@@ -191,7 +191,7 @@ body.dark .sitem canvas{background:linear-gradient(#34427e,#26306a)}
 .ojump{position:absolute;right:30px;bottom:40px;width:90px;height:90px;border-radius:50%;border:0;background:#ffd23f;font-size:36px;box-shadow:0 6px 0 #d4a700;touch-action:none}
 .hpbar{display:inline-block;width:86px;height:12px;background:#ffd6dc;border-radius:6px;overflow:hidden;margin:0 2px}
 .hpbar i{display:block;height:100%;width:100%;background:#2ec27e;transition:width .2s}
-.obig{position:absolute;top:34%;left:50%;transform:translateX(-50%);font-size:26px;font-weight:900;color:#fff;text-align:center;text-shadow:2px 2px 0 #1d2340,0 0 14px rgba(0,0,0,.35);pointer-events:none;max-width:90vw}
+.obig{position:absolute;top:34%;left:50%;transform:translateX(-50%);white-space:pre-line;font-size:26px;font-weight:900;color:#fff;text-align:center;text-shadow:2px 2px 0 #1d2340,0 0 14px rgba(0,0,0,.35);pointer-events:none;max-width:90vw}
 .obig:empty{display:none}
 .owarn{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 140px 50px rgba(255,40,0,.8);opacity:0}
 .owarn.blue{box-shadow:inset 0 0 140px 50px rgba(120,190,255,.85)}
@@ -1724,7 +1724,7 @@ const Obby = (() => {
   }
 
   /* ---------- Natural Disaster Survival ---------- */
-  const ROUND_LEN = 30, LOBBY_LEN = 6, READY_LEN = 3, SURVIVE_BONUS = 20, WATER0 = -1.2, SKY = '#8fd3ff';
+  const ROUND_LEN = 30, LOBBY_LEN = 6, READY_LEN = 3, SURVIVE_BONUS = 20, WATER0 = -1.2;
   const DISASTERS = {
     flood:     {emoji: '🌊', name: 'Flood',         tip: 'The water is rising! Climb up high!'},
     tornado:   {emoji: '🌪️', name: 'Tornado',       tip: 'Run away from the spinning funnel!'},
@@ -1735,54 +1735,190 @@ const Obby = (() => {
     acid:      {emoji: '🧪', name: 'Acid Rain',     tip: 'Get under a roof!'},
   };
   const DIS_KEYS = Object.keys(DISASTERS);
-  const SPOTS = [[0, 0], [4, -4], [-6, 4], [6, 14], [-2, 12], [14, -6], [-15, 2], [-3, -18]];
+  // combo rounds: only pairs/triples that can be survived together (every map has a roofed spot above the highest flood)
+  const COMBOS2 = [['tornado','meteor'], ['flood','meteor'], ['flood','tornado'], ['sandstorm','meteor'], ['blizzard','tornado'], ['acid','tornado'],
+    ['quake','meteor'], ['blizzard','meteor'], ['flood','acid'], ['quake','tornado'], ['acid','meteor'], ['sandstorm','tornado'], ['flood','blizzard']];
+  const COMBOS3 = [['tornado','meteor','sandstorm'], ['flood','meteor','tornado'], ['blizzard','meteor','tornado'], ['acid','meteor','quake']];
+  const COMBO_CHANCE = .3;
+  // maps: sky colour, ground colour, sea colours, what falling in is called, which disasters are a bit more likely there
+  const NDS_MAPS = {
+    island: {emoji: '🏝️', name: 'Disaster Island', sky: '#8fd3ff', ground: '#5fd068', sea: ['#2f8fe8', '#0a3a7a', '#1f6fc4'], fall: '💦 Splash! You fell in the water!', likes: ['flood', 'tornado'],
+      spots: [[0, 0], [4, -4], [-6, 4], [6, 14], [-2, 12], [14, -6], [-15, 2], [-3, -18]]},
+    city:   {emoji: '🏙️', name: 'Block City', sky: '#a9d6ff', ground: '#8e95a3', sea: ['#3a7bd5', '#0d2f66', '#245a9e'], fall: '💦 Splash! You fell in the harbor!', likes: ['quake', 'meteor'],
+      spots: [[0, 0], [4, -4], [-1.5, 3], [0, 12], [17, 0], [-17, 1], [3, -18], [-18, -3]]},
+    snow:   {emoji: '🏔️', name: 'Frosty Peak', sky: '#cfe6ff', ground: '#f4f8ff', sea: ['#7fc8f8', '#2a6f9e', '#4f9fd0'], fall: '🥶 Brrr! You fell in the icy water!', likes: ['blizzard', 'quake'],
+      spots: [[0, 0], [2, 6], [-6, 6], [-14, 14], [17, 0], [0, -17], [17, -17], [1, 17]]},
+    desert: {emoji: '🏜️', name: 'Sunny Oasis', sky: '#ffe0a8', ground: '#f2d58b', sea: ['#2fb5c9', '#0b5560', '#1f8f9e'], fall: '💦 Splash! You fell in the sea!', likes: ['sandstorm', 'meteor'],
+      spots: [[0, 0], [-3, 2], [1, -19], [18, 0], [-18, -2], [0, 17], [14, 17], [-17, 17]]},
+    sky:    {emoji: '☁️', name: 'Sky Islands', sky: '#b9e6ff', ground: '#7bd389', sea: ['#ffffff', '#9fb6d6', '#e8f1fb'], fall: '☁️ Whoops! You fell through the clouds!', likes: ['tornado', 'acid'],
+      spots: [[0, 0], [4, -4], [-5, 4], [6, 6], [-6, -6], [3, -7], [-7, 2], [7, -2]]},
+  };
+  const MAP_KEYS = Object.keys(NDS_MAPS);
   let nds = null, slip = false, shake = 0;
   const ext = {x: 0, z: 0};
   function buildNds(){
     const N = nds = {phase: 'lobby', t: LOBBY_LEN, el: 0, round: 0, survived: 0, streak: 0, best: load('rubloxNdsBest', 0), earned: 0, alive: true, hp: 100,
-      dis: null, last: null, forced: null, bldg: [], objs: [], meteors: [], booms: [], fallers: [], timers: {}, wind: {x: 0, z: 0}, waterY: WATER0, tornado: null, hurtCd: 0, bigT: 0, hurting: false, outs: 0};
+      dis: null, combo: [], pk: null, last: null, lastCombo: '', forced: null, forcedMap: null, map: null, maps: {}, bldg: [], objs: [], meteors: [], booms: [], fallers: [], timers: {}, wind: {x: 0, z: 0}, waterY: WATER0, tornado: null, hurtCd: 0, bigT: 0, hurting: false, outs: 0, combos: 0};
     // lobby (glass walls so you can see the island)
     const lobby = plat(0, 40, -60, 14, 14, '#9aa7c7', 1); checkpoint(lobby, 0);
     const glass = new THREE.MeshLambertMaterial({color: '#cfefff', transparent: true, opacity: .3});
     [[0, -67.3, 14.6, .6], [0, -52.7, 14.6, .6], [-7.3, -60, .6, 14.6], [7.3, -60, .6, 14.6]].forEach(([x, z, w, d]) => plat(x, 44, z, w, d, '#cfefff', 4, {material: glass}));
     [[-4, -64], [4, -64]].forEach(([x, z]) => { plat(x, 40.8, z, 3, 1, '#ff9f1c', .8); });
-    // island
-    plat(0, -.2, 0, 48, 48, '#f2d58b', 6);
-    N.grass = plat(0, 0, 0, 40, 40, '#5fd068', .4);
-    const B = (x, top, z, w, d, color, h = 1) => { const b = plat(x, top, z, w, d, color, h); b.home = b.mesh.position.clone(); N.bldg.push(b); return b; };
-    // house with a door, a flat roof and steps up the side
-    const wall = '#ffb3c7';
-    B(-9, 5, -11.2, 9, .6, wall, 5); B(-13.2, 5, -7, .6, 9, wall, 5); B(-4.8, 5, -7, .6, 9, wall, 5);
-    B(-11.85, 5, -2.8, 3.3, .6, wall, 5); B(-6.15, 5, -2.8, 3.3, .6, wall, 5); B(-9, 5, -2.8, 2.4, .6, wall, 1.4);
-    B(-9, 5.6, -7, 10, 10, '#ff4d5e', .6);
-    [[1.2, -4], [2.4, -6], [3.6, -8], [4.8, -10]].forEach(([t, z]) => B(-2.9, t, z, 1.8, 1.8, '#c7743a', t));
-    // windows (stuck to the walls so they fall with them)
-    const win = (b, x, y, z, w, d) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, 1.2, d), mat('#7cc6ff', '#1d5d99')); m.position.set(x, y, z); b.mesh.add(m); };
-    win(N.bldg[1], 0, .6, 0, .7, 2); win(N.bldg[2], 0, .6, 0, .7, 2);
-    // lookout tower: 4 pillars, a sheltered middle floor and a top deck, with 2 climbing trusses
-    const tc = [10, 6];
-    [[-2.1, -2.1], [2.1, -2.1], [-2.1, 2.1], [2.1, 2.1]].forEach(([dx, dz]) => B(tc[0] + dx, 14, tc[1] + dz, .8, .8, '#9aa7c7', 14));
-    B(tc[0], 7, tc[1], 5, 5, '#c9ced8', .5); B(tc[0], 14, tc[1], 5.6, 5.6, '#3a86ff', .6);
-    const truss = (x, top, z, w, d) => { const t = B(x, top, z, w, d, '#b8c0d0', top); trusses.push(t);
-      for (let y = .6; y < top; y += 1.2){ const r = new THREE.Mesh(new THREE.BoxGeometry(w + .12, .14, d + .12), mat('#7c869c')); r.position.y = y - top / 2; t.mesh.add(r); } };
-    truss(tc[0] - 3, 14, tc[1], 1, 1.6); truss(tc[0] + 3, 7, tc[1], 1, 1.6);
-    // two trees with log steps
-    [[-12, 11, 0], [3, -14, 2]].forEach(([x, z, a0]) => {
-      B(x, 6, z, 1.2, 1.2, '#8d5524', 6); B(x, 8.5, z, 4.6, 4.6, '#2ec27e', 3);
-      [1.5, 3, 4.5, 6].forEach((t, k) => { const a = a0 + k * .75; B(x + Math.cos(a) * 3.4, t, z + Math.sin(a) * 3.4, 1.4, 1.4, '#a0522d', t); });
-    });
     // sea
     const wgeo = new THREE.PlaneGeometry(320, 320, 32, 32); wgeo.rotateX(-Math.PI / 2);
     const water = new THREE.Mesh(wgeo, new THREE.MeshLambertMaterial({color: '#2f8fe8', emissive: '#0a3a7a', emissiveIntensity: .35, transparent: true, opacity: .85}));
     const deep = new THREE.Mesh(new THREE.BoxGeometry(320, 60, 320), new THREE.MeshBasicMaterial({color: '#1f6fc4'})); deep.position.y = -30.4; water.add(deep);
-    water.position.y = WATER0; scene.add(water); N.water = water; N.wbase = wgeo.attributes.position.array.slice();
+    water.position.y = WATER0; scene.add(water); N.water = water; N.deep = deep; N.wbase = wgeo.attributes.position.array.slice();
     // weather particles
     const cnt = LOWQ ? 600 : 1500, pa = new Float32Array(cnt * 3);
     for (let i = 0; i < cnt; i++){ pa[i*3] = (Math.random() - .5) * 60; pa[i*3+1] = Math.random() * 40 - 10; pa[i*3+2] = (Math.random() - .5) * 60; }
     const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(pa, 3));
     N.pts = new THREE.Points(pg, new THREE.PointsMaterial({color: '#ffffff', size: .35, transparent: true, opacity: .85}));
     N.pts.visible = false; N.pts.frustumCulled = false; scene.add(N.pts);
+    // maps are built the first time they are needed (keeps phones fast); the first one is random
+    setMap(MAP_KEYS[Math.floor(Math.random() * MAP_KEYS.length)]); clearDisaster();
   }
+  // ---------- map builders ----------
+  let MB = null; // the map being built
+  function ndsB(x, top, z, w, d, color, h = 1){ const b = plat(x, top, z, w, d, color, h); b.home = b.mesh.position.clone(); MB.bldg.push(b); return b; }
+  function ndsDeco(m){ scene.add(m); MB.deco.push(m); return m; }
+  function ndsBox(x, y, z, w, h, d, color, glow){ return ndsDeco(Object.assign(new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color, glow)), {}).translateX(x).translateY(y).translateZ(z)); }
+  function ndsTruss(x, top, z, w, d, bottom = 0){ const h = top - bottom, t = ndsB(x, top, z, w, d, '#b8c0d0', h); trusses.push(t); t.safe = true;
+    for (let y = bottom + .6; y < top; y += 1.2){ const r = new THREE.Mesh(new THREE.BoxGeometry(w + .12, .14, d + .12), mat('#7c869c')); r.position.y = y - (top - h / 2); t.mesh.add(r); }
+    return t; }
+  function ndsWin(b, x, y, z, w, d, h = 1.2){ const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat('#7cc6ff', '#1d5d99')); m.position.set(x, y, z); b.mesh.add(m); }
+  // a house with a door facing +z, a flat roof (top 5.6) and steps up its +x side
+  function ndsHouse(cx, cz, wall, roof, stepCol){
+    const B = ndsB;
+    const back = B(cx, 5, cz - 4.2, 9, .6, wall, 5), l = B(cx - 4.2, 5, cz, .6, 9, wall, 5), r = B(cx + 4.2, 5, cz, .6, 9, wall, 5);
+    B(cx - 2.85, 5, cz + 4.2, 3.3, .6, wall, 5); B(cx + 2.85, 5, cz + 4.2, 3.3, .6, wall, 5); B(cx, 5, cz + 4.2, 2.4, .6, wall, 1.4);
+    B(cx, 5.6, cz, 10, 10, roof, .6);
+    [[1.2, 3], [2.4, 1], [3.6, -1], [4.8, -3]].forEach(([t, dz]) => B(cx + 6.1, t, cz + dz, 1.8, 1.8, stepCol || '#c7743a', t));
+    ndsWin(l, 0, .6, 0, .7, 2); ndsWin(r, 0, .6, 0, .7, 2); ndsWin(back, 0, .6, 0, 2, .7);
+  }
+  function ndsPosts(cx, cz, hw, hd, bottom, top, col){ [[-hw, -hd], [hw, -hd], [-hw, hd], [hw, hd]].forEach(([dx, dz]) => ndsB(cx + dx, top, cz + dz, .45, .45, col, top - bottom)); }
+  function ndsGround(M, baseCol){ plat(0, -.2, 0, 48, 48, baseCol, 6); M.grass = plat(0, 0, 0, 40, 40, NDS_MAPS[M.id].ground, .4); }
+  const MAP_BUILD = {
+    island(M){
+      const B = ndsB; ndsGround(M, '#f2d58b');
+      ndsHouse(-9, -7, '#ffb3c7', '#ff4d5e');
+      // lookout tower: 4 pillars, a sheltered middle floor and a top deck, with 2 climbing trusses
+      const tc = [10, 6];
+      [[-2.1, -2.1], [2.1, -2.1], [-2.1, 2.1], [2.1, 2.1]].forEach(([dx, dz]) => B(tc[0] + dx, 14, tc[1] + dz, .8, .8, '#9aa7c7', 14).safe = true);
+      B(tc[0], 7, tc[1], 5, 5, '#c9ced8', .5).safe = true; B(tc[0], 14, tc[1], 5.6, 5.6, '#3a86ff', .6).safe = true;
+      ndsTruss(tc[0] - 3, 14, tc[1], 1, 1.6); ndsTruss(tc[0] + 3, 7, tc[1], 1, 1.6);
+      [[-12, 11, 0], [3, -14, 2]].forEach(([x, z, a0]) => {
+        B(x, 6, z, 1.2, 1.2, '#8d5524', 6); B(x, 8.5, z, 4.6, 4.6, '#2ec27e', 3);
+        [1.5, 3, 4.5, 6].forEach((t, k) => { const a = a0 + k * .75; B(x + Math.cos(a) * 3.4, t, z + Math.sin(a) * 3.4, 1.4, 1.4, '#a0522d', t); });
+      });
+    },
+    city(M){
+      const B = ndsB; ndsGround(M, '#c9ced8');
+      // roads with yellow dashes
+      ndsBox(0, .03, 0, 40, .05, 6, '#5b606b'); ndsBox(0, .035, 0, 6, .05, 40, '#5b606b');
+      for (let i = -18; i <= 18; i += 4){ if (Math.abs(i) > 3){ ndsBox(i, .06, 0, 1.8, .05, .25, '#ffd23f'); ndsBox(0, .06, i, .25, .05, 1.8, '#ffd23f'); } }
+      // skyscraper with a truss to the roof
+      const sky = B(-11, 15, -11, 8, 8, '#5aa9e6', 15); sky.safe = true;
+      for (let y = -5.5; y <= 6; y += 2.6) for (const o of [-2.4, 0, 2.4]){ ndsWin(sky, o, y, 4.02, 1.4, .1, 1.3); ndsWin(sky, 4.02, y, o, .1, 1.4, 1.3); }
+      ndsTruss(-11, 15, -6.5, 1.6, 1);
+      const sign = B(-11, 16.6, -14, 5, .4, '#ff4d5e', 1.6); sign.safe = true;
+      // parking garage: sheltered floors at 3.5 and 7, roof at 10.5
+      const gx = 10, gz = -10;
+      [[-3, -3], [3, -3], [-3, 3], [3, 3]].forEach(([dx, dz]) => B(gx + dx, 10.5, gz + dz, .8, .8, '#9aa7c7', 10.5).safe = true);
+      B(gx, 3.5, gz, 7, 7, '#c9ced8', .5).safe = true; B(gx, 7, gz, 7, 7, '#d8dde6', .5).safe = true; B(gx, 10.5, gz, 7.4, 7.4, '#ff9f1c', .6).safe = true;
+      [[1.2, -6.2], [2.4, -8.2], [3.5, -10.2]].forEach(([t, z]) => B(gx + 4.4, t, z, 1.8, 1.8, '#8d8d8d', t).safe = true);
+      ndsTruss(gx - 3.9, 7, gz, 1, 1.6); ndsTruss(gx, 10.5, gz - 3.9, 1.6, 1);
+      // two shops
+      ndsHouse(-9, 9, '#ffd23f', '#ff4d5e', '#9aa7c7'); ndsHouse(9, 10, '#7bd389', '#3a86ff', '#9aa7c7');
+      // bus stop
+      ndsPosts(-1, 17, 2.2, .9, 0, 3, '#3a86ff'); B(-1, 3.3, 17, 5, 2.4, '#3a86ff', .3);
+      // cars you can jump on
+      [[-5, 1.5, 3.4, 1.6, '#ff4d5e'], [6, -1.5, 3.4, 1.6, '#ffd23f'], [1.5, -16, 1.6, 3.4, '#8b5cf6'], [1.8, 7.5, 1.6, 3.4, '#2ec27e']].forEach(([x, z, w, d, c]) => {
+        B(x, 1.1, z, w, d, c, .8); B(x, 1.9, z, w * (w > d ? .55 : .9), d * (d > w ? .55 : .9), '#cfefff', .8); });
+      // street lamps
+      [[-4, -4], [4, 4], [-4, 4], [4, -4]].forEach(([x, z]) => { ndsBox(x, 2, z, .2, 4, .2, '#5b606b'); ndsBox(x, 4.1, z, .6, .3, .6, '#fff6b0', '#ffd23f'); });
+    },
+    snow(M){
+      const B = ndsB; ndsGround(M, '#dfe8f5');
+      // stepped mountain (each step can be jumped) with a red-roofed hut on a ledge above the flood line
+      [[-10, 16, 2.2, '#9aa7c7'], [-12, 12, 4.4, '#aab4cf'], [-13.5, 9, 6.6, '#c0c8dc'], [-15, 6, 8.8, '#dfe6f2'], [-16, 3, 11, '#ffffff']].forEach(([c, sz, t, col]) => B(c, t, c, sz, sz, col, t).safe = true);
+      ndsPosts(-10.5, -10.5, 1.15, 1.15, 6.6, 9.6, '#8d5524'); B(-10.5, 10, -10.5, 3.6, 3.6, '#ff4d5e', .4);
+      MB.bldg.slice(-5).forEach(b => b.safe = true);
+      ndsBox(-16, 11.6, -16, .15, 1.2, .15, '#5b606b'); ndsBox(-15.6, 11.95, -16, .7, .45, .05, '#ff4d5e');
+      // log cabins with snowy roofs
+      ndsHouse(8, -8, '#a0522d', '#ffffff', '#8d5524'); ndsHouse(9, 10, '#c7743a', '#ffffff', '#8d5524');
+      // pine trees
+      [[-4, 14], [-14, 8], [2, -17], [17, 17]].forEach(([x, z]) => {
+        B(x, 2, z, .8, .8, '#8d5524', 2);
+        const c1 = ndsDeco(new THREE.Mesh(new THREE.ConeGeometry(2.2, 4.4, 8), mat('#1f8a4c'))); c1.position.set(x, 4.1, z);
+        const c2 = ndsDeco(new THREE.Mesh(new THREE.ConeGeometry(1.1, 1.6, 8), mat('#ffffff'))); c2.position.set(x, 6.1, z);
+      });
+      // frozen pond and snowmen
+      const pond = ndsDeco(new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, .06, 24), mat('#bfe6ff', '#4a7aa8'))); pond.position.set(3, .04, 1.5);
+      [[-5, 2], [13, 2]].forEach(([x, z]) => {
+        [[.9, .9], [.65, 2.3], [.45, 3.3]].forEach(([r, y]) => { const b = ndsDeco(new THREE.Mesh(new THREE.SphereGeometry(r, 12, 10), mat('#ffffff'))); b.position.set(x, y, z); });
+        ndsBox(x, 3.3, z + .5, .12, .12, .5, '#ff9f1c'); ndsBox(x, 4.05, z, .7, .5, .7, '#2b2b2b');
+      });
+    },
+    desert(M){
+      const B = ndsB; ndsGround(M, '#e8c27a');
+      // stepped pyramid
+      [[14, 2, '#e8c17a'], [11, 4, '#dfb468'], [8, 6, '#d6a85a'], [5, 8, '#cc9c4d'], [2.5, 10, '#ffd23f']].forEach(([sz, t, col]) => B(9, t, -9, sz, sz, col, t).safe = true);
+      // temple on a high platform: roofed and above the flood line
+      B(-10, 6, -9, 8, 8, '#f4e1b5', 6).safe = true;
+      [[1.5, -6], [3, -8], [4.5, -10], [6, -12]].forEach(([t, z]) => B(-5.1, t, z, 1.8, 1.8, '#e0c08a', t).safe = true);
+      ndsPosts(-10, -9, 3.4, 3.4, 6, 9.6, '#fff3d6'); MB.bldg.slice(-4).forEach(b => b.safe = true);
+      B(-10, 10.2, -9, 8.4, 8.4, '#c97b4a', .6).safe = true;
+      // oasis pond with palm trees
+      const pond = ndsDeco(new THREE.Mesh(new THREE.CylinderGeometry(4, 4, .06, 28), mat('#2fb5c9', '#0b5560'))); pond.position.set(6, .04, 9);
+      [[1.5, 6], [10.5, 12], [3, 13.5], [11, 5]].forEach(([x, z], i) => {
+        B(x, 5, z, .6, .6, '#a0522d', 5);
+        for (let k = 0; k < 4; k++){ const l = ndsBox(x, 5.1, z, 3.6, .15, .9, '#2ec27e'); l.rotation.y = k * Math.PI / 4 + i; }
+      });
+      // adobe house, market tent and cacti
+      ndsHouse(-9, 10, '#e9b872', '#c97b4a', '#d6a85a');
+      ndsPosts(16, 3, 1.8, 1.8, 0, 3, '#ffffff'); B(16, 3.3, 3, 4.2, 4.2, '#ff6fb5', .3);
+      [[-2, -17], [17, -18], [-17, 2], [-4, -1.5]].forEach(([x, z]) => { B(x, 1.8, z, .6, .6, '#2ec27e', 1.8); ndsBox(x + .5, 1.2, z, .5, .25, .25, '#2ec27e'); ndsBox(x + .65, 1.5, z, .25, .6, .25, '#2ec27e'); });
+    },
+    sky(M){
+      const B = ndsB;
+      // floating islands joined by little bridges (the islands themselves never crumble)
+      plat(0, -.4, 0, 20, 20, '#8d5524', 3); M.grass = plat(0, 0, 0, 20, 20, NDS_MAPS.sky.ground, .4);
+      plat(17, 2.2, 2, 10, 10, '#ffb3c7', 2.6);                       // east: candy island
+      plat(11, 1.1, 2, 3.4, 2.6, '#a0522d', .4);                       // bridge step east
+      plat(0, 4.4, -17, 12, 10, '#9aa7c7', 3);                          // north island
+      plat(0, 2.2, -11, 2.6, 2, '#a0522d', .4);                         // step north
+      plat(0, 6.6, -18, 8, 6, '#c9ced8', 2.2);                          // raised temple floor (above the flood)
+      plat(-17, 1.1, 3, 8, 8, '#7bd389', 2.6);                          // west: tower island
+      plat(-11.5, .55, 3, 3.2, 2.4, '#a0522d', .4);                     // bridge west
+      plat(2, 0, 16, 10, 8, '#ffd23f', 2.6);                            // south island
+      plat(2, 0, 11, 2.6, 2.2, '#a0522d', .4);                          // bridge south
+      // temple roof on posts
+      ndsPosts(0, -18, 3.6, 2.6, 6.6, 9.8, '#ffffff'); B(0, 10.2, -18, 8.4, 6.4, '#ffd23f', .4);
+      MB.bldg.forEach(b => b.safe = true);
+      // tall tower on the west island
+      B(-17, 10, 3, 3, 3, '#9aa7c7', 8.9).safe = true; B(-17, 10.5, 3, 5, 5, '#3a86ff', .5).safe = true;
+      ndsTruss(-17, 10.5, 5, 1.6, 1, 1.1);
+      // little huts to hide under
+      ndsPosts(2, 16, 1.8, 1.4, 0, 3, '#8b5cf6'); B(2, 3.3, 16, 4.2, 3.4, '#8b5cf6', .3);
+      ndsPosts(18, 2, 1.6, 1.6, 2.2, 5.2, '#ff6fb5'); B(18, 5.5, 2, 3.8, 3.8, '#ff6fb5', .3);
+      // a rainbow and puffy clouds
+      const rc = ['#ff4d5e', '#ff9f1c', '#ffd23f', '#2ec27e', '#3a86ff', '#8b5cf6'];
+      rc.forEach((c, i) => { const t = ndsDeco(new THREE.Mesh(new THREE.TorusGeometry(14 - i * .6, .3, 6, 40, Math.PI), new THREE.MeshBasicMaterial({color: c}))); t.position.set(0, -1, -27); });
+      [[-14, -14], [14, -14], [-12, 16], [16, 14], [22, -6]].forEach(([x, z]) => [0, 1.4, -1.4].forEach((o, k) => {
+        const c = ndsDeco(new THREE.Mesh(new THREE.SphereGeometry(k ? 1.3 : 1.8, 10, 8), new THREE.MeshLambertMaterial({color: '#ffffff', emissive: '#c9dcef'}))); c.position.set(x + o, -1.6, z); }));
+    },
+  };
+  function setMap(id){
+    const N = nds; if (!NDS_MAPS[id]) id = 'island';
+    if (!N.maps[id]){ const M = MB = {id, bldg: [], deco: [], parts: null, grass: null}; const s0 = solids.length; MAP_BUILD[id](M); M.parts = solids.slice(s0); MB = null; N.maps[id] = M; }
+    for (const k in N.maps){ const M = N.maps[k], on = k === id;
+      M.parts.forEach(b => { b.active = on; b.mesh.visible = on; }); M.deco.forEach(m => m.visible = on); }
+    const M = N.maps[id], D = NDS_MAPS[id]; N.map = id; N.bldg = M.bldg; N.grass = M.grass;
+    N.water.material.color.set(D.sea[0]); N.water.material.emissive.set(D.sea[1]); N.deep.material.color.set(D.sea[2]);
+    N.water.material.opacity = id === 'sky' ? .95 : .85;
+  }
+  function pickMap(){ const k = MAP_KEYS.filter(m => m !== nds.map); return k[Math.floor(Math.random() * k.length)]; }
   function disposeObj(o){ scene.remove(o); o.traverse(c => { if (c.geometry) c.geometry.dispose(); [].concat(c.material || []).forEach(m => { if (!Object.values(mats).includes(m)) m.dispose(); }); }); }
   function big(text, secs = 0){ $('#oBig').textContent = text; nds && (nds.bigT = secs); }
   function topAt(x, z){
@@ -1800,41 +1936,72 @@ const Obby = (() => {
   function resetIsland(){
     clearDisaster();
     nds.bldg.forEach(b => { b.mesh.position.copy(b.home); b.mesh.rotation.set(0, 0, 0); b.active = true; b.mesh.visible = true; b.fall = null; });
+    nds.fallers.forEach(b => { if (!nds.bldg.includes(b)){ b.mesh.position.copy(b.home); b.mesh.rotation.set(0, 0, 0); b.fall = null; } });
     nds.fallers = [];
   }
   function clearDisaster(){
     const N = nds;
     N.objs.forEach(disposeObj); N.objs = []; N.meteors = []; N.booms = []; N.tornado = null;
     N.waterY = WATER0; slip = false; shake = 0; N.wind.x = N.wind.z = 0; ext.x = ext.z = 0; N.pts.visible = false; N.hurting = false;
-    N.grass.mesh.material = mat('#5fd068');
-    scene.background.set(SKY); scene.fog.color.set(SKY); scene.fog.near = 80; scene.fog.far = 230;
-    N.dis = null;
+    const MD = NDS_MAPS[N.map] || NDS_MAPS.island;
+    N.grass.mesh.material = mat(MD.ground);
+    scene.background.set(MD.sky); scene.fog.color.set(MD.sky); scene.fog.near = 80; scene.fog.far = 230;
+    N.dis = null; N.combo = []; N.pk = null;
   }
-  function toIsland(){
-    const N = nds; N.round++; resetIsland();
-    const [x, z] = SPOTS[Math.floor(Math.random() * SPOTS.length)];
-    Object.assign(P, {x, y: .05, z, vx: 0, vy: 0, vz: 0, onGround: false, ground: null});
+  function toIsland(map){
+    const N = nds; N.round++;
+    // the host (or single player) picks the map: the first round uses the one shown from the lobby, then a different one each round
+    if (!mpGuest()) map = N.forcedMap || (N.round === 1 ? N.map : pickMap());
+    N.forcedMap = null; resetIsland();
+    if (map && map !== N.map){ setMap(map); clearDisaster(); }
+    const MD = NDS_MAPS[N.map], [x, z] = MD.spots[Math.floor(Math.random() * MD.spots.length)];
+    Object.assign(P, {x, y: topAt(x, z) + .05, z, vx: 0, vy: 0, vz: 0, onGround: false, ground: null});
     cam.yaw = (x || z) ? Math.atan2(x, z) : Math.PI;
     N.alive = true; N.hp = 100; N.phase = 'ready'; N.t = READY_LEN; N.bigT = 0; SND.cp();
-    if (mp.on && mp.host) mpSend({t: 'nds', a: 'i'});
-    banner('🏝️ Round ' + N.round + '!');
+    if (mp.on && mp.host) mpSend({t: 'nds', a: 'i', map: N.map});
+    banner(MD.emoji + ' Round ' + N.round + ': ' + MD.name + '!');
   }
-  function pickDisaster(){ const k = DIS_KEYS.filter(d => d !== nds.last); return k[Math.floor(Math.random() * k.length)]; }
+  function pickDisaster(){
+    // each map makes its favourite disasters a bit more likely
+    const likes = (NDS_MAPS[nds.map] || {}).likes || [], k = DIS_KEYS.filter(d => d !== nds.last), pool = k.concat(likes.filter(d => k.includes(d)));
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  function pickRound(){
+    const N = nds;
+    if (N.round >= 2 && Math.random() < COMBO_CHANCE){
+      const pool = (N.round >= 4 && Math.random() < .3 ? COMBOS3 : COMBOS2).filter(c => c.join('+') !== N.lastCombo);
+      const c = pool[Math.floor(Math.random() * pool.length)].slice();
+      if (Math.random() < .5) c.reverse();
+      return c;
+    }
+    return [pickDisaster()];
+  }
+  function comboName(c){ return c.map(k => DISASTERS[k].emoji + ' ' + DISASTERS[k].name).join(' + '); }
   function setWeather(bg, fog, near, far, pcol, psize){
     scene.background.set(bg); scene.fog.color.set(fog); scene.fog.near = near; scene.fog.far = far;
     if (pcol){ nds.pts.visible = true; nds.pts.material.color.set(pcol); nds.pts.material.size = psize; }
   }
-  function beginDisaster(k){
-    const N = nds, D = DISASTERS[k];
-    N.forced = null; N.dis = k; N.last = k; N.phase = 'disaster'; N.t = ROUND_LEN; N.el = 0; N.timers = {m: 1, q: .8, j: 0, w: 0};
-    if (mp.on && mp.host) mpSend({t: 'nds', a: 'd', k});
-    banner(D.emoji + ' ' + D.name.toUpperCase() + '!'); big(D.tip, 3); SND.alarm();
-    if (k === 'tornado') makeTornado();
-    if (k === 'quake') shake = .3;
-    if (k === 'blizzard'){ slip = true; setWeather('#c9dcef', '#e3ecf6', 10, 75, '#ffffff', .4); N.grass.mesh.material = mat('#f4f8ff'); }
-    if (k === 'sandstorm'){ setWeather('#e8c17a', '#e0b46a', 6, 55, '#c98a3a', .3); newWind(); }
-    if (k === 'acid') setWeather('#7d9a63', '#8fae6a', 20, 110, '#9dff3a', .3);
-    if (k === 'meteor') setWeather('#ffb27a', '#ffc79a', 90, 260);
+  function beginDisaster(k, combo){
+    const N = nds, list = (Array.isArray(k) ? k : combo && combo.length > 1 ? combo : [k]).filter((d, i, a) => own(DISASTERS, d) && a.indexOf(d) === i).slice(0, 3);
+    k = list[0]; const D = DISASTERS[k];
+    N.forced = null; N.dis = k; N.combo = list; N.last = k; N.phase = 'disaster'; N.t = ROUND_LEN; N.el = 0; N.timers = {m: 1, q: .8, j: 0, w: 0};
+    if (list.length > 1){ N.lastCombo = list.slice().sort().join('+'); N.combos++; }
+    if (mp.on && mp.host) mpSend({t: 'nds', a: 'd', k, c: list, map: N.map});
+    if (list.length > 1){
+      banner('💥 ' + (list.length === 3 ? 'TRIPLE' : 'DOUBLE') + ' DISASTER: ' + list.map(d => DISASTERS[d].name).join(' + ') + '!');
+      big(list.map(d => DISASTERS[d].emoji + ' ' + DISASTERS[d].tip).join('\n'), 4.5); SND.alarm(); setTimeout(() => nds === N && N.phase === 'disaster' && SND.alarm(), 350);
+    } else { banner(D.emoji + ' ' + D.name.toUpperCase() + '!'); big(D.tip, 3); SND.alarm(); }
+    const has = d => list.includes(d);
+    if (has('tornado')) makeTornado();
+    if (has('quake')) shake = .3;
+    if (has('sandstorm')) newWind();
+    if (has('blizzard')){ slip = true; N.grass.mesh.material = mat('#f4f8ff'); }
+    // one weather look per round (the strongest one wins) so the sky and particles stay simple
+    N.pk = ['blizzard', 'acid', 'sandstorm', 'meteor'].find(has) || null;
+    if (N.pk === 'blizzard') setWeather('#c9dcef', '#e3ecf6', list.length > 1 ? 16 : 10, list.length > 1 ? 90 : 75, '#ffffff', .4);
+    if (N.pk === 'sandstorm') setWeather('#e8c17a', '#e0b46a', list.length > 1 ? 10 : 6, list.length > 1 ? 70 : 55, '#c98a3a', .3);
+    if (N.pk === 'acid') setWeather('#7d9a63', '#8fae6a', 20, 110, '#9dff3a', .3);
+    if (N.pk === 'meteor') setWeather('#ffb27a', '#ffc79a', 90, 260);
   }
   function newWind(){ const a = Math.random() * Math.PI * 2; nds.wind.x = Math.cos(a) * 6.5; nds.wind.z = Math.sin(a) * 6.5; nds.timers.w = 7; }
   function makeTornado(){
@@ -1871,10 +2038,10 @@ const Obby = (() => {
     for (const b of N.bldg){ if (!b.active || b.fall) continue; const p = b.mesh.position;
       if (Math.abs(p.y + b.hh - m.top) < .8 && Math.abs(m.x - p.x) < b.hw + .8 && Math.abs(m.z - p.z) < b.hd + .8) crumble(b); }
   }
-  function crumble(b){ if (b.fall) return; b.fall = {t: 0, vy: 0, hit: false}; nds.fallers.push(b); }
+  function crumble(b){ if (b.fall || (b.safe && nds.combo.length > 1)) return; b.fall = {t: 0, vy: 0, hit: false}; nds.fallers.push(b); }
   function damage(n, quiet){
     const N = nds; if (!N.alive || N.phase !== 'disaster') return;
-    N.hp -= n;
+    N.hp -= n * (N.combo.length === 3 ? .6 : N.combo.length === 2 ? .75 : 1);
     if (!quiet){ SND.hit(); const f = $('#oFlash'); f.classList.add('on'); requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove('on'))); }
     if (N.hp <= 0) knockOut('💔 Out of health!');
   }
@@ -1896,23 +2063,23 @@ const Obby = (() => {
   }
   function ndsChecks(){
     const N = nds; if (!N.alive || N.phase === 'lobby') return;
-    if (P.y < N.waterY - .3) return knockOut(N.dis === 'flood' ? '🌊 Swept away by the flood!' : '💦 Splash! You fell in the water!');
+    if (P.y < N.waterY - .3) return knockOut(N.combo.includes('flood') ? '🌊 Swept away by the flood!' : (NDS_MAPS[N.map] || NDS_MAPS.island).fall);
     if (P.y < -15) return knockOut('You fell off the map!');
   }
   function ndsUpdate(dt){
     const N = nds; N.t -= dt; N.hurting = false;
     if (N.bigT > 0){ N.bigT -= dt; if (N.bigT <= 0) big(''); }
     if (N.phase === 'lobby'){ if (N.bigT <= 0) big(N.t <= 0 && mpGuest() ? '⏳ Waiting for the host’s next round…' : 'Next round in ' + Math.max(1, Math.ceil(N.t)) + '…'); if (N.t <= 0 && !mpGuest()) toIsland(); }
-    else if (N.phase === 'ready'){ big('Get ready… ' + Math.max(1, Math.ceil(N.t))); if (N.t <= 0 && !mpGuest()) beginDisaster(N.forced || pickDisaster()); }
+    else if (N.phase === 'ready'){ big('Get ready… ' + Math.max(1, Math.ceil(N.t))); if (N.t <= 0 && !mpGuest()) beginDisaster(N.forced || pickRound()); }
     else if (N.phase === 'disaster'){ updateDisaster(dt); if (N.t <= 0) endRound(); }
     updateFallers(dt); updateParticles(dt);
     N.booms = N.booms.filter(b => { b.t += dt; const s = 1 + b.t * 9; b.mesh.scale.set(s, s, s); b.mesh.material.opacity = Math.max(0, .9 - b.t * 2.2);
       if (b.t > .4){ disposeObj(b.mesh); N.objs = N.objs.filter(o => o !== b.mesh); return false; } return true; });
   }
   function updateDisaster(dt){
-    const N = nds, k = N.dis; N.el += dt; N.hurtCd -= dt;
-    if (k === 'flood' && N.el > 2) N.waterY = Math.min(5.2, N.waterY + .33 * dt);
-    if (k === 'tornado' && N.tornado){
+    const N = nds, has = d => N.combo.includes(d), many = N.combo.length > 1; N.el += dt; N.hurtCd -= dt;
+    if (has('flood') && N.el > 2) N.waterY = Math.min(5.2, N.waterY + .33 * dt);
+    if (has('tornado') && N.tornado){
       const T = N.tornado, dx = T.tx - T.x, dz = T.tz - T.z, d = Math.hypot(dx, dz);
       if (d < .5){ T.tx = (Math.random() - .5) * 34; T.tz = (Math.random() - .5) * 34; }
       else { T.x += dx / d * 4.5 * dt; T.z += dz / d * 4.5 * dt; }
@@ -1923,25 +2090,25 @@ const Obby = (() => {
         if (pd < 3.4 && P.y < 22 && N.hurtCd <= 0){
           const ux = px / pd, uz = pz / pd; P.vy = 24; P.onGround = false; P.ground = null;
           ext.x = ux * 16 - uz * 8; ext.z = uz * 16 + ux * 8; N.hurtCd = 1.2; SND.boing(); damage(20);
-        } else if (pd < 10 && P.y < 22){ ext.x -= px / pd * 7 * dt; ext.z -= pz / pd * 7 * dt; }
+        } else if (pd < 10 && P.y < 22){ const pull = many ? 4.5 : 7; ext.x -= px / pd * pull * dt; ext.z -= pz / pd * pull * dt; }
       }
     }
-    if (k === 'meteor'){
-      if ((N.timers.m -= dt) <= 0){ N.timers.m = Math.max(.3, .85 - N.el * .018); spawnMeteor(); }
+    if (has('meteor')){
+      if ((N.timers.m -= dt) <= 0){ N.timers.m = Math.max(.3, .85 - N.el * .018) * (many ? 1.5 : 1); spawnMeteor(); }
       N.meteors = N.meteors.filter(m => { m.y -= 32 * dt; m.rock.position.y = m.y; m.rock.rotation.x += dt * 4;
         const s = 1 + Math.sin(N.el * 14) * .12; m.ring.scale.set(s, s, s);
         if (m.y <= m.top){ impact(m); return false; } return true; });
     }
-    if (k === 'quake'){
+    if (has('quake')){
       shake = .22 + Math.abs(Math.sin(N.el * 3)) * .2;
-      if ((N.timers.q -= dt) <= 0){ N.timers.q = .7; const up = N.bldg.filter(b => b.active && !b.fall); if (up.length) crumble(up[Math.floor(Math.random() * up.length)]); }
+      if ((N.timers.q -= dt) <= 0){ N.timers.q = many ? 1.3 : .7; const up = N.bldg.filter(b => b.active && !b.fall); if (up.length) crumble(up[Math.floor(Math.random() * up.length)]); }
       if ((N.timers.j -= dt) <= 0){ N.timers.j = .3; if (N.alive){ ext.x += (Math.random() - .5) * 3; ext.z += (Math.random() - .5) * 3; } }
     }
-    if (k === 'sandstorm'){
+    if (has('sandstorm')){
       if ((N.timers.w -= dt) <= 0){ newWind(); banner('💨 The wind changed!'); }
-      if (N.alive){ const kk = Math.min(1, dt * 2); ext.x += (N.wind.x - ext.x) * kk; ext.z += (N.wind.z - ext.z) * kk; }
+      if (N.alive){ const kk = Math.min(1, dt * 2) * (many ? .75 : 1); ext.x += (N.wind.x - ext.x) * kk; ext.z += (N.wind.z - ext.z) * kk; }
     }
-    if ((k === 'blizzard' || k === 'acid') && N.alive && !sheltered()){ N.hurting = true; damage((k === 'acid' ? 7 : 2.5) * dt, true); }
+    if ((has('blizzard') || has('acid')) && N.alive && !sheltered()){ N.hurting = true; damage(((has('acid') ? 7 : 0) + (has('blizzard') ? 2.5 : 0)) * dt, true); }
   }
   function updateFallers(dt){
     nds.fallers = nds.fallers.filter(b => {
@@ -1954,7 +2121,7 @@ const Obby = (() => {
     });
   }
   function updateParticles(dt){
-    const N = nds, D = N.dis, pts = N.pts;
+    const N = nds, D = N.pk, pts = N.pts;
     if (!pts.visible) return;
     const a = pts.geometry.attributes.position.array, fall = D === 'acid' ? 26 : D === 'blizzard' ? 5 : 1.5;
     const wx = D === 'sandstorm' ? N.wind.x * 4 : D === 'blizzard' ? 2 : 0, wz = D === 'sandstorm' ? N.wind.z * 4 : 0;
@@ -2438,6 +2605,8 @@ const Obby = (() => {
     if (T.phase !== 'play') return;
     T.t -= dt; T.freeze = Math.max(0, T.freeze - dt); T.noBack = Math.max(0, T.noBack - dt);
     (T.it === 0 ? T.you : T.bots[T.it - 1]).itTime += dt;
+    if (mp.on){ const now = performance.now(); T.hist = T.hist || [];   // for judging guests' tags fairly (they see everyone a bit in the past)
+      tagBodies().forEach((b, n) => { const h = T.hist[n] || (T.hist[n] = []); h.push([now, b.x, b.y, b.z]); while (h.length && now - h[0][0] > 800) h.shift(); }); }
     T.bots.forEach(B => { const d = Math.hypot(B.x - B.lastPos[0], B.z - B.lastPos[1]); B.stuckT = d < dt * 1.5 && B.want > .9 ? B.stuckT + dt : Math.max(0, B.stuckT - dt); B.lastPos = [B.x, B.z]; });
     if (T.freeze <= 0){
       const bodies = tagBodies(), I = bodies[T.it];
@@ -2619,8 +2788,20 @@ const Obby = (() => {
     }
     if (!g.ready) return;
     if (d.t === 'me'){ g.m = typeof d.m === 'string' ? d.m : null; g.st = Array.isArray(d.st) ? d.st.slice(0, 8) : null; mpEnt(g.uid, g.m, g.st); if (d.o) mpApplyOps(d.o, g.conn); }
+    else if (d.t === 'tagreq') mpTagReq(g, d);
     else if (d.t === 'getblocks'){ if (running && bw && mode === 'build') mpSendTo(g.conn, {t: 'blocks', c: bwSerialize()}); }
     else if (d.t === 'bye') mpDrop(g, 'left');
+  }
+  function mpTagReq(g, d){
+    const T = tg;
+    if (!running || mode !== 'tag' || !T || T.remote || T.phase !== 'play' || T.freeze > 0 || typeof d.to !== 'string') return;
+    const bodies = tagBodies(), i = T.it; if (i === 0 || bodies[i].uid !== g.uid) return;   // only the guest who is IT
+    const j = bodies.findIndex((b, n) => tagUid(n) === d.to);
+    if (j < 0 || j === i || bodies[j].away || (j === T.prevIt && T.noBack > 0)) return;
+    const I = bodies[i]; let px = I.x, py = I.y, pz = I.z;
+    if (Array.isArray(d.p) && d.p.length === 3 && d.p.every(Number.isFinite) && Math.hypot(d.p[0] - I.x, d.p[2] - I.z) < 3) [px, py, pz] = d.p;
+    const now = performance.now(), B = bodies[j], pts = [[now, B.x, B.y, B.z], ...((T.hist && T.hist[j]) || [])];
+    if (pts.some(q => now - q[0] <= 750 && Math.hypot(q[1] - px, q[3] - pz) < R * 2 + .8 && Math.abs(q[2] - py) < 2.4)) passIt(i, j);
   }
   function mpDrop(g, why){
     if (!g.ready || !mp.guests.has(g.uid)) { try { g.conn.close(); } catch(e){} return; }
@@ -2692,8 +2873,12 @@ const Obby = (() => {
   /* --- shared Disaster Island rounds (the host picks the disasters) --- */
   function mpNds(d){
     if (!running || mode !== 'nds' || !nds) return;
-    if (d.a === 'i'){ if (nds.phase === 'disaster' && nds.t < 3) endRound(); if (nds.phase !== 'ready') toIsland(); }
-    else if (d.a === 'd' && own(DISASTERS, d.k)){ if (nds.phase === 'disaster' && nds.t < 3) endRound(); if (nds.phase !== 'ready') toIsland(); beginDisaster(d.k); }
+    const map = own(NDS_MAPS, d.map) ? d.map : null;
+    if (d.a === 'i'){ if (nds.phase === 'disaster' && nds.t < 3) endRound(); if (nds.phase !== 'ready') toIsland(map); }
+    else if (d.a === 'd' && own(DISASTERS, d.k)){
+      const c = Array.isArray(d.c) ? d.c.filter(k => typeof k === 'string' && own(DISASTERS, k)).slice(0, 3) : [];
+      if (nds.phase === 'disaster' && nds.t < 3) endRound(); if (nds.phase !== 'ready' || (map && map !== nds.map)) toIsland(map);
+      beginDisaster(d.k, c.includes(d.k) ? c : [d.k]); }
   }
   /* --- shared Block Tag (the host runs the round, guests follow) --- */
   function mpTagWire(w){
@@ -2710,8 +2895,13 @@ const Obby = (() => {
     const T = tg;
     if (T.phase === 'ready'){ T.t -= dt; big(T.t > 0 ? '⏳ ' + Math.ceil(T.t) : '⏳'); return; }
     if (T.phase !== 'play') return;
-    T.t = Math.max(0, T.t - dt); T.freeze = Math.max(0, T.freeze - dt);
+    T.t = Math.max(0, T.t - dt); T.freeze = Math.max(0, T.freeze - dt); T.nbT = Math.max(0, (T.nbT || 0) - dt);
     if (T.it === 0 && T.inRound) T.you.itTime += dt;
+    if (T.it === 0 && T.inRound && T.freeze <= 0){ const now = performance.now();
+      if (now > (T.reqT || 0)) for (const E of mp.ents.values()){
+        if (E.m !== 'tag' || now - E.seen > 1500 || E.uid === mp.me || (E.uid === T.nbU && T.nbT > 0)) continue;
+        if (Math.hypot(E.x - P.x, E.z - P.z) < R * 2 + .35 && Math.abs(E.y - P.y) < 2.4){
+          const r = v => Math.round(v * 100) / 100; mpSendTo(mp.hconn, {t: 'tagreq', to: E.uid, p: [r(P.x), r(P.y), r(P.z)]}); T.reqT = now + 200; break; } } }
   }
   function mpTagEv(d){
     if (!running || !tg || !tg.remote || typeof d.f !== 'string' || typeof d.to !== 'string') return;
@@ -2719,7 +2909,7 @@ const Obby = (() => {
     if (d.f === mp.me){ tg.earned += TAG_COIN; runCoins = tg.earned; setCoins(coins + TAG_COIN); SND.coin(); banner('🏷️ Tagged ' + (L ? L.short : 'them') + '! +' + TAG_COIN + ' 🪙'); }
     else if (d.to === mp.me){ SND.hit(); banner("😱 You're IT! Tag someone!"); const f = $('#oFlash'); f.classList.add('on'); requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove('on'))); }
     else SND.jump();
-    tg.itU = d.to; tg.it = d.to === mp.me ? 0 : -1; tg.freeze = TAG_FREEZE;
+    tg.itU = d.to; tg.it = d.to === mp.me ? 0 : -1; tg.freeze = TAG_FREEZE; tg.nbU = d.f; tg.nbT = d.f ? TAG_NOBACK : 0;
   }
   function tagBoard(rows, meU){
     return '<div class="trow th"><span>#</span><span>Player</span><span>IT time</span><span>Tags</span></div>' +
@@ -2956,12 +3146,12 @@ const Obby = (() => {
     $('#oTime').textContent = fmt(time); $('#oDeaths').textContent = deaths;
     if (nds){
       const N = nds, D = N.dis && DISASTERS[N.dis], hp = Math.max(0, Math.round(N.hp));
-      $('#oDis').textContent = N.phase === 'lobby' ? '🛋️ Lobby' : N.phase === 'ready' ? '⏳ Get ready' : D.emoji + ' ' + D.name;
+      $('#oDis').textContent = N.phase === 'lobby' ? '🛋️ Lobby' : N.phase === 'ready' ? '⏳ Get ready' : N.combo.length > 1 ? N.combo.map(k => DISASTERS[k].emoji).join('') + (N.combo.length === 3 ? ' Triple!' : ' Double!') : D.emoji + ' ' + D.name;
       $('#oRT').textContent = Math.max(0, Math.ceil(N.t)) + 's';
       $('#oHp').textContent = N.alive ? hp : '😵'; const fill = $('#oHpFill');
       fill.style.width = (N.alive ? hp : 0) + '%'; fill.style.background = hp > 60 ? '#2ec27e' : hp > 30 ? '#ffb21c' : '#ff4d5e';
       $('#oSurv').textContent = N.survived; $('#oStreak').textContent = N.streak; $('#oCoins').textContent = N.earned;
-      $('#oWarn').classList.toggle('on', N.alive && N.phase === 'disaster' && (hp < 35 || N.hurting)); $('#oWarn').classList.toggle('blue', N.dis === 'blizzard' && hp >= 35);
+      $('#oWarn').classList.toggle('on', N.alive && N.phase === 'disaster' && (hp < 35 || N.hurting)); $('#oWarn').classList.toggle('blue', N.combo.includes('blizzard') && hp >= 35);
     }
     if (lava){
       $('#oHeight').textContent = Math.max(0, Math.floor(P.y)) + ' / ' + Math.floor(topY) + 'm';
@@ -3121,9 +3311,13 @@ const Obby = (() => {
   window.obbyDebug = {
     get state(){ return {mode, diff, x: P.x, y: P.y, z: P.z, stage: cpIndex + 1, deaths, runCoins, time, won, over, choosing, paused, running, onGround: P.onGround, rafActive: raf !== 0, lavaY: lava ? lava.y : null, topY, maxY}; },
     setLava(y){ if (lava) lava.y = y; },
-    nds: () => nds && {phase: nds.phase, t: nds.t, round: nds.round, survived: nds.survived, streak: nds.streak, alive: nds.alive, hp: nds.hp, dis: nds.dis, earned: nds.earned, outs: nds.outs,
+    nds: () => nds && {phase: nds.phase, t: nds.t, round: nds.round, survived: nds.survived, streak: nds.streak, alive: nds.alive, hp: nds.hp, dis: nds.dis, combo: nds.combo.slice(), map: nds.map, maps: Object.keys(nds.maps), combos: nds.combos, earned: nds.earned, outs: nds.outs, big: $('#oBig').textContent, hud: $('#oDis').textContent,
       waterY: nds.waterY, sheltered: sheltered(), fallen: nds.bldg.filter(b => !b.active).length, tornado: nds.tornado && [nds.tornado.x, nds.tornado.z], meteors: nds.meteors.length, slip, ext: [ext.x, ext.z]},
-    ndsForce(k, x, z){ if (nds.phase !== 'ready') toIsland(); if (x !== undefined){ Object.assign(P, {x, y: topAt(x, z) + .05, z, vx: 0, vy: 0, vz: 0}); } beginDisaster(k); },
+    ndsForce(k, x, z){ if (nds.phase !== 'ready') toIsland(); if (x !== undefined && x !== null){ Object.assign(P, {x, y: topAt(x, z) + .05, z, vx: 0, vy: 0, vz: 0}); } beginDisaster(k); },
+    ndsNextMap(m){ nds.forcedMap = m; }, combos: () => COMBOS2.concat(COMBOS3), ndsNextRound(c){ nds.forced = c; }, ndsSpots: () => MAP_KEYS.map(k => [k, NDS_MAPS[k].spots]),
+    ndsMapInfo: () => ({map: nds.map, grassTop: nds.grass.mesh.position.y + nds.grass.hh, bldg: nds.bldg.length, safe: nds.bldg.filter(b => b.safe).length, active: solids.filter(b => b.active).length, solids: solids.length}),
+    ndsTopAt: (x, z) => topAt(x, z), ndsSheltered(x, y, z){ const o = [P.x, P.y, P.z]; P.x = x; P.y = y; P.z = z; const r = sheltered(); [P.x, P.y, P.z] = o; return r; },
+    ndsInSolid(x, y, z){ const o = {x: P.x, y: P.y, z: P.z}; Object.assign(P, {x, y, z}); const r = solids.some(b => b.active && overlaps(b, .02)); Object.assign(P, o); return r; },
     ndsSetT(t){ nds.t = t; }, ndsHp(h){ nds.hp = h; },
     ndsTornado(x, z, tx, tz){ const T = nds.tornado; if (T){ T.x = x; T.z = z; T.tx = tx ?? x; T.tz = tz ?? z; } },
     trusses: () => trusses.map(t => [t.mesh.position.x, t.mesh.position.y + t.hh, t.mesh.position.z, t.hw]),
@@ -3144,6 +3338,7 @@ const Obby = (() => {
       ents: [...mp.ents.values()].map(E => ({uid: E.uid, m: E.m, x: +E.x.toFixed(2), y: +E.y.toFixed(2), z: +E.z.toFixed(2), e: E.e, vis: !!(E.model && E.model.g.visible && E.scene === scene)})),
       tag: tg && {remote: tg.remote, itU: tg.itU, it: tg.it, inRound: tg.inRound, humans: tg.bots.filter(B => B.human).map(B => ({uid: B.uid, away: B.away, it: B.itTime, tags: B.tags}))}}),
     mpHost: () => mpHost(), mpJoin: c => mpJoin(c), mpLeave: () => mpLeave(),
+    tagUid: i => tagUid(i), mpRaw: m => mpSend(m),
     tagSet(o){ Object.assign(tg, o); }, tagBotSet(i, o){ Object.assign(tg.bots[i], o); }, tagYou(o){ Object.assign(tg.you, o); }, tagBot(i, x, y, z){ Object.assign(tg.bots[i], {x, y, z, vx: 0, vy: 0, vz: 0}); },
     anim: () => ({emote: emote && emote.id, pose: lastPose, pack: avatar.anim, face: avatar.face, airT: P.airT, jumped: P.jumped, climbing: P.climbing, touchUI, lowq: LOWQ, joy: {...joy},
       pivot: model && [model.pivot.position.y, model.pivot.rotation.x, model.pivot.rotation.y], armR: model && [model.arms[1].rotation.x, model.arms[1].rotation.z]}),
