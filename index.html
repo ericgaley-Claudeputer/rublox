@@ -305,6 +305,37 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   .odiffs .big{min-width:96px;padding:10px 14px}
   #oWin .mbox{padding:10px 18px}
 }
+/* ---- Build World toolbar + Block Tag scoreboard ---- */
+.obuild{position:absolute;left:50%;transform:translateX(-50%);bottom:max(14px,env(safe-area-inset-bottom));display:none;gap:8px;align-items:center;max-width:calc(100vw - 24px);z-index:6;
+  background:rgba(29,35,64,.72);padding:7px;border-radius:18px;overflow-x:auto;scrollbar-width:none;touch-action:pan-x}
+.obuild::-webkit-scrollbar{display:none}
+.bmode .obuild{display:flex}
+.opal,.otools{display:flex;gap:5px;flex:none}
+.obuild button{flex:none;border:0;border-radius:12px;background:#fff;color:#1d2340;font:inherit;font-weight:900;font-size:20px;min-width:46px;height:46px;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.25);touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 6px}
+.opal button{background:var(--c);border:3px solid rgba(255,255,255,.55);width:50px;padding:0}
+.opal button i{font-style:normal;font-size:19px;line-height:1;filter:drop-shadow(0 1px 0 rgba(0,0,0,.3))}
+.opal button small{font-size:9px;color:#fff;text-shadow:0 1px 2px #000;line-height:1.1}
+.opal button.on{border-color:#fff;outline:3px solid #ffd23f;transform:translateY(-3px)}
+.otools button.wide{font-size:15px;min-width:92px;background:#2ec27e;color:#fff}
+.otools button.del{background:#ff4d5e;color:#fff}
+.otools button.arm{background:#ff4d5e;color:#fff;font-size:14px;animation:bump .6s infinite}
+.otip{pointer-events:none}
+.bmode .otip{bottom:96px}
+.touchui.bmode .obuild{bottom:auto;top:calc(64px + env(safe-area-inset-top))}
+.touchui.bmode .otip{top:calc(130px + env(safe-area-inset-top))}
+@media (max-width:560px){.touchui.bmode .obuild{top:calc(118px + env(safe-area-inset-top))}.touchui.bmode .otip{top:calc(186px + env(safe-area-inset-top))}}
+#oSlotList .slot{display:grid;grid-template-columns:1fr auto auto;gap:6px 8px;align-items:center;text-align:left;padding:8px 0;border-bottom:2px dashed var(--line)}
+#oSlotList .slot span{grid-column:1;grid-row:2;font-size:13px;color:var(--muted);font-weight:700}
+#oSlotList .slot button{grid-row:1/3;padding:10px 12px;font-size:15px}
+#oSlotList .slot button:disabled{opacity:.4}
+.tboard{margin:6px 0 10px;border-radius:14px;overflow:hidden;border:2px solid var(--line)}
+.trow{display:grid;grid-template-columns:34px 1fr 70px 46px;gap:6px;padding:6px 10px;font-weight:800;font-size:15px;text-align:left;align-items:center}
+.trow:nth-child(even){background:var(--bg2)}
+.trow.th{background:#1d2340;color:#fff;font-size:13px}
+.trow.you{background:#fff3b0;color:#1d2340}
+.trow em{font-style:normal;font-size:11px;color:#ff4d5e;display:block}
+#oTagEnd .mbox{max-width:460px}
+@media (max-height:500px){.obuild button{height:40px;min-width:40px;font-size:17px}.opal button{width:44px}.bmode .otip{bottom:80px}}
 </style>
 </head>
 <body>
@@ -444,6 +475,10 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
       <span id="oHpBox" style="display:none">❤️ <i class="hpbar"><i id="oHpFill"></i></i><b id="oHp">100</b></span>
       <span id="oSurvBox" style="display:none">🏅 <b id="oSurv">0</b>&nbsp;🔥 <b id="oStreak">0</b></span>
       <span id="oDeathBox">💀 <b id="oDeaths">0</b></span>
+      <span id="oBlkBox" style="display:none">🧱 <b id="oBlk">0</b></span>
+      <span id="oItBox" style="display:none">🏷️ IT: <b id="oIt">…</b></span>
+      <span id="oTagTBox" style="display:none">⏱️ <b id="oTagT">1:30</b></span>
+      <span id="oMyItBox" style="display:none">🔴 Your IT: <b id="oMyIt">0.0s</b></span>
     </div>
     <div class="obtns">
       <button id="oMute" title="Sound on/off">🔊</button>
@@ -461,6 +496,18 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   </div>
   <button class="oemo" id="oEmoBtn" title="Emotes (keys 1-4)" aria-label="Emotes">😀</button>
   <div class="oemos" id="oEmos"></div>
+  <div class="obuild" id="oBuild">
+    <div class="opal" id="oPal"></div>
+    <div class="otools">
+      <button id="bMode" class="wide" title="Build / Delete (X)">🔨 Build</button>
+      <button id="bUndo" title="Undo (Z)">↩️</button>
+      <button data-pre="house" title="Add a house">🏠</button>
+      <button data-pre="tree" title="Add a tree">🌳</button>
+      <button data-pre="tower" title="Add a tower">🗼</button>
+      <button id="bSlots" title="Save slots">💾</button>
+      <button id="bClear" title="Clear everything">🗑️</button>
+    </div>
+  </div>
   <div class="orot" id="oRot"><b>📱</b>Turn your phone sideways for a bigger view!<br><small>(or keep playing like this 👍)</small></div>
   <div class="oflash" id="oFlash"></div>
   <div class="owarn" id="oWarn"></div>
@@ -485,6 +532,19 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="stats">Take a break! 😊</div>
     <button class="big green" id="oResume">▶ Keep playing</button>
     <button class="big gray" id="oExit2" style="margin-left:6px">🏠 Home</button>
+  </div></div>
+  <div class="opanel" id="oSlots"><div class="mbox">
+    <span class="emoji">💾</span><h2>Save slots</h2>
+    <div class="stats" style="font-size:15px">Your build also saves itself automatically.</div>
+    <div id="oSlotList"></div>
+    <button class="big gray" id="oSlotsClose" style="margin-top:10px">✖ Close</button>
+  </div></div>
+  <div class="opanel" id="oTagEnd"><div class="mbox">
+    <span class="emoji" id="oTagEmoji">🏆</span><h2 id="oTagTitle">You win!</h2>
+    <div class="tboard" id="oTagBoard"></div>
+    <div class="stats" id="oTagStats"></div>
+    <button class="big green" id="oTagAgain">🔁 Play again</button>
+    <button class="big blue" id="oTagHome" style="margin-left:6px">🏠 Home</button>
   </div></div>
   <div class="opanel" id="oWin"><div class="mbox">
     <span class="emoji" id="oWinEmoji">🏆</span><h2 id="oWinTitle">You beat Obby Rush!</h2>
@@ -941,8 +1001,8 @@ $('#saveAv').onclick = () => {
 /* ---------- games ---------- */
 const GAMES = [
   {id:'obby',  name:'Obby Rush',   emoji:'🏃', tag:'Jump & run',      draw: drawObby, playable: true},
-  {id:'build', name:'Build World', emoji:'🧱', tag:'Build anything',  draw: drawBuild},
-  {id:'tag',   name:'Block Tag',   emoji:'🏷️', tag:"You're it!",      draw: drawTag},
+  {id:'build', name:'Build World', emoji:'🧱', tag:'Build anything',  draw: drawBuild, playable: true},
+  {id:'tag',   name:'Block Tag',   emoji:'🏷️', tag:"You're it!",      draw: drawTag, playable: true},
   {id:'lava',  name:'Lava Escape', emoji:'🌋', tag:'Climb up fast',   draw: drawLava, playable: true, anim: true},
   {id:'nds',   name:'Disaster Island', emoji:'🌪️', tag:'Survive natural disasters!', draw: drawNds, playable: true, anim: true},
 ];
@@ -1433,12 +1493,13 @@ const Obby = (() => {
     solids = []; kills = []; spinners = []; movers = []; vanishers = []; checkpoints = []; coinList = []; jumpPads = []; trusses = []; lava = null; escapePad = null; finish = null; trophy = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0;
-    if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else buildObbyCourse();
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null;
+    if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else buildObbyCourse();
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
-    else [[-30,10,40,2],[35,18,80,2.5],[-40,25,130,3],[30,8,20,1.5],[25,30,170,2.5],[-25,5,95,1.8],[0,40,230,4]].forEach(a => cloud(...a));
+    else if (mode === 'build') [[-40,22,30,2.5],[45,28,-20,3],[0,35,-60,3.5],[-30,18,-40,2]].forEach(a => cloud(...a));
+    else if (mode !== 'tag') [[-30,10,40,2],[35,18,80,2.5],[-40,25,130,3],[30,8,20,1.5],[25,30,170,2.5],[-25,5,95,1.8],[0,40,230,4]].forEach(a => cloud(...a));
     // player + shadow
     model = buildPlayer(avatar); scene.add(model.g);
     blob = new THREE.Mesh(new THREE.CircleGeometry(.6, 20), new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: .25, depthWrite: false}));
@@ -1834,21 +1895,25 @@ const Obby = (() => {
   }
 
   /* ---------- physics ---------- */
-  function overlaps(b, e = .001){
+  function overlaps(b, e = .001, B = P){
     const p = b.mesh.position;
-    return P.x + R > p.x - b.hw + e && P.x - R < p.x + b.hw - e &&
-           P.z + R > p.z - b.hd + e && P.z - R < p.z + b.hd - e &&
-           P.y + H > p.y - b.hh + e && P.y < p.y + b.hh - e;
+    return B.x + R > p.x - b.hw + e && B.x - R < p.x + b.hw - e &&
+           B.z + R > p.z - b.hd + e && B.z - R < p.z + b.hd - e &&
+           B.y + H > p.y - b.hh + e && B.y < p.y + b.hh - e;
   }
-  function resolve(axis){
+  function resolve(axis, B = P){
     for (const b of solids){
-      if (!b.active || !overlaps(b)) continue;
+      if (!b.active || !overlaps(b, .001, B)) continue;
       const p = b.mesh.position;
       if (axis === 'y'){
-        if (P.vy <= 0 && P.y > p.y){ P.y = p.y + b.hh; P.vy = 0; P.onGround = true; P.ground = b; }
-        else { P.y = p.y - b.hh - H; if (P.vy > 0) P.vy = 0; }
-      } else if (axis === 'x'){ P.x = P.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
-      else { P.z = P.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
+        if (B.vy <= 0 && B.y > p.y){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; }
+        else { B.y = p.y - b.hh - H; if (B.vy > 0) B.vy = 0; }
+        continue;
+      }
+      const up = p.y + b.hh - B.y;
+      if (mode === 'tag' && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
+      if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
+      else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
     }
   }
   function input(){
@@ -1873,7 +1938,7 @@ const Obby = (() => {
       else if (v.state === 2){ v.t -= dt; if (v.t <= 0){ v.state = 0; v.b.active = true; v.b.mesh.visible = true; v.material.opacity = 1; } }
     });
     if (P.onGround && P.ground){ P.x += P.ground.dx || 0; P.y += P.ground.dy || 0; P.z += P.ground.dz || 0; }
-    const inp = input();
+    const inp = tg && (tg.phase === 'ready' || (tg.phase === 'play' && tg.it === 0 && tg.freeze > 0)) ? {x: 0, z: 0, mag: 0, jump: false} : input();
     const k = Math.min(1, dt * (P.onGround ? (slip ? 1.4 : 14) : 6));
     P.vx += (inp.x * SPEED - P.vx) * k; P.vz += (inp.z * SPEED - P.vz) * k;
     if (inp.mag > .1) P.face = Math.atan2(inp.x, inp.z);
@@ -1894,11 +1959,13 @@ const Obby = (() => {
     P.y += P.vy * dt; resolve('y');
     if (P.onGround && jumpPads.includes(P.ground)){ P.vy = PAD; P.onGround = false; P.ground = null; P.coyote = 0; P.jumped = true; P.airT = 0; SND.boing(); }
     if (P.onGround){ P.airT = 0; P.jumped = false; } else P.airT += dt;
+    if (tg) tg.bots.forEach((B, n) => botStep(B, n + 1, dt));
     checks();
   }
   function checks(){
     if (mode === 'lava') return lavaChecks();
     if (mode === 'nds') return ndsChecks();
+    if (mode === 'build' || mode === 'tag'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -1946,12 +2013,384 @@ const Obby = (() => {
   function banner(text){ const b = $('#oBanner'); b.textContent = text; b.classList.remove('go'); void b.offsetWidth; b.classList.add('go'); }
   function fmt(t, tenths){ const m = Math.floor(t / 60), s = t - m * 60; return m + ':' + (tenths ? s.toFixed(1).padStart(4, '0') : String(Math.floor(s)).padStart(2, '0')); }
 
+  /* ===================== BUILD WORLD (creative sandbox) ===================== */
+  const CELL = 2, BW_HALF = 20, BW_MAXY = 30, BW_MAX = 2000, BW_DAY_CAP = 50;
+  const BLOCKS = [
+    {id: 'grass', emoji: '🌱', name: 'Grass', col: '#4cc35a'},
+    {id: 'wood',  emoji: '🪵', name: 'Wood',  col: '#b07a43'},
+    {id: 'stone', emoji: '🪨', name: 'Stone', col: '#9aa0ab'},
+    {id: 'brick', emoji: '🧱', name: 'Brick', col: '#c9503c'},
+    {id: 'sand',  emoji: '🏖️', name: 'Sand',  col: '#f2d58b'},
+    {id: 'glass', emoji: '🪟', name: 'Glass', col: '#bfe9ff'},
+    {id: 'water', emoji: '💧', name: 'Water', col: '#3a9bff'},
+    {id: 'neon',  emoji: '✨', name: 'Neon',  col: '#3cf2c8'},
+    {id: 'pink',  emoji: '🩷', name: 'Pink',  col: '#ff6fb5'},
+    {id: 'blue',  emoji: '💙', name: 'Blue',  col: '#3a86ff'},
+  ];
+  let bw = null, blockGeo = null, blockEdge = null, blockMats = null, ray = null;
+  const ptr = {x: 0, y: 0, has: false};
+  function texBlock(draw){ return canvasTex(32, 32, draw); }
+  function speckle(ctx, base, cols, n = 70){ ctx.fillStyle = base; ctx.fillRect(0, 0, 32, 32); for (let i = 0; i < n; i++){ ctx.fillStyle = cols[i % cols.length]; ctx.fillRect((i * 37 + (i * i) % 13) % 32, (i * 11 + (i * i * 7) % 29) % 32, 2, 2); } }
+  function makeBlockMats(){
+    const L = map => new THREE.MeshLambertMaterial({map});
+    return {
+      grass: L(texBlock(c => { speckle(c, '#4cc35a', ['#3fae4c', '#62d46e', '#2f9a3d']); })),
+      wood:  L(texBlock(c => { c.fillStyle = '#b07a43'; c.fillRect(0, 0, 32, 32); c.fillStyle = '#8a5a2b'; for (let y = 0; y < 32; y += 8){ c.fillRect(0, y, 32, 1); c.fillRect((y * 3) % 32, y, 1, 8); } c.fillStyle = '#c99059'; for (let y = 3; y < 32; y += 8) c.fillRect(4, y, 20, 1); })),
+      stone: L(texBlock(c => { speckle(c, '#9aa0ab', ['#7d838f', '#b5bac3', '#8a909b'], 90); c.fillStyle = '#6e7480'; c.fillRect(6, 8, 9, 1); c.fillRect(18, 21, 8, 1); })),
+      brick: L(texBlock(c => { c.fillStyle = '#e6d6c8'; c.fillRect(0, 0, 32, 32); c.fillStyle = '#c9503c'; for (let r = 0; r < 4; r++) for (let k = -1; k < 3; k++) c.fillRect(k * 16 + (r % 2) * 8 + 1, r * 8 + 1, 14, 6); })),
+      sand:  L(texBlock(c => { speckle(c, '#f2d58b', ['#e5c574', '#fbe4a8'], 60); })),
+      glass: new THREE.MeshLambertMaterial({color: '#cdeeff', transparent: true, opacity: .38, depthWrite: false}),
+      water: new THREE.MeshLambertMaterial({color: '#3a9bff', transparent: true, opacity: .62, emissive: '#0b3d7a', emissiveIntensity: .35,
+        map: texBlock(c => { c.fillStyle = '#5fb0ff'; c.fillRect(0, 0, 32, 32); c.fillStyle = '#9fd4ff'; for (let y = 4; y < 32; y += 9) for (let x = 0; x < 32; x += 2) c.fillRect(x, y + Math.round(Math.sin(x / 4) * 1.5), 2, 1); })}),
+      neon:  new THREE.MeshBasicMaterial({color: '#3cf2c8'}),
+      pink:  mat('#ff6fb5'),
+      blue:  mat('#3a86ff'),
+    };
+  }
+  const ckey = (i, j, k) => i + ',' + j + ',' + k;
+  function bwDay(){ const d = new Date().toDateString(), s = load('rubloxBuildDay', null); return s && s.d === d ? s : {d, n: 0, placed: 0}; }
+  function buildBuild(){
+    scene.background = new THREE.Color('#8fd3ff');
+    blockGeo = new THREE.BoxGeometry(CELL, CELL, CELL); blockEdge = new THREE.EdgesGeometry(blockGeo); blockMats = makeBlockMats();
+    // the baseplate with a grid that lines up with the block cells
+    const W = (BW_HALF * 2 + 1) * CELL;
+    const grid = canvasTex(32, 32, c => { c.fillStyle = '#5fcf6b'; c.fillRect(0, 0, 32, 32); c.fillStyle = '#4bb658'; c.fillRect(0, 0, 32, 2); c.fillRect(0, 0, 2, 32); });
+    grid.wrapS = grid.wrapT = THREE.RepeatWrapping; grid.repeat.set(W / CELL, W / CELL);
+    const top = new THREE.MeshLambertMaterial({map: grid}), side = mat('#3f9a4a');
+    const base = plat(0, 0, 0, W, W, '#5fcf6b', 2, {material: [side, side, top, side, side, side]});
+    base.mesh.material = [side, side, top, side, side, side];
+    const sp = {x: 0, y: .05, z: -6};
+    checkpoints[0] = {idx: 0, spawn: sp, flag: new THREE.Object3D()};
+    bw = {blocks: new Map(), meshes: [], base, sel: load('rubloxBuildSel', 0), del: false, undo: [], ghost: null, gcell: null, earned: 0, clearArm: 0, saveT: 0, waterT: 0};
+    const gm = new THREE.MeshBasicMaterial({color: '#ffffff', transparent: true, opacity: .35, depthWrite: false});
+    bw.ghost = new THREE.Mesh(blockGeo, gm); bw.ghost.scale.setScalar(1.02);
+    bw.ghostEdge = new THREE.LineSegments(blockEdge, new THREE.LineBasicMaterial({color: '#ffffff'})); bw.ghost.add(bw.ghostEdge);
+    bw.ghost.visible = false; scene.add(bw.ghost);
+    ray = new THREE.Raycaster();
+    (load('rubloxBuild', []) || []).forEach(c => addBlock(c[0], c[1], c[2], c[3], true));
+    sp.y = colTop(sp.x, sp.z) + .05;
+    buildPalette();
+  }
+  function cellCenter(i, j, k){ return [i * CELL, j * CELL + CELL / 2, k * CELL]; }
+  function colTop(x, z){ let t = 0; for (const b of solids) if (b.active && Math.abs(x - b.mesh.position.x) < b.hw + R && Math.abs(z - b.mesh.position.z) < b.hd + R) t = Math.max(t, b.mesh.position.y + b.hh); return t; }
+  function addBlock(i, j, k, m, quiet){
+    if (Math.abs(i) > BW_HALF || Math.abs(k) > BW_HALF || j < 0 || j >= BW_MAXY || bw.blocks.has(ckey(i, j, k)) || bw.blocks.size >= BW_MAX) return null;
+    const B = BLOCKS[m] || BLOCKS[0], [x, y, z] = cellCenter(i, j, k);
+    const mesh = new THREE.Mesh(blockGeo, blockMats[B.id]); mesh.position.set(x, y, z);
+    mesh.add(new THREE.LineSegments(blockEdge, edgeMat)); scene.add(mesh);
+    const b = {mesh, hw: CELL / 2, hh: CELL / 2, hd: CELL / 2, active: B.id !== 'water', dx: 0, dy: 0, dz: 0};
+    if (b.active) solids.push(b);
+    const e = {i, j, k, m, mesh, b}; mesh.userData.cell = e;
+    bw.blocks.set(ckey(i, j, k), e); bw.meshes.push(mesh);
+    if (!quiet) scheduleSave();
+    return e;
+  }
+  function removeBlock(e, quiet){
+    scene.remove(e.mesh); bw.blocks.delete(ckey(e.i, e.j, e.k));
+    const s = solids.indexOf(e.b); if (s >= 0) solids.splice(s, 1);
+    const q = bw.meshes.indexOf(e.mesh); if (q >= 0) bw.meshes.splice(q, 1);
+    if (P.ground === e.b){ P.ground = null; P.onGround = false; }
+    if (!quiet) scheduleSave();
+  }
+  function cellHitsPlayer(i, j, k){
+    const [x, y, z] = cellCenter(i, j, k), h = CELL / 2;
+    return P.x + R > x - h && P.x - R < x + h && P.z + R > z - h && P.z - R < z + h && P.y + H > y - h && P.y < y + h;
+  }
+  function scheduleSave(){ bw.saveT = .3; }
+  function bwSerialize(){ return [...bw.blocks.values()].map(e => [e.i, e.j, e.k, e.m]); }
+  function bwSave(){ save('rubloxBuild', bwSerialize()); }
+  function pushUndo(a){ bw.undo.push(a); if (bw.undo.length > 300) bw.undo.shift(); }
+  function aimCell(){
+    if (!bw || !camera) return null;
+    const v = new THREE.Vector2(ptr.has ? ptr.x : 0, ptr.has ? ptr.y : 0);
+    ray.setFromCamera(v, camera); ray.far = 90;
+    const hits = ray.intersectObjects([...bw.meshes, bw.base.mesh], false);
+    const h = hits[0]; if (!h) return null;
+    const n = h.face.normal.clone().transformDirection(h.object.matrixWorld);
+    if (h.object === bw.base.mesh){
+      if (n.y < .5) return null;
+      return {place: [Math.round(h.point.x / CELL), 0, Math.round(h.point.z / CELL)], target: null};
+    }
+    const e = h.object.userData.cell;
+    return {place: [e.i + Math.round(n.x), e.j + Math.round(n.y), e.k + Math.round(n.z)], target: e};
+  }
+  function bwClick(remove){
+    if (tipTimer > 0){ tipTimer = 0; $('#oTip').classList.add('hide'); }
+    const a = aimCell(); if (!a) return;
+    if (remove || bw.del){
+      if (!a.target) return;
+      const e = a.target; pushUndo({add: [], del: [[e.i, e.j, e.k, e.m]]}); removeBlock(e); SND.hit();
+      return;
+    }
+    const [i, j, k] = a.place;
+    if (cellHitsPlayer(i, j, k)){ banner('🙈 You are standing there!'); return; }
+    if (bw.blocks.size >= BW_MAX){ banner('🧱 Block limit reached (' + BW_MAX + ')'); return; }
+    const e = addBlock(i, j, k, bw.sel); if (!e) return;
+    pushUndo({add: [[i, j, k, bw.sel]], del: []}); SND.jump();
+    // +1 coin for every 10 blocks placed, up to 50 a day so it can't be farmed forever
+    const d = bwDay(); d.placed++;
+    if (d.placed % 10 === 0){
+      if (d.n < BW_DAY_CAP){ d.n++; bw.earned++; runCoins = bw.earned; setCoins(coins + 1); SND.coin(); if (d.n === BW_DAY_CAP) banner('🪙 Daily build coins maxed! Keep building for fun 🎨'); }
+    }
+    save('rubloxBuildDay', d);
+  }
+  function bwUndo(){
+    const a = bw.undo.pop(); if (!a){ banner('↩️ Nothing to undo'); return; }
+    a.add.forEach(c => { const e = bw.blocks.get(ckey(c[0], c[1], c[2])); if (e) removeBlock(e, true); });
+    a.del.forEach(c => { if (!cellHitsPlayer(c[0], c[1], c[2])) addBlock(c[0], c[1], c[2], c[3], true); });
+    scheduleSave(); SND.boing();
+  }
+  function bwReplace(cells, label){
+    const old = bwSerialize();
+    [...bw.blocks.values()].forEach(e => removeBlock(e, true));
+    const added = [];
+    cells.forEach(c => { if (!cellHitsPlayer(c[0], c[1], c[2]) && addBlock(c[0], c[1], c[2], c[3], true)) added.push(c); });
+    pushUndo({add: added, del: old}); scheduleSave();
+    if (label) banner(label);
+    if (overlapsAny()) P.y = colTop(P.x, P.z) + .05;
+  }
+  function overlapsAny(){ return solids.some(b => b.active && overlaps(b)); }
+  const PREFABS = {
+    house(){ const c = [];
+      for (let y = 0; y < 3; y++) for (let x = -2; x <= 2; x++) for (let z = -2; z <= 2; z++){
+        if (Math.abs(x) !== 2 && Math.abs(z) !== 2) continue;
+        if (z === -2 && x === 0 && y < 2) continue; // door
+        const win = y === 1 && ((Math.abs(x) === 2 && z === 0) || (z === 2 && Math.abs(x) === 1));
+        c.push([x, y, z, win ? 5 : 1]);
+      }
+      for (let x = -2; x <= 2; x++) for (let z = -2; z <= 2; z++) c.push([x, 3, z, 3]);
+      for (let x = -1; x <= 1; x++) for (let z = -1; z <= 1; z++) c.push([x, 4, z, 3]);
+      c.push([0, 5, 0, 7]); return c; },
+    tree(){ const c = [[0, 0, 0, 1], [0, 1, 0, 1], [0, 2, 0, 1]];
+      for (let x = -1; x <= 1; x++) for (let z = -1; z <= 1; z++){ c.push([x, 3, z, 0]); if (!(Math.abs(x) && Math.abs(z))) c.push([x, 4, z, 0]); }
+      c.push([0, 5, 0, 8]); return c; },
+    tower(){ const c = [], ring = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]];
+      for (let y = 0; y < 8; y++){ c.push([0, y, 0, 2]); const [x, z] = ring[y % 8]; c.push([x, y, z, y % 2 ? 4 : 9]); }
+      for (let x = -1; x <= 1; x++) for (let z = -1; z <= 1; z++) c.push([x, 8, z, 2]);
+      [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([x, z]) => c.push([x, 9, z, 7])); return c; },
+  };
+  function bwPrefab(name){
+    // drop it a few blocks in front of you
+    const fx = Math.sin(P.face), fz = Math.cos(P.face);
+    const ci = Math.round((P.x + fx * 9) / CELL), ck = Math.round((P.z + fz * 9) / CELL);
+    let base = 0; while (base < BW_MAXY - 1 && bw.blocks.has(ckey(ci, base, ck))) base++;
+    const added = [];
+    PREFABS[name]().forEach(([x, y, z, m]) => { const i = ci + x, j = base + y, k = ck + z; if (!cellHitsPlayer(i, j, k) && addBlock(i, j, k, m, true)) added.push([i, j, k, m]); });
+    pushUndo({add: added, del: []}); scheduleSave(); SND.cp();
+    banner({house: '🏠 A cozy house!', tree: '🌳 A tree!', tower: '🗼 A tower — hop up the steps!'}[name]);
+  }
+  function bwClear(){
+    const btn = $('#bClear');
+    if (!bw.clearArm){ bw.clearArm = 3; btn.classList.add('arm'); btn.textContent = '🗑️ Sure?'; return; }
+    bw.clearArm = 0; btn.classList.remove('arm'); btn.textContent = '🗑️';
+    bwReplace([], '🧹 All clear! (↩️ Undo brings it back)');
+  }
+  function buildPalette(){
+    $('#oPal').innerHTML = BLOCKS.map((B, i) => `<button data-blk="${i}" title="${B.name}" style="--c:${B.col}"><i>${B.emoji}</i><small>${B.name}</small></button>`).join('');
+    $('#oPal').querySelectorAll('button').forEach(b => b.onclick = e => { e.stopPropagation(); selBlock(+b.dataset.blk); });
+    selBlock(bw.sel); setDel(false);
+  }
+  function selBlock(i){ bw.sel = (i + BLOCKS.length) % BLOCKS.length; save('rubloxBuildSel', bw.sel); setDel(false);
+    $('#oPal').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.blk === bw.sel));
+    const on = $('#oPal').querySelector('.on'); if (on) on.scrollIntoView({block: 'nearest', inline: 'nearest'});
+  }
+  function setDel(on){ bw.del = on; const b = $('#bMode'); b.textContent = on ? '🧽 Delete' : '🔨 Build'; b.classList.toggle('del', on); }
+  function slotsPanel(){
+    const S = load('rubloxBuildSlots', [null, null, null]);
+    $('#oSlotList').innerHTML = [0, 1, 2].map(i => `<div class="slot"><b>Slot ${i + 1}</b><span>${S[i] ? S[i].cells.length + ' blocks · ' + S[i].when : 'empty'}</span>
+      <button class="big green" data-ssave="${i}">💾 Save</button><button class="big blue" data-sload="${i}" ${S[i] ? '' : 'disabled'}>📂 Load</button></div>`).join('');
+    $('#oSlotList').querySelectorAll('[data-ssave]').forEach(b => b.onclick = () => { const S2 = load('rubloxBuildSlots', [null, null, null]);
+      S2[+b.dataset.ssave] = {cells: bwSerialize(), when: new Date().toLocaleDateString()}; save('rubloxBuildSlots', S2); slotsPanel(); banner('💾 Saved to slot ' + (+b.dataset.ssave + 1)); });
+    $('#oSlotList').querySelectorAll('[data-sload]').forEach(b => b.onclick = () => { const S2 = load('rubloxBuildSlots', [null, null, null]), s = S2[+b.dataset.sload];
+      if (s){ bwReplace(s.cells, '📂 Loaded slot ' + (+b.dataset.sload + 1)); $('#oSlots').classList.remove('show'); paused = false; } });
+    $('#oSlots').classList.add('show'); paused = true;
+  }
+  function buildUpdate(dt){
+    if (bw.saveT > 0){ bw.saveT -= dt; if (bw.saveT <= 0) bwSave(); }
+    if (bw.clearArm > 0){ bw.clearArm -= dt; if (bw.clearArm <= 0){ bw.clearArm = 0; $('#bClear').classList.remove('arm'); $('#bClear').textContent = '🗑️'; } }
+    if (blockMats.water.map) blockMats.water.map.offset.x = (blockMats.water.map.offset.x + dt * .15) % 1;
+    const n = performance.now() / 600; blockMats.neon.color.setHSL(.47 + Math.sin(n) * .03, 1, .58 + Math.sin(n * 1.7) * .06);
+    const a = aimCell(), g = bw.ghost, del = bw.del || keys.ShiftLeft || keys.ShiftRight;
+    if (!a || (del && !a.target)){ g.visible = false; return; }
+    g.visible = true;
+    if (del){ g.position.copy(a.target.mesh.position); g.material.color.set('#ff4d5e'); g.material.opacity = .45; bw.ghostEdge.material.color.set('#ff2a2a'); }
+    else { const [x, y, z] = cellCenter(...a.place); g.position.set(x, y, z); const bad = cellHitsPlayer(...a.place) || a.place[1] >= BW_MAXY || Math.abs(a.place[0]) > BW_HALF || Math.abs(a.place[2]) > BW_HALF;
+      g.material.color.set(bad ? '#ff4d5e' : BLOCKS[bw.sel].col); g.material.opacity = bad ? .25 : .45; bw.ghostEdge.material.color.set('#ffffff'); }
+  }
+
+  /* ===================== BLOCK TAG (vs. computer players) ===================== */
+  const TAG_ROUND = 90, TAG_READY = 3, TAG_FREEZE = 1.2, TAG_NOBACK = 3, TAG_COIN = 5, TAG_WIN = 30, ARENA = 34;
+  const BOT_LOOKS = [
+    {name: 'Captain Waffles', emoji: '🧇', speed: 9.4, av: {head: '#ffcf99', shirt: '#ffd23f', pants: '#8d5524', hair: 'short', hairColor: '#3b2414', hat: 'cap', face: 'grin', shirtPat: 'star', anim: 'bouncy'}},
+    {name: 'Zoomy McZoom',   emoji: '⚡', speed: 9.8, av: {head: '#8d5524', shirt: '#3a86ff', pants: '#1d2340', hair: 'spiky', hairColor: '#ffd23f', face: 'shades', anim: 'ninja'}},
+    {name: 'Pickle Pop',     emoji: '🥒', speed: 9.1, av: {head: '#7bd389', shirt: '#2ec27e', pants: '#2f6b3a', ears: 'bunny', face: 'tongue', hat: 'party', anim: 'robot'}},
+    {name: 'Noodle Ninja',   emoji: '🍜', speed: 9.6, av: {head: '#f1c27d', shirt: '#8b5cf6', pants: '#2d2d2d', hair: 'bun', hairColor: '#1d1d1d', face: 'wink', tail: 'fox', anim: 'zombie'}},
+  ];
+  let tg = null;
+  function label(text, bg, fg = '#ffffff', w = 256){
+    const c = document.createElement('canvas'); c.width = w; c.height = 64; const x = c.getContext('2d');
+    x.font = '900 34px Nunito, system-ui, sans-serif'; const tw = Math.min(w - 8, x.measureText(text).width + 28);
+    x.fillStyle = bg; x.beginPath(); x.roundRect ? x.roundRect((w - tw) / 2, 6, tw, 52, 18) : x.rect((w - tw) / 2, 6, tw, 52); x.fill();
+    x.fillStyle = fg; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text, w / 2, 33, w - 20);
+    const t = new THREE.CanvasTexture(c), s = new THREE.Sprite(new THREE.SpriteMaterial({map: t, depthTest: false, transparent: true}));
+    s.scale.set(w / 64 * 1.05, 1.05, 1); s.renderOrder = 10; return s;
+  }
+  function stairs(x, z, dir, w, n, color){ // ramp made of low steps you can walk up
+    for (let i = 0; i < n; i++){ const top = (n - i) * .5, off = .75 + i * 1.5;
+      plat(x + dir[0] * off, top, z + dir[1] * off, dir[0] ? 1.5 : w, dir[0] ? w : 1.5, color, top); }
+  }
+  function buildTag(){
+    scene.background = new THREE.Color('#9ddcff');
+    const floorTex = canvasTex(32, 32, c => { c.fillStyle = '#f4f1ea'; c.fillRect(0, 0, 32, 32); c.fillStyle = '#e4dfd3'; c.fillRect(0, 0, 16, 16); c.fillRect(16, 16, 16, 16); });
+    floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping; floorTex.repeat.set(18, 18);
+    const fm = new THREE.MeshLambertMaterial({map: floorTex}), fs = mat('#c9c2b3');
+    const fl = plat(0, 0, 0, ARENA * 2 + 4, ARENA * 2 + 4, '#f4f1ea', 2, {material: [fs, fs, fm, fs, fs, fs]});
+    fl.mesh.material = [fs, fs, fm, fs, fs, fs];
+    const W = ARENA + 1;
+    [[0, W, ARENA * 2 + 4, 2], [0, -W, ARENA * 2 + 4, 2], [W, 0, 2, ARENA * 2 + 4], [-W, 0, 2, ARENA * 2 + 4]].forEach(([x, z, w, d], i) => plat(x, 4, z, w, d, C[i + 1], 4));
+    // middle stage with ramps on two sides
+    plat(0, 2.5, 0, 8, 8, '#8b5cf6', 2.5); stairs(0, 4, [0, 1], 4, 4, '#b79bff'); stairs(0, -4, [0, -1], 4, 4, '#b79bff');
+    // corner towers (jump up!) and crates
+    [[-22, 20, '#3a86ff'], [22, -20, '#ff9f1c']].forEach(([x, z, c]) => { plat(x, 2.5, z, 7, 7, c, 2.5); stairs(x + (x < 0 ? 3.5 : -3.5), z, [x < 0 ? 1 : -1, 0], 4, 4, shade(c, 40)); });
+    [[-12, -10, 4, 4, 2, C[0]], [12, 10, 4, 4, 2, C[3]], [-24, -22, 3, 3, 1, C[2]], [24, 22, 3, 3, 1, C[2]], [-6, 18, 3, 3, 1.2, C[6]], [6, -18, 3, 3, 1.2, C[6]], [18, -4, 3, 3, 2, C[4]], [-18, 4, 3, 3, 2, C[4]]]
+      .forEach(([x, z, w, d, h, c]) => plat(x, h, z, w, d, c, h));
+    // tall walls to run around
+    [[-8, 26, 12, 1.5], [8, -26, 12, 1.5], [26, 6, 1.5, 10], [-26, -6, 1.5, 10], [-14, 8, 1.5, 7], [14, -8, 1.5, 7]].forEach(([x, z, w, d]) => plat(x, 4, z, w, d, '#ff4d5e', 4));
+    [[-30,22,30,2.2],[30,26,-30,2.6],[0,30,40,3],[-40,20,-10,2]].forEach(a => cloud(...a));
+    checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: -28}, flag: new THREE.Object3D()};
+    const spots = [[-26, -28], [26, -28], [-28, 28], [28, 28]];
+    const bots = BOT_LOOKS.map((L, i) => {
+      const m = buildPlayer(Object.assign({}, DEF, L.av)); scene.add(m.g);
+      const tagS = label(L.emoji + ' ' + L.name, 'rgba(29,35,64,.75)'); tagS.position.y = 3.75; m.g.add(tagS);
+      const sh = new THREE.Mesh(new THREE.CircleGeometry(.6, 20), new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: .25, depthWrite: false})); sh.rotation.x = -Math.PI / 2; scene.add(sh);
+      return {id: i + 1, name: L.name, emoji: L.emoji, speed: L.speed, pack: L.av.anim, model: m, shadow: sh, x: spots[i][0], y: .05, z: spots[i][1], vx: 0, vy: 0, vz: 0,
+        onGround: false, ground: null, coyote: 0, face: Math.PI, walk: 0, airT: 0, jumped: false, dir: [0, 0], think: 0, want: 1, jumpWant: false, stuckT: 0, lastPos: [0, 0], wander: Math.random() * 6.28, itTime: 0, tags: 0};
+    });
+    const aura = new THREE.Mesh(new THREE.BoxGeometry(1.5, 3.3, 1.5), new THREE.MeshBasicMaterial({color: '#ff2a2a', transparent: true, opacity: .2, depthWrite: false}));
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(.9, .1, 8, 24), new THREE.MeshBasicMaterial({color: '#ff2a2a'})); ring.rotation.x = Math.PI / 2;
+    const itS = label('🏷️ IT!', '#ff2a2a', '#ffffff', 160); itS.scale.multiplyScalar(1.3);
+    const glow = new THREE.PointLight('#ff3030', 1.6, 7);
+    [aura, ring, itS, glow].forEach(o => scene.add(o));
+    tg = {bots, it: 0, prevIt: -1, freeze: 0, noBack: 0, phase: 'ready', t: TAG_READY, you: {itTime: 0, tags: 0}, earned: 0, aura, ring, itS, glow};
+  }
+  function tagBodies(){ return [P, ...tg.bots]; }
+  function tagName(i){ return i === 0 ? 'You' : tg.bots[i - 1].emoji + ' ' + tg.bots[i - 1].name; }
+  function tagStart(){
+    tg.phase = 'play'; tg.t = TAG_ROUND;
+    tg.it = Math.floor(Math.random() * (tg.bots.length + 1)); tg.freeze = 2; tg.noBack = 0; tg.prevIt = -1;
+    banner(tg.it === 0 ? "🏷️ You're IT! Go tag someone!" : '🏃 ' + tg.bots[tg.it - 1].name + " is IT! Run!");
+    SND.alarm();
+  }
+  function passIt(from, to){
+    tg.prevIt = from; tg.it = to; tg.freeze = TAG_FREEZE; tg.noBack = TAG_NOBACK;
+    const tb = to === 0 ? tg.you : tg.bots[to - 1], fb = from === 0 ? tg.you : tg.bots[from - 1]; fb.tags++;
+    if (from === 0){ tg.earned += TAG_COIN; runCoins = tg.earned; setCoins(coins + TAG_COIN); SND.coin(); banner('🏷️ Tagged ' + tg.bots[to - 1].name + '! +' + TAG_COIN + ' 🪙'); }
+    else if (to === 0){ SND.hit(); banner("😱 You're IT! Tag someone!"); const f = $('#oFlash'); f.classList.add('on'); requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove('on'))); }
+    else SND.jump();
+  }
+  function blockedAhead(B, dx, dz, dist = 1.1){ // tallest thing in the way at body height (ignores small steps)
+    const x = B.x + dx * dist, z = B.z + dz * dist; let top = null;
+    for (const b of solids){ if (!b.active) continue; const p = b.mesh.position;
+      if (Math.abs(x - p.x) < b.hw + R && Math.abs(z - p.z) < b.hd + R && p.y + b.hh > B.y + .62 && p.y - b.hh < B.y + H) top = Math.max(top ?? -1e9, p.y + b.hh); }
+    return top;
+  }
+  function botThink(B, idx){
+    const bodies = tagBodies(), isIt = tg.it === idx, it = bodies[tg.it];
+    let goal = null, want = 1;
+    if (isIt){
+      let best = 1e9; bodies.forEach((o, j) => { if (j === idx || (j === tg.prevIt && tg.noBack > 0)) return; const d = Math.hypot(o.x - B.x, o.z - B.z) + Math.abs(o.y - B.y) * 2; if (d < best){ best = d; goal = o; } });
+    }
+    const cands = [];
+    for (let a = 0; a < 16; a++){
+      const ang = a / 16 * Math.PI * 2, dx = Math.sin(ang), dz = Math.cos(ang), px = B.x + dx * 4, pz = B.z + dz * 4;
+      const top = blockedAhead(B, dx, dz, 1.3), tall = top !== null && top - B.y > 2.6;
+      let s;
+      if (isIt) s = goal ? -Math.hypot(goal.x - px, goal.z - pz) : 0;
+      else { const d = Math.hypot(it.x - px, it.z - pz), d0 = Math.hypot(it.x - B.x, it.z - B.z); s = d0 > 20 ? -Math.abs(ang - B.wander) * .3 : d; }
+      if (tall) s -= 9; if (Math.abs(px) > ARENA - 2 || Math.abs(pz) > ARENA - 2) s -= 7;
+      s += (dx * B.dir[0] + dz * B.dir[1]) * 1.2 + Math.random() * .6;
+      cands.push([s, dx, dz]);
+    }
+    cands.sort((a, b) => b[0] - a[0]); B.dir = [cands[0][1], cands[0][2]];
+    if (!isIt && Math.hypot(it.x - B.x, it.z - B.z) > 20){ want = .45; if (Math.random() < .1) B.wander = Math.random() * 6.28; }
+    if (isIt && goal && Math.hypot(goal.x - B.x, goal.z - B.z) < 2.5){ const l = Math.hypot(goal.x - B.x, goal.z - B.z) || 1; B.dir = [(goal.x - B.x) / l, (goal.z - B.z) / l]; }
+    B.want = want;
+  }
+  function botStep(B, idx, dt){
+    let mx = 0, mz = 0, jump = false;
+    const frozen = tg.phase !== 'play' || (tg.it === idx && tg.freeze > 0);
+    if (!frozen){
+      B.think -= dt; if (B.think <= 0){ B.think = .2 + Math.random() * .1; botThink(B, idx); }
+      mx = B.dir[0] * B.want; mz = B.dir[1] * B.want;
+      const top = blockedAhead(B, B.dir[0], B.dir[1], .9);
+      if (top !== null && top - B.y <= 2.6) jump = true;
+      if (B.stuckT > .9){ jump = true; B.dir = [Math.sin(B.wander += 2.1), Math.cos(B.wander)]; B.stuckT = 0; }
+    }
+    const sp = B.speed * (tg.it === idx ? 1 : .92);
+    const k = Math.min(1, dt * (B.onGround ? 14 : 6));
+    B.vx += (mx * sp - B.vx) * k; B.vz += (mz * sp - B.vz) * k;
+    if (Math.hypot(mx, mz) > .1) B.face = Math.atan2(mx, mz);
+    B.vy = Math.max(-40, B.vy - GRAV * dt); B.coyote = B.onGround ? .1 : B.coyote - dt;
+    if (jump && B.coyote > 0 && B.vy <= .01){ B.vy = JUMP; B.coyote = 0; B.jumped = true; B.airT = 0; }
+    B.x += B.vx * dt; resolve('x', B); B.z += B.vz * dt; resolve('z', B);
+    B.onGround = false; B.ground = null; B.y += B.vy * dt; resolve('y', B);
+    if (B.onGround){ B.airT = 0; B.jumped = false; } else B.airT += dt;
+    if (B.y < -20) Object.assign(B, {x: 0, y: 3, z: 10, vx: 0, vy: 0, vz: 0});
+  }
+  function tagUpdate(dt){
+    const T = tg;
+    if (T.phase === 'ready'){ T.t -= dt; big(T.t > 0 ? '⏳ ' + Math.ceil(T.t) : ''); if (T.t <= 0){ big(''); tagStart(); } return; }
+    if (T.phase !== 'play') return;
+    T.t -= dt; T.freeze = Math.max(0, T.freeze - dt); T.noBack = Math.max(0, T.noBack - dt);
+    (T.it === 0 ? T.you : T.bots[T.it - 1]).itTime += dt;
+    T.bots.forEach(B => { const d = Math.hypot(B.x - B.lastPos[0], B.z - B.lastPos[1]); B.stuckT = d < dt * 1.5 && B.want > .9 ? B.stuckT + dt : Math.max(0, B.stuckT - dt); B.lastPos = [B.x, B.z]; });
+    if (T.freeze <= 0){
+      const bodies = tagBodies(), I = bodies[T.it];
+      for (let j = 0; j < bodies.length; j++){
+        if (j === T.it || (j === T.prevIt && T.noBack > 0)) continue;
+        const o = bodies[j];
+        if (Math.hypot(o.x - I.x, o.z - I.z) < R * 2 + .3 && Math.abs(o.y - I.y) < 2.4){ passIt(T.it, j); break; }
+      }
+    }
+    if (T.t <= 0) tagEnd();
+  }
+  function tagEnd(){
+    const T = tg; T.phase = 'end'; over = true; T.t = 0; SND.win();
+    const rows = [{i: 0, name: '⭐ You', it: T.you.itTime, tags: T.you.tags}, ...T.bots.map(B => ({i: B.id, name: B.emoji + ' ' + B.name, it: B.itTime, tags: B.tags}))];
+    rows.forEach(r => r.end = r.i === T.it);
+    rows.sort((a, b) => (a.end - b.end) || (a.it - b.it) || (b.tags - a.tags));
+    const youWin = rows[0].i === 0;
+    if (youWin){ T.earned += TAG_WIN; runCoins = T.earned; setCoins(coins + TAG_WIN); confetti(); setTimeout(confetti, 500); }
+    $('#oTagEmoji').textContent = youWin ? '🏆' : '🏷️';
+    $('#oTagTitle').textContent = youWin ? 'You win!' : rows[0].name.replace(/^\S+ /, '') + ' wins!';
+    $('#oTagBoard').innerHTML = '<div class="trow th"><span>#</span><span>Player</span><span>IT time</span><span>Tags</span></div>' +
+      rows.map((r, k) => `<div class="trow${r.i === 0 ? ' you' : ''}"><span>${['🥇','🥈','🥉'][k] || k + 1}</span><span>${r.name}${r.end ? ' <em>IT at the end</em>' : ''}</span><span>${r.it.toFixed(1)}s</span><span>${r.tags}</span></div>`).join('');
+    $('#oTagStats').innerHTML = `🎁 You earned <b>${T.earned}</b> Rublox Coins` + (youWin ? ` (incl. +${TAG_WIN} win bonus)` : '') + '!';
+    $('#oTagEnd').classList.add('show');
+  }
+  function animateTag(dt){
+    const T = tg;
+    T.bots.forEach((B, n) => {
+      const M = B.model; M.g.position.set(B.x, B.y, B.z);
+      let d = B.face - M.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); M.g.rotation.y += d * Math.min(1, dt * 10);
+      const sp = Math.hypot(B.vx, B.vz); B.walk += dt * sp * 1.3;
+      const st = {state: !B.onGround && B.airT > .08 ? 'jump' : sp > .8 ? 'walk' : 'idle', t: worldT + n, ph: B.walk, sp: Math.min(1, sp / 5), air: B.airT, jumped: B.jumped};
+      applyPose(dt, animPose(B.pack, st), M);
+      B.shadow.position.set(B.x, colTop(B.x, B.z) + .03, B.z);
+    });
+    const I = T.it === 0 ? P : T.bots[T.it - 1], show = T.phase === 'play' || T.phase === 'end';
+    [T.aura, T.ring, T.itS, T.glow].forEach(o => o.visible = show);
+    T.aura.position.set(I.x, I.y + 1.55, I.z); T.ring.position.set(I.x, I.y + .1, I.z); T.itS.position.set(I.x, I.y + (T.it === 0 ? 3.8 : 4.5), I.z); T.glow.position.set(I.x, I.y + 1.5, I.z);
+    const pulse = .5 + .5 * Math.sin(worldT * 8); T.aura.material.opacity = T.freeze > 0 ? .1 + pulse * .1 : .16 + pulse * .12; T.ring.scale.setScalar(1 + pulse * .15);
+  }
+
   /* ---------- per-frame ---------- */
   function animate(dt){
     coinList.forEach(c => { c.mesh.rotation.z += dt * 3; });
     if (trophy) trophy.rotation.y += dt * (mode === 'lava' ? 14 : 1);
     if (lava) animateLava(dt);
     if (nds) animateNds(dt);
+    if (tg) animateTag(dt);
     checkpoints.forEach(cp => cp.flag.rotation.y = Math.sin(worldT * 4 + cp.idx) * .25);
     // player model
     model.g.position.set(P.x, P.y, P.z);
@@ -1968,8 +2407,8 @@ const Obby = (() => {
     blob.visible = top > -1e8;
     if (blob.visible){ blob.position.set(P.x, top + .03, P.z); const s = Math.max(.4, 1 - (P.y - top) / 12); blob.scale.set(s, s, s); }
   }
-  function applyPose(dt, p){
-    const r = dt > 0 ? Math.min(1, dt * 14) : 0, M = model;
+  function applyPose(dt, p, M = model){
+    const r = dt > 0 ? Math.min(1, dt * 14) : 0;
     const L = (o, k, v) => { o[k] += ((v || 0) - o[k]) * r; };
     L(M.legs[0].rotation, 'x', p.lL); L(M.legs[0].rotation, 'z', -(p.lLo || 0));
     L(M.legs[1].rotation, 'x', p.lR); L(M.legs[1].rotation, 'z', p.lRo || 0);
@@ -1978,7 +2417,7 @@ const Obby = (() => {
     L(M.head.rotation, 'z', -(p.hz || 0));
     L(M, 'lean', p.lean); L(M.pivot.position, 'y', 1.4 + (p.y || 0)); L(M.pivot.rotation, 'z', p.tilt);
     M.pivot.rotation.x = M.lean + (p.flip || 0); M.pivot.rotation.y = p.spin || 0;
-    lastPose = p;
+    if (M === model) lastPose = p;
   }
   function playEmote(id){
     if (!running || paused || won || over || choosing) return;
@@ -1994,6 +2433,16 @@ const Obby = (() => {
   }
   function setTouchUI(on){
     touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
+    if (mode === 'build'){
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ jump · Swipe to look<br>👆 Tap to place a block · 🔨/🧽 button switches to delete'
+        : '⌨️ WASD move · Space jump · Drag to look · 🖱️ Click to place a block<br>Shift+click / right-click / X = delete · Q/E pick block · Z undo') + '<br>Build anything! 🪙 +1 coin per 10 blocks (up to 50 a day)';
+      return;
+    }
+    if (mode === 'tag'){
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ to jump · Swipe the right side to look · 😀 emotes'
+        : '⌨️ WASD / Arrows to move · Space to jump · Drag the mouse to look · 1–4 emotes · Esc to pause') + "<br>🏷️ Don't be IT! Touch someone to pass it on. Least IT time after 90s wins! +5 🪙 per tag, +30 to win";
+      return;
+    }
     const goal = mode === 'nds' ? 'Survive each disaster for 30 seconds! Hide inside, climb up high, stay out of the water. +20 🪙 per round!' : mode === 'lava' ? 'Climb the tower to the 🚁 before the lava gets you!' : 'Grab the coins, dodge the red lava, and reach the 🏆!';
     $('#oTip').innerHTML = (on
       ? '🕹️ Left thumb to move · ⬆️ to jump · Swipe the right side to look · 😀 emotes'
@@ -2007,7 +2456,7 @@ const Obby = (() => {
   function updateCamera(){
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag'){ // pull the camera in front of walls so buildings don't block the view
       for (let s = 1.2; s <= cam.dist; s += .4){
         const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
         if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(1.2, s - .5); break; }
@@ -2018,7 +2467,15 @@ const Obby = (() => {
     if (shake > 0 && !paused){ camera.position.x += (Math.random() - .5) * shake; camera.position.y += (Math.random() - .5) * shake; }
   }
   function hud(){
+    if (bw){ $('#oBlk').textContent = bw.blocks.size; }
+    if (tg){
+      $('#oIt').textContent = tg.phase === 'ready' ? '…' : tg.it === 0 ? 'YOU! 😱' : tg.bots[tg.it - 1].emoji + ' ' + tg.bots[tg.it - 1].name.split(' ')[0];
+      $('#oItBox').classList.toggle('danger', tg.phase === 'play' && tg.it === 0);
+      $('#oTagT').textContent = fmt(tg.phase === 'ready' ? TAG_ROUND : Math.max(0, tg.t));
+      $('#oMyIt').textContent = tg.you.itTime.toFixed(1) + 's';
+    }
     $('#oStage').textContent = cpIndex + 1; $('#oCoins').textContent = runCoins;
+    if (tg) return;
     $('#oTime').textContent = fmt(time); $('#oDeaths').textContent = deaths;
     if (nds){
       const N = nds, D = N.dis && DISASTERS[N.dis], hp = Math.max(0, Math.round(N.hp));
@@ -2044,6 +2501,8 @@ const Obby = (() => {
     if (!paused && !won && !over && !choosing){
       time += dt; for (let i = 0; i < 3 && !over; i++) step(dt / 3);
       if (nds) ndsUpdate(dt);
+      if (bw) buildUpdate(dt);
+      if (tg) tagUpdate(dt);
       if (lava && time > LAVA_GRACE && !over && !won){ lava.y += DIFFS[diff].speed * (1 + (time - LAVA_GRACE) / 150) * dt; if (time - dt <= LAVA_GRACE + 0.001 && time > LAVA_GRACE) banner('🌋 The lava is rising! Climb!'); }
       if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0) $('#oTip').classList.add('hide'); }
     }
@@ -2063,6 +2522,12 @@ const Obby = (() => {
       if (e.code === 'Escape' || e.code === 'KeyP'){ if (!won && !over && !choosing) setPause(!paused); return; }
       const em = Object.keys(EMOTES).find(k => 'Digit' + EMOTES[k].key === e.code || 'Numpad' + EMOTES[k].key === e.code);
       if (em && !e.repeat){ playEmote(em); return; }
+      if (mode === 'build' && bw && !e.repeat && !paused){
+        if (e.code === 'KeyQ') return selBlock(bw.sel - 1);
+        if (e.code === 'KeyE') return selBlock(bw.sel + 1);
+        if (e.code === 'KeyX') return setDel(!bw.del);
+        if (e.code === 'KeyZ'){ e.preventDefault(); return bwUndo(); }
+      }
       keys[e.code] = true;
     });
     addEventListener('keyup', e => { keys[e.code] = false; });
@@ -2077,6 +2542,23 @@ const Obby = (() => {
       drag.x = e.clientX; drag.y = e.clientY;
     });
     el.addEventListener('pointerup', () => drag = null); el.addEventListener('pointercancel', () => drag = null);
+    // Build World: click / tap (without dragging) places a block where you point
+    let down = null;
+    const setPtr = e => { const r = el.getBoundingClientRect(); ptr.x = (e.clientX - r.left) / r.width * 2 - 1; ptr.y = -(e.clientY - r.top) / r.height * 2 + 1; ptr.has = true; };
+    el.addEventListener('pointerdown', e => { down = {x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId}; if (mode === 'build') setPtr(e); });
+    el.addEventListener('pointermove', e => { if (mode === 'build' && (e.pointerType === 'mouse' || !down)) setPtr(e); });
+    el.addEventListener('pointerup', e => {
+      if (down && e.pointerId === down.id && mode === 'build' && bw && running && !paused && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 10 && performance.now() - down.t < 600){ setPtr(e); bwClick(e.shiftKey || e.button === 2); }
+      down = null;
+    });
+    $('#bMode').onclick = () => bw && setDel(!bw.del);
+    $('#bUndo').onclick = () => bw && bwUndo();
+    $('#bClear').onclick = () => bw && bwClear();
+    $('#bSlots').onclick = () => bw && slotsPanel();
+    document.querySelectorAll('#oBuild [data-pre]').forEach(b => b.onclick = () => bw && bwPrefab(b.dataset.pre));
+    $('#oSlotsClose').onclick = () => { $('#oSlots').classList.remove('show'); paused = false; };
+    $('#oTagAgain').onclick = () => { stop(); start('tag'); };
+    $('#oTagHome').onclick = stop;
     el.addEventListener('contextmenu', e => e.preventDefault());
     el.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(5, Math.min(30, cam.dist * (1 + e.deltaY * .001))); }, {passive: false});
     // touch: a joystick that appears under your left thumb, a big jump button, and camera swipes anywhere else
@@ -2113,7 +2595,7 @@ const Obby = (() => {
 
   /* ---------- start / stop ---------- */
   function start(m = 'obby', d = null){
-    mode = ['lava', 'nds'].includes(m) ? m : 'obby'; diff = d;
+    mode = ['lava', 'nds', 'build', 'tag'].includes(m) ? m : 'obby'; diff = d;
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     $('#obby').classList.add('show'); document.body.style.overflow = 'hidden'; document.documentElement.classList.add('ingame');
     if (!renderer){
@@ -2125,11 +2607,13 @@ const Obby = (() => {
     if (!bound) bind();
     time = 0; worldT = 0; deaths = 0; runCoins = 0; cpIndex = 0; won = false; paused = false; over = false; maxY = 0;
     choosing = mode === 'lava' && !diff;
-    if (mode !== 'nds') lightCp(checkpoints[0]); respawn(); big(''); cam.pitch = .42; cam.dist = 13;
-    ['#oWin','#oLose','#oPausePanel'].forEach(id => $(id).classList.remove('show')); $('#oDiff').classList.toggle('show', choosing); $('#oWarn').classList.remove('on');
+    if (mode === 'obby' || mode === 'lava') lightCp(checkpoints[0]); respawn(); big(''); cam.pitch = .42; cam.dist = 13;
+    ['#oWin','#oLose','#oPausePanel','#oSlots','#oTagEnd'].forEach(id => $(id).classList.remove('show')); $('#oDiff').classList.toggle('show', choosing); $('#oWarn').classList.remove('on');
     $('#oStageBox').style.display = mode === 'obby' ? '' : 'none'; $('#oDeathBox').style.display = mode === 'obby' ? '' : 'none';
     $('#oHeightBox').style.display = $('#oLavaBox').style.display = mode === 'lava' ? '' : 'none';
-    ['#oDisBox','#oRTBox','#oHpBox','#oSurvBox'].forEach(id => $(id).style.display = mode === 'nds' ? '' : 'none'); $('#oTime').parentElement.style.display = mode === 'nds' ? 'none' : ''; $('#oPause').textContent = '⏸️';
+    ['#oDisBox','#oRTBox','#oHpBox','#oSurvBox'].forEach(id => $(id).style.display = mode === 'nds' ? '' : 'none'); $('#oTime').parentElement.style.display = mode === 'nds' || mode === 'tag' ? 'none' : '';
+    $('#oBlkBox').style.display = mode === 'build' ? '' : 'none'; ['#oItBox','#oTagTBox','#oMyItBox'].forEach(id => $(id).style.display = mode === 'tag' ? '' : 'none');
+    $('#obby').classList.toggle('bmode', mode === 'build'); ptr.has = false; $('#oPause').textContent = '⏸️';
     $('#oMute').textContent = muted ? '🔇' : '🔊';
     emote = null; P.airT = 0; P.jumped = false; P.climbing = false;
     setTouchUI(matchMedia('(pointer: coarse)').matches || (navigator.maxTouchPoints > 0 && !matchMedia('(hover: hover)').matches));
@@ -2138,6 +2622,8 @@ const Obby = (() => {
     resize(); running = true; last = performance.now(); raf = requestAnimationFrame(loop); checkRotate();
     if (mode === 'obby') banner('🏃 Obby Rush! Go go go!');
     else if (mode === 'nds') banner('🏝️ Disaster Island!');
+    else if (mode === 'build') banner('🧱 Build World! Make something awesome');
+    else if (mode === 'tag') banner("🏷️ Block Tag! Don't be IT!");
     else if (diff) begin(diff);
   }
   function stop(){
@@ -2145,6 +2631,7 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
+    if (bw) bwSave(); $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
   }
 
@@ -2166,6 +2653,12 @@ const Obby = (() => {
     cam: () => ({yaw: cam.yaw, pitch: cam.pitch, dist: cam.dist}),
     setCam(yaw, pitch, dist){ cam.yaw = yaw; cam.pitch = pitch; cam.dist = dist; },
     emote: id => playEmote(id),
+    build: () => bw && {count: bw.blocks.size, sel: bw.sel, del: bw.del, undo: bw.undo.length, earned: bw.earned, day: bwDay(), ghost: bw.ghost.visible && bw.ghost.position.toArray(), aim: aimCell() && aimCell().place},
+    bwPlace(i, j, k, m = 0){ const e = addBlock(i, j, k, m); if (e) pushUndo({add: [[i, j, k, m]], del: []}); return !!e; },
+    bwClick: remove => bwClick(remove), bwUndo: () => bwUndo(), bwPrefab: n => bwPrefab(n), bwSave: () => bwSave(),
+    bwPtr(x, y){ ptr.x = x; ptr.y = y; ptr.has = true; },
+    tag: () => tg && {phase: tg.phase, t: tg.t, it: tg.it, freeze: tg.freeze, you: {...tg.you}, earned: tg.earned, bots: tg.bots.map(B => ({name: B.name, x: +B.x.toFixed(2), y: +B.y.toFixed(2), z: +B.z.toFixed(2), it: B.itTime, tags: B.tags}))},
+    tagSet(o){ Object.assign(tg, o); }, tagBotSet(i, o){ Object.assign(tg.bots[i], o); }, tagYou(o){ Object.assign(tg.you, o); }, tagBot(i, x, y, z){ Object.assign(tg.bots[i], {x, y, z, vx: 0, vy: 0, vz: 0}); },
     anim: () => ({emote: emote && emote.id, pose: lastPose, pack: avatar.anim, face: avatar.face, airT: P.airT, jumped: P.jumped, climbing: P.climbing, touchUI, lowq: LOWQ, joy: {...joy},
       pivot: model && [model.pivot.position.y, model.pivot.rotation.x, model.pivot.rotation.y], armR: model && [model.arms[1].rotation.x, model.arms[1].rotation.z]}),
   };
