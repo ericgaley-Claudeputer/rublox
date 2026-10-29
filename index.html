@@ -460,9 +460,11 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
       <button class="tab" data-cat="pants">👖 Pants</button>
       <button class="tab" data-cat="face">😀 Faces</button>
       <button class="tab" data-cat="anim">🕺 Animations</button>
+      <button class="tab" data-cat="burger">🍔 Burger Family</button>
     </div>
     <div class="hairrow" id="hairRow">🎨 Hair color (free!): <div class="swatches" id="shopHairSw"></div></div>
-    <div class="animnote" id="animNote">🕺 Animation packs change how you walk, jump and climb in every game (pick one). 🎉 Emotes are yours forever: press <b>1–4</b> in a game, or tap the <b>😀</b> button on a phone.</div>
+    <div class="animnote" id="animNote">🕺 Animation packs change how you walk, jump and climb in every game (pick one). 🎉 Emotes are yours forever: press <b>1–6</b> in a game, or tap the <b>😀</b> button on a phone.</div>
+    <div class="animnote" id="burgerNote" style="display:none">🍔 Meet the Sizzle family from the Sizzle Shack diner! Grab a whole family outfit, or mix single pieces with your other stuff. ⭐ Star move: <b>Dina's Flail Run</b>. Emotes: <b>5</b> 🍳 Burger Flip, <b>6</b> 😩 Awkward Groan.</div>
     <div class="items" id="items"></div>
 </section>
 
@@ -547,7 +549,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="ojoy" id="oJoy"><div class="oknob" id="oKnob"></div></div>
     <button class="ojump" id="oJump" aria-label="Jump">⬆️</button>
   </div>
-  <button class="oemo" id="oEmoBtn" title="Emotes (keys 1-4)" aria-label="Emotes">😀</button>
+  <button class="oemo" id="oEmoBtn" title="Emotes (keys 1-6)" aria-label="Emotes">😀</button>
   <div class="oemos" id="oEmos"></div>
   <div class="obuild" id="oBuild">
     <div class="opal" id="oPal"></div>
@@ -693,10 +695,17 @@ function hairBack(ctx, av){
   if (h === 'long') block(ctx, 82, 40, 96, 92, shade(hc, -20));
   if (h === 'ponytail'){ block(ctx, 164, 44, 18, 14, shade(hc,-10)); rrect(ctx, 172, 48, 24, 70, 12, hc); rrect(ctx, 170, 52, 14, 8, 3, '#ff6fb5'); }
   if (h === 'bun'){ circ(ctx, 130, 28, 20, shade(hc, -10)); circ(ctx, 124, 22, 7, shade(hc, 25)); }
+  if (h === 'beehive'){ ctx.fillStyle = shade(hc, -12); ctx.beginPath(); ctx.ellipse(130, 22, 44, 38, 0, 0, Math.PI*2); ctx.fill(); }
+  if (h === 'spacebuns'){ circ(ctx, 92, 34, 19, shade(hc, -10)); circ(ctx, 168, 34, 19, shade(hc, -10)); circ(ctx, 87, 28, 6, shade(hc, 25)); circ(ctx, 163, 28, 6, shade(hc, 25)); }
 }
 function hairFront(ctx, av){
   const hc = av.hairColor, h = av.hair, dk = shade(hc, -35);
   if (!h) return;
+  if (h === 'bowl'){ // round mushroom cut with a straight fringe
+    ctx.fillStyle = hc; ctx.beginPath(); ctx.moveTo(82, 74); ctx.lineTo(82, 50); ctx.quadraticCurveTo(84, 22, 130, 22); ctx.quadraticCurveTo(176, 22, 178, 50); ctx.lineTo(178, 74); ctx.lineTo(166, 74); ctx.lineTo(166, 62); ctx.lineTo(94, 62); ctx.lineTo(94, 74); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = dk; ctx.fillRect(94, 58, 72, 4); ctx.fillStyle = shade(hc, 40); ctx.fillRect(100, 30, 34, 4);
+    return;
+  }
   if (h === 'spiky'){
     block(ctx, 86, 36, 88, 16, hc);
     poly(ctx, [[86,40],[92,12],[104,38],[112,6],[124,38],[132,2],[142,38],[152,8],[160,38],[170,14],[174,42]], hc);
@@ -717,6 +726,14 @@ function hairFront(ctx, av){
   if (h === 'long'){ block(ctx, 82, 40, 16, 96, hc); block(ctx, 162, 40, 16, 96, hc); ctx.fillStyle = dk; ctx.fillRect(88, 70, 3, 50); ctx.fillRect(169, 70, 3, 50); }
   if (h === 'ponytail'){ block(ctx, 86, 40, 8, 22, hc); block(ctx, 166, 40, 8, 22, hc); }
   if (h === 'bun'){ block(ctx, 86, 40, 8, 18, hc); block(ctx, 166, 40, 8, 18, hc); }
+  if (h === 'beehive'){ block(ctx, 86, 40, 8, 22, hc); block(ctx, 166, 40, 8, 22, hc); ctx.fillStyle = hc; ctx.beginPath(); ctx.ellipse(130, 26, 40, 22, 0, Math.PI, 0); ctx.fill(); rrect(ctx, 96, 34, 68, 6, 3, '#ffd23f'); }
+  if (h === 'spacebuns'){ block(ctx, 86, 40, 8, 20, hc); block(ctx, 166, 40, 8, 20, hc); rrect(ctx, 100, 38, 12, 8, 3, '#2ec27e'); rrect(ctx, 148, 38, 12, 8, 3, '#2ec27e'); }
+  if (h === 'braid'){ // side part + one chunky braid over the left shoulder
+    block(ctx, 86, 40, 10, 30, hc); block(ctx, 164, 40, 10, 22, hc);
+    ctx.fillStyle = hc; ctx.beginPath(); ctx.moveTo(86, 40); ctx.lineTo(150, 40); ctx.lineTo(96, 62); ctx.closePath(); ctx.fill();
+    for (let i = 0; i < 6; i++){ const x = 84 + (i % 2 ? 6 : 0) - i * 2, y = 74 + i * 14; ctx.fillStyle = i % 2 ? shade(hc, -18) : hc; ctx.beginPath(); ctx.ellipse(x, y, 11, 9, i % 2 ? .4 : -.4, 0, Math.PI*2); ctx.fill(); }
+    rrect(ctx, 66, 152, 16, 8, 3, '#2ec27e'); circ(ctx, 72, 166, 6, shade(hc, 10));
+  }
   if (h === 'pigtails'){
     block(ctx, 86, 40, 8, 24, hc); block(ctx, 166, 40, 8, 24, hc);
     rrect(ctx, 64, 56, 22, 46, 11, hc); rrect(ctx, 174, 56, 22, 46, 11, hc);
@@ -735,12 +752,35 @@ function drawShirt(ctx, av){
   if (p === 'star'){ ctx.fillStyle = c.toLowerCase() === '#ffd23f' ? '#ffffff' : '#ffd23f'; starPath(ctx, 130, 160, 28, 12); ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,.18)'; ctx.lineWidth = 3; ctx.stroke(); }
   if (p === 'heart'){ ctx.fillStyle = ['#ff4d5e','#ff6fb5'].includes(c.toLowerCase()) ? '#ffffff' : '#ff4d5e'; heartPath(ctx, 130, 158, 22); ctx.fill(); }
   if (p === 'lightning') poly(ctx, [[138,124],[110,164],[128,164],[118,198],[152,152],[134,152],[146,124]], c.toLowerCase() === '#ffd23f' ? '#1d2340' : '#ffd23f');
+  if (p === 'apron'){ // chef apron with a ketchup + mustard splat
+    ctx.strokeStyle = '#e8e8ee'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(108, 116); ctx.lineTo(112, 132); ctx.moveTo(152, 116); ctx.lineTo(148, 132); ctx.stroke();
+    rrect(ctx, 104, 130, 52, 74, 6, '#ffffff'); ctx.fillStyle = '#d8dbe6'; ctx.fillRect(86, 158, 18, 6); ctx.fillRect(156, 158, 18, 6);
+    rrect(ctx, 116, 170, 28, 18, 4, '#e9ebf3');
+    circ(ctx, 122, 146, 7, '#e63946'); circ(ctx, 130, 150, 4, '#e63946'); circ(ctx, 117, 154, 3, '#e63946'); circ(ctx, 142, 140, 5, '#ffcc1a'); ctx.fillStyle = '#ffcc1a'; ctx.fillRect(140, 140, 4, 12);
+  }
+  if (p === 'burger') drawBurgerIcon(ctx, 130, 162, 1.25);
+  if (p === 'diner'){ // retro diner uniform: white collar, buttons and a name tag
+    poly(ctx, [[110,116],[130,134],[126,116]], '#ffffff'); poly(ctx, [[150,116],[130,134],[134,116]], '#ffffff');
+    [146, 164, 182].forEach(y => circ(ctx, 130, y, 3, '#ffffff'));
+    rrect(ctx, 140, 146, 26, 14, 3, '#ffffff'); ctx.fillStyle = '#e63946'; heartPath(ctx, 153, 152, 4); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fillRect(86, 196, 88, 6);
+  }
   if (p === 'hoodie'){
     block(ctx, 104, 172, 52, 22, shade(c, -22));
     ctx.strokeStyle = ink; ctx.lineWidth = 3; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(120, 122); ctx.lineTo(118, 148); ctx.moveTo(140, 122); ctx.lineTo(142, 148); ctx.stroke();
     circ(ctx, 118, 150, 3, ink); circ(ctx, 142, 150, 3, ink);
   }
+}
+function drawBurgerIcon(ctx, x, y, k = 1){
+  ctx.save(); ctx.translate(x, y); ctx.scale(k, k);
+  ctx.fillStyle = '#f2a541'; ctx.beginPath(); ctx.ellipse(0, -8, 22, 14, 0, Math.PI, 0); ctx.fill();
+  ['#fff2c8'].forEach(c => { ctx.fillStyle = c; [[-10,-14],[0,-18],[10,-13],[-4,-11],[6,-9]].forEach(([a,b]) => { ctx.beginPath(); ctx.ellipse(a, b, 2, 1.2, .3, 0, Math.PI*2); ctx.fill(); }); });
+  ctx.fillStyle = '#5ec04a'; ctx.beginPath(); for (let i = 0; i <= 8; i++) ctx.lineTo(-24 + i*6, -8 + (i % 2 ? 4 : 0)); ctx.lineTo(24, -4); ctx.lineTo(-24, -4); ctx.fill();
+  ctx.fillStyle = '#ffcc1a'; poly(ctx, [[-20,-5],[20,-5],[8,3],[0,-1],[-10,3]], '#ffcc1a');
+  rrect(ctx, -22, -3, 44, 9, 4, '#6b3a1f');
+  rrect(ctx, -21, 6, 42, 9, 4, '#e8953a');
+  ctx.restore();
 }
 function drawPants(ctx, av){
   const p = av.pantsPat, skin = av.head;
@@ -782,7 +822,7 @@ function drawAvatar(ctx, av, opts = {}){
   ctx.clearRect(0, 0, W, H);
   ctx.save();
   if (opts.headOnly){
-    const tall = av.hat !== 'none' || av.ears || av.extra === 'horn' || ['spiky','bun','curly'].includes(av.hair);
+    const tall = av.hat !== 'none' || av.ears || av.extra === 'horn' || ['spiky','bun','curly','beehive','spacebuns','bowl'].includes(av.hair);
     const s = W / 124; ctx.scale(s, s); ctx.translate(-68, tall ? 4 : -16);
   } else {
     const s = Math.min(W / 260, H / 310); ctx.scale(s, s); ctx.translate((W/s - 260)/2, 10);
@@ -811,6 +851,12 @@ function drawAvatar(ctx, av, opts = {}){
     ctx.beginPath(); ctx.moveTo(92, 46); ctx.lineTo(92, 14); ctx.lineTo(110, 30); ctx.lineTo(130, 6); ctx.lineTo(150, 30); ctx.lineTo(168, 14); ctx.lineTo(168, 46); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#e0a800'; ctx.fillRect(92, 38, 76, 8);
     ctx.fillStyle = '#ff4d5e'; ctx.fillRect(126, 24, 8, 8); ctx.fillStyle = '#3a86ff'; ctx.fillRect(104, 32, 6, 6); ctx.fillRect(150, 32, 6, 6);
+  } else if (av.hat === 'toque'){ // tall puffy chef hat
+    block(ctx, 90, 28, 80, 20, '#f4f5fa'); ctx.fillStyle = '#d5d8e4'; ctx.fillRect(90, 42, 80, 6);
+    circ(ctx, 104, 16, 17, '#ffffff'); circ(ctx, 156, 16, 17, '#ffffff'); circ(ctx, 130, 4, 22, '#ffffff'); ctx.fillStyle = '#ffffff'; ctx.fillRect(94, 12, 72, 20);
+    ctx.strokeStyle = '#dfe2ec'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(116, 30); ctx.lineTo(118, 14); ctx.moveTo(144, 30); ctx.lineTo(142, 14); ctx.stroke();
+  } else if (av.hat === 'burger'){
+    drawBurgerIcon(ctx, 130, 30, 1.9);
   } else if (av.hat === 'party'){
     ctx.fillStyle = '#8b5cf6';
     ctx.beginPath(); ctx.moveTo(100, 46); ctx.lineTo(130, -2); ctx.lineTo(160, 46); ctx.closePath(); ctx.fill();
@@ -876,6 +922,28 @@ function drawFace(ctx, av){
     ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.fillRect(103, 62, 30, 4); ctx.fillRect(138, 62, 8, 4);
     openMouth(88, 12, false);
   }
+  else if (f === 'bigsmile'){ // happy closed eyes + huge smile
+    arc(113, 76, 7, 1.1, 1.9, 4, true); arc(147, 76, 7, 1.1, 1.9, 4, true);
+    ctx.save(); ctx.beginPath(); ctx.moveTo(108, 84); ctx.quadraticCurveTo(130, 116, 152, 84); ctx.closePath(); ctx.fillStyle = '#1d2340'; ctx.fill(); ctx.clip();
+    ctx.fillStyle = '#fff'; ctx.fillRect(104, 84, 52, 6); ctx.fillStyle = '#ff6f8a'; ctx.beginPath(); ctx.arc(130, 104, 9, 0, Math.PI*2); ctx.fill(); ctx.restore();
+    blush(.7);
+  }
+  else if (f === 'awkward'){ // eyes darting sideways, worried brows, wobbly mouth, sweat drop
+    ctx.fillStyle = '#fff'; ctx.fillRect(105, 66, 16, 14); ctx.fillRect(139, 66, 16, 14); ctx.fillStyle = '#1d2340'; ctx.fillRect(105, 69, 7, 9); ctx.fillRect(139, 69, 7, 9);
+    line([[104, 60], [120, 56]], 3); line([[140, 56], [156, 60]], 3);
+    line([[116, 94], [122, 91], [128, 95], [134, 91], [140, 95], [145, 92]], 3);
+    ctx.fillStyle = '#7fd3ff'; ctx.beginPath(); ctx.moveTo(162, 48); ctx.quadraticCurveTo(170, 60, 162, 64); ctx.quadraticCurveTo(154, 60, 162, 48); ctx.fill(); blush(.3);
+  }
+  else if (f === 'mischief'){ // sly half-lidded eyes, one raised brow, sideways smirk
+    ctx.fillStyle = ink; ctx.fillRect(108, 70, 10, 10); ctx.fillRect(142, 70, 10, 10); ctx.fillStyle = '#fff'; ctx.fillRect(113, 72, 3, 3); ctx.fillRect(147, 72, 3, 3);
+    line([[105, 69], [121, 69]], 4); line([[139, 69], [155, 69]], 4); line([[104, 62], [120, 64]], 3); line([[140, 56], [156, 52]], 3);
+    line([[118, 92], [132, 94], [144, 86]], 4); ctx.fillStyle = '#fff'; poly(ctx, [[134, 93], [140, 91], [137, 98]], '#fff'); blush(.35);
+  }
+  else if (f === 'goofy'){ // cross-eyed with a buck-tooth grin
+    ctx.fillStyle = '#fff'; ctx.fillRect(105, 64, 16, 16); ctx.fillRect(139, 64, 16, 16); ctx.fillStyle = '#1d2340'; ctx.fillRect(114, 69, 7, 8); ctx.fillRect(139, 69, 7, 8);
+    ctx.save(); ctx.beginPath(); ctx.moveTo(112, 86); ctx.quadraticCurveTo(130, 106, 148, 86); ctx.closePath(); ctx.fillStyle = '#1d2340'; ctx.fill(); ctx.restore();
+    ctx.fillStyle = '#fff'; ctx.fillRect(123, 86, 6, 8); ctx.fillRect(131, 86, 6, 8); blush(.5);
+  }
   else { // smile (default)
     eyes(); ctx.beginPath(); ctx.arc(130, 90, 12, 0.15*Math.PI, 0.85*Math.PI); ctx.lineWidth = 4; ctx.strokeStyle = ink; ctx.stroke(); blush();
   }
@@ -884,6 +952,8 @@ const FACE_LIST = [
   ['smile','Happy Smile',0],['grin','Big Grin',0],['wink','Wink',75],['tongue','Silly Tongue',75],['sleepy','Sleepy',100],
   ['surprised','Surprised',100],['blush','Blushing',120],['kitty','Kitty Face :3',150],['shades','Cool Shades',175],['stars','Star Eyes',200],['visor','Rainbow Visor',1000,true],
 ];
+// 🍔 Burger Family pack: our own original "Sizzle Shack" diner family (these show in the 🍔 tab, not the Faces tab)
+const BURGER_FACES = [['bigsmile','Mega Smile',120],['awkward','Awkward Eyes',120],['mischief','Mischief Smirk',150],['goofy','Goofy Grin',100]];
 
 /* ---------- animation packs + emotes (shared by the shop preview and the 3D games) ---------- */
 const ANIM_LIST = [
@@ -894,12 +964,15 @@ const ANIM_LIST = [
   ['ninja','🥷','Ninja',250,'Lean in and flip when you jump'],
   ['hero','🦸','Superhero',300,'Hands on hips, fist up to fly'],
   ['ballerina','🩰','Ballerina',300,'Graceful steps and a twirl'],
+  ['flail','🍔','Dina\'s Flail Run',300,'Stiff legs, flailing arms, a little lean. Very awkward. Very fast-ish.'],
 ];
 const EMOTES = {
   wave:  {key:1, emoji:'👋', name:'Wave',  price:75,  dur:2.6},
   dance: {key:2, emoji:'💃', name:'Dance', price:150, dur:Infinity},
   cheer: {key:3, emoji:'🙌', name:'Cheer', price:100, dur:2.6},
   sit:   {key:4, emoji:'🪑', name:'Sit',   price:75,  dur:Infinity},
+  flip:  {key:5, emoji:'🍳', name:'Burger Flip',   price:150, dur:2.2},
+  groan: {key:6, emoji:'😩', name:'Awkward Groan', price:100, dur:2.8},
 };
 const TAU = Math.PI * 2;
 // pose angles in radians: aL/aR/lL/lR = swing forward(-)/back(+); aLo/aRo/lLo/lRo = raise out to the side;
@@ -938,6 +1011,17 @@ function animPose(pack, s){
       else if (st === 'walk'){ walk(.8); p.lean = .1; }
       else { p.aR = -3.05; p.aL = .25; p.aLo = .3; p.lL = 0; p.lR = -.7; p.lean = -.1; }
       break;
+    case 'flail': { // awkward stiff run: floppy timing, arms everywhere, slight forward lean
+      if (st === 'idle'){ p.aLo = p.aRo = .08; p.aL = p.aR = -.08 + Math.max(0, Math.sin(t*2.6))*.18; p.hz = Math.sin(t*.9)*.18; p.tilt = Math.sin(t*.7)*.04; p.lLo = .04; p.lRo = .04; }
+      else if (st === 'walk'){
+        const f = (s.ph || 0) + Math.sin((s.ph || 0) * .5) * .6, k = Math.min(1, sp * 1.6);
+        p.lL = Math.sin(f) * .5 * k; p.lR = -p.lL;
+        p.aLo = (1.0 + Math.sin(f*1.7 + 1) * .75) * k; p.aRo = (1.0 + Math.sin(f*1.3) * .75) * k;
+        p.aL = -Math.sin(f*2.3) * 1.2 * k; p.aR = Math.sin(f*1.9 + .7) * 1.2 * k;
+        p.lean = .32 * k; p.tilt = Math.sin(f) * .11 * k; p.hz = Math.sin(f*.9) * .14; p.y = Math.abs(Math.sin(f)) * .1 * k;
+      }
+      else { p.aL = -2.7 + Math.sin(t*17)*.45; p.aR = -2.7 - Math.sin(t*15)*.45; p.aLo = .45 + Math.sin(t*13)*.3; p.aRo = .45 + Math.cos(t*11)*.3; p.lL = Math.sin(t*14)*.5; p.lR = -p.lL; p.hz = .15; }
+      break; }
     case 'ballerina':
       if (st === 'idle'){ p.aLo = p.aRo = .85 + Math.sin(t*2)*.15; p.aL = p.aR = -.3; p.tilt = Math.sin(t*1.5)*.05; }
       else if (st === 'walk'){ walk(.45); p.aLo = p.aRo = 1.0 + S*.2; p.y = Math.abs(S)*.08*sp; }
@@ -956,6 +1040,15 @@ function emotePose(id, t){
   else if (id === 'dance'){ const w = Math.sin(t*6); p.y = Math.abs(w)*.15; p.aLo = 1.2 + w; p.aRo = 1.2 - w; p.tilt = Math.sin(t*3)*.15; p.lLo = .12 + Math.max(0, w)*.3; p.lRo = .12 + Math.max(0, -w)*.3; p.hz = -Math.sin(t*3)*.2;
     const c = t % 3; if (c > 2.4) p.spin = (c - 2.4) / .6 * TAU; }
   else if (id === 'cheer'){ p.aL = p.aR = -3; p.aLo = p.aRo = .3 + Math.sin(t*14)*.12; p.y = Math.abs(Math.sin(t*6))*.35; }
+  else if (id === 'flip'){ // wind up, hop and flip like a patty, ta-da!
+    if (t < .5){ const k = t / .5; p.y = -.12*k; p.aR = .9*k; p.aRo = .3; p.lean = .2*k; p.lL = p.lR = -.3*k; }
+    else if (t < 1.3){ const a = (t - .5) / .8; p.y = Math.max(0, Math.sin(a*Math.PI)) * 1.1; p.flip = a * TAU; p.aLo = p.aRo = 1.3; p.lL = p.lR = -.9; }
+    else { p.aR = -2.8; p.aRo = .3; p.aLo = .9; p.y = Math.abs(Math.sin((t - 1.3)*8)) * .06; p.hz = -.12; }
+  }
+  else if (id === 'groan'){ // throw head back... then slump with dangly arms
+    if (t < .7){ const k = t / .7; p.lean = -.3*k; p.hz = .2*k; p.aLo = p.aRo = .25*k; p.aL = p.aR = .2*k; }
+    else { const w = Math.sin((t - .7)*2.6); p.lean = .35; p.y = -.1; p.aL = w*.35 - .15; p.aR = -w*.35 - .15; p.aLo = p.aRo = .02; p.hz = w*.18; p.tilt = w*.06; p.lL = p.lR = -.08; }
+  }
   else if (id === 'sit'){ p.y = -.72; p.lL = p.lR = -1.57; p.aL = p.aR = -.6; p.lean = -.05; }
   return p;
 }
@@ -1167,8 +1260,28 @@ const ITEMS = [
   ...FACE_LIST.map(([v,n,p,rare]) => ({id:'face-'+v, cat:'face', emoji:'😀', name:n, price:p, slot:'face', val:v, rare, def: v === 'smile'})),
   ...ANIM_LIST.map(([v,e,n,p,d]) => ({id:'anim-'+v, cat:'anim', emoji:e, name:n, price:p, slot:'anim', val:v, desc:d, def: v === 'default'})),
   ...Object.entries(EMOTES).map(([v,E]) => ({id:'emote-'+v, cat:'anim', emoji:E.emoji, name:E.name + ' Emote', price:E.price, emote:v, desc:'Press ' + E.key + ' or tap 😀 in games'})),
+  // 🍔 Burger Family pack (original characters from our own made-up diner, the Sizzle Shack)
+  {id:'fam-dad',    cat:'burger', emoji:'👨‍🍳', name:'Chef Hank (Dad)',     price:450, desc:'Puffy chef toque, ketchup-splat apron, big goofy grin', set:['hat-toque','shirt-apron','hair-short','face-grin','pants-jeans'],
+    look:{head:'#e0ac69', shirt:'#2a9d8f', pants:'#3d6fb5', hairColor:'#2b1d14'}},
+  {id:'fam-mom',    cat:'burger', emoji:'👩', name:'Rosie (Mom)',          price:450, desc:'Ginger beehive, diner uniform, the biggest smile in town', set:['hair-beehive','shirt-diner','face-bigsmile','pants-skirt'],
+    look:{head:'#ffdbac', shirt:'#ff9f1c', pants:'#8b5cf6', hairColor:'#d9601f'}},
+  {id:'fam-dina',   cat:'burger', emoji:'🙈', name:'Dina (Big Sister)',    price:400, desc:'Shy, awkward and secretly awesome. Mustard hoodie + side braid', set:['hair-braid','shirt-hoodie','face-awkward','pants-plaid'],
+    look:{head:'#c68642', shirt:'#e9b949', pants:'#6a4c93', hairColor:'#8a3b12'}},
+  {id:'fam-benny',  cat:'burger', emoji:'🤪', name:'Benny (Little Brother)', price:350, desc:'Bowl cut, burger tee, and a very silly face', set:['hair-bowl','shirt-burger','face-goofy','pants-shorts'],
+    look:{head:'#f1c27d', shirt:'#ff4d5e', pants:'#264653', hairColor:'#f2c14e'}},
+  {id:'fam-pip',    cat:'burger', emoji:'😼', name:'Pip (Little Sister)',  price:400, desc:'Space buns, stripy tee and a sneaky plan', set:['hair-spacebuns','shirt-stripes','face-mischief','pants-jeans'],
+    look:{head:'#8d5524', shirt:'#2ec27e', pants:'#3d6fb5', hairColor:'#ff6fb5'}},
+  {id:'hat-toque',  cat:'burger', emoji:'👨‍🍳', name:'Puffy Chef Toque', price:150, slot:'hat', val:'toque'},
+  {id:'hat-burger', cat:'burger', emoji:'🍔', name:'Burger Hat',       price:200, slot:'hat', val:'burger', desc:'Extra cheese!'},
+  {id:'shirt-apron', cat:'burger', emoji:'🧑‍🍳', name:'Ketchup Apron', price:150, slot:'shirtPat', val:'apron'},
+  {id:'shirt-diner', cat:'burger', emoji:'🍽️', name:'Diner Uniform',   price:150, slot:'shirtPat', val:'diner'},
+  {id:'shirt-burger', cat:'burger', emoji:'🍔', name:'Burger Tee',     price:120, slot:'shirtPat', val:'burger'},
+  ...[['beehive','Big Beehive',175],['braid','Side Braid',150],['bowl','Bowl Cut',125],['spacebuns','Space Buns',175]]
+    .map(([v,n,p]) => ({id:'hair-'+v, cat:'burger', emoji:'💇', name:n, price:p, slot:'hair', val:v})),
+  ...BURGER_FACES.map(([v,n,p]) => ({id:'face-'+v, cat:'burger', emoji:'😀', name:n, price:p, slot:'face', val:v})),
 ];
-const SLOT_DEF = {face:'smile', anim:'default'};
+['anim-flail','emote-flip','emote-groan'].forEach(id => { const it = ITEMS.find(x => x.id === id); it.also = 'burger'; if (id === 'anim-flail') it.star = true; });
+const SLOT_DEF = {face:'smile', anim:'default', hat:'none'};
 const byId = id => ITEMS.find(x => x.id === id);
 let coins = load('rubloxCoins', 500);
 let owned = new Set(load('rubloxOwned', []));
@@ -1191,16 +1304,18 @@ function claimBonus(){
 $('#coinBtn').onclick = claimBonus; $('#bonusBtn').onclick = claimBonus;
 
 function isOwned(it){ return it.set ? it.set.every(id => owned.has(id)) : it.price === 0 || owned.has(it.id); }
-function isOn(it){ if (it.emote) return isOwned(it); return it.set ? it.set.every(id => isOn(byId(id))) : (avatar[it.slot] ?? SLOT_DEF[it.slot] ?? null) === it.val; }
+function isOn(it){ if (it.emote) return isOwned(it); return it.set ? it.set.every(id => isOn(byId(id))) && (!it.look || Object.entries(it.look).every(([k, v]) => avatar[k] === v)) : (avatar[it.slot] ?? SLOT_DEF[it.slot] ?? null) === it.val; }
 function withItem(base, it, on = true){
   const a = Object.assign({}, base);
   if (it.emote) return a;
   (it.set ? it.set.map(byId) : [it]).forEach(x => a[x.slot] = on ? x.val : (SLOT_DEF[x.slot] ?? null));
+  if (on && it.look){ Object.assign(a, it.look); if (!it.set.some(id => byId(id).slot === 'hat')) a.hat = 'none'; } // family outfits set their colours too
   return a;
 }
 function wear(it, on){
   avatar = withItem(avatar, it, on);
   (it.set ? it.set.map(byId) : [it]).forEach(x => draft[x.slot] = avatar[x.slot]);
+  if (it.look) ['head','shirt','pants','hairColor','hat'].forEach(k => draft[k] = avatar[k]);
   save('rubloxAvatar', avatar); refreshLook();
 }
 function refreshLook(){ drawChip(); drawBig(); renderShop(); renderStuff(); }
@@ -1221,21 +1336,24 @@ function thumb(canvas, it){
     const a = {c: canvas, pack: it.val || avatar.anim || 'default', emote: it.emote, off: Math.random() * 3};
     animThumbs.push(a); drawPosed(canvas.getContext('2d'), avatar, it.emote ? emotePose(it.emote, .8) : previewPose(a.pack, 2)); return;
   }
-  const preview = withItem(avatar, it, true);
+  const preview = withItem(it.look ? Object.assign({}, DEF) : avatar, it, true); // outfits preview the whole family look
   if (it.slot === 'face'){ drawAvatar(canvas.getContext('2d'), preview, {headOnly: true}); return; }
   if (it.slot === 'hair' && preview.hat !== 'none') preview.hat = 'none';
-  const headish = it.slot === 'hair' || it.slot === 'ears' || it.val === 'horn';
+  const headish = it.slot === 'hair' || it.slot === 'ears' || it.slot === 'hat' || it.val === 'horn';
   drawAvatar(canvas.getContext('2d'), preview, {headOnly: headish});
 }
 function renderShop(){
   $$('.tab').forEach(t => t.classList.toggle('sel', t.dataset.cat === shopCat));
   $('#hairRow').style.display = shopCat === 'hair' ? '' : 'none'; $('#animNote').style.display = shopCat === 'anim' ? '' : 'none';
+  $('#burgerNote').style.display = shopCat === 'burger' ? '' : 'none';
   const box = $('#items'); box.innerHTML = '';
-  ITEMS.filter(it => it.cat === shopCat).forEach((it, i) => {
+  const list = ITEMS.filter(it => it.cat === shopCat || it.also === shopCat);
+  if (shopCat === 'burger') list.sort((a, b) => (b.set ? 2 : b.star ? 1 : 0) - (a.set ? 2 : a.star ? 1 : 0));
+  list.forEach((it, i) => {
     const d = document.createElement('div'); d.className = 'item'; d.dataset.item = it.id; d.style.animationDelay = (i*.03)+'s';
     const own = isOwned(it), on = own && isOn(it);
     d.innerHTML = `<canvas width="240" height="240"></canvas>
-      ${it.rare ? '<span class="tagl rare">✨ RARE</span>' : own ? '<span class="tagl">✔ Owned</span>' : ''}
+      ${it.rare ? '<span class="tagl rare">✨ RARE</span>' : own ? '<span class="tagl">✔ Owned</span>' : it.star ? '<span class="tagl rare">⭐ STAR MOVE</span>' : it.set && it.look ? '<span class="tagl">👪 Outfit</span>' : ''}
       ${on && !it.emote ? `<span class="tagl wear">${it.slot === 'anim' ? 'Equipped' : 'Wearing'}</span>` : ''}
       <div class="in"><h4>${it.emoji} ${it.name}</h4>${it.desc ? `<div class="desc">${it.desc}</div>` : ''}
       <div class="price"><span class="coin sm"></span>${own ? (it.price === 0 ? 'Free' : 'Owned') : it.price}</div>
@@ -1250,7 +1368,7 @@ function renderShop(){
 }
 function renderStuff(){
   const box = $('#stuff'); box.innerHTML = '';
-  const mine = ITEMS.filter(it => !it.set && (owned.has(it.id) || (it.price === 0 && (it.cat === 'face' || it.cat === 'anim'))));
+  const mine = ITEMS.filter(it => (!it.set || (it.look && owned.has(it.id))) && (owned.has(it.id) || (it.price === 0 && (it.cat === 'face' || it.cat === 'anim'))));
   if (!mine.length){ box.innerHTML = '<div class="empty">Nothing here yet! Visit the 🛍️ Shop to get hair, ears, tails and clothes.</div>'; return; }
   mine.forEach(it => {
     const b = document.createElement('button'); const on = isOn(it);
@@ -1523,6 +1641,10 @@ const Obby = (() => {
       if (av.hair === 'pigtails'){ bx(.24, .6, .24, hc, -.58, 2.3, 0); bx(.24, .6, .24, hc, .58, 2.3, 0); }
       if (av.hair === 'bun'){ const s = new THREE.Mesh(new THREE.SphereGeometry(.24, 12, 8), mat(hc)); s.position.set(0, 3.08, -.1); g.add(s); }
       if (av.hair === 'spiky') for (let i = -2; i <= 2; i++){ const c = new THREE.Mesh(new THREE.ConeGeometry(.15, .45, 4), mat(hc)); c.position.set(i*.17, 3.15, (i % 2) * .12); g.add(c); }
+      if (av.hair === 'beehive'){ const s = new THREE.Mesh(new THREE.SphereGeometry(.42, 14, 10), mat(hc)); s.scale.y = 1.25; s.position.set(0, 3.12, -.05); g.add(s); }
+      if (av.hair === 'spacebuns') [-1, 1].forEach(k => { const s = new THREE.Mesh(new THREE.SphereGeometry(.22, 12, 8), mat(hc)); s.position.set(k*.32, 3.02, -.05); g.add(s); });
+      if (av.hair === 'bowl'){ bx(.94, .3, .94, hc, 0, 2.86, 0); bx(.94, .16, .1, hc, 0, 2.73, .44); }
+      if (av.hair === 'braid') for (let i = 0; i < 5; i++){ const s = new THREE.Mesh(new THREE.SphereGeometry(.13, 8, 6), mat(i % 2 ? shade(hc, -18) : hc)); s.position.set(-.38 - (i % 2) * .05, 2.32 - i * .19, .32); g.add(s); }
       if (av.hair === 'curly') for (let i = 0; i < 10; i++){ const a = i / 10 * Math.PI * 2; const s = new THREE.Mesh(new THREE.SphereGeometry(.17, 8, 6), mat(hc)); s.position.set(Math.cos(a)*.42, 2.85, Math.sin(a)*.42); g.add(s); }
     }
     // ears
@@ -1548,6 +1670,10 @@ const Obby = (() => {
     // hats
     if (av.hat === 'cap'){ bx(.9, .25, .9, '#ff4d5e', 0, 2.95, 0); bx(.9, .06, .45, '#d93445', 0, 2.84, .6); }
     if (av.hat === 'crown'){ const c = new THREE.Mesh(new THREE.CylinderGeometry(.42, .42, .32, 8, 1, true), new THREE.MeshLambertMaterial({color: '#ffc928', emissive: '#7a5a00', side: THREE.DoubleSide})); c.position.y = 2.98; g.add(c); }
+    if (av.hat === 'toque'){ const b = new THREE.Mesh(new THREE.CylinderGeometry(.42, .42, .26, 12), mat('#f4f5fa')); b.position.y = 2.96; g.add(b);
+      const t = new THREE.Mesh(new THREE.SphereGeometry(.5, 14, 10), mat('#ffffff')); t.scale.set(1, .75, 1); t.position.y = 3.35; g.add(t); }
+    if (av.hat === 'burger'){ [[.44, .14, '#e8953a', 2.94], [.5, .05, '#5ec04a', 3.03], [.46, .12, '#6b3a1f', 3.1], [.47, .03, '#ffcc1a', 3.17]].forEach(([r, h, c, y]) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 14), mat(c)); m.position.y = y; g.add(m); });
+      const top = new THREE.Mesh(new THREE.SphereGeometry(.46, 14, 8, 0, Math.PI*2, 0, Math.PI/2), mat('#f2a541')); top.scale.y = .7; top.position.y = 3.18; g.add(top); }
     if (av.hat === 'party'){ const c = new THREE.Mesh(new THREE.ConeGeometry(.32, .75, 12), mat('#8b5cf6')); c.position.y = 3.18; g.add(c); ball(.1, '#ff6fb5', 0, 3.58, 0); }
     // group the head (with hair, ears and hats) so it can tilt, and wrap everything in a pivot for flips/spins/bounces
     const headG = new THREE.Group(); headG.position.y = 2.0;
@@ -3106,13 +3232,13 @@ const Obby = (() => {
     }
     if (mode === 'tag'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ to jump · Swipe the right side to look · 😀 emotes'
-        : '⌨️ WASD / Arrows to move · Space to jump · Drag the mouse to look · 1–4 emotes · Esc to pause') + "<br>🏷️ Don't be IT! Touch someone to pass it on. Least IT time after 90s wins! +5 🪙 per tag, +30 to win";
+        : '⌨️ WASD / Arrows to move · Space to jump · Drag the mouse to look · 1–6 emotes · Esc to pause') + "<br>🏷️ Don't be IT! Touch someone to pass it on. Least IT time after 90s wins! +5 🪙 per tag, +30 to win";
       return;
     }
     const goal = mode === 'nds' ? 'Survive each disaster for 30 seconds! Hide inside, climb up high, stay out of the water. +20 🪙 per round!' : mode === 'lava' ? 'Climb the tower to the 🚁 before the lava gets you!' : 'Grab the coins, dodge the red lava, and reach the 🏆!';
     $('#oTip').innerHTML = (on
       ? '🕹️ Left thumb to move · ⬆️ to jump · Swipe the right side to look · 😀 emotes'
-      : '⌨️ WASD / Arrows to move · Space to jump · Drag the mouse to look · Scroll to zoom · 1–4 emotes · Esc to pause') + '<br>' + goal + (mode === 'lava' ? '<br>🪜 Walk into a gray truss to climb it!' : '');
+      : '⌨️ WASD / Arrows to move · Space to jump · Drag the mouse to look · Scroll to zoom · 1–6 emotes · Esc to pause') + '<br>' + goal + (mode === 'lava' ? '<br>🪜 Walk into a gray truss to climb it!' : '');
   }
   function checkRotate(){
     const show = running && touchUI && innerHeight > innerWidth && !rotDismissed;
@@ -3335,7 +3461,7 @@ const Obby = (() => {
     bwPtr(x, y){ ptr.x = x; ptr.y = y; ptr.has = true; },
     tag: () => tg && {phase: tg.phase, t: tg.t, it: tg.it, freeze: tg.freeze, you: {...tg.you}, earned: tg.earned, bots: tg.bots.map(B => ({name: B.name, x: +B.x.toFixed(2), y: +B.y.toFixed(2), z: +B.z.toFixed(2), it: B.itTime, tags: B.tags}))},
     mp: () => ({on: mp.on, host: mp.host, code: mp.code, me: mp.me, status: mp.status, hmode: mp.hmode, count: mp.on ? mpCount() : 0, players: [...mp.players.entries()].map(([u, p]) => [u, p.name]),
-      ents: [...mp.ents.values()].map(E => ({uid: E.uid, m: E.m, x: +E.x.toFixed(2), y: +E.y.toFixed(2), z: +E.z.toFixed(2), e: E.e, vis: !!(E.model && E.model.g.visible && E.scene === scene)})),
+      ents: [...mp.ents.values()].map(E => ({uid: E.uid, m: E.m, x: +E.x.toFixed(2), y: +E.y.toFixed(2), z: +E.z.toFixed(2), e: E.e, pack: E.pack, av: (mpLook(E.uid) || {}).av, vis: !!(E.model && E.model.g.visible && E.scene === scene)})),
       tag: tg && {remote: tg.remote, itU: tg.itU, it: tg.it, inRound: tg.inRound, humans: tg.bots.filter(B => B.human).map(B => ({uid: B.uid, away: B.away, it: B.itTime, tags: B.tags}))}}),
     mpHost: () => mpHost(), mpJoin: c => mpJoin(c), mpLeave: () => mpLeave(),
     tagUid: i => tagUid(i), mpRaw: m => mpSend(m),
