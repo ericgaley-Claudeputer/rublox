@@ -411,6 +411,70 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .ocross:before,.ocross:after{content:'';position:absolute;background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.35);border-radius:2px}
 .ocross:before{left:11.5px;top:0;width:3px;height:26px}.ocross:after{top:11.5px;left:0;height:3px;width:26px}
 .obby.padui.bmode .ocross{display:block}
+
+/* ---- Adopt a Pet ---- */
+.pgoal,.ppet,.pact,.ppedals{display:none}
+.pgoal{position:absolute;left:50%;top:calc(max(10px,env(safe-area-inset-top)) + 58px);transform:translateX(-50%);align-items:center;gap:8px;background:rgba(255,255,255,.95);color:#1d2340;font-weight:900;font-size:17px;padding:6px 14px 6px 6px;border-radius:999px;box-shadow:0 4px 0 rgba(0,0,0,.18);pointer-events:none;max-width:min(94vw,600px);white-space:nowrap;z-index:3}
+.pgoal.show{display:flex}
+.pgoal span{overflow:hidden;text-overflow:ellipsis}
+.pgoal b{background:#ffd23f;border-radius:999px;padding:2px 8px;font-size:14px;flex:none}
+#pArrow{width:32px;height:32px;flex:none;fill:#fff;background:#ff6fb5;border-radius:50%;padding:5px;transition:transform .12s linear}
+.ppet{position:absolute;right:max(10px,env(safe-area-inset-right));top:calc(max(10px,env(safe-area-inset-top)) + 110px);background:rgba(255,255,255,.94);color:#1d2340;border-radius:16px;padding:8px 10px;box-shadow:0 4px 0 rgba(0,0,0,.18);width:200px;font-weight:900;z-index:3}
+.ppet.show{display:block}
+.ppn{display:flex;align-items:center;gap:6px;font-size:15px}
+.ppn div{flex:1;min-width:0}
+.ppn b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ppn small{display:block;font-size:12px;color:#6b7290}
+.ppn button{border:0;border-radius:10px;background:#ff6fb5;color:#fff;font-size:18px;width:40px;height:34px;cursor:pointer;box-shadow:0 3px 0 #c94b8c;flex:none;touch-action:manipulation}
+.pneeds{display:flex;gap:6px;margin:6px 0 5px}
+.pneeds span{flex:1;display:flex;align-items:center;gap:2px;font-size:13px}
+.pneeds i,.pmini b{flex:1;height:9px;background:#e7e9f2;border-radius:5px;overflow:hidden;display:block}
+.pneeds u,.pmini u{display:block;height:100%;background:#2ec27e;transition:width .3s}
+#pFood{background:#ff9f1c}#pFun{background:#3a86ff}#pEn{background:#8b5cf6}
+.pneeds u.low{animation:pblink .9s infinite}
+@keyframes pblink{50%{opacity:.35}}
+.pgrowbar,.pgrow{position:relative;height:17px;background:#e2f7e9;border-radius:9px;overflow:hidden}
+.pgrowbar u,.pgrow u{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#9be7a8,#2ec27e);transition:width .4s}
+.pgrowbar span,.pgrow span{position:relative;display:block;text-align:center;font-size:11.5px;line-height:17px}
+.pact{position:absolute;left:50%;bottom:104px;transform:translateX(-50%);border:0;border-radius:18px;background:#ffd23f;color:#1d2340;font:inherit;font-weight:900;font-size:20px;padding:12px 20px;box-shadow:0 5px 0 #d4a700;cursor:pointer;align-items:center;gap:10px;z-index:5;white-space:nowrap;touch-action:manipulation;animation:ppop .25s}
+@keyframes ppop{from{transform:translateX(-50%) scale(.7)}}
+.pact.show{display:flex}
+.pact kbd{background:#1d2340;color:#fff;border-radius:8px;padding:2px 9px;font:inherit;font-size:16px}
+.padui .pact kbd{background:#3a86ff;border-radius:50%;padding:2px 7px}
+.touchui .pact{left:auto;transform:none;right:max(16px,calc(env(safe-area-inset-right) + 10px));bottom:max(150px,calc(env(safe-area-inset-bottom) + 140px));font-size:18px;padding:14px 18px;animation:none;max-width:60vw;white-space:normal;text-align:left}
+.touchui .pact kbd{display:none}
+.pdrive.touchui .pact{bottom:max(150px,calc(env(safe-area-inset-bottom) + 140px))}
+.ppedals{position:absolute;right:max(18px,calc(env(safe-area-inset-right) + 12px));bottom:max(24px,calc(env(safe-area-inset-bottom) + 16px));gap:14px;align-items:flex-end;z-index:4}
+.pdrive.touchui .ppedals{display:flex}
+.pdrive #oJump,.pdrive #oEmoBtn{display:none!important}
+.ppedals button{border:0;border-radius:50%;width:84px;height:84px;font-size:30px;color:#fff;font-weight:900;display:flex;flex-direction:column;align-items:center;justify-content:center;touch-action:none;font-family:inherit;user-select:none;-webkit-user-select:none}
+.ppedals small{font-size:13px}
+#pGas{background:#2ec27e;box-shadow:0 6px 0 #1f9460;width:104px;height:104px}
+#pBrake{background:#ff4d5e;box-shadow:0 6px 0 #c22d3c}
+.ppedals button.on{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.3)}
+.pname{width:100%;max-width:340px;font:inherit;font-size:24px;font-weight:900;text-align:center;padding:10px 14px;border-radius:14px;border:3px solid #ff6fb5;outline:none;color:#1d2340;background:#fff;box-sizing:border-box}
+.pname.gpedit{border-color:#3a86ff;box-shadow:0 0 0 4px rgba(58,134,255,.35)}
+.psugg{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px auto 4px;max-width:440px}
+.pchip{border:0;border-radius:999px;background:#ffe0ef;color:#1d2340;font:inherit;font-weight:900;font-size:15px;padding:7px 12px;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.12)}
+.pmsg{min-height:22px;font-weight:900;color:#d6336c;margin-bottom:6px}
+#pAdoptPanel{place-items:end center;padding-bottom:3vh;background:linear-gradient(transparent 45%,rgba(10,14,35,.35))}
+.pcols{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+.pcol{border:3px solid transparent;border-radius:14px;background:#f1f3fa;color:#1d2340;font:inherit;font-weight:900;font-size:15px;padding:7px 12px;display:flex;align-items:center;gap:6px;cursor:pointer}
+.pcol i{width:22px;height:22px;border-radius:50%;border:4px solid;display:block;box-sizing:border-box}
+.pcol.sel{border-color:#ff6fb5;background:#ffe0ef}
+.pbox{max-width:760px;width:92vw;max-height:90vh;overflow:auto}
+.plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;text-align:left}
+.pcard{background:#f6f7fc;border-radius:16px;padding:10px;border:3px solid transparent;display:flex;flex-direction:column;gap:6px}
+.pcard.on{border-color:#2ec27e;background:#eafaf0}
+.pcn{display:flex;align-items:center;gap:8px}.pce{font-size:34px}.pcn b{font-size:18px;display:block}.pcn small{color:#6b7290;font-weight:800}
+.pmini{display:flex;align-items:center;gap:6px;font-size:13px}
+.pfollow{padding:8px 10px!important;font-size:15px!important}
+.pempty{font-weight:800;padding:16px}
+.pmode.touchui .otip{top:calc(170px + env(safe-area-inset-top))}
+@media (max-width:640px){.pgoal{top:calc(max(10px,env(safe-area-inset-top)) + 100px);font-size:14px;max-width:96vw}.ppet{top:calc(max(10px,env(safe-area-inset-top)) + 146px);width:168px;padding:6px 8px}.pmode.touchui .otip{top:calc(250px + env(safe-area-inset-top))}}
+#obby:has(#pNamePanel.show,#pAdoptPanel.show,#pPetsPanel.show) :is(.pgoal,.ppet,.ppedals,.pact){display:none!important}
+@media (max-height:500px){#pNamePanel .mbox,#pAdoptPanel .mbox{padding:10px 18px;max-height:94vh;overflow:auto}#pNamePanel .emoji,#pAdoptPanel .emoji{font-size:26px;margin:0}#pNamePanel h2,#pAdoptPanel h2{font-size:20px;margin:2px 0}#pNamePanel .stats{font-size:13px}#pNamePanel .pname{padding:6px 10px;font-size:18px}#pNamePanel .psugg{margin:6px 0}#pNamePanel .pmsg:empty{display:none}#pNamePanel .owinbtns .big{margin:3px}#pNamePanel .owinbtns,#pAdoptPanel .owinbtns{margin-top:6px}#pNamePanel .owinbtns .big,#pAdoptPanel .owinbtns .big{padding:8px 14px;font-size:15px}}
+@media (max-height:500px){.pgoal{font-size:14px;top:calc(max(8px,env(safe-area-inset-top)) + 50px)}.ppet{top:calc(max(8px,env(safe-area-inset-top)) + 96px);width:170px;padding:5px 8px}.ppn{font-size:13px}.pgrowbar{height:14px}.pgrowbar span{line-height:14px}.ppedals button{width:72px;height:72px}#pGas{width:86px;height:86px}.touchui .pact,.pdrive.touchui .pact{bottom:max(116px,calc(env(safe-area-inset-bottom) + 106px));font-size:16px;padding:10px 14px}.pmode.touchui .otip{top:calc(96px + env(safe-area-inset-top));left:calc(50% - 90px);max-width:60vw}}
 </style>
 </head>
 <body>
@@ -649,6 +713,34 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   <button class="oskip" id="oSkip" title="Too tricky? Skip to the next level">⏭️ Skip level</button>
   <div class="oflash" id="oFlash"></div>
   <div class="owarn" id="oWarn"></div>
+  <div class="pgoal" id="pGoal"><svg id="pArrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 10h-5v10h-6V12H4z"/></svg><span id="pGoalT"></span><b id="pGoalD"></b></div>
+  <div class="ppet" id="pPetBox">
+    <div class="ppn"><div><b id="pPetN"></b><small id="pPetS"></small></div><button id="pPetsBtn" title="My pets (M)" aria-label="My pets">🐾</button></div>
+    <div class="pneeds"><span title="Food">🍖<i><u id="pFood"></u></i></span><span title="Fun">🎾<i><u id="pFun"></u></i></span><span title="Energy">⚡<i><u id="pEn"></u></i></span></div>
+    <div class="pgrowbar"><u id="pGrow"></u><span id="pGrowT"></span></div>
+  </div>
+  <button class="pact" id="pAct" tabindex="-1"><kbd id="pKey">E</kbd><span id="pActT"></span></button>
+  <div class="ppedals" id="pPedals"><button id="pBrake" tabindex="-1" aria-label="Brake">🛑<small>Brake</small></button><button id="pGas" tabindex="-1" aria-label="Gas">⛽<small>Go!</small></button></div>
+  <div class="opanel" id="pNamePanel"><div class="mbox">
+    <span class="emoji">🏷️</span><h2>Name your new pet!</h2>
+    <div class="stats" style="margin-bottom:8px">🩺 Dr. Hazel: “Welcome! What will you call your new best friend?”</div>
+    <input id="petNameIn" class="pname" maxlength="14" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="Pet name" enterkeyhint="done">
+    <div class="psugg" id="pSugg"></div>
+    <div class="pmsg" id="pNameMsg"></div>
+    <div class="owinbtns"><button class="big green" id="pNameOk">✅ That's the name!</button><button class="big" id="pRand">🎲 Random</button><button class="big gray" id="pNameX">✖ Not yet</button></div>
+  </div></div>
+  <div class="opanel" id="pAdoptPanel"><div class="mbox">
+    <span class="emoji" id="pAdEmoji">🐱</span><h2 id="pAdTitle">Adopt a Cat?</h2>
+    <div class="stats" style="margin-bottom:6px">Meet <b id="pAdName"></b>! Pick a color:</div>
+    <div class="pcols" id="pCols"></div>
+    <div class="owinbtns"><button class="big green" id="pAdoptOk">💕 Adopt!</button><button class="big gray" id="pAdoptBack">↩️ See the others</button></div>
+  </div></div>
+  <div class="opanel" id="pPetsPanel"><div class="mbox pbox">
+    <span class="emoji">🐾</span><h2>My Pets <small id="pCount"></small></h2>
+    <div class="plist" id="pList"></div>
+    <div class="stats" style="font-size:14px;margin:10px 0">Feed, play and walk your pet to help it grow: 🍼 Baby → 🧒 Kid → 😎 Teen → ⭐ Adult.<br>When your newest pet is an Adult, adopt another at the 🏥 Pet Shelter (up to 6)!</div>
+    <button class="big gray" id="pPetsClose">✖ Close</button>
+  </div></div>
   <div class="opanel" id="oDiff"><div class="mbox">
     <span class="emoji">🌋</span><h2>Lava Escape</h2>
     <div class="stats" style="font-size:16px;line-height:1.5">The lava is rising! Climb the tower and reach the 🚁 rescue helicopter at the top.<br>How fast should the lava go?</div>
@@ -704,7 +796,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.10.29-1';
+const BUILD = '2026.10.29-2';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -1360,6 +1452,7 @@ $('#saveAv').onclick = () => {
 
 /* ---------- games ---------- */
 const GAMES = [
+  {id:'pets',  name:'Adopt a Pet', emoji:'🐾', tag:'Adopt & raise your own pet!', draw: drawPets, playable: true, isNew: true},
   {id:'obby',  name:'Obby Rush',   emoji:'🏃', tag:'50 levels!',      draw: drawObby, playable: true},
   {id:'build', name:'Build World', emoji:'🧱', tag:'Build anything',  draw: drawBuild, playable: true},
   {id:'tag',   name:'Block Tag',   emoji:'🏷️', tag:"You're it!",      draw: drawTag, playable: true},
@@ -1416,6 +1509,29 @@ function drawLava(ctx){
   ctx.lineTo(320, 200); ctx.fill();
   ctx.fillStyle = '#ffd23f'; for (let i = 0; i < 8; i++){ ctx.fillRect((i*47 + t*20) % 320, 168 + (i%3)*8, 8, 8); }
 }
+function drawPets(ctx){
+  sky(ctx, '#8fd3ff', '#e3f6ff'); cloud(ctx, 26, 26); cloud(ctx, 238, 40);
+  ctx.fillStyle = '#ffe066'; ctx.beginPath(); ctx.arc(286, 26, 16, 0, 7); ctx.fill();
+  ctx.fillStyle = '#7ccf6a'; ctx.fillRect(0, 118, 320, 82);
+  ctx.fillStyle = '#555a66'; ctx.fillRect(0, 150, 320, 26); ctx.fillStyle = '#ffd23f'; for (let x = 6; x < 320; x += 36) ctx.fillRect(x, 162, 18, 3);
+  // home
+  block(ctx, 14, 76, 74, 46, '#ffb3c7'); ctx.fillStyle = '#ff4d5e'; ctx.beginPath(); ctx.moveTo(6, 80); ctx.lineTo(51, 46); ctx.lineTo(96, 80); ctx.fill();
+  block(ctx, 42, 96, 18, 26, '#8d5524'); block(ctx, 20, 88, 16, 14, '#bfe6ff'); block(ctx, 66, 88, 16, 14, '#bfe6ff');
+  // shelter
+  block(ctx, 196, 70, 112, 52, '#fff3e0'); block(ctx, 196, 64, 112, 10, '#2ec2b0'); block(ctx, 240, 96, 24, 26, '#ff9f1c');
+  ctx.fillStyle = '#fff'; ctx.font = '900 12px Nunito, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('🐾 PET SHELTER', 252, 89);
+  // car
+  block(ctx, 110, 138, 64, 18, '#3a86ff'); block(ctx, 124, 128, 30, 12, '#bfe6ff');
+  ctx.fillStyle = '#2b2b33'; [122, 162].forEach(x => { ctx.beginPath(); ctx.arc(x, 158, 7, 0, 7); ctx.fill(); });
+  // pets: dog, cat, mouse
+  const ear = (x, y, c) => { ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 6, y - 11); ctx.lineTo(x + 12, y); ctx.fill(); };
+  const face = (x, y) => { ctx.fillStyle = '#1d2340'; ctx.fillRect(x - 6, y - 2, 4, 4); ctx.fillRect(x + 3, y - 2, 4, 4); ctx.fillStyle = '#ff7a8f'; ctx.fillRect(x - 2, y + 4, 5, 3); };
+  block(ctx, 26, 172, 40, 20, '#d9a057'); block(ctx, 52, 156, 26, 24, '#d9a057'); block(ctx, 48, 156, 7, 16, '#a8743a'); block(ctx, 75, 156, 7, 16, '#a8743a'); face(65, 167);
+  block(ctx, 214, 176, 30, 16, '#f29a3c'); block(ctx, 236, 160, 24, 22, '#f29a3c'); ear(236, 162, '#f29a3c'); ear(248, 162, '#f29a3c'); face(248, 170);
+  ctx.strokeStyle = '#f29a3c'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(214, 180); ctx.quadraticCurveTo(200, 172, 204, 158); ctx.stroke();
+  block(ctx, 276, 182, 22, 12, '#b9bdca'); block(ctx, 292, 174, 16, 14, '#b9bdca'); ctx.fillStyle = '#f4a9bd'; ctx.beginPath(); ctx.arc(294, 172, 6, 0, 7); ctx.arc(306, 172, 6, 0, 7); ctx.fill(); face(300, 181);
+  ctx.font = '22px system-ui'; ctx.fillText('💕', 150, 112);
+}
 function drawNds(ctx){
   sky(ctx, '#5b7fbf', '#bfe3ff');
   const t = performance.now() / 500;
@@ -1436,7 +1552,7 @@ function buildGames(){
   GAMES.forEach((g, i) => {
     const card = document.createElement('div');
     card.className = 'card'; card.dataset.game = g.id; card.style.animationDelay = (i * .08) + 's';
-    card.innerHTML = `<canvas width="320" height="200"></canvas>${g.playable ? '<span class="badge play">🎉 Play now!</span>' : '<span class="badge">🚧 Coming soon</span>'}
+    card.innerHTML = `<canvas width="320" height="200"></canvas>${g.isNew ? '<span class="badge play">✨ New!</span>' : g.playable ? '<span class="badge play">🎉 Play now!</span>' : '<span class="badge">🚧 Coming soon</span>'}
       <div class="cinfo"><div><h3>${g.emoji} ${g.name}</h3><small>${g.tag}</small></div><button class="big green">▶ Play</button></div>`;
     g.ctx = card.querySelector('canvas').getContext('2d'); g.draw(g.ctx);
     card.onclick = () => g.playable ? Obby.play(g.id) : comingSoon(g);
@@ -2085,12 +2201,13 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null;
-    if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else buildObbyLevel(level);
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null;
+    if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
     else if (mode === 'build') [[-40,22,30,2.5],[45,28,-20,3],[0,35,-60,3.5],[-30,18,-40,2]].forEach(a => cloud(...a));
+    else if (mode === 'pets') [[-50,30,-40,3],[40,34,-10,3.5],[-20,38,40,3],[30,30,80,3.5],[-60,32,90,3]].forEach(a => cloud(...a));
     else if (mode !== 'tag' && mode !== 'obby') [[-30,10,40,2],[35,18,80,2.5],[-40,25,130,3],[30,8,20,1.5],[25,30,170,2.5],[-25,5,95,1.8],[0,40,230,4]].forEach(a => cloud(...a));
     // player + shadow
     model = buildPlayer(avatar); scene.add(model.g);
@@ -3020,7 +3137,7 @@ const Obby = (() => {
         continue;
       }
       const up = p.y + b.hh - B.y;
-      if (mode === 'tag' && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
+      if ((mode === 'tag' || mode === 'pets') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
       if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
       else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
     }
@@ -3034,6 +3151,7 @@ const Obby = (() => {
   }
   function step(dt){
     worldT += dt;
+    if (pt && pt.drive){ carStep(dt); return; }
     if (!SIM) movers.forEach(m => {
       const p = m.b.mesh.position, ox = p.x, oy = p.y, oz = p.z;
       p[m.axis] = m.base[m.axis] + Math.sin(worldT * m.speed + m.phase) * m.amp;
@@ -3078,7 +3196,7 @@ const Obby = (() => {
     if (SIM) return;
     if (mode === 'lava') return lavaChecks();
     if (mode === 'nds') return ndsChecks();
-    if (mode === 'build' || mode === 'tag'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'build' || mode === 'tag' || mode === 'pets'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -3580,6 +3698,9 @@ const Obby = (() => {
   function mySnap(){
     if (!running || !model) return null;
     const sp = Math.hypot(P.vx, P.vz), s = P.climbing ? 3 : !P.onGround && P.airT > .08 ? 2 : sp > .8 ? 1 : 0, r = v => Math.round(v * 100) / 100;
+    if (pt){ const q = pt.pet, C = pt.car, qs = q ? Math.hypot(q.vx, q.vz) : 0;
+      return [r(P.x), r(P.y), r(P.z), r(pt.drive ? C.yaw : P.face), pt.drive ? 4 : s, pt.drive ? 0 : r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0,
+        [r(C.x), r(C.z), r(C.yaw), pt.drive ? 1 : 0, r(C.v)], q ? [q.d.k, q.d.c, q.stage, r(q.x), r(q.y), r(q.z), r(q.face), {eat: 2, sleep: 3, happy: 4, car: 5}[q.act] || (qs > .6 ? 1 : 0), q.d.n, r(qs)] : 0]; }
     return [r(P.x), r(P.y), r(P.z), r(P.face), s, r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0];
   }
   function mpRoster(){ return [{uid: 'H', ...myLook()}, ...[...mp.guests.values()].filter(g => g.ready).map(g => ({uid: g.uid, name: g.name, av: g.av}))]; }
@@ -3625,12 +3746,34 @@ const Obby = (() => {
     const e = own(EMOTES, st[6]) ? st[6] : '';
     if (e && (e !== E.e || Math.abs(n(7) - E.et) > .3)) E.et = n(7);
     E.e = e;
+    const cr = st[8], pr = st[9], num = v => { v = +v; return isFinite(v) ? Math.max(-1e4, Math.min(1e4, v)) : 0; };
+    E.car = Array.isArray(cr) && cr.length >= 4 ? [num(cr[0]), num(cr[1]), num(cr[2]), cr[3] ? 1 : 0, num(cr[4])] : null;
+    E.pet = Array.isArray(pr) && typeof pr[0] === 'string' && own(PET_KINDS, pr[0]) ? {k: pr[0], c: Math.max(0, Math.min(2, pr[1] | 0)), st: Math.max(0, Math.min(3, pr[2] | 0)), x: num(pr[3]), y: num(pr[4]), z: num(pr[5]), f: num(pr[6]), a: Math.max(0, Math.min(5, pr[7] | 0)), n: (petNameClean(pr[8]) && !petNameBad(pr[8]) ? petNameClean(pr[8]) : 'Pet'), sp: num(pr[9])} : null;
     if (E.fresh){ E.x = E.tx; E.y = E.ty; E.z = E.tz; E.face = E.tf; E.fresh = false; }
   }
-  function mpRemoveEnt(uid){ const E = mp.ents.get(uid); if (!E) return; if (E.model && E.scene){ E.scene.remove(E.model.g); E.scene.remove(E.sh); } mp.ents.delete(uid); }
+  function mpPetsEnt(E, dt, on){
+    on = on && mode === 'pets' && E.m === 'pets';
+    if (E.carM) E.carM.g.visible = on && !!E.car;
+    if (E.petM) E.petM.m.g.visible = on && !!E.pet;
+    if (!on) return;
+    const k = Math.min(1, dt * 12), wrap = d => Math.atan2(Math.sin(d), Math.cos(d));
+    if (E.car){ const c = E.car;
+      if (!E.carM){ const L = mpLook(E.uid), col = L && L.av && /^#[0-9a-f]{6}$/i.test(L.av.shirt) ? L.av.shirt : '#3a86ff'; E.carM = buildCar(col); E.carM.x = c[0]; E.carM.z = c[1]; E.carM.yaw = c[2]; scene.add(E.carM.g); }
+      const C = E.carM; if (Math.hypot(c[0] - C.x, c[1] - C.z) > 10){ C.x = c[0]; C.z = c[1]; }
+      C.x += (c[0] - C.x) * k; C.z += (c[1] - C.z) * k; C.yaw += wrap(c[2] - C.yaw) * k;
+      C.g.position.set(C.x, 0, C.z); C.g.rotation.y = C.yaw; C.wheels.forEach(w => { w.sp.rotation.x += c[4] * dt / .45; });
+      if (E.s === 4){ const cs = Math.cos(C.yaw), sn = Math.sin(C.yaw); E.x = C.x + cs * .5 - sn * .35; E.z = C.z - sn * .5 - cs * .35; E.y = .33; E.face = C.yaw; E.model.g.position.set(E.x, E.y, E.z); E.model.g.rotation.y = E.face; } }
+    if (E.pet){ const p = E.pet, key = p.k + p.c + p.st + p.n;
+      if (!E.petM || E.petM.key !== key){ if (E.petM) scene.remove(E.petM.m.g); const m = buildPet(p.k, p.c, p.st), tag = label(p.n, 'rgba(255,111,181,.85)', '#fff', 220);
+        tag.scale.multiplyScalar(.5); tag.position.y = 1.75 * m.base + .45; m.g.add(tag); scene.add(m.g); E.petM = {m, key, x: p.x, y: p.y, z: p.z, f: p.f}; }
+      const Q = E.petM; if (Math.hypot(p.x - Q.x, p.z - Q.z) > 8){ Q.x = p.x; Q.z = p.z; }
+      Q.x += (p.x - Q.x) * k; Q.y += (p.y - Q.y) * k; Q.z += (p.z - Q.z) * k; Q.f += wrap(p.f - Q.f) * k;
+      Q.m.g.position.set(Q.x, Q.y, Q.z); Q.m.g.rotation.y = Q.f; animPet(Q.m, p.a, p.sp, dt, worldT); }
+  }
+  function mpRemoveEnt(uid){ const E = mp.ents.get(uid); if (!E) return; if (E.model && E.scene){ E.scene.remove(E.model.g); E.scene.remove(E.sh); if (E.carM) E.scene.remove(E.carM.g); if (E.petM) E.scene.remove(E.petM.m.g); } mp.ents.delete(uid); }
   function mpBuildEnt(E){
     const L = mpLook(E.uid); if (!L) return false;
-    E.model = buildPlayer(L.av); E.pack = L.av.anim || 'default'; scene.add(E.model.g);
+    E.model = buildPlayer(L.av); E.pack = L.av.anim || 'default'; scene.add(E.model.g); E.carM = E.petM = null;
     const s = label(L.name, L.bot ? 'rgba(29,35,64,.75)' : 'rgba(46,194,126,.92)'); s.position.y = 3.75; E.model.g.add(s);
     E.sh = new THREE.Mesh(new THREE.CircleGeometry(.6, 20), new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: .25, depthWrite: false})); E.sh.rotation.x = -Math.PI / 2; scene.add(E.sh);
     E.scene = scene; E.fresh = true; return true;
@@ -3644,7 +3787,7 @@ const Obby = (() => {
       const show = E.m === mode && now - E.seen < 4000 && !(E.uid[0] === 'b' && !(tg && tg.remote));
       if (show && E.scene !== scene && !mpBuildEnt(E)) continue;
       if (!E.model || E.scene !== scene) continue;
-      E.model.g.visible = E.sh.visible = show; if (!show) continue;
+      E.model.g.visible = E.sh.visible = show; mpPetsEnt(E, dt, show); if (!show) continue;
       const k = Math.min(1, dt * 12);
       if (Math.hypot(E.tx - E.x, E.ty - E.y, E.tz - E.z) > 8){ E.x = E.tx; E.y = E.ty; E.z = E.tz; }
       E.x += (E.tx - E.x) * k; E.y += (E.ty - E.y) * k; E.z += (E.tz - E.z) * k;
@@ -3652,8 +3795,9 @@ const Obby = (() => {
       const M = E.model; M.g.position.set(E.x, E.y, E.z); M.g.rotation.y = E.face;
       E.walk += dt * E.v * 1.3;
       if (E.e){ E.et += dt; if (E.et > EMOTES[E.e].dur) E.e = ''; }
-      const st = {state: ['idle', 'walk', 'jump', 'climb'][E.s] || 'idle', t: worldT + E.uid.length, ph: E.walk, sp: Math.min(1, E.v / 5), air: E.s === 2 ? .3 : 0, jumped: E.s === 2};
-      applyPose(dt, E.e ? emotePose(E.e, E.et) : animPose(E.pack, st), M);
+      const st = {state: ['idle', 'walk', 'jump', 'climb', 'idle'][E.s] || 'idle', t: worldT + E.uid.length, ph: E.walk, sp: Math.min(1, E.v / 5), air: E.s === 2 ? .3 : 0, jumped: E.s === 2};
+      applyPose(dt, E.s === 4 ? SIT_POSE : E.e ? emotePose(E.e, E.et) : animPose(E.pack, st), M);
+      if (E.s === 4 && E.carM && E.car){ mpPetsEnt(E, 0, true); E.sh.visible = false; continue; }
       const top = surfaceBelow(E.x, E.y, E.z); E.sh.visible = top > -1e8; if (E.sh.visible) E.sh.position.set(E.x, top + .03, E.z);
     }
   }
@@ -3679,7 +3823,7 @@ const Obby = (() => {
       mpNote('👋 ' + g.name + ' joined!'); mpRender(); return;
     }
     if (!g.ready) return;
-    if (d.t === 'me'){ g.m = typeof d.m === 'string' ? d.m : null; g.st = Array.isArray(d.st) ? d.st.slice(0, 8) : null; mpEnt(g.uid, g.m, g.st); if (d.o) mpApplyOps(d.o, g.conn); }
+    if (d.t === 'me'){ g.m = typeof d.m === 'string' ? d.m : null; g.st = Array.isArray(d.st) ? d.st.slice(0, 10) : null; mpEnt(g.uid, g.m, g.st); if (d.o) mpApplyOps(d.o, g.conn); }
     else if (d.t === 'tagreq') mpTagReq(g, d);
     else if (d.t === 'getblocks'){ if (running && bw && mode === 'build') mpSendTo(g.conn, {t: 'blocks', c: bwSerialize()}); }
     else if (d.t === 'bye') mpDrop(g, 'left');
@@ -3735,7 +3879,7 @@ const Obby = (() => {
     if (!mp.on) return;
     const hm = d.hm || null, hd = hostLvl(hm, d.hd); if (hm !== mp.hmode || hd !== mp.hdiff){ mp.hmode = hm; mp.hdiff = hd; mpRender(); }
     const seen = new Set();
-    if (Array.isArray(d.p)) d.p.slice(0, 16).forEach(e => { if (!Array.isArray(e) || typeof e[0] !== 'string' || e[0] === mp.me || !/^(H|g\d{1,4}|b[0-3])$/.test(e[0])) return; seen.add(e[0]); mpEnt(e[0], e[1], e.slice(2, 10)); });
+    if (Array.isArray(d.p)) d.p.slice(0, 16).forEach(e => { if (!Array.isArray(e) || typeof e[0] !== 'string' || e[0] === mp.me || !/^(H|g\d{1,4}|b[0-3])$/.test(e[0])) return; seen.add(e[0]); mpEnt(e[0], e[1], e.slice(2, 12)); });
     for (const E of mp.ents.values()) if (!seen.has(E.uid)) E.m = null;
     if (d.tg && tg && tg.remote && running && mode === 'tag' && tg.phase !== 'end') mpTagWire(d.tg);
     if (d.o) mpApplyOps(d.o);
@@ -3949,6 +4093,7 @@ const Obby = (() => {
     if (mp.host){ clearTimeout(mp.homeT); mp.hmode = mode; if (!(mode === 'lava' && !diff)) mpSend({t: 'go', m: mode, d: diff || null}); return; }
     if (mode === 'build') mpSendTo(mp.hconn, {t: 'getblocks'});
     if (mode === 'tag'){ const n = +mp.me.slice(1) || 1; P.x = (n % 2 ? 1 : -1) * 4 * Math.ceil(n / 2); }
+    if (mode === 'pets' && pt){ const n = (+mp.me.slice(1) || 1) % 6 || 6; pt.car.z += 6.5 * n; P.x = 5; P.z = pt.car.z; if (pt.pet){ pt.pet.x = P.x - 1.5; pt.pet.z = P.z - 1.5; } }
   }
   function mpOnStop(){ if (mp.on && mp.host){ clearTimeout(mp.homeT); mp.homeT = setTimeout(() => { if (!running && mp.on){ mp.hmode = null; mpSend({t: 'home'}); mpRender(); } }, 400); } }
   /* --- home screen panel --- */
@@ -3997,7 +4142,629 @@ const Obby = (() => {
   mpBindUI();
 
 
+  /* ---------- Adopt a Pet: drive to the shelter, name + adopt a pet, raise it at home ---------- */
+  // 100% original: our own town, shelter, low-poly pets, names and UI.
+  const PET_KEY = 'rubloxPets', PET_MAX = 6;
+  const PET_KINDS = {
+    mouse: {name: 'Mouse', emoji: '🐭', base: .82, cols: [['Silver', '#b9bdca', '#f4a9bd'], ['Snowy', '#f6f3ee', '#f7a1b8'], ['Cocoa', '#9a6a45', '#f0b49a']]},
+    cat:   {name: 'Cat',   emoji: '🐱', base: .95, cols: [['Ginger', '#f29a3c', '#ffe2bf'], ['Midnight', '#3d4256', '#d6dbea'], ['Cloud', '#ece6dd', '#b7a493']]},
+    dog:   {name: 'Dog',   emoji: '🐶', base: 1.08, cols: [['Honey', '#d9a057', '#f7e3c2'], ['Cocoa', '#7a4b2e', '#dcb48f'], ['Spotty', '#f6f4ef', '#2f2f35']]},
+  };
+  const PET_ORDER = ['mouse', 'cat', 'dog'];
+  const STAGES = [{n: 'Baby', e: '🍼', xp: 0, s: .62, head: 1.3}, {n: 'Kid', e: '🧒', xp: 80, s: .78, head: 1.16}, {n: 'Teen', e: '😎', xp: 220, s: .92, head: 1.06}, {n: 'Adult', e: '⭐', xp: 450, s: 1.08, head: 1}];
+  const PET_NAMES = ['Biscuit','Pickles','Mochi','Peanut','Sprinkles','Waffles','Noodle','Pepper','Coco','Bubbles','Ziggy','Marshmallow','Nugget','Pudding','Daisy','Rocket',
+    'Sunny','Bean','Pip','Maple','Cupcake','Taco','Luna','Toffee','Jellybean','Scout','Pumpkin','Dottie','Muffin','Button','Clover','Ollie','Waffle','Pebbles','Snickerdoodle','Fudge','Kiwi','Bandit','Hazelnut','Nibbles'];
+  // strong words are blocked anywhere in the name; short/common ones only as a whole word (so "Button", "Pickles", "Peacock" stay OK)
+  const BAD = ['fuck','fuk','shit','bitch','cunt','pussy','slut','whore','nigg','nigr','retard','porn','penis','vagina','boob','nazi','hitler'];
+  const BAD_WORD = ['ass','sex','sexy','fat','gun','pee','dick','cock','fag','kkk','rape','damn','crap','piss','bastard','idiot','stupid','dumb','loser','ugly','hate','kill','die','poop','butt','fart','weed','drug','beer'];
+  const BAD_END = ['', 's', 'y', 'ie', 'head', 'face', 'hole', 'brain'];
+  function petNameBad(n){
+    const s = String(n).toLowerCase().replace(/[@4]/g, 'a').replace(/[3]/g, 'e').replace(/[1!|]/g, 'i').replace(/[0]/g, 'o').replace(/[5$]/g, 's').replace(/[7]/g, 't');
+    const dd = x => x.replace(/(.)\1+/g, '$1'), flat = dd(s.replace(/[^a-z]/g, '')), words = s.split(/[^a-z]+/).filter(Boolean);
+    const joined = s.replace(/[^a-z]/g, '');
+    return BAD.some(w => flat.includes(dd(w))) ||
+      [...words, joined].some(w => BAD_WORD.some(b => BAD_END.some(e => w === b + e || dd(w) === dd(b + e))));
+  }
+  function petNameClean(n){ let s = String(n || '').replace(/[^A-Za-z0-9 '\-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 14); return s ? s[0].toUpperCase() + s.slice(1) : ''; }
+  const stageOf = xp => { let i = 0; STAGES.forEach((S, k) => { if (xp >= S.xp) i = k; }); return i; };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const PLACES = {home: [-4, -46], car0: [8, -47], lot: [8, 50], desk: [0, 63.2], door: [0, 68.6], pens: [[-9, 78], [0, 78], [9, 78]], toy: [-4, -45.2], bowl: [-12, -43.5], bed: [-14.5, -50],
+    gate: [-2, -37.6], shelter: [0, 70], walk: [[-30, -30], [-34, 0], [-8, 1.5]]};
+  function petsLoad(){
+    const r = load(PET_KEY, null), o = r && typeof r === 'object' ? r : {};
+    const pets = (Array.isArray(o.pets) ? o.pets : []).slice(0, PET_MAX).filter(p => p && PET_KINDS[p.k]).map(p => ({
+      k: p.k, c: clamp(p.c | 0, 0, 2), n: petNameClean(p.n) && !petNameBad(p.n) ? petNameClean(p.n) : 'Buddy', xp: clamp(+p.xp || 0, 0, 1e6),
+      f: clamp(isFinite(+p.f) ? +p.f : 80, 0, 100), u: clamp(isFinite(+p.u) ? +p.u : 80, 0, 100), e: clamp(isFinite(+p.e) ? +p.e : 80, 0, 100), b: +p.b || Date.now()}));
+    const s = {v: 1, pets, a: clamp(o.a | 0, 0, Math.max(0, pets.length - 1)), flow: ['shelter', 'choose', 'home'].includes(o.flow) ? o.flow : null,
+      pend: petNameClean(o.pend), tut: clamp(o.tut | 0, 0, 3), t: +o.t || Date.now()};
+    if (!pets.length && s.flow !== 'choose') s.flow = 'shelter';
+    if (s.flow === 'choose' && !s.pend) s.flow = 'shelter';
+    if (s.flow === 'home' && !pets.length) s.flow = 'shelter';
+    // time away: pets get a little hungry/bored, but never sad from being away
+    const away = clamp((Date.now() - s.t) / 1000, 0, 7 * 864e2);
+    pets.forEach(p => { p.f = Math.max(Math.min(p.f, 25), p.f - away * .02); p.u = Math.max(Math.min(p.u, 25), p.u - away * .025); p.e = Math.max(Math.min(p.e, 25), p.e - away * .015); });
+    return s;
+  }
+  function petsSave(){ if (!pt) return; pt.s.t = Date.now(); save(PET_KEY, pt.s); pt.saveT = 5; }
+  function fmat(c){ const k = 'f' + c; if (!mats[k]) mats[k] = new THREE.MeshLambertMaterial({color: c, flatShading: true}); return mats[k]; }
+
+  /* --- low-poly pets (built from simple shapes, our own designs) --- */
+  function buildPet(kind, ci, stage){
+    const K = PET_KINDS[kind] || PET_KINDS.dog, col = K.cols[ci] || K.cols[0], main = col[1], acc = col[2], S = STAGES[stage] || STAGES[0];
+    const g = new THREE.Group(), inner = new THREE.Group(); g.add(inner);
+    const sph = (r, c, x, y, z, sx = 1, sy = 1, sz = 1, par = inner, seg = 8) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, seg, Math.max(4, seg - 2)), fmat(c)); m.position.set(x, y, z); m.scale.set(sx, sy, sz); par.add(m); return m; };
+    const box = (w, h, d, c, x, y, z, par = inner) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), fmat(c)); m.position.set(x, y, z); par.add(m); return m; };
+    const cyl = (r1, r2, h, c, x, y, z, par = inner, seg = 6) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, seg), fmat(c)); m.position.set(x, y, z); par.add(m); return m; };
+    const grp = (x, y, z, par = inner) => { const o = new THREE.Group(); o.position.set(x, y, z); par.add(o); return o; };
+    const eye = (par, x, y, z, r, iris) => { if (iris) sph(r * 1.15, iris, x, y, z - r * .2, 1, 1, .55, par, 6); sph(r * (iris ? .7 : 1), '#1d2340', x, y, z + (iris ? r * .2 : 0), 1, 1, .6, par, 6); sph(r * .33, '#ffffff', x + r * .3, y + r * .35, z + r * .5, 1, 1, 1, par, 4); };
+    const legs = [], ears = [], tailSegs = []; let head, tail, body, neck;
+    if (kind === 'dog'){
+      body = sph(.5, main, 0, .8, 0, 1, .85, 1.35);
+      if (ci === 2) [[.32, .95, .1, .17], [-.27, .9, -.3, .15], [.06, 1.16, -.36, .12], [-.33, .78, .3, .12], [.2, .72, -.48, .1]].forEach(([x, y, z, r]) => sph(r, acc, x, y, z, 1, .45, 1, inner, 6));
+      else sph(.3, acc, 0, .72, .45, 1, .9, .7);
+      head = grp(0, 1.2, .62); sph(.38, main, 0, 0, 0, 1, .95, 1, head);
+      sph(.2, acc, 0, -.1, .3, 1.1, .8, 1.1, head); sph(.075, '#1d2340', 0, -.02, .52, 1.2, 1, 1, head, 6);
+      sph(.06, '#ff7a8f', 0, -.2, .42, 1, .5, 1, head, 6);   // little tongue
+      eye(head, .15, .1, .31, .065); eye(head, -.15, .1, .31, .065);
+      if (ci === 2) sph(.13, acc, .17, .12, .26, 1, 1, .5, head, 6);   // eye patch
+      [-1, 1].forEach(k => { const e = grp(k * .31, .15, -.02, head); box(.1, .42, .24, ci === 2 ? acc : shade(main, -30), 0, -.19, 0, e); e.rotation.z = k * .38; ears.push(e); });
+      [[.22, .4], [-.22, .4], [.22, -.42], [-.22, -.42]].forEach(([x, z]) => { const l = grp(x, .6, z); cyl(.1, .09, .6, main, 0, -.3, 0, l); sph(.11, acc, 0, -.57, .05, 1, .6, 1.3, l, 6); legs.push(l); });
+      tail = grp(0, .97, -.66); cyl(.05, .08, .52, main, 0, .24, 0, tail); sph(.075, acc, 0, .5, 0, 1, 1, 1, tail, 6); tail.rotation.x = -.7;
+      neck = [0, 1.0, .5];
+    } else if (kind === 'cat'){
+      body = sph(.45, main, 0, .66, 0, .85, .8, 1.38);
+      sph(.25, acc, 0, .6, .42, .9, .9, .6);
+      if (ci === 0) [-.2, 0, .2].forEach(z => box(.5, .05, .1, shade(main, -35), 0, 1.0, z - .1));   // tabby stripes
+      head = grp(0, 1.03, .53); sph(.36, main, 0, 0, 0, 1.06, .92, .95, head);
+      sph(.14, acc, 0, -.11, .28, 1.35, .8, .8, head, 6); sph(.045, '#ff8fa3', 0, -.04, .37, 1.2, .8, 1, head, 4);
+      eye(head, .14, .06, .28, .075, ci === 1 ? '#ffd23f' : '#3cc47a'); eye(head, -.14, .06, .28, .075, ci === 1 ? '#ffd23f' : '#3cc47a');
+      [-1, 1].forEach(k => { const e = grp(k * .19, .26, 0, head); const c = new THREE.Mesh(new THREE.ConeGeometry(.14, .3, 4), fmat(main)); c.position.y = .1; c.rotation.y = Math.PI / 4; e.add(c);
+        const c2 = new THREE.Mesh(new THREE.ConeGeometry(.08, .18, 4), fmat('#ff9fb4')); c2.position.set(0, .07, .05); c2.rotation.y = Math.PI / 4; e.add(c2); e.rotation.z = -k * .18; ears.push(e);
+        [-.06, .04].forEach(dy => { const w = box(.34, .015, .015, '#ffffff', k * .25, -.1 + dy, .3, head); w.rotation.z = k * dy * 3; }); });
+      [[.19, .36], [-.19, .36], [.19, -.38], [-.19, -.38]].forEach(([x, z]) => { const l = grp(x, .46, z); cyl(.075, .07, .46, main, 0, -.23, 0, l); sph(.085, acc, 0, -.44, .03, 1, .6, 1.2, l, 6); legs.push(l); });
+      tail = grp(0, .78, -.58); cyl(.05, .055, .5, main, 0, .25, 0, tail); tail.rotation.x = -.95;
+      const t2 = grp(0, .5, 0, tail); cyl(.045, .05, .36, main, 0, .18, 0, t2); sph(.06, acc, 0, .37, 0, 1, 1, 1, t2, 6); t2.rotation.x = .9; tailSegs.push(t2);
+      neck = [0, .84, .4];
+    } else {
+      body = sph(.5, main, 0, .5, -.05, .9, .78, 1.15);
+      sph(.3, shade(main, 22), 0, .38, .2, .9, .7, .8);
+      head = grp(0, .7, .48); sph(.3, main, 0, 0, 0, .95, .9, 1.15, head);
+      const sn = new THREE.Mesh(new THREE.ConeGeometry(.15, .3, 6), fmat(main)); sn.rotation.x = Math.PI / 2; sn.position.set(0, -.05, .36); head.add(sn);
+      sph(.055, acc, 0, -.05, .52, 1, 1, 1, head, 6);
+      eye(head, .13, .08, .24, .058); eye(head, -.13, .08, .24, .058);
+      [-1, 1].forEach(k => { const e = grp(k * .24, .27, -.04, head);
+        const d1 = new THREE.Mesh(new THREE.CylinderGeometry(.24, .24, .05, 12), fmat(main)); d1.rotation.x = Math.PI / 2; e.add(d1);
+        const d2 = new THREE.Mesh(new THREE.CylinderGeometry(.16, .16, .05, 12), fmat(acc)); d2.rotation.x = Math.PI / 2; d2.position.z = .025; e.add(d2); ears.push(e);
+        [-.04, .04].forEach(dy => { const w = box(.3, .012, .012, '#ffffff', k * .2, -.06 + dy, .4, head); w.rotation.z = k * dy * 3; }); });
+      [[.22, .28], [-.22, .28], [.22, -.32], [-.22, -.32]].forEach(([x, z]) => { const l = grp(x, .2, z); sph(.1, acc, 0, -.12, .04, 1, .6, 1.3, l, 6); legs.push(l); });
+      tail = grp(0, .4, -.6); let par = tail;
+      for (let i = 0; i < 4; i++){ const s = grp(0, 0, i ? -.27 : 0, par); const c = cyl(.03, .036, .3, acc, 0, 0, -.14, s, 5); c.rotation.x = Math.PI / 2; s.rotation.x = -.15; tailSegs.push(s); par = s; }
+      neck = [0, .62, .34];
+    }
+    if (stage >= 2){ const c = new THREE.Mesh(new THREE.TorusGeometry(kind === 'dog' ? .27 : .22, .045, 6, 14), fmat(stage === 3 ? '#ff4d5e' : '#3a86ff')); c.position.set(...neck); c.rotation.x = Math.PI / 2 - .35; inner.add(c);
+      if (stage === 3){ const tg2 = new THREE.Mesh(new THREE.CylinderGeometry(.08, .08, .03, 10), new THREE.MeshLambertMaterial({color: '#ffd23f', emissive: '#7a5a00'})); tg2.position.set(neck[0], neck[1] - .2, neck[2] + .17); tg2.rotation.x = Math.PI / 2; inner.add(tg2); } }
+    const base = K.base * S.s; inner.scale.setScalar(base); head.scale.setScalar(S.head);
+    const sh = new THREE.Mesh(new THREE.CircleGeometry(.55, 16), new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: .22, depthWrite: false})); sh.rotation.x = -Math.PI / 2; sh.position.y = .03; sh.scale.setScalar(base * (kind === 'mouse' ? 1 : 1.25)); g.add(sh);
+    return {g, inner, body, by: body.scale.y, head, legs, ears, tail, tailSegs, kind, ci, stage, base, ph: Math.random() * 6, walk: 0};
+  }
+  function animPet(M, act, sp, dt, t){
+    const moving = sp > .6 && act !== 3 && act !== 5, T = t + M.ph;
+    M.walk += dt * sp * 2.4;
+    M.inner.rotation.set(0, 0, 0); M.inner.position.set(0, 0, 0);
+    M.legs.forEach((l, i) => { const ph = i === 0 || i === 3 ? 0 : Math.PI; l.rotation.x = moving ? Math.sin(M.walk * 2.6 + ph) * .75 : act === 3 ? (i < 2 ? -1.3 : 1.3) : act === 5 && i >= 2 ? -1.2 : 0; });
+    if (moving) M.inner.position.y = Math.abs(Math.sin(M.walk * 2.6)) * .07 * M.base;
+    M.body.scale.y = M.by * (1 + Math.sin(T * (act === 3 ? 1.4 : 2.6)) * .03);
+    const wag = act === 4 || moving ? 15 : 6;
+    if (M.kind === 'dog') M.tail.rotation.z = Math.sin(T * wag) * .55;
+    else if (M.kind === 'cat'){ M.tail.rotation.z = Math.sin(T * (act === 4 ? 6 : 1.4)) * .35; M.tailSegs[0].rotation.x = .9 + Math.sin(T * 1.1) * .25; }
+    else M.tailSegs.forEach((s, i) => { s.rotation.y = Math.sin(T * 2.2 - i * .7) * .28; });
+    M.head.rotation.set(0, Math.sin(T * .6) * .35, 0);
+    const tw = (T * .3) % 1 < .06;   // a little ear twitch now and then
+    M.ears.forEach((e, i) => { e.rotation.x = tw ? Math.sin(T * 30 + i) * .3 : 0; });
+    if (act === 2){ M.head.rotation.set(.6 + Math.sin(T * 12) * .12, 0, 0); }
+    else if (act === 3){ M.inner.position.y = -.22 * M.base; M.head.rotation.set(.45, .3, .25); }
+    else if (act === 4){ M.inner.position.y = Math.abs(Math.sin(T * 9)) * .4 * M.base; M.head.rotation.set(-.2, 0, Math.sin(T * 9) * .2); }
+    else if (act === 5){ M.inner.rotation.x = -.38; M.inner.position.y = .12 * M.base; }
+  }
+
+  /* --- the car (an open-top convertible so you can see who's driving) --- */
+  function buildCar(color){
+    const g = new THREE.Group(), bx = (w, h, d, c, x, y, z, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m || fmat(c)); o.position.set(x, y, z); g.add(o); return o; };
+    bx(2.3, .72, 4.3, color, 0, .78, 0); bx(2.34, .18, 4.34, shade(color, -30), 0, .5, 0);
+    bx(2.1, .14, 1.3, shade(color, 18), 0, 1.2, 1.4); bx(2.1, .14, .9, shade(color, 18), 0, 1.2, -1.7);
+    bx(.5, .02, 1.3, '#ffffff', 0, 1.28, 1.4);
+    [-1, 1].forEach(k => { bx(.8, .3, .8, '#fff3e0', k * .5, 1.2, -.4); bx(.8, .75, .18, '#fff3e0', k * .5, 1.55, -.85); });
+    const ws = bx(2.1, .62, .07, null, 0, 1.5, .62, new THREE.MeshLambertMaterial({color: '#bfe6ff', transparent: true, opacity: .45})); ws.rotation.x = -.35;
+    const sw = new THREE.Mesh(new THREE.TorusGeometry(.2, .04, 6, 14), fmat('#2d2d2d')); sw.position.set(.5, 1.5, .38); sw.rotation.x = -.9; g.add(sw);
+    bx(.4, .16, .06, '#fff6a8', .72, .92, 2.16, new THREE.MeshLambertMaterial({color: '#fff6a8', emissive: '#c9b400'})); bx(.4, .16, .06, '#fff6a8', -.72, .92, 2.16, new THREE.MeshLambertMaterial({color: '#fff6a8', emissive: '#c9b400'}));
+    bx(.36, .14, .06, '#ff4d5e', .75, .92, -2.16); bx(.36, .14, .06, '#ff4d5e', -.75, .92, -2.16);
+    const wheels = [];
+    [[1.1, 1.35], [-1.1, 1.35], [1.1, -1.35], [-1.1, -1.35]].forEach(([x, z], i) => { const w = new THREE.Group(); w.position.set(x, .45, z); g.add(w);
+      const sp = new THREE.Group(); w.add(sp); const t = new THREE.Mesh(new THREE.CylinderGeometry(.45, .45, .36, 12), fmat('#2b2b33')); t.rotation.z = Math.PI / 2; sp.add(t);
+      const h = new THREE.Mesh(new THREE.BoxGeometry(.38, .5, .12), fmat('#e8ecf5')); sp.add(h); wheels.push({w, sp, front: i < 2}); });
+    return {g, wheels};
+  }
+  function signTex(text, bg, fg, w = 512, h = 128){
+    const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+    x.fillStyle = bg; x.fillRect(0, 0, w, h); x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 8; x.strokeRect(8, 8, w - 16, h - 16);
+    x.fillStyle = fg; x.font = '900 ' + Math.round(h * .45) + 'px Nunito, system-ui, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text, w / 2, h / 2 + 4, w - 40);
+    const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return new THREE.MeshLambertMaterial({map: t});
+  }
+
+  /* --- the town --- */
+  let pt = null;
+  function deco(o){ scene.add(o); return o; }
+  function dbox(x, y, z, w, h, d, c, m){ const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m || fmat(c)); o.position.set(x, y, z); return deco(o); }
+  function tree(x, z, s = 1){ plat(x, 2 * s, z, .7 * s, .7 * s, '#8d5524', 2 * s); const c = new THREE.Mesh(new THREE.IcosahedronGeometry(1.6 * s, 0), fmat(Math.random() < .5 ? '#2ec27e' : '#3fb86b')); c.position.set(x, 3.2 * s, z); deco(c);
+    const c2 = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1 * s, 0), fmat('#5fd068')); c2.position.set(x + .5 * s, 4.1 * s, z - .3 * s); deco(c2); }
+  function house(x, z, w, d, wall, roof, face){   // face: 1 = door on +z side, -1 = on -z side
+    plat(x, 4.2, z, w, d, wall, 4.2);
+    const r = new THREE.Mesh(new THREE.ConeGeometry(Math.hypot(w, d) / 2 + .4, 2.6, 4), fmat(roof)); r.rotation.y = Math.PI / 4; r.scale.set(w / Math.hypot(w, d) * 1.41, 1, d / Math.hypot(w, d) * 1.41); r.position.set(x, 5.5, z); deco(r);
+    const fz = z + face * (d / 2 + .04);
+    dbox(x, 1.3, fz, 1.5, 2.6, .1, '#8d5524'); dbox(x + .5, 1.3, fz + face * .05, .14, .14, .06, '#ffd23f');
+    [-1, 1].forEach(k => { dbox(x + k * w * .3, 2.4, fz, 1.5, 1.3, .1, '#bfe6ff'); dbox(x + k * w * .3, 2.4, fz + face * .02, 1.6, .1, .1, '#ffffff'); });
+  }
+  function fence(x0, z0, x1, z1, c = '#ffffff'){ const w = Math.abs(x1 - x0) || .3, d = Math.abs(z1 - z0) || .3; plat((x0 + x1) / 2, .9, (z0 + z1) / 2, w, d, c, .9); }
+  function flagPole(x, z, col){
+    const g = new THREE.Group(); g.position.set(x, 0, z);
+    const p = new THREE.Mesh(new THREE.BoxGeometry(.16, 3.4, .16), fmat('#ffffff')); p.position.y = 1.7; g.add(p);
+    const f = new THREE.Mesh(new THREE.BoxGeometry(1.3, .8, .06), new THREE.MeshLambertMaterial({color: col, emissive: shade(col, -60)})); f.position.set(.66, 3, 0); g.add(f);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(2.2, .12, 6, 28), new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: .7})); ring.rotation.x = Math.PI / 2; ring.position.y = .08; g.add(ring);
+    return deco(g);
+  }
+  function buildPets(){
+    heartMat = zzzMat = null;
+    scene.background = new THREE.Color('#9ddcff'); scene.fog = new THREE.Fog('#9ddcff', 70, 190);
+    const grass = canvasTex(64, 64, c => { c.fillStyle = '#7ccf6a'; c.fillRect(0, 0, 64, 64); for (let i = 0; i < 120; i++){ c.fillStyle = ['#6cc35c', '#8bd979', '#74c763'][i % 3]; c.fillRect((i * 37) % 64, (i * 23 + (i >> 3)) % 64, 3, 3); } });
+    grass.wrapS = grass.wrapT = THREE.RepeatWrapping; grass.repeat.set(50, 56);
+    const gm = new THREE.MeshLambertMaterial({map: grass}), gs = fmat('#5aa24c');
+    const G0 = plat(0, 0, 5, 200, 224, '#7ccf6a', 2, {material: [gs, gs, gm, gs, gs, gs], noEdge: true}); G0.ground = true;
+    // edge hedges so nobody drives off the world
+    [[0, 116, 200, 2], [0, -106, 200, 2], [100, 5, 2, 224], [-100, 5, 2, 224]].forEach(([x, z, w, d]) => plat(x, 2, z, w, d, '#2f9a55', 2));
+    // roads (flat paint, not solid)
+    const asphalt = fmat('#555a66'), line = fmat('#ffd23f'), walkM = fmat('#d9d4c7');
+    dbox(8, .02, 0, 8, .04, 104, null, asphalt);      // main road: home → shelter
+    dbox(0, .025, 6, 104, .04, 8, null, asphalt);      // cross street
+    dbox(3, .03, 50, 34, .04, 14, null, fmat('#60656f'));   // shelter parking lot
+    dbox(8, .015, -47, 9, .04, 10, null, asphalt);     // home driveway
+    for (let z = -44; z < 44; z += 6) if (Math.abs(z - 6) > 5) dbox(8, .045, z, .3, .02, 3, null, line);
+    for (let x = -50; x < 52; x += 6) if (Math.abs(x - 8) > 5) dbox(x, .045, 6, 3, .02, .3, null, line);
+    for (let x = -10; x <= 16; x += 4) dbox(x, .065, 50, .2, .02, 4.6, null, fmat('#ffffff'));   // parking lines
+    // sidewalk for the walking loop
+    [[-17, -30, 26, 2.2], [-32, -15, 2.2, 32], [-21, 1.5, 24, 2.2], [-6, -18, 2.2, 38]].forEach(([x, z, w, d]) => dbox(x, .03, z, w, .05, d, null, walkM));
+    // home: house, yard, fence, care spots
+    house(-6, -64, 14, 9, '#ffb3c7', '#ff4d5e', 1);
+    dbox(-6, 6.9, -66, 1, 1.6, 1, '#c97b63');   // chimney
+    fence(-19, -59.5, -19, -36.5); fence(-19, -36.5, -4.2, -36.5); fence(.2, -36.5, 3.2, -36.5); fence(3.2, -36.5, 3.2, -40);
+    const yardSign = new THREE.Mesh(new THREE.BoxGeometry(3.4, .9, .12), signTex('🏠 My Home', '#ff6fb5', '#ffffff', 384, 100)); yardSign.position.set(-9.5, 2.6, -36.4); deco(yardSign); dbox(-9.5, 1.1, -36.4, .14, 2.2, .14, '#ffffff');
+    // toy box, food bowl, pet bed, leash post
+    plat(-4, .9, -46.4, 1.8, 1.1, '#3a86ff', .9); dbox(-4, .95, -46.4, 1.9, .1, 1.2, '#ffd23f');
+    [['#ff4d5e', -4.5], ['#2ec27e', -4], ['#ffd23f', -3.5]].forEach(([c, x]) => { const b = new THREE.Mesh(new THREE.SphereGeometry(.22, 10, 8), fmat(c)); b.position.set(x, 1.15, -46.4); deco(b); });
+    const toyS = label('🎾 Toys', 'rgba(58,134,255,.9)', '#fff', 200); toyS.scale.multiplyScalar(.6); toyS.position.set(-4, 2.1, -46.4); deco(toyS);
+    const bowl = new THREE.Mesh(new THREE.CylinderGeometry(.55, .4, .32, 14), fmat('#ff6fb5')); bowl.position.set(-12, .16, -44.2); deco(bowl);
+    const food = new THREE.Mesh(new THREE.SphereGeometry(.45, 8, 6), fmat('#a0612e')); food.scale.set(1, .3, 1); food.position.set(-12, .33, -44.2); food.visible = false; deco(food);
+    const bowlS = label('🍖 Food', 'rgba(255,111,181,.9)', '#fff', 200); bowlS.scale.multiplyScalar(.6); bowlS.position.set(-12, 1.4, -44.2); deco(bowlS);
+    const bed = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.3, .25, 16), fmat('#8b5cf6')); bed.position.set(-14.5, .13, -50.4); deco(bed);
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(1.3, .25, 6, 18), fmat('#b79bff')); rim.rotation.x = Math.PI / 2; rim.position.set(-14.5, .3, -50.4); deco(rim);
+    const bedS = label('💤 Bed', 'rgba(139,92,246,.9)', '#fff', 200); bedS.scale.multiplyScalar(.6); bedS.position.set(-14.5, 1.5, -50.4); deco(bedS);
+    plat(-2.6, 1.5, -36.4, .25, .25, '#8d5524', 1.5); const leashS = label('🦮 Walks', 'rgba(46,194,126,.92)', '#fff', 200); leashS.scale.multiplyScalar(.6); leashS.position.set(-2.6, 2.4, -36.4); deco(leashS);
+    // the neighborhood
+    [[-46, -30, '#8fd3ff', '#3a86ff', 1], [-46, -4, '#ffe08a', '#ff9f1c', 1], [-22, 22, '#b8f2c9', '#2ec27e', -1], [30, 20, '#e5d4ff', '#8b5cf6', -1], [30, -14, '#ffd0a8', '#ff7a1a', 1], [32, -46, '#c9f0ff', '#2f6fd6', 1], [-46, 30, '#ffc9de', '#d6336c', -1], [52, 36, '#fff3b0', '#e0a800', -1]]
+      .forEach(([x, z, w, r, f]) => house(x, z, 10, 8, w, r, f));
+    [[-26, -42], [-38, -48], [-12, -24], [-24, -12], [-40, 14], [20, -30], [22, 0], [-60, -20], [44, -30], [18, 30], [-30, 36], [60, 0], [40, 60], [-40, 60], [26, 76], [-26, 90], [60, -70], [-60, -70], [-70, 40], [70, 40], [16, -60], [-30, -64]]
+      .forEach(([x, z], i) => tree(x, z, .85 + (i % 3) * .15));
+    // the Pet Shelter (open-top so the camera can see inside)
+    const wallC = '#fff3e0', trim = '#2ec2b0';
+    dbox(0, .03, 72, 28, .04, 28, null, fmat('#f4efe6'));
+    const tile = canvasTex(32, 32, c => { c.fillStyle = '#f6e7d2'; c.fillRect(0, 0, 32, 32); c.fillStyle = '#ecd8bf'; c.fillRect(0, 0, 16, 16); c.fillRect(16, 16, 16, 16); });
+    tile.wrapS = tile.wrapT = THREE.RepeatWrapping; tile.repeat.set(14, 14); dbox(0, .05, 72, 27.6, .02, 27.6, null, new THREE.MeshLambertMaterial({map: tile}));
+    plat(-8, 4, 58.4, 12, .8, wallC, 4); plat(8, 4, 58.4, 12, .8, wallC, 4);        // front wall, door gap in the middle
+    plat(0, 4, 85.6, 28, .8, wallC, 4); plat(-13.6, 4, 72, .8, 28, wallC, 4); plat(13.6, 4, 72, .8, 28, wallC, 4);
+    plat(-7.7, 4, 70, 11.4, .6, wallC, 4); plat(7.7, 4, 70, 11.4, .6, wallC, 4);        // inside wall: lobby | adoption room
+    [[0, 4.1, 58.4, 28.4, .2, 1], [0, 4.1, 85.6, 28.4, .2, 1], [-13.6, 4.1, 72, 1, .2, 28.4], [13.6, 4.1, 72, 1, .2, 28.4]].forEach(([x, y, z, w, h, d]) => dbox(x, y, z, w, h, d, trim));
+    const sign = new THREE.Mesh(new THREE.BoxGeometry(12, 2.2, .3), [fmat(trim), fmat(trim), fmat(trim), fmat(trim), fmat(trim), signTex('🐾 Pet Shelter', '#2ec2b0', '#ffffff')]); sign.position.set(0, 6, 58.1); deco(sign);
+    [-5.6, 5.6].forEach(x => dbox(x, 4.6, 58.3, .3, 1.4, .3, trim));
+    dbox(0, .06, 56.4, 4, .04, 2.6, '#ff6fb5');   // welcome mat
+    // reception desk + Dr. Hazel
+    plat(0, 1.2, 65.6, 10, 1.2, '#2ec2b0', 1.2); dbox(0, 1.25, 65.6, 10.3, .1, 1.5, '#ffffff');
+    const vet = buildPlayer(Object.assign({}, DEF, {head: '#e0ac69', shirt: '#2ec2b0', pants: '#1d2340', hair: 'bun', hairColor: '#5b3a1e', face: 'smile', shirtPat: null}));
+    vet.g.position.set(0, 0, 67.6); vet.g.rotation.y = Math.PI; scene.add(vet.g);
+    const vs = label('🩺 Dr. Hazel', 'rgba(46,194,176,.92)'); vs.position.y = 3.75; vet.g.add(vs);
+    const deskS = new THREE.Mesh(new THREE.BoxGeometry(4, .8, .1), signTex('Reception', '#ff9f1c', '#ffffff', 384, 80)); deskS.position.set(0, .8, 64.95); deco(deskS);
+    [[-11, 60.5], [11, 60.5], [-11, 68], [11, 68]].forEach(([x, z]) => { plat(x, .7, z, 1.2, 1.2, '#ffd0a8', .7); const p = new THREE.Mesh(new THREE.IcosahedronGeometry(.8, 0), fmat('#2ec27e')); p.position.set(x, 1.5, z); deco(p); });
+    plat(-7, .6, 62, 4, 1, '#3a86ff', .6); plat(7, .6, 62, 4, 1, '#3a86ff', .6);   // benches
+    // the adoption room door (slides up when it opens)
+    const doorM = [fmat('#ff9f1c'), fmat('#ff9f1c'), fmat('#ff9f1c'), fmat('#ff9f1c'), signTex('🐾', '#ff9f1c', '#ffffff', 128, 128), signTex('🐾 Adopt', '#ff9f1c', '#ffffff', 256, 128)];
+    const door = plat(0, 3.6, 70, 4, .4, '#ff9f1c', 3.6); door.mesh.material = doorM;
+    const doorS = label('🚪 Adoption Room', 'rgba(255,159,28,.95)'); doorS.scale.multiplyScalar(.7); doorS.position.set(0, 4.6, 69.4); deco(doorS);
+    // three pens with a baby of each kind waiting
+    const pens = PET_ORDER.map((k, i) => { const x = PLACES.pens[i][0];
+      dbox(x, .07, 83, 7, .03, 5, ['#ffe08a', '#ffd0e6', '#cfe9ff'][i]);
+      fence(x - 3.5, 80.5, x - 2, 80.5, '#ffffff'); fence(x + 2, 80.5, x + 3.5, 80.5, '#ffffff'); plat(x, .45, 80.5, 4, .2, '#ffffff', .45);
+      if (i < 2) plat(x + 4.5, 1.3, 83, .3, 5, '#ffffff', 1.3);
+      const cush = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, .3, 14), fmat(['#ff9f1c', '#ff6fb5', '#3a86ff'][i])); cush.position.set(x, .15, 83); deco(cush);
+      const L = label(PET_KINDS[k].emoji + ' ' + PET_KINDS[k].name, ['rgba(255,159,28,.95)', 'rgba(255,111,181,.95)', 'rgba(58,134,255,.95)'][i], '#fff', 220); L.scale.multiplyScalar(.75); L.position.set(x, 3.2, 83); deco(L);
+      const m = buildPet(k, 0, 0); m.g.position.set(x, .3, 83); scene.add(m.g);
+      return {k, x, m, c: 0}; });
+    // car, beacon, ball, fx
+    const car = buildCar((player && /^#[0-9a-f]{6}$/i.test(player.fav) ? player.fav : '#3a86ff')); scene.add(car.g);
+    const beacon = new THREE.Group(); const cone = new THREE.Mesh(new THREE.ConeGeometry(.7, 1.4, 4), new THREE.MeshLambertMaterial({color: '#ffd23f', emissive: '#b88600'})); cone.rotation.x = Math.PI; beacon.add(cone);
+    const bring = new THREE.Mesh(new THREE.TorusGeometry(1.6, .14, 6, 24), new THREE.MeshBasicMaterial({color: '#ffd23f', transparent: true, opacity: .75})); bring.rotation.x = Math.PI / 2; beacon.add(bring); scene.add(beacon);
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(.24, 10, 8), fmat('#c6f03c')); ball.visible = false; scene.add(ball);
+    const leash = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), new THREE.LineBasicMaterial({color: '#ff4d5e'})); leash.visible = false; leash.frustumCulled = false; scene.add(leash);
+    const flags = PLACES.walk.map((w, i) => { const f = flagPole(w[0], w[1], ['#ff4d5e', '#ffd23f', '#3a86ff'][i]); f.visible = false; return f; });
+    const fade = []; scene.traverse(o => { if (o.isSprite) fade.push(o); });
+    checkpoints[0] = {idx: 0, spawn: {x: 2, y: .05, z: -45}, flag: new THREE.Object3D()};
+    const s = petsLoad();
+    pt = {s, fade, doorS, car: {x: PLACES.car0[0], z: PLACES.car0[1], yaw: 0, v: 0, steer: 0, m: car}, drive: false, door, doorOpen: false, doorT: 0, pens, vet, beacon, ball, food, leash, flags,
+      pet: null, ballSt: null, walk: null, leashOn: false, tsub: 0, prompt: null, goal: null, fx: [], petCd: 0, saveT: 5, camY: cam.yaw, lookT: 0, gas: 0, brake: 0, coinsEarned: 0, lastStage: -1, napT: 0, eatT: 0};
+    if (s.flow === 'home') s.flow = null;   // you start at home: you made it!
+    spawnPet();
+  }
+  const activePet = () => pt && pt.s.pets[pt.s.a] || null;
+  function spawnPet(near){
+    if (pt.pet){ scene.remove(pt.pet.m.g); pt.pet = null; }
+    const d = activePet(); if (!d) return;
+    const st = stageOf(d.xp), m = buildPet(d.k, d.c, st);
+    const tag = label(d.n, 'rgba(255,111,181,.92)', '#fff', 220); tag.scale.multiplyScalar(.55); tag.position.y = 1.75 * PET_KINDS[d.k].base * STAGES[st].s + .45; m.g.add(tag);
+    const sp = near || {x: P.x - 1.5, z: P.z - 1.5};
+    pt.pet = {d, m, tag, x: sp.x, z: sp.z, y: 0, face: P.face, vx: 0, vz: 0, act: 'follow', t: 0, stage: st, pop: 0};
+    pt.lastStage = st; m.g.position.set(sp.x, 0, sp.z); scene.add(m.g);
+  }
+  function seatPos(lx, lz){ const C = pt.car, c = Math.cos(C.yaw), s = Math.sin(C.yaw); return {x: C.x + c * lx + s * lz, z: C.z - s * lx + c * lz}; }
+  function pushOut(o, r){
+    let hit = false;
+    for (const b of solids){ if (!b.active || b.ground) continue; const p = b.mesh.position; if (p.y + b.hh < .35 || p.y - b.hh > 2) continue;
+      const cx = Math.max(p.x - b.hw, Math.min(o.x, p.x + b.hw)), cz = Math.max(p.z - b.hd, Math.min(o.z, p.z + b.hd));
+      const dx = o.x - cx, dz = o.z - cz, d = Math.hypot(dx, dz); if (d >= r) continue; hit = true;
+      if (d < 1e-6){ const ox = b.hw + r - Math.abs(o.x - p.x), oz = b.hd + r - Math.abs(o.z - p.z); if (ox < oz) o.x += Math.sign(o.x - p.x || 1) * ox; else o.z += Math.sign(o.z - p.z || 1) * oz; continue; }
+      o.x += dx / d * (r - d); o.z += dz / d * (r - d); }
+    return hit;
+  }
+  const dist2 = (a, x, z) => Math.hypot(a[0] - x, a[1] - z);
+  function carCircles(){ return [1.1, -1.1].map(k => seatPos(0, k)); }
+  /* --- driving --- */
+  function driveInput(){
+    const steer = clamp((keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0) + joy.x + pad.x, -1, 1);
+    const gas = clamp((keys.KeyW || keys.ArrowUp ? 1 : 0) + Math.max(0, joy.y) + (pad.gas || 0) + pt.gas, 0, 1);
+    const brake = clamp((keys.KeyS || keys.ArrowDown || keys.Space ? 1 : 0) + Math.max(0, -joy.y) + (pad.brake || 0) + pt.brake, 0, 1);
+    return {steer, gas, brake};
+  }
+  function carStep(dt){
+    const C = pt.car, I = driveInput(), f = I.gas - I.brake;
+    // brake always stops the car first (even after bouncing off a wall); reverse only after a short pause at a stop
+    if (f < -.05){
+      if (C.v > .05 || (C.v < -.05 && C.dir !== -1)){ C.v -= Math.sign(C.v) * Math.min(Math.abs(C.v), 30 * -f * dt); C.hold = .5; }
+      else if ((C.hold || 0) > 0){ C.hold -= dt; C.v = 0; }
+      else { C.v -= 9 * -f * dt; C.dir = -1; }
+    }
+    else if (f > .05){ if (C.v < -.05) C.v = Math.min(0, C.v + 30 * f * dt); else { C.v += 13 * f * dt; C.dir = 1; } C.hold = 0; }
+    else { C.v -= Math.sign(C.v) * Math.min(Math.abs(C.v), 6 * dt); C.hold = 0; }
+    C.v = clamp(C.v, -7, 22); C.steer += (I.steer - C.steer) * Math.min(1, dt * 8);
+    C.yaw -= C.steer * 2.1 * Math.min(1, Math.abs(C.v) / 5) * Math.sign(C.v) * dt;
+    C.x += Math.sin(C.yaw) * C.v * dt; C.z += Math.cos(C.yaw) * C.v * dt;
+    let bump = false;
+    for (const k of [1.1, -1.1]){ const c = seatPos(0, k), o = {x: c.x, z: c.z}; if (pushOut(o, 1.2)){ bump = true; C.x += o.x - c.x; C.z += o.z - c.z; } }
+    if (bump && Math.abs(C.v) > 3){ C.v *= -.3; SND.boing && SND.boing(); } else if (bump) C.v *= .5;
+    const s = seatPos(.5, -.35); P.x = s.x; P.z = s.z; P.y = .33; P.vx = P.vz = P.vy = 0; P.face = C.yaw; P.onGround = true; P.airT = 0;
+  }
+  function getIn(){
+    const C = pt.car; pt.drive = true; C.v = 0; C.hold = 0; C.dir = 1; emote = null; P.vx = P.vz = 0;
+    if (pt.leashOn) leashOff(true);
+    if (pt.pet){ pt.pet.act = 'car'; if (pt.ballSt){ pt.ball.visible = false; pt.ballSt = null; } }
+    $('#obby').classList.add('pdrive'); SND.jump(); pt.lookT = 0;
+    banner('🚗 ' + (touchUI ? 'Left thumb steers · ⛽ Go · 🛑 Brake' : pad.on ? 'RT gas · LT brake · stick steers' : 'W gas · S brake · A/D steer'));
+  }
+  function getOut(){
+    const C = pt.car; if (Math.abs(C.v) > 4) return; C.v = 0; pt.drive = false;
+    for (const lx of [2.2, -2.2, 0]){ const s = lx ? seatPos(lx, -.3) : seatPos(0, -3.4), o = {x: s.x, z: s.z}; pushOut(o, R + .1);
+      if (!carCircles().some(c => Math.hypot(c.x - o.x, c.z - o.z) < 1.5)){ Object.assign(P, {x: o.x, y: .05, z: o.z, vx: 0, vz: 0, vy: 0}); break; } }
+    if (pt.pet){ pt.pet.act = 'follow'; const s = seatPos(-2.4, -.3); pt.pet.x = s.x; pt.pet.z = s.z; pt.pet.y = 0; }
+    $('#obby').classList.remove('pdrive'); pt.gas = pt.brake = 0;
+  }
+  /* --- care actions --- */
+  function care(field, amt, xpBase, coinsMin, why){
+    const p = pt.pet && pt.pet.d; if (!p) return 0;
+    const before = p[field], gain = Math.min(100, before + amt) - before; p[field] = before + gain;
+    addXp(p, xpBase + gain * .15);
+    if (gain >= 5 && coinsMin) earn(coinsMin);
+    return gain;
+  }
+  function earn(n){ setCoins(coins + n); runCoins += n; pt.coinsEarned += n; }
+  function addXp(p, n){
+    const was = stageOf(p.xp); p.xp += n; const now = stageOf(p.xp);
+    if (now > was && pt.pet && pt.pet.d === p){ grow(now); }
+  }
+  function grow(st){
+    const P2 = pt.pet, S = STAGES[st], d = P2.d, x = P2.x, z = P2.z, act = P2.act;
+    spawnPet({x, z}); pt.pet.act = act === 'car' ? 'car' : 'follow'; pt.pet.pop = 1;
+    const bonus = [0, 25, 50, 100][st]; earn(bonus); SND.win(); confetti(); setTimeout(confetti, 500);
+    banner('🎉 ' + d.n + ' grew into ' + (st === 1 ? 'a ' : st === 3 ? 'an ' : 'a ') + S.n + '! ' + S.e);
+    big(S.e + ' ' + d.n + ' is now ' + (st === 3 ? 'an' : 'a') + ' ' + S.n + '!\n+' + bonus + ' 🪙', 3); pt.bigT = 3;
+    hearts(x, z, 6);
+    if (st === 3 && pt.s.pets.length < PET_MAX && pt.s.pets.indexOf(d) === pt.s.pets.length - 1 && pt.s.tut >= 3){ pt.s.flow = 'shelter'; setTimeout(() => running && pt && banner('🏥 You can adopt another pet at the Shelter!'), 2600); }
+    petsSave();
+  }
+  let heartMat = null, zzzMat = null;
+  function hearts(x, z, n = 3, kind){
+    if (!heartMat){ const s = label('❤️', 'rgba(0,0,0,0)', '#fff', 64); heartMat = s.material; const z2 = label('💤', 'rgba(0,0,0,0)', '#fff', 64); zzzMat = z2.material; }
+    for (let i = 0; i < n; i++){ const m = (kind === 'z' ? zzzMat : heartMat).clone(); const s = new THREE.Sprite(m); s.scale.set(.8, .8, 1); s.position.set(x + (Math.random() - .5) * 1.2, 1 + Math.random() * .6, z + (Math.random() - .5) * 1.2); scene.add(s); pt.fx.push({s, t: 0, d: i * .15}); }
+  }
+  function throwBall(){
+    if (!pt.pet || pt.ballSt) return;
+    // toss it out into the yard (away from the toy box), so it never lands somewhere the pet can't reach
+    let dx = P.x - PLACES.toy[0], dz = P.z - (PLACES.toy[1] - 1.2), m = Math.hypot(dx, dz) || 1; dx /= m; dz /= m;
+    const f = [dx, dz]; P.face = Math.atan2(dx, dz);
+    pt.ballSt = {x: P.x + f[0] * .6, y: 1.8, z: P.z + f[1] * .6, vx: f[0] * 7, vy: 6, vz: f[1] * 7, st: 'fly', t: 0};
+    pt.ball.visible = true; pt.pet.act = 'wait'; SND.jump(); banner('🎾 Fetch, ' + pt.pet.d.n + '!');
+  }
+  function petIt(){
+    const p = pt.pet; if (!p || pt.petCd > 0) return;
+    p.act = 'happy'; p.t = 1.4; pt.petCd = 2.5; hearts(p.x, p.z, 4); care('u', 6, 1, 0); SND.coin();
+    if (pt.s.tut === 0 && pt.tsub === 1){ tutDone(0, '❤️ Aww, ' + p.d.n + ' loves you!'); }
+    else banner('❤️ ' + p.d.n + ' loves that!');
+  }
+  function fillBowl(){ if (!pt.pet) return; pt.food.visible = true; pt.pet.act = 'toBowl'; pt.pet.t = 0; banner('🍖 Dinner time, ' + pt.pet.d.n + '!'); SND.coin(); }
+  function napTime(){ if (!pt.pet) return; pt.pet.act = 'toBed'; pt.pet.t = 0; banner('💤 Nap time, ' + pt.pet.d.n + '!'); }
+  function leashOnFn(){ if (!pt.pet) return; pt.leashOn = true; pt.walk = {i: 0, dist: 0}; pt.flags.forEach((f, i) => f.visible = i === 0); banner('🦮 Walk time! Follow the 🚩 flags'); SND.jump();
+    if (pt.s.tut === 1) pt.tsub = 1; }
+  function leashOff(quiet){ pt.leashOn = false; pt.walk = null; pt.leash.visible = false; pt.flags.forEach(f => f.visible = false); if (!quiet) banner('🦮 Leash off!'); }
+  function tutDone(step, msg){
+    const s = pt.s; if (s.tut !== step) return;
+    s.tut = step + 1; pt.tsub = 0; earn(step === 2 ? 40 : 10);
+    if (s.tut >= 3){ big('🎓 Tutorial done!\nKeep ' + (pt.pet ? pt.pet.d.n : 'your pet') + ' happy so it grows up!', 4); pt.bigT = 4; confetti(); setTimeout(confetti, 500); SND.win(); }
+    else { banner(msg || '✅ Nice!'); SND.cp(); }
+    petsSave();
+  }
+  /* --- naming + adopting (panels) --- */
+  function openPanel(id){ choosing = true; for (const k in keys) keys[k] = false; joy.x = joy.y = 0; pad.x = pad.y = 0; $(id).classList.add('show'); }
+  function closePanel(id){ $(id).classList.remove('show'); choosing = false; }
+  function nameSuggest(){ const pool = PET_NAMES.slice().sort(() => Math.random() - .5); return pool.slice(0, 6); }
+  function openName(){
+    const sug = nameSuggest(), box = $('#pSugg'); box.innerHTML = '';
+    sug.forEach(n => { const b = document.createElement('button'); b.className = 'pchip'; b.textContent = n; b.onclick = () => { $('#petNameIn').value = n; $('#pNameMsg').textContent = ''; }; box.appendChild(b); });
+    $('#petNameIn').value = pt.s.pend || sug[0]; $('#pNameMsg').textContent = '';
+    openPanel('#pNamePanel');
+    if (!touchUI && !pad.on) setTimeout(() => { try { $('#petNameIn').focus(); $('#petNameIn').select(); } catch(e){} }, 60);
+  }
+  function nameOk(){
+    const raw = $('#petNameIn').value, n = petNameClean(raw), msg = $('#pNameMsg');
+    if (!n){ msg.textContent = '✏️ Type a name first (or tap a suggestion)!'; return; }
+    if (petNameBad(n)){ msg.textContent = "🙊 Let's pick a kinder name! Try one of these 👆"; $('#petNameIn').value = ''; return; }
+    pt.s.pend = n; pt.s.flow = 'choose'; closePanel('#pNamePanel'); petsSave();
+    try { $('#petNameIn').blur(); } catch(e){}
+    banner('🏷️ ' + n + '! What a great name!'); SND.cp();
+    setTimeout(() => running && pt && banner('🚪 Now open the door to the adoption room!'), 1700);
+  }
+  function openAdopt(i){
+    const pen = pt.pens[i], K = PET_KINDS[pen.k]; pt.adoptI = i;
+    $('#pAdEmoji').textContent = K.emoji; $('#pAdTitle').textContent = 'Adopt a ' + K.name + '?';
+    $('#pAdName').textContent = pt.s.pend + ' the ' + K.name;
+    const cols = $('#pCols'); cols.innerHTML = '';
+    K.cols.forEach((c, ci) => { const b = document.createElement('button'); b.className = 'pcol' + (ci === pen.c ? ' sel' : ''); b.dataset.c = ci; b.innerHTML = `<i style="background:${c[1]};border-color:${c[2]}"></i>${c[0]}`;
+      b.onclick = () => { recolorPen(i, ci); cols.querySelectorAll('.pcol').forEach(x => x.classList.toggle('sel', x === b)); }; cols.appendChild(b); });
+    openPanel('#pAdoptPanel');
+    cam.yaw = Math.PI; cam.pitch = .3;
+  }
+  function recolorPen(i, ci){ const pen = pt.pens[i]; if (pen.c === ci) return; scene.remove(pen.m.g); pen.m = buildPet(pen.k, ci, 0); pen.m.g.position.set(pen.x, .3, 83); scene.add(pen.m.g); pen.c = ci; hearts(pen.x, 83, 2); }
+  function adoptOk(){
+    const pen = pt.pens[pt.adoptI], s = pt.s; if (!pen || s.flow !== 'choose' || s.pets.length >= PET_MAX) return closePanel('#pAdoptPanel');
+    const p = {k: pen.k, c: pen.c, n: s.pend || 'Buddy', xp: 0, f: 80, u: 80, e: 90, b: Date.now()};
+    s.pets.push(p); s.a = s.pets.length - 1; s.pend = ''; s.flow = 'home'; closePanel('#pAdoptPanel');
+    spawnPet({x: pen.x, z: 79.5}); hearts(pen.x, 79.5, 6);
+    earn(20); SND.win(); confetti(); setTimeout(confetti, 600);
+    big('🎉 ' + p.n + ' the ' + PET_KINDS[p.k].name + ' is your pet!\nDrive home together 🚗', 3.5); pt.bigT = 3.5;
+    petsSave();
+  }
+  function renderPets(){
+    const L = $('#pList'); L.innerHTML = ''; const s = pt.s;
+    if (!s.pets.length){ L.innerHTML = '<div class="pempty">No pets yet! Drive to the 🏥 Pet Shelter to adopt one.</div>'; return; }
+    s.pets.forEach((p, i) => {
+      const st = stageOf(p.xp), nx = STAGES[st + 1], pr = nx ? Math.round((p.xp - STAGES[st].xp) / (nx.xp - STAGES[st].xp) * 100) : 100;
+      const d = document.createElement('div'); d.className = 'pcard' + (i === s.a ? ' on' : '');
+      const bar = (e, v, c) => `<span class="pmini"><i>${e}</i><b><u style="width:${Math.round(v)}%;background:${c}"></u></b></span>`;
+      d.innerHTML = `<div class="pcn"><span class="pce">${PET_KINDS[p.k].emoji}</span><div><b></b><small>${STAGES[st].e} ${STAGES[st].n} ${PET_KINDS[p.k].name}</small></div></div>`
+        + `<div class="pgrow"><u style="width:${pr}%"></u><span>${nx ? '🌱 ' + pr + '% to ' + nx.n : '⭐ All grown up!'}</span></div>`
+        + bar('🍖', p.f, '#ff9f1c') + bar('🎾', p.u, '#3a86ff') + bar('⚡', p.e, '#8b5cf6')
+        + `<button class="big ${i === s.a ? 'gray' : 'green'} pfollow" data-i="${i}" ${i === s.a ? 'disabled' : ''}>${i === s.a ? '✅ With you' : '🐾 Follow me'}</button>`;
+      d.querySelector('.pcn b').textContent = p.n;
+      d.querySelector('.pfollow').onclick = () => { s.a = i; if (pt.leashOn) leashOff(true); const was = pt.pet && pt.pet.act === 'car'; spawnPet(); if (was) pt.pet.act = 'car'; petsSave(); renderPets(); banner('🐾 ' + p.n + ' is with you now!'); };
+      L.appendChild(d);
+    });
+    $('#pCount').textContent = s.pets.length + ' / ' + PET_MAX;
+  }
+  function openPets(){ if (!pt) return; renderPets(); openPanel('#pPetsPanel'); }
+  /* --- what can you do right here? --- */
+  function eligible(){ const s = pt.s, l = s.pets[s.pets.length - 1]; return s.pets.length < PET_MAX && (!l || stageOf(l.xp) === 3); }
+  function petsPrompt(){
+    if (!pt || choosing) return null;
+    if (pt.drive) return Math.abs(pt.car.v) < 4 ? {k: 'out', t: '🚪 Get out', act: getOut} : null;
+    const s = pt.s, x = P.x, z = P.z, near = (p, r) => dist2(p, x, z) < r, list = [];
+    if (carCircles().some(c => Math.hypot(c.x - x, c.z - z) < 3.4)) list.push({k: 'car', t: '🚗 Get in the car', act: getIn, d: 0});
+    if (near(PLACES.desk, 3.2)) list.push(s.flow === 'shelter' && eligible() ? {k: 'desk', t: '🏷️ Talk to Dr. Hazel', act: openName}
+      : {k: 'desk', t: '💬 Talk to Dr. Hazel', act: () => banner(s.flow === 'choose' ? '🩺 The pets are through the orange door!' : s.pets.length >= PET_MAX ? '🩺 Six pets! Your house is full of love 💕' : '🩺 Come back when ' + (s.pets[s.pets.length - 1] || {}).n + ' is all grown up! ⭐')});
+    if (!pt.doorOpen && near(PLACES.door, 3)) list.push(s.flow === 'choose' ? {k: 'door', t: '🚪 Open the door', act: openDoor} : {k: 'door', t: '🔒 Adoption room', act: () => banner('🏷️ Talk to Dr. Hazel at the desk first!')});
+    if (s.flow === 'choose') pt.pens.forEach((pen, i) => { if (near(PLACES.pens[i], 2.8)) list.push({k: 'pen' + i, t: PET_KINDS[pen.k].emoji + ' Meet the ' + PET_KINDS[pen.k].name, act: () => openAdopt(i)}); });
+    const p = pt.pet, free = p && ['follow', 'happy'].includes(p.act) && !pt.ballSt;
+    if (p){
+      if (near(PLACES.toy, 2.8)) list.push(free ? {k: 'toy', t: '🎾 Throw a ball', act: throwBall} : {k: 'toy', t: '🎾 ' + p.d.n + ' is busy', act: () => {}});
+      if (near(PLACES.bowl, 2.6)) list.push(free ? {k: 'bowl', t: '🍖 Fill the food bowl', act: fillBowl} : {k: 'bowl', t: '🍖 ' + p.d.n + ' is busy', act: () => {}});
+      if (near(PLACES.bed, 2.8)) list.push(free ? {k: 'bed', t: '💤 Nap time', act: napTime} : {k: 'bed', t: '💤 ' + p.d.n + ' is busy', act: () => {}});
+      if (near(PLACES.gate, 2.6)) list.push(pt.leashOn ? {k: 'gate', t: '🦮 Take off the leash', act: () => leashOff()} : free ? {k: 'gate', t: '🦮 Go for a walk', act: leashOnFn} : {k: 'gate', t: '🦮 ' + p.d.n + ' is busy', act: () => {}});
+      if (free && Math.hypot(p.x - x, p.z - z) < 2.4 && pt.petCd <= 0) list.push({k: 'pet', t: '❤️ Pet ' + p.d.n, act: petIt});
+    }
+    if (!list.length) return null;
+    const order = ['desk', 'door', 'pen0', 'pen1', 'pen2', 'toy', 'bowl', 'bed', 'gate', 'car', 'pet'];
+    list.sort((a, b) => order.indexOf(a.k) - order.indexOf(b.k));
+    if (s.tut < 3 && list.some(o => o.k === 'pet') && pt.s.tut === 0 && pt.tsub === 1) return list.find(o => o.k === 'pet');
+    return list[0];
+  }
+  function petsClosePanels(){ ['#pNamePanel','#pAdoptPanel','#pPetsPanel'].forEach(id => $(id).classList.remove('show')); choosing = false; try { $('#petNameIn').blur(); } catch(_){} }
+  function petsAct(){ const p = petsPrompt(); if (p && running && !paused && !choosing){ p.act(); return true; } return false; }
+  function openDoor(){ pt.doorOpen = true; pt.doorT = 0; SND.cp(); banner('🐾 Choose your new pet!'); }
+  /* --- where to go next (arrow + beacon) --- */
+  function petsGoal(){
+    const s = pt.s, x = P.x, z = P.z, p = pt.pet, nm = p ? p.d.n : '';
+    const far = !(x > -22 && x < 28 && z > 38 && z < 92), toLot = t => pt.drive ? {t: t, at: PLACES.lot} : dist2([pt.car.x, pt.car.z], x, z) < 40 ? {t: '🚗 Hop in your car → ' + t.replace(/^\S+ /, ''), at: [pt.car.x, pt.car.z]} : {t: t, at: PLACES.lot};
+    if (s.flow === 'shelter'){
+      if (!eligible()) s.flow = null;
+      else if (far) return toLot('🏥 Drive to the Pet Shelter');
+      else if (pt.drive) return {t: '🅿️ Park and get out', at: PLACES.lot};
+      else return {t: '🏷️ Talk to Dr. Hazel at the desk', at: PLACES.desk};
+    }
+    if (s.flow === 'choose'){
+      if (far) return toLot('🏥 Drive to the Pet Shelter');
+      if (pt.drive) return {t: '🅿️ Park and get out', at: PLACES.lot};
+      if (!pt.doorOpen) return {t: '🚪 Open the orange door', at: PLACES.door};
+      return {t: '🐾 Pick your pet: Mouse, Cat or Dog', at: [0, 79]};
+    }
+    const home = dist2(PLACES.home, x, z) < 18;
+    if (s.flow === 'home'){
+      if (home && !pt.drive){ s.flow = null; petsSave(); if (s.tut < 3){ big('🏠 Welcome home, ' + nm + '!\nLet\'s learn how to care for your pet', 3.5); pt.bigT = 3.5; } else banner('🏠 ' + nm + ' loves the new home!'); }
+      else if (pt.drive) return {t: home ? '🅿️ Park and get out' : '🏠 Drive home with ' + nm, at: PLACES.car0};
+      else return dist2([pt.car.x, pt.car.z], x, z) < 40 ? {t: '🚗 Get in the car with ' + nm, at: [pt.car.x, pt.car.z]} : {t: '🏠 Go home with ' + nm, at: PLACES.home};
+    }
+    if (!p) return null;
+    if (s.tut < 3){
+      if (!home && !pt.leashOn) return pt.drive ? {t: '🏠 Drive home', at: PLACES.car0} : {t: '🏠 Go home to learn pet care', at: PLACES.home};
+      if (s.tut === 0) return pt.tsub === 0 ? {t: '🎾 Step 1/3 · PLAY: Throw a ball at the toy box', at: PLACES.toy} : {t: '❤️ Now pet ' + nm + '! Walk up close', at: [p.x, p.z]};
+      if (s.tut === 1) return !pt.leashOn ? {t: '🦮 Step 2/3 · WALK: Get the leash at the gate', at: PLACES.gate} : pt.walk.i < 3 ? {t: '🚩 Walk ' + nm + ' to flag ' + (pt.walk.i + 1) + ' of 3', at: PLACES.walk[pt.walk.i]} : {t: '🏠 Back to the gate', at: PLACES.gate};
+      return {t: '🍖 Step 3/3 · FEED: Fill the food bowl', at: PLACES.bowl};
+    }
+    if (pt.leashOn && pt.walk) return pt.walk.i < 3 ? {t: '🚩 Walk to flag ' + (pt.walk.i + 1) + ' of 3', at: PLACES.walk[pt.walk.i]} : {t: '🏠 Back to the gate', at: PLACES.gate};
+    const d = p.d, low = [['f', d.f, '🍖 ' + nm + ' is hungry! Fill the food bowl', PLACES.bowl], ['u', d.u, '🎾 ' + nm + ' is bored! Play or go for a walk', PLACES.toy], ['e', d.e, '💤 ' + nm + ' is sleepy! Nap time in the bed', PLACES.bed]].sort((a, b) => a[1] - b[1])[0];
+    if (low[1] < 40) return home || !pt.drive ? {t: low[2], at: home ? low[3] : PLACES.home} : {t: '🏠 Drive home to take care of ' + nm, at: PLACES.car0};
+    return null;
+  }
+  /* --- per frame --- */
+  function petsUpdate(dt){
+    const s = pt.s, p = pt.pet;
+    pt.petCd = Math.max(0, pt.petCd - dt);
+    if ((pt.saveT -= dt) <= 0) petsSave();
+    // camera: follow behind the car unless you're steering the camera yourself
+    if (pt.drive){
+      if (Math.abs(cam.yaw - pt.camY) > 1e-4) pt.lookT = 1.4;
+      pt.lookT -= dt;
+      if (pt.lookT <= 0){ let d = (pt.car.yaw + Math.PI) - cam.yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); cam.yaw += d * Math.min(1, dt * 3); cam.pitch += (.34 - cam.pitch) * Math.min(1, dt * 2); cam.dist += (15 - cam.dist) * Math.min(1, dt * 2); }
+      pt.camY = cam.yaw;
+    } else {
+      // walk around the parked car, not through it
+      for (const c of carCircles()){ const dx = P.x - c.x, dz = P.z - c.z, d = Math.hypot(dx, dz); if (d < 1.2 + R && d > 1e-6){ P.x = c.x + dx / d * (1.2 + R); P.z = c.z + dz / d * (1.2 + R); } }
+    }
+    // needs go down slowly (the pet with you); the others snooze at home
+    s.pets.forEach(q => { const k = q === (p && p.d) ? 1 : .3, fl = q === (p && p.d) ? 0 : 30;
+      q.f = Math.max(Math.min(q.f, fl), q.f - .08 * k * dt); q.u = Math.max(Math.min(q.u, fl), q.u - .1 * k * dt); q.e = Math.max(Math.min(q.e, fl), q.e - .06 * k * dt); });
+    if (p){
+      const d = p.d, happy = Math.min(d.f, d.u, d.e) > 35;
+      if (s.flow !== 'choose') addXp(d, dt * (happy ? .2 : .05));
+      if (!pt.pet) return;
+    }
+    const q = pt.pet; if (!q) return;
+    // walking on the leash
+    if (pt.leashOn && pt.walk){ const sp = Math.hypot(P.vx, P.vz); if (sp > 2){ addXp(q.d, dt * .12); q.d.u = Math.min(100, q.d.u + dt * .8); q.d.e = Math.max(0, q.d.e - dt * .2); pt.walk.dist += sp * dt; }
+      if (!pt.pet) return;
+      const W = pt.walk;
+      if (W.i < 3 && dist2(PLACES.walk[W.i], P.x, P.z) < 3){ pt.flags[W.i].visible = false; W.i++; earn(3); SND.cp(); banner(W.i < 3 ? '🚩 Flag ' + W.i + '/3!' : '🏠 Now back to the gate!'); if (W.i < 3) pt.flags[W.i].visible = true; }
+      else if (W.i >= 3 && dist2(PLACES.gate, P.x, P.z) < 3.2){ leashOff(true); earn(10); care('u', 20, 15, 0); banner('🏁 Great walk!'); hearts(q.x, q.z, 5); if (s.tut === 1) tutDone(1, '✅ Walk done! Great job!'); }
+    }
+    // the ball
+    const B = pt.ballSt;
+    if (B){
+      if (B.st === 'fly'){ B.vy -= 22 * dt; B.x += B.vx * dt; B.y += B.vy * dt; B.z += B.vz * dt; const o = {x: B.x, z: B.z}; if (pushOut(o, .25)){ B.x = o.x; B.z = o.z; B.vx *= -.4; B.vz *= -.4; }
+        if (B.y < .24){ B.y = .24; B.vy *= -.45; B.vx *= .7; B.vz *= .7; if (Math.abs(B.vy) < 1.2){ B.vy = 0; } }
+        B.t += dt; if ((B.vy === 0 && Math.hypot(B.vx, B.vz) < .6) || B.t > 2.2){ B.st = 'ground'; B.vx = B.vz = 0; B.y = .24; q.act = 'fetch'; q.t = 0; } }
+      else if (B.st === 'carry'){ const f = [Math.sin(q.face), Math.cos(q.face)], h = q.m.base; B.x = q.x + f[0] * .75 * h; B.z = q.z + f[1] * .75 * h; B.y = q.y + .95 * h; }
+      pt.ball.position.set(B.x, B.y, B.z);
+    }
+    // the pet's brain
+    const tgt = (tx, tz, stopAt, speed = 11) => { const dx = tx - q.x, dz = tz - q.z, dd = Math.hypot(dx, dz); if (dd > stopAt){ const v = Math.min(speed, dd * 3.2); q.vx = dx / dd * v; q.vz = dz / dd * v; q.face = Math.atan2(dx, dz); } else { q.vx = q.vz = 0; } return dd; };
+    q.t += dt;
+    if (q.act === 'car'){ const s2 = seatPos(-.5, -.35); q.x = s2.x; q.z = s2.z; q.y = 1.33; q.face = pt.car.yaw; q.vx = q.vz = 0; }
+    else {
+      q.y = 0;
+      if (q.act === 'follow' || q.act === 'happy' || q.act === 'wait'){
+        const back = pt.leashOn ? 1.9 : 2.6, f = [Math.sin(P.face), Math.cos(P.face)], side = [f[1], -f[0]];
+        const tx = P.x - f[0] * back + side[0] * 1.1, tz = P.z - f[1] * back + side[1] * 1.1;
+        const dd = Math.hypot(P.x - q.x, P.z - q.z);
+        if (q.act === 'happy'){ q.vx = q.vz = 0; if ((q.t -= dt * 2) <= 0){ q.act = 'follow'; q.t = 0; } }
+        else if (q.act === 'wait'){ q.vx = q.vz = 0; q.face = Math.atan2(P.x - q.x, P.z - q.z); }
+        else if (dd > 30){ q.x = tx; q.z = tz; }
+        else if (tgt(tx, tz, .5, Math.max(11, Math.hypot(P.vx, P.vz) * 1.15)) <= .5 || dd < 1.6){ q.vx = q.vz = 0; if (dd > .5) q.face = Math.atan2(P.x - q.x, P.z - q.z); }
+      } else if (q.act === 'fetch'){
+        if (tgt(B.x, B.z, .6, 12) <= .6 || q.t > 6){ B.st = 'carry'; q.act = 'return'; q.t = 0; }
+      } else if (q.act === 'return'){
+        if (tgt(P.x, P.z, 1.6, 11) <= 1.6 || q.t > 8){ pt.ball.visible = false; pt.ballSt = null; q.act = 'happy'; q.t = 1.2; const g = care('u', 22, 2, 2); hearts(q.x, q.z, 3); q.d.e = Math.max(0, q.d.e - 3);
+          banner('🎾 ' + q.d.n + ' brought it back!' + (g >= 5 ? ' +2 🪙' : '')); SND.coin();
+          if (s.tut === 0 && pt.tsub === 0){ pt.tsub = 1; setTimeout(() => running && pt && banner('❤️ Now walk up and pet ' + q.d.n + '!'), 1500); } }
+      } else if (q.act === 'toBowl'){
+        if (q.t > 7){ q.x = PLACES.bowl[0] + .9; q.z = PLACES.bowl[1] - .2; }
+        if (tgt(PLACES.bowl[0] + .9, PLACES.bowl[1] - .2, .3, 11) <= .3){ q.face = Math.atan2(PLACES.bowl[0] - q.x, PLACES.bowl[1] - .7 - q.z); q.act = 'eat'; q.t = 0; }
+      } else if (q.act === 'eat'){
+        q.vx = q.vz = 0; q.face = Math.atan2(PLACES.bowl[0] - q.x, PLACES.bowl[1] - .2 - q.z);
+        if (q.t > 3){ pt.food.visible = false; q.act = 'happy'; q.t = 1; const g = care('f', 100, 3, 2); hearts(q.x, q.z, 3); banner('😋 Yum! ' + q.d.n + ' is full!' + (g >= 5 ? ' +2 🪙' : '')); if (s.tut === 2) tutDone(2); }
+      } else if (q.act === 'toBed'){
+        if (q.t > 7){ q.x = PLACES.bed[0]; q.z = PLACES.bed[1] - .4; }
+        if (tgt(PLACES.bed[0], PLACES.bed[1] - .4, .3, 11) <= .3){ q.act = 'sleep'; q.t = 0; }
+      } else if (q.act === 'sleep'){
+        q.vx = q.vz = 0; if (((q.t * 10) | 0) % 12 === 0 && pt.fx.length < 8) hearts(q.x, q.z, 1, 'z');
+        if (q.t > 5){ q.act = 'happy'; q.t = 1; const g = care('e', 100, 2, 2); banner('☀️ ' + q.d.n + ' feels fresh!' + (g >= 5 ? ' +2 🪙' : '')); }
+        else if (Math.hypot(P.x - q.x, P.z - q.z) > 25){ q.act = 'follow'; }
+      }
+      if (q.act !== 'happy' && q.act !== 'eat' && q.act !== 'sleep' && q.act !== 'wait'){ q.x += q.vx * dt; q.z += q.vz * dt; const o = {x: q.x, z: q.z}; pushOut(o, .4); q.x = o.x; q.z = o.z; }
+      else if (q.act === 'happy'){ /* hop in place */ }
+      if (q.act === 'sleep'){ q.y = .2; }
+    }
+  }
+  function animatePets(dt){
+    const t = worldT;
+    if (pt.bigT > 0){ pt.bigT -= dt; if (pt.bigT <= 0) big(''); }
+    // the door slides up into the wall when it opens
+    if (pt.doorOpen && pt.doorT < 1){ pt.doorT = Math.min(1, pt.doorT + dt * 1.5); pt.door.mesh.position.y = 1.8 - pt.doorT * 3.75; if (pt.doorT > .3) pt.door.active = false; if (pt.doorS.parent) scene.remove(pt.doorS); }
+    // name signs fade out when the camera gets close so they never fill the screen
+    if ((pt.fadeT = (pt.fadeT || 0) - dt) <= 0){ pt.fadeT = .1; const v = new THREE.Vector3(); pt.fade.forEach(L => { L.getWorldPosition(v); L.visible = camera.position.distanceTo(v) > 7.5; }); }
+    // car
+    const C = pt.car, cm = C.m; cm.g.position.set(C.x, 0, C.z); cm.g.rotation.y = C.yaw;
+    cm.wheels.forEach(w => { w.sp.rotation.x += C.v * dt / .45; if (w.front) w.w.rotation.y = -C.steer * .45; });
+    pt.pens.forEach((pen, i) => { const M = pen.m; M.g.rotation.y = Math.atan2(P.x - pen.x, P.z - 83); animPet(M, Math.sin(t * .5 + i) > .7 ? 4 : 0, 0, dt, t + i); });
+    applyPose(dt, animPose('default', {state: 'idle', t, ph: 0, sp: 0, air: 0}), pt.vet);
+    const q = pt.pet;
+    if (q){
+      const M = q.m, sp = Math.hypot(q.vx, q.vz);
+      M.g.position.set(q.x, q.y, q.z); let d = q.face - M.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); M.g.rotation.y += d * Math.min(1, dt * 10);
+      const act = {eat: 2, sleep: 3, happy: 4, car: 5}[q.act] || (sp > .6 ? 1 : 0);
+      animPet(M, act, sp, dt, t);
+      if (q.pop > 0){ q.pop = Math.max(0, q.pop - dt * 1.5); M.g.scale.setScalar(1 + Math.sin(q.pop * Math.PI) * .35); } else M.g.scale.setScalar(1);
+      // leash line from your hand to the collar
+      if (pt.leashOn){ const a = pt.leash.geometry.attributes.position, h = [Math.sin(P.face), Math.cos(P.face)];
+        a.setXYZ(0, P.x + h[1] * .7 + h[0] * .2, P.y + 1.15, P.z - h[0] * .7 + h[1] * .2); a.setXYZ(1, q.x + Math.sin(q.face) * .5 * M.base, q.y + .95 * M.base, q.z + Math.cos(q.face) * .5 * M.base); a.needsUpdate = true; pt.leash.visible = true; }
+    }
+    // floating hearts / zzz
+    pt.fx = pt.fx.filter(f => { f.t += dt; if (f.t < f.d){ f.s.visible = false; return true; } f.s.visible = true; const k = f.t - f.d; f.s.position.y += dt * 1.6; f.s.material.opacity = Math.max(0, 1 - k / 1.2); if (k > 1.2){ scene.remove(f.s); f.s.material.dispose(); return false; } return true; });
+    // beacon over the goal
+    const G2 = pt.goal, b = pt.beacon; b.visible = !!(G2 && G2.at && dist2(G2.at, P.x, P.z) > 3.5);
+    if (b.visible){ b.position.set(G2.at[0], 4.6 + Math.sin(t * 3) * .4, G2.at[1]); b.rotation.y = t * 1.5; b.children[1].position.y = -4.4 - Math.sin(t * 3) * .4; }
+    pt.flags.forEach((f, i) => { if (f.visible) f.children[1].rotation.y = Math.sin(t * 4 + i) * .3; });
+  }
+  function petsHud(){
+    const p = pt.pet, g = pt.goal = petsGoal();
+    const gl = $('#pGoal');
+    if (g){ gl.classList.add('show'); $('#pGoalT').textContent = g.t; const dx = g.at[0] - P.x, dz = g.at[1] - P.z, dd = Math.hypot(dx, dz);
+      $('#pGoalD').textContent = dd > 4 ? Math.round(dd) + 'm' : '📍';
+      const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), fwd = dx * fx + dz * fz, right = dx * -fz + dz * fx;
+      $('#pArrow').style.transform = 'rotate(' + (Math.atan2(right, fwd) * 180 / Math.PI).toFixed(1) + 'deg)'; $('#pArrow').style.visibility = dd > 4 ? '' : 'hidden'; }
+    else gl.classList.remove('show');
+    const pb = $('#pPetBox');
+    if (p){ pb.classList.add('show'); const d = p.d, st = stageOf(d.xp), nx = STAGES[st + 1];
+      $('#pPetN').textContent = PET_KINDS[d.k].emoji + ' ' + d.n; $('#pPetS').textContent = STAGES[st].e + ' ' + STAGES[st].n;
+      [['#pFood', d.f], ['#pFun', d.u], ['#pEn', d.e]].forEach(([id, v]) => { const e = $(id); e.style.width = Math.round(v) + '%'; e.classList.toggle('low', v < 30); });
+      const pr = nx ? (d.xp - STAGES[st].xp) / (nx.xp - STAGES[st].xp) : 1; $('#pGrow').style.width = Math.round(pr * 100) + '%'; $('#pGrowT').textContent = nx ? '🌱 ' + nx.n + ' ' + Math.floor(pr * 100) + '%' : '⭐ Grown up!'; }
+    else pb.classList.remove('show');
+    const pr = pt.prompt = petsPrompt(), b = $('#pAct');
+    if (pr){ b.classList.add('show'); if (b.dataset.k !== pr.k + pr.t){ b.dataset.k = pr.k + pr.t; $('#pActT').textContent = pr.t; } $('#pKey').textContent = pad.on ? 'Ⓧ' : 'E'; }
+    else { b.classList.remove('show'); b.dataset.k = ''; }
+  }
   /* ---------- per-frame ---------- */
+  const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
   function animate(dt){
     coinList.forEach(c => { c.mesh.rotation.z += dt * 3; });
     if (mode === 'obby') animateMech(dt);
@@ -4005,6 +4772,7 @@ const Obby = (() => {
     if (lava) animateLava(dt);
     if (nds) animateNds(dt);
     if (tg) animateTag(dt);
+    if (pt) animatePets(dt);
     animateMp(dt);
     checkpoints.forEach(cp => cp.flag.rotation.y = Math.sin(worldT * 4 + cp.idx) * .25);
     // player model
@@ -4014,7 +4782,8 @@ const Obby = (() => {
     P.walk += dt * sp * 1.3;
     if (emote){ emote.t += dt; if (emote.t > EMOTES[emote.id].dur || (!P.onGround && P.airT > .25)) emote = null; }
     const st = {state: P.climbing ? 'climb' : !P.onGround && P.airT > .08 ? 'jump' : sp > .8 ? 'walk' : 'idle', t: worldT, ph: P.walk, sp: Math.min(1, sp / 5), air: P.airT, jumped: P.jumped};
-    applyPose(dt, emote ? emotePose(emote.id, emote.t) : animPose(avatar.anim || 'default', st));
+    applyPose(dt, pt && pt.drive ? SIT_POSE : emote ? emotePose(emote.id, emote.t) : animPose(avatar.anim || 'default', st));
+    if (pt && pt.drive){ model.g.rotation.y = pt.car.yaw; blob.visible = false; return; }
     // shadow on the highest surface below
     let top = -1e9;
     for (const b of solids){ if (!b.active) continue; const p = b.mesh.position;
@@ -4049,13 +4818,13 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'build' ? '🎮 Left stick move · Ⓐ jump · Right stick look · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
+    const line = mode === 'pets' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use / talk · Ⓑ my pets · Right stick look · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · Ⓐ jump · Right stick look · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
       : '🎮 Left stick move · Ⓐ jump · Right stick look · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
   function padInput(s, dt){
     if (s === 'off' || s === 'idle' || s === 'lost' || !s){
-      pad.x = pad.y = 0; pad.jump = false; pad.lx = pad.ly = 0;
+      pad.x = pad.y = 0; pad.jump = false; pad.lx = pad.ly = 0; pad.gas = pad.brake = 0;
       if (s === 'idle' && pad.on){ pad.on = false; $('#obby').classList.remove('padui'); if (running) setTouchUI(touchUI); }
       if (s === 'lost' && running && !paused && !won && !over && !choosing && !(mp.on && mp.host && mode === 'tag')) setPause(true);
       return;
@@ -4079,6 +4848,12 @@ const Obby = (() => {
       if ($('#oSkip').classList.contains('show')) $('#oSkip').click();
       else { const t = $('#oTip'); padTip(); if (t.classList.contains('hide')){ t.classList.remove('hide'); tipTimer = 8; } else { t.classList.add('hide'); tipTimer = 0; } }
       return;
+    }
+    if (mode === 'pets' && pt){
+      if (jp[2] && petsAct()) return;
+      if (pt.drive){ pad.gas = Math.max(s.v[7] || 0, s.b[0] ? 1 : 0); pad.brake = Math.max(s.v[6] || 0, s.b[1] ? 1 : 0); pad.y = 0; pad.jump = false; if (jp[3]) { cam.yaw = pt.car.yaw + Math.PI; cam.pitch = .34; } return; }
+      pad.gas = pad.brake = 0;
+      if (jp[1]){ openPets(); return; }
     }
     if (mode === 'build' && bw){
       ptr.has = false;   // aim with the crosshair in the middle of the screen
@@ -4104,6 +4879,11 @@ const Obby = (() => {
         : '⌨️ WASD move · Space jump · Drag to look · 🖱️ Click to place a block<br>Shift+click / right-click / X = delete · Q/E pick block · Z undo') + '<br>Build anything! 🪙 +1 coin per 10 blocks (up to 50 a day)';
       return;
     }
+    if (mode === 'pets'){
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ jump · Tap the yellow button to use things · Swipe to look'
+        : '⌨️ WASD move · Space jump · E use / talk · M my pets · Drag to look') + '<br>🐾 Follow the arrow at the top! 🚗 In the car: ' + (on ? 'left thumb steers, ⛽ Go, 🛑 Brake' : 'W gas, S brake, A/D steer');
+      return;
+    }
     if (mode === 'tag'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ to jump · Swipe the right side to look · 😀 emotes'
         : '⌨️ WASD / Arrows to move · Space to jump · Drag the mouse to look · 1–8 emotes · Esc to pause') + "<br>🏷️ Don't be IT! Touch someone to pass it on. Least IT time after 90s wins! +5 🪙 per tag, +30 to win";
@@ -4123,7 +4903,7 @@ const Obby = (() => {
   function updateCamera(){
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets'){ // pull the camera in front of walls so buildings don't block the view
       for (let s = 1.2; s <= cam.dist; s += .4){
         const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
         if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(1.2, s - .5); break; }
@@ -4145,7 +4925,8 @@ const Obby = (() => {
     $('#oStage').textContent = cpIndex + 1; $('#oCoins').textContent = runCoins;
     if (mode === 'obby'){ $('#oLvl').textContent = level; $('#oStageN').textContent = checkpoints.length; $('#oCpWrap').style.display = checkpoints.length > 1 ? '' : 'none';
       $('#oSkip').classList.toggle('show', !won && !paused && deaths >= SKIP_DEATHS && level < OBBY_N && !mpGuest()); }
-    if (tg) return;
+    if (pt) petsHud();
+    if (tg || pt) return;
     $('#oTime').textContent = fmt(time); $('#oDeaths').textContent = deaths;
     if (nds){
       const N = nds, D = N.dis && DISASTERS[N.dis], hp = Math.max(0, Math.round(N.hp));
@@ -4173,6 +4954,7 @@ const Obby = (() => {
       if (nds) ndsUpdate(dt);
       if (bw) buildUpdate(dt);
       if (tg) tagUpdate(dt);
+      if (pt) petsUpdate(dt);
       if (lava && time > LAVA_GRACE && !over && !won){ lava.y += DIFFS[diff].speed * (1 + (time - LAVA_GRACE) / 150) * dt; if (time - dt <= LAVA_GRACE + 0.001 && time > LAVA_GRACE) banner('🌋 The lava is rising! Climb!'); }
       if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0) $('#oTip').classList.add('hide'); }
     }
@@ -4188,6 +4970,12 @@ const Obby = (() => {
     bound = true;
     addEventListener('keydown', e => {
       if (!running) return;
+      if (e.target && e.target.closest && e.target.closest('input, textarea, select')) return;   // typing a pet name etc.
+      if (mode === 'pets' && pt){
+        if (choosing){ if (e.code === 'Escape') petsClosePanels(); return; }
+        if (!e.repeat && !paused && (e.code === 'KeyE' || e.code === 'Enter')){ e.preventDefault(); petsAct(); return; }
+        if (!e.repeat && !paused && e.code === 'KeyM'){ openPets(); return; }
+      }
       if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
       if (e.code === 'Escape' || e.code === 'KeyP'){ if (!won && !over && !choosing) setPause(!paused); return; }
       const em = Object.keys(EMOTES).find(k => 'Digit' + EMOTES[k].key === e.code || 'Numpad' + EMOTES[k].key === e.code);
@@ -4230,6 +5018,20 @@ const Obby = (() => {
     $('#oSlotsClose').onclick = () => { $('#oSlots').classList.remove('show'); paused = false; };
     $('#oTagAgain').onclick = () => { if (mpGuest()) return; stop(); start('tag'); };
     $('#oTagHome').onclick = stop;
+    $('#pAct').addEventListener('pointerdown', e => { e.preventDefault(); e.currentTarget.blur(); petsAct(); });  // pointerdown: works as a 2nd finger while holding a pedal
+    $('#pAct').addEventListener('click', e => { if (e.detail === 0) petsAct(); });
+    $('#pPetsBtn').onclick = e => { e.currentTarget.blur(); if (!choosing && !paused) openPets(); };
+    [['#pGas', 'gas'], ['#pBrake', 'brake']].forEach(([id, k]) => { const b = $(id);
+      b.addEventListener('pointerdown', e => { e.preventDefault(); if (pt) pt[k] = 1; b.classList.add('on'); try { b.setPointerCapture(e.pointerId); } catch(_){} });
+      ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => b.addEventListener(t, () => { if (pt) pt[k] = 0; b.classList.remove('on'); })); });
+    $('#pNameOk').onclick = () => pt && nameOk();
+    $('#pRand').onclick = () => { $('#petNameIn').value = PET_NAMES[Math.floor(Math.random() * PET_NAMES.length)]; $('#pNameMsg').textContent = ''; SND.jump(); };
+    $('#pNameX').onclick = () => { closePanel('#pNamePanel'); try { $('#petNameIn').blur(); } catch(_){} };
+    $('#petNameIn').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter'){ e.preventDefault(); nameOk(); } else if (e.key === 'Escape') $('#pNameX').click(); });
+    $('#petNameIn').addEventListener('input', () => { $('#pNameMsg').textContent = ''; });
+    $('#pAdoptOk').onclick = () => pt && adoptOk();
+    $('#pAdoptBack').onclick = () => closePanel('#pAdoptPanel');
+    $('#pPetsClose').onclick = () => closePanel('#pPetsPanel');
     el.addEventListener('contextmenu', e => e.preventDefault());
     el.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(5, Math.min(30, cam.dist * (1 + e.deltaY * .001))); }, {passive: false});
     // touch: a joystick that appears under your left thumb, a big jump button, and camera swipes anywhere else
@@ -4271,7 +5073,7 @@ const Obby = (() => {
 
   /* ---------- start / stop ---------- */
   function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag'].includes(m) ? m : 'obby'; diff = d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets'].includes(m) ? m : 'obby'; diff = d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     $('#obby').classList.add('show'); document.body.style.overflow = 'hidden'; document.documentElement.classList.add('ingame');
@@ -4288,9 +5090,10 @@ const Obby = (() => {
     ['#oWin','#oLose','#oPausePanel','#oSlots','#oTagEnd'].forEach(id => $(id).classList.remove('show')); $('#oDiff').classList.toggle('show', choosing); $('#oWarn').classList.remove('on');
     $('#oStageBox').style.display = mode === 'obby' ? '' : 'none'; $('#oDeathBox').style.display = mode === 'obby' ? '' : 'none';
     $('#oHeightBox').style.display = $('#oLavaBox').style.display = mode === 'lava' ? '' : 'none';
-    ['#oDisBox','#oRTBox','#oHpBox','#oSurvBox'].forEach(id => $(id).style.display = mode === 'nds' ? '' : 'none'); $('#oTime').parentElement.style.display = mode === 'nds' || mode === 'tag' ? 'none' : '';
+    ['#oDisBox','#oRTBox','#oHpBox','#oSurvBox'].forEach(id => $(id).style.display = mode === 'nds' ? '' : 'none'); $('#oTime').parentElement.style.display = mode === 'nds' || mode === 'tag' || mode === 'pets' ? 'none' : '';
     $('#oBlkBox').style.display = mode === 'build' ? '' : 'none'; ['#oItBox','#oTagTBox','#oMyItBox'].forEach(id => $(id).style.display = mode === 'tag' ? '' : 'none');
-    $('#obby').classList.toggle('bmode', mode === 'build'); ptr.has = false; $('#oPause').textContent = '⏸️';
+    $('#obby').classList.toggle('bmode', mode === 'build'); $('#obby').classList.toggle('pmode', mode === 'pets'); $('#obby').classList.remove('pdrive'); ptr.has = false;
+    ['#pNamePanel','#pAdoptPanel','#pPetsPanel'].forEach(id => $(id).classList.remove('show')); pt && (pt.gas = pt.brake = 0); $('#oPause').textContent = '⏸️';
     $('#oMute').textContent = muted ? '🔇' : '🔊';
     emote = null; P.airT = 0; P.jumped = false; P.climbing = false;
     setTouchUI(!pad.on && (matchMedia('(pointer: coarse)').matches || (navigator.maxTouchPoints > 0 && !matchMedia('(hover: hover)').matches)));   // a controller in use keeps the screen clear
@@ -4302,6 +5105,7 @@ const Obby = (() => {
     else if (mode === 'nds') banner('🏝️ Disaster Island!');
     else if (mode === 'build') banner('🧱 Build World! Make something awesome');
     else if (mode === 'tag') banner("🏷️ Block Tag! Don't be IT!");
+    else if (mode === 'pets') banner(pt && pt.s.pets.length ? '🐾 Welcome back, ' + pt.s.pets[pt.s.a].n + '!' : '🐾 Adopt a Pet! Drive to the Pet Shelter');
     else if (diff) begin(diff);
     mpOnStart();
   }
@@ -4310,13 +5114,25 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); ['#pNamePanel','#pAdoptPanel','#pPetsPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
 
   // debug / test hook
   window.obbyDebug = {
+    pets: () => pt && {flow: pt.s.flow, pend: pt.s.pend, tut: pt.s.tut, tsub: pt.tsub, a: pt.s.a, pets: pt.s.pets.map(p => Object.assign({}, p, {stage: stageOf(p.xp)})), drive: pt.drive,
+      car: {x: pt.car.x, z: pt.car.z, yaw: pt.car.yaw, v: pt.car.v}, pet: pt.pet && {x: pt.pet.x, y: pt.pet.y, z: pt.pet.z, act: pt.pet.act, stage: pt.pet.stage, scale: pt.pet.m.inner.scale.x},
+      door: pt.doorOpen, leash: pt.leashOn, walk: pt.walk && Object.assign({}, pt.walk), ball: pt.ballSt && pt.ballSt.st, prompt: pt.prompt && pt.prompt.t, promptK: pt.prompt && pt.prompt.k,
+      goal: pt.goal && {t: pt.goal.t, at: pt.goal.at}, earned: pt.coinsEarned, choosing, coins, inp: driveInput(), pedals: [pt.gas, pt.brake]},
+    petsAct: () => petsAct(),
+    petsXp(n){ const d = activePet(); if (d) addXp(d, n); },
+    petsNeeds(o){ const d = activePet(); if (d) Object.assign(d, o); },
+    petsGo(k, dx = 0, dz = 0){ const p = k === 'car' ? (() => { const s2 = seatPos(2.6, 0); return [s2.x, s2.z]; })() : /^pen\d$/.test(k) ? PLACES.pens[+k[3]] : /^walk\d$/.test(k) ? PLACES.walk[+k[4]] : PLACES[k];
+      Object.assign(P, {x: p[0] + dx, y: .05, z: p[1] + dz, vx: 0, vy: 0, vz: 0}); const q = pt.pet; if (q && q.act === 'follow'){ q.x = P.x - 1.2; q.z = P.z - 1.2; } },
+    petsCar(x, z, yaw = 0){ Object.assign(pt.car, {x, z, yaw, v: 0}); },
+    petsFace(f){ P.face = f; cam.yaw = f + Math.PI; },
+    petsCam(yaw, pitch, dist){ cam.yaw = yaw; if (pitch != null) cam.pitch = pitch; if (dist != null) cam.dist = dist; },
     get state(){ return {mode, diff, level, x: P.x, y: P.y, z: P.z, stage: cpIndex + 1, deaths, runCoins, time, won, over, choosing, paused, running, onGround: P.onGround, rafActive: raf !== 0, lavaY: lava ? lava.y : null, topY, maxY}; },
     setLava(y){ if (lava) lava.y = y; },
     acc: () => { if (!model) return null; const o = {}; model.g.traverse(c => {
@@ -4485,7 +5301,7 @@ const Obby = (() => {
   }
   function closeOf(c){
     const id = c.root.id;
-    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome'};
+    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', pNamePanel: '#pNameX', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose'};
     if (map[id]) return document.querySelector(map[id]);
     return null;
   }
@@ -4506,7 +5322,7 @@ const Obby = (() => {
   }
   function endEdit(){
     const el = edit; edit = null; if (!el) return; el.classList.remove('gpedit'); el.blur();
-    const nxt = el.id === 'mpCode' ? document.getElementById('mpJoin') : el.id === 'nameIn' ? document.getElementById('nameOk') : null;
+    const nxt = el.id === 'mpCode' ? document.getElementById('mpJoin') : el.id === 'nameIn' ? document.getElementById('nameOk') : el.id === 'petNameIn' ? document.getElementById('pNameOk') : null;
     if (nxt && shown(nxt)) setFocus(nxt);
   }
   function editKey(dir){
