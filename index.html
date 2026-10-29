@@ -173,6 +173,24 @@ body.dark .sitem canvas{background:linear-gradient(#34427e,#26306a)}
 .otip{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);background:rgba(29,35,64,.85);color:#fff;font-weight:800;font-size:17px;padding:12px 20px;border-radius:16px;text-align:center;transition:opacity .6s;max-width:92vw}
 .otip.hide{opacity:0;pointer-events:none}
 .opanel{position:absolute;inset:0;display:none;place-items:center;background:rgba(10,14,35,.45)}
+.owinbtns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:6px}
+.oskip{position:absolute;left:50%;top:calc(max(14px,env(safe-area-inset-top)) + 62px);transform:translateX(-50%);display:none;border:0;border-radius:999px;background:#ffd23f;color:#1d2340;font:inherit;font-weight:900;font-size:16px;padding:10px 18px;box-shadow:0 4px 0 rgba(0,0,0,.2);cursor:pointer;z-index:4}
+.oskip.show{display:block;animation:skipin .5s cubic-bezier(.3,1.8,.5,1)}
+@media (max-width:640px){.oskip{top:calc(max(14px,env(safe-area-inset-top)) + 118px)}}
+@keyframes skipin{from{transform:translateX(-50%) scale(.5)}to{transform:translateX(-50%)}}
+#lvlModal .mbox.lvbox{max-width:780px;max-height:min(90vh,900px);overflow:auto;padding:20px 18px}
+.lvsub{color:var(--muted);font-weight:800;margin-bottom:6px;line-height:1.5}
+.lvworld{margin:12px 0 4px;text-align:left}
+.lvworld h3{margin:0 0 8px;padding:7px 12px;border-radius:12px;background:var(--wc);color:#fff;font-size:17px;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.lvrow{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+@media (max-width:640px){.lvrow{grid-template-columns:repeat(5,1fr)}}
+.lvbtn{border:3px solid var(--wc);border-radius:12px;background:var(--bg2);color:var(--text);font:inherit;font-weight:900;padding:5px 0;min-height:58px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:0 3px 0 rgba(0,0,0,.15);transition:transform .15s}
+.lvbtn b{font-size:20px;line-height:1.1}
+.lvbtn small{font-size:10.5px;color:var(--muted);font-weight:800;white-space:nowrap}
+.lvbtn.done{background:var(--wc);color:#fff}.lvbtn.done small{color:#fff}
+.lvbtn.lock{opacity:.45;cursor:default;border-style:dashed}
+.lvbtn.boss:not(.lock){background:linear-gradient(135deg,#ffd23f,#ff9f1c);color:#1d2340;border-color:#c98a00}.lvbtn.boss small{color:#1d2340}
+.lvbtn:not(.lock):hover{transform:translateY(-2px)}
 .opanel.show{display:grid}
 #oWin{place-items:end center;padding-bottom:3vh;background:rgba(10,14,35,.12)}
 #oWin .mbox{padding:18px 24px}
@@ -502,6 +520,14 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <button class="big" id="soonOk">OK! 👍</button>
   </div>
 </div>
+<div class="modal" id="lvlModal">
+  <div class="mbox lvbox">
+    <h2>🏃 Obby Rush</h2>
+    <div class="lvsub" id="lvSub"></div>
+    <div id="lvGrid"></div>
+    <button class="big gray" id="lvClose" style="margin-top:12px">✖ Close</button>
+  </div>
+</div>
 <div class="modal" id="setModal">
   <div class="mbox">
     <span class="emoji">⚙️</span>
@@ -521,7 +547,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   <div id="obbyView"></div>
   <div class="ohud">
     <div class="ostats">
-      <span id="oStageBox">🏁 Stage <b id="oStage">1</b>/3</span>
+      <span id="oStageBox">🏁 Lv <b id="oLvl">1</b><span id="oCpWrap"> · 🚩 <b id="oStage">1</b>/<b id="oStageN">3</b></span></span>
       <span id="oHeightBox">📏 <b id="oHeight">0</b></span>
       <span id="oLavaBox">🌋 <b id="oLava">0</b></span>
       <span><span class="coin sm"></span><b id="oCoins">0</b></span>
@@ -566,6 +592,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     </div>
   </div>
   <div class="orot" id="oRot"><b>📱</b>Turn your phone sideways for a bigger view!<br><small>(or keep playing like this 👍)</small></div>
+  <button class="oskip" id="oSkip" title="Too tricky? Skip to the next level">⏭️ Skip level</button>
   <div class="oflash" id="oFlash"></div>
   <div class="owarn" id="oWarn"></div>
   <div class="opanel" id="oDiff"><div class="mbox">
@@ -610,8 +637,12 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   <div class="opanel" id="oWin"><div class="mbox">
     <span class="emoji" id="oWinEmoji">🏆</span><h2 id="oWinTitle">You beat Obby Rush!</h2>
     <div class="stats" id="oWinStats"></div>
-    <button class="big green" id="oAgain">🔁 Play again</button>
-    <button class="big blue" id="oHome" style="margin-left:6px">🏠 Home</button>
+    <div class="owinbtns">
+    <button class="big green" id="oNext" style="display:none">▶ Next level</button>
+    <button class="big" id="oAgain">🔁 Play again</button>
+    <button class="big gray" id="oLevels" style="display:none">🗺️ Levels</button>
+    <button class="big blue" id="oHome">🏠 Home</button>
+    </div>
   </div></div>
 </div>
 <script>
@@ -1233,7 +1264,7 @@ $('#saveAv').onclick = () => {
 
 /* ---------- games ---------- */
 const GAMES = [
-  {id:'obby',  name:'Obby Rush',   emoji:'🏃', tag:'Jump & run',      draw: drawObby, playable: true},
+  {id:'obby',  name:'Obby Rush',   emoji:'🏃', tag:'50 levels!',      draw: drawObby, playable: true},
   {id:'build', name:'Build World', emoji:'🧱', tag:'Build anything',  draw: drawBuild, playable: true},
   {id:'tag',   name:'Block Tag',   emoji:'🏷️', tag:"You're it!",      draw: drawTag, playable: true},
   {id:'lava',  name:'Lava Escape', emoji:'🌋', tag:'Climb up fast',   draw: drawLava, playable: true, anim: true},
@@ -1656,7 +1687,7 @@ const Obby = (() => {
   function vanish(x, top, z, w, d, color){
     const material = new THREE.MeshLambertMaterial({color, transparent: true, opacity: 1});
     const b = plat(x, top, z, w, d, color, 1, {material});
-    vanishers.push({b, material, state: 0, t: 0, bx: x});
+    vanishers.push({b, material, state: 0, t: 0, bx: x}); return b;
   }
   function spinner(x, y, z, len, speed){
     const pivot = new THREE.Group(); pivot.position.set(x, y, z); scene.add(pivot);
@@ -1798,22 +1829,23 @@ const Obby = (() => {
     if (scene) scene.traverse(o => { if (o.geometry) o.geometry.dispose(); [].concat(o.material || []).forEach(m => { if (m.map) m.map.dispose(); if (!Object.values(mats).includes(m)) m.dispose(); }); });
     Object.values(mats).forEach(m => m.dispose()); mats = {};
     scene = new THREE.Scene();
-    const LV = mode === 'lava';
-    scene.background = new THREE.Color(LV ? '#4b2466' : '#8fd3ff');
-    scene.fog = new THREE.Fog(LV ? '#5e2a5a' : '#8fd3ff', LV ? 50 : 60, LV ? 150 : 170);
-    scene.add(LV ? new THREE.HemisphereLight('#ffe0c0', '#ff6a00', .62) : new THREE.HemisphereLight('#ffffff', '#5a6a9c', .62));
+    const LV = mode === 'lava', OW = mode === 'obby' ? worldOf(level) : null;
+    scene.background = new THREE.Color(OW ? OW.sky : LV ? '#4b2466' : '#8fd3ff');
+    scene.fog = new THREE.Fog(OW ? OW.fog : LV ? '#5e2a5a' : '#8fd3ff', LV ? 50 : 60, LV ? 150 : 170);
+    scene.add(OW ? new THREE.HemisphereLight(OW.hemi[0], OW.hemi[1], OW.neon ? .5 : .62) : LV ? new THREE.HemisphereLight('#ffe0c0', '#ff6a00', .62) : new THREE.HemisphereLight('#ffffff', '#5a6a9c', .62));
     const sun = new THREE.DirectionalLight(LV ? '#ffd9b0' : '#ffffff', .5); sun.position.set(30, 60, -20); scene.add(sun);
-    edgeMat = new THREE.LineBasicMaterial({color: '#1d2340', transparent: true, opacity: .25});
+    edgeMat = OW && OW.neon ? new THREE.LineBasicMaterial({color: '#e2c8ff', transparent: true, opacity: .75}) : new THREE.LineBasicMaterial({color: '#1d2340', transparent: true, opacity: .25});
     solids = []; kills = []; spinners = []; movers = []; vanishers = []; checkpoints = []; coinList = []; jumpPads = []; trusses = []; lava = null; escapePad = null; finish = null; trophy = null;
+    blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
     nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null;
-    if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else buildObbyCourse();
+    if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
     else if (mode === 'build') [[-40,22,30,2.5],[45,28,-20,3],[0,35,-60,3.5],[-30,18,-40,2]].forEach(a => cloud(...a));
-    else if (mode !== 'tag') [[-30,10,40,2],[35,18,80,2.5],[-40,25,130,3],[30,8,20,1.5],[25,30,170,2.5],[-25,5,95,1.8],[0,40,230,4]].forEach(a => cloud(...a));
+    else if (mode !== 'tag' && mode !== 'obby') [[-30,10,40,2],[35,18,80,2.5],[-40,25,130,3],[30,8,20,1.5],[25,30,170,2.5],[-25,5,95,1.8],[0,40,230,4]].forEach(a => cloud(...a));
     // player + shadow
     model = buildPlayer(avatar); scene.add(model.g);
     blob = new THREE.Mesh(new THREE.CircleGeometry(.6, 20), new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: .25, depthWrite: false}));
@@ -1821,46 +1853,393 @@ const Obby = (() => {
     camera = new THREE.PerspectiveCamera(60, 1, .1, 400);
   }
   let coinGeo;
-  function buildObbyCourse(){
-    // ---- Stage 1: hops, a beam and a lava strip
-    const start = plat(0, 0, 0, 12, 12, '#2ec27e', 2);
-    checkpoint(start, 0);
-    plat(0, 0, 10, 4, 4, C[0]); coin(0, 1.5, 10);
-    plat(0, 1, 16, 4, 4, C[1]); coin(0, 2.5, 16);
-    plat(0, 2, 22, 4, 4, C[2]); coin(0, 3.5, 22);
-    plat(0, 2, 30, 1.2, 10, C[4]); coin(0, 3.5, 28); coin(0, 3.5, 32);
-    plat(0, 2, 40, 8, 6, C[3]); kill(0, 2, 40, 8, .5, 1.2); coin(0, 4.6, 40);
-    plat(-5, 3, 47, 4, 4, C[5]); coin(-5, 4.5, 47);
-    plat(0, 4, 53, 4, 4, C[6]); coin(0, 5.5, 53);
-    checkpoint(plat(0, 4, 61, 8, 8, '#9aa7c7'), 1);
-    // ---- Stage 2: moving platforms, spinner, disappearing blocks
-    const m1 = plat(0, 4, 70, 4, 4, C[4]); mover(m1, 'x', 4, 1.2);
-    plat(0, 4, 77, 4, 4, C[2]); coin(0, 5.5, 77);
-    const m2 = plat(0, 4, 84, 4, 4, C[6]); mover(m2, 'x', 5, 1.6, 1); coin(0, 6, 84);
-    plat(0, 4, 96, 12, 12, C[3]); spinner(0, 4.6, 96, 11.5, 1.8);
-    coin(4, 5.5, 92); coin(-4, 5.5, 100); coin(4, 5.5, 100);
-    vanish(0, 4, 107, 3, 3, '#7cc6ff'); coin(0, 5.5, 107);
-    vanish(3, 4.5, 112.5, 3, 3, '#7cc6ff'); coin(3, 6, 112.5);
-    vanish(0, 5, 118, 3, 3, '#7cc6ff'); coin(0, 6.5, 118);
-    checkpoint(plat(0, 5, 126, 8, 8, '#9aa7c7'), 2);
-    // ---- Stage 3: jump pad, truss climb, lava beam, moving platform, finish
-    const pad = plat(0, 5, 135, 4, 4, '#ffd23f', 1, {glow: '#7a5a00'}); jumpPads.push(pad);
-    [-1, 1].forEach(s => addBox(s * .9, 5.05, 135, .5, .1, 1.6, '#ff9f1c', {noEdge: true}));
-    plat(0, 11, 142, 6, 6, C[5]); coin(-2, 12.5, 141);
-    const truss = plat(0, 19, 145.5, 3, 1, '#b8c0d0', 8); trusses.push(truss);
-    for (let y = 12; y < 19; y += 1.2) addBox(0, y, 145, 3.1, .15, .1, '#7c869c', {noEdge: true});
-    plat(0, 19, 150, 5, 8, C[0]); coin(0, 20.5, 151);
-    plat(0, 19, 160, 1.2, 8, C[4]); kill(0, 19, 160, 1.2, .8, .8); coin(0, 22, 160);
-    plat(0, 19, 168, 4, 4, C[2]); coin(0, 20.5, 168);
-    const m3 = plat(0, 19, 176, 4, 4, C[6]); mover(m3, 'x', 4, 1.4, 2); coin(0, 21, 176);
-    finish = plat(0, 19, 187, 10, 10, '#ffd23f', 1, {glow: '#6b4f00'});
-    // trophy
-    trophy = new THREE.Group(); trophy.position.set(0, 19, 189); scene.add(trophy);
+  /* ---------- Obby Rush: 50 levels in 5 themed worlds ---------- */
+  const OBBY_N = 50, SKIP_DEATHS = 12, PROG_KEY = 'rubloxObby';
+  const WORLDS = [
+    {name: 'Grassy Meadow', emoji: '🌱', sky: '#8fd3ff', fog: '#8fd3ff', hemi: ['#ffffff', '#5a6a9c'], cols: ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5'], start: '#2ec27e', cloud: '#ffffff', ui: '#2ec27e'},
+    {name: 'Desert Canyon', emoji: '🏜️', sky: '#ffd6a0', fog: '#ffd2a0', hemi: ['#fff1d6', '#a0643c'], cols: ['#e07a3f','#f2b45a','#c9643b','#e8c37a','#b5523b','#f0965a'], start: '#d9a24a', cloud: '#fff4e0', ui: '#f08a3c'},
+    {name: 'Frozen Peaks', emoji: '❄️', sky: '#cfeaff', fog: '#e4f3ff', hemi: ['#ffffff', '#7fa6c9'], cols: ['#ffffff','#bfe6ff','#8fd0ff','#d8ccff','#a7f0ff','#7fb6e8'], start: '#e9f6ff', cloud: '#ffffff', ui: '#3fa9f5'},
+    {name: 'Neon City', emoji: '🌃', sky: '#0b0c24', fog: '#0b0c24', hemi: ['#9aa6ff', '#221144'], cols: ['#ff2bd6','#00e5ff','#7cff4f','#ffe600','#b45cff'], start: '#3a2f7a', cloud: '#2a2350', ui: '#a24cff', neon: true},
+    {name: 'Volcano Peak', emoji: '🌋', sky: '#4b2466', fog: '#5e2a5a', hemi: ['#ffe0c0', '#ff6a00'], cols: ['#5a4a55','#7a5c66','#8b5e4a','#4d4459','#a0684a'], start: '#6b5560', cloud: '#6b4a6e', ui: '#ff5a2a', lavaSea: true},
+  ];
+  const worldOf = n => WORLDS[Math.min(WORLDS.length - 1, Math.floor((n - 1) / 10))];
+  // the level where each kind of obstacle first shows up
+  const TEMPLATES = {hops: 1, beam: 1, lavaplat: 1, mover: 2, spinner: 2, vanish: 2, pad: 3, truss: 3, stairs: 4, elevator: 5, lavabeam: 7, conveyor: 11, blink: 13, falling: 15, ice: 21, wind: 23, rope: 25, laser: 31, cross: 33};
+  const INTRO = {
+    2: [null, 'Moving platforms, a spinning bar and blocks that vanish!'], 3: [null, 'Jump pads boing you up high. Walk into the gray truss to climb!'],
+    4: ['stairs', '🪜 Stairs in the sky! Hop up, step by step.'], 5: ['elevator', '🛗 Elevators! Ride them up, then jump off at the top.'],
+    7: ['lavabeam', '🔥 Lava on the beams! Jump over the red blocks.'], 11: ['conveyor', '➡️ Conveyor belts push you! Walk against the arrows.'],
+    13: ['blink', '💡 Blinking blocks turn on and off. Jump when they light up!'], 15: ['falling', '🪨 Crumbly blocks fall when you stand on them. Keep moving!'],
+    21: ['ice', '🧊 Ice is slippery! Slow down before the edge.'], 23: ['wind', '💨 Wind pushes you sideways. Lean into it!'],
+    25: ['rope', '🪢 Tightropes! Walk carefully and stay in the middle.'], 31: ['laser', '🚨 Laser gates switch on and off. Wait for them to go dark!'],
+    33: ['cross', '✖️ Double spinning bars! Time your jumps.'], 41: [null, '🌋 Everything you have learned, all at once. Do not fall in the lava!'],
+    50: [null, '👑 The GRAND FINALE! Every obstacle in the game. You can do it!'],
+  };
+  const FAV = [['hops','mover','spinner','vanish','pad','truss','stairs','elevator','lavabeam'], ['conveyor','blink','falling','lavaplat','mover'], ['ice','wind','rope','vanish'], ['laser','cross','blink','mover','elevator'], []];
+  let level = 1, G = null, SIM = false, voidY = -25;
+  let blinkers = [], fallers = [], lasers = [], convs = [], winds = [];
+  function mulberry(a){ return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const reachV = (v0, h) => { const d = v0 * v0 - 2 * GRAV * h; return d < 0 ? -1 : SPEED * (v0 + Math.sqrt(d)) / GRAV; };
+  const reachD = h => reachV(JUMP, Math.max(0, h));
+  function gcol(G){ return G.W.cols[Math.floor(G.r() * G.W.cols.length)]; }
+  function gplat(G, x, top, z, w, d, col, opts, h = 1){ if (G.W.neon && !opts) opts = {glow: col}; return plat(x, top, z, w, d, col, h, opts); }
+  function gDx(G, m = 2.5){ return (G.r() * 2 - 1) * m - G.lx * .3; }
+  function gGap(G, rise){ return Math.min(.62 * reachD(rise), lerp(1.6, 2.4, G.t) + G.r() * lerp(1, 1.9, G.t)); }
+  function gRise(G){ return Math.round((G.r() * (lerp(1, 2.1, G.t) + 1) - 1) * 2) / 2; }
+  function gSize(G){ return Math.max(2.2, lerp(4.4, 2.6, G.t) + G.r() - .4); }
+  function gCoin(b, dy = 1.5){ const p = b.mesh.position; coin(p.x, p.y + b.hh + dy, p.z); }
+  // put the next block after the last one: `gap` is the real edge-to-edge distance, even for sideways steps
+  function place(G, o){
+    const w = o.w, d = o.d, top = G.y + (o.rise || 0);
+    let dx = o.dx || 0, gap = o.gap; if (G.capNext){ gap = Math.min(gap, G.capNext); G.capNext = 0; }
+    const half = G.lw + w / 2; let lat = Math.max(0, Math.abs(dx) - half);
+    if (lat > gap * .7){ lat = gap * .7; dx = Math.sign(dx) * (half + lat); }
+    const gz = Math.sqrt(Math.max(0, gap * gap - lat * lat)), x = G.lx + dx, z = G.ze + gz + d / 2;
+    const col = o.col || gcol(G);
+    const b = o.make ? o.make(x, top, z, w, d, col) : gplat(G, x, top, z, w, d, col, o.opts, o.h || 1);
+    Object.assign(G, {lx: x, lw: w / 2, y: top, ze: z + d / 2}); G.path.push(b); return b;
+  }
+  function tHops(G, k){
+    k = k || 3 + Math.floor(G.r() * 2 + G.t * 1.5);
+    for (let i = 0; i < k; i++){ const rise = gRise(G), s = gSize(G);
+      const b = place(G, {gap: gGap(G, rise), rise, w: s, d: s, dx: gDx(G)}); if (G.r() < .6) gCoin(b); }
+  }
+  function tStairs(G){
+    const dir = G.r() < .5 ? 1 : -1;
+    for (let i = 0; i < 4; i++){ const rise = Math.round((1.2 + G.r() * lerp(.4, .9, G.t)) * 2) / 2;
+      const b = place(G, {gap: Math.min(.62 * reachD(rise), 1.2 + G.r() * lerp(.6, 1.6, G.t)), rise, w: 3, d: 2.6, dx: dir * (i % 2 ? 1 : -1) * (.5 + G.r() * 1.5) - G.lx * .2});
+      if (i === 3) gCoin(b); }
+  }
+  function tBeam(G, lava){
+    const w = lerp(1.5, .95, G.t), d = 7 + G.r() * 4, rise = G.r() < .5 ? 0 : .5;
+    const b = place(G, {gap: gGap(G, rise) * .85, rise, w, d, dx: (G.r() * 2 - 1) * .8 - G.lx * .25});
+    const p = b.mesh.position, top = G.y;
+    if (lava){ const k = d > 9 ? 3 : 2; for (let i = 1; i <= k; i++){ const z = p.z - d / 2 + d * i / (k + 1); kill(p.x, top, z, w, .55, .7); coin(p.x, top + 2.6, z); } }
+    else for (let z = p.z - d / 2 + 1.5; z < p.z + d / 2 - 1; z += 3) coin(p.x, top + 1.5, z);
+  }
+  function tLavaPlat(G){
+    const s = 6 + G.r() * 2, rise = Math.min(1, gRise(G));
+    const b = place(G, {gap: gGap(G, rise), rise, w: s, d: s, dx: gDx(G)}), p = b.mesh.position;
+    kill(p.x, G.y, p.z, s, .5, lerp(1, 1.8, G.t)); coin(p.x, G.y + 2.8, p.z);
+  }
+  function tMover(G){
+    const k = G.t > .4 && G.r() < .5 ? 2 : 1;
+    for (let i = 0; i < k; i++){ const s = 3.4 + G.r() * .8;
+      const b = place(G, {gap: Math.min(2.4, gGap(G, 0)), rise: 0, w: s, d: s, dx: gDx(G, 1)});
+      mover(b, 'x', 3 + G.r() * lerp(1, 2.5, G.t), 1 + G.r() * lerp(.4, 1, G.t), G.r() * 6); gCoin(b, 2); }
+    G.capNext = 2.6;
+  }
+  function tElevator(G){
+    const amp = 1.8 + G.r() * .8;
+    const b = place(G, {gap: 2, rise: amp, w: 4, d: 4, dx: gDx(G, 1)});
+    mover(b, 'y', amp, 1 + G.r() * .5, G.r() * 6);
+    G.y += amp; G.capNext = 2.4;   // the next jump is measured from the top of the ride
+    const c = place(G, {gap: 2 + G.r() * .5, rise: Math.round(G.r() * 2) / 2, w: 4.5, d: 4.5, dx: gDx(G, 1)}); gCoin(c);
+  }
+  function tSpinner(G, cross){
+    const s = cross ? 11 : 10 + G.r() * 2, rise = Math.min(1, gRise(G));
+    const b = place(G, {gap: gGap(G, rise), rise, w: s, d: s, dx: gDx(G, 1)}), p = b.mesh.position;
+    const sp = (lerp(1.2, 2.1, G.t) + G.r() * .5) * (G.r() < .5 ? -1 : 1) * (cross ? .8 : 1);
+    spinner(p.x, G.y + .6, p.z, s - .6, sp);
+    if (cross){ spinner(p.x, G.y + .6, p.z, s - .6, sp); spinners[spinners.length - 1].pivot.rotation.y = Math.PI / 2; }
+    [[1, 1], [-1, -1], [1, -1]].forEach(([a, c]) => coin(p.x + a * s * .32, G.y + 1.5, p.z + c * s * .32));
+  }
+  function tVanish(G){
+    const k = 3 + (G.t > .5 ? 1 : 0);
+    for (let i = 0; i < k; i++){ const rise = Math.min(1, gRise(G));
+      const b = place(G, {gap: Math.min(2.6, gGap(G, rise)), rise, w: 3, d: 3, dx: gDx(G, 3), make: (x, top, z, w, d) => vanish(x, top, z, w, d, '#7cc6ff')});
+      if (i % 2 === 0) gCoin(b); }
+  }
+  function tPad(G){
+    const b = place(G, {gap: Math.min(2.6, gGap(G, 0)), rise: 0, w: 4, d: 4, dx: gDx(G, 1.5), col: '#ffd23f', opts: {glow: '#7a5a00'}}); jumpPads.push(b);
+    const p = b.mesh.position; [-1, 1].forEach(s => addBox(p.x + s * .9, G.y + .05, p.z, .5, .1, 1.6, '#ff9f1c', {noEdge: true}));
+    const c = place(G, {gap: 1.5 + G.r(), rise: Math.round((4 + G.r() * lerp(1, 2.5, G.t)) * 2) / 2, w: 5, d: 5, dx: gDx(G, 1)}); gCoin(c);
+  }
+  function tTruss(G){
+    const A = place(G, {gap: gGap(G, 0) * .9, rise: 0, w: 5, d: 5, dx: gDx(G, 1.5)});
+    const h = Math.round(5 + G.r() * lerp(1, 4, G.t)), ax = A.mesh.position.x, base = G.y, top = base + h, tz = G.ze + .5;
+    const tr = plat(ax, top, tz, 3, 1, '#b8c0d0', h); tr.truss = true; trusses.push(tr);
+    for (let y = base + 1; y < top; y += 1.2) addBox(ax, y, tz - .55, 3.1, .15, .1, '#7c869c', {noEdge: true});
+    Object.assign(G, {ze: G.ze + 1, y: top, lx: ax, lw: 1.5});
+    const B = place(G, {gap: 0, rise: 0, w: 5, d: 6, dx: 0}); gCoin(B);
+  }
+  function arrowTex(dir){
+    return canvasTex(32, 32, c => { c.fillStyle = '#3b3f55'; c.fillRect(0, 0, 32, 32); c.fillStyle = '#ffd23f'; c.translate(16, 16); c.rotate({u: 0, r: Math.PI / 2, l: -Math.PI / 2}[dir]);
+      c.beginPath(); c.moveTo(-10, 4); c.lineTo(0, -7); c.lineTo(10, 4); c.lineTo(6, 8); c.lineTo(0, 1); c.lineTo(-6, 8); c.closePath(); c.fill(); });
+  }
+  function tConveyor(G){
+    const side = G.r() < .5, d = 8 + G.r() * 4, w = side ? 4.5 : 3.6, sp = 2.5 + G.r() * lerp(1, 2.5, G.t), sx = G.r() < .5 ? -1 : 1;
+    const conv = side ? {x: sx * sp, z: 0} : {x: 0, z: -sp}, dir = side ? (sx > 0 ? 'r' : 'l') : 'u';
+    const b = place(G, {gap: gGap(G, 0) * .8, rise: Math.max(0, Math.min(1, gRise(G))), w, d, dx: gDx(G, 1.5), make: (x, top, z, w, d) => {
+      const tex = arrowTex(dir); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(w / 2, d / 2);
+      const sideM = mat('#3b3f55'), topM = new THREE.MeshLambertMaterial({map: tex, emissive: G.W.neon ? '#333333' : '#000000'});
+      const b = plat(x, top, z, w, d, null, 1, {material: [sideM, sideM, topM, sideM, sideM, sideM]});
+      const r = sp / 2; convs.push({b, tex, conv, du: dir === 'r' ? -r : dir === 'l' ? r : 0, dv: dir === 'u' ? -r : 0}); return b; }});
+    b.conv = conv;
+    for (let z = b.mesh.position.z - d / 2 + 2; z < b.mesh.position.z + d / 2 - 1; z += 3) coin(b.mesh.position.x, G.y + 1.5, z);
+  }
+  function tBlink(G){
+    const k = 3 + (G.t > .5 ? 1 : 0), per = lerp(3, 2.6, G.t);
+    for (let i = 0; i < k; i++){
+      const b = place(G, {gap: Math.min(2.4, gGap(G, 0)), rise: G.r() < .5 ? 0 : .5, w: 3.2, d: 3.2, dx: gDx(G, 2.5), make: (x, top, z, w, d) => {
+        const col = i % 2 ? '#ff6fb5' : '#3cf2c8', material = new THREE.MeshLambertMaterial({color: col, transparent: true, opacity: 1, emissive: col, emissiveIntensity: .35});
+        const b = plat(x, top, z, w, d, col, 1, {material}); blinkers.push({b, material, per, ph: (i % 2) * per / 2, on: .6}); return b; }});
+      if (i % 2) gCoin(b);
+    }
+  }
+  function tFalling(G){
+    const k = 3 + Math.floor(G.t * 2);
+    for (let i = 0; i < k; i++){ const rise = Math.min(.5, gRise(G));
+      const b = place(G, {gap: Math.min(2.6, gGap(G, rise)), rise, w: 2.8, d: 2.8, dx: gDx(G, 2.5), col: '#b98552', opts: G.W.neon ? {glow: '#b98552'} : undefined});
+      [.6, -.7].forEach(a => { const cr = new THREE.Mesh(new THREE.BoxGeometry(2, .04, .1), mat('#6b4a2b')); cr.position.y = .51; cr.rotation.y = a; b.mesh.add(cr); });
+      fallers.push({b, x: b.mesh.position.x, y0: b.mesh.position.y, st: 0, t: 0, v: 0, delay: lerp(.8, .5, G.t)}); if (i % 2) gCoin(b); }
+  }
+  function tIce(G){
+    const k = 2 + (G.t > .6 ? 1 : 0);
+    for (let i = 0; i < k; i++){ const s = 4.5 + G.r() * 1.5, rise = Math.min(1, Math.max(0, gRise(G)));
+      const b = place(G, {gap: Math.min(.5 * reachD(rise), gGap(G, rise)), rise, w: s, d: s, dx: gDx(G, 2), col: '#c8f3ff', opts: {glow: '#4fb3d9'}}); b.ice = true; gCoin(b); }
+    G.capNext = .5 * reachD(0);
+  }
+  function tWind(G){
+    const fx = (G.r() < .5 ? -1 : 1) * (2.5 + G.r() * lerp(1, 2.5, G.t)), z0 = G.ze, y0 = G.y;
+    for (let i = 0; i < 3; i++){ const rise = Math.min(1, gRise(G)); const b = place(G, {gap: Math.min(3, gGap(G, rise)), rise, w: 4.5, d: 3.2, dx: gDx(G, 1.2)}); if (i === 1) gCoin(b); }
+    const w = {z0: z0 + .5, z1: G.ze - 1.6, y0: Math.min(y0, G.y) - 8, y1: Math.max(y0, G.y) + 9, fx, streaks: [], cx: G.lx};
+    const sm = new THREE.MeshBasicMaterial({color: '#ffffff', transparent: true, opacity: .6});
+    for (let i = 0; i < 14; i++){ const s = new THREE.Mesh(new THREE.BoxGeometry(1.8, .07, .07), sm); s.position.set(G.lx + (G.r() - .5) * 20, w.y0 + 8 + G.r() * 7, w.z0 + G.r() * (w.z1 - w.z0)); scene.add(s); w.streaks.push(s); }
+    winds.push(w);
+  }
+  function tRope(G){
+    const d = 8 + G.r() * lerp(2, 6, G.t);
+    const b = place(G, {gap: 1.6 + G.r() * .8, rise: 0, w: .45, d, dx: (G.r() * 2 - 1) * .3 - G.lx * .15, col: '#e9d3a3', h: .3, opts: G.W.neon ? {glow: '#e9d3a3'} : undefined});
+    const p = b.mesh.position; [-1, 1].forEach(s => addBox(p.x, G.y - 1.3, p.z + s * (d / 2 - .25), .5, 2, .5, '#8b5a2b'));
+    for (let z = p.z - d / 2 + 2; z < p.z + d / 2 - 1; z += 2.5) coin(p.x, G.y + 1.5, z);
+    G.capNext = 2.6;
+  }
+  function tLaser(G){
+    const k = 2 + (G.t > .5 ? 1 : 0), d = 4 + k * 4, w = 4, per = 2.4 + G.r() * .6;
+    const b = place(G, {gap: gGap(G, 0) * .8, rise: 0, w, d, dx: gDx(G, 1.5)}), p = b.mesh.position;
+    for (let i = 1; i <= k; i++){ const z = p.z - d / 2 + i * 4;
+      [-1, 1].forEach(s => addBox(p.x + s * (w / 2 + .2), G.y + 1.7, z, .4, 3.4, .4, '#2d3047', {glow: '#5a0f2a'}));
+      const lm = new THREE.MeshBasicMaterial({color: '#ff2a6d', transparent: true, opacity: .8});
+      const l = {mesh: addBox(p.x, G.y + 1.6, z, w, 3.2, .22, null, {material: lm, noEdge: true}), hw: w / 2, hh: 1.6, hd: .11, active: true}; kills.push(l);
+      lasers.push({k: l, per, ph: (i % 2) * per / 2, on: .5}); coin(p.x, G.y + 1.5, z + 2); }
+  }
+  function tCheck(G){ const b = place(G, {gap: Math.min(2.4, gGap(G, 0)), rise: Math.max(0, Math.min(1, gRise(G))), w: 7, d: 7, dx: gDx(G, 1.5), col: '#9aa7c7'}); checkpoint(b, checkpoints.length); }
+  function trophyAt(x, y, z, s = 1){
+    trophy = new THREE.Group(); trophy.position.set(x, y, z); trophy.scale.setScalar(s); scene.add(trophy);
     const gold = new THREE.MeshLambertMaterial({color: '#ffd23f', emissive: '#8a6200'});
     const t1 = new THREE.Mesh(new THREE.BoxGeometry(1.4, .4, 1.4), gold); t1.position.y = .2; trophy.add(t1);
     const t2 = new THREE.Mesh(new THREE.CylinderGeometry(.15, .25, 1, 10), gold); t2.position.y = .9; trophy.add(t2);
     const t3 = new THREE.Mesh(new THREE.CylinderGeometry(.85, .35, 1.3, 16), gold); t3.position.y = 2; trophy.add(t3);
-    [-1, 1].forEach(s => { const h = new THREE.Mesh(new THREE.TorusGeometry(.35, .09, 8, 16), gold); h.position.set(s*.9, 2.1, 0); trophy.add(h); });
+    [-1, 1].forEach(k => { const h = new THREE.Mesh(new THREE.TorusGeometry(.35, .09, 8, 16), gold); h.position.set(k * .9, 2.1, 0); trophy.add(h); });
+  }
+  function tFinish(G, big){
+    const s = big ? 14 : 10;
+    finish = place(G, {gap: Math.min(2.6, gGap(G, 0)), rise: 0, w: s, d: s, dx: gDx(G, 1), col: '#ffd23f', opts: {glow: '#6b4f00'}});
+    const p = finish.mesh.position; trophyAt(p.x, G.y, p.z + (big ? 3 : 2), big ? 1.8 : 1);
+  }
+  const SEG = {hops: G => tHops(G), beam: G => tBeam(G, false), lavaplat: tLavaPlat, mover: tMover, spinner: G => tSpinner(G, false), vanish: tVanish, pad: tPad, truss: tTruss,
+    stairs: tStairs, elevator: tElevator, lavabeam: G => tBeam(G, true), conveyor: tConveyor, blink: tBlink, falling: tFalling, ice: tIce, wind: tWind, rope: tRope,
+    laser: tLaser, cross: G => tSpinner(G, true), CP: tCheck};
+  function levelPlan(n){
+    if (n === OBBY_N) return ['hops','mover','spinner','pad','vanish','CP','conveyor','blink','falling','truss','CP','ice','wind','rope','elevator','CP','laser','cross','lavabeam','stairs','CP','blink','laser','wind','pad','hops'];
+    const r = mulberry(n * 104729 + 7), wi = Math.floor((n - 1) / 10);
+    const avail = Object.keys(TEMPLATES).filter(k => TEMPLATES[k] <= n);
+    const nseg = 4 + Math.floor(n / 4), seq = [], intro = INTRO[n] && INTRO[n][0];
+    if (intro) seq.push(intro);
+    while (seq.length < nseg){
+      const ws = avail.map(k => (FAV[wi].includes(k) ? 3 : 1) * (k === seq[seq.length - 1] ? 0 : 1) * (k === 'hops' ? 1.5 : 1));
+      let x = r() * ws.reduce((a, b) => a + b, 0), i = 0; while (i < ws.length - 1 && x > ws[i]) x -= ws[i++];
+      seq.push(avail[i]);
+    }
+    if (intro && nseg >= 6) seq.splice(Math.floor(nseg * .6), 0, intro);
+    const out = []; seq.forEach((k, i) => { out.push(k); if (seq.length >= 8 && (i + 1) % 4 === 0 && i < seq.length - 2) out.push('CP'); });
+    return out;
+  }
+  function buildClassic(n){
+    const C = WORLDS[0].cols, gold = (x, top, z, w, d) => { finish = plat(x, top, z, w, d, '#ffd23f', 1, {glow: '#6b4f00'}); trophyAt(x, top, z + 2); };
+    if (n === 1){
+      // ---- Level 1: hops, a beam and a lava strip
+      checkpoint(plat(0, 0, 0, 12, 12, '#2ec27e', 2), 0);
+      plat(0, 0, 10, 4, 4, C[0]); coin(0, 1.5, 10);
+      plat(0, 1, 16, 4, 4, C[1]); coin(0, 2.5, 16);
+      plat(0, 2, 22, 4, 4, C[2]); coin(0, 3.5, 22);
+      plat(0, 2, 30, 1.2, 10, C[4]); coin(0, 3.5, 28); coin(0, 3.5, 32);
+      plat(0, 2, 40, 8, 6, C[3]); kill(0, 2, 40, 8, .5, 1.2); coin(0, 4.6, 40);
+      plat(-5, 3, 47, 4, 4, C[5]); coin(-5, 4.5, 47);
+      plat(0, 4, 53, 4, 4, C[6]); coin(0, 5.5, 53);
+      gold(0, 4, 61, 8, 8);
+    } else if (n === 2){
+      // ---- Level 2: moving platforms, spinner, disappearing blocks
+      checkpoint(plat(0, 4, 61, 8, 8, '#2ec27e'), 0);
+      const m1 = plat(0, 4, 70, 4, 4, C[4]); mover(m1, 'x', 4, 1.2);
+      plat(0, 4, 77, 4, 4, C[2]); coin(0, 5.5, 77);
+      const m2 = plat(0, 4, 84, 4, 4, C[6]); mover(m2, 'x', 5, 1.6, 1); coin(0, 6, 84);
+      plat(0, 4, 96, 12, 12, C[3]); spinner(0, 4.6, 96, 11.5, 1.8);
+      coin(4, 5.5, 92); coin(-4, 5.5, 100); coin(4, 5.5, 100);
+      vanish(0, 4, 107, 3, 3, '#7cc6ff'); coin(0, 5.5, 107);
+      vanish(3, 4.5, 112.5, 3, 3, '#7cc6ff'); coin(3, 6, 112.5);
+      vanish(0, 5, 118, 3, 3, '#7cc6ff'); coin(0, 6.5, 118);
+      gold(0, 5, 126, 8, 8);
+    } else {
+      // ---- Level 3: jump pad, truss climb, lava beam, moving platform, finish
+      checkpoint(plat(0, 5, 126, 8, 8, '#2ec27e'), 0);
+      const pad = plat(0, 5, 135, 4, 4, '#ffd23f', 1, {glow: '#7a5a00'}); jumpPads.push(pad);
+      [-1, 1].forEach(s => addBox(s * .9, 5.05, 135, .5, .1, 1.6, '#ff9f1c', {noEdge: true}));
+      plat(0, 11, 142, 6, 6, C[5]); coin(-2, 12.5, 141);
+      const truss = plat(0, 19, 145.5, 3, 1, '#b8c0d0', 8); trusses.push(truss); truss.truss = true;
+      for (let y = 12; y < 19; y += 1.2) addBox(0, y, 145, 3.1, .15, .1, '#7c869c', {noEdge: true});
+      plat(0, 19, 150, 5, 8, C[0]); coin(0, 20.5, 151);
+      plat(0, 19, 160, 1.2, 8, C[4]); kill(0, 19, 160, 1.2, .8, .8); coin(0, 22, 160);
+      plat(0, 19, 168, 4, 4, C[2]); coin(0, 20.5, 168);
+      const m3 = plat(0, 19, 176, 4, 4, C[6]); mover(m3, 'x', 4, 1.4, 2); coin(0, 21, 176);
+      gold(0, 19, 187, 10, 10);
+    }
+  }
+  function buildObbyLevel(n){
+    const W = worldOf(n);
+    G = {n, W, t: (n - 1) / (OBBY_N - 1), r: mulberry(n * 7919 + 12345), lx: 0, lw: 6, y: 0, ze: 6, path: [], segs: [], capNext: 0};
+    if (n <= 3){ buildClassic(n); G.path = solids.filter(b => !b.truss); G.segs = ['classic']; G.ze = finish.mesh.position.z + 5; }
+    else {
+      const start = plat(0, 0, 0, 12, 12, W.start, 2, W.neon ? {glow: '#2a2160'} : undefined); checkpoint(start, 0); G.path.push(start);
+      levelPlan(n).forEach(k => { G.segs.push(k); SEG[k](G); });
+      tFinish(G, n === OBBY_N);
+    }
+    G.minY = Math.min(...G.path.map(b => b.mesh.position.y + b.hh)); G.maxY = Math.max(...G.path.map(b => b.mesh.position.y + b.hh));
+    voidY = G.minY - 14;
+    decorate(W);
+  }
+  function decorate(W){
+    const z1 = G.ze + 30, wi = WORLDS.indexOf(W), lo = G.minY, hi = G.maxY;
+    let k = 0;
+    for (let z = -10; z < z1; z += 42, k++){
+      const s = k % 2 ? 1 : -1, x = s * (30 + (k * 7) % 12);
+      if (wi === 1){ const h = 20 + (k * 13) % 22; addBox(x * 1.3, lo - 20 + h / 2, z, 16 + (k * 5) % 8, h, 14, k % 3 ? '#c9743f' : '#b5603a'); }
+      else if (wi === 2){ const m = new THREE.Mesh(new THREE.ConeGeometry(16, 34 + (k * 11) % 16, 5), mat(k % 2 ? '#ffffff' : '#e3f1ff')); m.position.set(x * 1.4, lo - 14, z); scene.add(m); }
+      else if (wi === 3){ [0, 1].forEach(j => { const h = 30 + ((k + j) * 17) % 40; addBox(x * (1.1 + j * .35), lo - 25 + h / 2, z + j * 18, 9, h, 9, '#151536'); }); }
+      if (wi !== 3) cloud(-x * .9, hi + 6 + (k * 5) % 14, z + 15, 1.6 + (k % 3) * .5, W.cloud);
+    }
+    if (W.lavaSea){
+      const sea = new THREE.Mesh(new THREE.PlaneGeometry(500, z1 + 200), new THREE.MeshBasicMaterial({color: '#ff5a1f'}));
+      sea.rotation.x = -Math.PI / 2; sea.position.set(0, lo - 9, z1 / 2 - 60); scene.add(sea); lava = null; voidY = lo - 8.5;
+    }
+  }
+  /* --- moving bits that only the 50 levels use --- */
+  function obbyMech(dt){
+    blinkers.forEach(k => { const ph = ((worldT + k.ph) % k.per) / k.per, on = ph < k.on;
+      k.b.active = on; k.material.opacity = on ? (ph > k.on - .17 && Math.floor(worldT * 12) % 2 ? .4 : 1) : .13; });
+    fallers.forEach(f => { const p = f.b.mesh.position; let dy = 0;
+      if (f.st === 0 && P.onGround && P.ground === f.b){ f.st = 1; f.t = f.delay; }
+      else if (f.st === 1){ f.t -= dt; p.x = f.x + (Math.random() - .5) * .16; if (f.t <= 0){ f.st = 2; f.t = 2; f.v = 0; p.x = f.x; } }
+      else if (f.st === 2){ f.v += 30 * dt; dy = -f.v * dt; p.y += dy; f.t -= dt; if (f.t <= 0){ f.st = 3; f.t = 1.2; f.b.active = false; f.b.mesh.visible = false; } }
+      else if (f.st === 3){ f.t -= dt; if (f.t <= 0 && !(Math.abs(P.x - f.x) < f.b.hw + R && Math.abs(P.z - p.z) < f.b.hd + R && Math.abs(P.y - f.y0) < 3)){ f.st = 0; p.y = f.y0; f.b.active = true; f.b.mesh.visible = true; } }
+      f.b.dy = dy; });
+    lasers.forEach(l => { const ph = ((worldT + l.ph) % l.per) / l.per, on = ph < l.on; l.k.active = on;
+      l.k.mesh.visible = on || (ph > .88 && Math.floor(worldT * 14) % 2 === 0); l.k.mesh.material.opacity = on ? .8 : .3; });
+  }
+  function animateMech(dt){
+    convs.forEach(c => { c.tex.offset.x += c.du * dt; c.tex.offset.y += c.dv * dt; });
+    winds.forEach(w => w.streaks.forEach(s => { s.position.x += w.fx * 2.5 * dt; if (Math.abs(s.position.x - w.cx) > 10) s.position.x -= Math.sign(w.fx) * 20; }));
+  }
+  function windAt(){ let wx = 0; for (const w of winds) if (P.z > w.z0 && P.z < w.z1 && P.y > w.y0 && P.y < w.y1) wx += w.fx; return wx; }
+  /* --- progress saved on this device --- */
+  function prog(){ const p = load(PROG_KEY, null) || {}; const o = v => v && typeof v === 'object' && !Array.isArray(v) ? v : {};
+    return {u: Math.max(3, Math.min(OBBY_N, p.u | 0)), best: o(p.best), done: o(p.done), skip: o(p.skip)}; }
+  function saveProg(p){ save(PROG_KEY, p); }
+  function openLevels(){
+    const p = prog(), host = mp.on && mp.host, beaten = Object.keys(p.done).length;
+    $('#lvSub').innerHTML = `⭐ <b>${beaten}</b> / ${OBBY_N} beaten · 🔓 Levels 1–${p.u} open` + (host ? '<br>👥 Your family follows you into the level you pick!' : '');
+    $('#lvGrid').innerHTML = WORLDS.map((W, wi) => `<div class="lvworld" style="--wc:${W.ui}"><h3>${W.emoji} World ${wi + 1}: ${W.name}</h3><div class="lvrow">` +
+      Array.from({length: 10}, (_, k) => { const n = wi * 10 + k + 1, open = n <= p.u, b = p.best[n];
+        return `<button class="lvbtn${open ? '' : ' lock'}${p.done[n] ? ' done' : ''}${n === OBBY_N ? ' boss' : ''}" data-lvl="${n}"${open ? '' : ' disabled'} title="Level ${n}">` +
+          `<b>${open ? n : '🔒'}</b><small>${b ? '⏱️' + fmt(b, true) : !open ? n : p.skip[n] ? '⏭️ skipped' : n === OBBY_N ? '👑 finale' : 'new!'}</small></button>`; }).join('') + '</div></div>').join('');
+    $$('#lvGrid .lvbtn').forEach(b => b.onclick = () => { if (b.disabled) return; $('#lvlModal').classList.remove('show'); start('obby', +b.dataset.lvl); });
+    $('#lvlModal').classList.add('show');
+    const cur = $(`#lvGrid .lvbtn[data-lvl="${p.u}"]`); if (cur) cur.scrollIntoView({block: 'center'});
+  }
+  $('#lvClose').onclick = () => $('#lvlModal').classList.remove('show');
+  /* --- the reachability proof: every hop of every level, checked against the jump physics --- */
+  const topOf = b => b.mesh.position.y + b.hh;
+  function rectGap(A, B){ const a = A.mesh.position, b = B.mesh.position; return Math.hypot(Math.max(0, Math.abs(a.x - b.x) - A.hw - B.hw), Math.max(0, Math.abs(a.z - b.z) - A.hd - B.hd)); }
+  function resetMech(){
+    movers.forEach(m => { m.b.mesh.position.copy(m.base); m.b.dx = m.b.dy = m.b.dz = 0; });
+    vanishers.forEach(v => { v.state = 0; v.b.active = true; v.b.mesh.visible = true; v.b.mesh.position.x = v.bx; });
+    fallers.forEach(f => { f.st = 0; f.b.mesh.position.set(f.x, f.y0, f.b.mesh.position.z); f.b.active = true; f.b.mesh.visible = true; f.b.dy = 0; });
+    blinkers.forEach(k => k.b.active = true);
+  }
+  function poseMovers(A, B){   // a patient player waits until moving platforms line up
+    const ms = movers.filter(m => m.b === A || m.b === B); if (!ms.length) return;
+    const K = 24, set = (m, k) => { m.b.mesh.position[m.axis] = m.base[m.axis] + Math.sin(k / K * Math.PI * 2) * m.amp; };
+    let best = null, bc = 1e9;
+    const combos = ms.length === 1 ? [...Array(K).keys()].map(k => [k]) : [...Array(K * K).keys()].map(k => [k % K, Math.floor(k / K)]);
+    combos.forEach(c => { ms.forEach((m, i) => set(m, c[i])); const rise = topOf(B) - topOf(A);
+      const cost = rectGap(A, B) + Math.max(0, rise) * 1.5 + Math.max(0, -rise) * .2 + (rise > 2.3 && !jumpPads.includes(A) ? 100 : 0); if (cost < bc){ bc = cost; best = c; } });
+    ms.forEach((m, i) => set(m, best[i]));
+  }
+  function geoCheck(A, B){
+    const rise = topOf(B) - topOf(A), gap = rectGap(A, B), r2 = v => +v.toFixed(2);
+    const tr = trusses.find(t => Math.abs(topOf(t) - topOf(B)) < .05 && Math.abs(t.mesh.position.y - t.hh - topOf(A)) < .6 && rectGap(A, t) < .1 && rectGap(t, B) < .1);
+    if (tr) return {kind: 'truss', rise: r2(rise), gap: r2(gap), limit: 1, ok: gap <= 1.05};
+    const pad = jumpPads.includes(A), maxH = (pad ? PAD * PAD : JUMP * JUMP) / (2 * GRAV);
+    const reach = reachV(pad ? PAD : JUMP, Math.max(0, rise)) * (A.ice ? .75 : 1), limit = reach + 2 * R - 1;  // 1 unit of slack
+    return {kind: pad ? 'pad' : A.ice ? 'ice' : movers.some(m => m.b === A || m.b === B) ? 'moving' : 'jump', rise: r2(rise), gap: r2(gap), limit: r2(limit), ok: rise <= maxH - .5 && gap <= limit};
+  }
+  function simPair(A, B, tr){
+    // run the real game physics: start on A (with a run-up), steer at B, jump at the edge
+    const a = A.mesh.position, bp = B.mesh.position;
+    let dx = bp.x - a.x, dz = bp.z - a.z; const L = Math.hypot(dx, dz) || 1; dx /= L; dz /= L;
+    const exitT = (px, pz, box, ux, uz) => { const p = box.mesh.position; let t = 1e9;
+      if (ux > 1e-6) t = Math.min(t, (p.x + box.hw - px) / ux); else if (ux < -1e-6) t = Math.min(t, (p.x - box.hw - px) / ux);
+      if (uz > 1e-6) t = Math.min(t, (p.z + box.hd - pz) / uz); else if (uz < -1e-6) t = Math.min(t, (p.z - box.hd - pz) / uz); return t; };
+    const back = Math.max(0, Math.min(exitT(a.x, a.z, A, dx, dz) - .3, A.ice ? 6 : 2.5));
+    Object.assign(P, {x: a.x - dx * back, z: a.z - dz * back, y: topOf(A) + .02, vx: 0, vy: 0, vz: 0, onGround: false, ground: null, coyote: 0, lastPad: null});
+    for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false; ext.x = ext.z = 0;
+    const dt = 1 / 180, floor = Math.min(topOf(A), topOf(B)) - 6;
+    for (let i = 0; i < 1440; i++){
+      const ix = Math.max(bp.x - B.hw * .6, Math.min(bp.x + B.hw * .6, P.x)), iz = Math.max(bp.z - B.hd * .6, Math.min(bp.z + B.hd * .6, P.z));
+      const ax = ix - P.x, az = iz - P.z, al = Math.hypot(ax, az);
+      // lean against conveyors and wind like a real player would
+      const pu = (P.onGround && P.ground && P.ground.conv) ? P.ground.conv : {x: 0, z: 0}, wx = windAt();
+      const sx = al > .05 ? ax / al * SPEED - pu.x - wx : 0, sz = al > .05 ? az / al * SPEED - pu.z : 0;
+      keys.KeyW = al > .05; if (al > .05) cam.yaw = Math.atan2(-sx, -sz);
+      keys.Space = false;
+      if (P.onGround && P.ground && P.ground !== B && al > .05 && exitT(P.x, P.z, P.ground, ax / al, az / al) < .35) keys.Space = true;
+      step(dt); if (tr && i % 18 === 0) tr.push([+P.x.toFixed(2), +P.y.toFixed(2), +P.z.toFixed(2), P.onGround ? G.path.indexOf(P.ground) : -1, keys.Space ? 1 : 0, +P.vz.toFixed(1)]);
+      if ((P.onGround && P.ground === B) || P.lastPad === B) return {ok: true, t: +(i * dt).toFixed(2)};
+      if (P.y < floor) return {ok: false, why: 'fell', t: +(i * dt).toFixed(2)};
+    }
+    return {ok: false, why: 'timeout'};
+  }
+  function hazardChecks(){
+    const h = [], r2 = v => +v.toFixed(2);
+    kills.forEach(k => { if (lasers.some(l => l.k === k)) return; h.push({what: 'lava block', ok: k.hh * 2 <= 1 && Math.min(k.hw, k.hd) * 2 <= 2, v: [r2(k.hh * 2), r2(Math.min(k.hw, k.hd) * 2)]}); });
+    lasers.forEach(l => h.push({what: 'laser off-time', ok: l.per * (1 - l.on) >= 1, v: r2(l.per * (1 - l.on))}));
+    spinners.forEach(s => h.push({what: 'spinner speed', ok: Math.abs(s.speed) <= 3, v: r2(s.speed)}));
+    fallers.forEach(f => h.push({what: 'crumble delay', ok: f.delay >= .45, v: r2(f.delay)}));
+    convs.forEach(c => { const s = Math.hypot(c.conv.x, c.conv.z); h.push({what: 'conveyor speed', ok: s <= .55 * SPEED, v: r2(s)}); });
+    winds.forEach(w => h.push({what: 'wind', ok: Math.abs(w.fx) <= .55 * SPEED, v: r2(w.fx)}));
+    for (let i = 1; i < G.path.length; i++){
+      const a = blinkers.find(k => k.b === G.path[i - 1]), b = blinkers.find(k => k.b === G.path[i]); if (!b) continue;
+      let win = 0; for (let t = 0; t < b.per; t += .01){ const onA = !a || ((t + a.ph) % a.per) / a.per < a.on - .02, onB = ((t + .75 + b.ph) % b.per) / b.per < b.on - .1; if (onA && onB) win += .01; }
+      h.push({what: 'blink jump window', ok: win >= .4, v: r2(win)});
+    }
+    return h;
+  }
+  function verifyLevel(){
+    const out = {n: level, world: worldOf(level).name, segs: G.segs.slice(), pairs: [], hazards: [], coins: coinList.length, cps: checkpoints.length - 1, ok: true};
+    SIM = true;
+    try {
+      for (let i = 1; i < G.path.length; i++){
+        const A = G.path[i - 1], B = G.path[i];
+        resetMech(); poseMovers(A, B);
+        const geo = geoCheck(A, B), sim = simPair(A, B);
+        if (!(geo.ok && sim.ok)) out.ok = false;
+        out.pairs.push({i, ...geo, sim: sim.ok, simT: sim.t, why: sim.why});
+      }
+      out.hazards = hazardChecks(); if (out.hazards.some(x => !x.ok)) out.ok = false;
+    } finally { SIM = false; resetMech(); for (const k in keys) keys[k] = false; }
+    return out;
   }
   /* ---------- Lava Escape tower ---------- */
   const DIFFS = {
@@ -2409,21 +2788,23 @@ const Obby = (() => {
   }
   function step(dt){
     worldT += dt;
-    movers.forEach(m => {
+    if (!SIM) movers.forEach(m => {
       const p = m.b.mesh.position, ox = p.x, oy = p.y, oz = p.z;
       p[m.axis] = m.base[m.axis] + Math.sin(worldT * m.speed + m.phase) * m.amp;
       m.b.dx = p.x - ox; m.b.dy = p.y - oy; m.b.dz = p.z - oz;
     });
-    spinners.forEach(s => s.pivot.rotation.y += s.speed * dt);
-    vanishers.forEach(v => {
+    if (!SIM) spinners.forEach(s => s.pivot.rotation.y += s.speed * dt);
+    if (!SIM) vanishers.forEach(v => {
       if (v.state === 0 && P.onGround && P.ground === v.b){ v.state = 1; v.t = .7; }
       else if (v.state === 1){ v.t -= dt; v.material.opacity = Math.max(.15, v.t / .7); v.b.mesh.position.x = v.bx + (Math.random() - .5) * .12;
         if (v.t <= 0){ v.state = 2; v.t = 2.5; v.b.active = false; v.b.mesh.visible = false; v.b.mesh.position.x = v.bx; } }
       else if (v.state === 2){ v.t -= dt; if (v.t <= 0){ v.state = 0; v.b.active = true; v.b.mesh.visible = true; v.material.opacity = 1; } }
     });
-    if (P.onGround && P.ground){ P.x += P.ground.dx || 0; P.y += P.ground.dy || 0; P.z += P.ground.dz || 0; }
+    if (!SIM && mode === 'obby') obbyMech(dt);
+    if (P.onGround && P.ground){ P.x += P.ground.dx || 0; P.y += P.ground.dy || 0; P.z += P.ground.dz || 0;
+      if (P.ground.conv){ P.x += P.ground.conv.x * dt; P.z += P.ground.conv.z * dt; } }
     const inp = tg && (tg.phase === 'ready' || (tg.phase === 'play' && tg.it === 0 && tg.freeze > 0)) ? {x: 0, z: 0, mag: 0, jump: false} : input();
-    const k = Math.min(1, dt * (P.onGround ? (slip ? 1.4 : 14) : 6));
+    const k = Math.min(1, dt * (P.onGround ? (slip || (P.ground && P.ground.ice) ? 1.4 : 14) : 6));
     P.vx += (inp.x * SPEED - P.vx) * k; P.vz += (inp.z * SPEED - P.vz) * k;
     if (inp.mag > .1) P.face = Math.atan2(inp.x, inp.z);
     let climbing = false;
@@ -2437,29 +2818,31 @@ const Obby = (() => {
     P.climbing = climbing;
     if (emote && (inp.mag > .1 || inp.jump)) emote = null;
     ext.x *= Math.exp(-dt * 1.4); ext.z *= Math.exp(-dt * 1.4);
-    P.x += (P.vx + ext.x) * dt; resolve('x');
+    const wx = winds.length ? windAt() : 0;
+    P.x += (P.vx + ext.x + wx) * dt; resolve('x');
     P.z += (P.vz + ext.z) * dt; resolve('z');
     P.onGround = false; P.ground = null;
     P.y += P.vy * dt; resolve('y');
-    if (P.onGround && jumpPads.includes(P.ground)){ P.vy = PAD; P.onGround = false; P.ground = null; P.coyote = 0; P.jumped = true; P.airT = 0; SND.boing(); }
+    if (P.onGround && jumpPads.includes(P.ground)){ P.lastPad = P.ground; P.vy = PAD; P.onGround = false; P.ground = null; P.coyote = 0; P.jumped = true; P.airT = 0; SND.boing(); }
     if (P.onGround){ P.airT = 0; P.jumped = false; } else P.airT += dt;
     if (tg) tg.bots.forEach((B, n) => { if (!B.human) botStep(B, n + 1, dt); });
     checks();
   }
   function checks(){
+    if (SIM) return;
     if (mode === 'lava') return lavaChecks();
     if (mode === 'nds') return ndsChecks();
     if (mode === 'build' || mode === 'tag'){ if (P.y < -25) respawn(); return; }
-    for (const k of kills) if (overlaps(k, .08)) return die();
+    for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
       const lx = dx * Math.cos(a) - dz * Math.sin(a), lz = dx * Math.sin(a) + dz * Math.cos(a);
       if (Math.abs(lx) < s.len/2 + R - .1 && Math.abs(lz) < .3 + R - .1 && P.y < s.y + .3 && P.y + H > s.y - .3) return die();
     }
-    if (P.y < -25) return die();
+    if (P.y < voidY) return die();
     collectCoins();
     for (const cp of checkpoints){
-      if (cp.idx > cpIndex && P.onGround && P.ground === cp.b){ cpIndex = cp.idx; lightCp(cp); SND.cp(); banner('🚩 Checkpoint! Stage ' + (cpIndex + 1)); }
+      if (cp.idx > cpIndex && P.onGround && P.ground === cp.b){ cpIndex = cp.idx; lightCp(cp); SND.cp(); banner('🚩 Checkpoint ' + cpIndex + '/' + (checkpoints.length - 1) + '!'); }
     }
     if (!won && P.onGround && P.ground === finish) win();
   }
@@ -2482,15 +2865,25 @@ const Obby = (() => {
     const f = $('#oFlash'); f.classList.add('on'); requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove('on')));
   }
   function win(){
-    won = true; SND.win(); $('#oWarn').classList.remove('on'); $('#oTip').classList.add('hide');
+    won = true; SND.win(); $('#oWarn').classList.remove('on'); $('#oTip').classList.add('hide'); $('#oSkip').classList.remove('show');
+    $('#oNext').style.display = $('#oLevels').style.display = 'none';
     if (mode === 'lava'){
       const D = DIFFS[diff]; cam.yaw = Math.PI + 2.2; cam.pitch = .4; cam.dist = 14; setCoins(coins + D.bonus);
       $('#oWinEmoji').textContent = '🚁'; $('#oWinTitle').textContent = 'You escaped!';
       $('#oWinStats').innerHTML = `${D.emoji} ${D.name} lava · ⏱️ <b>${fmt(time, true)}</b><br>🪙 Coins found: <b>${runCoins}</b> / ${coinList.length}<br>🎁 You earned <b>${runCoins * COIN_VALUE + D.bonus}</b> Rublox Coins!`;
     } else {
-      cam.yaw = Math.PI - .7; cam.pitch = .35; cam.dist = 11; setCoins(coins + FINISH_BONUS);
-      $('#oWinEmoji').textContent = '🏆'; $('#oWinTitle').textContent = 'You beat Obby Rush!';
-      $('#oWinStats').innerHTML = `⏱️ Time: <b>${fmt(time, true)}</b><br>🪙 Coins found: <b>${runCoins}</b> / ${coinList.length}<br>💀 Falls: <b>${deaths}</b><br>🎁 You earned <b>${runCoins * COIN_VALUE + FINISH_BONUS}</b> Rublox Coins!`;
+      cam.yaw = Math.PI - .7; cam.pitch = .35; cam.dist = 11;
+      const p = prog(), n = level, first = !p.done[n], prev = p.best[n], W = worldOf(n), newBest = !prev || time < prev;
+      const bonus = (first ? 15 + n : 5) + (n === OBBY_N && first ? 1000 : 0);
+      setCoins(coins + bonus);
+      p.done[n] = 1; delete p.skip[n]; if (newBest) p.best[n] = +time.toFixed(2); p.u = Math.max(p.u, Math.min(OBBY_N, n + 1)); saveProg(p);
+      $('#oWinEmoji').textContent = n === OBBY_N ? '👑' : n % 10 === 0 ? '🏅' : '🏆';
+      $('#oWinTitle').textContent = n === OBBY_N ? 'You beat all 50 levels!' : 'Level ' + n + ' complete!';
+      $('#oWinStats').innerHTML = `${W.emoji} ${W.name} · Level ${n}<br>⏱️ Time: <b>${fmt(time, true)}</b>${newBest ? (prev ? ' 🏅 New best!' : '') : ' · best ' + fmt(prev, true)}<br>🪙 Coins found: <b>${runCoins}</b> / ${coinList.length}<br>💀 Falls: <b>${deaths}</b><br>🎁 You earned <b>${runCoins * COIN_VALUE + bonus}</b> Rublox Coins!`
+        + (n === OBBY_N && first ? '<br>👑 <b>+1000 Obby Champion bonus!</b>' : '') + (first && n < OBBY_N && n % 10 === 0 ? `<br>🔓 World ${n / 10 + 1}: ${WORLDS[n / 10].emoji} ${WORLDS[n / 10].name} is open!` : '');
+      const g = mpGuest(), nx = $('#oNext'); nx.style.display = n < OBBY_N ? '' : 'none'; nx.disabled = g; nx.textContent = g ? '⏳ Host picks next' : '▶ Level ' + (n + 1);
+      $('#oLevels').style.display = g ? 'none' : '';
+      if (n === OBBY_N) [1500, 2000, 2500].forEach(ms => setTimeout(confetti, ms));
     }
     $('#oWin').classList.add('show'); confetti(); setTimeout(confetti, 500); setTimeout(confetti, 1000);
   }
@@ -3049,18 +3442,19 @@ const Obby = (() => {
   }
   function mpKick(uid){ const g = mp.guests.get(uid); if (!g) return; mpSendTo(g.conn, {t: 'kick'}); setTimeout(() => mpDrop(g, 'kick'), 300); }
   /* --- guest side --- */
+  function hostLvl(m, v){ return m === 'lava' ? (own(DIFFS, v) ? v : null) : m === 'obby' && Number.isInteger(v) && v >= 1 && v <= OBBY_N ? v : null; }
   function mpFromHost(d){
     if (!d || typeof d !== 'object') return; mp.lastHost = performance.now();
     switch (d.t){
       case 'welcome':
         clearTimeout(mp.joinT); mp.on = true; mp.host = false; mp.me = typeof d.uid === 'string' ? d.uid : 'g0'; mp.status = '';
-        mpSetRoster(d.roster); mp.hmode = d.hm || null; mp.hdiff = d.hd || null; mpStartTick(); mpRender();
+        mpSetRoster(d.roster); mp.hmode = d.hm || null; mp.hdiff = hostLvl(mp.hmode, d.hd); mpStartTick(); mpRender();
         mpNote('🎉 You joined ' + ((mp.players.get('H') || {}).name || 'the') + "'s room!");
         if (mp.hmode && !(mp.hmode === 'lava' && !mp.hdiff)) mpFollow(mp.hmode, mp.hdiff);
         break;
       case 'roster': mpSetRoster(d.roster); mpRender(); break;
       case 's': mpSnap(d); break;
-      case 'go': if (typeof d.m === 'string' && GAMES.some(g => g.id === d.m)){ mp.hmode = d.m; mp.hdiff = own(DIFFS, d.d) ? d.d : null; mpRender(); mpFollow(mp.hmode, mp.hdiff); } break;
+      case 'go': if (typeof d.m === 'string' && GAMES.some(g => g.id === d.m)){ mp.hmode = d.m; mp.hdiff = hostLvl(d.m, d.d); mpRender(); mpFollow(mp.hmode, mp.hdiff); } break;
       case 'home': mp.hmode = null; mpRender(); if (running){ stop(); } toast('🏠 The host went back home. Wait here for the next game!'); break;
       case 'o': mpApplyOps(d.o); break;
       case 'blocks': mpLoadBlocks(d.c); break;
@@ -3074,7 +3468,7 @@ const Obby = (() => {
   }
   function mpSnap(d){
     if (!mp.on) return;
-    const hm = d.hm || null; if (hm !== mp.hmode){ mp.hmode = hm; mp.hdiff = d.hd || null; mpRender(); }
+    const hm = d.hm || null, hd = hostLvl(hm, d.hd); if (hm !== mp.hmode || hd !== mp.hdiff){ mp.hmode = hm; mp.hdiff = hd; mpRender(); }
     const seen = new Set();
     if (Array.isArray(d.p)) d.p.slice(0, 16).forEach(e => { if (!Array.isArray(e) || typeof e[0] !== 'string' || e[0] === mp.me || !/^(H|g\d{1,4}|b[0-3])$/.test(e[0])) return; seen.add(e[0]); mpEnt(e[0], e[1], e.slice(2, 10)); });
     for (const E of mp.ents.values()) if (!seen.has(E.uid)) E.m = null;
@@ -3082,9 +3476,9 @@ const Obby = (() => {
     if (d.o) mpApplyOps(d.o);
   }
   function mpFollow(m, d){
-    if (running && mode === m && m !== 'tag') return;   // already there (keep your own run going)
+    if (running && mode === m && m !== 'tag' && !(m === 'obby' && d && d !== level)) return;   // already there (keep your own run going)
     if (running) stop();
-    start(m, m === 'lava' ? d : null);
+    start(m, m === 'lava' || m === 'obby' ? d : null);
   }
   /* --- shared Build World --- */
   function mpApplyOps(o, from){
@@ -3262,14 +3656,15 @@ const Obby = (() => {
     });
     $('#mpMsg').textContent = mp.host
       ? (list.length < 2 ? '📣 Tell your family the code! When they join, pick any game below and everyone jumps in with you.' : '👉 Pick any game below and everyone in the room jumps in with you!')
-      : (mp.hmode ? '🎮 The host is playing ' + gameName(mp.hmode) + '. Tap that game to join in!' : '⏳ Waiting for the host to pick a game…');
+      : (mp.hmode ? '🎮 The host is playing ' + gameName(mp.hmode) + (mp.hmode === 'obby' && mp.hdiff ? ' (Level ' + mp.hdiff + ')' : '') + '. Tap that game to join in!' : '⏳ Waiting for the host to pick a game…');
   }
   function play(id){
     if (mpGuest()){
-      if (mp.hmode === id) start(id, id === 'lava' ? mp.hdiff : null);
+      if (mp.hmode === id) start(id, id === 'lava' || id === 'obby' ? mp.hdiff : null);
       else toast(mp.hmode ? '🎮 The host is playing ' + gameName(mp.hmode) + '! Tap that one.' : '⏳ The host picks the game. Hang on!');
       return;
     }
+    if (id === 'obby'){ openLevels(); return; }
     start(id);
   }
   function mpBindUI(){
@@ -3288,6 +3683,7 @@ const Obby = (() => {
   /* ---------- per-frame ---------- */
   function animate(dt){
     coinList.forEach(c => { c.mesh.rotation.z += dt * 3; });
+    if (mode === 'obby') animateMech(dt);
     if (trophy) trophy.rotation.y += dt * (mode === 'lava' ? 14 : 1);
     if (lava) animateLava(dt);
     if (nds) animateNds(dt);
@@ -3345,7 +3741,8 @@ const Obby = (() => {
         : '⌨️ WASD / Arrows to move · Space to jump · Drag the mouse to look · 1–8 emotes · Esc to pause') + "<br>🏷️ Don't be IT! Touch someone to pass it on. Least IT time after 90s wins! +5 🪙 per tag, +30 to win";
       return;
     }
-    const goal = mode === 'nds' ? 'Survive each disaster for 30 seconds! Hide inside, climb up high, stay out of the water. +20 🪙 per round!' : mode === 'lava' ? 'Climb the tower to the 🚁 before the lava gets you!' : 'Grab the coins, dodge the red lava, and reach the 🏆!';
+    const goal = mode === 'nds' ? 'Survive each disaster for 30 seconds! Hide inside, climb up high, stay out of the water. +20 🪙 per round!' : mode === 'lava' ? 'Climb the tower to the 🚁 before the lava gets you!'
+      : 'Level ' + level + ': grab the coins, dodge the red lava, and reach the 🏆!' + (INTRO[level] ? '<br>🆕 ' + INTRO[level][1] : '');
     $('#oTip').innerHTML = (on
       ? '🕹️ Left thumb to move · ⬆️ to jump · Swipe the right side to look · 😀 emotes'
       : '⌨️ WASD / Arrows to move · Space to jump · Drag the mouse to look · Scroll to zoom · 1–8 emotes · Esc to pause') + '<br>' + goal + (mode === 'lava' ? '<br>🪜 Walk into a gray truss to climb it!' : '');
@@ -3378,6 +3775,8 @@ const Obby = (() => {
       $('#oMyIt').textContent = tg.you.itTime.toFixed(1) + 's';
     }
     $('#oStage').textContent = cpIndex + 1; $('#oCoins').textContent = runCoins;
+    if (mode === 'obby'){ $('#oLvl').textContent = level; $('#oStageN').textContent = checkpoints.length; $('#oCpWrap').style.display = checkpoints.length > 1 ? '' : 'none';
+      $('#oSkip').classList.toggle('show', !won && !paused && deaths >= SKIP_DEATHS && level < OBBY_N && !mpGuest()); }
     if (tg) return;
     $('#oTime').textContent = fmt(time); $('#oDeaths').textContent = deaths;
     if (nds){
@@ -3492,6 +3891,9 @@ const Obby = (() => {
     $('#oResume').onclick = () => setPause(false);
     ['#oExit','#oExit2','#oExit3','#oHome','#oHome2'].forEach(id => $(id).onclick = stop);
     $('#oAgain').onclick = $('#oRetry').onclick = () => { stop(); start(mode, diff); };
+    $('#oNext').onclick = () => { if (mpGuest() || level >= OBBY_N) return; const n = level + 1; stop(); start('obby', n); };
+    $('#oLevels').onclick = () => { stop(); openLevels(); };
+    $('#oSkip').onclick = () => { if (mode !== 'obby' || mpGuest() || level >= OBBY_N) return; const p = prog(), n = level + 1; p.u = Math.max(p.u, n); if (!p.done[level]) p.skip[level] = 1; saveProg(p); stop(); start('obby', n); };
     document.querySelectorAll('#oDiff [data-diff]').forEach(b => b.onclick = () => begin(b.dataset.diff));
     $('#oMute').onclick = () => { muted = !muted; save('rubloxMute', muted); $('#oMute').textContent = muted ? '🔇' : '🔊'; };
   }
@@ -3502,6 +3904,7 @@ const Obby = (() => {
   /* ---------- start / stop ---------- */
   function start(m = 'obby', d = null){
     mode = ['lava', 'nds', 'build', 'tag'].includes(m) ? m : 'obby'; diff = d;
+    if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     $('#obby').classList.add('show'); document.body.style.overflow = 'hidden'; document.documentElement.classList.add('ingame');
     if (!renderer){
@@ -3524,9 +3927,10 @@ const Obby = (() => {
     emote = null; P.airT = 0; P.jumped = false; P.climbing = false;
     setTouchUI(matchMedia('(pointer: coarse)').matches || (navigator.maxTouchPoints > 0 && !matchMedia('(hover: hover)').matches));
     buildEmoteMenu(); $('#oEmos').classList.remove('show');
-    $('#oTip').classList.toggle('hide', choosing); tipTimer = 8;
+    $('#oTip').classList.toggle('hide', choosing); tipTimer = mode === 'obby' && INTRO[level] ? 11 : 8; $('#oSkip').classList.remove('show');
+    $('#lvlModal').classList.remove('show');
     resize(); running = true; last = performance.now(); raf = requestAnimationFrame(loop); checkRotate();
-    if (mode === 'obby') banner('🏃 Obby Rush! Go go go!');
+    if (mode === 'obby') banner('🏃 Level ' + level + ' · ' + worldOf(level).emoji + ' ' + worldOf(level).name);
     else if (mode === 'nds') banner('🏝️ Disaster Island!');
     else if (mode === 'build') banner('🧱 Build World! Make something awesome');
     else if (mode === 'tag') banner("🏷️ Block Tag! Don't be IT!");
@@ -3545,8 +3949,27 @@ const Obby = (() => {
 
   // debug / test hook
   window.obbyDebug = {
-    get state(){ return {mode, diff, x: P.x, y: P.y, z: P.z, stage: cpIndex + 1, deaths, runCoins, time, won, over, choosing, paused, running, onGround: P.onGround, rafActive: raf !== 0, lavaY: lava ? lava.y : null, topY, maxY}; },
+    get state(){ return {mode, diff, level, x: P.x, y: P.y, z: P.z, stage: cpIndex + 1, deaths, runCoins, time, won, over, choosing, paused, running, onGround: P.onGround, rafActive: raf !== 0, lavaY: lava ? lava.y : null, topY, maxY}; },
     setLava(y){ if (lava) lava.y = y; },
+    level: () => G && {n: G.n, world: G.W.name, segs: G.segs.slice(), path: G.path.length, coins: coinList.length, cps: checkpoints.length - 1, voidY, minY: G.minY,
+      count: {movers: movers.length, spinners: spinners.length, vanish: vanishers.length, pads: jumpPads.length, trusses: trusses.length, conv: convs.length, blink: blinkers.length, falling: fallers.length, lasers: lasers.length, winds: winds.length, ice: solids.filter(b => b.ice).length, kills: kills.length},
+      solids: solids.length, meshes: (() => { let k = 0; scene.traverse(o => { if (o.isMesh) k++; }); return k; })()},
+    verify(n){ const was = running; if (was) return {err: 'stop the game first'}; mode = 'obby'; level = n; diff = n; build(); return verifyLevel(); },
+    simHop(i){ SIM = true; const tr = []; try { resetMech(); poseMovers(G.path[i - 1], G.path[i]); const r = simPair(G.path[i - 1], G.path[i], tr); return {r, tr, conv: G.path[i - 1].conv || null, A: [G.path[i-1].hw, G.path[i-1].hd]}; } finally { SIM = false; } },
+    control(gap, rise, pad){   // negative control: the checker must reject hops that are too far / too high
+      const A = plat(500, 0, 0, 4, 4, '#888'), B = plat(500, rise, 2 + gap + 2, 4, 4, '#888'); if (pad) jumpPads.push(A);
+      SIM = true; try { resetMech(); return {geo: geoCheck(A, B), sim: simPair(A, B)}; }
+      finally { SIM = false; [A, B].forEach(b => { solids.splice(solids.indexOf(b), 1); scene.remove(b.mesh); }); if (pad) jumpPads.splice(jumpPads.indexOf(A), 1); } },
+    pathTop: i => { const b = G.path[(i + G.path.length) % G.path.length]; return [b.mesh.position.x, topOf(b) + .05, b.mesh.position.z]; },
+    mech: () => ({blink: blinkers.map(k => k.b.active), lasers: lasers.map(l => l.k.active), falling: fallers.map(f => [f.st, +f.b.mesh.position.y.toFixed(2)]), conv: convs.map(c => c.conv), winds: winds.map(w => [w.z0, w.z1, w.fx]), ground: P.ground ? {conv: P.ground.conv || null, ice: !!P.ground.ice} : null, wind: windAt()}),
+    convAt: i => { const c = convs[i].b; return [c.mesh.position.x, topOf(c) + .05, c.mesh.position.z]; },
+    iceAt: i => { const c = solids.filter(b => b.ice)[i]; return [c.mesh.position.x, topOf(c) + .05, c.mesh.position.z]; },
+    windAt: i => { const w = winds[i]; return [w.cx, Math.min(w.y1 - .5, w.y0 + 2.5), (w.z0 + w.z1) / 2]; },
+    fallAt: i => { const c = fallers[i].b; return [c.mesh.position.x, topOf(c) + .05, c.mesh.position.z]; },
+    laserAt: i => { const l = lasers[i].k; return [l.mesh.position.x, l.mesh.position.y - 1.6 + .05, l.mesh.position.z]; },
+    setT(t){ worldT = t; },
+    prog: () => prog(), setProg(o){ saveProg(Object.assign(prog(), o)); }, levels: () => openLevels(), skipShown: () => $('#oSkip').classList.contains('show'),
+    setDeaths(n){ deaths = n; },
     nds: () => nds && {phase: nds.phase, t: nds.t, round: nds.round, survived: nds.survived, streak: nds.streak, alive: nds.alive, hp: nds.hp, dis: nds.dis, combo: nds.combo.slice(), map: nds.map, maps: Object.keys(nds.maps), combos: nds.combos, earned: nds.earned, outs: nds.outs, big: $('#oBig').textContent, hud: $('#oDis').textContent,
       waterY: nds.waterY, sheltered: sheltered(), fallen: nds.bldg.filter(b => !b.active).length, tornado: nds.tornado && [nds.tornado.x, nds.tornado.z], meteors: nds.meteors.length, slip, ext: [ext.x, ext.z]},
     ndsForce(k, x, z){ if (nds.phase !== 'ready') toIsland(); if (x !== undefined && x !== null){ Object.assign(P, {x, y: topAt(x, z) + .05, z, vx: 0, vy: 0, vz: 0}); } beginDisaster(k); },
@@ -3579,7 +4002,7 @@ const Obby = (() => {
     anim: () => ({emote: emote && emote.id, pose: lastPose, pack: avatar.anim, face: avatar.face, airT: P.airT, jumped: P.jumped, climbing: P.climbing, touchUI, lowq: LOWQ, joy: {...joy},
       pivot: model && [model.pivot.position.y, model.pivot.rotation.x, model.pivot.rotation.y], armR: model && [model.arms[1].rotation.x, model.arms[1].rotation.z]}),
   };
-  return {start, stop, play, get running(){ return running; }};
+  return {start, stop, play, levels: openLevels, get running(){ return running; }};
 })();
 </script>
 </body>
