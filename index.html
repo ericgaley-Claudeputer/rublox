@@ -414,6 +414,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 
 /* ---- Adopt a Pet ---- */
 .pgoal,.ppet,.pact,.ppedals{display:none}
+#obby:not(.pmode) :is(.pgoal,.ppet,.ppedals,.pact,.pflash,#pNamePanel,#pAdoptPanel,#pPetsPanel,#pIndexPanel,#pReturnPanel){display:none!important}
 .pgoal{position:absolute;left:50%;top:calc(max(10px,env(safe-area-inset-top)) + 58px);transform:translateX(-50%);align-items:center;gap:8px;background:rgba(255,255,255,.95);color:#1d2340;font-weight:900;font-size:17px;padding:6px 14px 6px 6px;border-radius:999px;box-shadow:0 4px 0 rgba(0,0,0,.18);pointer-events:none;max-width:min(94vw,600px);white-space:nowrap;z-index:3}
 .pgoal.show{display:flex}
 .pgoal span{overflow:hidden;text-overflow:ellipsis}
@@ -446,7 +447,14 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .pdrive.touchui .pact{bottom:max(150px,calc(env(safe-area-inset-bottom) + 140px))}
 .ppedals{position:absolute;right:max(18px,calc(env(safe-area-inset-right) + 12px));bottom:max(24px,calc(env(safe-area-inset-bottom) + 16px));gap:14px;align-items:flex-end;z-index:4}
 .pdrive.touchui .ppedals{display:flex}
-.pdrive #oJump,.pdrive #oEmoBtn{display:none!important}
+.pdrive #oJump,.pdrive #oEmoBtn,.pdrive #oRun{display:none!important}
+.orun{position:absolute;right:calc(max(24px,calc(env(safe-area-inset-right) + 16px)) + 14px);bottom:calc(max(30px,calc(env(safe-area-inset-bottom) + 20px)) + 110px);width:68px;height:68px;border-radius:50%;border:0;background:rgba(255,255,255,.92);font-size:30px;box-shadow:0 5px 0 rgba(0,0,0,.2);touch-action:none;padding:0}
+.orun.on{background:#ff9f1c;box-shadow:0 5px 0 #c46f00;transform:scale(1.06)}
+@media (max-height:500px){.orun{width:58px;height:58px;font-size:26px;right:calc(max(24px,calc(env(safe-area-inset-right) + 16px)) + 13px);bottom:calc(max(30px,calc(env(safe-area-inset-bottom) + 20px)) + 96px)}}
+.ostam{position:absolute;left:50%;bottom:max(14px,calc(env(safe-area-inset-bottom) + 8px));transform:translateX(-50%);display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.92);border-radius:999px;padding:4px 10px 4px 6px;box-shadow:0 3px 0 rgba(0,0,0,.15);z-index:3;pointer-events:none;transition:opacity .4s}
+.ostam.full{opacity:.55}.ostam i{font-style:normal;font-size:18px}.ostam b{display:block;width:120px;height:12px;border-radius:99px;background:#e3e6f3;overflow:hidden}
+.ostam u{display:block;height:100%;width:100%;background:linear-gradient(90deg,#2ec27e,#ffd23f)}.ostam.tired u{background:#e8384f}
+.touchui .ostam{bottom:auto;top:calc(max(10px,env(safe-area-inset-top)) + 58px)}
 .ppedals button{border:0;border-radius:50%;width:84px;height:84px;font-size:30px;color:#fff;font-weight:900;display:flex;flex-direction:column;align-items:center;justify-content:center;touch-action:none;font-family:inherit;user-select:none;-webkit-user-select:none}
 .ppedals small{font-size:13px}
 #pGas{background:#2ec27e;box-shadow:0 6px 0 #1f9460;width:104px;height:104px}
@@ -470,10 +478,41 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .pmini{display:flex;align-items:center;gap:6px;font-size:13px}
 .pfollow{padding:8px 10px!important;font-size:15px!important}
 .pempty{font-weight:800;padding:16px}
+.pcard.r1,.pcard.r2,.pcard.r3,.pcard.r4{position:relative;box-shadow:0 0 0 3px var(--rc) inset,0 0 14px var(--rc)}
+.pcard.r4{background:linear-gradient(135deg,#fff8dc,#fff 60%,#fff3c4)}
+.pcard.r4::after{content:'✨';position:absolute;right:10px;top:6px;font-size:20px;animation:ptw 1.2s ease-in-out infinite}
+@keyframes ptw{0%,100%{opacity:.3;transform:scale(.7) rotate(0)}50%{opacity:1;transform:scale(1.2) rotate(20deg)}}
+.prb{margin-left:auto;background:var(--rc);color:#fff;font-weight:900;font-size:12px;border-radius:999px;padding:3px 9px;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.pcard.r4 .prb{margin-right:22px}
+.prar{display:inline-block;background:var(--rc);color:#fff;font-weight:900;border-radius:999px;padding:4px 14px;margin:2px 0 6px;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.prar.r4{animation:pglow 1.4s ease-in-out infinite;color:#5a3d00;text-shadow:none}
+.prar.r3{box-shadow:0 0 12px #a855f7}
+@keyframes pglow{0%,100%{box-shadow:0 0 6px #ffc61a}50%{box-shadow:0 0 22px #ffc61a,0 0 40px #fff0a8}}
+#pIdx{text-align:left;display:flex;flex-direction:column;gap:10px}
+.pirow{border:3px solid var(--rc);border-radius:16px;padding:8px;background:#f8f9fd}
+.pirh{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}.pirh b{font-size:17px}.pirh small{color:#6b7290;font-weight:800}
+.pirh span{margin-left:auto;font-weight:900;background:var(--rc);color:#fff;border-radius:999px;padding:2px 10px;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.pirh em{font-style:normal;font-weight:900;font-size:13px;background:#fff3c4;border-radius:999px;padding:2px 8px}.pirh em.ok{background:#d6f5e3}
+.pigrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
+.pic{border:2px solid #e3e6f0;border-radius:12px;background:#fff;font:inherit;color:#1d2340;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:default}
+.pic .pie{font-size:30px;filter:brightness(0);opacity:.22}.pic b{font-size:13px}.pic small{font-size:11px;color:#6b7290;font-weight:800}
+.pic.seen .pie{filter:none;opacity:1}.pic.seen{border-color:var(--rc)}.pic.own{background:#eafaf0}
+.prlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin:6px 0}
+.prpick{border:3px solid var(--rc);border-radius:16px;background:#fff;font:inherit;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;color:#1d2340;touch-action:manipulation;min-height:96px}
+.prpick .pce{font-size:34px}.prpick b{font-size:17px}.prpick small{font-size:12px;color:#5a6080}
+.prpick:hover:not([disabled]),.prpick:focus-visible,.prpick.gpfocus{transform:translateY(-2px);box-shadow:0 5px 0 var(--rc)}
+.prpick[disabled]{opacity:.55;cursor:default}
+#pRetYes{background:#ff6fb5;color:#fff;box-shadow:0 6px 0 #d14d92}
+#pReturnPanel [hidden]{display:none!important}
+#pRetMsg{font-weight:800;color:#d14d92;margin-top:4px}
+@media (max-height:500px){#pReturnPanel .mbox{padding:10px 16px;max-height:94vh;overflow:auto}#pReturnPanel .emoji{font-size:26px;margin:0}#pReturnPanel h2{font-size:19px!important;margin:2px 0}.prpick{min-height:70px;padding:6px}.prpick .pce{font-size:24px}}
+.pflash{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 45%,rgba(255,230,120,.85),rgba(255,198,26,.35) 40%,transparent 75%);z-index:5}
+.pflash.go{animation:pfl 2s ease-out}
+@keyframes pfl{0%{opacity:0}12%{opacity:1}100%{opacity:0}}
+.ppn #pIdxBtn2{margin-left:4px}
 .pmode.touchui .otip{top:calc(170px + env(safe-area-inset-top))}
 @media (max-width:640px){.pgoal{top:calc(max(10px,env(safe-area-inset-top)) + 100px);font-size:14px;max-width:96vw}.ppet{top:calc(max(10px,env(safe-area-inset-top)) + 146px);width:168px;padding:6px 8px}.pmode.touchui .otip{top:calc(250px + env(safe-area-inset-top))}}
-#obby:has(#pNamePanel.show,#pAdoptPanel.show,#pPetsPanel.show) :is(.pgoal,.ppet,.ppedals,.pact){display:none!important}
-#obby:not(.pmode) :is(.pgoal,.ppet,.ppedals,.pact,#pNamePanel,#pAdoptPanel,#pPetsPanel){display:none!important}
+#obby:has(#pNamePanel.show,#pAdoptPanel.show,#pPetsPanel.show,#pIndexPanel.show,#pReturnPanel.show) :is(.pgoal,.ppet,.ppedals,.pact){display:none!important}
 @media (max-height:500px){#pNamePanel .mbox,#pAdoptPanel .mbox{padding:10px 18px;max-height:94vh;overflow:auto}#pNamePanel .emoji,#pAdoptPanel .emoji{font-size:26px;margin:0}#pNamePanel h2,#pAdoptPanel h2{font-size:20px;margin:2px 0}#pNamePanel .stats{font-size:13px}#pNamePanel .pname{padding:6px 10px;font-size:18px}#pNamePanel .psugg{margin:6px 0}#pNamePanel .pmsg:empty{display:none}#pNamePanel .owinbtns .big{margin:3px}#pNamePanel .owinbtns,#pAdoptPanel .owinbtns{margin-top:6px}#pNamePanel .owinbtns .big,#pAdoptPanel .owinbtns .big{padding:8px 14px;font-size:15px}}
 @media (max-height:500px){.pgoal{font-size:14px;top:calc(max(8px,env(safe-area-inset-top)) + 50px)}.ppet{top:calc(max(8px,env(safe-area-inset-top)) + 96px);width:170px;padding:5px 8px}.ppn{font-size:13px}.pgrowbar{height:14px}.pgrowbar span{line-height:14px}.ppedals button{width:72px;height:72px}#pGas{width:86px;height:86px}.touchui .pact,.pdrive.touchui .pact{bottom:max(116px,calc(env(safe-area-inset-bottom) + 106px));font-size:16px;padding:10px 14px}.pmode.touchui .otip{top:calc(96px + env(safe-area-inset-top));left:calc(50% - 90px);max-width:60vw}}
 </style>
@@ -574,6 +613,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
       <button class="tab" data-cat="animal">🐱 Ears &amp; Tails</button>
       <button class="tab" data-cat="shirt">👕 Shirts</button>
       <button class="tab" data-cat="pants">👖 Pants</button>
+      <button class="tab" data-cat="style">👗 Styles</button>
       <button class="tab" data-cat="face">😀 Faces</button>
       <button class="tab" data-cat="anim">🕺 Animations</button>
       <button class="tab" data-cat="burger">🍔 Burger Family</button>
@@ -583,6 +623,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="animnote" id="animNote">🕺 Animation packs change how you walk, jump and climb in every game (pick one). 🎉 Emotes are yours forever: press <b>1–8</b> in a game, or tap the <b>😀</b> button on a phone.</div>
     <div class="animnote" id="burgerNote" style="display:none">🍔 Meet the Sizzle family from the Sizzle Shack diner! Grab a whole family outfit, or mix single pieces with your other stuff. ⭐ Star move: <b>Dina's Flail Run</b>. Emotes: <b>5</b> 🍳 Burger Flip, <b>6</b> 😩 Awkward Groan.</div>
     <div class="animnote" id="townNote" style="display:none">📺 Say hi to the Bumbles of Wobbleton, the goofiest family on TV! Grab a whole family outfit, or mix single pieces with your other stuff. ⭐ Star move: <b>Belly Waddle</b>. Emotes: <b>7</b> 🤦 Big Facepalm, <b>8</b> 🛹 Skate Trick.</div>
+    <div class="animnote" id="styleNote" style="display:none">👗 All free! Pick a <b>body type</b> (Classic or Girl), add lashes, and try a skirt, a dress or long hair. Works with every color, hat, outfit, animation and game.</div>
     <div class="wornbar" id="wornBar" aria-label="What you're wearing"></div>
     <div class="items" id="items"></div>
 </section>
@@ -652,6 +693,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
         <span><i>☰</i>Menu: pause (Home: settings)</span>
         <span><i style="font-size:8px;letter-spacing:-.2px">VIEW</i>View: help · skip level (Home: shop)</span>
         <span><i>✚</i>D-pad: move around menus</span>
+        <span><i>L3</i>Click left stick: run (hold, or click to keep running)</span>
         <span><i>R3</i>Click right stick: camera behind me</span>
       </div>
     </div>
@@ -695,7 +737,9 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="ojzone" id="oJoyZone"></div>
     <div class="ojoy" id="oJoy"><div class="oknob" id="oKnob"></div></div>
     <button class="ojump" id="oJump" aria-label="Jump">⬆️</button>
+    <button class="orun" id="oRun" aria-label="Run" aria-pressed="false">🏃</button>
   </div>
+  <div class="ostam full" id="oStam" style="display:none" title="Run energy"><i>🏃</i><b><u id="oStamF"></u></b></div>
   <button class="oemo" id="oEmoBtn" title="Emotes (keys 1-8)" aria-label="Emotes">😀</button>
   <div class="oemos" id="oEmos"></div>
   <div class="obuild" id="oBuild">
@@ -716,7 +760,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   <div class="owarn" id="oWarn"></div>
   <div class="pgoal" id="pGoal"><svg id="pArrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 10h-5v10h-6V12H4z"/></svg><span id="pGoalT"></span><b id="pGoalD"></b></div>
   <div class="ppet" id="pPetBox">
-    <div class="ppn"><div><b id="pPetN"></b><small id="pPetS"></small></div><button id="pPetsBtn" title="My pets (M)" aria-label="My pets">🐾</button></div>
+    <div class="ppn"><div><b id="pPetN"></b><small id="pPetS"></small></div><button id="pPetsBtn" title="My pets (M)" aria-label="My pets">🐾</button><button id="pIdxBtn2" title="Pet Index (I)" aria-label="Pet Index">📖</button></div>
     <div class="pneeds"><span title="Food">🍖<i><u id="pFood"></u></i></span><span title="Fun">🎾<i><u id="pFun"></u></i></span><span title="Energy">⚡<i><u id="pEn"></u></i></span></div>
     <div class="pgrowbar"><u id="pGrow"></u><span id="pGrowT"></span></div>
   </div>
@@ -732,16 +776,31 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   </div></div>
   <div class="opanel" id="pAdoptPanel"><div class="mbox">
     <span class="emoji" id="pAdEmoji">🐱</span><h2 id="pAdTitle">Adopt a Cat?</h2>
+    <span class="prar" id="pAdRar"></span>
     <div class="stats" style="margin-bottom:6px">Meet <b id="pAdName"></b>! Pick a color:</div>
     <div class="pcols" id="pCols"></div>
-    <div class="owinbtns"><button class="big green" id="pAdoptOk">💕 Adopt!</button><button class="big gray" id="pAdoptBack">↩️ See the others</button></div>
+    <div class="owinbtns"><button class="big green" id="pAdoptOk">💕 Adopt!</button><button class="big gray" id="pAdoptBack">↩️ See the others</button><button class="big" id="pReroll">🎲 New pets · 25 🪙</button></div>
   </div></div>
   <div class="opanel" id="pPetsPanel"><div class="mbox pbox">
     <span class="emoji">🐾</span><h2>My Pets <small id="pCount"></small></h2>
     <div class="plist" id="pList"></div>
     <div class="stats" style="font-size:14px;margin:10px 0">Feed, play and walk your pet to help it grow: 🍼 Baby → 🧒 Kid → 😎 Teen → ⭐ Adult.<br>When your newest pet is an Adult, adopt another at the 🏥 Pet Shelter (up to 6)!</div>
-    <button class="big gray" id="pPetsClose">✖ Close</button>
+    <div class="owinbtns"><button class="big" id="pIdxBtn">📖 Pet Index</button><button class="big gray" id="pPetsClose">✖ Close</button></div>
   </div></div>
+  <div class="opanel" id="pIndexPanel"><div class="mbox pbox">
+    <span class="emoji">📖</span><h2>Pet Index <small id="pIdxCount"></small></h2>
+    <div class="stats" style="font-size:14px;margin-bottom:8px">Visit the 🏥 Pet Shelter to discover pets — different ones every visit! Find a whole row to win coins. 🌟 Rarest: Unicorn &amp; Dragon</div>
+    <div id="pIdx"></div>
+    <button class="big gray" id="pIndexClose" style="margin-top:10px">✖ Close</button>
+  </div></div>
+  <div class="opanel" id="pReturnPanel"><div class="mbox pbox">
+    <div id="pRetPick"><span class="emoji">💌</span><h2>Return a pet</h2>
+      <div class="stats" style="font-size:15px;margin-bottom:8px">🩺 Dr. Hazel: “If a pet needs a new home, I’ll help them find a loving family.”</div>
+      <div class="prlist" id="pRetList"></div><div class="pmsg" id="pRetMsg"></div></div>
+    <div id="pRetAsk" hidden><span class="emoji" id="pRetE">🐶</span><h2 id="pRetQ" style="font-size:22px;line-height:1.3;max-width:420px;margin:6px auto"></h2></div>
+    <div class="owinbtns"><button class="big gray" id="pRetNo">↩️ Never mind</button><button class="big" id="pRetYes" hidden>💕 Return</button></div>
+  </div></div>
+  <div class="pflash" id="pFlash"></div>
   <div class="opanel" id="oDiff"><div class="mbox">
     <span class="emoji">🌋</span><h2>Lava Escape</h2>
     <div class="stats" style="font-size:16px;line-height:1.5">The lava is rising! Climb the tower and reach the 🚁 rescue helicopter at the top.<br>How fast should the lava go?</div>
@@ -797,7 +856,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.10.29-2a';
+const BUILD = '2026.10.29-3';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -813,7 +872,7 @@ function checkUpdate(why){
   }).catch(() => false);
 }
 setTimeout(() => checkUpdate('start'), 600);
-const DEF = {head:'#ffd23f', shirt:'#3a86ff', pants:'#2d2d2d', hat:'none', hair:null, hairColor:'#6b3e1f', ears:null, tail:null, back:null, brow:null, extra:null, shirtPat:null, pantsPat:null, face:'smile', anim:'default'};
+const DEF = {head:'#ffd23f', shirt:'#3a86ff', pants:'#2d2d2d', hat:'none', hair:null, hairColor:'#6b3e1f', ears:null, tail:null, back:null, brow:null, extra:null, shirtPat:null, pantsPat:null, face:'smile', anim:'default', body:'classic', lash:null};
 const HAIRCOLORS = ['#6b3e1f','#2b1d14','#f2c14e','#d9601f','#ff6fb5','#3a86ff','#8b5cf6','#2ec27e','#f4f4f4','#ff4d5e'];
 function load(k, d){ try{ const v = JSON.parse(localStorage.getItem(k)); return v ?? d; }catch(e){ return d; } }
 function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
@@ -1040,6 +1099,16 @@ function drawPants(ctx, av){
     ctx.fillStyle = shade(col, 30); ctx.fillRect(92, 234, 36, 5); ctx.fillRect(132, 234, 36, 5);
     return;
   }
+  if (p === 'dress'){   // twirly dress in your shirt color, with a bow in your pants color
+    const dc = av.shirt;
+    block(ctx, 98, 248, 28, 36, skin); block(ctx, 134, 248, 28, 36, skin);
+    poly(ctx, [[90,198],[170,198],[194,264],[66,264]], dc);
+    ctx.strokeStyle = shade(dc, -30); ctx.lineWidth = 3;
+    [98,114,130,146,162].forEach(x => { ctx.beginPath(); ctx.moveTo(x, 212); ctx.lineTo(x + (x-130)*.5, 262); ctx.stroke(); });
+    poly(ctx, [[69,256],[191,256],[194,264],[66,264]], shade(dc, 40));
+    ctx.fillStyle = av.pants; ctx.fillRect(90, 202, 80, 9); poly(ctx, [[130,206],[114,198],[114,214]], av.pants); poly(ctx, [[130,206],[146,198],[146,214]], av.pants); circ(ctx, 130, 206, 5, shade(av.pants, 30));
+    return;
+  }
   if (p === 'skirt'){
     block(ctx, 96, 230, 30, 54, skin); block(ctx, 134, 230, 30, 54, skin);
     poly(ctx, [[88,198],[172,198],[188,252],[72,252]], col);
@@ -1084,11 +1153,18 @@ function drawAvatar(ctx, av, opts = {}){
     hairBack(ctx, av);
   }
   if (opts.layer === 'back'){ ctx.restore(); return; }
-  drawPants(ctx, av);
+  const girl = av.body === 'girl', sxk = k => { ctx.translate(130, 0); ctx.scale(k, 1); ctx.translate(-130, 0); };
+  ctx.save(); if (girl) sxk(.9); drawPants(ctx, av); ctx.restore();
+  ctx.save();
+  if (girl){ sxk(.86); ctx.save(); ctx.beginPath(); ctx.rect(40, 100, 46, 120); ctx.rect(174, 100, 46, 120);
+    ctx.moveTo(86, 100); ctx.lineTo(174, 100); ctx.lineTo(174, 146); ctx.lineTo(165, 180); ctx.lineTo(171, 208); ctx.lineTo(89, 208); ctx.lineTo(95, 180); ctx.lineTo(86, 146); ctx.closePath(); ctx.clip(); }
   drawShirt(ctx, av);
+  if (girl) ctx.restore();
   block(ctx, 52, 192, 30, 22, av.head); block(ctx, 178, 192, 30, 22, av.head);
+  ctx.restore();
+  if (av.pantsPat === 'dress'){ ctx.save(); if (girl) sxk(.9); ctx.fillStyle = av.pants; ctx.fillRect(90, 200, 80, 9); poly(ctx, [[130,204],[114,196],[114,212]], av.pants); poly(ctx, [[130,204],[146,196],[146,212]], av.pants); circ(ctx, 130, 204, 5, shade(av.pants, 30)); ctx.restore(); }
   block(ctx, 90, 42, 80, 72, av.head);
-  drawFace(ctx, av);
+  drawFace(ctx, av); drawLashes(ctx, av);
   hairFront(ctx, av);
   if (av.ears && EARS[av.ears]) EARS[av.ears](ctx);
   if (av.brow === 'horn') drawHorn(ctx);
@@ -1127,6 +1203,13 @@ function drawAvatar(ctx, av, opts = {}){
 }
 /* ---------- faces ---------- */
 function lum(hex){ const n = parseInt(hex.slice(1),16); return (((n>>16)&255)*299 + ((n>>8)&255)*587 + (n&255)*114)/1000; }
+function drawLashes(ctx, av){   // optional lashes: little flicks on the outer corners of the eyes
+  if (av.lash !== 'on' || av.face === 'lashes') return;
+  ctx.save(); ctx.strokeStyle = lum(av.head || '#ffd23f') < 60 ? '#f1f4ff' : '#1d2340'; ctx.lineWidth = 2.6; ctx.lineCap = 'round';
+  [[108, -1], [152, 1]].forEach(([x, d]) => [[0, 0], [3 * d, 3]].forEach(([ox, oy]) => { ctx.beginPath(); ctx.moveTo(x - ox, 67 + oy); ctx.lineTo(x - ox + 5 * d, 61 + oy); ctx.stroke(); }));
+  [[110, 120], [142, 152]].forEach(([a, b]) => { ctx.beginPath(); ctx.moveTo(a - 1, 65); ctx.lineTo(b + 1, 65); ctx.stroke(); });
+  ctx.restore();
+}
 function drawFace(ctx, av){
   const ink = lum(av.head || '#ffd23f') < 60 ? '#f1f4ff' : '#1d2340';
   const eyes = () => { ctx.fillStyle = ink; ctx.fillRect(108, 66, 10, 14); ctx.fillRect(142, 66, 10, 14); ctx.fillStyle = ink === '#1d2340' ? '#ffffff' : '#1d2340'; ctx.fillRect(110, 68, 4, 4); ctx.fillRect(144, 68, 4, 4); };
@@ -1388,9 +1471,9 @@ function drawPosed(ctx, av, P = {}){
   let sx = Math.cos(P.spin || 0); if (Math.abs(sx) < .08) sx = sx < 0 ? -.08 : .08; ctx.scale(sx, 1 - (P.lean || 0) * .08);
   ctx.translate(0, -120); ctx.rotate(P.flip || 0); ctx.translate(0, 120);
   ctx.translate(-130, -290);
-  const legTop = av.pantsPat === 'skirt' ? 250 : 204;
+  const legTop = av.pantsPat === 'skirt' ? 250 : av.pantsPat === 'dress' ? 264 : 204, G2 = av.body === 'girl';
   const limbs = [
-    ['aL', 44, 112, 42, 108, 67, 122, 1], ['aR', 174, 112, 42, 108, 193, 122, -1],
+    G2 ? ['aL', 52, 112, 40, 108, 76, 122, 1] : ['aL', 44, 112, 42, 108, 67, 122, 1], G2 ? ['aR', 168, 112, 40, 108, 184, 122, -1] : ['aR', 174, 112, 42, 108, 193, 122, -1],
     ['lL', 88, legTop, 42, 296 - legTop, 110, 206, 1], ['lR', 130, legTop, 42, 296 - legTop, 150, 206, -1]];
   const HEAD = [20, -60, 220, 172];
   img(L.back);
@@ -1571,7 +1654,7 @@ function comingSoon(g){
 /* ---------- coins + shop ---------- */
 const ANIMALS = [['cat','🐱','Cat'],['bunny','🐰','Bunny'],['fox','🦊','Fox'],['bear','🐻','Bear'],['dog','🐶','Dog']];
 const ITEMS = [
-  ...[['short','Short Hair',100],['long','Long Hair',150],['ponytail','Ponytail',150],['pigtails','Pigtails',175],['curly','Curly Hair',175],['spiky','Spiky Hair',125],['bun','Top Bun',150]]
+  ...[['short','Short Hair',100],['long','Long Straight Hair',0],['ponytail','Ponytail',0],['pigtails','Pigtails',175],['curly','Curly Hair',175],['spiky','Spiky Hair',125],['bun','Top Bun',150]]
     .map(([v,n,p]) => ({id:'hair-'+v, cat:'hair', emoji:'💇', name:n, price:p, slot:'hair', val:v})),
   ...ANIMALS.flatMap(([a,e,n]) => [
     {id:'ears-'+a, cat:'animal', emoji:e, name:n+' Ears', price:120, slot:'ears', val:a},
@@ -1582,7 +1665,7 @@ const ITEMS = [
   {id:'extra-wings', cat:'animal', emoji:'🐉', name:'Dragon Wings', price:1200, slot:'back', val:'wings', rare:true},
   ...[['stripes','Stripy Shirt',100],['star','Star Shirt',120],['heart','Heart Shirt',120],['lightning','Lightning Shirt',150],['hoodie','Comfy Hoodie',200],['rainbow','Rainbow Shirt',250]]
     .map(([v,n,p]) => ({id:'shirt-'+v, cat:'shirt', emoji:'👕', name:n, price:p, slot:'shirtPat', val:v})),
-  ...[['jeans','Jeans',120],['shorts','Shorts',100],['skirt','Skirt',150],['plaid','Plaid Pants',150],['sparkly','Sparkly Pants',250]]
+  ...[['jeans','Jeans',120],['shorts','Shorts',100],['skirt','Skirt',0],['plaid','Plaid Pants',150],['sparkly','Sparkly Pants',250]]
     .map(([v,n,p]) => ({id:'pants-'+v, cat:'pants', emoji:'👖', name:n, price:p, slot:'pantsPat', val:v})),
   ...FACE_LIST.map(([v,n,p,rare]) => ({id:'face-'+v, cat:'face', emoji:'😀', name:n, price:p, slot:'face', val:v, rare, def: v === 'smile'})),
   ...ANIM_LIST.map(([v,e,n,p,d]) => ({id:'anim-'+v, cat:'anim', emoji:e, name:n, price:p, slot:'anim', val:v, desc:d, def: v === 'default'})),
@@ -1627,8 +1710,17 @@ ITEMS.push(
     .map(([v,n,p]) => ({id:'hair-'+v, cat:'town', emoji:'💇', name:n, price:p, slot:'hair', val:v})),
   ...TOWN_FACES.map(([v,n,p]) => ({id:'face-'+v, cat:'town', emoji:'😀', name:n, price:p, slot:'face', val:v})),
 );
+function byId0(id){ return ITEMS.find(x => x.id === id); }
 [['anim-flail','burger'],['emote-flip','burger'],['emote-groan','burger'],['anim-waddle','town'],['emote-facepalm','town'],['emote-skate','town']].forEach(([id, tab]) => { const it = ITEMS.find(x => x.id === id); it.also = tab; if (id.startsWith('anim-')) it.star = true; });
-const SLOT_DEF = {face:'smile', anim:'default', hat:'none'};
+ITEMS.push(
+  // 👗 Styles: all free. Body type works with every color, outfit, hat, pack and animation
+  {id:'body-classic', cat:'style', emoji:'🧍', name:'Classic Body', price:0, slot:'body', val:'classic', def:true, desc:'The original Rublox shape'},
+  {id:'body-girl',    cat:'style', emoji:'🧍‍♀️', name:'Girl Body', price:0, slot:'body', val:'girl', desc:'Slimmer shoulders, waist, arms and legs'},
+  {id:'lash-on',      cat:'style', emoji:'👁️', name:'Eyelashes', price:0, slot:'lash', val:'on', desc:'Cute lashes on any face'},
+  {id:'pants-dress',  cat:'style', emoji:'👗', name:'Twirly Dress', price:0, slot:'pantsPat', val:'dress', desc:'Matches your shirt color, with a bow in your pants color'},
+);
+['pants-skirt','hair-long','hair-ponytail'].forEach(id => byId0(id).also = 'style');
+const SLOT_DEF = {face:'smile', anim:'default', hat:'none', body:'classic'};
 const byId = id => ITEMS.find(x => x.id === id);
 let coins = load('rubloxCoins', 500);
 let owned = new Set(load('rubloxOwned', []));
@@ -1686,7 +1778,7 @@ function thumb(canvas, it){
   const preview = withItem(it.look ? Object.assign({}, DEF) : avatar, it, true); // outfits preview the whole family look
   if (it.slot === 'face'){ drawAvatar(canvas.getContext('2d'), preview, {headOnly: true}); return; }
   if (it.slot === 'hair' && preview.hat !== 'none') preview.hat = 'none';
-  const headish = it.slot === 'hair' || it.slot === 'ears' || it.slot === 'hat' || it.val === 'horn';
+  const headish = it.slot === 'hair' || it.slot === 'lash' || it.slot === 'ears' || it.slot === 'hat' || it.val === 'horn';
   drawAvatar(canvas.getContext('2d'), preview, {headOnly: headish});
 }
 const HATNAMES = {cap: 'Cap', crown: 'Crown', party: 'Party Hat'};
@@ -1705,7 +1797,7 @@ function renderShop(){
   renderWorn();
   $$('.tab').forEach(t => t.classList.toggle('sel', t.dataset.cat === shopCat));
   $('#hairRow').style.display = shopCat === 'hair' ? '' : 'none'; $('#animNote').style.display = shopCat === 'anim' ? '' : 'none';
-  $('#burgerNote').style.display = shopCat === 'burger' ? '' : 'none'; $('#townNote').style.display = shopCat === 'town' ? '' : 'none';
+  $('#burgerNote').style.display = shopCat === 'burger' ? '' : 'none'; $('#townNote').style.display = shopCat === 'town' ? '' : 'none'; $('#styleNote').style.display = shopCat === 'style' ? '' : 'none';
   const box = $('#items'); box.innerHTML = '';
   const list = ITEMS.filter(it => it.cat === shopCat || it.also === shopCat);
   if (shopCat === 'burger' || shopCat === 'town') list.sort((a, b) => (b.set ? 2 : b.star ? 1 : 0) - (a.set ? 2 : a.star ? 1 : 0));
@@ -1728,7 +1820,7 @@ function renderShop(){
 }
 function renderStuff(){
   const box = $('#stuff'); box.innerHTML = '';
-  const mine = ITEMS.filter(it => (!it.set || (it.look && owned.has(it.id))) && (owned.has(it.id) || (it.price === 0 && (it.cat === 'face' || it.cat === 'anim'))));
+  const mine = ITEMS.filter(it => (!it.set || (it.look && owned.has(it.id))) && (owned.has(it.id) || (it.price === 0 && (it.cat === 'face' || it.cat === 'anim' || it.cat === 'style' || it.also === 'style'))));
   if (!mine.length){ box.innerHTML = '<div class="empty">Nothing here yet! Visit the 🛍️ Shop to get hair, ears, tails and clothes.</div>'; return; }
   mine.forEach(it => {
     const b = document.createElement('button'); const on = isOn(it);
@@ -1859,6 +1951,8 @@ const Obby = (() => {
   const joy = {x:0, y:0, jump:false};
   const pad = {x: 0, y: 0, jump: false, on: false, lx: 0, ly: 0, emo: -1};   // game controller (fed by the gamepad script)
   let muted = load('rubloxMute', false);
+  const RUN_MUL = 1.6, STAM_MAX = 4;   // run = 1.6x walk; Block Tag gives everyone the same 4s stamina
+  const run = {pad: false, padT: 0, padIdle: 0, touch: false, on: false, stam: STAM_MAX, tired: false, shown: -1};
   let emote = null, lastPose = {}, touchUI = false, rotDismissed = false, rotT = 0;
   const LOWQ = (matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0) && Math.min(screen.width, screen.height) < 900;
 
@@ -2092,37 +2186,43 @@ const Obby = (() => {
     const g = new THREE.Group();
     const bx = (w, h, d, c, x, y, z, parent = g, material) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material || mat(c)); m.position.set(x, y, z); parent.add(m); return m; };
     const pantsCol = av.pantsPat === 'jeans' ? '#3d6fb5' : av.pants;
-    const bare = av.pantsPat === 'shorts' || av.pantsPat === 'skirt';
+    const bare = av.pantsPat === 'shorts' || av.pantsPat === 'skirt' || av.pantsPat === 'dress', G = av.body === 'girl';
+    const LW = G ? .38 : .44, TW = G ? .82 : .96, TD = G ? .44 : .5, AX = G ? .6 : .7, AW = G ? .34 : .4;
     // legs (pivot at the hip)
     let legMat = null;
     if (['jeans','plaid','sparkly'].includes(av.pantsPat)) {
       const tex = canvasTex(72, 168, ctx => { ctx.scale(2, 2); ctx.translate(-92, -200); drawPants(ctx, av); });
       legMat = new THREE.MeshLambertMaterial({map: tex});
     }
-    const legs = [-.24, .24].map(x => {
+    const legs = (G ? [-.2, .2] : [-.24, .24]).map(x => {
       const piv = new THREE.Group(); piv.position.set(x, 1.0, 0); g.add(piv);
-      bx(.44, 1.0, .44, bare ? av.head : pantsCol, 0, -.5, 0, piv, legMat);
-      if (av.pantsPat === 'shorts') bx(.47, .45, .47, pantsCol, 0, -.22, 0, piv);
+      bx(LW, 1.0, LW, bare ? av.head : pantsCol, 0, -.5, 0, piv, legMat);
+      if (av.pantsPat === 'shorts') bx(LW + .03, .45, LW + .03, pantsCol, 0, -.22, 0, piv);
       return piv;
     });
-    if (av.pantsPat === 'skirt'){ const s = new THREE.Mesh(new THREE.CylinderGeometry(.55, .78, .6, 8), mat(pantsCol)); s.position.y = .72; g.add(s); }
+    if (av.pantsPat === 'skirt'){ const s = new THREE.Mesh(new THREE.CylinderGeometry(G ? .48 : .55, G ? .72 : .78, .6, 8), mat(pantsCol)); s.position.y = .72; g.add(s); }
+    if (av.pantsPat === 'dress'){ const s = new THREE.Mesh(new THREE.CylinderGeometry(G ? .44 : .52, G ? .8 : .86, .8, 10), mat(av.shirt)); s.position.y = .62; g.add(s);
+      const hem = new THREE.Mesh(new THREE.CylinderGeometry(G ? .8 : .86, G ? .82 : .88, .08, 10), mat(shade(av.shirt, 40))); hem.position.y = .24; g.add(hem);
+      const sash = new THREE.Mesh(new THREE.CylinderGeometry(G ? .43 : .5, G ? .45 : .52, .12, 10), mat(av.pants)); sash.position.y = 1.04; g.add(sash);
+      bx(.34, .2, .1, av.pants, 0, 1.05, -(G ? .47 : .54)); }
     // torso with your shirt design on the front
     const shirtTex = canvasTex(176, 176, ctx => { ctx.scale(2, 2); ctx.translate(-86, -116); drawShirt(ctx, av); });
     const sm = mat(av.shirt), front = new THREE.MeshLambertMaterial({map: shirtTex});
-    bx(.96, 1.0, .5, null, 0, 1.5, 0, g, [sm, sm, sm, sm, front, sm]);
-    if (av.shirtPat === 'hoodie') bx(.8, .3, .25, shade(av.shirt, -30), 0, 2.0, -.3);
+    const torso = bx(TW, 1.0, TD, null, 0, 1.5, 0, g, [sm, sm, sm, sm, front, sm]);
+    if (G){ const pa = torso.geometry.attributes.position; for (let i = 0; i < pa.count; i++) if (pa.getY(i) < 0) pa.setX(i, pa.getX(i) * .88); pa.needsUpdate = true; torso.geometry.computeVertexNormals(); }   // a gentle waist
+    if (av.shirtPat === 'hoodie') bx(TW - .16, .3, .25, shade(av.shirt, -30), 0, 2.0, -.3);
     // arms
-    const arms = [-.7, .7].map(x => {
+    const arms = [-AX, AX].map(x => {
       const piv = new THREE.Group(); piv.position.set(x, 1.95, 0); g.add(piv);
-      bx(.4, .85, .4, av.shirtPat === 'rainbow' ? '#3a86ff' : av.shirt, 0, -.4, 0, piv);
-      bx(.38, .22, .38, av.head, 0, -.92, 0, piv);
+      bx(AW, .85, AW, av.shirtPat === 'rainbow' ? '#3a86ff' : av.shirt, 0, -.4, 0, piv);
+      bx(AW - .02, .22, AW - .02, av.head, 0, -.92, 0, piv);
       return piv;
     });
     // head: face + front hair drawn with the same 2D art as the avatar page
     const faceTex = canvasTex(320, 288, ctx => {
       ctx.scale(4, 4); ctx.translate(-90, -42);
       block(ctx, 90, 42, 80, 72, av.head);
-      drawFace(ctx, av);
+      drawFace(ctx, av); drawLashes(ctx, av);
       hairFront(ctx, Object.assign({}, av, {hair: av.hair && ['curly','spiky'].includes(av.hair) ? 'short' : av.hair}));
     });
     const hm = mat(av.head), faceM = new THREE.MeshLambertMaterial({map: faceTex});
@@ -2135,7 +2235,7 @@ const Obby = (() => {
       bx(.86, .2, .86, hc, 0, 2.86, 0);
       bx(.86, .7, .14, hc, 0, 2.5, -.43);
       bx(.12, .5, .7, hc, -.43, 2.6, -.05); bx(.12, .5, .7, hc, .43, 2.6, -.05);
-      if (av.hair === 'long') bx(.9, 1.1, .16, hc, 0, 2.15, -.46);
+      if (av.hair === 'long'){ bx(.9, 1.3, .16, hc, 0, 2.05, -.46); bx(.14, .9, .3, hc, -.45, 2.15, -.28); bx(.14, .9, .3, hc, .45, 2.15, -.28); }
       if (av.hair === 'ponytail') bx(.24, .75, .24, hc, 0, 2.3, -.62);
       if (av.hair === 'pigtails'){ bx(.24, .6, .24, hc, -.58, 2.3, 0); bx(.24, .6, .24, hc, .58, 2.3, 0); }
       if (av.hair === 'bun'){ const s = new THREE.Mesh(new THREE.SphereGeometry(.24, 12, 8), mat(hc)); s.position.set(0, 3.08, -.1); g.add(s); }
@@ -3171,7 +3271,12 @@ const Obby = (() => {
       if (P.ground.conv){ P.x += P.ground.conv.x * dt; P.z += P.ground.conv.z * dt; } }
     const inp = tg && (tg.phase === 'ready' || (tg.phase === 'play' && tg.it === 0 && tg.freeze > 0)) ? {x: 0, z: 0, mag: 0, jump: false} : input();
     const k = Math.min(1, dt * (P.onGround ? (slip || (P.ground && P.ground.ice) ? 1.4 : 14) : 6));
-    P.vx += (inp.x * SPEED - P.vx) * k; P.vz += (inp.z * SPEED - P.vz) * k;
+    const wantRun = !SIM && (keys.ShiftLeft || keys.ShiftRight || run.pad || run.touch) && inp.mag > .1;
+    if (!SIM){ if (mode === 'tag' && tg){ if (wantRun && !run.tired){ run.stam -= dt; if (run.stam <= 0){ run.stam = 0; run.tired = true; } } else run.stam = Math.min(STAM_MAX, run.stam + dt * .8); if (run.tired && run.stam >= 1.5) run.tired = false; }
+      else { run.stam = STAM_MAX; run.tired = false; } }
+    run.on = wantRun && !run.tired;
+    const spd = SPEED * (run.on ? RUN_MUL : 1);
+    P.vx += (inp.x * spd - P.vx) * k; P.vz += (inp.z * spd - P.vz) * k;
     if (inp.mag > .1) P.face = Math.atan2(inp.x, inp.z);
     let climbing = false;
     for (const t of trusses){
@@ -3580,7 +3685,14 @@ const Obby = (() => {
       if (top !== null && top - B.y <= 2.6) jump = true;
       if (B.stuckT > .9){ jump = true; B.dir = [Math.sin(B.wander += 2.1), Math.cos(B.wander)]; B.stuckT = 0; }
     }
-    const sp = B.speed * (tg.it === idx ? 1 : .92);
+    { const bodies = tagBodies(); let d = 1e9;
+      if (tg.it === idx) bodies.forEach((o, j) => { if (j !== idx && o && !o.away) d = Math.min(d, Math.hypot(o.x - B.x, o.z - B.z)); });
+      else { const it = bodies[tg.it]; if (it) d = Math.hypot(it.x - B.x, it.z - B.z); }
+      if (B.stam == null){ B.stam = STAM_MAX; B.tired = false; }
+      const want = !frozen && d < 9 && Math.hypot(mx, mz) > .1;
+      if (want && !B.tired){ B.stam -= dt; if (B.stam <= 0){ B.stam = 0; B.tired = true; } } else B.stam = Math.min(STAM_MAX, B.stam + dt * .8);
+      if (B.tired && B.stam >= 1.5) B.tired = false; B.run = want && !B.tired; }
+    const sp = B.speed * (tg.it === idx ? 1 : .92) * (B.run ? RUN_MUL : 1);
     const k = Math.min(1, dt * (B.onGround ? 14 : 6));
     B.vx += (mx * sp - B.vx) * k; B.vz += (mz * sp - B.vz) * k;
     if (Math.hypot(mx, mz) > .1) B.face = Math.atan2(mx, mz);
@@ -3637,8 +3749,8 @@ const Obby = (() => {
       if (!B.model) return;
       const M = B.model; M.g.position.set(B.x, B.y, B.z);
       let d = B.face - M.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); M.g.rotation.y += d * Math.min(1, dt * 10);
-      const sp = Math.hypot(B.vx, B.vz); B.walk += dt * sp * 1.3;
-      const st = {state: !B.onGround && B.airT > .08 ? 'jump' : sp > .8 ? 'walk' : 'idle', t: worldT + n, ph: B.walk, sp: Math.min(1, sp / 5), air: B.airT, jumped: B.jumped};
+      const sp = Math.hypot(B.vx, B.vz); B.walk += dt * sp * (B.run ? 1.5 : 1.3);
+      const st = {state: !B.onGround && B.airT > .08 ? 'jump' : sp > .8 ? 'walk' : 'idle', t: worldT + n, ph: B.walk, sp: Math.min(B.run ? 1.3 : 1, sp / 5), air: B.airT, jumped: B.jumped};
       applyPose(dt, animPose(B.pack, st), M);
       B.shadow.position.set(B.x, colTop(B.x, B.z) + .03, B.z);
     });
@@ -3705,11 +3817,11 @@ const Obby = (() => {
         [r(C.x), r(C.z), r(C.yaw), pt.drive ? 1 : 0, r(C.v)], q ? [q.d.k, q.d.c, q.stage, r(q.x), r(q.y), r(q.z), r(q.face), {eat: 2, sleep: 3, happy: 4, car: 5}[q.act] || (qs > .6 ? 1 : 0), q.d.n, r(qs)] : 0]; }
     return [r(P.x), r(P.y), r(P.z), r(P.face), s, r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0];
   }
-  function mpRoster(){ return [{uid: 'H', ...myLook()}, ...[...mp.guests.values()].filter(g => g.ready).map(g => ({uid: g.uid, name: g.name, av: g.av}))]; }
+  function mpRoster(){ return [{uid: 'H', ...myLook(), pl: 1}, ...[...mp.guests.values()].filter(g => g.ready).map(g => ({uid: g.uid, name: g.name, av: g.av, pl: g.plot || 0}))]; }
   function mpSetRoster(r){
     if (!Array.isArray(r)) return; mp.roster = []; const keep = new Set();
     r.slice(0, MP_MAX).forEach(p => { if (!p || typeof p.uid !== 'string' || !/^(H|g\d{1,4})$/.test(p.uid)) return;
-      const q = {uid: p.uid, name: cleanName(p.name), av: cleanAv(p.av)}; mp.roster.push(q); keep.add(q.uid);
+      const q = {uid: p.uid, name: cleanName(p.name), av: cleanAv(p.av), pl: Number.isInteger(p.pl) && p.pl >= 1 && p.pl <= 6 ? p.pl : 0}; mp.roster.push(q); keep.add(q.uid);
       if (q.uid !== mp.me) mp.players.set(q.uid, {name: q.name, av: q.av}); });
     for (const u of [...mp.players.keys()]) if (!keep.has(u)){ mp.players.delete(u); mpRemoveEnt(u); }
   }
@@ -3767,7 +3879,7 @@ const Obby = (() => {
       if (E.s === 4){ const cs = Math.cos(C.yaw), sn = Math.sin(C.yaw); E.x = C.x + cs * .5 - sn * .35; E.z = C.z - sn * .5 - cs * .35; E.y = .33; E.face = C.yaw; E.model.g.position.set(E.x, E.y, E.z); E.model.g.rotation.y = E.face; } }
     if (E.pet){ const p = E.pet, key = p.k + p.c + p.st + p.n;
       if (!E.petM || E.petM.key !== key){ if (E.petM) scene.remove(E.petM.m.g); const m = buildPet(p.k, p.c, p.st), tag = label(p.n, 'rgba(255,111,181,.85)', '#fff', 220);
-        tag.scale.multiplyScalar(.5); tag.position.y = 1.75 * m.base + .45; m.g.add(tag); scene.add(m.g); E.petM = {m, key, x: p.x, y: p.y, z: p.z, f: p.f}; }
+        tag.scale.multiplyScalar(.5); tag.position.y = m.top + .45; m.g.add(tag); scene.add(m.g); E.petM = {m, key, x: p.x, y: p.y, z: p.z, f: p.f}; }
       const Q = E.petM; if (Math.hypot(p.x - Q.x, p.z - Q.z) > 8){ Q.x = p.x; Q.z = p.z; }
       Q.x += (p.x - Q.x) * k; Q.y += (p.y - Q.y) * k; Q.z += (p.z - Q.z) * k; Q.f += wrap(p.f - Q.f) * k;
       Q.m.g.position.set(Q.x, Q.y, Q.z); Q.m.g.rotation.y = Q.f; animPet(Q.m, p.a, p.sp, dt, worldT); }
@@ -3795,9 +3907,9 @@ const Obby = (() => {
       E.x += (E.tx - E.x) * k; E.y += (E.ty - E.y) * k; E.z += (E.tz - E.z) * k;
       let d = E.tf - E.face; d = Math.atan2(Math.sin(d), Math.cos(d)); E.face += d * k;
       const M = E.model; M.g.position.set(E.x, E.y, E.z); M.g.rotation.y = E.face;
-      E.walk += dt * E.v * 1.3;
+      E.walk += dt * E.v * (E.v > SPEED * 1.15 ? 1.5 : 1.3);
       if (E.e){ E.et += dt; if (E.et > EMOTES[E.e].dur) E.e = ''; }
-      const st = {state: ['idle', 'walk', 'jump', 'climb', 'idle'][E.s] || 'idle', t: worldT + E.uid.length, ph: E.walk, sp: Math.min(1, E.v / 5), air: E.s === 2 ? .3 : 0, jumped: E.s === 2};
+      const st = {state: ['idle', 'walk', 'jump', 'climb', 'idle'][E.s] || 'idle', t: worldT + E.uid.length, ph: E.walk, sp: Math.min(E.v > SPEED * 1.15 ? 1.3 : 1, E.v / 5), air: E.s === 2 ? .3 : 0, jumped: E.s === 2};
       applyPose(dt, E.s === 4 ? SIT_POSE : E.e ? emotePose(E.e, E.et) : animPose(E.pack, st), M);
       if (E.s === 4 && E.carM && E.car){ mpPetsEnt(E, 0, true); E.sh.visible = false; continue; }
       const top = surfaceBelow(E.x, E.y, E.z); E.sh.visible = top > -1e8; if (E.sh.visible) E.sh.position.set(E.x, top + .03, E.z);
@@ -3816,6 +3928,7 @@ const Obby = (() => {
       if (g.ready) return;
       if (mp.guests.size >= MP_MAX - 1){ mpSendTo(g.conn, {t: 'full'}); setTimeout(() => { try { g.conn.close(); } catch(e){} }, 400); return; }
       g.uid = 'g' + (mp.nextG++); g.name = cleanName(d.name); g.av = cleanAv(d.av); g.ready = true;
+      g.plot = [2, 3, 4, 5, 6].find(n => ![...mp.guests.values()].some(o => o.ready && o.plot === n)) || 0;
       const gb = typeof d.b === 'string' ? d.b.slice(0, 20) : '';
       if (gb < BUILD){ mpSendTo(g.conn, {t: 'old', b: BUILD}); setTimeout(() => mpNote('🆕 ' + g.name + ' has an old Rublox. Refresh that page to update!'), 1500); }
       else if (gb > BUILD) checkUpdate('peer');
@@ -4095,7 +4208,7 @@ const Obby = (() => {
     if (mp.host){ clearTimeout(mp.homeT); mp.hmode = mode; if (!(mode === 'lava' && !diff)) mpSend({t: 'go', m: mode, d: diff || null}); return; }
     if (mode === 'build') mpSendTo(mp.hconn, {t: 'getblocks'});
     if (mode === 'tag'){ const n = +mp.me.slice(1) || 1; P.x = (n % 2 ? 1 : -1) * 4 * Math.ceil(n / 2); }
-    if (mode === 'pets' && pt){ const n = (+mp.me.slice(1) || 1) % 6 || 6; pt.car.z += 6.5 * n; P.x = 5; P.z = pt.car.z; if (pt.pet){ pt.pet.x = P.x - 1.5; pt.pet.z = P.z - 1.5; } }
+    if (mode === 'pets' && pt) petsToPlot();   // your own house on Pet Lane
   }
   function mpOnStop(){ if (mp.on && mp.host){ clearTimeout(mp.homeT); mp.homeT = setTimeout(() => { if (!running && mp.on){ mp.hmode = null; mpSend({t: 'home'}); mpRender(); } }, 400); } }
   /* --- home screen panel --- */
@@ -4147,12 +4260,46 @@ const Obby = (() => {
   /* ---------- Adopt a Pet: drive to the shelter, name + adopt a pet, raise it at home ---------- */
   // 100% original: our own town, shelter, low-poly pets, names and UI.
   const PET_KEY = 'rubloxPets', PET_MAX = 6;
+  // rarities: color, odds (weights) and the coin prize for discovering a whole row in the Pet Index
+  const RARITY = [
+    {n: 'Common',    c: '#9aa3b5', d: '#5d6478', e: '⚪', w: 50,  prize: 50},
+    {n: 'Uncommon',  c: '#2ec27e', d: '#1b8a55', e: '🟢', w: 28,  prize: 100},
+    {n: 'Rare',      c: '#3a86ff', d: '#2061c9', e: '🔵', w: 14,  prize: 200},
+    {n: 'Epic',      c: '#a855f7', d: '#7a2fd0', e: '🟣', w: 6.5, prize: 400},
+    {n: 'Legendary', c: '#ffc61a', d: '#c98f00', e: '🌟', w: 1.5, prize: 1000}];
   const PET_KINDS = {
-    mouse: {name: 'Mouse', emoji: '🐭', base: .82, cols: [['Silver', '#b9bdca', '#f4a9bd'], ['Snowy', '#f6f3ee', '#f7a1b8'], ['Cocoa', '#9a6a45', '#f0b49a']]},
-    cat:   {name: 'Cat',   emoji: '🐱', base: .95, cols: [['Ginger', '#f29a3c', '#ffe2bf'], ['Midnight', '#3d4256', '#d6dbea'], ['Cloud', '#ece6dd', '#b7a493']]},
-    dog:   {name: 'Dog',   emoji: '🐶', base: 1.08, cols: [['Honey', '#d9a057', '#f7e3c2'], ['Cocoa', '#7a4b2e', '#dcb48f'], ['Spotty', '#f6f4ef', '#2f2f35']]},
+    mouse:   {r: 0, name: 'Mouse',   emoji: '🐭', base: .82, tm: 'segs', cols: [['Silver', '#b9bdca', '#f4a9bd'], ['Snowy', '#f6f3ee', '#f7a1b8'], ['Cocoa', '#9a6a45', '#f0b49a']]},
+    cat:     {r: 0, name: 'Cat',     emoji: '🐱', base: .95, tm: 'cat', cols: [['Ginger', '#f29a3c', '#ffe2bf'], ['Midnight', '#3d4256', '#d6dbea'], ['Cloud', '#ece6dd', '#b7a493']]},
+    dog:     {r: 0, name: 'Dog',     emoji: '🐶', base: 1.08, tm: 'dog', cr: .27, cols: [['Honey', '#d9a057', '#f7e3c2'], ['Cocoa', '#7a4b2e', '#dcb48f'], ['Spotty', '#f6f4ef', '#2f2f35']]},
+    bunny:   {r: 0, name: 'Bunny',   emoji: '🐰', base: .9, tm: 'puff', cols: [['Cotton', '#f7f4ef', '#ffb3c7'], ['Caramel', '#c98a55', '#fbe3cc'], ['Smoky', '#8c8f9c', '#ece6f2']]},
+    hamster: {r: 0, name: 'Hamster', emoji: '🐹', base: .8, tm: 'puff', cols: [['Golden', '#f0b862', '#fff1dc'], ['Panda', '#f6f3ee', '#3d4256'], ['Cinnamon', '#c0703e', '#f7dcc3']]},
+    duck:    {r: 1, name: 'Duck',    emoji: '🦆', base: .9, tm: 'bird', cols: [['Sunny', '#ffd84d', '#ff9f1c'], ['Pond', '#7fbf6a', '#ffb02e'], ['Snow', '#f8f8f8', '#ff9f1c']]},
+    frog:    {r: 1, name: 'Frog',    emoji: '🐸', base: .88, tm: 'none', cols: [['Lime', '#6cd36c', '#f3f9c8'], ['Berry', '#ff5d7a', '#ffe0e6'], ['Blue Dart', '#3a86ff', '#1d2340']]},
+    turtle:  {r: 1, name: 'Turtle',  emoji: '🐢', base: .95, tm: 'puff', cr: .2, cols: [['Mossy', '#8fd16f', '#3f8a4a'], ['Sandy', '#d4e08f', '#b07a3a'], ['Ocean', '#7fd6c2', '#2f6fd6']]},
+    hedgehog:{r: 1, name: 'Hedgehog',emoji: '🦔', base: .85, tm: 'none', cols: [['Classic', '#ecd3ad', '#7a5233'], ['Snowy', '#fff4e6', '#cfc4b8'], ['Choco', '#dcb58c', '#4a2f22']]},
+    fox:     {r: 2, name: 'Fox',     emoji: '🦊', base: 1.0, tm: 'bush', cols: [['Fire', '#ff7a2e', '#fff4e6'], ['Arctic', '#f2f5fa', '#c7d3e6'], ['Silver', '#7b8496', '#f2f2f2']]},
+    penguin: {r: 2, name: 'Penguin', emoji: '🐧', base: .95, tm: 'bird', cr: .26, cols: [['Classic', '#2b3046', '#ffffff'], ['Fluffy', '#a7adb9', '#f2f2f2'], ['Blue', '#2f6fd6', '#ffffff']]},
+    owl:     {r: 2, name: 'Owl',     emoji: '🦉', base: .9, tm: 'bird', cr: .28, cols: [['Barn', '#d9a46a', '#fff4e6'], ['Snowy', '#f7f7f7', '#cfd6e6'], ['Midnight', '#4b3f72', '#c9b8ff']]},
+    koala:   {r: 2, name: 'Koala',   emoji: '🐨', base: .95, tm: 'none', cr: .25, cols: [['Gray', '#9aa0ab', '#eef0f4'], ['Cloud', '#cfd3dc', '#ffffff'], ['Cocoa', '#8a6a58', '#efe1d6']]},
+    redpanda:{r: 3, name: 'Red Panda', emoji: '🍁', base: 1.0, tm: 'bush', cols: [['Maple', '#d9542b', '#fff4e6'], ['Sunset', '#ff8a3d', '#ffe8c7'], ['Ember', '#a8352a', '#f6d5c6']]},
+    snowleo: {r: 3, name: 'Snow Leopard', emoji: '🐆', base: 1.08, tm: 'segs', cols: [['Snow', '#eef1f5', '#5b6170'], ['Gold', '#f2d08a', '#5a3a1e'], ['Shadow', '#8a90a1', '#2b2f3a']]},
+    phoenix: {r: 3, name: 'Phoenix Chick', emoji: '🔥', base: .88, tm: 'bird', cr: .28, cols: [['Blaze', '#ff6a2b', '#ffd23f'], ['Azure', '#3ab0ff', '#bff3ff'], ['Rose', '#ff5da2', '#ffd1e8']]},
+    unicorn: {r: 4, name: 'Unicorn', emoji: '🦄', base: 1.12, tm: 'horse', cr: .26, cols: [['Pearl', '#fbf7ff', '#ff8fd0'], ['Lilac', '#d9c2ff', '#7fe3ff'], ['Midnight', '#2b2d52', '#ffd23f']]},
+    dragon:  {r: 4, name: 'Dragon',  emoji: '🐉', base: 1.15, tm: 'segs', cr: .27, cols: [['Ruby', '#e8384f', '#ffd23f'], ['Emerald', '#2ec27e', '#ffe08a'], ['Sapphire', '#3a6df0', '#bff3ff']]},
   };
-  const PET_ORDER = ['mouse', 'cat', 'dog'];
+  const PET_ORDER = Object.keys(PET_KINDS).sort((a, b) => PET_KINDS[a].r - PET_KINDS[b].r);   // the Pet Index order
+  const STARTERS = ['mouse', 'cat', 'dog'];
+  const rarOf = k => RARITY[(PET_KINDS[k] || {r: 0}).r];
+  // three pets for this visit, by weighted rarity (no repeats)
+  function rollPets(rng = Math.random){
+    const tot = RARITY.reduce((a, R) => a + R.w, 0), out = [];
+    for (let tries = 0; out.length < 3 && tries < 60; tries++){
+      let x = rng() * tot, r = 0; while (r < 4 && x >= RARITY[r].w){ x -= RARITY[r].w; r++; }
+      const pool = PET_ORDER.filter(k => PET_KINDS[k].r === r && !out.includes(k));
+      if (pool.length) out.push(pool[Math.floor(rng() * pool.length)]);
+    }
+    return out;
+  }
   const STAGES = [{n: 'Baby', e: '🍼', xp: 0, s: .62, head: 1.3}, {n: 'Kid', e: '🧒', xp: 80, s: .78, head: 1.16}, {n: 'Teen', e: '😎', xp: 220, s: .92, head: 1.06}, {n: 'Adult', e: '⭐', xp: 450, s: 1.08, head: 1}];
   const PET_NAMES = ['Biscuit','Pickles','Mochi','Peanut','Sprinkles','Waffles','Noodle','Pepper','Coco','Bubbles','Ziggy','Marshmallow','Nugget','Pudding','Daisy','Rocket',
     'Sunny','Bean','Pip','Maple','Cupcake','Taco','Luna','Toffee','Jellybean','Scout','Pumpkin','Dottie','Muffin','Button','Clover','Ollie','Waffle','Pebbles','Snickerdoodle','Fudge','Kiwi','Bandit','Hazelnut','Nibbles'];
@@ -4170,8 +4317,26 @@ const Obby = (() => {
   function petNameClean(n){ let s = String(n || '').replace(/[^A-Za-z0-9 '\-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 14); return s ? s[0].toUpperCase() + s.slice(1) : ''; }
   const stageOf = xp => { let i = 0; STAGES.forEach((S, k) => { if (xp >= S.xp) i = k; }); return i; };
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const PLACES = {home: [-4, -46], car0: [8, -47], lot: [8, 50], desk: [0, 63.2], door: [0, 68.6], pens: [[-9, 78], [0, 78], [9, 78]], toy: [-4, -45.2], bowl: [-12, -43.5], bed: [-14.5, -50],
+  const PLACES = {home: [-4, -46], car0: [8, -47], lot: [8, 50], desk: [0, 63.2], ret: [4.2, 63.2], door: [0, 68.6], pens: [[-9, 78], [0, 78], [9, 78]], toy: [-4, -45.2], bowl: [-12, -43.5], bed: [-14.5, -50],
     gate: [-2, -37.6], shelter: [0, 70], walk: [[-30, -30], [-34, 0], [-8, 1.5]]};
+  // house plots on Pet Lane: everyone in a multiplayer room gets their own (host = plot 1)
+  const PLOT_DX = [0, 34, -34, 68, -68, 102], PLOT_N = 6;
+  const PLOT_COL = ['#ff6fb5', '#3a86ff', '#2ec27e', '#ff9f1c', '#8b5cf6', '#e8384f'];
+  const PLOT_HOUSE = [['#ffb3c7', '#ff4d5e'], ['#c9f0ff', '#2f6fd6'], ['#b8f2c9', '#2ec27e'], ['#ffe08a', '#ff9f1c'], ['#e5d4ff', '#8b5cf6'], ['#ffd0a8', '#d6336c']];
+  const HOME0 = {home: [-4, -46], car0: [8, -47], toy: [-4, -45.2], bowl: [-12, -43.5], bed: [-14.5, -50], gate: [-2, -37.6]};
+  function plotPlaces(i){ for (const k in HOME0) PLACES[k] = [HOME0[k][0] + PLOT_DX[i], HOME0[k][1]]; }
+  function myPlot(){   // 0-based
+    if (!mp.on || mp.host) return 0;
+    const me = (mp.roster || []).find(p => p.uid === mp.me), n = me && me.pl | 0;
+    return n >= 1 && n <= PLOT_N ? n - 1 : 1 + ((+String(mp.me).slice(1) || 0) % (PLOT_N - 1));
+  }
+  function plotOwners(){
+    const o = Array(PLOT_N).fill('');
+    if (!mp.on){ o[0] = myLook().name; return o; }
+    (mp.host ? mpRoster() : mp.roster || []).forEach(p => { const n = p.uid === 'H' ? 1 : p.pl | 0; if (n >= 1 && n <= PLOT_N && !o[n - 1]) o[n - 1] = cleanName(p.name); });
+    return o;
+  }
+  const possessive = n => n + (/s$/i.test(n) ? "'" : "'s");
   function petsLoad(){
     const r = load(PET_KEY, null), o = r && typeof r === 'object' ? r : {};
     const pets = (Array.isArray(o.pets) ? o.pets : []).slice(0, PET_MAX).filter(p => p && PET_KINDS[p.k]).map(p => ({
@@ -4179,6 +4344,15 @@ const Obby = (() => {
       f: clamp(isFinite(+p.f) ? +p.f : 80, 0, 100), u: clamp(isFinite(+p.u) ? +p.u : 80, 0, 100), e: clamp(isFinite(+p.e) ? +p.e : 80, 0, 100), b: +p.b || Date.now()}));
     const s = {v: 1, pets, a: clamp(o.a | 0, 0, Math.max(0, pets.length - 1)), flow: ['shelter', 'choose', 'home'].includes(o.flow) ? o.flow : null,
       pend: petNameClean(o.pend), tut: clamp(o.tut | 0, 0, 3), t: +o.t || Date.now()};
+    // Pet Index (v2): seen = met at the shelter, own = adopted, done = row prize paid
+    const dx = o.dex && typeof o.dex === 'object' ? o.dex : {}, pick = (m, ok) => { const r = {}; if (m && typeof m === 'object') for (const k in m) if (ok(k) && m[k]) r[k] = 1; return r; };
+    s.dex = {seen: pick(dx.seen, k => own(PET_KINDS, k)), own: pick(dx.own, k => own(PET_KINDS, k)), done: pick(dx.done, k => /^[0-4]$/.test(k))};
+    if ((o.v | 0) < 2 && pets.length) STARTERS.forEach(k => s.dex.seen[k] = 1);   // old saves: they met the first three at the shelter
+    pets.forEach(p => { s.dex.seen[p.k] = s.dex.own[p.k] = 1; });
+    s.v = 2;
+    const R = o.roll;
+    s.roll = R && Array.isArray(R.k) && R.k.length === 3 && R.k.every(k => typeof k === 'string' && own(PET_KINDS, k)) && new Set(R.k).size === 3
+      ? {k: R.k.slice(), c: [0, 1, 2].map(i => clamp((Array.isArray(R.c) ? R.c[i] : 0) | 0, 0, 2)), seen: !!R.seen, rev: !!R.rev, t: (Array.isArray(R.t) ? R.t : []).filter(i => i === 0 || i === 1 || i === 2), st: !!R.st} : null;
     if (!pets.length && s.flow !== 'choose') s.flow = 'shelter';
     if (s.flow === 'choose' && !s.pend) s.flow = 'shelter';
     if (s.flow === 'home' && !pets.length) s.flow = 'shelter';
@@ -4191,6 +4365,166 @@ const Obby = (() => {
   function fmat(c){ const k = 'f' + c; if (!mats[k]) mats[k] = new THREE.MeshLambertMaterial({color: c, flatShading: true}); return mats[k]; }
 
   /* --- low-poly pets (built from simple shapes, our own designs) --- */
+  function emat(c){ const k = 'e' + c; if (!mats[k]) mats[k] = new THREE.MeshLambertMaterial({color: c, emissive: c, emissiveIntensity: .45, flatShading: true}); return mats[k]; }
+  // the new pets (all our own low-poly designs): returns body/head/tail/neck; fills legs/ears/tailSegs/wings
+  function buildExotic(kind, ci, main, acc, H){
+    const {sph, box, cyl, grp, eye, inner, legs, ears, tailSegs, wings} = H;
+    const cone = (r, h, c, x, y, z, par = inner, seg = 6, m) => { const o = new THREE.Mesh(new THREE.ConeGeometry(r, h, seg), m || fmat(c)); o.position.set(x, y, z); par.add(o); return o; };
+    const legs4 = (xs, zf, zb, hip, len, r, c, paw) => [[xs, zf], [-xs, zf], [xs, zb], [-xs, zb]].forEach(([x, z]) => { const l = grp(x, hip, z); cyl(r, r * .9, len, c, 0, -len / 2, 0, l); sph(r * 1.15, paw || c, 0, -len + .03, .03, 1, .6, 1.3, l, 6); legs.push(l); });
+    const feet2 = (xs, hip, z, len, c) => [1, -1].forEach(k => { const l = grp(k * xs, hip, z); if (len) cyl(.035, .035, len, c, 0, -len / 2, 0, l, 5); box(.17, .05, .22, c, 0, -len - .02, .06, l); legs.push(l); });
+    const wing = (k, x, y, z, make, z0) => { const w = grp(k * x, y, z); make(w); w.userData.z0 = z0; w.userData.k = k; wings.push(w); return w; };
+    const onShell = (cx, cy, cz, rx, ry, rz, th, ph) => [cx + rx * Math.sin(ph) * Math.cos(th), cy + ry * Math.cos(ph), cz + rz * Math.sin(ph) * Math.sin(th)];
+    const UP = new THREE.Vector3(0, 1, 0);
+    let body, head, tail, neck;
+    if (kind === 'bunny'){
+      body = sph(.42, main, 0, .5, -.05, .95, .9, 1.15); sph(.25, shade(main, 18), 0, .45, .2, .9, .9, .7);
+      head = grp(0, .92, .32); sph(.32, main, 0, 0, 0, 1, .95, 1, head);
+      [-1, 1].forEach(k => sph(.13, shade(main, 18), k * .12, -.1, .22, 1, .8, .8, head, 6));
+      sph(.05, '#ff8fa3', 0, -.03, .31, 1.2, .8, 1, head, 5); eye(head, .13, .07, .26, .065); eye(head, -.13, .07, .26, .065);
+      [-1, 1].forEach(k => { const e = grp(k * .12, .22, -.04, head); sph(.1, main, 0, .3, 0, .85, 2.8, .5, e); sph(.06, acc, 0, .3, .035, .7, 2.3, .3, e, 6); e.rotation.z = -k * .16; ears.push(e); });
+      legs4(.18, .22, -.22, .3, .3, .075, main, shade(main, 15));
+      tail = grp(0, .55, -.5); sph(.14, shade(main, 25), 0, 0, 0, 1, 1, 1, tail, 6); neck = [0, .76, .28];
+    } else if (kind === 'hamster'){
+      body = sph(.48, main, 0, .45, 0, 1, .85, 1.05); sph(.3, acc, 0, .38, .25, 1, .85, .7);
+      if (ci === 1) sph(.22, acc, 0, .62, -.18, 1.6, .7, 1);   // panda patch
+      head = grp(0, .74, .4); sph(.3, main, 0, 0, 0, 1.1, .95, 1, head);
+      [-1, 1].forEach(k => sph(.13, acc, k * .2, -.08, .13, 1, .9, .9, head, 6));
+      sph(.045, '#ff8fa3', 0, -.02, .3, 1.2, .8, 1, head, 5); eye(head, .12, .07, .25, .055); eye(head, -.12, .07, .25, .055);
+      [-1, 1].forEach(k => { const e = grp(k * .2, .22, -.04, head); const d1 = new THREE.Mesh(new THREE.CylinderGeometry(.09, .09, .04, 10), fmat(main)); d1.rotation.x = Math.PI / 2; e.add(d1);
+        const d2 = new THREE.Mesh(new THREE.CylinderGeometry(.055, .055, .04, 10), fmat('#ffb3c7')); d2.rotation.x = Math.PI / 2; d2.position.z = .02; e.add(d2); ears.push(e); });
+      legs4(.2, .22, -.22, .16, .16, .06, acc);
+      tail = grp(0, .4, -.5); sph(.06, acc, 0, 0, 0, 1, 1, 1, tail, 5); neck = [0, .6, .36];
+    } else if (kind === 'duck'){
+      body = sph(.42, main, 0, .55, -.05, .95, .85, 1.25); sph(.26, shade(main, 15), 0, .48, .18, .9, .8, .8);
+      head = grp(0, 1.05, .32); sph(.27, ci === 1 ? '#2f8f57' : main, 0, 0, 0, 1, 1, 1, head);
+      if (ci === 1) cyl(.2, .22, .06, '#ffffff', 0, -.24, -.02, head, 10);   // ring neck
+      box(.24, .07, .26, acc, 0, -.07, .3, head); eye(head, .13, .07, .19, .055); eye(head, -.13, .07, .19, .055);
+      [-1, 1].forEach(k => wing(k, .37, .7, -.02, w => sph(.2, shade(main, -15), 0, -.12, -.05, .35, .8, 1.3, w, 6), .05));
+      feet2(.15, .32, .02, .28, acc);
+      tail = grp(0, .62, -.52); sph(.14, main, 0, .04, -.06, .9, .5, 1.3, tail, 6); tail.rotation.x = -.5; neck = [0, .86, .26];
+    } else if (kind === 'frog'){
+      body = sph(.45, main, 0, .38, 0, 1.15, .7, 1.0); sph(.33, acc, 0, .3, .18, 1.1, .6, .7);
+      if (ci === 2) [[.25, .6, -.1], [-.2, .62, .05], [.05, .64, -.28], [-.3, .5, -.25]].forEach(([x, y, z]) => sph(.08, '#1d2340', x, y, z, 1, .4, 1, inner, 5));
+      head = grp(0, .58, .3); sph(.34, main, 0, 0, 0, 1.25, .7, .95, head);
+      [-1, 1].forEach(k => { sph(.13, main, k * .2, .2, .05, 1, 1, 1, head, 7); sph(.05, '#ff9fb4', k * .26, -.02, .25, 1, .6, .6, head, 5); });
+      eye(head, .2, .24, .14, .075); eye(head, -.2, .24, .14, .075);
+      box(.36, .02, .02, '#1d2340', 0, -.08, .31, head);
+      [-1, 1].forEach(k => { const l = grp(k * .28, .25, .26); cyl(.06, .055, .25, main, 0, -.12, 0, l); box(.14, .04, .16, shade(main, -15), 0, -.25, .04, l); legs.push(l); });
+      [-1, 1].forEach(k => { const l = grp(k * .38, .28, -.18); sph(.17, main, 0, -.08, 0, .8, .7, 1.3, l, 6); box(.2, .04, .26, shade(main, -15), 0, -.26, .1, l); legs.push(l); });
+      tail = grp(0, .4, -.4); neck = [0, .55, .3];
+    } else if (kind === 'turtle'){
+      body = sph(.5, acc, 0, .5, -.05, 1, .7, 1.1);
+      const rim = cyl(.52, .55, .08, shade(acc, -22), 0, .3, -.05, inner, 12); rim.scale.z = 1.1;
+      [[0, .86, -.05], [.27, .74, .15], [-.27, .74, .15], [.27, .74, -.28], [-.27, .74, -.28], [0, .78, .3], [0, .78, -.42]].forEach(([x, y, z]) => sph(.12, shade(acc, 28), x, y, z, 1, .35, 1, inner, 6));
+      head = grp(0, .45, .58); sph(.22, main, 0, 0, 0, 1, .9, 1.15, head); cyl(.11, .13, .2, main, 0, -.05, -.18, head);
+      eye(head, .1, .06, .18, .05); eye(head, -.1, .06, .18, .05); box(.12, .015, .015, '#1d2340', 0, -.07, .23, head);
+      legs4(.3, .3, -.3, .3, .26, .1, main);
+      tail = grp(0, .32, -.6); const tc = cone(.06, .2, main, 0, 0, -.06, tail); tc.rotation.x = -Math.PI / 2; neck = [0, .44, .44];
+    } else if (kind === 'hedgehog'){
+      body = sph(.42, main, 0, .42, .02, 1, .8, 1.1); sph(.46, acc, 0, .52, -.08, 1.02, .88, 1.08);
+      for (let i = 0; i < 26; i++){ const th = (i * 2.399) % (Math.PI * 2), ph = .25 + ((i * .618) % 1) * 1.2; const p = onShell(0, .52, -.08, .47, .41, .5, th, ph);
+        if (p[2] > .22) continue; const n = new THREE.Vector3(p[0], p[1] - .52, p[2] + .08).normalize(); const c = cone(.06, .2, shade(acc, (i % 3) * 8), p[0], p[1], p[2], inner, 4); c.quaternion.setFromUnitVectors(UP, n); }
+      head = grp(0, .5, .42); sph(.24, main, 0, 0, 0, 1, .9, 1.1, head); const sn = cone(.12, .25, main, 0, -.04, .25, head); sn.rotation.x = Math.PI / 2;
+      sph(.05, '#1d2340', 0, -.04, .39, 1, 1, 1, head, 5); eye(head, .1, .07, .18, .05); eye(head, -.1, .07, .18, .05);
+      [-1, 1].forEach(k => { const e = grp(k * .15, .17, .02, head); sph(.06, main, 0, 0, 0, 1, 1, .5, e, 5); ears.push(e); });
+      legs4(.2, .22, -.22, .2, .2, .06, shade(main, -20));
+      tail = grp(0, .4, -.5); neck = [0, .47, .36];
+    } else if (kind === 'fox'){
+      body = sph(.45, main, 0, .78, 0, .85, .8, 1.35); sph(.25, acc, 0, .75, .42, .9, .9, .7);
+      head = grp(0, 1.15, .6); sph(.34, main, 0, 0, 0, 1.05, .9, 1, head);
+      const sn = cone(.15, .38, acc, 0, -.08, .36, head); sn.rotation.x = Math.PI / 2; sph(.055, '#1d2340', 0, -.08, .55, 1, 1, 1, head, 5);
+      [-1, 1].forEach(k => sph(.15, acc, k * .17, -.1, .17, 1, .8, .8, head, 6));
+      eye(head, .14, .06, .27, .065, '#ffb02e'); eye(head, -.14, .06, .27, .065, '#ffb02e');
+      [-1, 1].forEach(k => { const e = grp(k * .18, .26, -.02, head); cone(.12, .32, main, 0, .14, 0, e, 4); cone(.07, .2, shade(main, -45), 0, .1, .04, e, 4); e.rotation.z = -k * .2; ears.push(e); });
+      legs4(.2, .38, -.4, .6, .6, .08, main, '#2b2430');
+      tail = grp(0, .95, -.62); sph(.2, main, 0, -.05, -.32, .9, .9, 1.9, tail, 7); sph(.12, acc, 0, -.08, -.68, 1, 1, 1.2, tail, 6); tail.rotation.x = .35; neck = [0, 1.0, .5];
+    } else if (kind === 'penguin'){
+      body = sph(.45, main, 0, .7, 0, .95, 1.3, .9); sph(.36, acc, 0, .66, .17, .9, 1.15, .7);
+      head = grp(0, 1.32, .02); sph(.3, main, 0, 0, 0, 1, .95, 1, head); sph(.22, acc, 0, -.02, .15, 1.1, .9, .6, head);
+      const bk = cone(.06, .18, '#ff9f1c', 0, -.05, .33, head); bk.rotation.x = Math.PI / 2; eye(head, .1, .05, .25, .05); eye(head, -.1, .05, .25, .05);
+      [-1, 1].forEach(k => sph(.05, '#ff9fb4', k * .17, -.06, .22, 1, .6, .6, head, 5));
+      [-1, 1].forEach(k => wing(k, .42, 1.0, 0, w => sph(.12, main, 0, -.25, 0, .35, 1.6, .7, w, 6), .15));
+      feet2(.15, .12, .1, 0, '#ff9f1c');
+      tail = grp(0, .3, -.38); const tc = cone(.1, .2, main, 0, 0, -.05, tail); tc.rotation.x = -Math.PI / 2; neck = [0, 1.1, .05];
+    } else if (kind === 'owl'){
+      body = sph(.45, main, 0, .65, 0, 1, 1.1, .9); sph(.32, acc, 0, .6, .2, .9, 1, .6);
+      [[0, .75], [-.1, .6], [.1, .6], [0, .45]].forEach(([x, y]) => { const v = cone(.05, .07, shade(main, -10), x, y, .38, inner, 3); v.rotation.x = Math.PI; });
+      head = grp(0, 1.25, .02); sph(.36, main, 0, 0, 0, 1.1, .95, .95, head);
+      [-1, 1].forEach(k => { sph(.15, acc, k * .15, 0, .26, 1, 1, .4, head, 8); eye(head, k * .15, 0, .3, .09, '#ffb02e');
+        const e = grp(k * .22, .28, 0, head); cone(.08, .22, main, 0, .1, 0, e, 4); e.rotation.z = -k * .35; ears.push(e); });
+      const bk = cone(.05, .14, '#e8a33a', 0, -.12, .34, head); bk.rotation.x = Math.PI / 2 + .4;
+      [-1, 1].forEach(k => wing(k, .43, .95, -.02, w => sph(.17, shade(main, -15), 0, -.28, -.02, .4, 1.4, .9, w, 6), .08));
+      feet2(.16, .14, .12, 0, '#e8a33a');
+      tail = grp(0, .4, -.38); box(.3, .06, .25, shade(main, -15), 0, 0, -.08, tail); neck = [0, 1.02, .12];
+    } else if (kind === 'koala'){
+      body = sph(.45, main, 0, .6, -.02, 1, .95, 1.05); sph(.3, acc, 0, .55, .2, .9, .95, .6);
+      head = grp(0, 1.12, .3); sph(.36, main, 0, 0, 0, 1.15, 1, .95, head);
+      sph(.11, '#3d4256', 0, -.06, .32, .8, 1.15, .7, head, 6); eye(head, .15, .08, .29, .05); eye(head, -.15, .08, .29, .05);
+      [-1, 1].forEach(k => { const e = grp(k * .36, .16, -.02, head); sph(.18, main, 0, 0, 0, 1, 1, .45, e, 8); sph(.12, acc, 0, 0, .04, 1, 1, .4, e, 7); ears.push(e); });
+      legs4(.24, .26, -.26, .4, .4, .1, main, shade(main, -25));
+      tail = grp(0, .5, -.5); neck = [0, .95, .3];
+    } else if (kind === 'redpanda'){
+      body = sph(.45, main, 0, .72, 0, .9, .8, 1.3); sph(.3, '#3a2420', 0, .56, .05, .95, .6, 1.1);
+      head = grp(0, 1.1, .58); sph(.34, main, 0, 0, 0, 1.12, .92, .95, head);
+      [-1, 1].forEach(k => { sph(.15, acc, k * .15, -.1, .2, 1, .85, .7, head, 6); sph(.05, acc, k * .12, .16, .28, 1, .7, .6, head, 5); });
+      sph(.13, acc, 0, -.1, .28, 1.1, .8, .9, head, 6); sph(.045, '#1d2340', 0, -.06, .39, 1, 1, 1, head, 5);
+      eye(head, .13, .05, .29, .06); eye(head, -.13, .05, .29, .06);
+      [-1, 1].forEach(k => { const e = grp(k * .22, .24, -.02, head); cone(.12, .24, main, 0, .1, 0, e, 4); cone(.07, .15, acc, 0, .08, .04, e, 4); e.rotation.z = -k * .25; ears.push(e); });
+      legs4(.2, .36, -.38, .5, .5, .085, '#3a2420');
+      tail = grp(0, .85, -.6); for (let i = 0; i < 5; i++) sph(.17 - i * .01, i % 2 ? shade(main, -35) : main, 0, -.04 * i, -.15 - .17 * i, 1, 1, .8, tail, 7); tail.rotation.x = .3; neck = [0, .95, .5];
+    } else if (kind === 'snowleo'){
+      body = sph(.46, main, 0, .78, 0, .85, .78, 1.45);
+      for (let i = 0; i < 14; i++){ const th = (i * 2.399) % (Math.PI * 2), ph = .35 + ((i * .618) % 1) * 1.1, p = onShell(0, .78, 0, .4, .37, .68, th, ph); const s2 = sph(.065, acc, p[0], p[1], p[2], 1, .45, 1, inner, 5); s2.quaternion.setFromUnitVectors(UP, new THREE.Vector3(p[0], p[1] - .78, p[2]).normalize()); }
+      head = grp(0, 1.15, .66); sph(.33, main, 0, 0, 0, 1.1, .95, 1, head); sph(.14, shade(main, 12), 0, -.1, .27, 1.2, .8, .9, head, 6);
+      sph(.05, '#ff8fa3', 0, -.04, .37, 1.2, .8, 1, head, 5); eye(head, .13, .06, .27, .07, '#7fd6ff'); eye(head, -.13, .06, .27, .07, '#7fd6ff');
+      [-1, 1].forEach(k => { const e = grp(k * .22, .22, -.04, head); const d1 = new THREE.Mesh(new THREE.CylinderGeometry(.1, .1, .05, 10), fmat(main)); d1.rotation.x = Math.PI / 2; e.add(d1);
+        const d2 = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, .05, 10), fmat(acc)); d2.rotation.x = Math.PI / 2; d2.position.z = .02; e.add(d2); ears.push(e); });
+      legs4(.2, .42, -.44, .62, .62, .09, main, shade(main, 10));
+      tail = grp(0, .92, -.7); let par = tail;
+      for (let i = 0; i < 5; i++){ const s2 = grp(0, 0, i ? -.22 : 0, par); const c = cyl(.08, .09, .24, i % 2 ? acc : main, 0, 0, -.11, s2, 6); c.rotation.x = Math.PI / 2; s2.rotation.x = i ? -.1 : .55; tailSegs.push(s2); par = s2; }
+      neck = [0, 1.0, .58];
+    } else if (kind === 'phoenix'){
+      body = sph(.42, main, 0, .55, 0, 1, .95, 1.05); sph(.28, acc, 0, .5, .2, .9, .85, .6);
+      head = grp(0, 1.0, .18); sph(.3, main, 0, 0, 0, 1, 1, 1, head);
+      const bk = cone(.06, .15, '#ffb02e', 0, -.04, .32, head); bk.rotation.x = Math.PI / 2; eye(head, .12, .07, .24, .06); eye(head, -.12, .07, .24, .06);
+      const crest = grp(0, .26, -.04, head); [-1, 0, 1].forEach(i => { const c = cone(.07, .32 - Math.abs(i) * .06, null, i * .09, .12, 0, crest, 5, emat(i ? acc : '#ffd23f')); c.rotation.z = -i * .35; }); ears.push(crest);
+      [-1, 1].forEach(k => wing(k, .38, .72, 0, w => { sph(.17, shade(main, -12), 0, -.12, -.05, .35, .9, 1.2, w, 6); const f = cone(.06, .22, null, 0, -.3, -.18, w, 5, emat(acc)); f.rotation.x = 2.4; }, .1));
+      feet2(.13, .22, .05, .18, '#ffb02e');
+      tail = grp(0, .6, -.42); [-1, 0, 1].forEach(i => { const c = cone(.06, .5, null, i * .1, .2, -.12, tail, 5, emat(i ? main : acc)); c.rotation.x = -1.0; c.rotation.z = i * .3; });
+      neck = [0, .8, .2];
+    } else if (kind === 'unicorn'){
+      body = sph(.46, main, 0, .95, 0, .85, .8, 1.45);
+      legs4(.2, .42, -.45, .8, .8, .085, main, '#ffd76a');
+      const nk = cyl(.16, .22, .62, main, 0, 1.36, .52); nk.rotation.x = .55;
+      head = grp(0, 1.74, .76); sph(.28, main, 0, 0, 0, .9, .95, 1.05, head); sph(.19, shade(main, -6), 0, -.14, .24, .9, .8, 1.2, head, 7);
+      eye(head, .15, .06, .14, .07, '#a855f7'); eye(head, -.15, .06, .14, .07, '#a855f7'); [-1, 1].forEach(k => sph(.05, '#ff9fc8', k * .17, -.07, .2, 1, .6, .6, head, 5));
+      const horn = cone(.07, .5, null, 0, .4, .14, head, 8, emat('#ffd23f')); horn.rotation.x = .35;
+      [.15, .3].forEach(y => { const r = new THREE.Mesh(new THREE.TorusGeometry(.055 - y * .08, .015, 4, 10), fmat('#fff3b0')); r.position.set(0, .26 + y * .95, .09 + y * .33); r.rotation.x = Math.PI / 2 + .35; head.add(r); });
+      [-1, 1].forEach(k => { const e = grp(k * .13, .25, -.08, head); cone(.07, .2, main, 0, .08, 0, e, 4); ears.push(e); });
+      const mc = [acc, shade(acc, 30), '#ffe680', '#9be7ff'];
+      for (let i = 0; i < 6; i++){ const t = i / 5; sph(.11, mc[i % 4], 0, 1.98 - .72 * t, .64 - .46 * t - .06, .7, 1, 1, inner, 6); }
+      tail = grp(0, 1.05, -.7); let par = tail;
+      for (let i = 0; i < 3; i++){ const s2 = grp(0, 0, i ? -.2 : 0, par); sph(.12, mc[i], 0, -.05, -.12, .9, .9, 1.6, s2, 6); s2.rotation.x = i ? .35 : .6; tailSegs.push(s2); par = s2; }
+      neck = [0, 1.42, .55];
+    } else if (kind === 'dragon'){
+      body = sph(.46, main, 0, .78, 0, .9, .82, 1.35); sph(.32, acc, 0, .66, .12, .85, .7, 1.1);
+      for (let i = 0; i < 6; i++){ const z = .38 - i * .19, y = .78 + .37 * Math.sqrt(Math.max(0, 1 - (z / .62) ** 2)); cone(.07, .2, acc, 0, y + .06, z, inner, 4); }
+      const nk = cyl(.17, .22, .45, main, 0, 1.1, .5); nk.rotation.x = .6;
+      head = grp(0, 1.34, .66); sph(.32, main, 0, 0, 0, 1, .9, 1.1, head); sph(.2, main, 0, -.1, .28, .95, .7, 1.1, head, 7);
+      [-1, 1].forEach(k => sph(.03, '#1d2340', k * .07, -.04, .49, 1, 1, 1, head, 4));
+      eye(head, .15, .1, .2, .075, '#ffd23f'); eye(head, -.15, .1, .2, .075, '#ffd23f');
+      [-1, 1].forEach(k => { const e = grp(k * .17, .22, -.12, head); cone(.06, .3, acc, 0, .13, 0, e, 5); e.rotation.x = -.5; e.rotation.z = -k * .25; ears.push(e); });
+      [-1, 1].forEach(k => wing(k, .28, 1.12, .05, w => { const b = cyl(.035, .03, .8, shade(main, -25), k * .38, .04, 0, w, 5); b.rotation.z = Math.PI / 2;
+        sph(.36, shade(main, -18), k * .38, -.02, -.16, 1.05, .1, .65, w, 7); [0, 1, 2].forEach(j => cone(.04, .12, acc, k * (.16 + j * .24), -.04, -.42, w, 4).rotation.x = Math.PI / 2 * -1); }, .35));
+      legs4(.22, .38, -.38, .55, .55, .1, main, acc);
+      tail = grp(0, .82, -.68); let par = tail;
+      for (let i = 0; i < 5; i++){ const s2 = grp(0, 0, i ? -.22 : 0, par); const c = cyl(.09 - .014 * i, .1 - .014 * i, .25, main, 0, 0, -.11, s2, 6); c.rotation.x = Math.PI / 2; s2.rotation.x = i ? -.06 : .45; tailSegs.push(s2); par = s2;
+        if (i === 4){ const tip = cone(.09, .2, acc, 0, 0, -.3, s2, 4); tip.rotation.x = -Math.PI / 2; } }
+      neck = [0, 1.14, .52];
+    }
+    return {body, head, tail, neck};
+  }
+  const PET_H = {dog: 1.75, cat: 1.6, mouse: 1.25, bunny: 1.75, hamster: 1.3, duck: 1.55, frog: 1.15, turtle: 1.2, hedgehog: 1.2, fox: 1.7, penguin: 1.85, owl: 1.85, koala: 1.75, redpanda: 1.65, snowleo: 1.7, phoenix: 1.6, unicorn: 2.5, dragon: 2.0};
   function buildPet(kind, ci, stage){
     const K = PET_KINDS[kind] || PET_KINDS.dog, col = K.cols[ci] || K.cols[0], main = col[1], acc = col[2], S = STAGES[stage] || STAGES[0];
     const g = new THREE.Group(), inner = new THREE.Group(); g.add(inner);
@@ -4199,8 +4533,9 @@ const Obby = (() => {
     const cyl = (r1, r2, h, c, x, y, z, par = inner, seg = 6) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, seg), fmat(c)); m.position.set(x, y, z); par.add(m); return m; };
     const grp = (x, y, z, par = inner) => { const o = new THREE.Group(); o.position.set(x, y, z); par.add(o); return o; };
     const eye = (par, x, y, z, r, iris) => { if (iris) sph(r * 1.15, iris, x, y, z - r * .2, 1, 1, .55, par, 6); sph(r * (iris ? .7 : 1), '#1d2340', x, y, z + (iris ? r * .2 : 0), 1, 1, .6, par, 6); sph(r * .33, '#ffffff', x + r * .3, y + r * .35, z + r * .5, 1, 1, 1, par, 4); };
-    const legs = [], ears = [], tailSegs = []; let head, tail, body, neck;
-    if (kind === 'dog'){
+    const legs = [], ears = [], tailSegs = [], wings = []; let head, tail, body, neck;
+    if (!['dog', 'cat', 'mouse'].includes(kind)){ ({body, head, tail, neck} = buildExotic(kind, ci, main, acc, {sph, box, cyl, grp, eye, inner, legs, ears, tailSegs, wings})); }
+    else if (kind === 'dog'){
       body = sph(.5, main, 0, .8, 0, 1, .85, 1.35);
       if (ci === 2) [[.32, .95, .1, .17], [-.27, .9, -.3, .15], [.06, 1.16, -.36, .12], [-.33, .78, .3, .12], [.2, .72, -.48, .1]].forEach(([x, y, z, r]) => sph(r, acc, x, y, z, 1, .45, 1, inner, 6));
       else sph(.3, acc, 0, .72, .45, 1, .9, .7);
@@ -4243,12 +4578,23 @@ const Obby = (() => {
       for (let i = 0; i < 4; i++){ const s = grp(0, 0, i ? -.27 : 0, par); const c = cyl(.03, .036, .3, acc, 0, 0, -.14, s, 5); c.rotation.x = Math.PI / 2; s.rotation.x = -.15; tailSegs.push(s); par = s; }
       neck = [0, .62, .34];
     }
-    if (stage >= 2){ const c = new THREE.Mesh(new THREE.TorusGeometry(kind === 'dog' ? .27 : .22, .045, 6, 14), fmat(stage === 3 ? '#ff4d5e' : '#3a86ff')); c.position.set(...neck); c.rotation.x = Math.PI / 2 - .35; inner.add(c);
+    if (stage >= 2){ const c = new THREE.Mesh(new THREE.TorusGeometry(K.cr || .22, .045, 6, 14), fmat(stage === 3 ? '#ff4d5e' : '#3a86ff')); c.position.set(...neck); c.rotation.x = Math.PI / 2 - .35; inner.add(c);
       if (stage === 3){ const tg2 = new THREE.Mesh(new THREE.CylinderGeometry(.08, .08, .03, 10), new THREE.MeshLambertMaterial({color: '#ffd23f', emissive: '#7a5a00'})); tg2.position.set(neck[0], neck[1] - .2, neck[2] + .17); tg2.rotation.x = Math.PI / 2; inner.add(tg2); } }
     const base = K.base * S.s; inner.scale.setScalar(base); head.scale.setScalar(S.head);
+    const top = (PET_H[kind] || 1.75) * base;
     const sh = new THREE.Mesh(new THREE.CircleGeometry(.55, 16), new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: .22, depthWrite: false})); sh.rotation.x = -Math.PI / 2; sh.position.y = .03; sh.scale.setScalar(base * (kind === 'mouse' ? 1 : 1.25)); g.add(sh);
-    return {g, inner, body, by: body.scale.y, head, legs, ears, tail, tailSegs, kind, ci, stage, base, ph: Math.random() * 6, walk: 0};
+    // rarity glow: a colored ring for Uncommon+, sparkles for Rare+ (gold ones orbit Legendary pets) — part of the model so other players see it too
+    let fx = null; const R = K.r || 0;
+    if (R >= 1){
+      const ring = new THREE.Mesh(new THREE.RingGeometry(.6, .78, 24), rarMat(R, 'ring')); ring.rotation.x = -Math.PI / 2; ring.position.y = .05; ring.scale.setScalar(Math.max(.7, base * 1.3)); ring.renderOrder = 2; g.add(ring);
+      const sparks = []; for (let i = 0; i < [0, 0, 2, 4, 9][R]; i++){ const m = new THREE.Mesh(SPARK_GEO || (SPARK_GEO = new THREE.OctahedronGeometry(.07)), rarMat(R, 'spark')); g.add(m); sparks.push(m); }
+      fx = {ring, sparks, R, rad: Math.max(.55, base * .95), top, sz: R === 4 ? 1.5 : 1};
+    }
+    return {g, inner, body, by: body.scale.y, head, legs, ears, tail, tailSegs, wings, tm: K.tm, fx, top, kind, ci, stage, base, ph: Math.random() * 6, walk: 0};
   }
+  let SPARK_GEO = null;
+  function rarMat(R, w){ const k = 'rar' + w + R; if (!mats[k]) mats[k] = w === 'ring' ? new THREE.MeshBasicMaterial({color: RARITY[R].c, transparent: true, opacity: .45, depthWrite: false, side: THREE.DoubleSide})
+    : new THREE.MeshBasicMaterial({color: ['#ffffff', '#b8ffd9', '#a9cbff', '#e3c2ff', '#ffe066'][R]}); return mats[k]; }
   function animPet(M, act, sp, dt, t){
     const moving = sp > .6 && act !== 3 && act !== 5, T = t + M.ph;
     M.walk += dt * sp * 2.4;
@@ -4257,9 +4603,17 @@ const Obby = (() => {
     if (moving) M.inner.position.y = Math.abs(Math.sin(M.walk * 2.6)) * .07 * M.base;
     M.body.scale.y = M.by * (1 + Math.sin(T * (act === 3 ? 1.4 : 2.6)) * .03);
     const wag = act === 4 || moving ? 15 : 6;
-    if (M.kind === 'dog') M.tail.rotation.z = Math.sin(T * wag) * .55;
-    else if (M.kind === 'cat'){ M.tail.rotation.z = Math.sin(T * (act === 4 ? 6 : 1.4)) * .35; M.tailSegs[0].rotation.x = .9 + Math.sin(T * 1.1) * .25; }
-    else M.tailSegs.forEach((s, i) => { s.rotation.y = Math.sin(T * 2.2 - i * .7) * .28; });
+    const tm = M.tm || 'segs';
+    if (tm === 'dog') M.tail.rotation.z = Math.sin(T * wag) * .55;
+    else if (tm === 'cat'){ M.tail.rotation.z = Math.sin(T * (act === 4 ? 6 : 1.4)) * .35; M.tailSegs[0].rotation.x = .9 + Math.sin(T * 1.1) * .25; }
+    else if (tm === 'puff') M.tail.rotation.z = Math.sin(T * (act === 4 || moving ? 14 : 3)) * .3;
+    else if (tm === 'bush') M.tail.rotation.y = Math.sin(T * (act === 4 || moving ? 8 : 1.6)) * .4;
+    else if (tm === 'bird') M.tail.rotation.y = Math.sin(T * (act === 4 ? 12 : 2.5)) * .25;
+    else if (tm === 'segs' || tm === 'horse') M.tailSegs.forEach((s, i) => { s.rotation.y = Math.sin(T * (act === 4 ? 6 : 2.2) - i * .7) * .28; });
+    if (M.wings) M.wings.forEach(w => { const fl = act === 4 || (moving && M.kind !== 'penguin') ? Math.sin(T * (M.kind === 'dragon' ? 7 : 16)) * .6 : act === 3 ? -.15 : Math.sin(T * 2) * .1; w.rotation.z = w.userData.k * (w.userData.z0 + fl); });
+    if (M.fx){ const F = M.fx; F.ring.rotation.z = T * .8; F.ring.material.opacity = .32 + .16 * Math.sin(t * 3);
+      F.sparks.forEach((s, i) => { const a = T * (1 + (i % 3) * .15) + i * 2.4, rr = F.rad * (.85 + .25 * Math.sin(T * 1.3 + i)); s.position.set(Math.cos(a) * rr, F.top * (.15 + .8 * ((T * .3 + i * .37) % 1)), Math.sin(a) * rr);
+        s.scale.setScalar(F.sz * (.5 + .7 * Math.abs(Math.sin(T * 4 + i)))); s.rotation.y = T * 3; }); }
     M.head.rotation.set(0, Math.sin(T * .6) * .35, 0);
     const tw = (T * .3) % 1 < .06;   // a little ear twitch now and then
     M.ears.forEach((e, i) => { e.rotation.x = tw ? Math.sin(T * 30 + i) * .3 : 0; });
@@ -4314,46 +4668,74 @@ const Obby = (() => {
     const ring = new THREE.Mesh(new THREE.TorusGeometry(2.2, .12, 6, 28), new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: .7})); ring.rotation.x = Math.PI / 2; ring.position.y = .08; g.add(ring);
     return deco(g);
   }
+  function buildPlot(i){
+    const dx = PLOT_DX[i], X = x => x + dx, [wall, roof] = PLOT_HOUSE[i], col = PLOT_COL[i];
+    house(X(-6), -64, 14, 9, wall, roof, 1);
+    dbox(X(-6), 6.9, -66, 1, 1.6, 1, '#c97b63');   // chimney
+    fence(X(-19), -59.5, X(-19), -36.5); fence(X(-19), -36.5, X(-4.2), -36.5); fence(X(.2), -36.5, X(3.2), -36.5); fence(X(3.2), -36.5, X(3.2), -40);
+    const sign = new THREE.Mesh(new THREE.BoxGeometry(5, 1.15, .12), signTex(i ? '🏡 Plot ' + (i + 1) : '🏠 My Home', col, '#ffffff', 512, 118)); sign.position.set(X(-9.5), 2.85, -36.4); deco(sign); dbox(X(-9.5), 1.15, -36.4, .16, 2.3, .16, '#ffffff');
+    // mailbox in the plot's color
+    dbox(X(5), .6, -35.8, .15, 1.2, .15, '#8d5524'); dbox(X(5), 1.35, -35.8, .55, .45, .75, col); dbox(X(5.3), 1.6, -35.7, .05, .35, .2, '#ff4d5e');
+    dbox(X(8), .015, -47, 9, .04, 10, null, fmat('#555a66'));   // driveway
+    dbox(X(8), .016, -38.5, 4, .04, 7.2, null, fmat('#555a66'));
+    // toy box, food bowl, pet bed, leash post
+    plat(X(-4), .9, -46.4, 1.8, 1.1, '#3a86ff', .9); dbox(X(-4), .95, -46.4, 1.9, .1, 1.2, '#ffd23f');
+    [['#ff4d5e', -4.5], ['#2ec27e', -4], ['#ffd23f', -3.5]].forEach(([c, x]) => { const b = new THREE.Mesh(new THREE.SphereGeometry(.22, 10, 8), fmat(c)); b.position.set(X(x), 1.15, -46.4); deco(b); });
+    const toyS = label('🎾 Toys', 'rgba(58,134,255,.9)', '#fff', 200); toyS.scale.multiplyScalar(.6); toyS.position.set(X(-4), 2.1, -46.4); deco(toyS);
+    const bowl = new THREE.Mesh(new THREE.CylinderGeometry(.55, .4, .32, 14), fmat('#ff6fb5')); bowl.position.set(X(-12), .16, -44.2); deco(bowl);
+    const food = new THREE.Mesh(new THREE.SphereGeometry(.45, 8, 6), fmat('#a0612e')); food.scale.set(1, .3, 1); food.position.set(X(-12), .33, -44.2); food.visible = false; deco(food);
+    const bowlS = label('🍖 Food', 'rgba(255,111,181,.9)', '#fff', 200); bowlS.scale.multiplyScalar(.6); bowlS.position.set(X(-12), 1.4, -44.2); deco(bowlS);
+    const bed = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.3, .25, 16), fmat('#8b5cf6')); bed.position.set(X(-14.5), .13, -50.4); deco(bed);
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(1.3, .25, 6, 18), fmat('#b79bff')); rim.rotation.x = Math.PI / 2; rim.position.set(X(-14.5), .3, -50.4); deco(rim);
+    const bedS = label('💤 Bed', 'rgba(139,92,246,.9)', '#fff', 200); bedS.scale.multiplyScalar(.6); bedS.position.set(X(-14.5), 1.5, -50.4); deco(bedS);
+    plat(X(-2.6), 1.5, -36.4, .25, .25, '#8d5524', 1.5); const leashS = label('🦮 Walks', 'rgba(46,194,126,.92)', '#fff', 200); leashS.scale.multiplyScalar(.6); leashS.position.set(X(-2.6), 2.4, -36.4); deco(leashS);
+    return {i, dx, sign, food, tag: null, name: null};
+  }
+  // name signs follow who's in the room ("Tessa's House")
+  function plotSigns(force){
+    const o = plotOwners(); if (!force && o.join('|') === pt.owners.join('|')) return; pt.owners = o;
+    pt.plots.forEach((P2, i) => { const n = o[i], mine = i === pt.plot;
+      if (!force && P2.name === n) return; P2.name = n;
+      const t = n ? (mine ? '🏠 ' : '🏡 ') + possessive(n) + ' House' : '🏡 Plot ' + (i + 1) + ' · empty', old = P2.sign.material;
+      P2.sign.material = signTex(t, PLOT_COL[i], '#ffffff', 512, 118); if (old && old.map) old.map.dispose(); if (old && old.dispose) old.dispose();
+      if (P2.tag){ scene.remove(P2.tag); pt.fade = pt.fade.filter(o2 => o2 !== P2.tag); P2.tag = null; }
+      if (n){ P2.tag = label(t, PLOT_COL[i], '#fff', 300); P2.tag.scale.multiplyScalar(1.7); P2.tag.position.set(P2.dx - 6, 10.4, -64); deco(P2.tag); pt.fade.push(P2.tag); } });
+  }
+  // multiplayer: if the room gave us a different plot after the town was built, move in
+  function petsToPlot(){
+    if (!pt) return; const n = myPlot(); plotSigns();
+    if (n === pt.plot) return;
+    const d = PLOT_DX[n] - PLOT_DX[pt.plot]; pt.plot = n; plotPlaces(n); pt.food = pt.plots[n].food; checkpoints[0].spawn.x = 2 + PLOT_DX[n];
+    pt.car.x += d; P.x += d; if (pt.pet){ pt.pet.x += d; } plotSigns(true);
+  }
   function buildPets(){
     heartMat = zzzMat = null;
     scene.background = new THREE.Color('#9ddcff'); scene.fog = new THREE.Fog('#9ddcff', 70, 190);
     const grass = canvasTex(64, 64, c => { c.fillStyle = '#7ccf6a'; c.fillRect(0, 0, 64, 64); for (let i = 0; i < 120; i++){ c.fillStyle = ['#6cc35c', '#8bd979', '#74c763'][i % 3]; c.fillRect((i * 37) % 64, (i * 23 + (i >> 3)) % 64, 3, 3); } });
-    grass.wrapS = grass.wrapT = THREE.RepeatWrapping; grass.repeat.set(50, 56);
+    grass.wrapS = grass.wrapT = THREE.RepeatWrapping; grass.repeat.set(65, 56);
     const gm = new THREE.MeshLambertMaterial({map: grass}), gs = fmat('#5aa24c');
-    const G0 = plat(0, 0, 5, 200, 224, '#7ccf6a', 2, {material: [gs, gs, gm, gs, gs, gs], noEdge: true}); G0.ground = true;
+    const G0 = plat(0, 0, 5, 260, 224, '#7ccf6a', 2, {material: [gs, gs, gm, gs, gs, gs], noEdge: true}); G0.ground = true;
     // edge hedges so nobody drives off the world
-    [[0, 116, 200, 2], [0, -106, 200, 2], [100, 5, 2, 224], [-100, 5, 2, 224]].forEach(([x, z, w, d]) => plat(x, 2, z, w, d, '#2f9a55', 2));
+    [[0, 116, 260, 2], [0, -106, 260, 2], [130, 5, 2, 224], [-130, 5, 2, 224]].forEach(([x, z, w, d]) => plat(x, 2, z, w, d, '#2f9a55', 2));
     // roads (flat paint, not solid)
     const asphalt = fmat('#555a66'), line = fmat('#ffd23f'), walkM = fmat('#d9d4c7');
     dbox(8, .02, 0, 8, .04, 104, null, asphalt);      // main road: home → shelter
     dbox(0, .025, 6, 104, .04, 8, null, asphalt);      // cross street
     dbox(3, .03, 50, 34, .04, 14, null, fmat('#60656f'));   // shelter parking lot
-    dbox(8, .015, -47, 9, .04, 10, null, asphalt);     // home driveway
+    dbox(12.5, .02, -32.8, 236, .04, 4.4, null, asphalt);   // Pet Lane: the street in front of the houses
+    for (let x = -104; x < 128; x += 6) if (Math.abs(x - 8) > 4) dbox(x, .045, -32.8, 3, .02, .25, null, line);
     for (let z = -44; z < 44; z += 6) if (Math.abs(z - 6) > 5) dbox(8, .045, z, .3, .02, 3, null, line);
     for (let x = -50; x < 52; x += 6) if (Math.abs(x - 8) > 5) dbox(x, .045, 6, 3, .02, .3, null, line);
     for (let x = -10; x <= 16; x += 4) dbox(x, .065, 50, .2, .02, 4.6, null, fmat('#ffffff'));   // parking lines
     // sidewalk for the walking loop
     [[-17, -30, 26, 2.2], [-32, -15, 2.2, 32], [-21, 1.5, 24, 2.2], [-6, -18, 2.2, 38]].forEach(([x, z, w, d]) => dbox(x, .03, z, w, .05, d, null, walkM));
-    // home: house, yard, fence, care spots
-    house(-6, -64, 14, 9, '#ffb3c7', '#ff4d5e', 1);
-    dbox(-6, 6.9, -66, 1, 1.6, 1, '#c97b63');   // chimney
-    fence(-19, -59.5, -19, -36.5); fence(-19, -36.5, -4.2, -36.5); fence(.2, -36.5, 3.2, -36.5); fence(3.2, -36.5, 3.2, -40);
-    const yardSign = new THREE.Mesh(new THREE.BoxGeometry(3.4, .9, .12), signTex('🏠 My Home', '#ff6fb5', '#ffffff', 384, 100)); yardSign.position.set(-9.5, 2.6, -36.4); deco(yardSign); dbox(-9.5, 1.1, -36.4, .14, 2.2, .14, '#ffffff');
-    // toy box, food bowl, pet bed, leash post
-    plat(-4, .9, -46.4, 1.8, 1.1, '#3a86ff', .9); dbox(-4, .95, -46.4, 1.9, .1, 1.2, '#ffd23f');
-    [['#ff4d5e', -4.5], ['#2ec27e', -4], ['#ffd23f', -3.5]].forEach(([c, x]) => { const b = new THREE.Mesh(new THREE.SphereGeometry(.22, 10, 8), fmat(c)); b.position.set(x, 1.15, -46.4); deco(b); });
-    const toyS = label('🎾 Toys', 'rgba(58,134,255,.9)', '#fff', 200); toyS.scale.multiplyScalar(.6); toyS.position.set(-4, 2.1, -46.4); deco(toyS);
-    const bowl = new THREE.Mesh(new THREE.CylinderGeometry(.55, .4, .32, 14), fmat('#ff6fb5')); bowl.position.set(-12, .16, -44.2); deco(bowl);
-    const food = new THREE.Mesh(new THREE.SphereGeometry(.45, 8, 6), fmat('#a0612e')); food.scale.set(1, .3, 1); food.position.set(-12, .33, -44.2); food.visible = false; deco(food);
-    const bowlS = label('🍖 Food', 'rgba(255,111,181,.9)', '#fff', 200); bowlS.scale.multiplyScalar(.6); bowlS.position.set(-12, 1.4, -44.2); deco(bowlS);
-    const bed = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.3, .25, 16), fmat('#8b5cf6')); bed.position.set(-14.5, .13, -50.4); deco(bed);
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(1.3, .25, 6, 18), fmat('#b79bff')); rim.rotation.x = Math.PI / 2; rim.position.set(-14.5, .3, -50.4); deco(rim);
-    const bedS = label('💤 Bed', 'rgba(139,92,246,.9)', '#fff', 200); bedS.scale.multiplyScalar(.6); bedS.position.set(-14.5, 1.5, -50.4); deco(bedS);
-    plat(-2.6, 1.5, -36.4, .25, .25, '#8d5524', 1.5); const leashS = label('🦮 Walks', 'rgba(46,194,126,.92)', '#fff', 200); leashS.scale.multiplyScalar(.6); leashS.position.set(-2.6, 2.4, -36.4); deco(leashS);
+    // the houses on Pet Lane (yours is plot 1 when playing alone)
+    const me = myPlot(); plotPlaces(me);
+    const plots = PLOT_DX.map((dx, i) => buildPlot(i));
     // the neighborhood
-    [[-46, -30, '#8fd3ff', '#3a86ff', 1], [-46, -4, '#ffe08a', '#ff9f1c', 1], [-22, 22, '#b8f2c9', '#2ec27e', -1], [30, 20, '#e5d4ff', '#8b5cf6', -1], [30, -14, '#ffd0a8', '#ff7a1a', 1], [32, -46, '#c9f0ff', '#2f6fd6', 1], [-46, 30, '#ffc9de', '#d6336c', -1], [52, 36, '#fff3b0', '#e0a800', -1]]
+    [[-46, -18, '#8fd3ff', '#3a86ff', 1], [-46, 4, '#ffe08a', '#ff9f1c', 1], [-22, 22, '#b8f2c9', '#2ec27e', -1], [30, 20, '#e5d4ff', '#8b5cf6', -1], [30, -14, '#ffd0a8', '#ff7a1a', 1], [62, -14, '#c9f0ff', '#2f6fd6', 1], [-46, 30, '#ffc9de', '#d6336c', -1], [52, 36, '#fff3b0', '#e0a800', -1]]
       .forEach(([x, z, w, r, f]) => house(x, z, 10, 8, w, r, f));
-    [[-26, -42], [-38, -48], [-12, -24], [-24, -12], [-40, 14], [20, -30], [22, 0], [-60, -20], [44, -30], [18, 30], [-30, 36], [60, 0], [40, 60], [-40, 60], [26, 76], [-26, 90], [60, -70], [-60, -70], [-70, 40], [70, 40], [16, -60], [-30, -64]]
+    [[-26, -90], [-50, -92], [-12, -24], [-24, -12], [-40, 14], [20, -22], [22, 0], [-60, -20], [44, -22], [18, 30], [-30, 36], [60, 0], [40, 60], [-40, 60], [26, 76], [-26, 90], [80, -90], [-80, -90], [-70, 40], [70, 40], [16, -92], [50, -92], [110, 20], [-110, 20], [-100, -20], [100, -20]]
       .forEach(([x, z], i) => tree(x, z, .85 + (i % 3) * .15));
     // the Pet Shelter (open-top so the camera can see inside)
     const wallC = '#fff3e0', trim = '#2ec2b0';
@@ -4362,7 +4744,9 @@ const Obby = (() => {
     tile.wrapS = tile.wrapT = THREE.RepeatWrapping; tile.repeat.set(14, 14); dbox(0, .05, 72, 27.6, .02, 27.6, null, new THREE.MeshLambertMaterial({map: tile}));
     plat(-8, 4, 58.4, 12, .8, wallC, 4); plat(8, 4, 58.4, 12, .8, wallC, 4);        // front wall, door gap in the middle
     plat(0, 4, 85.6, 28, .8, wallC, 4); plat(-13.6, 4, 72, .8, 28, wallC, 4); plat(13.6, 4, 72, .8, 28, wallC, 4);
-    plat(-7.7, 4, 70, 11.4, .6, wallC, 4); plat(7.7, 4, 70, 11.4, .6, wallC, 4);        // inside wall: lobby | adoption room
+    const glass = new THREE.MeshLambertMaterial({color: '#bfe6ff', transparent: true, opacity: .32, depthWrite: false});
+    [plat(-7.7, 4, 70, 11.4, .6, wallC, 4), plat(7.7, 4, 70, 11.4, .6, wallC, 4)].forEach(w => { w.mesh.material = glass; w.mesh.renderOrder = 1; });   // glass wall: lobby | adoption room (peek at today's pets!)
+    [-7.7, 7.7].forEach(x => dbox(x, 8.05, 70, 11.4, .1, .7, '#2ec2b0'));
     [[0, 4.1, 58.4, 28.4, .2, 1], [0, 4.1, 85.6, 28.4, .2, 1], [-13.6, 4.1, 72, 1, .2, 28.4], [13.6, 4.1, 72, 1, .2, 28.4]].forEach(([x, y, z, w, h, d]) => dbox(x, y, z, w, h, d, trim));
     const sign = new THREE.Mesh(new THREE.BoxGeometry(12, 2.2, .3), [fmat(trim), fmat(trim), fmat(trim), fmat(trim), fmat(trim), signTex('🐾 Pet Shelter', '#2ec2b0', '#ffffff')]); sign.position.set(0, 6, 58.1); deco(sign);
     [-5.6, 5.6].forEach(x => dbox(x, 4.6, 58.3, .3, 1.4, .3, trim));
@@ -4373,21 +4757,20 @@ const Obby = (() => {
     vet.g.position.set(0, 0, 67.6); vet.g.rotation.y = Math.PI; scene.add(vet.g);
     const vs = label('🩺 Dr. Hazel', 'rgba(46,194,176,.92)'); vs.position.y = 3.75; vet.g.add(vs);
     const deskS = new THREE.Mesh(new THREE.BoxGeometry(4, .8, .1), signTex('Reception', '#ff9f1c', '#ffffff', 384, 80)); deskS.position.set(0, .8, 64.95); deco(deskS);
+    const retS = new THREE.Mesh(new THREE.BoxGeometry(2.2, .8, .1), signTex('💌 Returns', '#ff6fb5', '#ffffff', 256, 92)); retS.position.set(3.75, .8, 64.95); deco(retS);
     [[-11, 60.5], [11, 60.5], [-11, 68], [11, 68]].forEach(([x, z]) => { plat(x, .7, z, 1.2, 1.2, '#ffd0a8', .7); const p = new THREE.Mesh(new THREE.IcosahedronGeometry(.8, 0), fmat('#2ec27e')); p.position.set(x, 1.5, z); deco(p); });
     plat(-7, .6, 62, 4, 1, '#3a86ff', .6); plat(7, .6, 62, 4, 1, '#3a86ff', .6);   // benches
     // the adoption room door (slides up when it opens)
     const doorM = [fmat('#ff9f1c'), fmat('#ff9f1c'), fmat('#ff9f1c'), fmat('#ff9f1c'), signTex('🐾', '#ff9f1c', '#ffffff', 128, 128), signTex('🐾 Adopt', '#ff9f1c', '#ffffff', 256, 128)];
     const door = plat(0, 3.6, 70, 4, .4, '#ff9f1c', 3.6); door.mesh.material = doorM;
     const doorS = label('🚪 Adoption Room', 'rgba(255,159,28,.95)'); doorS.scale.multiplyScalar(.7); doorS.position.set(0, 4.6, 69.4); deco(doorS);
-    // three pens with a baby of each kind waiting
-    const pens = PET_ORDER.map((k, i) => { const x = PLACES.pens[i][0];
+    // three pens — who's waiting changes every visit (rolled by rarity, see setPens)
+    const pens = [0, 1, 2].map(i => { const x = PLACES.pens[i][0];
       dbox(x, .07, 83, 7, .03, 5, ['#ffe08a', '#ffd0e6', '#cfe9ff'][i]);
       fence(x - 3.5, 80.5, x - 2, 80.5, '#ffffff'); fence(x + 2, 80.5, x + 3.5, 80.5, '#ffffff'); plat(x, .45, 80.5, 4, .2, '#ffffff', .45);
       if (i < 2) plat(x + 4.5, 1.3, 83, .3, 5, '#ffffff', 1.3);
-      const cush = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, .3, 14), fmat(['#ff9f1c', '#ff6fb5', '#3a86ff'][i])); cush.position.set(x, .15, 83); deco(cush);
-      const L = label(PET_KINDS[k].emoji + ' ' + PET_KINDS[k].name, ['rgba(255,159,28,.95)', 'rgba(255,111,181,.95)', 'rgba(58,134,255,.95)'][i], '#fff', 220); L.scale.multiplyScalar(.75); L.position.set(x, 3.2, 83); deco(L);
-      const m = buildPet(k, 0, 0); m.g.position.set(x, .3, 83); scene.add(m.g);
-      return {k, x, m, c: 0}; });
+      const cush = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, .3, 14), fmat('#ff9f1c')); cush.position.set(x, .15, 83); deco(cush);
+      return {k: null, x, m: null, c: 0, cush, L: null, L2: null, beam: null}; });
     // car, beacon, ball, fx
     const car = buildCar((player && /^#[0-9a-f]{6}$/i.test(player.fav) ? player.fav : '#3a86ff')); scene.add(car.g);
     const beacon = new THREE.Group(); const cone = new THREE.Mesh(new THREE.ConeGeometry(.7, 1.4, 4), new THREE.MeshLambertMaterial({color: '#ffd23f', emissive: '#b88600'})); cone.rotation.x = Math.PI; beacon.add(cone);
@@ -4396,19 +4779,83 @@ const Obby = (() => {
     const leash = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), new THREE.LineBasicMaterial({color: '#ff4d5e'})); leash.visible = false; leash.frustumCulled = false; scene.add(leash);
     const flags = PLACES.walk.map((w, i) => { const f = flagPole(w[0], w[1], ['#ff4d5e', '#ffd23f', '#3a86ff'][i]); f.visible = false; return f; });
     const fade = []; scene.traverse(o => { if (o.isSprite) fade.push(o); });
-    checkpoints[0] = {idx: 0, spawn: {x: 2, y: .05, z: -45}, flag: new THREE.Object3D()};
+    checkpoints[0] = {idx: 0, spawn: {x: 2 + PLOT_DX[me], y: .05, z: -45}, flag: new THREE.Object3D()};
     const s = petsLoad();
-    pt = {s, fade, doorS, car: {x: PLACES.car0[0], z: PLACES.car0[1], yaw: 0, v: 0, steer: 0, m: car}, drive: false, door, doorOpen: false, doorT: 0, pens, vet, beacon, ball, food, leash, flags,
+    pt = {s, fade, doorS, plots, plot: me, owners: [], car: {x: PLACES.car0[0], z: PLACES.car0[1], yaw: 0, v: 0, steer: 0, m: car}, drive: false, door, doorOpen: false, doorT: 0, pens, vet, beacon, ball, leash, flags, food: plots[me].food,
       pet: null, ballSt: null, walk: null, leashOn: false, tsub: 0, prompt: null, goal: null, fx: [], petCd: 0, saveT: 5, camY: cam.yaw, lookT: 0, gas: 0, brake: 0, coinsEarned: 0, lastStage: -1, napT: 0, eatT: 0};
     if (s.flow === 'home') s.flow = null;   // you start at home: you made it!
-    spawnPet();
+    if (!s.roll) s.roll = newRoll();
+    setPens(); spawnPet(); plotSigns(true);
+  }
+  /* --- today's shelter pets (rolled by rarity; kept until you leave and come back) --- */
+  function newRoll(force){
+    const st = !force && !pt.s.pets.length, k = force || (st ? STARTERS.slice() : rollPets());
+    return {k, c: k.map(() => st ? 0 : Math.floor(Math.random() * 3)), seen: false, rev: false, t: [], st};
+  }
+  function setPens(){
+    const R = pt.s.roll; pt.pensRoll = R;
+    pt.pens.forEach((pen, i) => {
+      [pen.m && pen.m.g, pen.L, pen.L2, pen.beam].forEach(o => o && scene.remove(o));
+      pt.fade = pt.fade.filter(o => o !== pen.L && o !== pen.L2); pen.m = pen.L = pen.L2 = pen.beam = null;
+      const k = R.k[i], K = PET_KINDS[k], RR = rarOf(k); pen.k = k; pen.c = R.c[i]; pen.taken = R.t.includes(i);
+      pen.cush.material = fmat(pen.taken ? '#d9d4c7' : RR.c);
+      if (pen.taken){ pen.L = label('💕 Adopted!', 'rgba(255,111,181,.95)', '#fff', 220); pen.L.scale.multiplyScalar(.7); pen.L.position.set(pen.x, 2.4, 83); deco(pen.L); pt.fade.push(pen.L); return; }
+      pen.m = buildPet(k, pen.c, 0); pen.m.g.position.set(pen.x, .3, 83); scene.add(pen.m.g);
+      pen.L = label(K.emoji + ' ' + K.name, RR.d, '#fff', 260); pen.L.scale.multiplyScalar(.75); pen.L.position.set(pen.x, 3.35, 83); deco(pen.L);
+      pen.L2 = label(RR.e + ' ' + RR.n, RR.c, K.r === 4 || K.r === 0 ? '#1d2340' : '#fff', 220); pen.L2.scale.multiplyScalar(.5); pen.L2.position.set(pen.x, 2.65, 83); deco(pen.L2);
+      pt.fade.push(pen.L, pen.L2);
+      if (K.r >= 3){ pen.beam = new THREE.Mesh(new THREE.CylinderGeometry(1.25, 1.5, 12, 18, 1, true), new THREE.MeshBasicMaterial({color: RR.c, transparent: true, opacity: .14, depthWrite: false, side: THREE.DoubleSide})); pen.beam.position.set(pen.x, 6, 83); deco(pen.beam); }
+    });
+  }
+  const inShelter = () => !pt.drive && Math.abs(P.x) < 13.6 && P.z > 58.4 && P.z < 85.6;
+  const nearShelter = () => P.x > -22 && P.x < 28 && P.z > 38 && P.z < 92;
+  function rollTick(){
+    const s = pt.s;
+    if (s.roll && s.roll.seen && !nearShelter()){ s.roll = newRoll(); setPens(); petsSave(); }   // you left: new pets arrive for next time
+    if (s.roll && pt.pensRoll !== s.roll) setPens();
+    if (s.roll && !s.roll.seen && inShelter()) discover();
+  }
+  function discover(){
+    const R = pt.s.roll, d = pt.s.dex; R.seen = true;
+    const fresh = R.k.filter((k, i) => !R.t.includes(i) && !d.seen[k]); R.k.forEach((k, i) => { if (!R.t.includes(i)) d.seen[k] = 1; });
+    const best = R.k.reduce((a, k, i) => R.t.includes(i) || PET_KINDS[k].r <= a.r ? a : {r: PET_KINDS[k].r, k, i}, {r: -1});
+    if (best.r === 4 && !R.rev){ R.rev = true; legendaryReveal(best.k, best.i); }
+    else if (best.r === 3){ banner('🟣 Ooh! An EPIC ' + PET_KINDS[best.k].name + ' is at the shelter today!'); SND.cp(); }
+    if (fresh.length) setTimeout(() => running && pt && banner('📖 New in your Pet Index: ' + fresh.map(k => PET_KINDS[k].emoji + ' ' + PET_KINDS[k].name).join(', ')), best.r >= 3 ? 2600 : 300);
+    dexCheck(); petsSave();
+  }
+  function legendaryReveal(k, i){
+    const K = PET_KINDS[k], pen = pt.pens[i];
+    big('🌟 LEGENDARY! 🌟\nA ' + K.name + ' ' + K.emoji + ' is at the shelter!', 3.5); pt.bigT = 3.5; pt.revT = 3; pt.revI = i;
+    const f = $('#pFlash'); if (f){ f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }
+    confetti(); setTimeout(confetti, 450); setTimeout(confetti, 900);
+    [0, 120, 240, 360].forEach((ms, j) => setTimeout(() => running && SND.coin(), ms)); setTimeout(() => running && SND.win(), 520);
+    if (pen) hearts(pen.x, 83, 6);
+  }
+  function dexCheck(){
+    const d = pt.s.dex;
+    RARITY.forEach((R, r) => { if (d.done[r] || !PET_ORDER.filter(k => PET_KINDS[k].r === r).every(k => d.seen[k])) return;
+      d.done[r] = 1; earn(R.prize); setTimeout(() => { if (running && pt){ banner('📖 ' + R.e + ' ' + R.n + ' row complete! +' + R.prize + ' 🪙'); confetti(); SND.win(); } }, 3200); });
+  }
+  function renderIndex(){
+    const d = pt.s.dex; let h = '';
+    RARITY.forEach((R, r) => { const ks = PET_ORDER.filter(k => PET_KINDS[k].r === r), n = ks.filter(k => d.seen[k]).length;
+      h += `<div class="pirow" style="--rc:${R.c}"><div class="pirh"><b>${R.e} ${R.n}</b><small>${R.w}% odds</small><span>${n}/${ks.length}</span><em class="${d.done[r] ? 'ok' : ''}">${d.done[r] ? '✅ +' + R.prize + ' 🪙' : '🎁 ' + R.prize + ' 🪙'}</em></div><div class="pigrid">`
+        + ks.map(k => { const K = PET_KINDS[k], sn = d.seen[k], ow = d.own[k]; return `<button class="pic${sn ? ' seen' : ''}${ow ? ' own' : ''}" data-k="${k}"><span class="pie">${K.emoji}</span><b>${sn ? K.name : '???'}</b><small>${ow ? '🏠 Adopted' : sn ? '👀 Seen' : '❔ Not found'}</small></button>`; }).join('') + '</div></div>'; });
+    $('#pIdx').innerHTML = h; $('#pIdxCount').textContent = PET_ORDER.filter(k => d.seen[k]).length + ' / ' + PET_ORDER.length;
+  }
+  function openIndex(){ if (!pt || !running) return; $('#pPetsPanel').classList.remove('show'); renderIndex(); openPanel('#pIndexPanel'); }
+  function rerollPens(){
+    const s = pt.s; if (!s.roll || s.roll.st || s.flow !== 'choose') return;
+    if (coins < 25){ banner('🪙 You need 25 coins for new pets!'); return; }
+    setCoins(coins - 25); s.roll = newRoll(); closePanel('#pAdoptPanel'); setPens(); SND.boing ? SND.boing() : SND.cp(); banner('🎲 New pets just arrived!'); petsSave();
   }
   const activePet = () => pt && pt.s.pets[pt.s.a] || null;
   function spawnPet(near){
     if (pt.pet){ scene.remove(pt.pet.m.g); pt.pet = null; }
     const d = activePet(); if (!d) return;
     const st = stageOf(d.xp), m = buildPet(d.k, d.c, st);
-    const tag = label(d.n, 'rgba(255,111,181,.92)', '#fff', 220); tag.scale.multiplyScalar(.55); tag.position.y = 1.75 * PET_KINDS[d.k].base * STAGES[st].s + .45; m.g.add(tag);
+    const tag = label(d.n, 'rgba(255,111,181,.92)', '#fff', 220); tag.scale.multiplyScalar(.55); tag.position.y = m.top + .45; m.g.add(tag);
     const sp = near || {x: P.x - 1.5, z: P.z - 1.5};
     pt.pet = {d, m, tag, x: sp.x, z: sp.z, y: 0, face: P.face, vx: 0, vz: 0, act: 'follow', t: 0, stage: st, pop: 0};
     pt.lastStage = st; m.g.position.set(sp.x, 0, sp.z); scene.add(m.g);
@@ -4540,7 +4987,9 @@ const Obby = (() => {
   }
   function openAdopt(i){
     const pen = pt.pens[i], K = PET_KINDS[pen.k]; pt.adoptI = i;
-    $('#pAdEmoji').textContent = K.emoji; $('#pAdTitle').textContent = 'Adopt a ' + K.name + '?';
+    $('#pAdEmoji').textContent = K.emoji; $('#pAdTitle').textContent = 'Adopt ' + (/^[AEIOU]/.test(K.name) ? 'an ' : 'a ') + K.name + '?';
+    const RR = rarOf(pen.k), rb = $('#pAdRar'); rb.textContent = RR.e + ' ' + RR.n; rb.className = 'prar r' + K.r; rb.style.setProperty('--rc', RR.c);
+    $('#pReroll').style.display = pt.s.roll && !pt.s.roll.st ? '' : 'none';
     $('#pAdName').textContent = pt.s.pend + ' the ' + K.name;
     const cols = $('#pCols'); cols.innerHTML = '';
     K.cols.forEach((c, ci) => { const b = document.createElement('button'); b.className = 'pcol' + (ci === pen.c ? ' sel' : ''); b.dataset.c = ci; b.innerHTML = `<i style="background:${c[1]};border-color:${c[2]}"></i>${c[0]}`;
@@ -4548,24 +4997,26 @@ const Obby = (() => {
     openPanel('#pAdoptPanel');
     cam.yaw = Math.PI; cam.pitch = .3;
   }
-  function recolorPen(i, ci){ const pen = pt.pens[i]; if (pen.c === ci) return; scene.remove(pen.m.g); pen.m = buildPet(pen.k, ci, 0); pen.m.g.position.set(pen.x, .3, 83); scene.add(pen.m.g); pen.c = ci; hearts(pen.x, 83, 2); }
+  function recolorPen(i, ci){ const pen = pt.pens[i]; if (pen.c === ci || !pen.m) return; pt.s.roll.c[i] = ci; scene.remove(pen.m.g); pen.m = buildPet(pen.k, ci, 0); pen.m.g.position.set(pen.x, .3, 83); scene.add(pen.m.g); pen.c = ci; hearts(pen.x, 83, 2); }
   function adoptOk(){
-    const pen = pt.pens[pt.adoptI], s = pt.s; if (!pen || s.flow !== 'choose' || s.pets.length >= PET_MAX) return closePanel('#pAdoptPanel');
+    const pen = pt.pens[pt.adoptI], s = pt.s; if (!pen || !pen.m || s.flow !== 'choose' || s.pets.length >= PET_MAX) return closePanel('#pAdoptPanel');
     const p = {k: pen.k, c: pen.c, n: s.pend || 'Buddy', xp: 0, f: 80, u: 80, e: 90, b: Date.now()};
     s.pets.push(p); s.a = s.pets.length - 1; s.pend = ''; s.flow = 'home'; closePanel('#pAdoptPanel');
-    spawnPet({x: pen.x, z: 79.5}); hearts(pen.x, 79.5, 6);
+    s.dex.seen[p.k] = s.dex.own[p.k] = 1; s.roll.t.push(pt.adoptI); setPens(); dexCheck();
+    spawnPet({x: pen.x, z: 79.5}); hearts(pen.x, 79.5, 6); if (PET_KINDS[p.k].r >= 3){ setTimeout(confetti, 1200); pt.pet.pop = 1; }
     earn(20); SND.win(); confetti(); setTimeout(confetti, 600);
-    big('🎉 ' + p.n + ' the ' + PET_KINDS[p.k].name + ' is your pet!\nDrive home together 🚗', 3.5); pt.bigT = 3.5;
+    big((PET_KINDS[p.k].r === 4 ? '🌟 ' : '🎉 ') + p.n + ' the ' + PET_KINDS[p.k].name + ' is your pet!\nDrive home together 🚗', 3.5); pt.bigT = 3.5;
     petsSave();
   }
   function renderPets(){
     const L = $('#pList'); L.innerHTML = ''; const s = pt.s;
+    $('#pCount').textContent = s.pets.length + ' / ' + PET_MAX;
     if (!s.pets.length){ L.innerHTML = '<div class="pempty">No pets yet! Drive to the 🏥 Pet Shelter to adopt one.</div>'; return; }
     s.pets.forEach((p, i) => {
       const st = stageOf(p.xp), nx = STAGES[st + 1], pr = nx ? Math.round((p.xp - STAGES[st].xp) / (nx.xp - STAGES[st].xp) * 100) : 100;
-      const d = document.createElement('div'); d.className = 'pcard' + (i === s.a ? ' on' : '');
+      const d = document.createElement('div'), RR = rarOf(p.k); d.className = 'pcard r' + PET_KINDS[p.k].r + (i === s.a ? ' on' : ''); d.style.setProperty('--rc', RR.c);
       const bar = (e, v, c) => `<span class="pmini"><i>${e}</i><b><u style="width:${Math.round(v)}%;background:${c}"></u></b></span>`;
-      d.innerHTML = `<div class="pcn"><span class="pce">${PET_KINDS[p.k].emoji}</span><div><b></b><small>${STAGES[st].e} ${STAGES[st].n} ${PET_KINDS[p.k].name}</small></div></div>`
+      d.innerHTML = `<div class="pcn"><span class="pce">${PET_KINDS[p.k].emoji}</span><div><b></b><small>${STAGES[st].e} ${STAGES[st].n} ${PET_KINDS[p.k].name}</small></div><span class="prb">${RR.e} ${RR.n}</span></div>`
         + `<div class="pgrow"><u style="width:${pr}%"></u><span>${nx ? '🌱 ' + pr + '% to ' + nx.n : '⭐ All grown up!'}</span></div>`
         + bar('🍖', p.f, '#ff9f1c') + bar('🎾', p.u, '#3a86ff') + bar('⚡', p.e, '#8b5cf6')
         + `<button class="big ${i === s.a ? 'gray' : 'green'} pfollow" data-i="${i}" ${i === s.a ? 'disabled' : ''}>${i === s.a ? '✅ With you' : '🐾 Follow me'}</button>`;
@@ -4574,6 +5025,50 @@ const Obby = (() => {
       L.appendChild(d);
     });
     $('#pCount').textContent = s.pets.length + ' / ' + PET_MAX;
+  }
+  /* --- return a pet (t131u): pick one, gentle "are you sure?", wave goodbye, it leaves your save --- */
+  function openReturn(){ if (!pt || !running || pt.bye || !pt.s.pets.length) return; renderReturn(); openPanel('#pReturnPanel'); setTimeout(() => { const b = $('#pRetList button:not([disabled])') || $('#pRetNo'); try { b.focus({preventScroll: true}); } catch(_){} }, 30); }
+  function renderReturn(){
+    const s = pt.s, L = $('#pRetList'), only = s.pets.length <= 1; pt.retI = -1;
+    $('#pRetPick').hidden = false; $('#pRetAsk').hidden = true; $('#pRetYes').hidden = true; $('#pRetNo').textContent = '↩️ Never mind';
+    L.innerHTML = '';
+    s.pets.forEach((p, i) => { const RR = rarOf(p.k), b = document.createElement('button');
+      b.className = 'prpick'; b.style.setProperty('--rc', RR.c); b.disabled = only; b.dataset.i = i;
+      b.innerHTML = `<span class="pce">${PET_KINDS[p.k].emoji}</span><b></b><small>${RR.e} ${RR.n} ${PET_KINDS[p.k].name}</small>`; b.querySelector('b').textContent = p.n;
+      b.onclick = () => askReturn(i); L.appendChild(b); });
+    $('#pRetMsg').textContent = only ? '💕 ' + s.pets[0].n + ' is your only pet — they need you! You can’t return your only pet.' : '';
+  }
+  function askReturn(i){
+    const d = pt.s.pets[i]; if (!d || pt.s.pets.length <= 1) return;
+    pt.retI = i; $('#pRetPick').hidden = true; $('#pRetAsk').hidden = false; $('#pRetYes').hidden = false; $('#pRetNo').textContent = '✖ Cancel';
+    $('#pRetE').textContent = PET_KINDS[d.k].emoji; $('#pRetQ').textContent = 'Are you sure? ' + d.n + ' will go back to the shelter to find a new family 💕';
+    try { $('#pRetNo').focus({preventScroll: true}); } catch(_){}   // Cancel is the default
+  }
+  function doReturn(){
+    const s = pt.s, i = pt.retI, d = s.pets[i];
+    closePanel('#pReturnPanel'); pt.retI = -1;
+    if (!d || s.pets.length <= 1 || pt.bye) return;
+    let m;
+    if (pt.pet && pt.pet.d === d){ if (pt.leashOn) leashOff(true); if (pt.ballSt){ pt.ball.visible = false; pt.ballSt = null; } m = pt.pet.m; if (pt.pet.tag) pt.pet.tag.visible = false; pt.pet = null; }
+    else { m = buildPet(d.k, d.c, stageOf(d.xp)); scene.add(m.g); }
+    const f = Math.atan2(PLACES.ret[0] - P.x, PLACES.ret[1] + 1 - P.z), x = P.x + Math.sin(f) * 1.5, z = P.z + Math.cos(f) * 1.5;
+    pt.bye = {m, n: d.n, x, z, t: 0};
+    s.pets.splice(i, 1); if (s.a > i) s.a--; else if (s.a === i) s.a = 0; s.a = Math.max(0, Math.min(s.a, s.pets.length - 1));
+    if (!pt.pet) spawnPet({x: P.x - 1.5, z: P.z - 1.5});
+    if (s.flow !== 'choose' && s.tut >= 3 && eligible()) s.flow = 'shelter';
+    earn(10); petsSave();
+    P.vx = P.vz = 0; P.face = Math.atan2(x - P.x, z - P.z); emote = {id: 'wave', t: 0};
+    hearts(x, z, 5); SND.cp();
+    banner('👋 Bye bye, ' + d.n + '! Dr. Hazel will find them a loving new family 💕 +10 🪙');
+  }
+  function byeStep(dt, t){
+    const b = pt.bye, M = b.m; b.t += dt;
+    if (b.t < 1.7){ M.g.rotation.y = Math.atan2(P.x - b.x, P.z - b.z); animPet(M, 4, 0, dt, t); if (Math.random() < dt * 3) hearts(b.x, b.z, 1); }
+    else { const tx = 6.6, tz = 67, dx = tx - b.x, dz = tz - b.z, dd = Math.hypot(dx, dz);
+      if (dd > .2){ const v = Math.min(5, dd * 3); b.x += dx / dd * v * dt; b.z += dz / dd * v * dt; M.g.rotation.y = Math.atan2(dx, dz); }
+      animPet(M, 0, 4, dt, t); if (b.t > 3.1){ const k = Math.max(.01, 1 - (b.t - 3.1) / .6); M.g.scale.setScalar(k); } }
+    M.g.position.set(b.x, Math.max(0, b.t < 1.7 ? Math.abs(Math.sin(b.t * 9)) * .35 : 0), b.z);
+    if (b.t > 3.7){ scene.remove(M.g); pt.bye = null; }
   }
   function openPets(){ if (!pt) return; renderPets(); openPanel('#pPetsPanel'); }
   /* --- what can you do right here? --- */
@@ -4584,9 +5079,10 @@ const Obby = (() => {
     const s = pt.s, x = P.x, z = P.z, near = (p, r) => dist2(p, x, z) < r, list = [];
     if (carCircles().some(c => Math.hypot(c.x - x, c.z - z) < 3.4)) list.push({k: 'car', t: '🚗 Get in the car', act: getIn, d: 0});
     if (near(PLACES.desk, 3.2)) list.push(s.flow === 'shelter' && eligible() ? {k: 'desk', t: '🏷️ Talk to Dr. Hazel', act: openName}
-      : {k: 'desk', t: '💬 Talk to Dr. Hazel', act: () => banner(s.flow === 'choose' ? '🩺 The pets are through the orange door!' : s.pets.length >= PET_MAX ? '🩺 Six pets! Your house is full of love 💕' : '🩺 Come back when ' + (s.pets[s.pets.length - 1] || {}).n + ' is all grown up! ⭐')});
+      : {k: 'desk', t: '💬 Talk to Dr. Hazel', act: () => banner(s.flow === 'choose' ? '🩺 The pets are through the orange door!' : s.pets.length >= PET_MAX ? '🩺 Six pets! Your house is full of love 💕 (💌 Returns is at the end of my desk)' : '🩺 Come back when ' + (s.pets[s.pets.length - 1] || {}).n + ' is all grown up! ⭐')});
+    if (s.pets.length && !pt.bye && near(PLACES.ret, 1.8) && !near(PLACES.desk, 3.2)) list.push({k: 'ret', t: '💌 Return a pet', act: openReturn});
     if (!pt.doorOpen && near(PLACES.door, 3)) list.push(s.flow === 'choose' ? {k: 'door', t: '🚪 Open the door', act: openDoor} : {k: 'door', t: '🔒 Adoption room', act: () => banner('🏷️ Talk to Dr. Hazel at the desk first!')});
-    if (s.flow === 'choose') pt.pens.forEach((pen, i) => { if (near(PLACES.pens[i], 2.8)) list.push({k: 'pen' + i, t: PET_KINDS[pen.k].emoji + ' Meet the ' + PET_KINDS[pen.k].name, act: () => openAdopt(i)}); });
+    if (s.flow === 'choose') pt.pens.forEach((pen, i) => { if (pen.m && near(PLACES.pens[i], 2.8)) list.push({k: 'pen' + i, t: PET_KINDS[pen.k].emoji + ' Meet the ' + PET_KINDS[pen.k].name, act: () => openAdopt(i)}); });
     const p = pt.pet, free = p && ['follow', 'happy'].includes(p.act) && !pt.ballSt;
     if (p){
       if (near(PLACES.toy, 2.8)) list.push(free ? {k: 'toy', t: '🎾 Throw a ball', act: throwBall} : {k: 'toy', t: '🎾 ' + p.d.n + ' is busy', act: () => {}});
@@ -4596,12 +5092,12 @@ const Obby = (() => {
       if (free && Math.hypot(p.x - x, p.z - z) < 2.4 && pt.petCd <= 0) list.push({k: 'pet', t: '❤️ Pet ' + p.d.n, act: petIt});
     }
     if (!list.length) return null;
-    const order = ['desk', 'door', 'pen0', 'pen1', 'pen2', 'toy', 'bowl', 'bed', 'gate', 'car', 'pet'];
+    const order = ['desk', 'ret', 'door', 'pen0', 'pen1', 'pen2', 'toy', 'bowl', 'bed', 'gate', 'car', 'pet'];
     list.sort((a, b) => order.indexOf(a.k) - order.indexOf(b.k));
     if (s.tut < 3 && list.some(o => o.k === 'pet') && pt.s.tut === 0 && pt.tsub === 1) return list.find(o => o.k === 'pet');
     return list[0];
   }
-  function petsClosePanels(){ ['#pNamePanel','#pAdoptPanel','#pPetsPanel'].forEach(id => $(id).classList.remove('show')); choosing = false; try { $('#petNameIn').blur(); } catch(_){} }
+  function petsClosePanels(){ ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel'].forEach(id => $(id).classList.remove('show')); choosing = false; try { $('#petNameIn').blur(); } catch(_){} }
   function petsAct(){ const p = petsPrompt(); if (p && running && !paused && !choosing){ p.act(); return true; } return false; }
   function openDoor(){ pt.doorOpen = true; pt.doorT = 0; SND.cp(); banner('🐾 Choose your new pet!'); }
   /* --- where to go next (arrow + beacon) --- */
@@ -4618,7 +5114,7 @@ const Obby = (() => {
       if (far) return toLot('🏥 Drive to the Pet Shelter');
       if (pt.drive) return {t: '🅿️ Park and get out', at: PLACES.lot};
       if (!pt.doorOpen) return {t: '🚪 Open the orange door', at: PLACES.door};
-      return {t: '🐾 Pick your pet: Mouse, Cat or Dog', at: [0, 79]};
+      return {t: s.roll && s.roll.st ? '🐾 Pick your pet: Mouse, Cat or Dog' : '🐾 Pick your new pet! (' + s.roll.k.filter((k, i) => !s.roll.t.includes(i)).map(k => PET_KINDS[k].emoji).join(' ') + ')', at: [0, 79]};
     }
     const home = dist2(PLACES.home, x, z) < 18;
     if (s.flow === 'home'){
@@ -4642,6 +5138,8 @@ const Obby = (() => {
   function petsUpdate(dt){
     const s = pt.s, p = pt.pet;
     pt.petCd = Math.max(0, pt.petCd - dt);
+    rollTick();
+    if ((pt.signT = (pt.signT || 0) - dt) <= 0){ pt.signT = 1; petsToPlot(); }   // who lives where on Pet Lane
     if ((pt.saveT -= dt) <= 0) petsSave();
     // camera: follow behind the car unless you're steering the camera yourself
     if (pt.drive){
@@ -4727,8 +5225,12 @@ const Obby = (() => {
     // car
     const C = pt.car, cm = C.m; cm.g.position.set(C.x, 0, C.z); cm.g.rotation.y = C.yaw;
     cm.wheels.forEach(w => { w.sp.rotation.x += C.v * dt / .45; if (w.front) w.w.rotation.y = -C.steer * .45; });
-    pt.pens.forEach((pen, i) => { const M = pen.m; M.g.rotation.y = Math.atan2(P.x - pen.x, P.z - 83); animPet(M, Math.sin(t * .5 + i) > .7 ? 4 : 0, 0, dt, t + i); });
-    applyPose(dt, animPose('default', {state: 'idle', t, ph: 0, sp: 0, air: 0}), pt.vet);
+    if (pt.revT > 0) pt.revT -= dt;
+    pt.pens.forEach((pen, i) => { const M = pen.m;
+      if (pen.beam){ const rv = pt.revT > 0 && pt.revI === i; pen.beam.material.opacity = (rv ? .4 : .12) + .06 * Math.sin(t * 3 + i); pen.beam.rotation.y = t * .5; pen.beam.scale.x = pen.beam.scale.z = rv ? 1 + .25 * Math.sin(t * 10) : 1; }
+      if (!M) return; M.g.rotation.y = Math.atan2(P.x - pen.x, P.z - 83); const rv = pt.revT > 0 && pt.revI === i; animPet(M, rv || Math.sin(t * .5 + i) > .7 ? 4 : 0, 0, dt, t + i); });
+    applyPose(dt, pt.bye ? emotePose('wave', t) : animPose('default', {state: 'idle', t, ph: 0, sp: 0, air: 0}), pt.vet);
+    if (pt.bye) byeStep(dt, t);
     const q = pt.pet;
     if (q){
       const M = q.m, sp = Math.hypot(q.vx, q.vz);
@@ -4757,7 +5259,7 @@ const Obby = (() => {
     else gl.classList.remove('show');
     const pb = $('#pPetBox');
     if (p){ pb.classList.add('show'); const d = p.d, st = stageOf(d.xp), nx = STAGES[st + 1];
-      $('#pPetN').textContent = PET_KINDS[d.k].emoji + ' ' + d.n; $('#pPetS').textContent = STAGES[st].e + ' ' + STAGES[st].n;
+      $('#pPetN').textContent = PET_KINDS[d.k].emoji + ' ' + d.n; $('#pPetS').textContent = STAGES[st].e + ' ' + STAGES[st].n + (PET_KINDS[d.k].r ? ' · ' + rarOf(d.k).e + ' ' + rarOf(d.k).n : '');
       [['#pFood', d.f], ['#pFun', d.u], ['#pEn', d.e]].forEach(([id, v]) => { const e = $(id); e.style.width = Math.round(v) + '%'; e.classList.toggle('low', v < 30); });
       const pr = nx ? (d.xp - STAGES[st].xp) / (nx.xp - STAGES[st].xp) : 1; $('#pGrow').style.width = Math.round(pr * 100) + '%'; $('#pGrowT').textContent = nx ? '🌱 ' + nx.n + ' ' + Math.floor(pr * 100) + '%' : '⭐ Grown up!'; }
     else pb.classList.remove('show');
@@ -4781,9 +5283,11 @@ const Obby = (() => {
     model.g.position.set(P.x, P.y, P.z);
     let d = P.face - model.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); model.g.rotation.y += d * Math.min(1, dt * 12);
     const sp = Math.hypot(P.vx, P.vz);
-    P.walk += dt * sp * 1.3;
+    P.walk += dt * sp * (sp > SPEED * 1.15 ? 1.5 : 1.3);
+    { const fv = run.on && !(pt && pt.drive) ? 66 : 60; if (Math.abs(camera.fov - fv) > .05){ camera.fov += (fv - camera.fov) * Math.min(1, dt * 6); camera.updateProjectionMatrix(); } }
+    if (mode === 'tag'){ const v = Math.round(run.stam / STAM_MAX * 100) + (run.tired ? 1000 : 0); if (v !== run.shown){ run.shown = v; $('#oStamF').style.width = (v % 1000) + '%'; $('#oStam').classList.toggle('tired', run.tired); $('#oStam').classList.toggle('full', v === 100); } }
     if (emote){ emote.t += dt; if (emote.t > EMOTES[emote.id].dur || (!P.onGround && P.airT > .25)) emote = null; }
-    const st = {state: P.climbing ? 'climb' : !P.onGround && P.airT > .08 ? 'jump' : sp > .8 ? 'walk' : 'idle', t: worldT, ph: P.walk, sp: Math.min(1, sp / 5), air: P.airT, jumped: P.jumped};
+    const st = {state: P.climbing ? 'climb' : !P.onGround && P.airT > .08 ? 'jump' : sp > .8 ? 'walk' : 'idle', t: worldT, ph: P.walk, sp: Math.min(sp > SPEED * 1.15 ? 1.3 : 1, sp / 5), air: P.airT, jumped: P.jumped};
     applyPose(dt, pt && pt.drive ? SIT_POSE : emote ? emotePose(emote.id, emote.t) : animPose(avatar.anim || 'default', st));
     if (pt && pt.drive){ model.g.rotation.y = pt.car.yaw; blob.visible = false; return; }
     // shadow on the highest surface below
@@ -4820,13 +5324,13 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'pets' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use / talk · Ⓑ my pets · Right stick look · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · Ⓐ jump · Right stick look · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
-      : '🎮 Left stick move · Ⓐ jump · Right stick look · Ⓧ emotes · LT/RT zoom · ☰ pause';
+    const line = mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ use / talk · Ⓑ my pets · Ⓨ Pet Index · Right stick look · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
+      : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
   function padInput(s, dt){
     if (s === 'off' || s === 'idle' || s === 'lost' || !s){
-      pad.x = pad.y = 0; pad.jump = false; pad.lx = pad.ly = 0; pad.gas = pad.brake = 0;
+      pad.x = pad.y = 0; pad.jump = false; pad.lx = pad.ly = 0; pad.gas = pad.brake = 0; run.pad = false;
       if (s === 'idle' && pad.on){ pad.on = false; $('#obby').classList.remove('padui'); if (running) setTouchUI(touchUI); }
       if (s === 'lost' && running && !paused && !won && !over && !choosing && !(mp.on && mp.host && mode === 'tag')) setPause(true);
       return;
@@ -4838,6 +5342,9 @@ const Obby = (() => {
     if (!live){ pad.x = pad.y = 0; pad.jump = false; return; }
     const dx = (s.b[15] ? 1 : 0) - (s.b[14] ? 1 : 0), dy = (s.b[12] ? 1 : 0) - (s.b[13] ? 1 : 0);
     pad.x = Math.max(-1, Math.min(1, s.lx + dx)); pad.y = Math.max(-1, Math.min(1, -s.ly + dy)); pad.jump = s.b[0];
+    if (jp[10]){ run.pad = !run.pad; run.padT = 0; run.padIdle = 0; if (run.pad) banner('🏃 Running!'); }
+    if (s.b[10]) run.padT += dt; else if (run.padT > .4){ run.pad = false; run.padT = 0; }
+    if (run.pad && Math.hypot(pad.x, pad.y) < .15){ if ((run.padIdle += dt) > .6) run.pad = false; } else run.padIdle = 0;
     // smooth stick look: a gentle curve for aiming, eased so the camera never jerks
     const curve = v => v * (.45 + .55 * Math.abs(v)), inv = window.rubloxInvert || {}, k = window.rubloxPadSens || 1, e = Math.min(1, dt * 12);
     pad.lx += (curve(s.rx) - pad.lx) * e; pad.ly += (curve(s.ry) - pad.ly) * e;
@@ -4856,6 +5363,7 @@ const Obby = (() => {
       if (pt.drive){ pad.gas = Math.max(s.v[7] || 0, s.b[0] ? 1 : 0); pad.brake = Math.max(s.v[6] || 0, s.b[1] ? 1 : 0); pad.y = 0; pad.jump = false; if (jp[3]) { cam.yaw = pt.car.yaw + Math.PI; cam.pitch = .34; } return; }
       pad.gas = pad.brake = 0;
       if (jp[1]){ openPets(); return; }
+      if (jp[3]){ openIndex(); return; }
     }
     if (mode === 'build' && bw){
       ptr.has = false;   // aim with the crosshair in the middle of the screen
@@ -4877,25 +5385,25 @@ const Obby = (() => {
   function setTouchUIBase(on){
     touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
     if (mode === 'build'){
-      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ jump · Swipe to look<br>👆 Tap to place a block · 🔨/🧽 button switches to delete'
-        : '⌨️ WASD move · Space jump · Drag to look · 🖱️ Click to place a block<br>Shift+click / right-click / X = delete · Q/E pick block · Z undo') + '<br>Build anything! 🪙 +1 coin per 10 blocks (up to 50 a day)';
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ jump · 🏃 run · Swipe to look<br>👆 Tap to place a block · 🔨/🧽 button switches to delete'
+        : '⌨️ WASD move · Space jump · Shift run · Drag to look · 🖱️ Click to place a block<br>Shift+click / right-click / X = delete · Q/E pick block · Z undo') + '<br>Build anything! 🪙 +1 coin per 10 blocks (up to 50 a day)';
       return;
     }
     if (mode === 'pets'){
-      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ jump · Tap the yellow button to use things · Swipe to look'
-        : '⌨️ WASD move · Space jump · E use / talk · M my pets · Drag to look') + '<br>🐾 Follow the arrow at the top! 🚗 In the car: ' + (on ? 'left thumb steers, ⛽ Go, 🛑 Brake' : 'W gas, S brake, A/D steer');
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ jump · 🏃 run · Tap the yellow button to use things · Swipe to look'
+        : '⌨️ WASD move · Space jump · Shift run · E use / talk · M my pets · I Pet Index · Drag to look') + '<br>🐾 Follow the arrow at the top! 🚗 In the car: ' + (on ? 'left thumb steers, ⛽ Go, 🛑 Brake' : 'W gas, S brake, A/D steer');
       return;
     }
     if (mode === 'tag'){
-      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ to jump · Swipe the right side to look · 😀 emotes'
-        : '⌨️ WASD / Arrows to move · Space to jump · Drag the mouse to look · 1–8 emotes · Esc to pause') + "<br>🏷️ Don't be IT! Touch someone to pass it on. Least IT time after 90s wins! +5 🪙 per tag, +30 to win";
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ to jump · 🏃 to run · Swipe the right side to look · 😀 emotes'
+        : '⌨️ WASD / Arrows to move · Space to jump · Shift to run · Drag the mouse to look · 1–8 emotes · Esc to pause') + "<br>🏷️ Don't be IT! Touch someone to pass it on. Least IT time after 90s wins! +5 🪙 per tag, +30 to win";
       return;
     }
     const goal = mode === 'nds' ? 'Survive each disaster for 30 seconds! Hide inside, climb up high, stay out of the water. +20 🪙 per round!' : mode === 'lava' ? 'Climb the tower to the 🚁 before the lava gets you!'
       : 'Level ' + level + ': grab the coins, dodge the red lava, and reach the 🏆!' + (INTRO[level] ? '<br>🆕 ' + INTRO[level][1] : '');
     $('#oTip').innerHTML = (on
-      ? '🕹️ Left thumb to move · ⬆️ to jump · Swipe the right side to look · 😀 emotes'
-      : '⌨️ WASD / Arrows to move · Space to jump · Drag the mouse to look · Scroll to zoom · 1–8 emotes · Esc to pause') + '<br>' + goal + (mode === 'lava' ? '<br>🪜 Walk into a gray truss to climb it!' : '');
+      ? '🕹️ Left thumb to move · ⬆️ to jump · 🏃 to run · Swipe the right side to look · 😀 emotes'
+      : '⌨️ WASD / Arrows to move · Space to jump · Shift to run · Drag the mouse to look · Scroll to zoom · 1–8 emotes · Esc to pause') + '<br>' + goal + (mode === 'lava' ? '<br>🪜 Walk into a gray truss to climb it!' : '');
   }
   function checkRotate(){
     const show = running && touchUI && innerHeight > innerWidth && !rotDismissed;
@@ -4974,9 +5482,10 @@ const Obby = (() => {
       if (!running) return;
       if (e.target && e.target.closest && e.target.closest('input, textarea, select')) return;   // typing a pet name etc.
       if (mode === 'pets' && pt){
-        if (choosing){ if (e.code === 'Escape') petsClosePanels(); return; }
+        if (choosing){ if (e.code === 'Escape' || (e.code === 'KeyI' && $('#pIndexPanel').classList.contains('show'))) petsClosePanels(); return; }
         if (!e.repeat && !paused && (e.code === 'KeyE' || e.code === 'Enter')){ e.preventDefault(); petsAct(); return; }
         if (!e.repeat && !paused && e.code === 'KeyM'){ openPets(); return; }
+        if (!e.repeat && !paused && e.code === 'KeyI'){ openIndex(); return; }
       }
       if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
       if (e.code === 'Escape' || e.code === 'KeyP'){ if (!won && !over && !choosing) setPause(!paused); return; }
@@ -5034,6 +5543,12 @@ const Obby = (() => {
     $('#pAdoptOk').onclick = () => pt && adoptOk();
     $('#pAdoptBack').onclick = () => closePanel('#pAdoptPanel');
     $('#pPetsClose').onclick = () => closePanel('#pPetsPanel');
+    $('#pIdxBtn').onclick = () => pt && openIndex();
+    $('#pIdxBtn2').onclick = e => { e.currentTarget.blur(); if (!choosing && !paused) openIndex(); };
+    $('#pIndexClose').onclick = () => closePanel('#pIndexPanel');
+    $('#pReroll').onclick = () => pt && rerollPens();
+    $('#pRetNo').onclick = () => closePanel('#pReturnPanel');
+    $('#pRetYes').onclick = () => pt && doReturn();
     el.addEventListener('contextmenu', e => e.preventDefault());
     el.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(5, Math.min(30, cam.dist * (1 + e.deltaY * .001))); }, {passive: false});
     // touch: a joystick that appears under your left thumb, a big jump button, and camera swipes anywhere else
@@ -5050,6 +5565,8 @@ const Obby = (() => {
     jz.addEventListener('pointermove', e => { if (e.pointerId === jid) jmove(e); });
     const jend = e => { if (e && e.pointerId !== jid) return; jid = null; joy.x = joy.y = 0; knob.style.transform = ''; base.style.left = base.style.top = base.style.bottom = ''; base.classList.remove('act'); };
     jz.addEventListener('pointerup', jend); jz.addEventListener('pointercancel', jend);
+    const rb = $('#oRun');
+    rb.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); run.touch = !run.touch; rb.classList.toggle('on', run.touch); rb.setAttribute('aria-pressed', run.touch); });
     const jb = $('#oJump');
     jb.addEventListener('pointerdown', e => { e.preventDefault(); joy.jump = true; jb.classList.add('on'); });
     ['pointerup','pointercancel','pointerleave'].forEach(t => jb.addEventListener(t, () => { joy.jump = false; jb.classList.remove('on'); }));
@@ -5095,9 +5612,9 @@ const Obby = (() => {
     ['#oDisBox','#oRTBox','#oHpBox','#oSurvBox'].forEach(id => $(id).style.display = mode === 'nds' ? '' : 'none'); $('#oTime').parentElement.style.display = mode === 'nds' || mode === 'tag' || mode === 'pets' ? 'none' : '';
     $('#oBlkBox').style.display = mode === 'build' ? '' : 'none'; ['#oItBox','#oTagTBox','#oMyItBox'].forEach(id => $(id).style.display = mode === 'tag' ? '' : 'none');
     $('#obby').classList.toggle('bmode', mode === 'build'); $('#obby').classList.toggle('pmode', mode === 'pets'); $('#obby').classList.remove('pdrive'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  ptr.has = false;
-    ['#pNamePanel','#pAdoptPanel','#pPetsPanel'].forEach(id => $(id).classList.remove('show')); pt && (pt.gas = pt.brake = 0); $('#oPause').textContent = '⏸️';
+    ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel'].forEach(id => $(id).classList.remove('show')); pt && (pt.gas = pt.brake = 0); $('#oPause').textContent = '⏸️';
     $('#oMute').textContent = muted ? '🔇' : '🔊';
-    emote = null; P.airT = 0; P.jumped = false; P.climbing = false;
+    emote = null; P.airT = 0; P.jumped = false; P.climbing = false; Object.assign(run, {pad: false, touch: false, on: false, stam: STAM_MAX, tired: false, shown: -1}); $('#oRun').classList.remove('on'); $('#oStam').style.display = mode === 'tag' ? '' : 'none';
     setTouchUI(!pad.on && (matchMedia('(pointer: coarse)').matches || (navigator.maxTouchPoints > 0 && !matchMedia('(hover: hover)').matches)));   // a controller in use keeps the screen clear
     buildEmoteMenu(); $('#oEmos').classList.remove('show');
     $('#oTip').classList.toggle('hide', choosing); tipTimer = mode === 'obby' && INTRO[level] ? 11 : 8; $('#oSkip').classList.remove('show');
@@ -5116,18 +5633,28 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); ['#pNamePanel','#pAdoptPanel','#pPetsPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
 
   // debug / test hook
   window.obbyDebug = {
-    pets: () => pt && {flow: pt.s.flow, pend: pt.s.pend, tut: pt.s.tut, tsub: pt.tsub, a: pt.s.a, pets: pt.s.pets.map(p => Object.assign({}, p, {stage: stageOf(p.xp)})), drive: pt.drive,
+    pets: () => pt && {plot: pt.plot, owners: pt.owners, signs: pt.plots.map(q => q.name), places: {home: PLACES.home, car0: PLACES.car0, bowl: PLACES.bowl}, flow: pt.s.flow, pend: pt.s.pend, tut: pt.s.tut, tsub: pt.tsub, a: pt.s.a, pets: pt.s.pets.map(p => Object.assign({}, p, {stage: stageOf(p.xp)})), drive: pt.drive,
       car: {x: pt.car.x, z: pt.car.z, yaw: pt.car.yaw, v: pt.car.v}, pet: pt.pet && {x: pt.pet.x, y: pt.pet.y, z: pt.pet.z, act: pt.pet.act, stage: pt.pet.stage, scale: pt.pet.m.inner.scale.x},
       door: pt.doorOpen, leash: pt.leashOn, walk: pt.walk && Object.assign({}, pt.walk), ball: pt.ballSt && pt.ballSt.st, prompt: pt.prompt && pt.prompt.t, promptK: pt.prompt && pt.prompt.k,
-      goal: pt.goal && {t: pt.goal.t, at: pt.goal.at}, earned: pt.coinsEarned, choosing, coins, inp: driveInput(), pedals: [pt.gas, pt.brake]},
+      goal: pt.goal && {t: pt.goal.t, at: pt.goal.at}, earned: pt.coinsEarned, choosing, coins, inp: driveInput(), pedals: [pt.gas, pt.brake],
+      roll: pt.s.roll && JSON.parse(JSON.stringify(pt.s.roll)), dex: JSON.parse(JSON.stringify(pt.s.dex)), pens: pt.pens.map(p => ({k: p.k, c: p.c, taken: !!p.taken, rar: p.k && rarOf(p.k).n, fx: !!(p.m && p.m.fx), beam: !!p.beam})), v: pt.s.v},
+    petsRoll(kinds, cols){ pt.s.roll = newRoll(kinds); if (cols) pt.s.roll.c = cols.slice(); setPens(); return pt.s.roll.k; },
+    petsRollOdds(n = 20000){ const c = [0, 0, 0, 0, 0]; for (let i = 0; i < n; i++) rollPets().forEach(k => c[PET_KINDS[k].r]++); return c.map(x => x / (n * 3)); },
+    petsKinds: () => PET_ORDER.map(k => ({k, r: PET_KINDS[k].r, name: PET_KINDS[k].name})),
+    petsIndex: () => openIndex(),
+    petsGallery(st = 3, x0 = -20, z0 = -20, gap = 2.6){ (pt.gal || []).forEach(m => scene.remove(m.g)); pt.gal = PET_ORDER.map((k, i) => { const m = buildPet(k, i % 3, st); m.g.position.set(x0 + (i % 9) * gap, 0, z0 + Math.floor(i / 9) * gap * 1.6); m.g.rotation.y = Math.PI; scene.add(m.g); return m; });
+      if (!pt.galHook){ pt.galHook = true; const f = animatePets; animatePets = dt => { f(dt); (pt.gal || []).forEach((m, i) => animPet(m, i % 4 === 1 ? 1 : i % 4 === 2 ? 4 : 0, i % 4 === 1 ? 3 : 0, dt, worldT)); }; } return pt.gal.length; },
     petsAct: () => petsAct(),
+    run: () => ({on: run.on, stam: +run.stam.toFixed(2), tired: run.tired, pad: run.pad, touch: run.touch, v: +Math.hypot(P.vx, P.vz).toFixed(2), fov: +camera.fov.toFixed(1), bots: tg ? tg.bots.map(b => !!b.run) : []}),
+    petsReturn(i, yes){ if (!pt) return null; openReturn(); if (i == null) return; askReturn(i); if (yes) doReturn(); },
+    petsBye: () => pt && pt.bye && {n: pt.bye.n, t: pt.bye.t},
     elevTest(dts = [1/120, 1/60, 1/30, .05]){
       const out = [], ys = movers.filter(m => m.axis === 'y'), sv = {ex: ext.x, ez: ext.z};
       for (const k in keys) keys[k] = false; joy.x = joy.y = 0; pad.x = pad.y = 0; pad.jump = joy.jump = false;
@@ -5216,7 +5743,7 @@ const Obby = (() => {
     bwPtr(x, y){ ptr.x = x; ptr.y = y; ptr.has = true; },
     tag: () => tg && {phase: tg.phase, t: tg.t, it: tg.it, freeze: tg.freeze, you: {...tg.you}, earned: tg.earned, bots: tg.bots.map(B => ({name: B.name, x: +B.x.toFixed(2), y: +B.y.toFixed(2), z: +B.z.toFixed(2), it: B.itTime, tags: B.tags}))},
     mp: () => ({on: mp.on, host: mp.host, code: mp.code, me: mp.me, status: mp.status, hmode: mp.hmode, count: mp.on ? mpCount() : 0, players: [...mp.players.entries()].map(([u, p]) => [u, p.name]),
-      ents: [...mp.ents.values()].map(E => ({uid: E.uid, m: E.m, x: +E.x.toFixed(2), y: +E.y.toFixed(2), z: +E.z.toFixed(2), e: E.e, pack: E.pack, av: (mpLook(E.uid) || {}).av, vis: !!(E.model && E.model.g.visible && E.scene === scene)})),
+      ents: [...mp.ents.values()].map(E => ({uid: E.uid, m: E.m, v: +(E.v || 0).toFixed(2), x: +E.x.toFixed(2), y: +E.y.toFixed(2), z: +E.z.toFixed(2), e: E.e, pack: E.pack, av: (mpLook(E.uid) || {}).av, vis: !!(E.model && E.model.g.visible && E.scene === scene), pet: E.pet && {k: E.pet.k, n: E.pet.n, x: E.pet.x, z: E.pet.z, vis: !!(E.petM && E.petM.m.g.visible), rar: rarOf(E.pet.k).n}, car: E.car && {x: E.car[0], z: E.car[1], vis: !!(E.carM && E.carM.g.visible)}})),
       tag: tg && {remote: tg.remote, itU: tg.itU, it: tg.it, inRound: tg.inRound, humans: tg.bots.filter(B => B.human).map(B => ({uid: B.uid, away: B.away, it: B.itTime, tags: B.tags}))}}),
     mpHost: () => mpHost(), mpJoin: c => mpJoin(c), mpLeave: () => mpLeave(),
     tagUid: i => tagUid(i), mpRaw: m => mpSend(m),
@@ -5328,7 +5855,7 @@ const Obby = (() => {
   }
   function closeOf(c){
     const id = c.root.id;
-    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', pNamePanel: '#pNameX', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose'};
+    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', pNamePanel: '#pNameX', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
     if (map[id]) return document.querySelector(map[id]);
     return null;
   }
