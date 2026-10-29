@@ -403,10 +403,13 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .padsens{display:flex;align-items:center;gap:10px;font-weight:800;margin:10px 0 8px;background:var(--bg2);border:3px solid var(--line);border-radius:14px;padding:8px 12px}
 .padsens span{flex:none}.padsens input{flex:1;accent-color:var(--green);margin:0;padding:0;border:0;width:auto;min-width:0}.padsens b{flex:none;width:44px;text-align:right}
 .padmap{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pmap{display:none;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;text-align:left}.pmap.show{display:grid}
+#oPausePanel .mbox{max-height:92vh;overflow:auto;max-width:600px}
+#oPausePanel .invset .invrow{margin-bottom:6px}
 @media (max-width:520px){.padmap{grid-template-columns:1fr}}
-.padmap>span{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13.5px;background:var(--bg2);border-radius:12px;padding:6px 9px;line-height:1.25}
-.padmap i{flex:none;font-style:normal;font-weight:900;font-size:12px;min-width:30px;height:30px;padding:0 7px;border-radius:15px;display:grid;place-items:center;background:#3b4256;color:#fff}
-.padmap i.ba{background:#2ec27e}.padmap i.bb{background:#ff4d5e}.padmap i.bx{background:#3a86ff}.padmap i.by{background:#f2b705;color:#1d2340}
+.padmap>span,.pmap>span{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13.5px;background:var(--bg2);border-radius:12px;padding:6px 9px;line-height:1.25}
+.padmap i,.pmap i{flex:none;font-style:normal;font-weight:900;font-size:12px;min-width:30px;height:30px;padding:0 7px;border-radius:15px;display:grid;place-items:center;background:#3b4256;color:#fff}
+.padmap i.ba,.pmap i.ba{background:#2ec27e}.padmap i.bb,.pmap i.bb{background:#ff4d5e}.padmap i.bx,.pmap i.bx{background:#3a86ff}.padmap i.by,.pmap i.by{background:#f2b705;color:#1d2340}
 .ocross{display:none;position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;pointer-events:none;z-index:3}
 .ocross:before,.ocross:after{content:'';position:absolute;background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.35);border-radius:2px}
 .ocross:before{left:11.5px;top:0;width:3px;height:26px}.ocross:after{top:11.5px;left:0;height:3px;width:26px}
@@ -682,6 +685,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
       <label class="invrow"><input type="checkbox" class="invX" id="setInvX"><span>Invert look left/right<small>Flips which way the camera turns</small></span></label>
     </div>
     <label class="padsens"><span>🖱️ Mouse look speed</span><input type="range" id="mouseSens" min="0.3" max="3" step="0.1" value="1" aria-label="Mouse look speed"><b id="mouseSensV">1.0×</b></label>
+    <label class="invrow"><input type="checkbox" id="setThrow" checked><span>🎾 Turn camera when throwing<small>First person: the camera turns with your throw</small></span></label>
     <div class="padsec" id="padSec">
       <h3>🎮 Controller</h3>
       <div class="padst" id="padStatus">No controller yet.</div>
@@ -730,6 +734,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     </div>
     <div class="obtns">
       <button id="oMute" title="Sound on/off">🔊</button>
+      <button id="oGear" title="Settings (Esc)" aria-label="Settings">⚙️</button>
       <button id="oPause" title="Pause (Esc)">⏸️</button>
       <button id="oExit" title="Back to Rublox">🚪 Exit</button>
     </div>
@@ -824,11 +829,19 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <button class="big blue" id="oHome2" style="margin-left:6px">🏠 Home</button>
   </div></div>
   <div class="opanel" id="oPausePanel"><div class="mbox">
-    <span class="emoji">⏸️</span><h2>Paused</h2>
-    <div class="stats">Take a break! 😊</div>
+    <span class="emoji">⏸️</span><h2 id="oPauseH">Paused</h2>
+    <div class="stats" id="oPauseSub">Take a break! 😊</div>
     <div class="invset">
       <label class="invrow"><input type="checkbox" class="invY" id="pInvY"><span>Invert look up/down<small>Flips which way the camera tilts</small></span></label>
       <label class="invrow"><input type="checkbox" class="invX" id="pInvX"><span>Invert look left/right<small>Flips which way the camera turns</small></span></label>
+      <label class="invrow"><input type="checkbox" id="pFP"><span>👁️ First person<small>Also: V · R3 twice · scroll all the way in</small></span></label>
+      <label class="invrow"><input type="checkbox" id="pThrow"><span>🎾 Turn camera when throwing<small>First person: the camera turns with your throw</small></span></label>
+      <label class="invrow"><input type="checkbox" id="pSnd"><span>🔊 Sound<small>Game sounds on or off</small></span></label>
+      <label class="padsens"><span>🎯 Stick look speed</span><input type="range" id="pPadSens" min="0.3" max="3" step="0.1" value="1" aria-label="Controller look speed"><b id="pPadSensV">1.0×</b></label>
+      <label class="padsens"><span>🖱️ Mouse look speed</span><input type="range" id="pMouseSens" min="0.3" max="3" step="0.1" value="1" aria-label="Mouse look speed"><b id="pMouseSensV">1.0×</b></label>
+      <div class="padst" id="pPadStatus">🎮 No controller yet</div>
+      <button class="big gray" id="pMapBtn" style="margin-top:8px;font-size:16px;padding:8px 14px">🎮 Button map</button>
+      <div class="pmap" id="pMap"></div>
     </div>
     <button class="big green" id="oResume">▶ Keep playing</button>
     <button class="big gray" id="oExit2" style="margin-left:6px">🏠 Home</button>
@@ -862,7 +875,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.10.29-4';
+const BUILD = '2026.10.29-5';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -1954,7 +1967,8 @@ const Obby = (() => {
   const P = {x:0, y:0, z:0, vx:0, vy:0, vz:0, ground:null, onGround:false, coyote:0, face:0, walk:0};
   const cam = {yaw:Math.PI, pitch:0.42, dist:13};
   // first person (remembered per device); while driving in Adopt a Pet the camera goes back to third person on its own
-  const fp = {on: !!load('rubloxFP', false), r3: -1e9, wt: 0, unlockT: 0, shown: null, req: false, noLock: false};
+  const fp = {on: !!load('rubloxFP', false), r3: -1e9, wt: 0, unlockT: 0, shown: null, req: false, noLock: false, throwTurn: load('rubloxThrowTurn', true) !== false, turn: null};
+  let menuOpen = false;   // multiplayer menu: open over a game that keeps running
   function fpOn(){ return fp.on && running && !(pt && pt.drive); }
   function setFP(on, quiet){
     on = !!on; if (fp.on === on) return; fp.on = on; fp.wt = performance.now(); save('rubloxFP', on);
@@ -3829,7 +3843,7 @@ const Obby = (() => {
     const sp = Math.hypot(P.vx, P.vz), s = P.climbing ? 3 : !P.onGround && P.airT > .08 ? 2 : sp > .8 ? 1 : 0, r = v => Math.round(v * 100) / 100;
     if (pt){ const q = pt.pet, C = pt.car, qs = q ? Math.hypot(q.vx, q.vz) : 0;
       return [r(P.x), r(P.y), r(P.z), r(pt.drive ? C.yaw : P.face), pt.drive ? 4 : s, pt.drive ? 0 : r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0,
-        [r(C.x), r(C.z), r(C.yaw), pt.drive ? 1 : 0, r(C.v)], q ? [q.d.k, q.d.c, q.stage, r(q.x), r(q.y), r(q.z), r(q.face), {eat: 2, sleep: 3, happy: 4, car: 5}[q.act] || (qs > .6 ? 1 : 0), q.d.n, r(qs)] : 0]; }
+        [r(C.x), r(C.z), r(C.yaw), pt.drive ? 1 : 0, r(C.v)], q ? [q.d.k, q.d.c, q.stage, r(q.x), r(q.y), r(q.z), r(q.face), {eat: 2, sleep: 3, happy: 4, car: 5}[q.act] || (qs > .6 ? 1 : 0), q.d.n, r(qs), pt.leashOn ? 1 : 0] : 0]; }
     return [r(P.x), r(P.y), r(P.z), r(P.face), s, r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0];
   }
   function mpRoster(){ return [{uid: 'H', ...myLook(), pl: 1}, ...[...mp.guests.values()].filter(g => g.ready).map(g => ({uid: g.uid, name: g.name, av: g.av, pl: g.plot || 0}))]; }
@@ -3877,13 +3891,14 @@ const Obby = (() => {
     E.e = e;
     const cr = st[8], pr = st[9], num = v => { v = +v; return isFinite(v) ? Math.max(-1e4, Math.min(1e4, v)) : 0; };
     E.car = Array.isArray(cr) && cr.length >= 4 ? [num(cr[0]), num(cr[1]), num(cr[2]), cr[3] ? 1 : 0, num(cr[4])] : null;
-    E.pet = Array.isArray(pr) && typeof pr[0] === 'string' && own(PET_KINDS, pr[0]) ? {k: pr[0], c: Math.max(0, Math.min(2, pr[1] | 0)), st: Math.max(0, Math.min(3, pr[2] | 0)), x: num(pr[3]), y: num(pr[4]), z: num(pr[5]), f: num(pr[6]), a: Math.max(0, Math.min(5, pr[7] | 0)), n: (petNameClean(pr[8]) && !petNameBad(pr[8]) ? petNameClean(pr[8]) : 'Pet'), sp: num(pr[9])} : null;
+    E.pet = Array.isArray(pr) && typeof pr[0] === 'string' && own(PET_KINDS, pr[0]) ? {k: pr[0], c: Math.max(0, Math.min(2, pr[1] | 0)), st: Math.max(0, Math.min(3, pr[2] | 0)), x: num(pr[3]), y: num(pr[4]), z: num(pr[5]), f: num(pr[6]), a: Math.max(0, Math.min(5, pr[7] | 0)), n: (petNameClean(pr[8]) && !petNameBad(pr[8]) ? petNameClean(pr[8]) : 'Pet'), sp: num(pr[9]), l: pr[10] === 1} : null;
     if (E.fresh){ E.x = E.tx; E.y = E.ty; E.z = E.tz; E.face = E.tf; E.fresh = false; }
   }
   function mpPetsEnt(E, dt, on){
     on = on && mode === 'pets' && E.m === 'pets';
     if (E.carM) E.carM.g.visible = on && !!E.car;
     if (E.petM) E.petM.m.g.visible = on && !!E.pet;
+    if (E.leashL) E.leashL.visible = false;   // shown again below while they're walking their pet
     if (!on) return;
     const k = Math.min(1, dt * 12), wrap = d => Math.atan2(Math.sin(d), Math.cos(d));
     if (E.car){ const c = E.car;
@@ -3897,12 +3912,16 @@ const Obby = (() => {
         tag.scale.multiplyScalar(.5); tag.position.y = m.top + .45; m.g.add(tag); scene.add(m.g); E.petM = {m, key, x: p.x, y: p.y, z: p.z, f: p.f}; }
       const Q = E.petM; if (Math.hypot(p.x - Q.x, p.z - Q.z) > 8){ Q.x = p.x; Q.z = p.z; }
       Q.x += (p.x - Q.x) * k; Q.y += (p.y - Q.y) * k; Q.z += (p.z - Q.z) * k; Q.f += wrap(p.f - Q.f) * k;
-      Q.m.g.position.set(Q.x, Q.y, Q.z); Q.m.g.rotation.y = Q.f; animPet(Q.m, p.a, p.sp, dt, worldT); }
+      Q.m.g.position.set(Q.x, Q.y, Q.z); Q.m.g.rotation.y = Q.f; animPet(Q.m, p.a, p.sp, dt, worldT);
+      if (p.l && E.s !== 4){   // their leash: from their hand to their pet's collar (same shape as your own)
+        if (!E.leashL){ E.leashL = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), new THREE.LineBasicMaterial({color: '#ff4d5e'})); E.leashL.frustumCulled = false; scene.add(E.leashL); }
+        const a = E.leashL.geometry.attributes.position, h = [Math.sin(E.face), Math.cos(E.face)], b = Q.m.base || 1;
+        a.setXYZ(0, E.x + h[1] * .7 + h[0] * .2, E.y + 1.15, E.z - h[0] * .7 + h[1] * .2); a.setXYZ(1, Q.x + Math.sin(Q.f) * .5 * b, Q.y + .95 * b, Q.z + Math.cos(Q.f) * .5 * b); a.needsUpdate = true; E.leashL.visible = true; } }
   }
-  function mpRemoveEnt(uid){ const E = mp.ents.get(uid); if (!E) return; if (E.model && E.scene){ E.scene.remove(E.model.g); E.scene.remove(E.sh); if (E.carM) E.scene.remove(E.carM.g); if (E.petM) E.scene.remove(E.petM.m.g); } mp.ents.delete(uid); }
+  function mpRemoveEnt(uid){ const E = mp.ents.get(uid); if (!E) return; if (E.model && E.scene){ E.scene.remove(E.model.g); E.scene.remove(E.sh); if (E.carM) E.scene.remove(E.carM.g); if (E.petM) E.scene.remove(E.petM.m.g); if (E.leashL) E.scene.remove(E.leashL); } mp.ents.delete(uid); }
   function mpBuildEnt(E){
     const L = mpLook(E.uid); if (!L) return false;
-    E.model = buildPlayer(L.av); E.pack = L.av.anim || 'default'; scene.add(E.model.g); E.carM = E.petM = null;
+    E.model = buildPlayer(L.av); E.pack = L.av.anim || 'default'; scene.add(E.model.g); E.carM = E.petM = E.leashL = null;
     const s = label(L.name, L.bot ? 'rgba(29,35,64,.75)' : 'rgba(46,194,126,.92)'); s.position.y = 3.75; E.model.g.add(s);
     E.sh = new THREE.Mesh(new THREE.CircleGeometry(.6, 20), new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: .25, depthWrite: false})); E.sh.rotation.x = -Math.PI / 2; scene.add(E.sh);
     E.scene = scene; E.fresh = true; return true;
@@ -4960,6 +4979,15 @@ const Obby = (() => {
     let dx = P.x - PLACES.toy[0], dz = P.z - (PLACES.toy[1] - 1.2), m = Math.hypot(dx, dz) || 1; dx /= m; dz /= m;
     const f = [dx, dz]; P.face = Math.atan2(dx, dz);
     pt.ballSt = {x: P.x + f[0] * .6, y: 1.8, z: P.z + f[1] * .6, vx: f[0] * 7, vy: 6, vz: f[1] * 7, st: 'fly', t: 0};
+    if (fpOn()){   // first person: your body follows the camera, so either turn the camera with the throw (setting on) or throw where you look
+      let tx = f[0], tz = f[1];
+      if (!fp.throwTurn){ tx = -Math.sin(cam.yaw); tz = -Math.cos(cam.yaw); }
+      else { let to = Math.atan2(-tx, -tz); to = cam.yaw + Math.atan2(Math.sin(to - cam.yaw), Math.cos(to - cam.yaw)); fp.turn = {from: cam.yaw, to, t: 0, d: .42, p0: cam.pitch, p1: Math.min(cam.pitch, .3)}; }
+      P.face = Math.atan2(tx, tz);
+      const up = fp.throwTurn ? .1 : Math.max(-.4, Math.min(.6, -cam.pitch));
+      Object.assign(pt.ballSt, {x: P.x + tx * 1.0, y: P.y + 2.1, z: P.z + tz * 1.0, vx: tx * 7, vy: 4.5 + up * 6, vz: tz * 7});
+      pt.ball.position.set(pt.ballSt.x, pt.ballSt.y, pt.ballSt.z);
+    }
     pt.ball.visible = true; pt.pet.act = 'wait'; SND.jump(); banner('🎾 Fetch, ' + pt.pet.d.n + '!');
   }
   function petIt(){
@@ -5296,6 +5324,8 @@ const Obby = (() => {
     checkpoints.forEach(cp => cp.flag.rotation.y = Math.sin(worldT * 4 + cp.idx) * .25);
     // player model
     model.g.position.set(P.x, P.y, P.z);
+    if (fp.turn){ const T = fp.turn; T.t += dt; const u = Math.min(1, T.t / T.d), e = u * u * (3 - 2 * u);   // gentle eased turn toward a first-person throw
+      cam.yaw = T.from + (T.to - T.from) * e; cam.pitch = T.p0 + (T.p1 - T.p0) * e; if (u >= 1 || !fpOn()) fp.turn = null; }
     const fpv = fpOn(); if (fpv) P.face = cam.yaw + Math.PI;   // first person: your body turns with your view; your own head/hat/hair are hidden so they don't block it
     if (model.head) model.head.visible = !fpv; model.g.visible = !fpv;   // your own body would block the view when you look down (others still see all of you)
     if (pt && pt.pet && pt.pet.tag) pt.pet.tag.visible = !(fpv && Math.hypot(pt.pet.x - P.x, pt.pet.z - P.z) < 4.5);   // your pet's name bubble would fill the screen at your feet
@@ -5357,7 +5387,7 @@ const Obby = (() => {
     if (!running) return;
     if (s.any && !pad.on){ pad.on = true; $('#obby').classList.add('padui'); setTouchUI(false); $('#oRot').classList.remove('show'); }
     const live = !paused && !won && !over && !choosing, jp = s.jp;
-    if (jp[9]){ if (!won && !over && !choosing) setPause(!paused); return; }
+    if (jp[9]){ if (!won && !over && !choosing) setPause(!(paused || menuOpen)); return; }
     if (!live){ pad.x = pad.y = 0; pad.jump = false; return; }
     const dx = (s.b[15] ? 1 : 0) - (s.b[14] ? 1 : 0), dy = (s.b[12] ? 1 : 0) - (s.b[13] ? 1 : 0);
     pad.x = Math.max(-1, Math.min(1, s.lx + dx)); pad.y = Math.max(-1, Math.min(1, -s.ly + dy)); pad.jump = s.b[0];
@@ -5486,6 +5516,7 @@ const Obby = (() => {
     if (!running) return;
     raf = requestAnimationFrame(loop);
     const dt = Math.min(.05, Math.max(0, (t - last) / 1000)); last = t;
+    if (menuOpen){ for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false; pad.x = pad.y = 0; pad.jump = false; }
     if (!paused && !won && !over && !choosing){
       time += dt; for (let i = 0; i < 3 && !over; i++) step(dt / 3);
       if (nds) ndsUpdate(dt);
@@ -5495,7 +5526,7 @@ const Obby = (() => {
       if (lava && time > LAVA_GRACE && !over && !won){ lava.y += DIFFS[diff].speed * (1 + (time - LAVA_GRACE) / 150) * dt; if (time - dt <= LAVA_GRACE + 0.001 && time > LAVA_GRACE) banner('🌋 The lava is rising! Climb!'); }
       if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0) $('#oTip').classList.add('hide'); }
     }
-    if (document.pointerLockElement && (!fpOn() || paused || choosing || won || over)) document.exitPointerLock();
+    if (document.pointerLockElement && (!fpOn() || paused || menuOpen || choosing || won || over)) document.exitPointerLock();
     animate(paused ? 0 : dt); updateCamera(); renderer.render(scene, camera); hud();
   }
   function resize(){
@@ -5509,6 +5540,7 @@ const Obby = (() => {
     addEventListener('keydown', e => {
       if (!running) return;
       if (e.target && e.target.closest && e.target.closest('input, textarea, select')) return;   // typing a pet name etc.
+      if (menuOpen && e.code !== 'Escape' && e.code !== 'KeyP') return;
       if (mode === 'pets' && pt){
         if (choosing){ if (e.code === 'Escape' || (e.code === 'KeyI' && $('#pIndexPanel').classList.contains('show'))) petsClosePanels(); return; }
         if (!e.repeat && !paused && (e.code === 'KeyE' || e.code === 'Enter')){ e.preventDefault(); petsAct(); return; }
@@ -5517,7 +5549,7 @@ const Obby = (() => {
       }
       if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
       if (e.code === 'KeyV' && !e.repeat && !paused && !won && !over){ setFP(!fp.on); return; }
-      if (e.code === 'Escape' || e.code === 'KeyP'){ if (e.code === 'Escape' && performance.now() - fp.unlockT < 400) return; if (!won && !over && !choosing) setPause(!paused); return; }
+      if (e.code === 'Escape' || e.code === 'KeyP'){ if (e.code === 'Escape' && performance.now() - fp.unlockT < 400) return; if (!won && !over && !choosing) setPause(!(paused || menuOpen)); return; }
       const em = Object.keys(EMOTES).find(k => 'Digit' + EMOTES[k].key === e.code || 'Numpad' + EMOTES[k].key === e.code);
       if (em && !e.repeat){ playEmote(em); return; }
       if (mode === 'build' && bw && !e.repeat && !paused){
@@ -5617,8 +5649,17 @@ const Obby = (() => {
     $('#obby').addEventListener('touchmove', e => { if (running && !e.target.closest('.mbox')) e.preventDefault(); }, {passive: false});
     $('#obby').addEventListener('dblclick', e => e.preventDefault());
     addEventListener('resize', checkRotate);
-    $('#oPause').onclick = () => { if (!won && !over && !choosing) setPause(!paused); };
+    $('#oPause').onclick = () => { if (!won && !over && !choosing) setPause(!(paused || menuOpen)); };
     $('#oResume').onclick = () => setPause(false);
+    $('#oGear').onclick = () => { if (!won && !over && !choosing) setPause(!(paused || menuOpen)); };
+    $('#pFP').onchange = e => setFP(e.target.checked, true);
+    $('#pSnd').onchange = e => { if (muted === e.target.checked) $('#oMute').click(); };
+    const setThrow = v => { fp.throwTurn = !!v; save('rubloxThrowTurn', fp.throwTurn); $('#pThrow').checked = $('#setThrow').checked = fp.throwTurn; };
+    $('#pThrow').onchange = e => setThrow(e.target.checked); $('#setThrow').onchange = e => setThrow(e.target.checked); $('#setThrow').checked = fp.throwTurn;
+    $('#pPadSens').oninput = e => { const r = $('#padSens'); r.value = e.target.value; r.dispatchEvent(new Event('input')); menuVals(); };
+    $('#pMouseSens').oninput = e => { const r = $('#mouseSens'); r.value = e.target.value; r.dispatchEvent(new Event('input')); menuVals(); };
+    $('#pMapBtn').onclick = () => { const m = $('#pMap'); m.classList.toggle('show'); $('#pMapBtn').textContent = m.classList.contains('show') ? '🎮 Hide button map' : '🎮 Button map'; };
+    setInterval(() => { if ($('#oPausePanel').classList.contains('show')) menuPad(); }, 1000);
     ['#oExit','#oExit2','#oExit3','#oHome','#oHome2'].forEach(id => $(id).onclick = stop);
     $('#oAgain').onclick = $('#oRetry').onclick = () => { stop(); start(mode, diff); };
     $('#oNext').onclick = () => { if (mpGuest() || level >= OBBY_N) return; const n = level + 1; stop(); start('obby', n); };
@@ -5627,9 +5668,20 @@ const Obby = (() => {
     document.querySelectorAll('#oDiff [data-diff]').forEach(b => b.onclick = () => begin(b.dataset.diff));
     $('#oMute').onclick = () => { muted = !muted; save('rubloxMute', muted); $('#oMute').textContent = muted ? '🔇' : '🔊'; };
   }
+  function menuVals(){ $('#pPadSensV').textContent = (+$('#pPadSens').value).toFixed(1) + '×'; $('#pMouseSensV').textContent = (+$('#pMouseSens').value).toFixed(1) + '×'; }
+  function menuPad(){ const g = window.GP, st = $('#pPadStatus'), on = !!(g && g.connected); st.classList.toggle('on', on);
+    st.innerHTML = on ? '🎮 ✅ Connected: <b>' + String((g.pad && g.pad.id) || 'Controller').replace(/[<>&]/g, '').replace(/\s*\(.*$/, '').slice(0, 40) + '</b>' : '🎮 No controller yet: press any button on it while the game is open.'; }
+  function syncMenu(){
+    $('#oPauseH').textContent = mp.on ? '⚙️ Menu' : 'Paused'; $('#oPauseSub').textContent = mp.on ? '🌐 The game keeps going for everyone else' : 'Take a break! 😊';
+    $('#pFP').checked = fp.on; $('#pSnd').checked = !muted; $('#pThrow').checked = fp.throwTurn;
+    $('#pPadSens').value = window.rubloxPadSens || 1; $('#pMouseSens').value = window.rubloxMouseSens || 1; menuVals(); menuPad();
+    const m = document.querySelector('.padmap'); $('#pMap').innerHTML = m ? m.innerHTML : '';
+  }
   function setPause(p){
+    if (mp.on){   // multiplayer: the menu opens but the world (and the host's simulation) keeps running; only your own controls stop
+      menuOpen = !!p; paused = false; $('#oPausePanel').classList.toggle('show', menuOpen); $('#oPause').textContent = '⏸️'; for (const k in keys) keys[k] = false; if (menuOpen) syncMenu(); return; }
     if (p && mp.on && mp.host && mode === 'tag' && tg && tg.phase !== 'end'){ banner('⏸️ No pausing while your family is playing tag!'); return; }
-    paused = p; $('#oPausePanel').classList.toggle('show', p); $('#oPause').textContent = p ? '▶️' : '⏸️'; for (const k in keys) keys[k] = false; }
+    paused = p; menuOpen = false; $('#oPausePanel').classList.toggle('show', p); if (p) syncMenu(); $('#oPause').textContent = p ? '▶️' : '⏸️'; for (const k in keys) keys[k] = false; }
 
   /* ---------- start / stop ---------- */
   function start(m = 'obby', d = null){
@@ -5647,7 +5699,7 @@ const Obby = (() => {
     time = 0; worldT = 0; deaths = 0; runCoins = 0; cpIndex = 0; won = false; paused = false; over = false; maxY = 0;
     choosing = mode === 'lava' && !diff;
     if (mode === 'obby' || mode === 'lava') lightCp(checkpoints[0]); respawn(); big(''); cam.pitch = .42; cam.dist = 13;
-    ['#oWin','#oLose','#oPausePanel','#oSlots','#oTagEnd'].forEach(id => $(id).classList.remove('show')); $('#oDiff').classList.toggle('show', choosing); $('#oWarn').classList.remove('on');
+    menuOpen = false; fp.turn = null; ['#oWin','#oLose','#oPausePanel','#oSlots','#oTagEnd'].forEach(id => $(id).classList.remove('show')); $('#oDiff').classList.toggle('show', choosing); $('#oWarn').classList.remove('on');
     $('#oStageBox').style.display = mode === 'obby' ? '' : 'none'; $('#oDeathBox').style.display = mode === 'obby' ? '' : 'none';
     $('#oHeightBox').style.display = $('#oLavaBox').style.display = mode === 'lava' ? '' : 'none';
     ['#oDisBox','#oRTBox','#oHpBox','#oSurvBox'].forEach(id => $(id).style.display = mode === 'nds' ? '' : 'none'); $('#oTime').parentElement.style.display = mode === 'nds' || mode === 'tag' || mode === 'pets' ? 'none' : '';
@@ -5670,7 +5722,7 @@ const Obby = (() => {
     mpOnStart();
   }
   function stop(){
-    running = false; cancelAnimationFrame(raf); raf = 0; if (document.pointerLockElement) document.exitPointerLock(); fp.shown = null; $('#obby').classList.remove('fpv'); if (model){ model.g.visible = true; if (model.head) model.head.visible = true; }
+    running = false; cancelAnimationFrame(raf); raf = 0; if (document.pointerLockElement) document.exitPointerLock(); fp.shown = null; menuOpen = false; $('#obby').classList.remove('fpv'); if (model){ model.g.visible = true; if (model.head) model.head.visible = true; }
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
@@ -5693,8 +5745,10 @@ const Obby = (() => {
     petsGallery(st = 3, x0 = -20, z0 = -20, gap = 2.6){ (pt.gal || []).forEach(m => scene.remove(m.g)); pt.gal = PET_ORDER.map((k, i) => { const m = buildPet(k, i % 3, st); m.g.position.set(x0 + (i % 9) * gap, 0, z0 + Math.floor(i / 9) * gap * 1.6); m.g.rotation.y = Math.PI; scene.add(m.g); return m; });
       if (!pt.galHook){ pt.galHook = true; const f = animatePets; animatePets = dt => { f(dt); (pt.gal || []).forEach((m, i) => animPet(m, i % 4 === 1 ? 1 : i % 4 === 2 ? 4 : 0, i % 4 === 1 ? 3 : 0, dt, worldT)); }; } return pt.gal.length; },
     petsAct: () => petsAct(),
+    throwBall: () => throwBall(), ballPos: () => pt && pt.ballSt && {x: pt.ball.position.x, y: pt.ball.position.y, z: pt.ball.position.z, vis: pt.ball.visible, st: pt.ballSt.st, ndc: (v => [+v.x.toFixed(3), +v.y.toFixed(3), +v.z.toFixed(4)])(pt.ball.position.clone().project(camera))},
     fp: () => ({on: fp.on, active: fpOn(), pitch: +cam.pitch.toFixed(3), yaw: +cam.yaw.toFixed(3), dist: +cam.dist.toFixed(2), eye: +(camera.position.y - P.y).toFixed(2), head: !!(model && model.head && model.head.visible), body: !!(model && model.g.visible), locked: document.pointerLockElement === renderer.domElement, cls: $('#obby').classList.contains('fpv'), face: +P.face.toFixed(3), tag: pt && pt.pet && pt.pet.tag ? pt.pet.tag.visible : null}),
     setFP: on => setFP(on, true),
+    menu: () => ({open: $('#oPausePanel').classList.contains('show'), menuOpen, paused, turning: !!fp.turn, throwTurn: fp.throwTurn}),
     run: () => ({on: run.on, stam: +run.stam.toFixed(2), tired: run.tired, pad: run.pad, touch: run.touch, v: +Math.hypot(P.vx, P.vz).toFixed(2), fov: +camera.fov.toFixed(1), bots: tg ? tg.bots.map(b => !!b.run) : []}),
     petsReturn(i, yes){ if (!pt) return null; openReturn(); if (i == null) return; askReturn(i); if (yes) doReturn(); },
     petsBye: () => pt && pt.bye && {n: pt.bye.n, t: pt.bye.t},
@@ -5786,7 +5840,7 @@ const Obby = (() => {
     bwPtr(x, y){ ptr.x = x; ptr.y = y; ptr.has = true; },
     tag: () => tg && {phase: tg.phase, t: tg.t, it: tg.it, freeze: tg.freeze, you: {...tg.you}, earned: tg.earned, bots: tg.bots.map(B => ({name: B.name, x: +B.x.toFixed(2), y: +B.y.toFixed(2), z: +B.z.toFixed(2), it: B.itTime, tags: B.tags}))},
     mp: () => ({on: mp.on, host: mp.host, code: mp.code, me: mp.me, status: mp.status, hmode: mp.hmode, count: mp.on ? mpCount() : 0, players: [...mp.players.entries()].map(([u, p]) => [u, p.name]),
-      ents: [...mp.ents.values()].map(E => ({uid: E.uid, m: E.m, v: +(E.v || 0).toFixed(2), x: +E.x.toFixed(2), y: +E.y.toFixed(2), z: +E.z.toFixed(2), e: E.e, pack: E.pack, av: (mpLook(E.uid) || {}).av, vis: !!(E.model && E.model.g.visible && E.scene === scene), pet: E.pet && {k: E.pet.k, n: E.pet.n, x: E.pet.x, z: E.pet.z, vis: !!(E.petM && E.petM.m.g.visible), rar: rarOf(E.pet.k).n}, car: E.car && {x: E.car[0], z: E.car[1], vis: !!(E.carM && E.carM.g.visible)}})),
+      ents: [...mp.ents.values()].map(E => ({uid: E.uid, m: E.m, v: +(E.v || 0).toFixed(2), x: +E.x.toFixed(2), y: +E.y.toFixed(2), z: +E.z.toFixed(2), e: E.e, pack: E.pack, av: (mpLook(E.uid) || {}).av, vis: !!(E.model && E.model.g.visible && E.scene === scene), pet: E.pet && {k: E.pet.k, n: E.pet.n, x: E.pet.x, z: E.pet.z, vis: !!(E.petM && E.petM.m.g.visible), rar: rarOf(E.pet.k).n, leash: !!E.pet.l, line: !!(E.leashL && E.leashL.visible && E.leashL.parent === scene), ends: E.leashL && E.leashL.visible ? [...E.leashL.geometry.attributes.position.array].map(v => +v.toFixed(2)) : null}, car: E.car && {x: E.car[0], z: E.car[1], vis: !!(E.carM && E.carM.g.visible)}})),
       tag: tg && {remote: tg.remote, itU: tg.itU, it: tg.it, inRound: tg.inRound, humans: tg.bots.filter(B => B.human).map(B => ({uid: B.uid, away: B.away, it: B.itTime, tags: B.tags}))}}),
     mpHost: () => mpHost(), mpJoin: c => mpJoin(c), mpLeave: () => mpLeave(),
     tagUid: i => tagUid(i), mpRaw: m => mpSend(m),
@@ -5810,7 +5864,36 @@ const Obby = (() => {
   const html = document.documentElement;
   const G = () => (typeof Obby !== 'undefined' ? Obby : window.Obby);   // Obby is a top-level const, not a window property
 
-  function pads(){ try { return [...(navigator.getGamepads ? navigator.getGamepads() : [])].filter(p => p && p.connected !== false && p.buttons); } catch(e){ return []; } }
+  // Which controller to listen to: the first connected 'standard' pad (plus exact duplicates of it — some Macs list one
+  // controller twice). Only if no pad says 'standard' (older Safari/Firefox, some Bluetooth pads) do we take the first one and remap it.
+  const rest = new Map();   // per non-standard pad: the first value each axis showed (triggers rest at -1)
+  let padInfo = {n: 0, id: '', mapping: '', remap: false};
+  function rawPads(){ let l = []; try { l = navigator.getGamepads ? Array.from(navigator.getGamepads() || []) : []; } catch(e){ l = []; } return l.filter(p => p && p.connected !== false && p.buttons && p.axes); }
+  function norm(p){   // make a non-standard pad look like the standard (Xbox) layout
+    const key = p.index + '|' + p.id; let r = rest.get(key); if (!r || r.length !== p.axes.length){ r = [...p.axes].map(a => +a || 0); rest.set(key, r); }
+    const btn = i => { const q = p.buttons[i]; if (q == null) return 0; return typeof q === 'object' ? (+q.value || (q.pressed ? 1 : 0)) : +q || 0; };
+    const ms = /045e|xbox|xinput/i.test(p.id) && p.buttons.length >= 15 && p.buttons.length <= 17 && btn(2) === 0 && btn(5) === 0
+      ? [0, 1, 3, 4, 6, 7, -1, -1, 10, 11, 13, 14, -1, -1, -1, -1, 12]   // Xbox over Bluetooth (HID order: A B _ X Y _ LB RB _ _ View Menu Guide L3 R3)
+      : null;
+    const b = [], v = [];
+    for (let i = 0; i < 17; i++){ const j = ms ? ms[i] : i; const val = j >= 0 && j < p.buttons.length ? btn(j) : 0; v[i] = val; b[i] = val > .5; }
+    const sticks = [], trig = [];
+    p.axes.forEach((a, i) => { a = +a || 0; if (Math.abs(a) > 1.05 || Math.abs(r[i]) > 1.05) return;   // a "hat" d-pad axis
+      if (r[i] < -.9) trig.push((a + 1) / 2); else sticks.push(a); });
+    if (trig.length >= 2){ v[6] = Math.max(v[6], trig[0]); v[7] = Math.max(v[7], trig[1]); b[6] = b[6] || v[6] > .5; b[7] = b[7] || v[7] > .5; }
+    const hat = p.axes.findIndex((a, i) => Math.abs(r[i]) > 1.05);   // Chrome-style hat: 8 directions spread over -1..1, rest ~3.3
+    if (hat >= 0){ const a = +p.axes[hat]; if (Math.abs(a) <= 1.05){ const d = Math.round((a + 1) / (2 / 7)); if ([7, 0, 1].includes(d)) b[12] = true; if ([1, 2, 3].includes(d)) b[15] = true; if ([3, 4, 5].includes(d)) b[13] = true; if ([5, 6, 7].includes(d)) b[14] = true; } }
+    return {id: p.id, index: p.index, mapping: 'standard', connected: true, axes: [sticks[0] || 0, sticks[1] || 0, sticks[2] || 0, sticks[3] || 0], buttons: v.map((x, i) => ({value: x, pressed: b[i]}))};
+  }
+  function pads(){
+    const all = rawPads(); if (!all.length){ padInfo = {n: 0, id: '', mapping: '', remap: false}; return []; }
+    const std = all.filter(p => p.mapping === 'standard');
+    let use;
+    if (std.length) use = std.filter(p => p.id === std[0].id);
+    else use = [norm(all[0])];
+    padInfo = {n: all.length, id: String(use[0].id || ''), mapping: std.length ? 'standard' : (all[0].mapping || 'none'), remap: !std.length};
+    return use;
+  }
   function dz(x, y){ const m = Math.hypot(x, y); if (m < DZ) return [0, 0]; const k = Math.min(1, (m - DZ) / (1 - DZ)) / m; return [x * k, y * k]; }
   let swallow = [];
   function read(ps){   // merge every connected pad (some systems list a controller twice)
@@ -5986,14 +6069,16 @@ const Obby = (() => {
   function status(){
     const st = document.getElementById('padStatus'); if (!st) return;
     const ps = pads();
-    st.innerHTML = ps.length ? '✅ Connected: <b>' + String(ps[0].id || 'Controller').replace(/[<>&]/g, '').replace(/\s*\(.*$/, '').slice(0, 48) + '</b>' : 'No controller yet. Plug in or pair one (Xbox works great), then press any button.';
+    st.innerHTML = ps.length ? '✅ Connected: <b>' + String(ps[0].id || 'Controller').replace(/[<>&]/g, '').replace(/\s*\(.*$/, '').slice(0, 48) + '</b>' : 'No controller yet. Plug in or pair one (Xbox works great), then <b>press any button while this page is open</b> — browsers only show a controller to a website after a button press.';
     st.classList.toggle('on', !!ps.length);
   }
+  let lastPoll = 0, pollErr = 0;
+  function tick(t){ requestAnimationFrame(tick); poll(t); }
+  function poll(t){ lastPoll = performance.now(); try { frame(t); } catch(e){ if (pollErr++ < 3) console.warn('controller poll', e); } }
   function frame(t){
     const ps = pads();
-    if (!ps.length){ loopOn = false; if (connected) lost(); return; }
-    if (!connected){ connected = true; toast('🎮 Controller connected'); status(); }
-    requestAnimationFrame(frame);
+    if (!ps.length){ if (connected) lost(); last = 0; return; }
+    if (!connected){ connected = true; prev = []; last = 0; toast('🎮 Controller connected'); status(); }
     const dt = last ? Math.min(.05, Math.max(0, (t - last) / 1000)) : .016; last = t;
     const s = read(ps);
     let wake = false;
@@ -6014,15 +6099,15 @@ const Obby = (() => {
     if (c.kind === 'game'){ if (g && g.pad) g.pad(s, dt); return; }
     menu(c, s, dt, wake);
   }
-  function startLoop(){ if (loopOn) return; loopOn = true; last = 0; prev = []; requestAnimationFrame(frame); }
+  function startLoop(){ if (loopOn) return; loopOn = true; last = 0; prev = []; requestAnimationFrame(tick); }
   function lost(){
     connected = false; prev = []; status();
     const g = G(); if (g && g.pad) g.pad('lost');
     setPadMode(false); toast('🎮 Controller disconnected');
   }
-  addEventListener('gamepadconnected', () => { status(); startLoop(); });
-  addEventListener('gamepaddisconnected', () => { status(); if (!pads().length && connected){ loopOn = false; lost(); } });
-  setInterval(() => { if (!loopOn && pads().length) startLoop(); }, 1000);   // some browsers only show a pad after a button press
+  addEventListener('gamepadconnected', () => { startLoop(); poll(performance.now()); status(); });
+  addEventListener('gamepaddisconnected', () => { status(); if (!pads().length && connected) lost(); });
+  setInterval(() => { startLoop(); if (!document.hidden && performance.now() - lastPoll > 600) poll(performance.now()); }, 500);   // animation frames can stall (busy tab, some Safari states)
   // any mouse / touch / key use hands control back (highlight off, touch buttons back)
   const off = () => { if (padMode) setPadMode(false); };
   addEventListener('mousemove', e => { if (e.movementX || e.movementY) off(); }, true);
@@ -6038,9 +6123,9 @@ const Obby = (() => {
   { const ms = document.getElementById('mouseSens'), mv = document.getElementById('mouseSensV'), show = () => { mv.textContent = (+ms.value).toFixed(1) + '×'; };
     ms.value = window.rubloxMouseSens; show(); ms.addEventListener('input', () => { window.rubloxMouseSens = +ms.value; save('rubloxMouseSens', +ms.value); show(); }); }
   document.getElementById('setBtn').addEventListener('click', status);
-  status(); if (pads().length) startLoop();
+  status(); startLoop();
   window.GP = {get ctx(){ const c = context(); return c.kind + (c.root && c.root.id ? ':' + c.root.id : ''); }, get focus(){ return focus && (focus.id || focus.dataset.lvl && 'lv' + focus.dataset.lvl || focus.dataset.go && 'go-' + focus.dataset.go || focus.textContent.trim().slice(0, 30)); },
-    get mode(){ return padMode; }, get connected(){ return connected; }, get editing(){ return !!edit; }};
+    get mode(){ return padMode; }, get connected(){ return connected; }, get pad(){ return Object.assign({}, padInfo); }, get looping(){ return loopOn && performance.now() - lastPoll < 1500; }, get editing(){ return !!edit; }};
 })();
 </script>
 </body>
