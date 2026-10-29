@@ -411,6 +411,10 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .ocross:before,.ocross:after{content:'';position:absolute;background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.35);border-radius:2px}
 .ocross:before{left:11.5px;top:0;width:3px;height:26px}.ocross:after{top:11.5px;left:0;height:3px;width:26px}
 .obby.padui.bmode .ocross{display:block}
+.odot{display:none;position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.45);pointer-events:none;z-index:3}
+.obby.fpv .odot{display:block}.obby.fpv .ocross{display:none!important}
+.ofp{position:absolute;right:calc(max(24px,calc(env(safe-area-inset-right) + 16px)) + 102px);bottom:calc(max(30px,calc(env(safe-area-inset-bottom) + 20px)) + 120px);width:52px;height:52px;border-radius:50%;border:0;background:rgba(255,255,255,.92);font-size:24px;box-shadow:0 4px 0 rgba(0,0,0,.2);touch-action:none;padding:0}
+.ofp.on{background:#7cc4ff;box-shadow:0 4px 0 #2f7fc0}
 
 /* ---- Adopt a Pet ---- */
 .pgoal,.ppet,.pact,.ppedals{display:none}
@@ -447,7 +451,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .pdrive.touchui .pact{bottom:max(150px,calc(env(safe-area-inset-bottom) + 140px))}
 .ppedals{position:absolute;right:max(18px,calc(env(safe-area-inset-right) + 12px));bottom:max(24px,calc(env(safe-area-inset-bottom) + 16px));gap:14px;align-items:flex-end;z-index:4}
 .pdrive.touchui .ppedals{display:flex}
-.pdrive #oJump,.pdrive #oEmoBtn,.pdrive #oRun{display:none!important}
+.pdrive #oJump,.pdrive #oEmoBtn,.pdrive #oRun,.pdrive #oFP{display:none!important}
 .orun{position:absolute;right:calc(max(24px,calc(env(safe-area-inset-right) + 16px)) + 14px);bottom:calc(max(30px,calc(env(safe-area-inset-bottom) + 20px)) + 110px);width:68px;height:68px;border-radius:50%;border:0;background:rgba(255,255,255,.92);font-size:30px;box-shadow:0 5px 0 rgba(0,0,0,.2);touch-action:none;padding:0}
 .orun.on{background:#ff9f1c;box-shadow:0 5px 0 #c46f00;transform:scale(1.06)}
 @media (max-height:500px){.orun{width:58px;height:58px;font-size:26px;right:calc(max(24px,calc(env(safe-area-inset-right) + 16px)) + 13px);bottom:calc(max(30px,calc(env(safe-area-inset-bottom) + 20px)) + 96px)}}
@@ -677,6 +681,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
       <label class="invrow"><input type="checkbox" class="invY" id="setInvY"><span>Invert look up/down<small>Flips which way the camera tilts</small></span></label>
       <label class="invrow"><input type="checkbox" class="invX" id="setInvX"><span>Invert look left/right<small>Flips which way the camera turns</small></span></label>
     </div>
+    <label class="padsens"><span>🖱️ Mouse look speed</span><input type="range" id="mouseSens" min="0.3" max="3" step="0.1" value="1" aria-label="Mouse look speed"><b id="mouseSensV">1.0×</b></label>
     <div class="padsec" id="padSec">
       <h3>🎮 Controller</h3>
       <div class="padst" id="padStatus">No controller yet.</div>
@@ -694,7 +699,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
         <span><i style="font-size:8px;letter-spacing:-.2px">VIEW</i>View: help · skip level (Home: shop)</span>
         <span><i>✚</i>D-pad: move around menus</span>
         <span><i>L3</i>Click left stick: run (hold, or click to keep running)</span>
-        <span><i>R3</i>Click right stick: camera behind me</span>
+        <span><i>R3</i>Click right stick: camera behind me · click twice: 👁️ first person</span>
       </div>
     </div>
     <button class="big green" id="setOk">Done ✅</button>
@@ -731,13 +736,14 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   </div>
   <div class="otip" id="oTip"></div>
   <div class="obanner" id="oBanner"></div>
-  <div class="ocross" id="oCross"></div>
+  <div class="ocross" id="oCross"></div><div class="odot" id="oDot"></div>
   <div class="obig" id="oBig"></div>
   <div class="otouch" id="oTouch">
     <div class="ojzone" id="oJoyZone"></div>
     <div class="ojoy" id="oJoy"><div class="oknob" id="oKnob"></div></div>
     <button class="ojump" id="oJump" aria-label="Jump">⬆️</button>
     <button class="orun" id="oRun" aria-label="Run" aria-pressed="false">🏃</button>
+    <button class="ofp" id="oFP" aria-label="First person" aria-pressed="false">👁️</button>
   </div>
   <div class="ostam full" id="oStam" style="display:none" title="Run energy"><i>🏃</i><b><u id="oStamF"></u></b></div>
   <button class="oemo" id="oEmoBtn" title="Emotes (keys 1-8)" aria-label="Emotes">😀</button>
@@ -856,7 +862,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.10.29-3';
+const BUILD = '2026.10.29-4';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -1947,6 +1953,15 @@ const Obby = (() => {
   let firstStep = null, mode = 'obby', diff = null, lava = null, escapePad = null, topY = 0, maxY = 0, over = false, choosing = false;
   const P = {x:0, y:0, z:0, vx:0, vy:0, vz:0, ground:null, onGround:false, coyote:0, face:0, walk:0};
   const cam = {yaw:Math.PI, pitch:0.42, dist:13};
+  // first person (remembered per device); while driving in Adopt a Pet the camera goes back to third person on its own
+  const fp = {on: !!load('rubloxFP', false), r3: -1e9, wt: 0, unlockT: 0, shown: null, req: false, noLock: false};
+  function fpOn(){ return fp.on && running && !(pt && pt.drive); }
+  function setFP(on, quiet){
+    on = !!on; if (fp.on === on) return; fp.on = on; fp.wt = performance.now(); save('rubloxFP', on);
+    if (on) cam.pitch = .08; else { cam.pitch = .42; cam.dist = Math.max(cam.dist, 6); if (document.pointerLockElement) document.exitPointerLock(); }
+    const b = document.getElementById('oFP'); if (b){ b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }
+    if (!quiet && running) banner(on ? '👁️ First person' : '🎥 Third person');
+  }
   const keys = {};
   const joy = {x:0, y:0, jump:false};
   const pad = {x: 0, y: 0, jump: false, on: false, lx: 0, ly: 0, emo: -1};   // game controller (fed by the gamepad script)
@@ -5281,6 +5296,10 @@ const Obby = (() => {
     checkpoints.forEach(cp => cp.flag.rotation.y = Math.sin(worldT * 4 + cp.idx) * .25);
     // player model
     model.g.position.set(P.x, P.y, P.z);
+    const fpv = fpOn(); if (fpv) P.face = cam.yaw + Math.PI;   // first person: your body turns with your view; your own head/hat/hair are hidden so they don't block it
+    if (model.head) model.head.visible = !fpv; model.g.visible = !fpv;   // your own body would block the view when you look down (others still see all of you)
+    if (pt && pt.pet && pt.pet.tag) pt.pet.tag.visible = !(fpv && Math.hypot(pt.pet.x - P.x, pt.pet.z - P.z) < 4.5);   // your pet's name bubble would fill the screen at your feet
+    if (fp.shown !== fpv){ fp.shown = fpv; $('#obby').classList.toggle('fpv', fpv); }
     let d = P.face - model.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); model.g.rotation.y += d * Math.min(1, dt * 12);
     const sp = Math.hypot(P.vx, P.vz);
     P.walk += dt * sp * (sp > SPEED * 1.15 ? 1.5 : 1.3);
@@ -5324,8 +5343,8 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ use / talk · Ⓑ my pets · Ⓨ Pet Index · Right stick look · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
-      : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · Ⓧ emotes · LT/RT zoom · ☰ pause';
+    const line = mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ use / talk · Ⓑ my pets · Ⓨ Pet Index · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
+      : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
   function padInput(s, dt){
@@ -5350,9 +5369,9 @@ const Obby = (() => {
     pad.lx += (curve(s.rx) - pad.lx) * e; pad.ly += (curve(s.ry) - pad.ly) * e;
     if (Math.abs(pad.lx) < 1e-4) pad.lx = 0; if (Math.abs(pad.ly) < 1e-4) pad.ly = 0;
     cam.yaw -= pad.lx * 3.2 * k * dt * (inv.x ? -1 : 1);
-    cam.pitch = Math.max(-.05, Math.min(1.3, cam.pitch + pad.ly * 1.9 * k * dt * (inv.y ? -1 : 1)));
-    const behind = () => { cam.yaw = P.face + Math.PI; cam.pitch = .42; };
-    if (jp[11]) behind();
+    cam.pitch = Math.max(fpOn() ? -1.3 : -.05, Math.min(fpOn() ? 1.4 : 1.3, cam.pitch + pad.ly * 1.9 * k * dt * (inv.y ? -1 : 1)));
+    const behind = () => { cam.yaw = P.face + Math.PI; cam.pitch = fpOn() ? .08 : .42; };
+    if (jp[11]){ const now = performance.now(); if (now - fp.r3 < 400){ fp.r3 = -1e9; setFP(!fp.on); } else { fp.r3 = now; behind(); } }   // R3 twice = first person
     if (jp[8]){
       if ($('#oSkip').classList.contains('show')) $('#oSkip').click();
       else { const t = $('#oTip'); padTip(); if (t.classList.contains('hide')){ t.classList.remove('hide'); tipTimer = 8; } else { t.classList.add('hide'); tipTimer = 0; } }
@@ -5372,6 +5391,7 @@ const Obby = (() => {
       if (jp[2]) setDel(!bw.del); if (jp[3]) bwUndo();
       return;
     }
+    if (fp.on && (s.v[6] || 0) > .6 && performance.now() - fp.wt > 400) setFP(false);   // LT (zoom out) leaves first person
     cam.dist = Math.max(5, Math.min(30, cam.dist + ((s.v[6] || 0) - (s.v[7] || 0)) * 14 * dt));
     if (jp[3]) behind();
     if (jp[2]){ buildEmoteMenu(); $('#oEmos').classList.add('show'); return; }
@@ -5385,25 +5405,25 @@ const Obby = (() => {
   function setTouchUIBase(on){
     touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
     if (mode === 'build'){
-      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ jump · 🏃 run · Swipe to look<br>👆 Tap to place a block · 🔨/🧽 button switches to delete'
-        : '⌨️ WASD move · Space jump · Shift run · Drag to look · 🖱️ Click to place a block<br>Shift+click / right-click / X = delete · Q/E pick block · Z undo') + '<br>Build anything! 🪙 +1 coin per 10 blocks (up to 50 a day)';
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ jump · 🏃 run · Swipe to look · 👁️ first person<br>👆 Tap to place a block · 🔨/🧽 button switches to delete'
+        : '⌨️ WASD move · Space jump · Shift run · Drag to look · V first person · 🖱️ Click to place a block<br>Shift+click / right-click / X = delete · Q/E pick block · Z undo') + '<br>Build anything! 🪙 +1 coin per 10 blocks (up to 50 a day)';
       return;
     }
     if (mode === 'pets'){
-      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ jump · 🏃 run · Tap the yellow button to use things · Swipe to look'
-        : '⌨️ WASD move · Space jump · Shift run · E use / talk · M my pets · I Pet Index · Drag to look') + '<br>🐾 Follow the arrow at the top! 🚗 In the car: ' + (on ? 'left thumb steers, ⛽ Go, 🛑 Brake' : 'W gas, S brake, A/D steer');
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ jump · 🏃 run · Tap the yellow button to use things · Swipe to look · 👁️ first person'
+        : '⌨️ WASD move · Space jump · Shift run · E use / talk · M my pets · I Pet Index · Drag to look · V first person') + '<br>🐾 Follow the arrow at the top! 🚗 In the car: ' + (on ? 'left thumb steers, ⛽ Go, 🛑 Brake' : 'W gas, S brake, A/D steer');
       return;
     }
     if (mode === 'tag'){
-      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ to jump · 🏃 to run · Swipe the right side to look · 😀 emotes'
-        : '⌨️ WASD / Arrows to move · Space to jump · Shift to run · Drag the mouse to look · 1–8 emotes · Esc to pause') + "<br>🏷️ Don't be IT! Touch someone to pass it on. Least IT time after 90s wins! +5 🪙 per tag, +30 to win";
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ to jump · 🏃 to run · Swipe the right side to look · 👁️ first person · 😀 emotes'
+        : '⌨️ WASD / Arrows to move · Space to jump · Shift to run · Drag the mouse to look · V first person · 1–8 emotes · Esc to pause') + "<br>🏷️ Don't be IT! Touch someone to pass it on. Least IT time after 90s wins! +5 🪙 per tag, +30 to win";
       return;
     }
     const goal = mode === 'nds' ? 'Survive each disaster for 30 seconds! Hide inside, climb up high, stay out of the water. +20 🪙 per round!' : mode === 'lava' ? 'Climb the tower to the 🚁 before the lava gets you!'
       : 'Level ' + level + ': grab the coins, dodge the red lava, and reach the 🏆!' + (INTRO[level] ? '<br>🆕 ' + INTRO[level][1] : '');
     $('#oTip').innerHTML = (on
-      ? '🕹️ Left thumb to move · ⬆️ to jump · 🏃 to run · Swipe the right side to look · 😀 emotes'
-      : '⌨️ WASD / Arrows to move · Space to jump · Shift to run · Drag the mouse to look · Scroll to zoom · 1–8 emotes · Esc to pause') + '<br>' + goal + (mode === 'lava' ? '<br>🪜 Walk into a gray truss to climb it!' : '');
+      ? '🕹️ Left thumb to move · ⬆️ to jump · 🏃 to run · Swipe the right side to look · 👁️ first person · 😀 emotes'
+      : '⌨️ WASD / Arrows to move · Space to jump · Shift to run · Drag the mouse to look · V first person · Scroll to zoom (all the way in = first person) · 1–8 emotes · Esc to pause') + '<br>' + goal + (mode === 'lava' ? '<br>🪜 Walk into a gray truss to climb it!' : '');
   }
   function checkRotate(){
     const show = running && touchUI && innerHeight > innerWidth && !rotDismissed;
@@ -5411,6 +5431,13 @@ const Obby = (() => {
     clearTimeout(rotT); if (show) rotT = setTimeout(() => { rotDismissed = true; $('#oRot').classList.remove('show'); }, 5000);
   }
   function updateCamera(){
+    if (fpOn()){   // eyes: just in front of your (hidden) head, looking where the camera yaw/pitch point
+      const cp = Math.cos(cam.pitch), fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), ey = P.y + 2.45;
+      camera.position.set(P.x + fx * .22, ey, P.z + fz * .22);
+      camera.lookAt(P.x + fx * (.22 + cp * 10), ey - Math.sin(cam.pitch) * 10, P.z + fz * (.22 + cp * 10));
+      if (shake > 0 && !paused){ camera.position.x += (Math.random() - .5) * shake * .5; camera.position.y += (Math.random() - .5) * shake * .5; }
+      return;
+    }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
     if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets'){ // pull the camera in front of walls so buildings don't block the view
@@ -5468,6 +5495,7 @@ const Obby = (() => {
       if (lava && time > LAVA_GRACE && !over && !won){ lava.y += DIFFS[diff].speed * (1 + (time - LAVA_GRACE) / 150) * dt; if (time - dt <= LAVA_GRACE + 0.001 && time > LAVA_GRACE) banner('🌋 The lava is rising! Climb!'); }
       if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0) $('#oTip').classList.add('hide'); }
     }
+    if (document.pointerLockElement && (!fpOn() || paused || choosing || won || over)) document.exitPointerLock();
     animate(paused ? 0 : dt); updateCamera(); renderer.render(scene, camera); hud();
   }
   function resize(){
@@ -5488,7 +5516,8 @@ const Obby = (() => {
         if (!e.repeat && !paused && e.code === 'KeyI'){ openIndex(); return; }
       }
       if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
-      if (e.code === 'Escape' || e.code === 'KeyP'){ if (!won && !over && !choosing) setPause(!paused); return; }
+      if (e.code === 'KeyV' && !e.repeat && !paused && !won && !over){ setFP(!fp.on); return; }
+      if (e.code === 'Escape' || e.code === 'KeyP'){ if (e.code === 'Escape' && performance.now() - fp.unlockT < 400) return; if (!won && !over && !choosing) setPause(!paused); return; }
       const em = Object.keys(EMOTES).find(k => 'Digit' + EMOTES[k].key === e.code || 'Numpad' + EMOTES[k].key === e.code);
       if (em && !e.repeat){ playEmote(em); return; }
       if (mode === 'build' && bw && !e.repeat && !paused){
@@ -5503,22 +5532,29 @@ const Obby = (() => {
     addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
     addEventListener('resize', resize);
     const el = renderer.domElement; let drag = null;
-    el.addEventListener('pointerdown', e => { drag = {x: e.clientX, y: e.clientY, id: e.pointerId}; el.setPointerCapture(e.pointerId); });
+    // first person on a computer: click the game to lock the mouse for mouse-look (Esc lets go)
+    el.addEventListener('mousemove', e => { if (document.pointerLockElement !== el || !running || paused) return; const inv = window.rubloxInvert || {}, k = window.rubloxMouseSens || 1;
+      cam.yaw -= e.movementX * .0026 * k * (inv.x ? -1 : 1); cam.pitch = Math.max(-1.3, Math.min(1.4, cam.pitch + e.movementY * .0024 * k * (inv.y ? -1 : 1))); });
+    el.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse' && fpOn() && !paused && !choosing && !fp.noLock && document.pointerLockElement !== el){ fp.req = true; try { const r = el.requestPointerLock(); if (r && r.catch) r.catch(() => { fp.noLock = true; }); } catch(_){ fp.noLock = true; } } });
+    document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement !== el) fp.unlockT = performance.now(); });
+    document.addEventListener('pointerlockerror', () => { fp.noLock = true; });   // no mouse lock here: drag to look still works
+    el.addEventListener('pointerdown', e => { drag = {x: e.clientX, y: e.clientY, id: e.pointerId}; try { el.setPointerCapture(e.pointerId); } catch(_){}   /* not allowed while the mouse is locked */ });
     el.addEventListener('pointermove', e => {
       if (!drag || e.pointerId !== drag.id) return;
-      const k = e.pointerType === 'touch' ? 1.5 : 1;
+      const k = e.pointerType === 'touch' ? 1.5 : (window.rubloxMouseSens || 1);
       const inv = window.rubloxInvert || {}, ix = inv.x ? -1 : 1, iy = inv.y ? -1 : 1;
-      cam.yaw -= (e.clientX - drag.x) * .006 * k * ix; cam.pitch = Math.max(-.05, Math.min(1.3, cam.pitch + (e.clientY - drag.y) * .004 * k * iy));
+      cam.yaw -= (e.clientX - drag.x) * .006 * k * ix; cam.pitch = Math.max(fpOn() ? -1.3 : -.05, Math.min(fpOn() ? 1.4 : 1.3, cam.pitch + (e.clientY - drag.y) * .004 * k * iy));
       drag.x = e.clientX; drag.y = e.clientY;
     });
     el.addEventListener('pointerup', () => drag = null); el.addEventListener('pointercancel', () => drag = null);
     // Build World: click / tap (without dragging) places a block where you point
     let down = null;
-    const setPtr = e => { const r = el.getBoundingClientRect(); ptr.x = (e.clientX - r.left) / r.width * 2 - 1; ptr.y = -(e.clientY - r.top) / r.height * 2 + 1; ptr.has = true; };
-    el.addEventListener('pointerdown', e => { down = {x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId}; if (mode === 'build') setPtr(e); });
+    const setPtr = e => { if (fpOn()){ ptr.has = false; return; }   // first person aims from the dot in the middle
+      const r = el.getBoundingClientRect(); ptr.x = (e.clientX - r.left) / r.width * 2 - 1; ptr.y = -(e.clientY - r.top) / r.height * 2 + 1; ptr.has = true; };
+    el.addEventListener('pointerdown', e => { down = {x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId, skip: !!fp.req}; fp.req = false; if (mode === 'build') setPtr(e); });
     el.addEventListener('pointermove', e => { if (mode === 'build' && (e.pointerType === 'mouse' || !down)) setPtr(e); });
     el.addEventListener('pointerup', e => {
-      if (down && e.pointerId === down.id && mode === 'build' && bw && running && !paused && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 10 && performance.now() - down.t < 600){ setPtr(e); bwClick(e.shiftKey || e.button === 2); }
+      if (down && e.pointerId === down.id && mode === 'build' && bw && running && !paused && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 10 && performance.now() - down.t < 600 && !down.skip){ setPtr(e); bwClick(e.shiftKey || e.button === 2); }
       down = null;
     });
     $('#bMode').onclick = () => bw && setDel(!bw.del);
@@ -5550,7 +5586,11 @@ const Obby = (() => {
     $('#pRetNo').onclick = () => closePanel('#pReturnPanel');
     $('#pRetYes').onclick = () => pt && doReturn();
     el.addEventListener('contextmenu', e => e.preventDefault());
-    el.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(5, Math.min(30, cam.dist * (1 + e.deltaY * .001))); }, {passive: false});
+    el.addEventListener('wheel', e => { e.preventDefault(); if (!running) return;
+      const calm = performance.now() - fp.wt > 350;   // one scroll gesture = one switch
+      if (fp.on){ if (e.deltaY > 0 && calm) setFP(false); return; }
+      if (e.deltaY < 0 && cam.dist <= 5.05 && calm && !(pt && pt.drive)){ setFP(true); return; }
+      cam.dist = Math.max(5, Math.min(30, cam.dist * (1 + e.deltaY * .001))); }, {passive: false});
     // touch: a joystick that appears under your left thumb, a big jump button, and camera swipes anywhere else
     const jz = $('#oJoyZone'), base = $('#oJoy'), knob = $('#oKnob'); let jid = null, jcx = 0, jcy = 0, jR = 70;
     const jmove = e => { let dx = e.clientX - jcx, dy = e.clientY - jcy;
@@ -5567,6 +5607,7 @@ const Obby = (() => {
     jz.addEventListener('pointerup', jend); jz.addEventListener('pointercancel', jend);
     const rb = $('#oRun');
     rb.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); run.touch = !run.touch; rb.classList.toggle('on', run.touch); rb.setAttribute('aria-pressed', run.touch); });
+    $('#oFP').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); setFP(!fp.on); });
     const jb = $('#oJump');
     jb.addEventListener('pointerdown', e => { e.preventDefault(); joy.jump = true; jb.classList.add('on'); });
     ['pointerup','pointercancel','pointerleave'].forEach(t => jb.addEventListener(t, () => { joy.jump = false; jb.classList.remove('on'); }));
@@ -5614,7 +5655,7 @@ const Obby = (() => {
     $('#obby').classList.toggle('bmode', mode === 'build'); $('#obby').classList.toggle('pmode', mode === 'pets'); $('#obby').classList.remove('pdrive'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  ptr.has = false;
     ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel'].forEach(id => $(id).classList.remove('show')); pt && (pt.gas = pt.brake = 0); $('#oPause').textContent = '⏸️';
     $('#oMute').textContent = muted ? '🔇' : '🔊';
-    emote = null; P.airT = 0; P.jumped = false; P.climbing = false; Object.assign(run, {pad: false, touch: false, on: false, stam: STAM_MAX, tired: false, shown: -1}); $('#oRun').classList.remove('on'); $('#oStam').style.display = mode === 'tag' ? '' : 'none';
+    emote = null; P.airT = 0; P.jumped = false; P.climbing = false; Object.assign(run, {pad: false, touch: false, on: false, stam: STAM_MAX, tired: false, shown: -1}); $('#oRun').classList.remove('on'); $('#oFP').classList.toggle('on', fp.on); $('#oStam').style.display = mode === 'tag' ? '' : 'none';
     setTouchUI(!pad.on && (matchMedia('(pointer: coarse)').matches || (navigator.maxTouchPoints > 0 && !matchMedia('(hover: hover)').matches)));   // a controller in use keeps the screen clear
     buildEmoteMenu(); $('#oEmos').classList.remove('show');
     $('#oTip').classList.toggle('hide', choosing); tipTimer = mode === 'obby' && INTRO[level] ? 11 : 8; $('#oSkip').classList.remove('show');
@@ -5629,7 +5670,7 @@ const Obby = (() => {
     mpOnStart();
   }
   function stop(){
-    running = false; cancelAnimationFrame(raf); raf = 0;
+    running = false; cancelAnimationFrame(raf); raf = 0; if (document.pointerLockElement) document.exitPointerLock(); fp.shown = null; $('#obby').classList.remove('fpv'); if (model){ model.g.visible = true; if (model.head) model.head.visible = true; }
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
@@ -5652,6 +5693,8 @@ const Obby = (() => {
     petsGallery(st = 3, x0 = -20, z0 = -20, gap = 2.6){ (pt.gal || []).forEach(m => scene.remove(m.g)); pt.gal = PET_ORDER.map((k, i) => { const m = buildPet(k, i % 3, st); m.g.position.set(x0 + (i % 9) * gap, 0, z0 + Math.floor(i / 9) * gap * 1.6); m.g.rotation.y = Math.PI; scene.add(m.g); return m; });
       if (!pt.galHook){ pt.galHook = true; const f = animatePets; animatePets = dt => { f(dt); (pt.gal || []).forEach((m, i) => animPet(m, i % 4 === 1 ? 1 : i % 4 === 2 ? 4 : 0, i % 4 === 1 ? 3 : 0, dt, worldT)); }; } return pt.gal.length; },
     petsAct: () => petsAct(),
+    fp: () => ({on: fp.on, active: fpOn(), pitch: +cam.pitch.toFixed(3), yaw: +cam.yaw.toFixed(3), dist: +cam.dist.toFixed(2), eye: +(camera.position.y - P.y).toFixed(2), head: !!(model && model.head && model.head.visible), body: !!(model && model.g.visible), locked: document.pointerLockElement === renderer.domElement, cls: $('#obby').classList.contains('fpv'), face: +P.face.toFixed(3), tag: pt && pt.pet && pt.pet.tag ? pt.pet.tag.visible : null}),
+    setFP: on => setFP(on, true),
     run: () => ({on: run.on, stam: +run.stam.toFixed(2), tired: run.tired, pad: run.pad, touch: run.touch, v: +Math.hypot(P.vx, P.vz).toFixed(2), fov: +camera.fov.toFixed(1), bots: tg ? tg.bots.map(b => !!b.run) : []}),
     petsReturn(i, yes){ if (!pt) return null; openReturn(); if (i == null) return; askReturn(i); if (yes) doReturn(); },
     petsBye: () => pt && pt.bye && {n: pt.bye.n, t: pt.bye.t},
@@ -5991,6 +6034,9 @@ const Obby = (() => {
   const showSens = () => { rv.textContent = (+rs.value).toFixed(1) + '×'; };
   rs.value = window.rubloxPadSens; showSens();
   rs.addEventListener('input', () => { window.rubloxPadSens = +rs.value; save('rubloxPadSens', +rs.value); showSens(); });
+  window.rubloxMouseSens = Math.max(.3, Math.min(3, +load('rubloxMouseSens', 1) || 1));
+  { const ms = document.getElementById('mouseSens'), mv = document.getElementById('mouseSensV'), show = () => { mv.textContent = (+ms.value).toFixed(1) + '×'; };
+    ms.value = window.rubloxMouseSens; show(); ms.addEventListener('input', () => { window.rubloxMouseSens = +ms.value; save('rubloxMouseSens', +ms.value); show(); }); }
   document.getElementById('setBtn').addEventListener('click', status);
   status(); if (pads().length) startLoop();
   window.GP = {get ctx(){ const c = context(); return c.kind + (c.root && c.root.id ? ':' + c.root.id : ''); }, get focus(){ return focus && (focus.id || focus.dataset.lvl && 'lv' + focus.dataset.lvl || focus.dataset.go && 'go-' + focus.dataset.go || focus.textContent.trim().slice(0, 30)); },
