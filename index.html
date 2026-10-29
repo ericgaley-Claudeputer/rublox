@@ -473,6 +473,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .pmode.touchui .otip{top:calc(170px + env(safe-area-inset-top))}
 @media (max-width:640px){.pgoal{top:calc(max(10px,env(safe-area-inset-top)) + 100px);font-size:14px;max-width:96vw}.ppet{top:calc(max(10px,env(safe-area-inset-top)) + 146px);width:168px;padding:6px 8px}.pmode.touchui .otip{top:calc(250px + env(safe-area-inset-top))}}
 #obby:has(#pNamePanel.show,#pAdoptPanel.show,#pPetsPanel.show) :is(.pgoal,.ppet,.ppedals,.pact){display:none!important}
+#obby:not(.pmode) :is(.pgoal,.ppet,.ppedals,.pact,#pNamePanel,#pAdoptPanel,#pPetsPanel){display:none!important}
 @media (max-height:500px){#pNamePanel .mbox,#pAdoptPanel .mbox{padding:10px 18px;max-height:94vh;overflow:auto}#pNamePanel .emoji,#pAdoptPanel .emoji{font-size:26px;margin:0}#pNamePanel h2,#pAdoptPanel h2{font-size:20px;margin:2px 0}#pNamePanel .stats{font-size:13px}#pNamePanel .pname{padding:6px 10px;font-size:18px}#pNamePanel .psugg{margin:6px 0}#pNamePanel .pmsg:empty{display:none}#pNamePanel .owinbtns .big{margin:3px}#pNamePanel .owinbtns,#pAdoptPanel .owinbtns{margin-top:6px}#pNamePanel .owinbtns .big,#pAdoptPanel .owinbtns .big{padding:8px 14px;font-size:15px}}
 @media (max-height:500px){.pgoal{font-size:14px;top:calc(max(8px,env(safe-area-inset-top)) + 50px)}.ppet{top:calc(max(8px,env(safe-area-inset-top)) + 96px);width:170px;padding:5px 8px}.ppn{font-size:13px}.pgrowbar{height:14px}.pgrowbar span{line-height:14px}.ppedals button{width:72px;height:72px}#pGas{width:86px;height:86px}.touchui .pact,.pdrive.touchui .pact{bottom:max(116px,calc(env(safe-area-inset-bottom) + 106px));font-size:16px;padding:10px 14px}.pmode.touchui .otip{top:calc(96px + env(safe-area-inset-top));left:calc(50% - 90px);max-width:60vw}}
 </style>
@@ -796,7 +797,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.10.29-2';
+const BUILD = '2026.10.29-2a';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3132,11 +3133,12 @@ const Obby = (() => {
       if (!b.active || !overlaps(b, .001, B)) continue;
       const p = b.mesh.position;
       if (axis === 'y'){
-        if (B.vy <= 0 && B.y > p.y){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; }
+        if (B.vy <= 0 && (B.y > p.y || (B.py != null && B.py >= p.y + b.hh - Math.max(0, b.dy || 0) - .05))){ B.y = p.y + b.hh;   /* feet above the top before this move: land, even at low fps */ B.vy = 0; B.onGround = true; B.ground = b; }
         else { B.y = p.y - b.hh - H; if (B.vy > 0) B.vy = 0; }
         continue;
       }
       const up = p.y + b.hh - B.y;
+      if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
       if ((mode === 'tag' || mode === 'pets') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
       if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
       else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
@@ -3186,7 +3188,7 @@ const Obby = (() => {
     P.x += (P.vx + ext.x + wx) * dt; resolve('x');
     P.z += (P.vz + ext.z) * dt; resolve('z');
     P.onGround = false; P.ground = null;
-    P.y += P.vy * dt; resolve('y');
+    P.py = P.y; P.y += P.vy * dt; resolve('y');
     if (P.onGround && jumpPads.includes(P.ground)){ P.lastPad = P.ground; P.vy = PAD; P.onGround = false; P.ground = null; P.coyote = 0; P.jumped = true; P.airT = 0; SND.boing(); }
     if (P.onGround){ P.airT = 0; P.jumped = false; } else P.airT += dt;
     if (tg) tg.bots.forEach((B, n) => { if (!B.human) botStep(B, n + 1, dt); });
@@ -5092,7 +5094,7 @@ const Obby = (() => {
     $('#oHeightBox').style.display = $('#oLavaBox').style.display = mode === 'lava' ? '' : 'none';
     ['#oDisBox','#oRTBox','#oHpBox','#oSurvBox'].forEach(id => $(id).style.display = mode === 'nds' ? '' : 'none'); $('#oTime').parentElement.style.display = mode === 'nds' || mode === 'tag' || mode === 'pets' ? 'none' : '';
     $('#oBlkBox').style.display = mode === 'build' ? '' : 'none'; ['#oItBox','#oTagTBox','#oMyItBox'].forEach(id => $(id).style.display = mode === 'tag' ? '' : 'none');
-    $('#obby').classList.toggle('bmode', mode === 'build'); $('#obby').classList.toggle('pmode', mode === 'pets'); $('#obby').classList.remove('pdrive'); ptr.has = false;
+    $('#obby').classList.toggle('bmode', mode === 'build'); $('#obby').classList.toggle('pmode', mode === 'pets'); $('#obby').classList.remove('pdrive'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  ptr.has = false;
     ['#pNamePanel','#pAdoptPanel','#pPetsPanel'].forEach(id => $(id).classList.remove('show')); pt && (pt.gas = pt.brake = 0); $('#oPause').textContent = '⏸️';
     $('#oMute').textContent = muted ? '🔇' : '🔊';
     emote = null; P.airT = 0; P.jumped = false; P.climbing = false;
@@ -5114,7 +5116,7 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); ['#pNamePanel','#pAdoptPanel','#pPetsPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); ['#pNamePanel','#pAdoptPanel','#pPetsPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
@@ -5126,6 +5128,31 @@ const Obby = (() => {
       door: pt.doorOpen, leash: pt.leashOn, walk: pt.walk && Object.assign({}, pt.walk), ball: pt.ballSt && pt.ballSt.st, prompt: pt.prompt && pt.prompt.t, promptK: pt.prompt && pt.prompt.k,
       goal: pt.goal && {t: pt.goal.t, at: pt.goal.at}, earned: pt.coinsEarned, choosing, coins, inp: driveInput(), pedals: [pt.gas, pt.brake]},
     petsAct: () => petsAct(),
+    elevTest(dts = [1/120, 1/60, 1/30, .05]){
+      const out = [], ys = movers.filter(m => m.axis === 'y'), sv = {ex: ext.x, ez: ext.z};
+      for (const k in keys) keys[k] = false; joy.x = joy.y = 0; pad.x = pad.y = 0; pad.jump = joy.jump = false;
+      ys.forEach((m, mi) => { const b = m.b;
+        dts.forEach(dt => {
+          const top = () => b.mesh.position.y + b.hh;
+          // 1) stand on it for 1.3 full cycles
+          ext.x = ext.z = 0; Object.assign(P, {x: b.mesh.position.x, z: b.mesh.position.z, y: top(), vx: 0, vy: 0, vz: 0, onGround: true, ground: b}); b.dx = b.dy = b.dz = 0;
+          const x0 = P.x, z0 = P.z; let drift = 0, off = 0, maxOff = 0, gap = 0;
+          const N = Math.ceil(TAU / m.speed * 1.3 / dt);
+          for (let i = 0; i < N; i++){ step(dt); drift = Math.max(drift, Math.hypot(P.x - x0, P.z - z0)); off = P.ground === b ? 0 : off + dt; maxOff = Math.max(maxOff, off); gap = Math.max(gap, Math.abs(P.y - top())); }
+          // 2) land on it from just above at many phases (falling while it rises / sinks)
+          let land = 0, landBad = 0, landDrift = 0;
+          for (let j = 0; j < 24; j++){
+            for (let w = 0, n = 3 + j % 5; w < n; w++) step(dt);
+            const h = .01 + (j % 6) * .05, vy = -(1 + (j % 4) * 3);
+            ext.x = ext.z = 0; Object.assign(P, {x: b.mesh.position.x + ((j % 3) - 1) * .8, z: b.mesh.position.z + ((j % 2) ? .6 : -.6), y: top() + h, vx: 0, vy, vz: 0, onGround: false, ground: null});
+            const lx = P.x, lz = P.z; let ok = false, dd = 0;
+            for (let i = 0; i < Math.ceil(.6 / dt); i++){ step(dt); dd = Math.max(dd, Math.hypot(P.x - lx, P.z - lz)); if (P.ground === b) ok = true; }
+            land++; landDrift = Math.max(landDrift, dd); if (!ok || dd > .1 || P.ground !== b) landBad++;
+          }
+          out.push({mi, dt: +dt.toFixed(4), speed: +m.speed.toFixed(2), amp: +m.amp.toFixed(2), drift: +drift.toFixed(3), maxOff: +maxOff.toFixed(3), gap: +gap.toFixed(3), land, landBad, landDrift: +landDrift.toFixed(3)});
+        }); });
+      ext.x = sv.ex; ext.z = sv.ez; return out;
+    },
     petsXp(n){ const d = activePet(); if (d) addXp(d, n); },
     petsNeeds(o){ const d = activePet(); if (d) Object.assign(d, o); },
     petsGo(k, dx = 0, dz = 0){ const p = k === 'car' ? (() => { const s2 = seatPos(2.6, 0); return [s2.x, s2.z]; })() : /^pen\d$/.test(k) ? PLACES.pens[+k[3]] : /^walk\d$/.test(k) ? PLACES.walk[+k[4]] : PLACES[k];
