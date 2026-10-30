@@ -459,7 +459,15 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .pdrive #oJump,.pdrive #oEmoBtn,.pdrive #oRun,.pdrive #oFP{display:none!important}
 .rmode #oEmoBtn,.rmode #oRun,.rmode #oStam{display:none!important}
 .smode #oStam{display:none!important}
-.splevels{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px;margin:6px 0 10px}
+.splevels{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px;margin:6px 0 10px;max-height:min(46vh,430px);overflow-y:auto;padding:4px;overscroll-behavior:contain}
+.spdiffs{display:flex;gap:8px;justify-content:center;margin:4px 0 6px}.spdf{font:inherit;font-weight:900;border-radius:14px;border:3px solid #d9dcea;background:#fff;padding:6px 14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;color:#1d2340}
+.spdf small{font-size:11px;color:#5a6280}.spdf.on{border-color:#2a8fa0;background:#e3f6f9}.spdf.gpf,.spdf:hover:not(:disabled){border-color:#2a8fa0}
+.splv.cur{border-color:#ffb000}
+.spcoded{font-size:44px;font-weight:900;letter-spacing:6px;margin:4px 0}.spkeys{display:grid;grid-template-columns:repeat(3,72px);gap:8px;justify-content:center;margin:8px 0}
+.spkeys button{font:inherit;font-size:26px;font-weight:900;height:56px;border-radius:14px;border:3px solid #d9dcea;background:#fff;cursor:pointer;color:#1d2340}.spkeys button.gpf,.spkeys button:hover{border-color:#2a8fa0}
+.mbox.shake{animation:spshake .35s}@keyframes spshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.spshield{position:absolute;left:50%;top:14%;transform:translateX(-50%);display:none;z-index:6;pointer-events:none;background:rgba(60,150,255,.9);color:#fff;font-weight:900;padding:6px 14px;border-radius:14px}.spshield.on{display:block}
+#spShove.has{background:#ffe3e3}
 .splv{padding:10px 6px;border-radius:16px;border:3px solid #d9dcea;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font:inherit;color:#1d2340}
 .splv .re{font-size:40px;line-height:1.1}.splv b{font-size:16px}.splv small{font-size:12px;color:#5a6280;font-weight:700}.splv i{font-style:normal;font-size:12px;font-weight:800;color:#8a6a00}
 .splv:hover:not(:disabled),.splv.gpf{border-color:#2a8fa0;transform:translateY(-2px)}
@@ -472,7 +480,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .spwarn.on{display:block;animation:rcpulse .35s infinite alternate}
 #spPeb.has{background:#e8ecf5}
 .touchui .ojzone{top:calc(var(--hudb) + 6px)}
-@media (max-width:760px),(max-height:520px){.splevels{grid-template-columns:repeat(3,minmax(100px,1fr));gap:6px}.splv .re{font-size:26px}.splv small{display:none}.splv{padding:5px 4px}.sphelp{display:none}
+@media (max-width:760px),(max-height:520px){.splevels{grid-template-columns:repeat(4,minmax(90px,1fr));gap:6px;max-height:44vh}.spdf{padding:3px 8px}.spdf small{display:none}.spkeys{grid-template-columns:repeat(3,60px)}.spkeys button{height:40px;font-size:20px}.spcoded{font-size:30px}#spCode .emoji{display:none}.splv .re{font-size:26px}.splv small{display:none}.splv{padding:5px 4px}.sphelp{display:none}
  #spPick .emoji,#spEnd .emoji{display:none}#spPick h2,#spEnd h2{font-size:20px;margin:0 0 2px}#spPick .mbox,#spEnd .mbox{padding-top:10px;padding-bottom:10px}#spPick .big,#spEnd .big{padding-top:6px;padding-bottom:6px}.spwarn{font-size:14px;top:24%}.spmeter{bottom:30%}}
 .rcbox{max-width:760px}
 .rcmodes[hidden],.rcrides[hidden],#rcPick [hidden]{display:none!important}
@@ -863,8 +871,8 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="ostats">
       <span id="oStageBox">🏁 Lv <b id="oLvl">1</b><span id="oCpWrap"> · 🚩 <b id="oStage">1</b>/<b id="oStageN">3</b></span></span>
       <span id="spLvBox" style="display:none"><b id="spLvName">🪷 1. Lily Pad Lagoon</b></span>
-      <span id="spRoundBox" style="display:none">🌊 Round <b id="spRound">1</b> · ⏱️ <b id="spLeft">—</b></span>
-      <span id="spAliveBox" style="display:none">🙂 <b id="spAlive">1</b> left</span>
+      <span id="spRoundBox" style="display:none">🚪 <b id="spDist">0</b>m · ⏱️ <b id="spLeft">0:00</b></span>
+      <span id="spAliveBox" style="display:none">🏁 <b id="spAlive">0</b> at exit</span>
       <span id="rcLapBox" style="display:none">🏁 Lap <b id="rcLap">1</b>/3</span>
       <span id="rcPosBox" style="display:none"><b id="rcPos">🥇 1st</b>/<b id="rcN">6</b></span>
       <span id="oHeightBox">📏 <b id="oHeight">0</b></span>
@@ -885,6 +893,8 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="obtns">
       <span class="otopact" id="oTopAct"></span>
       <button id="spPeb" style="display:none" title="Throw a pebble (F)" aria-label="Throw a pebble">🪨 1</button>
+      <button id="spShove" style="display:none" title="Shove the monster away (Q)" aria-label="Shove the monster">👊</button>
+      <button id="spPull" style="display:none" title="Pull a friend out of the water (R)" aria-label="Pull a friend out">🤝</button>
       <button id="rcItem" style="display:none" title="Use your power-up (Shift)" aria-label="Use power-up">🎁</button>
       <button id="oMute" title="Sound on/off">🔊</button>
       <button class="ofp" id="oFP" title="First person (V)" aria-label="First person" aria-pressed="false">👁️</button>
@@ -984,18 +994,27 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   </div></div>
   <div class="pflash" id="pFlash"></div>
   <div class="spmeter" id="spMeter"><span>💦 Splash!</span><div class="spbar"><div id="spMeterF"></div></div></div>
-  <div class="spwarn" id="spWarn">😱 It's coming for you! Get out of the water / away from the edge!</div>
+  <div class="spwarn" id="spWarn">😱 It's coming for you! Get away from the edge, or 👊 shove it!</div>
+  <div class="spshield" id="spShield">🛡️ Shield</div>
   <div class="opanel" id="spPick"><div class="mbox rcbox">
     <span class="emoji">🌊</span><h2>Don't Splash!</h2>
     <div class="stats" id="spPickS">Pick a level!</div>
+    <div class="spdiffs" id="spDiffs"></div>
     <div class="splevels" id="spLevels"></div>
-    <div class="stats sphelp">Hop across the platforms. Touching the water makes noise, and noise wakes the <b>Splashgrabber</b>! 🪨 Throw pebbles into the water to trick it.</div>
+    <div class="stats sphelp">Hop from 🏁 START to the far 🚪 EXIT. The <b>Splashgrabber</b> can't see, but it hears every splash! 🪨 Throw pebbles to trick it, 👊 shove it away.</div>
     <div class="owinbtns"><button class="big gray" id="spHome">🏠 Home</button></div>
   </div></div>
   <div class="opanel" id="spEnd"><div class="mbox rcbox">
-    <span class="emoji">😱</span><h2>Splashgrabbed!</h2>
+    <span class="emoji">🏁</span><h2 id="spEndT">Level complete!</h2>
     <div class="stats" id="spEndS"></div>
-    <div class="owinbtns"><button class="big green" id="spAgain">🔁 Try again</button><button class="big blue" id="spLvls">🗺️ Levels</button><button class="big gray" id="spHome2">🏠 Home</button></div>
+    <div class="stats" id="spEndW" style="display:none">⏳ Waiting for the host to start the next level...</div>
+    <div class="owinbtns"><button class="big green" id="spNext">▶ Next level</button><button class="big blue" id="spAgain">🔁 Replay</button><button class="big blue" id="spLvls">🗺️ Levels</button><button class="big gray" id="spHome2">🏠 Home</button></div>
+  </div></div>
+  <div class="opanel" id="spCode"><div class="mbox rcbox">
+    <span class="emoji">🔒</span><h2>Door code</h2>
+    <div class="spcoded" id="spCodeD">_ _ _ _</div>
+    <div class="stats" id="spCodeM"></div>
+    <div class="spkeys" id="spKeys"><button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="<">⌫</button><button data-k="0">0</button><button data-k="x" id="spCodeX">✖</button></div>
   </div></div>
   <div class="opanel" id="rcPick"><div class="mbox rcbox">
     <span class="emoji">🏁</span><h2>Pet Kart Racing</h2>
@@ -1098,7 +1117,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.10.30-2';
+const BUILD = '2026.10.30-3';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -6676,130 +6695,292 @@ const Obby = (() => {
     if (!rc || (d.n | 0) !== rc.n || rc.order.some(o => o[0] === g.uid)) return;
     rc.order.push([g.uid, +d.tm || 0]); rcSendOrder();
   }
-  /* ---------- t187u-t191u: Don't Splash! Hop across floating platforms; splashing wakes the Splashgrabber ---------- */
+  /* ---------- t187u-t198u: Don't Splash! Cross the water from START to the far EXIT; splashing wakes the blind Splashgrabbers ---------- */
+  const SP_HW = 11, SP_TOP = 1, SP_FLOOR = -1.2, SP_FILL = 2.1, SP_MAXPEB = 3;
+  const SP_DIFF = [{id: 'easy', name: 'Easy', e: '🐣', mons: 1, sc: 1.25, sp: -2, peb: 2}, {id: 'normal', name: 'Normal', e: '🐸', mons: 3, sc: 1, sp: 0, peb: 0}, {id: 'hard', name: 'Hard', e: '🔥', mons: 5, sc: .92, sp: 2, peb: -1}];
+  // k: platform kinds · g: gap range · len: course length · run: chance of a running-jump gap · drift/conv/rot/sink: chance of moving / arrow-push / turning / sinking pads
   const SP_LEVELS = [
-    {name: 'Lily Pad Lagoon', e: '🪷', note: 'Big, easy lily pads', kind: 'wide', sky: '#7fb8c9'},
-    {name: 'Plank Bridges', e: '🪵', note: 'Long, thin planks', kind: 'planks', sky: '#86a9c4'},
-    {name: 'Stepping Stones', e: '🪨', note: 'Tiny, narrow stones', kind: 'stones', sky: '#7a98b8'},
-    {name: 'Mixed Marsh', e: '🌀', note: 'A bit of everything', kind: 'mixed', sky: '#6f8fa6'},
-    {name: 'Wobble Docks', e: '⚓', note: 'Wobbly docks that sink a lot', kind: 'docks', sky: '#5d7a96'}];
-  const SP_TOP = 1, SP_FLOOR = -1.2, SP_RAD = 27, SP_FILL = 2.1, SP_MAXPEB = 3, SP_UNLOCK = 3;
+    {name: 'Lily Pad Lagoon', e: '🪷', note: 'Big, easy lily pads', th: 'day', len: 52, k: ['wide'], g: [2, 3.2], peb: 7, mon: 17},
+    {name: 'Plank Bridges', e: '🪵', note: 'Long, thin planks', th: 'day', len: 58, k: ['planks'], g: [2, 3.4], peb: 7, mon: 17, br: 1},
+    {name: 'Stepping Stones', e: '🪨', note: 'Small stones, short hops', th: 'day', len: 60, k: ['stones'], g: [1.6, 3], peb: 6, mon: 18},
+    {name: 'Pool Hall', e: '🏛️', note: 'Tiled halls, pillars and arrows', th: 'pool', len: 66, k: ['tiles'], g: [2, 3.6], peb: 6, mon: 18, cps: 1, sink: .25},
+    {name: 'Sunset Lake', e: '🌅', note: 'Pads that drift side to side', th: 'sunset', len: 66, k: ['wide', 'planks'], g: [2.2, 3.6], peb: 6, mon: 18, drift: .3, br: 1},
+    {name: 'Mixed Marsh', e: '🌀', note: 'Pick your path!', th: 'day', len: 72, k: ['wide', 'planks', 'stones'], g: [2, 3.8], peb: 6, mon: 19, br: 3},
+    {name: 'Wobble Docks', e: '⚓', note: 'Docks that sink a lot', th: 'day', len: 72, k: ['docks'], g: [2, 3.6], peb: 6, mon: 19, sink: .6, cps: 1},
+    {name: 'Foggy Marsh', e: '🌫️', note: 'You can\'t see far...', th: 'fog', len: 74, k: ['wide', 'stones'], g: [2, 3.8], peb: 5, mon: 19, br: 2, cps: 1},
+    {name: 'Long Jump Lagoon', e: '🏃', note: 'Run to make the big jumps!', th: 'day', len: 78, k: ['wide'], g: [3, 4.2], run: .45, peb: 5, mon: 19, cps: 1},
+    {name: 'Memory Bridge', e: '💡', note: 'Watch which tiles light up!', th: 'pool', len: 80, k: ['tiles'], g: [2, 3.6], peb: 5, mon: 19, mem: 5, cps: 2},
+    {name: 'Night Swamp', e: '🌙', note: 'Fireflies and quiet hops', th: 'night', len: 82, k: ['stones', 'planks'], g: [2, 3.6], peb: 5, mon: 20, br: 2, cps: 1, code: 1},
+    {name: 'Icy Pond', e: '🧊', note: 'Slippery ice floes!', th: 'ice', len: 82, k: ['floe'], g: [2, 3.6], peb: 5, mon: 20, drift: .3, cps: 1},
+    {name: 'Pumpkin Pond', e: '🎃', note: 'Spooky pumpkin pads', th: 'spooky', len: 84, k: ['pumpkin', 'stones'], g: [2, 3.8], peb: 5, mon: 20, sink: .25, br: 2, cps: 1},
+    {name: 'Push Pools', e: '➡️', note: 'Arrow floors push you sideways', th: 'pool', len: 86, k: ['tiles', 'wide'], g: [2.2, 3.8], peb: 4, mon: 21, conv: .5, cps: 2},
+    {name: 'Turning Planks', e: '🔄', note: 'Wait for the planks to line up', th: 'sunset', len: 88, k: ['planks'], g: [2, 3.4], peb: 4, mon: 21, rot: .55, cps: 2, sink: .15},
+    {name: 'Tiny Toes', e: '🐾', note: 'Teeny tiny stepping stones', th: 'fog', len: 88, k: ['tiny'], g: [1.6, 3], peb: 4, mon: 21, br: 2, cps: 2},
+    {name: 'Frozen Rapids', e: '❄️', note: 'Ice that won\'t sit still', th: 'ice', len: 92, k: ['floe', 'stones'], g: [2.2, 3.8], peb: 4, mon: 22, drift: .5, cps: 2, code: 1},
+    {name: 'Haunted Bridges', e: '👻', note: 'Spooky planks that sink', th: 'spooky', len: 96, k: ['planks', 'docks'], g: [2.2, 3.8], peb: 3, mon: 22, sink: .45, rot: .25, cps: 2},
+    {name: "Monster's Moat", e: '😱', note: 'Fast monster, few pebbles', th: 'night', len: 100, k: ['wide', 'planks', 'stones', 'docks'], g: [2.4, 4], run: .2, peb: 3, mon: 24, drift: .25, sink: .3, br: 3, cps: 2},
+    {name: 'The Grand Crossing', e: '🏆', note: 'Everything! Find the door code', th: 'pool', len: 112, k: ['tiles', 'planks', 'stones', 'wide'], g: [2.2, 4], run: .15, peb: 3, mon: 24, drift: .2, conv: .25, rot: .2, sink: .3, mem: 4, br: 3, cps: 3, code: 1}];
+  const SP_TH = {
+    day: {sky: '#7fb8c9', fog: [45, 160], water: '#2a8fa0', em: '#08404d', light: 1},
+    sunset: {sky: '#f0a07a', fog: [40, 150], water: '#3c7f98', em: '#5a2a10', light: .9},
+    night: {sky: '#1c2446', fog: [22, 95], water: '#1d4f66', em: '#06202c', light: .5},
+    fog: {sky: '#b8c3c8', fog: [6, 42], water: '#4c8c96', em: '#10343a', light: .85},
+    ice: {sky: '#cfe6f2', fog: [40, 150], water: '#5fb3cf', em: '#1f5a70', light: 1.05},
+    spooky: {sky: '#3b2752', fog: [20, 100], water: '#2c4f5c', em: '#2a0f3a', light: .58},
+    pool: {sky: '#d6eef2', fog: [30, 130], water: '#5cc7d6', em: '#1d6e7a', light: 1.05}};
+  const SP_KCOL = {wide: ['#3fae5a', '#5cc46f', '#2f9a4e'], planks: ['#a8743f', '#8f5f30', '#b98550'], stones: ['#8d96a5', '#9fa7b3', '#7b8494'], tiny: ['#8d96a5', '#a9b0bc'], docks: ['#9b7b55', '#86684a', '#ab8a62'],
+    tiles: ['#f4fbfc', '#e6f5f8'], floe: ['#f2fbff', '#d8eef8', '#e6f6ff'], pumpkin: ['#ff8a1f', '#f07a12']};
   let dsp = null;
-  const spSave = () => save('rubloxSplash', dsp.sv);
+  const spSave = () => save('rubloxSplash2', dsp.sv);
   function spRng(seed){ let s = (seed >>> 0) || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
-  function spLayout(kind){   // [x, z, w, d] boxes (axis-aligned), the first one is the safe-ish home pad
-    const r = spRng(kind.length * 977 + 13), L = [], inside = (x, z, w, d) => Math.hypot(Math.abs(x) + w / 2, Math.abs(z) + d / 2) < SP_RAD;
-    const add = (x, z, w, d) => { if (inside(x, z, w, d) && !L.some(q => Math.abs(q[0] - x) < (q[2] + w) / 2 + 1.2 && Math.abs(q[1] - z) < (q[3] + d) / 2 + 1.2)) L.push([x, z, w, d]); };
-    if (kind === 'wide'){ add(0, 0, 8, 8); for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) if (i || j) add(i * 8 + (r() - .5) * 1.2, j * 8 + (r() - .5) * 1.2, 5 + r() * 1.2, 5 + r() * 1.2); }
-    else if (kind === 'planks'){ add(0, 0, 6, 6);
-      for (let j = -4; j <= 4; j++){ const v = Math.abs(j) % 2 === 1; if (v) for (let x = -22; x <= 22; x += 5.5) add(x + (r() - .5), j * 5.6, 1.6, 4.4);
-        else { let x = -24 + r() * 3; while (x < 22){ const w = 8 + r() * 5; add(x + w / 2, j * 5.6, w, 1.6); x += w + 2.2 + r() * 1.2; } } } }
-    else if (kind === 'stones'){ add(0, 0, 5, 5); for (let i = -6; i <= 6; i++) for (let j = -6; j <= 6; j++) if (r() < .72){ const s = 1.6 + r() * .7; add(i * 3.9 + (r() - .5) * .6, j * 3.9 + (r() - .5) * .6, s, s); } }
-    else if (kind === 'mixed'){ add(0, 0, 6.5, 6.5); for (let i = -4; i <= 4; i++) for (let j = -4; j <= 4; j++){ const k = r(), x = i * 6, z = j * 6;
-      if (k < .3) add(x, z, 4.2, 4.2); else if (k < .5) add(x, z, 5.6, 1.6); else if (k < .7) add(x, z, 1.6, 5.6); else add(x, z, 2.2, 2.2); } }
-    else { add(0, 0, 6, 6); for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) if (i || j){ const h = (i + j) % 2 === 0; add(i * 7.6, j * 7.6, h ? 8.6 : 2, h ? 2 : 8.6); } }
-    // keep only pads you can actually hop to from the home pad (gap <= 4)
-    const gap = (a, b) => Math.hypot(Math.max(0, Math.abs(a[0] - b[0]) - (a[2] + b[2]) / 2), Math.max(0, Math.abs(a[1] - b[1]) - (a[3] + b[3]) / 2));
-    const ok = new Set([0]), todo = [0]; while (todo.length){ const i = todo.pop(); L.forEach((b, j) => { if (!ok.has(j) && gap(L[i], b) <= 4.1){ ok.add(j); todo.push(j); } }); }
-    return L.filter((b, j) => ok.has(j));
+  function spPadSize(kind, r){
+    switch (kind){
+      case 'wide': { const s = 4.8 + r() * 2; return [s, s * (.85 + r() * .3)]; }
+      case 'planks': return r() < .8 ? [1.5 + r() * .3, 6 + r() * 4] : [6 + r() * 3, 1.6];
+      case 'stones': { const s = 1.7 + r() * .6; return [s, s]; }
+      case 'tiny': { const s = 1.2 + r() * .35; return [s, s]; }
+      case 'docks': return [2.2, 7 + r() * 2];
+      case 'tiles': { const s = r() < .5 ? 4 : 3; return [s, s + (r() < .3 ? 2 : 0)]; }
+      case 'floe': return [3 + r() * 2, 3 + r() * 2];
+      case 'pumpkin': { const s = 2.6 + r() * .6; return [s, s]; }
+    }
+    return [4, 4];
   }
-  const SP_COLS = {wide: ['#3fae5a', '#5cc46f', '#2f9a4e'], planks: ['#a8743f', '#8f5f30', '#b98550'], stones: ['#8d96a5', '#9fa7b3', '#7b8494'], mixed: ['#3fae5a', '#a8743f', '#8d96a5', '#5cc46f'], docks: ['#9b7b55', '#86684a', '#ab8a62']};
-  function spClearPlats(){
-    if (!dsp.plats) return; const gone = new Set(dsp.plats.map(q => q.b));
-    dsp.plats.forEach(q => { scene.remove(q.b.mesh); if (q.flower) scene.remove(q.flower); }); solids = solids.filter(b => !gone.has(b));
-    (dsp.pebs || []).forEach(p => scene.remove(p.m)); dsp.plats = []; dsp.pebs = [];
+  const spGap = (a, b, ax = 0, bx = 0) => Math.hypot(Math.max(0, Math.abs(a.x + ax - b.x - bx) - (a.w + b.w) / 2), Math.max(0, Math.abs(a.z - b.z) - (a.d + b.d) / 2));
+  function spGapW(a, b){   // worst case over the drift of moving pads
+    const A = a.mv ? [-a.mv.amp, 0, a.mv.amp] : [0], B = b.mv ? [-b.mv.amp, 0, b.mv.amp] : [0]; let g = 0;
+    for (const x of A) for (const y of B) g = Math.max(g, spGap(a, b, x, y)); return g;
   }
-  function spSetLevel(i){
-    i = clamp(i | 0, 0, SP_LEVELS.length - 1); dsp.lv = i; const Lv = SP_LEVELS[i]; spClearPlats();
-    scene.background = new THREE.Color(Lv.sky); scene.fog = new THREE.Fog(Lv.sky, 45, 140);
-    const cols = SP_COLS[Lv.kind];
-    dsp.plats = spLayout(Lv.kind).map(([x, z, w, d], k) => {
-      const b = plat(x, SP_TOP, z, w, d, cols[k % cols.length], 3.2), q = {b, x, z, w, d, home: k === 0, ev: []};
-      if (Lv.kind === 'wide' && k % 3 === 1){ const f = new THREE.Group(), pm = mat('#ff9fd0'); for (let a = 0; a < 5; a++){ const m = new THREE.Mesh(new THREE.BoxGeometry(.5, .2, .9), pm); m.position.set(Math.sin(a * 1.26) * .35, 0, Math.cos(a * 1.26) * .35); m.rotation.y = a * 1.26; f.add(m); }
-        const c = new THREE.Mesh(new THREE.BoxGeometry(.3, .25, .3), mat('#ffd23f')); f.add(c); f.position.set(x + w * .25, SP_TOP + .12, z - d * .25); scene.add(f); q.flower = f; }
+  const spReach = L => L.run ? 8.6 : 5.2;
+  function spLinked(C, a, b){   // can you hop from pad a to pad b? (pool walls only open at the checkpoint tunnel)
+    if (spGapW(a, b) > C.reach) return false;
+    for (const w of C.walls){ const lo = Math.min(a.z, b.z), hi = Math.max(a.z, b.z); if (lo < w.z && hi > w.z && a.cpk !== w.k && b.cpk !== w.k) return false; }
+    return true;
+  }
+  function spReachable(C){
+    const P = C.pads, ok = new Set([0]), todo = [0];
+    while (todo.length){ const i = todo.pop(); P.forEach((b, j) => { if (!ok.has(j) && !b.trapAll && spLinked(C, P[i], b)){ ok.add(j); todo.push(j); } }); }
+    return ok;
+  }
+  const spCourseCache = {};
+  function spCourse(i, df){
+    const key = i + ':' + df; if (spCourseCache[key]) return spCourseCache[key];
+    const L = SP_LEVELS[i], D = SP_DIFF[df], reach = spReach(L); let C = null;
+    for (let tr = 0; tr < 40; tr++){
+      const r = spRng(i * 7919 + tr * 104729 + 17 + df * 31337), pads = [], pick = a => a[Math.floor(r() * a.length)];
+      const size = kind => { let [w, d] = spPadSize(kind, r); if (kind === 'planks' || kind === 'docks'){ if (w < d) w *= D.sc > 1 ? 1.3 : 1; else d *= D.sc > 1 ? 1.3 : 1; } else { w *= D.sc; d *= D.sc; } return [w, d]; };
+      const inX = (x, w) => clamp(x, -SP_HW + w / 2, SP_HW - w / 2);
+      const over = (x, z, w, d, m) => pads.some(q => Math.abs(q.x - x) < (q.w + w) / 2 + m && Math.abs(q.z - z) < (q.d + d) / 2 + m);
+      const start = {x: 0, z: 0, w: 7, d: 7, kind: 'wide', main: true, start: true}; pads.push(start);
+      const cpZ = []; for (let k = 0; k < (L.cps || 0); k++) cpZ.push(L.len * (k + 1) / ((L.cps || 0) + 1));
+      const memZ = L.mem ? L.len * (L.cps ? .4 : .5) : 1e9; let memDone = !L.mem, cur = start, tx = 0, walls = [], cpk = 0, safeRun = 0;
+      const place = (w, d, g, o) => {   // put a pad g away from the current one, roughly forward
+        if (r() < .3) tx = (r() - .5) * 2 * (SP_HW - 4);
+        let nx = inX(cur.x + clamp(tx - cur.x, -3, 3), w); const sw = (w + cur.w) / 2;
+        let gx = Math.max(0, Math.abs(nx - cur.x) - sw); if (gx > g * .6){ nx = cur.x + Math.sign(nx - cur.x) * (sw + g * .5); gx = g * .5; }
+        const gz = Math.sqrt(Math.max(0, g * g - gx * gx)), q = Object.assign({x: nx, z: cur.z + (cur.d + d) / 2 + gz, w, d, main: true}, o); pads.push(q); cur = q; return q; };
+      while (cur.z + cur.d / 2 < L.len - 8){
+        if (cpZ.length && cur.z > cpZ[0]){ cpZ.shift(); const q = place(6.5 * Math.max(1, D.sc * .9), 6, 2.4, {kind: 'wide', cp: ++cpk, cpk}); q.x = inX(q.x, q.w); if (L.th === 'pool') walls.push({z: q.z, k: cpk, x: q.x, w: q.w}); continue; }
+        if (!memDone && cur.z > memZ){ memDone = true;
+          const bx = clamp(cur.x, -SP_HW + 5.5, SP_HW - 5.5), lanes = [-3.6, 0, 3.6], ts = 2.6 * Math.min(1.15, D.sc);
+          place(10, 4, 2.4, {kind: 'tiles', memEdge: true}); cur.x = bx;
+          for (let row = 0; row < L.mem; row++){ const z = cur.z + cur.d / 2 + 1.6 + ts / 2; lanes.forEach((lx, lane) => pads.push({x: bx + lx, z, w: ts, d: ts, kind: 'tiles', mem: {row, lane}, main: true}));
+            cur = {x: bx, z, w: 10, d: ts}; }
+          const q = {x: bx, z: cur.z + ts / 2 + 1.6 + 2, w: 10, d: 4, kind: 'tiles', memEdge: true, main: true}; pads.push(q); cur = q; continue; }
+        const runGap = L.run && r() < L.run && cur.w > 2.5 && !cur.mv && !cur.rot;
+        const kind = runGap ? 'wide' : pick(L.k); let [w, d] = runGap ? [4.6 * D.sc, 4.6 * D.sc] : size(kind);
+        let g = runGap ? 6.4 + r() * 1.6 : L.g[0] + r() * (L.g[1] - L.g[0]); if (df === 2) g = Math.min(reach - .4, g * 1.06);
+        const q = place(w, d, g, {kind, runGap});
+        if (!runGap){
+          if (L.rot && kind === 'planks' && q.d > q.w && r() < L.rot) q.rot = {per: 5 + r() * 2, ph: r() * 6};
+          else if (L.drift && r() < L.drift) q.mv = {amp: 1.4 + r() * 1.4, spd: .5 + r() * .5, ph: r() * 6};
+          if (L.conv && q.w >= 3 && q.d >= 3 && !q.mv && r() < L.conv) q.conv = (r() < .5 ? -1 : 1) * (2.2 + r() * 1.2);
+          if (kind === 'tiles') q.safe = r() < .45 || safeRun > 1;
+          const sinkP = (L.sink || 0) * (kind === 'tiles' ? 1.6 : 1);
+          if (!q.safe && !q.rot && r() < sinkP){ q.ev = {k: kind === 'docks' || kind === 'tiles' || r() < .7 ? 'sink' : 'shrink', per: 9 + r() * 6, t0: 2 + r() * 8, down: 2 + r() * 2}; safeRun++; } else safeRun = 0;
+        }
+      }
+      const ex = place(8, 7, Math.min(3.2, L.g[1]), {kind: 'wide', exit: true}); ex.x = inX(ex.x, 8);
+      // moving pads must stay reachable even at the far end of their slide
+      const main = pads.filter(q => q.main && !q.mem);
+      main.forEach((q, j) => { if (!q.mv) return; const a = main[j - 1], b = main[j + 1]; if ((a && spGapW(a, q) > reach - .3) || (b && spGapW(q, b) > reach - .3)) delete q.mv; });
+      // side branches (dead ends with pebbles, or a second way through)
+      for (let k = 0; k < (L.br || 0); k++){
+        const base = main[2 + Math.floor(r() * Math.max(1, main.length - 5))]; if (!base || base.cp || base.exit || base.memEdge) continue;
+        let c = base, side = base.x > 0 ? -1 : 1;
+        for (let h = 0; h < 2 + Math.floor(r() * 3); h++){ const kind = pick(L.k), [w, d] = size(kind), g = L.g[0] + r() * (L.g[1] - L.g[0]);
+          const x = h === 0 ? c.x + side * ((c.w + w) / 2 + g) : c.x + (r() - .5) * 2, z = h === 0 ? c.z + (r() - .5) * 2 : c.z + (c.d + d) / 2 + g;
+          if (Math.abs(x) > SP_HW - w / 2 || over(x, z, w, d, .9)) break; const q = {x, z, w, d, kind, br: true}; pads.push(q); c = q; } }
+      // a few extra pads scattered around
+      for (let k = 0; k < L.len / 9; k++){ const kind = pick(L.k), [w, d] = size(kind), x = (r() - .5) * 2 * (SP_HW - w / 2), z = 6 + r() * (L.len - 12);
+        if (!over(x, z, w, d, 1.3)) pads.push({x, z, w, d, kind, extra: true}); }
+      // pool walls: nothing but the tunnel pad may poke through a wall
+      let P2 = pads.filter(q => q.main || !walls.some(w => Math.abs(q.z - w.z) < q.d / 2 + .9));
+      const C0 = {pads: P2, walls, reach, len: ex.z, lv: i, df};
+      const ok = spReachable(C0), exitIdx = P2.indexOf(ex);
+      if (!ok.has(exitIdx)) continue;
+      C0.pads = P2.filter((q, j) => ok.has(j) || q.mem);
+      // water pillars for the pool halls + code pillars
+      C0.pillars = []; if (L.th === 'pool') for (let k = 0; k < L.len / 5; k++){ const x = (r() - .5) * 2 * (SP_HW + 2), z = 2 + r() * (ex.z - 4); if (!C0.pads.some(q => Math.abs(q.x - x) < q.w / 2 + 1.8 && Math.abs(q.z - z) < q.d / 2 + 1.8)) C0.pillars.push({x, z}); }
+      C0.codeAt = []; if (L.code){ const m2 = C0.pads.filter(q => q.main && !q.mem && !q.start && !q.exit && !q.cp && q.w >= 1.4); for (let k = 0; k < 4; k++){ const q = m2[Math.floor((k + .6) / 4.2 * m2.length)]; if (q) C0.codeAt.push(q); } }
+      C = C0; break;
+    }
+    spCourseCache[key] = C; return C;
+  }
+  function spValidate(){ const out = []; for (let i = 0; i < SP_LEVELS.length; i++) for (let df = 0; df < 3; df++){ const C = spCourse(i, df), ex = C ? C.pads.findIndex(q => q.exit) : -1; let ok = !!C && spReachable(C).has(ex), combos = 1;
+      // memory bridge: the exit must be reachable whichever lane lights up in each row
+      const mem = C ? C.pads.filter(q => q.mem) : [], rows = mem.length ? 1 + Math.max(...mem.map(q => q.mem.row)) : 0;
+      if (ok && rows){ combos = Math.pow(3, rows); for (let c = 0; c < combos && ok; c++){ let v = c; const safe = []; for (let r = 0; r < rows; r++){ safe.push(v % 3); v = Math.floor(v / 3); }
+          mem.forEach(q => { q.trapAll = q.mem.lane !== safe[q.mem.row]; }); ok = spReachable(C).has(ex); } mem.forEach(q => { q.trapAll = true; }); var need = !spReachable(C).has(ex); mem.forEach(q => { delete q.trapAll; }); }
+      out.push({i, df, ok, len: C ? +C.len.toFixed(1) : 0, n: C ? C.pads.length : 0, rows, combos, need: rows ? need : null}); } return out; }
+  /* --- textures + bits of scenery --- */
+  let spTex = null;
+  function spTileTex(){ if (spTex) return spTex; const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
+    x.fillStyle = '#f3fbfd'; x.fillRect(0, 0, 64, 64); x.strokeStyle = '#9fd3de'; x.lineWidth = 3; for (let k = 0; k <= 64; k += 32){ x.beginPath(); x.moveTo(k, 0); x.lineTo(k, 64); x.stroke(); x.beginPath(); x.moveTo(0, k); x.lineTo(64, k); x.stroke(); }
+    spTex = new THREE.CanvasTexture(c); spTex.wrapS = spTex.wrapT = THREE.RepeatWrapping; return spTex; }
+  function spMesh(w, h, d, m, x, y, z, parent){ const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), typeof m === 'string' ? mat(m) : m); o.position.set(x, y, z); (parent || dsp.envG).add(o); return o; }
+  function spArrow(parent, x, y, z, yaw, col, s = 1){ const g = new THREE.Group(), m = mat(col); const a = new THREE.Mesh(new THREE.BoxGeometry(.5 * s, .06, 1.4 * s), m); a.position.z = -.3 * s; g.add(a);
+    [-1, 1].forEach(sd => { const b = new THREE.Mesh(new THREE.BoxGeometry(.4 * s, .06, 1.1 * s), m); b.position.set(sd * .32 * s, 0, .5 * s); b.rotation.y = -sd * .75; g.add(b); });
+    g.position.set(x, y, z); g.rotation.y = yaw; parent.add(g); return g; }
+  function spClearLevel(){
+    if (dsp.plats){ const gone = new Set(dsp.plats.map(q => q.b).concat(dsp.envSolids || []));
+      dsp.plats.forEach(q => { scene.remove(q.b.mesh); if (q.deco) scene.remove(q.deco); }); (dsp.envSolids || []).forEach(b => scene.remove(b.mesh)); solids = solids.filter(b => !gone.has(b)); }
+    (dsp.pebs || []).forEach(p => scene.remove(p.m)); if (dsp.envG) scene.remove(dsp.envG); (dsp.mons || []).forEach(M => scene.remove(M.g));
+    dsp.plats = []; dsp.pebs = []; dsp.envSolids = []; dsp.mons = [];
+  }
+  function spSetLevel(i, df){
+    i = clamp(i | 0, 0, SP_LEVELS.length - 1); df = clamp(df == null ? dsp.df : df | 0, 0, 2); dsp.lv = i; dsp.df = df; const Lv = SP_LEVELS[i], T = SP_TH[Lv.th], C = spCourse(i, df); spClearLevel(); dsp.C = C; dsp.len = C.len;
+    scene.background = new THREE.Color(T.sky); scene.fog = new THREE.Fog(T.sky, T.fog[0], T.fog[1]);
+    scene.traverse(o => { if (o.isHemisphereLight || o.isDirectionalLight){ if (o.userData.spB == null) o.userData.spB = o.intensity; o.intensity = o.userData.spB * T.light; } });
+    const G = dsp.envG = new THREE.Group(); scene.add(G); const r = spRng(i * 131 + 5), z0 = -12, z1 = C.len + 12, W = SP_HW * 2 + 34;
+    // pond floor + water
+    const fl = plat(0, SP_FLOOR, (z0 + z1) / 2, W, z1 - z0, Lv.th === 'pool' ? '#a9dfe7' : Lv.th === 'ice' ? '#7fa7b5' : '#6b7f5a', 2); dsp.envSolids.push(fl);
+    const wg = new THREE.PlaneGeometry(W, z1 - z0, 30, Math.round((z1 - z0) / 3)); wg.rotateX(-Math.PI / 2); wg.translate(0, 0, (z0 + z1) / 2);
+    const water = new THREE.Mesh(wg, new THREE.MeshLambertMaterial({color: T.water, emissive: T.em, emissiveIntensity: .4, transparent: true, opacity: Lv.th === 'pool' ? .7 : .8})); G.add(water); dsp.water = water; dsp.wbase = wg.attributes.position.array.slice();
+    // invisible fences
+    [[-SP_HW - 4.5, (z0 + z1) / 2, 1, z1 - z0], [SP_HW + 4.5, (z0 + z1) / 2, 1, z1 - z0], [0, -9, W, 1], [0, C.len + 9, W, 1]].forEach(([x, z, w, d]) => { const b = plat(x, 7, z, w, d, '#ffffff', 10); b.mesh.visible = false; dsp.envSolids.push(b); });
+    // shore: reeds, snow banks, dead trees, or tiled walls with arrows
+    if (Lv.th === 'pool'){ const wm = new THREE.MeshLambertMaterial({map: spTileTex().clone()}); wm.map.needsUpdate = true; wm.map.repeat.set((z1 - z0) / 3, 3);
+      [-1, 1].forEach(sd => { spMesh(.6, 9, z1 - z0, wm, sd * (SP_HW + 5.2), 3.3, (z0 + z1) / 2); for (let z = 4; z < C.len; z += 9) { const a = spArrow(G, sd * (SP_HW + 4.85), 3.2, z, 0, '#2f6fd1', 1.3); a.rotation.set(0, 0, sd * Math.PI / 2); } });
+      const wm2 = new THREE.MeshLambertMaterial({map: spTileTex().clone()}); wm2.map.needsUpdate = true; wm2.map.repeat.set(W / 3, 3);
+      spMesh(W, 9, .6, wm2, 0, 3.3, z0 + 1); spMesh(W, 9, .6, wm2, 0, 3.3, z1 - 1);
+      const pm = new THREE.MeshLambertMaterial({map: spTileTex()}); C.pillars.forEach(p => { const b = plat(p.x, 8, p.z, 1.1, 1.1, '#f3fbfd', 9.2); b.mesh.material = pm; dsp.envSolids.push(b); });
+      // tunnel walls between rooms, open only at the checkpoint pad
+      C.walls.forEach(w => { const L0 = (w.x - w.w / 2) - (-SP_HW - 5), R0 = (SP_HW + 5) - (w.x + w.w / 2);
+        [[-SP_HW - 5 + L0 / 2, L0], [w.x + w.w / 2 + R0 / 2, R0]].forEach(([x, wd]) => { if (wd > .2){ const b = plat(x, 8, w.z, wd, 1, '#f3fbfd', 9.2); b.mesh.material = wm2; dsp.envSolids.push(b); } });
+        spMesh(w.w + .2, 3.4, 3, wm2, w.x, SP_TOP + 4.4 + 1.7, w.z); }); }
+    else { const n = Math.round((z1 - z0) / 2.4) * 2, stalk = new THREE.InstancedMesh(new THREE.BoxGeometry(.18, 1, .18), mat(Lv.th === 'ice' ? '#e8f4fa' : Lv.th === 'spooky' ? '#4a3a33' : '#5c8a3a'), n * 3), head = new THREE.InstancedMesh(new THREE.BoxGeometry(.3, .9, .3), mat(Lv.th === 'ice' ? '#ffffff' : Lv.th === 'spooky' ? '#ff8a1f' : '#7a4b2e'), n * 3), o = new THREE.Object3D(); let k = 0;
+      for (let j = 0; j < n; j++){ const sd = j % 2 ? 1 : -1, z = z0 + Math.floor(j / 2) * 2.4, x = sd * (SP_HW + 5 + r() * 4);
+        for (let m = 0; m < 3; m++, k++){ const h = 2.4 + r() * 2, xx = x + (r() - .5) * 1.5, zz = z + (r() - .5) * 1.5; o.position.set(xx, h / 2 - 1, zz); o.scale.set(1, h, 1); o.rotation.set(0, 0, 0); o.updateMatrix(); stalk.setMatrixAt(k, o.matrix);
+          o.position.set(xx, h - .6, zz); o.scale.set(1, 1, 1); o.updateMatrix(); head.setMatrixAt(k, o.matrix); } }
+      G.add(stalk, head);
+      for (let k2 = 0; k2 < (z1 - z0) / 5; k2++){ const sd = k2 % 2 ? 1 : -1, s = 2 + r() * 2.5; spMesh(s, s, s * 1.1, Lv.th === 'ice' ? '#eef8ff' : '#6d6f78', sd * (SP_HW + 6 + r() * 5), s / 2 - .6, z0 + r() * (z1 - z0)); } }
+    // fireflies (lots at night)
+    const fc = Lv.th === 'night' || Lv.th === 'spooky' ? 140 : 50, fa = new Float32Array(fc * 3); for (let k = 0; k < fc; k++){ fa[k * 3] = (r() - .5) * (W - 6); fa[k * 3 + 1] = 1 + r() * 6; fa[k * 3 + 2] = z0 + r() * (z1 - z0); }
+    const fg = new THREE.BufferGeometry(); fg.setAttribute('position', new THREE.BufferAttribute(fa, 3));
+    dsp.flies = new THREE.Points(fg, new THREE.PointsMaterial({color: Lv.th === 'ice' ? '#ffffff' : '#f6ff8a', size: Lv.th === 'ice' ? .35 : .25})); G.add(dsp.flies);
+    // platforms
+    const tt = spTileTex();
+    dsp.plats = C.pads.map((c, k) => {
+      const cols = SP_KCOL[c.kind] || SP_KCOL.wide, col = c.start ? '#ffd23f' : c.exit ? '#7dfcff' : c.cp ? '#9be15d' : cols[k % cols.length];
+      const b = plat(c.x, SP_TOP, c.z, c.w, c.d, col, 3.2), q = Object.assign({b, ev: null}, c);
+      if (c.kind === 'tiles' && !c.start && !c.exit && !c.cp){ const m = new THREE.MeshLambertMaterial({map: tt.clone()}); m.map.needsUpdate = true; m.map.repeat.set(c.w / 2, c.d / 2); b.mesh.material = m; q.tm = m; }
+      if (c.kind === 'floe') b.ice = true;
+      if (c.ev) q.ev = c.ev;
+      const D = new THREE.Group(); let has = false;
+      if (c.kind === 'tiles' && c.safe && !c.mem){ has = true; const m = mat('#1d3550'); [[0, c.d / 2 - .12, c.w, .24], [0, -c.d / 2 + .12, c.w, .24], [c.w / 2 - .12, 0, .24, c.d], [-c.w / 2 + .12, 0, .24, c.d]].forEach(([x, z, w, d]) => spMesh(w, .1, d, m, x, .04, z, D)); }
+      if (c.conv){ has = true; for (let a = -1; a <= 1; a++) spArrow(D, a * Math.min(1.2, c.w / 4), .08, 0, c.conv > 0 ? Math.PI / 2 : -Math.PI / 2, '#ffb020', .8); }
+      if (Lv.th === 'pool' && c.main && !c.mem && !c.conv && k % 2 === 0 && c.w >= 2.5 && c.d >= 2.5 && !c.exit){ has = true; spArrow(D, 0, .08, 0, 0, '#2f6fd1', .9); }
+      if (Lv.th === 'day' && c.kind === 'wide' && k % 3 === 1){ has = true; const pm = mat('#ff9fd0'); for (let a = 0; a < 5; a++) spMesh(.5, .2, .9, pm, c.w * .25 + Math.sin(a * 1.26) * .35, .12, -c.d * .25 + Math.cos(a * 1.26) * .35, D).rotation.y = a * 1.26; spMesh(.3, .25, .3, '#ffd23f', c.w * .25, .12, -c.d * .25, D); }
+      if (c.kind === 'pumpkin' || (Lv.th === 'spooky' && k % 4 === 2 && c.w > 2)){ has = true; const px = c.w * .25, pz = c.d * .25; spMesh(1, .8, 1, '#ff8a1f', px, .4, pz, D); spMesh(.15, .3, .15, '#3f7a2a', px, .95, pz, D); [-.2, .2].forEach(e => spMesh(.16, .16, .05, mat('#ffe066', '#ffd000'), px + e, .5, pz + .51, D)); }
+      if (c.start){ has = true; const s = label('🏁 START', 'rgba(30,140,60,.9)'); s.position.set(0, 3.2, -c.d / 2 + .5); D.add(s); }
+      if (c.cp){ has = true; const am = mat('#9be15d', '#3c8a00'); [-1, 1].forEach(sd => spMesh(.5, 4.2, .5, am, sd * (c.w / 2 - .3), 2.1, 0, D)); spMesh(c.w, .5, .6, am, 0, 4.3, 0, D);
+        const s = label('✅ Checkpoint', 'rgba(60,150,30,.9)'); s.position.set(0, 5.4, 0); s.scale.multiplyScalar(.8); D.add(s); q.cpFlag = s; }
+      if (c.exit){ has = true; const gm = mat('#ffd23f', '#ffb000'), zz = c.d / 2 - 1; [-1, 1].forEach(sd => spMesh(.6, 4.6, .6, gm, sd * 1.9, 2.3, zz, D)); spMesh(4.4, .7, .7, gm, 0, 4.7, zz, D);
+        const pm = new THREE.MeshBasicMaterial({color: '#7dfcff', transparent: true, opacity: .55, side: THREE.DoubleSide}); const portal = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 4.3), pm); portal.position.set(0, 2.2, zz); D.add(portal);
+        const beam = new THREE.Mesh(new THREE.CylinderGeometry(.6, .6, 60, 12, 1, true), new THREE.MeshBasicMaterial({color: '#fff3a0', transparent: true, opacity: .32, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide})); beam.position.set(0, 30, zz); D.add(beam);
+        const lt = new THREE.PointLight('#fff3a0', 1.4, 18, 1.5); lt.position.set(0, 3, zz - 1); D.add(lt);
+        const s = label(Lv.code ? '🔒 EXIT' : '🚪 EXIT', 'rgba(255,170,0,.95)'); s.userData.bg = 'rgba(255,170,0,.95)'; s.position.set(0, 6.3, zz); D.add(s); q.portal = portal; q.beam = beam; q.sign = s;
+        if (Lv.code){ const kp = spMesh(.9, 1.2, .3, '#2b3350', 2.7, 1.4, zz - .2, D); spMesh(.6, .4, .05, mat('#5ff2ff', '#2fd9ff'), 2.7, 1.6, zz - .38, D); q.keypad = kp; } }
+      if (has){ D.position.set(c.x, SP_TOP, c.z); scene.add(D); q.deco = D; }
       return q; });
-    // checkpoint 0 = the home pad
-    const h = dsp.plats[0].b; checkpoints = []; checkpoints[0] = {b: h, idx: 0, flag: new THREE.Object3D(), spawn: {x: 0, y: SP_TOP + .05, z: 0}, lit: true}; cpIndex = 0;
-    $('#spLvName').textContent = Lv.e + ' ' + (i + 1) + '. ' + Lv.name;
+    // code pillars: 4 numbered pillars along the way
+    dsp.codeP = C.codeAt.map((c, k) => { const q = dsp.plats.find(p => p.x === c.x && p.z === c.z), g = new THREE.Group(), x = c.w / 2 - .35, z = -c.d / 2 + .35;
+      spMesh(.6, 3, .6, '#c9b6ff', x, 1.5, z, g); const s = label('?', 'rgba(110,70,200,.95)', '#fff', 160); s.userData.bg = 'rgba(110,70,200,.95)'; s.position.set(x, 3.8, z); g.add(s); if (q){ if (!q.deco){ q.deco = new THREE.Group(); scene.add(q.deco); } q.deco.add(g); } return {s, k}; });
+    const st = dsp.plats[0].b; checkpoints = []; checkpoints[0] = {b: st, idx: 0, flag: new THREE.Object3D(), spawn: {x: 0, y: SP_TOP + .05, z: 0}, lit: true}; cpIndex = 0;
+    // the Splashgrabbers: one per stretch of the course
+    const nm = SP_DIFF[df].mons; dsp.mons = []; for (let m = 0; m < nm; m++){ const M = spMonster(); scene.add(M.g); const zc = C.len * (m + .5) / nm;
+      Object.assign(M, {k: m, x: (m % 2 ? 1 : -1) * (SP_HW + 1), z: zc, y: -3, yaw: 0, st: 'lurk', t: 0, tx: 0, tz: 0, tgt: null, lure: 0, a: m * 2.1, give: 0, z0: C.len * m / nm - 4, z1: C.len * (m + 1) / nm + 4, zc}); dsp.mons.push(M); }
+    $('#spLvName').textContent = Lv.e + ' ' + (i + 1) + '. ' + Lv.name + ' · ' + SP_DIFF[df].e;
   }
   function buildSplash(){
-    Object.assign(dsp, {lv: 0, plats: [], pebs: [], flying: [], fx: [], ph: 'pick', t: 0, n: 0, seed: 1, alive: true, wet: false, meter: 0, peb: 1, al: [], earned: 0, survived: 0, cd: 0, bigT: 0, msgT: 0});
-    // the pond floor (you can wade, but it's loud) + the water + a ring of reeds and rocks
-    plat(0, SP_FLOOR, 0, 120, 120, '#6b7f5a', 2);
-    const wg = new THREE.PlaneGeometry(130, 130, 48, 48); wg.rotateX(-Math.PI / 2);
-    const water = new THREE.Mesh(wg, new THREE.MeshLambertMaterial({color: '#2a8fa0', emissive: '#08404d', emissiveIntensity: .4, transparent: true, opacity: .78}));
-    scene.add(water); dsp.water = water; dsp.wbase = wg.attributes.position.array.slice();
-    const r = spRng(7);
-    for (let k = 0; k < 70; k++){ const a = k / 70 * Math.PI * 2 + r() * .05, d = SP_RAD + 4 + r() * 6, x = Math.cos(a) * d, z = Math.sin(a) * d;
-      if (k % 5 === 0){ const s = 2 + r() * 2.5; addBox(x, s / 2 - .6, z, s, s, s * 1.1, '#6d6f78'); }
-      else for (let j = 0; j < 3; j++){ const h = 2.4 + r() * 2; addBox(x + (r() - .5) * 1.5, h / 2 - 1, z + (r() - .5) * 1.5, .18, h, .18, '#5c8a3a', {noEdge: true}); addBox(x + (r() - .5) * 1.5, h - .6, z + (r() - .5) * 1.5, .3, .9, .3, '#7a4b2e', {noEdge: true}); } }
-    // invisible fence so nobody wanders off into the reeds
-    [[0, -SP_RAD - 3.5, 70, 1], [0, SP_RAD + 3.5, 70, 1], [-SP_RAD - 3.5, 0, 1, 70], [SP_RAD + 3.5, 0, 1, 70]].forEach(([x, z, w, d]) => { const b = plat(x, 6, z, w, d, '#ffffff', 9); b.mesh.visible = false; });
-    // lifeguard tower: where you watch after you're caught
-    dsp.tower = plat(SP_RAD + 1, 9, 0, 4, 4, '#ff4d5e', .6); addBox(SP_RAD + 1, 4, 0, .5, 9, .5, '#ffffff'); addBox(SP_RAD + 1, 10.4, 1.9, 4, .8, .2, '#ffffff', {noEdge: true});
-    const sign = label('🛟 Watch tower', 'rgba(255,77,94,.9)'); sign.position.set(SP_RAD + 1, 11.6, 0); scene.add(sign);
-    // fireflies
-    const fc = 60, fa = new Float32Array(fc * 3); for (let i = 0; i < fc; i++){ fa[i * 3] = (r() - .5) * 60; fa[i * 3 + 1] = 1 + r() * 6; fa[i * 3 + 2] = (r() - .5) * 60; }
-    const fg = new THREE.BufferGeometry(); fg.setAttribute('position', new THREE.BufferAttribute(fa, 3));
-    dsp.flies = new THREE.Points(fg, new THREE.PointsMaterial({color: '#f6ff8a', size: .25})); scene.add(dsp.flies);
-    dsp.mon = spMonster(); scene.add(dsp.mon.g);
-    Object.assign(dsp.mon, {x: 0, z: -18, y: -3, yaw: 0, st: 'lurk', t: 0, tx: 0, tz: 0, tgt: null, lure: 0, a: 0, dsp: 0, give: 0});
-    spSetLevel(0);
+    Object.assign(dsp, {lv: 0, df: 1, plats: [], pebs: [], flying: [], fx: [], mons: [], ph: 'pick', t: 0, n: 0, rs: 1, alive: true, wet: false, meter: 0, peb: 1, earned: 0, caught: 0, cd: 0, bigT: 0, fin: [], cz: {}, czSeen: 0, shield: 0, shoveCd: 0, pullCd: 0, cp: 0, reached: false});
+    spSetLevel(0, 1);
   }
-  /* --- the Splashgrabber: our own pond monster. A long frog-eel with frilly fins, glowy spots and big lantern eyes --- */
+  /* --- the Splashgrabber: our own pond monster. Blind (no pupils, just glowing lanterns), it hunts by sound --- */
   function spMonster(){
     const g = new THREE.Group(), skin = mat('#1f5753'), belly = mat('#7fb59a'), fin = mat('#7b4fb0'), glow = mat('#9dff6a', '#7dff3a'), dot = mat('#5ff2ff', '#2fd9ff');
     const head = new THREE.Group(); g.add(head);
     const box = (p, w, h, d, m, x, y, z) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.set(x, y, z); p.add(o); return o; };
-    box(head, 2.6, .9, 2.2, skin, 0, .45, .2); box(head, 2.4, .35, 2, belly, 0, -.05, .3);   // flat frog head + jaw
-    const eyes = [-.75, .75].map(x => { const e = new THREE.Mesh(new THREE.SphereGeometry(.42, 12, 10), glow); e.position.set(x, 1.05, .7); head.add(e); const p = new THREE.Mesh(new THREE.BoxGeometry(.16, .4, .1), mat('#10131c')); p.position.set(0, 0, .38); e.add(p); return e; });
-    [-1, 0, 1].forEach(k => { const f = box(head, .12, .9 - Math.abs(k) * .3, .7, fin, k * .5, 1.2, -.5); f.rotation.x = -.5; });   // frill
-    [[-1.35, .5], [1.35, .5]].forEach(([x, z]) => { const f = box(head, .7, .1, 1, fin, x, .5, z); f.rotation.z = x > 0 ? -.5 : .5; });   // ear fins
-    box(head, 1.6, .08, .12, mat('#0c2b29'), 0, .2, 1.32);   // a long thin grin
+    box(head, 2.6, .9, 2.2, skin, 0, .45, .2); box(head, 2.4, .35, 2, belly, 0, -.05, .3);
+    const eyes = [-.75, .75].map(x => { const e = new THREE.Mesh(new THREE.SphereGeometry(.42, 12, 10), glow); e.position.set(x, 1.05, .7); head.add(e); return e; });
+    [-1, 0, 1].forEach(k => { const f = box(head, .12, .9 - Math.abs(k) * .3, .7, fin, k * .5, 1.2, -.5); f.rotation.x = -.5; });
+    [[-1.35, .5], [1.35, .5]].forEach(([x, z]) => { const f = box(head, .7, .1, 1, fin, x, .5, z); f.rotation.z = x > 0 ? -.5 : .5; });
+    box(head, 1.6, .08, .12, mat('#0c2b29'), 0, .2, 1.32);
     const segs = []; for (let i = 0; i < 7; i++){ const s = 1.5 - i * .17, o = new THREE.Group(); box(o, s * 1.3, s * .7, 1.2, skin, 0, 0, 0); if (i % 2 === 0) box(o, .18, .18, .18, dot, 0, s * .37, 0); if (i < 6) box(o, .1, .5, .8, fin, 0, s * .45, -.2); g.add(o); segs.push(o); }
     const arms = [-1, 1].map(sd => { const a = new THREE.Group(); a.position.set(sd * 1.2, .2, .3); head.add(a);
-      const up = box(a, .28, .28, 1.8, skin, 0, 0, .9), lo = new THREE.Group(); lo.position.set(0, 0, 1.8); a.add(lo); box(lo, .24, .24, 1.6, skin, 0, 0, .8);
+      box(a, .28, .28, 1.8, skin, 0, 0, .9); const lo = new THREE.Group(); lo.position.set(0, 0, 1.8); a.add(lo); box(lo, .24, .24, 1.6, skin, 0, 0, .8);
       [-.22, 0, .22].forEach(fx => box(lo, .08, .08, .7, fin, fx, 0, 1.9)); return {a, lo, sd}; });
-    const hl = new THREE.PointLight('#9dff6a', 1.2, 9, 1.5); hl.position.set(0, 1.2, 1.2); head.add(hl);
     const alert = label('❗', 'rgba(255,77,94,.95)', '#fff', 90); alert.scale.multiplyScalar(.7); alert.position.set(0, 2.6, 0); head.add(alert); alert.visible = false;
-    return {g, head, segs, arms, eyes, alert, trail: []};
+    const zz = label('💫', 'rgba(120,80,200,.9)', '#fff', 90); zz.scale.multiplyScalar(.7); zz.position.set(0, 2.6, 0); head.add(zz); zz.visible = false;
+    return {g, head, segs, arms, eyes, alert, zz, trail: []};
   }
-  /* --- rounds: platforms wobble / sink / shrink on a schedule everyone computes from the same seed --- */
-  function spPlan(){
-    const r = spRng(dsp.seed * 31 + dsp.n * 7 + dsp.lv), n = dsp.n, kind = SP_LEVELS[dsp.lv].kind, dur = spDur();
-    dsp.plats.forEach(q => { q.ev = []; q.b.hw = q.w / 2; q.b.hd = q.d / 2; q.b.mesh.scale.set(1, 1, 1); q.b.mesh.position.set(q.x, SP_TOP - q.b.hh, q.z); q.b.active = true; q.b.mesh.visible = true; q.b.mesh.rotation.set(0, 0, 0); });
-    const cnt = Math.round((4 + n * 2.2) * (kind === 'docks' ? 1.5 : 1) * Math.min(1.6, dsp.plats.length / 25));
-    for (let k = 0; k < cnt; k++){ const q = dsp.plats[1 + Math.floor(r() * (dsp.plats.length - 1))], t0 = 3 + r() * (dur - 8);
-      if (!q || q.ev.some(e => Math.abs(e.t0 - t0) < 9)) continue;
-      const sink = kind === 'stones' || kind === 'docks' || r() < .6; q.ev.push({t0, k: sink ? 'sink' : 'shrink', down: 2.5 + r() * 2 + n * .3}); }
-    // pebbles on random platforms
+  /* --- per-run setup: pebbles, memory tiles, door code (all from the run seed so friends see the same thing) --- */
+  function spRunSetup(){
+    const r = spRng(dsp.rs * 31 + dsp.lv * 7 + 3), L = SP_LEVELS[dsp.lv];
+    dsp.plats.forEach(q => { q.drop = 0; q.b.active = true; q.b.mesh.visible = true; });
     (dsp.pebs || []).forEach(p => scene.remove(p.m)); dsp.pebs = [];
     const pm = mat('#b9bcc6'), ring = new THREE.MeshBasicMaterial({color: '#ffffff', transparent: true, opacity: .55});
-    for (let k = 0; k < 8; k++){ const q = dsp.plats[1 + Math.floor(r() * (dsp.plats.length - 1))]; if (!q) continue; const x = q.x + (r() - .5) * Math.max(0, q.w - 1), z = q.z + (r() - .5) * Math.max(0, q.d - 1);
+    const cand = dsp.plats.filter(q => !q.start && !q.mem && !q.exit), brs = cand.filter(q => q.br || q.extra), N = Math.max(1, (L.peb || 5) + SP_DIFF[dsp.df].peb);
+    for (let k = 0; k < N && cand.length; k++){ const pool = k % 2 === 0 && brs.length ? brs : cand, q = pool[Math.floor(r() * pool.length)], x = (r() - .5) * Math.max(0, q.w - 1), z = (r() - .5) * Math.max(0, q.d - 1);
       const m = new THREE.Group(); const s = new THREE.Mesh(new THREE.DodecahedronGeometry(.28), pm); s.position.y = .3; m.add(s); const g = new THREE.Mesh(new THREE.RingGeometry(.42, .56, 18), ring); g.rotation.x = -Math.PI / 2; g.position.y = .04; m.add(g);
-      m.position.set(x, SP_TOP, z); scene.add(m); dsp.pebs.push({m, q, ox: x - q.x, oz: z - q.z, got: false}); }
+      scene.add(m); dsp.pebs.push({m, q, ox: x, oz: z, got: false}); }
+    // memory bridge: one safe tile per row
+    dsp.memSafe = {}; dsp.plats.filter(q => q.mem).forEach(q => { if (!(q.mem.row in dsp.memSafe)) dsp.memSafe[q.mem.row] = Math.floor(r() * 3); });
+    dsp.plats.forEach(q => { if (q.mem){ q.trap = dsp.memSafe[q.mem.row] !== q.mem.lane; if (q.tm) q.tm.color.set('#ffffff'); } });
+    dsp.memShow = -1; dsp.memT = 0;
+    // door code
+    dsp.code = L.code ? [0, 1, 2, 3].map(() => 1 + Math.floor(r() * 9)).join('') : ''; dsp.unlocked = !L.code; dsp.typed = '';
+    (dsp.codeP || []).forEach(({s, k}) => { spSetLabel(s, (k + 1) + '️⃣ ' + dsp.code[k]); });
+    const ex = dsp.plats.find(q => q.exit); if (ex && ex.sign) spSetLabel(ex.sign, L.code ? '🔒 EXIT' : '🚪 EXIT');
   }
-  function spDur(){ return Math.min(60, 32 + dsp.n * 4); }
+  function spSetLabel(s, txt){ const c = s.material.map && s.material.map.image; if (!c || !c.getContext) return; const x = c.getContext('2d'), w = c.width;
+    x.clearRect(0, 0, w, c.height); x.font = '900 34px Nunito, system-ui, sans-serif'; const tw = Math.min(w - 8, x.measureText(txt).width + 28);
+    x.fillStyle = s.userData.bg || 'rgba(110,70,200,.95)'; x.beginPath(); x.roundRect ? x.roundRect((w - tw) / 2, 6, tw, 52, 18) : x.rect((w - tw) / 2, 6, tw, 52); x.fill();
+    x.fillStyle = '#ffffff'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(txt, w / 2, 33, w - 20); s.material.map.needsUpdate = true; s.userData.txt = txt; }
   function spPlatState(q, t){
-    let dy = 0, wob = 0, sc = 1;
-    for (const e of q.ev){ const u = t - e.t0; if (u < 0) continue;
+    let dy = 0, wob = 0, sc = 1, rot = 0; const e = q.ev;
+    if (e && t > e.t0){ const u = (t - e.t0) % e.per;
       if (e.k === 'sink'){ const W = 1.8, D = 1.3, U = 1.3; if (u < W) wob = u / W; else if (u < W + D){ wob = 1; dy = -(u - W) / D * 2.6; } else if (u < W + D + e.down) dy = -2.6; else if (u < W + D + e.down + U) dy = -2.6 * (1 - (u - W - D - e.down) / U); }
-      else { const W = 1.5; if (u < W) wob = u / W * .6; else sc = Math.min(sc, Math.max(.45, 1 - (u - W) / 2.2 * .55)); } }
-    return {dy, wob, sc};
+      else { const W = 1.5, S = 2.2, H = 3, G = 2; if (u < W) wob = u / W * .6; else if (u < W + S) sc = 1 - (u - W) / S * .55; else if (u < W + S + H) sc = .45; else if (u < W + S + H + G) sc = .45 + (u - W - S - H) / G * .55; } }
+    if (q.drop){ const u = dsp.t - q.drop; if (u < .35) wob = 1; else if (u < 4.5) dy = Math.max(-3, -(u - .35) * 8); else q.drop = 0; }
+    if (q.rot){ const u = (t + q.rot.ph) % q.rot.per, h = q.rot.per / 2; const turn = .7; rot = u < h - turn ? 0 : u < h ? (u - (h - turn)) / turn : u < q.rot.per - turn ? 1 : 1 - (u - (q.rot.per - turn)) / turn; }
+    return {dy, wob, sc, rot, ox: q.mv ? Math.sin(t * q.mv.spd + q.mv.ph) * q.mv.amp : 0};
   }
   function spApplyPlats(dt){
     const t = dsp.ph === 'play' ? dsp.t : 0;
-    dsp.plats.forEach(q => { const S = spPlatState(q, t), b = q.b, p = b.mesh.position, oy = p.y;
-      const ny = SP_TOP - b.hh + S.dy, jit = S.wob > 0 && S.dy > -2.5 ? Math.sin(worldT * 23 + q.x) * .05 * S.wob : 0;
-      p.set(q.x + jit, ny, q.z); b.dy = ny - oy; b.dx = b.dz = 0;
-      b.mesh.rotation.z = S.wob * Math.sin(worldT * 9 + q.z) * .05; b.mesh.rotation.x = S.wob * Math.cos(worldT * 8 + q.x) * .05;
-      b.mesh.scale.set(S.sc, 1, S.sc); b.hw = q.w / 2 * S.sc; b.hd = q.d / 2 * S.sc;
-      if (q.flower) q.flower.position.y = ny + b.hh + .12; });
-    dsp.pebs.forEach(p => { const b = p.q.b; p.m.position.set(p.q.x + p.ox * b.mesh.scale.x, b.mesh.position.y + b.hh, p.q.z + p.oz * b.mesh.scale.z); });
+    dsp.plats.forEach(q => { const S = spPlatState(q, t), b = q.b, p = b.mesh.position, oy = p.y, ox = p.x;
+      const ny = SP_TOP - b.hh + S.dy, jit = S.wob > 0 && S.dy > -2.5 ? Math.sin(worldT * 23 + q.x) * .05 * S.wob : 0, nx = q.x + S.ox;
+      p.set(nx + jit, ny, q.z); b.dy = ny - oy; b.dx = q.mv ? nx - (q.lx == null ? nx : q.lx) : 0; q.lx = nx; b.dz = 0;
+      b.mesh.rotation.z = S.wob * Math.sin(worldT * 9 + q.z) * .05; b.mesh.rotation.x = S.wob * Math.cos(worldT * 8 + q.x) * .05; b.mesh.rotation.y = S.rot * Math.PI / 2;
+      b.mesh.scale.set(S.sc, 1, S.sc); const sw = S.rot > .5; b.hw = (sw ? q.d : q.w) / 2 * S.sc; b.hd = (sw ? q.w : q.d) / 2 * S.sc;
+      b.conv = q.conv && S.dy > -.5 ? {x: q.conv, z: 0} : null;
+      if (q.deco){ q.deco.position.set(nx, ny + b.hh, q.z); q.deco.rotation.y = b.mesh.rotation.y; q.deco.scale.set(S.sc, 1, S.sc); } });
+    dsp.pebs.forEach(p => { const b = p.q.b; p.m.position.set(b.mesh.position.x + p.ox * b.mesh.scale.x, b.mesh.position.y + b.hh, p.q.z + p.oz * b.mesh.scale.z); });
   }
   /* --- water, splashes, pebbles --- */
   function spWetAt(x, y, z){ return y < -.15; }
-  function spEdge(x, y, z){   // standing on a platform within reach of the water's edge?
+  function spEdge(x, y, z){
     for (const q of dsp.plats){ const b = q.b, p = b.mesh.position, top = p.y + b.hh; if (Math.abs(top - y) > .4) continue;
       const ex = b.hw - Math.abs(x - p.x), ez = b.hd - Math.abs(z - p.z); if (ex > -.1 && ez > -.1) return Math.min(ex, ez) < .95; }
     return false;
@@ -6809,207 +6990,274 @@ const Obby = (() => {
     const drops = []; for (let i = 0; i < (big ? 12 : 6); i++){ const d = new THREE.Mesh(new THREE.BoxGeometry(.16, .16, .16), mat('#bff2ff')); d.position.set(x, .1, z); scene.add(d); const a = Math.random() * 7; drops.push({d, vx: Math.cos(a) * (2 + Math.random() * 2), vz: Math.sin(a) * (2 + Math.random() * 2), vy: 4 + Math.random() * (big ? 5 : 3)}); }
     dsp.fx.push({m, drops, t: 0, big}); beep(big ? [220, 140] : [520, 300], .08, 'sine', big ? .07 : .04);
   }
-  function spNoise(k, x, z, uid){   // something splashed. On the host / single player the monster hears it
+  const spIn = (x, z, m = 0) => Math.abs(x) < SP_HW + 4 + m && z > -9 - m && z < dsp.len + 9 + m;
+  function spNoise(k, x, z, uid){
     if (dsp.remote){ mpSendTo(mp.hconn, {t: 'splashev', k, x: +x.toFixed(2), z: +z.toFixed(2)}); return; }
     spHear(k, x, z, uid);
   }
-  function spHear(k, x, z, uid){
-    const M = dsp.mon; if (dsp.ph !== 'play' || M.st === 'grab') return;
-    if (k === 'pebble'){ Object.assign(M, {st: 'go', tx: x, tz: z, tgt: null, lure: 3.2, t: 0}); return; }
-    if (M.lure > 0) return;   // busy with a pebble splash
-    if (k === 'loud'){ Object.assign(M, {st: 'chase', tgt: uid, t: 0, give: 0}); return; }
-    if (M.st !== 'chase') Object.assign(M, {st: 'go', tx: x, tz: z, tgt: null, t: 0});
+  const spDist = (M, x, z) => Math.hypot(M.x - x, M.z - z);
+  function spHear(k, x, z, uid){   // the monsters are blind: they only know where things splash
+    if (dsp.ph !== 'play') return; const free = dsp.mons.filter(M => M.st !== 'grab' && M.st !== 'stun').sort((a, b) => spDist(a, x, z) - spDist(b, x, z));
+    if (!free.length) return;
+    if (k === 'pebble'){ free.forEach((M, j) => { if (j === 0 || spDist(M, x, z) < 16) Object.assign(M, {st: 'go', tx: x, tz: z, tgt: null, lure: 3.2, t: 0}); }); return; }
+    const M = free.find(M => M.lure <= 0); if (!M) return;
+    if (k === 'loud'){ if (spDist(M, x, z) < 45) Object.assign(M, {st: 'chase', tgt: uid, t: 0, give: 0}); return; }
+    if (k === 'valve' || spDist(M, x, z) < 26){ if (M.st !== 'chase') Object.assign(M, {st: 'go', tx: x, tz: z, tgt: null, t: 0}); }
   }
   function splashThrow(){
-    if (!dsp || dsp.ph === 'pick' || !dsp.alive || paused || choosing) return;
+    if (!dsp || dsp.ph === 'pick' || dsp.ph === 'done' || !dsp.alive || paused || choosing) return;
     if (dsp.peb <= 0){ banner('🪨 No pebbles! Grab one from a platform (max ' + SP_MAXPEB + ')'); return; }
     dsp.peb--; const yaw = fpOn() ? cam.yaw + Math.PI : (Math.abs(P.vx) + Math.abs(P.vz) > .5 ? P.face : cam.yaw + Math.PI), fx = Math.sin(yaw), fz = Math.cos(yaw);
     const m = new THREE.Mesh(new THREE.DodecahedronGeometry(.25), mat('#b9bcc6')); m.position.set(P.x + fx * .6, P.y + 2, P.z + fz * .6); scene.add(m);
     dsp.flying.push({m, vx: fx * 14, vz: fz * 14, vy: 7.5}); SND.jump(); P.face = yaw;
   }
-  /* --- the monster's brain (single player / host only) --- */
-  function spTargets(){   // everyone still in the round: [{uid, x, y, z, wet}]
-    const out = []; if (dsp.alive) out.push({uid: spUid(), x: P.x, y: P.y, z: P.z, wet: dsp.wet, me: true});
-    if (mp.on && mp.host) for (const u of dsp.al){ if (u === 'H') continue; const E = mp.ents.get(u); if (!E || E.m !== 'splash') continue; out.push({uid: u, x: E.tx, y: E.ty, z: E.tz, wet: !!(E.dsp && E.dsp.wet)}); }
+  // 👊 shove the monster back when it's right on you
+  function splashShove(){
+    if (!dsp || dsp.ph !== 'play' || !dsp.alive || paused || choosing) return;
+    if (dsp.shoveCd > 0){ banner('👊 Shove is recharging (' + Math.ceil(dsp.shoveCd) + 's)'); return; }
+    dsp.shoveCd = 8; SND.boing ? SND.boing() : SND.jump(); shake = .2; P.vy = Math.max(P.vy, 0);
+    if (dsp.remote) mpSendTo(mp.hconn, {t: 'splashev', k: 'shove', x: +P.x.toFixed(2), z: +P.z.toFixed(2)}); else spShoveAt(P.x, P.z);
+  }
+  function spShoveAt(x, z){ let hit = 0;
+    dsp.mons.forEach(M => { const d = spDist(M, x, z); if (d < 5.5 && M.st !== 'stun'){ const nx = (M.x - x) / (d || 1), nz = (M.z - z) / (d || 1); M.x += nx * 9; M.z += nz * 9; Object.assign(M, {st: 'stun', t: 0, tgt: null}); hit++; } });
+    if (hit && !dsp.remote) banner('👊 Shoved it away! Go go go!'); return hit; }
+  // 🤝 pull a friend out of the water (multiplayer)
+  function splashPull(){
+    if (!dsp || !mp.on || dsp.ph !== 'play' || !dsp.alive || dsp.wet || paused || choosing) return;
+    if (dsp.pullCd > 0) return; let best = null, bd = 3.4;
+    for (const [u, E] of mp.ents){ if (E.m !== 'splash' || !E.dsp || !E.dsp.wet || !E.dsp.alive) continue; const d = Math.hypot(E.tx - P.x, E.tz - P.z); if (d < bd){ bd = d; best = u; } }
+    if (!best){ banner('🤝 Stand on a platform next to a friend in the water to pull them out'); return; }
+    dsp.pullCd = 3; const msg = {k: 'pull', u: best, x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2)}; SND.coin();
+    const L = mpLook(best); banner('🤝 You pulled ' + (L ? L.short : 'your friend') + ' out!');
+    if (dsp.remote) mpSendTo(mp.hconn, Object.assign({t: 'splashev'}, msg)); else spPullSend(best, msg);
+  }
+  function spPullSend(u, msg){ const g = mp.guests.get(u); if (g) mpSendTo(g.conn, {t: 'splash', a: 'pull', n: dsp.n, x: msg.x, y: msg.y, z: msg.z}); }
+  function spPulled(x, y, z){ if (!dsp.alive || !dsp.wet) return; Object.assign(P, {x: x + (Math.random() - .5) * .6, y: y + .3, z: z + (Math.random() - .5) * .6, vx: 0, vy: 4, vz: 0}); dsp.shield = 3; dsp.meter = 0; dsp.loud = false; banner('🤝 A friend pulled you out! 🛡️ Shield for 3s'); SND.coin(); }
+  /* --- the monsters' brains (single player / host only) --- */
+  function spTargets(){
+    const out = []; if (dsp.alive && dsp.shield <= 0 && !dsp.reached) out.push({uid: spUid(), x: P.x, y: P.y, z: P.z, wet: dsp.wet, me: true});
+    if (mp.on && mp.host) for (const [u, E] of mp.ents){ if (E.m !== 'splash' || !E.dsp || !E.dsp.alive || E.dsp.shield || dsp.fin.includes(u)) continue; out.push({uid: u, x: E.tx, y: E.ty, z: E.tz, wet: !!E.dsp.wet}); }
     return out;
   }
   function spUid(){ return mp.on ? (mp.host ? 'H' : mp.me) : 'me'; }
-  function spMonStep(dt){
-    const M = dsp.mon, T = spTargets(), fast = 19 + Math.min(6, dsp.n * .5); M.t += dt; if (M.lure > 0) M.lure -= dt;
+  function spParts(){ const p = [spUid()]; if (mp.on && mp.host) for (const [u, E] of mp.ents) if (E.m === 'splash' && mp.guests.has(u)) p.push(u); return p; }
+  function spMonStep(M, dt, T){
+    const fast = SP_LEVELS[dsp.lv].mon + SP_DIFF[dsp.df].sp; M.t += dt; if (M.lure > 0) M.lure -= dt;
     let gx = M.x, gz = M.z, speed = 0, up = false;
-    if (dsp.ph !== 'play'){ M.st = 'lurk'; }
-    if (M.st === 'lurk'){ M.a += dt * .25; gx = Math.cos(M.a) * 17; gz = Math.sin(M.a) * 17; speed = 4; }
-    else if (M.st === 'go'){ gx = M.tx; gz = M.tz; speed = M.lure > 0 ? fast : 13; up = true;
-      if (Math.hypot(gx - M.x, gz - M.z) < 1.2){ M.st = 'sniff'; M.t = 0; } }
-    else if (M.st === 'sniff'){ up = true; if (M.lure <= 0){ const w = T.filter(o => o.wet && Math.hypot(o.x - M.x, o.z - M.z) < 7).sort((a, b) => Math.hypot(a.x - M.x, a.z - M.z) - Math.hypot(b.x - M.x, b.z - M.z))[0];
-        if (w){ Object.assign(M, {st: 'chase', tgt: w.uid, t: 0, give: 0}); } else if (M.t > 1.6){ M.st = 'lurk'; } } else if (M.t > 3) M.st = 'lurk'; }
+    if (dsp.ph !== 'play' && M.st !== 'stun') M.st = 'lurk';
+    if (M.st === 'lurk'){ M.a += dt * .3; const near = T.filter(o => o.z > M.z0 && o.z < M.z1).sort((a, b) => spDist(M, a.x, a.z) - spDist(M, b.x, b.z))[0];
+      const cx = near ? near.x * .5 : 0, cz = near ? clamp(near.z + 6, M.z0, M.z1) : M.zc; gx = cx + Math.cos(M.a) * 8; gz = cz + Math.sin(M.a) * 7; speed = 4.5; }
+    else if (M.st === 'go'){ gx = M.tx; gz = M.tz; speed = M.lure > 0 ? fast : 13; up = true; if (spDist(M, gx, gz) < 1.2){ M.st = 'sniff'; M.t = 0; } }
+    else if (M.st === 'sniff'){ up = true; if (M.lure <= 0){ const w = T.filter(o => o.wet && spDist(M, o.x, o.z) < 7).sort((a, b) => spDist(M, a.x, a.z) - spDist(M, b.x, b.z))[0];
+        if (w) Object.assign(M, {st: 'chase', tgt: w.uid, t: 0, give: 0}); else if (M.t > 1.6) M.st = 'lurk'; } else if (M.t > 3) M.st = 'lurk'; }
     else if (M.st === 'chase'){ const o = T.find(o => o.uid === M.tgt); up = true;
-      if (!o){ M.st = 'lurk'; } else { gx = o.x; gz = o.z; speed = fast; const reach = o.wet || spEdge(o.x, o.y, o.z); if (!reach){ if ((M.give += dt) > 1.3) M.st = 'sniff', M.t = 0; } else M.give = 0;
-        if (Math.hypot(o.x - M.x, o.z - M.z) < 1.9 && reach && o.y < SP_TOP + 1) spCatch(o.uid); if (M.t > 9) M.st = 'sniff', M.t = 0; } }
+      if (!o) M.st = 'lurk'; else { gx = o.x; gz = o.z; speed = fast; const reach = o.wet || spEdge(o.x, o.y, o.z); if (!reach){ if ((M.give += dt) > 1.3){ M.st = 'sniff'; M.t = 0; } } else M.give = 0;
+        if (spDist(M, o.x, o.z) < 1.9 && reach && o.y < SP_TOP + 1) spCatch(M, o.uid); if (M.t > 9){ M.st = 'sniff'; M.t = 0; } } }
     else if (M.st === 'grab'){ up = true; if (M.t > 1.4) M.st = 'lurk'; }
+    else if (M.st === 'stun'){ if (M.t > 2.2) M.st = 'lurk'; }
     const dx = gx - M.x, dz = gz - M.z, d = Math.hypot(dx, dz);
     if (d > .05 && speed){ const s = Math.min(d, speed * dt); M.x += dx / d * s; M.z += dz / d * s; const want = Math.atan2(dx, dz); M.yaw += Math.atan2(Math.sin(want - M.yaw), Math.cos(want - M.yaw)) * Math.min(1, dt * 8); }
-    const R0 = Math.hypot(M.x, M.z); if (R0 > SP_RAD + 2){ M.x *= (SP_RAD + 2) / R0; M.z *= (SP_RAD + 2) / R0; }
-    const under = M.st !== 'grab' && dsp.plats.some(q => Math.abs(M.x - q.x) < q.b.hw + .3 && Math.abs(M.z - q.z) < q.b.hd + .3 && q.b.mesh.position.y + q.b.hh > -.5);   // swims under the pads, pops up in open water
-    M.y += ((up && !under ? .05 : under ? -2.2 : -2.6) - M.y) * Math.min(1, dt * (under ? 6 : 3));
+    M.x = clamp(M.x, -SP_HW - 3, SP_HW + 3); M.z = clamp(M.z, -7, dsp.len + 7);
+    const under = M.st !== 'grab' && dsp.plats.some(q => Math.abs(M.x - q.b.mesh.position.x) < q.b.hw + .3 && Math.abs(M.z - q.z) < q.b.hd + .3 && q.b.mesh.position.y + q.b.hh > -.5);
+    M.y += ((up && !under ? .05 : under || M.st === 'stun' ? -2.4 : -2.6) - M.y) * Math.min(1, dt * (under ? 6 : 3));
   }
-  function spCatch(uid){
-    const M = dsp.mon; M.st = 'grab'; M.t = 0; M.tgt = null;
-    dsp.al = dsp.al.filter(u => u !== uid);
+  function spCatch(M, uid){
+    M.st = 'grab'; M.t = 0; M.tgt = null; dsp.cz[uid] = (dsp.cz[uid] | 0) + 1;
     if (uid === spUid()) spOut();
-    else { const L = mpLook(uid); banner('😱 The Splashgrabber got ' + (L ? L.short : 'a friend') + '!'); }
+    else { const L = mpLook(uid); banner('😱 The Splashgrabber got ' + (L ? L.short : 'a friend') + '! Back to the checkpoint!'); }
   }
   function spOut(){
-    if (!dsp.alive) return; dsp.alive = false; SND.die(); shake = .4; big('😱 Splashgrabbed!'); dsp.bigT = 1.8;
+    if (!dsp.alive) return; dsp.alive = false; dsp.caught++; SND.die(); shake = .4; big('😱 Splashgrabbed!'); dsp.bigT = 1.8;
     const f = $('#oFlash'); f.classList.add('on'); requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove('on')));
-    setTimeout(() => { if (!dsp || dsp.alive) return; Object.assign(P, {x: dsp.tower.mesh.position.x, y: 9.4, z: 0, vx: 0, vy: 0, vz: 0}); cam.yaw = Math.PI / 2; cam.pitch = .55; cam.dist = 14;
-      if (!mp.on) spEnd(); else banner('🛟 You\'re out! Watch from the tower. You\'re back next round.'); }, 1300);
+    const n = dsp.n; setTimeout(() => { if (!dsp || dsp.n !== n || dsp.alive || dsp.ph === 'done' || dsp.ph === 'pick') return; spBack(); }, 2500);
   }
+  function spBack(){ dsp.alive = true; dsp.shield = 2.5; dsp.meter = 0; dsp.wet = false; dsp.loud = false; respawn(); cam.yaw = Math.PI; banner((dsp.cp ? '✅ Back at the checkpoint' : '🏁 Back to the start') + '! 🛡️ Shield for a moment'); }
   /* --- per-step --- */
   function splashStep(dt){
     if (!dsp || dsp.ph === 'pick') return;
     if (dsp.bigT > 0 && (dsp.bigT -= dt) <= 0) big('');
-    const host = !dsp.remote;
-    if (dsp.ph === 'ready'){ dsp.cd -= dt; const n = Math.ceil(dsp.cd); if (n !== dsp.cdN){ dsp.cdN = n; if (n > 0){ big('Round ' + dsp.n + ' · ' + n); beep([440], .12, 'square', .05); } else { big('Hop! 🐸'); dsp.bigT = .9; beep([880, 1175], .14, 'square', .06); } }
-      if (dsp.cd <= 0 && host) spPhase('play'); }
+    const host = !dsp.remote; if (dsp.shield > 0) dsp.shield -= dt; if (dsp.shoveCd > 0) dsp.shoveCd -= dt; if (dsp.pullCd > 0) dsp.pullCd -= dt;
+    if (dsp.ph === 'ready'){ dsp.cd -= dt; const n = Math.ceil(dsp.cd); if (n !== dsp.cdN){ dsp.cdN = n; if (n > 0){ big(SP_LEVELS[dsp.lv].e + ' ' + n); beep([440], .12, 'square', .05); } else { big('Hop! Find the EXIT 🚪'); dsp.bigT = 1.2; beep([880, 1175], .14, 'square', .06); } }
+      if (dsp.cd <= 0 && host){ dsp.ph = 'play'; dsp.t = 0; } }
     else if (dsp.ph === 'play'){ dsp.t += dt;
-      if (host){ const live = spTargets().length, many = (dsp.parts || []).length > 1;
-        if (dsp.t >= spDur() || (mp.on && many && dsp.al.length <= 1) || (mp.on && !dsp.al.length)) spRoundEnd(); } }
-    else if (dsp.ph === 'break'){ dsp.cd -= dt; if (dsp.cd <= 0 && host) spNextRound(); }
+      if (host && dsp.fin.length){ const parts = spParts(); if (parts.every(u => dsp.fin.includes(u)) || dsp.t - dsp.firstT > 15) spDone(); } }
     spApplyPlats(dt);
-    if (host) spMonStep(dt);
-    // you: water, meter, pebbles
-    if (dsp.alive && dsp.ph !== 'end'){
+    if (host){ const T = spTargets(); dsp.mons.forEach(M => spMonStep(M, dt, T)); }
+    if (dsp.alive && dsp.ph === 'play'){
       const wet = spWetAt(P.x, P.y, P.z);
-      if (wet && !dsp.wet && dsp.ph === 'play'){ spFx(P.x, P.z, P.vy < -10); spNoise(P.vy < -10 ? 'loud' : 'splash', P.x, P.z, spUid()); if (P.vy < -10) dsp.loud = true; }
+      if (wet && !dsp.wet){ spFx(P.x, P.z, P.vy < -10); spNoise(P.vy < -10 ? 'loud' : 'splash', P.x, P.z, spUid()); if (P.vy < -10) dsp.loud = true; }
       dsp.wet = wet;
-      if (wet && dsp.ph === 'play'){ dsp.meter = Math.min(1, dsp.meter + dt / SP_FILL); if (dsp.meter >= 1 && !dsp.loud){ dsp.loud = true; spNoise('loud', P.x, P.z, spUid()); big('😱 It heard you! GET OUT!'); dsp.bigT = 1.5; SND.alarm(); } }
+      if (wet){ dsp.meter = Math.min(1, dsp.meter + dt / SP_FILL); if (dsp.meter >= 1 && !dsp.loud){ dsp.loud = true; spNoise('loud', P.x, P.z, spUid()); big('😱 It heard you! GET OUT!'); dsp.bigT = 1.5; SND.alarm(); } }
       else { dsp.meter = Math.max(0, dsp.meter - dt * .6); if (dsp.meter < .5) dsp.loud = false; }
       for (const p of dsp.pebs){ if (p.got || dsp.peb >= SP_MAXPEB) continue; const q = p.m.position; if (Math.hypot(P.x - q.x, P.z - q.z) < 1.1 && Math.abs(P.y - q.y) < 1.6){ p.got = true; p.m.visible = false; dsp.peb++; SND.coin(); banner('🪨 Pebble! (' + dsp.peb + '/' + SP_MAXPEB + ') Throw it to trick the monster: ' + (pad.on ? 'RB' : touchUI ? 'tap 🪨' : 'F')); } }
+      // where am I standing?
+      const g = P.onGround && P.ground ? dsp.plats.find(q => q.b === P.ground) : null;
+      if (g && g.trap && !g.drop){ g.drop = dsp.t; beep([300, 200], .1, 'sawtooth', .04); }
+      if (g && g.cp && g.cp > dsp.cp){ dsp.cp = g.cp; checkpoints[0].spawn = {x: g.b.mesh.position.x, y: SP_TOP + .05, z: g.z}; SND.coin(); banner('✅ Checkpoint ' + g.cp + '! If you get caught, you come back here.'); }
+      if (g && g.memEdge && dsp.memShow < 0 && g.z < dsp.plats.filter(q => q.mem).reduce((a, q) => Math.min(a, q.z), 1e9)){ dsp.memShow = 0; dsp.memT = 0; banner('💡 Watch the glowing tiles... then walk on them in order!'); }
+      if (g && g.exit && !dsp.reached && P.z > g.z + .5){ if (dsp.unlocked) spReachExit(); else if (!dsp.codeOpen && !(dsp.codeCd > 0)) spCodeOpen(); }
+      if (g && !g.exit && dsp.codeCd > 0) dsp.codeCd = 0;
     }
+    // memory bridge light show
+    if (dsp.memShow >= 0){ dsp.memT += dt; const rows = Object.keys(dsp.memSafe).length, step = .7, k = Math.floor(dsp.memT / step);
+      dsp.plats.forEach(q => { if (!q.mem || !q.tm) return; const lit = k < rows && q.mem.row === k && !q.trap; q.tm.color.set(lit ? '#ffe066' : '#ffffff'); q.tm.emissive && q.tm.emissive.set(lit ? '#ffb000' : '#000000'); });
+      if (k >= rows + 1){ dsp.memShow = -1; dsp.memDone = (dsp.memDone | 0) + 1; } }
     dsp.flying = dsp.flying.filter(f => { f.vy -= GRAV * .6 * dt; const p = f.m.position; p.x += f.vx * dt; p.z += f.vz * dt; p.y += f.vy * dt; f.m.rotation.x += dt * 9;
       const top = surfaceBelow(p.x, p.y + .3, p.z);
-      if (top > SP_FLOOR + .5 && p.y <= top + .1){ scene.remove(f.m); beep([900], .04, 'square', .03); return false; }   // clack: landed on a platform
-      if (p.y <= 0 || Math.hypot(p.x, p.z) > SP_RAD + 2){ scene.remove(f.m); if (Math.hypot(p.x, p.z) <= SP_RAD + 2){ spFx(p.x, p.z, true); spNoise('pebble', p.x, p.z); banner('🪨 Sploosh! The monster goes for the pebble!'); } return false; }
+      if (top > SP_FLOOR + .5 && p.y <= top + .1){ scene.remove(f.m); beep([900], .04, 'square', .03); return false; }
+      if (p.y <= 0 || !spIn(p.x, p.z, 2)){ scene.remove(f.m); if (spIn(p.x, p.z, 2)){ spFx(p.x, p.z, true); spNoise('pebble', p.x, p.z); banner('🪨 Sploosh! The monster goes for the pebble!'); } return false; }
       return true; });
-    P.x = clamp(P.x, -SP_RAD - 2.5, SP_RAD + 3); P.z = clamp(P.z, -SP_RAD - 2.5, SP_RAD + 2.5);
+    P.x = clamp(P.x, -SP_HW - 4, SP_HW + 4); P.z = clamp(P.z, -8.5, dsp.len + 8.5);
   }
   function splashChecks(){ if (P.y < -20) respawn(); }
-  function spPhase(ph){ dsp.ph = ph; if (ph === 'play'){ dsp.t = 0; } }
-  function spStartRound(){   // host / single player
-    dsp.n++; dsp.seed = (Math.random() * 1e9) | 0; dsp.parts = [spUid()]; if (mp.on && mp.host) for (const g of mp.guests.values()) if (g.ready && g.m === 'splash') dsp.parts.push(g.uid);
-    dsp.al = dsp.parts.slice(); spLocalRound(); spPhase('ready');
+  /* --- the locked door: type the code from the 4 numbered pillars --- */
+  function spCodeOpen(){ dsp.codeOpen = true; choosing = true; dsp.typed = ''; spCodeShow(''); $('#spCode').classList.add('show'); setTimeout(() => { if (pad.on && window.rubloxPadFocus) rubloxPadFocus($('#spKeys button')); }, 0); }
+  function spCodeClose(){ dsp.codeOpen = false; choosing = false; dsp.codeCd = 1; $('#spCode').classList.remove('show'); }
+  function spCodeShow(msg){ $('#spCodeD').textContent = (dsp.typed + '____').slice(0, 4).split('').join(' '); $('#spCodeM').textContent = msg || 'Find the 4 numbered pillars on the way and type their numbers in order.'; }
+  function spCodeKey(k){
+    if (!dsp || !dsp.codeOpen) return;
+    if (k === 'x'){ spCodeClose(); return; } if (k === '<'){ dsp.typed = dsp.typed.slice(0, -1); spCodeShow(); return; }
+    if (/^[0-9]$/.test(k) && dsp.typed.length < 4){ dsp.typed += k; beep([660], .05, 'square', .03); spCodeShow(); }
+    if (dsp.typed.length === 4){ if (dsp.typed === dsp.code){ dsp.unlocked = true; SND.win(); spCodeClose(); const ex = dsp.plats.find(q => q.exit); if (ex && ex.sign) spSetLabel(ex.sign, '🔓 EXIT'); banner('🔓 The door is open!'); spReachExit(); }
+      else { dsp.typed = ''; SND.die(); spCodeShow('❌ Not quite! Look for pillars 1, 2, 3 and 4 and try again.'); const b = $('#spCode .mbox'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); } }
   }
-  function spLocalRound(){   // everyone: reset for a fresh round
-    spPlan(); dsp.cd = 3.99; dsp.cdN = 9; dsp.t = 0; dsp.alive = dsp.al.includes(spUid()); dsp.meter = 0; dsp.wet = false; dsp.loud = false; dsp.peb = Math.max(dsp.peb, 1); dsp.ph = 'ready'; dsp.endShown = false;
-    if (dsp.alive){ respawn(); const a = Math.random() * 6.28; P.x = Math.cos(a) * 1.5; P.z = Math.sin(a) * 1.5; cam.yaw = Math.atan2(P.x, P.z); }
-    Object.assign(dsp.mon, {st: 'lurk', x: 0, z: -18, y: -3, tgt: null, lure: 0});
-    $('#spEnd').classList.remove('show'); choosing = false;
+  /* --- start, finish, next --- */
+  function spLocalStart(){   // everyone: reset for this level run
+    spRunSetup(); dsp.cd = 3.99; dsp.cdN = 9; dsp.t = 0; dsp.alive = true; dsp.meter = 0; dsp.wet = false; dsp.loud = false; dsp.peb = 1; dsp.ph = 'ready'; dsp.endShown = false; dsp.reached = false; dsp.fin = []; dsp.caught = 0; dsp.cp = 0; dsp.shield = 0; dsp.shoveCd = 0; dsp.codeOpen = false; dsp.memDone = 0; dsp.paid = false;
+    checkpoints[0].spawn = {x: 0, y: SP_TOP + .05, z: 0}; respawn(); const a = Math.random() * 6.28; P.x = Math.cos(a) * 1.6; P.z = Math.sin(a) * 1.6; cam.yaw = Math.PI; cam.pitch = .45; cam.dist = 12;
+    dsp.mons.forEach(M => Object.assign(M, {st: 'lurk', x: (M.k % 2 ? 1 : -1) * (SP_HW + 1), z: M.zc, y: -3, tgt: null, lure: 0, trail: []}));
+    ['#spEnd', '#spCode', '#spPick'].forEach(id => $(id).classList.remove('show')); choosing = false;
   }
-  function spRoundEnd(){
-    dsp.ph = 'break'; dsp.cd = mp.on ? 5 : 3; const me = spUid(), Lv = SP_LEVELS[dsp.lv];
-    if (mp.on && (dsp.parts || []).length > 1){ const w = dsp.al.length === 1 ? dsp.al[0] : null, L = w && mpLook(w);
-      dsp.msg = w ? (w === me ? '🏆 You win the round!' : '🏆 ' + (L ? L.short : 'A friend') + ' wins the round!') : dsp.al.length ? '🎉 ' + dsp.al.length + ' players survived!' : '🫧 Nobody made it this time!'; }
-    else dsp.msg = dsp.alive ? '🎉 You survived round ' + dsp.n + '!' : '';
-    spPaySurvive(dsp.al.slice());
-    if (mp.on && mp.host) mpSend({t: 'splash', a: 'end', n: dsp.n, al: dsp.al, msg: dsp.msg});
+  function spStartLevel(){ dsp.n++; dsp.rs = (Math.random() * 1e9) | 0; dsp.cz = {}; spLocalStart(); if (mp.on && mp.host) mpSend({t: 'splash', a: 'go', n: dsp.n, lv: dsp.lv, df: dsp.df, rs: dsp.rs}); }
+  function spReachExit(){
+    if (dsp.reached) return; dsp.reached = true; SND.win(); confetti();
+    if (dsp.remote){ mpSendTo(mp.hconn, {t: 'splashev', k: 'exit', x: 0, z: 0}); big('🚪 You made it!'); dsp.bigT = 2; banner('⏳ Waiting for your friends...'); return; }
+    spFinish(spUid());
   }
-  function spPaySurvive(al){
-    if (!dsp.alive || !al.includes(spUid())) { if (dsp.msg) { big(dsp.msg); dsp.bigT = 3; } return; }
-    const solo = !mp.on || (dsp.parts || []).length <= 1, win = !solo && al.length === 1, prize = win ? 25 : 10 + dsp.n * 2;
-    setCoins(coins + prize); runCoins += prize; dsp.earned += prize; dsp.survived++; SND.win(); confetti();
-    big(dsp.msg || '🎉 Survived!'); dsp.bigT = 3; banner('🪙 +' + prize + ' Rublox Coins!');
-    const b = dsp.sv.best[dsp.lv] | 0; if (solo && dsp.survived > b){ dsp.sv.best[dsp.lv] = dsp.survived; }
-    if (solo && dsp.survived >= SP_UNLOCK && dsp.lv + 1 < SP_LEVELS.length && dsp.sv.unl < dsp.lv + 2){ dsp.sv.unl = dsp.lv + 2; const N = SP_LEVELS[dsp.lv + 1]; setTimeout(() => banner('🔓 New level: ' + N.e + ' ' + N.name + '!'), 1500); }
-    spSave();
+  function spFinish(uid){
+    if (dsp.ph !== 'play' || dsp.fin.includes(uid)) return; dsp.fin.push(uid); if (dsp.fin.length === 1) dsp.firstT = dsp.t;
+    if (mp.on && spParts().length > 1){ const L = mpLook(uid); banner(dsp.fin.length === 1 ? '🏆 ' + (uid === spUid() ? 'You' : (L ? L.short : 'A friend')) + ' reached the exit first! 15s for everyone else!' : '🚪 ' + (uid === spUid() ? 'You' : (L ? L.short : 'A friend')) + ' made it too!'); }
   }
-  function spNextRound(){ spStartRound(); if (mp.on && mp.host) mpSend({t: 'splash', a: 'round', n: dsp.n, seed: dsp.seed, lv: dsp.lv, al: dsp.al}); }
+  function spDone(){ dsp.ph = 'done'; if (mp.on && mp.host) mpSend({t: 'splash', a: 'done', n: dsp.n, fin: dsp.fin, t: +dsp.t.toFixed(1)}); spDoneLocal(dsp.fin, dsp.t); }
+  function spDoneLocal(fin, t){
+    if (dsp.paid) return; dsp.paid = true; dsp.ph = 'done'; dsp.endShown = true; const me = spUid(), rank = fin.indexOf(me), Lv = SP_LEVELS[dsp.lv], solo = !mp.on || fin.length + (mp.on ? 0 : 0) < 1 || (mp.on && Object.keys(dsp.cz).length + fin.length < 1);
+    const multi = mp.on && (dsp.remote || spParts().length > 1), key = SP_DIFF[dsp.df].id + ':' + dsp.lv;
+    let prize = 0, title = '🏁 Level complete!', emo = '🏁';
+    if (rank >= 0){ const first = !dsp.sv.beat[key]; prize = multi ? (rank === 0 ? 30 : 15) : 10 + dsp.lv * 2 + (first ? 15 : 0); dsp.sv.beat[key] = 1;
+      if (multi) title = rank === 0 ? '🏆 You reached the exit first!' : '🚪 You made it to the exit!';
+      if (!multi){ const b = dsp.sv.best[key]; if (!b || t < b) dsp.sv.best[key] = +t.toFixed(1); }
+      if (dsp.lv + 2 > dsp.sv.unl && dsp.lv + 1 < SP_LEVELS.length){ dsp.sv.unl = dsp.lv + 2; } setCoins(coins + prize); runCoins += prize; dsp.earned += prize; }
+    else { title = '🫧 Level over!'; emo = '🫧'; }
+    if (multi && fin.length){ const L = mpLook(fin[0]); if (fin[0] !== me) title = (rank >= 0 ? '🚪 You made it! ' : '🫧 ') + '🏆 ' + (L ? L.short : 'A friend') + ' won'; }
+    spSave(); big(title); dsp.bigT = 2.5; if (prize) banner('🪙 +' + prize + ' Rublox Coins!');
+    const last = dsp.lv + 1 >= SP_LEVELS.length, best = dsp.sv.best[key];
+    $('#spEnd .emoji').textContent = emo; $('#spEndT').textContent = last && rank >= 0 ? '🏆 You beat all ' + SP_LEVELS.length + ' levels!' : title;
+    $('#spEndS').innerHTML = `${Lv.e} ${dsp.lv + 1}. ${Lv.name} · ${SP_DIFF[dsp.df].e} ${SP_DIFF[dsp.df].name}<br>⏱️ Time: <b>${spClock(t)}</b>${best ? ' · 🏅 Best: <b>' + spClock(best) + '</b>' : ''} · 😱 Caught: <b>${dsp.caught}</b><br>🪙 Coins: <b>+${prize}</b>` + (rank >= 0 && dsp.lv + 1 < SP_LEVELS.length && !multi ? '<br>🔓 Next: ' + SP_LEVELS[dsp.lv + 1].e + ' ' + SP_LEVELS[dsp.lv + 1].name : '');
+    const g = mpGuest(), nb = $('#spNext'); nb.style.display = last || g || (!multi && rank < 0) ? 'none' : ''; nb.textContent = '▶ Next level';
+    $('#spEndW').style.display = g ? '' : 'none';
+    dsp.nextT = last || g ? 0 : multi ? 9 : 6;
+    $('#spEnd').classList.add('show'); choosing = true; setTimeout(() => { if (pad.on && window.rubloxPadFocus) rubloxPadFocus(nb.style.display === 'none' ? $('#spAgain') : nb); }, 0);
+    if (g) $('#spAgain').style.display = 'none'; else $('#spAgain').style.display = '';
+  }
+  function spNext(){ if (mpGuest() || !dsp) return; dsp.nextT = 0; if (dsp.lv + 1 >= SP_LEVELS.length){ spPickOpen(); return; } spChoose(dsp.lv + 1, true); }
+  const spClock = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
   /* --- panels --- */
+  function spLocked(i){ if (mp.on) return ''; if (i + 1 > dsp.sv.unl) return 'Locked'; if (dsp.df === 2 && !dsp.sv.beat['normal:' + i]) return 'Beat on Normal first'; return ''; }
   function spPickOpen(){
-    dsp.ph = 'pick'; choosing = true; const g = mpGuest();
-    $('#spPickS').textContent = g ? '⏳ The host picks the level. Get ready!' : mp.on ? 'Pick a level for everyone!' : 'Pick a level! Survive ' + SP_UNLOCK + ' rounds to open the next one.';
-    $('#spLevels').innerHTML = SP_LEVELS.map((L, i) => { const lock = !mp.on && i + 1 > dsp.sv.unl; return `<button class="splv${lock ? ' lock' : ''}" data-lv="${i}"${lock || g ? ' disabled' : ''}><span class="re">${lock ? '🔒' : L.e}</span><b>${i + 1}. ${L.name}</b><small>${L.note}</small><i>${lock ? 'Locked' : '🏅 Best: ' + (dsp.sv.best[i] | 0) + ' rounds'}</i></button>`; }).join('');
+    dsp.ph = 'pick'; choosing = true; const g = mpGuest(); dsp.mons.forEach(M => { M.st = 'lurk'; });
+    $('#spPickS').textContent = g ? '⏳ The host picks the level. Get ready!' : mp.on ? 'Pick a level for everyone! First to the EXIT wins.' : 'Reach the 🚪 EXIT to open the next level!';
+    $('#spDiffs').innerHTML = SP_DIFF.map((D, k) => `<button class="spdf${k === dsp.df ? ' on' : ''}" data-df="${k}"${g ? ' disabled' : ''}>${D.e} ${D.name}<small>${D.mons} monster${D.mons > 1 ? 's' : ''}${k === 0 ? ' · wide pads' : ''}</small></button>`).join('');
+    $('#spDiffs').querySelectorAll('.spdf').forEach(b => b.onclick = () => { dsp.df = +b.dataset.df; dsp.sv.df = dsp.df; spSave(); spPickOpen(); });
+    $('#spLevels').innerHTML = SP_LEVELS.map((L, i) => { const lock = spLocked(i), b = dsp.sv.best[SP_DIFF[dsp.df].id + ':' + i];
+      return `<button class="splv${lock ? ' lock' : ''}${i === dsp.lv ? ' cur' : ''}" data-lv="${i}"${lock || g ? ' disabled' : ''}><span class="re">${lock ? '🔒' : L.e}</span><b>${i + 1}. ${L.name}</b><small>${L.note}</small><i>${lock ? lock : b ? '🏅 ' + spClock(b) : dsp.sv.beat[SP_DIFF[dsp.df].id + ':' + i] ? '✅ Done' : '⭐ New'}</i></button>`; }).join('');
     $('#spLevels').querySelectorAll('.splv').forEach(b => b.onclick = () => spChoose(+b.dataset.lv));
-    $('#spEnd').classList.remove('show'); $('#spPick').classList.add('show');
-    setTimeout(() => { if (pad.on && window.rubloxPadFocus){ const b = $('#spLevels .splv:not([disabled])'); if (b) rubloxPadFocus(b); } }, 0);
+    ['#spEnd', '#spCode'].forEach(id => $(id).classList.remove('show')); $('#spPick').classList.add('show');
+    setTimeout(() => { const c = $('#spLevels .splv.cur') || $('#spLevels .splv:not([disabled])'); if (c) c.scrollIntoView({block: 'nearest'}); if (pad.on && window.rubloxPadFocus){ const b = $('#spLevels .splv.cur:not([disabled])') || $('#spLevels .splv:not([disabled])'); if (b) rubloxPadFocus(b); } }, 0);
   }
-  function spChoose(i){
-    if (mpGuest() || !dsp) return; if (!mp.on && i + 1 > dsp.sv.unl) return;
-    $('#spPick').classList.remove('show'); choosing = false; dsp.n = 0; dsp.survived = 0; dsp.earned = 0; dsp.peb = 1; spSetLevel(i);
-    dsp.sv.last = i; spSave(); banner(SP_LEVELS[i].e + ' ' + SP_LEVELS[i].name + '!'); spNextRound();
-  }
-  function spEnd(){
-    if (dsp.endShown) return; dsp.endShown = true; dsp.ph = 'end'; choosing = true; const L = SP_LEVELS[dsp.lv];
-    $('#spEndS').innerHTML = `${L.e} ${L.name}<br>🌊 Rounds survived: <b>${dsp.survived}</b> · 🏅 Best: <b>${dsp.sv.best[dsp.lv] | 0}</b><br>🪙 Coins earned: <b>${dsp.earned}</b>`;
-    $('#spEnd').classList.add('show'); setTimeout(() => { if (pad.on && window.rubloxPadFocus) rubloxPadFocus($('#spAgain')); }, 0);
+  function spChoose(i, auto){
+    if (mpGuest() || !dsp) return; if (!auto && spLocked(i)) return;
+    $('#spPick').classList.remove('show'); choosing = false; dsp.earned = 0; spSetLevel(i, dsp.df);
+    dsp.sv.last = i; spSave(); banner(SP_LEVELS[i].e + ' ' + SP_LEVELS[i].name + ' — get to the 🚪 EXIT!'); spStartLevel();
   }
   function splashEnter(){
-    dsp.sv = Object.assign({unl: 1, best: {}, last: 0}, load('rubloxSplash', {}) || {}); dsp.remote = mpGuest();
-    cam.yaw = Math.PI * .75; cam.pitch = .55; cam.dist = 22;
-    if (dsp.remote){ spSetLevel(mp.spLv | 0); if (mp.spW && mp.spW.ph !== 'pick'){ dsp.al = []; dsp.n = mp.spW.n | 0; dsp.alive = false; spLocalRound(); dsp.alive = false; Object.assign(P, {x: dsp.tower.mesh.position.x, y: 9.4, z: 0}); dsp.ph = mp.spW.ph; banner('🛟 A round is going on. You\'re in the next one!'); return; } }
-    spSetLevel(dsp.sv.last | 0); spPickOpen();
+    dsp.sv = Object.assign({unl: 1, best: {}, beat: {}, last: 0, df: 1}, load('rubloxSplash2', {}) || {}); dsp.df = clamp(dsp.sv.df | 0, 0, 2); dsp.remote = mpGuest();
+    cam.yaw = Math.PI; cam.pitch = .55; cam.dist = 22;
+    if (dsp.remote && mp.spW && (mp.spW.ph === 'ready' || mp.spW.ph === 'play')){ const w = mp.spW; spSetLevel(w.lv | 0, w.df | 0); dsp.n = w.n | 0; dsp.rs = w.rs | 0; spLocalStart(); dsp.ph = w.ph; dsp.t = +w.t || 0; banner('🌊 Jump in! Race everyone to the EXIT!'); return; }
+    if (dsp.remote && mp.spW){ spSetLevel(mp.spW.lv | 0, mp.spW.df | 0); spPickOpen(); return; }
+    spSetLevel(dsp.sv.last | 0, dsp.df); spPickOpen();
   }
-  function splashStop(){ ['#spPick', '#spEnd'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('smode'); }
+  function splashStop(){ ['#spPick', '#spEnd', '#spCode'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('smode', 'smp'); }
   function splashAnimate(dt){
-    if (!dsp) return;
+    // the end panel freezes the world (choosing), so the "next level" countdown ticks here
+    if (dsp && dsp.ph === 'done' && dsp.nextT > 0 && dt > 0){ dsp.nextT -= dt; const b = $('#spNext'); if (b){ const s = '▶ Next level (' + Math.max(0, Math.ceil(dsp.nextT)) + ')'; if (b.textContent !== s) b.textContent = s; } if (dsp.nextT <= 0 && !dsp.remote) spNext(); }
+    if (!dsp || !dsp.water) return;
     const arr = dsp.water.geometry.attributes.position.array, base = dsp.wbase, t = worldT;
     for (let i = 0; i < arr.length; i += 3) arr[i + 1] = Math.sin(base[i] * .2 + t * 1.4) * .06 + Math.cos(base[i + 2] * .17 + t * 1.1) * .06;
     dsp.water.geometry.attributes.position.needsUpdate = true;
     const fa = dsp.flies.geometry.attributes.position.array; for (let i = 0; i < fa.length; i += 3) fa[i + 1] += Math.sin(t * 2 + i) * dt * .4; dsp.flies.geometry.attributes.position.needsUpdate = true;
     dsp.pebs.forEach((p, k) => { if (!p.got) p.m.children[0].rotation.y += dt * 2; p.m.children[1].material.opacity = .35 + .25 * Math.sin(t * 4 + k); });
+    const ex = dsp.plats.find(q => q.exit); if (ex && ex.portal){ ex.portal.material.opacity = .4 + .2 * Math.sin(t * 3); ex.beam.rotation.y += dt; ex.beam.material.opacity = .22 + .12 * Math.sin(t * 2); }
     dsp.fx = dsp.fx.filter(f => { f.t += dt; const s = 1 + f.t * (f.big ? 9 : 6); f.m.scale.set(s, s, s); f.m.material.opacity = Math.max(0, .9 - f.t * 1.4);
       f.drops.forEach(o => { o.vy -= 25 * dt; o.d.position.x += o.vx * dt; o.d.position.z += o.vz * dt; o.d.position.y = Math.max(-1, o.d.position.y + o.vy * dt); });
       if (f.t > .8){ scene.remove(f.m); f.drops.forEach(o => scene.remove(o.d)); return false; } return true; });
-    // monster
-    const M = dsp.mon, G = M.g; if (dsp.remote && M.w){ const k = Math.min(1, dt * 10); M.x += (M.w[0] - M.x) * k; M.y += (M.w[1] - M.y) * k; M.z += (M.w[2] - M.z) * k; M.yaw += Math.atan2(Math.sin(M.w[3] - M.yaw), Math.cos(M.w[3] - M.yaw)) * k; if (M.st !== M.w[4]) M.t = 0; M.st = M.w[4]; M.t += dt; }
-    const hy = M.y + (M.st === 'grab' ? Math.sin(Math.min(1, M.t / .5) * Math.PI) * 1.5 : 0);
-    M.head.position.set(M.x, hy, M.z); M.head.rotation.y = M.yaw;
-    const last = M.trail[0]; if (!last || Math.hypot(last[0] - M.x, last[2] - M.z) > .35) M.trail.unshift([M.x, hy, M.z]); if (M.trail.length > 40) M.trail.length = 40;
-    M.segs.forEach((s, i) => { const p = M.trail[Math.min(M.trail.length - 1, 3 + i * 3)] || [M.x, hy, M.z]; s.position.set(p[0], p[1] - .1 + Math.sin(t * 6 - i) * .12, p[2]);
-      const q = M.trail[Math.min(M.trail.length - 1, 1 + i * 3)] || p; s.rotation.y = Math.atan2(q[0] - p[0], q[2] - p[2]) || M.yaw; });
-    const reach = M.st === 'chase' || M.st === 'grab' ? 1 : 0;
-    M.arms.forEach(A => { A.a.rotation.y = -A.sd * (.6 - reach * .45) + Math.sin(t * (reach ? 14 : 3) + A.sd) * .25; A.a.rotation.x = -.15 - reach * .2; A.lo.rotation.y = A.sd * (.9 - reach * .7); });
-    M.eyes.forEach(e => { const s = 1 + (M.st === 'chase' ? .25 + Math.sin(t * 18) * .1 : M.st === 'lurk' ? 0 : .12); e.scale.set(s, s, s); });
-    M.alert.visible = M.st === 'chase' || (M.st === 'go' && M.y > -1);
+    dsp.mons.forEach(M => {
+      if (dsp.remote && M.w){ const k = Math.min(1, dt * 10); M.x += (M.w[0] - M.x) * k; M.y += (M.w[1] - M.y) * k; M.z += (M.w[2] - M.z) * k; M.yaw += Math.atan2(Math.sin(M.w[3] - M.yaw), Math.cos(M.w[3] - M.yaw)) * k; if (M.st !== M.w[4]) M.t = 0; M.st = M.w[4]; M.t += dt; }
+      const hy = M.y + (M.st === 'grab' ? Math.sin(Math.min(1, M.t / .5) * Math.PI) * 1.5 : 0);
+      M.head.position.set(M.x, hy, M.z); M.head.rotation.y = M.yaw;
+      const last = M.trail[0]; if (!last || Math.hypot(last[0] - M.x, last[2] - M.z) > .35) M.trail.unshift([M.x, hy, M.z]); if (M.trail.length > 40) M.trail.length = 40;
+      M.segs.forEach((s, i) => { const p = M.trail[Math.min(M.trail.length - 1, 3 + i * 3)] || [M.x, hy, M.z]; s.position.set(p[0], p[1] - .1 + Math.sin(t * 6 - i) * .12, p[2]);
+        const q = M.trail[Math.min(M.trail.length - 1, 1 + i * 3)] || p; s.rotation.y = Math.atan2(q[0] - p[0], q[2] - p[2]) || M.yaw; });
+      const reach = M.st === 'chase' || M.st === 'grab' ? 1 : 0;
+      M.arms.forEach(A => { A.a.rotation.y = -A.sd * (.6 - reach * .45) + Math.sin(t * (reach ? 14 : 3) + A.sd) * .25; A.a.rotation.x = -.15 - reach * .2; A.lo.rotation.y = A.sd * (.9 - reach * .7); });
+      M.eyes.forEach(e => { const s = 1 + (M.st === 'chase' ? .25 + Math.sin(t * 18) * .1 : M.st === 'lurk' || M.st === 'stun' ? 0 : .12); e.scale.set(s, s, s); });
+      M.alert.visible = M.st === 'chase' || (M.st === 'go' && M.y > -1); M.zz.visible = M.st === 'stun'; });
+    // pad focus: keep the focused level card in view
+    if ($('#spPick').classList.contains('show')){ const f = $('#spLevels .gpf'); if (f && f !== dsp.lastF){ dsp.lastF = f; f.scrollIntoView({block: 'nearest'}); } }
   }
   function splashHud(){
-    if (!dsp) return; const L = SP_LEVELS[dsp.lv];
-    $('#spRound').textContent = dsp.n || 1; $('#spLeft').textContent = dsp.ph === 'play' ? Math.max(0, Math.ceil(spDur() - dsp.t)) + 's' : '—';
-    const ab = $('#spAliveBox'); ab.style.display = mp.on ? '' : 'none'; if (mp.on) $('#spAlive').textContent = dsp.al.length;
+    if (!dsp) return;
+    $('#spDist').textContent = Math.max(0, Math.round(dsp.len - P.z)); $('#spLeft').textContent = dsp.ph === 'play' || dsp.ph === 'done' ? spClock(dsp.t) : '0:00';
+    const ab = $('#spAliveBox'); ab.style.display = mp.on ? '' : 'none'; if (mp.on) $('#spAlive').textContent = dsp.fin.length;
     const pb = $('#spPeb'), want = '🪨 ' + dsp.peb; if (pb.textContent !== want) pb.textContent = want; pb.classList.toggle('has', dsp.peb > 0);
+    const sb = $('#spShove'), sw = dsp.shoveCd > 0 ? '👊 ' + Math.ceil(dsp.shoveCd) : '👊'; if (sb.textContent !== sw) sb.textContent = sw; sb.classList.toggle('has', dsp.shoveCd <= 0);
+    $('#spPull').style.display = mp.on ? '' : 'none'; $('#obby').classList.toggle('smp', !!mp.on);
     const m = $('#spMeter'), show = dsp.alive && (dsp.wet || dsp.meter > .02) && dsp.ph === 'play'; m.classList.toggle('show', show);
     if (show){ $('#spMeterF').style.width = Math.round(dsp.meter * 100) + '%'; m.classList.toggle('hot', dsp.meter > .65); }
-    $('#spWarn').classList.toggle('on', dsp.mon.st === 'chase' && dsp.mon.tgt === spUid());
+    const me = spUid(), near = dsp.mons.some(M => M.st === 'chase' && M.tgt === me); $('#spWarn').classList.toggle('on', near);
+    $('#spShield').classList.toggle('on', dsp.shield > 0 && dsp.ph === 'play');
   }
   /* --- multiplayer --- */
-  function splashWire(){ const M = dsp.mon, r = v => Math.round(v * 100) / 100; return {ph: dsp.ph, n: dsp.n, t: r(dsp.t), lv: dsp.lv, seed: dsp.seed, al: dsp.al, m: [r(M.x), r(M.y), r(M.z), r(M.yaw), M.st, M.tgt || '']}; }
-  function splashMe(){ return ['S', dsp.alive ? 1 : 0, dsp.wet ? 1 : 0, dsp.loud ? 1 : 0]; }
-  function splashParse(m, a){ if (m !== 'splash' || !Array.isArray(a) || a[0] !== 'S') return null; return {alive: !!a[1], wet: !!a[2], loud: !!a[3]}; }
-  function splashFromHost(w){   // guests: the host's round + monster
-    if (!w || typeof w !== 'object') return; mp.spW = w; mp.spLv = clamp(w.lv | 0, 0, SP_LEVELS.length - 1);
+  function splashWire(){ const r = v => Math.round(v * 100) / 100; return {ph: dsp.ph, n: dsp.n, t: r(dsp.t), lv: dsp.lv, df: dsp.df, rs: dsp.rs, fin: dsp.fin, cz: dsp.cz, gt: dsp.fin.length ? r(Math.max(0, 15 - (dsp.t - dsp.firstT))) : -1, m: dsp.mons.map(M => [r(M.x), r(M.y), r(M.z), r(M.yaw), M.st, M.tgt || ''])}; }
+  function splashMe(){ return ['S', dsp.alive ? 1 : 0, dsp.wet ? 1 : 0, dsp.loud ? 1 : 0, dsp.shield > 0 ? 1 : 0]; }
+  function splashParse(m, a){ if (m !== 'splash' || !Array.isArray(a) || a[0] !== 'S') return null; return {alive: !!a[1], wet: !!a[2], loud: !!a[3], shield: !!a[4]}; }
+  function splashFromHost(w){   // guests: the host's level + monsters
+    if (!w || typeof w !== 'object') return; mp.spW = w;
     if (!(running && mode === 'splash' && dsp && dsp.remote)) return;
-    const al = Array.isArray(w.al) ? w.al.filter(u => typeof u === 'string').slice(0, 8) : [];
-    if (w.ph === 'pick'){ if (dsp.ph !== 'pick') spPickOpen(); return; }
-    if (dsp.lv !== mp.spLv){ spSetLevel(mp.spLv); }
-    if ((w.n | 0) !== dsp.n && (w.ph === 'ready' || w.ph === 'play')){ dsp.n = w.n | 0; dsp.seed = w.seed | 0; dsp.al = al; dsp.parts = al.slice(); $('#spPick').classList.remove('show'); spLocalRound(); }
-    dsp.al = al; if (dsp.ph === 'pick' && w.ph !== 'pick'){ $('#spPick').classList.remove('show'); choosing = false; }
-    if (w.ph === 'play' && dsp.ph !== 'play'){ dsp.ph = 'play'; dsp.t = +w.t || 0; }
+    const lv = clamp(w.lv | 0, 0, SP_LEVELS.length - 1), df = clamp(w.df | 0, 0, 2);
+    if (w.ph === 'pick'){ if (dsp.ph !== 'pick'){ if (dsp.lv !== lv || dsp.df !== df) spSetLevel(lv, df); spPickOpen(); } return; }
+    if ((w.n | 0) !== dsp.n && (w.ph === 'ready' || w.ph === 'play')){ spSetLevel(lv, df); dsp.n = w.n | 0; dsp.rs = w.rs | 0; spLocalStart(); }
+    if (w.ph === 'play' && dsp.ph === 'ready'){ dsp.ph = 'play'; dsp.t = +w.t || 0; }
     else if (w.ph === 'play' && Math.abs(dsp.t - (+w.t || 0)) > .5) dsp.t = +w.t || 0;
-    if (w.ph === 'break' && dsp.ph === 'play') dsp.ph = 'break';
-    if (dsp.alive && (dsp.ph === 'play' || dsp.ph === 'break') && (w.ph === 'play' || w.ph === 'break') && (w.n | 0) === dsp.n && !al.includes(mp.me)) spOut();
-    if (Array.isArray(w.m)){ const n = i => { const v = +w.m[i]; return isFinite(v) ? v : 0; }; dsp.mon.w = [n(0), n(1), n(2), n(3), typeof w.m[4] === 'string' ? w.m[4] : 'lurk']; dsp.mon.tgt = typeof w.m[5] === 'string' && w.m[5] ? w.m[5] : null; }
+    dsp.fin = Array.isArray(w.fin) ? w.fin.filter(u => typeof u === 'string').slice(0, 8) : [];
+    const c = w.cz && typeof w.cz === 'object' ? +w.cz[mp.me] || 0 : 0; if ((w.n | 0) === dsp.n && c > dsp.czSeen){ dsp.czSeen = c; if (dsp.ph === 'play') spOut(); }
+    if ((w.n | 0) !== dsp.lastN){ dsp.lastN = w.n | 0; dsp.czSeen = c; }
+    if (w.ph === 'done' && (w.n | 0) === dsp.n && dsp.ph !== 'done') spDoneLocal(dsp.fin, +w.t || dsp.t);
+    if (typeof w.gt === 'number' && w.gt >= 0 && dsp.ph === 'play' && !dsp.reached){ const s = Math.ceil(w.gt); if (s !== dsp.gtS){ dsp.gtS = s; if (s <= 10 && s > 0) { big('⏳ ' + s); dsp.bigT = .9; } } }
+    if (Array.isArray(w.m)) w.m.slice(0, dsp.mons.length).forEach((a, k) => { if (!Array.isArray(a)) return; const n = i => { const v = +a[i]; return isFinite(v) ? v : 0; }; const M = dsp.mons[k]; M.w = [n(0), n(1), n(2), n(3), typeof a[4] === 'string' ? a[4] : 'lurk']; M.tgt = typeof a[5] === 'string' && a[5] ? a[5] : null; });
   }
-  function splashNet(d){   // guests: host round messages
+  function splashNet(d){   // guests: host messages
     if (!(running && mode === 'splash' && dsp && dsp.remote)) return;
-    if (d.a === 'end'){ dsp.ph = 'break'; dsp.al = Array.isArray(d.al) ? d.al.filter(u => typeof u === 'string') : []; if (dsp.alive && !dsp.al.includes(mp.me)) spOut(); dsp.msg = typeof d.msg === 'string' ? d.msg.replace(/You win/, 'You win').slice(0, 80) : '';
-      const w = dsp.al.length === 1 ? dsp.al[0] : null; if (w && w !== mp.me){ const L = mpLook(w); dsp.msg = '🏆 ' + (L ? L.short : 'A friend') + ' wins the round!'; } else if (w === mp.me) dsp.msg = '🏆 You win the round!';
-      spPaySurvive(dsp.al); }
-    if (d.a === 'round'){ dsp.n = d.n | 0; dsp.seed = d.seed | 0; dsp.al = Array.isArray(d.al) ? d.al.filter(u => typeof u === 'string') : []; dsp.parts = dsp.al.slice(); if ((d.lv | 0) !== dsp.lv) spSetLevel(d.lv | 0); $('#spPick').classList.remove('show'); spLocalRound(); }
+    if (d.a === 'go'){ spSetLevel(d.lv | 0, d.df | 0); dsp.n = d.n | 0; dsp.rs = d.rs | 0; dsp.czSeen = 0; dsp.lastN = dsp.n; spLocalStart(); }
+    if (d.a === 'done' && (d.n | 0) === dsp.n){ dsp.fin = Array.isArray(d.fin) ? d.fin.filter(u => typeof u === 'string') : []; spDoneLocal(dsp.fin, +d.t || dsp.t); }
+    if (d.a === 'pull' && (d.n | 0) === dsp.n){ const x = +d.x, y = +d.y, z = +d.z; if (isFinite(x) && isFinite(y) && isFinite(z)) spPulled(clamp(x, -20, 20), clamp(y, -2, 6), clamp(z, -10, dsp.len + 10)); }
   }
-  function splashGuestEv(g, d){   // host: a friend splashed / threw a pebble
-    if (!dsp || dsp.remote || !running || mode !== 'splash' || !['splash', 'loud', 'pebble'].includes(d.k)) return;
-    const x = +d.x, z = +d.z; if (!isFinite(x) || !isFinite(z)) return; if (d.k !== 'pebble' && !dsp.al.includes(g.uid)) return;
-    spHear(d.k, clamp(x, -40, 40), clamp(z, -40, 40), g.uid);
+  function splashGuestEv(g, d){   // host: a friend splashed / threw a pebble / shoved / pulled / reached the exit
+    if (!dsp || dsp.remote || !running || mode !== 'splash' || !['splash', 'loud', 'pebble', 'shove', 'pull', 'exit'].includes(d.k)) return;
+    if (d.k === 'exit'){ spFinish(g.uid); return; }
+    const x = +d.x, z = +d.z; if (!isFinite(x) || !isFinite(z)) return;
+    if (d.k === 'shove'){ spShoveAt(clamp(x, -30, 30), clamp(z, -20, dsp.len + 20)); return; }
+    if (d.k === 'pull'){ const y = +d.y; if (!isFinite(y) || typeof d.u !== 'string') return; const msg = {x: clamp(x, -20, 20), y: clamp(y, -2, 6), z: clamp(z, -10, dsp.len + 10)}; if (d.u === 'H') spPulled(msg.x, msg.y, msg.z); else spPullSend(d.u, msg); return; }
+    spHear(d.k, clamp(x, -40, 40), clamp(z, -20, dsp.len + 20), g.uid);
   }
   /* ---------- per-frame ---------- */
   const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
@@ -7076,7 +7324,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB throw a pebble 🪨 · Right stick look · R3 twice: first person · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
+    const line = mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -7110,7 +7358,7 @@ const Obby = (() => {
       else { const t = $('#oTip'); padTip(); if (t.classList.contains('hide')){ t.classList.remove('hide'); tipTimer = 8; } else { t.classList.add('hide'); tipTimer = 0; } }
       return;
     }
-    if (mode === 'splash' && dsp && jp[5]){ splashThrow(); return; }
+    if (mode === 'splash' && dsp && (jp[5] || jp[2] || jp[4])){ if (jp[5]) splashThrow(); if (jp[2]) splashShove(); if (jp[4]) splashPull(); return; }
     if (mode === 'race' && rc){ pad.gas = Math.max(s.v[7] || 0, s.b[0] ? 1 : 0); pad.brake = Math.max(s.v[6] || 0, s.b[1] ? 1 : 0); pad.y = 0; pad.jump = false; pad.hop = !!(s.b[5] || s.b[2]); pad.item = !!(s.b[4] || s.b[3]); return; }
     if (mode === 'pets' && pt){
       if (jp[2] && petsAct()) return;
@@ -7161,8 +7409,8 @@ const Obby = (() => {
   function setTouchUIBase(on){
     hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
     if (mode === 'splash'){
-      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · ⬆️ jump · 🪨 (top) throws a pebble · 👁️ first person' : '⌨️ WASD move · Space jump · F throw a pebble 🪨 · V first person · Esc menu')
-        + "<br>🌊 Don't touch the water! Splashing wakes the Splashgrabber. Throw a pebble into the water to send it the wrong way.";
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · ⬆️ jump · 🏃 run · 🪨 pebble · 👊 shove' : '⌨️ WASD move · Shift run · Space jump · F pebble 🪨 · Q shove 👊 · R pull a friend 🤝 · Esc menu')
+        + "<br>🚪 Get to the EXIT far away! The Splashgrabber is blind but hears splashes. Throw a pebble to send it the wrong way.";
       return;
     }
     if (mode === 'race'){
@@ -7289,7 +7537,10 @@ const Obby = (() => {
       }
       if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
       if (e.code === 'KeyV' && !e.repeat && !paused && !won && !over){ setFP(!fp.on); return; }
+      if (dsp && mode === 'splash' && dsp.codeOpen){ const m = e.code.match(/^(?:Digit|Numpad)([0-9])$/); if (m){ spCodeKey(m[1]); return; } if (e.code === 'Backspace'){ spCodeKey('<'); return; } }
       if (dsp && mode === 'splash' && (e.code === 'KeyF' || e.code === 'KeyE') && !e.repeat){ splashThrow(); return; }
+      if (dsp && mode === 'splash' && e.code === 'KeyQ' && !e.repeat){ splashShove(); return; }
+      if (dsp && mode === 'splash' && e.code === 'KeyR' && !e.repeat){ splashPull(); return; }
       if (e.code === 'Escape' || e.code === 'KeyP'){ if (e.code === 'Escape' && performance.now() - fp.unlockT < 400) return; if (!won && !over && !choosing) setPause(!(paused || menuOpen)); return; }
       const em = Object.keys(EMOTES).find(k => 'Digit' + EMOTES[k].key === e.code || 'Numpad' + EMOTES[k].key === e.code);
       if (em && !e.repeat){ playEmote(em); return; }
@@ -7472,11 +7723,12 @@ const Obby = (() => {
         $('#rcBack').onclick = () => rc && rcPickOpen(1); $('#rcHome').onclick = $('#rcFinHome').onclick = stop; $('#rcAgain').onclick = () => rc && rcAgain();
         $('#rcItem').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (rc) rc.tapItem = true; }); }
       raceEnter(); }
-    $('#obby').classList.toggle('smode', mode === 'splash'); ['#spLvBox', '#spRoundBox', '#spPeb'].forEach(id => $(id).style.display = mode === 'splash' ? '' : 'none'); if (mode !== 'splash') $('#spAliveBox').style.display = 'none';
-    ['#spPick', '#spEnd'].forEach(id => $(id).classList.remove('show')); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on');
+    $('#obby').classList.toggle('smode', mode === 'splash'); ['#spLvBox', '#spRoundBox', '#spPeb', '#spShove'].forEach(id => $(id).style.display = mode === 'splash' ? '' : 'none'); if (mode !== 'splash') ['#spAliveBox', '#spPull'].forEach(id => $(id).style.display = 'none');
+    ['#spPick', '#spEnd', '#spCode'].forEach(id => $(id).classList.remove('show')); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on');
     if (mode === 'splash'){ if (!window.__spBound){ window.__spBound = true;
-        $('#spHome').onclick = $('#spHome2').onclick = stop; $('#spAgain').onclick = () => dsp && spChoose(dsp.lv); $('#spLvls').onclick = () => dsp && spPickOpen();
-        $('#spPeb').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); splashThrow(); }); }
+        $('#spHome').onclick = $('#spHome2').onclick = stop; $('#spAgain').onclick = () => dsp && spChoose(dsp.lv, true); $('#spLvls').onclick = () => dsp && spPickOpen(); $('#spNext').onclick = () => dsp && spNext();
+        $('#spKeys').querySelectorAll('button').forEach(b => b.onclick = () => spCodeKey(b.dataset.k));
+        [['#spPeb', () => splashThrow()], ['#spShove', () => splashShove()], ['#spPull', () => splashPull()]].forEach(([id, f]) => $(id).addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); f(); })); }
       splashEnter(); }
     mpOnStart();
   }
@@ -7485,19 +7737,24 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
 
   // debug / test hook
   window.obbyDebug = {
-    splash: () => dsp && {ph: dsp.ph, lv: dsp.lv, n: dsp.n, t: +dsp.t.toFixed(2), alive: dsp.alive, wet: dsp.wet, meter: +dsp.meter.toFixed(2), peb: dsp.peb, al: dsp.al.slice(), remote: !!dsp.remote, sv: dsp.sv, survived: dsp.survived, earned: dsp.earned, choosing,
-      mon: {st: dsp.mon.st, x: +dsp.mon.x.toFixed(2), y: +dsp.mon.y.toFixed(2), z: +dsp.mon.z.toFixed(2), tgt: dsp.mon.tgt, lure: +dsp.mon.lure.toFixed(2)}, plats: dsp.plats.length, pebs: dsp.pebs.map(p => ({x: +p.m.position.x.toFixed(2), y: +p.m.position.y.toFixed(2), z: +p.m.position.z.toFixed(2), got: p.got})),
-      P: {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2)}, fp: fpOn()},
-    splashPlats: () => dsp.plats.map(q => ({x: q.x, z: q.z, w: q.w, d: q.d, top: +(q.b.mesh.position.y + q.b.hh).toFixed(2), hw: +q.b.hw.toFixed(2), ev: q.ev.map(e => [e.k, +e.t0.toFixed(1)])})),
+    splash: () => dsp && {ph: dsp.ph, lv: dsp.lv, df: dsp.df, n: dsp.n, t: +dsp.t.toFixed(2), alive: dsp.alive, wet: dsp.wet, meter: +dsp.meter.toFixed(2), peb: dsp.peb, fin: dsp.fin.slice(), remote: !!dsp.remote, sv: dsp.sv, caught: dsp.caught, earned: dsp.earned, choosing, len: +dsp.len.toFixed(1), cp: dsp.cp, shield: +dsp.shield.toFixed(2), shoveCd: +dsp.shoveCd.toFixed(2), reached: dsp.reached, code: dsp.code, unlocked: dsp.unlocked, codeOpen: !!dsp.codeOpen, memSafe: dsp.memSafe, memShow: dsp.memShow, cz: dsp.cz,
+      mons: dsp.mons.map(M => ({st: M.st, x: +M.x.toFixed(2), y: +M.y.toFixed(2), z: +M.z.toFixed(2), tgt: M.tgt, lure: +M.lure.toFixed(2)})), mon: dsp.mons[0] && {st: dsp.mons[0].st, x: +dsp.mons[0].x.toFixed(2), y: +dsp.mons[0].y.toFixed(2), z: +dsp.mons[0].z.toFixed(2), tgt: dsp.mons[0].tgt, lure: +dsp.mons[0].lure.toFixed(2)},
+      plats: dsp.plats.length, pebs: dsp.pebs.map(p => ({x: +p.m.position.x.toFixed(2), y: +p.m.position.y.toFixed(2), z: +p.m.position.z.toFixed(2), got: p.got})),
+      P: {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2), g: !!P.onGround}, fp: fpOn()},
+    splashPlats: () => dsp.plats.map(q => ({x: +q.b.mesh.position.x.toFixed(2), z: q.z, w: q.w, d: q.d, top: +(q.b.mesh.position.y + q.b.hh).toFixed(2), hw: +q.b.hw.toFixed(2), hd: +q.b.hd.toFixed(2), kind: q.kind, start: !!q.start, exit: !!q.exit, cp: q.cp | 0, mem: q.mem || null, trap: !!q.trap, mv: !!q.mv, conv: q.conv || 0, rot: !!q.rot, ev: q.ev ? q.ev.k : '', main: !!q.main, ice: !!q.b.ice})),
+    splashCourse: (i, df) => { const C = spCourse(i, df); return {len: C.len, reach: C.reach, walls: C.walls, pads: C.pads.map(q => ({x: q.x, z: q.z, w: q.w, d: q.d, mv: q.mv ? q.mv.amp : 0, exit: !!q.exit, start: !!q.start, cpk: q.cpk || 0, mem: !!q.mem}))}; },
+    splashValidate: () => spValidate(), splashLevels: () => SP_LEVELS.map(L => ({name: L.name, th: L.th, code: !!L.code, mem: L.mem | 0})),
     splashTo(x, y, z){ Object.assign(P, {x, y, z, vx: 0, vy: 0, vz: 0}); }, splashSkip(){ if (dsp.ph === 'ready') dsp.cd = .01; }, splashTime(t){ dsp.t = t; }, splashPeb(n){ dsp.peb = n; },
-    splashMon(o){ Object.assign(dsp.mon, o); }, splashLevel(i){ spChoose(i); }, splashUnlock(n){ dsp.sv.unl = n; spSave(); },
+    splashMon(o, k = 0){ Object.assign(dsp.mons[k], o); }, splashLevel(i){ spChoose(i, true); }, splashUnlock(n){ dsp.sv.unl = n; spSave(); }, splashDiff(d){ dsp.df = d; dsp.sv.df = d; spSave(); },
+    splashExit(){ const q = dsp.plats.find(q => q.exit); Object.assign(P, {x: q.b.mesh.position.x, y: SP_TOP + 1.2, z: q.z + 1.6, vx: 0, vy: 0, vz: 0}); },
+    splashBeat(k, v){ dsp.sv.beat[k] = v; spSave(); }, splashShove: () => splashShove(), splashPull: () => splashPull(), splashCodeKey: k => spCodeKey(k),
     race: () => rc && {phase: rc.phase, panel: rc.panel, md: rc.md, n: rc.n, clock: rc.clock, order: rc.order.slice(), remote: rc.remote, place: rc.me ? rcMyPlace() : 0, field: rc.me ? rcField().map(o => ({uid: o.uid, prog: o.prog, fin: o.fin})) : [],
       racers: rc.racers.map(R => ({uid: R.uid, me: !!R.me, bot: !!R.bot, ride: R.mount.R.name, x: +R.x.toFixed(2), y: +R.y.toFixed(2), z: +R.z.toFixed(2), v: +R.v.toFixed(2), lap: R.lap, i: R.i, prog: R.prog, fin: R.fin, item: R.item, boost: +R.boost.toFixed(2), onGround: R.onGround})),
       sv: rc.sv, choosing, N: rc.T.N, fp: fpOn(), cam: {yaw: +cam.yaw.toFixed(3), x: +camera.position.x.toFixed(2), y: +camera.position.y.toFixed(2), z: +camera.position.z.toFixed(2)}, inp: rc.me && !rc.me.fin ? rcInput(rc.me) : null},
@@ -7712,6 +7969,7 @@ const Obby = (() => {
   const inView = r => r.bottom > 70 && r.top < innerHeight - 10;
   function pickDefault(c, list){
     if (!list.length) return null;
+    if (c.root.id === 'spPick'){ const lv = list.filter(e => e.classList.contains('splv')); return lv.find(e => e.classList.contains('cur')) || lv[0] || list[0]; }
     if (c.root.id === 'lvlModal'){ const open = list.filter(e => e.classList.contains('lvbtn')); const nd = open.filter(e => !e.classList.contains('done')); return nd[nd.length - 1] || open[open.length - 1] || list[0]; }
     if (c.kind === 'page'){ const main = list.filter(e => e.closest('main') && inView(e.getBoundingClientRect())); return main[0] || list.find(e => e.matches('nav button.active')) || list[0]; }
     return list.find(e => e.matches('.big.green') && e.style.display !== 'none') || list[0];
@@ -7759,7 +8017,7 @@ const Obby = (() => {
   }
   function closeOf(c){
     const id = c.root.id;
-    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', spEnd: '#spHome2', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
+    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
     if (id === 'rcPick'){ const b = document.querySelector('#rcBack'); if (b && !b.hidden) return b; }   // B in the ride list = back to the modes
     if (map[id]) return document.querySelector(map[id]);
     return null;
