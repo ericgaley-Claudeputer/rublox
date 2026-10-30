@@ -481,6 +481,23 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;text-align:left}
 .pcard{background:#f6f7fc;border-radius:16px;padding:10px;border:3px solid transparent;display:flex;flex-direction:column;gap:6px}
 .pcard.on{border-color:#2ec27e;background:#eafaf0}
+.pchip.sel{background:#ff6fb5;color:#fff;box-shadow:0 3px 0 #c94b8c}
+.pgen{display:flex;gap:8px;justify-content:center;margin:2px 0 8px}
+.pgline{font-weight:900;font-size:14px;color:#1d2340}.pgline em{font-style:normal;text-shadow:0 1px 0 rgba(0,0,0,.35),0 0 1px rgba(0,0,0,.5)}
+.pcard .pdress{font-size:15px;padding:6px 10px}
+.shtabs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:8px}
+.shgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.shit{background:#fff;border-radius:14px;padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 0 0 3px var(--rc) inset}
+.shit.r3{box-shadow:0 0 0 3px var(--rc) inset,0 0 10px var(--rc)}.shit.r4{background:linear-gradient(135deg,#fff8dc,#fff 60%,#fff3c4);box-shadow:0 0 0 3px var(--rc) inset,0 0 12px var(--rc)}
+.she{font-size:34px;line-height:1.15}.shit b{font-size:15px}.shit small{font-size:12px;color:#6b7290;font-weight:800}.shit small i{font-style:normal}
+.shit .big{font-size:15px;padding:7px 12px;margin-top:4px;min-width:112px}
+.shcoins{background:#ffd23f;color:#5a3d00;border-radius:999px;padding:2px 10px;font-size:16px;vertical-align:middle}
+.wpets{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:4px 0 10px}
+.wrow{background:#f6f7fc;border-radius:14px;padding:8px;margin-bottom:8px;text-align:left}.wrow>b{display:block;margin-bottom:6px}
+.wopts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.wopts small{color:#6b7290;font-weight:800}
+.wopt{border:3px solid #e3e6f0;border-radius:12px;background:#fff;font:inherit;font-weight:900;font-size:14px;padding:6px 10px;cursor:pointer;color:#1d2340}
+.wopt.sel{border-color:#2ec27e;background:#eafaf0}
+.ppn #pWardBtn{margin-left:4px}
 .pcn{display:flex;align-items:center;gap:8px}.pce{font-size:34px}.pcn b{font-size:18px;display:block}.pcn small{color:#6b7290;font-weight:800}
 .pmini{display:flex;align-items:center;gap:6px;font-size:13px}
 .pfollow{padding:8px 10px!important;font-size:15px!important}
@@ -522,6 +539,86 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 #obby:has(#pNamePanel.show,#pAdoptPanel.show,#pPetsPanel.show,#pIndexPanel.show,#pReturnPanel.show) :is(.pgoal,.ppet,.ppedals,.pact){display:none!important}
 @media (max-height:500px){#pNamePanel .mbox,#pAdoptPanel .mbox{padding:10px 18px;max-height:94vh;overflow:auto}#pNamePanel .emoji,#pAdoptPanel .emoji{font-size:26px;margin:0}#pNamePanel h2,#pAdoptPanel h2{font-size:20px;margin:2px 0}#pNamePanel .stats{font-size:13px}#pNamePanel .pname{padding:6px 10px;font-size:18px}#pNamePanel .psugg{margin:6px 0}#pNamePanel .pmsg:empty{display:none}#pNamePanel .owinbtns .big{margin:3px}#pNamePanel .owinbtns,#pAdoptPanel .owinbtns{margin-top:6px}#pNamePanel .owinbtns .big,#pAdoptPanel .owinbtns .big{padding:8px 14px;font-size:15px}}
 @media (max-height:500px){.pgoal{font-size:14px;top:calc(max(8px,env(safe-area-inset-top)) + 50px)}.ppet{top:calc(max(8px,env(safe-area-inset-top)) + 96px);width:170px;padding:5px 8px}.ppn{font-size:13px}.pgrowbar{height:14px}.pgrowbar span{line-height:14px}.ppedals button{width:72px;height:72px}#pGas{width:86px;height:86px}.touchui .pact,.pdrive.touchui .pact{bottom:max(116px,calc(env(safe-area-inset-bottom) + 106px));font-size:16px;padding:10px 14px}.pmode.touchui .otip{top:calc(96px + env(safe-area-inset-top));left:calc(50% - 90px);max-width:60vw}}
+</style>
+<style id="mobileHud">
+/* t161u phone HUD: every tap target >= 48px with >= 10px between them; joystick owns the left, actions arc round the right thumb */
+.obtns .ofp{display:none}
+#obby{--sl:max(16px,calc(env(safe-area-inset-left) + 10px));--sr:max(16px,calc(env(safe-area-inset-right) + 10px));--sb:max(16px,calc(env(safe-area-inset-bottom) + 10px));--st:max(10px,env(safe-area-inset-top))}
+.touchui .ohud{top:var(--st);left:var(--sl);right:var(--sr)}
+.touchui .obtns{gap:10px}
+.touchui .obtns button{min-width:48px;min-height:48px;padding:6px 10px;font-size:19px}
+.touchui #oMute,.touchui #oPause{display:none}
+.touchui .obtns .ofp{display:flex;position:static;width:auto;height:auto;border-radius:12px;font-size:19px;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.touchui .obtns .ofp.on{background:#7cc4ff;box-shadow:0 4px 0 #2f7fc0}
+.touchui .ojoy{left:var(--sl);bottom:var(--sb)}
+.touchui .ojump{right:var(--sr);bottom:var(--sb);width:92px;height:92px}
+.otopact{display:none}
+.touchui .otopact{display:contents}
+#obby{--hudb:70px}
+.touchui .ohud{pointer-events:none}
+.touchui .obtns{flex-wrap:wrap;justify-content:flex-end;pointer-events:auto;max-width:100%}
+.touchui .obtns>*{pointer-events:auto}
+.touchui .obtns .orun,.touchui .obtns .oemo{position:static;display:flex;align-items:center;justify-content:center;width:auto;height:auto;min-width:48px;min-height:48px;border-radius:12px;font-size:21px;padding:6px 10px;box-shadow:0 4px 0 rgba(0,0,0,.18);transform:none}
+.touchui .obtns .orun.on,.touchui .obtns .orun[aria-pressed="true"]{background:#7cff9c}
+.touchui .obtns .pact{position:static;transform:none;min-height:48px;max-width:min(60vw,240px);font-size:16px;padding:6px 14px;border-radius:12px;box-shadow:0 4px 0 #d4a700;white-space:normal;text-align:left;line-height:1.15}
+.touchui .obtns .pact:not(.show){display:none}
+.touchui .olbl{display:none}
+.touchui .oemos{right:var(--sr);top:calc(var(--hudb) + 10px);bottom:auto;max-height:calc(100% - var(--hudb) - 130px);overflow-y:auto;flex-wrap:wrap}
+.touchui .otip{top:calc(var(--hudb) + 10px)}
+.touchui .ostam{top:calc(var(--hudb) + 10px);left:var(--sl);transform:none}
+.touchui .pgoal{top:calc(var(--hudb) + 10px)}
+.pmode.touchui .ostam{top:calc(var(--hudb) + 62px)}
+.touchui .ppet{top:calc(var(--hudb) + 62px)}
+.pmode.touchui .otip{top:calc(var(--hudb) + 270px)}
+.touchui .ppn{flex-wrap:wrap;gap:10px}
+.touchui .ppn div{flex-basis:100%}
+.touchui .ppn button{width:48px;height:48px;margin-left:0!important;font-size:21px}
+.touchui .ppet{width:auto;min-width:184px}
+.touchui .ppedals{right:var(--sr);bottom:var(--sb);gap:14px}
+.touchui.bmode .obuild{top:calc(var(--hudb) + 10px)}
+.touchui.bmode .otip{top:calc(var(--hudb) + 80px)}
+.touchui .obuild{gap:10px;padding:4px 6px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.touchui .opal,.touchui .otools{gap:10px}
+.touchui .obuild button{min-width:48px;height:48px}
+.touchui .opal button{width:52px}
+@media (max-height:500px){
+  .touchui .ojoy{width:120px;height:120px}
+  .touchui .ojump{width:80px;height:80px;font-size:32px}
+  .touchui .ppedals button{width:72px;height:72px}
+  .touchui #pGas{width:84px;height:84px}
+  .touchui .obuild button{height:48px;min-width:48px;font-size:18px}
+  .pmode.touchui .otip{top:calc(var(--hudb) + 10px);bottom:auto;left:calc(var(--sl) + 8px);transform:none;max-width:calc(100% - 260px - var(--sl) - var(--sr))}
+  .pmode.touchui .pgoal{left:calc(50% - 110px)}
+  .touchui .opal button{width:50px}
+}
+@media (max-width:560px){
+  .touchui .ppedals{flex-direction:column-reverse;align-items:flex-end;gap:12px}
+  .touchui .ppedals button{width:76px;height:76px}
+  .touchui #pGas{width:92px;height:92px}
+  .touchui.bmode .otip{top:calc(var(--hudb) + 150px)}
+  .touchui.bmode .obuild{top:calc(var(--hudb) + 10px);flex-direction:column;align-items:stretch;left:var(--sl);right:var(--sr);transform:none;max-width:none}
+  .touchui .opal,.touchui .otools{overflow-x:auto;padding:4px 2px 6px;scrollbar-width:none}
+  .touchui .opal::-webkit-scrollbar,.touchui .otools::-webkit-scrollbar{display:none}
+}
+</style>
+<style id="padPets">
+.ppad{display:none}
+.padui .ppad{display:flex;flex-wrap:wrap;gap:4px 8px;margin-top:6px;font-size:12px;font-weight:800;color:#1d2340}
+.ppad span{display:flex;align-items:center;gap:3px;white-space:nowrap}
+.ppad b{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 4px;border-radius:10px;background:#3b4256;color:#fff;font-size:10.5px}
+.ppad b.bx{background:#3a86ff}.ppad b.by{background:#f2b705;color:#1d2340}.ppad b.bb{background:#ff4d5e}
+.pdrive .ppad{display:none}
+</style>
+<style id="musicCss">
+.musbox{border-radius:14px;background:rgba(58,134,255,.07);padding:4px 6px 8px;margin:4px 0}
+.musbox.off .musrow{opacity:.5}
+.musrow{display:flex;align-items:center;gap:10px;margin-top:8px}
+.musbtn,.musmode{min-width:48px;min-height:48px;border:0;border-radius:12px;background:var(--bg2,#fff);color:inherit;font:inherit;font-weight:900;font-size:20px;box-shadow:0 3px 0 rgba(0,0,0,.15);cursor:pointer}
+.musmode{flex:1;font-size:15px}
+.musmode.sel{background:#2ec27e;color:#fff;box-shadow:0 3px 0 #1f9460}
+.musnow{flex:1;text-align:center;line-height:1.2;min-width:0}
+.obby .opanel.show{z-index:8}   /* menus sit above HUD pieces like the pet goal banner */
+.musnow b{display:block;font-size:16px}.musnow small{display:block;font-size:12px;opacity:.75}
 </style>
 </head>
 <body>
@@ -625,11 +722,13 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
       <button class="tab" data-cat="anim">🕺 Animations</button>
       <button class="tab" data-cat="burger">🍔 Burger Family</button>
       <button class="tab" data-cat="town">📺 Cartoon Town</button>
+      <button class="tab" data-cat="holiday">🎃 Holiday 🎄</button>
     </div>
     <div class="hairrow" id="hairRow">🎨 Hair color (free!): <div class="swatches" id="shopHairSw"></div></div>
     <div class="animnote" id="animNote">🕺 Animation packs change how you walk, jump and climb in every game (pick one). 🎉 Emotes are yours forever: press <b>1–8</b> in a game, or tap the <b>😀</b> button on a phone.</div>
     <div class="animnote" id="burgerNote" style="display:none">🍔 Meet the Sizzle family from the Sizzle Shack diner! Grab a whole family outfit, or mix single pieces with your other stuff. ⭐ Star move: <b>Dina's Flail Run</b>. Emotes: <b>5</b> 🍳 Burger Flip, <b>6</b> 😩 Awkward Groan.</div>
     <div class="animnote" id="townNote" style="display:none">📺 Say hi to the Bumbles of Wobbleton, the goofiest family on TV! Grab a whole family outfit, or mix single pieces with your other stuff. ⭐ Star move: <b>Belly Waddle</b>. Emotes: <b>7</b> 🤦 Big Facepalm, <b>8</b> 🛹 Skate Trick.</div>
+    <div class="animnote" id="holNote" style="display:none">🎃 Spooky and 🎄 cozy holiday gear, in the shop all year! Antlers sit on your forehead, so they stack with any hat.</div>
     <div class="animnote" id="styleNote" style="display:none">👗 All free! Pick a <b>body type</b> (Classic or Girl), add lashes, and try a skirt, a dress or long hair. Works with every color, hat, outfit, animation and game.</div>
     <div class="wornbar" id="wornBar" aria-label="What you're wearing"></div>
     <div class="items" id="items"></div>
@@ -694,10 +793,10 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
         <span><i>L ●</i>Left stick: move</span>
         <span><i>R ●</i>Right stick: look around</span>
         <span><i class="ba">A</i>Jump · pick in menus</span>
-        <span><i class="bb">B</i>Back · close menu</span>
-        <span><i class="bx">X</i>Emote wheel (Build: build/delete)</span>
-        <span><i class="by">Y</i>Camera behind me (Build: undo)</span>
-        <span><i>LB RB</i>Quick emotes (Build: pick block)</span>
+        <span><i class="bb">B</i>Back · close menu (Pets: 🐾 my pets)</span>
+        <span><i class="bx">X</i>Emote wheel (Build: build/delete · Pets: pet / use)</span>
+        <span><i class="by">Y</i>Camera behind me (Build: undo · Pets: 🦮 walk)</span>
+        <span><i>LB RB</i>Quick emotes (Build: pick block · Pets: LB 🍖 feed, RB 🎾 throw)</span>
         <span><i>LT RT</i>Zoom out / in (Build: delete / place)</span>
         <span><i>☰</i>Menu: pause (Home: settings)</span>
         <span><i style="font-size:8px;letter-spacing:-.2px">VIEW</i>View: help · skip level (Home: shop)</span>
@@ -733,10 +832,13 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
       <span id="oMpBox" style="display:none" title="Players in your room">👥 <b id="oMp">1</b></span>
     </div>
     <div class="obtns">
+      <span class="otopact" id="oTopAct"></span>
       <button id="oMute" title="Sound on/off">🔊</button>
+      <button class="ofp" id="oFP" title="First person (V)" aria-label="First person" aria-pressed="false">👁️</button>
       <button id="oGear" title="Settings (Esc)" aria-label="Settings">⚙️</button>
       <button id="oPause" title="Pause (Esc)">⏸️</button>
-      <button id="oExit" title="Back to Rublox">🚪 Exit</button>
+      <button id="oExit" title="Back to Rublox" aria-label="Exit">🚪<span class="olbl"> Exit</span></button>
+      <span class="otopact" id="oTopAct2"></span>
     </div>
   </div>
   <div class="otip" id="oTip"></div>
@@ -748,7 +850,6 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="ojoy" id="oJoy"><div class="oknob" id="oKnob"></div></div>
     <button class="ojump" id="oJump" aria-label="Jump">⬆️</button>
     <button class="orun" id="oRun" aria-label="Run" aria-pressed="false">🏃</button>
-    <button class="ofp" id="oFP" aria-label="First person" aria-pressed="false">👁️</button>
   </div>
   <div class="ostam full" id="oStam" style="display:none" title="Run energy"><i>🏃</i><b><u id="oStamF"></u></b></div>
   <button class="oemo" id="oEmoBtn" title="Emotes (keys 1-8)" aria-label="Emotes">😀</button>
@@ -771,9 +872,10 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   <div class="owarn" id="oWarn"></div>
   <div class="pgoal" id="pGoal"><svg id="pArrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 10h-5v10h-6V12H4z"/></svg><span id="pGoalT"></span><b id="pGoalD"></b></div>
   <div class="ppet" id="pPetBox">
-    <div class="ppn"><div><b id="pPetN"></b><small id="pPetS"></small></div><button id="pPetsBtn" title="My pets (M)" aria-label="My pets">🐾</button><button id="pIdxBtn2" title="Pet Index (I)" aria-label="Pet Index">📖</button></div>
+    <div class="ppn"><div><b id="pPetN"></b><small id="pPetS"></small></div><button id="pPetsBtn" title="My pets (M)" aria-label="My pets">🐾</button><button id="pIdxBtn2" title="Pet Index (I)" aria-label="Pet Index">📖</button><button id="pWardBtn" title="Wardrobe (O)" aria-label="Wardrobe">👗</button></div>
     <div class="pneeds"><span title="Food">🍖<i><u id="pFood"></u></i></span><span title="Fun">🎾<i><u id="pFun"></u></i></span><span title="Energy">⚡<i><u id="pEn"></u></i></span></div>
     <div class="pgrowbar"><u id="pGrow"></u><span id="pGrowT"></span></div>
+    <div class="ppad" id="pPadHint"><span><b class="bx">X</b>Pet</span><span><b>RB</b>🎾 Throw</span><span><b>LB</b>🍖 Feed</span><span><b class="by">Y</b>🦮 Walk</span><span><b class="bb">B</b>🐾 Pets</span></div>
   </div>
   <button class="pact" id="pAct" tabindex="-1"><kbd id="pKey">E</kbd><span id="pActT"></span></button>
   <div class="ppedals" id="pPedals"><button id="pBrake" tabindex="-1" aria-label="Brake">🛑<small>Brake</small></button><button id="pGas" tabindex="-1" aria-label="Gas">⛽<small>Go!</small></button></div>
@@ -782,6 +884,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="stats" style="margin-bottom:8px">🩺 Dr. Hazel: “Welcome! What will you call your new best friend?”</div>
     <input id="petNameIn" class="pname" maxlength="14" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="Pet name" enterkeyhint="done">
     <div class="psugg" id="pSugg"></div>
+    <div class="pgen" id="pGen"><button class="pchip" data-g="b">👦 Boy</button><button class="pchip" data-g="g">👧 Girl</button></div>
     <div class="pmsg" id="pNameMsg"></div>
     <div class="owinbtns"><button class="big green" id="pNameOk">✅ That's the name!</button><button class="big" id="pRand">🎲 Random</button><button class="big gray" id="pNameX">✖ Not yet</button></div>
   </div></div>
@@ -797,6 +900,21 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="plist" id="pList"></div>
     <div class="stats" style="font-size:14px;margin:10px 0">Feed, play and walk your pet to help it grow: 🍼 Baby → 🧒 Kid → 😎 Teen → ⭐ Adult.<br>When your newest pet is an Adult, adopt another at the 🏥 Pet Shelter (up to 6)!</div>
     <div class="owinbtns"><button class="big" id="pIdxBtn">📖 Pet Index</button><button class="big gray" id="pPetsClose">✖ Close</button></div>
+  </div></div>
+  <div class="opanel" id="pShopPanel"><div class="mbox pbox">
+    <span class="emoji">🛍️</span><h2>Pet Shop <small class="shcoins">🪙 <b id="pShopCoins">0</b></small></h2>
+    <div class="stats" style="font-size:14px;margin-bottom:8px">🛍️ Pip: “Hats, collars, capes and more! What you buy is yours to keep, and any of your pets can wear it.”</div>
+    <div class="shtabs" id="pShopTabs"></div>
+    <div class="shgrid" id="pShopGrid"></div>
+    <div class="pmsg" id="pShopMsg" style="margin-top:8px"></div>
+    <div class="owinbtns"><button class="big" id="pShopWard">👗 Wardrobe</button><button class="big gray" id="pShopClose">✖ Close</button></div>
+  </div></div>
+  <div class="opanel" id="pWardPanel"><div class="mbox pbox">
+    <span class="emoji">👗</span><h2>Wardrobe</h2>
+    <div class="wpets" id="pWardPets"></div>
+    <div id="pWardSlots"></div>
+    <div class="pmsg" id="pWardMsg"></div>
+    <div class="owinbtns"><button class="big" id="pWardShop" hidden>🛍️ Back to the shop</button><button class="big gray" id="pWardClose">✖ Close</button></div>
   </div></div>
   <div class="opanel" id="pIndexPanel"><div class="mbox pbox">
     <span class="emoji">📖</span><h2>Pet Index <small id="pIdxCount"></small></h2>
@@ -837,6 +955,12 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
       <label class="invrow"><input type="checkbox" id="pFP"><span>👁️ First person<small>Also: V · R3 twice · scroll all the way in</small></span></label>
       <label class="invrow"><input type="checkbox" id="pThrow"><span>🎾 Turn camera when throwing<small>First person: the camera turns with your throw</small></span></label>
       <label class="invrow"><input type="checkbox" id="pSnd"><span>🔊 Sound<small>Game sounds on or off</small></span></label>
+      <div class="musbox">
+        <label class="invrow"><input type="checkbox" id="pMus"><span>🎵 Music<small>Chill bossa tunes, made right here in the game</small></span></label>
+        <label class="padsens"><span>🎚️ Music volume</span><input type="range" id="pMusVol" min="0" max="1" step="0.05" value="0.35" aria-label="Music volume"><b id="pMusVolV">35%</b></label>
+        <div class="musrow"><button class="musbtn" id="pMusPrev" aria-label="Previous song" title="Previous song">⏮</button><div class="musnow"><b id="pMusNow">🎵</b><small id="pMusInfo"></small></div><button class="musbtn" id="pMusNext" aria-label="Next song" title="Next song">⏭</button></div>
+        <div class="musrow"><button class="musmode" id="pMusAll">🔀 Play all</button><button class="musmode" id="pMusOne">🔂 Loop this song</button></div>
+      </div>
       <label class="padsens"><span>🎯 Stick look speed</span><input type="range" id="pPadSens" min="0.3" max="3" step="0.1" value="1" aria-label="Controller look speed"><b id="pPadSensV">1.0×</b></label>
       <label class="padsens"><span>🖱️ Mouse look speed</span><input type="range" id="pMouseSens" min="0.3" max="3" step="0.1" value="1" aria-label="Mouse look speed"><b id="pMouseSensV">1.0×</b></label>
       <div class="padst" id="pPadStatus">🎮 No controller yet</div>
@@ -875,7 +999,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.10.29-5';
+const BUILD = '2026.10.29-6';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -970,6 +1094,20 @@ function drawWings(ctx){   // dragon wings: dark bones, see-through scalloped me
     circ(ctx, f(80), 80, 4.5, '#13734a'); ctx.fillStyle = '#f4ecd2'; ctx.beginPath(); ctx.moveTo(f(78), 78); ctx.lineTo(f(84), 66); ctx.lineTo(f(86), 79); ctx.fill();
   };
   wing(-1); wing(1);
+}
+function drawBatWings(ctx){   // bat wings: purple membrane with scalloped edges
+  [-1, 1].forEach(d => { const f = v => 130 + d * v; ctx.fillStyle = '#4b2a6b'; ctx.beginPath(); ctx.moveTo(f(30), 120); ctx.lineTo(f(78), 72); ctx.lineTo(f(128), 70);
+    ctx.quadraticCurveTo(f(112), 96, f(122), 118); ctx.quadraticCurveTo(f(100), 108, f(98), 140); ctx.quadraticCurveTo(f(80), 122, f(66), 150); ctx.quadraticCurveTo(f(54), 132, f(34), 150); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#2b1d40'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(f(30), 120); ctx.lineTo(f(78), 72); ctx.lineTo(f(128), 70); ctx.moveTo(f(78), 72); ctx.lineTo(f(122), 118); ctx.moveTo(f(78), 72); ctx.lineTo(f(98), 140); ctx.moveTo(f(78), 72); ctx.lineTo(f(66), 150); ctx.stroke(); });
+}
+function drawCane(ctx){   // a big red-and-white candy cane slung on the back
+  ctx.save(); ctx.lineCap = 'round'; const path = () => { ctx.beginPath(); ctx.moveTo(196, 222); ctx.lineTo(78, 44); ctx.arc(56, 46, 22, -0.09, -Math.PI * 1.1, true); };
+  ctx.lineWidth = 18; ctx.strokeStyle = '#ffffff'; path(); ctx.stroke(); ctx.setLineDash([12, 12]); ctx.strokeStyle = '#e8384f'; path(); ctx.stroke(); ctx.restore();
+}
+function drawAntlers(ctx){   // reindeer antlers on the forehead
+  ctx.save(); ctx.strokeStyle = '#8a5a2b'; ctx.lineWidth = 7; ctx.lineCap = 'round';
+  [-1, 1].forEach(d => { const f = v => 130 + d * v; ctx.beginPath(); ctx.moveTo(f(18), 42); ctx.quadraticCurveTo(f(30), 14, f(48), 0); ctx.moveTo(f(26), 24); ctx.lineTo(f(46), 22); ctx.moveTo(f(36), 10); ctx.lineTo(f(34), -6); ctx.stroke(); });
+  ctx.restore();
 }
 function drawHorn(ctx){   // twisted pearly unicorn horn with a pastel shimmer and a sparkle
   ctx.save();
@@ -1154,12 +1292,12 @@ function drawPants(ctx, av){
 // draws a character in a 260x310 design space (scales to any canvas size)
 function drawAvatar(ctx, av, opts = {}){
   if (av && av.extra) av = fixAv(Object.assign({}, av));
-  av = Object.assign({}, DEF, av);
+  av = Object.assign({}, DEF, av); if (av.hat === 'pumpkin') av.hair = null;
   const W = ctx.canvas.width, H = ctx.canvas.height;
   ctx.clearRect(0, 0, W, H);
   ctx.save();
   if (opts.headOnly){
-    const tall = av.hat !== 'none' || av.ears || av.brow === 'horn' || ['spiky','bun','curly','beehive','spacebuns','bowl','curl'].includes(av.hair);
+    const tall = av.hat !== 'none' || av.ears || av.brow === 'horn' || av.brow === 'antlers' || ['spiky','bun','curly','beehive','spacebuns','bowl','curl'].includes(av.hair);
     const s = W / 124; ctx.scale(s, s); ctx.translate(-68, tall ? 4 : -16);
   } else {
     const s = Math.min(W / 260, H / 310); ctx.scale(s, s); ctx.translate((W/s - 260)/2, 10);
@@ -1167,7 +1305,7 @@ function drawAvatar(ctx, av, opts = {}){
   }
   ctx.lineCap = 'butt';
   if (opts.layer !== 'body'){
-    if (av.back === 'wings') drawWings(ctx);
+    if (av.back === 'wings') drawWings(ctx); else if (av.back === 'bat') drawBatWings(ctx); else if (av.back === 'cane') drawCane(ctx);
     if (av.tail && TAILS[av.tail]) TAILS[av.tail](ctx);
     hairBack(ctx, av);
   }
@@ -1186,7 +1324,7 @@ function drawAvatar(ctx, av, opts = {}){
   drawFace(ctx, av); drawLashes(ctx, av);
   hairFront(ctx, av);
   if (av.ears && EARS[av.ears]) EARS[av.ears](ctx);
-  if (av.brow === 'horn') drawHorn(ctx);
+  if (av.brow === 'horn') drawHorn(ctx); else if (av.brow === 'antlers') drawAntlers(ctx);
   if (av.hat === 'cap'){
     block(ctx, 86, 26, 88, 24, '#ff4d5e'); block(ctx, 150, 44, 46, 10, '#d93445');
     ctx.fillStyle = '#ffd23f'; ctx.fillRect(124, 30, 12, 8);
@@ -1210,6 +1348,21 @@ function drawAvatar(ctx, av, opts = {}){
   } else if (av.hat === 'propeller'){
     ['#ff4d5e','#ffd23f','#2ec27e','#3a86ff'].forEach((col, i) => { ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(130, 48); ctx.arc(130, 48, 42, Math.PI + i * Math.PI / 4, Math.PI + (i + 1) * Math.PI / 4); ctx.closePath(); ctx.fill(); });
     ctx.fillStyle = '#8b5cf6'; ctx.fillRect(127, 0, 6, 8); ctx.fillStyle = '#ff6fb5'; ctx.beginPath(); ctx.ellipse(112, 2, 18, 4, 0, 0, Math.PI*2); ctx.ellipse(148, 2, 18, 4, 0, 0, Math.PI*2); ctx.fill();
+  } else if (av.hat === 'pumpkin'){ // jack-o'-lantern helmet over the whole head
+    const pg = ctx.createRadialGradient(118, 60, 8, 130, 78, 62); pg.addColorStop(0, '#ffb04a'); pg.addColorStop(1, '#e8650f');
+    [[-30, 34], [30, 34], [0, 50]].forEach(([dx, rx]) => { ctx.fillStyle = pg; ctx.beginPath(); ctx.ellipse(130 + dx, 78, rx, 46, 0, 0, Math.PI*2); ctx.fill(); });
+    ctx.strokeStyle = '#c9530a'; ctx.lineWidth = 2.5; [-22, 22].forEach(dx => { ctx.beginPath(); ctx.ellipse(130 + dx * .6, 78, 18, 44, 0, -Math.PI/2, Math.PI/2, dx < 0); ctx.stroke(); });
+    ctx.fillStyle = '#3f7a2a'; ctx.fillRect(125, 20, 10, 16); ctx.fillStyle = '#5ec04a'; ctx.beginPath(); ctx.ellipse(146, 26, 12, 5, -.4, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#3a1d00'; ctx.shadowColor = '#ffd23f'; ctx.shadowBlur = 8;
+    [[110, 1], [150, -1]].forEach(([x]) => { ctx.beginPath(); ctx.moveTo(x - 11, 74); ctx.lineTo(x + 11, 74); ctx.lineTo(x, 58); ctx.closePath(); ctx.fill(); });
+    ctx.beginPath(); ctx.moveTo(102, 92); [[110, 100], [118, 94], [126, 102], [134, 94], [142, 102], [150, 94], [158, 92], [150, 110], [110, 110]].forEach(([x, y]) => ctx.lineTo(x, y)); ctx.closePath(); ctx.fill(); ctx.shadowBlur = 0;
+  } else if (av.hat === 'witch'){
+    ctx.fillStyle = '#2b1d40'; ctx.beginPath(); ctx.ellipse(130, 44, 64, 9, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(100, 44); ctx.lineTo(126, 8); ctx.quadraticCurveTo(140, -12, 168, -4); ctx.quadraticCurveTo(146, 0, 142, 18); ctx.lineTo(160, 44); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#8b5cf6'; ctx.fillRect(103, 32, 54, 8); ctx.fillStyle = '#ffd23f'; ctx.fillRect(124, 30, 12, 12); ctx.fillStyle = '#8b5cf6'; ctx.fillRect(127, 33, 6, 6);
+  } else if (av.hat === 'santa'){
+    ctx.fillStyle = '#e8384f'; ctx.beginPath(); ctx.moveTo(92, 40); ctx.quadraticCurveTo(120, -14, 168, 6); ctx.quadraticCurveTo(178, 14, 176, 30); ctx.quadraticCurveTo(160, 14, 168, 40); ctx.closePath(); ctx.fill();
+    block(ctx, 86, 32, 88, 16, '#ffffff'); circ(ctx, 177, 32, 10, '#ffffff');
   } else if (av.hat === 'burger'){
     drawBurgerIcon(ctx, 130, 30, 1.9);
   } else if (av.hat === 'party'){
@@ -1739,6 +1892,14 @@ ITEMS.push(
   {id:'pants-dress',  cat:'style', emoji:'👗', name:'Twirly Dress', price:0, slot:'pantsPat', val:'dress', desc:'Matches your shirt color, with a bow in your pants color'},
 );
 ['pants-skirt','hair-long','hair-ponytail'].forEach(id => byId0(id).also = 'style');
+ITEMS.push(   // 🎃🎄 Holiday (t160u), sold all year
+  {id:'hat-pumpkin',  cat:'holiday', emoji:'🎃', name:'Pumpkin Head', price:300, slot:'hat', val:'pumpkin', desc:'A grinning jack-o\'-lantern helmet'},
+  {id:'hat-witch',    cat:'holiday', emoji:'🧙', name:'Witch Hat', price:200, slot:'hat', val:'witch'},
+  {id:'back-bat',     cat:'holiday', emoji:'🦇', name:'Bat Wings', price:400, slot:'back', val:'bat', rare:true, desc:'Flap when you run'},
+  {id:'hat-santa',    cat:'holiday', emoji:'🎅', name:'Santa Hat', price:200, slot:'hat', val:'santa'},
+  {id:'brow-antlers', cat:'holiday', emoji:'🦌', name:'Reindeer Antlers', price:250, slot:'brow', val:'antlers', desc:'Stacks with any hat!'},
+  {id:'back-cane',    cat:'holiday', emoji:'🍭', name:'Candy-Cane Back', price:250, slot:'back', val:'cane'},
+);
 const SLOT_DEF = {face:'smile', anim:'default', hat:'none', body:'classic'};
 const byId = id => ITEMS.find(x => x.id === id);
 let coins = load('rubloxCoins', 500);
@@ -1800,7 +1961,7 @@ function thumb(canvas, it){
   const headish = it.slot === 'hair' || it.slot === 'lash' || it.slot === 'ears' || it.slot === 'hat' || it.val === 'horn';
   drawAvatar(canvas.getContext('2d'), preview, {headOnly: headish});
 }
-const HATNAMES = {cap: 'Cap', crown: 'Crown', party: 'Party Hat'};
+const HATNAMES = {cap: 'Cap', crown: 'Crown', party: 'Party Hat', pumpkin: 'Pumpkin Head', witch: 'Witch Hat', santa: 'Santa Hat'};
 function slotVal(slot){ const v = avatar[slot] ?? null; return v === (SLOT_DEF[slot] ?? null) ? null : v; }
 function valName(slot, v){
   const it = ITEMS.find(i => i.slot === slot && i.val === v && !i.set);
@@ -1816,7 +1977,7 @@ function renderShop(){
   renderWorn();
   $$('.tab').forEach(t => t.classList.toggle('sel', t.dataset.cat === shopCat));
   $('#hairRow').style.display = shopCat === 'hair' ? '' : 'none'; $('#animNote').style.display = shopCat === 'anim' ? '' : 'none';
-  $('#burgerNote').style.display = shopCat === 'burger' ? '' : 'none'; $('#townNote').style.display = shopCat === 'town' ? '' : 'none'; $('#styleNote').style.display = shopCat === 'style' ? '' : 'none';
+  $('#burgerNote').style.display = shopCat === 'burger' ? '' : 'none'; $('#townNote').style.display = shopCat === 'town' ? '' : 'none'; $('#styleNote').style.display = shopCat === 'style' ? '' : 'none'; $('#holNote').style.display = shopCat === 'holiday' ? '' : 'none';
   const box = $('#items'); box.innerHTML = '';
   const list = ITEMS.filter(it => it.cat === shopCat || it.also === shopCat);
   if (shopCat === 'burger' || shopCat === 'town') list.sort((a, b) => (b.set ? 2 : b.star ? 1 : 0) - (a.set ? 2 : a.star ? 1 : 0));
@@ -1989,6 +2150,7 @@ const Obby = (() => {
   let actx;
   function beep(freqs, dur, type, vol){
     if (muted) return;
+    if (window.rubloxMusic) rubloxMusic.duck();   // music dips a little under sound effects
     try {
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
       const t0 = actx.currentTime;
@@ -2011,6 +2173,161 @@ const Obby = (() => {
     hit:  () => beep([260, 180], .07, 'square', .06),
     alarm:() => beep([660, 880, 660, 880], .13, 'triangle', .07),
   };
+  /* ---------- t168u/t169u: background music. Original procedural chill bossa / lounge tunes (generic idioms only), no audio files ---------- */
+  const MUS = (() => {
+    const KEY = 'rubloxMusic';
+    const cfg = Object.assign({on: true, vol: .35, mode: 'all', song: 0}, load(KEY, {}) || {});
+    const CH = {maj7: [0, 4, 7, 11], maj9: [0, 4, 11, 14], 6: [0, 4, 7, 9], m7: [0, 3, 7, 10], m9: [0, 3, 10, 14], 7: [0, 4, 7, 10], 9: [0, 4, 10, 14], 13: [0, 4, 10, 21], m7b5: [0, 3, 6, 10], '7b9': [0, 4, 10, 13], sus: [0, 5, 10, 14]};
+    const PC = {C: 0, Db: 1, D: 2, Eb: 3, E: 4, F: 5, Gb: 6, G: 7, Ab: 8, A: 9, Bb: 10, B: 11};
+    const ch = s => s.split(' ').map(b => b.split(',').map(c => { const m = c.match(/^([A-G]b?)(.*)$/); return [PC[m[1]], CH[m[2]] || CH.maj7]; }));
+    const MAJ = [0, 2, 4, 5, 7, 9, 11], DOR = [0, 2, 3, 5, 7, 9, 10];
+    // each song: own name, key, tempo, progression (one bar per item, "X,Y" = two chords in the bar), feel and lead voice
+    const SONGS = [
+      {n: 'Sunny Sidewalk', e: '☀️', key: 'F', sc: MAJ, bpm: 132, feel: 'bossa', lead: 'ep', prog: ch('Fmaj7 Fmaj7 Gm7 C9 Am7 D7b9 Gm9 C13')},
+      {n: 'Moonlight Pier', e: '🌙', key: 'Eb', sc: MAJ, bpm: 112, feel: 'ballad', lead: 'flute', prog: ch('Ebmaj7 Abmaj9 Fm7 Bb9 Gm7 C7b9 Fm9 Bbsus')},
+      {n: 'Carnival Kites', e: '🪁', key: 'G', sc: MAJ, bpm: 140, feel: 'samba', lead: 'vibes', prog: ch('Gmaj7 E9 Am7 D9 Bm7 E7b9 Am9 D13')},
+      {n: 'Rainy Window', e: '🌧️', key: 'A', sc: DOR, bpm: 118, feel: 'bossa', lead: 'muted', prog: ch('Am9 D9 Am9 D9 Fmaj7 E7b9 Am7 Bm7b5,E7')},
+      {n: 'Puppy Park', e: '🐶', key: 'C', sc: MAJ, bpm: 128, feel: 'bossa', lead: 'ocarina', prog: ch('Cmaj7 A7 Dm7 G9 Em7 A7b9 Dm9 G13')},
+      {n: 'Hammock Afternoon', e: '🌴', key: 'D', sc: MAJ, bpm: 124, feel: 'ballad', lead: 'ep', prog: ch('Dmaj9 Bm7 Em9 A13 F#m7 B7b9 Em7 A9'.replace('F#', 'Gb'))}];
+    let ac = null, master = null, duckG = null, noise = null, cur = null, old = null, timer = 0, started = false, barsLeft = 0;
+    const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+    function rng(seed){ let s = seed >>> 0 || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
+    function ctx(){
+      try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); } catch(_){ return null; }
+      ac = actx;
+      if (!master){
+        master = ac.createGain(); duckG = ac.createGain(); master.gain.value = 0; master.connect(duckG); duckG.connect(ac.destination);
+        const n = ac.createBuffer(1, ac.sampleRate, ac.sampleRate), d = n.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; noise = n;
+      }
+      return ac;
+    }
+    const want = () => cfg.on && !muted && !document.hidden;
+    const level = () => cfg.vol * cfg.vol * .55;
+    /* ----- instruments (1–2 oscillators each, short lives) ----- */
+    function env(g, t, a, peak, dec){ g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(.0005, t + a + dec); }
+    function pluck(bus, m, t, v, dur){   // nylon-ish: triangle + saw through a closing lowpass
+      const o = ac.createOscillator(), o2 = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain();
+      o.type = 'triangle'; o2.type = 'sawtooth'; o.frequency.value = o2.frequency.value = mtof(m); o2.detune.value = 4;
+      f.type = 'lowpass'; f.Q.value = .7; f.frequency.setValueAtTime(2600, t); f.frequency.exponentialRampToValueAtTime(500, t + .25);
+      const g2 = ac.createGain(); g2.gain.value = .25; o2.connect(g2); g2.connect(f); o.connect(f); f.connect(g); g.connect(bus);
+      env(g, t, .004, v, dur); o.start(t); o2.start(t); o.stop(t + dur + .05); o2.stop(t + dur + .05);
+    }
+    function bass(bus, m, t, v, dur){
+      const o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain(); o.type = 'triangle'; o.frequency.value = mtof(m);
+      f.type = 'lowpass'; f.frequency.value = 600; o.connect(f); f.connect(g); g.connect(bus);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .01); g.gain.setTargetAtTime(v * .55, t + .02, .12); g.gain.setTargetAtTime(0, t + dur, .05);
+      o.start(t); o.stop(t + dur + .3);
+    }
+    function hit(bus, t, v, kind){   // shaker / rim / brush / soft kick, all from one shared noise buffer
+      if (kind === 'kick'){ const o = ac.createOscillator(), g = ac.createGain(); o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(45, t + .12); o.connect(g); g.connect(bus); env(g, t, .003, v, .18); o.start(t); o.stop(t + .25); return; }
+      const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(); s.buffer = noise;
+      const P = {shk: ['highpass', 7000, .6, .045], rim: ['bandpass', 1900, 6, .03], brush: ['bandpass', 3200, .8, .16]}[kind];
+      f.type = P[0]; f.frequency.value = P[1]; f.Q.value = P[2]; s.connect(f); f.connect(g); g.connect(bus);
+      env(g, t, kind === 'brush' ? .03 : .002, v, P[3]); s.start(t, Math.random() * .8); s.stop(t + P[3] + .08);
+    }
+    function lead(bus, kind, m, t, v, dur){
+      const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = mtof(m); let o2 = null, end = t + dur + .5;
+      if (kind === 'ep' || kind === 'vibes'){   // tiny FM: mellow electric piano / vibraphone
+        o2 = ac.createOscillator(); const mg = ac.createGain(); o2.frequency.value = mtof(m) * (kind === 'ep' ? 1 : 4); mg.gain.setValueAtTime(mtof(m) * (kind === 'ep' ? 1.4 : .6), t); mg.gain.exponentialRampToValueAtTime(1, t + .6);
+        o2.connect(mg); mg.connect(o.frequency); env(g, t, .006, v, kind === 'ep' ? dur + .5 : 1.4);
+      } else if (kind === 'flute' || kind === 'ocarina'){   // breathy sine with a slow vibrato
+        o2 = ac.createOscillator(); const mg = ac.createGain(); o2.frequency.value = 5.2; mg.gain.setValueAtTime(0, t); mg.gain.linearRampToValueAtTime(mtof(m) * .006, t + .35); o2.connect(mg); mg.connect(o.frequency);
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + (kind === 'flute' ? .07 : .02)); g.gain.setTargetAtTime(0, t + dur, .08); end = t + dur + .4;
+      } else {   // muted trumpet-ish: filtered saw
+        o.type = 'sawtooth'; const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1100; f.Q.value = 1.5; o.connect(f); f.connect(g);
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v * .6, t + .04); g.gain.setTargetAtTime(0, t + dur, .07); g.connect(bus); o.start(t); o.stop(end); return;
+      }
+      o.connect(g); g.connect(bus); o.start(t); o.stop(end); if (o2){ o2.start(t); o2.stop(end); }
+    }
+    /* ----- rhythm patterns (32 steps = 2 bars of 16ths) ----- */
+    const FEEL = {
+      bossa: {gtr: [0, 3, 6, 10, 12, 18, 21, 25, 28], bass: [[0, 0, 5], [6, 7, 2], [8, 7, 5], [14, 0, 2]], rim: [3, 6, 10, 18, 22, 26], shk: 2, brush: [4, 12]},
+      samba: {gtr: [0, 2, 3, 6, 8, 10, 11, 14, 16, 19, 22, 24, 26, 27, 30], bass: [[0, 0, 3], [6, 7, 2], [8, 7, 3], [14, 0, 2]], rim: [3, 6, 10, 13, 19, 22, 26, 29], shk: 1, brush: [], kick: [0, 8, 12]},
+      ballad: {gtr: [0, 6, 10, 16, 22, 26], bass: [[0, 0, 7], [8, 7, 7]], rim: [12, 28], shk: 4, brush: [4, 12]}};
+    const RHY = [[[0, 4], [6, 2], [8, 6], [16, 3], [20, 4], [24, 8]], [[2, 2], [4, 4], [10, 2], [12, 6], [20, 2], [22, 2], [24, 6]], [[0, 6], [8, 2], [10, 4], [16, 6], [26, 4]], [[0, 2], [3, 3], [6, 2], [8, 8], [18, 2], [20, 2], [22, 8]]];
+    function voice(c, lo, hi){ return c[1].slice(1).map(i => { let m = c[0] + i + 48; while (m < lo) m += 12; while (m > hi) m -= 12; return m; }).sort((a, b) => a - b); }
+    function makeInst(i){
+      const S = SONGS[i], bus = ac.createGain(); bus.gain.value = 0; bus.connect(master);
+      return {i, S, bus, step: 0, bar: 0, t: ac.currentTime + .12, sp: 60 / S.bpm / 4, mel: null, prev: 72 + PC[S.key] % 12 - 12 * ((72 + PC[S.key]) > 78), drop: false};
+    }
+    function chordAt(I, bar, step){ const b = I.S.prog[bar % I.S.prog.length]; return b.length > 1 && step % 16 >= 8 ? b[1] : b[0]; }
+    function melPhrase(I, bar){   // a 2-bar phrase; sections: comp-only, melody, varied melody, light melody
+      const sect = Math.floor(bar / I.S.prog.length) % 4; if (sect === 0) return [];
+      const r = rng(I.i * 977 + Math.floor(bar / 2) % (I.S.prog.length / 2) * 31 + (sect === 2 ? 7 : 0)), rh = RHY[Math.floor(r() * RHY.length)], key = PC[I.S.key], out = [];
+      if (sect === 3 && r() < .5) return [];
+      rh.forEach(([st, d]) => {
+        const c = chordAt(I, bar + (st >= 16 ? 1 : 0), st), tones = c[1].map(x => (c[0] + x) % 12), strong = st % 8 === 0;
+        let best = I.prev, bd = 99;
+        for (let m = 64; m <= 84; m++){ const pc = (m % 12 + 12) % 12, inScale = I.S.sc.some(x => (key + x) % 12 === pc), isCt = tones.includes(pc);
+          if (!(strong ? isCt : inScale || isCt)) continue; const dist = Math.abs(m - I.prev) + (r() * 3.2) - (isCt ? .6 : 0) + (m === I.prev ? 2.5 : 0); if (dist < bd){ bd = dist; best = m; } }
+        I.prev = best; out.push([st, best, d]); });
+      return out;
+    }
+    function schedStep(I){
+      const S = I.S, F = FEEL[S.feel], st = I.step % 32, t = I.t, bar = I.bar, c = chordAt(I, bar, st % 16), r = Math.random;
+      if (st % 16 === 0 && st === 0) I.mel = melPhrase(I, bar);
+      const lowq = typeof LOWQ !== 'undefined' && LOWQ;
+      if (!I.drop && F.gtr.includes(st)){ const v = voice(c, 53, 69); v.forEach((m, k) => pluck(I.bus, m, t + k * .012, .07 - k * .006, S.feel === 'ballad' ? .9 : .45)); }
+      F.bass.forEach(([s, iv, d]) => { if (s === st % 16){ let root = c[0] + 36; while (root < 36) root += 12; while (root > 47) root -= 12;
+        const walk = S.feel !== 'samba' && (bar % 4 === 3) && s >= 8, m = walk ? root + (s === 8 ? 4 : 11) : root + iv; bass(I.bus, m, t, .3, d * I.sp); } });
+      if (F.rim.includes(st) && !(lowq && st % 2)) hit(I.bus, t, .07, 'rim');
+      if (st % F.shk === 0 && !(lowq && st % 2)) hit(I.bus, t, (st % 4 === 2 ? .05 : .028), 'shk');
+      if (F.brush.includes(st % 16)) hit(I.bus, t, .05, 'brush');
+      if (F.kick && F.kick.includes(st % 16)) hit(I.bus, t, st % 16 === 12 ? .22 : .14, 'kick');
+      if (I.mel) I.mel.forEach(([s, m, d]) => { if (s === st) lead(I.bus, S.lead, m, t + (r() * .01), S.lead === 'muted' ? .09 : .1, d * I.sp * .9); });
+      if (st % 16 === 15 && (bar + 1) % S.prog.length === 0) hit(I.bus, t, .06, 'rim');   // tiny fill into the next pass
+      I.t += I.sp * (st % 2 ? .94 : 1.06); I.step++;   // a hint of lilt
+      if (I.step % 16 === 0){ I.bar++; if (I.step % 32 === 0) I.mel = null; if (I.bar % 8 === 0) I.drop = Math.random() < .2; if (cur === I && barsLeft > 0) barsLeft--; }
+    }
+    function fade(bus, to, secs){ const t = ac.currentTime; bus.gain.cancelScheduledValues(t); bus.gain.setValueAtTime(bus.gain.value, t); bus.gain.linearRampToValueAtTime(to, t + secs); }
+    function startSong(i, xf){
+      i = ((i % SONGS.length) + SONGS.length) % SONGS.length; cfg.song = i; save();
+      if (cur){ if (old) try { old.bus.disconnect(); } catch(_){} old = cur; fade(old.bus, 0, xf); const o = old; setTimeout(() => { if (old === o){ try { o.bus.disconnect(); } catch(_){} old = null; } }, xf * 1000 + 400); }
+      cur = makeInst(i); fade(cur.bus, 1, xf); barsLeft = 40; ui();
+    }
+    function tick(){
+      if (!ac) return;
+      const on = want(); master.gain.setTargetAtTime(on ? level() : 0, ac.currentTime, .25);
+      if (!on || ac.state !== 'running'){ if (cur) cur.t = Math.max(cur.t, ac.currentTime + .1); return; }
+      if (!cur) startSong(cfg.song, 2);
+      if (cfg.mode === 'all' && barsLeft <= 0) startSong(cfg.song + 1, 3.5);
+      [cur, old].forEach(I => { if (!I) return; if (I.t < ac.currentTime) I.t = ac.currentTime + .05; while (I.t < ac.currentTime + .3) schedStep(I); });
+      if (ui.vis()) ui();
+    }
+    function save(){ try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch(_){} }
+    function kick(){   // first user gesture (autoplay rules)
+      if (!ctx()) return; if (ac.state === 'suspended') ac.resume().catch(() => {});
+      if (!started){ started = true; timer = setInterval(tick, 90); }
+    }
+    ['pointerdown', 'keydown', 'touchend'].forEach(ev => addEventListener(ev, kick, {capture: true, passive: true}));
+    function duck(){ if (!duckG || !ac) return; const t = ac.currentTime; duckG.gain.cancelScheduledValues(t); duckG.gain.setValueAtTime(duckG.gain.value, t); duckG.gain.linearRampToValueAtTime(.55, t + .03); duckG.gain.setTargetAtTime(1, t + .25, .2); }
+    const $m = id => document.getElementById(id);
+    function ui(){
+      const S = SONGS[cfg.song] || SONGS[0], now = $m('pMusNow'); if (!now) return;
+      const txt = S.e + ' ' + S.n; if (now.textContent !== txt) now.textContent = txt;
+      $m('pMusInfo').textContent = S.key + (S.sc === DOR ? ' minor' : ' major') + ' · ' + S.bpm + ' bpm · ' + {ep: 'electric piano', flute: 'flute', vibes: 'vibes', muted: 'muted horn', ocarina: 'ocarina'}[S.lead];
+      $m('pMus').checked = cfg.on; $m('pMusVol').value = cfg.vol; $m('pMusVolV').textContent = Math.round(cfg.vol * 100) + '%';
+      $m('pMusAll').classList.toggle('sel', cfg.mode === 'all'); $m('pMusOne').classList.toggle('sel', cfg.mode === 'one');
+      $m('pMusAll').setAttribute('aria-pressed', cfg.mode === 'all'); $m('pMusOne').setAttribute('aria-pressed', cfg.mode === 'one');
+      document.querySelector('.musbox').classList.toggle('off', !cfg.on);
+    }
+    ui.vis = () => { const p = $m('oPausePanel'); return p && p.classList.contains('show'); };
+    function skip(d){ kick(); if (ac && want() && cur) startSong(cfg.song + d, 1.2); else { cfg.song = ((cfg.song + d) % SONGS.length + SONGS.length) % SONGS.length; save(); cur = null; ui(); } }
+    function wire(){
+      if (!$m('pMus')) return;
+      $m('pMus').onchange = e => { cfg.on = e.target.checked; save(); kick(); ui(); };
+      $m('pMusVol').oninput = e => { cfg.vol = +e.target.value; save(); ui(); if (master && ac) master.gain.setTargetAtTime(want() ? level() : 0, ac.currentTime, .05); };
+      $m('pMusPrev').onclick = () => skip(-1); $m('pMusNext').onclick = () => skip(1);
+      $m('pMusAll').onclick = () => { cfg.mode = 'all'; barsLeft = Math.max(barsLeft, 16); save(); ui(); };
+      $m('pMusOne').onclick = () => { cfg.mode = 'one'; save(); ui(); };
+      ui();
+    }
+    setTimeout(wire, 0);
+    return {SONGS, cfg, duck, kick, ui, next: () => skip(1), prev: () => skip(-1),
+      state: () => ({started, ctx: ac ? ac.state : 'none', on: cfg.on, vol: cfg.vol, mode: cfg.mode, song: cfg.song, name: SONGS[cfg.song].n, playing: !!(cur && want() && ac && ac.state === 'running'), cur: cur && cur.i, bar: cur ? cur.bar : 0, gain: master ? +master.gain.value.toFixed(4) : 0, xfade: !!old, barsLeft}),
+      _bars: n => { barsLeft = n; }};
+  })();
+  window.rubloxMusic = MUS;
 
   /* ---------- building helpers ---------- */
   function mat(color, glow){
@@ -2211,7 +2528,7 @@ const Obby = (() => {
     return G;
   }
   function buildPlayer(av){
-    av = fixAv(Object.assign({}, DEF, av));
+    av = fixAv(Object.assign({}, DEF, av)); if (av.hat === 'pumpkin') av.hair = null;
     const g = new THREE.Group();
     const bx = (w, h, d, c, x, y, z, parent = g, material) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material || mat(c)); m.position.set(x, y, z); parent.add(m); return m; };
     const pantsCol = av.pantsPat === 'jeans' ? '#3d6fb5' : av.pants;
@@ -2297,9 +2614,30 @@ const Obby = (() => {
     }
     if (av.brow === 'horn') g.add(horn3D(av));
     if (av.back === 'wings') g.add(wings3D(av));
+    if (av.back === 'bat'){ const W = new THREE.Group(); W.position.set(0, 1.84, av.shirtPat === 'hoodie' ? -.44 : -.27); W.userData.bat = true; const mem = new THREE.MeshLambertMaterial({color: '#4b2a6b', emissive: '#1a0b2a', side: THREE.DoubleSide});
+      const sh = new THREE.Shape(); [[0, 0], [.5, .5], [1.1, .55], [.95, .2], [.8, .32], [.7, .0], [.5, .12], [.35, -.2], [.1, -.15]].forEach(([x, y], i) => i ? sh.lineTo(x, y) : sh.moveTo(x, y)); const geo = new THREE.ShapeGeometry(sh);
+      const sides = [-1, 1].map(s => { const piv = new THREE.Group(); piv.position.x = s * .14; W.add(piv); const m = new THREE.Mesh(geo, mem); m.scale.x = s; piv.add(m); piv.rotation.y = s * .55; return {piv, s}; });
+      const hub = new THREE.Mesh(new THREE.BoxGeometry(.26, .14, .06), mat('#2b1d40')); W.add(hub); let ph = Math.random() * 6;
+      hub.onBeforeRender = () => { ph += .05; sides.forEach(({piv, s}) => piv.rotation.y = s * (.55 + Math.sin(ph * 2.2) * .2)); }; g.add(W); }
+    if (av.back === 'cane'){ const C = new THREE.Group(); C.position.set(0, 1.55, av.shirtPat === 'hoodie' ? -.48 : -.32); C.rotation.z = -.6; C.userData.cane = true;
+      const red = mat('#e8384f'), wht = mat('#ffffff'); for (let i = 0; i < 9; i++){ const s = new THREE.Mesh(new THREE.CylinderGeometry(.075, .075, .14, 10), i % 2 ? red : wht); s.position.y = -.56 + i * .14; C.add(s); }
+      for (let i = 0; i < 7; i++){ const a = Math.PI - i / 6 * Math.PI, s = new THREE.Mesh(new THREE.SphereGeometry(.08, 8, 6), i % 2 ? red : wht); s.position.set(.2 + Math.cos(a) * .2, .64 + Math.sin(a) * .2, 0); C.add(s); } g.add(C); }
+    if (av.brow === 'antlers'){ const A = new THREE.Group(); A.position.set(0, 2.82, .05); A.userData.antlers = true; const br = mat('#8a5a2b');
+      [-1, 1].forEach(k => { const a = new THREE.Group(); a.position.x = k * .24; a.rotation.z = -k * .45; A.add(a); const m = new THREE.Mesh(new THREE.CylinderGeometry(.035, .05, .55, 6), br); m.position.y = .27; a.add(m);
+        [[.22, .22], [.38, .18]].forEach(([y, l]) => { const t = new THREE.Mesh(new THREE.CylinderGeometry(.025, .035, l, 5), br); t.position.set(-k * .07, y + .04, 0); t.rotation.z = k * 1.0; a.add(t); }); }); g.add(A); }
     // hats
     if (av.hat === 'cap'){ bx(.9, .25, .9, '#ff4d5e', 0, 2.95, 0); bx(.9, .06, .45, '#d93445', 0, 2.84, .6); }
     if (av.hat === 'crown') g.add(crown3D(av));
+    if (av.hat === 'pumpkin'){ const P = new THREE.Group(); P.position.y = 2.44; P.userData.pumpkin = true; const pm = new THREE.MeshLambertMaterial({color: '#ff8a1c', emissive: '#4a1c00', flatShading: true});
+      [[-.24, .5], [.24, .5], [0, .62], [0, .55]].forEach(([x, r], i) => { const b = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 9), pm); b.position.set(x, 0, i === 3 ? -.18 : 0); b.scale.set(i < 2 ? .9 : 1.12, .95, 1.12); P.add(b); });
+      const st = new THREE.Mesh(new THREE.CylinderGeometry(.06, .09, .22, 6), mat('#3f7a2a')); st.position.y = .66; P.add(st);
+      const glow = new THREE.MeshBasicMaterial({color: '#ffd23f'}); [-1, 1].forEach(k => { const e = new THREE.Mesh(new THREE.ConeGeometry(.1, .14, 3), glow); e.position.set(k * .2, .1, .67); e.rotation.x = Math.PI / 2; e.rotation.y = Math.PI; P.add(e); });
+      const mo = new THREE.Mesh(new THREE.BoxGeometry(.42, .1, .04), glow); mo.position.set(0, -.18, .68); P.add(mo); [-.12, .12].forEach(x => { const t = new THREE.Mesh(new THREE.BoxGeometry(.06, .06, .05), pm); t.position.set(x, -.15, .69); P.add(t); }); g.add(P); }
+    if (av.hat === 'witch'){ const pu = mat('#2b1d40'); const b = new THREE.Mesh(new THREE.CylinderGeometry(.75, .75, .04, 20), pu); b.position.y = 2.84; g.add(b);
+      const c = new THREE.Mesh(new THREE.ConeGeometry(.4, .95, 14), pu); c.position.set(0, 3.32, 0); c.rotation.z = .12; g.add(c); const t = new THREE.Mesh(new THREE.ConeGeometry(.14, .3, 10), pu); t.position.set(.16, 3.86, 0); t.rotation.z = -.8; g.add(t);
+      const band = new THREE.Mesh(new THREE.CylinderGeometry(.41, .41, .1, 14), mat('#8b5cf6')); band.position.y = 2.92; g.add(band); bx(.16, .14, .03, '#ffd23f', 0, 2.92, .41); }
+    if (av.hat === 'santa'){ const s = new THREE.Group(); s.position.y = 2.88; s.rotation.z = -.35; s.rotation.x = -.25; const c = new THREE.Mesh(new THREE.ConeGeometry(.42, .8, 14), mat('#e8384f')); c.position.y = .36; s.add(c);
+      const pp = new THREE.Mesh(new THREE.SphereGeometry(.12, 8, 6), mat('#ffffff')); pp.position.y = .78; s.add(pp); g.add(s); const f = new THREE.Mesh(new THREE.TorusGeometry(.43, .1, 8, 20), mat('#ffffff')); f.position.y = 2.86; f.rotation.x = Math.PI / 2; g.add(f); }
     if (av.hat === 'toque'){ const b = new THREE.Mesh(new THREE.CylinderGeometry(.42, .42, .26, 12), mat('#f4f5fa')); b.position.y = 2.96; g.add(b);
       const t = new THREE.Mesh(new THREE.SphereGeometry(.5, 14, 10), mat('#ffffff')); t.scale.set(1, .75, 1); t.position.y = 3.35; g.add(t); }
     if (av.hat === 'backcap'){ bx(.9, .25, .9, '#2ec27e', 0, 2.95, 0); bx(.9, .06, .45, '#1f9460', 0, 2.84, -.6); bx(.2, .1, .02, '#ffffff', 0, 2.88, .46); }
@@ -3843,7 +4181,7 @@ const Obby = (() => {
     const sp = Math.hypot(P.vx, P.vz), s = P.climbing ? 3 : !P.onGround && P.airT > .08 ? 2 : sp > .8 ? 1 : 0, r = v => Math.round(v * 100) / 100;
     if (pt){ const q = pt.pet, C = pt.car, qs = q ? Math.hypot(q.vx, q.vz) : 0;
       return [r(P.x), r(P.y), r(P.z), r(pt.drive ? C.yaw : P.face), pt.drive ? 4 : s, pt.drive ? 0 : r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0,
-        [r(C.x), r(C.z), r(C.yaw), pt.drive ? 1 : 0, r(C.v)], q ? [q.d.k, q.d.c, q.stage, r(q.x), r(q.y), r(q.z), r(q.face), {eat: 2, sleep: 3, happy: 4, car: 5}[q.act] || (qs > .6 ? 1 : 0), q.d.n, r(qs), pt.leashOn ? 1 : 0] : 0]; }
+        [r(C.x), r(C.z), r(C.yaw), pt.drive ? 1 : 0, r(C.v)], q ? [q.d.k, q.d.c, q.stage, r(q.x), r(q.y), r(q.z), r(q.face), {eat: 2, sleep: 3, happy: 4, car: 5}[q.act] || (qs > .6 ? 1 : 0), q.d.n, r(qs), pt.leashOn ? 1 : 0, accStr(q.d.acc)] : 0]; }
     return [r(P.x), r(P.y), r(P.z), r(P.face), s, r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0];
   }
   function mpRoster(){ return [{uid: 'H', ...myLook(), pl: 1}, ...[...mp.guests.values()].filter(g => g.ready).map(g => ({uid: g.uid, name: g.name, av: g.av, pl: g.plot || 0}))]; }
@@ -3891,7 +4229,7 @@ const Obby = (() => {
     E.e = e;
     const cr = st[8], pr = st[9], num = v => { v = +v; return isFinite(v) ? Math.max(-1e4, Math.min(1e4, v)) : 0; };
     E.car = Array.isArray(cr) && cr.length >= 4 ? [num(cr[0]), num(cr[1]), num(cr[2]), cr[3] ? 1 : 0, num(cr[4])] : null;
-    E.pet = Array.isArray(pr) && typeof pr[0] === 'string' && own(PET_KINDS, pr[0]) ? {k: pr[0], c: Math.max(0, Math.min(2, pr[1] | 0)), st: Math.max(0, Math.min(3, pr[2] | 0)), x: num(pr[3]), y: num(pr[4]), z: num(pr[5]), f: num(pr[6]), a: Math.max(0, Math.min(5, pr[7] | 0)), n: (petNameClean(pr[8]) && !petNameBad(pr[8]) ? petNameClean(pr[8]) : 'Pet'), sp: num(pr[9]), l: pr[10] === 1} : null;
+    E.pet = Array.isArray(pr) && typeof pr[0] === 'string' && own(PET_KINDS, pr[0]) ? {k: pr[0], c: Math.max(0, Math.min(2, pr[1] | 0)), st: Math.max(0, Math.min(3, pr[2] | 0)), x: num(pr[3]), y: num(pr[4]), z: num(pr[5]), f: num(pr[6]), a: Math.max(0, Math.min(5, pr[7] | 0)), n: (petNameClean(pr[8]) && !petNameBad(pr[8]) ? petNameClean(pr[8]) : 'Pet'), sp: num(pr[9]), l: pr[10] === 1, acc: accParse(pr[11])} : null;
     if (E.fresh){ E.x = E.tx; E.y = E.ty; E.z = E.tz; E.face = E.tf; E.fresh = false; }
   }
   function mpPetsEnt(E, dt, on){
@@ -3907,8 +4245,8 @@ const Obby = (() => {
       C.x += (c[0] - C.x) * k; C.z += (c[1] - C.z) * k; C.yaw += wrap(c[2] - C.yaw) * k;
       C.g.position.set(C.x, 0, C.z); C.g.rotation.y = C.yaw; C.wheels.forEach(w => { w.sp.rotation.x += c[4] * dt / .45; });
       if (E.s === 4){ const cs = Math.cos(C.yaw), sn = Math.sin(C.yaw); E.x = C.x + cs * .5 - sn * .35; E.z = C.z - sn * .5 - cs * .35; E.y = .33; E.face = C.yaw; E.model.g.position.set(E.x, E.y, E.z); E.model.g.rotation.y = E.face; } }
-    if (E.pet){ const p = E.pet, key = p.k + p.c + p.st + p.n;
-      if (!E.petM || E.petM.key !== key){ if (E.petM) scene.remove(E.petM.m.g); const m = buildPet(p.k, p.c, p.st), tag = label(p.n, 'rgba(255,111,181,.85)', '#fff', 220);
+    if (E.pet){ const p = E.pet, key = p.k + p.c + p.st + p.n + '|' + accStr(p.acc);
+      if (!E.petM || E.petM.key !== key){ if (E.petM) scene.remove(E.petM.m.g); const m = buildPet(p.k, p.c, p.st), _dr = dress(m, p.acc), tag = label(p.n, 'rgba(255,111,181,.85)', '#fff', 220);
         tag.scale.multiplyScalar(.5); tag.position.y = m.top + .45; m.g.add(tag); scene.add(m.g); E.petM = {m, key, x: p.x, y: p.y, z: p.z, f: p.f}; }
       const Q = E.petM; if (Math.hypot(p.x - Q.x, p.z - Q.z) > 8){ Q.x = p.x; Q.z = p.z; }
       Q.x += (p.x - Q.x) * k; Q.y += (p.y - Q.y) * k; Q.z += (p.z - Q.z) * k; Q.f += wrap(p.f - Q.f) * k;
@@ -4323,6 +4661,30 @@ const Obby = (() => {
   };
   const PET_ORDER = Object.keys(PET_KINDS).sort((a, b) => PET_KINDS[a].r - PET_KINDS[b].r);   // the Pet Index order
   const STARTERS = ['mouse', 'cat', 'dog'];
+  // pet accessories (t157u): all our own low-poly designs, bought with Rublox Coins; one per slot so they stack
+  const ACC = [
+    {id: 'collarP', n: 'Pink Collar', e: '💗', s: 'neck', p: 30, r: 0}, {id: 'collarB', n: 'Blue Collar', e: '💙', s: 'neck', p: 30, r: 0},
+    {id: 'bow', n: 'Bow', e: '🎀', s: 'head', p: 40, r: 0}, {id: 'bandana', n: 'Bandana', e: '🧣', s: 'neck', p: 50, r: 0},
+    {id: 'party', n: 'Party Hat', e: '🥳', s: 'head', p: 60, r: 1}, {id: 'bowtie', n: 'Bowtie', e: '🎗️', s: 'neck', p: 70, r: 1},
+    {id: 'glasses', n: 'Glasses', e: '👓', s: 'face', p: 80, r: 1}, {id: 'pack', n: 'Backpack', e: '🎒', s: 'back', p: 100, r: 1},
+    {id: 'shades', n: 'Sunglasses', e: '🕶️', s: 'face', p: 120, r: 2}, {id: 'flowers', n: 'Flower Crown', e: '🌸', s: 'head', p: 150, r: 2},
+    {id: 'cowboy', n: 'Cowboy Hat', e: '🤠', s: 'head', p: 180, r: 2}, {id: 'cape', n: 'Hero Cape', e: '🦸', s: 'back', p: 250, r: 3},
+    {id: 'wings', n: 'Little Wings', e: '🪽', s: 'back', p: 350, r: 3}, {id: 'crown', n: 'Tiny Crown', e: '👑', s: 'head', p: 500, r: 4},
+    // 🎃 Halloween + 🎄 Christmas (t160u): sold all year
+    {id: 'pumpkinH', n: 'Pumpkin Hat', e: '🎃', s: 'head', p: 120, r: 1, t: 'hw'}, {id: 'witch', n: 'Witch Hat', e: '🧙', s: 'head', p: 160, r: 2, t: 'hw'},
+    {id: 'batW', n: 'Bat Wings', e: '🦇', s: 'back', p: 220, r: 3, t: 'hw'}, {id: 'ghost', n: 'Ghost Cape', e: '👻', s: 'back', p: 200, r: 2, t: 'hw'},
+    {id: 'candyC', n: 'Candy-Corn Collar', e: '🍬', s: 'neck', p: 90, r: 1, t: 'hw'}, {id: 'spooky', n: 'Spooky Glasses', e: '🕸️', s: 'face', p: 110, r: 1, t: 'hw'},
+    {id: 'santa', n: 'Santa Hat', e: '🎅', s: 'head', p: 140, r: 1, t: 'xm'}, {id: 'antlers', n: 'Reindeer Antlers', e: '🦌', s: 'head', p: 160, r: 2, t: 'xm'},
+    {id: 'elf', n: 'Elf Hat', e: '🧝', s: 'head', p: 120, r: 1, t: 'xm'}, {id: 'scarf', n: 'Cozy Scarf', e: '🧶', s: 'neck', p: 80, r: 0, t: 'xm'},
+    {id: 'jingle', n: 'Jingle-Bell Collar', e: '🔔', s: 'neck', p: 100, r: 1, t: 'xm'}, {id: 'present', n: 'Present Backpack', e: '🎁', s: 'back', p: 180, r: 2, t: 'xm'}];
+  const ACC_THEMES = [['hw', '🎃 Halloween'], ['xm', '🎄 Christmas']];
+  const ACC_BY = {}; ACC.forEach(a => ACC_BY[a.id] = a);
+  const ACC_SLOTS = [['head', '🎩 Head'], ['neck', '🎀 Neck'], ['back', '🎒 Back'], ['face', '👓 Face']], SLOTN = {head: 'Head', neck: 'Neck', back: 'Back', face: 'Face'};
+  function accClean(a){ const o = {}; if (a && typeof a === 'object') ACC_SLOTS.forEach(([sl]) => { const id = a[sl]; if (own(ACC_BY, id) && ACC_BY[id].s === sl) o[sl] = id; }); return o; }
+  function invClean(v){ const o = {}; if (v && typeof v === 'object') for (const k in v) if (own(ACC_BY, k) && v[k]) o[k] = 1; return o; }
+  const accStr = a => a ? ACC_SLOTS.map(([sl]) => a[sl] || '').join(',') : '';
+  const accParse = v => { if (typeof v !== 'string' || v.length > 80) return {}; const p = v.split(','), o = {}; ACC_SLOTS.forEach(([sl], i) => o[sl] = p[i]); return accClean(o); };
+  const genOf = g => g === 'b' ? 'Boy' : 'Girl';
   const rarOf = k => RARITY[(PET_KINDS[k] || {r: 0}).r];
   // three pets for this visit, by weighted rarity (no repeats)
   function rollPets(rng = Math.random){
@@ -4351,7 +4713,7 @@ const Obby = (() => {
   function petNameClean(n){ let s = String(n || '').replace(/[^A-Za-z0-9 '\-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 14); return s ? s[0].toUpperCase() + s.slice(1) : ''; }
   const stageOf = xp => { let i = 0; STAGES.forEach((S, k) => { if (xp >= S.xp) i = k; }); return i; };
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const PLACES = {home: [-4, -46], car0: [8, -47], lot: [8, 50], desk: [0, 63.2], ret: [4.2, 63.2], door: [0, 68.6], pens: [[-9, 78], [0, 78], [9, 78]], toy: [-4, -45.2], bowl: [-12, -43.5], bed: [-14.5, -50],
+  const PLACES = {shop: [-29.4, 50], shopDoor: [-21, 50], home: [-4, -46], car0: [8, -47], lot: [8, 50], desk: [0, 63.2], ret: [4.2, 63.2], door: [0, 68.6], pens: [[-9, 78], [0, 78], [9, 78]], toy: [-4, -45.2], bowl: [-12, -43.5], bed: [-14.5, -50],
     gate: [-2, -37.6], shelter: [0, 70], walk: [[-30, -30], [-34, 0], [-8, 1.5]]};
   // house plots on Pet Lane: everyone in a multiplayer room gets their own (host = plot 1)
   const PLOT_DX = [0, 34, -34, 68, -68, 102], PLOT_N = 6;
@@ -4375,9 +4737,9 @@ const Obby = (() => {
     const r = load(PET_KEY, null), o = r && typeof r === 'object' ? r : {};
     const pets = (Array.isArray(o.pets) ? o.pets : []).slice(0, PET_MAX).filter(p => p && PET_KINDS[p.k]).map(p => ({
       k: p.k, c: clamp(p.c | 0, 0, 2), n: petNameClean(p.n) && !petNameBad(p.n) ? petNameClean(p.n) : 'Buddy', xp: clamp(+p.xp || 0, 0, 1e6),
-      f: clamp(isFinite(+p.f) ? +p.f : 80, 0, 100), u: clamp(isFinite(+p.u) ? +p.u : 80, 0, 100), e: clamp(isFinite(+p.e) ? +p.e : 80, 0, 100), b: +p.b || Date.now()}));
+      f: clamp(isFinite(+p.f) ? +p.f : 80, 0, 100), u: clamp(isFinite(+p.u) ? +p.u : 80, 0, 100), e: clamp(isFinite(+p.e) ? +p.e : 80, 0, 100), b: +p.b || Date.now(), acc: accClean(p.acc), g: p.g === 'b' || p.g === 'g' ? p.g : (Math.random() < .5 ? 'b' : 'g')}));   // older pets get a gender once (saved below)
     const s = {v: 1, pets, a: clamp(o.a | 0, 0, Math.max(0, pets.length - 1)), flow: ['shelter', 'choose', 'home'].includes(o.flow) ? o.flow : null,
-      pend: petNameClean(o.pend), tut: clamp(o.tut | 0, 0, 3), t: +o.t || Date.now()};
+      pend: petNameClean(o.pend), pendG: o.pendG === 'b' || o.pendG === 'g' ? o.pendG : '', inv: invClean(o.inv), tut: clamp(o.tut | 0, 0, 3), t: +o.t || Date.now()};
     // Pet Index (v2): seen = met at the shelter, own = adopted, done = row prize paid
     const dx = o.dex && typeof o.dex === 'object' ? o.dex : {}, pick = (m, ok) => { const r = {}; if (m && typeof m === 'object') for (const k in m) if (ok(k) && m[k]) r[k] = 1; return r; };
     s.dex = {seen: pick(dx.seen, k => own(PET_KINDS, k)), own: pick(dx.own, k => own(PET_KINDS, k)), done: pick(dx.done, k => /^[0-4]$/.test(k))};
@@ -4612,8 +4974,9 @@ const Obby = (() => {
       for (let i = 0; i < 4; i++){ const s = grp(0, 0, i ? -.27 : 0, par); const c = cyl(.03, .036, .3, acc, 0, 0, -.14, s, 5); c.rotation.x = Math.PI / 2; s.rotation.x = -.15; tailSegs.push(s); par = s; }
       neck = [0, .62, .34];
     }
-    if (stage >= 2){ const c = new THREE.Mesh(new THREE.TorusGeometry(K.cr || .22, .045, 6, 14), fmat(stage === 3 ? '#ff4d5e' : '#3a86ff')); c.position.set(...neck); c.rotation.x = Math.PI / 2 - .35; inner.add(c);
-      if (stage === 3){ const tg2 = new THREE.Mesh(new THREE.CylinderGeometry(.08, .08, .03, 10), new THREE.MeshLambertMaterial({color: '#ffd23f', emissive: '#7a5a00'})); tg2.position.set(neck[0], neck[1] - .2, neck[2] + .17); tg2.rotation.x = Math.PI / 2; inner.add(tg2); } }
+    const colM = [];
+    if (stage >= 2){ const c = new THREE.Mesh(new THREE.TorusGeometry(K.cr || .22, .045, 6, 14), fmat(stage === 3 ? '#ff4d5e' : '#3a86ff')); c.position.set(...neck); c.rotation.x = Math.PI / 2 - .35; inner.add(c); colM.push(c);
+      if (stage === 3){ const tg2 = new THREE.Mesh(new THREE.CylinderGeometry(.08, .08, .03, 10), new THREE.MeshLambertMaterial({color: '#ffd23f', emissive: '#7a5a00'})); tg2.position.set(neck[0], neck[1] - .2, neck[2] + .17); tg2.rotation.x = Math.PI / 2; inner.add(tg2); colM.push(tg2); } }
     const base = K.base * S.s; inner.scale.setScalar(base); head.scale.setScalar(S.head);
     const top = (PET_H[kind] || 1.75) * base;
     const sh = new THREE.Mesh(new THREE.CircleGeometry(.55, 16), new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: .22, depthWrite: false})); sh.rotation.x = -Math.PI / 2; sh.position.y = .03; sh.scale.setScalar(base * (kind === 'mouse' ? 1 : 1.25)); g.add(sh);
@@ -4624,9 +4987,92 @@ const Obby = (() => {
       const sparks = []; for (let i = 0; i < [0, 0, 2, 4, 9][R]; i++){ const m = new THREE.Mesh(SPARK_GEO || (SPARK_GEO = new THREE.OctahedronGeometry(.07)), rarMat(R, 'spark')); g.add(m); sparks.push(m); }
       fx = {ring, sparks, R, rad: Math.max(.55, base * .95), top, sz: R === 4 ? 1.5 : 1};
     }
-    return {g, inner, body, by: body.scale.y, head, legs, ears, tail, tailSegs, wings, tm: K.tm, fx, top, kind, ci, stage, base, ph: Math.random() * 6, walk: 0};
+    return {g, inner, body, neck, cr: K.cr || .22, collar: colM, by: body.scale.y, head, legs, ears, tail, tailSegs, wings, tm: K.tm, fx, top, kind, ci, stage, base, ph: Math.random() * 6, walk: 0};
   }
   let SPARK_GEO = null;
+  // accessories: each is built around its attach point at a "standard" size (head radius .36, collar .22, body .45) and scaled per pet
+  function accMesh(id){
+    const g = new THREE.Group(), M = (geo, c, x = 0, y = 0, z = 0, par = g) => { const o = new THREE.Mesh(geo, typeof c === 'string' ? fmat(c) : c); o.position.set(x, y, z); par.add(o); return o; };
+    const gold = mats.accGold || (mats.accGold = new THREE.MeshLambertMaterial({color: '#ffd23f', emissive: '#7a5a00', flatShading: true}));
+    if (id === 'bow'){ const b = new THREE.Group(); b.position.set(.15, -.01, .02); b.rotation.z = -.35; g.add(b);
+      [-1, 1].forEach(k => { const c = M(new THREE.ConeGeometry(.09, .17, 4), '#ff6fb5', k * .085, 0, 0, b); c.rotation.z = k * Math.PI / 2; }); M(new THREE.SphereGeometry(.05, 6, 5), '#d6336c', 0, 0, 0, b); }
+    else if (id === 'party'){ const h = new THREE.Group(); h.rotation.z = .22; g.add(h); M(new THREE.ConeGeometry(.14, .38, 10), '#3a86ff', 0, .17, 0, h);
+      [.06, .17].forEach((y, i) => { const t = M(new THREE.TorusGeometry(.13 - i * .05, .02, 5, 12), i ? '#ff6fb5' : '#ffd23f', 0, y, 0, h); t.rotation.x = Math.PI / 2; }); M(new THREE.SphereGeometry(.06, 6, 5), '#ffd23f', 0, .38, 0, h); }
+    else if (id === 'crown'){ M(new THREE.CylinderGeometry(.15, .13, .1, 8, 1, true), gold, 0, .04, 0).material.side = THREE.DoubleSide;
+      for (let i = 0; i < 6; i++){ const a = i / 6 * Math.PI * 2; M(new THREE.ConeGeometry(.035, .1, 4), gold, Math.sin(a) * .145, .13, Math.cos(a) * .145); M(new THREE.SphereGeometry(.022, 5, 4), i % 2 ? '#3a86ff' : '#ff4d5e', Math.sin(a) * .15, .05, Math.cos(a) * .15); } }
+    else if (id === 'flowers'){ const t = M(new THREE.TorusGeometry(.2, .025, 5, 16), '#2ec27e', 0, .02, 0); t.rotation.x = Math.PI / 2;
+      for (let i = 0; i < 7; i++){ const a = i / 7 * Math.PI * 2; M(new THREE.SphereGeometry(.055, 6, 5), ['#ff6fb5', '#ffd23f', '#ffffff', '#b79bff'][i % 4], Math.sin(a) * .2, .04, Math.cos(a) * .2); M(new THREE.SphereGeometry(.022, 5, 4), '#ff9f1c', Math.sin(a) * .24, .06, Math.cos(a) * .24); } }
+    else if (id === 'cowboy'){ M(new THREE.CylinderGeometry(.36, .36, .03, 14), '#a0612e', 0, .02, 0); [-1, 1].forEach(k => { const e = M(new THREE.BoxGeometry(.12, .03, .5), '#a0612e', k * .33, .06, 0); e.rotation.z = -k * .5; });
+      M(new THREE.CylinderGeometry(.17, .2, .22, 10), '#b9773a', 0, .13, 0); M(new THREE.CylinderGeometry(.205, .205, .045, 10), '#5a3a1e', 0, .06, 0); }
+    else if (id === 'collarP' || id === 'collarB'){ const t = M(new THREE.TorusGeometry(.22, .05, 6, 14), id === 'collarP' ? '#ff6fb5' : '#3a86ff'); t.rotation.x = Math.PI / 2; const tag = M(new THREE.CylinderGeometry(.075, .075, .03, 10), gold, 0, -.08, .25); tag.rotation.x = Math.PI / 2; }
+    else if (id === 'bandana'){ const t = M(new THREE.TorusGeometry(.22, .04, 5, 14), '#e8384f'); t.rotation.x = Math.PI / 2; const c = M(new THREE.ConeGeometry(.2, .3, 3), '#e8384f', 0, -.12, .2); c.rotation.x = Math.PI; c.scale.z = .35;
+      [[-.06, -.06], [.06, -.08], [0, -.16]].forEach(([x, y]) => M(new THREE.SphereGeometry(.018, 4, 3), '#ffffff', x, y, .27)); }
+    else if (id === 'bowtie'){ const t = M(new THREE.TorusGeometry(.22, .025, 5, 14), '#1d2340'); t.rotation.x = Math.PI / 2;
+      [-1, 1].forEach(k => { const c = M(new THREE.ConeGeometry(.08, .15, 4), '#8b5cf6', k * .075, -.03, .25); c.rotation.z = k * Math.PI / 2; }); M(new THREE.SphereGeometry(.04, 6, 5), '#6d3fd6', 0, -.03, .26); }
+    else if (id === 'pack'){ M(new THREE.BoxGeometry(.34, .28, .3), '#ff9f1c', 0, .12, -.04); M(new THREE.BoxGeometry(.36, .08, .32), '#d9761a', 0, .26, -.04); M(new THREE.BoxGeometry(.2, .12, .04), '#ffd23f', 0, .1, -.2);
+      [-1, 1].forEach(k => M(new THREE.BoxGeometry(.04, .04, .34), '#d9761a', k * .12, .02, .17)); }
+    else if (id === 'cape'){ const c = M(new THREE.BoxGeometry(.62, .03, .8), '#e8384f', 0, .01, -.28); c.rotation.x = .28; M(new THREE.BoxGeometry(.62, .035, .06), '#ffd23f', 0, .03, .12); M(new THREE.SphereGeometry(.05, 6, 5), gold, 0, .05, .16); }
+    else if (id === 'wings'){ g.userData.wings = [];
+      [-1, 1].forEach(k => { const w = new THREE.Group(); w.position.set(k * .1, .06, 0); w.userData.k = k; g.add(w); const f = M(new THREE.SphereGeometry(.2, 8, 6), '#ffffff', k * .2, .08, -.04, w); f.scale.set(1.3, .22, .8);
+        const f2 = M(new THREE.SphereGeometry(.13, 7, 5), '#cfe9ff', k * .3, .12, -.14, w); f2.scale.set(1.2, .2, .7); g.userData.wings.push(w); }); }
+    else if (id === 'glasses'){ [-1, 1].forEach(k => M(new THREE.TorusGeometry(.075, .016, 5, 12), '#1d2340', k * .12, 0, .02)); M(new THREE.BoxGeometry(.09, .018, .018), '#1d2340', 0, .01, .02);
+      [-1, 1].forEach(k => M(new THREE.CircleGeometry(.065, 10), new THREE.MeshBasicMaterial({color: '#cfeeff', transparent: true, opacity: .35}), k * .12, 0, .021)); }
+    else if (id === 'shades'){ [-1, 1].forEach(k => { M(new THREE.BoxGeometry(.17, .1, .03), '#1d2340', k * .11, 0, .02); M(new THREE.BoxGeometry(.05, .02, .005), '#8fa0c4', k * .11 - .03, .025, .037); }); M(new THREE.BoxGeometry(.08, .02, .02), '#1d2340', 0, .02, .02); }
+    else if (id === 'pumpkinH'){ const o = '#ff8a1c'; [-.08, 0, .08].forEach((x, i) => { const p = M(new THREE.SphereGeometry(i === 1 ? .14 : .12, 8, 6), o, x, .1, 0); p.scale.y = .85; });
+      M(new THREE.CylinderGeometry(.025, .035, .09, 5), '#3f7a2a', 0, .24, 0); const lf = M(new THREE.SphereGeometry(.05, 5, 4), '#5ec04a', .05, .24, 0); lf.scale.set(1.2, .3, .7);
+      [-1, 1].forEach(k => { const e = M(new THREE.ConeGeometry(.03, .045, 3), '#3a1d00', k * .05, .12, .135); e.rotation.x = Math.PI / 2; }); M(new THREE.BoxGeometry(.1, .022, .02), '#3a1d00', 0, .06, .135); }
+    else if (id === 'witch'){ const pu = '#2b1d40'; M(new THREE.CylinderGeometry(.3, .3, .025, 16), pu, 0, .02, 0); const h = new THREE.Group(); h.rotation.z = .16; g.add(h);
+      M(new THREE.ConeGeometry(.17, .44, 12), pu, 0, .24, 0, h); const tip = M(new THREE.ConeGeometry(.06, .14, 8), pu, .04, .48, 0, h); tip.rotation.z = -.7;
+      M(new THREE.CylinderGeometry(.175, .175, .05, 12), '#8b5cf6', 0, .06, 0, h); M(new THREE.BoxGeometry(.07, .06, .02), gold, 0, .06, .17, h); M(new THREE.SphereGeometry(.03, 5, 4), '#ff9f1c', -.2, .04, .12); }
+    else if (id === 'santa' || id === 'elf'){ const sa = id === 'santa', h = new THREE.Group(); h.rotation.z = sa ? -.4 : .5; g.add(h);
+      M(new THREE.ConeGeometry(.16, sa ? .36 : .42, 12), sa ? '#e8384f' : '#2ec27e', 0, sa ? .18 : .21, 0, h); M(new THREE.SphereGeometry(.055, 7, 5), sa ? '#ffffff' : gold, 0, sa ? .37 : .43, 0, h);
+      const t = M(new THREE.TorusGeometry(.16, .05, 6, 16), sa ? '#ffffff' : '#e8384f', 0, .02, 0); t.rotation.x = Math.PI / 2; }
+    else if (id === 'antlers'){ const br = '#8a5a2b';
+      [-1, 1].forEach(k => { const a = new THREE.Group(); a.position.set(k * .12, .02, 0); a.rotation.z = -k * .35; g.add(a); M(new THREE.CylinderGeometry(.018, .028, .3, 5), br, 0, .15, 0, a);
+        [[.08, .2], [.13, .1]].forEach(([y, l], i) => { const t = M(new THREE.CylinderGeometry(.013, .018, l, 4), br, k * .04, y + .02 + i * .06, 0, a); t.rotation.z = -k * 1.0; }); M(new THREE.SphereGeometry(.024, 5, 4), br, 0, .3, 0, a); }); }
+    else if (id === 'candyC'){ ['#ffd23f', '#ff8a1c', '#ffffff'].forEach((c, i) => { const t = M(new THREE.TorusGeometry(.22, .024, 5, 14), c, 0, -.035 + i * .035, 0); t.rotation.x = Math.PI / 2; });
+      const c1 = M(new THREE.ConeGeometry(.055, .14, 6), '#ff8a1c', 0, -.1, .25); c1.rotation.x = Math.PI; M(new THREE.CylinderGeometry(.057, .057, .035, 6), '#ffd23f', 0, -.035, .25); M(new THREE.ConeGeometry(.025, .04, 6), '#ffffff', 0, -.19, .25).rotation.x = Math.PI; }
+    else if (id === 'scarf'){ const t = M(new THREE.TorusGeometry(.22, .065, 6, 14), '#e8384f'); t.rotation.x = Math.PI / 2;
+      const tail = M(new THREE.BoxGeometry(.11, .3, .05), '#e8384f', .12, -.16, .24); tail.rotation.z = .15; [-.06, .04].forEach(y => M(new THREE.BoxGeometry(.112, .03, .052), '#ffffff', .12 + y * -.15, -.16 + y, .24)); }
+    else if (id === 'jingle'){ const t = M(new THREE.TorusGeometry(.22, .045, 6, 14), '#2ec27e'); t.rotation.x = Math.PI / 2;
+      [[-.1, -.06, .22], [0, -.08, .25], [.1, -.06, .22]].forEach(([x, y, z]) => { M(new THREE.SphereGeometry(.045, 7, 5), gold, x, y, z); M(new THREE.BoxGeometry(.05, .008, .01), '#7a5a00', x, y - .015, z + .04); });
+      [-1, 1].forEach(k => { const c = M(new THREE.ConeGeometry(.05, .09, 4), '#e8384f', k * .05, .0, .26); c.rotation.z = k * Math.PI / 2; }); }
+    else if (id === 'spooky'){ const ring = new THREE.TorusGeometry(.08, .02, 4, 6);
+      [-1, 1].forEach(k => { M(ring, '#ff8a1c', k * .12, 0, .02); M(new THREE.CircleGeometry(.07, 6), new THREE.MeshBasicMaterial({color: '#8b5cf6', transparent: true, opacity: .5}), k * .12, 0, .021);
+        [-1, 1].forEach(j => M(new THREE.ConeGeometry(.025, .05, 3), '#1d2340', k * .12 + j * .04, .09, .02)); }); M(new THREE.BoxGeometry(.09, .02, .02), '#1d2340', 0, .01, .02); }
+    else if (id === 'batW'){ g.userData.wings = []; const sh = new THREE.Shape(); [[0, -.02], [.25, -.1], [.52, -.07], [.44, .1], [.36, .05], [.3, .18], [.2, .1], [.12, .17], [0, .1]].forEach(([x, y], i) => i ? sh.lineTo(x, y) : sh.moveTo(x, y));
+      const geo = new THREE.ShapeGeometry(sh), mem = new THREE.MeshLambertMaterial({color: '#4b2a6b', emissive: '#1a0b2a', side: THREE.DoubleSide});
+      [-1, 1].forEach(k => { const w = new THREE.Group(); w.position.set(k * .08, .07, 0); w.userData.k = k; g.add(w); const m = M(geo, mem, 0, 0, 0, w); m.rotation.x = -Math.PI / 2; m.scale.x = k;
+        const bone = M(new THREE.CylinderGeometry(.015, .02, .55, 4), '#2b1d40', k * .26, .005, .06, w); bone.rotation.z = Math.PI / 2; bone.rotation.y = k * .15; g.userData.wings.push(w); }); }
+    else if (id === 'ghost'){ const c = new THREE.Group(); c.position.set(0, .01, -.28); c.rotation.x = .28; g.add(c);
+      const gm = new THREE.MeshLambertMaterial({color: '#f4f6ff', transparent: true, opacity: .88}); M(new THREE.BoxGeometry(.62, .03, .8), gm, 0, 0, 0, c);
+      [-.22, 0, .22].forEach(x => M(new THREE.SphereGeometry(.1, 7, 5), gm, x, 0, -.4, c).scale.set(1, .3, 1));
+      [-1, 1].forEach(k => M(new THREE.SphereGeometry(.05, 6, 5), '#1d2340', k * .1, .02, -.1, c).scale.set(1, .3, 1.4)); M(new THREE.SphereGeometry(.045, 6, 5), '#1d2340', 0, .02, -.24, c).scale.set(1, .3, 1.3);
+      M(new THREE.BoxGeometry(.62, .035, .06), '#cfd6ee', 0, .03, .12); }
+    else if (id === 'present'){ M(new THREE.BoxGeometry(.32, .28, .3), '#e8384f', 0, .14, -.04); M(new THREE.BoxGeometry(.06, .29, .31), gold, 0, .14, -.04); M(new THREE.BoxGeometry(.33, .29, .06), gold, 0, .14, -.04);
+      [-1, 1].forEach(k => { const c = M(new THREE.ConeGeometry(.06, .12, 4), gold, k * .06, .31, -.04); c.rotation.z = k * Math.PI / 2; M(new THREE.BoxGeometry(.04, .04, .34), '#a8213a', k * .12, .02, .17); }); M(new THREE.SphereGeometry(.035, 6, 5), gold, 0, .31, -.04); }
+    return g;
+  }
+  // per-species nudges on top of the automatic fit (horn, ears, beaks...)
+  const ACC_FIX = {unicorn: {head: [0, -.02, -.1]}, dragon: {head: [0, -.02, -.06]}, bunny: {hs: .9}, owl: {head: [0, -.04, 0]}, turtle: {fs: .9}, frog: {head: [0, -.05, -.05]}, koala: {hs: .95}};
+  function accFit(M){
+    const bb = m => { const G = m.geometry; if (!G.boundingBox) G.computeBoundingBox(); const b = G.boundingBox, s = m.scale, p = m.position;
+      return {cx: p.x + (b.min.x + b.max.x) / 2 * s.x, cy: p.y + (b.min.y + b.max.y) / 2 * s.y, cz: p.z + (b.min.z + b.max.z) / 2 * s.z, hx: (b.max.x - b.min.x) / 2 * s.x, hy: (b.max.y - b.min.y) / 2 * s.y, hz: (b.max.z - b.min.z) / 2 * s.z}; };
+    const sk = M.head.children.find(o => o.isMesh) || M.body, H = bb(sk), B = bb(M.body), X = ACC_FIX[M.kind] || {}, add = (a, d) => d ? a.map((v, i) => v + d[i]) : a;
+    const hs = clamp(Math.max(H.hx, H.hz) / .36, .45, 1.6) * (X.hs || 1), bs = clamp(B.hx / .45, .5, 1.8);
+    return {head: {par: M.head, p: add([H.cx, H.cy + H.hy * .86, H.cz - H.hz * .05], X.head), s: hs},
+      face: {par: M.head, p: add([H.cx, H.cy + H.hy * .24, H.cz + H.hz * .93], X.face), s: hs * (X.fs || 1)},
+      neck: {par: M.inner, p: add((M.neck || [0, .8, .3]).slice(), X.neck), s: M.cr / .22, rx: -.35},
+      back: {par: M.inner, p: add([B.cx, B.cy + B.hy * .9, B.cz], X.back), s: bs}};
+  }
+  function dress(M, acc){
+    (M.accO || []).forEach(o => o.parent && o.parent.remove(o)); M.accO = []; M.accW = [];
+    acc = acc || {}; const has = sl => own(ACC_BY, acc[sl]) && ACC_BY[acc[sl]].s === sl;
+    (M.collar || []).forEach(c => c.visible = !has('neck'));
+    const F = M.fit || (M.fit = accFit(M));
+    ACC_SLOTS.forEach(([sl]) => { if (!has(sl)) return; const o = accMesh(acc[sl]), f = F[sl]; o.position.set(...f.p); o.scale.setScalar(f.s); if (f.rx) o.rotation.x = f.rx; o.userData.slot = sl;
+      f.par.add(o); M.accO.push(o); if (o.userData.wings) M.accW.push(...o.userData.wings); });
+  }
   function rarMat(R, w){ const k = 'rar' + w + R; if (!mats[k]) mats[k] = w === 'ring' ? new THREE.MeshBasicMaterial({color: RARITY[R].c, transparent: true, opacity: .45, depthWrite: false, side: THREE.DoubleSide})
     : new THREE.MeshBasicMaterial({color: ['#ffffff', '#b8ffd9', '#a9cbff', '#e3c2ff', '#ffe066'][R]}); return mats[k]; }
   function animPet(M, act, sp, dt, t){
@@ -4648,6 +5094,7 @@ const Obby = (() => {
     if (M.fx){ const F = M.fx; F.ring.rotation.z = T * .8; F.ring.material.opacity = .32 + .16 * Math.sin(t * 3);
       F.sparks.forEach((s, i) => { const a = T * (1 + (i % 3) * .15) + i * 2.4, rr = F.rad * (.85 + .25 * Math.sin(T * 1.3 + i)); s.position.set(Math.cos(a) * rr, F.top * (.15 + .8 * ((T * .3 + i * .37) % 1)), Math.sin(a) * rr);
         s.scale.setScalar(F.sz * (.5 + .7 * Math.abs(Math.sin(T * 4 + i)))); s.rotation.y = T * 3; }); }
+    if (M.accW) M.accW.forEach(w => { w.rotation.z = w.userData.k * (.5 + Math.sin(T * (act === 4 || moving ? 14 : 3)) * (act === 4 || moving ? .35 : .12)); });
     M.head.rotation.set(0, Math.sin(T * .6) * .35, 0);
     const tw = (T * .3) % 1 < .06;   // a little ear twitch now and then
     M.ears.forEach((e, i) => { e.rotation.x = tw ? Math.sin(T * 30 + i) * .3 : 0; });
@@ -4805,6 +5252,30 @@ const Obby = (() => {
       if (i < 2) plat(x + 4.5, 1.3, 83, .3, 5, '#ffffff', 1.3);
       const cush = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, .3, 14), fmat('#ff9f1c')); cush.position.set(x, .15, 83); deco(cush);
       return {k: null, x, m: null, c: 0, cush, L: null, L2: null, beam: null}; });
+    // the Pet Shop (t157u): open-top like the shelter, door faces the shelter parking lot
+    const shW = '#ffe9f3', shT = '#ff6fb5';
+    dbox(-28, .03, 50, 12.6, .04, 12.6, null, fmat('#fbeef5'));
+    const shTile = canvasTex(32, 32, c => { c.fillStyle = '#ffe3ef'; c.fillRect(0, 0, 32, 32); c.fillStyle = '#ffd0e4'; c.fillRect(0, 0, 16, 16); c.fillRect(16, 16, 16, 16); });
+    shTile.wrapS = shTile.wrapT = THREE.RepeatWrapping; shTile.repeat.set(6, 6); dbox(-28, .05, 50, 12, .02, 12, null, new THREE.MeshLambertMaterial({map: shTile}));
+    dbox(-18, .035, 50, 8, .05, 3.4, null, walkM);   // path from the lot
+    plat(-34, 5, 50, .6, 12.6, shW, 5); plat(-28, 5, 56, 12.6, .6, shW, 5); plat(-28, 5, 44, 12.6, .6, shW, 5);
+    plat(-22, 5, 45.9, .6, 4.4, shW, 5); plat(-22, 5, 54.1, .6, 4.4, shW, 5);   // front wall, door gap in the middle
+    [[-28, 5.1, 56, 13, .2, 1], [-28, 5.1, 44, 13, .2, 1], [-34, 5.1, 50, 1, .2, 13], [-22, 5.1, 50, 1, .2, 13]].forEach(([x, y, z, w, h, d]) => dbox(x, y, z, w, h, d, shT));
+    for (let i = 0; i < 6; i++){ const a = dbox(-21.2, 4.4, 47.9 + i * .84, 1.8, .12, .84, i % 2 ? '#ffffff' : shT); a.rotation.z = -.35; }   // striped awning
+    const shSign = new THREE.Mesh(new THREE.BoxGeometry(8, 1.9, .3), [fmat(shT), fmat(shT), fmat(shT), fmat(shT), signTex('🛍️ Pet Shop', shT, '#ffffff'), fmat(shT)]);
+    shSign.rotation.y = Math.PI / 2; shSign.position.set(-21.5, 6.4, 50); deco(shSign);
+    const shL = label('🛍️ Pet Shop · hats, collars & more', 'rgba(255,111,181,.95)', '#fff', 360); shL.scale.multiplyScalar(1.3); shL.position.set(-28, 9, 50); deco(shL);
+    // roadside sign at the lot
+    const rs = new THREE.Mesh(new THREE.BoxGeometry(4.4, 1.2, .15), signTex('🛍️ Pet Shop ←', shT, '#ffffff', 512, 140)); rs.position.set(-13, 2.6, 44.2); deco(rs); dbox(-13, 1, 44.2, .18, 2, .18, '#ffffff');
+    dbox(-20.6, .06, 50, 2.4, .04, 3.6, '#ffd23f');   // welcome mat
+    plat(-31.6, 1.2, 50, 1.2, 6, '#ff6fb5', 1.2); dbox(-31.6, 1.25, 50, 1.5, .1, 6.3, '#ffffff');   // counter
+    const pip = buildPlayer(Object.assign({}, DEF, {head: '#c68642', shirt: '#ff6fb5', pants: '#3a86ff', hair: 'bun', hairColor: '#1d2340', face: 'smile', shirtPat: null}));
+    pip.g.position.set(-33, 0, 50); pip.g.rotation.y = Math.PI / 2; scene.add(pip.g);
+    const pipL = label('🛍️ Pip', 'rgba(255,111,181,.92)'); pipL.position.y = 3.75; pip.g.add(pipL);
+    const cS = new THREE.Mesh(new THREE.BoxGeometry(3.4, .7, .1), signTex('🎀 Shop here!', '#ff9f1c', '#ffffff', 384, 80)); cS.rotation.y = Math.PI / 2; cS.position.set(-30.95, .8, 50); deco(cS);
+    // display stands with the real accessories on top
+    [['crown', -32, 54.6], ['cowboy', -29.6, 54.6], ['pumpkinH', -27.2, 54.6], ['santa', -24.8, 54.6], ['witch', -32, 45.4], ['wings', -29.6, 45.4], ['antlers', -27.2, 45.4], ['present', -24.8, 45.4]].forEach(([id, x, z]) => {
+      plat(x, 1, z, 1, 1, '#ffffff', 1); dbox(x, 1.03, z, 1.05, .06, 1.05, shT); const o = accMesh(id); o.scale.setScalar(1.9); o.position.set(x, id === 'shades' ? 1.35 : 1.1, z); o.rotation.y = z > 50 ? Math.PI : 0; deco(o); });
     // car, beacon, ball, fx
     const car = buildCar((player && /^#[0-9a-f]{6}$/i.test(player.fav) ? player.fav : '#3a86ff')); scene.add(car.g);
     const beacon = new THREE.Group(); const cone = new THREE.Mesh(new THREE.ConeGeometry(.7, 1.4, 4), new THREE.MeshLambertMaterial({color: '#ffd23f', emissive: '#b88600'})); cone.rotation.x = Math.PI; beacon.add(cone);
@@ -4819,7 +5290,7 @@ const Obby = (() => {
       pet: null, ballSt: null, walk: null, leashOn: false, tsub: 0, prompt: null, goal: null, fx: [], petCd: 0, saveT: 5, camY: cam.yaw, lookT: 0, gas: 0, brake: 0, coinsEarned: 0, lastStage: -1, napT: 0, eatT: 0};
     if (s.flow === 'home') s.flow = null;   // you start at home: you made it!
     if (!s.roll) s.roll = newRoll();
-    setPens(); spawnPet(); plotSigns(true);
+    setPens(); spawnPet(); plotSigns(true); petsSave();
   }
   /* --- today's shelter pets (rolled by rarity; kept until you leave and come back) --- */
   function newRoll(force){
@@ -4888,7 +5359,7 @@ const Obby = (() => {
   function spawnPet(near){
     if (pt.pet){ scene.remove(pt.pet.m.g); pt.pet = null; }
     const d = activePet(); if (!d) return;
-    const st = stageOf(d.xp), m = buildPet(d.k, d.c, st);
+    const st = stageOf(d.xp), m = buildPet(d.k, d.c, st); dress(m, d.acc);
     const tag = label(d.n, 'rgba(255,111,181,.92)', '#fff', 220); tag.scale.multiplyScalar(.55); tag.position.y = m.top + .45; m.g.add(tag);
     const sp = near || {x: P.x - 1.5, z: P.z - 1.5};
     pt.pet = {d, m, tag, x: sp.x, z: sp.z, y: 0, face: P.face, vx: 0, vz: 0, act: 'follow', t: 0, stage: st, pop: 0};
@@ -5016,6 +5487,9 @@ const Obby = (() => {
     const sug = nameSuggest(), box = $('#pSugg'); box.innerHTML = '';
     sug.forEach(n => { const b = document.createElement('button'); b.className = 'pchip'; b.textContent = n; b.onclick = () => { $('#petNameIn').value = n; $('#pNameMsg').textContent = ''; }; box.appendChild(b); });
     $('#petNameIn').value = pt.s.pend || sug[0]; $('#pNameMsg').textContent = '';
+    if (!pt.s.pendG) pt.s.pendG = Math.random() < .5 ? 'b' : 'g';   // random default, tap to change
+    const gsel = () => $('#pGen').querySelectorAll('button').forEach(b => b.classList.toggle('sel', b.dataset.g === pt.s.pendG));
+    $('#pGen').querySelectorAll('button').forEach(b => b.onclick = () => { pt.s.pendG = b.dataset.g; gsel(); }); gsel();
     openPanel('#pNamePanel');
     if (!touchUI && !pad.on) setTimeout(() => { try { $('#petNameIn').focus(); $('#petNameIn').select(); } catch(e){} }, 60);
   }
@@ -5043,7 +5517,7 @@ const Obby = (() => {
   function recolorPen(i, ci){ const pen = pt.pens[i]; if (pen.c === ci || !pen.m) return; pt.s.roll.c[i] = ci; scene.remove(pen.m.g); pen.m = buildPet(pen.k, ci, 0); pen.m.g.position.set(pen.x, .3, 83); scene.add(pen.m.g); pen.c = ci; hearts(pen.x, 83, 2); }
   function adoptOk(){
     const pen = pt.pens[pt.adoptI], s = pt.s; if (!pen || !pen.m || s.flow !== 'choose' || s.pets.length >= PET_MAX) return closePanel('#pAdoptPanel');
-    const p = {k: pen.k, c: pen.c, n: s.pend || 'Buddy', xp: 0, f: 80, u: 80, e: 90, b: Date.now()};
+    const p = {k: pen.k, c: pen.c, n: s.pend || 'Buddy', xp: 0, f: 80, u: 80, e: 90, b: Date.now(), g: s.pendG || (Math.random() < .5 ? 'b' : 'g'), acc: {}}; s.pendG = '';
     s.pets.push(p); s.a = s.pets.length - 1; s.pend = ''; s.flow = 'home'; closePanel('#pAdoptPanel');
     s.dex.seen[p.k] = s.dex.own[p.k] = 1; s.roll.t.push(pt.adoptI); setPens(); dexCheck();
     spawnPet({x: pen.x, z: 79.5}); hearts(pen.x, 79.5, 6); if (PET_KINDS[p.k].r >= 3){ setTimeout(confetti, 1200); pt.pet.pop = 1; }
@@ -5059,11 +5533,11 @@ const Obby = (() => {
       const st = stageOf(p.xp), nx = STAGES[st + 1], pr = nx ? Math.round((p.xp - STAGES[st].xp) / (nx.xp - STAGES[st].xp) * 100) : 100;
       const d = document.createElement('div'), RR = rarOf(p.k); d.className = 'pcard r' + PET_KINDS[p.k].r + (i === s.a ? ' on' : ''); d.style.setProperty('--rc', RR.c);
       const bar = (e, v, c) => `<span class="pmini"><i>${e}</i><b><u style="width:${Math.round(v)}%;background:${c}"></u></b></span>`;
-      d.innerHTML = `<div class="pcn"><span class="pce">${PET_KINDS[p.k].emoji}</span><div><b></b><small>${STAGES[st].e} ${STAGES[st].n} ${PET_KINDS[p.k].name}</small></div><span class="prb">${RR.e} ${RR.n}</span></div>`
+      d.innerHTML = `<div class="pcn"><span class="pce">${PET_KINDS[p.k].emoji}</span><div><b></b><small>${STAGES[st].e} ${STAGES[st].n} ${PET_KINDS[p.k].name}</small></div><span class="prb">${RR.e} ${RR.n}</span></div><div class="pgline"><span class="pgn"></span> · ${genOf(p.g)} · <em style="color:${RR.c}">${RR.n}</em></div>`
         + `<div class="pgrow"><u style="width:${pr}%"></u><span>${nx ? '🌱 ' + pr + '% to ' + nx.n : '⭐ All grown up!'}</span></div>`
         + bar('🍖', p.f, '#ff9f1c') + bar('🎾', p.u, '#3a86ff') + bar('⚡', p.e, '#8b5cf6')
-        + `<button class="big ${i === s.a ? 'gray' : 'green'} pfollow" data-i="${i}" ${i === s.a ? 'disabled' : ''}>${i === s.a ? '✅ With you' : '🐾 Follow me'}</button>`;
-      d.querySelector('.pcn b').textContent = p.n;
+        + `<button class="big ${i === s.a ? 'gray' : 'green'} pfollow" data-i="${i}" ${i === s.a ? 'disabled' : ''}>${i === s.a ? '✅ With you' : '🐾 Follow me'}</button><button class="big pdress" data-i="${i}">👗 Dress up</button>`;
+      d.querySelector('.pcn b').textContent = p.n; d.querySelector('.pgn').textContent = p.n; d.querySelector('.pdress').onclick = () => openWard(false, i);
       d.querySelector('.pfollow').onclick = () => { s.a = i; if (pt.leashOn) leashOff(true); const was = pt.pet && pt.pet.act === 'car'; spawnPet(); if (was) pt.pet.act = 'car'; petsSave(); renderPets(); banner('🐾 ' + p.n + ' is with you now!'); };
       L.appendChild(d);
     });
@@ -5093,7 +5567,7 @@ const Obby = (() => {
     if (!d || s.pets.length <= 1 || pt.bye) return;
     let m;
     if (pt.pet && pt.pet.d === d){ if (pt.leashOn) leashOff(true); if (pt.ballSt){ pt.ball.visible = false; pt.ballSt = null; } m = pt.pet.m; if (pt.pet.tag) pt.pet.tag.visible = false; pt.pet = null; }
-    else { m = buildPet(d.k, d.c, stageOf(d.xp)); scene.add(m.g); }
+    else { m = buildPet(d.k, d.c, stageOf(d.xp)); dress(m, d.acc); scene.add(m.g); }
     const f = Math.atan2(PLACES.ret[0] - P.x, PLACES.ret[1] + 1 - P.z), x = P.x + Math.sin(f) * 1.5, z = P.z + Math.cos(f) * 1.5;
     pt.bye = {m, n: d.n, x, z, t: 0};
     s.pets.splice(i, 1); if (s.a > i) s.a--; else if (s.a === i) s.a = 0; s.a = Math.max(0, Math.min(s.a, s.pets.length - 1));
@@ -5114,6 +5588,44 @@ const Obby = (() => {
     if (b.t > 3.7){ scene.remove(M.g); pt.bye = null; }
   }
   function openPets(){ if (!pt) return; renderPets(); openPanel('#pPetsPanel'); }
+  /* --- Pet Shop + Wardrobe (t157u) --- */
+  function setAcc(i, sl, id){ const p = pt.s.pets[i]; if (!p) return; p.acc = p.acc || {}; if (id) p.acc[sl] = id; else delete p.acc[sl]; if (pt.pet && pt.pet.d === p) dress(pt.pet.m, p.acc); petsSave(); }
+  function openShop(){ if (!pt || !running) return; pt.shopTab = pt.shopTab || 'all'; $('#pShopMsg').textContent = ''; renderPetShop(); openPanel('#pShopPanel'); SND.cp(); }
+  function renderPetShop(){
+    const tab = pt.shopTab || 'all', a = activePet(), T = $('#pShopTabs'), G = $('#pShopGrid'); $('#pShopCoins').textContent = coins;
+    T.innerHTML = [['all', '✨ All'], ...ACC_SLOTS, ...ACC_THEMES].map(([k, t]) => `<button class="pchip${k === tab ? ' sel' : ''}" data-t="${k}">${t}</button>`).join('');
+    T.querySelectorAll('button').forEach(b => b.onclick = () => { pt.shopTab = b.dataset.t; renderPetShop(); });
+    G.innerHTML = ACC.filter(it => tab === 'all' || it.s === tab || it.t === tab).map(it => { const R = RARITY[it.r], ow = pt.s.inv[it.id], on = !!(a && a.acc && a.acc[it.s] === it.id);
+      return `<div class="shit r${it.r}" style="--rc:${R.c}"><span class="she">${it.e}</span><b>${it.n}</b><small>${SLOTN[it.s]} · <i style="color:${R.d}">${R.e} ${R.n}</i></small>`
+        + `<button class="big ${ow ? (on ? 'gray' : 'green') : ''} shbuy" data-id="${it.id}">${ow ? (on ? '✅ Wearing' : '👗 Wear') : '🪙 ' + it.p}</button></div>`; }).join('');
+    G.querySelectorAll('.shbuy').forEach(b => b.onclick = () => shopBuy(b.dataset.id));
+  }
+  function shopBuy(id){
+    const it = ACC_BY[id], a = activePet(), msg = $('#pShopMsg'); if (!it) return;
+    if (pt.s.inv[id]){ if (!a){ msg.textContent = '🐾 Adopt a pet first, then come back to dress them up!'; return; }
+      const on = a.acc && a.acc[it.s] === id; setAcc(pt.s.a, it.s, on ? null : id); msg.textContent = on ? '👋 ' + a.n + ' took off the ' + it.n + '.' : '👗 ' + a.n + ' is wearing the ' + it.n + '!'; SND.cp(); renderPetShop(); return; }
+    if (coins < it.p){ msg.textContent = '🪙 You need ' + (it.p - coins) + ' more coins for the ' + it.n + '! Care for your pet to earn more.'; SND.boing && SND.boing(); return; }
+    setCoins(coins - it.p); pt.s.inv[id] = 1; if (a) setAcc(pt.s.a, it.s, id); SND.coin(); confetti();
+    msg.textContent = '🎉 You bought the ' + it.n + '!' + (a ? ' ' + a.n + ' is wearing it.' : ''); petsSave(); renderPetShop();
+  }
+  function openWard(fromShop, i){
+    if (!pt || !running || paused) return; if (!pt.s.pets.length){ banner('🐾 Adopt a pet first!'); return; }
+    pt.wardI = i >= 0 ? i : pt.s.a; ['#pShopPanel', '#pPetsPanel'].forEach(id => $(id).classList.remove('show'));
+    $('#pWardShop').hidden = !fromShop; $('#pWardMsg').textContent = ''; renderWard(); openPanel('#pWardPanel');
+  }
+  function renderWard(){
+    const s = pt.s; if (!(pt.wardI >= 0 && pt.wardI < s.pets.length)) pt.wardI = s.a; const p = s.pets[pt.wardI]; p.acc = p.acc || {};
+    const P2 = $('#pWardPets'); P2.innerHTML = '';
+    s.pets.forEach((q, j) => { const b = document.createElement('button'); b.className = 'pchip' + (j === pt.wardI ? ' sel' : ''); b.textContent = PET_KINDS[q.k].emoji + ' ' + q.n; b.onclick = () => { pt.wardI = j; renderWard(); }; P2.appendChild(b); });
+    const any = ACC.some(it => s.inv[it.id]);
+    $('#pWardSlots').innerHTML = ACC_SLOTS.map(([sl, t]) => { const owned = ACC.filter(it => it.s === sl && s.inv[it.id]);
+      return `<div class="wrow"><b>${t}</b><div class="wopts"><button class="wopt${!p.acc[sl] ? ' sel' : ''}" data-s="${sl}" data-id="">🚫 None</button>`
+        + owned.map(it => `<button class="wopt${p.acc[sl] === it.id ? ' sel' : ''}" data-s="${sl}" data-id="${it.id}" style="box-shadow:0 0 0 2px ${RARITY[it.r].c} inset">${it.e} ${it.n}</button>`).join('')
+        + (owned.length ? '' : '<small>Nothing yet: find some at the 🛍️ Pet Shop</small>') + '</div></div>'; }).join('');
+    $('#pWardSlots').querySelectorAll('.wopt').forEach(b => b.onclick = () => { const id = b.dataset.id, sl = b.dataset.s; setAcc(pt.wardI, sl, id || null); SND.cp();
+      $('#pWardMsg').textContent = id ? '👗 ' + p.n + ' is wearing the ' + ACC_BY[id].n + '!' : '👋 ' + SLOTN[sl] + ' slot is empty now.'; renderWard(); });
+    if (!any) $('#pWardMsg').textContent = '🛍️ The Pet Shop is next to the Pet Shelter: buy hats, collars and more!';
+  }
   /* --- what can you do right here? --- */
   function eligible(){ const s = pt.s, l = s.pets[s.pets.length - 1]; return s.pets.length < PET_MAX && (!l || stageOf(l.xp) === 3); }
   function petsPrompt(){
@@ -5124,6 +5636,7 @@ const Obby = (() => {
     if (near(PLACES.desk, 3.2)) list.push(s.flow === 'shelter' && eligible() ? {k: 'desk', t: '🏷️ Talk to Dr. Hazel', act: openName}
       : {k: 'desk', t: '💬 Talk to Dr. Hazel', act: () => banner(s.flow === 'choose' ? '🩺 The pets are through the orange door!' : s.pets.length >= PET_MAX ? '🩺 Six pets! Your house is full of love 💕 (💌 Returns is at the end of my desk)' : '🩺 Come back when ' + (s.pets[s.pets.length - 1] || {}).n + ' is all grown up! ⭐')});
     if (s.pets.length && !pt.bye && near(PLACES.ret, 1.8) && !near(PLACES.desk, 3.2)) list.push({k: 'ret', t: '💌 Return a pet', act: openReturn});
+    if (near(PLACES.shop, 2.8)) list.push({k: 'shop', t: '🛍️ Shop pet accessories', act: openShop});
     if (!pt.doorOpen && near(PLACES.door, 3)) list.push(s.flow === 'choose' ? {k: 'door', t: '🚪 Open the door', act: openDoor} : {k: 'door', t: '🔒 Adoption room', act: () => banner('🏷️ Talk to Dr. Hazel at the desk first!')});
     if (s.flow === 'choose') pt.pens.forEach((pen, i) => { if (pen.m && near(PLACES.pens[i], 2.8)) list.push({k: 'pen' + i, t: PET_KINDS[pen.k].emoji + ' Meet the ' + PET_KINDS[pen.k].name, act: () => openAdopt(i)}); });
     const p = pt.pet, free = p && ['follow', 'happy'].includes(p.act) && !pt.ballSt;
@@ -5135,12 +5648,22 @@ const Obby = (() => {
       if (free && Math.hypot(p.x - x, p.z - z) < 2.4 && pt.petCd <= 0) list.push({k: 'pet', t: '❤️ Pet ' + p.d.n, act: petIt});
     }
     if (!list.length) return null;
-    const order = ['desk', 'ret', 'door', 'pen0', 'pen1', 'pen2', 'toy', 'bowl', 'bed', 'gate', 'car', 'pet'];
+    const order = ['shop', 'desk', 'ret', 'door', 'pen0', 'pen1', 'pen2', 'toy', 'bowl', 'bed', 'gate', 'car', 'pet'];
     list.sort((a, b) => order.indexOf(a.k) - order.indexOf(b.k));
     if (s.tut < 3 && list.some(o => o.k === 'pet') && pt.s.tut === 0 && pt.tsub === 1) return list.find(o => o.k === 'pet');
     return list[0];
   }
-  function petsClosePanels(){ ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel'].forEach(id => $(id).classList.remove('show')); choosing = false; try { $('#petNameIn').blur(); } catch(_){} }
+  function petsClosePanels(){ ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel'].forEach(id => $(id).classList.remove('show')); choosing = false; try { $('#petNameIn').blur(); } catch(_){} }
+  // t167u: dedicated pad buttons for the pet activities, usable anywhere sensible (not only on the exact spot)
+  function padPet(what){
+    if (!pt || !running || paused || choosing || pt.drive) return false;
+    const p = pt.pet; if (!p){ banner('🐾 Adopt a pet first!'); return false; }
+    const free = ['follow', 'happy'].includes(p.act) && !pt.ballSt, far = (q, r) => Math.hypot(q[0] - P.x, q[1] - P.z) > r, busy = e => { banner(e + ' ' + p.d.n + ' is busy right now'); return false; };
+    if (what === 'walk'){ if (pt.leashOn){ leashOff(); return true; } if (!free) return busy('🦮'); leashOnFn(); return true; }
+    if (what === 'feed'){ if (far(PLACES.bowl, 26)) { banner('🍖 Go home to feed ' + p.d.n + ' (the bowl is in your house)'); return false; } if (!free) return busy('🍖'); fillBowl(); return true; }
+    if (what === 'throw'){ if (far(PLACES.toy, 14)) { banner('🎾 Go to the toy box in your yard to play fetch!'); return false; } if (!free) return busy('🎾'); throwBall(); return true; }
+    return false;
+  }
   function petsAct(){ const p = petsPrompt(); if (p && running && !paused && !choosing){ p.act(); return true; } return false; }
   function openDoor(){ pt.doorOpen = true; pt.doorT = 0; SND.cp(); banner('🐾 Choose your new pet!'); }
   /* --- where to go next (arrow + beacon) --- */
@@ -5373,7 +5896,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ use / talk · Ⓑ my pets · Ⓨ Pet Index · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
+    const line = mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -5412,7 +5935,9 @@ const Obby = (() => {
       if (pt.drive){ pad.gas = Math.max(s.v[7] || 0, s.b[0] ? 1 : 0); pad.brake = Math.max(s.v[6] || 0, s.b[1] ? 1 : 0); pad.y = 0; pad.jump = false; if (jp[3]) { cam.yaw = pt.car.yaw + Math.PI; cam.pitch = .34; } return; }
       pad.gas = pad.brake = 0;
       if (jp[1]){ openPets(); return; }
-      if (jp[3]){ openIndex(); return; }
+      if (jp[3]){ padPet('walk'); return; }
+      if (jp[4]){ padPet('feed'); return; }
+      if (jp[5]){ padPet('throw'); return; }
     }
     if (mode === 'build' && bw){
       ptr.has = false;   // aim with the crosshair in the middle of the screen
@@ -5432,8 +5957,27 @@ const Obby = (() => {
       const id = mine[pad.emo]; playEmote(id); banner(EMOTES[id].emoji + ' ' + EMOTES[id].name);
     }
   }
+  // t162u: on phones the extra buttons ride in the top bar; Jump stays alone at the bottom right
+  const HUDBAR = [];
+  function hudBar(on){
+    const bar = $('#oTopAct'); if (!bar) return;
+    if (!HUDBAR.length) ['#oRun','#oEmoBtn','#pAct'].forEach(q => { const el = $(q); if (el) HUDBAR.push([el, el.parentNode, el.nextSibling]); });
+    for (const [el, par, nx] of HUDBAR){
+      const dest = el.id === 'pAct' ? ($('#oTopAct2') || bar) : bar;
+      if (on){ if (el.parentNode !== dest) dest.appendChild(el); }
+      else if (el.parentNode !== par) par.insertBefore(el, nx && nx.parentNode === par ? nx : null);
+    }
+    hudMeasure();
+  }
+  function hudMeasure(){
+    const h = $('#obby .ohud'), o = $('#obby'); if (!h || !o) return;
+    const r = h.getBoundingClientRect(), ro = o.getBoundingClientRect();
+    o.style.setProperty('--hudb', Math.round(r.bottom - ro.top) + 'px');
+  }
+  if (window.ResizeObserver) setTimeout(() => { const h = document.querySelector('#obby .ohud'); if (h) new ResizeObserver(hudMeasure).observe(h); }, 0);
+  addEventListener('resize', () => setTimeout(hudMeasure, 50));
   function setTouchUIBase(on){
-    touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
+    hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
     if (mode === 'build'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ jump · 🏃 run · Swipe to look · 👁️ first person<br>👆 Tap to place a block · 🔨/🧽 button switches to delete'
         : '⌨️ WASD move · Space jump · Shift run · Drag to look · V first person · 🖱️ Click to place a block<br>Shift+click / right-click / X = delete · Q/E pick block · Z undo') + '<br>Build anything! 🪙 +1 coin per 10 blocks (up to 50 a day)';
@@ -5546,6 +6090,7 @@ const Obby = (() => {
         if (!e.repeat && !paused && (e.code === 'KeyE' || e.code === 'Enter')){ e.preventDefault(); petsAct(); return; }
         if (!e.repeat && !paused && e.code === 'KeyM'){ openPets(); return; }
         if (!e.repeat && !paused && e.code === 'KeyI'){ openIndex(); return; }
+        if (!e.repeat && !paused && e.code === 'KeyO'){ openWard(); return; }
       }
       if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
       if (e.code === 'KeyV' && !e.repeat && !paused && !won && !over){ setFP(!fp.on); return; }
@@ -5597,7 +6142,8 @@ const Obby = (() => {
     $('#oSlotsClose').onclick = () => { $('#oSlots').classList.remove('show'); paused = false; };
     $('#oTagAgain').onclick = () => { if (mpGuest()) return; stop(); start('tag'); };
     $('#oTagHome').onclick = stop;
-    $('#pAct').addEventListener('pointerdown', e => { e.preventDefault(); e.currentTarget.blur(); petsAct(); });  // pointerdown: works as a 2nd finger while holding a pedal
+    $('#pAct').addEventListener('pointerdown', e => { e.preventDefault(); e.currentTarget.blur(); window.__pActT = performance.now(); petsAct(); });
+    document.addEventListener('click', e => { const t = e.target; if (performance.now() - (window.__pActT || -1e9) < 600 && t && t.closest && t.closest('.obtns,.ohud') && !t.closest('#pAct')){ e.preventDefault(); e.stopPropagation(); } }, true);  // pointerdown: works as a 2nd finger while holding a pedal
     $('#pAct').addEventListener('click', e => { if (e.detail === 0) petsAct(); });
     $('#pPetsBtn').onclick = e => { e.currentTarget.blur(); if (!choosing && !paused) openPets(); };
     [['#pGas', 'gas'], ['#pBrake', 'brake']].forEach(([id, k]) => { const b = $(id);
@@ -5612,6 +6158,9 @@ const Obby = (() => {
     $('#pAdoptBack').onclick = () => closePanel('#pAdoptPanel');
     $('#pPetsClose').onclick = () => closePanel('#pPetsPanel');
     $('#pIdxBtn').onclick = () => pt && openIndex();
+    $('#pWardBtn').onclick = e => { e.currentTarget.blur(); if (!choosing && !paused) openWard(); };
+    $('#pShopClose').onclick = () => closePanel('#pShopPanel'); $('#pShopWard').onclick = () => openWard(true);
+    $('#pWardClose').onclick = () => closePanel('#pWardPanel'); $('#pWardShop').onclick = () => { $('#pWardPanel').classList.remove('show'); openShop(); };
     $('#pIdxBtn2').onclick = e => { e.currentTarget.blur(); if (!choosing && !paused) openIndex(); };
     $('#pIndexClose').onclick = () => closePanel('#pIndexPanel');
     $('#pReroll').onclick = () => pt && rerollPens();
@@ -5705,7 +6254,7 @@ const Obby = (() => {
     ['#oDisBox','#oRTBox','#oHpBox','#oSurvBox'].forEach(id => $(id).style.display = mode === 'nds' ? '' : 'none'); $('#oTime').parentElement.style.display = mode === 'nds' || mode === 'tag' || mode === 'pets' ? 'none' : '';
     $('#oBlkBox').style.display = mode === 'build' ? '' : 'none'; ['#oItBox','#oTagTBox','#oMyItBox'].forEach(id => $(id).style.display = mode === 'tag' ? '' : 'none');
     $('#obby').classList.toggle('bmode', mode === 'build'); $('#obby').classList.toggle('pmode', mode === 'pets'); $('#obby').classList.remove('pdrive'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  ptr.has = false;
-    ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel'].forEach(id => $(id).classList.remove('show')); pt && (pt.gas = pt.brake = 0); $('#oPause').textContent = '⏸️';
+    ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel'].forEach(id => $(id).classList.remove('show')); pt && (pt.gas = pt.brake = 0); $('#oPause').textContent = '⏸️';
     $('#oMute').textContent = muted ? '🔇' : '🔊';
     emote = null; P.airT = 0; P.jumped = false; P.climbing = false; Object.assign(run, {pad: false, touch: false, on: false, stam: STAM_MAX, tired: false, shown: -1}); $('#oRun').classList.remove('on'); $('#oFP').classList.toggle('on', fp.on); $('#oStam').style.display = mode === 'tag' ? '' : 'none';
     setTouchUI(!pad.on && (matchMedia('(pointer: coarse)').matches || (navigator.maxTouchPoints > 0 && !matchMedia('(hover: hover)').matches)));   // a controller in use keeps the screen clear
@@ -5726,14 +6275,14 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
 
   // debug / test hook
   window.obbyDebug = {
-    pets: () => pt && {plot: pt.plot, owners: pt.owners, signs: pt.plots.map(q => q.name), places: {home: PLACES.home, car0: PLACES.car0, bowl: PLACES.bowl}, flow: pt.s.flow, pend: pt.s.pend, tut: pt.s.tut, tsub: pt.tsub, a: pt.s.a, pets: pt.s.pets.map(p => Object.assign({}, p, {stage: stageOf(p.xp)})), drive: pt.drive,
+    pets: () => pt && {plot: pt.plot, owners: pt.owners, signs: pt.plots.map(q => q.name), places: {home: PLACES.home, car0: PLACES.car0, bowl: PLACES.bowl, toy: PLACES.toy, bed: PLACES.bed, gate: PLACES.gate}, flow: pt.s.flow, pend: pt.s.pend, tut: pt.s.tut, tsub: pt.tsub, a: pt.s.a, pets: pt.s.pets.map(p => Object.assign({}, p, {stage: stageOf(p.xp)})), drive: pt.drive,
       car: {x: pt.car.x, z: pt.car.z, yaw: pt.car.yaw, v: pt.car.v}, pet: pt.pet && {x: pt.pet.x, y: pt.pet.y, z: pt.pet.z, act: pt.pet.act, stage: pt.pet.stage, scale: pt.pet.m.inner.scale.x},
       door: pt.doorOpen, leash: pt.leashOn, walk: pt.walk && Object.assign({}, pt.walk), ball: pt.ballSt && pt.ballSt.st, prompt: pt.prompt && pt.prompt.t, promptK: pt.prompt && pt.prompt.k,
       goal: pt.goal && {t: pt.goal.t, at: pt.goal.at}, earned: pt.coinsEarned, choosing, coins, inp: driveInput(), pedals: [pt.gas, pt.brake],
@@ -5742,12 +6291,18 @@ const Obby = (() => {
     petsRollOdds(n = 20000){ const c = [0, 0, 0, 0, 0]; for (let i = 0; i < n; i++) rollPets().forEach(k => c[PET_KINDS[k].r]++); return c.map(x => x / (n * 3)); },
     petsKinds: () => PET_ORDER.map(k => ({k, r: PET_KINDS[k].r, name: PET_KINDS[k].name})),
     petsIndex: () => openIndex(),
-    petsGallery(st = 3, x0 = -20, z0 = -20, gap = 2.6){ (pt.gal || []).forEach(m => scene.remove(m.g)); pt.gal = PET_ORDER.map((k, i) => { const m = buildPet(k, i % 3, st); m.g.position.set(x0 + (i % 9) * gap, 0, z0 + Math.floor(i / 9) * gap * 1.6); m.g.rotation.y = Math.PI; scene.add(m.g); return m; });
+    petsGallery(st = 3, x0 = -20, z0 = -20, gap = 2.6, acc){ (pt.gal || []).forEach(m => scene.remove(m.g)); pt.gal = PET_ORDER.map((k, i) => { const m = buildPet(k, i % 3, st); if (acc) dress(m, typeof acc === 'function' ? acc(i, k) : acc); m.g.position.set(x0 + (i % 9) * gap, 0, z0 + Math.floor(i / 9) * gap * 1.6); m.g.rotation.y = Math.PI; scene.add(m.g); return m; });
       if (!pt.galHook){ pt.galHook = true; const f = animatePets; animatePets = dt => { f(dt); (pt.gal || []).forEach((m, i) => animPet(m, i % 4 === 1 ? 1 : i % 4 === 2 ? 4 : 0, i % 4 === 1 ? 3 : 0, dt, worldT)); }; } return pt.gal.length; },
-    petsAct: () => petsAct(),
+    petsAct: () => petsAct(), padPet: w => padPet(w),
     throwBall: () => throwBall(), ballPos: () => pt && pt.ballSt && {x: pt.ball.position.x, y: pt.ball.position.y, z: pt.ball.position.z, vis: pt.ball.visible, st: pt.ballSt.st, ndc: (v => [+v.x.toFixed(3), +v.y.toFixed(3), +v.z.toFixed(4)])(pt.ball.position.clone().project(camera))},
     fp: () => ({on: fp.on, active: fpOn(), pitch: +cam.pitch.toFixed(3), yaw: +cam.yaw.toFixed(3), dist: +cam.dist.toFixed(2), eye: +(camera.position.y - P.y).toFixed(2), head: !!(model && model.head && model.head.visible), body: !!(model && model.g.visible), locked: document.pointerLockElement === renderer.domElement, cls: $('#obby').classList.contains('fpv'), face: +P.face.toFixed(3), tag: pt && pt.pet && pt.pet.tag ? pt.pet.tag.visible : null}),
     setFP: on => setFP(on, true),
+    shop: () => pt && {open: $('#pShopPanel').classList.contains('show'), ward: $('#pWardPanel').classList.contains('show'), inv: Object.keys(pt.s.inv), coins, pets: pt.s.pets.map(p => ({n: p.n, k: p.k, g: p.g, acc: Object.assign({}, p.acc)})), a: pt.s.a,
+      worn: pt.pet ? (pt.pet.m.accO || []).map(o => o.userData.slot) : [], prompt: (petsPrompt() || {}).k},
+    openShop: () => openShop(), openWard: (i) => openWard(false, i), buyAcc: id => shopBuy(id), setAcc: (i, sl, id) => setAcc(i, sl, id),
+    accCheck(k, st = 3, acc = {head: 'crown', face: 'shades', neck: 'collarP', back: 'cape'}){ const M = buildPet(k, 0, st); dress(M, acc); M.g.updateMatrixWorld(true);
+      const bx = o => { const b = new THREE.Box3().setFromObject(o); return [b.min.toArray().map(v => +v.toFixed(3)), b.max.toArray().map(v => +v.toFixed(3))]; }, sk = M.head.children.find(o => o.isMesh);
+      const out = {head: bx(sk), body: bx(M.body), acc: {}}; M.accO.forEach(o => out.acc[o.userData.slot] = bx(o)); out.collarHidden = (M.collar || []).every(c => !c.visible); return out; },
     menu: () => ({open: $('#oPausePanel').classList.contains('show'), menuOpen, paused, turning: !!fp.turn, throwTurn: fp.throwTurn}),
     run: () => ({on: run.on, stam: +run.stam.toFixed(2), tired: run.tired, pad: run.pad, touch: run.touch, v: +Math.hypot(P.vx, P.vz).toFixed(2), fov: +camera.fov.toFixed(1), bots: tg ? tg.bots.map(b => !!b.run) : []}),
     petsReturn(i, yes){ if (!pt) return null; openReturn(); if (i == null) return; askReturn(i); if (yes) doReturn(); },
@@ -5840,7 +6395,7 @@ const Obby = (() => {
     bwPtr(x, y){ ptr.x = x; ptr.y = y; ptr.has = true; },
     tag: () => tg && {phase: tg.phase, t: tg.t, it: tg.it, freeze: tg.freeze, you: {...tg.you}, earned: tg.earned, bots: tg.bots.map(B => ({name: B.name, x: +B.x.toFixed(2), y: +B.y.toFixed(2), z: +B.z.toFixed(2), it: B.itTime, tags: B.tags}))},
     mp: () => ({on: mp.on, host: mp.host, code: mp.code, me: mp.me, status: mp.status, hmode: mp.hmode, count: mp.on ? mpCount() : 0, players: [...mp.players.entries()].map(([u, p]) => [u, p.name]),
-      ents: [...mp.ents.values()].map(E => ({uid: E.uid, m: E.m, v: +(E.v || 0).toFixed(2), x: +E.x.toFixed(2), y: +E.y.toFixed(2), z: +E.z.toFixed(2), e: E.e, pack: E.pack, av: (mpLook(E.uid) || {}).av, vis: !!(E.model && E.model.g.visible && E.scene === scene), pet: E.pet && {k: E.pet.k, n: E.pet.n, x: E.pet.x, z: E.pet.z, vis: !!(E.petM && E.petM.m.g.visible), rar: rarOf(E.pet.k).n, leash: !!E.pet.l, line: !!(E.leashL && E.leashL.visible && E.leashL.parent === scene), ends: E.leashL && E.leashL.visible ? [...E.leashL.geometry.attributes.position.array].map(v => +v.toFixed(2)) : null}, car: E.car && {x: E.car[0], z: E.car[1], vis: !!(E.carM && E.carM.g.visible)}})),
+      ents: [...mp.ents.values()].map(E => ({uid: E.uid, m: E.m, v: +(E.v || 0).toFixed(2), x: +E.x.toFixed(2), y: +E.y.toFixed(2), z: +E.z.toFixed(2), e: E.e, pack: E.pack, av: (mpLook(E.uid) || {}).av, vis: !!(E.model && E.model.g.visible && E.scene === scene), pet: E.pet && {k: E.pet.k, n: E.pet.n, x: E.pet.x, z: E.pet.z, vis: !!(E.petM && E.petM.m.g.visible), rar: rarOf(E.pet.k).n, acc: E.pet.acc, worn: E.petM && E.petM.m.accO ? E.petM.m.accO.length : 0, leash: !!E.pet.l, line: !!(E.leashL && E.leashL.visible && E.leashL.parent === scene), ends: E.leashL && E.leashL.visible ? [...E.leashL.geometry.attributes.position.array].map(v => +v.toFixed(2)) : null}, car: E.car && {x: E.car[0], z: E.car[1], vis: !!(E.carM && E.carM.g.visible)}})),
       tag: tg && {remote: tg.remote, itU: tg.itU, it: tg.it, inRound: tg.inRound, humans: tg.bots.filter(B => B.human).map(B => ({uid: B.uid, away: B.away, it: B.itTime, tags: B.tags}))}}),
     mpHost: () => mpHost(), mpJoin: c => mpJoin(c), mpLeave: () => mpLeave(),
     tagUid: i => tagUid(i), mpRaw: m => mpSend(m),
@@ -5906,6 +6461,7 @@ const Obby = (() => {
     }
     const [lx, ly] = dz(ax[0], ax[1]), [rx, ry] = dz(ax[2], ax[3]);
     const jp = b.map((x, i) => x && !prev[i]); prev = b;
+    if (window.rubloxMusic && jp.some(Boolean)) rubloxMusic.kick();   // a controller press starts the music too
     return {b, v, jp, lx, ly, rx, ry, any: b.some(x => x) || lx !== 0 || ly !== 0 || rx !== 0 || ry !== 0};
   }
   const dirOf = s => s.b[12] ? 'up' : s.b[13] ? 'down' : s.b[14] ? 'left' : s.b[15] ? 'right'
@@ -5981,7 +6537,7 @@ const Obby = (() => {
   }
   function closeOf(c){
     const id = c.root.id;
-    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', pNamePanel: '#pNameX', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
+    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
     if (map[id]) return document.querySelector(map[id]);
     return null;
   }
