@@ -458,6 +458,22 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .pdrive.touchui .ppedals{display:flex}
 .pdrive #oJump,.pdrive #oEmoBtn,.pdrive #oRun,.pdrive #oFP{display:none!important}
 .rmode #oEmoBtn,.rmode #oRun,.rmode #oStam{display:none!important}
+.smode #oStam{display:none!important}
+.splevels{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px;margin:6px 0 10px}
+.splv{padding:10px 6px;border-radius:16px;border:3px solid #d9dcea;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font:inherit;color:#1d2340}
+.splv .re{font-size:40px;line-height:1.1}.splv b{font-size:16px}.splv small{font-size:12px;color:#5a6280;font-weight:700}.splv i{font-style:normal;font-size:12px;font-weight:800;color:#8a6a00}
+.splv:hover:not(:disabled),.splv.gpf{border-color:#2a8fa0;transform:translateY(-2px)}
+.splv:disabled{opacity:.6;cursor:default}.splv.lock{background:#eef0f6}
+.sphelp{font-size:14px!important;max-width:560px;margin:0 auto 10px}
+.spmeter{position:absolute;left:50%;bottom:22%;transform:translateX(-50%);display:none;flex-direction:column;align-items:center;gap:4px;z-index:6;pointer-events:none;font-weight:900;color:#fff;text-shadow:0 2px 0 #0008}
+.spmeter.show{display:flex}.spbar{width:220px;height:16px;border-radius:9px;background:#0007;border:2px solid #fff;overflow:hidden}
+#spMeterF{height:100%;width:0;background:linear-gradient(90deg,#5ff2ff,#3a86ff)}.spmeter.hot #spMeterF{background:linear-gradient(90deg,#ffd23f,#ff4d5e)}.spmeter.hot span{animation:rcpulse .3s infinite alternate}
+.spwarn{position:absolute;left:50%;top:20%;transform:translateX(-50%);display:none;z-index:6;pointer-events:none;background:rgba(255,77,94,.92);color:#fff;font-weight:900;padding:8px 16px;border-radius:14px;font-size:18px;text-align:center}
+.spwarn.on{display:block;animation:rcpulse .35s infinite alternate}
+#spPeb.has{background:#e8ecf5}
+.touchui .ojzone{top:calc(var(--hudb) + 6px)}
+@media (max-width:760px),(max-height:520px){.splevels{grid-template-columns:repeat(3,minmax(100px,1fr));gap:6px}.splv .re{font-size:26px}.splv small{display:none}.splv{padding:5px 4px}.sphelp{display:none}
+ #spPick .emoji,#spEnd .emoji{display:none}#spPick h2,#spEnd h2{font-size:20px;margin:0 0 2px}#spPick .mbox,#spEnd .mbox{padding-top:10px;padding-bottom:10px}#spPick .big,#spEnd .big{padding-top:6px;padding-bottom:6px}.spwarn{font-size:14px;top:24%}.spmeter{bottom:30%}}
 .rcbox{max-width:760px}
 .rcmodes[hidden],.rcrides[hidden],#rcPick [hidden]{display:none!important}
 .rcmodes{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:6px 0 10px}
@@ -846,6 +862,9 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   <div class="ohud">
     <div class="ostats">
       <span id="oStageBox">🏁 Lv <b id="oLvl">1</b><span id="oCpWrap"> · 🚩 <b id="oStage">1</b>/<b id="oStageN">3</b></span></span>
+      <span id="spLvBox" style="display:none"><b id="spLvName">🪷 1. Lily Pad Lagoon</b></span>
+      <span id="spRoundBox" style="display:none">🌊 Round <b id="spRound">1</b> · ⏱️ <b id="spLeft">—</b></span>
+      <span id="spAliveBox" style="display:none">🙂 <b id="spAlive">1</b> left</span>
       <span id="rcLapBox" style="display:none">🏁 Lap <b id="rcLap">1</b>/3</span>
       <span id="rcPosBox" style="display:none"><b id="rcPos">🥇 1st</b>/<b id="rcN">6</b></span>
       <span id="oHeightBox">📏 <b id="oHeight">0</b></span>
@@ -865,6 +884,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     </div>
     <div class="obtns">
       <span class="otopact" id="oTopAct"></span>
+      <button id="spPeb" style="display:none" title="Throw a pebble (F)" aria-label="Throw a pebble">🪨 1</button>
       <button id="rcItem" style="display:none" title="Use your power-up (Shift)" aria-label="Use power-up">🎁</button>
       <button id="oMute" title="Sound on/off">🔊</button>
       <button class="ofp" id="oFP" title="First person (V)" aria-label="First person" aria-pressed="false">👁️</button>
@@ -963,6 +983,20 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="owinbtns"><button class="big gray" id="pRetNo">↩️ Never mind</button><button class="big" id="pRetYes" hidden>💕 Return</button></div>
   </div></div>
   <div class="pflash" id="pFlash"></div>
+  <div class="spmeter" id="spMeter"><span>💦 Splash!</span><div class="spbar"><div id="spMeterF"></div></div></div>
+  <div class="spwarn" id="spWarn">😱 It's coming for you! Get out of the water / away from the edge!</div>
+  <div class="opanel" id="spPick"><div class="mbox rcbox">
+    <span class="emoji">🌊</span><h2>Don't Splash!</h2>
+    <div class="stats" id="spPickS">Pick a level!</div>
+    <div class="splevels" id="spLevels"></div>
+    <div class="stats sphelp">Hop across the platforms. Touching the water makes noise, and noise wakes the <b>Splashgrabber</b>! 🪨 Throw pebbles into the water to trick it.</div>
+    <div class="owinbtns"><button class="big gray" id="spHome">🏠 Home</button></div>
+  </div></div>
+  <div class="opanel" id="spEnd"><div class="mbox rcbox">
+    <span class="emoji">😱</span><h2>Splashgrabbed!</h2>
+    <div class="stats" id="spEndS"></div>
+    <div class="owinbtns"><button class="big green" id="spAgain">🔁 Try again</button><button class="big blue" id="spLvls">🗺️ Levels</button><button class="big gray" id="spHome2">🏠 Home</button></div>
+  </div></div>
   <div class="opanel" id="rcPick"><div class="mbox rcbox">
     <span class="emoji">🏁</span><h2>Pet Kart Racing</h2>
     <div class="stats" id="rcPickS">Pick how you want to race!</div>
@@ -1064,7 +1098,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.10.30-1';
+const BUILD = '2026.10.30-2';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -1773,7 +1807,8 @@ $('#saveAv').onclick = () => {
 
 /* ---------- games ---------- */
 const GAMES = [
-  {id:'race',  name:'Pet Kart Racing', emoji:'🏁', tag:'Race on animals or go-karts!', draw: drawRace, playable: true, isNew: true},
+  {id:'splash', name:"Don't Splash!", emoji:'🌊', tag:'Hop the pads. Shh... something lives in the water!', draw: drawSplash, playable: true, isNew: true},
+  {id:'race',  name:'Pet Kart Racing', emoji:'🏁', tag:'Race on animals or go-karts!', draw: drawRace, playable: true},
   {id:'pets',  name:'Adopt a Pet', emoji:'🐾', tag:'Adopt & raise your own pet!', draw: drawPets, playable: true},
   {id:'obby',  name:'Obby Rush',   emoji:'🏃', tag:'50 levels!',      draw: drawObby, playable: true},
   {id:'build', name:'Build World', emoji:'🧱', tag:'Build anything',  draw: drawBuild, playable: true},
@@ -1830,6 +1865,20 @@ function drawLava(ctx){
   for (let x = 0; x <= 320; x += 10) ctx.lineTo(x, 150 + Math.sin(x/22 + t)*6);
   ctx.lineTo(320, 200); ctx.fill();
   ctx.fillStyle = '#ffd23f'; for (let i = 0; i < 8; i++){ ctx.fillRect((i*47 + t*20) % 320, 168 + (i%3)*8, 8, 8); }
+}
+function drawSplash(ctx){
+  sky(ctx, '#5d7a96', '#a9c6d6'); cloud(ctx, 40, 24); cloud(ctx, 220, 34);
+  ctx.fillStyle = '#2a8fa0'; ctx.fillRect(0, 110, 320, 90);
+  ctx.strokeStyle = 'rgba(232,251,255,.5)'; ctx.lineWidth = 2; for (let i = 0; i < 6; i++){ ctx.beginPath(); ctx.moveTo(i * 60 - 10, 140 + (i % 2) * 22); ctx.quadraticCurveTo(i * 60 + 10, 134 + (i % 2) * 22, i * 60 + 30, 140 + (i % 2) * 22); ctx.stroke(); }
+  [[20, 128, 70, '#3fae5a'], [120, 150, 60, '#a8743f'], [200, 122, 40, '#8d96a5'], [256, 160, 56, '#3fae5a']].forEach(([x, y, w, c]) => { block(ctx, x, y, w, 12, c); });
+  guy(ctx, 40, 82, 18, '#ff6fb5'); guy(ctx, 210, 76, 16, '#3a86ff');
+  // the Splashgrabber peeking out
+  ctx.fillStyle = '#1f5753'; ctx.beginPath(); ctx.ellipse(160, 190, 46, 26, 0, Math.PI, 0); ctx.fill();
+  ctx.fillStyle = '#7b4fb0'; ctx.fillRect(150, 160, 6, 12); ctx.fillRect(160, 156, 6, 16); ctx.fillRect(170, 160, 6, 12);
+  ctx.fillStyle = '#9dff6a'; [[144, 180], [176, 180]].forEach(([x, y]) => { ctx.beginPath(); ctx.arc(x, y, 8, 0, 7); ctx.fill(); });
+  ctx.fillStyle = '#10131c'; ctx.fillRect(143, 175, 3, 10); ctx.fillRect(175, 175, 3, 10);
+  ctx.fillStyle = '#5ff2ff'; [[128, 192], [194, 190], [160, 172]].forEach(([x, y]) => ctx.fillRect(x, y, 4, 4));
+  block(ctx, 100, 104, 8, 8, '#b9bcc6');
 }
 function drawRace(ctx){
   sky(ctx, '#7cc6ff', '#d8f0ff'); cloud(ctx, 30, 26); cloud(ctx, 200, 44);
@@ -2976,8 +3025,8 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null;
-    if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null;
+    if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -3929,6 +3978,7 @@ const Obby = (() => {
     worldT += dt;
     if (pt && pt.drive){ carStep(dt); return; }
     if (rc){ raceStep(dt); return; }
+    if (dsp) splashStep(dt);
     if (!SIM) movers.forEach(m => {
       const p = m.b.mesh.position, ox = p.x, oy = p.y, oz = p.z;
       p[m.axis] = m.base[m.axis] + Math.sin(worldT * m.speed + m.phase) * m.amp;
@@ -3950,7 +4000,7 @@ const Obby = (() => {
     if (!SIM){ if (mode === 'tag' && tg){ if (wantRun && !run.tired){ run.stam -= dt; if (run.stam <= 0){ run.stam = 0; run.tired = true; } } else run.stam = Math.min(STAM_MAX, run.stam + dt * .8); if (run.tired && run.stam >= 1.5) run.tired = false; }
       else { run.stam = STAM_MAX; run.tired = false; } }
     run.on = wantRun && !run.tired;
-    const spd = SPEED * (run.on ? RUN_MUL : 1);
+    const spd = SPEED * (run.on ? RUN_MUL : 1) * (dsp && P.y < -.15 ? .55 : 1);   // wading is slow
     P.vx += (inp.x * spd - P.vx) * k; P.vz += (inp.z * spd - P.vz) * k;
     if (inp.mag > .1) P.face = Math.atan2(inp.x, inp.z);
     let climbing = false;
@@ -3977,6 +4027,7 @@ const Obby = (() => {
   function checks(){
     if (SIM) return;
     if (mode === 'lava') return lavaChecks();
+    if (mode === 'splash') return splashChecks();
     if (mode === 'nds') return ndsChecks();
     if (mode === 'build' || mode === 'tag' || mode === 'pets'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
@@ -4489,6 +4540,7 @@ const Obby = (() => {
   function mySnap(){
     if (!running || !model) return null;
     const sp = Math.hypot(P.vx, P.vz), s = P.climbing ? 3 : !P.onGround && P.airT > .08 ? 2 : sp > .8 ? 1 : 0, r = v => Math.round(v * 100) / 100;
+    if (dsp && mode === 'splash') return [r(P.x), r(P.y), r(P.z), r(P.face), s, r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0, splashMe()];
     if (rc && mode === 'race') return [r(P.x), r(P.y), r(P.z), r(P.face), 4, r(rc.me ? rc.me.v : 0), '', 0, raceWire()];
     if (pt){ const q = pt.pet, C = pt.car, qs = q ? Math.hypot(q.vx, q.vz) : 0;
       return [r(P.x), r(P.y), r(P.z), r(pt.drive ? C.yaw : P.face), pt.drive ? 4 : s, pt.drive ? 0 : r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0,
@@ -4519,6 +4571,7 @@ const Obby = (() => {
         list.push([B.uid, 'tag', r(B.x), r(B.y), r(B.z), r(B.face), !B.onGround && B.airT > .08 ? 2 : sp > .8 ? 1 : 0, r(sp), '', 0]); });
       const msg = {t: 's', p: list, hm: running ? mode : null, hd: diff || null};
       if (running && tg && !tg.remote) msg.tg = tagWire();
+      if (running && dsp && !dsp.remote && mode === 'splash') msg.sp = splashWire();
       if (ops) msg.o = ops;
       mpBroadcast(msg);
     } else {
@@ -4542,7 +4595,7 @@ const Obby = (() => {
     const cr = st[8], pr = st[9], num = v => { v = +v; return isFinite(v) ? Math.max(-1e4, Math.min(1e4, v)) : 0; };
     E.car = Array.isArray(cr) && cr.length >= 4 ? [num(cr[0]), num(cr[1]), num(cr[2]), cr[3] ? 1 : 0, num(cr[4])] : null;
     E.pet = Array.isArray(pr) && typeof pr[0] === 'string' && own(PET_KINDS, pr[0]) ? {k: pr[0], c: Math.max(0, Math.min(2, pr[1] | 0)), st: Math.max(0, Math.min(3, pr[2] | 0)), x: num(pr[3]), y: num(pr[4]), z: num(pr[5]), f: num(pr[6]), a: Math.max(0, Math.min(5, pr[7] | 0)), n: (petNameClean(pr[8]) && !petNameBad(pr[8]) ? petNameClean(pr[8]) : 'Pet'), sp: num(pr[9]), l: pr[10] === 1, acc: accParse(pr[11])} : null;
-    E.rc = raceParse(E.m, st[8]);
+    E.rc = raceParse(E.m, st[8]); E.dsp = splashParse(E.m, st[8]);
     if (E.fresh){ E.x = E.tx; E.y = E.ty; E.z = E.tz; E.face = E.tf; E.fresh = false; }
   }
   function mpPetsEnt(E, dt, on){
@@ -4627,6 +4680,7 @@ const Obby = (() => {
     if (d.t === 'me'){ g.m = typeof d.m === 'string' ? d.m : null; g.st = Array.isArray(d.st) ? d.st.slice(0, 10) : null; mpEnt(g.uid, g.m, g.st); if (d.o) mpApplyOps(d.o, g.conn); }
     else if (d.t === 'tagreq') mpTagReq(g, d);
     else if (d.t === 'racefin') raceGuestFin(g, d);
+    else if (d.t === 'splashev') splashGuestEv(g, d);
     else if (d.t === 'getblocks'){ if (running && bw && mode === 'build') mpSendTo(g.conn, {t: 'blocks', c: bwSerialize()}); }
     else if (d.t === 'bye') mpDrop(g, 'left');
   }
@@ -4673,6 +4727,7 @@ const Obby = (() => {
       case 'tagev': mpTagEv(d); break;
       case 'tagend': mpTagEnd(d); break;
       case 'race': raceNet(d); break;
+      case 'splash': splashNet(d); break;
       case 'kick': mpHostGone('kick'); break;
       case 'full': mpCleanup(); mpStatus('😅 That room is full (6 players max).'); break;
       case 'old': { const b = $('#updBar'); if (b) b.hidden = false; (running ? banner : toast)('🆕 There is a newer Rublox! Refresh this page when you get a chance.'); break; }
@@ -4685,6 +4740,7 @@ const Obby = (() => {
     const seen = new Set();
     if (Array.isArray(d.p)) d.p.slice(0, 16).forEach(e => { if (!Array.isArray(e) || typeof e[0] !== 'string' || e[0] === mp.me || !/^(H|g\d{1,4}|b[0-3])$/.test(e[0])) return; seen.add(e[0]); mpEnt(e[0], e[1], e.slice(2, 12)); });
     for (const E of mp.ents.values()) if (!seen.has(E.uid)) E.m = null;
+    if (d.sp) splashFromHost(d.sp);
     if (d.tg && tg && tg.remote && running && mode === 'tag' && tg.phase !== 'end') mpTagWire(d.tg);
     if (d.o) mpApplyOps(d.o);
   }
@@ -6620,6 +6676,341 @@ const Obby = (() => {
     if (!rc || (d.n | 0) !== rc.n || rc.order.some(o => o[0] === g.uid)) return;
     rc.order.push([g.uid, +d.tm || 0]); rcSendOrder();
   }
+  /* ---------- t187u-t191u: Don't Splash! Hop across floating platforms; splashing wakes the Splashgrabber ---------- */
+  const SP_LEVELS = [
+    {name: 'Lily Pad Lagoon', e: '🪷', note: 'Big, easy lily pads', kind: 'wide', sky: '#7fb8c9'},
+    {name: 'Plank Bridges', e: '🪵', note: 'Long, thin planks', kind: 'planks', sky: '#86a9c4'},
+    {name: 'Stepping Stones', e: '🪨', note: 'Tiny, narrow stones', kind: 'stones', sky: '#7a98b8'},
+    {name: 'Mixed Marsh', e: '🌀', note: 'A bit of everything', kind: 'mixed', sky: '#6f8fa6'},
+    {name: 'Wobble Docks', e: '⚓', note: 'Wobbly docks that sink a lot', kind: 'docks', sky: '#5d7a96'}];
+  const SP_TOP = 1, SP_FLOOR = -1.2, SP_RAD = 27, SP_FILL = 2.1, SP_MAXPEB = 3, SP_UNLOCK = 3;
+  let dsp = null;
+  const spSave = () => save('rubloxSplash', dsp.sv);
+  function spRng(seed){ let s = (seed >>> 0) || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
+  function spLayout(kind){   // [x, z, w, d] boxes (axis-aligned), the first one is the safe-ish home pad
+    const r = spRng(kind.length * 977 + 13), L = [], inside = (x, z, w, d) => Math.hypot(Math.abs(x) + w / 2, Math.abs(z) + d / 2) < SP_RAD;
+    const add = (x, z, w, d) => { if (inside(x, z, w, d) && !L.some(q => Math.abs(q[0] - x) < (q[2] + w) / 2 + 1.2 && Math.abs(q[1] - z) < (q[3] + d) / 2 + 1.2)) L.push([x, z, w, d]); };
+    if (kind === 'wide'){ add(0, 0, 8, 8); for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) if (i || j) add(i * 8 + (r() - .5) * 1.2, j * 8 + (r() - .5) * 1.2, 5 + r() * 1.2, 5 + r() * 1.2); }
+    else if (kind === 'planks'){ add(0, 0, 6, 6);
+      for (let j = -4; j <= 4; j++){ const v = Math.abs(j) % 2 === 1; if (v) for (let x = -22; x <= 22; x += 5.5) add(x + (r() - .5), j * 5.6, 1.6, 4.4);
+        else { let x = -24 + r() * 3; while (x < 22){ const w = 8 + r() * 5; add(x + w / 2, j * 5.6, w, 1.6); x += w + 2.2 + r() * 1.2; } } } }
+    else if (kind === 'stones'){ add(0, 0, 5, 5); for (let i = -6; i <= 6; i++) for (let j = -6; j <= 6; j++) if (r() < .72){ const s = 1.6 + r() * .7; add(i * 3.9 + (r() - .5) * .6, j * 3.9 + (r() - .5) * .6, s, s); } }
+    else if (kind === 'mixed'){ add(0, 0, 6.5, 6.5); for (let i = -4; i <= 4; i++) for (let j = -4; j <= 4; j++){ const k = r(), x = i * 6, z = j * 6;
+      if (k < .3) add(x, z, 4.2, 4.2); else if (k < .5) add(x, z, 5.6, 1.6); else if (k < .7) add(x, z, 1.6, 5.6); else add(x, z, 2.2, 2.2); } }
+    else { add(0, 0, 6, 6); for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) if (i || j){ const h = (i + j) % 2 === 0; add(i * 7.6, j * 7.6, h ? 8.6 : 2, h ? 2 : 8.6); } }
+    // keep only pads you can actually hop to from the home pad (gap <= 4)
+    const gap = (a, b) => Math.hypot(Math.max(0, Math.abs(a[0] - b[0]) - (a[2] + b[2]) / 2), Math.max(0, Math.abs(a[1] - b[1]) - (a[3] + b[3]) / 2));
+    const ok = new Set([0]), todo = [0]; while (todo.length){ const i = todo.pop(); L.forEach((b, j) => { if (!ok.has(j) && gap(L[i], b) <= 4.1){ ok.add(j); todo.push(j); } }); }
+    return L.filter((b, j) => ok.has(j));
+  }
+  const SP_COLS = {wide: ['#3fae5a', '#5cc46f', '#2f9a4e'], planks: ['#a8743f', '#8f5f30', '#b98550'], stones: ['#8d96a5', '#9fa7b3', '#7b8494'], mixed: ['#3fae5a', '#a8743f', '#8d96a5', '#5cc46f'], docks: ['#9b7b55', '#86684a', '#ab8a62']};
+  function spClearPlats(){
+    if (!dsp.plats) return; const gone = new Set(dsp.plats.map(q => q.b));
+    dsp.plats.forEach(q => { scene.remove(q.b.mesh); if (q.flower) scene.remove(q.flower); }); solids = solids.filter(b => !gone.has(b));
+    (dsp.pebs || []).forEach(p => scene.remove(p.m)); dsp.plats = []; dsp.pebs = [];
+  }
+  function spSetLevel(i){
+    i = clamp(i | 0, 0, SP_LEVELS.length - 1); dsp.lv = i; const Lv = SP_LEVELS[i]; spClearPlats();
+    scene.background = new THREE.Color(Lv.sky); scene.fog = new THREE.Fog(Lv.sky, 45, 140);
+    const cols = SP_COLS[Lv.kind];
+    dsp.plats = spLayout(Lv.kind).map(([x, z, w, d], k) => {
+      const b = plat(x, SP_TOP, z, w, d, cols[k % cols.length], 3.2), q = {b, x, z, w, d, home: k === 0, ev: []};
+      if (Lv.kind === 'wide' && k % 3 === 1){ const f = new THREE.Group(), pm = mat('#ff9fd0'); for (let a = 0; a < 5; a++){ const m = new THREE.Mesh(new THREE.BoxGeometry(.5, .2, .9), pm); m.position.set(Math.sin(a * 1.26) * .35, 0, Math.cos(a * 1.26) * .35); m.rotation.y = a * 1.26; f.add(m); }
+        const c = new THREE.Mesh(new THREE.BoxGeometry(.3, .25, .3), mat('#ffd23f')); f.add(c); f.position.set(x + w * .25, SP_TOP + .12, z - d * .25); scene.add(f); q.flower = f; }
+      return q; });
+    // checkpoint 0 = the home pad
+    const h = dsp.plats[0].b; checkpoints = []; checkpoints[0] = {b: h, idx: 0, flag: new THREE.Object3D(), spawn: {x: 0, y: SP_TOP + .05, z: 0}, lit: true}; cpIndex = 0;
+    $('#spLvName').textContent = Lv.e + ' ' + (i + 1) + '. ' + Lv.name;
+  }
+  function buildSplash(){
+    Object.assign(dsp, {lv: 0, plats: [], pebs: [], flying: [], fx: [], ph: 'pick', t: 0, n: 0, seed: 1, alive: true, wet: false, meter: 0, peb: 1, al: [], earned: 0, survived: 0, cd: 0, bigT: 0, msgT: 0});
+    // the pond floor (you can wade, but it's loud) + the water + a ring of reeds and rocks
+    plat(0, SP_FLOOR, 0, 120, 120, '#6b7f5a', 2);
+    const wg = new THREE.PlaneGeometry(130, 130, 48, 48); wg.rotateX(-Math.PI / 2);
+    const water = new THREE.Mesh(wg, new THREE.MeshLambertMaterial({color: '#2a8fa0', emissive: '#08404d', emissiveIntensity: .4, transparent: true, opacity: .78}));
+    scene.add(water); dsp.water = water; dsp.wbase = wg.attributes.position.array.slice();
+    const r = spRng(7);
+    for (let k = 0; k < 70; k++){ const a = k / 70 * Math.PI * 2 + r() * .05, d = SP_RAD + 4 + r() * 6, x = Math.cos(a) * d, z = Math.sin(a) * d;
+      if (k % 5 === 0){ const s = 2 + r() * 2.5; addBox(x, s / 2 - .6, z, s, s, s * 1.1, '#6d6f78'); }
+      else for (let j = 0; j < 3; j++){ const h = 2.4 + r() * 2; addBox(x + (r() - .5) * 1.5, h / 2 - 1, z + (r() - .5) * 1.5, .18, h, .18, '#5c8a3a', {noEdge: true}); addBox(x + (r() - .5) * 1.5, h - .6, z + (r() - .5) * 1.5, .3, .9, .3, '#7a4b2e', {noEdge: true}); } }
+    // invisible fence so nobody wanders off into the reeds
+    [[0, -SP_RAD - 3.5, 70, 1], [0, SP_RAD + 3.5, 70, 1], [-SP_RAD - 3.5, 0, 1, 70], [SP_RAD + 3.5, 0, 1, 70]].forEach(([x, z, w, d]) => { const b = plat(x, 6, z, w, d, '#ffffff', 9); b.mesh.visible = false; });
+    // lifeguard tower: where you watch after you're caught
+    dsp.tower = plat(SP_RAD + 1, 9, 0, 4, 4, '#ff4d5e', .6); addBox(SP_RAD + 1, 4, 0, .5, 9, .5, '#ffffff'); addBox(SP_RAD + 1, 10.4, 1.9, 4, .8, .2, '#ffffff', {noEdge: true});
+    const sign = label('🛟 Watch tower', 'rgba(255,77,94,.9)'); sign.position.set(SP_RAD + 1, 11.6, 0); scene.add(sign);
+    // fireflies
+    const fc = 60, fa = new Float32Array(fc * 3); for (let i = 0; i < fc; i++){ fa[i * 3] = (r() - .5) * 60; fa[i * 3 + 1] = 1 + r() * 6; fa[i * 3 + 2] = (r() - .5) * 60; }
+    const fg = new THREE.BufferGeometry(); fg.setAttribute('position', new THREE.BufferAttribute(fa, 3));
+    dsp.flies = new THREE.Points(fg, new THREE.PointsMaterial({color: '#f6ff8a', size: .25})); scene.add(dsp.flies);
+    dsp.mon = spMonster(); scene.add(dsp.mon.g);
+    Object.assign(dsp.mon, {x: 0, z: -18, y: -3, yaw: 0, st: 'lurk', t: 0, tx: 0, tz: 0, tgt: null, lure: 0, a: 0, dsp: 0, give: 0});
+    spSetLevel(0);
+  }
+  /* --- the Splashgrabber: our own pond monster. A long frog-eel with frilly fins, glowy spots and big lantern eyes --- */
+  function spMonster(){
+    const g = new THREE.Group(), skin = mat('#1f5753'), belly = mat('#7fb59a'), fin = mat('#7b4fb0'), glow = mat('#9dff6a', '#7dff3a'), dot = mat('#5ff2ff', '#2fd9ff');
+    const head = new THREE.Group(); g.add(head);
+    const box = (p, w, h, d, m, x, y, z) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.set(x, y, z); p.add(o); return o; };
+    box(head, 2.6, .9, 2.2, skin, 0, .45, .2); box(head, 2.4, .35, 2, belly, 0, -.05, .3);   // flat frog head + jaw
+    const eyes = [-.75, .75].map(x => { const e = new THREE.Mesh(new THREE.SphereGeometry(.42, 12, 10), glow); e.position.set(x, 1.05, .7); head.add(e); const p = new THREE.Mesh(new THREE.BoxGeometry(.16, .4, .1), mat('#10131c')); p.position.set(0, 0, .38); e.add(p); return e; });
+    [-1, 0, 1].forEach(k => { const f = box(head, .12, .9 - Math.abs(k) * .3, .7, fin, k * .5, 1.2, -.5); f.rotation.x = -.5; });   // frill
+    [[-1.35, .5], [1.35, .5]].forEach(([x, z]) => { const f = box(head, .7, .1, 1, fin, x, .5, z); f.rotation.z = x > 0 ? -.5 : .5; });   // ear fins
+    box(head, 1.6, .08, .12, mat('#0c2b29'), 0, .2, 1.32);   // a long thin grin
+    const segs = []; for (let i = 0; i < 7; i++){ const s = 1.5 - i * .17, o = new THREE.Group(); box(o, s * 1.3, s * .7, 1.2, skin, 0, 0, 0); if (i % 2 === 0) box(o, .18, .18, .18, dot, 0, s * .37, 0); if (i < 6) box(o, .1, .5, .8, fin, 0, s * .45, -.2); g.add(o); segs.push(o); }
+    const arms = [-1, 1].map(sd => { const a = new THREE.Group(); a.position.set(sd * 1.2, .2, .3); head.add(a);
+      const up = box(a, .28, .28, 1.8, skin, 0, 0, .9), lo = new THREE.Group(); lo.position.set(0, 0, 1.8); a.add(lo); box(lo, .24, .24, 1.6, skin, 0, 0, .8);
+      [-.22, 0, .22].forEach(fx => box(lo, .08, .08, .7, fin, fx, 0, 1.9)); return {a, lo, sd}; });
+    const hl = new THREE.PointLight('#9dff6a', 1.2, 9, 1.5); hl.position.set(0, 1.2, 1.2); head.add(hl);
+    const alert = label('❗', 'rgba(255,77,94,.95)', '#fff', 90); alert.scale.multiplyScalar(.7); alert.position.set(0, 2.6, 0); head.add(alert); alert.visible = false;
+    return {g, head, segs, arms, eyes, alert, trail: []};
+  }
+  /* --- rounds: platforms wobble / sink / shrink on a schedule everyone computes from the same seed --- */
+  function spPlan(){
+    const r = spRng(dsp.seed * 31 + dsp.n * 7 + dsp.lv), n = dsp.n, kind = SP_LEVELS[dsp.lv].kind, dur = spDur();
+    dsp.plats.forEach(q => { q.ev = []; q.b.hw = q.w / 2; q.b.hd = q.d / 2; q.b.mesh.scale.set(1, 1, 1); q.b.mesh.position.set(q.x, SP_TOP - q.b.hh, q.z); q.b.active = true; q.b.mesh.visible = true; q.b.mesh.rotation.set(0, 0, 0); });
+    const cnt = Math.round((4 + n * 2.2) * (kind === 'docks' ? 1.5 : 1) * Math.min(1.6, dsp.plats.length / 25));
+    for (let k = 0; k < cnt; k++){ const q = dsp.plats[1 + Math.floor(r() * (dsp.plats.length - 1))], t0 = 3 + r() * (dur - 8);
+      if (!q || q.ev.some(e => Math.abs(e.t0 - t0) < 9)) continue;
+      const sink = kind === 'stones' || kind === 'docks' || r() < .6; q.ev.push({t0, k: sink ? 'sink' : 'shrink', down: 2.5 + r() * 2 + n * .3}); }
+    // pebbles on random platforms
+    (dsp.pebs || []).forEach(p => scene.remove(p.m)); dsp.pebs = [];
+    const pm = mat('#b9bcc6'), ring = new THREE.MeshBasicMaterial({color: '#ffffff', transparent: true, opacity: .55});
+    for (let k = 0; k < 8; k++){ const q = dsp.plats[1 + Math.floor(r() * (dsp.plats.length - 1))]; if (!q) continue; const x = q.x + (r() - .5) * Math.max(0, q.w - 1), z = q.z + (r() - .5) * Math.max(0, q.d - 1);
+      const m = new THREE.Group(); const s = new THREE.Mesh(new THREE.DodecahedronGeometry(.28), pm); s.position.y = .3; m.add(s); const g = new THREE.Mesh(new THREE.RingGeometry(.42, .56, 18), ring); g.rotation.x = -Math.PI / 2; g.position.y = .04; m.add(g);
+      m.position.set(x, SP_TOP, z); scene.add(m); dsp.pebs.push({m, q, ox: x - q.x, oz: z - q.z, got: false}); }
+  }
+  function spDur(){ return Math.min(60, 32 + dsp.n * 4); }
+  function spPlatState(q, t){
+    let dy = 0, wob = 0, sc = 1;
+    for (const e of q.ev){ const u = t - e.t0; if (u < 0) continue;
+      if (e.k === 'sink'){ const W = 1.8, D = 1.3, U = 1.3; if (u < W) wob = u / W; else if (u < W + D){ wob = 1; dy = -(u - W) / D * 2.6; } else if (u < W + D + e.down) dy = -2.6; else if (u < W + D + e.down + U) dy = -2.6 * (1 - (u - W - D - e.down) / U); }
+      else { const W = 1.5; if (u < W) wob = u / W * .6; else sc = Math.min(sc, Math.max(.45, 1 - (u - W) / 2.2 * .55)); } }
+    return {dy, wob, sc};
+  }
+  function spApplyPlats(dt){
+    const t = dsp.ph === 'play' ? dsp.t : 0;
+    dsp.plats.forEach(q => { const S = spPlatState(q, t), b = q.b, p = b.mesh.position, oy = p.y;
+      const ny = SP_TOP - b.hh + S.dy, jit = S.wob > 0 && S.dy > -2.5 ? Math.sin(worldT * 23 + q.x) * .05 * S.wob : 0;
+      p.set(q.x + jit, ny, q.z); b.dy = ny - oy; b.dx = b.dz = 0;
+      b.mesh.rotation.z = S.wob * Math.sin(worldT * 9 + q.z) * .05; b.mesh.rotation.x = S.wob * Math.cos(worldT * 8 + q.x) * .05;
+      b.mesh.scale.set(S.sc, 1, S.sc); b.hw = q.w / 2 * S.sc; b.hd = q.d / 2 * S.sc;
+      if (q.flower) q.flower.position.y = ny + b.hh + .12; });
+    dsp.pebs.forEach(p => { const b = p.q.b; p.m.position.set(p.q.x + p.ox * b.mesh.scale.x, b.mesh.position.y + b.hh, p.q.z + p.oz * b.mesh.scale.z); });
+  }
+  /* --- water, splashes, pebbles --- */
+  function spWetAt(x, y, z){ return y < -.15; }
+  function spEdge(x, y, z){   // standing on a platform within reach of the water's edge?
+    for (const q of dsp.plats){ const b = q.b, p = b.mesh.position, top = p.y + b.hh; if (Math.abs(top - y) > .4) continue;
+      const ex = b.hw - Math.abs(x - p.x), ez = b.hd - Math.abs(z - p.z); if (ex > -.1 && ez > -.1) return Math.min(ex, ez) < .95; }
+    return false;
+  }
+  function spFx(x, z, big){
+    const m = new THREE.Mesh(new THREE.RingGeometry(.3, .55, 24), new THREE.MeshBasicMaterial({color: '#e8fbff', transparent: true, opacity: .9, side: THREE.DoubleSide})); m.rotation.x = -Math.PI / 2; m.position.set(x, .06, z); scene.add(m);
+    const drops = []; for (let i = 0; i < (big ? 12 : 6); i++){ const d = new THREE.Mesh(new THREE.BoxGeometry(.16, .16, .16), mat('#bff2ff')); d.position.set(x, .1, z); scene.add(d); const a = Math.random() * 7; drops.push({d, vx: Math.cos(a) * (2 + Math.random() * 2), vz: Math.sin(a) * (2 + Math.random() * 2), vy: 4 + Math.random() * (big ? 5 : 3)}); }
+    dsp.fx.push({m, drops, t: 0, big}); beep(big ? [220, 140] : [520, 300], .08, 'sine', big ? .07 : .04);
+  }
+  function spNoise(k, x, z, uid){   // something splashed. On the host / single player the monster hears it
+    if (dsp.remote){ mpSendTo(mp.hconn, {t: 'splashev', k, x: +x.toFixed(2), z: +z.toFixed(2)}); return; }
+    spHear(k, x, z, uid);
+  }
+  function spHear(k, x, z, uid){
+    const M = dsp.mon; if (dsp.ph !== 'play' || M.st === 'grab') return;
+    if (k === 'pebble'){ Object.assign(M, {st: 'go', tx: x, tz: z, tgt: null, lure: 3.2, t: 0}); return; }
+    if (M.lure > 0) return;   // busy with a pebble splash
+    if (k === 'loud'){ Object.assign(M, {st: 'chase', tgt: uid, t: 0, give: 0}); return; }
+    if (M.st !== 'chase') Object.assign(M, {st: 'go', tx: x, tz: z, tgt: null, t: 0});
+  }
+  function splashThrow(){
+    if (!dsp || dsp.ph === 'pick' || !dsp.alive || paused || choosing) return;
+    if (dsp.peb <= 0){ banner('🪨 No pebbles! Grab one from a platform (max ' + SP_MAXPEB + ')'); return; }
+    dsp.peb--; const yaw = fpOn() ? cam.yaw + Math.PI : (Math.abs(P.vx) + Math.abs(P.vz) > .5 ? P.face : cam.yaw + Math.PI), fx = Math.sin(yaw), fz = Math.cos(yaw);
+    const m = new THREE.Mesh(new THREE.DodecahedronGeometry(.25), mat('#b9bcc6')); m.position.set(P.x + fx * .6, P.y + 2, P.z + fz * .6); scene.add(m);
+    dsp.flying.push({m, vx: fx * 14, vz: fz * 14, vy: 7.5}); SND.jump(); P.face = yaw;
+  }
+  /* --- the monster's brain (single player / host only) --- */
+  function spTargets(){   // everyone still in the round: [{uid, x, y, z, wet}]
+    const out = []; if (dsp.alive) out.push({uid: spUid(), x: P.x, y: P.y, z: P.z, wet: dsp.wet, me: true});
+    if (mp.on && mp.host) for (const u of dsp.al){ if (u === 'H') continue; const E = mp.ents.get(u); if (!E || E.m !== 'splash') continue; out.push({uid: u, x: E.tx, y: E.ty, z: E.tz, wet: !!(E.dsp && E.dsp.wet)}); }
+    return out;
+  }
+  function spUid(){ return mp.on ? (mp.host ? 'H' : mp.me) : 'me'; }
+  function spMonStep(dt){
+    const M = dsp.mon, T = spTargets(), fast = 19 + Math.min(6, dsp.n * .5); M.t += dt; if (M.lure > 0) M.lure -= dt;
+    let gx = M.x, gz = M.z, speed = 0, up = false;
+    if (dsp.ph !== 'play'){ M.st = 'lurk'; }
+    if (M.st === 'lurk'){ M.a += dt * .25; gx = Math.cos(M.a) * 17; gz = Math.sin(M.a) * 17; speed = 4; }
+    else if (M.st === 'go'){ gx = M.tx; gz = M.tz; speed = M.lure > 0 ? fast : 13; up = true;
+      if (Math.hypot(gx - M.x, gz - M.z) < 1.2){ M.st = 'sniff'; M.t = 0; } }
+    else if (M.st === 'sniff'){ up = true; if (M.lure <= 0){ const w = T.filter(o => o.wet && Math.hypot(o.x - M.x, o.z - M.z) < 7).sort((a, b) => Math.hypot(a.x - M.x, a.z - M.z) - Math.hypot(b.x - M.x, b.z - M.z))[0];
+        if (w){ Object.assign(M, {st: 'chase', tgt: w.uid, t: 0, give: 0}); } else if (M.t > 1.6){ M.st = 'lurk'; } } else if (M.t > 3) M.st = 'lurk'; }
+    else if (M.st === 'chase'){ const o = T.find(o => o.uid === M.tgt); up = true;
+      if (!o){ M.st = 'lurk'; } else { gx = o.x; gz = o.z; speed = fast; const reach = o.wet || spEdge(o.x, o.y, o.z); if (!reach){ if ((M.give += dt) > 1.3) M.st = 'sniff', M.t = 0; } else M.give = 0;
+        if (Math.hypot(o.x - M.x, o.z - M.z) < 1.9 && reach && o.y < SP_TOP + 1) spCatch(o.uid); if (M.t > 9) M.st = 'sniff', M.t = 0; } }
+    else if (M.st === 'grab'){ up = true; if (M.t > 1.4) M.st = 'lurk'; }
+    const dx = gx - M.x, dz = gz - M.z, d = Math.hypot(dx, dz);
+    if (d > .05 && speed){ const s = Math.min(d, speed * dt); M.x += dx / d * s; M.z += dz / d * s; const want = Math.atan2(dx, dz); M.yaw += Math.atan2(Math.sin(want - M.yaw), Math.cos(want - M.yaw)) * Math.min(1, dt * 8); }
+    const R0 = Math.hypot(M.x, M.z); if (R0 > SP_RAD + 2){ M.x *= (SP_RAD + 2) / R0; M.z *= (SP_RAD + 2) / R0; }
+    const under = M.st !== 'grab' && dsp.plats.some(q => Math.abs(M.x - q.x) < q.b.hw + .3 && Math.abs(M.z - q.z) < q.b.hd + .3 && q.b.mesh.position.y + q.b.hh > -.5);   // swims under the pads, pops up in open water
+    M.y += ((up && !under ? .05 : under ? -2.2 : -2.6) - M.y) * Math.min(1, dt * (under ? 6 : 3));
+  }
+  function spCatch(uid){
+    const M = dsp.mon; M.st = 'grab'; M.t = 0; M.tgt = null;
+    dsp.al = dsp.al.filter(u => u !== uid);
+    if (uid === spUid()) spOut();
+    else { const L = mpLook(uid); banner('😱 The Splashgrabber got ' + (L ? L.short : 'a friend') + '!'); }
+  }
+  function spOut(){
+    if (!dsp.alive) return; dsp.alive = false; SND.die(); shake = .4; big('😱 Splashgrabbed!'); dsp.bigT = 1.8;
+    const f = $('#oFlash'); f.classList.add('on'); requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove('on')));
+    setTimeout(() => { if (!dsp || dsp.alive) return; Object.assign(P, {x: dsp.tower.mesh.position.x, y: 9.4, z: 0, vx: 0, vy: 0, vz: 0}); cam.yaw = Math.PI / 2; cam.pitch = .55; cam.dist = 14;
+      if (!mp.on) spEnd(); else banner('🛟 You\'re out! Watch from the tower. You\'re back next round.'); }, 1300);
+  }
+  /* --- per-step --- */
+  function splashStep(dt){
+    if (!dsp || dsp.ph === 'pick') return;
+    if (dsp.bigT > 0 && (dsp.bigT -= dt) <= 0) big('');
+    const host = !dsp.remote;
+    if (dsp.ph === 'ready'){ dsp.cd -= dt; const n = Math.ceil(dsp.cd); if (n !== dsp.cdN){ dsp.cdN = n; if (n > 0){ big('Round ' + dsp.n + ' · ' + n); beep([440], .12, 'square', .05); } else { big('Hop! 🐸'); dsp.bigT = .9; beep([880, 1175], .14, 'square', .06); } }
+      if (dsp.cd <= 0 && host) spPhase('play'); }
+    else if (dsp.ph === 'play'){ dsp.t += dt;
+      if (host){ const live = spTargets().length, many = (dsp.parts || []).length > 1;
+        if (dsp.t >= spDur() || (mp.on && many && dsp.al.length <= 1) || (mp.on && !dsp.al.length)) spRoundEnd(); } }
+    else if (dsp.ph === 'break'){ dsp.cd -= dt; if (dsp.cd <= 0 && host) spNextRound(); }
+    spApplyPlats(dt);
+    if (host) spMonStep(dt);
+    // you: water, meter, pebbles
+    if (dsp.alive && dsp.ph !== 'end'){
+      const wet = spWetAt(P.x, P.y, P.z);
+      if (wet && !dsp.wet && dsp.ph === 'play'){ spFx(P.x, P.z, P.vy < -10); spNoise(P.vy < -10 ? 'loud' : 'splash', P.x, P.z, spUid()); if (P.vy < -10) dsp.loud = true; }
+      dsp.wet = wet;
+      if (wet && dsp.ph === 'play'){ dsp.meter = Math.min(1, dsp.meter + dt / SP_FILL); if (dsp.meter >= 1 && !dsp.loud){ dsp.loud = true; spNoise('loud', P.x, P.z, spUid()); big('😱 It heard you! GET OUT!'); dsp.bigT = 1.5; SND.alarm(); } }
+      else { dsp.meter = Math.max(0, dsp.meter - dt * .6); if (dsp.meter < .5) dsp.loud = false; }
+      for (const p of dsp.pebs){ if (p.got || dsp.peb >= SP_MAXPEB) continue; const q = p.m.position; if (Math.hypot(P.x - q.x, P.z - q.z) < 1.1 && Math.abs(P.y - q.y) < 1.6){ p.got = true; p.m.visible = false; dsp.peb++; SND.coin(); banner('🪨 Pebble! (' + dsp.peb + '/' + SP_MAXPEB + ') Throw it to trick the monster: ' + (pad.on ? 'RB' : touchUI ? 'tap 🪨' : 'F')); } }
+    }
+    dsp.flying = dsp.flying.filter(f => { f.vy -= GRAV * .6 * dt; const p = f.m.position; p.x += f.vx * dt; p.z += f.vz * dt; p.y += f.vy * dt; f.m.rotation.x += dt * 9;
+      const top = surfaceBelow(p.x, p.y + .3, p.z);
+      if (top > SP_FLOOR + .5 && p.y <= top + .1){ scene.remove(f.m); beep([900], .04, 'square', .03); return false; }   // clack: landed on a platform
+      if (p.y <= 0 || Math.hypot(p.x, p.z) > SP_RAD + 2){ scene.remove(f.m); if (Math.hypot(p.x, p.z) <= SP_RAD + 2){ spFx(p.x, p.z, true); spNoise('pebble', p.x, p.z); banner('🪨 Sploosh! The monster goes for the pebble!'); } return false; }
+      return true; });
+    P.x = clamp(P.x, -SP_RAD - 2.5, SP_RAD + 3); P.z = clamp(P.z, -SP_RAD - 2.5, SP_RAD + 2.5);
+  }
+  function splashChecks(){ if (P.y < -20) respawn(); }
+  function spPhase(ph){ dsp.ph = ph; if (ph === 'play'){ dsp.t = 0; } }
+  function spStartRound(){   // host / single player
+    dsp.n++; dsp.seed = (Math.random() * 1e9) | 0; dsp.parts = [spUid()]; if (mp.on && mp.host) for (const g of mp.guests.values()) if (g.ready && g.m === 'splash') dsp.parts.push(g.uid);
+    dsp.al = dsp.parts.slice(); spLocalRound(); spPhase('ready');
+  }
+  function spLocalRound(){   // everyone: reset for a fresh round
+    spPlan(); dsp.cd = 3.99; dsp.cdN = 9; dsp.t = 0; dsp.alive = dsp.al.includes(spUid()); dsp.meter = 0; dsp.wet = false; dsp.loud = false; dsp.peb = Math.max(dsp.peb, 1); dsp.ph = 'ready'; dsp.endShown = false;
+    if (dsp.alive){ respawn(); const a = Math.random() * 6.28; P.x = Math.cos(a) * 1.5; P.z = Math.sin(a) * 1.5; cam.yaw = Math.atan2(P.x, P.z); }
+    Object.assign(dsp.mon, {st: 'lurk', x: 0, z: -18, y: -3, tgt: null, lure: 0});
+    $('#spEnd').classList.remove('show'); choosing = false;
+  }
+  function spRoundEnd(){
+    dsp.ph = 'break'; dsp.cd = mp.on ? 5 : 3; const me = spUid(), Lv = SP_LEVELS[dsp.lv];
+    if (mp.on && (dsp.parts || []).length > 1){ const w = dsp.al.length === 1 ? dsp.al[0] : null, L = w && mpLook(w);
+      dsp.msg = w ? (w === me ? '🏆 You win the round!' : '🏆 ' + (L ? L.short : 'A friend') + ' wins the round!') : dsp.al.length ? '🎉 ' + dsp.al.length + ' players survived!' : '🫧 Nobody made it this time!'; }
+    else dsp.msg = dsp.alive ? '🎉 You survived round ' + dsp.n + '!' : '';
+    spPaySurvive(dsp.al.slice());
+    if (mp.on && mp.host) mpSend({t: 'splash', a: 'end', n: dsp.n, al: dsp.al, msg: dsp.msg});
+  }
+  function spPaySurvive(al){
+    if (!dsp.alive || !al.includes(spUid())) { if (dsp.msg) { big(dsp.msg); dsp.bigT = 3; } return; }
+    const solo = !mp.on || (dsp.parts || []).length <= 1, win = !solo && al.length === 1, prize = win ? 25 : 10 + dsp.n * 2;
+    setCoins(coins + prize); runCoins += prize; dsp.earned += prize; dsp.survived++; SND.win(); confetti();
+    big(dsp.msg || '🎉 Survived!'); dsp.bigT = 3; banner('🪙 +' + prize + ' Rublox Coins!');
+    const b = dsp.sv.best[dsp.lv] | 0; if (solo && dsp.survived > b){ dsp.sv.best[dsp.lv] = dsp.survived; }
+    if (solo && dsp.survived >= SP_UNLOCK && dsp.lv + 1 < SP_LEVELS.length && dsp.sv.unl < dsp.lv + 2){ dsp.sv.unl = dsp.lv + 2; const N = SP_LEVELS[dsp.lv + 1]; setTimeout(() => banner('🔓 New level: ' + N.e + ' ' + N.name + '!'), 1500); }
+    spSave();
+  }
+  function spNextRound(){ spStartRound(); if (mp.on && mp.host) mpSend({t: 'splash', a: 'round', n: dsp.n, seed: dsp.seed, lv: dsp.lv, al: dsp.al}); }
+  /* --- panels --- */
+  function spPickOpen(){
+    dsp.ph = 'pick'; choosing = true; const g = mpGuest();
+    $('#spPickS').textContent = g ? '⏳ The host picks the level. Get ready!' : mp.on ? 'Pick a level for everyone!' : 'Pick a level! Survive ' + SP_UNLOCK + ' rounds to open the next one.';
+    $('#spLevels').innerHTML = SP_LEVELS.map((L, i) => { const lock = !mp.on && i + 1 > dsp.sv.unl; return `<button class="splv${lock ? ' lock' : ''}" data-lv="${i}"${lock || g ? ' disabled' : ''}><span class="re">${lock ? '🔒' : L.e}</span><b>${i + 1}. ${L.name}</b><small>${L.note}</small><i>${lock ? 'Locked' : '🏅 Best: ' + (dsp.sv.best[i] | 0) + ' rounds'}</i></button>`; }).join('');
+    $('#spLevels').querySelectorAll('.splv').forEach(b => b.onclick = () => spChoose(+b.dataset.lv));
+    $('#spEnd').classList.remove('show'); $('#spPick').classList.add('show');
+    setTimeout(() => { if (pad.on && window.rubloxPadFocus){ const b = $('#spLevels .splv:not([disabled])'); if (b) rubloxPadFocus(b); } }, 0);
+  }
+  function spChoose(i){
+    if (mpGuest() || !dsp) return; if (!mp.on && i + 1 > dsp.sv.unl) return;
+    $('#spPick').classList.remove('show'); choosing = false; dsp.n = 0; dsp.survived = 0; dsp.earned = 0; dsp.peb = 1; spSetLevel(i);
+    dsp.sv.last = i; spSave(); banner(SP_LEVELS[i].e + ' ' + SP_LEVELS[i].name + '!'); spNextRound();
+  }
+  function spEnd(){
+    if (dsp.endShown) return; dsp.endShown = true; dsp.ph = 'end'; choosing = true; const L = SP_LEVELS[dsp.lv];
+    $('#spEndS').innerHTML = `${L.e} ${L.name}<br>🌊 Rounds survived: <b>${dsp.survived}</b> · 🏅 Best: <b>${dsp.sv.best[dsp.lv] | 0}</b><br>🪙 Coins earned: <b>${dsp.earned}</b>`;
+    $('#spEnd').classList.add('show'); setTimeout(() => { if (pad.on && window.rubloxPadFocus) rubloxPadFocus($('#spAgain')); }, 0);
+  }
+  function splashEnter(){
+    dsp.sv = Object.assign({unl: 1, best: {}, last: 0}, load('rubloxSplash', {}) || {}); dsp.remote = mpGuest();
+    cam.yaw = Math.PI * .75; cam.pitch = .55; cam.dist = 22;
+    if (dsp.remote){ spSetLevel(mp.spLv | 0); if (mp.spW && mp.spW.ph !== 'pick'){ dsp.al = []; dsp.n = mp.spW.n | 0; dsp.alive = false; spLocalRound(); dsp.alive = false; Object.assign(P, {x: dsp.tower.mesh.position.x, y: 9.4, z: 0}); dsp.ph = mp.spW.ph; banner('🛟 A round is going on. You\'re in the next one!'); return; } }
+    spSetLevel(dsp.sv.last | 0); spPickOpen();
+  }
+  function splashStop(){ ['#spPick', '#spEnd'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('smode'); }
+  function splashAnimate(dt){
+    if (!dsp) return;
+    const arr = dsp.water.geometry.attributes.position.array, base = dsp.wbase, t = worldT;
+    for (let i = 0; i < arr.length; i += 3) arr[i + 1] = Math.sin(base[i] * .2 + t * 1.4) * .06 + Math.cos(base[i + 2] * .17 + t * 1.1) * .06;
+    dsp.water.geometry.attributes.position.needsUpdate = true;
+    const fa = dsp.flies.geometry.attributes.position.array; for (let i = 0; i < fa.length; i += 3) fa[i + 1] += Math.sin(t * 2 + i) * dt * .4; dsp.flies.geometry.attributes.position.needsUpdate = true;
+    dsp.pebs.forEach((p, k) => { if (!p.got) p.m.children[0].rotation.y += dt * 2; p.m.children[1].material.opacity = .35 + .25 * Math.sin(t * 4 + k); });
+    dsp.fx = dsp.fx.filter(f => { f.t += dt; const s = 1 + f.t * (f.big ? 9 : 6); f.m.scale.set(s, s, s); f.m.material.opacity = Math.max(0, .9 - f.t * 1.4);
+      f.drops.forEach(o => { o.vy -= 25 * dt; o.d.position.x += o.vx * dt; o.d.position.z += o.vz * dt; o.d.position.y = Math.max(-1, o.d.position.y + o.vy * dt); });
+      if (f.t > .8){ scene.remove(f.m); f.drops.forEach(o => scene.remove(o.d)); return false; } return true; });
+    // monster
+    const M = dsp.mon, G = M.g; if (dsp.remote && M.w){ const k = Math.min(1, dt * 10); M.x += (M.w[0] - M.x) * k; M.y += (M.w[1] - M.y) * k; M.z += (M.w[2] - M.z) * k; M.yaw += Math.atan2(Math.sin(M.w[3] - M.yaw), Math.cos(M.w[3] - M.yaw)) * k; if (M.st !== M.w[4]) M.t = 0; M.st = M.w[4]; M.t += dt; }
+    const hy = M.y + (M.st === 'grab' ? Math.sin(Math.min(1, M.t / .5) * Math.PI) * 1.5 : 0);
+    M.head.position.set(M.x, hy, M.z); M.head.rotation.y = M.yaw;
+    const last = M.trail[0]; if (!last || Math.hypot(last[0] - M.x, last[2] - M.z) > .35) M.trail.unshift([M.x, hy, M.z]); if (M.trail.length > 40) M.trail.length = 40;
+    M.segs.forEach((s, i) => { const p = M.trail[Math.min(M.trail.length - 1, 3 + i * 3)] || [M.x, hy, M.z]; s.position.set(p[0], p[1] - .1 + Math.sin(t * 6 - i) * .12, p[2]);
+      const q = M.trail[Math.min(M.trail.length - 1, 1 + i * 3)] || p; s.rotation.y = Math.atan2(q[0] - p[0], q[2] - p[2]) || M.yaw; });
+    const reach = M.st === 'chase' || M.st === 'grab' ? 1 : 0;
+    M.arms.forEach(A => { A.a.rotation.y = -A.sd * (.6 - reach * .45) + Math.sin(t * (reach ? 14 : 3) + A.sd) * .25; A.a.rotation.x = -.15 - reach * .2; A.lo.rotation.y = A.sd * (.9 - reach * .7); });
+    M.eyes.forEach(e => { const s = 1 + (M.st === 'chase' ? .25 + Math.sin(t * 18) * .1 : M.st === 'lurk' ? 0 : .12); e.scale.set(s, s, s); });
+    M.alert.visible = M.st === 'chase' || (M.st === 'go' && M.y > -1);
+  }
+  function splashHud(){
+    if (!dsp) return; const L = SP_LEVELS[dsp.lv];
+    $('#spRound').textContent = dsp.n || 1; $('#spLeft').textContent = dsp.ph === 'play' ? Math.max(0, Math.ceil(spDur() - dsp.t)) + 's' : '—';
+    const ab = $('#spAliveBox'); ab.style.display = mp.on ? '' : 'none'; if (mp.on) $('#spAlive').textContent = dsp.al.length;
+    const pb = $('#spPeb'), want = '🪨 ' + dsp.peb; if (pb.textContent !== want) pb.textContent = want; pb.classList.toggle('has', dsp.peb > 0);
+    const m = $('#spMeter'), show = dsp.alive && (dsp.wet || dsp.meter > .02) && dsp.ph === 'play'; m.classList.toggle('show', show);
+    if (show){ $('#spMeterF').style.width = Math.round(dsp.meter * 100) + '%'; m.classList.toggle('hot', dsp.meter > .65); }
+    $('#spWarn').classList.toggle('on', dsp.mon.st === 'chase' && dsp.mon.tgt === spUid());
+  }
+  /* --- multiplayer --- */
+  function splashWire(){ const M = dsp.mon, r = v => Math.round(v * 100) / 100; return {ph: dsp.ph, n: dsp.n, t: r(dsp.t), lv: dsp.lv, seed: dsp.seed, al: dsp.al, m: [r(M.x), r(M.y), r(M.z), r(M.yaw), M.st, M.tgt || '']}; }
+  function splashMe(){ return ['S', dsp.alive ? 1 : 0, dsp.wet ? 1 : 0, dsp.loud ? 1 : 0]; }
+  function splashParse(m, a){ if (m !== 'splash' || !Array.isArray(a) || a[0] !== 'S') return null; return {alive: !!a[1], wet: !!a[2], loud: !!a[3]}; }
+  function splashFromHost(w){   // guests: the host's round + monster
+    if (!w || typeof w !== 'object') return; mp.spW = w; mp.spLv = clamp(w.lv | 0, 0, SP_LEVELS.length - 1);
+    if (!(running && mode === 'splash' && dsp && dsp.remote)) return;
+    const al = Array.isArray(w.al) ? w.al.filter(u => typeof u === 'string').slice(0, 8) : [];
+    if (w.ph === 'pick'){ if (dsp.ph !== 'pick') spPickOpen(); return; }
+    if (dsp.lv !== mp.spLv){ spSetLevel(mp.spLv); }
+    if ((w.n | 0) !== dsp.n && (w.ph === 'ready' || w.ph === 'play')){ dsp.n = w.n | 0; dsp.seed = w.seed | 0; dsp.al = al; dsp.parts = al.slice(); $('#spPick').classList.remove('show'); spLocalRound(); }
+    dsp.al = al; if (dsp.ph === 'pick' && w.ph !== 'pick'){ $('#spPick').classList.remove('show'); choosing = false; }
+    if (w.ph === 'play' && dsp.ph !== 'play'){ dsp.ph = 'play'; dsp.t = +w.t || 0; }
+    else if (w.ph === 'play' && Math.abs(dsp.t - (+w.t || 0)) > .5) dsp.t = +w.t || 0;
+    if (w.ph === 'break' && dsp.ph === 'play') dsp.ph = 'break';
+    if (dsp.alive && (dsp.ph === 'play' || dsp.ph === 'break') && (w.ph === 'play' || w.ph === 'break') && (w.n | 0) === dsp.n && !al.includes(mp.me)) spOut();
+    if (Array.isArray(w.m)){ const n = i => { const v = +w.m[i]; return isFinite(v) ? v : 0; }; dsp.mon.w = [n(0), n(1), n(2), n(3), typeof w.m[4] === 'string' ? w.m[4] : 'lurk']; dsp.mon.tgt = typeof w.m[5] === 'string' && w.m[5] ? w.m[5] : null; }
+  }
+  function splashNet(d){   // guests: host round messages
+    if (!(running && mode === 'splash' && dsp && dsp.remote)) return;
+    if (d.a === 'end'){ dsp.ph = 'break'; dsp.al = Array.isArray(d.al) ? d.al.filter(u => typeof u === 'string') : []; if (dsp.alive && !dsp.al.includes(mp.me)) spOut(); dsp.msg = typeof d.msg === 'string' ? d.msg.replace(/You win/, 'You win').slice(0, 80) : '';
+      const w = dsp.al.length === 1 ? dsp.al[0] : null; if (w && w !== mp.me){ const L = mpLook(w); dsp.msg = '🏆 ' + (L ? L.short : 'A friend') + ' wins the round!'; } else if (w === mp.me) dsp.msg = '🏆 You win the round!';
+      spPaySurvive(dsp.al); }
+    if (d.a === 'round'){ dsp.n = d.n | 0; dsp.seed = d.seed | 0; dsp.al = Array.isArray(d.al) ? d.al.filter(u => typeof u === 'string') : []; dsp.parts = dsp.al.slice(); if ((d.lv | 0) !== dsp.lv) spSetLevel(d.lv | 0); $('#spPick').classList.remove('show'); spLocalRound(); }
+  }
+  function splashGuestEv(g, d){   // host: a friend splashed / threw a pebble
+    if (!dsp || dsp.remote || !running || mode !== 'splash' || !['splash', 'loud', 'pebble'].includes(d.k)) return;
+    const x = +d.x, z = +d.z; if (!isFinite(x) || !isFinite(z)) return; if (d.k !== 'pebble' && !dsp.al.includes(g.uid)) return;
+    spHear(d.k, clamp(x, -40, 40), clamp(z, -40, 40), g.uid);
+  }
   /* ---------- per-frame ---------- */
   const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
   function animate(dt){
@@ -6628,6 +7019,7 @@ const Obby = (() => {
     if (trophy) trophy.rotation.y += dt * (mode === 'lava' ? 14 : 1);
     if (lava) animateLava(dt);
     if (nds) animateNds(dt);
+    if (dsp) splashAnimate(dt);
     if (tg) animateTag(dt);
     if (pt) animatePets(dt);
     animateMp(dt);
@@ -6684,7 +7076,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
+    const line = mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB throw a pebble 🪨 · Right stick look · R3 twice: first person · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -6718,6 +7110,7 @@ const Obby = (() => {
       else { const t = $('#oTip'); padTip(); if (t.classList.contains('hide')){ t.classList.remove('hide'); tipTimer = 8; } else { t.classList.add('hide'); tipTimer = 0; } }
       return;
     }
+    if (mode === 'splash' && dsp && jp[5]){ splashThrow(); return; }
     if (mode === 'race' && rc){ pad.gas = Math.max(s.v[7] || 0, s.b[0] ? 1 : 0); pad.brake = Math.max(s.v[6] || 0, s.b[1] ? 1 : 0); pad.y = 0; pad.jump = false; pad.hop = !!(s.b[5] || s.b[2]); pad.item = !!(s.b[4] || s.b[3]); return; }
     if (mode === 'pets' && pt){
       if (jp[2] && petsAct()) return;
@@ -6767,6 +7160,11 @@ const Obby = (() => {
   addEventListener('resize', () => setTimeout(hudMeasure, 50));
   function setTouchUIBase(on){
     hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
+    if (mode === 'splash'){
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · ⬆️ jump · 🪨 (top) throws a pebble · 👁️ first person' : '⌨️ WASD move · Space jump · F throw a pebble 🪨 · V first person · Esc menu')
+        + "<br>🌊 Don't touch the water! Splashing wakes the Splashgrabber. Throw a pebble into the water to send it the wrong way.";
+      return;
+    }
     if (mode === 'race'){
       $('#oTip').innerHTML = (on ? '🕹️ Your ride goes by itself: left thumb steers (pull back to brake) · ⬆️ hop (hold + steer to drift) · 🎁 use a power-up · 👁️ first person'
         : '⌨️ W/↑ go · S/↓ brake · A/D steer · Space hop (hold + steer to drift) · Shift use power-up · V first person · Esc menu') + '<br>🏁 3 laps! Blue arrows = boost · ❓ boxes = power-ups · orange ramps = big jumps';
@@ -6835,6 +7233,7 @@ const Obby = (() => {
     if (tg || pt) return;
     $('#oTime').textContent = rc ? fmt(rc.clock || 0, true) : fmt(time); $('#oDeaths').textContent = deaths;
     if (rc) raceHud();
+    if (dsp) splashHud();
     if (nds){
       const N = nds, D = N.dis && DISASTERS[N.dis], hp = Math.max(0, Math.round(N.hp));
       $('#oDis').textContent = N.phase === 'lobby' ? '🛋️ Lobby' : N.phase === 'ready' ? '⏳ Get ready' : N.combo.length > 1 ? N.combo.map(k => DISASTERS[k].emoji).join('') + (N.combo.length === 3 ? ' Triple!' : ' Double!') : D.emoji + ' ' + D.name;
@@ -6890,6 +7289,7 @@ const Obby = (() => {
       }
       if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
       if (e.code === 'KeyV' && !e.repeat && !paused && !won && !over){ setFP(!fp.on); return; }
+      if (dsp && mode === 'splash' && (e.code === 'KeyF' || e.code === 'KeyE') && !e.repeat){ splashThrow(); return; }
       if (e.code === 'Escape' || e.code === 'KeyP'){ if (e.code === 'Escape' && performance.now() - fp.unlockT < 400) return; if (!won && !over && !choosing) setPause(!(paused || menuOpen)); return; }
       const em = Object.keys(EMOTES).find(k => 'Digit' + EMOTES[k].key === e.code || 'Numpad' + EMOTES[k].key === e.code);
       if (em && !e.repeat){ playEmote(em); return; }
@@ -7030,7 +7430,7 @@ const Obby = (() => {
 
   /* ---------- start / stop ---------- */
   function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race'].includes(m) ? m : 'obby'; diff = mode === 'race' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     $('#obby').classList.add('show'); document.body.style.overflow = 'hidden'; document.documentElement.classList.add('ingame');
@@ -7063,6 +7463,7 @@ const Obby = (() => {
     else if (mode === 'build') banner('🧱 Build World! Make something awesome');
     else if (mode === 'tag') banner("🏷️ Block Tag! Don't be IT!");
     else if (mode === 'race') banner('🏁 Pet Kart Racing!');
+    else if (mode === 'splash') banner("🌊 Don't Splash! Shhh...");
     else if (mode === 'pets') banner(pt && pt.s.pets.length ? '🐾 Welcome back, ' + pt.s.pets[pt.s.a].n + '!' : '🐾 Adopt a Pet! Drive to the Pet Shelter');
     else if (diff) begin(diff);
     $('#obby').classList.toggle('rmode', mode === 'race'); ['#rcLapBox', '#rcPosBox', '#rcItem'].forEach(id => $(id).style.display = mode === 'race' ? '' : 'none'); ['#rcPick', '#rcFin'].forEach(id => $(id).classList.remove('show'));
@@ -7071,6 +7472,12 @@ const Obby = (() => {
         $('#rcBack').onclick = () => rc && rcPickOpen(1); $('#rcHome').onclick = $('#rcFinHome').onclick = stop; $('#rcAgain').onclick = () => rc && rcAgain();
         $('#rcItem').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (rc) rc.tapItem = true; }); }
       raceEnter(); }
+    $('#obby').classList.toggle('smode', mode === 'splash'); ['#spLvBox', '#spRoundBox', '#spPeb'].forEach(id => $(id).style.display = mode === 'splash' ? '' : 'none'); if (mode !== 'splash') $('#spAliveBox').style.display = 'none';
+    ['#spPick', '#spEnd'].forEach(id => $(id).classList.remove('show')); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on');
+    if (mode === 'splash'){ if (!window.__spBound){ window.__spBound = true;
+        $('#spHome').onclick = $('#spHome2').onclick = stop; $('#spAgain').onclick = () => dsp && spChoose(dsp.lv); $('#spLvls').onclick = () => dsp && spPickOpen();
+        $('#spPeb').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); splashThrow(); }); }
+      splashEnter(); }
     mpOnStart();
   }
   function stop(){
@@ -7078,13 +7485,19 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
 
   // debug / test hook
   window.obbyDebug = {
+    splash: () => dsp && {ph: dsp.ph, lv: dsp.lv, n: dsp.n, t: +dsp.t.toFixed(2), alive: dsp.alive, wet: dsp.wet, meter: +dsp.meter.toFixed(2), peb: dsp.peb, al: dsp.al.slice(), remote: !!dsp.remote, sv: dsp.sv, survived: dsp.survived, earned: dsp.earned, choosing,
+      mon: {st: dsp.mon.st, x: +dsp.mon.x.toFixed(2), y: +dsp.mon.y.toFixed(2), z: +dsp.mon.z.toFixed(2), tgt: dsp.mon.tgt, lure: +dsp.mon.lure.toFixed(2)}, plats: dsp.plats.length, pebs: dsp.pebs.map(p => ({x: +p.m.position.x.toFixed(2), y: +p.m.position.y.toFixed(2), z: +p.m.position.z.toFixed(2), got: p.got})),
+      P: {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2)}, fp: fpOn()},
+    splashPlats: () => dsp.plats.map(q => ({x: q.x, z: q.z, w: q.w, d: q.d, top: +(q.b.mesh.position.y + q.b.hh).toFixed(2), hw: +q.b.hw.toFixed(2), ev: q.ev.map(e => [e.k, +e.t0.toFixed(1)])})),
+    splashTo(x, y, z){ Object.assign(P, {x, y, z, vx: 0, vy: 0, vz: 0}); }, splashSkip(){ if (dsp.ph === 'ready') dsp.cd = .01; }, splashTime(t){ dsp.t = t; }, splashPeb(n){ dsp.peb = n; },
+    splashMon(o){ Object.assign(dsp.mon, o); }, splashLevel(i){ spChoose(i); }, splashUnlock(n){ dsp.sv.unl = n; spSave(); },
     race: () => rc && {phase: rc.phase, panel: rc.panel, md: rc.md, n: rc.n, clock: rc.clock, order: rc.order.slice(), remote: rc.remote, place: rc.me ? rcMyPlace() : 0, field: rc.me ? rcField().map(o => ({uid: o.uid, prog: o.prog, fin: o.fin})) : [],
       racers: rc.racers.map(R => ({uid: R.uid, me: !!R.me, bot: !!R.bot, ride: R.mount.R.name, x: +R.x.toFixed(2), y: +R.y.toFixed(2), z: +R.z.toFixed(2), v: +R.v.toFixed(2), lap: R.lap, i: R.i, prog: R.prog, fin: R.fin, item: R.item, boost: +R.boost.toFixed(2), onGround: R.onGround})),
       sv: rc.sv, choosing, N: rc.T.N, fp: fpOn(), cam: {yaw: +cam.yaw.toFixed(3), x: +camera.position.x.toFixed(2), y: +camera.position.y.toFixed(2), z: +camera.position.z.toFixed(2)}, inp: rc.me && !rc.me.fin ? rcInput(rc.me) : null},
@@ -7346,7 +7759,7 @@ const Obby = (() => {
   }
   function closeOf(c){
     const id = c.root.id;
-    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
+    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', spEnd: '#spHome2', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
     if (id === 'rcPick'){ const b = document.querySelector('#rcBack'); if (b && !b.hidden) return b; }   // B in the ride list = back to the modes
     if (map[id]) return document.querySelector(map[id]);
     return null;
