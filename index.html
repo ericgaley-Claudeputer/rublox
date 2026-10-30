@@ -620,6 +620,13 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .musmode.sel{background:#2ec27e;color:#fff;box-shadow:0 3px 0 #1f9460}
 .musnow{flex:1;text-align:center;line-height:1.2;min-width:0}
 .obby .opanel.show{z-index:8}   /* menus sit above HUD pieces like the pet goal banner */
+#musSpot .spmsg{font-weight:800;font-size:14px;padding:8px 10px;border-radius:12px;background:rgba(255,190,11,.18);margin-top:8px;white-space:pre-line}
+#musSpot [hidden]{display:none!important}
+#musSpot .spnote{display:block;font-size:12px;opacity:.75;margin-top:6px}
+.spnow{display:flex;align-items:center;gap:10px;margin-top:8px}.spnow img{width:56px;height:56px;border-radius:8px;object-fit:cover}
+.splist{display:flex;flex-direction:column;gap:6px;margin:6px 0;max-height:220px;overflow:auto}
+.spitem{min-height:44px;border:0;border-radius:12px;background:var(--bg2,#fff);color:inherit;font:inherit;font-weight:800;text-align:left;padding:8px 12px;box-shadow:0 2px 0 rgba(0,0,0,.12);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spitem.sel,.musbtn.sel{background:#1db954;color:#fff}
 .musnow b{display:block;font-size:16px}.musnow small{display:block;font-size:12px;opacity:.75}
 </style>
 </head>
@@ -960,9 +967,25 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
       <label class="invrow"><input type="checkbox" id="pSnd"><span>🔊 Sound<small>Game sounds on or off</small></span></label>
       <div class="musbox">
         <label class="invrow"><input type="checkbox" id="pMus"><span>🎵 Music<small>Chill bossa tunes, made right here in the game</small></span></label>
+        <div class="musrow"><button class="musmode" id="pMusSrcR">🎵 Rublox songs</button><button class="musmode" id="pMusSrcS">🟢 Spotify</button></div>
+        <div id="musRub">
         <label class="padsens"><span>🎚️ Music volume</span><input type="range" id="pMusVol" min="0" max="1" step="0.05" value="0.35" aria-label="Music volume"><b id="pMusVolV">35%</b></label>
         <div class="musrow"><button class="musbtn" id="pMusPrev" aria-label="Previous song" title="Previous song">⏮</button><div class="musnow"><b id="pMusNow">🎵</b><small id="pMusInfo"></small></div><button class="musbtn" id="pMusNext" aria-label="Next song" title="Next song">⏭</button></div>
         <div class="musrow"><button class="musmode" id="pMusAll">🔀 Play all</button><button class="musmode" id="pMusOne">🔂 Loop this song</button></div>
+        </div>
+        <div id="musSpot" hidden>
+          <div class="spmsg" id="spMsg" hidden></div>
+          <div class="musrow" id="spConnectRow"><button class="musmode" id="spConnect">🟢 Connect Spotify</button></div>
+          <small class="spnote" id="spNote">Sign in with a Spotify Premium account. On computers Rublox becomes a Spotify speaker; on phones it controls your Spotify app.</small>
+          <div id="spMain" hidden>
+            <div class="spnow"><img id="spArt" alt="" hidden><div class="musnow"><b id="spTitle">⏳ Getting ready…</b><small id="spArtist"></small></div></div>
+            <div class="musrow"><button class="musbtn" id="spPrev" aria-label="Previous song">⏮</button><button class="musbtn" id="spPlay" aria-label="Play">▶️</button><button class="musbtn" id="spNext" aria-label="Next song">⏭</button><button class="musbtn" id="spShuf" aria-label="Shuffle" title="Shuffle">🔀</button></div>
+            <label class="padsens"><span>🎚️ Spotify volume</span><input type="range" id="spVol" min="0" max="100" step="5" value="50" aria-label="Spotify volume"><b id="spVolV">50%</b></label>
+            <div id="spDevs" hidden><small>📱 Play on:</small><div class="splist" id="spDevList"></div><button class="spitem" id="spFind">🔄 Find devices</button></div>
+            <small>🎶 Your music</small><div class="splist" id="spLists"></div>
+            <div class="musrow"><button class="musmode" id="spDisc">🔌 Disconnect Spotify</button></div>
+          </div>
+        </div>
       </div>
       <label class="padsens"><span>🎯 Stick look speed</span><input type="range" id="pPadSens" min="0.3" max="3" step="0.1" value="1" aria-label="Controller look speed"><b id="pPadSensV">1.0×</b></label>
       <label class="padsens"><span>🖱️ Mouse look speed</span><input type="range" id="pMouseSens" min="0.3" max="3" step="0.1" value="1" aria-label="Mouse look speed"><b id="pMouseSensV">1.0×</b></label>
@@ -1002,7 +1025,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.10.29-7';
+const BUILD = '2026.10.29-8';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2179,7 +2202,7 @@ const Obby = (() => {
   /* ---------- t168u/t169u: background music. Original procedural chill bossa / lounge tunes (generic idioms only), no audio files ---------- */
   const MUS = (() => {
     const KEY = 'rubloxMusic';
-    const cfg = Object.assign({on: true, vol: .35, mode: 'all', song: 0}, load(KEY, {}) || {});
+    const cfg = Object.assign({on: true, vol: .35, mode: 'all', song: 0, src: 'rublox'}, load(KEY, {}) || {});
     const CH = {maj7: [0, 4, 7, 11], maj9: [0, 4, 11, 14], 6: [0, 4, 7, 9], m7: [0, 3, 7, 10], m9: [0, 3, 10, 14], 7: [0, 4, 7, 10], 9: [0, 4, 10, 14], 13: [0, 4, 10, 21], m7b5: [0, 3, 6, 10], '7b9': [0, 4, 10, 13], sus: [0, 5, 10, 14]};
     const PC = {C: 0, Db: 1, D: 2, Eb: 3, E: 4, F: 5, Gb: 6, G: 7, Ab: 8, A: 9, Bb: 10, B: 11};
     const ch = s => s.split(' ').map(b => b.split(',').map(c => { const m = c.match(/^([A-G]b?)(.*)$/); return [PC[m[1]], CH[m[2]] || CH.maj7]; }));
@@ -2204,7 +2227,7 @@ const Obby = (() => {
       }
       return ac;
     }
-    const want = () => cfg.on && !muted && !document.hidden;
+    const want = () => cfg.on && cfg.src !== 'spotify' && !muted && !document.hidden;
     const level = () => cfg.vol * cfg.vol * .55;
     /* ----- instruments (1–2 oscillators each, short lives) ----- */
     function env(g, t, a, peak, dec){ g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(.0005, t + a + dec); }
@@ -2313,24 +2336,246 @@ const Obby = (() => {
       $m('pMusAll').classList.toggle('sel', cfg.mode === 'all'); $m('pMusOne').classList.toggle('sel', cfg.mode === 'one');
       $m('pMusAll').setAttribute('aria-pressed', cfg.mode === 'all'); $m('pMusOne').setAttribute('aria-pressed', cfg.mode === 'one');
       document.querySelector('.musbox').classList.toggle('off', !cfg.on);
+      const sp = cfg.src === 'spotify';
+      $m('pMusSrcR').classList.toggle('sel', !sp); $m('pMusSrcS').classList.toggle('sel', sp);
+      $m('pMusSrcR').setAttribute('aria-pressed', !sp); $m('pMusSrcS').setAttribute('aria-pressed', sp);
+      $m('musRub').hidden = sp; $m('musSpot').hidden = !sp;
+      if (sp && window.rubloxSpotify) rubloxSpotify.ui();
     }
     ui.vis = () => { const p = $m('oPausePanel'); return p && p.classList.contains('show'); };
     function skip(d){ kick(); if (ac && want() && cur) startSong(cfg.song + d, 1.2); else { cfg.song = ((cfg.song + d) % SONGS.length + SONGS.length) % SONGS.length; save(); cur = null; ui(); } }
     function wire(){
       if (!$m('pMus')) return;
-      $m('pMus').onchange = e => { cfg.on = e.target.checked; save(); kick(); ui(); };
+      $m('pMus').onchange = e => { cfg.on = e.target.checked; save(); kick(); ui(); if (!cfg.on && window.rubloxSpotify) rubloxSpotify.pause(); };
+      $m('pMusSrcR').onclick = () => setSrc('rublox'); $m('pMusSrcS').onclick = () => setSrc('spotify');
       $m('pMusVol').oninput = e => { cfg.vol = +e.target.value; save(); ui(); if (master && ac) master.gain.setTargetAtTime(want() ? level() : 0, ac.currentTime, .05); };
       $m('pMusPrev').onclick = () => skip(-1); $m('pMusNext').onclick = () => skip(1);
       $m('pMusAll').onclick = () => { cfg.mode = 'all'; barsLeft = Math.max(barsLeft, 16); save(); ui(); };
       $m('pMusOne').onclick = () => { cfg.mode = 'one'; save(); ui(); };
       ui();
     }
+    function setSrc(src){
+      cfg.src = src === 'spotify' ? 'spotify' : 'rublox'; save(); kick(); ui();
+      if (master && ac) master.gain.setTargetAtTime(want() ? level() : 0, ac.currentTime, .05);   // Spotify on: our songs stop right away
+      if (window.rubloxSpotify){ if (cfg.src === 'spotify') rubloxSpotify.start(); else rubloxSpotify.pause(); }
+    }
     setTimeout(wire, 0);
-    return {SONGS, cfg, duck, kick, ui, next: () => skip(1), prev: () => skip(-1),
-      state: () => ({started, ctx: ac ? ac.state : 'none', on: cfg.on, vol: cfg.vol, mode: cfg.mode, song: cfg.song, name: SONGS[cfg.song].n, playing: !!(cur && want() && ac && ac.state === 'running'), cur: cur && cur.i, bar: cur ? cur.bar : 0, gain: master ? +master.gain.value.toFixed(4) : 0, xfade: !!old, barsLeft}),
+    return {SONGS, cfg, duck, kick, ui, setSrc, next: () => skip(1), prev: () => skip(-1),
+      state: () => ({started, ctx: ac ? ac.state : 'none', on: cfg.on, src: cfg.src, vol: cfg.vol, mode: cfg.mode, song: cfg.song, name: SONGS[cfg.song].n, playing: !!(cur && want() && ac && ac.state === 'running'), cur: cur && cur.i, bar: cur ? cur.bar : 0, gain: master ? +master.gain.value.toFixed(4) : 0, xfade: !!old, barsLeft}),
       _bars: n => { barsLeft = n; }};
   })();
   window.rubloxMusic = MUS;
+  /* ---------- Spotify (optional music source; Dad's Premium account) ----------
+     Authorization Code + PKCE in the browser (no secret). Desktop: the Web Playback SDK makes a "Rublox" speaker.
+     Phones (no SDK support): remote-control the Spotify app through Spotify Connect. */
+  const SPOT = (() => {
+    const CID = '4025aaae113f42fa86a1f7971a906eb4';
+    const REDIR = 'https://ericgaley-claudeputer.github.io/rublox/';
+    const SCOPES = 'streaming user-read-email user-read-private user-read-playback-state user-modify-playback-state playlist-read-private playlist-read-collaborative user-library-read';
+    const TK = 'rubloxSpotify', PK = 'rubloxSpotifyPkce', API = 'https://api.spotify.com/v1';
+    const S = {tok: null, mode: null, dev: null, devName: '', ready: false, playing: false, track: null, shuffle: false, vol: 50,
+      lists: null, devices: null, msg: '', busy: false, me: null, pollT: 0, sdkLoading: false};
+    const $s = id => document.getElementById(id);
+    try { S.tok = JSON.parse(localStorage.getItem(TK) || 'null'); } catch(_){}
+    const saveTok = () => { try { S.tok ? localStorage.setItem(TK, JSON.stringify(S.tok)) : localStorage.removeItem(TK); } catch(_){} };
+    const mobile = () => S._mobile != null ? S._mobile : /Android|iPhone|iPad|iPod|Mobile|Silk/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const say = m => { S.msg = m || ''; ui(); };
+    const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    function rand(n){ const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~', a = crypto.getRandomValues(new Uint8Array(n)); return [...a].map(x => A[x % A.length]).join(''); }
+    async function authUrl(){
+      const v = rand(64), state = rand(16);
+      const ch = b64u(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v)));
+      try { localStorage.setItem(PK, JSON.stringify({v, state, t: Date.now()})); } catch(_){}
+      return 'https://accounts.spotify.com/authorize?' + new URLSearchParams({client_id: CID, response_type: 'code', redirect_uri: REDIR,
+        code_challenge_method: 'S256', code_challenge: ch, scope: SCOPES, state}).toString();
+    }
+    async function connect(){
+      if (!window.crypto || !crypto.subtle){ say('😢 This browser can\'t sign in to Spotify (needs a secure https page).'); return; }
+      say('🟢 Opening Spotify sign-in…'); S._go(await authUrl());
+    }
+    S._go = url => location.assign(url);
+    async function tokenCall(body){
+      const r = await fetch('https://accounts.spotify.com/api/token', {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: new URLSearchParams(body).toString()});
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.access_token) { const e = new Error(j.error_description || j.error || ('token ' + r.status)); e.code = j.error; throw e; }
+      S.tok = {at: j.access_token, rt: j.refresh_token || (S.tok && S.tok.rt), exp: Date.now() + (j.expires_in || 3600) * 1000, scope: j.scope || ''}; saveTok();
+      return S.tok.at;
+    }
+    // back from Spotify's sign-in page: ?code=…&state=… (or ?error=access_denied). Swap the code, then tidy the address bar.
+    async function handleRedirect(){
+      const q = new URLSearchParams(location.search), code = q.get('code'), err = q.get('error'), st = q.get('state');
+      if (!code && !err) return false;
+      let pk = null; try { pk = JSON.parse(localStorage.getItem(PK) || 'null'); } catch(_){}
+      if (!pk || pk.state !== st) return false;   // not ours
+      ['code', 'state', 'error'].forEach(k => q.delete(k));
+      const clean = location.pathname + (q.toString() ? '?' + q : '') + location.hash;
+      try { history.replaceState(null, '', clean); } catch(_){}
+      try { localStorage.removeItem(PK); } catch(_){}
+      if (err){ say(err === 'access_denied' ? 'No problem! Spotify was not connected.' : '😕 Spotify sign-in failed (' + err + ').'); toast(S.msg); return true; }
+      try {
+        await tokenCall({grant_type: 'authorization_code', code, redirect_uri: REDIR, client_id: CID, code_verifier: pk.v});
+        if (window.rubloxMusic) rubloxMusic.setSrc('spotify');
+        say(''); toast('🟢 Spotify connected! Open the ⚙️ menu in any game to pick a playlist.');
+        start();
+      } catch(e){ say('😕 Couldn\'t finish connecting Spotify (' + e.message + '). Try Connect again.'); toast(S.msg); }
+      return true;
+    }
+    async function token(){
+      if (!S.tok) throw Object.assign(new Error('signed out'), {code: 'signed_out'});
+      if (Date.now() < S.tok.exp - 60000) return S.tok.at;
+      if (!S.tok.rt) throw Object.assign(new Error('expired'), {code: 'invalid_grant'});
+      if (!S._ref) S._ref = tokenCall({grant_type: 'refresh_token', refresh_token: S.tok.rt, client_id: CID}).finally(() => { S._ref = null; });
+      return S._ref;
+    }
+    function signedOut(m){ S.tok = null; saveTok(); stopPoll(); try { if (S.player) S.player.disconnect(); } catch(_){} Object.assign(S, {player: null, mode: null, dev: null, ready: false, track: null, playing: false, lists: null, devices: null}); say(m); }
+    async function api(path, opt = {}, again = true){
+      let at; try { at = await token(); } catch(e){ if (e.code === 'invalid_grant' || e.code === 'signed_out') signedOut(e.code === 'signed_out' ? '' : '🔑 Spotify signed out. Tap Connect again.'); throw e; }
+      const r = await fetch(API + path, Object.assign({}, opt, {headers: Object.assign({Authorization: 'Bearer ' + at}, opt.body ? {'Content-Type': 'application/json'} : {})}));
+      if (r.status === 401 && again){ S.tok.exp = 0; return api(path, opt, false); }
+      if (r.status === 204 || r.status === 202) return null;
+      const j = await r.json().catch(() => null);
+      if (r.ok) return j;
+      const m = ((j && j.error && (j.error.reason || j.error.message)) || '') + '';
+      const e = new Error(m || ('HTTP ' + r.status)); e.status = r.status; e.reason = m;
+      if (r.status === 403 && /premium/i.test(m)) say('🎧 Playing Spotify here needs Spotify Premium. (Rublox songs still work!)');
+      else if (r.status === 403 && /user|registered|allow|developer/i.test(m)) say('🔒 This Spotify account isn\'t on the app\'s list yet. Dad: Spotify Developer Dashboard → Rublox app → User Management → add this account\'s email.');
+      else if (r.status === 404 && /device/i.test(m)) say(S.mode === 'connect' ? '📱 Open the Spotify app first, then tap 🔄 Find devices.' : '🔄 Getting the Rublox speaker ready… try again in a moment.');
+      else if (r.status === 429) say('⏳ Spotify says slow down. Try again in a moment.');
+      throw e;
+    }
+    const devQ = () => S.dev ? '?device_id=' + encodeURIComponent(S.dev) : '';
+    const devQa = () => S.dev ? '&device_id=' + encodeURIComponent(S.dev) : '';
+    /* --- desktop: Web Playback SDK --- */
+    function loadSdk(){
+      if (S.player || S.sdkLoading) return;
+      S.sdkLoading = true; say('🎧 Starting the Rublox speaker…');
+      window.onSpotifyWebPlaybackSDKReady = makePlayer;
+      if (window.Spotify && Spotify.Player) { makePlayer(); return; }
+      const sc = document.createElement('script'); sc.src = 'https://sdk.scdn.co/spotify-player.js'; sc.async = true;
+      sc.onerror = () => { S.sdkLoading = false; useConnect('📡 Couldn\'t load the Spotify player here, so Rublox can control the Spotify app instead.'); };
+      document.head.appendChild(sc);
+    }
+    function makePlayer(){
+      S.sdkLoading = false; if (S.player || !S.tok) return;
+      const p = S.player = new Spotify.Player({name: 'Rublox', volume: S.vol / 100, getOAuthToken: cb => { token().then(cb).catch(() => {}); }});
+      p.addListener('ready', ({device_id}) => { S.dev = device_id; S.devName = 'Rublox'; S.ready = true; say(''); api('/me/player', {method: 'PUT', body: JSON.stringify({device_ids: [device_id], play: false})}).catch(() => {}); refresh(); });
+      p.addListener('not_ready', () => { S.ready = false; say('🔄 Spotify speaker went offline, reconnecting…'); });
+      p.addListener('initialization_error', () => { try { p.disconnect(); } catch(_){} S.player = null; useConnect('This browser can\'t play Spotify itself, so Rublox controls your Spotify app instead.'); });
+      p.addListener('authentication_error', () => { signedOut('🔑 Spotify sign-in expired. Tap Connect again.'); });
+      p.addListener('account_error', () => { try { p.disconnect(); } catch(_){} S.player = null; S.ready = false; say('🎧 Playing Spotify in Rublox needs Spotify Premium. (Rublox songs still work!)'); });
+      p.addListener('playback_error', ({message}) => say('😕 Spotify couldn\'t play that (' + (message || 'error') + ').'));
+      p.addListener('player_state_changed', st => { if (!st) return; fromSdk(st); });
+      p.connect().then(ok => { if (!ok) useConnect('This browser can\'t play Spotify itself, so Rublox controls your Spotify app instead.'); });
+    }
+    function fromSdk(st){
+      const t = st.track_window && st.track_window.current_track;
+      S.playing = !st.paused; S.shuffle = !!st.shuffle;
+      S.track = t ? {title: t.name, artist: (t.artists || []).map(a => a.name).join(', '), art: ((t.album && t.album.images) || []).slice(-1)[0]?.url || ((t.album && t.album.images) || [])[0]?.url || ''} : null;
+      ui();
+    }
+    /* --- phones: control the Spotify app (Spotify Connect) --- */
+    function useConnect(note){ S.mode = 'connect'; S.dev = null; S.ready = true; say(note || ''); findDevices(); refresh(); }
+    async function findDevices(){
+      try { const j = await api('/me/player/devices'); S.devices = (j && j.devices || []).filter(d => !d.is_restricted);
+        const act = S.devices.find(d => d.is_active); if (act && !S.dev){ S.dev = act.id; S.devName = act.name; }
+        if (!S.devices.length) say('📱 Open the Spotify app on this phone (play any song for a second), then tap 🔄 Find devices.'); else if (/Open the Spotify app/.test(S.msg)) say('');
+      } catch(_){ S.devices = S.devices || []; }
+      ui();
+    }
+    async function pickDevice(d){
+      S.dev = d.id; S.devName = d.name; ui();
+      try { await api('/me/player', {method: 'PUT', body: JSON.stringify({device_ids: [d.id], play: S.playing})}); say(''); setTimeout(refresh, 700); } catch(_){}
+    }
+    /* --- shared --- */
+    async function refresh(){
+      if (!S.tok) return;
+      if (!S.me) api('/me').then(j => { S.me = j; if (j && j.product && j.product !== 'premium' && S.mode !== 'connect') say('🎧 Playing Spotify in Rublox needs Spotify Premium. (Rublox songs still work!)'); ui(); }).catch(() => {});
+      if (!S.lists) loadLists();
+      if (S.mode === 'connect' || !S.player){
+        try { const j = await api('/me/player'); if (j && j.item){ S.playing = !!j.is_playing; S.shuffle = !!j.shuffle_state; if (j.device){ S.vol = j.device.volume_percent ?? S.vol; if (S.mode === 'connect' && !S.dev){ S.dev = j.device.id; S.devName = j.device.name; } }
+          const t = j.item; S.track = {title: t.name, artist: (t.artists || []).map(a => a.name).join(', '), art: ((t.album && t.album.images) || []).slice(-1)[0]?.url || ''}; } } catch(_){}
+      } else if (S.player){ try { const st = await S.player.getCurrentState(); if (st) fromSdk(st); } catch(_){} }
+      ui();
+    }
+    async function loadLists(){
+      S.lists = [];
+      try { const j = await api('/me/playlists?limit=50'); S.lists = (j && j.items || []).filter(Boolean).map(p => ({name: p.name, uri: p.uri, img: ((p.images || [])[0] || {}).url || ''})); } catch(_){ S.lists = null; }
+      ui();
+    }
+    const go = fn => { if (S.busy) return; S.busy = true; Promise.resolve().then(fn).catch(() => {}).finally(() => { S.busy = false; setTimeout(refresh, 600); ui(); }); };
+    async function playWhat(body){
+      if (S.mode === 'connect' && !S.dev){ await findDevices(); if (!S.dev){ say('📱 Pick where to play: open the Spotify app, then tap 🔄 Find devices.'); return; } }
+      if (S.player) try { await S.player.activateElement(); } catch(_){}
+      await api('/me/player/play' + devQ(), {method: 'PUT', body: JSON.stringify(body)}); S.playing = true; say('');
+    }
+    async function playLiked(){
+      try { const j = await api('/me/tracks?limit=50'); const uris = (j && j.items || []).map(i => i.track && i.track.uri).filter(Boolean);
+        if (!uris.length){ say('💚 No Liked Songs yet!'); return; }
+        await playWhat({uris});
+      } catch(e){ if (S.me && S.me.id && e.status !== 404) try { await playWhat({context_uri: 'spotify:user:' + S.me.id + ':collection'}); } catch(_){} }
+    }
+    const ctl = {
+      toggle: () => go(async () => { if (S.player && S.mode !== 'connect'){ try { await S.player.activateElement(); } catch(_){} await S.player.togglePlay(); return; }   // the SDK reports the new state itself
+        if (S.playing){ await api('/me/player/pause' + devQ(), {method: 'PUT'}); S.playing = false; } else { await api('/me/player/play' + devQ(), {method: 'PUT'}); S.playing = true; } }),
+      next: () => go(() => S.player && S.mode !== 'connect' ? S.player.nextTrack() : api('/me/player/next' + devQ(), {method: 'POST'})),
+      prev: () => go(() => S.player && S.mode !== 'connect' ? S.player.previousTrack() : api('/me/player/previous' + devQ(), {method: 'POST'})),
+      shuffle: () => go(async () => { await api('/me/player/shuffle?state=' + !S.shuffle + devQa(), {method: 'PUT'}); S.shuffle = !S.shuffle; }),
+      pause: () => { if (!S.tok || !S.playing) return; S.playing = false; ui(); (S.player && S.mode !== 'connect' ? S.player.pause() : api('/me/player/pause' + devQ(), {method: 'PUT'})).catch(() => {}); }
+    };
+    let volT = 0;
+    function setVol(v){ S.vol = v; ui(); clearTimeout(volT); volT = setTimeout(() => { (S.player && S.mode !== 'connect' ? S.player.setVolume(v / 100) : api('/me/player/volume?volume_percent=' + Math.round(v) + devQa(), {method: 'PUT'})).catch(() => {}); }, 250); }
+    function start(){
+      if (!S.tok || !window.rubloxMusic || rubloxMusic.cfg.src !== 'spotify') return;
+      if (!S.mode){ if (mobile()) useConnect(''); else { S.mode = 'sdk'; loadSdk(); } }
+      refresh(); startPoll();
+    }
+    function startPoll(){ if (!S.pollT) S.pollT = setInterval(() => { const p = $s('oPausePanel'); if (S.tok && p && p.classList.contains('show') && rubloxMusic.cfg.src === 'spotify'){ refresh(); if (S.mode === 'connect' && !(S.devices || []).length) findDevices(); } }, 5000); }
+    function stopPoll(){ clearInterval(S.pollT); S.pollT = 0; }
+    function disconnect(){ ctl.pause(); signedOut('Spotify disconnected. Tap Connect any time.'); if (window.rubloxMusic) rubloxMusic.setSrc('rublox'); }
+    /* --- the panel in the ⚙️ menu --- */
+    function ui(){
+      const box = $s('musSpot'); if (!box) return;
+      const on = !!S.tok;
+      $s('spMsg').textContent = S.msg; $s('spMsg').hidden = !S.msg;
+      $s('spConnect').hidden = on; $s('spMain').hidden = !on;
+      $s('spNote').hidden = on;
+      if (!on) return;
+      const t = S.track;
+      $s('spTitle').textContent = t ? t.title : (S.ready ? 'Pick a playlist below 👇' : '⏳ Getting ready…');
+      $s('spArtist').textContent = t ? t.artist : (S.mode === 'connect' ? '📱 Playing through your Spotify app' + (S.devName ? ' on ' + S.devName : '') : S.ready ? '🔊 Playing on this computer' : '');
+      const art = $s('spArt'); if (t && t.art){ if (art.getAttribute('src') !== t.art) art.src = t.art; art.hidden = false; } else art.hidden = true;
+      $s('spPlay').textContent = S.playing ? '⏸️' : '▶️'; $s('spPlay').setAttribute('aria-label', S.playing ? 'Pause' : 'Play');
+      $s('spShuf').classList.toggle('sel', S.shuffle); $s('spShuf').setAttribute('aria-pressed', S.shuffle);
+      $s('spVol').value = S.vol; $s('spVolV').textContent = Math.round(S.vol) + '%';
+      const dv = $s('spDevs'); dv.hidden = S.mode !== 'connect';
+      if (S.mode === 'connect'){
+        const L = $s('spDevList'), key = JSON.stringify([(S.devices || []).map(d => d.id), S.dev]);
+        if (L.dataset.k !== key){ L.dataset.k = key; L.innerHTML = '';
+          (S.devices || []).forEach(d => { const b = document.createElement('button'); b.className = 'spitem' + (d.id === S.dev ? ' sel' : '');
+            b.textContent = ({Smartphone: '📱 ', Computer: '💻 ', Speaker: '🔊 ', TV: '📺 '}[d.type] || '🎵 ') + d.name; b.onclick = () => pickDevice(d); L.appendChild(b); }); }
+      }
+      const PL = $s('spLists'), lk = JSON.stringify((S.lists || []).map(p => p.uri));
+      if (PL.dataset.k !== lk){ PL.dataset.k = lk; PL.innerHTML = '';
+        const add = (txt, fn) => { const b = document.createElement('button'); b.className = 'spitem'; b.textContent = txt; b.onclick = () => go(fn); PL.appendChild(b); };
+        add('💚 Liked Songs', playLiked);
+        (S.lists || []).forEach(p => add('🎶 ' + p.name, () => playWhat({context_uri: p.uri})));
+        if (S.lists === null){ const s = document.createElement('small'); s.textContent = 'Playlists will show up here.'; PL.appendChild(s); }
+      }
+    }
+    function wire(){
+      if (!$s('spConnect')) return;
+      $s('spConnect').onclick = () => connect();
+      $s('spDisc').onclick = disconnect;
+      $s('spPlay').onclick = ctl.toggle; $s('spNext').onclick = ctl.next; $s('spPrev').onclick = ctl.prev; $s('spShuf').onclick = ctl.shuffle;
+      $s('spVol').oninput = e => setVol(+e.target.value);
+      $s('spFind').onclick = () => findDevices();
+      ui();
+    }
+    setTimeout(() => { wire(); handleRedirect().then(done => { if (!done) start(); }); }, 0);
+    return {S, ui, start, connect, disconnect, authUrl, handleRedirect, refresh, findDevices, pause: ctl.pause, ctl, CID, REDIR, SCOPES,
+      state: () => ({connected: !!S.tok, mode: S.mode, dev: S.dev, devName: S.devName, ready: S.ready, playing: S.playing, track: S.track, shuffle: S.shuffle, vol: S.vol, lists: S.lists && S.lists.length, devices: S.devices && S.devices.length, msg: S.msg, sdk: !!S.player})};
+  })();
+  window.rubloxSpotify = SPOT;
 
   /* ---------- building helpers ---------- */
   function mat(color, glow){
