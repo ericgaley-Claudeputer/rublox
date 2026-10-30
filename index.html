@@ -457,6 +457,26 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .ppedals{position:absolute;right:max(18px,calc(env(safe-area-inset-right) + 12px));bottom:max(24px,calc(env(safe-area-inset-bottom) + 16px));gap:14px;align-items:flex-end;z-index:4}
 .pdrive.touchui .ppedals{display:flex}
 .pdrive #oJump,.pdrive #oEmoBtn,.pdrive #oRun,.pdrive #oFP{display:none!important}
+.rmode #oEmoBtn,.rmode #oRun,.rmode #oStam{display:none!important}
+.rcbox{max-width:760px}
+.rcmodes[hidden],.rcrides[hidden],#rcPick [hidden]{display:none!important}
+.rcmodes{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:6px 0 10px}
+.rcmode{width:250px;padding:14px 12px;border-radius:18px;border:3px solid #d9dcea;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font:inherit;color:#1d2340}
+.rcmode .re{font-size:52px;line-height:1.1}.rcmode b{font-size:22px}.rcmode small{font-size:14px;color:#5a6280;font-weight:700}.rcmode i{font-style:normal;font-size:14px;font-weight:800;color:#8a6a00}.rcmode u{text-decoration:none}
+.rcmode:hover,.rcmode.gpf,.rcride:hover,.rcride.gpf{border-color:#3a86ff;transform:translateY(-2px)}
+.rcmode:disabled{opacity:.55;cursor:default;transform:none}
+.rcrides{display:grid;grid-template-columns:repeat(3,minmax(150px,1fr));gap:10px;margin:6px 0 10px}
+.rcride{padding:8px 8px 10px;border-radius:16px;border:3px solid #d9dcea;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font:inherit;color:#1d2340}
+.rcride.sel{border-color:#2ec27e;background:#eafff2}
+.rcride .re{font-size:40px;line-height:1.1}.rcride b{font-size:17px}.rcride i{font-style:normal;font-size:12.5px;font-weight:800;display:flex;gap:6px;align-items:center}.rcride small{font-size:12px;color:#5a6280;font-weight:700}
+.rcbar{display:inline-flex;gap:2px}.rcbar u{width:11px;height:8px;border-radius:4px;background:#d9dcea}.rcbar u.on{background:#2ec27e}
+.rcstand{list-style:none;padding:0;margin:0 auto 14px;max-width:360px;text-align:left;font-weight:800}
+.rcstand li{display:flex;gap:8px;align-items:center;padding:5px 10px;border-radius:10px}.rcstand li span{margin-left:auto;color:#5a6280}.rcstand li.me{background:#fff4c2}
+#rcItem.has{background:#ffd23f;animation:rcpulse .8s infinite alternate}
+@keyframes rcpulse{to{transform:scale(1.12)}}
+@media (max-height:520px){.rcmode{width:210px;padding:8px}.rcmode .re{font-size:36px}.rcrides{grid-template-columns:repeat(3,minmax(120px,1fr));gap:6px}.rcride .re{font-size:28px}.rcride small{display:none}
+ #rcPick .emoji{display:none}#rcPick h2{font-size:20px;margin:0 0 2px}#rcPick .mbox{padding-top:10px;padding-bottom:10px}#rcPick .big{padding-top:6px;padding-bottom:6px}
+ .rcride{flex-direction:row;flex-wrap:wrap;justify-content:center;padding:3px 6px 4px;gap:0 6px}.rcride .re{font-size:22px}.rcride b{font-size:15px}.rcride i{font-size:11px;width:100%;justify-content:center;line-height:1.25}.rcbar u{width:9px;height:6px}}
 .orun{position:absolute;right:calc(max(24px,calc(env(safe-area-inset-right) + 16px)) + 14px);bottom:calc(max(30px,calc(env(safe-area-inset-bottom) + 20px)) + 110px);width:68px;height:68px;border-radius:50%;border:0;background:rgba(255,255,255,.92);font-size:30px;box-shadow:0 5px 0 rgba(0,0,0,.2);touch-action:none;padding:0}
 .orun.on{background:#ff9f1c;box-shadow:0 5px 0 #c46f00;transform:scale(1.06)}
 @media (max-height:500px){.orun{width:58px;height:58px;font-size:26px;right:calc(max(24px,calc(env(safe-area-inset-right) + 16px)) + 13px);bottom:calc(max(30px,calc(env(safe-area-inset-bottom) + 20px)) + 96px)}}
@@ -826,6 +846,8 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   <div class="ohud">
     <div class="ostats">
       <span id="oStageBox">🏁 Lv <b id="oLvl">1</b><span id="oCpWrap"> · 🚩 <b id="oStage">1</b>/<b id="oStageN">3</b></span></span>
+      <span id="rcLapBox" style="display:none">🏁 Lap <b id="rcLap">1</b>/3</span>
+      <span id="rcPosBox" style="display:none"><b id="rcPos">🥇 1st</b>/<b id="rcN">6</b></span>
       <span id="oHeightBox">📏 <b id="oHeight">0</b></span>
       <span id="oLavaBox">🌋 <b id="oLava">0</b></span>
       <span><span class="coin sm"></span><b id="oCoins">0</b></span>
@@ -843,6 +865,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     </div>
     <div class="obtns">
       <span class="otopact" id="oTopAct"></span>
+      <button id="rcItem" style="display:none" title="Use your power-up (Shift)" aria-label="Use power-up">🎁</button>
       <button id="oMute" title="Sound on/off">🔊</button>
       <button class="ofp" id="oFP" title="First person (V)" aria-label="First person" aria-pressed="false">👁️</button>
       <button id="oGear" title="Settings (Esc)" aria-label="Settings">⚙️</button>
@@ -940,6 +963,22 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="owinbtns"><button class="big gray" id="pRetNo">↩️ Never mind</button><button class="big" id="pRetYes" hidden>💕 Return</button></div>
   </div></div>
   <div class="pflash" id="pFlash"></div>
+  <div class="opanel" id="rcPick"><div class="mbox rcbox">
+    <span class="emoji">🏁</span><h2>Pet Kart Racing</h2>
+    <div class="stats" id="rcPickS">Pick how you want to race!</div>
+    <div class="rcmodes" id="rcModes">
+      <button class="rcmode" data-md="animal"><span class="re">🐾</span><b>Animal mode</b><small>Ride a dog, cat, bunny, fox, unicorn pony or dragon!</small><i>🏅 Best: <u id="rcBestA">—</u></i></button>
+      <button class="rcmode" data-md="kart"><span class="re">🏎️</span><b>Normal mode</b><small>Zoom around in a go-kart</small><i>🏅 Best: <u id="rcBestK">—</u></i></button>
+    </div>
+    <div class="rcrides" id="rcRides" hidden></div>
+    <div class="owinbtns"><button class="big gray" id="rcBack" hidden>↩️ Back</button><button class="big gray" id="rcHome">🏠 Home</button></div>
+  </div></div>
+  <div class="opanel" id="rcFin"><div class="mbox rcbox">
+    <span class="emoji" id="rcFinE">🏆</span><h2 id="rcFinH">You won!</h2>
+    <div class="stats" id="rcFinS"></div>
+    <ol class="rcstand" id="rcStand"></ol>
+    <div class="owinbtns"><button class="big green" id="rcAgain">🔁 Race again</button><button class="big blue" id="rcFinHome">🏠 Home</button></div>
+  </div></div>
   <div class="opanel" id="oDiff"><div class="mbox">
     <span class="emoji">🌋</span><h2>Lava Escape</h2>
     <div class="stats" style="font-size:16px;line-height:1.5">The lava is rising! Climb the tower and reach the 🚁 rescue helicopter at the top.<br>How fast should the lava go?</div>
@@ -1025,7 +1064,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.10.29-8';
+const BUILD = '2026.10.30-1';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -1734,7 +1773,8 @@ $('#saveAv').onclick = () => {
 
 /* ---------- games ---------- */
 const GAMES = [
-  {id:'pets',  name:'Adopt a Pet', emoji:'🐾', tag:'Adopt & raise your own pet!', draw: drawPets, playable: true, isNew: true},
+  {id:'race',  name:'Pet Kart Racing', emoji:'🏁', tag:'Race on animals or go-karts!', draw: drawRace, playable: true, isNew: true},
+  {id:'pets',  name:'Adopt a Pet', emoji:'🐾', tag:'Adopt & raise your own pet!', draw: drawPets, playable: true},
   {id:'obby',  name:'Obby Rush',   emoji:'🏃', tag:'50 levels!',      draw: drawObby, playable: true},
   {id:'build', name:'Build World', emoji:'🧱', tag:'Build anything',  draw: drawBuild, playable: true},
   {id:'tag',   name:'Block Tag',   emoji:'🏷️', tag:"You're it!",      draw: drawTag, playable: true},
@@ -1790,6 +1830,25 @@ function drawLava(ctx){
   for (let x = 0; x <= 320; x += 10) ctx.lineTo(x, 150 + Math.sin(x/22 + t)*6);
   ctx.lineTo(320, 200); ctx.fill();
   ctx.fillStyle = '#ffd23f'; for (let i = 0; i < 8; i++){ ctx.fillRect((i*47 + t*20) % 320, 168 + (i%3)*8, 8, 8); }
+}
+function drawRace(ctx){
+  sky(ctx, '#7cc6ff', '#d8f0ff'); cloud(ctx, 30, 26); cloud(ctx, 200, 44);
+  ctx.fillStyle = '#5fd068'; ctx.fillRect(0, 105, 320, 95);
+  ctx.fillStyle = '#4b5163'; ctx.beginPath(); ctx.moveTo(-10, 200); ctx.quadraticCurveTo(130, 112, 330, 118); ctx.lineTo(330, 150); ctx.quadraticCurveTo(170, 140, 90, 200); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.setLineDash([10, 10]); ctx.beginPath(); ctx.moveTo(30, 200); ctx.quadraticCurveTo(150, 128, 330, 134); ctx.stroke(); ctx.setLineDash([]);
+  block(ctx, 246, 46, 8, 80, '#ff4d5e'); block(ctx, 302, 46, 8, 80, '#ff4d5e');
+  for (let i = 0; i < 8; i++) for (let j = 0; j < 2; j++){ ctx.fillStyle = (i + j) % 2 ? '#1d2340' : '#ffffff'; ctx.fillRect(246 + i * 8, 40 + j * 7, 8, 7); }
+  [[20, 92, '#ff4d5e'], [60, 80, '#ffd23f'], [100, 70, '#3a86ff'], [210, 60, '#8b5cf6']].forEach(([x, y, c]) => { ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y, 2, 26); ctx.fillStyle = c; ctx.fillRect(x + 2, y, 14, 9); });
+  // dog with a rider
+  block(ctx, 40, 132, 56, 22, '#d9a057'); block(ctx, 90, 116, 24, 22, '#d9a057'); block(ctx, 104, 110, 7, 9, '#7a4b2e');
+  ctx.fillStyle = '#1d2340'; ctx.fillRect(106, 122, 4, 4); ctx.fillRect(112, 129, 4, 3);
+  [44, 58, 78, 88].forEach((x, i) => block(ctx, x, 152, 7, 16 - (i % 2) * 4, '#c58a45')); block(ctx, 30, 128, 12, 6, '#d9a057');
+  guy(ctx, 54, 92, 18, '#ff6fb5');
+  // kart
+  block(ctx, 150, 150, 70, 16, '#3a86ff'); block(ctx, 212, 146, 14, 10, '#7fb0ff'); block(ctx, 148, 140, 8, 14, '#1d2340');
+  ctx.fillStyle = '#1d1d24'; [[160, 168], [212, 168]].forEach(([x, y]) => { ctx.beginPath(); ctx.arc(x, y, 9, 0, 7); ctx.fill(); });
+  guy(ctx, 170, 116, 18, '#ffd23f');
+  ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 3; [[118, 150], [122, 160], [126, 140]].forEach(([x, y]) => { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 20, y); ctx.stroke(); });
 }
 function drawPets(ctx){
   sky(ctx, '#8fd3ff', '#e3f6ff'); cloud(ctx, 26, 26); cloud(ctx, 238, 40);
@@ -2917,8 +2976,8 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null;
-    if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null;
+    if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -3869,6 +3928,7 @@ const Obby = (() => {
   function step(dt){
     worldT += dt;
     if (pt && pt.drive){ carStep(dt); return; }
+    if (rc){ raceStep(dt); return; }
     if (!SIM) movers.forEach(m => {
       const p = m.b.mesh.position, ox = p.x, oy = p.y, oz = p.z;
       p[m.axis] = m.base[m.axis] + Math.sin(worldT * m.speed + m.phase) * m.amp;
@@ -4429,6 +4489,7 @@ const Obby = (() => {
   function mySnap(){
     if (!running || !model) return null;
     const sp = Math.hypot(P.vx, P.vz), s = P.climbing ? 3 : !P.onGround && P.airT > .08 ? 2 : sp > .8 ? 1 : 0, r = v => Math.round(v * 100) / 100;
+    if (rc && mode === 'race') return [r(P.x), r(P.y), r(P.z), r(P.face), 4, r(rc.me ? rc.me.v : 0), '', 0, raceWire()];
     if (pt){ const q = pt.pet, C = pt.car, qs = q ? Math.hypot(q.vx, q.vz) : 0;
       return [r(P.x), r(P.y), r(P.z), r(pt.drive ? C.yaw : P.face), pt.drive ? 4 : s, pt.drive ? 0 : r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0,
         [r(C.x), r(C.z), r(C.yaw), pt.drive ? 1 : 0, r(C.v)], q ? [q.d.k, q.d.c, q.stage, r(q.x), r(q.y), r(q.z), r(q.face), {eat: 2, sleep: 3, happy: 4, car: 5}[q.act] || (qs > .6 ? 1 : 0), q.d.n, r(qs), pt.leashOn ? 1 : 0, accStr(q.d.acc)] : 0]; }
@@ -4453,6 +4514,7 @@ const Obby = (() => {
     if (mp.host){
       const list = [], s = mySnap(); if (s) list.push(['H', mode, ...s]);
       for (const g of [...mp.guests.values()]){ if (now - g.last > 15000){ mpDrop(g, 'lost'); continue; } if (g.ready && g.st && g.m) list.push([g.uid, g.m, ...g.st]); }
+      if (running && rc && mode === 'race') raceBotsSnap(list);
       if (running && tg && !tg.remote) tg.bots.forEach(B => { if (B.human) return; const sp = Math.hypot(B.vx, B.vz), r = v => Math.round(v * 100) / 100;
         list.push([B.uid, 'tag', r(B.x), r(B.y), r(B.z), r(B.face), !B.onGround && B.airT > .08 ? 2 : sp > .8 ? 1 : 0, r(sp), '', 0]); });
       const msg = {t: 's', p: list, hm: running ? mode : null, hd: diff || null};
@@ -4480,6 +4542,7 @@ const Obby = (() => {
     const cr = st[8], pr = st[9], num = v => { v = +v; return isFinite(v) ? Math.max(-1e4, Math.min(1e4, v)) : 0; };
     E.car = Array.isArray(cr) && cr.length >= 4 ? [num(cr[0]), num(cr[1]), num(cr[2]), cr[3] ? 1 : 0, num(cr[4])] : null;
     E.pet = Array.isArray(pr) && typeof pr[0] === 'string' && own(PET_KINDS, pr[0]) ? {k: pr[0], c: Math.max(0, Math.min(2, pr[1] | 0)), st: Math.max(0, Math.min(3, pr[2] | 0)), x: num(pr[3]), y: num(pr[4]), z: num(pr[5]), f: num(pr[6]), a: Math.max(0, Math.min(5, pr[7] | 0)), n: (petNameClean(pr[8]) && !petNameBad(pr[8]) ? petNameClean(pr[8]) : 'Pet'), sp: num(pr[9]), l: pr[10] === 1, acc: accParse(pr[11])} : null;
+    E.rc = raceParse(E.m, st[8]);
     if (E.fresh){ E.x = E.tx; E.y = E.ty; E.z = E.tz; E.face = E.tf; E.fresh = false; }
   }
   function mpPetsEnt(E, dt, on){
@@ -4506,10 +4569,10 @@ const Obby = (() => {
         const a = E.leashL.geometry.attributes.position, h = [Math.sin(E.face), Math.cos(E.face)], b = Q.m.base || 1;
         a.setXYZ(0, E.x + h[1] * .7 + h[0] * .2, E.y + 1.15, E.z - h[0] * .7 + h[1] * .2); a.setXYZ(1, Q.x + Math.sin(Q.f) * .5 * b, Q.y + .95 * b, Q.z + Math.cos(Q.f) * .5 * b); a.needsUpdate = true; E.leashL.visible = true; } }
   }
-  function mpRemoveEnt(uid){ const E = mp.ents.get(uid); if (!E) return; if (E.model && E.scene){ E.scene.remove(E.model.g); E.scene.remove(E.sh); if (E.carM) E.scene.remove(E.carM.g); if (E.petM) E.scene.remove(E.petM.m.g); if (E.leashL) E.scene.remove(E.leashL); } mp.ents.delete(uid); }
+  function mpRemoveEnt(uid){ const E = mp.ents.get(uid); if (!E) return; if (E.model && E.scene){ E.scene.remove(E.model.g); E.scene.remove(E.sh); if (E.carM) E.scene.remove(E.carM.g); if (E.rcM) E.scene.remove(E.rcM.g); if (E.petM) E.scene.remove(E.petM.m.g); if (E.leashL) E.scene.remove(E.leashL); } mp.ents.delete(uid); }
   function mpBuildEnt(E){
     const L = mpLook(E.uid); if (!L) return false;
-    E.model = buildPlayer(L.av); E.pack = L.av.anim || 'default'; scene.add(E.model.g); E.carM = E.petM = E.leashL = null;
+    E.model = buildPlayer(L.av); E.pack = L.av.anim || 'default'; scene.add(E.model.g); E.carM = E.petM = E.leashL = E.rcM = null;
     const s = label(L.name, L.bot ? 'rgba(29,35,64,.75)' : 'rgba(46,194,126,.92)'); s.position.y = 3.75; E.model.g.add(s);
     E.sh = new THREE.Mesh(new THREE.CircleGeometry(.6, 20), new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: .25, depthWrite: false})); E.sh.rotation.x = -Math.PI / 2; scene.add(E.sh);
     E.scene = scene; E.fresh = true; return true;
@@ -4520,10 +4583,10 @@ const Obby = (() => {
     if (!mp.ents.size || !scene) return;
     const now = performance.now();
     for (const E of mp.ents.values()){
-      const show = E.m === mode && now - E.seen < 4000 && !(E.uid[0] === 'b' && !(tg && tg.remote));
+      const show = E.m === mode && now - E.seen < 4000 && !(E.uid[0] === 'b' && !(tg && tg.remote) && !(rc && rc.remote && mode === 'race'));
       if (show && E.scene !== scene && !mpBuildEnt(E)) continue;
       if (!E.model || E.scene !== scene) continue;
-      E.model.g.visible = E.sh.visible = show; mpPetsEnt(E, dt, show); if (!show) continue;
+      E.model.g.visible = E.sh.visible = show; mpPetsEnt(E, dt, show); if (E.rcM && !(show && mode === 'race' && E.m === 'race' && E.rc)) E.rcM.g.visible = false; if (!show) continue;
       const k = Math.min(1, dt * 12);
       if (Math.hypot(E.tx - E.x, E.ty - E.y, E.tz - E.z) > 8){ E.x = E.tx; E.y = E.ty; E.z = E.tz; }
       E.x += (E.tx - E.x) * k; E.y += (E.ty - E.y) * k; E.z += (E.tz - E.z) * k;
@@ -4534,6 +4597,7 @@ const Obby = (() => {
       const st = {state: ['idle', 'walk', 'jump', 'climb', 'idle'][E.s] || 'idle', t: worldT + E.uid.length, ph: E.walk, sp: Math.min(E.v > SPEED * 1.15 ? 1.3 : 1, E.v / 5), air: E.s === 2 ? .3 : 0, jumped: E.s === 2};
       applyPose(dt, E.s === 4 ? SIT_POSE : E.e ? emotePose(E.e, E.et) : animPose(E.pack, st), M);
       if (E.s === 4 && E.carM && E.car){ mpPetsEnt(E, 0, true); E.sh.visible = false; continue; }
+      if (E.m === 'race' && mpRaceEnt(E, dt, show)) continue;
       const top = surfaceBelow(E.x, E.y, E.z); E.sh.visible = top > -1e8; if (E.sh.visible) E.sh.position.set(E.x, top + .03, E.z);
     }
   }
@@ -4562,6 +4626,7 @@ const Obby = (() => {
     if (!g.ready) return;
     if (d.t === 'me'){ g.m = typeof d.m === 'string' ? d.m : null; g.st = Array.isArray(d.st) ? d.st.slice(0, 10) : null; mpEnt(g.uid, g.m, g.st); if (d.o) mpApplyOps(d.o, g.conn); }
     else if (d.t === 'tagreq') mpTagReq(g, d);
+    else if (d.t === 'racefin') raceGuestFin(g, d);
     else if (d.t === 'getblocks'){ if (running && bw && mode === 'build') mpSendTo(g.conn, {t: 'blocks', c: bwSerialize()}); }
     else if (d.t === 'bye') mpDrop(g, 'left');
   }
@@ -4607,6 +4672,7 @@ const Obby = (() => {
       case 'nds': mpNds(d); break;
       case 'tagev': mpTagEv(d); break;
       case 'tagend': mpTagEnd(d); break;
+      case 'race': raceNet(d); break;
       case 'kick': mpHostGone('kick'); break;
       case 'full': mpCleanup(); mpStatus('😅 That room is full (6 players max).'); break;
       case 'old': { const b = $('#updBar'); if (b) b.hidden = false; (running ? banner : toast)('🆕 There is a newer Rublox! Refresh this page when you get a chance.'); break; }
@@ -6134,6 +6200,426 @@ const Obby = (() => {
     if (pr){ b.classList.add('show'); if (b.dataset.k !== pr.k + pr.t){ b.dataset.k = pr.k + pr.t; $('#pActT').textContent = pr.t; } $('#pKey').textContent = pad.on ? 'Ⓧ' : 'E'; }
     else { b.classList.remove('show'); b.dataset.k = ''; }
   }
+  /* ---------- t183u/t185u: Pet Kart Racing (for Tessa). Ride an animal or drive a go-kart; 3 laps against 5 friendly AI racers ---------- */
+  const RC_LAPS = 3, RC_W = 8, RC_HIP = .92;
+  const RC_ANIMALS = [
+    {k: 'dog', c: 0, name: 'Dog', e: '🐶', sp: 3, tn: 4, zm: 3, note: 'Good at everything!'},
+    {k: 'cat', c: 0, name: 'Cat', e: '🐱', sp: 2, tn: 5, zm: 4, note: 'Super twisty turns'},
+    {k: 'bunny', c: 0, name: 'Bunny', e: '🐰', sp: 2, tn: 4, zm: 5, hop: 1, note: 'Huge hops, fast start'},
+    {k: 'fox', c: 0, name: 'Fox', e: '🦊', sp: 4, tn: 3, zm: 3, note: 'Quick and clever'},
+    {k: 'unicorn', c: 0, name: 'Unicorn Pony', e: '🦄', sp: 5, tn: 2, zm: 3, note: 'Fastest on straights'},
+    {k: 'dragon', c: 0, name: 'Dragon', e: '🐉', sp: 4, tn: 2, zm: 4, glide: 1, note: 'Glides far off ramps'},
+  ];
+  const RC_KARTS = [['Red', '#ff4d5e'], ['Blue', '#3a86ff'], ['Green', '#2ec27e'], ['Yellow', '#ffd23f'], ['Purple', '#8b5cf6'], ['Pink', '#ff6fb5']]
+    .map(([name, col]) => ({name: name + ' Kart', col, e: '🏎️', sp: 4, tn: 3, zm: 4, note: 'Zoom zoom!'}));
+  const RC_BOTS = BOT_LOOKS.concat([{name: 'Sprinkle Sparks', emoji: '🍩', av: {head: '#ffcf99', shirt: '#ff6fb5', pants: '#3a86ff', hair: 'bun', hairColor: '#ff9f1c', face: 'grin'}}]);
+  const RC_ITEMS = {rocket: {e: '🚀', n: 'Rocket Boost'}, spring: {e: '🦘', n: 'Super Jump'}, star: {e: '🌟', n: 'Star Power'}};
+  const RC_PLACE = ['1st', '2nd', '3rd', '4th', '5th', '6th'], RC_MEDAL = ['🥇', '🥈', '🥉', '🏅', '🏅', '🏅'], RC_PRIZE = [30, 20, 15, 10, 10, 10];
+  let rc = null;
+  const rcRides = md => md === 'kart' ? RC_KARTS : RC_ANIMALS;
+  const rcStats = R => ({vmax: 19 + R.sp * 1.3, acc: 8 + R.zm * 2, turn: 1.55 + R.tn * .17, hop: R.hop ? 8.4 : 6.4, glide: !!R.glide});
+  const rcSave = () => save('rubloxRace', rc.sv);
+  const rcWrap = d => Math.atan2(Math.sin(d), Math.cos(d));
+  function rcTex(w, h, f){ const c = document.createElement('canvas'); c.width = w; c.height = h; f(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return t; }
+  function rcRibbon(T, a, b, y0, y1, colOf, vertical){   // a strip along the track between lateral offsets a..b (or a wall at a from y0 to y1)
+    const pos = [], col = [], N = T.N;
+    for (let i = 0; i < N; i++){ const p = T.p[i], q = T.p[(i + 1) % N], c = new THREE.Color(colOf(i));
+      const P1 = vertical ? [p.x + p.nx * a, y0, p.z + p.nz * a] : [p.x + p.nx * a, y0, p.z + p.nz * a], P2 = vertical ? [p.x + p.nx * a, y1, p.z + p.nz * a] : [p.x + p.nx * b, y0, p.z + p.nz * b];
+      const Q1 = vertical ? [q.x + q.nx * a, y0, q.z + q.nz * a] : [q.x + q.nx * a, y0, q.z + q.nz * a], Q2 = vertical ? [q.x + q.nx * a, y1, q.z + q.nz * a] : [q.x + q.nx * b, y0, q.z + q.nz * b];
+      pos.push(...P1, ...Q1, ...P2, ...P2, ...Q1, ...Q2); for (let k = 0; k < 6; k++) col.push(c.r, c.g, c.b); }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.computeVertexNormals();
+    const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({vertexColors: true, side: THREE.DoubleSide})); scene.add(m); return m;
+  }
+  function rcFrame(T, i, lat = 0){ const p = T.p[((i % T.N) + T.N) % T.N]; return {x: p.x + p.nx * lat, z: p.z + p.nz * lat, tx: p.tx, tz: p.tz, nx: p.nx, nz: p.nz, yaw: Math.atan2(p.tx, p.tz)}; }
+  function rcPlace(o, F, y = 0){ o.position.set(F.x, y, F.z); o.rotation.y = F.yaw; scene.add(o); return o; }
+  function buildRace(){
+    scene.background = new THREE.Color('#8fd3ff'); scene.fog = new THREE.Fog('#8fd3ff', 90, 260);
+    const CP = [[0,-70],[60,-75],[100,-50],[108,0],[85,38],[45,32],[18,58],[35,95],[0,118],[-50,104],[-68,62],[-100,35],[-98,-30],[-62,-66]];
+    const curve = new THREE.CatmullRomCurve3(CP.map(([x, z]) => new THREE.Vector3(x, 0, z)), true, 'catmullrom', .5);
+    const N = 700, raw = curve.getSpacedPoints(N).slice(0, N), T = {N, p: []};
+    raw.forEach((v, i) => { const a = raw[(i - 1 + N) % N], b = raw[(i + 1) % N]; let tx = b.x - a.x, tz = b.z - a.z; const l = Math.hypot(tx, tz) || 1; tx /= l; tz /= l; T.p.push({x: v.x, z: v.z, tx, tz, nx: tz, nz: -tx}); });
+    // ground, road, curbs, walls
+    const gr = new THREE.Mesh(new THREE.PlaneGeometry(700, 700), fmat('#5fd068')); gr.rotation.x = -Math.PI / 2; gr.position.y = -.02; scene.add(gr);
+    rcRibbon(T, -RC_W, RC_W, .02, 0, i => (i >> 3) % 2 ? '#4b5163' : '#50566a');
+    rcRibbon(T, RC_W, RC_W + 1.1, .04, 0, i => (i >> 2) % 2 ? '#ff4d5e' : '#ffffff'); rcRibbon(T, -RC_W - 1.1, -RC_W, .04, 0, i => (i >> 2) % 2 ? '#ff4d5e' : '#ffffff');
+    rcRibbon(T, RC_W + 2.4, 0, 0, .9, i => (i >> 4) % 2 ? '#3a86ff' : '#ffffff', true); rcRibbon(T, -RC_W - 2.4, 0, 0, .9, i => (i >> 4) % 2 ? '#3a86ff' : '#ffffff', true);
+    // dashed middle line
+    rcRibbon(T, -.18, .18, .03, 0, i => (i >> 3) % 2 ? '#ffffff' : '#4b5163');
+    // start / finish: checkered line and a big arch
+    const chk = rcTex(256, 32, (c, w, h) => { for (let x = 0; x < 16; x++) for (let y = 0; y < 2; y++){ c.fillStyle = (x + y) % 2 ? '#1d2340' : '#ffffff'; c.fillRect(x * 16, y * 16, 16, 16); } });
+    const line = new THREE.Mesh(new THREE.PlaneGeometry(RC_W * 2, 2), new THREE.MeshLambertMaterial({map: chk})); line.rotation.x = -Math.PI / 2;
+    const lg = new THREE.Group(); lg.add(line); line.position.y = .05; rcPlace(lg, rcFrame(T, 0));
+    const arch = new THREE.Group(), ab = (w, h, d, c, x, y, z, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m || fmat(c)); o.position.set(x, y, z); arch.add(o); return o; };
+    ab(1.2, 8, 1.2, '#ff4d5e', -(RC_W + 2.2), 4, 0); ab(1.2, 8, 1.2, '#ff4d5e', RC_W + 2.2, 4, 0);
+    const sign = rcTex(512, 96, (c, w, h) => { c.fillStyle = '#1d2340'; c.fillRect(0, 0, w, h); for (let x = 0; x < 32; x++) for (let y = 0; y < 2; y++){ c.fillStyle = (x + y) % 2 ? '#1d2340' : '#ffffff'; c.fillRect(x * 16, y * 8 + (y ? h - 16 : 0), 16, 8); }
+      c.fillStyle = '#ffd23f'; c.font = 'bold 54px system-ui, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('🏁 FINISH 🏁', w / 2, h / 2 + 2); });
+    const sm = new THREE.MeshBasicMaterial({map: sign}); ab(RC_W * 2 + 5.6, 2.2, .6, '#1d2340', 0, 8.6, 0, [fmat('#1d2340'), fmat('#1d2340'), fmat('#1d2340'), fmat('#1d2340'), sm, sm]);
+    rcPlace(arch, rcFrame(T, 0));
+    // which side of the road is open (no other track nearby): stands, flags and trees go there
+    const near = (x, z, r) => { for (let i = 0; i < N; i += 3){ const p = T.p[i]; if ((p.x - x) ** 2 + (p.z - z) ** 2 < r * r) return true; } return false; };
+    const side = i => { const F = rcFrame(T, i, RC_W + 14), G = rcFrame(T, i, -RC_W - 14); return near(F.x, F.z, RC_W + 9) ? -1 : near(G.x, G.z, RC_W + 9) ? 1 : 1; };
+    // grandstand with a cheering crowd beside the start straight
+    const sd = side(N - 30), stand = new THREE.Group(), sb = (w, h, d, c, x, y, z) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), fmat(c)); o.position.set(x, y, z); stand.add(o); return o; };
+    for (let r = 0; r < 4; r++) sb(34, 1, 2.2, ['#d9dcea', '#c2c7da', '#d9dcea', '#c2c7da'][r], 0, .5 + r, r * 2.2);
+    sb(36, .4, 10, '#ff4d5e', 0, 7.6, 3.4); [-17, 17].forEach(x => sb(.5, 7.6, .5, '#ffffff', x, 3.8, 7.6));
+    const fans = ['#ff4d5e', '#3a86ff', '#ffd23f', '#2ec27e', '#8b5cf6', '#ff9f1c', '#ff6fb5'];
+    rc.fans = [];
+    for (let r = 0; r < 4; r++) for (let k = 0; k < 13; k++){ if (Math.random() < .2) continue; const f = sb(.9, 1.2, .7, fans[(r * 5 + k * 3) % 7], -15 + k * 2.5 + (r % 2) * .8, 1.6 + r, r * 2.2); rc.fans.push({o: f, y: f.position.y, ph: Math.random() * 6}); }
+    const SF = rcFrame(T, N - 30, sd * (RC_W + 5)); stand.position.set(SF.x, 0, SF.z); stand.rotation.y = SF.yaw + (sd > 0 ? -Math.PI / 2 : Math.PI / 2); scene.add(stand);
+    // flags along the track
+    rc.flags = [];
+    for (let k = 0; k < 18; k++){ const i = Math.floor(k * N / 18 + 12), s = side(i), F = rcFrame(T, i, s * (RC_W + 3.4)), g = new THREE.Group();
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(.08, .08, 5, 6), fmat('#ffffff')); pole.position.y = 2.5; g.add(pole);
+      const fl = new THREE.Mesh(new THREE.BoxGeometry(.06, .9, 1.4), fmat(fans[k % 7])); fl.position.set(0, 4.5, .7); const fg = new THREE.Group(); fg.position.y = 0; fg.add(fl); g.add(fg);
+      g.position.set(F.x, 0, F.z); scene.add(g); rc.flags.push({g: fg, ph: k}); }
+    // trees and bushes
+    const trunkG = new THREE.CylinderGeometry(.35, .45, 2.4, 6), leafG = new THREE.ConeGeometry(2.2, 4.4, 7), bushG = new THREE.SphereGeometry(1.6, 7, 5);
+    let placed = 0, tries = 0;
+    while (placed < (LOWQ ? 70 : 120) && tries++ < 4000){ const x = -170 + Math.random() * 340, z = -150 + Math.random() * 330;
+      if (near(x, z, RC_W + 6.5) || (Math.hypot(x - SF.x, z - SF.z) < 26)) continue; placed++;
+      if (Math.random() < .7){ const t = new THREE.Mesh(trunkG, fmat('#8d5524')); t.position.set(x, 1.2, z); scene.add(t); const l = new THREE.Mesh(leafG, fmat(['#2f9e5a', '#3fbf6a', '#2a8a4e'][placed % 3])); l.position.set(x, 4.4, z); scene.add(l); }
+      else { const b = new THREE.Mesh(bushG, fmat(['#4cc06a', '#58d27a', '#ff9fca'][placed % 3])); b.position.set(x, .6, z); b.scale.y = .7; scene.add(b); } }
+    [[-60,40,-40,3],[50,44,10,3.5],[-20,48,90,3],[90,40,120,3.5],[-110,42,-90,3]].forEach(a => cloud(...a));
+    // ramps (one half of the road: take it or go around)
+    rc.ramps = [[Math.floor(N * .115), 4], [Math.floor(N * .62), -4]].map(([i, lat]) => { const F = rcFrame(T, i, lat), len = 9, H = 1.7, hw = 3.4;
+      const g = new THREE.Group(), geo = new THREE.BoxGeometry(hw * 2, .3, Math.hypot(len, H)), m = new THREE.Mesh(geo, fmat('#ff9f1c')); m.rotation.x = -Math.atan2(H, len); m.position.set(0, H / 2, len / 2); g.add(m);
+      const st = rcTex(128, 128, (c) => { c.fillStyle = '#ffd23f'; c.fillRect(0, 0, 128, 128); c.fillStyle = '#1d2340'; for (let k = -2; k < 6; k++){ c.beginPath(); c.moveTo(k * 32, 128); c.lineTo(k * 32 + 16, 128); c.lineTo(k * 32 + 80, 0); c.lineTo(k * 32 + 64, 0); c.fill(); } });
+      m.material = new THREE.MeshLambertMaterial({map: st});
+      const side2 = new THREE.Mesh(new THREE.BoxGeometry(hw * 2, H, .4), fmat('#c26a00')); side2.position.set(0, H / 2, len); g.add(side2);
+      rcPlace(g, F); return {x: F.x, z: F.z, tx: F.tx, tz: F.tz, nx: F.nx, nz: F.nz, len, H, hw}; });
+    // boost pads
+    const arrowT = rcTex(128, 128, c => { c.fillStyle = '#00d4ff'; c.fillRect(0, 0, 128, 128); c.strokeStyle = '#ffffff'; c.lineWidth = 14; c.lineCap = 'round'; c.lineJoin = 'round';
+      [28, 70].forEach(y => { c.beginPath(); c.moveTo(22, y + 34); c.lineTo(64, y - 4); c.lineTo(106, y + 34); c.stroke(); }); });
+    rc.pads = [[.07, -3], [.3, 3], [.47, 0], [.555, 3.5], [.79, -3.5], [.9, 2.5]].map(([u, lat]) => { const F = rcFrame(T, Math.floor(N * u), lat);
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 5), new THREE.MeshBasicMaterial({map: arrowT, transparent: true, opacity: .95})); m.rotation.x = -Math.PI / 2; m.rotation.z = Math.PI;
+      const g = new THREE.Group(); g.add(m); m.position.y = .06; rcPlace(g, F); return {x: F.x, z: F.z, tx: F.tx, tz: F.tz, nx: F.nx, nz: F.nz, m}; });
+    // mystery boxes (harmless power-ups)
+    const qT = rcTex(128, 128, c => { const g2 = c.createLinearGradient(0, 0, 128, 128); ['#ff4d5e', '#ffd23f', '#2ec27e', '#3a86ff', '#8b5cf6'].forEach((col, k) => g2.addColorStop(k / 4, col)); c.fillStyle = g2; c.fillRect(0, 0, 128, 128);
+      c.fillStyle = '#ffffff'; c.font = 'bold 92px system-ui, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('?', 64, 70); });
+    const qM = new THREE.MeshLambertMaterial({map: qT, transparent: true, opacity: .92}), qG = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+    rc.boxes = [];
+    [.2, .4, .68, .86].forEach(u => [-5.4, -1.8, 1.8, 5.4].forEach(lat => { const F = rcFrame(T, Math.floor(N * u), lat), m = new THREE.Mesh(qG, qM); m.position.set(F.x, 1.3, F.z); scene.add(m); rc.boxes.push({x: F.x, z: F.z, m, t: 0}); }));
+    rc.T = T;
+    // a spawn so the rest of Rublox is happy
+    const S0 = rcFrame(T, N - 8); checkpoints.push({spawn: {x: S0.x, y: 0, z: S0.z}, flag: new THREE.Object3D(), idx: 0});
+  }
+  /* --- rides --- */
+  function rcKart(col){
+    const g = new THREE.Group(), bx = (w, h, d, c, x, y, z) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), fmat(c)); o.position.set(x, y, z); g.add(o); return o; };
+    bx(1.9, .35, 3.2, col, 0, .42, 0); bx(1.5, .3, 1.1, shade(col, 20), 0, .5, 1.55); bx(2.3, .18, .5, '#1d2340', 0, .35, 1.95);
+    bx(.35, .4, 1.6, shade(col, -25), -.95, .55, -.1); bx(.35, .4, 1.6, shade(col, -25), .95, .55, -.1);
+    bx(1.1, .7, .25, '#2d2d2d', 0, .95, -.75); bx(1.1, .14, .8, '#2d2d2d', 0, .66, -.4);
+    bx(2.1, .12, .5, shade(col, -30), 0, 1.15, -1.55); bx(.12, .55, .12, '#2d2d2d', -.7, .85, -1.55); bx(.12, .55, .12, '#2d2d2d', .7, .85, -1.55);
+    const sw = new THREE.Mesh(new THREE.TorusGeometry(.26, .05, 6, 14), fmat('#2d2d2d')); sw.position.set(0, 1.05, .45); sw.rotation.x = -.9; g.add(sw);
+    const wheels = []; [[-1.05, 1.1], [1.05, 1.1], [-1.05, -1.1], [1.05, -1.1]].forEach(([x, z]) => { const w = new THREE.Group(), t = new THREE.Mesh(new THREE.CylinderGeometry(.42, .42, .42, 10), fmat('#1d1d24')); t.rotation.z = Math.PI / 2; w.add(t);
+      const hub = new THREE.Mesh(new THREE.CylinderGeometry(.2, .2, .44, 6), fmat('#d9dcea')); hub.rotation.z = Math.PI / 2; w.add(hub); w.position.set(x, .42, z); g.add(w); wheels.push(w); });
+    const sh = new THREE.Mesh(new THREE.CircleGeometry(1.6, 16), new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: .22, depthWrite: false})); sh.rotation.x = -Math.PI / 2; sh.scale.set(1, 1.5, 1); sh.position.y = .03; g.add(sh);
+    return {g, wheels, sh, seatY: .72, seatZ: -.35, kart: true};
+  }
+  function rcMount(md, idx){
+    const R = rcRides(md)[idx] || rcRides(md)[0];
+    if (md === 'kart') return Object.assign(rcKart(R.col), {R});
+    const M = buildPet(R.k, R.c, 3), s = 3.7 / M.top, g = new THREE.Group(); M.g.scale.setScalar(s); g.add(M.g);
+    M.g.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(M.body), seatY = bb.max.y * .96, seatZ = (bb.min.z + bb.max.z) / 2 - (bb.max.z - bb.min.z) * .08;
+    return {g, pet: M, seatY, seatZ, R};
+  }
+  const RC_RIDE_POSE = {lL: -1.05, lR: -1.05, lLo: .6, lRo: .6, aL: -1.15, aR: -1.15, lean: .18};
+  function rcPose(R){
+    const kart = R.md === 'kart', tilt = -(R.steer || 0) * .16, up = R.cheer > 0;
+    return Object.assign({}, kart ? SIT_POSE : RC_RIDE_POSE, {tilt}, up ? {aL: -2.8, aR: -2.8, aLo: .3, aRo: .3} : null);
+  }
+  /* --- racers --- */
+  function rcRacer(o){
+    const ride = rcRides(o.md)[o.ride] || rcRides(o.md)[0];
+    const R = Object.assign({x: 0, z: 0, y: 0, vy: 0, yaw: 0, v: 0, steer: 0, i: 0, lap: -1, half: true, prog: 0, boost: 0, star: 0, item: null, itemT: 0, fin: false, finT: 0, onGround: true, gh0: 0, drift: 0, driftT: 0, hop0: false, it0: false, cheer: 0, lane: 0, skill: 1, rb: 1, bumpT: 0}, o);
+    R.st = rcStats(ride); R.mount = rcMount(o.md, o.ride); scene.add(R.mount.g);
+    if (!R.me){ R.model = buildPlayer(o.av); scene.add(R.model.g); const s = label(o.name, 'rgba(29,35,64,.75)'); s.position.y = 3.75; R.model.g.add(s); }
+    return R;
+  }
+  function rcGridSpot(slot){ const F = rcFrame(rc.T, rc.T.N - 7 - Math.floor(slot / 2) * 6, slot % 2 ? 3.6 : -3.6); return F; }
+  function rcSetGrid(R, slot){ const F = rcGridSpot(slot); Object.assign(R, {x: F.x, z: F.z, y: 0, yaw: F.yaw, v: 0, vy: 0, lap: -1, half: true, fin: false, finT: 0, boost: 0, star: 0, item: null, drift: 0, onGround: true, slot}); R.i = rcNearest(R, true); R.prog = R.lap * rc.T.N + R.i; }
+  function rcNearest(R, full){
+    const T = rc.T, N = T.N; let best = R.i, bd = 1e18;
+    const from = full ? 0 : R.i - 10, to = full ? N - 1 : R.i + 18;
+    for (let j = from; j <= to; j++){ const k = ((j % N) + N) % N, p = T.p[k], d = (p.x - R.x) ** 2 + (p.z - R.z) ** 2; if (d < bd){ bd = d; best = k; } }
+    return best;
+  }
+  function rcClear(){
+    if (!rc) return;
+    rc.racers.forEach(R => { scene.remove(R.mount.g); if (R.model) scene.remove(R.model.g); }); rc.racers = []; rc.me = null;
+  }
+  function rcUid(){ return mp.on ? (mp.host ? 'H' : mp.me) : 'me'; }
+  function rcBuildRacers(md, ride, grid, bots){
+    rcClear();
+    const me = rcRacer({uid: rcUid(), me: true, md, ride, name: 'You'}); rc.racers.push(me); rc.me = me;
+    rcSetGrid(me, grid[me.uid] != null ? grid[me.uid] : 0);
+    if (!rc.remote) bots.forEach((b, k) => { const L = RC_BOTS[b.look % RC_BOTS.length];
+      const B = rcRacer({uid: 'b' + b.look, bot: true, md, ride: b.ride, name: L.emoji + ' ' + L.name, av: Object.assign({}, DEF, L.av), lane: (k % 3 - 1) * 3, skill: b.skill});
+      rc.racers.push(B); rcSetGrid(B, b.slot); });
+  }
+  function rcInput(R){
+    if (R.me && !R.fin && !rc.panel && !menuOpen){
+      let steer = clamp((keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0) + joy.x + pad.x, -1, 1);
+      let gas = clamp((keys.KeyW || keys.ArrowUp ? 1 : 0) + (pad.gas || 0), 0, 1), brake = clamp((keys.KeyS || keys.ArrowDown ? 1 : 0) + (pad.brake || 0), 0, 1);
+      if (touchUI && !pad.on){ if (joy.y < -.35) brake = Math.max(brake, Math.min(1, -joy.y)); else gas = 1; }   // phones: your ride runs by itself; pull back to brake
+      else { gas = Math.max(gas, Math.max(0, joy.y)); brake = Math.max(brake, Math.max(0, -joy.y)); }
+      const hop = !!(keys.Space || joy.jump || pad.hop), item = !!(keys.ShiftLeft || keys.ShiftRight || keys.KeyE || pad.item || rc.tapItem);
+      rc.tapItem = false; return {steer, gas, brake, hop, item};
+    }
+    // computer racers (and you, after the finish line): follow the track with a little wobble
+    const T = rc.T, look = 9 + Math.floor(Math.max(0, R.v) * .35), F = rcFrame(T, R.i + look, R.lane);
+    if ((R.laneT = (R.laneT || 0) - 1 / 60) <= 0){ R.laneT = 2 + Math.random() * 3; R.lane = clamp(R.lane + (Math.random() - .5) * 4, -4.5, 4.5); }
+    const des = Math.atan2(F.x - R.x, F.z - R.z), d = rcWrap(des - R.yaw), steer = clamp(-d * 2.4, -1, 1);
+    let gas = R.fin ? .55 : 1; if (Math.abs(d) > .55 && R.v > 14) gas = .25;
+    let item = false; if (R.item){ R.itemT -= 1 / 60; if (R.itemT <= 0) item = true; }
+    return {steer, gas, brake: 0, hop: false, item};
+  }
+  function rcGround(R){
+    for (const r of rc.ramps){ const dx = R.x - r.x, dz = R.z - r.z, a = dx * r.tx + dz * r.tz, l = dx * r.nx + dz * r.nz;
+      if (a >= 0 && a <= r.len && Math.abs(l) <= r.hw) return a / r.len * r.H; }
+    return 0;
+  }
+  function rcUseItem(R){
+    const k = R.item; if (!k) return; R.item = null;
+    if (k === 'rocket') R.boost = Math.max(R.boost, 2.2);
+    else if (k === 'spring'){ R.onGround = false; R.vy = 13; R.boost = Math.max(R.boost, .6); }
+    else R.star = 4;
+    R.cheer = .8;
+    if (R.me){ SND.boing(); banner(RC_ITEMS[k].e + ' ' + RC_ITEMS[k].n + '!'); }
+  }
+  function rcPhys(R, I, dt){
+    const S = R.st, T = rc.T, go = rc.phase === 'go' || R.fin;
+    if (!go){ I = {steer: 0, gas: 0, brake: 0, hop: false, item: false}; }
+    R.boost = Math.max(0, R.boost - dt); R.star = Math.max(0, R.star - dt); R.cheer = Math.max(0, R.cheer - dt); R.bumpT = Math.max(0, R.bumpT - dt);
+    const c = T.p[R.i], lat = (R.x - c.x) * c.nx + (R.z - c.z) * c.nz, off = Math.abs(lat) > RC_W + .4;
+    const vmax = S.vmax * (R.bot ? R.skill * R.rb : 1) * (R.boost > 0 ? 1.42 : 1) * (R.star > 0 ? 1.18 : 1) * (off && R.star <= 0 && R.onGround ? .55 : 1);
+    if (R.onGround){
+      if (I.gas > .05 && I.brake <= .05 && R.v < -.5) R.v = Math.min(0, R.v + 22 * I.gas * dt);   // gas while rolling backwards: stop, then go
+      if (I.gas > .05 && R.v > -.5) R.v += S.acc * I.gas * dt * (R.v < vmax * .5 ? 1.3 : 1);
+      if (I.brake > .05){ if (R.v > .3) R.v -= 26 * I.brake * dt; else R.v = Math.max(-7, R.v - 9 * I.brake * dt); }
+      if (I.gas <= .05 && I.brake <= .05) R.v -= Math.sign(R.v) * Math.min(Math.abs(R.v), 5 * dt);
+      if (R.boost > 0) R.v = Math.max(R.v, Math.min(vmax, R.v + 34 * dt));
+      if (R.v > vmax) R.v = Math.max(vmax, R.v - 18 * dt);
+    }
+    R.steer += (I.steer - R.steer) * Math.min(1, dt * 9);
+    const st = R.drift ? R.drift * .55 + R.steer * .55 : R.steer;
+    R.yaw -= st * S.turn * (R.drift ? 1.25 : 1) * Math.min(1, Math.abs(R.v) / 5) * (R.v < 0 ? -1 : 1) * (R.onGround ? 1 : .6) * dt;
+    R.x += Math.sin(R.yaw) * R.v * dt; R.z += Math.cos(R.yaw) * R.v * dt;
+    // walls: a soft bump back onto the grass strip
+    { const i = rcNearest(R), p = T.p[i], l = (R.x - p.x) * p.nx + (R.z - p.z) * p.nz, lim = RC_W + 1.7;
+      if (Math.abs(l) > lim){ const o = l - Math.sign(l) * lim; R.x -= p.nx * o; R.z -= p.nz * o; R.v *= .9; if (R.me && R.bumpT <= 0 && R.v > 6){ SND.hit(); R.bumpT = .5; } } }
+    // jumping: hop (hold it while steering to drift), ramps launch you
+    const gh = rcGround(R), hopP = I.hop && !R.hop0; R.hop0 = I.hop;
+    if (R.onGround){
+      if (R.gh0 - gh > .25 && R.v > 4){ R.onGround = false; R.vy = clamp(R.v * .34, 4, 10); if (R.me) R.cheer = 1; }
+      else if (hopP){ R.onGround = false; R.vy = S.hop; if (R.me) SND.jump(); }
+      else R.y = gh;
+    }
+    if (!R.onGround){ R.vy -= (S.glide && R.vy < 0 ? 15 : 30) * dt; R.y += R.vy * dt;
+      if (R.y <= gh){ R.y = gh; R.vy = 0; R.onGround = true; if (I.hop && Math.abs(R.steer) > .3 && R.v > 8){ R.drift = Math.sign(R.steer); R.driftT = 0; } } }
+    R.gh0 = gh;
+    if (R.drift){ R.driftT += dt; if (!I.hop || R.v < 6){ if (R.driftT > .9){ R.boost = Math.max(R.boost, .45 + Math.min(.7, (R.driftT - .9) * .5)); if (R.me) banner('✨ Drift boost!'); } R.drift = 0; } }
+    const itemP = I.item && !R.it0; R.it0 = I.item; if (itemP && go) rcUseItem(R);
+    // boost pads and mystery boxes
+    if (R.y < .6) for (const p of rc.pads){ const dx = R.x - p.x, dz = R.z - p.z, a = dx * p.tx + dz * p.tz, l = dx * p.nx + dz * p.nz;
+      if (Math.abs(a) < 2.6 && Math.abs(l) < 2.2){ if (R.boost < .5 && R.me) SND.boing(); R.boost = Math.max(R.boost, 1.25); } }
+    for (const b of rc.boxes){ if (b.t > 0 || Math.abs(R.x - b.x) > 2 || Math.abs(R.z - b.z) > 2 || R.y > 2.6) continue;
+      b.t = 3; b.m.visible = false; if (!R.item){ const ks = Object.keys(RC_ITEMS); R.item = ks[Math.floor(Math.random() * ks.length)]; R.itemT = 1 + Math.random() * 2.5;
+        if (R.me){ SND.coin(); banner('🎁 ' + RC_ITEMS[R.item].e + ' ' + RC_ITEMS[R.item].n + '! ' + (touchUI && !pad.on ? 'Tap ' + RC_ITEMS[R.item].e + ' to use it' : pad.on ? 'Press LB or Ⓨ' : 'Press Shift')); } } }
+    // laps
+    const prev = R.i; R.i = rcNearest(R); const N = T.N;
+    if (R.i > N * .45 && R.i < N * .55) R.half = true;
+    if (prev > N * .85 && R.i < N * .15){ if (R.half){ R.lap++; R.half = false; if (!R.fin) rcLap(R); } }
+    else if (prev < N * .15 && R.i > N * .85){ R.lap--; R.half = true; }
+    R.prog = R.lap * N + R.i;
+  }
+  function rcLap(R){
+    if (R.lap >= RC_LAPS){ rcFinish(R); return; }
+    if (R.me && R.lap >= 1) banner(R.lap === RC_LAPS - 1 ? '🔔 Final lap!' : '🏁 Lap ' + (R.lap + 1) + ' of ' + RC_LAPS);
+  }
+  function rcFinish(R){
+    R.fin = true; R.finT = rc.clock; R.cheer = 2.5;
+    if (!rc.remote){ if (!rc.order.some(o => o[0] === R.uid)){ rc.order.push([R.uid, +R.finT.toFixed(2)]); rcSendOrder(); } }
+    if (R.me){
+      if (rc.remote) mpSendTo(mp.hconn, {t: 'racefin', n: rc.n, tm: +R.finT.toFixed(2)});
+      const pl = rcMyPlace(); SND.win(); big(RC_MEDAL[pl - 1] + ' ' + RC_PLACE[pl - 1] + '!'); rc.bigT = 2.5; confetti();
+      rc.endT = 3.2;
+    }
+  }
+  function rcSendOrder(){ if (mp.on && mp.host) mpSend({t: 'race', a: 'ord', n: rc.n, o: rc.order}); }
+  /* --- who's racing (local + friends in the room) and in what place --- */
+  function rcField(){
+    const out = rc.racers.map(R => ({uid: R.uid, name: R.me ? 'You' : R.name, prog: R.prog, fin: R.fin, finT: R.finT, me: !!R.me}));
+    if (mp.on) for (const E of mp.ents.values()){ if (E.m !== 'race' || !E.rc || E.rc.n !== rc.n || performance.now() - E.seen > 4000) continue;
+      if (out.some(o => o.uid === E.uid)) continue; const L = mpLook(E.uid); out.push({uid: E.uid, name: L ? L.name : 'Friend', prog: E.rc.prog, fin: E.rc.fin, finT: 0, me: false}); }
+    const oi = u => { const k = rc.order.findIndex(o => o[0] === u); return k < 0 ? -1 : k; };
+    out.forEach(o => { const k = oi(o.uid); o.ord = k >= 0 ? k : o.fin ? 50 + (o.finT || 0) / 1000 : 1e9; if (k >= 0) o.finT = rc.order[k][1]; });
+    out.sort((a, b) => a.ord - b.ord || b.prog - a.prog); return out;
+  }
+  function rcMyPlace(){ const f = rcField(); return Math.max(1, f.findIndex(o => o.me) + 1); }
+  /* --- per-step / per-frame --- */
+  function raceStep(dt){
+    if (!rc || !rc.me) return;
+    if (rc.phase === 'cd'){
+      rc.cd -= dt; const n = Math.ceil(rc.cd);
+      if (n !== rc.cdN){ rc.cdN = n; if (n > 0){ big(String(n)); beep([440], .14, 'square', .06); } else { big('GO! 🏁'); beep([880, 1175], .16, 'square', .07); rc.phase = 'go'; rc.bigT = .9; rc.clock = 0; } }
+    } else if (rc.phase === 'go'){ if (!rc.me.fin) rc.clock += dt; }
+    if (rc.bigT > 0 && (rc.bigT -= dt) <= 0) big('');
+    // gentle rubber-banding: computer racers ease off when far ahead of you and push a bit when behind
+    const ref = rc.me.fin ? null : rc.me.prog;
+    rc.racers.forEach(R => { if (!R.bot) return; if (ref == null){ R.rb = 1; return; } const lead = (R.prog - ref) / rc.T.N; R.rb = clamp(1 - lead * 1.3, .8, 1.08); });
+    rc.racers.forEach(R => rcPhys(R, rcInput(R), dt));
+    // racers bump each other softly
+    const L = rc.racers; for (let a = 0; a < L.length; a++) for (let b = a + 1; b < L.length; b++){ const A = L[a], B = L[b], dx = B.x - A.x, dz = B.z - A.z, d = Math.hypot(dx, dz);
+      if (d < 2.2 && d > 1e-4 && Math.abs(A.y - B.y) < 1.5){ const o = (2.2 - d) / 2, ux = dx / d, uz = dz / d; A.x -= ux * o; A.z -= uz * o; B.x += ux * o; B.z += uz * o; } }
+    rc.boxes.forEach(b => { if (b.t > 0 && (b.t -= dt) <= 0) b.m.visible = true; });
+    const M = rc.me; P.x = M.x; P.z = M.z; P.y = M.y; P.vx = P.vz = P.vy = 0; P.face = M.yaw; P.onGround = true; P.airT = 0; emote = null;
+    if (rc.endT > 0 && (rc.endT -= dt) <= 0) rcShowFinish();
+  }
+  function rcPlaceMount(R, mt, x, y, z, yaw, v, dt, steer){
+    mt.g.position.set(x, y, z); mt.g.rotation.y = yaw;
+    if (mt.pet){ animPet(mt.pet, 0, Math.min(9, Math.abs(v) / 2.2), dt, worldT); mt.pet.g.rotation.z = -(steer || 0) * .08; }
+    if (mt.wheels) mt.wheels.forEach(w => { w.rotation.x += v * dt / .42; });
+    if (mt.sh) mt.sh.position.y = .03 - y;
+  }
+  function rcSeat(mt, x, y, z, yaw){ const s = Math.sin(yaw), c = Math.cos(yaw); return {x: x + s * mt.seatZ, y: y + mt.seatY - RC_HIP - (mt.kart ? -.12 : 0), z: z + c * mt.seatZ}; }
+  function raceAnimate(dt){
+    if (!rc) return;
+    rc.boxes.forEach(b => { b.m.rotation.y += dt * 1.6; b.m.rotation.x = Math.sin(worldT * 1.3 + b.x) * .25; b.m.position.y = 1.3 + Math.sin(worldT * 2 + b.z) * .15; });
+    rc.pads.forEach((p, k) => { p.m.material.opacity = .7 + .3 * Math.sin(worldT * 8 + k); });
+    rc.flags.forEach(f => { f.g.rotation.y = Math.sin(worldT * 3 + f.ph) * .35; });
+    rc.fans.forEach(f => { f.o.position.y = f.y + Math.max(0, Math.sin(worldT * (rc.phase === 'go' ? 9 : 4) + f.ph)) * .35; });
+    rc.racers.forEach(R => {
+      rcPlaceMount(R, R.mount, R.x, R.y, R.z, R.yaw, R.v, dt, R.steer);
+      const s = rcSeat(R.mount, R.x, R.y, R.z, R.yaw), M = R.me ? model : R.model;
+      M.g.position.set(s.x, s.y, s.z); M.g.rotation.y = R.yaw; if (!R.me) applyPose(dt, rcPose(R), M);
+      if (R.mount.pet) R.mount.pet.g.visible = true;
+    });
+    if (rc.me){ const M = rc.me;   // camera: chase behind (unless you're looking around yourself); first person rides along
+      if (rc.phase === 'pick'){ cam.yaw += dt * .18; cam.pitch += (.32 - cam.pitch) * Math.min(1, dt * 2); cam.dist += (16 - cam.dist) * Math.min(1, dt * 2); }
+      else { if (Math.abs(cam.yaw - (rc.camY ?? cam.yaw)) > 1e-4) rc.lookT = 1.4; rc.lookT = (rc.lookT || 0) - dt;
+        if (rc.lookT <= 0 || fpOn()){ let d = (M.yaw + Math.PI) - cam.yaw; d = rcWrap(d); cam.yaw += d * Math.min(1, dt * (fpOn() ? 10 : 3.2)); if (!fpOn()){ cam.pitch += (.3 - cam.pitch) * Math.min(1, dt * 2); cam.dist += (11.5 - cam.dist) * Math.min(1, dt * 2); } } }
+      rc.camY = cam.yaw; }
+  }
+  function raceCam(){
+    const M = rc && rc.me; if (!M) return false;
+    const mt = M.mount, top = M.y + mt.seatY + (mt.kart ? 1.7 : 1.4);
+    if (fpOn()){ const s = rcSeat(mt, M.x, M.y, M.z, M.yaw), fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), ey = s.y + 2.5, cp = Math.cos(cam.pitch);
+      camera.position.set(s.x + fx * .3, ey, s.z + fz * .3); camera.lookAt(s.x + fx * (.3 + cp * 10), ey - Math.sin(cam.pitch) * 10, s.z + fz * (.3 + cp * 10)); return true; }
+    const cp = Math.cos(cam.pitch), d = cam.dist;
+    camera.position.set(M.x + Math.sin(cam.yaw) * cp * d, Math.max(.6, top + Math.sin(cam.pitch) * d), M.z + Math.cos(cam.yaw) * cp * d); camera.lookAt(M.x, top, M.z);
+    const fv = 60 + (M.boost > 0 ? 9 : 0); if (Math.abs(camera.fov - fv) > .05){ camera.fov += (fv - camera.fov) * .08; camera.updateProjectionMatrix(); }
+    return true;
+  }
+  function raceHud(){
+    if (!rc || !rc.me) return;
+    const M = rc.me, lap = clamp(M.lap + 1, 1, RC_LAPS), f = rcField(), pl = Math.max(1, f.findIndex(o => o.me) + 1);
+    $('#rcLap').textContent = M.fin ? '✔' : lap; $('#rcPos').textContent = RC_MEDAL[pl - 1] + ' ' + RC_PLACE[pl - 1]; $('#rcN').textContent = f.length;
+    const it = $('#rcItem'), want = M.item ? RC_ITEMS[M.item].e : '🎁'; if (it.textContent !== want) it.textContent = want; it.classList.toggle('has', !!M.item);
+    if (rc.panel === 'fin' && (rc.finT = (rc.finT || 0) + 1) % 30 === 0) rcStandings();
+  }
+  /* --- panels: pick a mode and a ride, the finish screen --- */
+  function rcBar(n){ return '<span class="rcbar">' + [1, 2, 3, 4, 5].map(k => '<u class="' + (k <= n ? 'on' : '') + '"></u>').join('') + '</span>'; }
+  function rcBest(md){ const b = rc.sv.best[md]; return b ? fmt(b, true) : '—'; }
+  function rcPickOpen(step, md){
+    rc.panel = 'pick'; rc.phase = 'pick'; choosing = true; big(''); $('#rcFin').classList.remove('show'); $('#oTip').classList.add('hide');
+    const g = mpGuest(), P2 = $('#rcPick'); P2.classList.add('show');
+    $('#rcModes').hidden = step !== 1; $('#rcRides').hidden = step !== 2; $('#rcBack').hidden = step !== 2 || g;
+    $('#rcBestA').textContent = rcBest('animal'); $('#rcBestK').textContent = rcBest('kart');
+    P2.querySelectorAll('.rcmode').forEach(b => b.disabled = g);
+    if (step === 1){ $('#rcPickS').textContent = g ? (rc.wait ? '🏁 A race is going on! You\'ll join the next one.' : '⏳ The host picks the mode. Get ready!') : 'Pick how you want to race!'; setTimeout(() => { const b = $('#rcModes .rcmode'); if (b && pad.on && window.rubloxPadFocus) rubloxPadFocus(b); }, 0); return; }
+    rc.md = md; const L = rcRides(md), mine = rc.sv.ride[md] | 0;
+    $('#rcPickS').innerHTML = (md === 'kart' ? '🏎️ <b>Normal mode</b> · pick your kart!' : '🐾 <b>Animal mode</b> · pick who you ride!') + (g ? '<br>' + (rc.ready ? '✅ Ready! Waiting for the host to start…' : 'Tap your favorite. The host starts the race.') : '');
+    $('#rcRides').innerHTML = L.map((R, i) => `<button class="rcride${g && rc.ready && i === mine ? ' sel' : ''}" data-ride="${i}">${md === 'kart' ? `<span class="re" style="color:${R.col}">■</span>` : `<span class="re">${R.e}</span>`}<b>${R.name}</b>`
+      + `<i>⚡ Speed ${rcBar(R.sp)}</i><i>🌀 Turning ${rcBar(R.tn)}</i><i>🚀 Zoom ${rcBar(R.zm)}</i><small>${R.note}</small></button>`).join('');
+    $('#rcRides').querySelectorAll('.rcride').forEach(b => b.onclick = () => rcChoose(+b.dataset.ride));
+  }
+  function rcPickMode(md){
+    if (mpGuest()) return;
+    rcPickOpen(2, md); if (mp.on && mp.host) mpSend({t: 'race', a: 'pick', md});
+  }
+  function rcChoose(i){
+    rc.sv.ride[rc.md] = i; rcSave();
+    if (mpGuest()){ rc.ready = true; rcPickOpen(2, rc.md); return; }
+    rcGo(rc.md, i);
+  }
+  function rcGo(md, ride){   // single player or the host: set up the grid and start the countdown
+    rc.n = (rc.n || 0) + 1; rc.order = []; rc.md = md;
+    const grid = {}, humans = [rcUid()]; if (mp.on) for (const g of mp.guests.values()) if (g.m === 'race') humans.push(g.uid);
+    humans.slice(0, 6).forEach((u, k) => grid[u] = k);
+    const nb = mp.on ? 0 : 5 /* t186u: AI racers only in single player; multiplayer = real players only */, looks = (mp.on ? [0, 1, 2, 3] : [0, 1, 2, 3, 4]).sort(() => Math.random() - .5).slice(0, nb);
+    const bots = looks.map((look, k) => ({look, ride: Math.floor(Math.random() * rcRides(md).length), slot: humans.length + k, skill: .86 + Math.random() * .06}));
+    rcBuildRacers(md, ride, grid, bots);
+    if (mp.on && mp.host) mpSend({t: 'race', a: 'cd', n: rc.n, md, grid});
+    rcCountdown();
+  }
+  function rcCountdown(){
+    rc.panel = null; rc.phase = 'cd'; rc.cd = 3.99; rc.cdN = 9; rc.clock = 0; rc.endT = 0; rc.lookT = 0; choosing = false; rc.ready = false; rc.wait = false;
+    $('#rcPick').classList.remove('show'); $('#rcFin').classList.remove('show'); cam.yaw = rc.me.yaw + Math.PI; cam.pitch = .3; cam.dist = 11.5;
+    $('#oTip').classList.remove('hide'); tipTimer = 7; banner(rc.md === 'kart' ? '🏎️ Normal mode · 3 laps!' : '🐾 Animal mode · 3 laps!');
+  }
+  function rcShowFinish(){
+    const M = rc.me, pl = rcMyPlace(), md = rc.md, t = M.finT, best = rc.sv.best[md], nb = !best || t < best;
+    if (!rc.paid){ rc.paid = true; const won = RC_PRIZE[pl - 1] + (nb ? 10 : 0); setCoins(coins + won); runCoins += won; rc.won = won;
+      if (nb) rc.sv.best[md] = +t.toFixed(2); rc.sv.races = (rc.sv.races || 0) + 1; if (pl === 1) rc.sv.wins = (rc.sv.wins || 0) + 1; rcSave(); rc.nb = nb; }
+    rc.panel = 'fin'; if (!mp.on) choosing = true;
+    $('#rcFinE').textContent = pl === 1 ? '🏆' : RC_MEDAL[pl - 1]; $('#rcFinH').textContent = pl === 1 ? 'You won the race!' : 'You came ' + RC_PLACE[pl - 1] + '!';
+    $('#rcFinS').innerHTML = `⏱️ Time: <b>${fmt(t, true)}</b>${rc.nb ? ' 🏅 New best!' : ' · best ' + rcBest(md)}<br>🎁 You earned <b>${rc.won}</b> Rublox Coins!`;
+    const g = mpGuest(); $('#rcAgain').disabled = g; $('#rcAgain').textContent = g ? '⏳ Host starts the next race' : '🔁 Race again';
+    rcStandings(); $('#rcFin').classList.add('show');
+    setTimeout(() => { if (pad.on && window.rubloxPadFocus) rubloxPadFocus(g ? $('#rcFinHome') : $('#rcAgain')); }, 0);
+  }
+  function rcStandings(){
+    $('#rcStand').innerHTML = rcField().map((o, k) => `<li class="${o.me ? 'me' : ''}">${RC_MEDAL[k] || '🏅'} <b>${o.name}</b> <span>${o.ord < 1e8 ? fmt(o.finT, true) : '🏃 racing…'}</span></li>`).join('');
+  }
+  function rcAgain(){
+    if (mpGuest()) return;
+    rcClear(); rc.paid = false; rcPickOpen(1); if (mp.on && mp.host) mpSend({t: 'race', a: 'again'});
+  }
+  function raceEnter(){   // called by start() for the racing game
+    rc.sv = Object.assign({best: {}, ride: {animal: 0, kart: 0}, races: 0, wins: 0}, load('rubloxRace', {}) || {});
+    rc.racers = []; rc.order = []; rc.n = 0; rc.remote = mpGuest(); rc.paid = false;
+    const S0 = rcFrame(rc.T, rc.T.N - 8); cam.yaw = S0.yaw + Math.PI - .8; cam.pitch = .32; cam.dist = 16;
+    rc.me = rcRacer({uid: rcUid(), me: true, md: 'animal', ride: rc.sv.ride.animal | 0, name: 'You'}); rc.racers.push(rc.me); rcSetGrid(rc.me, 0);   // you wait on the grid while you pick
+    if (rc.remote && mp.hmode === 'race' && mp.rcLive){ rc.wait = true; }
+    rcPickOpen(1);
+    if (rc.remote && mp.rcPick) rcPickOpen(2, mp.rcPick);
+  }
+  function raceStop(){ ['#rcPick', '#rcFin'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('rmode'); }
+  /* --- multiplayer: the host runs the race (countdown, finish order); everyone drives their own ride --- */
+  function raceWire(){ const M = rc && rc.me; if (!M) return 0; return ['R', rc.md === 'kart' ? 1 : 0, M.mount.R ? rcRides(rc.md).indexOf(M.mount.R) : 0, M.lap, Math.round(M.prog), M.fin ? 1 : 0, M.boost > 0 ? 1 : 0, rc.n | 0]; }
+  function raceBotsSnap(list){
+    if (!rc || rc.remote || rc.phase === 'pick') return; const r = v => Math.round(v * 100) / 100;
+    rc.racers.forEach(R => { if (!R.bot || !/^b[0-3]$/.test(R.uid)) return;
+      list.push([R.uid, 'race', r(R.x), r(R.y), r(R.z), r(R.yaw), 4, r(R.v), '', 0, ['R', rc.md === 'kart' ? 1 : 0, rcRides(rc.md).indexOf(R.mount.R), R.lap, Math.round(R.prog), R.fin ? 1 : 0, R.boost > 0 ? 1 : 0, rc.n | 0]]); });
+  }
+  function raceParse(m, a){
+    if (m !== 'race' || !Array.isArray(a) || a[0] !== 'R') return null; const n = v => { v = +v; return isFinite(v) ? v : 0; };
+    return {md: a[1] ? 'kart' : 'animal', ride: clamp(n(a[2]) | 0, 0, 5), lap: n(a[3]) | 0, prog: n(a[4]), fin: !!a[5], boost: !!a[6], n: n(a[7]) | 0};
+  }
+  function mpRaceEnt(E, dt, show){
+    const on = show && mode === 'race' && rc && E.m === 'race' && !!E.rc;
+    if (E.rcM) E.rcM.g.visible = on;
+    if (!on) return false;
+    const key = E.rc.md + E.rc.ride;
+    if (!E.rcM || E.rcM.key !== key){ if (E.rcM) scene.remove(E.rcM.g); E.rcM = rcMount(E.rc.md, E.rc.ride); E.rcM.key = key; scene.add(E.rcM.g); }
+    rcPlaceMount(E, E.rcM, E.x, E.y, E.z, E.face, E.v, dt, 0);
+    const s = rcSeat(E.rcM, E.x, E.y, E.z, E.face); E.model.g.position.set(s.x, s.y, s.z); E.model.g.rotation.y = E.face;
+    applyPose(dt, rcPose({md: E.rc.md, steer: 0, cheer: E.rc.fin ? 1 : 0}), E.model); E.sh.visible = false; return true;
+  }
+  function raceNet(d){   // guests: messages from the host
+    if (d.a === 'pick'){ mp.rcPick = d.md === 'kart' ? 'kart' : 'animal'; mp.rcLive = false; if (running && mode === 'race' && rc && rc.panel === 'pick'){ rc.ready = false; rcPickOpen(2, mp.rcPick); } return; }
+    if (d.a === 'again'){ mp.rcPick = null; mp.rcLive = false; if (running && mode === 'race' && rc){ rcClear(); rc.paid = false; rc.wait = false; rcPickOpen(1); } return; }
+    if (d.a === 'cd'){ mp.rcLive = true; mp.rcPick = null;
+      if (!(running && mode === 'race' && rc)) return; const md = d.md === 'kart' ? 'kart' : 'animal', grid = d.grid && typeof d.grid === 'object' ? d.grid : {};
+      if (grid[mp.me] == null){ rc.wait = true; if (rc.panel === 'pick') rcPickOpen(1); return; }
+      rc.n = d.n | 0; rc.order = []; rc.md = md; rc.paid = false; rcBuildRacers(md, rc.sv.ride[md] | 0, {[mp.me]: clamp(grid[mp.me] | 0, 0, 5)}, []); rcCountdown(); return; }
+    if (d.a === 'ord' && rc && (d.n | 0) === rc.n && Array.isArray(d.o)){ rc.order = d.o.slice(0, 8).filter(o => Array.isArray(o) && typeof o[0] === 'string').map(o => [o[0], +o[1] || 0]); }
+  }
+  function raceGuestFin(g, d){   // host: a friend crossed the line
+    if (!rc || (d.n | 0) !== rc.n || rc.order.some(o => o[0] === g.uid)) return;
+    rc.order.push([g.uid, +d.tm || 0]); rcSendOrder();
+  }
   /* ---------- per-frame ---------- */
   const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
   function animate(dt){
@@ -6157,12 +6643,13 @@ const Obby = (() => {
     let d = P.face - model.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); model.g.rotation.y += d * Math.min(1, dt * 12);
     const sp = Math.hypot(P.vx, P.vz);
     P.walk += dt * sp * (sp > SPEED * 1.15 ? 1.5 : 1.3);
-    { const fv = run.on && !(pt && pt.drive) ? 66 : 60; if (Math.abs(camera.fov - fv) > .05){ camera.fov += (fv - camera.fov) * Math.min(1, dt * 6); camera.updateProjectionMatrix(); } }
+    { const fv = run.on && !(pt && pt.drive) ? 66 : 60; if (!rc && Math.abs(camera.fov - fv) > .05){ camera.fov += (fv - camera.fov) * Math.min(1, dt * 6); camera.updateProjectionMatrix(); } }
     if (mode === 'tag'){ const v = Math.round(run.stam / STAM_MAX * 100) + (run.tired ? 1000 : 0); if (v !== run.shown){ run.shown = v; $('#oStamF').style.width = (v % 1000) + '%'; $('#oStam').classList.toggle('tired', run.tired); $('#oStam').classList.toggle('full', v === 100); } }
     if (emote){ emote.t += dt; if (emote.t > EMOTES[emote.id].dur || (!P.onGround && P.airT > .25)) emote = null; }
     const st = {state: P.climbing ? 'climb' : !P.onGround && P.airT > .08 ? 'jump' : sp > .8 ? 'walk' : 'idle', t: worldT, ph: P.walk, sp: Math.min(sp > SPEED * 1.15 ? 1.3 : 1, sp / 5), air: P.airT, jumped: P.jumped};
-    applyPose(dt, pt && pt.drive ? SIT_POSE : emote ? emotePose(emote.id, emote.t) : animPose(avatar.anim || 'default', st));
+    applyPose(dt, rc && rc.me ? rcPose(rc.me) : pt && pt.drive ? SIT_POSE : emote ? emotePose(emote.id, emote.t) : animPose(avatar.anim || 'default', st));
     if (pt && pt.drive){ model.g.rotation.y = pt.car.yaw; blob.visible = false; return; }
+    if (rc){ raceAnimate(dt); blob.visible = false; return; }
     // shadow on the highest surface below
     let top = -1e9;
     for (const b of solids){ if (!b.active) continue; const p = b.mesh.position;
@@ -6197,13 +6684,13 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
+    const line = mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
   function padInput(s, dt){
     if (s === 'off' || s === 'idle' || s === 'lost' || !s){
-      pad.x = pad.y = 0; pad.jump = false; pad.lx = pad.ly = 0; pad.gas = pad.brake = 0; run.pad = false;
+      pad.x = pad.y = 0; pad.jump = false; pad.lx = pad.ly = 0; pad.gas = pad.brake = 0; pad.hop = pad.item = false; run.pad = false;
       if (s === 'idle' && pad.on){ pad.on = false; $('#obby').classList.remove('padui'); if (running) setTouchUI(touchUI); }
       if (s === 'lost' && running && !paused && !won && !over && !choosing && !(mp.on && mp.host && mode === 'tag')) setPause(true);
       return;
@@ -6231,6 +6718,7 @@ const Obby = (() => {
       else { const t = $('#oTip'); padTip(); if (t.classList.contains('hide')){ t.classList.remove('hide'); tipTimer = 8; } else { t.classList.add('hide'); tipTimer = 0; } }
       return;
     }
+    if (mode === 'race' && rc){ pad.gas = Math.max(s.v[7] || 0, s.b[0] ? 1 : 0); pad.brake = Math.max(s.v[6] || 0, s.b[1] ? 1 : 0); pad.y = 0; pad.jump = false; pad.hop = !!(s.b[5] || s.b[2]); pad.item = !!(s.b[4] || s.b[3]); return; }
     if (mode === 'pets' && pt){
       if (jp[2] && petsAct()) return;
       if (pt.drive){ pad.gas = Math.max(s.v[7] || 0, s.b[0] ? 1 : 0); pad.brake = Math.max(s.v[6] || 0, s.b[1] ? 1 : 0); pad.y = 0; pad.jump = false; if (jp[3]) { cam.yaw = pt.car.yaw + Math.PI; cam.pitch = .34; } return; }
@@ -6279,6 +6767,11 @@ const Obby = (() => {
   addEventListener('resize', () => setTimeout(hudMeasure, 50));
   function setTouchUIBase(on){
     hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
+    if (mode === 'race'){
+      $('#oTip').innerHTML = (on ? '🕹️ Your ride goes by itself: left thumb steers (pull back to brake) · ⬆️ hop (hold + steer to drift) · 🎁 use a power-up · 👁️ first person'
+        : '⌨️ W/↑ go · S/↓ brake · A/D steer · Space hop (hold + steer to drift) · Shift use power-up · V first person · Esc menu') + '<br>🏁 3 laps! Blue arrows = boost · ❓ boxes = power-ups · orange ramps = big jumps';
+      return;
+    }
     if (mode === 'build'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ jump · 🏃 run · Swipe to look · 👁️ first person<br>👆 Tap to place a block · 🔨/🧽 button switches to delete'
         : '⌨️ WASD move · Space jump · Shift run · Drag to look · V first person · 🖱️ Click to place a block<br>Shift+click / right-click / X = delete · Q/E pick block · Z undo') + '<br>Build anything! 🪙 +1 coin per 10 blocks (up to 50 a day)';
@@ -6306,6 +6799,7 @@ const Obby = (() => {
     clearTimeout(rotT); if (show) rotT = setTimeout(() => { rotDismissed = true; $('#oRot').classList.remove('show'); }, 5000);
   }
   function updateCamera(){
+    if (rc && raceCam()) return;
     if (fpOn()){   // eyes: just in front of your (hidden) head, looking where the camera yaw/pitch point
       const cp = Math.cos(cam.pitch), fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), ey = P.y + 2.45;
       camera.position.set(P.x + fx * .22, ey, P.z + fz * .22);
@@ -6339,7 +6833,8 @@ const Obby = (() => {
       $('#oSkip').classList.toggle('show', !won && !paused && deaths >= SKIP_DEATHS && level < OBBY_N && !mpGuest()); }
     if (pt) petsHud();
     if (tg || pt) return;
-    $('#oTime').textContent = fmt(time); $('#oDeaths').textContent = deaths;
+    $('#oTime').textContent = rc ? fmt(rc.clock || 0, true) : fmt(time); $('#oDeaths').textContent = deaths;
+    if (rc) raceHud();
     if (nds){
       const N = nds, D = N.dis && DISASTERS[N.dis], hp = Math.max(0, Math.round(N.hp));
       $('#oDis').textContent = N.phase === 'lobby' ? '🛋️ Lobby' : N.phase === 'ready' ? '⏳ Get ready' : N.combo.length > 1 ? N.combo.map(k => DISASTERS[k].emoji).join('') + (N.combo.length === 3 ? ' Triple!' : ' Double!') : D.emoji + ' ' + D.name;
@@ -6535,7 +7030,7 @@ const Obby = (() => {
 
   /* ---------- start / stop ---------- */
   function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets'].includes(m) ? m : 'obby'; diff = d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race'].includes(m) ? m : 'obby'; diff = mode === 'race' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     $('#obby').classList.add('show'); document.body.style.overflow = 'hidden'; document.documentElement.classList.add('ingame');
@@ -6567,8 +7062,15 @@ const Obby = (() => {
     else if (mode === 'nds') banner('🏝️ Disaster Island!');
     else if (mode === 'build') banner('🧱 Build World! Make something awesome');
     else if (mode === 'tag') banner("🏷️ Block Tag! Don't be IT!");
+    else if (mode === 'race') banner('🏁 Pet Kart Racing!');
     else if (mode === 'pets') banner(pt && pt.s.pets.length ? '🐾 Welcome back, ' + pt.s.pets[pt.s.a].n + '!' : '🐾 Adopt a Pet! Drive to the Pet Shelter');
     else if (diff) begin(diff);
+    $('#obby').classList.toggle('rmode', mode === 'race'); ['#rcLapBox', '#rcPosBox', '#rcItem'].forEach(id => $(id).style.display = mode === 'race' ? '' : 'none'); ['#rcPick', '#rcFin'].forEach(id => $(id).classList.remove('show'));
+    if (mode === 'race'){ if (!window.__rcBound){ window.__rcBound = true;
+        document.querySelectorAll('#rcModes .rcmode').forEach(b => b.onclick = () => rc && rcPickMode(b.dataset.md));
+        $('#rcBack').onclick = () => rc && rcPickOpen(1); $('#rcHome').onclick = $('#rcFinHome').onclick = stop; $('#rcAgain').onclick = () => rc && rcAgain();
+        $('#rcItem').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (rc) rc.tapItem = true; }); }
+      raceEnter(); }
     mpOnStart();
   }
   function stop(){
@@ -6576,13 +7078,19 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
 
   // debug / test hook
   window.obbyDebug = {
+    race: () => rc && {phase: rc.phase, panel: rc.panel, md: rc.md, n: rc.n, clock: rc.clock, order: rc.order.slice(), remote: rc.remote, place: rc.me ? rcMyPlace() : 0, field: rc.me ? rcField().map(o => ({uid: o.uid, prog: o.prog, fin: o.fin})) : [],
+      racers: rc.racers.map(R => ({uid: R.uid, me: !!R.me, bot: !!R.bot, ride: R.mount.R.name, x: +R.x.toFixed(2), y: +R.y.toFixed(2), z: +R.z.toFixed(2), v: +R.v.toFixed(2), lap: R.lap, i: R.i, prog: R.prog, fin: R.fin, item: R.item, boost: +R.boost.toFixed(2), onGround: R.onGround})),
+      sv: rc.sv, choosing, N: rc.T.N, fp: fpOn(), cam: {yaw: +cam.yaw.toFixed(3), x: +camera.position.x.toFixed(2), y: +camera.position.y.toFixed(2), z: +camera.position.z.toFixed(2)}, inp: rc.me && !rc.me.fin ? rcInput(rc.me) : null},
+    raceWarp(laps, back = 30, who){ const L = who ? rc.racers.filter(R => who === 'bots' ? R.bot : R.uid === who) : [rc.me]; L.forEach(R => { const F = rcFrame(rc.T, rc.T.N - back, R.me ? 0 : (R.slot % 2 ? 3 : -3)); Object.assign(R, {x: F.x, z: F.z, yaw: F.yaw, lap: laps, half: true}); R.i = rcNearest(R, true); R.prog = R.lap * rc.T.N + R.i; }); },
+    raceAt(u, lat = 0){ const F = rcFrame(rc.T, Math.floor(rc.T.N * u), lat); Object.assign(rc.me, {x: F.x, z: F.z, yaw: F.yaw}); rc.me.i = rcNearest(rc.me, true); rc.me.prog = rc.me.lap * rc.T.N + rc.me.i; return {ramps: rc.ramps.length, pads: rc.pads.length, boxes: rc.boxes.length}; },
+    raceItem(k){ rc.me.item = k; }, raceBoxReset(){ rc.boxes.forEach(b => { b.t = 0; b.m.visible = true; }); }, raceSkipCd(){ if (rc.phase === 'cd') rc.cd = .01; },
     pets: () => pt && {plot: pt.plot, owners: pt.owners, signs: pt.plots.map(q => q.name), places: {home: PLACES.home, car0: PLACES.car0, bowl: PLACES.bowl, toy: PLACES.toy, bed: PLACES.bed, gate: PLACES.gate}, flow: pt.s.flow, pend: pt.s.pend, tut: pt.s.tut, tsub: pt.tsub, a: pt.s.a, pets: pt.s.pets.map(p => Object.assign({}, p, {stage: stageOf(p.xp)})), drive: pt.drive,
       car: {x: pt.car.x, z: pt.car.z, yaw: pt.car.yaw, v: pt.car.v}, pet: pt.pet && {x: pt.pet.x, y: pt.pet.y, z: pt.pet.z, act: pt.pet.act, stage: pt.pet.stage, scale: pt.pet.m.inner.scale.x},
       door: pt.doorOpen, leash: pt.leashOn, walk: pt.walk && Object.assign({}, pt.walk), ball: pt.ballSt && pt.ballSt.st, prompt: pt.prompt && pt.prompt.t, promptK: pt.prompt && pt.prompt.k,
@@ -6838,7 +7346,8 @@ const Obby = (() => {
   }
   function closeOf(c){
     const id = c.root.id;
-    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
+    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
+    if (id === 'rcPick'){ const b = document.querySelector('#rcBack'); if (b && !b.hidden) return b; }   // B in the ride list = back to the modes
     if (map[id]) return document.querySelector(map[id]);
     return null;
   }
