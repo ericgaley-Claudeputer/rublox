@@ -378,6 +378,8 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .mpp i{width:16px;height:16px;border-radius:50%;display:inline-block;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.2)}
 .mpp button{border:0;background:#ffdde1;color:#c0263a;border-radius:50%;width:24px;height:24px;font-weight:900;cursor:pointer;padding:0}
 .mpmsg{width:100%;font-weight:800}
+.mpjs{margin-top:10px;padding:10px 12px;border-radius:14px;background:var(--bg2);border:2px solid var(--line);font-weight:800;white-space:pre-line;line-height:1.55}
+.mpjs.bad{border-color:var(--red)}.mpjs.ok{border-color:#2ec27e}
 .mpst{font-weight:800;color:var(--red);margin-top:8px;white-space:pre-line;line-height:1.45}
 .updbar{display:block;margin-top:10px;border:0;border-radius:12px;padding:10px 14px;font:inherit;font-weight:900;color:#fff;background:var(--blue);cursor:pointer}
 .updbar[hidden]{display:none}
@@ -665,7 +667,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
       <div class="mprow" id="mpIdle">
         <div class="mpt"><b>👨‍👩‍👧 Play together</b><small>Play with your family on your own phones and computers! Private rooms with a secret code. No chat, no strangers.</small></div>
         <button class="big" id="mpHost">🏠 Host a game</button>
-        <div class="mpj"><input id="mpCode" maxlength="9" autocorrect="off" inputmode="text" placeholder="CODE" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Room code"><button class="big green" id="mpJoin">🚪 Join</button></div>
+        <div class="mpj"><input id="mpCode" maxlength="9" autocorrect="off" inputmode="text" enterkeyhint="go" placeholder="CODE" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Room code"><button class="big green" id="mpJoin">🚪 Join</button></div>
       </div>
       <div class="mprow" id="mpRoom" hidden>
         <div class="mpcode"><small id="mpRole">Room code</small><b id="mpCodeShow">-----</b><div class="mplink" id="mpLink"></div></div>
@@ -673,6 +675,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
         <button class="big" id="mpLeave">👋 Leave room</button>
         <div class="mpmsg" id="mpMsg"></div>
       </div>
+      <div class="mpjs" id="mpJoinStat" hidden aria-live="polite"></div>
       <div class="mpst" id="mpStatus"></div>
       <button class="updbar" id="updBar" hidden onclick="location.replace(location.pathname + '?v=' + Date.now() + location.hash)">🆕 A newer Rublox is ready! Tap here to refresh</button>
     </div>
@@ -999,7 +1002,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.10.29-6';
+const BUILD = '2026.10.29-7';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -4148,7 +4151,9 @@ const Obby = (() => {
   const MP_TURN_URL = '';
   const MP_ICE = {iceServers: [
     {urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302']},
-    {urls: 'stun:stun.cloudflare.com:3478'}, {urls: 'stun:global.stun.twilio.com:3478'}]};
+    {urls: 'stun:stun.cloudflare.com:3478'}, {urls: 'stun:global.stun.twilio.com:3478'},
+    // best-effort free relay (no sign-up). If it's down it is simply skipped; set MP_TURN_URL for a reliable one.
+    {urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turn:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject'}]};
   if (MP_TURN_URL) fetch(MP_TURN_URL).then(r => r.json()).then(l => { if (Array.isArray(l)) MP_ICE.iceServers.push(...l.slice(0, 6)); }).catch(() => {});
   const mp = {on: false, host: false, code: '', peer: null, hconn: null, me: '', guests: new Map(), players: new Map(), roster: [], ents: new Map(),
     hmode: null, hdiff: null, ops: [], applying: false, lastHost: 0, timer: 0, nextG: 1, joinT: 0, status: '', homeT: 0, link: 'ok', revT: 0, revN: 0, retryT: 0};
@@ -4341,6 +4346,7 @@ const Obby = (() => {
     if (!d || typeof d !== 'object') return; mp.lastHost = performance.now();
     switch (d.t){
       case 'welcome':
+        if (!mp.on) mpJS(4);
         clearTimeout(mp.joinT); mp.on = true; mp.host = false; mp.me = typeof d.uid === 'string' ? d.uid : 'g0'; mp.status = '';
         mpSetRoster(d.roster); mp.hmode = d.hm || null; mp.hdiff = hostLvl(mp.hmode, d.hd); mpStartTick(); mpRender();
         mpNote('🎉 You joined ' + ((mp.players.get('H') || {}).name || 'the') + "'s room!");
@@ -4456,6 +4462,25 @@ const Obby = (() => {
   }
   /* --- connecting --- */
   function mpStatus(s){ mp.status = s; mpRender(); }
+  // Guest join progress, shown step by step so a stuck join says exactly where it stuck.
+  const MP_STEPS = ['📡 Connecting to the game server', '🔎 Finding room ', "🤝 Connecting to the host's computer", '✅ Joined the room!'];
+  function mpJS(n, detail, err){
+    if (!mp.js || n === 1) mp.js = {n: 1, room: mp.code};
+    if (n) mp.js.n = n; mp.js.detail = detail || ''; mp.js.err = err || ''; mp.js.room = mp.code || mp.js.room;
+    if (n === 4){ const j = mp.js; setTimeout(() => { if (mp.js === j){ mp.js = null; mpRender(); } }, 6000); }
+    mpRender();
+  }
+  function mpJSRender(){
+    const el = $('#mpJoinStat'); if (!el) return;
+    const j = mp.js; el.hidden = !j; if (!j) return;
+    el.className = 'mpjs' + (j.err ? ' bad' : j.n === 4 ? ' ok' : '');
+    el.textContent = (j.n < 4 ? 'Joining… step ' + j.n + ' of 4\n' : '') + MP_STEPS.map((t, i) => {
+      const k = i + 1, label = t + (k === 2 ? (j.room || '') : '');
+      if (k < j.n || (k === 4 && j.n === 4)) return '✔️ ' + label.replace(/^\S+ /, '');
+      if (k === j.n) return (j.err ? '❌ ' : '⏳ ') + label + (j.err ? '' : '…') + (j.detail && !j.err ? ' (' + j.detail + ')' : '');
+      return '▫️ ' + label.replace(/^\S+ /, '');
+    }).join('\n') + (j.err ? '\n' + j.err : '');
+  }
   function netMsg(err){
     const t = err && err.type;
     if (t === 'browser-incompatible') return '😢 This browser can\'t do multiplayer. Try Chrome, Safari or Edge.';
@@ -4469,6 +4494,7 @@ const Obby = (() => {
   function mpStartTick(){ clearInterval(mp.timer); mp.timer = setInterval(mpTick, MP_TICK); }
   function mpHost(tries = 0){
     if (mp.on || mp.peer) return;
+    mp.js = null;
     const code = Array.from({length: 5}, () => MP_ALPHA[Math.floor(Math.random() * MP_ALPHA.length)]).join('');
     mpStatus('⏳ Making your room…');
     const peer = mp.peer = mpNewPeer(MP_PREFIX + code); if (!peer) return;
@@ -4514,42 +4540,65 @@ const Obby = (() => {
   const mpWake = () => { if (mp.on && mp.host && mp.peer && mp.peer.disconnected){ mp.revN = 0; mpRevive(true); } };
   document.addEventListener('visibilitychange', () => { if (!document.hidden){ mpWake(); if (!mp.on) checkUpdate('wake'); } });
   addEventListener('online', mpWake); addEventListener('pageshow', mpWake);
+  const MP_NET_HELP = '\nTry this:\n📶 Both on the same Wi-Fi (not a "guest" Wi-Fi)\n🛡️ Turn off any VPN or ad-blocker app on the phone\n🔄 Refresh both pages and try again\n🌐 Open Rublox in Safari or Chrome, not inside another app';
   const MP_HELP = '\nTry this:\n✔️ Check the code with the host\n📶 Both on the same Wi-Fi\n🔄 Refresh both pages\n🖥️ Host: keep the Rublox screen open';
   function mpJoin(raw){
     const codes = mpCodes(raw);
-    if (!codes){ mpStatus('🔤 Room codes have 5 letters, like ' + 'KQZTA' + '.'); return; }
+    if (!codes){ mp.js = null; mpStatus('🔤 Room codes have 5 letters, like ' + 'KQZTA' + '.'); return; }
     if (mp.on || mp.peer) return;
     const t0 = Date.now(); let n = 0;
-    mp.code = codes[0]; mpStatus('⏳ Looking for room ' + codes[0] + '…');
-    const peer = mp.peer = mpNewPeer(); if (!peer) return;
-    const giveUp = msg => { if (mp.peer !== peer || mp.on) return; mpCleanup(); mpStatus(msg); checkUpdate('join'); };
+    mp.code = codes[0]; mp.status = ''; mpJS(1);
+    const peer = mp.peer = mpNewPeer(); if (!peer){ mpJS(1, '', '😢 Multiplayer could not load. Refresh the page.'); return; }
+    const giveUp = msg => { if (mp.peer !== peer || mp.on) return; const j = mp.js; mpCleanup(); mp.js = j; if (j) j.err = msg.split('\n')[0]; mpStatus(msg.split('\n').slice(1).join('\n').trim()); checkUpdate('join'); };
+    // the phone keyboard / switching apps can drop the link to the matchmaker mid-join: reconnect instead of failing
+    peer.on('disconnected', () => { if (mp.peer === peer && !mp.on && !peer.destroyed) setTimeout(() => { try { if (mp.peer === peer && !mp.on && peer.disconnected && !peer.destroyed) peer.reconnect(); } catch(e){} }, 500); });
     const attempt = () => {
       if (mp.peer !== peer || mp.on) return;
       const code = codes[n % codes.length]; n++; mp.code = code;
       let done = false;
+      if (mp.js && mp.js.n < 2) mpJS(2); else if (n > 1) mpJS(2, 'try ' + n);
       const conn = mp.hconn = peer.connect(MP_PREFIX + code, {reliable: true, serialization: 'json'});
+      // watch the WebRTC link: the host answered = room found (step 3); then the network path check (ICE)
+      const iw = setInterval(() => {
+        const pc = conn.peerConnection;
+        if (done || mp.on || mp.hconn !== conn || mp.peer !== peer){ clearInterval(iw); return; }
+        if (!pc) return;
+        if (pc.remoteDescription && mp.js && mp.js.n < 3){ codes.splice(0, codes.length, code); mpJS(3); }
+        const ice = pc.iceConnectionState, cs = pc.connectionState;
+        if (mp.js && mp.js.n === 3){
+          const d = ice === 'checking' ? 'checking network paths' : ice === 'connected' || ice === 'completed' ? 'saying hi' : ice === 'disconnected' ? 'link wobbly, retrying' : '';
+          if (d !== mp.js.detail) mpJS(3, d);
+        }
+        if (ice === 'failed' || cs === 'failed'){ clearInterval(iw); giveUp("😕 Found room " + code + " but this device couldn't reach the host's computer (network blocked)." + MP_NET_HELP); }
+      }, 300);
       const retry = () => {   // room not found (yet): the host may be re-registering, so keep trying for ~10 s
         if (done || mp.hconn !== conn || mp.on || mp.peer !== peer) return; done = true; clearTimeout(wd);
         try { conn.close(); } catch(e){}
-        if (Date.now() - t0 < 10000){ mpStatus('⏳ Still looking for room ' + codes[0] + '… (try ' + (n + 1) + ')'); clearTimeout(mp.retryT); mp.retryT = setTimeout(attempt, 1000 + 400 * n); }
-        else giveUp("🤔 Can't find room " + codes[0] + '.' + MP_HELP);
+        if (Date.now() - t0 < 10000){ mpJS(2, 'try ' + (n + 1)); clearTimeout(mp.retryT); mp.retryT = setTimeout(attempt, 1000 + 400 * n); }
+        else giveUp("🤔 Can't find room " + codes[0] + '. Is the code right?' + MP_HELP);
       };
       conn._retry = retry;
       // the matchmaker doesn't always repeat "no such room" for a retry, so a silent retry counts as not found yet
       const wd = n > 1 ? setTimeout(retry, 4000) : 0;
-      conn.on('open', () => { clearTimeout(wd); mpSendTo(conn, {t: 'hello', v: 1, b: BUILD, ...myLook()}); });
+      conn.on('open', () => { clearTimeout(wd); if (mp.js && mp.js.n < 3) mpJS(3); if (mp.js) mpJS(3, 'saying hi'); mpSendTo(conn, {t: 'hello', v: 1, b: BUILD, ...myLook()}); });
       conn.on('data', d => { if (mp.hconn === conn) mpFromHost(d); });
       conn.on('close', () => { if (mp.hconn !== conn || mp.leaving) return; if (mp.on) mpHostGone('left'); else retry(); });
       conn.on('error', () => { if (mp.hconn === conn && !mp.on) retry(); });
     };
-    peer.on('open', attempt);
+    peer.on('open', () => { if (mp.js && mp.js.n < 2) attempt(); });   // (a reconnect re-opens: don't start a second try)
     peer.on('error', err => {
       if (mp.peer !== peer || mp.on) return;
       if (err.type === 'peer-unavailable'){ if (mp.hconn && mp.hconn._retry) mp.hconn._retry(); return; }
-      giveUp(netMsg(err) + MP_HELP);
+      if (err.type === 'disconnected' || err.type === 'socket-closed'){ if (mp.js && mp.js.n >= 2) return; }   // reconnecting
+      giveUp((mp.js && mp.js.n > 1 ? netMsg(err) : "📡 Couldn't reach the game server (" + mpEsc(err.type || 'error') + ').') + MP_HELP);
     });
     clearTimeout(mp.joinT);
-    mp.joinT = setTimeout(() => giveUp("😕 Found the room but couldn't connect to it." + MP_HELP + "\n📱 On phone data? Switch to Wi-Fi"), 25000);
+    mp.joinT = setTimeout(() => {
+      const s = mp.js ? mp.js.n : 1;
+      giveUp(s <= 1 ? "📡 Couldn't reach the game server. Check the internet." + MP_HELP
+        : s === 2 ? "🤔 The game server didn't answer about room " + codes[0] + '.' + MP_HELP
+        : "😕 Found room " + mp.code + " but couldn't connect to the host's computer." + MP_NET_HELP);
+    }, 25000);
   }
   function mpCleanup(){
     clearInterval(mp.timer); clearTimeout(mp.joinT); clearTimeout(mp.revT); clearTimeout(mp.retryT); mp.timer = mp.revT = 0;
@@ -4570,6 +4619,7 @@ const Obby = (() => {
     else { if (running) stop(); showMsg('😢', why === 'kick' ? 'Removed from the room' : 'The host left', t + ' You can keep playing on your own, or join a new room!'); }
   }
   function mpLeave(){
+    mp.js = null;
     if (mp.on) mpSend({t: 'bye'}); mp.leaving = true;   // our own goodbye: don't show "the host left"
     const wasTag = running && tg && tg.remote;
     setTimeout(() => { mpCleanup(); if (wasTag && running) stop(); }, 150);
@@ -4587,6 +4637,7 @@ const Obby = (() => {
   function mpRender(){
     const idle = $('#mpIdle'), room = $('#mpRoom'); if (!idle) return;
     idle.hidden = mp.on; room.hidden = !mp.on;
+    mpJSRender();
     $('#mpStatus').textContent = mp.status || ''; $('#mpHost').disabled = $('#mpJoin').disabled = !!mp.peer && !mp.on;
     if (!mp.on) return;
     $('#mpCodeShow').textContent = mp.code;
@@ -4619,9 +4670,14 @@ const Obby = (() => {
   function mpBindUI(){
     if (!$('#mpHost')) return;
     $('#mpHost').onclick = () => mpHost();
-    $('#mpJoin').onclick = () => mpJoin($('#mpCode').value);
-    $('#mpCode').addEventListener('keydown', e => { if (e.key === 'Enter') mpJoin($('#mpCode').value); });
-    $('#mpCode').addEventListener('input', e => { const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5); if (v !== e.target.value) e.target.value = v; });   // keep look-alike digits: join maps them
+    // Phone keyboards type through "composition": changing the box's text mid-word made them repeat letters
+    // ("drpaj" became "DDRDR"), so the room was never found. Now we only tidy the code once typing is finished.
+    // (CSS already shows it in capitals.) Keep look-alike digits: join maps them.
+    const codeBox = $('#mpCode'), tidy = () => { const v = codeBox.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5); if (v !== codeBox.value) codeBox.value = v; };
+    const joinNow = () => { tidy(); try { codeBox.blur(); } catch(e){} mpJoin(codeBox.value); };   // blur: the keyboard closes so the status shows
+    $('#mpJoin').onclick = joinNow;
+    codeBox.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing){ e.preventDefault(); joinNow(); } });
+    codeBox.addEventListener('blur', tidy); codeBox.addEventListener('change', tidy);
     $('#mpLeave').onclick = mpLeave;
     addEventListener('pagehide', () => { if (mp.on) mpSend({t: 'bye'}); });
     mpRender();
