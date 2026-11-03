@@ -913,6 +913,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   <div class="ohud">
     <div class="ostats">
       <span id="oStageBox">🏁 Lv <b id="oLvl">1</b><span id="oCpWrap"> · 🚩 <b id="oStage">1</b>/<b id="oStageN">3</b></span></span>
+      <span id="auBox" style="display:none">🍂 Autumn Farm · <b id="auN">🎃 0/12</b></span>
       <span id="fsBox" style="display:none"><b id="fsPh">👗 Fashion Show</b><span id="fsThB"></span> · ⏱️ <b id="fsT">0:00</b></span>
       <span id="hsBox" style="display:none"><b id="hsRoleT">🙈 Hide & Seek</b> · ⏱️ <b id="hsT">0:00</b> · 🏃 <b id="hsLeft">0</b> hiding</span>
       <span id="spLvBox" style="display:none"><b id="spLvName">🪷 1. Lily Pad Lagoon</b></span>
@@ -1229,7 +1230,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.02-5';
+const BUILD = '2026.11.02-6';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -1586,6 +1587,12 @@ function drawAvatar(ctx, av, opts = {}){
     ctx.fillStyle = '#3a1d00'; ctx.shadowColor = '#ffd23f'; ctx.shadowBlur = 8;
     [[110, 1], [150, -1]].forEach(([x]) => { ctx.beginPath(); ctx.moveTo(x - 11, 74); ctx.lineTo(x + 11, 74); ctx.lineTo(x, 58); ctx.closePath(); ctx.fill(); });
     ctx.beginPath(); ctx.moveTo(102, 92); [[110, 100], [118, 94], [126, 102], [134, 94], [142, 102], [150, 94], [158, 92], [150, 110], [110, 110]].forEach(([x, y]) => ctx.lineTo(x, y)); ctx.closePath(); ctx.fill(); ctx.shadowBlur = 0;
+  } else if (av.hat === 'turkey'){
+    ['#b5332e', '#f08c2e', '#e9b949', '#8a3b12', '#e9b949', '#f08c2e', '#b5332e'].forEach((c, i) => { const a = -1.25 + i * (2.5 / 6); ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(122 + Math.sin(a) * 26, 30 - Math.cos(a) * 24, 9, 22, a, 0, Math.PI*2); ctx.fill(); });
+    ctx.fillStyle = '#8a5a2b'; ctx.beginPath(); ctx.ellipse(130, 38, 36, 15, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#a0612e'; ctx.beginPath(); ctx.ellipse(160, 24, 10, 12, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#1d1d1d'; ctx.fillRect(160, 19, 4, 4); ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.moveTo(168, 23); ctx.lineTo(178, 26); ctx.lineTo(168, 29); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#e8384f'; ctx.beginPath(); ctx.ellipse(167, 33, 3, 6, 0, 0, Math.PI*2); ctx.fill();
   } else if (av.hat === 'witch'){
     ctx.fillStyle = '#2b1d40'; ctx.beginPath(); ctx.ellipse(130, 44, 64, 9, 0, 0, Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.moveTo(100, 44); ctx.lineTo(126, 8); ctx.quadraticCurveTo(140, -12, 168, -4); ctx.quadraticCurveTo(146, 0, 142, 18); ctx.lineTo(160, 44); ctx.closePath(); ctx.fill();
@@ -1938,6 +1945,7 @@ $('#saveAv').onclick = () => {
 
 /* ---------- games ---------- */
 const GAMES = [
+  {id:'autumn', name:'Cozy Autumn Farm', emoji:'🍂', tag:'Jump in leaf piles, climb hay bales, find 12 pumpkins!', draw: drawAutumn, playable: true, isNew: true},
   {id:'fashion', name:'Fashion Show', emoji:'👗', tag:'Dress up for the theme, strut the runway, win the vote!', draw: drawFashion, playable: true, isNew: true},
   {id:'hide', name:'Hide and Seek', emoji:'🙈', tag:'Count, hide, seek! A whole town to hide in.', draw: drawHide, playable: true, isNew: true},
   {id:'splash', name:"Don't Splash!", emoji:'🌊', tag:'Hop the pads. Shh... something lives in the water!', draw: drawSplash, playable: true},
@@ -1998,6 +2006,17 @@ function drawLava(ctx){
   for (let x = 0; x <= 320; x += 10) ctx.lineTo(x, 150 + Math.sin(x/22 + t)*6);
   ctx.lineTo(320, 200); ctx.fill();
   ctx.fillStyle = '#ffd23f'; for (let i = 0; i < 8; i++){ ctx.fillRect((i*47 + t*20) % 320, 168 + (i%3)*8, 8, 8); }
+}
+function drawAutumn(ctx){
+  sky(ctx, '#ffb36b', '#ffe3b8');
+  ctx.fillStyle = '#b9a24a'; ctx.fillRect(0, 140, 320, 60);
+  ctx.fillStyle = '#b5332e'; ctx.fillRect(196, 70, 90, 72); ctx.fillStyle = '#6b2a20'; ctx.beginPath(); ctx.moveTo(188, 72); ctx.lineTo(241, 36); ctx.lineTo(294, 72); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.strokeRect(225, 100, 32, 42); ctx.beginPath(); ctx.moveTo(225, 100); ctx.lineTo(257, 142); ctx.moveTo(257, 100); ctx.lineTo(225, 142); ctx.stroke();
+  ctx.fillStyle = '#6b3e1f'; ctx.fillRect(40, 80, 12, 64); [['#d9601f', 46, 66, 32], ['#e9b949', 26, 84, 22], ['#b5332e', 68, 82, 22]].forEach(([c, x, y, r]) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill(); });
+  ctx.fillStyle = '#e2bd5a'; [[110, 132], [140, 132], [125, 112]].forEach(([x, y]) => { ctx.fillRect(x, y, 30, 20); ctx.fillStyle = '#b58a2e'; ctx.fillRect(x + 9, y, 3, 20); ctx.fillRect(x + 19, y, 3, 20); ctx.fillStyle = '#e2bd5a'; });
+  [[90, 160, 12], [180, 166, 14], [150, 176, 9]].forEach(([x, y, r]) => { ctx.fillStyle = '#ff8a1c'; ctx.beginPath(); ctx.ellipse(x, y, r * 1.25, r, 0, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#3f7a2a'; ctx.fillRect(x - 2, y - r - 5, 4, 7); });
+  ['#d9601f', '#e9b949', '#b5332e', '#f08c2e'].forEach((c, i) => { for (let k = 0; k < 4; k++){ ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(20 + ((i * 83 + k * 61) % 290), 20 + ((i * 37 + k * 29) % 110), 5, 3, i + k, 0, Math.PI*2); ctx.fill(); } });
+  guy(ctx, 62, 150, 12, '#3a86ff'); ctx.font = '22px sans-serif'; ctx.fillText('🦃', 54, 122); ctx.fillText('🥧', 256, 176);
 }
 function drawFashion(ctx){
   sky(ctx, '#b79cff', '#ffd6ec');
@@ -2187,6 +2206,7 @@ ITEMS.push(   // 🎃🎄 Holiday (t160u), sold all year
   {id:'hat-witch',    cat:'holiday', emoji:'🧙', name:'Witch Hat', price:200, slot:'hat', val:'witch'},
   {id:'back-bat',     cat:'holiday', emoji:'🦇', name:'Bat Wings', price:400, slot:'back', val:'bat', rare:true, desc:'Flap when you run'},
   {id:'hat-santa',    cat:'holiday', emoji:'🎅', name:'Santa Hat', price:200, slot:'hat', val:'santa'},
+  {id:'hat-turkey',   cat:'holiday', emoji:'🦃', name:'Turkey Hat', price:250, slot:'hat', val:'turkey', desc:'Gobble gobble! A plush turkey with a big feather fan'},
   {id:'brow-antlers', cat:'holiday', emoji:'🦌', name:'Reindeer Antlers', price:250, slot:'brow', val:'antlers', desc:'Stacks with any hat!'},
   {id:'back-cane',    cat:'holiday', emoji:'🍭', name:'Candy-Cane Back', price:250, slot:'back', val:'cane'},
 );
@@ -2251,7 +2271,7 @@ function thumb(canvas, it){
   const headish = it.slot === 'hair' || it.slot === 'lash' || it.slot === 'ears' || it.slot === 'hat' || it.val === 'horn';
   drawAvatar(canvas.getContext('2d'), preview, {headOnly: headish});
 }
-const HATNAMES = {cap: 'Cap', crown: 'Crown', party: 'Party Hat', pumpkin: 'Pumpkin Head', witch: 'Witch Hat', santa: 'Santa Hat'};
+const HATNAMES = {cap: 'Cap', crown: 'Crown', party: 'Party Hat', pumpkin: 'Pumpkin Head', witch: 'Witch Hat', santa: 'Santa Hat', turkey: 'Turkey Hat'};
 function slotVal(slot){ const v = avatar[slot] ?? null; return v === (SLOT_DEF[slot] ?? null) ? null : v; }
 function valName(slot, v){
   const it = ITEMS.find(i => i.slot === slot && i.val === v && !i.set);
@@ -3145,6 +3165,13 @@ const Obby = (() => {
       const st = new THREE.Mesh(new THREE.CylinderGeometry(.06, .09, .22, 6), mat('#3f7a2a')); st.position.y = .66; P.add(st);
       const glow = new THREE.MeshBasicMaterial({color: '#ffd23f'}); [-1, 1].forEach(k => { const e = new THREE.Mesh(new THREE.ConeGeometry(.1, .14, 3), glow); e.position.set(k * .2, .1, .67); e.rotation.x = Math.PI / 2; e.rotation.y = Math.PI; P.add(e); });
       const mo = new THREE.Mesh(new THREE.BoxGeometry(.42, .1, .04), glow); mo.position.set(0, -.18, .68); P.add(mo); [-.12, .12].forEach(x => { const t = new THREE.Mesh(new THREE.BoxGeometry(.06, .06, .05), pm); t.position.set(x, -.15, .69); P.add(t); }); g.add(P); }
+    if (av.hat === 'turkey'){ const T = new THREE.Group(); T.position.y = 2.86; g.add(T); const TM = c => new THREE.MeshLambertMaterial({color: c, flatShading: true});
+      ['#b5332e', '#f08c2e', '#e9b949', '#8a3b12', '#e9b949', '#f08c2e', '#b5332e'].forEach((c, i) => { const a = -1.2 + i * .4, f = new THREE.Mesh(new THREE.SphereGeometry(.26, 8, 6), TM(c)); f.scale.set(.55, 1.5, .18); f.position.set(Math.sin(a) * .5, .38 + Math.cos(a) * .42, -.34); f.rotation.z = -a; T.add(f); });
+      const b = new THREE.Mesh(new THREE.SphereGeometry(.5, 12, 9), TM('#8a5a2b')); b.scale.set(1, .62, 1.05); b.position.y = .2; T.add(b);
+      const hd = new THREE.Mesh(new THREE.SphereGeometry(.17, 10, 8), TM('#a0612e')); hd.position.set(0, .55, .42); T.add(hd);
+      const bk = new THREE.Mesh(new THREE.ConeGeometry(.06, .16, 6), TM('#ffd23f')); bk.rotation.x = Math.PI / 2; bk.position.set(0, .54, .62); T.add(bk);
+      const wt = new THREE.Mesh(new THREE.SphereGeometry(.05, 6, 5), TM('#e8384f')); wt.scale.y = 1.8; wt.position.set(.04, .43, .56); T.add(wt);
+      [-1, 1].forEach(k => { const e = new THREE.Mesh(new THREE.SphereGeometry(.035, 6, 5), TM('#1d1d1d')); e.position.set(k * .08, .6, .56); T.add(e); const w = new THREE.Mesh(new THREE.SphereGeometry(.22, 8, 6), TM('#6b3e1f')); w.scale.set(.35, .6, 1); w.position.set(k * .47, .22, 0); T.add(w); }); }
     if (av.hat === 'witch'){ const pu = mat('#2b1d40'); const b = new THREE.Mesh(new THREE.CylinderGeometry(.75, .75, .04, 20), pu); b.position.y = 2.84; g.add(b);
       const c = new THREE.Mesh(new THREE.ConeGeometry(.4, .95, 14), pu); c.position.set(0, 3.32, 0); c.rotation.z = .12; g.add(c); const t = new THREE.Mesh(new THREE.ConeGeometry(.14, .3, 10), pu); t.position.set(.16, 3.86, 0); t.rotation.z = -.8; g.add(t);
       const band = new THREE.Mesh(new THREE.CylinderGeometry(.41, .41, .1, 14), mat('#8b5cf6')); band.position.y = 2.92; g.add(band); bx(.16, .14, .03, '#ffd23f', 0, 2.92, .41); }
@@ -3181,8 +3208,8 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null;
-    if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null;
+    if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -4118,7 +4145,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
       if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
       else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
     }
@@ -4187,7 +4214,7 @@ const Obby = (() => {
     if (mode === 'lava') return lavaChecks();
     if (mode === 'splash') return splashChecks();
     if (mode === 'nds') return ndsChecks();
-    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -5252,6 +5279,7 @@ const Obby = (() => {
     snowleo: {r: 3, name: 'Snow Leopard', emoji: '🐆', base: 1.08, tm: 'segs', cols: [['Snow', '#eef1f5', '#5b6170'], ['Gold', '#f2d08a', '#5a3a1e'], ['Shadow', '#8a90a1', '#2b2f3a']]},
     phoenix: {r: 3, name: 'Phoenix Chick', emoji: '🔥', base: .88, tm: 'bird', cr: .28, cols: [['Blaze', '#ff6a2b', '#ffd23f'], ['Azure', '#3ab0ff', '#bff3ff'], ['Rose', '#ff5da2', '#ffd1e8']]},
     unicorn: {r: 4, name: 'Unicorn', emoji: '🦄', base: 1.12, tm: 'horse', cr: .26, cols: [['Pearl', '#fbf7ff', '#ff8fd0'], ['Lilac', '#d9c2ff', '#7fe3ff'], ['Midnight', '#2b2d52', '#ffd23f']]},
+    pie:     {r: 2, name: 'Pie Pal', emoji: '🥧', base: 1.0, tm: 'none', cr: .62, cols: [['Pumpkin', '#e9873a', '#e8bf7a'], ['Apple', '#f2c46a', '#d9a35c'], ['Cherry', '#d8344f', '#efc583']]},
     dragon:  {r: 4, name: 'Dragon',  emoji: '🐉', base: 1.15, tm: 'segs', cr: .27, cols: [['Ruby', '#e8384f', '#ffd23f'], ['Emerald', '#2ec27e', '#ffe08a'], ['Sapphire', '#3a6df0', '#bff3ff']]},
   };
   const PET_ORDER = Object.keys(PET_KINDS).sort((a, b) => PET_KINDS[a].r - PET_KINDS[b].r);   // the Pet Index order
@@ -5393,6 +5421,16 @@ const Obby = (() => {
       [-1, 1].forEach(k => wing(k, .37, .7, -.02, w => sph(.2, shade(main, -15), 0, -.12, -.05, .35, .8, 1.3, w, 6), .05));
       feet2(.15, .32, .02, .28, acc);
       tail = grp(0, .62, -.52); sph(.14, main, 0, .04, -.06, .9, .5, 1.3, tail, 6); tail.rotation.x = -.5; neck = [0, .86, .26];
+    } else if (kind === 'pie'){   // 🥧 a happy little pie with a crimped crust, lattice + whipped cream
+      body = cyl(.56, .46, .34, acc, 0, .3, 0, inner, 16);
+      cyl(.5, .5, .05, main, 0, .49, 0, inner, 16);
+      for (let i = 0; i < 16; i++){ const a = i / 16 * Math.PI * 2; sph(.085, shade(acc, -8), Math.sin(a) * .52, .5, Math.cos(a) * .52, 1, .8, 1, inner, 6); }
+      [-.2, .2].forEach(o => { box(.08, .03, .9, shade(acc, 8), o, .53, 0); box(.9, .03, .08, shade(acc, 8), 0, .54, o); });
+      sph(.15, '#fffaf0', 0, .62, -.05, 1, .7, 1, inner, 8); cone(.09, .16, '#fffaf0', 0, .74, -.05, inner, 8);
+      head = grp(0, .3, .47); eye(head, .15, .04, .02, .07); eye(head, -.15, .04, .02, .07);
+      box(.14, .03, .03, '#6b2a20', 0, -.07, .05, head); [-1, 1].forEach(k => sph(.05, '#ff8fa3', k * .25, -.04, .0, 1, .6, .4, head, 5));
+      [[.28, .22], [-.28, .22], [.28, -.22], [-.28, -.22]].forEach(([x, z]) => { const l = grp(x, .14, z); sph(.09, shade(acc, -20), 0, -.06, .03, 1, .6, 1.3, l, 6); legs.push(l); });
+      tail = grp(0, .35, -.5); neck = [0, .3, 0];
     } else if (kind === 'frog'){
       body = sph(.45, main, 0, .38, 0, 1.15, .7, 1.0); sph(.33, acc, 0, .3, .18, 1.1, .6, .7);
       if (ci === 2) [[.25, .6, -.1], [-.2, .62, .05], [.05, .64, -.28], [-.3, .5, -.25]].forEach(([x, y, z]) => sph(.08, '#1d2340', x, y, z, 1, .4, 1, inner, 5));
@@ -5515,7 +5553,7 @@ const Obby = (() => {
     }
     return {body, head, tail, neck};
   }
-  const PET_H = {dog: 1.75, cat: 1.6, mouse: 1.25, bunny: 1.75, hamster: 1.3, duck: 1.55, frog: 1.15, turtle: 1.2, hedgehog: 1.2, fox: 1.7, penguin: 1.85, owl: 1.85, koala: 1.75, redpanda: 1.65, snowleo: 1.7, phoenix: 1.6, unicorn: 2.5, dragon: 2.0};
+  const PET_H = {dog: 1.75, cat: 1.6, mouse: 1.25, bunny: 1.75, hamster: 1.3, duck: 1.55, frog: 1.15, pie: 1.05, turtle: 1.2, hedgehog: 1.2, fox: 1.7, penguin: 1.85, owl: 1.85, koala: 1.75, redpanda: 1.65, snowleo: 1.7, phoenix: 1.6, unicorn: 2.5, dragon: 2.0};
   function buildPet(kind, ci, stage){
     const K = PET_KINDS[kind] || PET_KINDS.dog, col = K.cols[ci] || K.cols[0], main = col[1], acc = col[2], S = STAGES[stage] || STAGES[0];
     const g = new THREE.Group(), inner = new THREE.Group(); g.add(inner);
@@ -5890,6 +5928,7 @@ const Obby = (() => {
   /* --- today's shelter pets (rolled by rarity; kept until you leave and come back) --- */
   function newRoll(force){
     const st = !force && !pt.s.pets.length, k = force || (st ? STARTERS.slice() : rollPets());
+    if (!force && !st && new Date().getMonth() === 10 && !k.includes('pie')) k[2] = 'pie';   // 🦃 Thanksgiving special
     return {k, c: k.map(() => st ? 0 : Math.floor(Math.random() * 3)), seen: false, rev: false, t: [], st};
   }
   function setPens(){
@@ -8421,6 +8460,111 @@ const Obby = (() => {
     else if (d.t === 'fsready' && fs.ph === 'dress') fs.ready.add(g.uid);
     else if (d.t === 'fsvote' && fs.ph === 'vote' && typeof d.u === 'string' && fs.ord.includes(d.u) && d.u !== g.uid) fs.votes[g.uid] = d.u;
   }
+  /* ===================== t207u: 🍂 COZY AUTUMN HANGOUT — leaf piles, pumpkins, hay bales ===================== */
+  const AU_N = 12, AU_EACH = 1, AU_ALL = 10;
+  const AU_LEAF = ['#d9601f', '#e9b949', '#b5332e', '#f08c2e', '#8a3b12'];
+  let au = null;
+  function auDeco(geo, col, x, y, z, par){ const m = new THREE.Mesh(geo, fmat(col)); m.position.set(x, y, z); (par || scene).add(m); return m; }
+  function auPumpkin(x, y, z, s, par){
+    const g = new THREE.Group(); g.position.set(x, y, z); g.scale.setScalar(s); (par || scene).add(g);
+    [[-.22, .42], [.22, .42], [0, .5], [0, .46]].forEach(([px, r], i) => { const b = auDeco(new THREE.SphereGeometry(r, 10, 8), i % 2 ? '#f08c2e' : '#ff8a1c', px, .42, i === 3 ? -.14 : 0, g); b.scale.set(i < 2 ? .9 : 1.1, .9, 1.1); });
+    auDeco(new THREE.CylinderGeometry(.05, .08, .22, 6), '#3f7a2a', 0, .9, 0, g);
+    const lf = auDeco(new THREE.SphereGeometry(.12, 6, 4), '#5ec04a', .12, .9, 0, g); lf.scale.set(1.3, .3, .7);
+    return g;
+  }
+  function auTree(x, z, s){
+    plat(x, 3 * s, z, .9 * s, .9 * s, '#6b3e1f', 3 * s);
+    const cols = [AU_LEAF[(Math.abs(x * 7 + z * 3) | 0) % 5], AU_LEAF[(Math.abs(x * 3 + z) | 0 + 1) % 5], '#e9b949'];
+    [[0, 4.4, 0, 2.1], [1, 3.9, .6, 1.5], [-1, 3.9, -.5, 1.5], [.3, 5.4, -.3, 1.4]].forEach(([dx, y, dz, r], i) => { const b = auDeco(new THREE.IcosahedronGeometry(r * s, 0), cols[i % 3], x + dx * s, y * s, z + dz * s); au.canopy.push(b); });
+    au.trees.push({x, z, s});
+  }
+  function auBale(x, top, z, rot){
+    const b = plat(x, top, z, rot ? 1 : 2, rot ? 2 : 1, '#e2bd5a', 1);
+    [-.33, .33].forEach(o => auDeco(new THREE.BoxGeometry(rot ? 1.02 : .08, 1.02, rot ? .08 : 1.02), '#b58a2e', x + (rot ? 0 : o), top - .5, z + (rot ? o : 0)));
+    return b;
+  }
+  function buildAutumn(){
+    scene.background = new THREE.Color('#ffd7a8');
+    au = {got: new Set(), pk: [], piles: [], leaves: [], burst: [], canopy: [], trees: [], t: 0, paid: false, bounceT: 0};
+    plat(0, 0, 0, 60, 60, '#b9a24a', 2);
+    // leafy ground: scattered flat leaves
+    const lg = new THREE.PlaneGeometry(.45, .3);
+    for (let i = 0; i < 260; i++){ const m = new THREE.Mesh(lg, fmat(AU_LEAF[i % 5])); m.rotation.x = -Math.PI / 2; m.rotation.z = Math.random() * 6; m.position.set((Math.random() - .5) * 56, .02 + (i % 7) * .001, (Math.random() - .5) * 56); scene.add(m); }
+    // path to the barn
+    plat(0, .03, -6, 3, 20, '#c9a46a', .05);
+    // red barn (solid) with a roof + white X doors
+    plat(-6, 5, -20, 12, 8, '#b5332e', 5);
+    const rg = new THREE.CylinderGeometry(4.7, 4.7, 12.6, 3, 1); rg.rotateX(-Math.PI / 2); rg.rotateY(Math.PI / 2); const roof = new THREE.Mesh(rg, fmat('#6b2a20')); roof.position.set(-6, 5 + 2.35, -20); scene.add(roof);
+    auDeco(new THREE.BoxGeometry(4, 3.6, .1), '#8a2a22', -6, 1.8, -15.95);
+    [-1, 1].forEach(k => { const d = auDeco(new THREE.BoxGeometry(.25, 4.6, .12), '#ffffff', -6, 1.8, -15.88); d.rotation.z = k * .75; });
+    auDeco(new THREE.BoxGeometry(4.2, .25, .12), '#ffffff', -6, 3.62, -15.88);
+    // hay bale stacks (climb them!)
+    [[-1, 0], [1, 0]].forEach(([x]) => auBale(6 + x, 1, -6)); auBale(6, 1, -7, false); auBale(6.5, 2, -6.5); auBale(6.5, 3, -6.5, true);
+    auBale(-9, 1, 4, true); auBale(-10, 1, 4, true); auBale(-9.5, 2, 4, true);
+    auBale(12, 1, 10); auBale(12.5, 2, 10, true);
+    // pumpkin patch: big pumpkins in rows (solid little stumps so you can hop on them)
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++){ const x = 10 + c * 2.2, z = -16 + r * 2.4, s = 1 + ((r + c) % 3) * .25; auPumpkin(x, 0, z, s); plat(x, .7 * s, z, .9 * s, .9 * s, '#000', .7 * s, {noEdge: true}).mesh.visible = false; }
+    for (let i = 0; i < 6; i++){ const v = auDeco(new THREE.CylinderGeometry(.05, .05, 2.2, 4), '#3f7a2a', 10 + i * 1.8, .05, -13.4); v.rotation.z = Math.PI / 2; }
+    // maple trees
+    [[-18, -8, 1.1], [-16, 10, 1], [-4, 14, .9], [16, -2, 1.2], [18, 14, 1], [-20, 20, 1.1], [2, -14, .8], [20, -20, 1], [-22, -18, .9]].forEach(([x, z, s]) => auTree(x, z, s));
+    // leaf piles: jump in!
+    [[-4, 4], [3, 6], [-12, -4], [14, 4], [-6, 18], [9, 18]].forEach(([x, z]) => { const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+      for (let i = 0; i < 26; i++){ const a = Math.random() * 6.28, r = Math.random() * 1.3, l = auDeco(new THREE.IcosahedronGeometry(.32 + Math.random() * .2, 0), AU_LEAF[i % 5], Math.cos(a) * r, .2 + (1.3 - r) * .45 * Math.random() + .1, Math.sin(a) * r, g); l.scale.y = .55; }
+      au.piles.push({x, z, g, sq: 0}); });
+    // scarecrow
+    const sc = new THREE.Group(); sc.position.set(14, 0, -10); scene.add(sc);
+    auDeco(new THREE.BoxGeometry(.18, 3, .18), '#8a5a2b', 0, 1.5, 0, sc); auDeco(new THREE.BoxGeometry(2.2, .16, .16), '#8a5a2b', 0, 2.3, 0, sc);
+    auDeco(new THREE.BoxGeometry(1, 1.1, .5), '#3a86ff', 0, 2.1, 0, sc); [-1, 1].forEach(k => auDeco(new THREE.BoxGeometry(.9, .3, .3), '#d62d50', k * .8, 2.3, 0, sc));
+    auDeco(new THREE.SphereGeometry(.42, 8, 6), '#f2d08a', 0, 3.05, 0, sc); auDeco(new THREE.CylinderGeometry(.7, .7, .06, 12), '#c9a46a', 0, 3.38, 0, sc); auDeco(new THREE.CylinderGeometry(.32, .38, .4, 10), '#c9a46a', 0, 3.6, 0, sc);
+    [-1, 1].forEach(k => auDeco(new THREE.SphereGeometry(.06, 5, 4), '#1d1d1d', k * .15, 3.12, .38, sc));
+    // picnic table with a pie + cocoa
+    plat(-14, 1.1, 12, 3.2, 1.4, '#a0612e', .15); [-1.3, 1.3].forEach(dx => [-.5, .5].forEach(dz => auDeco(new THREE.BoxGeometry(.15, 1, .15), '#7a4b2e', -14 + dx, .5, 12 + dz)));
+    [-1, 1].forEach(k => plat(-14, .55, 12 + k * 1.15, 3.2, .45, '#a0612e', .12));
+    auDeco(new THREE.CylinderGeometry(.42, .36, .14, 14), '#e8bf7a', -14.4, 1.2, 12); auDeco(new THREE.CylinderGeometry(.38, .38, .03, 14), '#e9873a', -14.4, 1.28, 12);
+    [0, 1].forEach(i => { auDeco(new THREE.CylinderGeometry(.12, .1, .24, 8), '#ffffff', -13.3 + i * .5, 1.3, 11.9); auDeco(new THREE.CylinderGeometry(.1, .1, .02, 8), '#6b3e1f', -13.3 + i * .5, 1.42, 11.9); });
+    // wooden fence around the farm (keeps you in)
+    [[0, -29, 60, .3], [0, 29, 60, .3], [-29, 0, .3, 60], [29, 0, .3, 60]].forEach(([x, z, w, d]) => { plat(x, 1.4, z, w, d, '#a0612e', 1.4, {noEdge: true}); });
+    // welcome sign
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(6, 1.4), new THREE.MeshBasicMaterial({map: canvasTex(512, 120, c => { c.fillStyle = '#8a3b12'; c.fillRect(0, 0, 512, 120); c.fillStyle = '#ffe9b8'; c.font = '900 50px Nunito, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('🍂 Cozy Autumn Farm 🎃', 256, 62); })}));
+    sign.position.set(0, 3.4, 7.6); sign.rotation.y = Math.PI; scene.add(sign); [-2.6, 2.6].forEach(x => auDeco(new THREE.BoxGeometry(.2, 4, .2), '#6b3e1f', x, 2, 7.7));
+    // 12 mini pumpkins to find (some up high!)
+    [[-3, .05, 0], [5, .05, 12], [6.5, 3.05, -6.5], [-9.5, 2.05, 4], [12.5, 2.05, 10], [-15.2, 1.1, 12.3], [-20, .05, 24], [22, .05, 22], [-24, .05, -24], [24, .05, -10], [-12, .05, -14], [0, .05, 22]]
+      .forEach(([x, y, z], i) => { const g = auPumpkin(x, y, z, .55); g.userData.i = i; au.pk.push({x, y, z, g, i}); });
+    // drifting leaves
+    const fl = new THREE.PlaneGeometry(.35, .24);
+    for (let i = 0; i < 60; i++){ const m = new THREE.Mesh(fl, new THREE.MeshLambertMaterial({color: AU_LEAF[i % 5], side: THREE.DoubleSide})); m.position.set((Math.random() - .5) * 50, Math.random() * 9, (Math.random() - .5) * 50); m.userData = {s: .4 + Math.random() * .5, w: Math.random() * 6}; scene.add(m); au.leaves.push(m); }
+    checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 4}, flag: new THREE.Object3D()};
+  }
+  const auDay = () => new Date().toDateString();
+  function autumnEnter(){ au.paid = load('rubloxAutumnDay', '') === auDay(); P.face = Math.PI; autumnHud(); }
+  function auBurst(x, y, z, n){
+    for (let i = 0; i < n; i++){ const m = new THREE.Mesh(new THREE.PlaneGeometry(.3, .2), new THREE.MeshLambertMaterial({color: AU_LEAF[i % 5], side: THREE.DoubleSide, transparent: true}));
+      m.position.set(x, y + .4, z); scene.add(m); const a = Math.random() * 6.28, sp = 2 + Math.random() * 3; au.burst.push({m, vx: Math.cos(a) * sp, vy: 4 + Math.random() * 4, vz: Math.sin(a) * sp, t: 1.6}); }
+  }
+  function autumnUpdate(dt){
+    if (!au) return;
+    au.bounceT = Math.max(0, au.bounceT - dt);
+    au.piles.forEach(pl => { const d = Math.hypot(P.x - pl.x, P.z - pl.z);
+      if (d < 1.5 && P.y < 1.2 && P.vy <= 0 && au.bounceT <= 0 && (P.onGround || P.y < .9)){ P.vy = 10.5; P.onGround = false; P.ground = null; au.bounceT = .5; pl.sq = 1; auBurst(pl.x, .3, pl.z, 18); SND.jump && SND.jump(); au.jumps = (au.jumps || 0) + 1; if (au.jumps === 1) banner('🍂 Wheee! Leaf piles are bouncy!'); } });
+    for (const p of au.pk){ if (au.got.has(p.i)) continue;
+      if (Math.hypot(P.x - p.x, P.z - p.z) < 1.0 && Math.abs(P.y - p.y) < 1.4){ au.got.add(p.i); scene.remove(p.g); auBurst(p.x, p.y, p.z, 8);
+        const n = au.got.size; let pay = 0;
+        if (!au.paid){ pay = AU_EACH; if (n === AU_N){ pay += AU_ALL; au.paid = true; save('rubloxAutumnDay', auDay()); } setCoins(coins + pay); runCoins = (runCoins || 0) + pay; }
+        SND.coin();
+        if (n === AU_N){ confetti(); banner('🎃 You found all ' + AU_N + ' pumpkins!' + (pay ? ' +' + pay + ' coins' : ' (come back tomorrow for more coins)')); }
+        else banner('🎃 Pumpkin ' + n + '/' + AU_N + (pay ? ' · +' + pay + ' coin' : '')); autumnHud(); } }
+  }
+  function autumnAnimate(dt){
+    if (!au) return; const t = worldT;
+    au.leaves.forEach(m => { const u = m.userData; m.position.y -= u.s * dt; m.position.x += Math.sin(t * .9 + u.w) * dt * .6; m.rotation.x += dt * 1.3; m.rotation.y += dt * .8;
+      if (m.position.y < .05){ m.position.y = 8 + Math.random() * 3; m.position.x = (Math.random() - .5) * 50; m.position.z = (Math.random() - .5) * 50; } });
+    au.pk.forEach(p => { if (!au.got.has(p.i)){ p.g.rotation.y = t * 1.2 + p.i; p.g.position.y = p.y + Math.abs(Math.sin(t * 2.2 + p.i)) * .18; } });
+    au.piles.forEach(pl => { if (pl.sq > 0){ pl.sq = Math.max(0, pl.sq - dt * 2.5); } pl.g.scale.set(1 + pl.sq * .25, 1 - pl.sq * .45, 1 + pl.sq * .25); });
+    au.burst = au.burst.filter(b => { b.t -= dt; b.vy -= 9 * dt; b.vx *= .98; b.vz *= .98; b.m.position.x += b.vx * dt; b.m.position.y = Math.max(.03, b.m.position.y + b.vy * dt); b.m.position.z += b.vz * dt; b.m.rotation.x += dt * 6; b.m.rotation.z += dt * 4; b.m.material.opacity = Math.min(1, b.t);
+      if (b.t <= 0){ scene.remove(b.m); b.m.geometry.dispose(); b.m.material.dispose(); return false; } return true; });
+  }
+  function autumnHud(){ if (!au) return; const s = '🎃 ' + au.got.size + '/' + AU_N; if ($('#auN').textContent !== s) $('#auN').textContent = s; }
+  function autumnStop(){ if (au) au.burst.forEach(b => scene.remove(b.m)); au = null; }
   /* ---------- per-frame ---------- */
   const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
   function animate(dt){
@@ -8432,6 +8576,7 @@ const Obby = (() => {
     if (dsp) splashAnimate(dt);
     if (hs) hideAnimate(dt);
     if (fs) fashionAnimate(dt);
+    if (au) autumnAnimate(dt);
     if (tg) animateTag(dt);
     if (pt) animatePets(dt);
     animateMp(dt);
@@ -8488,7 +8633,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'fashion' ? '🎮 Left stick move · Ⓐ jump · Ⓧ wardrobe 👗 · Right stick look · ☰ menu' : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? '🎮 Left stick move · Ⓐ jump · Ⓧ wardrobe 👗 · Right stick look · ☰ menu' : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -8576,6 +8721,11 @@ const Obby = (() => {
   addEventListener('resize', () => setTimeout(hudMeasure, 50));
   function setTouchUIBase(on){
     hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
+    if (mode === 'autumn'){
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · ⬆️ jump' : '⌨️ WASD move · Space jump · Esc menu')
+        + "<br>🍂 Bounce in the leaf piles, climb the hay bales and find all 12 mini pumpkins 🎃";
+      return;
+    }
     if (mode === 'fashion'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · ⬆️ jump · 👗 button = wardrobe' : '⌨️ WASD move · Space jump · C wardrobe · Esc menu')
         + "<br>👗 Dress up for the theme! Tip: the judges love outfits that match the theme.";
@@ -8634,7 +8784,7 @@ const Obby = (() => {
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn'){ // pull the camera in front of walls so buildings don't block the view
       for (let s = 1.2; s <= cam.dist; s += .4){
         const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
         if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(1.2, s - .5); break; }
@@ -8663,6 +8813,7 @@ const Obby = (() => {
     if (dsp) splashHud();
     if (hs) hideHud();
     if (fs) fashionHud();
+    if (au) autumnHud();
     if (nds){
       const N = nds, D = N.dis && DISASTERS[N.dis], hp = Math.max(0, Math.round(N.hp));
       $('#oDis').textContent = N.phase === 'lobby' ? '🛋️ Lobby' : N.phase === 'ready' ? '⏳ Get ready' : N.combo.length > 1 ? N.combo.map(k => DISASTERS[k].emoji).join('') + (N.combo.length === 3 ? ' Triple!' : ' Double!') : D.emoji + ' ' + D.name;
@@ -8692,6 +8843,7 @@ const Obby = (() => {
       if (tg) tagUpdate(dt);
       if (hs) hideUpdate(dt);
       if (fs) fashionUpdate(dt);
+      if (au) autumnUpdate(dt);
       if (pt) petsUpdate(dt);
       if (lava && time > LAVA_GRACE && !over && !won){ lava.y += DIFFS[diff].speed * (1 + (time - LAVA_GRACE) / 150) * dt; if (time - dt <= LAVA_GRACE + 0.001 && time > LAVA_GRACE) banner('🌋 The lava is rising! Climb!'); }
       if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0) $('#oTip').classList.add('hide'); }
@@ -8876,7 +9028,7 @@ const Obby = (() => {
 
   /* ---------- start / stop ---------- */
   function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     $('#obby').classList.add('show'); document.body.style.overflow = 'hidden'; document.documentElement.classList.add('ingame');
@@ -8913,6 +9065,7 @@ const Obby = (() => {
     else if (mode === 'splash') banner("🌊 Don't Splash! Shhh...");
     else if (mode === 'hide') banner('🙈 Hide and Seek on Maple Street!');
     else if (mode === 'fashion') banner('👗 Welcome to the Fashion Show!');
+    else if (mode === 'autumn') banner('🍂 Welcome to the Cozy Autumn Farm! Find 12 pumpkins 🎃');
     else if (mode === 'pets') banner(pt && pt.s.pets.length ? '🐾 Welcome back, ' + pt.s.pets[pt.s.a].n + '!' : '🐾 Adopt a Pet! Drive to the Pet Shelter');
     else if (diff) begin(diff);
     $('#obby').classList.toggle('rmode', mode === 'race'); ['#rcLapBox', '#rcPosBox', '#rcItem'].forEach(id => $(id).style.display = mode === 'race' ? '' : 'none'); ['#rcPick', '#rcFin'].forEach(id => $(id).classList.remove('show'));
@@ -8921,7 +9074,7 @@ const Obby = (() => {
         $('#rcBack').onclick = () => rc && rcPickOpen(1); $('#rcHome').onclick = $('#rcFinHome').onclick = stop; $('#rcAgain').onclick = () => rc && rcAgain();
         $('#rcItem').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (rc) rc.tapItem = true; }); }
       raceEnter(); }
-    if (mode === 'splash' || mode === 'hide' || mode === 'fashion') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion') && touchUI && tipTimer > 4) tipTimer = 4;
+    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn') && touchUI && tipTimer > 4) tipTimer = 4;
     $('#obby').classList.toggle('smode', mode === 'splash'); ['#spLvBox', '#spRoundBox', '#spPeb', '#spShove'].forEach(id => $(id).style.display = mode === 'splash' ? '' : 'none'); if (mode !== 'splash') ['#spAliveBox', '#spPull'].forEach(id => $(id).style.display = 'none');
     ['#spPick', '#spEnd', '#spCode'].forEach(id => $(id).classList.remove('show')); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on');
     if (mode === 'splash'){ if (!window.__spBound){ window.__spBound = true;
@@ -8940,6 +9093,7 @@ const Obby = (() => {
         $('#fsHome').onclick = $('#fsHome2').onclick = stop; $('#fsGo').onclick = $('#fsAgain').onclick = () => fs && fsStart();
         $('#fsReady').onclick = () => fsReadyBtn(); $('#fsWardClose').onclick = () => fsWardClose(); $('#fsWardBtn').onclick = () => fsWardOpen(); $('#fsKeep').onclick = () => fsKeep(); }
       fashionEnter(); }
+    $('#auBox').style.display = mode === 'autumn' ? '' : 'none'; if (mode === 'autumn') autumnEnter();
     mpOnStart();
   }
   function stop(){
@@ -8947,13 +9101,16 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
 
   // debug / test hook
   window.obbyDebug = {
+    autumn: () => au && {got: [...au.got], n: AU_N, paid: au.paid, piles: au.piles.length, pk: au.pk.map(p => [p.x, p.y, p.z]), leaves: au.leaves.length, burst: au.burst.length, jumps: au.jumps || 0, P: {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2), vy: +P.vy.toFixed(2)}},
+    auTo(x, y, z){ Object.assign(P, {x, y, z, vx: 0, vy: 0, vz: 0}); },
+    petKind: k => PET_KINDS[k] ? [PET_KINDS[k].name, PET_KINDS[k].r] : null, newRoll: () => newRoll(), petBuild(k, c){ const m = buildPet(k, c || 0, 3); return {ok: !!m.g, head: !!m.head, legs: m.legs.length}; },
     fashion: () => fs && {ph: fs.ph, n: fs.n, t: +fs.t.toFixed(2), wt: +fs.wt.toFixed(2), th: fs.th, theme: FS_THEMES[fs.th].id, ord: fs.ord.slice(), ready: [...fs.ready], votes: Object.assign({}, fs.votes), voted: fs.voted || null, res: fs.res, win: fs.win, earned: fs.earned, ward: !!fs.ward, remote: !!fs.remote,
       fit: fs.fit ? {hat: fs.fit.hat, shirt: fs.fit.shirt, shirtPat: fs.fit.shirtPat, pantsPat: fs.fit.pantsPat} : null, fits: Object.keys(fs.fits), walkers: fs.walkers.filter(w => w.m.g.visible).map(w => w.u), judges: fs.judges.length, npc: Object.values(fs.npcM).filter(M => M.m.g.visible).length, frozen: fsFrozen(), P: {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2)}, avHat: avatar.hat, avShirt: avatar.shirt},
     fsStart: () => fsStart(), fsTime(t){ fs.t = t; }, fsWt(t){ fs.wt = t; }, fsSet: (k, v) => fsSet(k, v), fsReady: () => fsReadyBtn(), fsVote: u => fsVote(u), fsTheme(i){ fs.forceTh = i; }, fsScore: (u) => fsScore(fs.fits[u], fs.th),
