@@ -459,6 +459,24 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .pdrive #oJump,.pdrive #oEmoBtn,.pdrive #oRun,.pdrive #oFP{display:none!important}
 .rmode #oEmoBtn,.rmode #oRun,.rmode #oStam{display:none!important}
 .smode #oStam{display:none!important}
+.fswardbtn{display:none;position:absolute;right:14px;bottom:96px;z-index:6;border:0;border-radius:16px;padding:10px 16px;background:#ff6fb5;color:#fff;font:inherit;font-weight:900;font-size:17px;box-shadow:0 4px 0 #c94f8d;cursor:pointer}
+.fswardbtn.show{display:block}
+.fsward{max-width:640px;width:94vw}.fshead{display:flex;justify-content:space-between;align-items:center;font-size:20px;gap:10px}.fshead span{font-weight:900;color:#ff4d5e}
+.fslikes{font-size:13px;margin:2px 0 6px}
+.fstabs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:6px}
+.fstab{border:2px solid #e3d6ff;background:#fff;border-radius:12px;padding:4px 10px;font:inherit;font-size:20px;cursor:pointer;display:flex;flex-direction:column;align-items:center}.fstab small{font-size:11px;font-weight:800}
+.fstab.on{background:#8b5cf6;color:#fff;border-color:#8b5cf6}
+.fsitems{max-height:38vh;overflow:auto;padding:2px}
+.fsrow{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:4px 0}.fsrow b{width:84px;text-align:left;font-size:13px}
+.fssw{width:28px;height:28px;border-radius:50%;border:3px solid #fff;background:var(--c);box-shadow:0 0 0 1px #ccc;cursor:pointer}.fssw.on{box-shadow:0 0 0 3px #8b5cf6}
+.fsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:6px}
+.fsit{position:relative;border:2px solid #eee;background:#fff;border-radius:12px;padding:4px;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center}.fsit i{font-style:normal;font-size:22px}.fsit small{font-size:11px;font-weight:800;line-height:1.1}
+.fsit u{position:absolute;top:1px;right:3px;text-decoration:none;font-size:11px}.fsit.on{border-color:#ff6fb5;background:#fff0f7}
+.fsvcs{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:8px 0}
+.fsvc{border:3px solid #eee;background:#fff;border-radius:14px;padding:6px 10px;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}.fsvc img{width:60px;height:78px;border-radius:8px}.fsvc.on{border-color:#2ec27e;background:#eafff3}
+.fsress{display:flex;flex-direction:column;gap:4px;margin:6px 0;max-height:34vh;overflow:auto}
+.fsres{display:flex;align-items:center;gap:8px;background:#f6f3ff;border-radius:12px;padding:3px 10px}.fsres img{width:34px;height:44px;border-radius:6px}.fsres span{flex:1;text-align:left;font-weight:800}.fsres.win{background:#fff4c2}
+@media (max-width:760px),(max-height:520px){#fsPick .emoji,#fsEnd .emoji{display:none}#fsPick h2,#fsEnd h2,#fsVote h2{font-size:18px;margin:0 0 2px}.fsitems{max-height:30vh}.fshead{font-size:15px}.fstab{font-size:16px;padding:2px 7px}.fsvc img{width:44px;height:57px}.fswardbtn{bottom:auto;top:64px;right:10px;font-size:14px;padding:7px 12px}.fsress{max-height:28vh}}
 #bMode.paint{background:#8b5cf6;color:#fff}
 #bTest.go{background:#2ec27e;color:#fff}
 .btestbox{display:none;position:absolute;top:64px;left:50%;transform:translateX(-50%);background:rgba(20,24,40,.82);color:#fff;border-radius:14px;padding:6px 14px;text-align:center;z-index:6;font-size:15px}
@@ -895,6 +913,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   <div class="ohud">
     <div class="ostats">
       <span id="oStageBox">🏁 Lv <b id="oLvl">1</b><span id="oCpWrap"> · 🚩 <b id="oStage">1</b>/<b id="oStageN">3</b></span></span>
+      <span id="fsBox" style="display:none"><b id="fsPh">👗 Fashion Show</b><span id="fsThB"></span> · ⏱️ <b id="fsT">0:00</b></span>
       <span id="hsBox" style="display:none"><b id="hsRoleT">🙈 Hide & Seek</b> · ⏱️ <b id="hsT">0:00</b> · 🏃 <b id="hsLeft">0</b> hiding</span>
       <span id="spLvBox" style="display:none"><b id="spLvName">🪷 1. Lily Pad Lagoon</b></span>
       <span id="spRoundBox" style="display:none">🚪 <b id="spDist">0</b>m · ⏱️ <b id="spLeft">0:00</b></span>
@@ -1043,6 +1062,32 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="owinbtns"><button class="big gray" id="pRetNo">↩️ Never mind</button><button class="big" id="pRetYes" hidden>💕 Return</button></div>
   </div></div>
   <div class="pflash" id="pFlash"></div>
+  <button class="fswardbtn" id="fsWardBtn">👗 Wardrobe</button>
+  <div class="opanel" id="fsPick"><div class="mbox rcbox">
+    <span class="emoji">👗</span><h2>Fashion Show</h2>
+    <div class="stats" id="fsPickS"></div>
+    <div class="stats hshelp">1️⃣ Dress up for a surprise theme (you can borrow anything from the shop!) · 2️⃣ Walk the runway · 3️⃣ Everyone votes · 👑 The winner gets +30 coins!</div>
+    <div class="owinbtns"><button class="big green" id="fsGo">▶ Start the show</button><button class="big gray" id="fsHome">🏠 Home</button></div>
+  </div></div>
+  <div class="opanel" id="fsWard"><div class="mbox rcbox fsward">
+    <div class="fshead"><b id="fsTheme"></b><span id="fsWardT"></span></div>
+    <div class="stats fslikes" id="fsLikes"></div>
+    <div class="fstabs" id="fsTabs"></div>
+    <div class="fsitems" id="fsItems"></div>
+    <div class="owinbtns"><button class="big green" id="fsReady">✅ I'm ready!</button><button class="big blue" id="fsWardClose">👀 Look at me</button></div>
+  </div></div>
+  <div class="opanel" id="fsVote"><div class="mbox rcbox">
+    <h2>🗳️ Vote for your favourite!</h2><div class="stats" id="fsVoteT"></div>
+    <div class="fsvcs" id="fsVoteC"></div>
+    <div class="stats" id="fsVoteW"></div>
+  </div></div>
+  <div class="opanel" id="fsEnd"><div class="mbox rcbox">
+    <span class="emoji" id="fsEndE">👑</span><h2 id="fsEndT">Results</h2>
+    <div class="fsress" id="fsEndS"></div>
+    <div class="stats" id="fsEndC"></div>
+    <div class="stats" id="fsEndW" style="display:none">⏳ Waiting for the host to start the next show...</div>
+    <div class="owinbtns"><button class="big green" id="fsAgain">🔁 Another show</button><button class="big blue" id="fsKeep">👗 Keep my look</button><button class="big gray" id="fsHome2">🏠 Home</button></div>
+  </div></div>
   <div class="hsblind" id="hsBlind"><div>🙈</div><b id="hsBlindN">20</b><span>Counting... no peeking!</span></div>
   <div class="spwarn" id="hsWarn">👀 The seeker is close! Stay still or sneak away!</div>
   <div class="opanel" id="hsPick"><div class="mbox rcbox">
@@ -1184,7 +1229,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.02-4';
+const BUILD = '2026.11.02-5';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -1893,6 +1938,7 @@ $('#saveAv').onclick = () => {
 
 /* ---------- games ---------- */
 const GAMES = [
+  {id:'fashion', name:'Fashion Show', emoji:'👗', tag:'Dress up for the theme, strut the runway, win the vote!', draw: drawFashion, playable: true, isNew: true},
   {id:'hide', name:'Hide and Seek', emoji:'🙈', tag:'Count, hide, seek! A whole town to hide in.', draw: drawHide, playable: true, isNew: true},
   {id:'splash', name:"Don't Splash!", emoji:'🌊', tag:'Hop the pads. Shh... something lives in the water!', draw: drawSplash, playable: true},
   {id:'race',  name:'Pet Kart Racing', emoji:'🏁', tag:'Race on animals or go-karts!', draw: drawRace, playable: true},
@@ -1952,6 +1998,18 @@ function drawLava(ctx){
   for (let x = 0; x <= 320; x += 10) ctx.lineTo(x, 150 + Math.sin(x/22 + t)*6);
   ctx.lineTo(320, 200); ctx.fill();
   ctx.fillStyle = '#ffd23f'; for (let i = 0; i < 8; i++){ ctx.fillRect((i*47 + t*20) % 320, 168 + (i%3)*8, 8, 8); }
+}
+function drawFashion(ctx){
+  sky(ctx, '#b79cff', '#ffd6ec');
+  ctx.fillStyle = '#8b5cf6'; ctx.fillRect(0, 0, 320, 70); ctx.fillStyle = '#ff6fb5'; ctx.fillRect(70, 14, 180, 26); ctx.fillStyle = '#fff'; ctx.font = '900 16px Nunito, sans-serif'; ctx.fillText('✨ FASHION SHOW ✨', 84, 33);
+  [[40, 'rgba(255,111,181,.35)'], [160, 'rgba(58,198,255,.35)'], [280, 'rgba(255,210,63,.35)']].forEach(([x, c]) => { ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x - 6, 0); ctx.lineTo(x + 6, 0); ctx.lineTo(x + 40, 200); ctx.lineTo(x - 40, 200); ctx.closePath(); ctx.fill(); });
+  ctx.fillStyle = '#f3c6dd'; ctx.fillRect(0, 150, 320, 50);
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(140, 80); ctx.lineTo(180, 80); ctx.lineTo(230, 200); ctx.lineTo(90, 200); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#ff6fb5'; ctx.beginPath(); ctx.moveTo(150, 112); ctx.lineTo(170, 112); ctx.lineTo(182, 150); ctx.lineTo(138, 150); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#ffdbac'; ctx.fillRect(150, 92, 20, 20); ctx.fillStyle = '#ffd23f'; ctx.fillRect(147, 86, 26, 8); ctx.fillStyle = '#1d1d1d'; ctx.fillRect(154, 100, 3, 3); ctx.fillRect(163, 100, 3, 3);
+  ctx.fillStyle = '#ffdbac'; ctx.fillRect(149, 150, 6, 18); ctx.fillRect(165, 150, 6, 18);
+  ctx.font = '22px sans-serif'; ctx.fillText('👑', 148, 86); ctx.fillText('⭐', 40, 120); ctx.fillText('⭐', 260, 112); ctx.fillText('🗳️', 270, 170);
+  guy(ctx, 40, 150, 12, '#3a86ff'); guy(ctx, 70, 156, 12, '#2ec27e'); guy(ctx, 250, 156, 12, '#ffd23f');
 }
 function drawHide(ctx){
   sky(ctx, '#7cc8ff', '#c9ecff'); cloud(ctx, 30, 26); cloud(ctx, 230, 18);
@@ -3123,8 +3181,8 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null;
-    if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null;
+    if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -4060,7 +4118,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
       if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
       else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
     }
@@ -4093,7 +4151,7 @@ const Obby = (() => {
     if (!SIM && mode === 'obby') obbyMech(dt);
     if (P.onGround && P.ground){ P.x += P.ground.dx || 0; P.y += P.ground.dy || 0; P.z += P.ground.dz || 0;
       if (P.ground.conv){ P.x += P.ground.conv.x * dt; P.z += P.ground.conv.z * dt; } }
-    const inp = (hs && hsFrozen()) ? {x: 0, z: 0, mag: 0, jump: false} : tg && (tg.phase === 'ready' || (tg.phase === 'play' && tg.it === 0 && tg.freeze > 0)) ? {x: 0, z: 0, mag: 0, jump: false} : input();
+    const inp = ((hs && hsFrozen()) || (fs && fsFrozen())) ? {x: 0, z: 0, mag: 0, jump: false} : tg && (tg.phase === 'ready' || (tg.phase === 'play' && tg.it === 0 && tg.freeze > 0)) ? {x: 0, z: 0, mag: 0, jump: false} : input();
     const k = Math.min(1, dt * (P.onGround ? (slip || (P.ground && P.ground.ice) ? 1.4 : 14) : 6));
     const wantRun = !SIM && (keys.ShiftLeft || keys.ShiftRight || run.pad || run.touch) && inp.mag > .1;
     if (!SIM){ if ((mode === 'tag' && tg) || (mode === 'hide' && hs)){ if (wantRun && !run.tired){ run.stam -= dt; if (run.stam <= 0){ run.stam = 0; run.tired = true; } } else run.stam = Math.min(STAM_MAX, run.stam + dt * .8); if (run.tired && run.stam >= 1.5) run.tired = false; }
@@ -4129,7 +4187,7 @@ const Obby = (() => {
     if (mode === 'lava') return lavaChecks();
     if (mode === 'splash') return splashChecks();
     if (mode === 'nds') return ndsChecks();
-    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -4679,6 +4737,7 @@ const Obby = (() => {
       if (running && tg && !tg.remote) msg.tg = tagWire();
       if (running && dsp && !dsp.remote && mode === 'splash') msg.sp = splashWire();
       if (running && hs && !hs.remote && mode === 'hide') msg.hs = hideWire();
+      if (running && fs && !fs.remote && mode === 'fashion') msg.fs = fashionWire();
       if (running && bw && mode === 'build') msg.bt = bwWire();
       if (ops) msg.o = ops;
       mpBroadcast(msg);
@@ -4789,6 +4848,7 @@ const Obby = (() => {
     else if (d.t === 'tagreq') mpTagReq(g, d);
     else if (d.t === 'racefin') raceGuestFin(g, d);
     else if (d.t === 'splashev') splashGuestEv(g, d);
+    else if (d.t === 'fsfit' || d.t === 'fsready' || d.t === 'fsvote') fsGuestMsg(g, d);
     else if (d.t === 'btfin'){ if (running && bw && bw.test && mode === 'build') bwResAdd(g.name, Math.max(0, Math.min(3600, +d.tm || 0))); }
     else if (d.t === 'getblocks'){ if (running && bw && mode === 'build') mpSendTo(g.conn, {t: 'blocks', c: bwSerialize()}); }
     else if (d.t === 'bye') mpDrop(g, 'left');
@@ -4851,6 +4911,7 @@ const Obby = (() => {
     for (const E of mp.ents.values()) if (!seen.has(E.uid)) E.m = null;
     if (d.sp) splashFromHost(d.sp);
     if (d.hs) hideFromHost(d.hs);
+    if (d.fs) fashionFromHost(d.fs);
     if (d.bt) bwFromHost(d.bt);
     if (d.tg && tg && tg.remote && running && mode === 'tag' && tg.phase !== 'end') mpTagWire(d.tg);
     if (d.o) mpApplyOps(d.o);
@@ -7999,6 +8060,367 @@ const Obby = (() => {
     bwReplace(cells, '📥 Loaded a shared build! (' + cells.length + ' pieces)'); bwShareClose(); return true;
   }
 
+  /* ===================== t207u: FASHION SHOW — dress for a theme, walk the runway, vote! ===================== */
+  const FS_DRESS = 60, FS_WALK = 5.5, FS_VOTE = 15, FS_WIN = 30, FS_JOIN = 5;
+  const FS_THEMES = [
+    {id: 'beach',  name: 'Beach Day',      emoji: '🏖️', cols: ['#ffd23f', '#3ac6ff', '#ff9f1c', '#2ec4b6'], likes: ['shorts', 'shades', 'backcap', 'star', 'sun', 'flower'], hint: 'sunny colours, shorts, cool shades'},
+    {id: 'hero',   name: 'Superhero',      emoji: '🦸', cols: ['#ff4d4d', '#3a86ff', '#ffd23f'], likes: ['lightning', 'hero', 'cape', 'star', 'mask', 'wings'], hint: 'red, blue & yellow, lightning bolts'},
+    {id: 'space',  name: 'Space Explorer', emoji: '🚀', cols: ['#1d2340', '#8b5cf6', '#c0c7d6', '#3cf2c8'], likes: ['propeller', 'robot', 'sparkly', 'spacebuns', 'star', 'antenna'], hint: 'dark purple & silver, sparkles, space buns'},
+    {id: 'fancy',  name: 'Fancy Party',    emoji: '🎩', cols: ['#2b2d42', '#f5f5f5', '#ff6fb5', '#ffd23f'], likes: ['dress', 'crown', 'sparkly', 'bow', 'lash', 'beehive', 'top'], hint: 'twirly dresses, sparkles, black & white'},
+    {id: 'rainbow',name: 'Rainbow',        emoji: '🌈', cols: ['#ff4d4d', '#ff9f1c', '#ffd23f', '#2ec27e', '#3a86ff', '#8b5cf6'], likes: ['rainbow', 'sparkly', 'horn', 'heart', 'unicorn'], hint: 'ALL the colours, rainbows, unicorns'},
+    {id: 'autumn', name: 'Cozy Autumn',    emoji: '🍂', cols: ['#d9601f', '#b07a43', '#8a3b12', '#e9b949'], likes: ['hoodie', 'plaid', 'pumpkin', 'jeans', 'turkey', 'fox', 'bear'], hint: 'orange & brown, hoodies, plaid'},
+    {id: 'spooky', name: 'Spooky Cute',    emoji: '👻', cols: ['#2b2d42', '#ff9f1c', '#8b5cf6', '#f5f5f5'], likes: ['pumpkin', 'witch', 'bat', 'zombie', 'kitty'], hint: 'black & orange, witch hats, bat wings'},
+    {id: 'animal', name: 'Animal Friends', emoji: '🐾', cols: ['#b07a43', '#f5c49a', '#ff6fb5', '#9aa0ab'], likes: ['cat', 'bunny', 'fox', 'bear', 'dog', 'kitty'], hint: 'animal ears & tails, soft colours'},
+  ];
+  const FS_NPCS = [
+    {uid: 'n0', name: 'Sunny', emoji: '☀️', base: {head: '#f1c27d', hairColor: '#ffd23f', hair: 'pigtails'}},
+    {uid: 'n1', name: 'Coco',  emoji: '🥥', base: {head: '#8d5524', hairColor: '#1d1d1d', hair: 'curly'}},
+    {uid: 'n2', name: 'Ziggy', emoji: '⚡', base: {head: '#ffdbac', hairColor: '#8b5cf6', hair: 'spiky'}},
+  ];
+  const FS_JUDGES = [
+    {name: 'Grandma Rose', emoji: '👵', av: {head: '#ffdbac', shirt: '#ff6fb5', pants: '#8b5cf6', hair: 'bun', hairColor: '#e8e8e8', face: 'smile'}},
+    {name: 'Coach Max',    emoji: '🧢', av: {head: '#c68642', shirt: '#2ec27e', pants: '#1d2340', hair: 'short', hairColor: '#1d1d1d', hat: 'backcap', face: 'grin'}},
+    {name: 'Lulu',         emoji: '🎀', av: {head: '#f1c27d', shirt: '#ffd23f', pants: '#ff6fb5', hair: 'ponytail', hairColor: '#d9601f', face: 'wink'}},
+    {name: 'Mr. Pebbles',  emoji: '🐧', av: {head: '#e0ac69', shirt: '#2b2d42', pants: '#2b2d42', hair: 'short', hairColor: '#6b3e1f', face: 'shades'}},
+  ];
+  const FS_COLS = ['#ff4d4d', '#ff9f1c', '#ffd23f', '#2ec27e', '#3ac6ff', '#3a86ff', '#8b5cf6', '#ff6fb5', '#f5f5f5', '#9aa0ab', '#2b2d42', '#b07a43', '#8a3b12', '#c0c7d6'];
+  const FS_SKIN = ['#ffdbac', '#f1c27d', '#e0ac69', '#c68642', '#8d5524', '#ffd23f', '#7bd389'];
+  const FS_TABS = [['col', '🎨', 'Colours'], ['hat', '🎩', 'Hats'], ['top', '👕', 'Tops'], ['bot', '👖', 'Bottoms'], ['hair', '💇', 'Hair'], ['xtra', '✨', 'Extras']];
+  const FS_TABSLOTS = {hat: ['hat'], top: ['shirtPat'], bot: ['pantsPat'], hair: ['hair'], xtra: ['face', 'ears', 'tail', 'back', 'brow', 'lash']};
+  let fs = null;
+  const fsUid = () => mp.on ? mp.me : 'H';
+  const fsRand = a => a[Math.floor(Math.random() * a.length)];
+  function fsItems(slot){ return ITEMS.filter(it => it.slot === slot && !it.set && it.val != null); }
+  function fsName(u){ if (u === fsUid()) return 'You'; const N = FS_NPCS.find(n => n.uid === u); if (N) return N.emoji + ' ' + N.name; const L = mpLook(u); return L ? L.name : 'Player'; }
+  function fsFrozen(){ return !!fs && (fs.ph === 'walk' || fs.ph === 'vote' || fs.ph === 'end' || fs.ward); }
+  function fsDeco(w, h, d, col, x, y, z, o){ const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), o || mat(col)); m.position.set(x, y, z); scene.add(m); return m; }
+  function fsTex(text, w, h, bg, fg, size){ return canvasTex(w, h, c => { c.fillStyle = bg; c.fillRect(0, 0, w, h); c.fillStyle = fg; c.font = '900 ' + size + 'px Nunito, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(text, w / 2, h / 2 + 2); }); }
+  function buildFashion(){
+    scene.background = new THREE.Color('#d7c4ff');
+    fs = {ph: 'pick', n: 0, t: 0, wt: 0, th: 0, ord: [], fits: {}, gfits: {}, votes: {}, ready: new Set(), res: [], win: [], walkers: [], judges: [], npcM: {}, spots: [], earned: 0, lastTh: -1, remote: false};
+    plat(0, 0, 0, 60, 60, '#f3c6dd', 2);
+    // the runway
+    plat(0, .9, -3, 4, 22, '#ffffff', .9);
+    plat(0, .45, 8.6, 4, 1.2, '#ffd23f', .45);
+    [-2.08, 2.08].forEach(x => fsDeco(.16, .12, 22, '#ff6fb5', x, .92, -3, new THREE.MeshBasicMaterial({color: '#ff6fb5'})));
+    for (let z = -13; z <= 7; z += 2.5) [-2.08, 2.08].forEach(x => { const b = fsDeco(.22, .22, .22, '#fff', x, 1.05, z, new THREE.MeshBasicMaterial({color: '#fff6b0'})); b.userData.bulb = z; fs.spots.push(b); });
+    // backdrop + sign + curtains
+    plat(0, 9, -15, 26, 1, '#8b5cf6', 9);
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(14, 2.6), new THREE.MeshBasicMaterial({map: fsTex('✨ RUBLOX FASHION SHOW ✨', 512, 96, '#ff6fb5', '#ffffff', 52)}));
+    sign.position.set(0, 7, -14.45); scene.add(sign);
+    [-1, 1].forEach(s => { for (let k = 0; k < 5; k++) fsDeco(.9, 6, .3, '#d62d50', s * (2.6 + k * .85), 3, -14.3, mat(k % 2 ? '#e63e62' : '#c81e45')); });
+    fsDeco(5.6, .8, .3, '#c81e45', 0, 5.6, -14.3);
+    // lights: a truss with coloured spotlights
+    fsDeco(18, .3, .3, '#555', 0, 11, -3); fsDeco(.3, 11, .3, '#555', -9, 5.5, -3); fsDeco(.3, 11, .3, '#555', 9, 5.5, -3);
+    fs.cones = ['#ff6fb5', '#3ac6ff', '#ffd23f', '#8b5cf6'].map((c, i) => {
+      const g = new THREE.Group(); g.position.set(-6 + i * 4, 11, -3);
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(1.8, 10, 18, 1, true), new THREE.MeshBasicMaterial({color: c, transparent: true, opacity: .16, depthWrite: false, side: THREE.DoubleSide}));
+      cone.position.y = -5; g.add(cone); scene.add(g); g.userData.ph = i * 1.3; return g; });
+    // audience: tiered benches on both sides + a riser at the front
+    [-1, 1].forEach(s => { for (let r = 0; r < 3; r++) plat(s * (5 + r * 2), .5 + r * .5, -3, 1.6, 16, r % 2 ? '#3a86ff' : '#ff6fb5', .5 + r * .5); });
+    plat(0, .6, 15.5, 16, 2.4, '#3a86ff', .6);
+    // judges' table
+    plat(0, .95, 11.4, 9, 1, '#ffffff', .95); fsDeco(9.1, .2, 1.1, '#ffd23f', 0, 1.0, 11.4);
+    const jt = new THREE.Mesh(new THREE.PlaneGeometry(4, .6), new THREE.MeshBasicMaterial({map: fsTex('⭐ JUDGES ⭐', 256, 40, '#ff6fb5', '#fff', 26)})); jt.position.set(0, .55, 11.92); scene.add(jt);
+    // dressing corners: clothes racks
+    [-1, 1].forEach(s => { const x = s * 11; fsDeco(.12, 2.6, .12, '#bbb', x, 1.3, -1); fsDeco(.12, 2.6, .12, '#bbb', x, 1.3, 3); fsDeco(.12, .12, 4.1, '#bbb', x, 2.6, 1);
+      FS_COLS.slice(0, 8).forEach((c, k) => fsDeco(.9, 1.3, .12, c, x, 1.9, -.6 + k * .5));
+      const mir = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 3.4), new THREE.MeshBasicMaterial({color: '#dff6ff'})); mir.position.set(s * 13.4, 2, 6); mir.rotation.y = -s * Math.PI / 2; scene.add(mir);
+      fsDeco(.2, 3.8, 2.6, '#ffd23f', s * 13.5, 1.9, 6); });
+    checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 11 - 1.2}, flag: new THREE.Object3D()};
+    checkpoints[0].spawn = {x: 0, y: .05, z: 9.8};
+  }
+  /* --- outfits --- */
+  function fsNpcFit(N, th, effort){
+    const T = FS_THEMES[th], av = Object.assign({}, DEF, N.base);
+    const pick = (slot, liked) => { const all = fsItems(slot); const good = all.filter(it => T.likes.some(l => String(it.val).includes(l) || it.id.includes(l)));
+      return (liked && good.length ? fsRand(good) : fsRand(all) || {}).val; };
+    const on = () => Math.random() < effort;
+    av.shirt = on() ? fsRand(T.cols) : fsRand(FS_COLS); av.pants = on() ? fsRand(T.cols) : fsRand(FS_COLS);
+    if (Math.random() < .7) av.hat = pick('hat', on()) || 'none';
+    if (Math.random() < .7) av.shirtPat = pick('shirtPat', on()) || null;
+    if (Math.random() < .5) av.pantsPat = pick('pantsPat', on()) || null;
+    if (Math.random() < .5) av.face = pick('face', on()) || 'smile';
+    if (Math.random() < .35){ const x = fsRand(['ears', 'tail', 'back', 'brow']); av[x] = pick(x, on()) || null; }
+    return av;
+  }
+  function fsScore(av, th){
+    const T = FS_THEMES[th], hex = h => { const n = parseInt(String(h || '#000').slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+    const near = c => { const a = hex(c); return Math.max(0, 1 - Math.min(...T.cols.map(t => { const b = hex(t); return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]); })) / 160); };
+    let s = near(av.shirt) * 2 + near(av.pants) * 1.5 + near(av.hairColor) * .5;
+    const vals = ['hat', 'shirtPat', 'pantsPat', 'hair', 'face', 'ears', 'tail', 'back', 'brow', 'lash'].map(k => av[k]).filter(v => v && v !== 'none');
+    s += Math.min(3, vals.filter(v => T.likes.some(l => String(v).includes(l))).length) * 1.6;
+    s += Math.min(1.5, vals.length * .25);
+    return s;
+  }
+  function fsRebuild(av){ if (!model) return; const g = model.g, pos = g.position.clone(), ry = g.rotation.y; scene.remove(g); model = buildPlayer(av); model.g.position.copy(pos); model.g.rotation.y = ry; scene.add(model.g); }
+  function fsThumb(av){
+    const c = document.createElement('canvas'); c.width = 60; c.height = 78; const x = c.getContext('2d');
+    x.fillStyle = '#fff0f7'; x.fillRect(0, 0, 60, 78);
+    x.fillStyle = av.head || '#ffd23f'; x.fillRect(20, 12, 20, 18);
+    if (av.hair){ x.fillStyle = av.hairColor || '#6b3e1f'; x.fillRect(18, 9, 24, 7); if (/long|pony|pig|braid/.test(av.hair)) x.fillRect(17, 12, 4, 20); }
+    x.fillStyle = '#1d1d1d'; x.fillRect(25, 19, 3, 3); x.fillRect(33, 19, 3, 3);
+    x.fillStyle = av.shirt || '#3a86ff'; if (av.pantsPat === 'dress'){ x.beginPath(); x.moveTo(20, 31); x.lineTo(40, 31); x.lineTo(46, 60); x.lineTo(14, 60); x.fill(); } else x.fillRect(16, 31, 28, 20);
+    if (av.shirtPat){ x.fillStyle = 'rgba(255,255,255,.75)'; if (av.shirtPat === 'stripes') for (let y = 34; y < 50; y += 5) x.fillRect(16, y, 28, 2); else if (av.shirtPat === 'rainbow') ['#ff4d4d', '#ffd23f', '#2ec27e', '#3a86ff'].forEach((q, i) => { x.fillStyle = q; x.fillRect(16, 33 + i * 4, 28, 3); }); else { x.font = '12px sans-serif'; x.fillText('★', 25, 46); } }
+    x.fillStyle = av.pants || '#2d2d2d'; if (av.pantsPat !== 'dress'){ x.fillRect(18, 51, 10, av.pantsPat === 'shorts' ? 10 : 20); x.fillRect(32, 51, 10, av.pantsPat === 'shorts' ? 10 : 20); }
+    const hat = av.hat && av.hat !== 'none' && ITEMS.find(it => it.slot === 'hat' && it.val === av.hat);
+    if (hat){ x.font = '17px sans-serif'; x.textAlign = 'center'; x.fillText(hat.emoji, 30, 11); }
+    const ear = av.ears && ITEMS.find(it => it.slot === 'ears' && it.val === av.ears); if (ear){ x.font = '11px sans-serif'; x.fillText(ear.emoji, 50, 14); }
+    return c.toDataURL();
+  }
+  /* --- wardrobe --- */
+  function fsWardOpen(){ if (!fs || fs.ph !== 'dress') return; fs.ward = true; fsWardRender(); $('#fsWard').classList.add('show'); $('#fsWardBtn').classList.remove('show'); }
+  function fsWardClose(){ if (!fs) return; fs.ward = false; $('#fsWard').classList.remove('show'); if (fs.ph === 'dress') $('#fsWardBtn').classList.add('show'); }
+  function fsWardRender(){
+    const T = FS_THEMES[fs.th], tab = fs.tab || 'col', f = fs.fit;
+    $('#fsTheme').textContent = T.emoji + ' Theme: ' + T.name; $('#fsLikes').textContent = '⭐ Judges love: ' + T.hint;
+    $('#fsTabs').innerHTML = FS_TABS.map(([k, e, n]) => `<button class="fstab${k === tab ? ' on' : ''}" data-t="${k}">${e}<small>${n}</small></button>`).join('');
+    $('#fsTabs').querySelectorAll('.fstab').forEach(b => b.onclick = () => { fs.tab = b.dataset.t; fsWardRender(); });
+    let h = '';
+    if (tab === 'col'){
+      h = [['shirt', '👕 Top'], ['pants', '👖 Bottom'], ['hairColor', '💇 Hair'], ['head', '🙂 Skin']].map(([k, n]) => `<div class="fsrow"><b>${n}</b>${(k === 'head' ? FS_SKIN : FS_COLS).map(c => `<button class="fssw${f[k] === c ? ' on' : ''}" data-k="${k}" data-c="${c}" style="--c:${c}" aria-label="${n} ${c}"></button>`).join('')}</div>`).join('');
+    } else {
+      const list = [];
+      FS_TABSLOTS[tab].forEach(slot => { if (slot === 'hat') list.push({slot, val: 'none', emoji: '🚫', name: 'No hat'}); if (slot === 'shirtPat') list.push({slot, val: null, emoji: '👕', name: 'Plain'}); if (slot === 'pantsPat') list.push({slot, val: null, emoji: '👖', name: 'Plain'});
+        fsItems(slot).forEach(it => list.push({slot, val: it.val, emoji: it.emoji, name: it.name, own: isOwned(it), like: FS_THEMES[fs.th].likes.some(l => String(it.val).includes(l) || it.id.includes(l))})); });
+      h = '<div class="fsgrid">' + list.map((it, i) => `<button class="fsit${f[it.slot] === it.val || (it.val == null && !f[it.slot]) ? ' on' : ''}" data-i="${i}"><i>${it.emoji}</i><small>${it.name}</small>${it.own ? '<u>⭐</u>' : ''}</button>`).join('') + '</div>';
+      fs.list = list;
+    }
+    $('#fsItems').innerHTML = h;
+    $('#fsItems').querySelectorAll('.fssw').forEach(b => b.onclick = () => fsSet(b.dataset.k, b.dataset.c));
+    $('#fsItems').querySelectorAll('.fsit').forEach(b => b.onclick = () => { const it = fs.list[+b.dataset.i]; const cur = fs.fit[it.slot]; fsSet(it.slot, cur === it.val && it.slot !== 'hat' && it.val != null ? null : it.val); });
+    $('#fsReady').textContent = fs.ready.has(fsUid()) ? '✅ Ready! (keep changing if you like)' : '✅ I\'m ready!';
+  }
+  function fsSet(k, v){
+    if (!fs || fs.ph !== 'dress') return;
+    if (k === 'pantsPat' && v === 'dress' && fs.fit.pantsPat !== 'dress') fs.fit.shirtPat = fs.fit.shirtPat;
+    fs.fit[k] = v; fsRebuild(fs.fit); fs.fitDirty = .5; SND.coin(); fsWardRender();
+  }
+  function fsReadyBtn(){
+    if (!fs || fs.ph !== 'dress') return;
+    fs.ready.add(fsUid()); fsWardClose(); banner('✅ Looking good! Waiting for the show to start...');
+    if (fs.remote){ mpSendTo(mp.hconn, {t: 'fsfit', av: cleanAv(fs.fit)}); mpSendTo(mp.hconn, {t: 'fsready'}); }
+  }
+  /* --- flow --- */
+  function fsBodies(){
+    const out = [fsUid()];
+    if (mp.on && mp.host){ const now = performance.now(); for (const g of mp.guests.values()){ if (!g.ready) continue; const E = mp.ents.get(g.uid); if (E && E.m === 'fashion' && now - E.seen < 3000) out.push(g.uid); } }
+    return out;
+  }
+  function fsStart(){
+    if (!fs || mpGuest()) return;
+    let ord;
+    if (mp.on){ ord = fsBodies(); if (ord.length < 2){ toast('👫 The Fashion Show needs 2+ players in the room'); return; } }
+    else ord = ['H', ...FS_NPCS.map(n => n.uid)];
+    let th; do { th = Math.floor(Math.random() * FS_THEMES.length); } while (th === fs.lastTh && FS_THEMES.length > 1);
+    if (fs.forceTh != null) th = fs.forceTh;
+    fs.lastTh = th; fs.th = th; fs.ord = ord; fs.n++; fs.ph = 'dress'; fs.t = FS_DRESS; fs.wt = 0; fs.gfits = {}; fs.fits = {}; fs.votes = {}; fs.ready = new Set(); fs.res = []; fs.win = [];
+    if (!mp.on){ fs.npcFit = {}; FS_NPCS.forEach(N => { fs.npcFit[N.uid] = fsNpcFit(N, th, .2); }); fs.tryT = 1; }
+    fsLocalDress();
+  }
+  function fsLocalDress(){
+    ['#fsPick', '#fsEnd', '#fsVote'].forEach(id => $(id).classList.remove('show')); choosing = false; over = false;
+    fs.endShown = false; fs.voted = null; fs.paid = false; fs.earned = 0; fs.tab = 'col'; fs.walkers.forEach(w => scene.remove(w.m.g)); fs.walkers = [];
+    if (!fs.ready) fs.ready = new Set();
+    fs.fit = fixAv(Object.assign({}, DEF, avatar)); fsRebuild(fs.fit);
+    const i = Math.max(0, fs.ord.indexOf(fsUid()));
+    Object.assign(P, {x: (i - (fs.ord.length - 1) / 2) * 1.8, y: .05, z: 10.2, vx: 0, vy: 0, vz: 0}); P.face = Math.PI; cam.yaw = 0; cam.pitch = .3; cam.dist = 7;
+    const T = FS_THEMES[fs.th]; banner('👗 Theme: ' + T.emoji + ' ' + T.name + '! Dress up!'); SND.cp();
+    fsWardOpen();
+  }
+  function fsBeginWalk(){
+    fs.ph = 'walk'; fs.wt = 0;
+    fs.fits = {}; fs.ord.forEach(u => {
+      if (u === fsUid()) fs.fits[u] = cleanAv(fs.fit);
+      else if (!mp.on) fs.fits[u] = fsNpcFit(FS_NPCS.find(n => n.uid === u), fs.th, .55 + Math.random() * .3);
+      else fs.fits[u] = fs.gfits[u] || (mpLook(u) || {}).av || Object.assign({}, DEF);
+    });
+    fsLocalWalk();
+  }
+  function fsSeat(){
+    const i = fs.ord.indexOf(fsUid()), n = fs.ord.length, k = i < 0 ? n + (+String(mp.me).slice(1) || 0) % 4 : i;
+    return {x: (k - (n - 1) / 2) * 1.7, y: .65, z: 15.6};
+  }
+  function fsLocalWalk(){
+    fsWardClose(); $('#fsWardBtn').classList.remove('show'); ['#fsPick', '#fsVote', '#fsEnd'].forEach(id => $(id).classList.remove('show'));
+    fs.walkers.forEach(w => scene.remove(w.m.g)); fs.walkers = [];
+    fs.ord.forEach((u, k) => { const av = Object.assign({}, DEF, fs.fits[u] || {}), m = buildPlayer(av); m.g.visible = false; scene.add(m.g);
+      const lab = label(fsName(u) === 'You' ? '⭐ You' : fsName(u), 'rgba(255,111,181,.92)'); lab.position.y = 3.75; m.g.add(lab);
+      fs.walkers.push({u, m, av, ph: 0, pack: av.anim || 'default'}); });
+    Object.values(fs.npcM).forEach(M => { M.m.g.visible = false; });
+    const s = fsSeat(); Object.assign(P, {x: s.x, y: s.y, z: s.z, vx: 0, vy: 0, vz: 0}); P.face = Math.PI;
+    if (fs.dressed !== false){ fsRebuild(fs.fit || avatar); }
+    banner('✨ The show begins! ' + FS_THEMES[fs.th].emoji); SND.win();
+  }
+  function fsVoteOpen(){
+    fs.ph = 'vote'; if (!fs.remote) fs.t = FS_VOTE;
+    const me = fsUid();
+    $('#fsVoteC').innerHTML = fs.ord.map((u, k) => u === me ? '' : `<button class="fsvc" data-u="${u}"><img alt="" src="${fsThumb(Object.assign({}, DEF, fs.fits[u] || {}))}"><b>${bxEsc(fsName(u))}</b></button>`).join('');
+    $('#fsVoteC').querySelectorAll('.fsvc').forEach(b => b.onclick = () => fsVote(b.dataset.u));
+    $('#fsVoteW').textContent = fs.ord.includes(me) ? 'You can\'t vote for yourself 😉 — pick your favourite!' : 'Pick your favourite!';
+    $('#fsVote').classList.add('show');
+    if (!mp.on){ fs.jv = FS_JUDGES.map((J, i) => ({t: 1.5 + Math.random() * 6 + i * .6, done: false})); }
+    banner('🗳️ Time to vote!');
+  }
+  function fsVote(u){
+    if (!fs || fs.ph !== 'vote' || u === fsUid() || !fs.ord.includes(u)) return;
+    fs.voted = u; document.querySelectorAll('#fsVoteC .fsvc').forEach(b => b.classList.toggle('on', b.dataset.u === u));
+    $('#fsVoteW').textContent = '✅ You voted for ' + fsName(u) + '! Waiting for the others...'; SND.coin();
+    if (fs.remote) mpSendTo(mp.hconn, {t: 'fsvote', u}); else fs.votes[fsUid()] = u;
+  }
+  function fsTally(){
+    const cnt = {}; fs.ord.forEach(u => cnt[u] = 0);
+    Object.entries(fs.votes).forEach(([v, u]) => { if (u in cnt && u !== v) cnt[u]++; });
+    fs.res = fs.ord.map(u => [u, cnt[u]]).sort((a, b) => b[1] - a[1]);
+    const top = fs.res.length ? fs.res[0][1] : 0; fs.win = top > 0 ? fs.res.filter(r => r[1] === top).map(r => r[0]) : [];
+    fs.ph = 'end'; fsEndLocal();
+  }
+  function fsEndLocal(){
+    if (fs.endShown) return; fs.endShown = true;
+    $('#fsVote').classList.remove('show'); choosing = true;
+    const me = fsUid(), mine = fs.ord.includes(me), won = fs.win.includes(me);
+    if (!fs.paid){ fs.paid = true; const n = (mine ? FS_JOIN : 0) + (won ? FS_WIN : 0); if (n){ fs.earned = n; runCoins = n; setCoins(coins + n); SND.coin(); } }
+    if (won) confetti();
+    $('#fsEndE').textContent = won ? '👑' : '✨';
+    $('#fsEndT').textContent = won ? (fs.win.length > 1 ? '👑 It\'s a tie — you\'re a winner!' : '👑 You won the Fashion Show!') : fs.win.length ? '👑 ' + fs.win.map(fsName).join(' & ') + ' won!' : 'What a show!';
+    $('#fsEndS').innerHTML = fs.res.map(([u, v], k) => `<div class="fsres${fs.win.includes(u) ? ' win' : ''}"><img alt="" src="${fsThumb(Object.assign({}, DEF, fs.fits[u] || {}))}"><span>${fs.win.includes(u) ? '👑' : ['🥇', '🥈', '🥉'][k] || ''} ${bxEsc(fsName(u))}</span><b>${'⭐'.repeat(Math.min(v, 8)) || '—'} ${v}</b></div>`).join('');
+    $('#fsEndC').textContent = fs.earned ? '🪙 +' + fs.earned + ' coins' + (won ? ' (+' + FS_WIN + ' for winning!)' : ' for walking the runway') : '';
+    const g = mpGuest(); $('#fsAgain').style.display = g ? 'none' : ''; $('#fsEndW').style.display = g ? '' : 'none';
+    $('#fsKeep').style.display = mine ? '' : 'none'; $('#fsKeep').disabled = false; $('#fsKeep').textContent = '👗 Keep my look';
+    $('#fsEnd').classList.add('show');
+  }
+  function fsKeep(){
+    if (!fs || !fs.fit) return;
+    const keep = {}, slots = ['hat', 'shirtPat', 'pantsPat', 'hair', 'face', 'ears', 'tail', 'back', 'brow', 'lash'];
+    let kept = 0, lent = 0;
+    ['shirt', 'pants', 'hairColor', 'head'].forEach(k => { if (fs.fit[k] !== avatar[k]){ keep[k] = fs.fit[k]; kept++; } });
+    slots.forEach(k => { const v = fs.fit[k]; if (v === avatar[k] || (v == null && avatar[k] == null)) return;
+      const it = v == null || v === 'none' ? null : ITEMS.find(x => x.slot === k && x.val === v);
+      if (!it || isOwned(it)){ keep[k] = v; kept++; } else lent++; });
+    avatar = fixAv(Object.assign({}, avatar, keep)); save('rubloxAvatar', avatar);
+    $('#fsKeep').disabled = true; $('#fsKeep').textContent = '✅ Saved!';
+    toast(kept ? '👗 Saved your look!' + (lent ? ' (' + lent + ' borrowed thing' + (lent > 1 ? 's' : '') + ' went back — buy them in the 🛍️ Shop)' : '') : lent ? '🛍️ Those were borrowed! Buy them in the Shop to keep them' : '👗 That\'s already your look!');
+  }
+  function fsPickOpen(){
+    fs.ph = 'pick'; choosing = true; const g = mpGuest();
+    ['#fsEnd', '#fsVote', '#fsWard'].forEach(id => $(id).classList.remove('show')); $('#fsWardBtn').classList.remove('show'); fs.ward = false;
+    fs.walkers.forEach(w => scene.remove(w.m.g)); fs.walkers = [];
+    $('#fsPickS').textContent = g ? '⏳ Waiting for the host to start the show...' : mp.on ? 'Everyone in the room dresses up for a surprise theme, walks the runway, then votes!' : 'Dress up for a surprise theme, strut down the runway, and win the judges\' votes! 👑';
+    $('#fsGo').style.display = g ? 'none' : '';
+    $('#fsPick').classList.add('show');
+  }
+  /* --- per-frame --- */
+  function fashionUpdate(dt){
+    if (!fs) return;
+    if (fs.remote){ if (fs.ph === 'dress' && fs.fitDirty > 0){ fs.fitDirty -= dt; if (fs.fitDirty <= 0) mpSendTo(mp.hconn, {t: 'fsfit', av: cleanAv(fs.fit)}); }
+      if (fs.ph === 'dress' || fs.ph === 'vote') fs.t = Math.max(0, fs.t - dt); if (fs.ph === 'walk') fs.wt += dt; return; }
+    if (fs.ph === 'dress'){
+      fs.t -= dt;
+      if (!mp.on){ fs.tryT -= dt; if (fs.tryT <= 0){ fs.tryT = 2.5 + Math.random() * 2; const N = fsRand(FS_NPCS); fs.npcFit[N.uid] = fsNpcFit(N, fs.th, .4); fsNpcShow(N.uid); } }
+      const all = mp.on ? fsBodies().every(u => fs.ready.has(u)) : fs.ready.has('H');
+      if (fs.t <= 0 || all) fsBeginWalk();
+    } else if (fs.ph === 'walk'){
+      fs.wt += dt; if (fs.wt >= fs.ord.length * FS_WALK + .6) fsVoteOpen();
+    } else if (fs.ph === 'vote'){
+      fs.t -= dt;
+      if (!mp.on && fs.jv) fs.jv.forEach((j, i) => { if (!j.done && FS_VOTE - fs.t >= j.t){ j.done = true;
+        const opts = fs.ord.map(u => [u, fsScore(fs.fits[u], fs.th) + Math.random() * 2.2]).sort((a, b) => b[1] - a[1]); fs.votes['j' + i] = opts[0][0];
+        const J = fs.judges[i]; if (J) J.voteT = 2.5; } });
+      const voters = mp.on ? fsBodies() : ['H', 'j0', 'j1', 'j2', 'j3'];
+      if (fs.t <= 0 || voters.every(v => fs.votes[v])) fsTally();
+    }
+  }
+  function fsNpcShow(u){
+    const N = FS_NPCS.find(n => n.uid === u); if (!N) return; const i = FS_NPCS.indexOf(N);
+    const old = fs.npcM[u]; if (old) scene.remove(old.m.g);
+    const m = buildPlayer(Object.assign({}, DEF, fs.npcFit[u])); const s = i === 1 ? 1 : -1;
+    m.g.position.set(s * 9.4, .05, -.5 + (i === 2 ? 3 : 0)); m.g.rotation.y = s * Math.PI / 2; scene.add(m.g);
+    const lab = label(N.emoji + ' ' + N.name, 'rgba(29,35,64,.75)'); lab.position.y = 3.75; m.g.add(lab);
+    fs.npcM[u] = {m, pack: 'default', ph: 0};
+  }
+  function fashionAnimate(dt){
+    if (!fs) return;
+    const t = worldT;
+    (fs.cones || []).forEach(g => { g.rotation.z = Math.sin(t * .8 + g.userData.ph) * .35; g.rotation.x = Math.cos(t * .6 + g.userData.ph) * .2; });
+    fs.spots.forEach((b, i) => b.material.color.setHSL(((t * .3 + i * .07) % 1), .9, .75));
+    if (!fs.judges.length && !mp.on){ FS_JUDGES.forEach((J, i) => { const m = buildPlayer(Object.assign({}, DEF, J.av)); m.g.position.set(-3.3 + i * 2.2, .05, 12.5); m.g.rotation.y = Math.PI; scene.add(m.g);
+        const lab = label(J.emoji + ' ' + J.name, 'rgba(29,35,64,.75)'); lab.position.y = 3.75; m.g.add(lab); fs.judges.push({m, voteT: 0, ph: i}); }); }
+    fs.judges.forEach((J, i) => { const cheer = J.voteT > 0; if (cheer) J.voteT -= dt;
+      applyPose(dt, animPose('default', {state: cheer ? 'jump' : 'idle', t: t + i, ph: 0, sp: 0, air: cheer ? .3 : 0, jumped: cheer}), J.m); J.m.g.position.y = .05 + (cheer ? Math.abs(Math.sin(t * 8)) * .3 : 0); });
+    if (fs.ph === 'dress' && !mp.on){ FS_NPCS.forEach(N => { if (!fs.npcM[N.uid] && fs.npcFit) fsNpcShow(N.uid); const M = fs.npcM[N.uid]; if (M){ M.m.g.visible = true; applyPose(dt, animPose('default', {state: 'idle', t: t + 1, ph: 0, sp: 0}), M.m); } }); }
+    else Object.values(fs.npcM).forEach(M => { M.m.g.visible = false; });
+    // the runway walk: one model at a time
+    const per = FS_WALK, z0 = -13.5, z1 = 7.2;
+    fs.walkers.forEach((W, k) => { const M = W.m;
+      if (fs.ph === 'end'){ const n = fs.walkers.length, wi = fs.win.includes(W.u); M.g.visible = true;
+        const x = (k - (n - 1) / 2) * 1.5; M.g.position.set(x * .9, .95, 5.5 - (wi ? -1.2 : 0)); M.g.rotation.y = wi ? t * 1.5 : 0;
+        applyPose(dt, animPose(W.pack, {state: wi ? 'jump' : 'idle', t: t + k, ph: 0, sp: 0, air: wi ? .3 : 0, jumped: wi}), M); return; }
+      const lt = fs.wt - k * per; if (fs.ph !== 'walk' || lt < 0 || lt > per){ M.g.visible = false; return; }
+      M.g.visible = true; let z, ry = 0, walk = true;
+      if (lt < 2.6){ z = z0 + (z1 - z0) * (lt / 2.6); }
+      else if (lt < 3.8){ z = z1; ry = (lt - 2.6) / 1.2 * Math.PI * 2; walk = false; }
+      else { z = z1 - (lt - 3.8) * 6; ry = Math.PI; }
+      M.g.position.set(0, .95 + (walk ? 0 : Math.sin((lt - 2.6) / 1.2 * Math.PI) * .35), z); M.g.rotation.y = ry;
+      W.ph += dt * 6;
+      applyPose(dt, animPose(W.pack, {state: walk ? 'walk' : 'jump', t: t + k, ph: W.ph, sp: walk ? .7 : 0, air: walk ? 0 : .3, jumped: !walk}), M);
+      if (!W.shown && lt > .05){ W.shown = true; banner('👠 ' + (W.u === fsUid() ? 'Your turn! Strut it! ✨' : fsName(W.u) + ' hits the runway!')); }
+    });
+  }
+  function fashionCam(){
+    if (!fs || !(fs.ph === 'walk' || fs.ph === 'end')) return false;
+    let tx = 0, ty = 2.2, tz = 2;
+    if (fs.ph === 'walk'){ const k = Math.min(fs.walkers.length - 1, Math.floor(fs.wt / FS_WALK)), W = fs.walkers[k]; if (W && W.m.g.visible){ tx = W.m.g.position.x; ty = W.m.g.position.y + 2; tz = W.m.g.position.z; } }
+    else { tz = 5.5; }
+    if (fs.ph === 'walk') camera.position.set(4.2 + Math.sin(worldT * .25) * 1.2, 3.3, 9.9); else camera.position.set(Math.sin(worldT * .25) * 1.5, 3.2, 10.2);
+    camera.lookAt(tx, ty, tz); return true;
+  }
+  function fashionHud(){
+    if (!fs) return;
+    const ph = {pick: '👗 Fashion Show', dress: '👗 Dress up!', walk: '👠 Runway', vote: '🗳️ Vote!', end: '👑 Results'}[fs.ph] || '👗';
+    if ($('#fsPh').textContent !== ph) $('#fsPh').textContent = ph;
+    const T = FS_THEMES[fs.th]; $('#fsThB').textContent = fs.ph === 'pick' ? '' : ' · ' + T.emoji + ' ' + T.name;
+    $('#fsT').textContent = fs.ph === 'dress' || fs.ph === 'vote' ? fmt(Math.max(0, Math.ceil(fs.t))) : fs.ph === 'walk' ? (Math.min(fs.ord.length, Math.floor(fs.wt / FS_WALK) + 1)) + '/' + fs.ord.length : '—';
+    if (fs.ph === 'dress' && fs.ward){ $('#fsWardT').textContent = '⏱️ ' + fmt(Math.max(0, Math.ceil(fs.t))); }
+    if (fs.ph === 'vote') $('#fsVoteT').textContent = '⏱️ ' + Math.max(0, Math.ceil(fs.t));
+  }
+  function fashionEnter(){
+    fs.remote = mpGuest(); fs.dressed = true;
+    if (fs.remote && mp.fsW) fashionFromHost(mp.fsW, true);
+    if (fs.ph === 'pick') fsPickOpen();
+  }
+  function fashionStop(){
+    ['#fsPick', '#fsEnd', '#fsVote', '#fsWard'].forEach(id => $(id).classList.remove('show')); $('#fsWardBtn').classList.remove('show');
+    if (fs){ fs.walkers.forEach(w => scene.remove(w.m.g)); fs.walkers = []; fs.ward = false; }
+    fs = null;
+  }
+  /* --- multiplayer --- */
+  function fashionWire(){
+    const w = {ph: fs.ph, n: fs.n, t: +fs.t.toFixed(1), wt: +fs.wt.toFixed(2), th: fs.th, ord: fs.ord, rd: [...fs.ready], vc: Object.keys(fs.votes).length};
+    if (fs.ph === 'walk' || fs.ph === 'vote' || fs.ph === 'end') w.fits = fs.fits;
+    if (fs.ph === 'end'){ w.res = fs.res; w.win = fs.win; }
+    return w;
+  }
+  function fashionFromHost(w, entering){
+    if (!w || typeof w !== 'object') return; mp.fsW = w;
+    if (!(running && mode === 'fashion' && fs && fs.remote)) return;
+    const S = a => Array.isArray(a) ? a.filter(u => typeof u === 'string').slice(0, 8) : [];
+    const ph = ['pick', 'dress', 'walk', 'vote', 'end'].includes(w.ph) ? w.ph : 'pick', n = w.n | 0;
+    fs.th = Math.max(0, Math.min(FS_THEMES.length - 1, w.th | 0)); fs.ord = S(w.ord); fs.ready = new Set(S(w.rd));
+    if (w.fits && typeof w.fits === 'object') fs.ord.forEach(u => { const a = w.fits[u]; if (a && typeof a === 'object') fs.fits[u] = cleanAv(a); });
+    if (ph === 'pick'){ if (fs.ph !== 'pick' || entering) fsPickOpen(); return; }
+    const newRound = n !== fs.n; fs.n = n;
+    if (ph === 'dress'){ fs.t = +w.t || 0; if (newRound || fs.ph !== 'dress'){ fs.ph = 'dress'; fs.ready = new Set(S(w.rd)); fsLocalDress(); } return; }
+    if (ph === 'walk'){ if (fs.ph !== 'walk' || newRound){ fs.ph = 'walk'; fs.wt = +w.wt || 0; fsLocalWalk(); } else if (Math.abs(fs.wt - (+w.wt || 0)) > .4) fs.wt = +w.wt || 0; return; }
+    if (ph === 'vote'){ fs.t = +w.t || 0; if (fs.ph !== 'vote' || newRound){ if (!fs.walkers.length) fsLocalWalk(); fsVoteOpen(); } return; }
+    if (ph === 'end'){ fs.res = Array.isArray(w.res) ? w.res.filter(r => Array.isArray(r) && typeof r[0] === 'string').slice(0, 8).map(r => [r[0], Math.max(0, r[1] | 0)]) : []; fs.win = S(w.win);
+      if (fs.ph !== 'end' || newRound){ if (!fs.walkers.length) fsLocalWalk(); fs.ph = 'end'; fs.endShown = false; fsEndLocal(); } }
+  }
+  function fsGuestMsg(g, d){
+    if (!fs || mode !== 'fashion' || !running) return;
+    if (d.t === 'fsfit' && fs.ph === 'dress' && d.av && typeof d.av === 'object') fs.gfits[g.uid] = cleanAv(d.av);
+    else if (d.t === 'fsready' && fs.ph === 'dress') fs.ready.add(g.uid);
+    else if (d.t === 'fsvote' && fs.ph === 'vote' && typeof d.u === 'string' && fs.ord.includes(d.u) && d.u !== g.uid) fs.votes[g.uid] = d.u;
+  }
   /* ---------- per-frame ---------- */
   const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
   function animate(dt){
@@ -8009,6 +8431,7 @@ const Obby = (() => {
     if (nds) animateNds(dt);
     if (dsp) splashAnimate(dt);
     if (hs) hideAnimate(dt);
+    if (fs) fashionAnimate(dt);
     if (tg) animateTag(dt);
     if (pt) animatePets(dt);
     animateMp(dt);
@@ -8065,7 +8488,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'fashion' ? '🎮 Left stick move · Ⓐ jump · Ⓧ wardrobe 👗 · Right stick look · ☰ menu' : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -8099,6 +8522,7 @@ const Obby = (() => {
       else { const t = $('#oTip'); padTip(); if (t.classList.contains('hide')){ t.classList.remove('hide'); tipTimer = 8; } else { t.classList.add('hide'); tipTimer = 0; } }
       return;
     }
+    if (mode === 'fashion' && fs && jp[2]){ if (fs.ph === 'dress') fs.ward ? fsWardClose() : fsWardOpen(); return; }
     if (mode === 'splash' && dsp && (jp[5] || jp[2] || jp[4])){ if (jp[5]) splashThrow(); if (jp[2]) splashShove(); if (jp[4]) splashPull(); return; }
     if (mode === 'race' && rc){ pad.gas = Math.max(s.v[7] || 0, s.b[0] ? 1 : 0); pad.brake = Math.max(s.v[6] || 0, s.b[1] ? 1 : 0); pad.y = 0; pad.jump = false; pad.hop = !!(s.b[5] || s.b[2]); pad.item = !!(s.b[4] || s.b[3]); return; }
     if (mode === 'pets' && pt){
@@ -8152,6 +8576,11 @@ const Obby = (() => {
   addEventListener('resize', () => setTimeout(hudMeasure, 50));
   function setTouchUIBase(on){
     hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
+    if (mode === 'fashion'){
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · ⬆️ jump · 👗 button = wardrobe' : '⌨️ WASD move · Space jump · C wardrobe · Esc menu')
+        + "<br>👗 Dress up for the theme! Tip: the judges love outfits that match the theme.";
+      return;
+    }
     if (mode === 'hide'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · ⬆️ jump · 🏃 run' : '⌨️ WASD move · Shift run · Space jump · Esc menu')
         + "<br>🙈 Seeker: touch hiders to find them! 🏃 Hiders: find a sneaky spot before the count ends.";
@@ -8195,6 +8624,7 @@ const Obby = (() => {
   }
   function updateCamera(){
     if (rc && raceCam()) return;
+    if (fs && fashionCam()) return;
     if (fpOn()){   // eyes: just in front of your (hidden) head, looking where the camera yaw/pitch point
       const cp = Math.cos(cam.pitch), fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), ey = P.y + 2.45;
       camera.position.set(P.x + fx * .22, ey, P.z + fz * .22);
@@ -8204,7 +8634,7 @@ const Obby = (() => {
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion'){ // pull the camera in front of walls so buildings don't block the view
       for (let s = 1.2; s <= cam.dist; s += .4){
         const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
         if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(1.2, s - .5); break; }
@@ -8232,6 +8662,7 @@ const Obby = (() => {
     if (rc) raceHud();
     if (dsp) splashHud();
     if (hs) hideHud();
+    if (fs) fashionHud();
     if (nds){
       const N = nds, D = N.dis && DISASTERS[N.dis], hp = Math.max(0, Math.round(N.hp));
       $('#oDis').textContent = N.phase === 'lobby' ? '🛋️ Lobby' : N.phase === 'ready' ? '⏳ Get ready' : N.combo.length > 1 ? N.combo.map(k => DISASTERS[k].emoji).join('') + (N.combo.length === 3 ? ' Triple!' : ' Double!') : D.emoji + ' ' + D.name;
@@ -8260,6 +8691,7 @@ const Obby = (() => {
       if (bw) buildUpdate(dt);
       if (tg) tagUpdate(dt);
       if (hs) hideUpdate(dt);
+      if (fs) fashionUpdate(dt);
       if (pt) petsUpdate(dt);
       if (lava && time > LAVA_GRACE && !over && !won){ lava.y += DIFFS[diff].speed * (1 + (time - LAVA_GRACE) / 150) * dt; if (time - dt <= LAVA_GRACE + 0.001 && time > LAVA_GRACE) banner('🌋 The lava is rising! Climb!'); }
       if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0) $('#oTip').classList.add('hide'); }
@@ -8296,6 +8728,7 @@ const Obby = (() => {
       if (e.code === 'Escape' || e.code === 'KeyP'){ if (e.code === 'Escape' && performance.now() - fp.unlockT < 400) return; if (!won && !over && !choosing) setPause(!(paused || menuOpen)); return; }
       const em = Object.keys(EMOTES).find(k => 'Digit' + EMOTES[k].key === e.code || 'Numpad' + EMOTES[k].key === e.code);
       if (em && !e.repeat){ playEmote(em); return; }
+      if (mode === 'fashion' && fs && !e.repeat && !paused && e.code === 'KeyC' && fs.ph === 'dress'){ fs.ward ? fsWardClose() : fsWardOpen(); return; }
       if (mode === 'build' && bw && !e.repeat && !paused){
         if (e.code === 'KeyQ') return selBlock(bw.sel - 1);
         if (e.code === 'KeyE') return selBlock(bw.sel + 1);
@@ -8436,13 +8869,14 @@ const Obby = (() => {
   function setPause(p){
     if (mp.on){   // multiplayer: the menu opens but the world (and the host's simulation) keeps running; only your own controls stop
       menuOpen = !!p; paused = false; $('#oPausePanel').classList.toggle('show', menuOpen); $('#oPause').textContent = '⏸️'; for (const k in keys) keys[k] = false; if (menuOpen) syncMenu(); return; }
+    if (p && mp.on && mp.host && mode === 'fashion' && fs && fs.ph !== 'pick' && fs.ph !== 'end'){ banner('⏸️ No pausing during the show!'); return; }
     if (p && mp.on && mp.host && mode === 'hide' && hs && (hs.ph === 'hide' || hs.ph === 'seek')){ banner('⏸️ No pausing while your family is playing hide and seek!'); return; }
     if (p && mp.on && mp.host && mode === 'tag' && tg && tg.phase !== 'end'){ banner('⏸️ No pausing while your family is playing tag!'); return; }
     paused = p; menuOpen = false; $('#oPausePanel').classList.toggle('show', p); if (p) syncMenu(); $('#oPause').textContent = p ? '▶️' : '⏸️'; for (const k in keys) keys[k] = false; }
 
   /* ---------- start / stop ---------- */
   function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     $('#obby').classList.add('show'); document.body.style.overflow = 'hidden'; document.documentElement.classList.add('ingame');
@@ -8478,6 +8912,7 @@ const Obby = (() => {
     else if (mode === 'race') banner('🏁 Pet Kart Racing!');
     else if (mode === 'splash') banner("🌊 Don't Splash! Shhh...");
     else if (mode === 'hide') banner('🙈 Hide and Seek on Maple Street!');
+    else if (mode === 'fashion') banner('👗 Welcome to the Fashion Show!');
     else if (mode === 'pets') banner(pt && pt.s.pets.length ? '🐾 Welcome back, ' + pt.s.pets[pt.s.a].n + '!' : '🐾 Adopt a Pet! Drive to the Pet Shelter');
     else if (diff) begin(diff);
     $('#obby').classList.toggle('rmode', mode === 'race'); ['#rcLapBox', '#rcPosBox', '#rcItem'].forEach(id => $(id).style.display = mode === 'race' ? '' : 'none'); ['#rcPick', '#rcFin'].forEach(id => $(id).classList.remove('show'));
@@ -8486,7 +8921,7 @@ const Obby = (() => {
         $('#rcBack').onclick = () => rc && rcPickOpen(1); $('#rcHome').onclick = $('#rcFinHome').onclick = stop; $('#rcAgain').onclick = () => rc && rcAgain();
         $('#rcItem').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (rc) rc.tapItem = true; }); }
       raceEnter(); }
-    if (mode === 'splash' || mode === 'hide') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide') && touchUI && tipTimer > 4) tipTimer = 4;
+    if (mode === 'splash' || mode === 'hide' || mode === 'fashion') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion') && touchUI && tipTimer > 4) tipTimer = 4;
     $('#obby').classList.toggle('smode', mode === 'splash'); ['#spLvBox', '#spRoundBox', '#spPeb', '#spShove'].forEach(id => $(id).style.display = mode === 'splash' ? '' : 'none'); if (mode !== 'splash') ['#spAliveBox', '#spPull'].forEach(id => $(id).style.display = 'none');
     ['#spPick', '#spEnd', '#spCode'].forEach(id => $(id).classList.remove('show')); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on');
     if (mode === 'splash'){ if (!window.__spBound){ window.__spBound = true;
@@ -8500,6 +8935,11 @@ const Obby = (() => {
         document.querySelectorAll('#hsSolo .hsrole').forEach(b => b.onclick = () => { if (!hs) return; hs.role = b.dataset.r; document.querySelectorAll('#hsSolo .hsrole').forEach(x => x.classList.toggle('on', x === b)); });
         document.querySelectorAll('#hsRules .hsrule').forEach(b => b.onclick = () => { if (!hs || mpGuest()) return; hs.rule = b.dataset.k; document.querySelectorAll('#hsRules .hsrule').forEach(x => x.classList.toggle('on', x === b)); }); }
       hideEnter(); }
+    $('#fsBox').style.display = mode === 'fashion' ? '' : 'none'; ['#fsPick', '#fsEnd', '#fsVote', '#fsWard'].forEach(id => $(id).classList.remove('show')); $('#fsWardBtn').classList.remove('show');
+    if (mode === 'fashion'){ if (!window.__fsBound){ window.__fsBound = true;
+        $('#fsHome').onclick = $('#fsHome2').onclick = stop; $('#fsGo').onclick = $('#fsAgain').onclick = () => fs && fsStart();
+        $('#fsReady').onclick = () => fsReadyBtn(); $('#fsWardClose').onclick = () => fsWardClose(); $('#fsWardBtn').onclick = () => fsWardOpen(); $('#fsKeep').onclick = () => fsKeep(); }
+      fashionEnter(); }
     mpOnStart();
   }
   function stop(){
@@ -8507,13 +8947,17 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
 
   // debug / test hook
   window.obbyDebug = {
+    fashion: () => fs && {ph: fs.ph, n: fs.n, t: +fs.t.toFixed(2), wt: +fs.wt.toFixed(2), th: fs.th, theme: FS_THEMES[fs.th].id, ord: fs.ord.slice(), ready: [...fs.ready], votes: Object.assign({}, fs.votes), voted: fs.voted || null, res: fs.res, win: fs.win, earned: fs.earned, ward: !!fs.ward, remote: !!fs.remote,
+      fit: fs.fit ? {hat: fs.fit.hat, shirt: fs.fit.shirt, shirtPat: fs.fit.shirtPat, pantsPat: fs.fit.pantsPat} : null, fits: Object.keys(fs.fits), walkers: fs.walkers.filter(w => w.m.g.visible).map(w => w.u), judges: fs.judges.length, npc: Object.values(fs.npcM).filter(M => M.m.g.visible).length, frozen: fsFrozen(), P: {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2)}, avHat: avatar.hat, avShirt: avatar.shirt},
+    fsStart: () => fsStart(), fsTime(t){ fs.t = t; }, fsWt(t){ fs.wt = t; }, fsSet: (k, v) => fsSet(k, v), fsReady: () => fsReadyBtn(), fsVote: u => fsVote(u), fsTheme(i){ fs.forceTh = i; }, fsScore: (u) => fsScore(fs.fits[u], fs.th),
+    fsTab(t){ fs.tab = t; fsWardRender(); },
     tricks: () => pt && pt.pet && {tr: Object.assign({}, trOf(pt.pet.d)), act: pt.pet.act, trk: pt.pet.trk || '', goof: !!pt.pet.goof, e: pt.pet.d.e, cd: Object.assign({}, pt.trCd || {}), showCd: pt.showCd || 0, coins, panel: $('#pTrickPanel').classList.contains('show'), wireAct: trickAct(pt.pet)},
     mpPetActs: () => [...mp.ents.values()].filter(E => E.pet).map(E => ({uid: E.uid, a: E.pet.a, n: E.pet.n})),
     trickGo: k => trickGo(k), trickShow: () => trickShow(), trickSet(k, v){ trOf(pt.pet.d)[k] = v; }, trickRest(){ pt.trCd = {}; pt.showCd = 0; }, trickEnergy(v){ pt.pet.d.e = v; },
@@ -8803,7 +9247,7 @@ const Obby = (() => {
   }
   function closeOf(c){
     const id = c.root.id;
-    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', bShare: '#bShareClose', bTestEnd: '#bTestBack', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pTrickPanel: '#pTrickClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
+    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', fsPick: '#fsHome', fsEnd: '#fsHome2', fsWard: '#fsWardClose', bShare: '#bShareClose', bTestEnd: '#bTestBack', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pTrickPanel: '#pTrickClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
     if (id === 'rcPick'){ const b = document.querySelector('#rcBack'); if (b && !b.hidden) return b; }   // B in the ride list = back to the modes
     if (map[id]) return document.querySelector(map[id]);
     return null;
@@ -8869,6 +9313,7 @@ const Obby = (() => {
     }
     if (s.jp[1]) return back(c);
     if (s.jp[2] && c.kind === 'emotes') return back(c);
+    if (s.jp[2] && c.root && c.root.id === 'fsWard') return back(c);   // Ⓧ toggles the Fashion Show wardrobe
     if (s.jp[9]){
       if (c.kind === 'panel' && c.root.id === 'oPausePanel') return document.getElementById('oResume').click();
       if (c.kind === 'modal' && c.root.id === 'setModal') return document.getElementById('setOk').click();
