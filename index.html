@@ -459,6 +459,12 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .pdrive #oJump,.pdrive #oEmoBtn,.pdrive #oRun,.pdrive #oFP{display:none!important}
 .rmode #oEmoBtn,.rmode #oRun,.rmode #oStam{display:none!important}
 .smode #oStam{display:none!important}
+.ptricks{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:4px 0 10px}
+.ptrick{font:inherit;color:#1d2340;border-radius:16px;border:3px solid #d9dcea;background:#fff;padding:8px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;width:150px}
+.ptrick .te{font-size:34px;line-height:1.1}.ptrick b{font-size:17px}.ptrick small{font-size:12px;font-weight:800;color:#5a6280}
+.ptrick i{display:block;width:100%;height:10px;border-radius:6px;background:#eef0f6;overflow:hidden}.ptrick i u{display:block;height:100%;background:linear-gradient(90deg,#ffd23f,#ff9f1c)}
+.ptrick.known{border-color:#ffd23f;background:#fffbe6}.ptrick.known i u{background:linear-gradient(90deg,#2ec27e,#7be0a6)}.ptrick.gpf,.ptrick:hover{border-color:#ff6fb5;transform:translateY(-2px)}
+@media (max-width:760px),(max-height:520px){.ptrick{width:118px;padding:5px 8px}.ptrick .te{font-size:24px}#pTrickPanel .emoji{display:none}}
 .hsblind{position:absolute;inset:0;display:none;z-index:5;pointer-events:none;background:radial-gradient(circle,#1d2340 0,#0b0e1c 80%);color:#fff;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-weight:900;text-align:center}
 .hsblind.show{display:flex}.hsblind div{font-size:80px;line-height:1}.hsblind b{font-size:96px;line-height:1;color:#ffd23f}.hsblind span{font-size:22px}
 .hsroles{display:flex;gap:10px;justify-content:center;margin:6px 0 8px;flex-wrap:wrap}
@@ -946,10 +952,10 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   <div class="owarn" id="oWarn"></div>
   <div class="pgoal" id="pGoal"><svg id="pArrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 10h-5v10h-6V12H4z"/></svg><span id="pGoalT"></span><b id="pGoalD"></b></div>
   <div class="ppet" id="pPetBox">
-    <div class="ppn"><div><b id="pPetN"></b><small id="pPetS"></small></div><button id="pPetsBtn" title="My pets (M)" aria-label="My pets">🐾</button><button id="pIdxBtn2" title="Pet Index (I)" aria-label="Pet Index">📖</button><button id="pWardBtn" title="Wardrobe (O)" aria-label="Wardrobe">👗</button></div>
+    <div class="ppn"><div><b id="pPetN"></b><small id="pPetS"></small></div><button id="pPetsBtn" title="My pets (M)" aria-label="My pets">🐾</button><button id="pIdxBtn2" title="Pet Index (I)" aria-label="Pet Index">📖</button><button id="pWardBtn" title="Wardrobe (O)" aria-label="Wardrobe">👗</button><button id="pTrickBtn" title="Tricks (T)" aria-label="Pet tricks">🎪</button></div>
     <div class="pneeds"><span title="Food">🍖<i><u id="pFood"></u></i></span><span title="Fun">🎾<i><u id="pFun"></u></i></span><span title="Energy">⚡<i><u id="pEn"></u></i></span></div>
     <div class="pgrowbar"><u id="pGrow"></u><span id="pGrowT"></span></div>
-    <div class="ppad" id="pPadHint"><span><b class="bx">X</b>Pet</span><span><b>RB</b>🎾 Throw</span><span><b>LB</b>🍖 Feed</span><span><b class="by">Y</b>🦮 Walk</span><span><b class="bb">B</b>🐾 Pets</span></div>
+    <div class="ppad" id="pPadHint"><span><b class="bx">X</b>Pet</span><span><b>RB</b>🎾 Throw</span><span><b>LB</b>🍖 Feed</span><span><b class="by">Y</b>🦮 Walk</span><span><b>RT</b>🎪 Tricks</span><span><b class="bb">B</b>🐾 Pets</span></div>
   </div>
   <button class="pact" id="pAct" tabindex="-1"><kbd id="pKey">E</kbd><span id="pActT"></span></button>
   <div class="ppedals" id="pPedals"><button id="pBrake" tabindex="-1" aria-label="Brake">🛑<small>Brake</small></button><button id="pGas" tabindex="-1" aria-label="Gas">⛽<small>Go!</small></button></div>
@@ -982,6 +988,12 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="shgrid" id="pShopGrid"></div>
     <div class="pmsg" id="pShopMsg" style="margin-top:8px"></div>
     <div class="owinbtns"><button class="big" id="pShopWard">👗 Wardrobe</button><button class="big gray" id="pShopClose">✖ Close</button></div>
+  </div></div>
+  <div class="opanel" id="pTrickPanel"><div class="mbox pbox">
+    <span class="emoji">🎪</span><h2>Pet Tricks</h2>
+    <div class="stats" id="pTrickS" style="font-size:14px;margin-bottom:8px"></div>
+    <div class="ptricks" id="pTricks"></div>
+    <div class="owinbtns"><button class="big green" id="pTrickShow">🎪 Trick Show</button><button class="big gray" id="pTrickClose">✖ Close</button></div>
   </div></div>
   <div class="opanel" id="pWardPanel"><div class="mbox pbox">
     <span class="emoji">👗</span><h2>Wardrobe</h2>
@@ -1145,7 +1157,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.02-2';
+const BUILD = '2026.11.02-3';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -4605,7 +4617,7 @@ const Obby = (() => {
     if (rc && mode === 'race') return [r(P.x), r(P.y), r(P.z), r(P.face), 4, r(rc.me ? rc.me.v : 0), '', 0, raceWire()];
     if (pt){ const q = pt.pet, C = pt.car, qs = q ? Math.hypot(q.vx, q.vz) : 0;
       return [r(P.x), r(P.y), r(P.z), r(pt.drive ? C.yaw : P.face), pt.drive ? 4 : s, pt.drive ? 0 : r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0,
-        [r(C.x), r(C.z), r(C.yaw), pt.drive ? 1 : 0, r(C.v)], q ? [q.d.k, q.d.c, q.stage, r(q.x), r(q.y), r(q.z), r(q.face), {eat: 2, sleep: 3, happy: 4, car: 5}[q.act] || (qs > .6 ? 1 : 0), q.d.n, r(qs), pt.leashOn ? 1 : 0, accStr(q.d.acc)] : 0]; }
+        [r(C.x), r(C.z), r(C.yaw), pt.drive ? 1 : 0, r(C.v)], q ? [q.d.k, q.d.c, q.stage, r(q.x), r(q.y), r(q.z), r(q.face), trickAct(q) || {eat: 2, sleep: 3, happy: 4, car: 5}[q.act] || (qs > .6 ? 1 : 0), q.d.n, r(qs), pt.leashOn ? 1 : 0, accStr(q.d.acc)] : 0]; }
     return [r(P.x), r(P.y), r(P.z), r(P.face), s, r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0];
   }
   function mpRoster(){ return [{uid: 'H', ...myLook(), pl: 1}, ...[...mp.guests.values()].filter(g => g.ready).map(g => ({uid: g.uid, name: g.name, av: g.av, pl: g.plot || 0}))]; }
@@ -4656,7 +4668,7 @@ const Obby = (() => {
     E.e = e;
     const cr = st[8], pr = st[9], num = v => { v = +v; return isFinite(v) ? Math.max(-1e4, Math.min(1e4, v)) : 0; };
     E.car = Array.isArray(cr) && cr.length >= 4 ? [num(cr[0]), num(cr[1]), num(cr[2]), cr[3] ? 1 : 0, num(cr[4])] : null;
-    E.pet = Array.isArray(pr) && typeof pr[0] === 'string' && own(PET_KINDS, pr[0]) ? {k: pr[0], c: Math.max(0, Math.min(2, pr[1] | 0)), st: Math.max(0, Math.min(3, pr[2] | 0)), x: num(pr[3]), y: num(pr[4]), z: num(pr[5]), f: num(pr[6]), a: Math.max(0, Math.min(5, pr[7] | 0)), n: (petNameClean(pr[8]) && !petNameBad(pr[8]) ? petNameClean(pr[8]) : 'Pet'), sp: num(pr[9]), l: pr[10] === 1, acc: accParse(pr[11])} : null;
+    E.pet = Array.isArray(pr) && typeof pr[0] === 'string' && own(PET_KINDS, pr[0]) ? {k: pr[0], c: Math.max(0, Math.min(2, pr[1] | 0)), st: Math.max(0, Math.min(3, pr[2] | 0)), x: num(pr[3]), y: num(pr[4]), z: num(pr[5]), f: num(pr[6]), a: Math.max(0, Math.min(9, pr[7] | 0)), n: (petNameClean(pr[8]) && !petNameBad(pr[8]) ? petNameClean(pr[8]) : 'Pet'), sp: num(pr[9]), l: pr[10] === 1, acc: accParse(pr[11])} : null;
     E.rc = raceParse(E.m, st[8]); E.dsp = splashParse(E.m, st[8]);
     if (E.fresh){ E.x = E.tx; E.y = E.ty; E.z = E.tz; E.face = E.tf; E.fresh = false; }
   }
@@ -4678,7 +4690,7 @@ const Obby = (() => {
         tag.scale.multiplyScalar(.5); tag.position.y = m.top + .45; m.g.add(tag); scene.add(m.g); E.petM = {m, key, x: p.x, y: p.y, z: p.z, f: p.f}; }
       const Q = E.petM; if (Math.hypot(p.x - Q.x, p.z - Q.z) > 8){ Q.x = p.x; Q.z = p.z; }
       Q.x += (p.x - Q.x) * k; Q.y += (p.y - Q.y) * k; Q.z += (p.z - Q.z) * k; Q.f += wrap(p.f - Q.f) * k;
-      Q.m.g.position.set(Q.x, Q.y, Q.z); Q.m.g.rotation.y = Q.f; animPet(Q.m, p.a, p.sp, dt, worldT);
+      Q.m.g.position.set(Q.x, Q.y, Q.z); Q.m.g.rotation.y = Q.f; animPet(Q.m, p.a, p.sp, dt, worldT); if (p.a >= 6 && p.a <= 9) trickPose(Q.m, p.a, worldT + Q.m.ph, null);
       if (p.l && E.s !== 4){   // their leash: from their hand to their pet's collar (same shape as your own)
         if (!E.leashL){ E.leashL = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), new THREE.LineBasicMaterial({color: '#ff4d5e'})); E.leashL.frustumCulled = false; scene.add(E.leashL); }
         const a = E.leashL.geometry.attributes.position, h = [Math.sin(E.face), Math.cos(E.face)], b = Q.m.base || 1;
@@ -5223,7 +5235,7 @@ const Obby = (() => {
     const r = load(PET_KEY, null), o = r && typeof r === 'object' ? r : {};
     const pets = (Array.isArray(o.pets) ? o.pets : []).slice(0, PET_MAX).filter(p => p && PET_KINDS[p.k]).map(p => ({
       k: p.k, c: clamp(p.c | 0, 0, 2), n: petNameClean(p.n) && !petNameBad(p.n) ? petNameClean(p.n) : 'Buddy', xp: clamp(+p.xp || 0, 0, 1e6),
-      f: clamp(isFinite(+p.f) ? +p.f : 80, 0, 100), u: clamp(isFinite(+p.u) ? +p.u : 80, 0, 100), e: clamp(isFinite(+p.e) ? +p.e : 80, 0, 100), b: +p.b || Date.now(), acc: accClean(p.acc), g: p.g === 'b' || p.g === 'g' ? p.g : (Math.random() < .5 ? 'b' : 'g')}));   // older pets get a gender once (saved below)
+      f: clamp(isFinite(+p.f) ? +p.f : 80, 0, 100), u: clamp(isFinite(+p.u) ? +p.u : 80, 0, 100), e: clamp(isFinite(+p.e) ? +p.e : 80, 0, 100), b: +p.b || Date.now(), acc: accClean(p.acc), tr: trClean(p.tr), g: p.g === 'b' || p.g === 'g' ? p.g : (Math.random() < .5 ? 'b' : 'g')}));   // older pets get a gender once (saved below)
     const s = {v: 1, pets, a: clamp(o.a | 0, 0, Math.max(0, pets.length - 1)), flow: ['shelter', 'choose', 'home'].includes(o.flow) ? o.flow : null,
       pend: petNameClean(o.pend), pendG: o.pendG === 'b' || o.pendG === 'g' ? o.pendG : '', inv: invClean(o.inv), tut: clamp(o.tut | 0, 0, 3), t: +o.t || Date.now()};
     // Pet Index (v2): seen = met at the shelter, own = adopted, done = row prize paid
@@ -6139,7 +6151,7 @@ const Obby = (() => {
     if (s.tut < 3 && list.some(o => o.k === 'pet') && pt.s.tut === 0 && pt.tsub === 1) return list.find(o => o.k === 'pet');
     return list[0];
   }
-  function petsClosePanels(){ ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel'].forEach(id => $(id).classList.remove('show')); choosing = false; try { $('#petNameIn').blur(); } catch(_){} }
+  function petsClosePanels(){ ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); choosing = false; try { $('#petNameIn').blur(); } catch(_){} }
   // t167u: dedicated pad buttons for the pet activities, usable anywhere sensible (not only on the exact spot)
   function padPet(what){
     if (!pt || !running || paused || choosing || pt.drive) return false;
@@ -6188,6 +6200,7 @@ const Obby = (() => {
   }
   /* --- per frame --- */
   function petsUpdate(dt){
+    trickTick(dt);
     const s = pt.s, p = pt.pet;
     pt.petCd = Math.max(0, pt.petCd - dt);
     rollTick();
@@ -6231,7 +6244,8 @@ const Obby = (() => {
     // the pet's brain
     const tgt = (tx, tz, stopAt, speed = 11) => { const dx = tx - q.x, dz = tz - q.z, dd = Math.hypot(dx, dz); if (dd > stopAt){ const v = Math.min(speed, dd * 3.2); q.vx = dx / dd * v; q.vz = dz / dd * v; q.face = Math.atan2(dx, dz); } else { q.vx = q.vz = 0; } return dd; };
     q.t += dt;
-    if (q.act === 'car'){ const s2 = seatPos(-.5, -.35); q.x = s2.x; q.z = s2.z; q.y = 1.33; q.face = pt.car.yaw; q.vx = q.vz = 0; }
+    if (q.act === 'trick'){ q.vx = q.vz = 0; }
+    else if (q.act === 'car'){ const s2 = seatPos(-.5, -.35); q.x = s2.x; q.z = s2.z; q.y = 1.33; q.face = pt.car.yaw; q.vx = q.vz = 0; }
     else {
       q.y = 0;
       if (q.act === 'follow' || q.act === 'happy' || q.act === 'wait'){
@@ -6287,8 +6301,8 @@ const Obby = (() => {
     if (q){
       const M = q.m, sp = Math.hypot(q.vx, q.vz);
       M.g.position.set(q.x, q.y, q.z); let d = q.face - M.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); M.g.rotation.y += d * Math.min(1, dt * 10);
-      const act = {eat: 2, sleep: 3, happy: 4, car: 5}[q.act] || (sp > .6 ? 1 : 0);
-      animPet(M, act, sp, dt, t);
+      const act = trickAct(q) || {eat: 2, sleep: 3, happy: 4, car: 5}[q.act] || (sp > .6 ? 1 : 0);
+      animPet(M, act, sp, dt, t); if (act >= 6) trickPose(M, act, t + M.ph, q);
       if (q.pop > 0){ q.pop = Math.max(0, q.pop - dt * 1.5); M.g.scale.setScalar(1 + Math.sin(q.pop * Math.PI) * .35); } else M.g.scale.setScalar(1);
       // leash line from your hand to the collar
       if (pt.leashOn){ const a = pt.leash.geometry.attributes.position, h = [Math.sin(P.face), Math.cos(P.face)];
@@ -7677,6 +7691,79 @@ const Obby = (() => {
     hs.ph = ph; hs.win = w.win === 'seek' ? 'seek' : 'hide';
     if (ph === 'end' && !hs.endShown) hsEndLocal();
   }
+  /* ===================== PET TRICKS (t207u) ===================== */
+  // Teach your pet Sit, Spin and Jump. Each practice fills the trick's bar; at 100% the pet knows it
+  // and does it perfectly every time. Perform learned tricks for coins (short rest between paid tricks).
+  const TRICKS = [
+    {k: 'sit', e: '🪑', n: 'Sit', d: 1.6, pay: 5},
+    {k: 'spin', e: '🌀', n: 'Spin', d: 1.4, pay: 6},
+    {k: 'jump', e: '⬆️', n: 'Jump', d: 1.3, pay: 7},
+  ];
+  const TRICK_REST = 12, SHOW_REST = 45, SHOW_PAY = 20;
+  function trClean(o){ const r = {}; TRICKS.forEach(T => { const v = o && typeof o === 'object' ? +o[T.k] : 0; r[T.k] = clamp(isFinite(v) ? Math.round(v) : 0, 0, 100); }); return r; }
+  function trOf(p){ if (!p.tr) p.tr = trClean(null); return p.tr; }
+  function trickBusy(){ const q = pt && pt.pet; return !q || !['follow', 'happy'].includes(q.act) || !!pt.ballSt || pt.drive; }
+  function trickGo(k, show){
+    const q = pt && pt.pet; if (!q) return false; const T = TRICKS.find(t => t.k === k); if (!T) return false;
+    closePanel('#pTrickPanel');
+    if (trickBusy()){ banner('🎪 ' + q.d.n + ' is busy right now'); return false; }
+    if (q.d.e < 12){ banner('😴 ' + q.d.n + ' is too sleepy for tricks. Nap time first!'); return false; }
+    const tr = trOf(q.d), known = tr[k] >= 100;
+    // when it isn't learned yet the pet sometimes gets it a bit wrong (silly wobble instead)
+    const goof = !known && Math.random() > .35 + tr[k] / 160;
+    q.act = 'trick'; q.trk = k; q.t = 0; q.goof = goof; q.tdur = T.d; q.show = !!show; q.face = Math.atan2(P.x - q.x, P.z - q.z); q.spin0 = q.m.g.rotation.y;
+    banner(known ? '🎪 ' + q.d.n + ', ' + T.n.toLowerCase() + '!' : '📚 Practice: ' + T.n + '!'); SND.jump();
+    return true;
+  }
+  function trickDone(q){
+    const T = TRICKS.find(t => t.k === q.trk), tr = trOf(q.d), was = tr[T.k];
+    q.act = 'happy'; q.t = 1; q.d.e = Math.max(0, q.d.e - 2);
+    if (was < 100){
+      const gain = Math.round((q.goof ? 14 : 24) + Math.random() * 8); tr[T.k] = Math.min(100, was + gain); addXp(q.d, 3);
+      if (tr[T.k] >= 100){ big('🎓 ' + q.d.n + ' learned ' + T.n + '!\n' + T.e + ' Now perform it for coins!', 3); pt.bigT = 3; confetti(); SND.win(); earn(10); hearts(q.x, q.z, 5); }
+      else { banner((q.goof ? '😅 Oops, almost! ' : '👍 Good try! ') + T.n + ' ' + tr[T.k] + '% learned'); SND.cp(); hearts(q.x, q.z, 2); }
+    } else if (q.show){
+      if (pt.showN === 2){ pt.showN = 0; q.show = false; const ok = (pt.showCd || 0) <= 0;
+        if (ok){ pt.showCd = SHOW_REST; earn(SHOW_PAY); banner('🎪 Ta-da! The Trick Show was amazing! +' + SHOW_PAY + ' 🪙'); confetti(); SND.win(); } else { banner('🎪 Ta-da! (Rest ' + Math.ceil(pt.showCd) + 's for more show coins)'); SND.coin(); }
+        hearts(q.x, q.z, 5); care('u', 10, 2, 0); }
+      else { pt.showN = (pt.showN || 0) + 1; const nx = TRICKS[pt.showN]; setTimeout(() => { if (running && pt && pt.pet === q){ q.act = 'follow'; trickGo(nx.k, true); } }, 250); hearts(q.x, q.z, 2); SND.coin(); }
+    } else {
+      const cd = pt.trCd || (pt.trCd = {}), ok = (cd[T.k] || 0) <= 0;
+      if (ok){ cd[T.k] = TRICK_REST; earn(T.pay); banner('⭐ Great ' + T.n.toLowerCase() + '! +' + T.pay + ' 🪙'); SND.coin(); } else banner('⭐ Great ' + T.n.toLowerCase() + '! (' + Math.ceil(cd[T.k]) + 's until it pays again)');
+      hearts(q.x, q.z, 3); care('u', 4, 1, 0);
+    }
+    petsSave(); if ($('#pTrickPanel').classList.contains('show')) renderTricks();
+  }
+  function trickShow(){
+    const q = pt && pt.pet; if (!q) return; const tr = trOf(q.d);
+    if (!TRICKS.every(T => tr[T.k] >= 100)){ banner('🎪 Teach all 3 tricks first for a Trick Show!'); return; }
+    pt.showN = 0; trickGo(TRICKS[0].k, true);
+  }
+  function trickTick(dt){
+    if (!pt) return; if (pt.trCd) for (const k in pt.trCd) pt.trCd[k] = Math.max(0, pt.trCd[k] - dt); if (pt.showCd > 0) pt.showCd = Math.max(0, pt.showCd - dt);
+    const q = pt.pet; if (q && q.act === 'trick'){ q.vx = q.vz = 0; if (q.t >= q.tdur) trickDone(q); }
+  }
+  function trickAct(q){ if (q.act !== 'trick') return null; return q.goof ? 9 : 6 + TRICKS.findIndex(t => t.k === q.trk); }
+  function trickPose(M, act, T, q){
+    // 6 sit · 7 spin · 8 jump · 9 a silly wobble (not learned yet)
+    if (act === 6){ M.inner.rotation.x = -.42; M.inner.position.y = .1 * M.base; M.head.rotation.set(-.15, 0, 0); M.legs.forEach((l, i) => { if (i >= 2) l.rotation.x = -1.2; }); }
+    else if (act === 7){ const k = q ? clamp(q.t / q.tdur, 0, 1) : (T * .7) % 1; M.inner.rotation.y = (k < .85 ? k / .85 : 1) * Math.PI * 2; M.inner.position.y = Math.sin(k * Math.PI) * .15 * M.base; }
+    else if (act === 8){ const k = q ? clamp(q.t / q.tdur, 0, 1) : (T * .8) % 1; M.inner.position.y = Math.max(0, Math.sin(k * Math.PI)) * 1.4 * M.base; M.inner.rotation.x = Math.sin(k * Math.PI * 2) * .25; M.legs.forEach((l, i) => l.rotation.x = (i < 2 ? -.8 : .8) * Math.sin(k * Math.PI)); }
+    else if (act === 9){ M.inner.rotation.z = Math.sin(T * 14) * .22; M.head.rotation.set(0, Math.sin(T * 9) * .5, Math.sin(T * 7) * .2); M.inner.position.y = Math.abs(Math.sin(T * 7)) * .12 * M.base; }
+  }
+  function renderTricks(){
+    const q = pt && pt.pet, box = $('#pTricks'); box.innerHTML = '';
+    if (!q){ $('#pTrickS').textContent = '🐾 Adopt a pet first!'; $('#pTrickShow').disabled = true; return; }
+    const tr = trOf(q.d), cd = pt.trCd || {};
+    $('#pTrickS').textContent = 'Teach ' + q.d.n + ' tricks! Practice until the bar is full, then perform for 🪙 coins.';
+    TRICKS.forEach(T => { const v = tr[T.k], known = v >= 100, rest = Math.ceil(cd[T.k] || 0);
+      const b = document.createElement('button'); b.className = 'ptrick' + (known ? ' known' : ''); b.dataset.k = T.k;
+      b.innerHTML = `<span class="te">${T.e}</span><b>${T.n}</b><i><u style="width:${v}%"></u></i><small>${known ? (rest ? '⭐ Perform (rest ' + rest + 's)' : '⭐ Perform · +' + T.pay + ' 🪙') : '📚 Practice · ' + v + '%'}</small>`;
+      b.onclick = () => trickGo(T.k); box.appendChild(b); });
+    const all = TRICKS.every(T => tr[T.k] >= 100); $('#pTrickShow').disabled = !all;
+    $('#pTrickShow').textContent = all ? '🎪 Trick Show' + ((pt.showCd || 0) > 0 ? ' (rest ' + Math.ceil(pt.showCd) + 's)' : ' · +' + SHOW_PAY + ' 🪙') : '🎪 Trick Show (learn all 3)';
+  }
+  function openTricks(){ if (!pt || pt.drive) return; if (!pt.pet){ banner('🐾 Adopt a pet first!'); return; } renderTricks(); openPanel('#pTrickPanel'); setTimeout(() => { if (pad.on && window.rubloxPadFocus) rubloxPadFocus($('#pTricks .ptrick')); }, 0); }
   /* ---------- per-frame ---------- */
   const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
   function animate(dt){
@@ -7787,6 +7874,7 @@ const Obby = (() => {
       if (jp[3]){ padPet('walk'); return; }
       if (jp[4]){ padPet('feed'); return; }
       if (jp[5]){ padPet('throw'); return; }
+      if (jp[7]){ openTricks(); return; }
     }
     if (mode === 'build' && bw){
       ptr.has = false;   // aim with the crosshair in the middle of the screen
@@ -7958,6 +8046,7 @@ const Obby = (() => {
         if (choosing){ if (e.code === 'Escape' || (e.code === 'KeyI' && $('#pIndexPanel').classList.contains('show'))) petsClosePanels(); return; }
         if (!e.repeat && !paused && (e.code === 'KeyE' || e.code === 'Enter')){ e.preventDefault(); petsAct(); return; }
         if (!e.repeat && !paused && e.code === 'KeyM'){ openPets(); return; }
+        if (!e.repeat && !paused && e.code === 'KeyT'){ openTricks(); return; }
         if (!e.repeat && !paused && e.code === 'KeyI'){ openIndex(); return; }
         if (!e.repeat && !paused && e.code === 'KeyO'){ openWard(); return; }
       }
@@ -8018,6 +8107,8 @@ const Obby = (() => {
     $('#pAct').addEventListener('pointerdown', e => { e.preventDefault(); e.currentTarget.blur(); window.__pActT = performance.now(); petsAct(); });
     document.addEventListener('click', e => { const t = e.target; if (performance.now() - (window.__pActT || -1e9) < 600 && t && t.closest && t.closest('.obtns,.ohud') && !t.closest('#pAct')){ e.preventDefault(); e.stopPropagation(); } }, true);  // pointerdown: works as a 2nd finger while holding a pedal
     $('#pAct').addEventListener('click', e => { if (e.detail === 0) petsAct(); });
+    $('#pTrickBtn').onclick = e => { e.currentTarget.blur(); if (!choosing && !paused) openTricks(); };
+    $('#pTrickClose').onclick = () => closePanel('#pTrickPanel'); $('#pTrickShow').onclick = () => trickShow();
     $('#pPetsBtn').onclick = e => { e.currentTarget.blur(); if (!choosing && !paused) openPets(); };
     [['#pGas', 'gas'], ['#pBrake', 'brake']].forEach(([id, k]) => { const b = $(id);
       b.addEventListener('pointerdown', e => { e.preventDefault(); if (pt) pt[k] = 1; b.classList.add('on'); try { b.setPointerCapture(e.pointerId); } catch(_){} });
@@ -8128,7 +8219,7 @@ const Obby = (() => {
     ['#oDisBox','#oRTBox','#oHpBox','#oSurvBox'].forEach(id => $(id).style.display = mode === 'nds' ? '' : 'none'); $('#oTime').parentElement.style.display = mode === 'nds' || mode === 'tag' || mode === 'pets' ? 'none' : '';
     $('#oBlkBox').style.display = mode === 'build' ? '' : 'none'; ['#oItBox','#oTagTBox','#oMyItBox'].forEach(id => $(id).style.display = mode === 'tag' ? '' : 'none');
     $('#obby').classList.toggle('bmode', mode === 'build'); $('#obby').classList.toggle('pmode', mode === 'pets'); $('#obby').classList.remove('pdrive'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  ptr.has = false;
-    ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel'].forEach(id => $(id).classList.remove('show')); pt && (pt.gas = pt.brake = 0); $('#oPause').textContent = '⏸️';
+    ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); pt && (pt.gas = pt.brake = 0); $('#oPause').textContent = '⏸️';
     $('#oMute').textContent = muted ? '🔇' : '🔊';
     emote = null; P.airT = 0; P.jumped = false; P.climbing = false; Object.assign(run, {pad: false, touch: false, on: false, stam: STAM_MAX, tired: false, shown: -1}); $('#oRun').classList.remove('on'); $('#oFP').classList.toggle('on', fp.on); $('#oStam').style.display = mode === 'tag' || mode === 'hide' ? '' : 'none';
     setTouchUI(!pad.on && (matchMedia('(pointer: coarse)').matches || (navigator.maxTouchPoints > 0 && !matchMedia('(hover: hover)').matches)));   // a controller in use keeps the screen clear
@@ -8172,13 +8263,16 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
 
   // debug / test hook
   window.obbyDebug = {
+    tricks: () => pt && pt.pet && {tr: Object.assign({}, trOf(pt.pet.d)), act: pt.pet.act, trk: pt.pet.trk || '', goof: !!pt.pet.goof, e: pt.pet.d.e, cd: Object.assign({}, pt.trCd || {}), showCd: pt.showCd || 0, coins, panel: $('#pTrickPanel').classList.contains('show'), wireAct: trickAct(pt.pet)},
+    mpPetActs: () => [...mp.ents.values()].filter(E => E.pet).map(E => ({uid: E.uid, a: E.pet.a, n: E.pet.n})),
+    trickGo: k => trickGo(k), trickShow: () => trickShow(), trickSet(k, v){ trOf(pt.pet.d)[k] = v; }, trickRest(){ pt.trCd = {}; pt.showCd = 0; }, trickEnergy(v){ pt.pet.d.e = v; },
     hide: () => hs && {ph: hs.ph, n: hs.n, t: +hs.t.toFixed(2), sk: hs.sk.slice(), fd: hs.fd.slice(), out: hs.out.slice(), rule: hs.rule, role: hs.role, win: hs.win || '', fb: Object.assign({}, hs.fb), dn: hs.dn, remote: !!hs.remote, earned: hs.earned, choosing, frozen: hsFrozen(), myRole: hsRole(),
       blind: $('#hsBlind').classList.contains('show'), spots: hs.spots.length, P: {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2)},
       bots: hs.bots.map(B => ({uid: B.uid, x: +B.x.toFixed(2), y: +B.y.toFixed(2), z: +B.z.toFixed(2), spot: B.spot ? B.spot.n : '', route: B.route.length, tgt: B.tgt}))},
@@ -8457,7 +8551,7 @@ const Obby = (() => {
   }
   function closeOf(c){
     const id = c.root.id;
-    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
+    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pTrickPanel: '#pTrickClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
     if (id === 'rcPick'){ const b = document.querySelector('#rcBack'); if (b && !b.hidden) return b; }   // B in the ride list = back to the modes
     if (map[id]) return document.querySelector(map[id]);
     return null;
