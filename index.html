@@ -459,6 +459,15 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .pdrive #oJump,.pdrive #oEmoBtn,.pdrive #oRun,.pdrive #oFP{display:none!important}
 .rmode #oEmoBtn,.rmode #oRun,.rmode #oStam{display:none!important}
 .smode #oStam{display:none!important}
+#bMode.paint{background:#8b5cf6;color:#fff}
+#bTest.go{background:#2ec27e;color:#fff}
+.btestbox{display:none;position:absolute;top:64px;left:50%;transform:translateX(-50%);background:rgba(20,24,40,.82);color:#fff;border-radius:14px;padding:6px 14px;text-align:center;z-index:6;font-size:15px}
+.btestbox b{font-size:22px;display:block}.btestbox #bTestRes{font-size:13px;margin:2px 0}.btestbox #bTestRes div{white-space:nowrap}.btestbox #bTestRes b{display:inline;font-size:13px}
+.btestbox button{margin-top:4px;background:#ff4d5e;color:#fff;border:0;border-radius:10px;padding:6px 12px;font:inherit;font-weight:800;cursor:pointer}
+#obby.btest .btestbox{display:block}#obby.btest .obuild,#obby.btest #oCross,#obby.btest #oDot{display:none!important}
+.bcode{width:100%;box-sizing:border-box;font:12px/1.3 ui-monospace,monospace;border-radius:10px;border:2px solid #cfd6ea;padding:6px;resize:none;word-break:break-all}
+@media (max-width:760px),(max-height:520px){#bShare .emoji,#bTestEnd .emoji{display:none}#bShare h2,#bTestEnd h2{font-size:18px;margin:0 0 2px}#bShare .stats{font-size:12px;margin:2px 0}.bcode{height:34px}.btestbox{top:52px;font-size:12px;padding:4px 10px}.btestbox b{font-size:17px}}
+
 .ptricks{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:4px 0 10px}
 .ptrick{font:inherit;color:#1d2340;border-radius:16px;border:3px solid #d9dcea;background:#fff;padding:8px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;width:150px}
 .ptrick .te{font-size:34px;line-height:1.1}.ptrick b{font-size:17px}.ptrick small{font-size:12px;font-weight:800;color:#5a6280}
@@ -944,8 +953,26 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
       <button data-pre="tower" title="Add a tower">🗼</button>
       <button id="bSlots" title="Save slots">💾</button>
       <button id="bClear" title="Clear everything">🗑️</button>
+      <button id="bTest" class="wide go" title="Play-test your obby (G)">▶️ Test</button>
+      <button id="bShareBtn" title="Share code (B)">📤</button>
     </div>
   </div>
+  <div class="btestbox" id="bTestBox"><b id="bTestT">⏱️ 0:00.0</b><div id="bTestRes"></div><button id="bTestStop">⏹️ Stop test</button></div>
+  <div class="opanel" id="bTestEnd"><div class="mbox rcbox">
+    <span class="emoji">🏁</span><h2>You made it!</h2>
+    <div class="stats" id="bTestEndT"></div><div class="stats" id="bTestEndC"></div>
+    <div class="owinbtns"><button class="big green" id="bTestAgain">🔁 Again</button><button class="big blue" id="bTestBack">🔨 Keep building</button></div>
+  </div></div>
+  <div class="opanel" id="bShare"><div class="mbox rcbox">
+    <span class="emoji">📤</span><h2>Share your build</h2>
+    <div class="stats">Your code — copy it and send it to a friend:</div>
+    <textarea id="bShareOut" class="bcode" readonly rows="2"></textarea>
+    <div class="owinbtns"><button class="big green" id="bShareCopy">📋 Copy code</button></div>
+    <div class="stats">Got a code? Paste it here:</div>
+    <textarea id="bShareIn" class="bcode" rows="2"></textarea>
+    <div class="stats" id="bShareMsg"></div>
+    <div class="owinbtns"><button class="big blue" id="bShareLoad">📥 Load code</button><button class="big gray" id="bShareClose">✖ Close</button></div>
+  </div></div>
   <div class="orot" id="oRot"><b>📱</b>Turn your phone sideways for a bigger view!<br><small>(or keep playing like this 👍)</small></div>
   <button class="oskip" id="oSkip" title="Too tricky? Skip to the next level">⏭️ Skip level</button>
   <div class="oflash" id="oFlash"></div>
@@ -1157,7 +1184,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.02-3';
+const BUILD = '2026.11.02-4';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -4033,7 +4060,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
       if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
       else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
     }
@@ -4198,7 +4225,7 @@ const Obby = (() => {
   function bwDay(){ const d = new Date().toDateString(), s = load('rubloxBuildDay', null); return s && s.d === d ? s : {d, n: 0, placed: 0}; }
   function buildBuild(){
     scene.background = new THREE.Color('#8fd3ff');
-    blockGeo = new THREE.BoxGeometry(CELL, CELL, CELL); blockEdge = new THREE.EdgesGeometry(blockGeo); blockMats = makeBlockMats();
+    blockGeo = new THREE.BoxGeometry(CELL, CELL, CELL); blockEdge = new THREE.EdgesGeometry(blockGeo); blockMats = makeBlockMats(); bxMats(blockMats);
     // the baseplate with a grid that lines up with the block cells
     const W = (BW_HALF * 2 + 1) * CELL;
     const grid = canvasTex(32, 32, c => { c.fillStyle = '#5fcf6b'; c.fillRect(0, 0, 32, 32); c.fillStyle = '#4bb658'; c.fillRect(0, 0, 32, 2); c.fillRect(0, 0, 2, 32); });
@@ -4215,15 +4242,16 @@ const Obby = (() => {
     bw.ghost.visible = false; scene.add(bw.ghost);
     ray = new THREE.Raycaster();
     bw.shared = mpGuest(); mp.applying = true;
-    (bw.shared ? [] : load('rubloxBuild', []) || []).forEach(c => addBlock(c[0], c[1], c[2], c[3], true));
+    (bw.shared ? [] : load('rubloxBuild', []) || []).forEach(c => addBlock(c[0], c[1], c[2], c[3], true, c[4]));
     mp.applying = false;
     sp.y = colTop(sp.x, sp.z) + .05;
     buildPalette();
   }
   function cellCenter(i, j, k){ return [i * CELL, j * CELL + CELL / 2, k * CELL]; }
   function colTop(x, z){ let t = 0; for (const b of solids) if (b.active && Math.abs(x - b.mesh.position.x) < b.hw + R && Math.abs(z - b.mesh.position.z) < b.hd + R) t = Math.max(t, b.mesh.position.y + b.hh); return t; }
-  function addBlock(i, j, k, m, quiet){
+  function addBlock(i, j, k, m, quiet, r){
     if (Math.abs(i) > BW_HALF || Math.abs(k) > BW_HALF || j < 0 || j >= BW_MAXY || bw.blocks.has(ckey(i, j, k)) || bw.blocks.size >= BW_MAX) return null;
+    if (isProp(m)){ const e = addProp(i, j, k, m, r); if (mp.on && !mp.applying) mp.ops.push([1, i, j, k, m | 0, e.r]); if (!quiet) scheduleSave(); return e; }
     const B = BLOCKS[m] || BLOCKS[0], [x, y, z] = cellCenter(i, j, k);
     const mesh = new THREE.Mesh(blockGeo, blockMats[B.id]); mesh.position.set(x, y, z);
     mesh.add(new THREE.LineSegments(blockEdge, edgeMat)); scene.add(mesh);
@@ -4236,6 +4264,7 @@ const Obby = (() => {
     return e;
   }
   function removeBlock(e, quiet){
+    bxRemoveSteps(e);
     scene.remove(e.mesh); bw.blocks.delete(ckey(e.i, e.j, e.k));
     const s = solids.indexOf(e.b); if (s >= 0) solids.splice(s, 1);
     const q = bw.meshes.indexOf(e.mesh); if (q >= 0) bw.meshes.splice(q, 1);
@@ -4248,7 +4277,7 @@ const Obby = (() => {
     return P.x + R > x - h && P.x - R < x + h && P.z + R > z - h && P.z - R < z + h && P.y + H > y - h && P.y < y + h;
   }
   function scheduleSave(){ bw.saveT = .3; }
-  function bwSerialize(){ return [...bw.blocks.values()].map(e => [e.i, e.j, e.k, e.m]); }
+  function bwSerialize(){ return [...bw.blocks.values()].map(e => e.prop === 'ramp' ? [e.i, e.j, e.k, e.m, e.r | 0] : [e.i, e.j, e.k, e.m]); }
   function bwSave(){ if (bw && bw.shared) return; save('rubloxBuild', bwSerialize()); }
   function pushUndo(a){ bw.undo.push(a); if (bw.undo.length > 300) bw.undo.shift(); }
   function aimCell(){
@@ -4267,17 +4296,19 @@ const Obby = (() => {
   }
   function bwClick(remove){
     if (tipTimer > 0){ tipTimer = 0; $('#oTip').classList.add('hide'); }
+    if (bw.test) return;
     const a = aimCell(); if (!a) return;
+    if (bw.paint && !remove) return bwPaint(a);
     if (remove || bw.del){
       if (!a.target) return;
-      const e = a.target; pushUndo({add: [], del: [[e.i, e.j, e.k, e.m]]}); removeBlock(e); SND.hit();
+      const e = a.target; pushUndo({add: [], del: [[e.i, e.j, e.k, e.m, e.r | 0]]}); removeBlock(e); SND.hit();
       return;
     }
     const [i, j, k] = a.place;
     if (cellHitsPlayer(i, j, k)){ banner('🙈 You are standing there!'); return; }
     if (bw.blocks.size >= BW_MAX){ banner('🧱 Block limit reached (' + BW_MAX + ')'); return; }
-    const e = addBlock(i, j, k, bw.sel); if (!e) return;
-    pushUndo({add: [[i, j, k, bw.sel]], del: []}); SND.jump();
+    const e = addBlock(i, j, k, bw.sel, false, faceRot(P.face)); if (!e) return;
+    pushUndo({add: [[i, j, k, bw.sel, e.r | 0]], del: []}); SND.jump();
     // +1 coin for every 10 blocks placed, up to 50 a day so it can't be farmed forever
     const d = bwDay(); d.placed++;
     if (d.placed % 10 === 0){
@@ -4288,7 +4319,7 @@ const Obby = (() => {
   function bwUndo(){
     const a = bw.undo.pop(); if (!a){ banner('↩️ Nothing to undo'); return; }
     a.add.forEach(c => { const e = bw.blocks.get(ckey(c[0], c[1], c[2])); if (e) removeBlock(e, true); });
-    a.del.forEach(c => { if (!cellHitsPlayer(c[0], c[1], c[2])) addBlock(c[0], c[1], c[2], c[3], true); });
+    a.del.forEach(c => { if (!cellHitsPlayer(c[0], c[1], c[2])) addBlock(c[0], c[1], c[2], c[3], true, c[4]); });
     scheduleSave(); SND.boing();
   }
   function bwReplace(cells, label){
@@ -4296,7 +4327,7 @@ const Obby = (() => {
     const old = bwSerialize();
     [...bw.blocks.values()].forEach(e => removeBlock(e, true));
     const added = [];
-    cells.forEach(c => { if (!cellHitsPlayer(c[0], c[1], c[2]) && addBlock(c[0], c[1], c[2], c[3], true)) added.push(c); });
+    cells.forEach(c => { if (!cellHitsPlayer(c[0], c[1], c[2]) && addBlock(c[0], c[1], c[2], c[3], true, c[4])) added.push(c); });
     pushUndo({add: added, del: old}); scheduleSave();
     if (label) banner(label);
     if (overlapsAny()) P.y = colTop(P.x, P.z) + .05;
@@ -4346,7 +4377,7 @@ const Obby = (() => {
     $('#oPal').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.blk === bw.sel));
     const on = $('#oPal').querySelector('.on'); if (on) on.scrollIntoView({block: 'nearest', inline: 'nearest'});
   }
-  function setDel(on){ bw.del = on; const b = $('#bMode'); b.textContent = on ? '🧽 Delete' : '🔨 Build'; b.classList.toggle('del', on); }
+  function setDel(on){ setTool(on ? 'del' : bw.tool === 'paint' ? 'paint' : 'build'); }
   function slotsPanel(){
     const S = load('rubloxBuildSlots', [null, null, null]);
     $('#oSlotList').innerHTML = [0, 1, 2].map(i => `<div class="slot"><b>Slot ${i + 1}</b><span>${S[i] ? S[i].cells.length + ' blocks · ' + S[i].when : 'empty'}</span>
@@ -4362,7 +4393,9 @@ const Obby = (() => {
     if (bw.clearArm > 0){ bw.clearArm -= dt; if (bw.clearArm <= 0){ bw.clearArm = 0; $('#bClear').classList.remove('arm'); $('#bClear').textContent = '🗑️'; } }
     if (blockMats.water.map) blockMats.water.map.offset.x = (blockMats.water.map.offset.x + dt * .15) % 1;
     const n = performance.now() / 600; blockMats.neon.color.setHSL(.47 + Math.sin(n) * .03, 1, .58 + Math.sin(n * 1.7) * .06);
+    bwTestTick(dt); if (bw.test){ bw.ghost.visible = false; return; }
     const a = aimCell(), g = bw.ghost, del = bw.del || keys.ShiftLeft || keys.ShiftRight;
+    if (bw.paint && !del){ if (!a || !a.target){ g.visible = false; return; } g.visible = true; g.position.copy(a.target.mesh.position); const no = a.target.prop || isProp(bw.sel); g.material.color.set(no ? '#ff4d5e' : BLOCKS[bw.sel].col); g.material.opacity = no ? .2 : .6; bw.ghostEdge.material.color.set('#e9d5ff'); return; }
     if (!a || (del && !a.target)){ g.visible = false; return; }
     g.visible = true;
     if (del){ g.position.copy(a.target.mesh.position); g.material.color.set('#ff4d5e'); g.material.opacity = .45; bw.ghostEdge.material.color.set('#ff2a2a'); }
@@ -4646,6 +4679,7 @@ const Obby = (() => {
       if (running && tg && !tg.remote) msg.tg = tagWire();
       if (running && dsp && !dsp.remote && mode === 'splash') msg.sp = splashWire();
       if (running && hs && !hs.remote && mode === 'hide') msg.hs = hideWire();
+      if (running && bw && mode === 'build') msg.bt = bwWire();
       if (ops) msg.o = ops;
       mpBroadcast(msg);
     } else {
@@ -4755,6 +4789,7 @@ const Obby = (() => {
     else if (d.t === 'tagreq') mpTagReq(g, d);
     else if (d.t === 'racefin') raceGuestFin(g, d);
     else if (d.t === 'splashev') splashGuestEv(g, d);
+    else if (d.t === 'btfin'){ if (running && bw && bw.test && mode === 'build') bwResAdd(g.name, Math.max(0, Math.min(3600, +d.tm || 0))); }
     else if (d.t === 'getblocks'){ if (running && bw && mode === 'build') mpSendTo(g.conn, {t: 'blocks', c: bwSerialize()}); }
     else if (d.t === 'bye') mpDrop(g, 'left');
   }
@@ -4816,6 +4851,7 @@ const Obby = (() => {
     for (const E of mp.ents.values()) if (!seen.has(E.uid)) E.m = null;
     if (d.sp) splashFromHost(d.sp);
     if (d.hs) hideFromHost(d.hs);
+    if (d.bt) bwFromHost(d.bt);
     if (d.tg && tg && tg.remote && running && mode === 'tag' && tg.phase !== 'end') mpTagWire(d.tg);
     if (d.o) mpApplyOps(d.o);
   }
@@ -4829,8 +4865,8 @@ const Obby = (() => {
     if (!Array.isArray(o)) return; o = o.slice(0, BW_MAX + 50);
     if (running && mode === 'build' && bw){
       mp.applying = true;
-      for (const op of o){ if (!Array.isArray(op)) continue; const [a, i, j, k, m] = op.map(v => v | 0);
-        if (a === 1) addBlock(i, j, k, Math.max(0, Math.min(BLOCKS.length - 1, m)), true); else { const e = bw.blocks.get(ckey(i, j, k)); if (e) removeBlock(e, true); } }
+      for (const op of o){ if (!Array.isArray(op)) continue; const [a, i, j, k, m, r] = op.map(v => v | 0);
+        if (a === 1) addBlock(i, j, k, Math.max(0, Math.min(BLOCKS.length - 1, m)), true, r); else { const e = bw.blocks.get(ckey(i, j, k)); if (e) removeBlock(e, true); } }
       mp.applying = false;
       if (mp.host) scheduleSave();
       if (overlapsAny()) P.y = colTop(P.x, P.z) + .05;
@@ -4840,7 +4876,7 @@ const Obby = (() => {
   function mpLoadBlocks(c){
     if (!running || mode !== 'build' || !bw || !Array.isArray(c)) return;
     mp.applying = true; [...bw.blocks.values()].forEach(e => removeBlock(e, true));
-    c.slice(0, BW_MAX).forEach(q => { if (Array.isArray(q)) addBlock(q[0] | 0, q[1] | 0, q[2] | 0, Math.max(0, Math.min(BLOCKS.length - 1, q[3] | 0)), true); });
+    c.slice(0, BW_MAX).forEach(q => { if (Array.isArray(q)) addBlock(q[0] | 0, q[1] | 0, q[2] | 0, Math.max(0, Math.min(BLOCKS.length - 1, q[3] | 0)), true, q[4] | 0); });
     mp.applying = false; bw.undo = [];
     if (overlapsAny()) P.y = colTop(P.x, P.z) + .05;
   }
@@ -7764,6 +7800,205 @@ const Obby = (() => {
     $('#pTrickShow').textContent = all ? '🎪 Trick Show' + ((pt.showCd || 0) > 0 ? ' (rest ' + Math.ceil(pt.showCd) + 's)' : ' · +' + SHOW_PAY + ' 🪙') : '🎪 Trick Show (learn all 3)';
   }
   function openTricks(){ if (!pt || pt.drive) return; if (!pt.pet){ banner('🐾 Adopt a pet first!'); return; } renderTricks(); openPanel('#pTrickPanel'); setTimeout(() => { if (pad.on && window.rubloxPadFocus) rubloxPadFocus($('#pTricks .ptrick')); }, 0); }
+  /* ===================== t207u: BUILD MODE EXTRAS — paint, props, play-test obby, share codes ===================== */
+  // new pieces go on the END of BLOCKS so old saves keep their colours
+  BLOCKS.push(
+    {id: 'red',    emoji: '❤️', name: 'Red',    col: '#ff4d4d'},
+    {id: 'yellow', emoji: '💛', name: 'Yellow', col: '#ffd23f'},
+    {id: 'purple', emoji: '💜', name: 'Purple', col: '#8b5cf6'},
+    {id: 'orange', emoji: '🧡', name: 'Orange', col: '#ff9f1c'},
+    {id: 'white',  emoji: '🤍', name: 'White',  col: '#f5f5f5'},
+    {id: 'black',  emoji: '🖤', name: 'Black',  col: '#2b2d42'},
+    {id: 'ramp',   emoji: '📐', name: 'Ramp',   col: '#f4a261', prop: 'ramp'},
+    {id: 'cp',     emoji: '🚩', name: 'Checkpoint', col: '#3a86ff', prop: 'cp'},
+    {id: 'finish', emoji: '🏁', name: 'Finish', col: '#ffd23f', prop: 'fin'},
+    {id: 'start',  emoji: '🟢', name: 'Start',  col: '#2ec27e', prop: 'start'},
+  );
+  const bxEsc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'})[c]);
+  const BX_FIRST_PROP = BLOCKS.findIndex(B => B.prop);
+  const isProp = m => !!(BLOCKS[m] && BLOCKS[m].prop);
+  let rampGeo = null, padGeo = null;
+  function bxMats(M){
+    M.red = mat('#ff4d4d'); M.yellow = mat('#ffd23f'); M.purple = mat('#8b5cf6'); M.orange = mat('#ff9f1c'); M.white = mat('#f5f5f5'); M.black = mat('#2b2d42');
+    M.ramp = new THREE.MeshLambertMaterial({map: texBlock(c => { c.fillStyle = '#f4a261'; c.fillRect(0, 0, 32, 32); c.fillStyle = '#e07a3a'; for (let y = 2; y < 32; y += 8) c.fillRect(0, y, 32, 3); })});
+    M.cp = mat('#3a86ff');
+    M.finish = new THREE.MeshLambertMaterial({map: texBlock(c => { for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++){ c.fillStyle = (x + y) % 2 ? '#222' : '#fff'; c.fillRect(x * 8, y * 8, 8, 8); } })});
+    M.start = new THREE.MeshLambertMaterial({color: '#2ec27e', emissive: '#0d5e36', emissiveIntensity: .35});
+    // a wedge that rises toward local +X
+    const sh = new THREE.Shape(); sh.moveTo(-CELL / 2, -CELL / 2); sh.lineTo(CELL / 2, -CELL / 2); sh.lineTo(CELL / 2, CELL / 2); sh.closePath();
+    rampGeo = new THREE.ExtrudeGeometry(sh, {depth: CELL, bevelEnabled: false}); rampGeo.translate(0, 0, -CELL / 2);
+    padGeo = new THREE.BoxGeometry(CELL, .3, CELL);
+  }
+  const RAMP_DIR = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+  const faceRot = f => ((Math.round(f / (Math.PI / 2)) % 4) + 4) % 4;
+  function propMesh(B, i, j, k, r){
+    const [x, y, z] = cellCenter(i, j, k);
+    if (B.prop === 'ramp'){
+      const m = new THREE.Mesh(rampGeo, blockMats.ramp); m.position.set(x, y, z); m.rotation.y = (r - 1) * Math.PI / 2;
+      m.add(new THREE.LineSegments(new THREE.EdgesGeometry(rampGeo), edgeMat)); return m;
+    }
+    const m = new THREE.Mesh(padGeo, blockMats[B.id]); m.position.set(x, j * CELL + .15, z);
+    m.add(new THREE.LineSegments(new THREE.EdgesGeometry(padGeo), edgeMat));
+    if (B.prop === 'cp'){ // a little flag on a pole
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, 2.2, 6), mat('#eeeeee')); pole.position.set(-.75, 1.1, -.75); m.add(pole);
+      const fl = new THREE.Mesh(new THREE.BoxGeometry(.7, .45, .05), mat('#ff4d4d')); fl.position.set(-.38, 1.95, -.75); fl.userData.flag = true; m.add(fl);
+    } else if (B.prop === 'fin'){ // a checkered arch
+      [-.85, .85].forEach(px => { const p = new THREE.Mesh(new THREE.BoxGeometry(.16, 2.4, .16), mat('#ffd23f')); p.position.set(px, 1.2, 0); m.add(p); });
+      const top = new THREE.Mesh(new THREE.BoxGeometry(1.9, .45, .2), blockMats.finish); top.position.set(0, 2.4, 0); m.add(top);
+    } else if (B.prop === 'start'){
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(.6, .07, 6, 20), new THREE.MeshBasicMaterial({color: '#b9ffd9'})); ring.rotation.x = Math.PI / 2; ring.position.y = .2; ring.userData.spin = true; m.add(ring);
+    }
+    return m;
+  }
+  // called from addBlock for props; returns the cell entry
+  function addProp(i, j, k, m, r){
+    const B = BLOCKS[m]; r = ((r | 0) % 4 + 4) % 4;
+    if (B.prop === 'start'){ const old = [...bw.blocks.values()].find(e => BLOCKS[e.m].prop === 'start'); if (old) removeBlock(old, true); }
+    const mesh = propMesh(B, i, j, k, r); scene.add(mesh);
+    let b, bs = [];
+    if (B.prop === 'ramp'){
+      // four little steps you can walk up
+      const [dx, dz] = RAMP_DIR[r], [x, , z] = cellCenter(i, j, k);
+      b = {mesh: new THREE.Object3D(), hw: 0, hh: 0, hd: 0, active: false, dx: 0, dy: 0, dz: 0};
+      for (let n = 0; n < 4; n++){
+        const h = (n + 1) * CELL / 4, off = -CELL / 2 + (n + .5) * CELL / 4, o = new THREE.Object3D();
+        o.position.set(x + dx * off, j * CELL + h / 2, z + dz * off);
+        const s = {mesh: o, hw: dx ? CELL / 8 : CELL / 2, hh: h / 2, hd: dz ? CELL / 8 : CELL / 2, active: true, dx: 0, dy: 0, dz: 0};
+        solids.push(s); bs.push(s);
+      }
+    } else { b = {mesh, hw: CELL / 2, hh: .15, hd: CELL / 2, active: true, dx: 0, dy: 0, dz: 0}; solids.push(b); }
+    const e = {i, j, k, m, r, mesh, b, bs, prop: B.prop}; mesh.userData.cell = e;
+    bw.blocks.set(ckey(i, j, k), e); bw.meshes.push(mesh);
+    return e;
+  }
+  function bxRemoveSteps(e){ (e.bs || []).forEach(s => { const q = solids.indexOf(s); if (q >= 0) solids.splice(q, 1); if (P.ground === s){ P.ground = null; P.onGround = false; } }); }
+
+  /* ---------- tools: build / delete / paint ---------- */
+  function setTool(t){
+    if (!bw) return; bw.tool = t; bw.del = t === 'del'; bw.paint = t === 'paint';
+    const b = $('#bMode'); b.textContent = t === 'del' ? '🧽 Delete' : t === 'paint' ? '🎨 Paint' : '🔨 Build';
+    b.classList.toggle('del', t === 'del'); b.classList.toggle('paint', t === 'paint');
+  }
+  function bwCycle(){ setTool(bw.tool === 'build' || !bw.tool ? 'del' : bw.tool === 'del' ? 'paint' : 'build'); banner(bw.tool === 'del' ? '🧽 Delete: tap a block to remove it' : bw.tool === 'paint' ? '🎨 Paint: tap a block to colour it' : '🔨 Build: tap to place'); }
+  function bwPaint(a){
+    if (!a || !a.target) return;
+    if (isProp(bw.sel)){ banner('🎨 Pick a colour block to paint with'); return; }
+    const e = a.target; if (e.prop){ banner('🎨 Props can\'t be painted — only blocks'); return; }
+    if (e.m === bw.sel) return;
+    const old = [e.i, e.j, e.k, e.m]; removeBlock(e, true); addBlock(old[0], old[1], old[2], bw.sel);
+    pushUndo({add: [[old[0], old[1], old[2], bw.sel]], del: [old]}); SND.coin();
+  }
+
+  /* ---------- play-test: your build becomes an obby ---------- */
+  function bxFind(p){ return [...bw.blocks.values()].filter(e => e.prop === p); }
+  function padTop(e){ return {x: e.mesh.position.x, y: e.j * CELL + .35, z: e.mesh.position.z}; }
+  function bwTestStart(fromHost){
+    if (!bw || bw.test) return;
+    if (mpGuest() && !fromHost){ banner('🏠 The host starts play-tests for everyone'); return; }
+    const fin = bxFind('fin'); if (!fin.length){ banner('🏁 Add a Finish pad first! (find it in the blocks bar)'); return; }
+    const st = bxFind('start')[0];
+    const sp = st ? padTop(st) : {x: checkpoints[0].spawn.x, y: checkpoints[0].spawn.y, z: checkpoints[0].spawn.z};
+    bw.test = {t: 0, done: false, cp: null, home: {...checkpoints[0].spawn}, back: {x: P.x, y: P.y, z: P.z}, lava: !!(st && st.j > 0), falls: 0};
+    checkpoints[0].spawn = {...sp}; cpIndex = 0; respawn();
+    if (st){ const f = bxFind('fin')[0]; P.face = Math.atan2(f.mesh.position.x - sp.x, f.mesh.position.z - sp.z); cam.yaw = P.face + Math.PI; }
+    setTool('build'); $('#obby').classList.add('btest'); $('#bTestEnd').classList.remove('show'); bw.ghost.visible = false;
+    if (bw.test.lava){ bw.base.mesh.material[2].color.set('#ff8a5c'); }
+    banner(bw.test.lava ? '▶️ Play-test! 🔥 The floor is lava — reach the 🏁' : '▶️ Play-test! Reach the 🏁 finish'); SND.cp();
+    if (mp.on && mp.host){ bw.res = []; bw.testId = (bw.testId || 0) + 1; }
+  }
+  function bwTestStop(fromHost){
+    if (!bw || !bw.test) return;
+    if (mpGuest() && !fromHost && mp.bt && mp.bt.on){ banner('🏠 The host ends the play-test'); return; }
+    const T = bw.test; bw.test = null; checkpoints[0].spawn = T.home;
+    Object.assign(P, {x: T.back.x, y: T.back.y, z: T.back.z, vx: 0, vy: 0, vz: 0, onGround: false, ground: null});
+    if (overlapsAny()) P.y = colTop(P.x, P.z) + .05;
+    bw.base.mesh.material[2].color.set('#ffffff');
+    $('#obby').classList.remove('btest'); $('#bTestEnd').classList.remove('show');
+    banner('🔨 Back to building');
+  }
+  function onPad(e){
+    const x = e.mesh.position.x, z = e.mesh.position.z;
+    return Math.abs(P.x - x) < CELL / 2 + R * .5 && Math.abs(P.z - z) < CELL / 2 + R * .5 && P.y >= e.j * CELL + .1 && P.y < e.j * CELL + 1.1;
+  }
+  const fmtT = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') + '.' + Math.floor((t % 1) * 10);
+  function bwTestTick(dt){
+    const T = bw.test; if (!T) return;
+    if (!T.done && !paused) T.t += dt;
+    if (!T.done){
+      for (const e of bxFind('cp')) if (T.cp !== e && onPad(e)){ T.cp = e; checkpoints[0].spawn = padTop(e); banner('🚩 Checkpoint!'); SND.cp(); }
+      if (T.lava && P.onGround && P.ground === bw.base){ T.falls++; SND.die(); respawn(); const f = $('#oFlash'); f.classList.add('on'); requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove('on'))); }
+      for (const e of bxFind('fin')) if (onPad(e)){ bwFinish(); break; }
+    }
+    $('#bTestT').textContent = '⏱️ ' + fmtT(T.t) + (T.cp ? ' · 🚩' : '');
+    const res = mp.on && mp.bt && mp.bt.res && mp.bt.res.length ? mp.bt.res : (mp.on && mp.host && bw.res && bw.res.length ? bw.res : null);
+    $('#bTestRes').innerHTML = res ? res.slice(0, 6).map((r, n) => `<div>${['🥇', '🥈', '🥉'][n] || (n + 1)} ${bxEsc(r[0])} <b>${fmtT(r[1])}</b></div>`).join('') : '';
+  }
+  function bwLayoutKey(){ let h = 0; for (const c of bwSerialize().sort()) for (const v of c) h = (h * 31 + (v | 0) + 7) | 0; return 'k' + (h >>> 0).toString(36); }
+  function bwFinish(){
+    const T = bw.test; T.done = true; SND.win(); confetti();
+    const B = load('rubloxBuildBest', {}), key = bwLayoutKey(), best = B[key];
+    const isBest = !best || T.t < best; if (isBest){ B[key] = +T.t.toFixed(2); const ks = Object.keys(B); if (ks.length > 30) delete B[ks[0]]; save('rubloxBuildBest', B); }
+    // coins share the daily build-coin limit so tiny obbies can't be farmed
+    const d = bwDay(); let got = 0; if (d.n < BW_DAY_CAP){ got = Math.min(3, BW_DAY_CAP - d.n); d.n += got; save('rubloxBuildDay', d); bw.earned += got; runCoins = bw.earned; setCoins(coins + got); }
+    $('#bTestEndT').textContent = '⏱️ ' + fmtT(T.t) + (isBest ? '  ⭐ New best!' : '  (best ' + fmtT(best) + ')');
+    $('#bTestEndC').textContent = got ? '🪙 +' + got + ' coins' : '🪙 Daily build coins maxed — still awesome!';
+    $('#bTestEnd').classList.add('show'); $('#bTestAgain').style.display = mpGuest() ? 'none' : ''; $('#bTestBack').style.display = mpGuest() ? 'none' : '';
+    if (mp.on && mp.host){ bwResAdd(myLook().name || 'Host', T.t); }
+    else if (mpGuest()) mpSendTo(mp.hconn, {t: 'btfin', tm: +T.t.toFixed(2)});
+  }
+  function bwResAdd(name, tm){ if (!bw.res) bw.res = []; if (bw.res.some(r => r[0] === name)) return; bw.res.push([String(name).slice(0, 20), tm]); bw.res.sort((a, b) => a[1] - b[1]); }
+  function bwAgain(){ if (!bw.test) return; const T = bw.test; checkpoints[0].spawn = T.home; bw.test = null; $('#obby').classList.remove('btest'); bwTestStart(true); bw.test.back = T.back; bw.test.home = T.home; }
+  // host → guests: is a play-test running?
+  function bwWire(){ return bw ? {on: bw.test ? 1 : 0, id: bw.testId || 0, res: (bw.res || []).slice(0, 8)} : null; }
+  function bwFromHost(w){
+    if (!w || typeof w !== 'object' || !bw || mode !== 'build') return;
+    const res = Array.isArray(w.res) ? w.res.filter(r => Array.isArray(r) && typeof r[0] === 'string').slice(0, 8).map(r => [r[0].slice(0, 20), +r[1] || 0]) : [];
+    const prev = mp.bt; mp.bt = {on: !!w.on, id: w.id | 0, res};
+    if (mp.bt.on && (!bw.test || (prev && prev.id !== mp.bt.id))){ if (bw.test) { bw.test = null; $('#obby').classList.remove('btest'); } bwTestStart(true); }
+    else if (!mp.bt.on && bw.test) bwTestStop(true);
+  }
+
+  /* ---------- share codes ---------- */
+  function b64u(bytes){ let s = ''; for (const b of bytes) s += String.fromCharCode(b); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  function unb64u(s){ s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; const t = atob(s); return Uint8Array.from(t, c => c.charCodeAt(0)); }
+  function bwCode(){
+    const cells = bwSerialize(), out = [cells.length >> 8, cells.length & 255];
+    for (const [i, j, k, m, r] of cells) out.push(i + BW_HALF, j, k + BW_HALF, (m & 63) | (((r | 0) & 3) << 6));
+    let sum = 0; for (const b of out) sum = (sum + b) & 255; out.push(sum);
+    return 'RBX1-' + b64u(out);
+  }
+  function bwParse(code){
+    code = String(code || '').trim().replace(/\s+/g, '');
+    if (!code.startsWith('RBX1-')) return null;
+    let by; try { by = unb64u(code.slice(5)); } catch (e){ return null; }
+    if (by.length < 3) return null;
+    const n = (by[0] << 8) | by[1]; if (n > BW_MAX || by.length !== 2 + n * 4 + 1) return null;
+    let sum = 0; for (let q = 0; q < by.length - 1; q++) sum = (sum + by[q]) & 255; if (sum !== by[by.length - 1]) return null;
+    const cells = [];
+    for (let q = 0; q < n; q++){ const o = 2 + q * 4, i = by[o] - BW_HALF, j = by[o + 1], k = by[o + 2] - BW_HALF, m = by[o + 3] & 63, r = by[o + 3] >> 6;
+      if (Math.abs(i) > BW_HALF || Math.abs(k) > BW_HALF || j >= BW_MAXY || m >= BLOCKS.length) return null; cells.push([i, j, k, m, r]); }
+    return cells;
+  }
+  function bwShareOpen(){
+    if (!bw) return; if (bw.test) bwTestStop();
+    $('#bShareOut').value = bwCode(); $('#bShareIn').value = ''; $('#bShareMsg').textContent = bw.blocks.size + ' pieces in this build';
+    $('#bShareLoad').disabled = mpGuest(); $('#bShareIn').placeholder = mpGuest() ? 'Only the host can load a code into the room' : 'Paste a friend\'s code here (starts with RBX1-)';
+    $('#bShare').classList.add('show'); paused = true;
+  }
+  function bwShareClose(){ $('#bShare').classList.remove('show'); paused = false; }
+  function bwShareCopy(){
+    const v = $('#bShareOut').value, ta = $('#bShareOut'); ta.select();
+    const ok = () => { $('#bShareMsg').textContent = '📋 Copied! Send it to a friend'; SND.coin(); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(ok, () => { try { document.execCommand('copy'); ok(); } catch (e){ $('#bShareMsg').textContent = 'Select the code and copy it'; } });
+    else { try { document.execCommand('copy'); ok(); } catch (e){} }
+  }
+  function bwShareLoad(code){
+    if (mpGuest()){ $('#bShareMsg').textContent = '🏠 Only the host can load a whole build'; return false; }
+    const cells = bwParse(code != null ? code : $('#bShareIn').value);
+    if (!cells){ $('#bShareMsg').textContent = '🤔 That code doesn\'t look right — check it was copied fully'; SND.hit(); return false; }
+    bwReplace(cells, '📥 Loaded a shared build! (' + cells.length + ' pieces)'); bwShareClose(); return true;
+  }
+
   /* ---------- per-frame ---------- */
   const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
   function animate(dt){
@@ -7830,7 +8065,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
+    const line = mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -7877,10 +8112,12 @@ const Obby = (() => {
       if (jp[7]){ openTricks(); return; }
     }
     if (mode === 'build' && bw){
+      if (jp[12]){ bw.test ? bwTestStop() : bwTestStart(); return; } if (jp[13]){ bwShareOpen(); return; }
+      if (bw.test){ if (jp[3]) behind(); return; }
       ptr.has = false;   // aim with the crosshair in the middle of the screen
       if (jp[7]) bwClick(false); if (jp[6]) bwClick(true);
       if (jp[4]) selBlock(bw.sel - 1); if (jp[5]) selBlock(bw.sel + 1);
-      if (jp[2]) setDel(!bw.del); if (jp[3]) bwUndo();
+      if (jp[2]) bwCycle(); if (jp[3]) bwUndo();
       return;
     }
     if (fp.on && (s.v[6] || 0) > .6 && performance.now() - fp.wt > 400) setFP(false);   // LT (zoom out) leaves first person
@@ -7931,8 +8168,8 @@ const Obby = (() => {
       return;
     }
     if (mode === 'build'){
-      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ jump · 🏃 run · Swipe to look · 👁️ first person<br>👆 Tap to place a block · 🔨/🧽 button switches to delete'
-        : '⌨️ WASD move · Space jump · Shift run · Drag to look · V first person · 🖱️ Click to place a block<br>Shift+click / right-click / X = delete · Q/E pick block · Z undo') + '<br>Build anything! 🪙 +1 coin per 10 blocks (up to 50 a day)';
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ jump · 🏃 run · Swipe to look · 👁️ first person<br>👆 Tap to place a block · 🔨 button switches Build/Delete/🎨 Paint · ▶️ play-test · 📤 share'
+        : '⌨️ WASD move · Space jump · Shift run · Drag to look · V first person · 🖱️ Click to place a block<br>Shift+click / right-click = delete · X build/delete/paint · Q/E pick block · Z undo · G play-test · B share code') + '<br>📐 Ramps, 🚩 checkpoints, 🏁 finish and 🟢 start are at the end of the blocks bar — make an obby and press ▶️ Test! Build anything! 🪙 +1 coin per 10 blocks (up to 50 a day)';
       return;
     }
     if (mode === 'pets'){
@@ -8062,7 +8299,9 @@ const Obby = (() => {
       if (mode === 'build' && bw && !e.repeat && !paused){
         if (e.code === 'KeyQ') return selBlock(bw.sel - 1);
         if (e.code === 'KeyE') return selBlock(bw.sel + 1);
-        if (e.code === 'KeyX') return setDel(!bw.del);
+        if (e.code === 'KeyX') return bw.test ? undefined : bwCycle();
+        if (e.code === 'KeyG') return bw.test ? bwTestStop() : bwTestStart();
+        if (e.code === 'KeyB') return bwShareOpen();
         if (e.code === 'KeyZ'){ e.preventDefault(); return bwUndo(); }
       }
       keys[e.code] = true;
@@ -8096,7 +8335,11 @@ const Obby = (() => {
       if (down && e.pointerId === down.id && mode === 'build' && bw && running && !paused && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 10 && performance.now() - down.t < 600 && !down.skip){ setPtr(e); bwClick(e.shiftKey || e.button === 2); }
       down = null;
     });
-    $('#bMode').onclick = () => bw && setDel(!bw.del);
+    $('#bMode').onclick = () => bw && bwCycle();
+    $('#bTest').onclick = () => bw && bwTestStart(); $('#bTestStop').onclick = () => bw && bwTestStop();
+    $('#bTestAgain').onclick = () => bw && bwAgain(); $('#bTestBack').onclick = () => bw && bwTestStop();
+    $('#bShareBtn').onclick = () => bw && bwShareOpen(); $('#bShareClose').onclick = bwShareClose; $('#bShareCopy').onclick = bwShareCopy; $('#bShareLoad').onclick = () => bwShareLoad();
+    ['#bShareIn', '#bShareOut'].forEach(id => { $(id).addEventListener('keydown', e => e.stopPropagation()); });
     $('#bUndo').onclick = () => bw && bwUndo();
     $('#bClear').onclick = () => bw && bwClear();
     $('#bSlots').onclick = () => bw && slotsPanel();
@@ -8218,6 +8461,7 @@ const Obby = (() => {
     $('#oHeightBox').style.display = $('#oLavaBox').style.display = mode === 'lava' ? '' : 'none';
     ['#oDisBox','#oRTBox','#oHpBox','#oSurvBox'].forEach(id => $(id).style.display = mode === 'nds' ? '' : 'none'); $('#oTime').parentElement.style.display = mode === 'nds' || mode === 'tag' || mode === 'pets' ? 'none' : '';
     $('#oBlkBox').style.display = mode === 'build' ? '' : 'none'; ['#oItBox','#oTagTBox','#oMyItBox'].forEach(id => $(id).style.display = mode === 'tag' ? '' : 'none');
+    $('#obby').classList.remove('btest'); ['#bTestEnd', '#bShare'].forEach(id => $(id).classList.remove('show')); mp.bt = null;
     $('#obby').classList.toggle('bmode', mode === 'build'); $('#obby').classList.toggle('pmode', mode === 'pets'); $('#obby').classList.remove('pdrive'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  ptr.has = false;
     ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); pt && (pt.gas = pt.brake = 0); $('#oPause').textContent = '⏸️';
     $('#oMute').textContent = muted ? '🔇' : '🔊';
@@ -8404,6 +8648,14 @@ const Obby = (() => {
     emote: id => playEmote(id),
     build: () => bw && {count: bw.blocks.size, sel: bw.sel, del: bw.del, undo: bw.undo.length, earned: bw.earned, day: bwDay(), ghost: bw.ghost.visible && bw.ghost.position.toArray(), aim: aimCell() && aimCell().place},
     bwPlace(i, j, k, m = 0){ const e = addBlock(i, j, k, m); if (e) pushUndo({add: [[i, j, k, m]], del: []}); return !!e; },
+    bx: () => bw && {tool: bw.tool, n: bw.blocks.size, test: !bw.test ? null : {t: bw.test.t, done: bw.test.done, cp: !!bw.test.cp, lava: bw.test.lava, falls: bw.test.falls}, res: bw.res || null, bt: mp.bt || null,
+      props: Object.fromEntries(['ramp', 'cp', 'fin', 'start'].map(p => [p, bxFind(p).length])), ids: BLOCKS.map(B => B.id), endShown: $('#bTestEnd').classList.contains('show')},
+    bxCell: (i, j, k) => { const e = bw && bw.blocks.get(ckey(i, j, k)); return e ? {m: e.m, id: BLOCKS[e.m].id, r: e.r | 0} : null; },
+    bxPlace: (i, j, k, id, r = 0) => { const m = BLOCKS.findIndex(B => B.id === id); const e = addBlock(i, j, k, m, false, r); if (e) pushUndo({add: [[i, j, k, m, r]], del: []}); return !!e; },
+    bxSel: id => selBlock(BLOCKS.findIndex(B => B.id === id)), bxTool: t => setTool(t), bxCycle: () => bwCycle(),
+    bxTest: on => on ? bwTestStart() : bwTestStop(), bxCode: () => bwCode(), bxLoad: c => bwShareLoad(c), bxParse: c => { const r = bwParse(c); return r && r.length; },
+    bxTo: (x, y, z) => { Object.assign(P, {x, y, z, vx: 0, vy: 0, vz: 0}); }, bxSteps: () => solids.filter(b => b.active).length,
+    bxPaintAt: (i, j, k) => bwPaint({target: bw.blocks.get(ckey(i, j, k))}), bxCam: y => { cam.yaw = y; P.face = y - Math.PI; }, bxP: () => ({x: P.x, y: P.y, z: P.z, g: P.onGround}),
     bwClick: remove => bwClick(remove), bwUndo: () => bwUndo(), bwPrefab: n => bwPrefab(n), bwSave: () => bwSave(),
     bwPtr(x, y){ ptr.x = x; ptr.y = y; ptr.has = true; },
     tag: () => tg && {phase: tg.phase, t: tg.t, it: tg.it, freeze: tg.freeze, you: {...tg.you}, earned: tg.earned, bots: tg.bots.map(B => ({name: B.name, x: +B.x.toFixed(2), y: +B.y.toFixed(2), z: +B.z.toFixed(2), it: B.itTime, tags: B.tags}))},
@@ -8551,7 +8803,7 @@ const Obby = (() => {
   }
   function closeOf(c){
     const id = c.root.id;
-    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pTrickPanel: '#pTrickClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
+    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', bShare: '#bShareClose', bTestEnd: '#bTestBack', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pTrickPanel: '#pTrickClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
     if (id === 'rcPick'){ const b = document.querySelector('#rcBack'); if (b && !b.hidden) return b; }   // B in the ride list = back to the modes
     if (map[id]) return document.querySelector(map[id]);
     return null;
