@@ -459,6 +459,15 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .pdrive #oJump,.pdrive #oEmoBtn,.pdrive #oRun,.pdrive #oFP{display:none!important}
 .rmode #oEmoBtn,.rmode #oRun,.rmode #oStam{display:none!important}
 .smode #oStam{display:none!important}
+.hsblind{position:absolute;inset:0;display:none;z-index:5;pointer-events:none;background:radial-gradient(circle,#1d2340 0,#0b0e1c 80%);color:#fff;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-weight:900;text-align:center}
+.hsblind.show{display:flex}.hsblind div{font-size:80px;line-height:1}.hsblind b{font-size:96px;line-height:1;color:#ffd23f}.hsblind span{font-size:22px}
+.hsroles{display:flex;gap:10px;justify-content:center;margin:6px 0 8px;flex-wrap:wrap}
+.hsrole,.hsrule{font:inherit;color:#1d2340;border-radius:16px;border:3px solid #d9dcea;background:#fff;padding:8px 18px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:130px}
+.hsrole span,.hsrule span{font-size:34px;line-height:1.1}.hsrole small{font-size:12px;color:#5a6280}.hsrule{min-width:120px;padding:5px 12px}.hsrule span{font-size:24px}
+.hsrole.on,.hsrule.on{border-color:#ff6fb5;background:#ffe9f4}.hsrole.gpf,.hsrule.gpf,.hsrole:hover,.hsrule:hover:not(:disabled){border-color:#ff6fb5}.hsrule:disabled{opacity:.6}
+.hshelp{font-size:14px!important;max-width:560px;margin:0 auto 4px}.hsprize{margin-top:8px;font-weight:900}
+#hsBox.seek{background:rgba(255,77,94,.85);border-radius:10px;padding:0 6px}
+@media (max-width:760px),(max-height:520px){#hsPick .emoji,#hsEnd .emoji{display:none}#hsPick h2,#hsEnd h2{font-size:20px;margin:0 0 2px}.hsrole{min-width:100px;padding:4px 10px}.hsrole span{font-size:24px}.hsrole small{display:none}.hshelp{font-size:12px!important}.hsblind b{font-size:64px}.hsblind div{font-size:50px}}
 .touchui.smode .otip{font-size:12px;line-height:1.3;padding:5px 9px;max-width:min(62vw,340px);opacity:.92}
 .splevels{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px;margin:6px 0 10px;max-height:min(46vh,430px);overflow-y:auto;padding:4px;overscroll-behavior:contain}
 .spdiffs{display:flex;gap:8px;justify-content:center;margin:4px 0 6px}.spdf{font:inherit;font-weight:900;border-radius:14px;border:3px solid #d9dcea;background:#fff;padding:6px 14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;color:#1d2340}
@@ -871,6 +880,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   <div class="ohud">
     <div class="ostats">
       <span id="oStageBox">🏁 Lv <b id="oLvl">1</b><span id="oCpWrap"> · 🚩 <b id="oStage">1</b>/<b id="oStageN">3</b></span></span>
+      <span id="hsBox" style="display:none"><b id="hsRoleT">🙈 Hide & Seek</b> · ⏱️ <b id="hsT">0:00</b> · 🏃 <b id="hsLeft">0</b> hiding</span>
       <span id="spLvBox" style="display:none"><b id="spLvName">🪷 1. Lily Pad Lagoon</b></span>
       <span id="spRoundBox" style="display:none">🚪 <b id="spDist">0</b>m · ⏱️ <b id="spLeft">0:00</b></span>
       <span id="spAliveBox" style="display:none">🏁 <b id="spAlive">0</b> at exit</span>
@@ -994,6 +1004,23 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="owinbtns"><button class="big gray" id="pRetNo">↩️ Never mind</button><button class="big" id="pRetYes" hidden>💕 Return</button></div>
   </div></div>
   <div class="pflash" id="pFlash"></div>
+  <div class="hsblind" id="hsBlind"><div>🙈</div><b id="hsBlindN">20</b><span>Counting... no peeking!</span></div>
+  <div class="spwarn" id="hsWarn">👀 The seeker is close! Stay still or sneak away!</div>
+  <div class="opanel" id="hsPick"><div class="mbox rcbox">
+    <span class="emoji">🙈</span><h2>Hide and Seek</h2>
+    <div class="stats" id="hsPickS">Do you want to seek or hide?</div>
+    <div class="hsroles" id="hsSolo"><button class="hsrole" data-r="seek"><span>🙈</span><b>I'll seek</b><small>Find 4 hiders</small></button><button class="hsrole" data-r="hide"><span>🏃</span><b>I'll hide</b><small>Don't get found!</small></button></div>
+    <div class="stats hshelp">When someone is found:</div>
+    <div class="hsroles" id="hsRules"><button class="hsrule" data-k="join"><span>🙈</span><b>They seek too</b></button><button class="hsrule" data-k="watch"><span>👀</span><b>They watch</b></button></div>
+    <div class="stats hshelp">The seeker counts to 20 with a blindfold. Hide in the big house, the shed, the treehouse, closets or bushes! Every 30 seconds a 🔔 ding makes hiders sparkle.</div>
+    <div class="owinbtns"><button class="big green" id="hsGo">▶ Start</button><button class="big gray" id="hsHome">🏠 Home</button></div>
+  </div></div>
+  <div class="opanel" id="hsEnd"><div class="mbox rcbox">
+    <span class="emoji" id="hsEndE">🙈</span><h2 id="hsEndT">Round over!</h2>
+    <div class="stats tlist" id="hsEndS"></div>
+    <div class="stats" id="hsEndW" style="display:none">⏳ Waiting for the host to start the next round...</div>
+    <div class="owinbtns"><button class="big green" id="hsAgain">🔁 Play again</button><button class="big blue" id="hsRoles">🎭 Switch roles</button><button class="big gray" id="hsHome2">🏠 Home</button></div>
+  </div></div>
   <div class="spmeter" id="spMeter"><span>💦 Splash!</span><div class="spbar"><div id="spMeterF"></div></div></div>
   <div class="spwarn" id="spWarn">😱 It's coming for you! Get away from the edge, or 👊 shove it!</div>
   <div class="spshield" id="spShield">🛡️ Shield</div>
@@ -1118,7 +1145,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.02-1';
+const BUILD = '2026.11.02-2';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -1827,7 +1854,8 @@ $('#saveAv').onclick = () => {
 
 /* ---------- games ---------- */
 const GAMES = [
-  {id:'splash', name:"Don't Splash!", emoji:'🌊', tag:'Hop the pads. Shh... something lives in the water!', draw: drawSplash, playable: true, isNew: true},
+  {id:'hide', name:'Hide and Seek', emoji:'🙈', tag:'Count, hide, seek! A whole town to hide in.', draw: drawHide, playable: true, isNew: true},
+  {id:'splash', name:"Don't Splash!", emoji:'🌊', tag:'Hop the pads. Shh... something lives in the water!', draw: drawSplash, playable: true},
   {id:'race',  name:'Pet Kart Racing', emoji:'🏁', tag:'Race on animals or go-karts!', draw: drawRace, playable: true},
   {id:'pets',  name:'Adopt a Pet', emoji:'🐾', tag:'Adopt & raise your own pet!', draw: drawPets, playable: true},
   {id:'obby',  name:'Obby Rush',   emoji:'🏃', tag:'50 levels!',      draw: drawObby, playable: true},
@@ -1885,6 +1913,17 @@ function drawLava(ctx){
   for (let x = 0; x <= 320; x += 10) ctx.lineTo(x, 150 + Math.sin(x/22 + t)*6);
   ctx.lineTo(320, 200); ctx.fill();
   ctx.fillStyle = '#ffd23f'; for (let i = 0; i < 8; i++){ ctx.fillRect((i*47 + t*20) % 320, 168 + (i%3)*8, 8, 8); }
+}
+function drawHide(ctx){
+  sky(ctx, '#7cc8ff', '#c9ecff'); cloud(ctx, 30, 26); cloud(ctx, 230, 18);
+  ctx.fillStyle = '#86d36b'; ctx.fillRect(0, 140, 320, 60);
+  block(ctx, 120, 70, 120, 72, '#f6d5a8'); ctx.fillStyle = '#b5523b'; ctx.beginPath(); ctx.moveTo(110, 72); ctx.lineTo(180, 28); ctx.lineTo(250, 72); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#7a4a1f'; ctx.fillRect(168, 104, 24, 38); ctx.fillStyle = '#9fd8ff'; ctx.fillRect(132, 86, 22, 18); ctx.fillRect(208, 86, 22, 18);
+  ctx.fillStyle = '#2f8f47'; [[40, 150, 26], [66, 156, 20], [276, 152, 24]].forEach(([x, y, r]) => { ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); });
+  ctx.fillStyle = '#ffdbac'; ctx.beginPath(); ctx.arc(56, 132, 8, 0, 7); ctx.fill(); ctx.fillStyle = '#1d1d1d'; ctx.fillRect(52, 130, 3, 3); ctx.fillRect(58, 130, 3, 3);
+  guy(ctx, 214, 92, 14, '#2ec27e');
+  guy(ctx, 96, 104, 18, '#ff6fb5'); ctx.fillStyle = '#1d2340'; ctx.fillRect(90, 106, 20, 5);
+  ctx.fillStyle = '#fff'; ctx.font = '900 18px Nunito, sans-serif'; ctx.fillText('1, 2, 3...', 70, 96);
 }
 function drawSplash(ctx){
   sky(ctx, '#5d7a96', '#a9c6d6'); cloud(ctx, 40, 24); cloud(ctx, 220, 34);
@@ -3045,8 +3084,8 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null;
-    if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null;
+    if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -3982,7 +4021,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
       if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
       else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
     }
@@ -3999,6 +4038,7 @@ const Obby = (() => {
     if (pt && pt.drive){ carStep(dt); return; }
     if (rc){ raceStep(dt); return; }
     if (dsp) splashStep(dt);
+    if (hs) hideStep(dt);
     if (!SIM) movers.forEach(m => {
       const p = m.b.mesh.position, ox = p.x, oy = p.y, oz = p.z;
       p[m.axis] = m.base[m.axis] + Math.sin(worldT * m.speed + m.phase) * m.amp;
@@ -4014,10 +4054,10 @@ const Obby = (() => {
     if (!SIM && mode === 'obby') obbyMech(dt);
     if (P.onGround && P.ground){ P.x += P.ground.dx || 0; P.y += P.ground.dy || 0; P.z += P.ground.dz || 0;
       if (P.ground.conv){ P.x += P.ground.conv.x * dt; P.z += P.ground.conv.z * dt; } }
-    const inp = tg && (tg.phase === 'ready' || (tg.phase === 'play' && tg.it === 0 && tg.freeze > 0)) ? {x: 0, z: 0, mag: 0, jump: false} : input();
+    const inp = (hs && hsFrozen()) ? {x: 0, z: 0, mag: 0, jump: false} : tg && (tg.phase === 'ready' || (tg.phase === 'play' && tg.it === 0 && tg.freeze > 0)) ? {x: 0, z: 0, mag: 0, jump: false} : input();
     const k = Math.min(1, dt * (P.onGround ? (slip || (P.ground && P.ground.ice) ? 1.4 : 14) : 6));
     const wantRun = !SIM && (keys.ShiftLeft || keys.ShiftRight || run.pad || run.touch) && inp.mag > .1;
-    if (!SIM){ if (mode === 'tag' && tg){ if (wantRun && !run.tired){ run.stam -= dt; if (run.stam <= 0){ run.stam = 0; run.tired = true; } } else run.stam = Math.min(STAM_MAX, run.stam + dt * .8); if (run.tired && run.stam >= 1.5) run.tired = false; }
+    if (!SIM){ if ((mode === 'tag' && tg) || (mode === 'hide' && hs)){ if (wantRun && !run.tired){ run.stam -= dt; if (run.stam <= 0){ run.stam = 0; run.tired = true; } } else run.stam = Math.min(STAM_MAX, run.stam + dt * .8); if (run.tired && run.stam >= 1.5) run.tired = false; }
       else { run.stam = STAM_MAX; run.tired = false; } }
     run.on = wantRun && !run.tired;
     const spd = SPEED * (run.on ? RUN_MUL : 1) * (dsp && P.y < -.15 ? .55 : 1);   // wading is slow
@@ -4042,6 +4082,7 @@ const Obby = (() => {
     if (P.onGround && jumpPads.includes(P.ground)){ P.lastPad = P.ground; P.vy = PAD; P.onGround = false; P.ground = null; P.coyote = 0; P.jumped = true; P.airT = 0; SND.boing(); }
     if (P.onGround){ P.airT = 0; P.jumped = false; } else P.airT += dt;
     if (tg) tg.bots.forEach((B, n) => { if (!B.human) botStep(B, n + 1, dt); });
+    if (hs) hideBots(dt);
     checks();
   }
   function checks(){
@@ -4049,7 +4090,7 @@ const Obby = (() => {
     if (mode === 'lava') return lavaChecks();
     if (mode === 'splash') return splashChecks();
     if (mode === 'nds') return ndsChecks();
-    if (mode === 'build' || mode === 'tag' || mode === 'pets'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -4592,6 +4633,7 @@ const Obby = (() => {
       const msg = {t: 's', p: list, hm: running ? mode : null, hd: diff || null};
       if (running && tg && !tg.remote) msg.tg = tagWire();
       if (running && dsp && !dsp.remote && mode === 'splash') msg.sp = splashWire();
+      if (running && hs && !hs.remote && mode === 'hide') msg.hs = hideWire();
       if (ops) msg.o = ops;
       mpBroadcast(msg);
     } else {
@@ -4761,6 +4803,7 @@ const Obby = (() => {
     if (Array.isArray(d.p)) d.p.slice(0, 16).forEach(e => { if (!Array.isArray(e) || typeof e[0] !== 'string' || e[0] === mp.me || !/^(H|g\d{1,4}|b[0-3])$/.test(e[0])) return; seen.add(e[0]); mpEnt(e[0], e[1], e.slice(2, 12)); });
     for (const E of mp.ents.values()) if (!seen.has(E.uid)) E.m = null;
     if (d.sp) splashFromHost(d.sp);
+    if (d.hs) hideFromHost(d.hs);
     if (d.tg && tg && tg.remote && running && mode === 'tag' && tg.phase !== 'end') mpTagWire(d.tg);
     if (d.o) mpApplyOps(d.o);
   }
@@ -7286,6 +7329,354 @@ const Obby = (() => {
     if (d.k === 'pull'){ const y = +d.y; if (!isFinite(y) || typeof d.u !== 'string') return; const msg = {x: clamp(x, -20, 20), y: clamp(y, -2, 6), z: clamp(z, -10, dsp.len + 10)}; if (d.u === 'H') spPulled(msg.x, msg.y, msg.z); else spPullSend(d.u, msg); return; }
     spHear(d.k, clamp(x, -40, 40), clamp(z, -20, dsp.len + 20), g.uid);
   }
+  /* ===================== HIDE AND SEEK (t207u) ===================== */
+  // One seeker counts with a blindfold while everyone else hides in Maple Street (a big house, little houses, a shed,
+  // a treehouse, bushes...). Touch a hider to find them. Found hiders join the seekers (or watch from the lookout tower).
+  // Single player: NPC hiders or an NPC seeker. Multiplayer: real players only, the host runs the round.
+  const HS_HIDE = 20, HS_SEEK = 150, HS_DING = 30, HS_TAG = 1.35, HS_PLAZA = [0, 4];
+  const HS_LOOKS = [
+    {name: 'Biscuit', emoji: '🍪', av: {head: '#f1c27d', shirt: '#ff9f1c', pants: '#5a3b1f', hair: 'short', hairColor: '#7a4a1f', hat: 'cap', face: 'grin', anim: 'bouncy'}},
+    {name: 'Mochi', emoji: '🍡', av: {head: '#ffe0bd', shirt: '#ff6fb5', pants: '#3a2d5c', hair: 'bun', hairColor: '#1d1d1d', ears: 'bunny', face: 'wink', anim: 'default'}},
+    {name: 'Pip', emoji: '🐸', av: {head: '#8d5524', shirt: '#2ec27e', pants: '#1d2340', hair: 'spiky', hairColor: '#2d2d2d', face: 'tongue', anim: 'ninja'}},
+    {name: 'Juniper', emoji: '🌲', av: {head: '#c68642', shirt: '#3a86ff', pants: '#2d2d2d', hair: 'ponytail', hairColor: '#b5651d', hat: 'party', face: 'smile', anim: 'robot'}},
+    {name: 'Sprout', emoji: '🌱', av: {head: '#ffdbac', shirt: '#8b5cf6', pants: '#2f6b3a', hair: 'short', hairColor: '#ffd23f', tail: 'fox', face: 'shades', anim: 'zombie'}},
+  ];
+  let hs = null;
+  const hsUid = () => mp.on ? mp.me : 'H';
+  function hsHouse(cx, cz, w, d, h, door, wall, roof){
+    const t = .5, hw = w / 2, hd = d / 2, gap = 3.2;
+    ['N', 'S', 'E', 'W'].forEach(s => {
+      const horiz = s === 'N' || s === 'S', zc = s === 'N' ? cz + hd - t / 2 : s === 'S' ? cz - hd + t / 2 : cz, xc = s === 'E' ? cx + hw - t / 2 : s === 'W' ? cx - hw + t / 2 : cx, len = horiz ? w : d;
+      if (s !== door){ if (horiz) plat(xc, h, zc, len, t, wall, h); else plat(xc, h, zc, t, len, wall, h); return; }
+      const seg = (len - gap) / 2;
+      [-1, 1].forEach(k => { const off = k * (gap / 2 + seg / 2); if (horiz) plat(xc + off, h, zc, seg, t, wall, h); else plat(xc, h, zc + off, t, seg, wall, h); });
+      if (horiz) plat(xc, h, zc, gap, t, wall, h - 3.4); else plat(xc, h, zc, t, gap, wall, h - 3.4);
+      const dx = s === 'E' ? 1 : s === 'W' ? -1 : 0, dz = s === 'N' ? 1 : s === 'S' ? -1 : 0;   // a doormat
+      addBox(xc + dx * 1.2, .04, zc + dz * 1.2, dx ? 1.6 : 2.6, .06, dx ? 2.6 : 1.6, '#b5523b', {noEdge: true});
+    });
+    hs.roofs.push({b: plat(cx, h + .35, cz, w + 1.2, d + 1.2, roof, .35), x0: cx - hw, x1: cx + hw, z0: cz - hd, z1: cz + hd});
+    addBox(cx, .04, cz, w - 1, .05, d - 1, '#ecdcc0', {noEdge: true});
+    // little windows (just paint)
+    const win = mat('#9fd8ff', '#2a6fa0');
+    [[cx - hw - .02, cz, 0], [cx + hw + .02, cz, 0]].forEach(([x, z]) => { if ((door === 'W' && x < cx) || (door === 'E' && x > cx)) return; for (const o of [-d / 4, d / 4]){ const m = new THREE.Mesh(new THREE.BoxGeometry(.06, 1.2, 1.6), win); m.position.set(x, 2.4, z + o); scene.add(m); } });
+  }
+  function hsCloset(x, z, open, col, h = 3){
+    const s = 1.3, t = .25;
+    if (open !== 'N') plat(x, h, z + s - t / 2, 2 * s, t, col, h); if (open !== 'S') plat(x, h, z - s + t / 2, 2 * s, t, col, h);
+    if (open !== 'E') plat(x + s - t / 2, h, z, t, 2 * s, col, h); if (open !== 'W') plat(x - s + t / 2, h, z, t, 2 * s, col, h);
+    plat(x, h + .15, z, 2 * s, 2 * s, shade(col, -25), .15); hs.closets.push({x, z, y: h - 3, r: s});
+  }
+  function hsBush(x, z, s = 1){
+    const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+    const m1 = mat('#3fae5a'), m2 = mat('#2f8f47');
+    [[0, 1.25, 0, 1.65, m1], [.9, 1, .5, 1.1, m2], [-.8, 1.05, -.4, 1.15, m2], [.2, 2.1, -.2, 1, m1]].forEach(([a, b, c, r, m]) => { const o = new THREE.Mesh(new THREE.IcosahedronGeometry(r * s, 0), m); o.position.set(a * s, b * s, c * s); o.rotation.y = a + c; g.add(o); });
+    hs.bushes.push({x, z, r: 1.7 * s});
+  }
+  function hsTree(x, z){
+    plat(x, 3.2, z, .8, .8, '#7a4a1f', 3.2);
+    const g = new THREE.Group(); g.position.set(x, 4.6, z); scene.add(g);
+    [[0, 0, 0, 2.4, '#2ec27e'], [1.2, -.4, .6, 1.6, '#27a96b'], [-1, -.3, -.7, 1.7, '#36c97a']].forEach(([a, b, c, r, col]) => { const o = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 0), mat(col)); o.position.set(a, b, c); g.add(o); });
+  }
+  function buildHide(){
+    hs = {ph: 'pick', t: 0, n: 0, rule: 'join', role: 'seek', sk: [], fd: [], out: [], fb: {}, bots: [], marks: new Map(), bushes: [], closets: [], roofs: [], dn: 0, dingT: 0, earned: 0, remote: mpGuest(), order: 0, endShown: false, meFound: false, warnT: 0};
+    scene.background = new THREE.Color('#a8dcff');
+    plat(0, 0, 0, 104, 104, '#86d36b', 1);
+    [[0, 51, 104, .6], [0, -51, 104, .6], [51, 0, .6, 104], [-51, 0, .6, 104]].forEach(([x, z, w, d]) => plat(x, 3.4, z, w, d, '#f4f1ea', 3.4));
+    // streets + plaza (paint)
+    addBox(0, .03, -4, 9, .05, 80, '#c9c4b8', {noEdge: true}); addBox(0, .03, 2, 92, .05, 7, '#c9c4b8', {noEdge: true});
+    const pz = new THREE.Mesh(new THREE.CylinderGeometry(7, 7, .08, 32), mat('#e9e3d3')); pz.position.set(0, .05, 2); scene.add(pz);
+    // the counting post
+    plat(0, 2.6, -3, .7, .7, '#ffd23f', 2.6); const cs = label('🙈 Count here!', 'rgba(255,111,181,.92)'); cs.position.set(0, 3.6, -3); scene.add(cs);
+    // BIG HOUSE: two rooms downstairs, a loft upstairs with stairs, closets + a pantry
+    hsHouse(0, 22, 24, 20, 7, 'S', '#f6d5a8', '#b5523b');
+    plat(0, 3.5, 28.1, 23, 7.6, '#c8a27a', .3);                 // the loft
+    stairs(10, 24, [0, -1], 2.5, 7, '#d8b48a');
+    plat(-2.25, 4.5, 24.4, 18.5, .2, '#8a5a3c', 1);              // loft railing
+    plat(0, 3.2, 20, .4, 8, '#f0c896', 3.2);                     // wall between the rooms
+    plat(-9.5, 1.1, 20, 1.2, 5, '#3a86ff', 1.1); plat(-8.6, .6, 20, .8, 5, '#5a9cff', .6);   // sofa
+    plat(-4, 1.2, 18, 2.4, 1.6, '#a0643c', .25); plat(-4, .95, 18, .3, .3, '#7a4a1f', .95);   // coffee table
+    hsCloset(-10.4, 30.1, 'E', '#d9c3a5', 2.95);                   // closet (under the loft)
+    hsCloset(10.4, 30.1, 'W', '#e8e8e8', 2.95);                    // pantry
+    plat(5, 1.2, 14, 4, 1.2, '#e8e8e8', 1.2); plat(3, 1.2, 30.8, 3, 1.4, '#cfd6e0', 1.2);   // kitchen counter, sink
+    plat(-8, 4.7, 30.2, 2.4, 2.4, '#ff9f1c', 1.2); plat(-5.6, 4.3, 30.6, 1.6, 1.6, '#ffd23f', .8);   // toy boxes on the loft
+    plat(5, 4.1, 30, 3.2, 2.2, '#ff6fb5', .6); plat(5, 4.9, 31.3, 3.2, .4, '#c94f8f', 1.4);      // loft bed
+    // little houses
+    hsHouse(-30, -6, 12, 10, 5, 'E', '#bfe3ff', '#3a6fb5'); hsHouse(30, -6, 12, 10, 5, 'W', '#ffe3a3', '#c27a1d');
+    hsHouse(-28, -30, 12, 10, 5, 'E', '#d6f5c9', '#3d8a4f'); hsHouse(28, -30, 12, 10, 5, 'W', '#f5cfe3', '#a8467a');
+    [[-30, -6, 1], [30, -6, -1], [-28, -30, 1], [28, -30, -1]].forEach(([x, z, sd], k) => {
+      hsCloset(x - sd * 3.9, z + 2.4, sd > 0 ? 'E' : 'W', '#d9c3a5');
+      plat(x - sd * 3.2, .9, z - 2.6, 3.4, 2.2, ['#ff4d5e', '#3a86ff', '#8b5cf6', '#2ec27e'][k], .9); plat(x - sd * 4.6, 1.5, z - 2.6, .4, 2.2, '#7a4a1f', 1.5);   // bed
+    });
+    // garden shed + the treehouse
+    hsHouse(-30, 24, 7, 7, 4, 'E', '#c79a6b', '#6b4a2e'); plat(-32, 1, 25.5, 1.6, 1.6, '#8a6a4a', 1); plat(-32, 2, 25.5, 1.2, 1.2, '#a0805a', 1);
+    plat(32, 4, 26, 5, 5, '#a0643c', .4); [[32, 28.4, 5, .3], [34.4, 26, .3, 5], [29.6, 26, .3, 5]].forEach(([x, z, w, d]) => plat(x, 5.6, z, w, d, '#c68642', 1.6));
+    [[30, 24], [34, 24], [30, 28], [34, 28]].forEach(([x, z]) => plat(x, 3.6, z, .4, .4, '#7a4a1f', 3.6));
+    stairs(32, 23.5, [0, -1], 2, 8, '#b98a5a');
+    hs.roofs.push({b: plat(32, 7.6, 26, 6, 6, '#ff4d5e', .3), x0: 29.6, x1: 34.4, z0: 23.6, z1: 28.4});
+    // the car, crates, bins, trees, bushes
+    plat(14, 1.2, -10, 4.6, 2, '#ff4d5e', 1); plat(13.6, 2.1, -10, 2.4, 1.8, '#9fd8ff', .9); [[12.4, -11], [15.6, -11], [12.4, -9], [15.6, -9]].forEach(([x, z]) => { const w = new THREE.Mesh(new THREE.CylinderGeometry(.45, .45, .3, 14), mat('#1d1d1d')); w.rotation.x = Math.PI / 2; w.position.set(x, .45, z); scene.add(w); });
+    plat(-14, 1.6, -38, 3, 3, '#c68642', 1.6); plat(-11, 1.4, -39, 2.4, 2.4, '#d9a066', 1.4); plat(-13.6, 4.2, -38, 2, 2, '#b5823c', 1.2);
+    [[-18, -2], [18, -2]].forEach(([x, z]) => plat(x, 1.4, z, 1, 1, '#3d8a4f', 1.4));
+    [[-40, 30], [40, 40], [-42, -20], [42, -18], [22, 40], [-20, 44], [8, -44], [-30, 42]].forEach(([x, z]) => hsTree(x, z));
+    [[-16, 8], [16, 8], [-40, 10], [40, 6], [-18, -24], [18, -24], [0, -30], [-40, -42], [40, -42], [-6, 40]].forEach(([x, z]) => hsBush(x, z));
+    // lookout tower: found players watch from here (if that rule is on)
+    plat(0, 8, -44, 6, 6, '#8a96a8', 8); const glass = new THREE.MeshLambertMaterial({color: '#bfe6ff', transparent: true, opacity: .25});
+    [[0, -41, 6, .2], [0, -47, 6, .2], [3, -44, .2, 6], [-3, -44, .2, 6]].forEach(([x, z, w, d]) => plat(x, 12, z, w, d, '#bfe6ff', 4, {material: glass, noEdge: true}));
+    const ls = label('👀 Lookout', 'rgba(29,35,64,.8)'); ls.position.set(0, 13, -44); scene.add(ls);
+    [[-30, 22, 30, 2.2], [30, 26, -30, 2.6], [0, 30, 40, 3]].forEach(a => cloud(...a));
+    checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 4}, flag: new THREE.Object3D()};
+    // hiding spots: a walking path from the plaza, then the spot
+    const BH = [[0, 9], [0, 14]], L = [...BH, [-6, 15]], K = [...BH, [5, 16]], UP = [...BH, [10, 12.9], [10, 25.8]];
+    hs.spots = [
+      {n: 'behind the sofa', p: [...L, [-10.9, 15.6], [-10.9, 20]], cv: 1},
+      {n: 'in the closet', p: [...L, [-6, 27], [-7.5, 30.1], [-10.5, 30.1]], cv: 1},
+      {n: 'in the pantry', p: [...K, [5, 26.5], [7.5, 30.1], [10.5, 30.1]], cv: 1},
+      {n: 'behind the toy boxes', p: [...UP, [2, 27], [-6, 27.5], [-10.4, 30.5]], cv: 1},
+      {n: 'by the loft bed', p: [...UP, [2, 27.5], [7.6, 29]], cv: 1},
+      {n: 'behind the kitchen counter', p: [...K, [5, 15.4]], cv: 1},
+      ...[[-30, -6, 1], [30, -6, -1], [-28, -30, 1], [28, -30, -1]].flatMap(([x, z, sd]) => [
+        {n: 'in a little closet', p: [[x + sd * 8, z], [x + sd * 4.5, z], [x - sd * 1.5, z + 2.4], [x - sd * 3.9, z + 2.4]], cv: 1},
+        {n: 'behind a bed', p: [[x + sd * 8, z], [x + sd * 4.5, z], [x - sd * 1, z - 1], [x - sd * 1, z - 4.1]], cv: 1}]),
+      {n: 'in the shed', p: [[-16, 10], [-25, 24], [-30, 23.4]], cv: 1},
+      {n: 'up in the treehouse', p: [[16, 10], [32, 10], [32, 21], [32, 25.8]], cv: 1},
+      {n: 'behind the car', p: [[8, -13], [14, -12.6]], cv: 1},
+      {n: 'behind the crates', p: [[-6, -20], [-10, -34], [-11, -36.6]], cv: 1},
+      {n: 'behind the big house', p: [[-16, 10], [-15, 35], [0, 35]], cv: 0},
+      ...hs.bushes.map(b => ({n: 'in a bush', p: b.z > 30 ? [[-16, 10], [-15, 35], [b.x, b.z]] : [[b.x * .5, b.z * .5 + 2], [b.x, b.z]], cv: 1})),
+    ];
+    hs.sv = Object.assign({wins: 0, finds: 0}, load('rubloxHide', {}) || {});
+  }
+  function hsMakeBot(i){
+    const L = HS_LOOKS[i], m = buildPlayer(Object.assign({}, DEF, L.av)); scene.add(m.g);
+    const lab = label(L.emoji + ' ' + L.name, 'rgba(29,35,64,.75)'); lab.position.y = 3.75; m.g.add(lab);
+    const sh = new THREE.Mesh(new THREE.CircleGeometry(.6, 20), new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: .25, depthWrite: false})); sh.rotation.x = -Math.PI / 2; scene.add(sh);
+    return {uid: 'n' + i, name: L.name, emoji: L.emoji, pack: L.av.anim, model: m, lab, shadow: sh, x: 0, y: .05, z: 4, vx: 0, vy: 0, vz: 0, onGround: false, ground: null, coyote: 0, face: Math.PI, walk: 0, airT: 0, jumped: false,
+      route: [], trav: [], spot: null, think: 0, dir: [0, 0], want: 0, stuckT: 0, lastPos: [0, 4], tgt: null, chaseFrom: null, fleeCd: 0, stam: STAM_MAX, tired: false, run: false, speed: 9 + i * .15, seen: new Set()};
+  }
+  /* --- who's playing --- */
+  function hsBodies(){
+    const out = [{uid: hsUid(), me: true, x: P.x, y: P.y, z: P.z}];
+    if (mp.on && mp.host){ const now = performance.now(); for (const g of mp.guests.values()){ if (!g.ready) continue; const E = mp.ents.get(g.uid); if (E && E.m === 'hide' && now - E.seen < 3000) out.push({uid: g.uid, x: E.tx, y: E.ty, z: E.tz, remote: true}); } }
+    if (!mp.on) hs.bots.forEach(B => out.push({uid: B.uid, bot: B, x: B.x, y: B.y, z: B.z}));
+    return out;
+  }
+  const hsSeeker = u => hs.sk.includes(u), hsGone = u => hs.fd.includes(u) && !hs.sk.includes(u);
+  function hsName(u){ if (u === hsUid()) return 'You'; const B = hs.bots.find(b => b.uid === u); if (B) return B.emoji + ' ' + B.name; const L = mpLook(u); return L ? L.short : 'A friend'; }
+  function hsRole(){ const u = hsUid(); return hs.out.includes(u) ? 'watch' : hsSeeker(u) ? 'seek' : 'hide'; }
+  function hsFrozen(){ return hs.ph === 'ready' || (hs.ph === 'hide' && hsSeeker(hsUid())); }
+  /* --- start a round (host / single player) --- */
+  function hsStart(){
+    if (mpGuest()) return;
+    const B = hsBodies(); hs.bots.forEach(b => { scene.remove(b.model.g); scene.remove(b.shadow); }); hs.bots = [];
+    if (mp.on){ if (B.length < 2){ toast('👫 Hide and Seek needs 2+ players in the room'); return; }
+      const order = B.map(b => b.uid).sort(); hs.sk = [order[hs.order++ % order.length]]; }
+    else { hs.bots = HS_LOOKS.slice(0, 4).map((L, i) => hsMakeBot(i)); hs.sk = [hs.role === 'seek' ? 'H' : hs.bots[0].uid]; }
+    hs.n++; hs.ph = 'hide'; hs.t = HS_HIDE; hs.fd = []; hs.out = []; hs.fb = {}; hs.dn = 0; hs.win = ''; hs.chosen = hsShuffle(hs.spots.map((s, i) => i));
+    hs.bots.forEach((b, k) => { const a = k / Math.max(1, hs.bots.length) * 6.28; Object.assign(b, {x: Math.cos(a) * 3, y: .05, z: 4 + Math.sin(a) * 2.5, vx: 0, vy: 0, vz: 0, route: [], trav: [], tgt: null, chaseFrom: null, seen: new Set()});
+      if (hsSeeker(b.uid)) Object.assign(b, {x: 0, z: -5.5, face: 0}); else hsGoTo(b, hs.spots[hs.chosen[k % hs.chosen.length]]); });
+    hsLocalStart();
+  }
+  function hsShuffle(a){ for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  function hsLocalStart(){   // everyone: reset for this round
+    hs.endShown = false; hs.meFound = false; hs.earned = 0; hs.dingT = 0; hs.lastDn = 0; hs.warnT = 0;
+    ['#hsPick', '#hsEnd'].forEach(id => $(id).classList.remove('show')); choosing = false; over = false;
+    const seek = hsSeeker(hsUid()), n = mp.on ? (+String(mp.me).slice(1) || 0) : 0, a = Math.random() * 6.28;
+    if (seek){ Object.assign(P, {x: 0, y: .05, z: -5.4, vx: 0, vy: 0, vz: 0}); P.face = 0; cam.yaw = Math.PI; }
+    else { Object.assign(P, {x: Math.cos(a) * (2 + n * .4), y: .05, z: 4 + Math.sin(a) * 2, vx: 0, vy: 0, vz: 0}); cam.yaw = Math.PI; }
+    cam.pitch = .4; cam.dist = 11;
+    banner(seek ? '🙈 You are the SEEKER! Count to ' + HS_HIDE + '... no peeking!' : '🏃 Go hide! The seeker is counting to ' + HS_HIDE + '!');
+  }
+  /* --- per-frame: host rules --- */
+  function hideUpdate(dt){
+    if (!hs) return;
+    hs.dingT = Math.max(0, hs.dingT - dt); hs.warnT = Math.max(0, hs.warnT - dt);
+    if (hs.remote) return;
+    if (hs.ph === 'hide'){ hs.t -= dt; if (hs.t <= 0){ hs.ph = 'seek'; hs.t = HS_SEEK; SND.alarm(); banner(hsSeeker(hsUid()) ? '👀 Ready or not, here I come! Find everyone!' : '😱 The seeker is coming! Stay hidden!'); } return; }
+    if (hs.ph !== 'seek') return;
+    hs.t -= dt;
+    if (Math.floor((HS_SEEK - hs.t) / HS_DING) > hs.dn){ hs.dn++; }
+    const B = hsBodies(), here = new Set(B.map(b => b.uid));
+    const seekers = B.filter(b => hsSeeker(b.uid)), hiders = B.filter(b => !hsSeeker(b.uid) && !hs.fd.includes(b.uid));
+    for (const s of seekers) for (const h of hiders){ if (hs.fd.includes(h.uid)) continue;
+      const r = HS_TAG + (s.remote || h.remote ? .35 : 0); if (Math.hypot(s.x - h.x, s.z - h.z) < r && Math.abs(s.y - h.y) < 2.2) hsFound(h.uid, s.uid); }
+    const left = B.filter(b => !hsSeeker(b.uid) && !hs.fd.includes(b.uid)).length;
+    if (!seekers.length || !hs.sk.some(u => here.has(u))) return hsEnd('hide');
+    if (left === 0) return hsEnd('seek');
+    if (hs.t <= 0) hsEnd('hide');
+  }
+  function hsFound(u, by){
+    hs.fd.push(u); hs.fb[by] = (hs.fb[by] || 0) + 1;
+    if (hs.rule === 'join') hs.sk.push(u); else hs.out.push(u);
+    const B = hs.bots.find(b => b.uid === u); if (B){ B.route = []; B.trav = []; B.tgt = null; if (hs.rule !== 'join') Object.assign(B, {x: (Math.random() - .5) * 3, y: 8.1, z: -44 + (Math.random() - .5) * 3, vx: 0, vy: 0, vz: 0}); }
+    hsFoundFx(u, by);
+  }
+  function hsFoundFx(u, by){
+    const me = hsUid();
+    if (u === me) hsMeFound();
+    else if (by === me){ SND.coin(); banner('🙈 You found ' + hsName(u) + '!'); }
+    else { SND.jump(); banner('🙈 ' + hsName(by) + ' found ' + hsName(u) + '!'); }
+  }
+  function hsMeFound(){
+    if (hs.meFound) return; hs.meFound = true; SND.hit(); const f = $('#oFlash'); f.classList.add('on'); requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove('on')));
+    if (hs.rule === 'join') banner("🙈 You've been found! Now you're a seeker too — find the others!");
+    else { banner('👀 Found! Watch the rest from the lookout tower.'); Object.assign(P, {x: (Math.random() - .5) * 3, y: 8.1, z: -44 + (Math.random() - .5) * 3, vx: 0, vy: 0, vz: 0}); cam.dist = 16; cam.pitch = .55; }
+  }
+  function hsEnd(win){ hs.ph = 'end'; hs.win = win; hsEndLocal(); }
+  function hsEndLocal(){
+    if (hs.endShown) return; hs.endShown = true; over = false; choosing = true;
+    const me = hsUid(), was = hs.fd.includes(me) ? 'found' : hsSeeker(me) ? 'seek' : 'safe', mine = hs.fb[me] || 0;
+    let prize = 0; if (was === 'safe') prize = 25; prize += mine * 10; if (hs.win === 'seek' && hsSeeker(me)) prize += 15;
+    if (prize){ setCoins(coins + prize); runCoins += prize; hs.earned += prize; }
+    if ((was === 'safe' && hs.win === 'hide') || (hs.win === 'seek' && hsSeeker(me))) hs.sv.wins++; hs.sv.finds += mine; save('rubloxHide', hs.sv);
+    const iWin = (hs.win === 'hide' && was === 'safe') || (hs.win === 'seek' && hsSeeker(me) && !hs.fd.includes(me)) || (hs.win === 'seek' && mine > 0);
+    if (iWin){ SND.win(); confetti(); } else SND.jump();
+    $('#hsEndE').textContent = hs.win === 'seek' ? '🙈' : '🏃';
+    $('#hsEndT').textContent = hs.win === 'seek' ? 'The seekers found everyone!' : 'Time! The hiders win!';
+    const rows = hsBodies().map(b => b.uid); hs.fd.forEach(u => rows.includes(u) || rows.push(u));
+    $('#hsEndS').innerHTML = rows.map(u => `<div class="trow${u === me ? ' you' : ''}"><span>${hsName(u)}</span><span>${hs.fd.includes(u) ? '🙈 found' : hsSeeker(u) ? '👀 seeker' : '🏃 safe!'}</span><span>${hs.fb[u] ? '🔎 ' + hs.fb[u] : ''}</span></div>`).join('') +
+      `<div class="hsprize">🪙 You earned <b>+${prize}</b> Rublox Coins</div>`;
+    const g = mpGuest(); $('#hsAgain').style.display = g ? 'none' : ''; $('#hsRoles').style.display = g || mp.on ? 'none' : ''; $('#hsEndW').style.display = g ? '' : 'none';
+    $('#hsEnd').classList.add('show'); setTimeout(() => { if (pad.on && window.rubloxPadFocus) rubloxPadFocus(g ? $('#hsHome2') : $('#hsAgain')); }, 0);
+  }
+  /* --- per-step: you --- */
+  function hideStep(dt){
+    if (!hs) return;
+    if (hsRole() === 'watch' && (P.y < 6 || Math.abs(P.z + 44) > 3.5 || Math.abs(P.x) > 3.5)) Object.assign(P, {x: 0, y: 8.1, z: -44, vx: 0, vy: 0, vz: 0});
+    if (hsFrozen() && hs.ph === 'hide'){ P.x = clamp(P.x, -1.5, 1.5); P.z = clamp(P.z, -6.5, -4.6); }
+  }
+  /* --- NPCs (single player only) --- */
+  function hsGoTo(B, spot){
+    const back = B.trav.slice().reverse().map(p => ({x: p.x, z: p.z, out: false}));
+    B.route = [...(B.chaseFrom ? [{x: B.chaseFrom[0], z: B.chaseFrom[1], out: false, neutral: true}] : []), ...back, {x: HS_PLAZA[0], z: HS_PLAZA[1], out: false, neutral: true}, ...spot.p.map(([x, z]) => ({x, z, out: true}))];
+    B.chaseFrom = null; B.spot = spot;
+  }
+  function hsCover(b){ for (const q of hs.bushes) if (Math.hypot(b.x - q.x, b.z - q.z) < q.r) return 2.2; for (const c of hs.closets) if (Math.abs(b.x - c.x) < c.r && Math.abs(b.z - c.z) < c.r && Math.abs(b.y - c.y) < 1) return 3; return 11; }
+  function hsSees(S, H){
+    const d = Math.hypot(H.x - S.x, H.z - S.z); if (Math.abs(S.y - H.y) > 2.4 && d > 3) return false; if (d > hsCover(H)) return false;
+    const y = Math.max(S.y, H.y) + 1.6, n = Math.ceil(d / .5);
+    for (let i = 1; i < n; i++){ const x = S.x + (H.x - S.x) * i / n, z = S.z + (H.z - S.z) * i / n;
+      for (const b of solids){ if (!b.active) continue; const p = b.mesh.position; if (p.y + b.hh < y || p.y - b.hh > y) continue; if (Math.abs(x - p.x) < b.hw && Math.abs(z - p.z) < b.hd) return false; } }
+    return true;
+  }
+  function hideBots(dt){
+    if (!hs || !hs.bots.length) return;
+    const bodies = hsBodies();
+    hs.bots.forEach(B => {
+      const seek = hsSeeker(B.uid), gone = hsGone(B.uid);
+      let mx = 0, mz = 0, jump = false, want = 0;
+      const frozen = gone || hs.ph === 'end' || hs.ph === 'pick' || (seek && hs.ph === 'hide');
+      if (!frozen){
+        B.fleeCd = Math.max(0, B.fleeCd - dt); B.think -= dt;
+        if (B.think <= 0){ B.think = .2 + Math.random() * .1;
+          if (seek && hs.ph === 'seek'){
+            let best = null, bd = 1e9; bodies.forEach(o => { if (hsSeeker(o.uid) || hs.fd.includes(o.uid)) return; const d = Math.hypot(o.x - B.x, o.z - B.z); if (d < bd && (d < 1.8 || hsSees(B, o) || (B.tgt === o.uid && d < 7))){ bd = d; best = o; } });
+            if (best && !B.tgt){ B.chaseFrom = [B.x, B.z]; B.route = []; } if (!best && B.tgt){ B.tgt = null; hsNextSpot(B); } B.tgt = best ? best.uid : null;
+            if (!B.tgt && !B.route.length) hsNextSpot(B);
+          } else if (!seek && hs.ph === 'seek' && B.fleeCd <= 0){
+            const s = bodies.find(o => hsSeeker(o.uid) && Math.hypot(o.x - B.x, o.z - B.z) < 6 && hsSees(o, B));
+            if (s){ B.fleeCd = 5; let far = null, fd = -1; hs.spots.forEach(sp => { const e = sp.p[sp.p.length - 1], d = Math.hypot(e[0] - s.x, e[1] - s.z); if (d > fd && sp !== B.spot && Math.random() < .5){ fd = d; far = sp; } }); if (far){ hsGoTo(B, far); B.flee = 4; } }
+          }
+        }
+        let gx = null, gz = null;
+        if (B.tgt){ const o = bodies.find(b => b.uid === B.tgt); if (o){ gx = o.x; gz = o.z; } else B.tgt = null; }
+        if (gx === null && B.route.length){ const r = B.route[0]; if (Math.hypot(r.x - B.x, r.z - B.z) < .7){ B.route.shift(); if (r.out) B.trav.push(r); else if (!r.neutral) B.trav.pop(); else if (r.x === HS_PLAZA[0] && r.z === HS_PLAZA[1]) B.trav = []; } const r2 = B.route[0]; if (r2){ gx = r2.x; gz = r2.z; } }
+        if (gx !== null){ const dx = gx - B.x, dz = gz - B.z, l = Math.hypot(dx, dz) || 1; mx = dx / l; mz = dz / l; want = l < .5 && !B.tgt ? 0 : 1; B.dir = [mx, mz]; }
+        if (want){ const top = blockedAhead(B, mx, mz, .9); if (top !== null && top - B.y <= 2.6) jump = true; if (B.stuckT > 1){ jump = true; B.stuckT = 0; B.stuckN = (B.stuckN || 0) + 1; const s = B.wander = (B.wander || 0) + 2.1; mx = Math.sin(s); mz = Math.cos(s);
+          if (B.stuckN > 3 && B.route[0]){ Object.assign(B, {x: B.route[0].x, z: B.route[0].z}); B.stuckN = 0; } } }
+        const runWant = want && (B.tgt || B.flee > 0); B.flee = Math.max(0, (B.flee || 0) - dt);
+        if (runWant && !B.tired){ B.stam -= dt; if (B.stam <= 0){ B.stam = 0; B.tired = true; } } else B.stam = Math.min(STAM_MAX, B.stam + dt * .8); if (B.tired && B.stam >= 1.5) B.tired = false; B.run = runWant && !B.tired;
+      }
+      const sp = B.speed * (seek ? 1 : .95) * (B.run ? RUN_MUL : 1) * want, k = Math.min(1, dt * (B.onGround ? 14 : 6));
+      B.vx += (mx * sp - B.vx) * k; B.vz += (mz * sp - B.vz) * k; if (want) B.face = Math.atan2(mx, mz);
+      B.vy = Math.max(-40, B.vy - GRAV * dt); B.coyote = B.onGround ? .1 : B.coyote - dt;
+      if (jump && B.coyote > 0 && B.vy <= .01){ B.vy = JUMP; B.coyote = 0; B.jumped = true; B.airT = 0; }
+      B.x += B.vx * dt; resolve('x', B); B.z += B.vz * dt; resolve('z', B);
+      B.onGround = false; B.ground = null; B.py = B.y; B.y += B.vy * dt; resolve('y', B);
+      if (B.onGround){ B.airT = 0; B.jumped = false; } else B.airT += dt;
+      if (B.y < -20) Object.assign(B, {x: 0, y: 3, z: 4, vx: 0, vy: 0, vz: 0});
+      const d = Math.hypot(B.x - B.lastPos[0], B.z - B.lastPos[1]); B.stuckT = d < dt * 1.5 && want ? B.stuckT + dt : Math.max(0, B.stuckT - dt); B.lastPos = [B.x, B.z];
+    });
+  }
+  function hsNextSpot(B){
+    const me = {x: P.x, z: P.z}, left = hs.spots.filter(s => !B.seen.has(s)); if (!left.length) B.seen.clear();
+    const pool = left.length ? left : hs.spots, near = pool.slice().sort((a, b) => { const ea = a.p[a.p.length - 1], eb = b.p[b.p.length - 1]; return Math.hypot(ea[0] - me.x, ea[1] - me.z) - Math.hypot(eb[0] - me.x, eb[1] - me.z); });
+    const sp = Math.random() < .3 ? near[Math.floor(Math.random() * Math.min(3, near.length))] : pool[Math.floor(Math.random() * pool.length)];
+    B.seen.add(sp); hsGoTo(B, sp);
+  }
+  /* --- drawing --- */
+  function hsMark(u){
+    let M = hs.marks.get(u); if (M) return M;
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(.9, .1, 8, 24), new THREE.MeshBasicMaterial({color: '#ff4d5e'})); ring.rotation.x = Math.PI / 2;
+    const lab = label('🙈 SEEKER', '#ff4d5e', '#ffffff', 200); lab.scale.multiplyScalar(.9);
+    const spk = label('✨ here! ✨', 'rgba(255,210,63,.95)', '#1d2340', 200);
+    scene.add(ring); scene.add(lab); scene.add(spk); M = {ring, lab, spk}; hs.marks.set(u, M); return M;
+  }
+  function hideAnimate(dt){
+    if (!hs) return;
+    hs.bots.forEach((B, n) => { const M = B.model; M.g.position.set(B.x, B.y, B.z);
+      let d = B.face - M.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); M.g.rotation.y += d * Math.min(1, dt * 10);
+      const sp = Math.hypot(B.vx, B.vz); B.walk += dt * sp * (B.run ? 1.5 : 1.3);
+      applyPose(dt, animPose(B.pack, {state: !B.onGround && B.airT > .08 ? 'jump' : sp > .8 ? 'walk' : 'idle', t: worldT + n, ph: B.walk, sp: Math.min(B.run ? 1.3 : 1, sp / 5), air: B.airT, jumped: B.jumped}), M);
+      B.shadow.position.set(B.x, colTop(B.x, B.z) + .03, B.z); });
+    hs.roofs.forEach(r => { r.b.mesh.visible = !(P.x > r.x0 - .3 && P.x < r.x1 + .3 && P.z > r.z0 - .3 && P.z < r.z1 + .3 && P.y < r.b.mesh.position.y); });
+    const playing = hs.ph === 'hide' || hs.ph === 'seek', me = hsUid(), iSeek = hsSeeker(me);
+    const pos = u => { if (u === me) return P; const B = hs.bots.find(b => b.uid === u); if (B) return B; const E = mp.ents.get(u); return E && E.m === 'hide' && E.model ? E : null; };
+    hs.bots.forEach(B => { B.lab.visible = !playing || hsSeeker(B.uid) || !iSeek; });
+    for (const E of mp.ents.values()) if (E.model){ const s = E.model.g.children.find(c => c.isSprite); if (s) s.visible = !(playing && mode === 'hide' && E.m === 'hide' && iSeek && !hsSeeker(E.uid)); }
+    const seen = new Set();
+    for (const u of new Set([...hs.sk, ...hs.marks.keys()])){ const M = hsMark(u), p = pos(u), sk = playing && hsSeeker(u) && !!p;
+      M.ring.visible = M.lab.visible = sk; if (sk){ M.ring.position.set(p.x, p.y + .1, p.z); M.lab.position.set(p.x, p.y + (u === me ? 3.9 : 4.6), p.z); M.ring.scale.setScalar(1 + .12 * Math.sin(worldT * 8)); }
+      const hid = hs.dingT > 0 && hs.ph === 'seek' && !hsSeeker(u) && !hs.fd.includes(u) && !!p; M.spk.visible = hid; if (hid) M.spk.position.set(p.x, p.y + 4.4 + Math.sin(worldT * 6) * .2, p.z); seen.add(u); }
+    // ding sparkles for hiders that aren't marked yet
+    if (hs.dingT > 0) hsBodies().forEach(b => { if (!seen.has(b.uid) && !hsSeeker(b.uid) && !hs.fd.includes(b.uid)) hsMark(b.uid); });
+    if (playing && hs.dn > (hs.lastDn || 0)){ hs.lastDn = hs.dn; hs.dingT = 2.5; beep([1320, 1760], .12, 'sine', .05); banner('🔔 Ding! Every hider sparkles for a moment ✨'); }
+    if (hs.ph === 'seek' && hsRole() === 'hide' && !hs.fd.includes(me)){ const near = hsBodies().some(o => hsSeeker(o.uid) && o.uid !== me && Math.hypot(o.x - P.x, o.z - P.z) < 8 && Math.abs(o.y - P.y) < 3); if (near && hs.warnT <= 0) hs.warnT = .6; $('#hsWarn').classList.toggle('on', near); } else $('#hsWarn').classList.remove('on');
+  }
+  function hideHud(){
+    if (!hs) return;
+    const r = hsRole(), playing = hs.ph === 'hide' || hs.ph === 'seek';
+    const rw = !playing ? '🙈 Hide & Seek' : r === 'watch' ? '👀 Watching' : r === 'seek' ? '🙈 Seeker' : '🏃 Hider'; if ($('#hsRoleT').textContent !== rw) $('#hsRoleT').textContent = rw;
+    $('#hsBox').classList.toggle('seek', playing && r === 'seek');
+    $('#hsT').textContent = hs.ph === 'hide' ? '🙈 ' + Math.max(0, Math.ceil(hs.t)) : hs.ph === 'seek' ? fmt(Math.max(0, hs.t)) : '0:00';
+    const left = hsBodies().filter(b => !hsSeeker(b.uid) && !hs.fd.includes(b.uid)).length + (hs.remote && hsRole() === 'hide' ? 0 : 0);
+    $('#hsLeft').textContent = hs.remote ? hs.left | 0 : left;
+    const bl = $('#hsBlind'), on = hs.ph === 'hide' && hsSeeker(hsUid()); bl.classList.toggle('show', on);
+    if (on){ const s = String(Math.max(0, Math.ceil(hs.t))); if ($('#hsBlindN').textContent !== s) $('#hsBlindN').textContent = s; }
+  }
+  /* --- panels --- */
+  function hsPickOpen(){
+    hs.ph = 'pick'; choosing = true; const g = mpGuest();
+    ['#hsEnd'].forEach(id => $(id).classList.remove('show'));
+    $('#hsPickS').textContent = g ? '⏳ The host is getting the next round ready...' : mp.on ? 'Everyone in the room plays! A random player is the seeker.' : 'Do you want to seek or hide?';
+    $('#hsSolo').style.display = mp.on ? 'none' : ''; $('#hsGo').style.display = g ? 'none' : '';
+    document.querySelectorAll('#hsSolo .hsrole').forEach(b => b.classList.toggle('on', b.dataset.r === hs.role));
+    document.querySelectorAll('#hsRules .hsrule').forEach(b => { b.classList.toggle('on', b.dataset.k === hs.rule); b.disabled = g; });
+    $('#hsPick').classList.add('show'); setTimeout(() => { if (pad.on && window.rubloxPadFocus) rubloxPadFocus(g ? $('#hsHome') : $('#hsGo')); }, 0);
+  }
+  function hideEnter(){
+    hs.remote = mpGuest(); cam.yaw = Math.PI; cam.pitch = .45; cam.dist = 14;
+    if (hs.remote && mp.hsW) hideFromHost(mp.hsW, true);
+    if (hs.ph === 'pick') hsPickOpen();
+  }
+  function hideStop(){ ['#hsPick', '#hsEnd'].forEach(id => $(id).classList.remove('show')); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); }
+  /* --- multiplayer --- */
+  function hideWire(){ return {ph: hs.ph, n: hs.n, t: +hs.t.toFixed(1), sk: hs.sk, fd: hs.fd, out: hs.out, rule: hs.rule, win: hs.win || '', fb: hs.fb, dn: hs.dn, left: hsBodies().filter(b => !hsSeeker(b.uid) && !hs.fd.includes(b.uid)).length}; }
+  function hideFromHost(w, entering){
+    if (!w || typeof w !== 'object') return; mp.hsW = w;
+    if (!(running && mode === 'hide' && hs && hs.remote)) return;
+    const S = a => Array.isArray(a) ? a.filter(u => typeof u === 'string').slice(0, 8) : [];
+    const ph = ['pick', 'hide', 'seek', 'end'].includes(w.ph) ? w.ph : 'pick', n = w.n | 0;
+    hs.rule = w.rule === 'watch' ? 'watch' : 'join'; hs.left = w.left | 0;
+    if (ph === 'pick'){ if (hs.ph !== 'pick' || entering) hsPickOpen(); return; }
+    const prevFd = hs.fd.slice(), wasN = hs.n;
+    hs.sk = S(w.sk); hs.fd = S(w.fd); hs.out = S(w.out); hs.fb = w.fb && typeof w.fb === 'object' ? Object.fromEntries(Object.entries(w.fb).filter(([k, v]) => typeof k === 'string' && isFinite(+v)).slice(0, 8).map(([k, v]) => [k, +v | 0])) : {};
+    hs.dn = w.dn | 0; hs.t = isFinite(+w.t) ? +w.t : 0;
+    if (n !== wasN && (ph === 'hide' || ph === 'seek')){ hs.n = n; hs.ph = ph; hs.lastDn = hs.dn; hsLocalStart(); if (entering && ph === 'seek' && !hsSeeker(hsUid())) banner('🏃 A round is on — quick, hide!'); return; }
+    if (hs.ph === 'hide' && ph === 'seek') banner(hsSeeker(hsUid()) ? '👀 Ready or not, here I come! Find everyone!' : '😱 The seeker is coming! Stay hidden!');
+    hs.fd.forEach(u => { if (!prevFd.includes(u)){ const by = Object.keys(hs.fb).find(k => hsSeeker(k)) || ''; if (u === hsUid()) hsMeFound(); else banner('🙈 ' + hsName(u) + ' was found!'); } });
+    hs.ph = ph; hs.win = w.win === 'seek' ? 'seek' : 'hide';
+    if (ph === 'end' && !hs.endShown) hsEndLocal();
+  }
   /* ---------- per-frame ---------- */
   const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
   function animate(dt){
@@ -7295,6 +7686,7 @@ const Obby = (() => {
     if (lava) animateLava(dt);
     if (nds) animateNds(dt);
     if (dsp) splashAnimate(dt);
+    if (hs) hideAnimate(dt);
     if (tg) animateTag(dt);
     if (pt) animatePets(dt);
     animateMp(dt);
@@ -7351,7 +7743,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
+    const line = mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete · Ⓨ undo · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -7435,6 +7827,11 @@ const Obby = (() => {
   addEventListener('resize', () => setTimeout(hudMeasure, 50));
   function setTouchUIBase(on){
     hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
+    if (mode === 'hide'){
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · ⬆️ jump · 🏃 run' : '⌨️ WASD move · Shift run · Space jump · Esc menu')
+        + "<br>🙈 Seeker: touch hiders to find them! 🏃 Hiders: find a sneaky spot before the count ends.";
+      return;
+    }
     if (mode === 'splash'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · ⬆️ jump · 🏃 run · 🪨 pebble · 👊 shove' : '⌨️ WASD move · Shift run · Space jump · F pebble 🪨 · Q shove 👊 · R pull a friend 🤝 · Esc menu')
         + "<br>🚪 Get to the EXIT far away! The Splashgrabber is blind but hears splashes. Throw a pebble to send it the wrong way.";
@@ -7482,7 +7879,7 @@ const Obby = (() => {
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide'){ // pull the camera in front of walls so buildings don't block the view
       for (let s = 1.2; s <= cam.dist; s += .4){
         const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
         if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(1.2, s - .5); break; }
@@ -7509,6 +7906,7 @@ const Obby = (() => {
     $('#oTime').textContent = rc ? fmt(rc.clock || 0, true) : fmt(time); $('#oDeaths').textContent = deaths;
     if (rc) raceHud();
     if (dsp) splashHud();
+    if (hs) hideHud();
     if (nds){
       const N = nds, D = N.dis && DISASTERS[N.dis], hp = Math.max(0, Math.round(N.hp));
       $('#oDis').textContent = N.phase === 'lobby' ? '🛋️ Lobby' : N.phase === 'ready' ? '⏳ Get ready' : N.combo.length > 1 ? N.combo.map(k => DISASTERS[k].emoji).join('') + (N.combo.length === 3 ? ' Triple!' : ' Double!') : D.emoji + ' ' + D.name;
@@ -7536,6 +7934,7 @@ const Obby = (() => {
       if (nds) ndsUpdate(dt);
       if (bw) buildUpdate(dt);
       if (tg) tagUpdate(dt);
+      if (hs) hideUpdate(dt);
       if (pt) petsUpdate(dt);
       if (lava && time > LAVA_GRACE && !over && !won){ lava.y += DIFFS[diff].speed * (1 + (time - LAVA_GRACE) / 150) * dt; if (time - dt <= LAVA_GRACE + 0.001 && time > LAVA_GRACE) banner('🌋 The lava is rising! Climb!'); }
       if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0) $('#oTip').classList.add('hide'); }
@@ -7703,12 +8102,13 @@ const Obby = (() => {
   function setPause(p){
     if (mp.on){   // multiplayer: the menu opens but the world (and the host's simulation) keeps running; only your own controls stop
       menuOpen = !!p; paused = false; $('#oPausePanel').classList.toggle('show', menuOpen); $('#oPause').textContent = '⏸️'; for (const k in keys) keys[k] = false; if (menuOpen) syncMenu(); return; }
+    if (p && mp.on && mp.host && mode === 'hide' && hs && (hs.ph === 'hide' || hs.ph === 'seek')){ banner('⏸️ No pausing while your family is playing hide and seek!'); return; }
     if (p && mp.on && mp.host && mode === 'tag' && tg && tg.phase !== 'end'){ banner('⏸️ No pausing while your family is playing tag!'); return; }
     paused = p; menuOpen = false; $('#oPausePanel').classList.toggle('show', p); if (p) syncMenu(); $('#oPause').textContent = p ? '▶️' : '⏸️'; for (const k in keys) keys[k] = false; }
 
   /* ---------- start / stop ---------- */
   function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     $('#obby').classList.add('show'); document.body.style.overflow = 'hidden'; document.documentElement.classList.add('ingame');
@@ -7730,7 +8130,7 @@ const Obby = (() => {
     $('#obby').classList.toggle('bmode', mode === 'build'); $('#obby').classList.toggle('pmode', mode === 'pets'); $('#obby').classList.remove('pdrive'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  ptr.has = false;
     ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel'].forEach(id => $(id).classList.remove('show')); pt && (pt.gas = pt.brake = 0); $('#oPause').textContent = '⏸️';
     $('#oMute').textContent = muted ? '🔇' : '🔊';
-    emote = null; P.airT = 0; P.jumped = false; P.climbing = false; Object.assign(run, {pad: false, touch: false, on: false, stam: STAM_MAX, tired: false, shown: -1}); $('#oRun').classList.remove('on'); $('#oFP').classList.toggle('on', fp.on); $('#oStam').style.display = mode === 'tag' ? '' : 'none';
+    emote = null; P.airT = 0; P.jumped = false; P.climbing = false; Object.assign(run, {pad: false, touch: false, on: false, stam: STAM_MAX, tired: false, shown: -1}); $('#oRun').classList.remove('on'); $('#oFP').classList.toggle('on', fp.on); $('#oStam').style.display = mode === 'tag' || mode === 'hide' ? '' : 'none';
     setTouchUI(!pad.on && (matchMedia('(pointer: coarse)').matches || (navigator.maxTouchPoints > 0 && !matchMedia('(hover: hover)').matches)));   // a controller in use keeps the screen clear
     buildEmoteMenu(); $('#oEmos').classList.remove('show');
     $('#oTip').classList.toggle('hide', choosing); tipTimer = mode === 'obby' && INTRO[level] ? 11 : 8; $('#oSkip').classList.remove('show');
@@ -7742,6 +8142,7 @@ const Obby = (() => {
     else if (mode === 'tag') banner("🏷️ Block Tag! Don't be IT!");
     else if (mode === 'race') banner('🏁 Pet Kart Racing!');
     else if (mode === 'splash') banner("🌊 Don't Splash! Shhh...");
+    else if (mode === 'hide') banner('🙈 Hide and Seek on Maple Street!');
     else if (mode === 'pets') banner(pt && pt.s.pets.length ? '🐾 Welcome back, ' + pt.s.pets[pt.s.a].n + '!' : '🐾 Adopt a Pet! Drive to the Pet Shelter');
     else if (diff) begin(diff);
     $('#obby').classList.toggle('rmode', mode === 'race'); ['#rcLapBox', '#rcPosBox', '#rcItem'].forEach(id => $(id).style.display = mode === 'race' ? '' : 'none'); ['#rcPick', '#rcFin'].forEach(id => $(id).classList.remove('show'));
@@ -7750,7 +8151,7 @@ const Obby = (() => {
         $('#rcBack').onclick = () => rc && rcPickOpen(1); $('#rcHome').onclick = $('#rcFinHome').onclick = stop; $('#rcAgain').onclick = () => rc && rcAgain();
         $('#rcItem').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (rc) rc.tapItem = true; }); }
       raceEnter(); }
-    $('#oTime').parentElement.style.display = mode === 'splash' ? 'none' : ''; if (mode === 'splash' && touchUI && tipTimer > 4) tipTimer = 4;
+    if (mode === 'splash' || mode === 'hide') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide') && touchUI && tipTimer > 4) tipTimer = 4;
     $('#obby').classList.toggle('smode', mode === 'splash'); ['#spLvBox', '#spRoundBox', '#spPeb', '#spShove'].forEach(id => $(id).style.display = mode === 'splash' ? '' : 'none'); if (mode !== 'splash') ['#spAliveBox', '#spPull'].forEach(id => $(id).style.display = 'none');
     ['#spPick', '#spEnd', '#spCode'].forEach(id => $(id).classList.remove('show')); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on');
     if (mode === 'splash'){ if (!window.__spBound){ window.__spBound = true;
@@ -7758,6 +8159,12 @@ const Obby = (() => {
         $('#spKeys').querySelectorAll('button').forEach(b => b.onclick = () => spCodeKey(b.dataset.k));
         [['#spPeb', () => splashThrow()], ['#spShove', () => splashShove()], ['#spPull', () => splashPull()]].forEach(([id, f]) => $(id).addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); f(); })); }
       splashEnter(); }
+    $('#hsBox').style.display = mode === 'hide' ? '' : 'none'; ['#hsPick', '#hsEnd'].forEach(id => $(id).classList.remove('show')); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on');
+    if (mode === 'hide'){ if (!window.__hsBound){ window.__hsBound = true;
+        $('#hsHome').onclick = $('#hsHome2').onclick = stop; $('#hsGo').onclick = () => hs && hsStart(); $('#hsAgain').onclick = () => hs && (mp.on ? hsStart() : hsStart()); $('#hsRoles').onclick = () => hs && hsPickOpen();
+        document.querySelectorAll('#hsSolo .hsrole').forEach(b => b.onclick = () => { if (!hs) return; hs.role = b.dataset.r; document.querySelectorAll('#hsSolo .hsrole').forEach(x => x.classList.toggle('on', x === b)); });
+        document.querySelectorAll('#hsRules .hsrule').forEach(b => b.onclick = () => { if (!hs || mpGuest()) return; hs.rule = b.dataset.k; document.querySelectorAll('#hsRules .hsrule').forEach(x => x.classList.toggle('on', x === b)); }); }
+      hideEnter(); }
     mpOnStart();
   }
   function stop(){
@@ -7765,13 +8172,18 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
 
   // debug / test hook
   window.obbyDebug = {
+    hide: () => hs && {ph: hs.ph, n: hs.n, t: +hs.t.toFixed(2), sk: hs.sk.slice(), fd: hs.fd.slice(), out: hs.out.slice(), rule: hs.rule, role: hs.role, win: hs.win || '', fb: Object.assign({}, hs.fb), dn: hs.dn, remote: !!hs.remote, earned: hs.earned, choosing, frozen: hsFrozen(), myRole: hsRole(),
+      blind: $('#hsBlind').classList.contains('show'), spots: hs.spots.length, P: {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2)},
+      bots: hs.bots.map(B => ({uid: B.uid, x: +B.x.toFixed(2), y: +B.y.toFixed(2), z: +B.z.toFixed(2), spot: B.spot ? B.spot.n : '', route: B.route.length, tgt: B.tgt}))},
+    hideRole(r){ hs.role = r; }, hideRule(r){ hs.rule = r; }, hideStart: () => hsStart(), hideTime(t){ hs.t = t; }, hideTo(x, y, z){ Object.assign(P, {x, y, z, vx: 0, vy: 0, vz: 0}); },
+    hideBot(i, o){ Object.assign(hs.bots[i], o); }, hideSpots: () => hs.spots.map(s => ({n: s.n, end: s.p[s.p.length - 1]})), hideSees: (a, b) => hsSees(a, b), hideBotGo(i, k){ const B = hs.bots[i]; Object.assign(B, {x: 0, y: .05, z: 4, vx: 0, vy: 0, vz: 0, trav: [], route: [], tgt: null, chaseFrom: null}); hsGoTo(B, hs.spots[k]); }, hideCam(yaw, pitch, dist){ Object.assign(cam, {yaw, pitch, dist}); },
     splash: () => dsp && {ph: dsp.ph, lv: dsp.lv, df: dsp.df, n: dsp.n, t: +dsp.t.toFixed(2), alive: dsp.alive, wet: dsp.wet, meter: +dsp.meter.toFixed(2), peb: dsp.peb, fin: dsp.fin.slice(), remote: !!dsp.remote, sv: dsp.sv, caught: dsp.caught, earned: dsp.earned, choosing, len: +dsp.len.toFixed(1), cp: dsp.cp, shield: +dsp.shield.toFixed(2), shoveCd: +dsp.shoveCd.toFixed(2), reached: dsp.reached, code: dsp.code, unlocked: dsp.unlocked, codeOpen: !!dsp.codeOpen, memSafe: dsp.memSafe, memShow: dsp.memShow, cz: dsp.cz,
       mons: dsp.mons.map(M => ({st: M.st, x: +M.x.toFixed(2), y: +M.y.toFixed(2), z: +M.z.toFixed(2), tgt: M.tgt, lure: +M.lure.toFixed(2)})), mon: dsp.mons[0] && {st: dsp.mons[0].st, x: +dsp.mons[0].x.toFixed(2), y: +dsp.mons[0].y.toFixed(2), z: +dsp.mons[0].z.toFixed(2), tgt: dsp.mons[0].tgt, lure: +dsp.mons[0].lure.toFixed(2)},
       plats: dsp.plats.length, pebs: dsp.pebs.map(p => ({x: +p.m.position.x.toFixed(2), y: +p.m.position.y.toFixed(2), z: +p.m.position.z.toFixed(2), got: p.got})),
@@ -8045,7 +8457,7 @@ const Obby = (() => {
   }
   function closeOf(c){
     const id = c.root.id;
-    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
+    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
     if (id === 'rcPick'){ const b = document.querySelector('#rcBack'); if (b && !b.hidden) return b; }   // B in the ride list = back to the modes
     if (map[id]) return document.querySelector(map[id]);
     return null;
