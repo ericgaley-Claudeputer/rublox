@@ -13,7 +13,7 @@ function drawWaterPark(ctx){""")
 rep("""      <span id="wpBox" style="display:none">""", """      <span id="psBox" style="display:none"><b id="psN">📸 Photos</b></span>
       <span id="wpBox" style="display:none">""")
 rep("""  <button class="fsnear wpnear" id="wpAct"></button>""", """  <div class="psflash" id="psFlash"></div>
-  <button class="fsnear psnear" id="psCamBtn">📸 Use the camera<small>E / Ⓧ</small></button>
+  <button class="fsnear psnear" id="psCamBtn">📸 Take Photo<small>E / Ⓧ — works anywhere</small></button>
   <button class="fswardbtn psgbtn" id="psGalBtn">🖼️ My Photos</button>
   <div class="psbar" id="psBar">
     <button data-k="pose" data-d="-1">◀</button><button data-k="pose"><small>Pose</small><span id="psV_pose"></span></button><button data-k="pose" data-d="1">▶</button>
@@ -49,7 +49,7 @@ rep("    applyPose(dt, rc && rc.me ? rcPose(rc.me) :", "    applyPose(dt, psPose
 rep(" : animPose(avatar.anim || 'default', st));\n    if (pt && pt.drive){", " : animPose(avatar.anim || 'default', st)));\n    if (pt && pt.drive){")
 rep("'bakery', 'waterpark'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' ? null : d;",
     "'bakery', 'waterpark', 'photostudio'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' ? null : d;")
-rep("    else if (mode === 'waterpark') banner(", "    else if (mode === 'photostudio') banner('📸 Welcome to Star Snaps! Wear your best outfit and stand on the ⭐ spot');\n    else if (mode === 'waterpark') banner(")
+rep("    else if (mode === 'waterpark') banner(", "    else if (mode === 'photostudio') banner('📸 Welcome to Star Snaps! Press 📸 Take Photo (E / Ⓧ) to start the camera');\n    else if (mode === 'waterpark') banner(")
 rep("mode === 'bakery' || mode === 'waterpark') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark') && touchUI",
     "mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio') && touchUI")
 rep("    $('#wpBox').style.display = mode === 'waterpark' ? '' : 'none';", """    $('#psBox').style.display = mode === 'photostudio' ? '' : 'none'; ['#psBar', '#psCamBtn', '#psGal', '#psGalBtn'].forEach(id => $(id).classList.remove('show'));
@@ -60,9 +60,9 @@ rep("    $('#wpBox').style.display = mode === 'waterpark' ? '' : 'none';", """  
       $('#psGalBtn').classList.add('show'); photostudioEnter(); }
     $('#wpBox').style.display = mode === 'waterpark' ? '' : 'none';""")
 rep(" if (wp) waterparkStop();", " if (wp) waterparkStop(); if (psx) photostudioStop();")
-rep("    const line = mode === 'waterpark' ?", "    const line = mode === 'photostudio' ? '🎮 Ⓧ camera on ⭐ · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ?")
+rep("    const line = mode === 'waterpark' ?", "    const line = mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ?")
 rep("    if (mode === 'waterpark'){\n      $('#oTip').innerHTML", """    if (mode === 'photostudio'){
-      $('#oTip').innerHTML = (on ? '🕹️ Walk to the ⭐ spot · tap 📸 Use the camera · tap the bar to change pose & backdrop' : '⌨️ E camera on ⭐ · Space snap · Q/E pose · B backdrop · F framing · C angle · T shape · K border · G photos · Esc done')
+      $('#oTip').innerHTML = (on ? '🕹️ Tap 📸 Take Photo · then tap the bar to change pose & backdrop · 📸 Snap!' : '⌨️ E Take Photo · Space snap · Q/E pose · B backdrop · F framing · C angle · T shape · K border · G photos · Esc done')
         + "<br>📸 Photos stay on this device only — download the ones you love!";
       return;
     }
@@ -74,7 +74,7 @@ rep("|| (wp && wp.menu)) ?", "|| (wp && wp.menu) || (psx && (psx.cam || psx.gal)
 rep("wpPanel: '#wpClose',", "wpPanel: '#wpClose', psGal: '#psGalClose',")
 rep("  window.obbyDebug = {\n", """  window.obbyDebug = {
     photo: () => psx && {s: Object.assign({}, psx.s), cam: psx.cam, count: psx.count, gal: psx.gal, near: psx.near, photos: psGallery().length, cp: psCamPos(psx.s, 0, .45, 0)},
-    psCam: o => psCamOn(o), psSnap: () => psSnap(), psCap: () => psCapture(), psCycle: (k, d) => psCycle(k, d), psGal: o => psGalOpen(o),
+    psCam: o => psCamOn(o), psSnap: () => psSnap(), psCap: () => psCapture(), psCycle: (k, d) => psCycle(k, d), psGal: o => psGalOpen(o), psView: i => { const g = psGallery().slice().reverse(); if (psx && g[i]){ psx.view = g[i].id; psGalRender(); return true; } return false; },
 """)
 # Esc in camera mode / My Photos should step back out of the studio camera, not open the pause menu
 rep("      if (e.code === 'Escape' || e.code === 'KeyP'){ if (e.code === 'Escape' && performance.now() - fp.unlockT < 400) return;", "      if (mode === 'photostudio' && psx && (psx.cam || psx.gal) && e.code === 'Escape' && !e.repeat && psKey(e)) return;\n      if (e.code === 'Escape' || e.code === 'KeyP'){ if (e.code === 'Escape' && performance.now() - fp.unlockT < 400) return;")

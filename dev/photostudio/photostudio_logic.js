@@ -42,9 +42,10 @@ chk('8 backdrops, 3 framings, 5 camera angles, 3 shapes, 5 borders', W.A.PS_BGS.
 const bad = world({rubloxPhotoStudio: '{"bg":99,"frame":-4,"angle":"x","pose":1e9,"shape":2,"shots":-3}'}).A.psSet();
 chk('damaged settings save is clamped', bad.bg === 7 && bad.frame === 0 && bad.angle === 0 && bad.pose === 7 && bad.shape === 2 && bad.shots === 0, bad);
 // --- entering the camera ---
-chk('camera needs the ⭐ spot', !W.A.psAct() && !W.A.psx.cam);
-W.P.x = .5; W.P.z = .4; tick(W, .1); chk('standing on the spot shows the camera button', W.A.psx.near && W.$('#psCamBtn').classList.contains('show'));
-chk('E on the spot enters camera mode, snaps you to the mark facing the camera', key(W, 'KeyE') && W.A.psx.cam && W.P.x === 0 && W.P.z === 0 && W.P.face === 0);
+chk('📸 Take Photo button is visible from the start (no spot hunting)', W.$('#psCamBtn').classList.contains('show') && !W.A.psx.near);
+W.P.x = 12; W.P.z = 15; tick(W, .1);
+chk('E far from the spot enters camera mode and places you on the mark facing the camera', key(W, 'KeyE') && W.A.psx.cam && W.P.x === 0 && W.P.z === 0 && W.P.face === 0);
+chk('Take Photo button hides while the camera bar is up', !W.$('#psCamBtn').classList.contains('show') && W.$('#psBar').classList.contains('show'));
 W.P.x = 3; W.P.vx = 5; tick(W, .1); chk('camera mode holds you on the mark', W.P.x === 0 && W.P.vx === 0);
 chk('camera mode swallows movement keys', key(W, 'KeyW') === true);
 // --- poses (uses the fashion poses on your own avatar) ---
@@ -95,7 +96,7 @@ W.A.psDownload(W.A.psGallery()[0]); const an = W.log.anchors[0]; chk('download s
 key(W, 'KeyG'); chk('G opens My Photos', W.A.psx.gal && W.$('#psGal').classList.contains('show'));
 key(W, 'Escape'); chk('Esc closes My Photos', !W.A.psx.gal);
 key(W, 'Escape'); chk('Esc leaves camera mode', !W.A.psx.cam);
-W.A.psCamOn(true); const p0 = W.A.psx.s.pose, b0 = W.A.psx.s.bg;
+W.A.psPad(jp(2)); chk('Xbox Ⓧ enters the camera from anywhere', W.A.psx.cam); const p0 = W.A.psx.s.pose, b0 = W.A.psx.s.bg;
 W.A.psPad(jp(5)); W.A.psPad(jp(15)); chk('Xbox RB pose / d-pad backdrop', W.A.psx.s.pose === (p0 + 1) % 8 && W.A.psx.s.bg === (b0 + 1) % 8);
 W.A.psPad(jp(0)); chk('Xbox Ⓐ snaps', W.A.psx.count > 0); tick(W, 3.3);
 W.A.psPad(jp(1)); chk('Xbox Ⓑ leaves camera mode', !W.A.psx.cam);
@@ -103,7 +104,7 @@ W.A.psPad(jp(3)); chk('Xbox Ⓨ opens My Photos', W.A.psx.gal); W.A.psGalOpen(fa
 // --- privacy + other saves untouched ---
 chk('other saves untouched (avatar, coins, water park)', st.rubloxAvatar === '{"shirt":"#ff0000"}' && st.rubloxCoins === '42' && st.rubloxWaterPark === '{"best":61}');
 chk('only photo-studio keys added', Object.keys(st).filter(k => !['rubloxAvatar', 'rubloxCoins', 'rubloxWaterPark'].includes(k)).every(k => k === 'rubloxPhotoStudio' || k === 'rubloxPhotos'), Object.keys(st));
-const M = world({}, {mp: true}); M.A.buildPhotoStudio(); M.P.x = 0; M.P.z = 0; tick(M, .1); M.A.psAct(); M.A.psSnap(); tick(M, 3.3);
+const M = world({}, {mp: true}); M.A.buildPhotoStudio(); M.A.psAct(); M.A.psSnap(); tick(M, 3.3);
 chk('multiplayer: photo taken locally, nothing sent to other players', M.A.psGallery().length === 1 && M.out.length === 0);
 chk('source has no network calls or remote URLs', !/fetch\(|XMLHttpRequest|WebSocket|sendBeacon|mpSend|https?:\/\//.test(SRC));
 W.A.photostudioStop(); chk('leaving the studio clears it', W.A.psx === null && !W.$('#psBar').classList.contains('show'));

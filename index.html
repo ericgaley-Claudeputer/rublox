@@ -1104,7 +1104,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   </div></div>
   <div class="pflash" id="pFlash"></div>
   <div class="psflash" id="psFlash"></div>
-  <button class="fsnear psnear" id="psCamBtn">📸 Use the camera<small>E / Ⓧ</small></button>
+  <button class="fsnear psnear" id="psCamBtn">📸 Take Photo<small>E / Ⓧ — works anywhere</small></button>
   <button class="fswardbtn psgbtn" id="psGalBtn">🖼️ My Photos</button>
   <div class="psbar" id="psBar">
     <button data-k="pose" data-d="-1">◀</button><button data-k="pose"><small>Pose</small><span id="psV_pose"></span></button><button data-k="pose" data-d="1">▶</button>
@@ -1310,7 +1310,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.07-5';
+const BUILD = '2026.11.07-6';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -9783,7 +9783,8 @@ const Obby = (() => {
     plat(0, 0, 0, 40, 40, '#f7d9ea', 2);
     [[0, -20, 40, 1], [0, 20, 40, 1], [-20, 0, 1, 40], [20, 0, 1, 40]].forEach(([x, z, w, d]) => plat(x, 6, z, w, d, '#ffffff', 6, {noEdge: true}));
     plat(0, .4, -1, 9, 7, '#ffffff', .4);   // stage
-    const mk = new THREE.Mesh(new THREE.CylinderGeometry(.9, .9, .04, 24), new THREE.MeshLambertMaterial({color: '#ffd23f'})); mk.position.set(PS_MARK[0], .42, PS_MARK[1]); scene.add(mk); psx.mark = mk;
+    const mk = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, .12, 5), new THREE.MeshBasicMaterial({color: '#ffd23f'})); mk.position.set(PS_MARK[0], .47, PS_MARK[1]); scene.add(mk); psx.mark = mk;   // raised, unlit gold star pad (5 sides) so it reads clearly on the white stage
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(.9, .9, 6, 16, 1, true), new THREE.MeshBasicMaterial({color: '#ffe680', transparent: true, opacity: .25, side: THREE.DoubleSide})); beam.position.set(PS_MARK[0], 3.5, PS_MARK[1]); scene.add(beam);
     // the backdrop: a big curved sheet with a painted (swappable) picture
     const c = document.createElement('canvas'); c.width = 1024; c.height = 512; psx.bdC = c; psx.bdT = new THREE.CanvasTexture(c);
     const bd = new THREE.Mesh(new THREE.CylinderGeometry(9, 9, 11, 32, 1, true, Math.PI * .65, Math.PI * .7), new THREE.MeshBasicMaterial({map: psx.bdT, side: THREE.DoubleSide}));
@@ -9793,7 +9794,7 @@ const Obby = (() => {
       const l = new THREE.Mesh(new THREE.SphereGeometry(.6, 12, 8), new THREE.MeshBasicMaterial({color: '#fff6c9'})); l.position.set(x, 4.2, z); scene.add(l); });
     const tri = new THREE.Mesh(new THREE.BoxGeometry(.9, .6, .6), new THREE.MeshLambertMaterial({color: '#1d2340'})); tri.position.set(0, 2.2, 8); scene.add(tri);
     const sg = label('📸 Star Snaps Photo Studio', 'rgba(255,111,181,.95)', '#fff', 420); sg.position.set(0, 9.5, -7); scene.add(sg);
-    const hint = label('⭐ Stand on the star spot!', 'rgba(29,35,64,.85)', '#fff', 300); hint.scale.multiplyScalar(.6); hint.position.set(0, 3.4, 2.2); scene.add(hint); psx.hint = hint;
+    const hint = label('📸 Photo spot — press Take Photo!', 'rgba(29,35,64,.85)', '#fff', 340); hint.scale.multiplyScalar(.6); hint.position.set(0, 3.4, 2.2); scene.add(hint); psx.hint = hint;
     psPaintBackdrop();
     // respawn()/start() need a spawn checkpoint in every mode — without it start('photostudio') threw half-way (blank sky, generic HUD, no studio)
     checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 9}, flag: new THREE.Object3D()};
@@ -9803,7 +9804,7 @@ const Obby = (() => {
   function psOnMark(){ return Math.hypot(P.x - PS_MARK[0], P.z - PS_MARK[1]) < 2.2; }
   function psCamOn(on){
     if (!psx) return; psx.cam = on; psx.count = 0;
-    if (on){ Object.assign(P, {x: PS_MARK[0], y: .45, z: PS_MARK[1], vx: 0, vy: 0, vz: 0}); P.face = 0; for (const k in keys) keys[k] = false; banner('📸 Camera mode! Pick a pose and backdrop, then snap!'); }
+    if (on){ Object.assign(P, {x: PS_MARK[0], y: .45, z: PS_MARK[1], vx: 0, vy: 0, vz: 0}); P.face = 0; for (const k in keys) keys[k] = false; banner('📸 Camera on! You\'re on the photo spot — pick a pose and backdrop, then press 📸 Snap!'); }
     psHud();
   }
   function psSnap(){ if (!psx || !psx.cam || psx.count > 0) return false; psx.count = 3.01; psHud(); return true; }
@@ -9844,7 +9845,7 @@ const Obby = (() => {
   }
   function psHud(){
     if (!psx) return; const S = psx.s, pz = S.pose ? FS_POSES[S.pose - 1] : {e: '🙂', n: 'Natural'};
-    $('#psBar').classList.toggle('show', psx.cam); $('#psCamBtn').classList.toggle('show', !psx.cam && psx.near && !psx.gal);
+    $('#psBar').classList.toggle('show', psx.cam); $('#psCamBtn').classList.toggle('show', !psx.cam && !psx.gal);   // always there in the studio — no hunting for the spot
     $('#psN').textContent = '📸 Photos: ' + psGallery().length + '/' + PS_MAX;
     if (!psx.cam) return;
     const lab = {pose: pz.e + ' ' + pz.n, bg: PS_BGS[S.bg].e + ' ' + PS_BGS[S.bg].n, frame: PS_FRAMES[S.frame].e + ' ' + PS_FRAMES[S.frame].n, angle: PS_ANGLES[S.angle].e + ' ' + PS_ANGLES[S.angle].n, shape: PS_SHAPES[S.shape].e + ' ' + PS_SHAPES[S.shape].n, border: PS_BORDERS[S.border].e + ' ' + PS_BORDERS[S.border].n};
@@ -9861,7 +9862,7 @@ const Obby = (() => {
     if (psx.flash > 0){ psx.flash = Math.max(0, psx.flash - dt * 3); $('#psFlash').style.opacity = psx.flash; } }
   function photoCam(){ if (!psx || !psx.cam) return false; const c = psCamPos(psx.s, PS_MARK[0], .45, PS_MARK[1]); camera.position.set(c.x, c.y, c.z); camera.lookAt(c.tx, c.ty, c.tz); return true; }
   function psPosed(){ return psx && psx.cam && psx.s.pose > 0 ? Object.assign({lL: 0, lR: 0}, FS_POSES[psx.s.pose - 1].p(psx.s.pose === 4 ? 0 : worldT)) : null; }   // twirl is held still for the camera
-  function psAct(){ if (!psx) return false; if (psx.cam) return psSnap(); if (psx.near){ psCamOn(true); return true; } banner('⭐ Walk onto the gold star spot to use the camera'); return false; }
+  function psAct(){ if (!psx) return false; if (psx.cam) return psSnap(); psCamOn(true); return true; }   // works from anywhere: you're placed on the photo spot automatically
   function psPad(jp){ if (!psx) return false; if (psx.gal) return false;
     if (!psx.cam){ if (jp[2]){ psAct(); return true; } if (jp[3]){ psGalOpen(true); return true; } return false; }
     if (jp[0]) psSnap(); else if (jp[1]) psCamOn(false); else if (jp[3]) psGalOpen(true); else if (jp[4]) psCycle('pose', -1); else if (jp[5]) psCycle('pose', 1);
@@ -9950,7 +9951,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'photostudio' ? '🎮 Ⓧ camera on ⭐ · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -10043,7 +10044,7 @@ const Obby = (() => {
   function setTouchUIBase(on){
     hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
     if (mode === 'photostudio'){
-      $('#oTip').innerHTML = (on ? '🕹️ Walk to the ⭐ spot · tap 📸 Use the camera · tap the bar to change pose & backdrop' : '⌨️ E camera on ⭐ · Space snap · Q/E pose · B backdrop · F framing · C angle · T shape · K border · G photos · Esc done')
+      $('#oTip').innerHTML = (on ? '🕹️ Tap 📸 Take Photo · then tap the bar to change pose & backdrop · 📸 Snap!' : '⌨️ E Take Photo · Space snap · Q/E pose · B backdrop · F framing · C angle · T shape · K border · G photos · Esc done')
         + "<br>📸 Photos stay on this device only — download the ones you love!";
       return;
     }
@@ -10419,7 +10420,7 @@ const Obby = (() => {
     else if (mode === 'hide') banner('🙈 Hide and Seek on Maple Street!');
     else if (mode === 'fashion') banner('👗 Welcome to the Fashion Show!');
     else if (mode === 'autumn') banner('🍂 Welcome to the Cozy Autumn Farm! Find 12 pumpkins 🎃');
-    else if (mode === 'photostudio') banner('📸 Welcome to Star Snaps! Wear your best outfit and stand on the ⭐ spot');
+    else if (mode === 'photostudio') banner('📸 Welcome to Star Snaps! Press 📸 Take Photo (E / Ⓧ) to start the camera');
     else if (mode === 'waterpark') banner('🌊 Welcome to Splash Summit! Stand on a ride pad or press 🎢 Rides');
     else if (mode === 'bakery') banner(mp.on ? '🧁 Welcome to the Sweet Team Bakery! Bake together!' : '🧁 Welcome to the Sweet Team Bakery! Customers are coming!');
     else if (mode === 'petisland') banner('🏝️ Welcome to Pet Adventure Island! Ask your pet to sniff for treasure 👃');
@@ -10488,7 +10489,7 @@ const Obby = (() => {
   // debug / test hook
   window.obbyDebug = {
     photo: () => psx && {s: Object.assign({}, psx.s), cam: psx.cam, count: psx.count, gal: psx.gal, near: psx.near, photos: psGallery().length, cp: psCamPos(psx.s, 0, .45, 0)},
-    psCam: o => psCamOn(o), psSnap: () => psSnap(), psCap: () => psCapture(), psCycle: (k, d) => psCycle(k, d), psGal: o => psGalOpen(o),
+    psCam: o => psCamOn(o), psSnap: () => psSnap(), psCap: () => psCapture(), psCycle: (k, d) => psCycle(k, d), psGal: o => psGalOpen(o), psView: i => { const g = psGallery().slice().reverse(); if (psx && g[i]){ psx.view = g[i].id; psGalRender(); return true; } return false; },
     waterpark: () => wp && {ride: wp.ride && {i: wp.ride.i, d: +wp.ride.d.toFixed(1)}, race: {ph: wp.race.ph, n: wp.race.n, t: +wp.race.t.toFixed(1), me: wp.race.me && {d: +wp.race.me.d.toFixed(1), off: +wp.race.me.off.toFixed(2), fin: wp.race.me.fin}, res: wp.race.res, npcs: wp.race.npcs.length}, prog: wpProg(), menu: wp.menu, L: +wp.river.L.toFixed(1), earned: wp.earned, P: {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2)}},
     wpRide: i => wpRideStart(i), wpRace: () => wpRaceStart(), wpMenu: o => wpMenu(o), wpTo(x, z){ Object.assign(P, {x, y: .05, z, vx: 0, vy: 0, vz: 0}); },
     bakery: () => bk && {st: bk.st, orders: bk.orders, lv: bk.lv, served: bk.served, earned: bk.earned, panel: bk.panel, near: bk.near, remote: bk.remote, prog: bkProg(), npc: Object.keys(bk.npcM).length},

@@ -50,7 +50,8 @@
     plat(0, 0, 0, 40, 40, '#f7d9ea', 2);
     [[0, -20, 40, 1], [0, 20, 40, 1], [-20, 0, 1, 40], [20, 0, 1, 40]].forEach(([x, z, w, d]) => plat(x, 6, z, w, d, '#ffffff', 6, {noEdge: true}));
     plat(0, .4, -1, 9, 7, '#ffffff', .4);   // stage
-    const mk = new THREE.Mesh(new THREE.CylinderGeometry(.9, .9, .04, 24), new THREE.MeshLambertMaterial({color: '#ffd23f'})); mk.position.set(PS_MARK[0], .42, PS_MARK[1]); scene.add(mk); psx.mark = mk;
+    const mk = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, .12, 5), new THREE.MeshBasicMaterial({color: '#ffd23f'})); mk.position.set(PS_MARK[0], .47, PS_MARK[1]); scene.add(mk); psx.mark = mk;   // raised, unlit gold star pad (5 sides) so it reads clearly on the white stage
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(.9, .9, 6, 16, 1, true), new THREE.MeshBasicMaterial({color: '#ffe680', transparent: true, opacity: .25, side: THREE.DoubleSide})); beam.position.set(PS_MARK[0], 3.5, PS_MARK[1]); scene.add(beam);
     // the backdrop: a big curved sheet with a painted (swappable) picture
     const c = document.createElement('canvas'); c.width = 1024; c.height = 512; psx.bdC = c; psx.bdT = new THREE.CanvasTexture(c);
     const bd = new THREE.Mesh(new THREE.CylinderGeometry(9, 9, 11, 32, 1, true, Math.PI * .65, Math.PI * .7), new THREE.MeshBasicMaterial({map: psx.bdT, side: THREE.DoubleSide}));
@@ -60,7 +61,7 @@
       const l = new THREE.Mesh(new THREE.SphereGeometry(.6, 12, 8), new THREE.MeshBasicMaterial({color: '#fff6c9'})); l.position.set(x, 4.2, z); scene.add(l); });
     const tri = new THREE.Mesh(new THREE.BoxGeometry(.9, .6, .6), new THREE.MeshLambertMaterial({color: '#1d2340'})); tri.position.set(0, 2.2, 8); scene.add(tri);
     const sg = label('📸 Star Snaps Photo Studio', 'rgba(255,111,181,.95)', '#fff', 420); sg.position.set(0, 9.5, -7); scene.add(sg);
-    const hint = label('⭐ Stand on the star spot!', 'rgba(29,35,64,.85)', '#fff', 300); hint.scale.multiplyScalar(.6); hint.position.set(0, 3.4, 2.2); scene.add(hint); psx.hint = hint;
+    const hint = label('📸 Photo spot — press Take Photo!', 'rgba(29,35,64,.85)', '#fff', 340); hint.scale.multiplyScalar(.6); hint.position.set(0, 3.4, 2.2); scene.add(hint); psx.hint = hint;
     psPaintBackdrop();
     // respawn()/start() need a spawn checkpoint in every mode — without it start('photostudio') threw half-way (blank sky, generic HUD, no studio)
     checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 9}, flag: new THREE.Object3D()};
@@ -70,7 +71,7 @@
   function psOnMark(){ return Math.hypot(P.x - PS_MARK[0], P.z - PS_MARK[1]) < 2.2; }
   function psCamOn(on){
     if (!psx) return; psx.cam = on; psx.count = 0;
-    if (on){ Object.assign(P, {x: PS_MARK[0], y: .45, z: PS_MARK[1], vx: 0, vy: 0, vz: 0}); P.face = 0; for (const k in keys) keys[k] = false; banner('📸 Camera mode! Pick a pose and backdrop, then snap!'); }
+    if (on){ Object.assign(P, {x: PS_MARK[0], y: .45, z: PS_MARK[1], vx: 0, vy: 0, vz: 0}); P.face = 0; for (const k in keys) keys[k] = false; banner('📸 Camera on! You\'re on the photo spot — pick a pose and backdrop, then press 📸 Snap!'); }
     psHud();
   }
   function psSnap(){ if (!psx || !psx.cam || psx.count > 0) return false; psx.count = 3.01; psHud(); return true; }
@@ -111,7 +112,7 @@
   }
   function psHud(){
     if (!psx) return; const S = psx.s, pz = S.pose ? FS_POSES[S.pose - 1] : {e: '🙂', n: 'Natural'};
-    $('#psBar').classList.toggle('show', psx.cam); $('#psCamBtn').classList.toggle('show', !psx.cam && psx.near && !psx.gal);
+    $('#psBar').classList.toggle('show', psx.cam); $('#psCamBtn').classList.toggle('show', !psx.cam && !psx.gal);   // always there in the studio — no hunting for the spot
     $('#psN').textContent = '📸 Photos: ' + psGallery().length + '/' + PS_MAX;
     if (!psx.cam) return;
     const lab = {pose: pz.e + ' ' + pz.n, bg: PS_BGS[S.bg].e + ' ' + PS_BGS[S.bg].n, frame: PS_FRAMES[S.frame].e + ' ' + PS_FRAMES[S.frame].n, angle: PS_ANGLES[S.angle].e + ' ' + PS_ANGLES[S.angle].n, shape: PS_SHAPES[S.shape].e + ' ' + PS_SHAPES[S.shape].n, border: PS_BORDERS[S.border].e + ' ' + PS_BORDERS[S.border].n};
@@ -128,7 +129,7 @@
     if (psx.flash > 0){ psx.flash = Math.max(0, psx.flash - dt * 3); $('#psFlash').style.opacity = psx.flash; } }
   function photoCam(){ if (!psx || !psx.cam) return false; const c = psCamPos(psx.s, PS_MARK[0], .45, PS_MARK[1]); camera.position.set(c.x, c.y, c.z); camera.lookAt(c.tx, c.ty, c.tz); return true; }
   function psPosed(){ return psx && psx.cam && psx.s.pose > 0 ? Object.assign({lL: 0, lR: 0}, FS_POSES[psx.s.pose - 1].p(psx.s.pose === 4 ? 0 : worldT)) : null; }   // twirl is held still for the camera
-  function psAct(){ if (!psx) return false; if (psx.cam) return psSnap(); if (psx.near){ psCamOn(true); return true; } banner('⭐ Walk onto the gold star spot to use the camera'); return false; }
+  function psAct(){ if (!psx) return false; if (psx.cam) return psSnap(); psCamOn(true); return true; }   // works from anywhere: you're placed on the photo spot automatically
   function psPad(jp){ if (!psx) return false; if (psx.gal) return false;
     if (!psx.cam){ if (jp[2]){ psAct(); return true; } if (jp[3]){ psGalOpen(true); return true; } return false; }
     if (jp[0]) psSnap(); else if (jp[1]) psCamOn(false); else if (jp[3]) psGalOpen(true); else if (jp[4]) psCycle('pose', -1); else if (jp[5]) psCycle('pose', 1);
