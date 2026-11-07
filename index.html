@@ -929,6 +929,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   <div class="ohud">
     <div class="ostats">
       <span id="oStageBox">🏁 Lv <b id="oLvl">1</b><span id="oCpWrap"> · 🚩 <b id="oStage">1</b>/<b id="oStageN">3</b></span></span>
+      <span id="piBox" style="display:none">🏝️ Pet Island · <b id="piN">💰 0/8</b></span>
       <span id="auBox" style="display:none">🍂 Autumn Farm · <b id="auN">🎃 0/12</b></span>
       <span id="fsBox" style="display:none"><b id="fsPh">👗 Fashion Show</b><span id="fsThB"></span> · ⏱️ <b id="fsT">0:00</b></span>
       <span id="hsBox" style="display:none"><b id="hsRoleT">🙈 Hide & Seek</b> · ⏱️ <b id="hsT">0:00</b> · 🏃 <b id="hsLeft">0</b> hiding</span>
@@ -1079,6 +1080,13 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="owinbtns"><button class="big gray" id="pRetNo">↩️ Never mind</button><button class="big" id="pRetYes" hidden>💕 Return</button></div>
   </div></div>
   <div class="pflash" id="pFlash"></div>
+  <button class="fswardbtn" id="piBook">📖 Journal</button>
+  <button class="fsnear" id="piAct"></button>
+  <div class="opanel" id="piPanel"><div class="mbox rcbox">
+    <span class="emoji">🏝️</span><h2>Island Journal</h2>
+    <div class="stats" id="piList" style="text-align:left;line-height:1.7"></div>
+    <div class="row"><button class="big green" id="piClose">🐾 Keep exploring</button><button class="big gray" id="piHome">🏠 Home</button></div>
+  </div></div>
   <button class="fswardbtn" id="fsWardBtn">👗 Wardrobe</button>
   <button class="fswardbtn fsshow" id="fsShowBtn">✨ Show menu</button>
   <button class="fsnear" id="fsNear"></button>
@@ -1250,7 +1258,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.03-1';
+const BUILD = '2026.11.07-1';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -1965,6 +1973,7 @@ $('#saveAv').onclick = () => {
 
 /* ---------- games ---------- */
 const GAMES = [
+  {id:'petisland', name:'Pet Adventure Island', emoji:'🏝️', tag:'Explore with your pet: dig up treasure, open secret caves, solve puzzles!', draw: drawPetIsland, playable: true, isNew: true},
   {id:'autumn', name:'Cozy Autumn Farm', emoji:'🍂', tag:'Jump in leaf piles, climb hay bales, find 12 pumpkins!', draw: drawAutumn, playable: true, isNew: true},
   {id:'fashion', name:'Fashion Show', emoji:'👗', tag:'Style a look in the big dressing room, strike a pose, get 5 stars!', draw: drawFashion, playable: true, isNew: true},
   {id:'hide', name:'Hide and Seek', emoji:'🙈', tag:'Count, hide, seek! A whole town to hide in.', draw: drawHide, playable: true, isNew: true},
@@ -2026,6 +2035,18 @@ function drawLava(ctx){
   for (let x = 0; x <= 320; x += 10) ctx.lineTo(x, 150 + Math.sin(x/22 + t)*6);
   ctx.lineTo(320, 200); ctx.fill();
   ctx.fillStyle = '#ffd23f'; for (let i = 0; i < 8; i++){ ctx.fillRect((i*47 + t*20) % 320, 168 + (i%3)*8, 8, 8); }
+}
+function drawPetIsland(ctx){
+  sky(ctx, '#7fd6ff', '#d4f4ff');
+  ctx.fillStyle = '#3ac6ff'; ctx.fillRect(0, 120, 320, 80);
+  ctx.fillStyle = '#f2d58a'; ctx.beginPath(); ctx.ellipse(160, 150, 140, 38, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#7bd389'; ctx.beginPath(); ctx.ellipse(160, 142, 104, 24, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#8a8f99'; ctx.beginPath(); ctx.moveTo(206, 140); ctx.lineTo(236, 84); ctx.lineTo(276, 140); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#1d1d1d'; ctx.beginPath(); ctx.ellipse(240, 130, 12, 13, 0, Math.PI, 0); ctx.fill(); ctx.fillRect(228, 130, 24, 10);
+  ctx.fillStyle = '#a0703e'; ctx.fillRect(66, 86, 8, 58); ctx.fillStyle = '#3fa34d'; [-1.2, -.5, .2, .9, 1.6].forEach(a => { ctx.save(); ctx.translate(70, 86); ctx.rotate(a); ctx.beginPath(); ctx.ellipse(18, 0, 22, 6, 0, 0, Math.PI*2); ctx.fill(); ctx.restore(); });
+  ctx.fillStyle = '#a0612e'; ctx.fillRect(140, 132, 34, 20); ctx.fillStyle = '#ffd23f'; ctx.fillRect(140, 130, 34, 5); ctx.fillRect(154, 136, 6, 7);
+  ctx.strokeStyle = '#e8384f'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(186, 150); ctx.lineTo(200, 162); ctx.moveTo(200, 150); ctx.lineTo(186, 162); ctx.stroke();
+  guy(ctx, 112, 156, 12, '#ff6fb5'); ctx.font = '22px sans-serif'; ctx.fillText('🐶', 118, 172); ctx.fillText('🔑', 274, 70); ctx.fillText('💎', 30, 60);
 }
 function drawAutumn(ctx){
   sky(ctx, '#ffb36b', '#ffe3b8');
@@ -3228,8 +3249,8 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null;
-    if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null;
+    if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -4165,7 +4186,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
       if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
       else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
     }
@@ -4198,7 +4219,7 @@ const Obby = (() => {
     if (!SIM && mode === 'obby') obbyMech(dt);
     if (P.onGround && P.ground){ P.x += P.ground.dx || 0; P.y += P.ground.dy || 0; P.z += P.ground.dz || 0;
       if (P.ground.conv){ P.x += P.ground.conv.x * dt; P.z += P.ground.conv.z * dt; } }
-    const inp = ((hs && hsFrozen()) || (fs && fsFrozen())) ? {x: 0, z: 0, mag: 0, jump: false} : tg && (tg.phase === 'ready' || (tg.phase === 'play' && tg.it === 0 && tg.freeze > 0)) ? {x: 0, z: 0, mag: 0, jump: false} : input();
+    const inp = ((hs && hsFrozen()) || (fs && fsFrozen()) || (isl && isl.panel)) ? {x: 0, z: 0, mag: 0, jump: false} : tg && (tg.phase === 'ready' || (tg.phase === 'play' && tg.it === 0 && tg.freeze > 0)) ? {x: 0, z: 0, mag: 0, jump: false} : input();
     const k = Math.min(1, dt * (P.onGround ? (slip || (P.ground && P.ground.ice) ? 1.4 : 14) : 6));
     const wantRun = !SIM && (keys.ShiftLeft || keys.ShiftRight || run.pad || run.touch) && inp.mag > .1;
     if (!SIM){ if ((mode === 'tag' && tg) || (mode === 'hide' && hs)){ if (wantRun && !run.tired){ run.stam -= dt; if (run.stam <= 0){ run.stam = 0; run.tired = true; } } else run.stam = Math.min(STAM_MAX, run.stam + dt * .8); if (run.tired && run.stam >= 1.5) run.tired = false; }
@@ -4234,7 +4255,7 @@ const Obby = (() => {
     if (mode === 'lava') return lavaChecks();
     if (mode === 'splash') return splashChecks();
     if (mode === 'nds') return ndsChecks();
-    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -8951,6 +8972,237 @@ const Obby = (() => {
   }
   function autumnHud(){ if (!au) return; const s = '🎃 ' + au.got.size + '/' + AU_N; if ($('#auN').textContent !== s) $('#auN').textContent = s; }
   function autumnStop(){ if (au) au.burst.forEach(b => scene.remove(b.m)); au = null; }
+  /* ===================== t214u: 🏝️ PET ADVENTURE ISLAND — treasure hunts, secret caves, pet puzzles ===================== */
+  const PI_KEY = 'rubloxPetIsland';
+  const PI_TREAS = [[-28, 20], [24, 26], [-31, -4], [33, 16], [-10, -32], [7, -13], [-7, 11], [13, 9]];
+  const PI_STONES = [[21.5, -7.5], [25.5, -7.5], [21.5, -.5], [25.5, -.5]], PI_STC = ['#ff5d7a', '#3a86ff', '#2ec27e', '#ffd23f'];
+  const PI_PAY = {t: 5, crab: 25, echo: 25, vault: 50, all: 100}, PI_XP = {t: 8, cave: 25};
+  const PI_ROCK = '#8a8f99', PI_ROCK2 = '#6f7480';
+  let isl = null;
+  function piLoad(){
+    const o = load(PI_KEY, null), r = o && typeof o === 'object' ? o : {};
+    const t = Array.isArray(r.t) ? r.t.filter(i => Number.isInteger(i) && i >= 0 && i < PI_TREAS.length) : [];
+    return {v: 1, t: [...new Set(t)], crab: !!r.crab, crabG: !!r.crabG, echo: !!r.echo, key: !!r.key, vault: !!r.vault, vaultG: !!r.vaultG, all: !!r.all, coins: Math.max(0, +r.coins || 0), visits: Math.max(0, r.visits | 0)};
+  }
+  function piSave(){ if (isl) save(PI_KEY, isl.s); }
+  function piGems(){ const s = isl.s; return (s.crabG ? 1 : 0) + (s.echo ? 1 : 0) + (s.vaultG ? 1 : 0); }
+  function piDeco(geo, col, x, y, z, par){ const m = new THREE.Mesh(geo, fmat(col)); m.position.set(x, y, z); (par || scene).add(m); return m; }
+  function piSign(text, x, y, z, bg){ const l = label(text, bg || 'rgba(29,35,64,.85)', '#fff', 300); l.scale.multiplyScalar(.8); l.position.set(x, y, z); scene.add(l); return l; }
+  // the active adopted pet, read straight from the Adopt a Pet save (never changed except for a little XP + happiness)
+  function piPetData(){
+    const r = load(PET_KEY, null); if (!r || typeof r !== 'object' || !Array.isArray(r.pets) || !r.pets.length) return null;
+    const a = clamp(r.a | 0, 0, r.pets.length - 1), p = r.pets[a]; return p && PET_KINDS[p.k] ? {p, a} : null;
+  }
+  function piPetXp(n){
+    if (!isl || isl.borrowed) return; const r = load(PET_KEY, null); if (!r || !Array.isArray(r.pets)) return;
+    const a = clamp(r.a | 0, 0, r.pets.length - 1), p = r.pets[a]; if (!p || !PET_KINDS[p.k]) return;
+    p.xp = Math.min(1e6, (+p.xp || 0) + n); p.u = Math.min(100, (isFinite(+p.u) ? +p.u : 80) + 3); save(PET_KEY, r); isl.petXp += n;
+  }
+  function piPay(n){ setCoins(coins + n); runCoins = (runCoins || 0) + n; isl.s.coins += n; isl.earned += n; SND.coin(); }
+  function piSpark(x, y, z, n, col){
+    for (let i = 0; i < n; i++){ const m = new THREE.Mesh(new THREE.OctahedronGeometry(.12, 0), new THREE.MeshBasicMaterial({color: col || ['#ffd23f', '#ff6fb5', '#3ac6ff', '#7bd389'][i % 4], transparent: true}));
+      m.position.set(x, y, z); scene.add(m); const a = Math.random() * 6.28, sp = 1.5 + Math.random() * 2.5; isl.fx.push({m, vx: Math.cos(a) * sp, vy: 3 + Math.random() * 4, vz: Math.sin(a) * sp, t: 1.4}); }
+  }
+  function piChest(x, z, big, rot){
+    const g = new THREE.Group(), s = big ? 1.5 : 1; g.position.set(x, 0, z); g.scale.setScalar(s); g.rotation.y = rot || 0; scene.add(g);
+    piDeco(new THREE.BoxGeometry(1.1, .6, .7), '#a0612e', 0, .3, 0, g); piDeco(new THREE.BoxGeometry(1.14, .1, .74), '#ffd23f', 0, .5, 0, g);
+    const lid = new THREE.Group(); lid.position.set(0, .6, -.35); g.add(lid);
+    piDeco(new THREE.BoxGeometry(1.1, .3, .7), '#8a5a2b', 0, .15, .35, lid); piDeco(new THREE.BoxGeometry(.18, .2, .06), '#ffd23f', 0, .05, .72, lid);
+    const gold = piDeco(new THREE.BoxGeometry(.9, .14, .5), '#ffd23f', 0, .56, 0, g); gold.visible = false;
+    return {g, lid, gold, open: 0, x, z};
+  }
+  function piOpen(c){ c.open = 1; c.gold.visible = true; }
+  function piPalm(x, z, s){
+    const tr = plat(x, 4 * s, z, .55, .55, '#a0703e', 4 * s); tr.mesh.rotation.z = .05;
+    for (let i = 0; i < 6; i++){ const a = i / 6 * Math.PI * 2, l = piDeco(new THREE.BoxGeometry(2.4 * s, .08, .7 * s), i % 2 ? '#3fa34d' : '#5ec04a', x + Math.cos(a) * 1.1 * s, 4 * s + .15, z + Math.sin(a) * 1.1 * s); l.rotation.y = -a; l.rotation.z = -.35; }
+    [0, 2.1, 4.2].forEach(a => piDeco(new THREE.SphereGeometry(.2, 6, 5), '#6b3e1f', x + Math.cos(a) * .35, 4 * s - .2, z + Math.sin(a) * .35));
+  }
+  function piRock(x, z, r, col){ const m = piDeco(new THREE.DodecahedronGeometry(r, 0), col || PI_ROCK, x, r * .55, z); m.rotation.set(x, z, 0); return m; }
+  function piWall(x, z, w, d, h){ const b = plat(x, h || 4.5, z, w, d, PI_ROCK, h || 4.5); return b; }
+  function buildPetIsland(){
+    scene.background = new THREE.Color('#9fe3ff');
+    isl = {s: piLoad(), pet: null, borrowed: false, marks: [], chests: {}, fx: [], prints: [], sniffed: new Set(), ctx: null, panel: false, seq: null, onStone: -1,
+      door: null, doorY: 0, gate: null, gateY: 0, keyM: null, petXp: 0, earned: 0, stones: [], printT: 0, waveT: 0};
+    const S = isl.s;
+    const sea = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshLambertMaterial({color: '#3ac6ff'})); sea.rotation.x = -Math.PI / 2; sea.position.y = -.7; scene.add(sea); isl.sea = sea;
+    plat(0, 0, 0, 84, 84, '#f2d58a', 3);
+    const grass = piDeco(new THREE.CylinderGeometry(30, 31, .06, 28), '#7bd389', 0, -.01, -3); grass.scale.z = 1.1;
+    // rocky shore all around (keeps everyone on the island)
+    [[0, -41.5, 84, 1], [0, 41.5, 84, 1], [-41.5, 0, 1, 84], [41.5, 0, 1, 84]].forEach(([x, z, w, d]) => plat(x, 2.2, z, w, d, PI_ROCK2, 2.2, {noEdge: true}));
+    for (let i = 0; i < 40; i++){ const a = i / 40 * Math.PI * 2, R = 40.5; piRock(Math.max(-41, Math.min(41, Math.cos(a) * R * 1.3)), Math.max(-41, Math.min(41, Math.sin(a) * R * 1.3)), 1.2 + (i % 3) * .5); }
+    // dock + boat you arrived on
+    for (let i = 0; i < 6; i++) piDeco(new THREE.BoxGeometry(3.6, .12, .9), i % 2 ? '#a0612e' : '#b07a43', 0, .06, 33 + i * 1);
+    const boat = new THREE.Group(); boat.position.set(4, -.4, 45); scene.add(boat); piDeco(new THREE.BoxGeometry(3, 1, 6), '#f5f5f5', 0, 0, 0, boat); piDeco(new THREE.BoxGeometry(3.1, .2, 6.1), '#ff4d5e', 0, .5, 0, boat);
+    piDeco(new THREE.CylinderGeometry(.08, .08, 4, 6), '#6b3e1f', 0, 2.3, 0, boat); const sail = piDeco(new THREE.ConeGeometry(1.6, 3.4, 3), '#ffd23f', 0, 2.6, .9, boat); sail.scale.z = .15; isl.boat = boat;
+    piSign('🏝️ Pet Adventure Island', 0, 4, 30, 'rgba(255,111,181,.92)');
+    // palms, flowers, rocks
+    [[-18, 26], [-34, 10], [-22, 2], [30, 30], [36, 4], [-36, -18], [2, -36], [-4, 22], [18, 20], [10, 30], [-30, 32], [34, -34]].forEach(([x, z], i) => piPalm(x, z, .85 + (i % 3) * .15));
+    for (let i = 0; i < 70; i++){ const x = (Math.random() - .5) * 60, z = (Math.random() - .5) * 60; piDeco(new THREE.SphereGeometry(.14, 5, 4), ['#ff6fb5', '#ffd23f', '#ffffff', '#c084fc'][i % 4], x, .1, z); }
+    // 🦀 Crab Cove Cave: a stone door that opens when your pet sits on the 🐾 plate and you stand on the 👟 plate
+    piWall(-22, -26.5, 14, 1); piWall(-28.5, -21, 1, 12); piWall(-15.5, -21, 1, 12); piWall(-26.25, -15.5, 5.5, 1); piWall(-17.75, -15.5, 5.5, 1);
+    isl.door = plat(-22, 4.5, -15.5, 3, .8, '#8a5a2b', 4.5); [-1, 0, 1].forEach(k => piDeco(new THREE.BoxGeometry(.12, 4.3, .9), '#6b3e1f', -22 + k * .9, 2.25, -15.5, null));
+    isl.doorBars = scene.children.slice(-3);
+    piSign('🦀 Crab Cove Cave', -22, 6.4, -15);
+    isl.plateA = piPlate(-25, -12, '#ff6fb5', '🐾'); isl.plateB = piPlate(-19, -12, '#3a86ff', '👟');
+    isl.chests.crab = piChest(-22, -23, false); if (S.crabG) piOpen(isl.chests.crab);
+    if (S.crab) piDoorOpen(true);
+    // 🔔 Echo Grotto: the pet hops on coloured paw stones — copy the order!
+    piWall(30.5, -4, 1, 14); piWall(24, -10.5, 14, 1); piWall(24, 2.5, 14, 1); piWall(17.5, -8.25, 1, 5.5); piWall(17.5, .25, 1, 5.5);
+    piSign('🔔 Echo Grotto', 17, 6.2, -4);
+    PI_STONES.forEach(([x, z], i) => { const m = piDeco(new THREE.CylinderGeometry(1, 1.05, .14, 14), PI_STC[i], x, .07, z); m.material = new THREE.MeshLambertMaterial({color: PI_STC[i], emissive: PI_STC[i], emissiveIntensity: .05}); isl.stones.push({m, x, z, glow: 0}); });
+    piDeco(new THREE.CylinderGeometry(.12, .12, 2.4, 6), '#6b3e1f', 28.5, 1.2, -4); const bell = piDeco(new THREE.ConeGeometry(.55, .8, 10), '#ffd23f', 28.5, 2.6, -4); isl.bell = bell;
+    isl.chests.echo = piChest(28.5, -8.2, false, -Math.PI / 2); if (S.echo) piOpen(isl.chests.echo);
+    // 🏛️ Treasure Vault: locked gate — only your pet fits through the 🕳️ tiny tunnel to fetch the golden key
+    piWall(22, -30.5, 14, 1); piWall(15.5, -25, 1, 12); piWall(28.5, -25, 1, 12); piWall(17.75, -19.5, 5.5, 1); piWall(26.25, -19.5, 5.5, 1);
+    isl.gate = plat(22, 4.5, -19.5, 3, .5, '#ffd23f', 4.5);
+    piSign('🏛️ Treasure Vault', 22, 6.4, -19);
+    isl.chests.vault = piChest(22, -26, true); if (S.vaultG) piOpen(isl.chests.vault);
+    if (S.vault) piGateOpen(true);
+    plat(6, 3, -29, 5, 4, PI_ROCK, 3); piRock(6, -29.5, 3.2, PI_ROCK2);
+    const hole = piDeco(new THREE.CircleGeometry(.55, 14), '#1d1d1d', 6, .55, -26.95); hole.rotation.y = 0;
+    piSign('🕳️ Tiny Tunnel', 6, 4.6, -26.5);
+    const key = new THREE.Group(); piDeco(new THREE.TorusGeometry(.18, .06, 6, 12), '#ffd23f', 0, .25, 0, key); piDeco(new THREE.BoxGeometry(.08, .4, .08), '#ffd23f', 0, -.05, 0, key); piDeco(new THREE.BoxGeometry(.16, .06, .08), '#ffd23f', .08, -.18, 0, key);
+    key.visible = false; scene.add(key); isl.keyM = key;
+    // buried treasure: ❌ marks appear when your pet sniffs them out
+    PI_TREAS.forEach(([x, z], i) => { const g = new THREE.Group(); g.position.set(x, .05, z); scene.add(g);
+      [-1, 1].forEach(k => { const b = piDeco(new THREE.BoxGeometry(1.4, .04, .25), '#e8384f', 0, 0, 0, g); b.rotation.y = k * Math.PI / 4; });
+      const mound = piDeco(new THREE.SphereGeometry(.6, 8, 5), '#d9b56a', 0, -.25, 0, g); mound.scale.y = .5;
+      g.visible = false; const m = {i, x, z, g, chest: null}; isl.marks.push(m);
+      if (S.t.includes(i)){ m.chest = piChest(x, z, false); piOpen(m.chest); } });
+    checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 30}, flag: new THREE.Object3D()};
+  }
+  function piPlate(x, z, col, icon){ const m = piDeco(new THREE.CylinderGeometry(1, 1, .12, 16), col, x, .06, z); const l = label(icon, 'rgba(255,255,255,.85)', '#1d2340', 90); l.scale.multiplyScalar(.5); l.position.set(x, 1.1, z); scene.add(l); return {m, x, z, l}; }
+  function piDoorOpen(now){ isl.s.crab = true; isl.door.active = false; isl.doorOpenT = now ? 1 : 0; if (now){ isl.door.mesh.position.y -= 4.6; (isl.doorBars || []).forEach(b => b.visible = false); } }
+  function piGateOpen(now){ isl.s.vault = true; isl.gate.active = false; isl.gateOpenT = now ? 1 : 0; if (now) isl.gate.mesh.position.y += 4.7; }
+  function piSpawnPet(){
+    const d = piPetData(); let k = 'dog', c = 0, st = 1, n = 'Buddy', acc = {};
+    if (d){ k = d.p.k; c = clamp(d.p.c | 0, 0, 2); st = stageOf(+d.p.xp || 0); n = petNameClean(d.p.n) || 'Buddy'; acc = d.p.acc || {}; isl.borrowed = false; } else isl.borrowed = true;
+    const m = buildPet(k, c, st); try { dress(m, accClean(acc)); } catch (e){}
+    const tag = label((isl.borrowed ? '🐶 ' : '🐾 ') + n, 'rgba(255,111,181,.92)', '#fff', 220); tag.scale.multiplyScalar(.55); tag.position.y = (m.top || 1.2) + .45; m.g.add(tag);
+    const x = P.x - 1.5, z = P.z + 1.2; m.g.position.set(x, 0, z); scene.add(m.g);
+    isl.pet = {m, n, k, x, z, face: Math.PI, sp: 0, mode: 'follow', act: 0, tx: x, tz: z, then: null, bt: 0};
+  }
+  function piGo(x, z, then, spd){ const q = isl.pet; q.mode = 'go'; q.tx = x; q.tz = z; q.then = then || null; q.spd = spd || 8; q.act = 0; }
+  function piBusy(sec, act, then){ const q = isl.pet; q.mode = 'busy'; q.bt = sec; q.act = act; q.then = then || null; }
+  function piNear(x, z, r){ return Math.hypot(P.x - x, P.z - z) < r; }
+  function piContext(){
+    const s = isl.s, q = isl.pet; if (!q || q.mode === 'busy' || q.mode === 'go' || q.mode === 'lead') return null;
+    if (!s.key && !s.vault && piNear(6, -24.8, 2.8)) return {k: 'tunnel', t: '🕳️ Send ' + q.n + ' into the tunnel'};
+    if (s.key && !s.vault && piNear(22, -18, 3)) return {k: 'gate', t: '🔑 Unlock the vault'};
+    if (!s.crab && q.mode !== 'stay' && piNear(-25, -12, 2.6)) return {k: 'stay', t: '🐾 ' + q.n + ', sit on the plate!'};
+    if (q.mode === 'stay') return {k: 'come', t: '🐾 Come here, ' + q.n + '!'};
+    if (!s.echo && !isl.seq && piNear(28.5, -4, 2.8)) return {k: 'bell', t: '🔔 Ring the echo bell'};
+    const m = isl.marks.find(m => !s.t.includes(m.i) && isl.sniffed.has(m.i) && piNear(m.x, m.z, 2.2)); if (m) return {k: 'dig', t: '🦴 Dig here, ' + q.n + '!', m};
+    if (s.t.length < PI_TREAS.length) return {k: 'sniff', t: '👃 Sniff for treasure'};
+    return {k: 'pat', t: '💖 Pat ' + q.n};
+  }
+  function piAct(){
+    if (!isl || isl.panel || !running || paused || choosing) return false;
+    const c = piContext(); if (!c) return false; const q = isl.pet, s = isl.s;
+    if (c.k === 'sniff'){
+      const left = isl.marks.filter(m => !s.t.includes(m.i)).sort((a, b) => Math.hypot(a.x - P.x, a.z - P.z) - Math.hypot(b.x - P.x, b.z - P.z)), m = left[0];
+      isl.sniffed.add(m.i); banner('👃 ' + q.n + ' smells treasure! Follow the glowing paw prints to the ❌');
+      piGo(m.x + .9, m.z + .4, () => { m.g.visible = true; piSpark(m.x, .4, m.z, 8); piBusy(1.6, 4, null); }, 9);
+    } else if (c.k === 'dig'){
+      const m = c.m; piGo(m.x + .8, m.z, () => { q.face = Math.atan2(m.x - q.x, m.z - q.z); piBusy(1.6, 2, () => piFound(m)); }, 8); banner('🦴 Dig, ' + q.n + ', dig!');
+    } else if (c.k === 'stay'){
+      piGo(isl.plateA.x, isl.plateA.z, () => { q.mode = 'stay'; q.act = 0; banner('🐾 Good ' + q.n + '! Now YOU stand on the 👟 plate'); }, 7);
+    } else if (c.k === 'come'){ q.mode = 'follow'; banner('🐾 ' + q.n + ' runs back to you!');
+    } else if (c.k === 'bell'){ piBell();
+    } else if (c.k === 'tunnel'){
+      banner('🕳️ Only ' + q.n + ' is small enough! In you go...');
+      piGo(6, -26.4, () => { q.m.g.visible = false; piBusy(2.4, 0, () => { q.m.g.visible = true; q.x = 6; q.z = -25.6; s.key = true; piSave(); piSpark(6, 1, -25.6, 14); SND.win && SND.win();
+        banner('🔑 ' + q.n + ' found the GOLDEN KEY! Take it to the 🏛️ Treasure Vault'); }); }, 7);
+    } else if (c.k === 'gate'){ piGateOpen(false); piSave(); SND.cp(); banner('🔓 The vault gate is open! Grab the treasure inside');
+    } else if (c.k === 'pat'){ piBusy(1, 4, null); piSpark(q.x, 1, q.z, 5, '#ff6fb5'); banner('💖 ' + q.n + ' loves you!'); }
+    return true;
+  }
+  function piFound(m){
+    const s = isl.s; if (s.t.includes(m.i)) return; s.t.push(m.i); m.g.visible = false; m.chest = piChest(m.x, m.z, false); piOpen(m.chest);
+    piPay(PI_PAY.t); piPetXp(PI_XP.t); piSpark(m.x, .8, m.z, 16);
+    banner('💰 Treasure ' + s.t.length + '/' + PI_TREAS.length + '! +' + PI_PAY.t + ' coins · ' + isl.pet.n + ' +' + PI_XP.t + ' XP'); piSave(); piCheckAll(); islandHud();
+  }
+  function piBell(){
+    const order = [0, 1, 2, 3].sort(() => Math.random() - .5); order.push(order[Math.random() * 3 | 0]);
+    isl.seq = {order, t: 0, show: true, inp: []}; isl.onStone = -1; SND.cp(); banner('🔔 Watch ' + isl.pet.n + ' hop on the paw stones...'); isl.pet.mode = 'lead';
+  }
+  function piStep(dt){
+    const s = isl.s, q = isl.pet;
+    // echo grotto sequence
+    if (isl.seq){ const Q = isl.seq, D = 1.15;
+      if (Q.show){ Q.t += dt; const k = Math.floor(Q.t / D);
+        if (k < Q.order.length){ const st = isl.stones[Q.order[k]]; q.tx = st.x; q.tz = st.z; if (Math.hypot(q.x - st.x, q.z - st.z) < .4 && Q.lit !== k){ Q.lit = k; st.glow = 1; SND.jump && SND.jump(); } }
+        else if (Q.t > Q.order.length * D + .4){ Q.show = false; q.mode = 'follow'; banner('👟 Your turn! Step on the stones in the same order (' + Q.order.length + ' hops)'); } }
+      else { const k = isl.stones.findIndex(st => Math.hypot(P.x - st.x, P.z - st.z) < 1.05);
+        if (k >= 0 && k !== isl.onStone){ isl.stones[k].glow = 1; Q.inp.push(k);
+          if (Q.order[Q.inp.length - 1] !== k){ isl.seq = null; banner('🙈 Oops, wrong stone! Ring the 🔔 bell to try again'); SND.boing && SND.boing(); }
+          else if (Q.inp.length === Q.order.length){ isl.seq = null; s.echo = true; piOpen(isl.chests.echo); piPay(PI_PAY.echo); piPetXp(PI_XP.cave); piSpark(28.5, 1, -8.2, 22); confetti(); SND.win && SND.win();
+            banner('💎 You solved the Echo Grotto! +' + PI_PAY.echo + ' coins & a gem'); piSave(); piCheckAll(); }
+          else SND.coin(); }
+        isl.onStone = k; } }
+    // crab cove plates
+    if (!s.crab && q && q.mode === 'stay'){ const onB = piNear(isl.plateB.x, isl.plateB.z, 1.1);
+      if (onB){ piDoorOpen(false); q.mode = 'follow'; SND.cp(); banner('🦀 The stone door rumbles open! Go see what is inside'); piSave(); } }
+    if (s.crab && !s.crabG && piNear(-22, -23, 1.6)){ s.crabG = true; piOpen(isl.chests.crab); piPay(PI_PAY.crab); piPetXp(PI_XP.cave); piSpark(-22, 1, -23, 20); confetti(); banner('💎 Crab Cove treasure! +' + PI_PAY.crab + ' coins & a gem'); piSave(); piCheckAll(); }
+    if (s.vault && !s.vaultG && piNear(22, -26, 2)){ s.vaultG = true; piOpen(isl.chests.vault); piPay(PI_PAY.vault); piPetXp(PI_XP.cave); piSpark(22, 1.5, -26, 30); confetti(); SND.win && SND.win(); banner('👑 The BIG vault treasure! +' + PI_PAY.vault + ' coins & a gem'); piSave(); piCheckAll(); }
+  }
+  function piCheckAll(){
+    const s = isl.s; if (s.all || s.t.length < PI_TREAS.length || !s.crabG || !s.echo || !s.vaultG) return;
+    s.all = true; piPay(PI_PAY.all); piSave(); confetti(); setTimeout(confetti, 500);
+    banner('🏆 ISLAND HERO! You and ' + isl.pet.n + ' found everything! +' + PI_PAY.all + ' bonus coins');
+  }
+  function petIslandEnter(){
+    isl.s.visits++; piSave(); P.face = Math.PI; piSpawnPet(); islandHud();
+    if (isl.borrowed) setTimeout(() => isl && banner('🐶 Buddy is helping today — adopt your own pet in 🐾 Adopt a Pet to bring them here!'), 2600);
+  }
+  function petIslandUpdate(dt){
+    if (!isl || !isl.pet) return; const q = isl.pet;
+    let tx = q.x, tz = q.z, spd = 0;
+    if (q.mode === 'follow'){ const bx = P.x - Math.sin(P.face) * 1.6 + Math.cos(P.face) * .9, bz = P.z - Math.cos(P.face) * 1.6 - Math.sin(P.face) * .9, d = Math.hypot(bx - q.x, bz - q.z);
+      if (d > 20){ q.x = bx; q.z = bz; } else if (d > .45){ tx = bx; tz = bz; spd = Math.min(10, 1.5 + d * 2.4); } }
+    else if (q.mode === 'go' || q.mode === 'lead'){ tx = q.tx; tz = q.tz; spd = q.mode === 'lead' ? 9 : q.spd;
+      if (q.mode === 'go' && Math.hypot(tx - q.x, tz - q.z) < .25){ const f = q.then; q.then = null; q.mode = 'busy'; q.bt = .2; q.act = 0; if (f) f(); } }
+    else if (q.mode === 'busy'){ q.bt -= dt; if (q.bt <= 0){ const f = q.then; q.then = null; q.mode = 'follow'; q.act = 0; if (f) f(); } }
+    if (spd > 0){ const dx = tx - q.x, dz = tz - q.z, d = Math.hypot(dx, dz); if (d > .05){ const st = Math.min(d, spd * dt); q.x += dx / d * st; q.z += dz / d * st; q.face = Math.atan2(dx, dz); q.sp = spd; } else q.sp = 0; } else q.sp = 0;
+    if (q.mode === 'go' && q.sp > 0){ isl.printT -= dt; if (isl.printT <= 0){ isl.printT = .22; const p = new THREE.Mesh(new THREE.CircleGeometry(.16, 8), new THREE.MeshBasicMaterial({color: '#ffd23f', transparent: true})); p.rotation.x = -Math.PI / 2; p.position.set(q.x, .06, q.z); scene.add(p); isl.prints.push({m: p, t: 14}); } }
+    piStep(dt);
+    const c = piContext(), t = c ? c.t : ''; isl.ctx = c;
+    if (t !== isl.ctxT){ isl.ctxT = t; const b = $('#piAct'); if (c){ b.innerHTML = t + ' <small>' + (pad.on ? 'Ⓧ' : touchUI ? 'tap' : 'E') + '</small>'; b.classList.add('show'); } else b.classList.remove('show'); }
+  }
+  function petIslandAnimate(dt){
+    if (!isl) return; const t = worldT, q = isl.pet;
+    if (q){ const M = q.m; M.g.position.set(q.x, 0, q.z); let d = q.face - M.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); M.g.rotation.y += d * Math.min(1, dt * 10);
+      animPet(M, q.mode === 'busy' ? q.act : q.mode === 'lead' && q.sp === 0 ? 4 : 0, q.sp, dt, t);
+      if (q.mode === 'stay') M.g.position.y = 0; }
+    if (isl.keyM){ const show = isl.s.key && !isl.s.vault && q && q.m.g.visible; isl.keyM.visible = show; if (show){ isl.keyM.position.set(q.x, 1.9 + Math.sin(t * 3) * .12, q.z); isl.keyM.rotation.y = t * 2; } }
+    isl.marks.forEach(m => { if (m.g.visible) m.g.rotation.y = Math.sin(t * 2 + m.i) * .15; });
+    Object.values(isl.chests).concat(isl.marks.map(m => m.chest).filter(Boolean)).forEach(c => { if (c.open > 0){ c.lid.rotation.x += ((-1.9) - c.lid.rotation.x) * Math.min(1, dt * 4); } });
+    if (isl.doorOpenT < 1 && isl.s.crab){ isl.doorOpenT = Math.min(1, isl.doorOpenT + dt * .6); isl.door.mesh.position.y = 2.25 - isl.doorOpenT * 4.6; (isl.doorBars || []).forEach(b => b.position.y = 2.25 - isl.doorOpenT * 4.6); }
+    if (isl.gateOpenT < 1 && isl.s.vault){ isl.gateOpenT = Math.min(1, isl.gateOpenT + dt * .6); isl.gate.mesh.position.y = 2.25 + isl.gateOpenT * 4.7; }
+    isl.stones.forEach(st => { st.glow = Math.max(0, st.glow - dt * 1.4); st.m.material.emissiveIntensity = .05 + st.glow * .9; st.m.position.y = .07 + st.glow * .08; });
+    if (isl.bell) isl.bell.rotation.z = isl.seq && isl.seq.show ? Math.sin(t * 14) * .3 : Math.sin(t) * .04;
+    if (isl.sea) isl.sea.position.y = -.7 + Math.sin(t * .8) * .08; if (isl.boat){ isl.boat.rotation.z = Math.sin(t * 1.1) * .05; isl.boat.position.y = -.4 + Math.sin(t * .9) * .1; }
+    isl.prints = isl.prints.filter(p => { p.t -= dt; p.m.material.opacity = Math.min(1, p.t / 3); if (p.t <= 0){ scene.remove(p.m); p.m.geometry.dispose(); p.m.material.dispose(); return false; } return true; });
+    isl.fx = isl.fx.filter(b => { b.t -= dt; b.vy -= 9 * dt; b.m.position.x += b.vx * dt; b.m.position.y = Math.max(.05, b.m.position.y + b.vy * dt); b.m.position.z += b.vz * dt; b.m.rotation.y += dt * 6; b.m.material.opacity = Math.min(1, b.t);
+      if (b.t <= 0){ scene.remove(b.m); b.m.geometry.dispose(); b.m.material.dispose(); return false; } return true; });
+  }
+  function islandHud(){ if (!isl) return; const s = '💰 ' + isl.s.t.length + '/' + PI_TREAS.length + ' · 💎 ' + piGems() + '/3'; if ($('#piN').textContent !== s) $('#piN').textContent = s; }
+  function piJournal(open){
+    if (!isl) return; if (open === undefined) open = !isl.panel; isl.panel = open;
+    if (!open){ $('#piPanel').classList.remove('show'); choosing = false; return; }
+    const s = isl.s, q = isl.pet, ok = b => b ? '✅' : '⬜';
+    $('#piList').innerHTML = '<b>' + (q ? '🐾 Exploring with ' + bxEsc(q.n) : '') + '</b><br>'
+      + ok(s.t.length === PI_TREAS.length) + ' 💰 Buried treasure: ' + s.t.length + '/' + PI_TREAS.length + ' <small>(ask your pet to 👃 sniff, then 🦴 dig)</small><br>'
+      + ok(s.crabG) + ' 🦀 Crab Cove Cave <small>(pet on 🐾, you on 👟)</small><br>'
+      + ok(s.echo) + ' 🔔 Echo Grotto <small>(copy your pet’s hops)</small><br>'
+      + ok(s.vaultG) + ' 🏛️ Treasure Vault <small>' + (s.vault ? '(open!)' : s.key ? '(you have the 🔑!)' : '(only your pet fits in the 🕳️ tiny tunnel)') + '</small><br>'
+      + ok(s.all) + ' 🏆 Island Hero bonus: +' + PI_PAY.all + ' 🪙<br>'
+      + '<small>💎 Gems ' + piGems() + '/3 · 🪙 earned here: ' + s.coins + (isl.petXp ? ' · ' + bxEsc(q.n) + ' +' + isl.petXp + ' XP today' : '') + '</small>';
+    choosing = true; for (const k in keys) keys[k] = false; joy.x = joy.y = 0; $('#piPanel').classList.add('show');
+  }
+  function piPad(jp){ if (!isl) return false; if (isl.panel){ if (jp[3]){ piJournal(false); return true; } return false; } if (jp[2]) return piAct() || true; if (jp[3]){ piJournal(true); return true; } return false; }
+  function piKey(e){ if (!isl || e.repeat || paused) return false; if (e.code === 'KeyE' && !isl.panel) return piAct(); if (e.code === 'KeyJ'){ piJournal(); return true; } return false; }
+  function petIslandStop(){ if (isl){ isl.fx.forEach(b => scene.remove(b.m)); isl.prints.forEach(p => scene.remove(p.m)); if (isl.panel) choosing = false; } isl = null; ['#piAct', '#piBook', '#piPanel'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
   /* ---------- per-frame ---------- */
   const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
   function animate(dt){
@@ -8963,6 +9215,7 @@ const Obby = (() => {
     if (hs) hideAnimate(dt);
     if (fs) fashionAnimate(dt);
     if (au) autumnAnimate(dt);
+    if (isl) petIslandAnimate(dt);
     if (tg) animateTag(dt);
     if (pt) animatePets(dt);
     animateMp(dt);
@@ -9019,7 +9272,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -9053,6 +9306,7 @@ const Obby = (() => {
       else { const t = $('#oTip'); padTip(); if (t.classList.contains('hide')){ t.classList.remove('hide'); tipTimer = 8; } else { t.classList.add('hide'); tipTimer = 0; } }
       return;
     }
+    if (mode === 'petisland' && isl && piPad(jp)) return;
     if (mode === 'fashion' && fs && fsPad(jp)) return;
     if (mode === 'splash' && dsp && (jp[5] || jp[2] || jp[4])){ if (jp[5]) splashThrow(); if (jp[2]) splashShove(); if (jp[4]) splashPull(); return; }
     if (mode === 'race' && rc){ pad.gas = Math.max(s.v[7] || 0, s.b[0] ? 1 : 0); pad.brake = Math.max(s.v[6] || 0, s.b[1] ? 1 : 0); pad.y = 0; pad.jump = false; pad.hop = !!(s.b[5] || s.b[2]); pad.item = !!(s.b[4] || s.b[3]); return; }
@@ -9107,6 +9361,11 @@ const Obby = (() => {
   addEventListener('resize', () => setTimeout(hudMeasure, 50));
   function setTouchUIBase(on){
     hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
+    if (mode === 'petisland'){
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · ⬆️ jump · tap the 🐾 button to ask your pet' : '⌨️ WASD move · Space jump · E ask your pet · J journal · Esc menu')
+        + "<br>🏝️ Sniff out 8 buried treasures and open 3 secret caves with your pet!";
+      return;
+    }
     if (mode === 'autumn'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · ⬆️ jump' : '⌨️ WASD move · Space jump · Esc menu')
         + "<br>🍂 Bounce in the leaf piles, climb the hay bales and find all 12 mini pumpkins 🎃";
@@ -9170,7 +9429,7 @@ const Obby = (() => {
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland'){ // pull the camera in front of walls so buildings don't block the view
       for (let s = 1.2; s <= cam.dist; s += .4){
         const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
         if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(1.2, s - .5); break; }
@@ -9200,6 +9459,7 @@ const Obby = (() => {
     if (hs) hideHud();
     if (fs) fashionHud();
     if (au) autumnHud();
+    if (isl) islandHud();
     if (nds){
       const N = nds, D = N.dis && DISASTERS[N.dis], hp = Math.max(0, Math.round(N.hp));
       $('#oDis').textContent = N.phase === 'lobby' ? '🛋️ Lobby' : N.phase === 'ready' ? '⏳ Get ready' : N.combo.length > 1 ? N.combo.map(k => DISASTERS[k].emoji).join('') + (N.combo.length === 3 ? ' Triple!' : ' Double!') : D.emoji + ' ' + D.name;
@@ -9230,6 +9490,7 @@ const Obby = (() => {
       if (hs) hideUpdate(dt);
       if (fs) fashionUpdate(dt);
       if (au) autumnUpdate(dt);
+      if (isl) petIslandUpdate(dt);
       if (pt) petsUpdate(dt);
       if (lava && time > LAVA_GRACE && !over && !won){ lava.y += DIFFS[diff].speed * (1 + (time - LAVA_GRACE) / 150) * dt; if (time - dt <= LAVA_GRACE + 0.001 && time > LAVA_GRACE) banner('🌋 The lava is rising! Climb!'); }
       if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0) $('#oTip').classList.add('hide'); }
@@ -9267,6 +9528,7 @@ const Obby = (() => {
       if (mode === 'fashion' && fs && fs.ph === 'walk' && /^Digit[1-7]$/.test(e.code) && fsKey(e)) return;
       const em = Object.keys(EMOTES).find(k => 'Digit' + EMOTES[k].key === e.code || 'Numpad' + EMOTES[k].key === e.code);
       if (em && !e.repeat){ playEmote(em); return; }
+      if (mode === 'petisland' && isl && piKey(e)) return;
       if (mode === 'fashion' && fs && fsKey(e)) return;
       if (mode === 'build' && bw && !e.repeat && !paused){
         if (e.code === 'KeyQ') return selBlock(bw.sel - 1);
@@ -9415,7 +9677,7 @@ const Obby = (() => {
 
   /* ---------- start / stop ---------- */
   function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     $('#obby').classList.add('show'); document.body.style.overflow = 'hidden'; document.documentElement.classList.add('ingame');
@@ -9453,6 +9715,7 @@ const Obby = (() => {
     else if (mode === 'hide') banner('🙈 Hide and Seek on Maple Street!');
     else if (mode === 'fashion') banner('👗 Welcome to the Fashion Show!');
     else if (mode === 'autumn') banner('🍂 Welcome to the Cozy Autumn Farm! Find 12 pumpkins 🎃');
+    else if (mode === 'petisland') banner('🏝️ Welcome to Pet Adventure Island! Ask your pet to sniff for treasure 👃');
     else if (mode === 'pets') banner(pt && pt.s.pets.length ? '🐾 Welcome back, ' + pt.s.pets[pt.s.a].n + '!' : '🐾 Adopt a Pet! Drive to the Pet Shelter');
     else if (diff) begin(diff);
     $('#obby').classList.toggle('rmode', mode === 'race'); ['#rcLapBox', '#rcPosBox', '#rcItem'].forEach(id => $(id).style.display = mode === 'race' ? '' : 'none'); ['#rcPick', '#rcFin'].forEach(id => $(id).classList.remove('show'));
@@ -9461,7 +9724,7 @@ const Obby = (() => {
         $('#rcBack').onclick = () => rc && rcPickOpen(1); $('#rcHome').onclick = $('#rcFinHome').onclick = stop; $('#rcAgain').onclick = () => rc && rcAgain();
         $('#rcItem').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (rc) rc.tapItem = true; }); }
       raceEnter(); }
-    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn') && touchUI && tipTimer > 4) tipTimer = 4;
+    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland') && touchUI && tipTimer > 4) tipTimer = 4;
     $('#obby').classList.toggle('smode', mode === 'splash'); ['#spLvBox', '#spRoundBox', '#spPeb', '#spShove'].forEach(id => $(id).style.display = mode === 'splash' ? '' : 'none'); if (mode !== 'splash') ['#spAliveBox', '#spPull'].forEach(id => $(id).style.display = 'none');
     ['#spPick', '#spEnd', '#spCode'].forEach(id => $(id).classList.remove('show')); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on');
     if (mode === 'splash'){ if (!window.__spBound){ window.__spBound = true;
@@ -9483,6 +9746,10 @@ const Obby = (() => {
         $('#fsReady').onclick = () => fsReadyBtn(); $('#fsWardClose').onclick = () => fsWardClose(); $('#fsWardBtn').onclick = () => fsWardOpen(fs && fs.near || null); $('#fsKeep').onclick = () => fsKeep(); }
       fashionEnter(); }
     $('#auBox').style.display = mode === 'autumn' ? '' : 'none'; if (mode === 'autumn') autumnEnter();
+    $('#piBox').style.display = mode === 'petisland' ? '' : 'none'; ['#piAct', '#piBook', '#piPanel'].forEach(id => $(id).classList.remove('show'));
+    if (mode === 'petisland'){ if (!window.__piBound){ window.__piBound = true;
+        $('#piAct').onclick = () => piAct(); $('#piBook').onclick = () => piJournal(true); $('#piClose').onclick = () => piJournal(false); $('#piHome').onclick = () => { piJournal(false); stop(); }; }
+      $('#piBook').classList.add('show'); petIslandEnter(); }
     mpOnStart();
   }
   function stop(){
@@ -9490,13 +9757,15 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
 
   // debug / test hook
   window.obbyDebug = {
+    island: () => isl && {s: isl.s, ctx: isl.ctx && isl.ctx.k, pet: isl.pet && {n: isl.pet.n, k: isl.pet.k, mode: isl.pet.mode, x: +isl.pet.x.toFixed(2), z: +isl.pet.z.toFixed(2)}, borrowed: isl.borrowed, sniffed: [...isl.sniffed], seq: isl.seq && {order: isl.seq.order, show: isl.seq.show, inp: isl.seq.inp}, door: !!(isl.door && !isl.door.active), gate: !!(isl.gate && !isl.gate.active), panel: isl.panel, earned: isl.earned, petXp: isl.petXp, P: {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2)}},
+    isTo(x, z){ Object.assign(P, {x, y: .05, z, vx: 0, vy: 0, vz: 0}); }, isAct: () => piAct(), isJournal: o => piJournal(o), isPetTo(x, z){ if (isl && isl.pet){ isl.pet.x = x; isl.pet.z = z; } },
     autumn: () => au && {got: [...au.got], n: AU_N, paid: au.paid, piles: au.piles.length, pk: au.pk.map(p => [p.x, p.y, p.z]), leaves: au.leaves.length, burst: au.burst.length, jumps: au.jumps || 0, P: {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2), vy: +P.vy.toFixed(2)}},
     auTo(x, y, z){ Object.assign(P, {x, y, z, vx: 0, vy: 0, vz: 0}); },
     petKind: k => PET_KINDS[k] ? [PET_KINDS[k].name, PET_KINDS[k].r] : null, newRoll: () => newRoll(), petBuild(k, c){ const m = buildPet(k, c || 0, 3); return {ok: !!m.g, head: !!m.head, legs: m.legs.length}; },
@@ -9797,7 +10066,7 @@ const Obby = (() => {
   }
   function closeOf(c){
     const id = c.root.id;
-    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', fsPick: '#fsExplore', fsEnd: '#fsHome2', fsWard: '#fsWardClose', bShare: '#bShareClose', bTestEnd: '#bTestBack', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pTrickPanel: '#pTrickClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
+    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', fsPick: '#fsExplore', fsEnd: '#fsHome2', fsWard: '#fsWardClose', piPanel: '#piClose', bShare: '#bShareClose', bTestEnd: '#bTestBack', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pTrickPanel: '#pTrickClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
     if (id === 'rcPick'){ const b = document.querySelector('#rcBack'); if (b && !b.hidden) return b; }   // B in the ride list = back to the modes
     if (map[id]) return document.querySelector(map[id]);
     return null;
