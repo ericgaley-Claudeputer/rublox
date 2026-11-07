@@ -22,7 +22,7 @@ function world(store, opt = {}){
     renderer: {domElement: {width: 1600, height: 900}, render(s, c){ log.render++; }},
     camera: {position: V(), lookAt(x, y, z){ log.look = [x, y, z]; }},
     paused: false, worldT: 1.5, banners: [], keys: {}, P: {x: 0, y: .45, z: 9, face: 0, vx: 0, vz: 0}, FS_POSES: [1, 2, 3, 4, 5, 6, 7].map(POSE),
-    plat: () => ({mesh: O()}), label: () => O(), SND: {coin(){}, cp(){}}, mp: {on: !!opt.mp, host: false}, out: [], log
+    checkpoints: [], plat: () => ({mesh: O()}), label: () => O(), SND: {coin(){}, cp(){}}, mp: {on: !!opt.mp, host: false}, out: [], log
   };
   ctx.banner = t => ctx.banners.push(t); ctx.mpSendTo = (c, m) => ctx.out.push(m); ctx.updateCamera = () => ctx.A.photoCam();
   vm.createContext(ctx);
@@ -37,6 +37,7 @@ const jp = (...i) => { const a = []; i.forEach(k => a[k] = true); return a; };
 const st = {rubloxAvatar: '{"shirt":"#ff0000"}', rubloxCoins: '42', rubloxWaterPark: '{"best":61}'}, W = world(st);
 W.A.buildPhotoStudio(); W.A.photostudioEnter();
 chk('studio builds with default settings', W.A.psx && JSON.stringify(W.A.psSet()) === JSON.stringify({bg: 0, frame: 0, angle: 0, shape: 0, border: 0, pose: 0, shots: 0}));
+chk('studio sets a spawn checkpoint (start/respawn need it)', W.checkpoints[0] && W.checkpoints[0].spawn && W.checkpoints[0].spawn.z === 9);
 chk('8 backdrops, 3 framings, 5 camera angles, 3 shapes, 5 borders', W.A.PS_BGS.length === 8 && W.A.PS_FRAMES.length === 3 && W.A.PS_ANGLES.length === 5 && W.A.PS_SHAPES.length === 3 && W.A.PS_BORDERS.length === 5);
 const bad = world({rubloxPhotoStudio: '{"bg":99,"frame":-4,"angle":"x","pose":1e9,"shape":2,"shots":-3}'}).A.psSet();
 chk('damaged settings save is clamped', bad.bg === 7 && bad.frame === 0 && bad.angle === 0 && bad.pose === 7 && bad.shape === 2 && bad.shots === 0, bad);

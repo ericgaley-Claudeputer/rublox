@@ -62,6 +62,8 @@
     const sg = label('📸 Star Snaps Photo Studio', 'rgba(255,111,181,.95)', '#fff', 420); sg.position.set(0, 9.5, -7); scene.add(sg);
     const hint = label('⭐ Stand on the star spot!', 'rgba(29,35,64,.85)', '#fff', 300); hint.scale.multiplyScalar(.6); hint.position.set(0, 3.4, 2.2); scene.add(hint); psx.hint = hint;
     psPaintBackdrop();
+    // respawn()/start() need a spawn checkpoint in every mode — without it start('photostudio') threw half-way (blank sky, generic HUD, no studio)
+    checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 9}, flag: new THREE.Object3D()};
     P.x = 0; P.z = 9; P.face = Math.PI;
   }
   function photostudioEnter(){ P.face = Math.PI; psHud(); }
