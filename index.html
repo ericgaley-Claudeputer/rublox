@@ -459,6 +459,14 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .pdrive #oJump,.pdrive #oEmoBtn,.pdrive #oRun,.pdrive #oFP{display:none!important}
 .rmode #oEmoBtn,.rmode #oRun,.rmode #oStam{display:none!important}
 .smode #oStam{display:none!important}
+.psnear{background:#ff6fb5;box-shadow:0 4px 0 #c94f8d}.psnear small{display:block;font-size:12px}.psgbtn{background:#8b5cf6;box-shadow:0 4px 0 #5b34c0}
+.psflash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:7}
+.psbar{display:none;position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:6;flex-wrap:wrap;justify-content:center;gap:5px;max-width:96vw;background:rgba(29,35,64,.7);padding:6px;border-radius:16px}
+.psbar.show{display:flex}.psbar button{border:0;border-radius:12px;padding:6px 9px;background:#fff;color:#1d2340;font:inherit;font-weight:800;font-size:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center}
+.psbar button small{font-size:10px;opacity:.7}.psbar .pssnap{background:#ff4d5e;color:#fff;font-size:18px;padding:8px 16px}.psbar .psdone{background:#9aa0ab;color:#fff}
+.psgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;max-height:48vh;overflow:auto;margin:8px 0}.psth{border:3px solid #fff;border-radius:10px;padding:0;background:#eee;cursor:pointer}.psth img{width:100%;display:block;border-radius:7px}
+.psbig{max-width:100%;max-height:52vh;display:block;margin:8px auto;border-radius:10px}.psnote{display:block;opacity:.8;font-weight:700}
+@media (max-width:760px),(max-height:520px){#psGal .emoji{display:none}#psGal h2{font-size:18px;margin:0}.psbar button{font-size:12px;padding:4px 6px}.psbar .pssnap{font-size:15px}.psbig{max-height:42vh}}
 .wpnear{background:#3a86ff;box-shadow:0 4px 0 #2563c9}.wpnear small{color:#3a86ff}.wpbtn{background:#3ac6ff;box-shadow:0 4px 0 #1f8fc0}
 .wplist{display:flex;flex-direction:column;gap:8px;margin:8px 0}.wprb{display:flex;flex-direction:column;align-items:center}.wprb small{font-size:12px;font-weight:800;opacity:.85}.wprb:disabled{opacity:.5}
 @media (max-width:760px),(max-height:520px){#wpPanel .emoji{display:none}#wpPanel h2{font-size:18px;margin:0}.wprb{padding:6px 12px;font-size:15px}.wplist{gap:5px;max-height:58vh;overflow:auto}}
@@ -941,6 +949,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   <div class="ohud">
     <div class="ostats">
       <span id="oStageBox">🏁 Lv <b id="oLvl">1</b><span id="oCpWrap"> · 🚩 <b id="oStage">1</b>/<b id="oStageN">3</b></span></span>
+      <span id="psBox" style="display:none"><b id="psN">📸 Photos</b></span>
       <span id="wpBox" style="display:none"><b id="wpN">🌊 Water Park</b></span>
       <span id="bkBox" style="display:none">🧁 Bakery · <b id="bkN">🎂 0</b></span>
       <span id="piBox" style="display:none">🏝️ Pet Island · <b id="piN">💰 0/8</b></span>
@@ -1094,6 +1103,21 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="owinbtns"><button class="big gray" id="pRetNo">↩️ Never mind</button><button class="big" id="pRetYes" hidden>💕 Return</button></div>
   </div></div>
   <div class="pflash" id="pFlash"></div>
+  <div class="psflash" id="psFlash"></div>
+  <button class="fsnear psnear" id="psCamBtn">📸 Take Photo<small>E / Ⓧ — works anywhere</small></button>
+  <button class="fswardbtn psgbtn" id="psGalBtn">🖼️ My Photos</button>
+  <div class="psbar" id="psBar">
+    <button data-k="pose" data-d="-1">◀</button><button data-k="pose"><small>Pose</small><span id="psV_pose"></span></button><button data-k="pose" data-d="1">▶</button>
+    <button data-k="bg"><small>Backdrop</small><span id="psV_bg"></span></button><button data-k="frame"><small>Framing</small><span id="psV_frame"></span></button>
+    <button data-k="angle"><small>Camera</small><span id="psV_angle"></span></button><button data-k="shape"><small>Shape</small><span id="psV_shape"></span></button>
+    <button data-k="border"><small>Border</small><span id="psV_border"></span></button>
+    <button class="pssnap" id="psSnap">📸 Snap!</button><button class="psdone" id="psDone">✖ Done</button>
+  </div>
+  <div class="opanel" id="psGal"><div class="mbox rcbox">
+    <span class="emoji">🖼️</span><h2>My Photos</h2><small class="psnote">🔒 Saved only on this device — never uploaded or shared. Download the ones you love!</small>
+    <div id="psGList"></div>
+    <div class="row"><button class="big gray" id="psGalClose">👋 Close</button><button class="big gray" id="psHome">🏠 Home</button></div>
+  </div></div>
   <button class="fsnear wpnear" id="wpAct"></button>
   <button class="fswardbtn wpbtn" id="wpRides">🎢 Rides</button>
   <div class="opanel" id="wpPanel"><div class="mbox rcbox">
@@ -1286,7 +1310,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.07-3';
+const BUILD = '2026.11.07-6';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2001,6 +2025,7 @@ $('#saveAv').onclick = () => {
 
 /* ---------- games ---------- */
 const GAMES = [
+  {id:'photostudio', name:'Star Snaps Photo Studio', emoji:'📸', tag:'Strike a pose in your outfit and save photos on your device!', draw: drawPhotoStudio, playable: true, isNew: true},
   {id:'waterpark', name:'Splash Summit Water Park', emoji:'🌊', tag:'Zoom down giant slides and race floats round the lazy river!', draw: drawWaterPark, playable: true, isNew: true},
   {id:'bakery', name:'Sweet Team Bakery', emoji:'🧁', tag:'Bake & decorate cakes with friends, fill orders, earn coins!', draw: drawBakery, playable: true, isNew: true},
   {id:'petisland', name:'Pet Adventure Island', emoji:'🏝️', tag:'Explore with your pet: dig up treasure, open secret caves, solve puzzles!', draw: drawPetIsland, playable: true, isNew: true},
@@ -2065,6 +2090,14 @@ function drawLava(ctx){
   for (let x = 0; x <= 320; x += 10) ctx.lineTo(x, 150 + Math.sin(x/22 + t)*6);
   ctx.lineTo(320, 200); ctx.fill();
   ctx.fillStyle = '#ffd23f'; for (let i = 0; i < 8; i++){ ctx.fillRect((i*47 + t*20) % 320, 168 + (i%3)*8, 8, 8); }
+}
+function drawPhotoStudio(ctx){
+  sky(ctx, '#ffd6ec', '#fff0f8');
+  ctx.fillStyle = '#f7d9ea'; ctx.fillRect(0, 150, 320, 50); ctx.fillStyle = '#fff'; ctx.fillRect(90, 140, 140, 18);
+  const g = ctx.createLinearGradient(0, 20, 0, 140); g.addColorStop(0, '#7fd6ff'); g.addColorStop(1, '#ff6fb5'); ctx.fillStyle = g; ctx.fillRect(80, 20, 160, 122);
+  ctx.font = '18px sans-serif'; ['⭐', '✨', '💖', '🌟'].forEach((e, i) => ctx.fillText(e, 92 + i * 38, 46 + (i % 2) * 20));
+  guy(ctx, 160, 140, 12, '#ff6fb5'); ctx.fillStyle = '#1d2340'; ctx.fillRect(268, 120, 30, 20); ctx.fillRect(281, 140, 4, 30); ctx.fillStyle = '#fff6c9'; ctx.beginPath(); ctx.arc(292, 130, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.font = '22px sans-serif'; ctx.fillText('📸', 40, 80);
 }
 function drawWaterPark(ctx){
   sky(ctx, '#7fd6ff', '#e0f7ff');
@@ -3298,8 +3331,8 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null;
-    if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null;
+    if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -4235,7 +4268,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
       if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
       else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
     }
@@ -4269,7 +4302,7 @@ const Obby = (() => {
     if (!SIM && mode === 'obby') obbyMech(dt);
     if (P.onGround && P.ground){ P.x += P.ground.dx || 0; P.y += P.ground.dy || 0; P.z += P.ground.dz || 0;
       if (P.ground.conv){ P.x += P.ground.conv.x * dt; P.z += P.ground.conv.z * dt; } }
-    const inp = ((hs && hsFrozen()) || (fs && fsFrozen()) || (isl && isl.panel) || (bk && bk.panel >= 0) || (wp && wp.menu)) ? {x: 0, z: 0, mag: 0, jump: false} : tg && (tg.phase === 'ready' || (tg.phase === 'play' && tg.it === 0 && tg.freeze > 0)) ? {x: 0, z: 0, mag: 0, jump: false} : input();
+    const inp = ((hs && hsFrozen()) || (fs && fsFrozen()) || (isl && isl.panel) || (bk && bk.panel >= 0) || (wp && wp.menu) || (psx && (psx.cam || psx.gal))) ? {x: 0, z: 0, mag: 0, jump: false} : tg && (tg.phase === 'ready' || (tg.phase === 'play' && tg.it === 0 && tg.freeze > 0)) ? {x: 0, z: 0, mag: 0, jump: false} : input();
     const k = Math.min(1, dt * (P.onGround ? (slip || (P.ground && P.ground.ice) ? 1.4 : 14) : 6));
     const wantRun = !SIM && (keys.ShiftLeft || keys.ShiftRight || run.pad || run.touch) && inp.mag > .1;
     if (!SIM){ if ((mode === 'tag' && tg) || (mode === 'hide' && hs)){ if (wantRun && !run.tired){ run.stam -= dt; if (run.stam <= 0){ run.stam = 0; run.tired = true; } } else run.stam = Math.min(STAM_MAX, run.stam + dt * .8); if (run.tired && run.stam >= 1.5) run.tired = false; }
@@ -4305,7 +4338,7 @@ const Obby = (() => {
     if (mode === 'lava') return lavaChecks();
     if (mode === 'splash') return splashChecks();
     if (mode === 'nds') return ndsChecks();
-    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -9698,6 +9731,154 @@ const Obby = (() => {
   function wpPad(jp){ if (!wp) return false; if (wp.menu) { if (jp[3]){ wpMenu(false); return true; } return false; } if (wp.ride || (wp.race.me && wp.race.ph !== 'idle')) return false; if (jp[2]) return wpAct() || true; if (jp[3]){ wpMenu(true); return true; } return false; }
   function wpKey(e){ if (!wp || e.repeat || paused) return false; if (e.code === 'KeyE' && !wp.menu) return wpAct(); if (e.code === 'KeyR' && !wp.ride && !wp.race.me){ wpMenu(); return true; } if (e.code === 'Escape' && wp.menu){ wpMenu(false); return true; } return false; }
   function waterparkStop(){ if (wp){ wp.fx.forEach(b => scene.remove(b.m)); wp.race.npcs.forEach(r => r.m && scene.remove(r.m.g)); } wp = null; ['#wpAct', '#wpPanel'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
+  /* ===================== t215u: 📸 STAR SNAPS PHOTO STUDIO — pose your own avatar, pick a backdrop, save photos on this device ===================== */
+  // Privacy: photos are made from this page's own 3D view, kept only in this device's localStorage and downloaded by you. Nothing is uploaded or sent to other players.
+  const PS_KEY = 'rubloxPhotoStudio', PS_GAL = 'rubloxPhotos', PS_MAX = 12;
+  const PS_BGS = [
+    {id: 'pink', e: '🎀', n: 'Bubblegum', a: '#ffb3d9', b: '#ff6fb5', ic: '💖'}, {id: 'sky', e: '☁️', n: 'Sky High', a: '#e0f7ff', b: '#7fd6ff', ic: '☁️'},
+    {id: 'stars', e: '🌟', n: 'Starry Night', a: '#1d2340', b: '#5b34c0', ic: '⭐'}, {id: 'beach', e: '🏖️', n: 'Sunny Beach', a: '#ffe7a3', b: '#3ac6ff', ic: '🌴'},
+    {id: 'garden', e: '🌸', n: 'Flower Garden', a: '#d9ffd1', b: '#2ec27e', ic: '🌸'}, {id: 'candy', e: '🍭', n: 'Candy Land', a: '#fff0f8', b: '#8b5cf6', ic: '🍬'},
+    {id: 'rainbow', e: '🌈', n: 'Rainbow', a: '#ff4d5e', b: '#3a86ff', ic: '🌈', rb: true}, {id: 'snow', e: '❄️', n: 'Snow Day', a: '#ffffff', b: '#a9d6ff', ic: '❄️'},
+  ];
+  const PS_FRAMES = [{id: 'full', e: '🧍', n: 'Full Body', d: 7.2, y: 1.6}, {id: 'waist', e: '👕', n: 'Waist Up', d: 4.4, y: 2.2}, {id: 'face', e: '🙂', n: 'Close-Up', d: 2.7, y: 2.75}];
+  const PS_ANGLES = [{id: 'front', e: '⬆️', n: 'Front', yaw: 0, h: 0}, {id: 'left', e: '↖️', n: 'Left Side', yaw: -.6, h: 0}, {id: 'right', e: '↗️', n: 'Right Side', yaw: .6, h: 0},
+    {id: 'hero', e: '🦸', n: 'Hero (low)', yaw: 0, h: -1.1}, {id: 'top', e: '🚁', n: 'From Above', yaw: 0, h: 2.6}];
+  const PS_SHAPES = [{id: 'tall', e: '📱', n: 'Tall', r: 4 / 5}, {id: 'sq', e: '⬛', n: 'Square', r: 1}, {id: 'wide', e: '🖥️', n: 'Wide', r: 16 / 9}];
+  const PS_BORDERS = [{id: 'none', e: '⬜', n: 'No Border'}, {id: 'pola', e: '🖼️', n: 'Snapshot'}, {id: 'stars', e: '✨', n: 'Sparkles'}, {id: 'hearts', e: '💕', n: 'Hearts'}, {id: 'film', e: '🎞️', n: 'Film Strip'}];
+  const PS_POSE_N = () => FS_POSES.length + 1;   // 0 = natural (your normal idle)
+  const PS_OPTS = {bg: PS_BGS, frame: PS_FRAMES, angle: PS_ANGLES, shape: PS_SHAPES, border: PS_BORDERS};
+  const PS_MARK = [0, 0];   // stage spot (stage top is at y = .4)
+  let psx = null;
+  const psClamp = (v, n) => Math.max(0, Math.min(n - 1, v | 0));
+  function psSet(){ const r = load(PS_KEY, null), o = r && typeof r === 'object' ? r : {};
+    return {bg: psClamp(o.bg, PS_BGS.length), frame: psClamp(o.frame, PS_FRAMES.length), angle: psClamp(o.angle, PS_ANGLES.length), shape: psClamp(o.shape, PS_SHAPES.length),
+      border: psClamp(o.border, PS_BORDERS.length), pose: psClamp(o.pose, PS_POSE_N()), shots: Math.max(0, o.shots | 0)}; }
+  function psGallery(){ const r = load(PS_GAL, []); return (Array.isArray(r) ? r : []).filter(p => p && typeof p.d === 'string' && /^data:image\/(jpeg|png);base64,/.test(p.d) && +p.t > 0).slice(-PS_MAX).map(p => ({id: String(p.id || p.t).slice(0, 24), t: +p.t, d: p.d, bg: psClamp(p.bg, PS_BGS.length)})); }
+  // store a photo; if the device is out of room, drop the oldest until it fits. Returns how many are kept (0 = could not save, download it instead).
+  function psStore(photo){
+    const g = psGallery(); g.push(photo); while (g.length > PS_MAX) g.shift();
+    while (g.length){ try { localStorage.setItem(PS_GAL, JSON.stringify(g)); return g.length; } catch (e){ if (g.length === 1) break; g.shift(); } }
+    return 0;
+  }
+  function psDelete(id){ const g = psGallery().filter(p => p.id !== id); try { localStorage.setItem(PS_GAL, JSON.stringify(g)); } catch (e){} return g.length; }
+  function psCycle(k, dir){ if (!psx) return; const n = k === 'pose' ? PS_POSE_N() : PS_OPTS[k].length; psx.s[k] = ((psx.s[k] + (dir || 1)) % n + n) % n; save(PS_KEY, psx.s); if (k === 'bg') psPaintBackdrop(); psHud(); }
+  // camera for the current framing/angle; the player stands on the mark facing +z (towards the camera)
+  function psCamPos(s, px, py, pz){ const F = PS_FRAMES[s.frame], A = PS_ANGLES[s.angle], ty = py + F.y;
+    return {x: px + Math.sin(A.yaw) * F.d, y: ty + A.h * (F.d / 7.2) + (s.frame === 2 ? 0 : .2), z: pz + Math.cos(A.yaw) * F.d, tx: px, ty, tz: pz}; }
+  // centre crop of a w×h image to aspect r
+  function psCrop(w, h, r){ if (w / h > r){ const cw = Math.round(h * r); return {x: Math.round((w - cw) / 2), y: 0, w: cw, h}; } const ch = Math.round(w / r); return {x: 0, y: Math.round((h - ch) / 2), w, h: ch}; }
+  function psOutSize(r){ const L = 900; return r >= 1 ? {w: L, h: Math.round(L / r)} : {w: Math.round(L * r), h: L}; }
+  function psFileName(t){ const d = new Date(t), z = n => ('0' + n).slice(-2); return 'rublox-photo-' + d.getFullYear() + z(d.getMonth() + 1) + z(d.getDate()) + '-' + z(d.getHours()) + z(d.getMinutes()) + z(d.getSeconds()) + '.jpg'; }
+  function psBgPaint(ctx, w, h, i){
+    const B = PS_BGS[i], g = ctx.createLinearGradient(0, 0, 0, h);
+    if (B.rb) ['#ff4d5e', '#ff9f1c', '#ffd23f', '#2ec27e', '#3a86ff', '#8b5cf6'].forEach((c, k) => g.addColorStop(k / 5, c)); else { g.addColorStop(0, B.a); g.addColorStop(1, B.b); }
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h); ctx.font = Math.round(h / 9) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.globalAlpha = .55;
+    for (let y = 0; y < 5; y++) for (let x = 0; x < 7; x++) ctx.fillText(B.ic, (x + (y % 2 ? .5 : .1)) * w / 6.4, (y + .75) * h / 5);
+    ctx.globalAlpha = 1;
+  }
+  function psPaintBackdrop(){ if (!psx || !psx.bdC) return; psBgPaint(psx.bdC.getContext('2d'), psx.bdC.width, psx.bdC.height, psx.s.bg); psx.bdT.needsUpdate = true; scene.background = new THREE.Color(PS_BGS[psx.s.bg].a); }
+  function buildPhotoStudio(){
+    scene.background = new THREE.Color('#ffe9f5');
+    psx = {s: psSet(), cam: false, count: 0, flash: 0, gal: false, view: null, near: false, last: null, bdC: null, bdT: null};
+    plat(0, 0, 0, 40, 40, '#f7d9ea', 2);
+    [[0, -20, 40, 1], [0, 20, 40, 1], [-20, 0, 1, 40], [20, 0, 1, 40]].forEach(([x, z, w, d]) => plat(x, 6, z, w, d, '#ffffff', 6, {noEdge: true}));
+    plat(0, .4, -1, 9, 7, '#ffffff', .4);   // stage
+    const mk = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, .12, 5), new THREE.MeshBasicMaterial({color: '#ffd23f'})); mk.position.set(PS_MARK[0], .47, PS_MARK[1]); scene.add(mk); psx.mark = mk;   // raised, unlit gold star pad (5 sides) so it reads clearly on the white stage
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(.9, .9, 6, 16, 1, true), new THREE.MeshBasicMaterial({color: '#ffe680', transparent: true, opacity: .25, side: THREE.DoubleSide})); beam.position.set(PS_MARK[0], 3.5, PS_MARK[1]); scene.add(beam);
+    // the backdrop: a big curved sheet with a painted (swappable) picture
+    const c = document.createElement('canvas'); c.width = 1024; c.height = 512; psx.bdC = c; psx.bdT = new THREE.CanvasTexture(c);
+    const bd = new THREE.Mesh(new THREE.CylinderGeometry(9, 9, 11, 32, 1, true, Math.PI * .65, Math.PI * .7), new THREE.MeshBasicMaterial({map: psx.bdT, side: THREE.DoubleSide}));
+    bd.position.set(0, 5.9, 4.5); scene.add(bd);
+    // studio lights + camera on a tripod (decor)
+    [[-6, 4], [6, 4]].forEach(([x, z]) => { const p = new THREE.Mesh(new THREE.CylinderGeometry(.08, .08, 4, 6), new THREE.MeshLambertMaterial({color: '#555'})); p.position.set(x, 2, z); scene.add(p);
+      const l = new THREE.Mesh(new THREE.SphereGeometry(.6, 12, 8), new THREE.MeshBasicMaterial({color: '#fff6c9'})); l.position.set(x, 4.2, z); scene.add(l); });
+    const tri = new THREE.Mesh(new THREE.BoxGeometry(.9, .6, .6), new THREE.MeshLambertMaterial({color: '#1d2340'})); tri.position.set(0, 2.2, 8); scene.add(tri);
+    const sg = label('📸 Star Snaps Photo Studio', 'rgba(255,111,181,.95)', '#fff', 420); sg.position.set(0, 9.5, -7); scene.add(sg);
+    const hint = label('📸 Photo spot — press Take Photo!', 'rgba(29,35,64,.85)', '#fff', 340); hint.scale.multiplyScalar(.6); hint.position.set(0, 3.4, 2.2); scene.add(hint); psx.hint = hint;
+    psPaintBackdrop();
+    // respawn()/start() need a spawn checkpoint in every mode — without it start('photostudio') threw half-way (blank sky, generic HUD, no studio)
+    checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 9}, flag: new THREE.Object3D()};
+    P.x = 0; P.z = 9; P.face = Math.PI;
+  }
+  function photostudioEnter(){ P.face = Math.PI; psHud(); }
+  function psOnMark(){ return Math.hypot(P.x - PS_MARK[0], P.z - PS_MARK[1]) < 2.2; }
+  function psCamOn(on){
+    if (!psx) return; psx.cam = on; psx.count = 0;
+    if (on){ Object.assign(P, {x: PS_MARK[0], y: .45, z: PS_MARK[1], vx: 0, vy: 0, vz: 0}); P.face = 0; for (const k in keys) keys[k] = false; banner('📸 Camera on! You\'re on the photo spot — pick a pose and backdrop, then press 📸 Snap!'); }
+    psHud();
+  }
+  function psSnap(){ if (!psx || !psx.cam || psx.count > 0) return false; psx.count = 3.01; psHud(); return true; }
+  function psCapture(){
+    const S = psx.s, sh = PS_SHAPES[S.shape], out = psOutSize(sh.r), cv = document.createElement('canvas'); cv.width = out.w; cv.height = out.h;
+    const ctx = cv.getContext('2d'), src = renderer.domElement;
+    updateCamera(); renderer.render(scene, camera);   // draw right now so the picture is read before the browser clears it
+    const cr = psCrop(src.width, src.height, sh.r);
+    const pad = S.border === 1 ? Math.round(out.w * .05) : S.border === 4 ? Math.round(out.w * .07) : 0, bottom = S.border === 1 ? Math.round(out.h * .1) : pad;
+    ctx.fillStyle = S.border === 4 ? '#14141c' : '#ffffff'; ctx.fillRect(0, 0, out.w, out.h);
+    try { ctx.drawImage(src, cr.x, cr.y, cr.w, cr.h, pad, pad, out.w - pad * 2, out.h - pad - bottom); } catch (e){ return null; }
+    psDecorate(ctx, out.w, out.h, S.border, bottom);
+    let d; try { d = cv.toDataURL('image/jpeg', .85); } catch (e){ return null; }
+    const t = Date.now(), photo = {id: 'p' + t, t, d, bg: S.bg}; psx.last = photo; psx.flash = 1;
+    S.shots++; save(PS_KEY, S);
+    const kept = psStore(photo); banner(kept ? '📸 Snap! Saved on this device (' + kept + '/' + PS_MAX + ') — tap 🖼️ to see or download it' : '📸 Snap! This device is out of photo space — download it from 🖼️');
+    SND.cp && SND.cp(); return photo;
+  }
+  function psDecorate(ctx, w, h, b, bottom){
+    ctx.textAlign = 'center';
+    if (b === 1){ ctx.fillStyle = '#5b5b6b'; ctx.font = 'bold ' + Math.round(bottom * .38) + 'px sans-serif'; ctx.fillText('⭐ Star Snaps · ' + new Date().toLocaleDateString(), w / 2, h - bottom * .38); }
+    if (b === 2 || b === 3){ const ic = b === 2 ? ['✨', '⭐', '🌟'] : ['💕', '💖', '💗']; ctx.font = Math.round(w / 12) + 'px sans-serif';
+      for (let k = 0; k < 10; k++){ const e = ic[k % 3], s = k / 10; ctx.fillText(e, w * (.06 + .88 * s), h * .08); ctx.fillText(ic[(k + 1) % 3], w * (.06 + .88 * s), h * .98); } }
+    if (b === 4){ ctx.fillStyle = '#ffffff'; const p = Math.round(w * .07), hs = Math.round(p * .35); for (let y = hs; y < h; y += hs * 2.2){ ctx.fillRect(p * .3, y, hs, hs * 1.2); ctx.fillRect(w - p * .3 - hs, y, hs, hs * 1.2); } }
+  }
+  function psDownload(photo){ if (!photo) return false; const a = document.createElement('a'); a.href = photo.d; a.download = psFileName(photo.t); document.body.appendChild(a); a.click(); a.remove(); banner('⬇️ Downloading ' + a.download); return true; }
+  function psGalOpen(open){
+    if (!psx) return; psx.gal = open === undefined ? !psx.gal : open; psx.view = null; if (!psx.gal){ $('#psGal').classList.remove('show'); psHud(); return; }
+    psGalRender(); $('#psGal').classList.add('show');
+  }
+  function psGalRender(){
+    const g = psGallery(), v = psx.view && g.find(p => p.id === psx.view);
+    if (v){ $('#psGList').innerHTML = '<img class="psbig" alt="your photo" src="' + v.d + '"><div class="row"><button class="big blue" id="psDl">⬇️ Download</button><button class="big gray" id="psDel">🗑️ Delete</button><button class="big gray" id="psBack">⬅️ All photos</button></div><small class="psnote">On a phone you can also press and hold the picture to save it.</small>';
+      $('#psDl').onclick = () => psDownload(v); $('#psDel').onclick = () => { psDelete(v.id); psx.view = null; psGalRender(); }; $('#psBack').onclick = () => { psx.view = null; psGalRender(); }; return; }
+    $('#psGList').innerHTML = g.length ? '<div class="psgrid">' + g.slice().reverse().map(p => '<button class="psth" data-id="' + p.id + '"><img alt="photo" src="' + p.d + '"></button>').join('') + '</div>'
+      : '<p>No photos yet — step on the ⭐ spot and press 📸!</p>';
+    $('#psGList').querySelectorAll('.psth').forEach(b => b.onclick = () => { psx.view = b.dataset.id; psGalRender(); });
+  }
+  function psHud(){
+    if (!psx) return; const S = psx.s, pz = S.pose ? FS_POSES[S.pose - 1] : {e: '🙂', n: 'Natural'};
+    $('#psBar').classList.toggle('show', psx.cam); $('#psCamBtn').classList.toggle('show', !psx.cam && !psx.gal);   // always there in the studio — no hunting for the spot
+    $('#psN').textContent = '📸 Photos: ' + psGallery().length + '/' + PS_MAX;
+    if (!psx.cam) return;
+    const lab = {pose: pz.e + ' ' + pz.n, bg: PS_BGS[S.bg].e + ' ' + PS_BGS[S.bg].n, frame: PS_FRAMES[S.frame].e + ' ' + PS_FRAMES[S.frame].n, angle: PS_ANGLES[S.angle].e + ' ' + PS_ANGLES[S.angle].n, shape: PS_SHAPES[S.shape].e + ' ' + PS_SHAPES[S.shape].n, border: PS_BORDERS[S.border].e + ' ' + PS_BORDERS[S.border].n};
+    Object.keys(lab).forEach(k => { const e = $('#psV_' + k); if (e) e.textContent = lab[k]; });
+    $('#psSnap').textContent = psx.count > 0 ? Math.ceil(psx.count) + '…' : '📸 Snap!';
+  }
+  function photostudioUpdate(dt){
+    if (!psx) return;
+    const n = !psx.cam && psOnMark(); if (n !== psx.near){ psx.near = n; psHud(); }
+    if (psx.cam){ Object.assign(P, {x: PS_MARK[0], z: PS_MARK[1], vx: 0, vz: 0}); P.face = 0;
+      if (psx.count > 0){ const c0 = Math.ceil(psx.count); psx.count -= dt; if (psx.count <= 0){ psx.count = 0; psCapture(); psHud(); } else if (Math.ceil(psx.count) !== c0){ psHud(); SND.coin && SND.coin(); } } }
+  }
+  function photostudioAnimate(dt){ if (!psx) return; if (psx.mark) psx.mark.rotation.y += dt; if (psx.hint) psx.hint.visible = !psx.cam;
+    if (psx.flash > 0){ psx.flash = Math.max(0, psx.flash - dt * 3); $('#psFlash').style.opacity = psx.flash; } }
+  function photoCam(){ if (!psx || !psx.cam) return false; const c = psCamPos(psx.s, PS_MARK[0], .45, PS_MARK[1]); camera.position.set(c.x, c.y, c.z); camera.lookAt(c.tx, c.ty, c.tz); return true; }
+  function psPosed(){ return psx && psx.cam && psx.s.pose > 0 ? Object.assign({lL: 0, lR: 0}, FS_POSES[psx.s.pose - 1].p(psx.s.pose === 4 ? 0 : worldT)) : null; }   // twirl is held still for the camera
+  function psAct(){ if (!psx) return false; if (psx.cam) return psSnap(); psCamOn(true); return true; }   // works from anywhere: you're placed on the photo spot automatically
+  function psPad(jp){ if (!psx) return false; if (psx.gal) return false;
+    if (!psx.cam){ if (jp[2]){ psAct(); return true; } if (jp[3]){ psGalOpen(true); return true; } return false; }
+    if (jp[0]) psSnap(); else if (jp[1]) psCamOn(false); else if (jp[3]) psGalOpen(true); else if (jp[4]) psCycle('pose', -1); else if (jp[5]) psCycle('pose', 1);
+    else if (jp[14]) psCycle('bg', -1); else if (jp[15]) psCycle('bg', 1); else if (jp[12]) psCycle('frame', 1); else if (jp[13]) psCycle('angle', 1); else if (jp[2]) psCycle('border', 1); else if (jp[6] || jp[7]) psCycle('shape', 1); else return false;
+    return true; }
+  function psKey(e){ if (!psx || e.repeat || paused) return false; const c = e.code;
+    if (psx.gal){ if (c === 'Escape' || c === 'KeyG'){ psGalOpen(false); return true; } return false; }
+    if (c === 'KeyG'){ psGalOpen(true); return true; }
+    if (!psx.cam){ if (c === 'KeyE'){ psAct(); return true; } return false; }
+    const m = {KeyQ: ['pose', -1], KeyE: ['pose', 1], KeyB: ['bg', 1], KeyF: ['frame', 1], KeyC: ['angle', 1], KeyT: ['shape', 1], KeyK: ['border', 1]};
+    if (m[c]){ psCycle(m[c][0], m[c][1]); return true; }
+    if (c === 'Space' || c === 'Enter'){ psSnap(); return true; }
+    if (c === 'Escape'){ psCamOn(false); return true; }
+    return true;   // camera mode swallows other keys so you don't walk off the mark
+  }
+  function photostudioStop(){ psx = null; ['#psBar', '#psCamBtn', '#psGal'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); const f = $('#psFlash'); if (f) f.style.opacity = 0; }
   /* ---------- per-frame ---------- */
   const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
   function animate(dt){
@@ -9713,6 +9894,7 @@ const Obby = (() => {
     if (isl) petIslandAnimate(dt);
     if (bk) bakeryAnimate(dt);
     if (wp) waterparkAnimate(dt);
+    if (psx) photostudioAnimate(dt);
     if (tg) animateTag(dt);
     if (pt) animatePets(dt);
     animateMp(dt);
@@ -9732,7 +9914,7 @@ const Obby = (() => {
     if (mode === 'tag'){ const v = Math.round(run.stam / STAM_MAX * 100) + (run.tired ? 1000 : 0); if (v !== run.shown){ run.shown = v; $('#oStamF').style.width = (v % 1000) + '%'; $('#oStam').classList.toggle('tired', run.tired); $('#oStam').classList.toggle('full', v === 100); } }
     if (emote){ emote.t += dt; if (emote.t > EMOTES[emote.id].dur || (!P.onGround && P.airT > .25)) emote = null; }
     const st = {state: P.climbing ? 'climb' : !P.onGround && P.airT > .08 ? 'jump' : sp > .8 ? 'walk' : 'idle', t: worldT, ph: P.walk, sp: Math.min(sp > SPEED * 1.15 ? 1.3 : 1, sp / 5), air: P.airT, jumped: P.jumped};
-    applyPose(dt, rc && rc.me ? rcPose(rc.me) : pt && pt.drive ? SIT_POSE : emote ? emotePose(emote.id, emote.t) : animPose(avatar.anim || 'default', st));
+    applyPose(dt, psPosed() || (rc && rc.me ? rcPose(rc.me) : pt && pt.drive ? SIT_POSE : emote ? emotePose(emote.id, emote.t) : animPose(avatar.anim || 'default', st)));
     if (pt && pt.drive){ model.g.rotation.y = pt.car.yaw; blob.visible = false; return; }
     if (rc){ raceAnimate(dt); blob.visible = false; return; }
     // shadow on the highest surface below
@@ -9769,7 +9951,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -9803,6 +9985,7 @@ const Obby = (() => {
       else { const t = $('#oTip'); padTip(); if (t.classList.contains('hide')){ t.classList.remove('hide'); tipTimer = 8; } else { t.classList.add('hide'); tipTimer = 0; } }
       return;
     }
+    if (mode === 'photostudio' && psx && psPad(jp)) return;
     if (mode === 'waterpark' && wp && wpPad(jp)) return;
     if (mode === 'bakery' && bk && bkPad(jp)) return;
     if (mode === 'petisland' && isl && piPad(jp)) return;
@@ -9860,6 +10043,11 @@ const Obby = (() => {
   addEventListener('resize', () => setTimeout(hudMeasure, 50));
   function setTouchUIBase(on){
     hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
+    if (mode === 'photostudio'){
+      $('#oTip').innerHTML = (on ? '🕹️ Tap 📸 Take Photo · then tap the bar to change pose & backdrop · 📸 Snap!' : '⌨️ E Take Photo · Space snap · Q/E pose · B backdrop · F framing · C angle · T shape · K border · G photos · Esc done')
+        + "<br>📸 Photos stay on this device only — download the ones you love!";
+      return;
+    }
     if (mode === 'waterpark'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves & steers · ⬆️ jump / paddle · tap a ride button' : '⌨️ WASD move & steer · Space jump / paddle · E ride · R rides menu · Esc menu')
         + "<br>🌊 Zoom down 3 giant slides, then race floats round the lazy river — hit the ⚡ rings!";
@@ -9929,6 +10117,7 @@ const Obby = (() => {
   function updateCamera(){
     if (rc && raceCam()) return;
     if (fs && fashionCam()) return;
+    if (psx && photoCam()) return;
     if (fpOn()){   // eyes: just in front of your (hidden) head, looking where the camera yaw/pitch point
       const cp = Math.cos(cam.pitch), fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), ey = P.y + 2.45;
       camera.position.set(P.x + fx * .22, ey, P.z + fz * .22);
@@ -9938,7 +10127,7 @@ const Obby = (() => {
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio'){ // pull the camera in front of walls so buildings don't block the view
       for (let s = 1.2; s <= cam.dist; s += .4){
         const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
         if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(1.2, s - .5); break; }
@@ -10002,6 +10191,7 @@ const Obby = (() => {
       if (isl) petIslandUpdate(dt);
       if (bk) bakeryUpdate(dt);
       if (wp) waterparkUpdate(dt);
+      if (psx) photostudioUpdate(dt);
       if (pt) petsUpdate(dt);
       if (lava && time > LAVA_GRACE && !over && !won){ lava.y += DIFFS[diff].speed * (1 + (time - LAVA_GRACE) / 150) * dt; if (time - dt <= LAVA_GRACE + 0.001 && time > LAVA_GRACE) banner('🌋 The lava is rising! Climb!'); }
       if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0) $('#oTip').classList.add('hide'); }
@@ -10035,10 +10225,12 @@ const Obby = (() => {
       if (dsp && mode === 'splash' && (e.code === 'KeyF' || e.code === 'KeyE') && !e.repeat){ splashThrow(); return; }
       if (dsp && mode === 'splash' && e.code === 'KeyQ' && !e.repeat){ splashShove(); return; }
       if (dsp && mode === 'splash' && e.code === 'KeyR' && !e.repeat){ splashPull(); return; }
+      if (mode === 'photostudio' && psx && (psx.cam || psx.gal) && e.code === 'Escape' && !e.repeat && psKey(e)) return;
       if (e.code === 'Escape' || e.code === 'KeyP'){ if (e.code === 'Escape' && performance.now() - fp.unlockT < 400) return; if (!won && !over && !choosing) setPause(!(paused || menuOpen)); return; }
       if (mode === 'fashion' && fs && fs.ph === 'walk' && /^Digit[1-7]$/.test(e.code) && fsKey(e)) return;
       const em = Object.keys(EMOTES).find(k => 'Digit' + EMOTES[k].key === e.code || 'Numpad' + EMOTES[k].key === e.code);
       if (em && !e.repeat){ playEmote(em); return; }
+      if (mode === 'photostudio' && psx && psKey(e)) return;
       if (mode === 'waterpark' && wp && wpKey(e)) return;
       if (mode === 'bakery' && bk && bkKey(e)) return;
       if (mode === 'petisland' && isl && piKey(e)) return;
@@ -10190,7 +10382,7 @@ const Obby = (() => {
 
   /* ---------- start / stop ---------- */
   function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     $('#obby').classList.add('show'); document.body.style.overflow = 'hidden'; document.documentElement.classList.add('ingame');
@@ -10228,6 +10420,7 @@ const Obby = (() => {
     else if (mode === 'hide') banner('🙈 Hide and Seek on Maple Street!');
     else if (mode === 'fashion') banner('👗 Welcome to the Fashion Show!');
     else if (mode === 'autumn') banner('🍂 Welcome to the Cozy Autumn Farm! Find 12 pumpkins 🎃');
+    else if (mode === 'photostudio') banner('📸 Welcome to Star Snaps! Press 📸 Take Photo (E / Ⓧ) to start the camera');
     else if (mode === 'waterpark') banner('🌊 Welcome to Splash Summit! Stand on a ride pad or press 🎢 Rides');
     else if (mode === 'bakery') banner(mp.on ? '🧁 Welcome to the Sweet Team Bakery! Bake together!' : '🧁 Welcome to the Sweet Team Bakery! Customers are coming!');
     else if (mode === 'petisland') banner('🏝️ Welcome to Pet Adventure Island! Ask your pet to sniff for treasure 👃');
@@ -10239,7 +10432,7 @@ const Obby = (() => {
         $('#rcBack').onclick = () => rc && rcPickOpen(1); $('#rcHome').onclick = $('#rcFinHome').onclick = stop; $('#rcAgain').onclick = () => rc && rcAgain();
         $('#rcItem').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (rc) rc.tapItem = true; }); }
       raceEnter(); }
-    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark') && touchUI && tipTimer > 4) tipTimer = 4;
+    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio') && touchUI && tipTimer > 4) tipTimer = 4;
     $('#obby').classList.toggle('smode', mode === 'splash'); ['#spLvBox', '#spRoundBox', '#spPeb', '#spShove'].forEach(id => $(id).style.display = mode === 'splash' ? '' : 'none'); if (mode !== 'splash') ['#spAliveBox', '#spPull'].forEach(id => $(id).style.display = 'none');
     ['#spPick', '#spEnd', '#spCode'].forEach(id => $(id).classList.remove('show')); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on');
     if (mode === 'splash'){ if (!window.__spBound){ window.__spBound = true;
@@ -10261,6 +10454,12 @@ const Obby = (() => {
         $('#fsReady').onclick = () => fsReadyBtn(); $('#fsWardClose').onclick = () => fsWardClose(); $('#fsWardBtn').onclick = () => fsWardOpen(fs && fs.near || null); $('#fsKeep').onclick = () => fsKeep(); }
       fashionEnter(); }
     $('#auBox').style.display = mode === 'autumn' ? '' : 'none'; if (mode === 'autumn') autumnEnter();
+    $('#psBox').style.display = mode === 'photostudio' ? '' : 'none'; ['#psBar', '#psCamBtn', '#psGal', '#psGalBtn'].forEach(id => $(id).classList.remove('show'));
+    if (mode === 'photostudio'){ if (!window.__psBound){ window.__psBound = true;
+        $('#psCamBtn').onclick = () => psAct(); $('#psGalBtn').onclick = () => psx && psGalOpen(true); $('#psGalClose').onclick = () => psGalOpen(false); $('#psHome').onclick = () => { psGalOpen(false); stop(); };
+        $('#psSnap').onclick = () => psSnap(); $('#psDone').onclick = () => psCamOn(false);
+        document.querySelectorAll('#psBar [data-k]').forEach(b => b.onclick = () => psCycle(b.dataset.k, +(b.dataset.d || 1))); }
+      $('#psGalBtn').classList.add('show'); photostudioEnter(); }
     $('#wpBox').style.display = mode === 'waterpark' ? '' : 'none'; ['#wpAct', '#wpPanel', '#wpRides'].forEach(id => $(id).classList.remove('show'));
     if (mode === 'waterpark'){ if (!window.__wpBound){ window.__wpBound = true;
         $('#wpAct').onclick = () => wpAct(); $('#wpRides').onclick = () => wp && !wp.ride && !wp.race.me && wpMenu(true); $('#wpClose').onclick = () => wpMenu(false); $('#wpHome').onclick = () => { wpMenu(false); stop(); }; }
@@ -10282,13 +10481,15 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
 
   // debug / test hook
   window.obbyDebug = {
+    photo: () => psx && {s: Object.assign({}, psx.s), cam: psx.cam, count: psx.count, gal: psx.gal, near: psx.near, photos: psGallery().length, cp: psCamPos(psx.s, 0, .45, 0)},
+    psCam: o => psCamOn(o), psSnap: () => psSnap(), psCap: () => psCapture(), psCycle: (k, d) => psCycle(k, d), psGal: o => psGalOpen(o), psView: i => { const g = psGallery().slice().reverse(); if (psx && g[i]){ psx.view = g[i].id; psGalRender(); return true; } return false; },
     waterpark: () => wp && {ride: wp.ride && {i: wp.ride.i, d: +wp.ride.d.toFixed(1)}, race: {ph: wp.race.ph, n: wp.race.n, t: +wp.race.t.toFixed(1), me: wp.race.me && {d: +wp.race.me.d.toFixed(1), off: +wp.race.me.off.toFixed(2), fin: wp.race.me.fin}, res: wp.race.res, npcs: wp.race.npcs.length}, prog: wpProg(), menu: wp.menu, L: +wp.river.L.toFixed(1), earned: wp.earned, P: {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2)}},
     wpRide: i => wpRideStart(i), wpRace: () => wpRaceStart(), wpMenu: o => wpMenu(o), wpTo(x, z){ Object.assign(P, {x, y: .05, z, vx: 0, vy: 0, vz: 0}); },
     bakery: () => bk && {st: bk.st, orders: bk.orders, lv: bk.lv, served: bk.served, earned: bk.earned, panel: bk.panel, near: bk.near, remote: bk.remote, prog: bkProg(), npc: Object.keys(bk.npcM).length},
@@ -10595,7 +10796,7 @@ const Obby = (() => {
   }
   function closeOf(c){
     const id = c.root.id;
-    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', fsPick: '#fsExplore', fsEnd: '#fsHome2', fsWard: '#fsWardClose', piPanel: '#piClose', bkPanel: '#bkClose', wpPanel: '#wpClose', bShare: '#bShareClose', bTestEnd: '#bTestBack', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pTrickPanel: '#pTrickClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
+    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', fsPick: '#fsExplore', fsEnd: '#fsHome2', fsWard: '#fsWardClose', piPanel: '#piClose', bkPanel: '#bkClose', wpPanel: '#wpClose', psGal: '#psGalClose', bShare: '#bShareClose', bTestEnd: '#bTestBack', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pTrickPanel: '#pTrickClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
     if (id === 'rcPick'){ const b = document.querySelector('#rcBack'); if (b && !b.hidden) return b; }   // B in the ride list = back to the modes
     if (map[id]) return document.querySelector(map[id]);
     return null;
