@@ -459,6 +459,9 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .pdrive #oJump,.pdrive #oEmoBtn,.pdrive #oRun,.pdrive #oFP{display:none!important}
 .rmode #oEmoBtn,.rmode #oRun,.rmode #oStam{display:none!important}
 .smode #oStam{display:none!important}
+.wpnear{background:#3a86ff;box-shadow:0 4px 0 #2563c9}.wpnear small{color:#3a86ff}.wpbtn{background:#3ac6ff;box-shadow:0 4px 0 #1f8fc0}
+.wplist{display:flex;flex-direction:column;gap:8px;margin:8px 0}.wprb{display:flex;flex-direction:column;align-items:center}.wprb small{font-size:12px;font-weight:800;opacity:.85}.wprb:disabled{opacity:.5}
+@media (max-width:760px),(max-height:520px){#wpPanel .emoji{display:none}#wpPanel h2{font-size:18px;margin:0}.wprb{padding:6px 12px;font-size:15px}.wplist{gap:5px;max-height:58vh;overflow:auto}}
 .bkorders{position:absolute;left:10px;top:64px;z-index:5;display:flex;flex-direction:column;gap:5px;pointer-events:none}
 .bkord{position:relative;overflow:hidden;background:rgba(255,255,255,.92);border:3px solid #ff6fb5;border-radius:12px;padding:3px 9px 7px;font-size:20px;font-weight:900;color:#1d2340}
 .bkord i{position:absolute;left:0;bottom:0;height:4px;background:#2ec27e}
@@ -938,6 +941,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   <div class="ohud">
     <div class="ostats">
       <span id="oStageBox">🏁 Lv <b id="oLvl">1</b><span id="oCpWrap"> · 🚩 <b id="oStage">1</b>/<b id="oStageN">3</b></span></span>
+      <span id="wpBox" style="display:none"><b id="wpN">🌊 Water Park</b></span>
       <span id="bkBox" style="display:none">🧁 Bakery · <b id="bkN">🎂 0</b></span>
       <span id="piBox" style="display:none">🏝️ Pet Island · <b id="piN">💰 0/8</b></span>
       <span id="auBox" style="display:none">🍂 Autumn Farm · <b id="auN">🎃 0/12</b></span>
@@ -1090,6 +1094,13 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="owinbtns"><button class="big gray" id="pRetNo">↩️ Never mind</button><button class="big" id="pRetYes" hidden>💕 Return</button></div>
   </div></div>
   <div class="pflash" id="pFlash"></div>
+  <button class="fsnear wpnear" id="wpAct"></button>
+  <button class="fswardbtn wpbtn" id="wpRides">🎢 Rides</button>
+  <div class="opanel" id="wpPanel"><div class="mbox rcbox">
+    <span class="emoji">🌊</span><h2>Pick a ride!</h2>
+    <div class="wplist" id="wpList"></div>
+    <div class="row"><button class="big gray" id="wpClose">👋 Not now</button><button class="big gray" id="wpHome">🏠 Home</button></div>
+  </div></div>
   <div class="bkorders" id="bkOrders" style="display:none"></div>
   <button class="fsnear bknear" id="bkAct"></button>
   <div class="opanel" id="bkPanel"><div class="mbox rcbox bkbox">
@@ -1275,7 +1286,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.07-2';
+const BUILD = '2026.11.07-3';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -1990,6 +2001,7 @@ $('#saveAv').onclick = () => {
 
 /* ---------- games ---------- */
 const GAMES = [
+  {id:'waterpark', name:'Splash Summit Water Park', emoji:'🌊', tag:'Zoom down giant slides and race floats round the lazy river!', draw: drawWaterPark, playable: true, isNew: true},
   {id:'bakery', name:'Sweet Team Bakery', emoji:'🧁', tag:'Bake & decorate cakes with friends, fill orders, earn coins!', draw: drawBakery, playable: true, isNew: true},
   {id:'petisland', name:'Pet Adventure Island', emoji:'🏝️', tag:'Explore with your pet: dig up treasure, open secret caves, solve puzzles!', draw: drawPetIsland, playable: true, isNew: true},
   {id:'autumn', name:'Cozy Autumn Farm', emoji:'🍂', tag:'Jump in leaf piles, climb hay bales, find 12 pumpkins!', draw: drawAutumn, playable: true, isNew: true},
@@ -2053,6 +2065,15 @@ function drawLava(ctx){
   for (let x = 0; x <= 320; x += 10) ctx.lineTo(x, 150 + Math.sin(x/22 + t)*6);
   ctx.lineTo(320, 200); ctx.fill();
   ctx.fillStyle = '#ffd23f'; for (let i = 0; i < 8; i++){ ctx.fillRect((i*47 + t*20) % 320, 168 + (i%3)*8, 8, 8); }
+}
+function drawWaterPark(ctx){
+  sky(ctx, '#7fd6ff', '#e0f7ff');
+  ctx.fillStyle = '#f2e6c9'; ctx.fillRect(0, 150, 320, 50); ctx.fillStyle = '#3ac6ff'; ctx.beginPath(); ctx.ellipse(160, 172, 130, 18, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#9aa0ab'; ctx.fillRect(40, 40, 22, 120); ctx.fillStyle = '#8b5cf6'; ctx.beginPath(); ctx.moveTo(30, 42); ctx.lineTo(51, 18); ctx.lineTo(72, 42); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(139,92,246,.85)'; ctx.lineWidth = 12; ctx.beginPath(); ctx.moveTo(62, 46); ctx.bezierCurveTo(150, 40, 40, 110, 140, 120); ctx.bezierCurveTo(200, 128, 170, 160, 190, 168); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,77,94,.85)'; ctx.beginPath(); ctx.moveTo(250, 30); ctx.lineTo(262, 160); ctx.stroke(); ctx.fillStyle = '#9aa0ab'; ctx.fillRect(240, 26, 22, 8);
+  [[110, '#ff4d5e'], [200, '#ff9f1c']].forEach(([x, c]) => { ctx.strokeStyle = c; ctx.lineWidth = 7; ctx.beginPath(); ctx.ellipse(x, 174, 14, 6, 0, 0, Math.PI * 2); ctx.stroke(); });
+  guy(ctx, 110, 170, 10, '#ffd23f'); ctx.font = '22px sans-serif'; ctx.fillText('💦', 182, 152); ctx.fillText('🏁', 280, 150);
 }
 function drawBakery(ctx){
   sky(ctx, '#ffc9de', '#fff0f6');
@@ -3277,8 +3298,8 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null;
-    if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null;
+    if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -4214,7 +4235,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
       if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
       else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
     }
@@ -4229,6 +4250,7 @@ const Obby = (() => {
   function step(dt){
     worldT += dt;
     if (pt && pt.drive){ carStep(dt); return; }
+    if (wp && wpStep(dt)) return;
     if (rc){ raceStep(dt); return; }
     if (dsp) splashStep(dt);
     if (hs) hideStep(dt);
@@ -4247,7 +4269,7 @@ const Obby = (() => {
     if (!SIM && mode === 'obby') obbyMech(dt);
     if (P.onGround && P.ground){ P.x += P.ground.dx || 0; P.y += P.ground.dy || 0; P.z += P.ground.dz || 0;
       if (P.ground.conv){ P.x += P.ground.conv.x * dt; P.z += P.ground.conv.z * dt; } }
-    const inp = ((hs && hsFrozen()) || (fs && fsFrozen()) || (isl && isl.panel) || (bk && bk.panel >= 0)) ? {x: 0, z: 0, mag: 0, jump: false} : tg && (tg.phase === 'ready' || (tg.phase === 'play' && tg.it === 0 && tg.freeze > 0)) ? {x: 0, z: 0, mag: 0, jump: false} : input();
+    const inp = ((hs && hsFrozen()) || (fs && fsFrozen()) || (isl && isl.panel) || (bk && bk.panel >= 0) || (wp && wp.menu)) ? {x: 0, z: 0, mag: 0, jump: false} : tg && (tg.phase === 'ready' || (tg.phase === 'play' && tg.it === 0 && tg.freeze > 0)) ? {x: 0, z: 0, mag: 0, jump: false} : input();
     const k = Math.min(1, dt * (P.onGround ? (slip || (P.ground && P.ground.ice) ? 1.4 : 14) : 6));
     const wantRun = !SIM && (keys.ShiftLeft || keys.ShiftRight || run.pad || run.touch) && inp.mag > .1;
     if (!SIM){ if ((mode === 'tag' && tg) || (mode === 'hide' && hs)){ if (wantRun && !run.tired){ run.stam -= dt; if (run.stam <= 0){ run.stam = 0; run.tired = true; } } else run.stam = Math.min(STAM_MAX, run.stam + dt * .8); if (run.tired && run.stam >= 1.5) run.tired = false; }
@@ -4283,7 +4305,7 @@ const Obby = (() => {
     if (mode === 'lava') return lavaChecks();
     if (mode === 'splash') return splashChecks();
     if (mode === 'nds') return ndsChecks();
-    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -4835,6 +4857,7 @@ const Obby = (() => {
       if (running && hs && !hs.remote && mode === 'hide') msg.hs = hideWire();
       if (running && fs && !fs.remote && mode === 'fashion') msg.fs = fashionWire();
       if (running && bk && !bk.remote && mode === 'bakery') msg.bk = bakeryWire();
+      if (running && wp && mp.host && mode === 'waterpark') msg.wp = waterparkWire();
       if (running && bw && mode === 'build') msg.bt = bwWire();
       if (ops) msg.o = ops;
       mpBroadcast(msg);
@@ -4947,6 +4970,7 @@ const Obby = (() => {
     else if (d.t === 'splashev') splashGuestEv(g, d);
     else if (d.t === 'fsfit' || d.t === 'fsready' || d.t === 'fspose' || d.t === 'fsrate') fsGuestMsg(g, d);
     else if (d.t === 'bkact') bkGuestMsg(g, d);
+    else if (d.t === 'wpprog') wpGuestMsg(g, d);
     else if (d.t === 'btfin'){ if (running && bw && bw.test && mode === 'build') bwResAdd(g.name, Math.max(0, Math.min(3600, +d.tm || 0))); }
     else if (d.t === 'getblocks'){ if (running && bw && mode === 'build') mpSendTo(g.conn, {t: 'blocks', c: bwSerialize()}); }
     else if (d.t === 'bye') mpDrop(g, 'left');
@@ -5011,6 +5035,7 @@ const Obby = (() => {
     if (d.hs) hideFromHost(d.hs);
     if (d.fs) fashionFromHost(d.fs);
     if (d.bk) bakeryFromHost(d.bk);
+    if (d.wp) waterparkFromHost(d.wp);
     if (d.bt) bwFromHost(d.bt);
     if (d.tg && tg && tg.remote && running && mode === 'tag' && tg.phase !== 'end') mpTagWire(d.tg);
     if (d.o) mpApplyOps(d.o);
@@ -9421,8 +9446,8 @@ const Obby = (() => {
     const h = bk.orders.slice().sort((a, b) => a.slot - b.slot).map(o => '<div class="bkord">' + bkOrderTxt(o) + '<i style="width:' + Math.max(0, Math.round(o.t / o.T * 100)) + '%"></i></div>').join('') || '<div class="bkord">🛎️ Waiting for orders…</div>';
     if (bk.ordH !== h){ bk.ordH = h; $('#bkOrders').innerHTML = h; } }
   function bkOrderTxt(o){ const f = (L, v) => (L.find(r => r[0] === v) || ['', '?'])[1]; return (o.who >= 0 && !mp.on ? BK_NPCS[o.who][1] + ' ' : '🧾 ') + f(BK_SH, o.sh) + f(BK_FL, o.fl) + (o.ti === 2 ? '2️⃣' : '') + f(BK_FR, o.fr) + f(BK_TP, o.tp); }
-  function bkPanel(i){ if (!bk) return; if (i < 0){ bk.panel = -1; $('#bkPanel').classList.remove('show'); choosing = false; bk.near = -2; return; }
-    bk.panel = i; bkPanelRender(); choosing = true; for (const k in keys) keys[k] = false; joy.x = joy.y = 0; $('#bkPanel').classList.add('show'); $('#bkAct').classList.remove('show'); }
+  function bkPanel(i){ if (!bk) return; if (i < 0){ bk.panel = -1; $('#bkPanel').classList.remove('show'); bk.near = -2; return; }
+    bk.panel = i; bkPanelRender(); for (const k in keys) keys[k] = false; joy.x = joy.y = 0; $('#bkPanel').classList.add('show'); $('#bkAct').classList.remove('show'); }
   function bkPanelRender(){
     const i = bk.panel; if (i < 0) return; const S = bk.st[i], ul = bkUnlocked(bk.lv);
     const row = (k, L, lab, on) => '<div class="fsrow"><b>' + lab + '</b>' + L.map(r => { const lock = k === 'tp' && !ul.includes(r[0]);
@@ -9440,7 +9465,239 @@ const Obby = (() => {
   }
   function bkPad(jp){ if (!bk) return false; if (bk.panel >= 0) return false; if (jp[2]){ if (bk.near >= 0) bkPanel(bk.near); return true; } return false; }
   function bkKey(e){ if (!bk || e.repeat || paused) return false; if (e.code === 'KeyE'){ if (bk.panel >= 0) bkPanel(-1); else if (bk.near >= 0) bkPanel(bk.near); return true; } return false; }
-  function bakeryStop(){ if (bk && bk.panel >= 0) choosing = false; bk = null; ['#bkAct', '#bkPanel'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
+  function bakeryStop(){ bk = null; ['#bkAct', '#bkPanel'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
+  /* ===================== t214u: 🌊 SPLASH SUMMIT WATER PARK — giant slides + lazy-river float races ===================== */
+  const WP_KEY = 'rubloxWaterPark';
+  const WP_SLIDE_PAY = 3, WP_RACE_PAY = [15, 10, 6, 3], WP_BEST_PAY = 10, WP_RACES_DAY = 3, WP_LAPS = 3, WP_CP = 6;
+  const WP_NPCS = [['Splashy Sam', '🐬', {head: '#f1c27d', shirt: '#3ac6ff', pants: '#ffd23f', hair: 'spiky', hairColor: '#e9b949'}], ['Bubbles', '🫧', {head: '#ffdbac', shirt: '#ff6fb5', pants: '#8b5cf6', hair: 'pigtails', hairColor: '#8a3b12'}], ['Captain Kai', '⚓', {head: '#8d5524', shirt: '#2ec27e', pants: '#1d2340', hair: 'short', hairColor: '#1d1d1d'}]];
+  let wp = null;
+  // --- curves (Catmull-Rom through control points, sampled by distance) ---
+  function wpPath(ctrl, closed, per){
+    per = per || 16; const n = ctrl.length, pts = [], P0 = i => ctrl[closed ? (i + n) % n : Math.max(0, Math.min(n - 1, i))];
+    const segs = closed ? n : n - 1;
+    for (let s = 0; s < segs; s++){ const a = P0(s - 1), b = P0(s), c = P0(s + 1), d = P0(s + 2);
+      for (let k = 0; k < per; k++){ const t = k / per, t2 = t * t, t3 = t2 * t, f = i => .5 * ((2 * b[i]) + (-a[i] + c[i]) * t + (2 * a[i] - 5 * b[i] + 4 * c[i] - d[i]) * t2 + (-a[i] + 3 * b[i] - 3 * c[i] + d[i]) * t3);
+        pts.push([f(0), f(1), f(2)]); } }
+    if (!closed) pts.push(ctrl[n - 1].slice()); else pts.push(pts[0].slice());
+    const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1], pts[i][2] - pts[i - 1][2]));
+    return {pts, cum, L: cum[cum.length - 1], closed};
+  }
+  function wpAt(p, d){
+    if (p.closed) d = ((d % p.L) + p.L) % p.L; else d = Math.max(0, Math.min(p.L, d));
+    let lo = 0, hi = p.cum.length - 1; while (hi - lo > 1){ const m = (lo + hi) >> 1; if (p.cum[m] <= d) lo = m; else hi = m; }
+    const a = p.pts[lo], b = p.pts[hi], seg = p.cum[hi] - p.cum[lo] || 1, t = (d - p.cum[lo]) / seg;
+    return {x: a[0] + (b[0] - a[0]) * t, y: a[1] + (b[1] - a[1]) * t, z: a[2] + (b[2] - a[2]) * t, h: Math.atan2(b[0] - a[0], b[2] - a[2])};
+  }
+  function wpTwister(){ const c = [], cx = -22, cz = -12; for (let i = 0; i <= 20; i++){ const a = i / 20 * Math.PI * 5; c.push([cx + Math.cos(a) * 5, 14 - i / 20 * 13, cz + Math.sin(a) * 5]); } c.push([-22, .7, 1]); c.push([-22, .45, 6]); return c; }
+  const WP_SLIDES = [
+    {id: 'twister', name: 'Tornado Twister', e: '🌀', col: '#8b5cf6', ctrl: wpTwister(), tower: [-22, -12, 14], pad: [-30, -12], exit: [-17.5, 9], pool: [-22, 7]},
+    {id: 'drop', name: 'Mega Drop', e: '⚡', col: '#ff4d5e', ctrl: [[0, 18, -30], [0, 17.6, -27.5], [0, 12, -22], [0, 4.5, -15], [0, 1, -8.5], [0, .5, -3.5], [0, .45, 0]], tower: [0, -32, 18], pad: [6, -32], exit: [4.5, 2.5], pool: [0, 1]},
+    {id: 'rainbow', name: 'Rainbow Wave', e: '🌈', col: '#ffd23f', ctrl: [[22, 12, -14], [22, 11.5, -11], [26.5, 8.5, -6.5], [19.5, 6.5, -1.5], [26.5, 4.2, 3.5], [20.5, 2.2, 8], [23, .7, 12], [23, .45, 15]], tower: [22, -16, 12], pad: [29, -16], exit: [27.5, 17.5], pool: [23, 15]},
+  ];
+  const WP_RIVER = [[-30, 0, 22], [0, 0, 21], [30, 0, 22], [37, 0, 30], [30, 0, 38], [0, 0, 39], [-30, 0, 38], [-37, 0, 30]];
+  const WP_DOCK = [0, 18];
+  function wpDay(){ return new Date().toDateString(); }
+  function wpProg(){
+    const o = load(WP_KEY, null), r = o && typeof o === 'object' ? o : {}, day = wpDay(), same = r.day === day;
+    const rides = {}; WP_SLIDES.forEach(s => rides[s.id] = Math.max(0, (r.rides && r.rides[s.id]) | 0));
+    return {day, rides, paid: same && Array.isArray(r.paid) ? r.paid.filter(id => WP_SLIDES.some(s => s.id === id)) : [], races: same ? Math.max(0, Math.min(WP_RACES_DAY, r.races | 0)) : 0,
+      best: +r.best > 0 ? +r.best : 0, raced: Math.max(0, r.raced | 0), wins: Math.max(0, r.wins | 0), coins: Math.max(0, +r.coins || 0)};
+  }
+  function wpSave(p){ save(WP_KEY, p); }
+  const wpUid = () => mp.on ? mp.me : 'H';
+  function wpPay(n){ if (n <= 0) return; setCoins(coins + n); runCoins = (runCoins || 0) + n; wp.earned += n; const p = wpProg(); p.coins += n; wpSave(p); SND.coin(); }
+  const wpFmt = s => (s / 60 | 0) + ':' + ('0' + (s % 60).toFixed(1)).slice(-4);
+  // --- slides ---
+  function wpRideStart(i){
+    if (!wp || wp.ride || wp.race.me) return false; const S = WP_SLIDES[i]; if (!S) return false;
+    wp.ride = {i, d: 0, v: 4, t: 0}; const a = wpAt(S.path, 0); Object.assign(P, {x: a.x, y: a.y + .35, z: a.z, vx: 0, vy: 0, vz: 0}); P.face = a.h;
+    wpMenu(false); banner(S.e + ' ' + S.name + '! Wheeee!'); SND.jump && SND.jump(); return true;
+  }
+  function wpRideStep(dt){
+    const R = wp.ride, S = WP_SLIDES[R.i], y0 = S.path.pts[0][1]; R.t += dt;
+    const a0 = wpAt(S.path, R.d); R.v = Math.max(5, Math.min(19, 5 + Math.sqrt(Math.max(0, 2 * 9.8 * (y0 - a0.y))) * .8)); R.d += R.v * dt;
+    const a = wpAt(S.path, R.d); Object.assign(P, {x: a.x, y: a.y + .35, z: a.z, vx: 0, vy: 0, vz: 0}); P.face = a.h; P.onGround = false;
+    if (typeof cam !== 'undefined') cam.yaw += (((a.h + Math.PI) - cam.yaw + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, dt * 3);
+    if (R.d >= S.path.L) wpRideEnd();
+  }
+  function wpRideEnd(){
+    const S = WP_SLIDES[wp.ride.i], t = wp.ride.t; wp.ride = null;
+    Object.assign(P, {x: S.exit[0], y: .05, z: S.exit[1], vx: 0, vy: 5, vz: 0}); P.onGround = false;
+    wpSplash(S.pool[0], .3, S.pool[1], 22);
+    const p = wpProg(); p.rides[S.id]++; let pay = 0; if (!p.paid.includes(S.id)){ p.paid.push(S.id); pay = WP_SLIDE_PAY; } wpSave(p);
+    if (pay) wpPay(pay);
+    banner('💦 SPLASH! ' + S.name + ' in ' + t.toFixed(1) + 's' + (pay ? ' · +' + pay + ' 🪙 (first ride today)' : ' · ride #' + p.rides[S.id]));
+    wpHud();
+  }
+  // --- float race ---
+  function wpRaceNew(n){ return {ph: 'idle', n: n || 0, t: 0, me: null, npcs: [], prog: {}, fin: {}, res: null, endT: 0, paid: false}; }
+  function wpRacer(lane){ return {d: -lane * 2.2 - 1, off: [-1.6, 1.6, -.5, .5, 0][lane % 5], v: 0, boost: 0, cd: 0, cp: 0, lap: 0, fin: 0, sp: 0}; }
+  function wpRaceStart(){   // solo or host: start a countdown
+    if (!wp || wp.ride || (mp.on && !mp.host)) return false; if (wp.race.ph === 'count' || wp.race.ph === 'go') return false;
+    const n = wp.race.n + 1; wp.race = wpRaceNew(n); wp.race.ph = 'count'; wp.race.t = 3.5; wpRaceJoin(0); wpMenu(false);
+    if (!mp.on) wp.race.npcs = WP_NPCS.map((N, i) => Object.assign(wpRacer(i + 1), {u: 'n' + i, base: 9.2 + i * .35 + Math.random() * .5, m: wpNpcModel(i)}));
+    banner('🛟 Float race! ' + WP_LAPS + ' laps of the Lazy River — steer into the ⚡ rings!'); return true;
+  }
+  function wpRaceJoin(lane){ wp.race.me = wpRacer(lane); wp.race.me.u = wpUid(); const a = wpAt(wp.river, wp.race.me.d); Object.assign(P, {x: a.x, y: .25, z: a.z, vx: 0, vy: 0, vz: 0}); P.face = a.h; if (wp.floatM) wp.floatM.visible = true; }
+  function wpInput(){
+    const steer = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0) + (joy.x || 0) + (pad.x || 0);
+    const fwd = (keys.KeyW || keys.ArrowUp ? 1 : 0) + Math.max(0, joy.y || 0) + Math.max(0, pad.y || 0);
+    return {steer: Math.max(-1, Math.min(1, steer)), fwd: Math.max(0, Math.min(1, fwd)), paddle: !!(keys.Space || joy.jump || pad.jump)};
+  }
+  // advance one racer (player or NPC); returns true when it crosses the finish
+  function wpRacerStep(r, dt, inp, now){
+    if (r.fin) { r.d += 3 * dt; return false; }
+    r.cd = Math.max(0, r.cd - dt); r.boost = Math.max(0, r.boost - dt);
+    if (inp.paddle && r.cd <= 0){ r.cd = 1.2; r.boost = Math.max(r.boost, .6); }
+    const target = (r.base || 8.6) + inp.fwd * 2.6 + (r.boost > 0 ? 5 : 0); r.v += (target - r.v) * Math.min(1, dt * 2.5); r.sp = r.v;
+    r.off = Math.max(-2.4, Math.min(2.4, r.off + inp.steer * 4 * dt));
+    const before = r.d; r.d += r.v * dt; const L = wp.river.L;
+    wp.rings.forEach(g => { const rd = g.d; for (let k = 0; k <= WP_LAPS; k++){ const x = rd + k * L; if (before < x && r.d >= x && Math.abs(r.off - g.off) < 1.15){ r.boost = 1.6; if (r === wp.race.me){ SND.boing && SND.boing(); banner('⚡ BOOST!'); } } } });
+    const cpLen = L / WP_CP, cp = Math.floor(Math.max(0, r.d) / cpLen); if (cp > r.cp){ r.cp = cp; if (r === wp.race.me && cp % WP_CP !== 0) SND.cp(); }
+    const lap = Math.floor(Math.max(0, r.d) / L); if (lap > r.lap){ r.lap = lap; if (r === wp.race.me && lap < WP_LAPS) banner('🏁 Lap ' + (lap + 1) + '/' + WP_LAPS + ' · ' + wpFmt(now)); }
+    if (r.d >= WP_LAPS * L){ r.fin = now; return true; } return false;
+  }
+  function wpNpcInput(r, t){ const ring = wp.rings.find(g => { const x = ((g.d - r.d) % wp.river.L + wp.river.L) % wp.river.L; return x < 14; }); const want = ring ? ring.off : Math.sin(t * .4 + r.base) * 1.2;
+    return {steer: Math.max(-1, Math.min(1, (want - r.off) * 1.5)), fwd: .55 + .45 * Math.sin(t * .7 + r.base * 3), paddle: Math.random() < .015}; }
+  function wpRaceStep(dt){
+    const R = wp.race, me = R.me; if (!me) return;
+    if (R.ph === 'count'){ const a = wpAt(wp.river, me.d), nx = Math.cos(a.h), nz = -Math.sin(a.h); Object.assign(P, {x: a.x + nx * me.off, y: .25, z: a.z + nz * me.off, vx: 0, vy: 0, vz: 0}); P.face = a.h; return; }
+    if (R.ph !== 'go' && !(R.ph === 'done' && !me.fin)) return;
+    if (!me.fin && wpRacerStep(me, dt, wpInput(), R.t)) wpFinish();
+    const a = wpAt(wp.river, me.d), nx = Math.cos(a.h), nz = -Math.sin(a.h);
+    Object.assign(P, {x: a.x + nx * me.off, y: .25 + Math.sin(worldT * 3) * .05, z: a.z + nz * me.off, vx: 0, vy: 0, vz: 0}); P.face = a.h; P.onGround = true;
+    if (typeof cam !== 'undefined') cam.yaw += (((a.h + Math.PI) - cam.yaw + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, dt * 2.5);
+  }
+  function wpFinish(){
+    const R = wp.race, me = R.me; R.fin[me.u] = +me.fin.toFixed(2); SND.win && SND.win();
+    if (mp.on && !mp.host) mpSendTo(mp.hconn, {t: 'wpprog', n: R.n, d: +me.d.toFixed(1), fin: R.fin[me.u]});
+    banner('🏁 FINISH! ' + wpFmt(me.fin)); if (!mp.on) wpSoloResults();
+  }
+  function wpSoloResults(){
+    const R = wp.race, all = [R.me].concat(R.npcs);
+    R.npcs.forEach(n => { if (!n.fin){ const left = WP_LAPS * wp.river.L - n.d; n.fin = R.t + Math.max(.5, left / Math.max(6, n.v)); } });
+    R.res = all.slice().sort((a, b) => a.fin - b.fin).map(r => [r.u, +r.fin.toFixed(2)]); R.ph = 'done'; R.endT = 6; wpPaid();
+  }
+  // host: rank everyone (finished by time, then by distance) — guests are paid from this list
+  function wpHostResults(){ const R = wp.race, us = Object.keys(R.prog);
+    R.res = us.map(u => [u, R.fin[u] || 0, R.prog[u] || 0]).sort((a, b) => (a[1] && b[1]) ? a[1] - b[1] : a[1] ? -1 : b[1] ? 1 : b[2] - a[2]).map(r => [r[0], r[1]]); R.ph = 'done'; R.endT = 7; wpPaid(); }
+  function wpPaid(){
+    const R = wp.race; if (R.paid || !R.res) return; R.paid = true; const me = wpUid(), k = R.res.findIndex(r => r[0] === me); if (k < 0) return;
+    const t = R.res[k][1], p = wpProg(); p.raced++; if (k === 0 && R.res.length > 1) p.wins++;
+    let pay = 0, msg = ''; const newBest = t > 0 && (!p.best || t < p.best);
+    if (p.races < WP_RACES_DAY){ p.races++; pay = WP_RACE_PAY[k] || 2; if (newBest) pay += WP_BEST_PAY; msg = ' · +' + pay + ' 🪙'; } else msg = ' · (race coins maxed for today)';
+    if (newBest) p.best = t; wpSave(p); wpPay(pay);
+    banner((['🥇 You won', '🥈 2nd place', '🥉 3rd place'][k] || '🏁 Place ' + (k + 1)) + (t ? ' · ' + wpFmt(t) : '') + (newBest ? ' · ⭐ NEW BEST!' : '') + msg);
+    if (k === 0 || newBest) confetti(); wpHud();
+  }
+  function wpRaceTick(dt){
+    const R = wp.race; if (R.ph === 'idle') return; R.t += dt;
+    if (R.ph === 'count'){ R.t -= dt; R.t -= dt; const s = Math.ceil(R.t); if (s !== R.lastS){ R.lastS = s; if (s > 0) banner(s === 3 ? '3️⃣' : s === 2 ? '2️⃣' : '1️⃣'); }
+      if (R.t <= 0){ R.ph = 'go'; R.t = 0; banner('💦 GO! Paddle with Space / Ⓐ / ⬆️'); } return; }
+    if (R.ph === 'go'){
+      R.npcs.forEach(n => { if (!n.fin) wpRacerStep(n, dt, wpNpcInput(n, R.t), R.t); });
+      if (wp.race.me) R.prog[wp.race.me.u] = wp.race.me.d;
+      if (mp.on && mp.host){ const us = Object.keys(R.prog), done = us.filter(u => R.fin[u]).length; if (done && !R.firstFin) R.firstFin = R.t; if ((us.length && done === us.length) || (R.firstFin && R.t - R.firstFin > 45) || R.t > 300) wpHostResults(); }
+      if (mp.on && !mp.host && R.me && !R.me.fin && (R.sendT = (R.sendT || 0) - dt) <= 0){ R.sendT = .3; mpSendTo(mp.hconn, {t: 'wpprog', n: R.n, d: +R.me.d.toFixed(1), fin: 0}); }
+    }
+    if (R.ph === 'done'){ R.endT -= dt; if (R.endT <= 0 && (!mp.on || mp.host)) wpRaceEnd(); }
+  }
+  function wpRaceEnd(){ const n = wp.race.n; wp.race.npcs.forEach(r => r.m && scene.remove(r.m.g)); const wasIn = !!wp.race.me; wp.race = wpRaceNew(n); if (wp.floatM) wp.floatM.visible = false;
+    if (wasIn){ Object.assign(P, {x: WP_DOCK[0] + 3, y: .05, z: WP_DOCK[1] - 2, vx: 0, vy: 0, vz: 0}); P.face = Math.PI; } wpHud(); }
+  function wpGuestMsg(g, d){ if (!wp || !mp.host || d.t !== 'wpprog' || (d.n | 0) !== wp.race.n || wp.race.ph !== 'go') return;
+    wp.race.prog[g.uid] = Math.max(wp.race.prog[g.uid] || 0, Math.min(WP_LAPS * wp.river.L + 50, +d.d || 0)); if (+d.fin > 3 && !wp.race.fin[g.uid]) wp.race.fin[g.uid] = Math.min(999, +d.fin); }
+  function waterparkWire(){ const R = wp.race; return {ph: R.ph, n: R.n, t: +R.t.toFixed(2), res: R.res, prog: R.prog}; }
+  function waterparkFromHost(w){
+    if (!wp || !w || typeof w !== 'object' || !mp.on || mp.host || mode !== 'waterpark') return;
+    const n = w.n | 0, ph = ['idle', 'count', 'go', 'done'].includes(w.ph) ? w.ph : 'idle';
+    if (!wp.synced){ wp.synced = true; wp.race.n = n; if (ph !== 'idle') return; }   // joined mid-race: wait for the next one
+    if (n > wp.race.n && ph === 'count'){ wp.race = wpRaceNew(n); wp.race.ph = 'count'; wp.race.t = Math.max(0, +w.t || 0); if (wp.ride) wp.ride = null; wpMenu(false); wpRaceJoin(1 + (Math.abs(String(mp.me).split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % 4)); banner('🛟 The host started a float race!'); return; }
+    if (n !== wp.race.n) return; const R = wp.race;
+    if (ph === 'go' && R.ph === 'count'){ R.ph = 'go'; R.t = Math.max(0, +w.t || 0); banner('💦 GO!'); }
+    if (ph === 'done' && Array.isArray(w.res)){ R.res = w.res.filter(r => Array.isArray(r) && typeof r[0] === 'string').slice(0, 8).map(r => [r[0], Math.max(0, Math.min(999, +r[1] || 0))]); R.ph = 'done'; wpPaid(); }
+    if (ph === 'idle' && R.ph !== 'idle') wpRaceEnd();
+    R.standings = w.prog && typeof w.prog === 'object' ? w.prog : {};
+  }
+  // --- world ---
+  function wpDeco(geo, col, x, y, z, par){ const m = new THREE.Mesh(geo, fmat(col)); m.position.set(x, y, z); (par || scene).add(m); return m; }
+  function wpWaterMat(){ return new THREE.MeshLambertMaterial({color: '#3ac6ff', transparent: true, opacity: .85}); }
+  function wpNpcModel(i){ const N = WP_NPCS[i], m = buildPlayer(Object.assign({}, DEF, N[2])); scene.add(m.g); const f = wpDeco(new THREE.TorusGeometry(.75, .28, 8, 16), ['#ff9f1c', '#ff6fb5', '#2ec27e'][i], 0, .9, 0, m.g); f.rotation.x = Math.PI / 2;
+    const lab = label(N[1] + ' ' + N[0], 'rgba(29,35,64,.75)'); lab.position.y = 3.5; m.g.add(lab); return m; }
+  function wpSplash(x, y, z, n){ for (let i = 0; i < n; i++){ const m = new THREE.Mesh(new THREE.SphereGeometry(.12, 5, 4), new THREE.MeshBasicMaterial({color: i % 2 ? '#ffffff' : '#8ce0ff', transparent: true})); m.position.set(x, y, z); scene.add(m);
+      const a = Math.random() * 6.28, s = 1.5 + Math.random() * 3; wp.fx.push({m, vx: Math.cos(a) * s, vy: 4 + Math.random() * 4, vz: Math.sin(a) * s, t: 1.2}); } }
+  function buildWaterPark(){
+    scene.background = new THREE.Color('#aee8ff');
+    wp = {river: wpPath(WP_RIVER, true, 18), ride: null, race: wpRaceNew(0), rings: [], fx: [], menu: false, near: null, earned: 0, synced: false, floatM: null};
+    WP_SLIDES.forEach(S => S.path = wpPath(S.ctrl, false, 14));
+    plat(0, 0, 0, 100, 100, '#f2e6c9', 2);
+    for (let x = -48; x < 49; x += 4) for (let z = -48; z < 49; z += 4) if (((x + z) / 4) % 2 === 0) wpDeco(new THREE.BoxGeometry(4, .02, 4), '#e8d9b5', x + 2, .01, z + 2);
+    [[0, -50, 100, 1], [0, 50, 100, 1], [-50, 0, 1, 100], [50, 0, 1, 100]].forEach(([x, z, w, d]) => plat(x, 2.5, z, w, d, '#7bd389', 2.5, {noEdge: true}));
+    const sg = label('🌊 Splash Summit Water Park', 'rgba(58,198,255,.95)', '#fff', 440); sg.position.set(0, 5.5, 8); scene.add(sg);
+    // slides: tower, coloured tube, supports, splash pool, entry pad
+    WP_SLIDES.forEach((S, i) => {
+      const [tx, tz, th] = S.tower; plat(tx, th - .4, tz, 3.2, 3.2, '#9aa0ab', th - .4); wpDeco(new THREE.ConeGeometry(2.6, 2, 4), S.col, tx, th + 1.6, tz).rotation.y = Math.PI / 4;
+      const v = S.path.pts.map(p => new THREE.Vector3(p[0], p[1], p[2])), curve = new THREE.CatmullRomCurve3(v);
+      const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, Math.max(40, S.path.pts.length), .95, 10, false), new THREE.MeshLambertMaterial({color: S.col, transparent: true, opacity: .55, side: THREE.DoubleSide})); scene.add(tube);
+      for (let k = 6; k < S.path.pts.length - 2; k += 6){ const p = S.path.pts[k]; if (p[1] > 1.2) wpDeco(new THREE.CylinderGeometry(.12, .12, p[1] - .9, 6), '#ffffff', p[0], (p[1] - .9) / 2, p[2]); }
+      const pool = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.6, .1, 24), wpWaterMat()); pool.position.set(S.pool[0], .05, S.pool[1]); scene.add(pool);
+      wpDeco(new THREE.TorusGeometry(3.6, .25, 6, 24), '#ffffff', S.pool[0], .12, S.pool[1]).rotation.x = Math.PI / 2;
+      const pad = wpDeco(new THREE.CylinderGeometry(1.3, 1.3, .14, 18), S.col, S.pad[0], .07, S.pad[1]); S.padM = pad;
+      const l = label(S.e + ' ' + S.name, 'rgba(29,35,64,.85)', '#fff', 300); l.scale.multiplyScalar(.7); l.position.set(S.pad[0], 2.6, S.pad[1]); scene.add(l);
+      const ex = label('🚪 Exit', 'rgba(46,194,126,.9)', '#fff', 140); ex.scale.multiplyScalar(.45); ex.position.set(S.exit[0], 1.6, S.exit[1]); scene.add(ex); });
+    // lazy river loop + checkpoint arches + boost rings
+    const R = wp.river, wm = wpWaterMat();
+    for (let d = 0; d < R.L; d += 1.6){ const a = wpAt(R, d), m = new THREE.Mesh(new THREE.BoxGeometry(6.4, .06, 1.9), wm); m.position.set(a.x, .03, a.z); m.rotation.y = a.h; scene.add(m); }
+    for (let k = 0; k < WP_CP; k++){ const a = wpAt(R, k * R.L / WP_CP), nx = Math.cos(a.h), nz = -Math.sin(a.h), col = k === 0 ? '#ffffff' : ['#ff4d5e', '#ffd23f', '#2ec27e', '#3a86ff', '#8b5cf6'][k % 5];
+      [-1, 1].forEach(s => wpDeco(new THREE.CylinderGeometry(.18, .18, 3.6, 6), col, a.x + nx * 3.4 * s, 1.8, a.z + nz * 3.4 * s));
+      const top = wpDeco(new THREE.BoxGeometry(7.2, .35, .35), col, a.x, 3.6, a.z); top.rotation.y = a.h + Math.PI / 2 - Math.PI / 2; top.rotation.y = Math.atan2(nx, nz) + Math.PI / 2;
+      if (k === 0){ const f = label('🏁 START / FINISH', 'rgba(29,35,64,.85)', '#fff', 260); f.scale.multiplyScalar(.6); f.position.set(a.x, 4.6, a.z); scene.add(f); } }
+    [.12, .3, .47, .63, .8, .93].forEach((q, i) => { const d = q * R.L, off = [1.5, -1.5, 0, -1.6, 1.4, -.4][i], a = wpAt(R, d), nx = Math.cos(a.h), nz = -Math.sin(a.h);
+      const ring = wpDeco(new THREE.TorusGeometry(.8, .12, 6, 16), '#ffd23f', a.x + nx * off, .9, a.z + nz * off); ring.rotation.y = a.h; wp.rings.push({d, off, m: ring}); });
+    // race dock + float you ride on
+    const dk = wpDeco(new THREE.CylinderGeometry(1.4, 1.4, .14, 18), '#ff9f1c', WP_DOCK[0], .07, WP_DOCK[1]); const dl = label('🛟 Float Race', 'rgba(29,35,64,.85)', '#fff', 240); dl.scale.multiplyScalar(.7); dl.position.set(WP_DOCK[0], 2.6, WP_DOCK[1]); scene.add(dl);
+    const fl = new THREE.Group(); wpDeco(new THREE.TorusGeometry(.75, .28, 8, 16), '#ff4d5e', 0, 0, 0, fl).rotation.x = Math.PI / 2; fl.visible = false; scene.add(fl); wp.floatM = fl;
+    // palms + umbrellas + loungers
+    [[-40, -40], [40, -40], [-42, 5], [42, 5], [-12, 8], [12, 8], [-40, 44], [40, 44]].forEach(([x, z], i) => { plat(x, 4, z, .5, .5, '#a0703e', 4); for (let k = 0; k < 5; k++){ const a = k / 5 * 6.28, l = wpDeco(new THREE.BoxGeometry(2.2, .08, .6), '#3fa34d', x + Math.cos(a), 4.1, z + Math.sin(a)); l.rotation.y = -a; l.rotation.z = -.3; } });
+    [[-8, 4, '#ff6fb5'], [8, 4, '#3ac6ff'], [-36, 14, '#ffd23f'], [36, 12, '#2ec27e']].forEach(([x, z, c]) => { wpDeco(new THREE.CylinderGeometry(.06, .06, 3, 6), '#ffffff', x, 1.5, z); wpDeco(new THREE.ConeGeometry(1.8, .7, 10), c, x, 3.1, z); plat(x + 1.6, .4, z, 1, 2.2, '#ffffff', .4); });
+    checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 10}, flag: new THREE.Object3D()};
+  }
+  function waterparkEnter(){ P.face = Math.PI; wpHud(); }
+  function wpStep(dt){ if (!wp) return false; if (wp.ride){ wpRideStep(dt); return true; } if (wp.race.me && wp.race.ph !== 'idle'){ wpRaceStep(dt); return true; } return false; }
+  function wpNearest(){ if (wp.ride || wp.race.me) return null; for (let i = 0; i < WP_SLIDES.length; i++){ const S = WP_SLIDES[i]; if (Math.hypot(P.x - S.pad[0], P.z - S.pad[1]) < 2.2) return {k: 'slide', i, t: S.e + ' Ride ' + S.name}; }
+    if (Math.hypot(P.x - WP_DOCK[0], P.z - WP_DOCK[1]) < 2.2) return {k: 'race', t: mp.on && !mp.host ? '🛟 Race starts when the host is ready' : '🛟 Start a float race'}; return null; }
+  function wpAct(){ if (!wp || paused || choosing) return false; const c = wpNearest(); if (!c) return false; if (c.k === 'slide') return wpRideStart(c.i); if (c.k === 'race') return wpRaceStart() || true; return false; }
+  function waterparkUpdate(dt){
+    if (!wp) return; wpRaceTick(dt);
+    const c = wpNearest(), t = c ? c.t : ''; if (t !== wp.nearT){ wp.nearT = t; const b = $('#wpAct'); if (c){ b.innerHTML = t + ' <small>' + (pad.on ? 'Ⓧ' : touchUI ? 'tap' : 'E') + '</small>'; b.classList.add('show'); } else b.classList.remove('show'); }
+    wpHud();
+  }
+  function waterparkAnimate(dt){
+    if (!wp) return; const t = worldT, R = wp.race;
+    wp.rings.forEach((g, i) => g.m.rotation.z = t * 2 + i);
+    if (wp.floatM && wp.floatM.visible){ wp.floatM.position.set(P.x, P.y + .55, P.z); }
+    R.npcs.forEach(n => { const a = wpAt(wp.river, n.d), nx = Math.cos(a.h), nz = -Math.sin(a.h); n.m.g.position.set(a.x + nx * n.off, .25 + Math.sin(t * 3 + n.base) * .05, a.z + nz * n.off); n.m.g.rotation.y = a.h; });
+    wp.fx = wp.fx.filter(b => { b.t -= dt; b.vy -= 9 * dt; b.m.position.x += b.vx * dt; b.m.position.y = Math.max(.05, b.m.position.y + b.vy * dt); b.m.position.z += b.vz * dt; b.m.material.opacity = Math.min(1, b.t);
+      if (b.t <= 0){ scene.remove(b.m); b.m.geometry.dispose(); b.m.material.dispose(); return false; } return true; });
+  }
+  function wpHud(){ if (!wp) return; const R = wp.race, me = R.me; let s;
+    if (wp.ride) s = WP_SLIDES[wp.ride.i].e + ' ' + WP_SLIDES[wp.ride.i].name;
+    else if (me && R.ph === 'count') s = '🛟 Get ready… ' + Math.max(1, Math.ceil(R.t));
+    else if (me && (R.ph === 'go' || R.ph === 'done')){ const lap = Math.min(WP_LAPS, Math.floor(Math.max(0, me.d) / wp.river.L) + 1), cp = Math.floor(Math.max(0, me.d) / (wp.river.L / WP_CP)) % WP_CP;
+      const all = [[me.u, me.d]].concat(R.npcs.map(n => [n.u, n.d])).concat(Object.entries(R.standings || R.prog || {}).filter(([u]) => u !== me.u)), place = 1 + all.filter(([u, d]) => u !== me.u && d > me.d).length;
+      s = '🛟 Lap ' + lap + '/' + WP_LAPS + ' · 🚩 ' + cp + '/' + WP_CP + ' · ⏱️ ' + wpFmt(me.fin || R.t) + ' · #' + place; }
+    else { const p = wpProg(); s = '🌊 Water Park · 🏆 best ' + (p.best ? wpFmt(p.best) : '—') + ' · 🛟 ' + p.races + '/' + WP_RACES_DAY + ' paid races today'; }
+    if ($('#wpN').textContent !== s) $('#wpN').textContent = s; }
+  function wpMenu(open){
+    if (!wp) return; wp.menu = open === undefined ? !wp.menu : open; if (!wp.menu){ $('#wpPanel').classList.remove('show'); return; }
+    const p = wpProg(), busy = !!(wp.ride || wp.race.me);
+    $('#wpList').innerHTML = WP_SLIDES.map((S, i) => '<button class="big wprb" data-i="' + i + '"' + (busy ? ' disabled' : '') + '>' + S.e + ' ' + S.name + '<small>' + (p.paid.includes(S.id) ? 'ridden today · ' : '+' + WP_SLIDE_PAY + ' 🪙 first ride today · ') + p.rides[S.id] + ' rides</small></button>').join('')
+      + '<button class="big blue wprb" data-i="race"' + (busy || (mp.on && !mp.host) ? ' disabled' : '') + '>🛟 Float Race (' + WP_LAPS + ' laps)<small>' + (mp.on && !mp.host ? 'the host starts races' : 'best ' + (p.best ? wpFmt(p.best) : '—') + ' · paid races left today: ' + (WP_RACES_DAY - p.races)) + '</small></button>';
+    $('#wpList').querySelectorAll('.wprb').forEach(b => b.onclick = () => b.dataset.i === 'race' ? wpRaceStart() : wpRideStart(+b.dataset.i));
+    $('#wpPanel').classList.add('show');
+  }
+  function wpPad(jp){ if (!wp) return false; if (wp.menu) { if (jp[3]){ wpMenu(false); return true; } return false; } if (wp.ride || (wp.race.me && wp.race.ph !== 'idle')) return false; if (jp[2]) return wpAct() || true; if (jp[3]){ wpMenu(true); return true; } return false; }
+  function wpKey(e){ if (!wp || e.repeat || paused) return false; if (e.code === 'KeyE' && !wp.menu) return wpAct(); if (e.code === 'KeyR' && !wp.ride && !wp.race.me){ wpMenu(); return true; } if (e.code === 'Escape' && wp.menu){ wpMenu(false); return true; } return false; }
+  function waterparkStop(){ if (wp){ wp.fx.forEach(b => scene.remove(b.m)); wp.race.npcs.forEach(r => r.m && scene.remove(r.m.g)); } wp = null; ['#wpAct', '#wpPanel'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
   /* ---------- per-frame ---------- */
   const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
   function animate(dt){
@@ -9455,6 +9712,7 @@ const Obby = (() => {
     if (au) autumnAnimate(dt);
     if (isl) petIslandAnimate(dt);
     if (bk) bakeryAnimate(dt);
+    if (wp) waterparkAnimate(dt);
     if (tg) animateTag(dt);
     if (pt) animatePets(dt);
     animateMp(dt);
@@ -9511,7 +9769,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -9545,6 +9803,7 @@ const Obby = (() => {
       else { const t = $('#oTip'); padTip(); if (t.classList.contains('hide')){ t.classList.remove('hide'); tipTimer = 8; } else { t.classList.add('hide'); tipTimer = 0; } }
       return;
     }
+    if (mode === 'waterpark' && wp && wpPad(jp)) return;
     if (mode === 'bakery' && bk && bkPad(jp)) return;
     if (mode === 'petisland' && isl && piPad(jp)) return;
     if (mode === 'fashion' && fs && fsPad(jp)) return;
@@ -9601,6 +9860,11 @@ const Obby = (() => {
   addEventListener('resize', () => setTimeout(hudMeasure, 50));
   function setTouchUIBase(on){
     hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
+    if (mode === 'waterpark'){
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves & steers · ⬆️ jump / paddle · tap a ride button' : '⌨️ WASD move & steer · Space jump / paddle · E ride · R rides menu · Esc menu')
+        + "<br>🌊 Zoom down 3 giant slides, then race floats round the lazy river — hit the ⚡ rings!";
+      return;
+    }
     if (mode === 'bakery'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · tap 🎂 Station to bake' : '⌨️ WASD move · Space jump · E use a cake station · Esc menu')
         + "<br>🧁 Bake a cake, frost it, top it and serve it to match the 🧾 orders!";
@@ -9674,7 +9938,7 @@ const Obby = (() => {
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark'){ // pull the camera in front of walls so buildings don't block the view
       for (let s = 1.2; s <= cam.dist; s += .4){
         const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
         if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(1.2, s - .5); break; }
@@ -9737,6 +10001,7 @@ const Obby = (() => {
       if (au) autumnUpdate(dt);
       if (isl) petIslandUpdate(dt);
       if (bk) bakeryUpdate(dt);
+      if (wp) waterparkUpdate(dt);
       if (pt) petsUpdate(dt);
       if (lava && time > LAVA_GRACE && !over && !won){ lava.y += DIFFS[diff].speed * (1 + (time - LAVA_GRACE) / 150) * dt; if (time - dt <= LAVA_GRACE + 0.001 && time > LAVA_GRACE) banner('🌋 The lava is rising! Climb!'); }
       if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0) $('#oTip').classList.add('hide'); }
@@ -9774,6 +10039,7 @@ const Obby = (() => {
       if (mode === 'fashion' && fs && fs.ph === 'walk' && /^Digit[1-7]$/.test(e.code) && fsKey(e)) return;
       const em = Object.keys(EMOTES).find(k => 'Digit' + EMOTES[k].key === e.code || 'Numpad' + EMOTES[k].key === e.code);
       if (em && !e.repeat){ playEmote(em); return; }
+      if (mode === 'waterpark' && wp && wpKey(e)) return;
       if (mode === 'bakery' && bk && bkKey(e)) return;
       if (mode === 'petisland' && isl && piKey(e)) return;
       if (mode === 'fashion' && fs && fsKey(e)) return;
@@ -9924,7 +10190,7 @@ const Obby = (() => {
 
   /* ---------- start / stop ---------- */
   function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     $('#obby').classList.add('show'); document.body.style.overflow = 'hidden'; document.documentElement.classList.add('ingame');
@@ -9962,6 +10228,7 @@ const Obby = (() => {
     else if (mode === 'hide') banner('🙈 Hide and Seek on Maple Street!');
     else if (mode === 'fashion') banner('👗 Welcome to the Fashion Show!');
     else if (mode === 'autumn') banner('🍂 Welcome to the Cozy Autumn Farm! Find 12 pumpkins 🎃');
+    else if (mode === 'waterpark') banner('🌊 Welcome to Splash Summit! Stand on a ride pad or press 🎢 Rides');
     else if (mode === 'bakery') banner(mp.on ? '🧁 Welcome to the Sweet Team Bakery! Bake together!' : '🧁 Welcome to the Sweet Team Bakery! Customers are coming!');
     else if (mode === 'petisland') banner('🏝️ Welcome to Pet Adventure Island! Ask your pet to sniff for treasure 👃');
     else if (mode === 'pets') banner(pt && pt.s.pets.length ? '🐾 Welcome back, ' + pt.s.pets[pt.s.a].n + '!' : '🐾 Adopt a Pet! Drive to the Pet Shelter');
@@ -9972,7 +10239,7 @@ const Obby = (() => {
         $('#rcBack').onclick = () => rc && rcPickOpen(1); $('#rcHome').onclick = $('#rcFinHome').onclick = stop; $('#rcAgain').onclick = () => rc && rcAgain();
         $('#rcItem').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (rc) rc.tapItem = true; }); }
       raceEnter(); }
-    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery') && touchUI && tipTimer > 4) tipTimer = 4;
+    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark') && touchUI && tipTimer > 4) tipTimer = 4;
     $('#obby').classList.toggle('smode', mode === 'splash'); ['#spLvBox', '#spRoundBox', '#spPeb', '#spShove'].forEach(id => $(id).style.display = mode === 'splash' ? '' : 'none'); if (mode !== 'splash') ['#spAliveBox', '#spPull'].forEach(id => $(id).style.display = 'none');
     ['#spPick', '#spEnd', '#spCode'].forEach(id => $(id).classList.remove('show')); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on');
     if (mode === 'splash'){ if (!window.__spBound){ window.__spBound = true;
@@ -9994,6 +10261,10 @@ const Obby = (() => {
         $('#fsReady').onclick = () => fsReadyBtn(); $('#fsWardClose').onclick = () => fsWardClose(); $('#fsWardBtn').onclick = () => fsWardOpen(fs && fs.near || null); $('#fsKeep').onclick = () => fsKeep(); }
       fashionEnter(); }
     $('#auBox').style.display = mode === 'autumn' ? '' : 'none'; if (mode === 'autumn') autumnEnter();
+    $('#wpBox').style.display = mode === 'waterpark' ? '' : 'none'; ['#wpAct', '#wpPanel', '#wpRides'].forEach(id => $(id).classList.remove('show'));
+    if (mode === 'waterpark'){ if (!window.__wpBound){ window.__wpBound = true;
+        $('#wpAct').onclick = () => wpAct(); $('#wpRides').onclick = () => wp && !wp.ride && !wp.race.me && wpMenu(true); $('#wpClose').onclick = () => wpMenu(false); $('#wpHome').onclick = () => { wpMenu(false); stop(); }; }
+      $('#wpRides').classList.add('show'); waterparkEnter(); }
     $('#bkBox').style.display = $('#bkOrders').style.display = mode === 'bakery' ? '' : 'none'; ['#bkAct', '#bkPanel'].forEach(id => $(id).classList.remove('show'));
     if (mode === 'bakery'){ if (!window.__bkBound){ window.__bkBound = true;
         $('#bkAct').onclick = () => bk && bk.near >= 0 && bkPanel(bk.near); $('#bkClose').onclick = () => bkPanel(-1);
@@ -10011,13 +10282,15 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
 
   // debug / test hook
   window.obbyDebug = {
+    waterpark: () => wp && {ride: wp.ride && {i: wp.ride.i, d: +wp.ride.d.toFixed(1)}, race: {ph: wp.race.ph, n: wp.race.n, t: +wp.race.t.toFixed(1), me: wp.race.me && {d: +wp.race.me.d.toFixed(1), off: +wp.race.me.off.toFixed(2), fin: wp.race.me.fin}, res: wp.race.res, npcs: wp.race.npcs.length}, prog: wpProg(), menu: wp.menu, L: +wp.river.L.toFixed(1), earned: wp.earned, P: {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2)}},
+    wpRide: i => wpRideStart(i), wpRace: () => wpRaceStart(), wpMenu: o => wpMenu(o), wpTo(x, z){ Object.assign(P, {x, y: .05, z, vx: 0, vy: 0, vz: 0}); },
     bakery: () => bk && {st: bk.st, orders: bk.orders, lv: bk.lv, served: bk.served, earned: bk.earned, panel: bk.panel, near: bk.near, remote: bk.remote, prog: bkProg(), npc: Object.keys(bk.npcM).length},
     bkDo: a => bkDo(a), bkPanel: i => bkPanel(i), bkTo(x, z){ Object.assign(P, {x, y: .05, z, vx: 0, vy: 0, vz: 0}); },
     island: () => isl && {s: isl.s, ctx: isl.ctx && isl.ctx.k, pet: isl.pet && {n: isl.pet.n, k: isl.pet.k, mode: isl.pet.mode, x: +isl.pet.x.toFixed(2), z: +isl.pet.z.toFixed(2)}, borrowed: isl.borrowed, sniffed: [...isl.sniffed], seq: isl.seq && {order: isl.seq.order, show: isl.seq.show, inp: isl.seq.inp}, door: !!(isl.door && !isl.door.active), gate: !!(isl.gate && !isl.gate.active), panel: isl.panel, earned: isl.earned, petXp: isl.petXp, P: {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2)}},
@@ -10322,7 +10595,7 @@ const Obby = (() => {
   }
   function closeOf(c){
     const id = c.root.id;
-    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', fsPick: '#fsExplore', fsEnd: '#fsHome2', fsWard: '#fsWardClose', piPanel: '#piClose', bkPanel: '#bkClose', bShare: '#bShareClose', bTestEnd: '#bTestBack', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pTrickPanel: '#pTrickClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
+    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', fsPick: '#fsExplore', fsEnd: '#fsHome2', fsWard: '#fsWardClose', piPanel: '#piClose', bkPanel: '#bkClose', wpPanel: '#wpClose', bShare: '#bShareClose', bTestEnd: '#bTestBack', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pTrickPanel: '#pTrickClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
     if (id === 'rcPick'){ const b = document.querySelector('#rcBack'); if (b && !b.hidden) return b; }   // B in the ride list = back to the modes
     if (map[id]) return document.querySelector(map[id]);
     return null;
