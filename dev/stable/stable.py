@@ -53,3 +53,22 @@ rep("  window.obbyDebug = {\n", """  window.obbyDebug = {
     stable: () => sb && {ph: sb.ph, pony: sb.pony && Object.assign({}, sb.pony), near: sb.near, ridden: sb.ridden, show: sb.show && Object.assign({}, sb.show), earned: sb.earned, prog: sbProg()},
     sbAdopt: id => sbAdopt(id), sbCare: k => sbCare(k), sbMount: o => sbMount(o), sbShow: () => sbStartShow(), sbAct: () => sbAct(), sbTo(x, z){ Object.assign(P, {x, y: .05, z, vx: 0, vy: 0, vz: 0}); },
 """)
+
+# ----- batch1 browser fixes (Esc, prompts, build stamp, camera floor, ice cream grid) -----
+rep("      if (mode === 'photostudio' && psx && (psx.cam || psx.gal) && e.code === 'Escape' && !e.repeat && psKey(e)) return;\n      if (e.code === 'Escape' || e.code === 'KeyP'){",
+     """      if (mode === 'tower' && td && over && e.code === 'Escape' && !e.repeat){ stop(); return; }
+      if (mode === 'icecream' && ic && ic.panel >= 0 && e.code === 'Escape' && !e.repeat){ icPanel(-1); return; }
+      if (mode === 'stable' && sb && sb.panel && e.code === 'Escape' && !e.repeat){ sbShowPick(false); return; }
+      if (mode === 'photostudio' && psx && (psx.cam || psx.gal) && e.code === 'Escape' && !e.repeat && psKey(e)) return;
+      if (e.code === 'Escape' || e.code === 'KeyP'){""")
+# hide stray mode prompts at every start(); show build stamp
+rep("    $('#sbBox').style.display = mode === 'stable' ? '' : 'none'; ['#sbAct', '#sbPick'].forEach(id => $(id).classList.remove('show'));",
+    """    ['#psCamBtn','#psGalBtn','#psBar','#bkAct','#icAct','#sbAct','#wpAct','#wpRides','#piAct','#piBook','#fsNear','#fsWardBtn','#fsShowBtn','#hsBlind'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); });
+    { const bs = $('#fsBuild'); if (bs){ bs.textContent = typeof BUILD !== 'undefined' ? BUILD : ''; bs.classList.add('show'); } }
+    $('#sbBox').style.display = mode === 'stable' ? '' : 'none'; ['#sbAct', '#sbPick'].forEach(id => $(id).classList.remove('show'));""")
+# camera min distance floor for stables (avoid head-clip near barn)
+rep("        if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(1.2, s - .5); break; }",
+    "        if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 5.5 : 1.2, s - .5); break; }")
+# ice cream option grid
+rep(".icb{border:2px solid #cfefff;background:#fff;border-radius:12px;padding:4px 8px;font:inherit;font-size:20px;min-width:62px;min-height:48px;cursor:pointer;display:flex;flex-direction:column;align-items:center}",
+    ".icbox .fsitems,#icItems{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px;width:100%;max-width:min(96vw,680px)}\n.icb{border:2px solid #cfefff;background:#fff;border-radius:12px;padding:4px 8px;font:inherit;font-size:20px;min-width:0;min-height:48px;cursor:pointer;display:flex;flex-direction:column;align-items:center;width:100%}")

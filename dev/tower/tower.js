@@ -1,14 +1,18 @@
-  /* ===================== t227u: 🗼 TOWER OF DOOM — climb stacked obstacle sections while friendly bubbly goo rises ===================== */
-  const TD_KEY = 'rubloxTower', TD_SECTIONS = 12, TD_H = 7.2, TD_GOO_BASE = .55;
+  /* ===================== t227u: 🗼 TOWER OF DOOM — climb stacked sections while friendly bubbly goo rises ===================== */
+  const TD_KEY = 'rubloxTower', TD_SECTIONS = 12, TD_H = 7.2, TD_GOO_BASE = .42, TD_GRACE = 6;
   const TD_KINDS = ['steps', 'beam', 'zig', 'pads', 'bridge', 'spin'];
   let td = null;
   function tdProg(){ const o = load(TD_KEY, null), r = o && typeof o === 'object' ? o : {}; return {best: Math.max(0, r.best | 0), wins: Math.max(0, r.wins | 0), coins: Math.max(0, +r.coins || 0)}; }
   function tdSeed(n){ let x = (n * 1103515245 + 12345) & 0x7fffffff; return () => { x = (x * 1103515245 + 12345) & 0x7fffffff; return (x >>> 0) / 0x7fffffff; }; }
+  function tdGooTop(){ return td ? td.goo : -99; }   // td.goo is the visible TOP surface of the goo
   function buildTower(){
-    td = {ph: 'play', t: 0, goo: -2, topY: TD_SECTIONS * TD_H + 6, paid: false, earned: 0, kind: [], near: -1, seed: ((Date.now() / 1000) | 0) % 99991};
+    td = {ph: 'play', t: 0, goo: -8, topY: TD_SECTIONS * TD_H + 6, paid: false, earned: 0, kind: [], near: -1, seed: ((Date.now() / 1000) | 0) % 99991, grace: TD_GRACE};
     scene.background = new THREE.Color('#b8e0ff');
     if (scene.fog){ scene.fog.color = new THREE.Color('#d7f0ff'); scene.fog.near = 40; scene.fog.far = 180; }
-    plat(0, 0, 0, 14, 14, '#8fd39a', .4); plat(0, .4, -6, 4, 3, '#ffe08a', .3);
+    // start island + rim so you can't walk off into the void
+    plat(0, 0, 0, 14, 14, '#8fd39a', .4);
+    [[0, 7.2, 14.4, .6], [0, -7.2, 14.4, .6], [7.2, 0, .6, 14.4], [-7.2, 0, .6, 14.4]].forEach(([x, z, w, d]) => plat(x, 1.1, z, w, d, '#ffe08a', 1.1));
+    plat(0, .4, -6, 4, 3, '#ffe08a', .3);
     const rnd = tdSeed(td.seed);
     for (let i = 0; i < TD_SECTIONS; i++){
       const y0 = 1.2 + i * TD_H, kind = TD_KINDS[(rnd() * TD_KINDS.length) | 0];
@@ -26,31 +30,41 @@
     }
     const top = 1.2 + TD_SECTIONS * TD_H;
     plat(0, top, -8, 5, 5, '#fff0a8', .5); finish = {mesh: plat(0, top + .6, -8, 2.2, 2.2, '#2ec27e', .3).mesh, y: top + 1};
-    const goo = new THREE.Mesh(new THREE.CylinderGeometry(18, 18, 2.4, 28), new THREE.MeshLambertMaterial({color: '#b388ff', transparent: true, opacity: .88}));
-    goo.position.set(0, -2, -4); scene.add(goo); td.gooMesh = goo;
+    // goo cylinder: mesh center so its TOP face sits at td.goo (height 2.4 → centre = goo - 1.2)
+    const goo = new THREE.Mesh(new THREE.CylinderGeometry(20, 20, 2.4, 28), new THREE.MeshLambertMaterial({color: '#b388ff', transparent: true, opacity: .9}));
+    goo.position.set(0, td.goo - 1.2, -4); scene.add(goo); td.gooMesh = goo;
     Object.assign(P, {x: 0, y: .05, z: -5.5, vx: 0, vy: 0, vz: 0}); P.face = 0; cam.yaw = Math.PI; cam.pitch = .35; cam.dist = 10;
     topY = td.topY; maxY = 0;
-    // spawn checkpoint so entry_wiring / start() don't throw
     plat(0, .5, -5.5, 2, 2, '#ffe08a', .2); checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: -5.5}, flag: new THREE.Object3D()};
   }
-  function towerEnter(){ if (!td) return; td.ph = 'play'; td.t = 0; td.goo = -2; td.paid = false; td.earned = 0; choosing = false; over = false;
+  function towerEnter(){ if (!td) return; td.ph = 'play'; td.t = 0; td.goo = -8; td.grace = TD_GRACE; td.paid = false; td.earned = 0; choosing = false; over = false;
+    if (td.gooMesh) td.gooMesh.position.y = td.goo - 1.2;
+    const lose = $('#oLose'); if (lose){ const em = lose.querySelector('.emoji'), h2 = lose.querySelector('h2'); if (em) em.textContent = '🫧'; if (h2) h2.textContent = 'The bubbly goo caught you!'; }
     banner('🗼 Tower of Doom! Climb past the bubbly goo — gold pads are checkpoints!'); tipTimer = 6; towerHud(); }
-  function towerStop(){ if (td && td.gooMesh) scene.remove(td.gooMesh); td = null; }
+  function towerStop(){
+    if (td && td.gooMesh) scene.remove(td.gooMesh); td = null;
+    const lose = $('#oLose'); if (lose){ const em = lose.querySelector('.emoji'), h2 = lose.querySelector('h2'); if (em) em.textContent = '🔥'; if (h2) h2.textContent = 'The lava got you!'; }
+  }
   function towerUpdate(dt){
     if (!td || td.ph !== 'play' || over || choosing) return;
     td.t += dt; maxY = Math.max(maxY, P.y);
-    const speed = TD_GOO_BASE + Math.min(1.6, maxY / 80);
-    td.goo += speed * dt; if (td.gooMesh) td.gooMesh.position.y = td.goo - 1.1;
-    if (P.y < td.goo + .35){ towerLose(); return; }
+    if (td.grace > 0) td.grace -= dt;
+    else {
+      const speed = TD_GOO_BASE + Math.min(1.4, Math.max(0, maxY) / 90);
+      td.goo += speed * dt;
+    }
+    if (td.gooMesh) td.gooMesh.position.y = td.goo - 1.2;
+    // die only when your feet are actually at/below the visible goo top (not while standing above it)
+    if (td.grace <= 0 && P.y < td.goo + .15){ towerLose(); return; }
     if (finish && P.y >= finish.y - .2 && Math.hypot(P.x, P.z + 8) < 3.2) towerWin();
     towerHud();
   }
-  function towerAnimate(dt){ if (!td || !td.gooMesh) return; td.gooMesh.rotation.y += .003; }
+  function towerAnimate(dt){ if (!td || !td.gooMesh) return; td.gooMesh.rotation.y += .004; }
   function towerLose(){
     if (over || choosing) return; over = true; choosing = true; td.ph = 'lose';
-    const reached = Math.floor(maxY), p = tdProg(); if (reached > p.best){ p.best = reached; save(TD_KEY, p); }
-    $('#oLose').classList.add('show');
-    $('#oLoseStats').innerHTML = '🗼 You climbed <b>' + reached + 'm</b>!<br>🏅 Best: <b>' + p.best + 'm</b><br>🫧 The bubbly goo caught you — try again!';
+    const reached = Math.max(0, Math.floor(maxY)), p = tdProg(); if (reached > p.best){ p.best = reached; save(TD_KEY, p); }
+    const lose = $('#oLose'); if (lose){ const em = lose.querySelector('.emoji'), h2 = lose.querySelector('h2'); if (em) em.textContent = '🫧'; if (h2) h2.textContent = 'The bubbly goo caught you!'; lose.classList.add('show'); }
+    $('#oLoseStats').innerHTML = '🗼 You climbed <b>' + reached + 'm</b>!<br>🏅 Best: <b>' + p.best + 'm</b><br>🫧 The bubbly goo caught you — try again!<br><small>Esc or 🏠 Home</small>';
   }
   function towerWin(){
     if (over || td.paid) return; over = true; choosing = true; td.ph = 'win'; td.paid = true;
@@ -60,6 +74,14 @@
     $('#oWin').classList.add('show');
     $('#oWinStats').innerHTML = '🗼 Tower of Doom cleared!<br>⏱️ ' + fmt(td.t, true) + ' · 📏 ' + Math.floor(maxY) + 'm<br>🎁 +' + bonus + ' Rublox Coins';
   }
-  function towerHud(){ if (!td) return; const g = $('#tdGoo'), h = $('#tdH'); if (g) g.textContent = Math.max(0, Math.floor(td.goo)); if (h) h.textContent = Math.max(0, Math.floor(maxY)); }
+  function towerHud(){
+    if (!td) return;
+    const g = $('#tdGoo'), h = $('#tdH');
+    if (h) h.textContent = Math.max(0, Math.floor(maxY));
+    if (g){
+      if (td.grace > 0) g.textContent = 'wakes ' + Math.ceil(td.grace) + 's';
+      else { const dist = P.y - td.goo; g.textContent = dist >= 0 ? Math.floor(dist) + 'm below' : 'GOT YOU'; }
+    }
+  }
   function tdPad(jp){ return false; }
-  function tdKey(e){ return false; }
+  function tdKey(e){ if (!td || e.repeat) return false; if (e.code === 'Escape' && over && td.ph === 'lose'){ stop(); return true; } return false; }

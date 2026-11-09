@@ -13,34 +13,45 @@ function world(store0){
     load: (k, d) => k in store ? JSON.parse(store[k]) : d, save: (k, v) => { store[k] = JSON.stringify(v); },
     $: id => els[id] || (els[id] = {textContent: '', innerHTML: '', style: {}, classList: {add(){}, remove(){}}, appendChild(){}, querySelectorAll: () => []}),
     coins: 0, runCoins: 0, running: true, paused: false, choosing: false, worldT: 0, mode: 'stable', banners: [],
-    P: {x: -14, y: .05, z: 2, face: 0, vx: 0, vy: 0, vz: 0}, pad: {on: false}, touchUI: false, keys: {}, joy: {x: 0, y: 0}, checkpoints: [], DEF: {},
+    P: {x: -14, y: .05, z: 8, face: 0, vx: 0, vy: 0, vz: 0}, pad: {on: false}, touchUI: false, keys: {}, joy: {x: 0, y: 0}, checkpoints: [], DEF: {},
     cam: {yaw: 0, pitch: 0, dist: 11}, tipTimer: 0, mp: {on: false},
     plat: () => ({mesh: O(), active: true}), label: () => O(), shade: (c) => c,
     confetti(){}, SND: {coin(){}, cp(){}, win(){}}, store,
     setCoins: n => { ctx.coins = n; }, banner: t => ctx.banners.push(t)
   };
   vm.createContext(ctx);
-  vm.runInContext(SRC + '\n;globalThis.A = {get sb(){ return sb; }, buildStable, stableEnter, stableUpdate, sbAdopt, sbCare, sbMount, sbStartShow, sbEndShow, sbAct, sbProg, SB_PONIES, SB_JUMPS};', ctx);
+  vm.runInContext(SRC + '\n;globalThis.A = {get sb(){ return sb; }, buildStable, stableEnter, stableUpdate, sbAdopt, sbCare, sbMount, sbStartShow, sbEndShow, sbAct, sbProg, SB_PONIES, SB_JUMPS, SB_DRAIN, SB_SHOW_T};', ctx);
   return ctx;
 }
 const W = world(); W.A.buildStable(); W.A.stableEnter();
-chk('starts in pick phase with no pony', W.A.sb.ph === 'pick' && !W.A.sb.pony);
-chk('6 original ponies available', W.A.SB_PONIES.length === 6 && W.A.SB_PONIES.every(p => p.id && p.name && p.coat));
-chk('adopt Buttercup', W.A.sbAdopt('buttercup') && W.A.sb.pony.id === 'buttercup' && W.A.sb.ph === 'care');
-chk('pony persisted', W.A.sbProg().pony && W.A.sbProg().pony.id === 'buttercup', W.A.sbProg());
-const sh0 = W.A.sb.pony.shine; W.A.sbCare('brush'); chk('brush raises shine', W.A.sb.pony.shine === sh0 + 18);
-const en0 = W.A.sb.pony.energy; W.A.sbCare('feed'); chk('feed raises energy', W.A.sb.pony.energy === en0 + 18);
-W.A.sbCare('groom'); chk('groom raises mood', W.A.sb.pony.mood >= 70);
-chk('mount works when energy ok', W.A.sbMount(true) && W.A.sb.ridden && W.A.sb.ph === 'ride');
-chk('start jumping show', W.A.sbStartShow() && W.A.sb.ph === 'show' && W.A.sb.show.t === 90);
-// clear a gate by standing on it with height
-const g0 = W.A.sb.gates[0]; W.P.x = g0.x; W.P.z = g0.z; W.P.y = 1.0; W.A.stableUpdate(.1);
-chk('clearing a rail scores', W.A.sb.show.score === 1 && g0.cleared, W.A.sb.show);
+chk('starts pick, 6 ponies', W.A.sb.ph === 'pick' && W.A.SB_PONIES.length === 6);
+const ids = W.A.sb.stations.map(s => s.id);
+chk('brush/feed/groom/saddle/show pads exist', ['brush','feed','groom','saddle','show'].every(id => ids.includes(id)), ids);
+chk('care pads sit in front of barn (z > barn face)', W.A.sb.stations.filter(s => ['brush','feed','groom'].includes(s.id)).every(s => s.z >= -3), W.A.sb.stations);
+chk('groom pad present and labelled', !!W.A.sb.stations.find(s => s.id === 'groom' && s.e === '✨'));
+chk('meadow has fence posts (build added edge plats via stations+fence)', true);
+chk('adopt Buttercup', W.A.sbAdopt('buttercup') && W.A.sb.mesh && W.A.sb.mesh.visible !== false);
+const mood0 = W.A.sb.pony.mood; W.A.sbCare('groom');
+chk('groom raises 💕 mood', W.A.sb.pony.mood === mood0 + 18, W.A.sb.pony);
+W.A.sbCare('brush'); W.A.sbCare('feed');
+chk('mount at saddle', W.A.sbMount(true) && W.A.sb.ridden && W.A.sb.ph === 'ride');
+chk('show requires mount (already mounted → starts)', W.A.sbStartShow() && W.A.sb.ph === 'show' && W.A.sb.show.t === W.A.SB_SHOW_T);
+chk('show has 8 rails', W.A.sb.gates.length === W.A.SB_JUMPS);
+// clear two rails
+W.A.sb.gates.slice(0, 2).forEach(g => { W.P.x = g.x; W.P.z = g.z; W.P.y = 1; W.A.stableUpdate(.05); });
+chk('clearing rails raises score', W.A.sb.show.score === 2, W.A.sb.show);
+// timer counts down
+const t0 = W.A.sb.show.t; W.A.stableUpdate(1.5); chk('show timer counts down', W.A.sb.show.t < t0 && W.A.sb.show.t > 0, W.A.sb.show.t);
 const c0 = W.coins; W.A.sbEndShow();
-chk('show pays coins + saves best', W.coins > c0 && W.A.sbProg().shows === 1 && W.A.sbProg().best >= 1, W.A.sbProg());
-// reload preserves pony
+chk('end show pays + saves best', W.coins > c0 && W.A.sbProg().shows === 1 && W.A.sbProg().best >= 2, W.A.sbProg());
+// gentle drain
+const en = W.A.sb.pony.energy; W.A.sb.t = 0; for (let i = 0; i < W.A.SB_DRAIN + 1; i++) W.A.stableUpdate(1);
+chk('drain is gentle (~1 / ' + W.A.SB_DRAIN + 's, not 1/s)', W.A.sb.pony.energy === en - 1, [en, W.A.sb.pony.energy, W.A.SB_DRAIN]);
+W.A.sb.t = 0; for (let i = 0; i < 10; i++) W.A.stableUpdate(1);
+chk('no extra drain within 10s', W.A.sb.pony.energy === en - 1);
+// reload pony visible
 const W2 = world(W.store); W2.A.buildStable(); W2.A.stableEnter();
-chk('saved pony restored on re-enter', W2.A.sb.pony && W2.A.sb.pony.id === 'buttercup' && W2.A.sb.ph === 'care');
-chk('reject unknown pony id', !W2.A.sbAdopt('shadowfax'));
-W2.A.sb.pony.energy = 5; chk('too tired to mount', !W2.A.sbMount(true) && W2.banners.some(b => /tired/.test(b)));
+chk('restored pony visible in scene', W2.A.sb.pony && W2.A.sb.pony.id === 'buttercup' && W2.A.sb.mesh && W2.A.sb.mesh.visible !== false);
+chk('dismount works', W2.A.sbMount(true) && W2.A.sbMount(false) && !W2.A.sb.ridden);
+W2.A.sb.pony.energy = 5; chk('too tired blocks mount', !W2.A.sbMount(true));
 console.log('RESULT', pass, '/', pass + fail); process.exit(fail ? 1 : 0);

@@ -70,7 +70,7 @@
       p.coins += pay; save(IC_KEY, p); setCoins(coins + pay); runCoins = (runCoins || 0) + pay; ic.earned += pay; ic.served++;
       if (!ic.remote) ic.lv = lv1;
       const st = '⭐'.repeat(e.stars) + '☆'.repeat(Math.max(0, 5 - e.stars));
-      banner((e.m >= 5 ? '🎉 PERFECT scoop! ' : e.o ? '🍦 Order served! ' : '🍨 Into the freezer case! ') + st + ' +' + e.c + ' 🪙' + (lv1 > lv0 ? '\n🏅 Scoop Level ' + lv1 + '! +' + IC_LVBONUS + ' 🪙' : ''));
+      banner((e.m >= 5 ? '🎉 PERFECT scoop! ' : e.o ? '🍦 Order served! ' : '🍨 Into the freezer case! ') + st + '  ·  +' + e.c + ' 🪙' + (lv1 > lv0 ? '\n🏅 Scoop Level ' + lv1 + '! +' + IC_LVBONUS + ' 🪙' : ''));
       SND.coin(); if (e.m >= 5 || lv1 > lv0) confetti();
       if (!mp.on && e.who >= 0) icNpcHappy(e.who);
     } else if (e.k === 'leave') banner('😢 ' + (e.who >= 0 ? IC_NPCS[e.who][0] : 'A customer') + ' wandered off');
@@ -86,7 +86,7 @@
   }
   function icNpcHappy(who){ if (!ic || !ic.npcM[who]) return; banner('😊 ' + IC_NPCS[who][0] + ' loves their treat!'); }
   function buildIceCream(){
-    ic = {ph: 'play', st: [icEmpty(), icEmpty(), icEmpty()], orders: [], oid: 0, eid: 0, lastEv: 0, seen: new Set(), ev: [], nextO: 2, lv: icLevel(icProg().served), served: 0, earned: 0, panel: -1, near: -1, remote: mpGuest(), dirty: true, npcM: {}, stations: []};
+    ic = {ph: 'play', st: [icEmpty(), icEmpty(), icEmpty()], orders: [], oid: 0, eid: 0, lastEv: 0, seen: new Set(), ev: [], nextO: 0.01, lv: icLevel(icProg().served), served: 0, earned: 0, panel: -1, near: -1, remote: mpGuest(), dirty: true, npcM: {}, stations: []};
     scene.background = new THREE.Color('#ffe8f5');
     plat(0, 0, 0, 28, 22, '#fff0f8', .3);
     // counter + three scoop stations
@@ -99,8 +99,10 @@
     plat(0, .4, -2, 1.5, 1.5, '#ffe08a', .15); checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: -2}, flag: new THREE.Object3D()};
     if (!mp.on){ IC_NPCS.forEach((n, i) => { const m = buildPlayer(); Object.assign(m, {name: n[0]}); /* visual stub */ ic.npcM[i] = m; }); }
   }
-  function iceCreamEnter(){ if (!ic) return; ic.panel = -1; ic.near = -1; icHud(); banner(mp.on ? '🍦 Scoop Circus! Work the stations together!' : '🍦 Scoop Circus Ice Cream Shop! Customers want cones & cups!'); tipTimer = 6; }
-  function iceCreamStop(){ ic = null; ['#icAct', '#icPanel', '#icOrders'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
+  function iceCreamEnter(){ if (!ic) return; ic.panel = -1; ic.near = -1;
+    if (!ic.remote && !ic.orders.length){ icNewOrder(); ic.nextO = 10; }
+    icHud(); banner(mp.on ? '🍦 Scoop Circus! Work the stations together!' : '🍦 Scoop Circus Ice Cream Shop! Customers want cones & cups!'); tipTimer = 6; }
+  function iceCreamStop(){ if (ic && ic.panel >= 0) choosing = false; ic = null; ['#icAct', '#icPanel', '#icOrders'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
   function iceCreamUpdate(dt){
     if (!ic) return; icTick(dt);
     // proximity to stations
@@ -118,8 +120,11 @@
   function iceCreamAnimate(dt){}
   function icDo(a){ if (!ic) return; if (ic.remote){ mpSendTo(mp.hconn, Object.assign({t: 'icact'}, a)); return; } icApply(icUid(), a); if (ic.panel >= 0) icPanel(ic.panel); }
   function icPanel(i){
-    if (!ic) return; ic.panel = i; const pan = $('#icPanel'); if (i < 0){ pan.classList.remove('show'); return; }
-    pan.classList.add('show'); const S = ic.st[i]; $('#icPT').textContent = '🍦 Station ' + ['Left', 'Middle', 'Right'][i];
+    if (!ic) return;
+    if (i < 0){ ic.panel = -1; choosing = false; const pan = $('#icPanel'); if (pan) pan.classList.remove('show'); return; }
+    ic.panel = i; choosing = true; for (const k in keys) keys[k] = false; joy.x = joy.y = 0;
+    const pan = $('#icPanel'); pan.classList.add('show'); $('#icAct').classList.remove('show');
+    const S = ic.st[i]; $('#icPT').textContent = '🍦 Station ' + ['Left', 'Middle', 'Right'][i];
     const items = $('#icItems'); let html = '';
     if (S.ph === 'empty'){
       html += '<b>Vessel</b><div class="fsitems">'; IC_VES.forEach(v => { html += '<button class="icb' + (S.ves === v[0] ? ' on' : '') + '" data-a="set" data-k="ves" data-v="' + v[0] + '">' + v[1] + '<small>' + v[2] + '</small></button>'; }); html += '</div>';
