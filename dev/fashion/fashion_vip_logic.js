@@ -12,8 +12,8 @@ function world(store, coins0){
     THREE: new Proxy({}, {get:()=>function(){return O();}}), scene:{add(){},remove(){},background:null},
     load:(k,d)=>{ try{ return k in store ? JSON.parse(store[k]) : d; }catch(e){return d;} }, save:(k,v)=>{ store[k]=JSON.stringify(v); },
     $: id => els[id] || (els[id] = {textContent:'',innerHTML:'',style:{},disabled:false,onclick:null,classList:{s:new Set(),add(c){this.s.add(c);},remove(c){this.s.delete(c);},toggle(c,on){(on===undefined?!this.s.has(c):on)?this.s.add(c):this.s.delete(c);},contains(c){return this.s.has(c);}},querySelectorAll:()=>[],querySelector:()=>null}),
-    coins: coins0 == null ? 500 : coins0, runCoins: 0, paused: false, choosing: false, worldT: 0, mode: 'fashion', banners: [], toasts: [],
-    P:{x:0,y:.05,z:23,face:0,vx:0,vy:0,vz:0}, pad:{on:false}, touchUI:false, keys:{}, DEF:{shirt:'#3a86ff',pants:'#2d2d2d',head:'#f1c27d',hairColor:'#6b3e1f',hair:'short',body:'girl',hat:null,shirtPat:null,pantsPat:null,face:null,ears:null,tail:null,back:null,brow:null,lash:null},
+    coins: coins0 == null ? 500 : coins0, runCoins: 0, paused: false, choosing: false, over: false, worldT: 0, mode: 'fashion', banners: [], toasts: [],
+    P:{x:0,y:.05,z:23,face:0,vx:0,vy:0,vz:0}, cam:{yaw:0,pitch:.3,dist:6}, pad:{on:false}, touchUI:false, keys:{}, DEF:{shirt:'#3a86ff',pants:'#2d2d2d',head:'#f1c27d',hairColor:'#6b3e1f',hair:'short',body:'girl',hat:null,shirtPat:null,pantsPat:null,face:null,ears:null,tail:null,back:null,brow:null,lash:null},
     avatar: null, model: {g:O()}, mp:{on:false,host:true,me:'H',guests:new Map(),ents:new Map()},
     ITEMS: [{slot:'hat',val:'crown',id:'hat_crown',emoji:'👑',name:'Crown'},{slot:'shirtPat',val:'startee',id:'sp1',emoji:'⭐',name:'Star Tee'}],
     plat:()=>({mesh:O()}), mat:()=>({}), shade:(c)=>c, label:()=>O(), buildPlayer:()=>({g:O(),pivot:{children:[O()]},head:O(),legs:[O(),O()],arms:[O(),O()]}),
@@ -29,7 +29,7 @@ function world(store, coins0){
   ctx.fmt = s => s; ctx.bxEsc = s => s; ctx.mpLook = () => null; ctx.mpGuest = () => false; ctx.mpSendTo = () => {};
   vm.createContext(ctx);
   // provide minimal FX consumer stubs used before decorate runs deeply
-  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_VIP_COST,fsProg,fsIsVip,fsBuyVip,fsVipBadge,fsList,fsCleanFx,fsKeep,fsMigrateAvatar,fsLocked,fsVipRows,FX,FS_RACKS,FS_ST,fsWardRender,fsFx,buildFashion,fashionEnter,fashionStop,fsPickOpen,fsName};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_VIP_COST,fsProg,fsIsVip,fsBuyVip,fsVipBadge,fsList,fsKeep,fsHasSavedLook,fsApplySavedLook,fsLocalDress,fsCleanFx,FS_FXDEF,fsCleanFx,fsKeep,fsMigrateAvatar,fsLocked,fsVipRows,FX,FS_RACKS,FS_ST,fsWardRender,fsFx,buildFashion,fashionEnter,fashionStop,fsPickOpen,fsName};`, ctx);
   return ctx;
 }
 const st = {rubloxCoins:'500', rubloxAvatar: JSON.stringify({shirt:'#111111',pants:'#222222',head:'#f1c27d',hairColor:'#6b3e1f',hair:'short'})};
@@ -59,6 +59,24 @@ const avAfter = JSON.parse(st.rubloxAvatar);
 const look = JSON.parse(st.rubloxFsLook);
 chk('Save for next show writes rubloxFsLook with runway FX', look.fx.top==='velvet' && look.fx.dress==='pastelg' && look.fx.acc.includes('vipcrown'));
 chk('Save for next show does NOT change the normal avatar', avAfter.shirt === avBefore.shirt && avAfter.pants === avBefore.pants);
+
+// --- save → re-enter dress → look restored (incl. VIP pieces) ---
+W.A.fs.fit = Object.assign({}, W.avatar, {shirt:'#ff6fb5', pants:'#8b5cf6'});
+W.A.fs.fx = W.A.fsCleanFx({top:'velvet', dress:'pastelg', shoe:'goldheel', hair:'pastel', mk:'vipglam', acc:['vipcrown','vipbadge'], pat:'hologram'});
+W.A.fsKeep();
+chk('Save for next show persists rubloxFsLook with VIP FX', (()=>{ const s=JSON.parse(st.rubloxFsLook||'null'); return s && s.fx && s.fx.top==='velvet' && s.fx.dress==='pastelg' && s.fx.acc.includes('vipcrown') && s.fx.acc.includes('vipbadge'); })());
+chk('hasSavedLook is true after save', W.A.fsHasSavedLook());
+// simulate a brand-new dress phase (what leaving + re-entering a show does)
+W.A.fs.fit = null; W.A.fs.fx = null;
+W.A.fs.ord = ['H']; W.A.fs.th = 0; W.A.fs.dl = 180; W.A.fs.ph = 'dress';
+W.A.fsLocalDress();
+chk('re-entry auto-wears saved look (not plain Classic Tee)', W.A.fs.fx.top==='velvet' && W.A.fs.fx.dress==='pastelg' && W.A.fs.fx.shoe==='goldheel' && W.A.fs.fx.hair==='pastel' && W.A.fs.fx.acc.includes('vipcrown'), W.A.fs.fx);
+chk('re-entry keeps VIP accessories when still VIP', W.A.fs.fx.acc.includes('vipbadge') && W.A.fs.fx.mk==='vipglam');
+// strip VIP, re-apply: VIP pieces should drop
+const st2 = Object.assign({}, st); const p = JSON.parse(st2.rubloxFashion); p.vip=false; st2.rubloxFashion=JSON.stringify(p);
+const W3 = world(st2, 0); W3.A.buildFashion(); W3.A.fs.ord=['H']; W3.A.fs.th=0; W3.A.fs.dl=180; W3.A.fsLocalDress();
+chk('saved VIP pieces stripped when VIP is locked again', W3.A.fs.fx.top!=='velvet' && !W3.A.fs.fx.acc.includes('vipcrown'), W3.A.fs.fx);
+
 chk('no real-money strings in fashion source', !/robux|real money|purchase|\$|credit card|stripe|paypal/i.test(SRC) || /never real money/i.test(SRC));
 chk('VIP copy says Rublox coins / never real money', /Rublox coins/.test(SRC) && /never real money/i.test(SRC));
 // migrate: unknown slot value cleared
@@ -70,7 +88,7 @@ if (fs.existsSync(HTML)){
   const h = fs.readFileSync(HTML,'utf8');
   chk('built page: VIP lounge + Save for next show + coins-only unlock', /Star VIP/.test(h) && /Save for next show/.test(h) && /FS_VIP_COST = 250/.test(h) && /never real money/i.test(h));
   chk('built page: Save button in wardrobe panel (mini + footer)', /id="fsKeepWard"/.test(h) && /id="fsKeepWard2"/.test(h));
-  chk('built page: VIP nametag helper + small prep sign + VIP not in doorway', /function fsVipBadge/.test(h) && /PREP ROOM/.test(h) && !/PASTEL PREP ROOM/.test(h) && /id: 'vip', x: -27\.5/.test(h));
+  chk('built page: VIP badge + auto-restore + no doorway lintel band', /function fsVipBadge/.test(h) && /fsApplySavedLook/.test(h) && /fsLocalDress/.test(h) && /Wear my saved look/.test(h) && !/fsDeco\(\.4, \.5, 5\.2, '#ff6fb5'/.test(h) && /x: -23\.5/.test(h) && /oCoins'\)\.textContent = coins/.test(h) && /VIP You/.test(h));
   const km = h.match(/function fsKeep\(\)\{[\s\S]*?\n  \}/);
   chk('built page: fsKeep no longer writes rubloxAvatar', !!(km && km[0].includes('rubloxFsLook') && !km[0].includes("save('rubloxAvatar'")));
   chk('built page: fashionStop restores normal avatar model', /function fashionStop\(\)\{[\s\S]*buildPlayer\(avatar\)/.test(h));

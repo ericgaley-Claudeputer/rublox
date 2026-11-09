@@ -328,13 +328,12 @@
     fsDeco(3.2, .05, 20, '#e8c4ff', X + 2, .03, 0);
     // outer walls — doorway cheeks are SHORT stubs so they never fill the camera
     plat(-30.9, H, 0, .6, 22.6, W, H); plat(X, H, -11, 14.4, .6, W, H); plat(X, H, 11, 14.4, .6, W, H);
-    plat(-17.1, 2.2, -7.6, .35, 5.2, W, 2.2); plat(-17.1, 2.2, 7.6, .35, 5.2, W, 2.2);   // low pink stubs only
-    // open arch + small vanity lights (no full-height purple slab)
-    fsDeco(.4, .5, 5.2, '#ff6fb5', -17.1, 4.0, 0); [-1, 1].forEach(s => fsDeco(.35, 2.0, .25, '#ffd23f', -17.1, 2.9, s * 2.7));
-    for (let k = 0; k < 5; k++){ const y = 3.5 + k * .18, bulb = new THREE.Mesh(new THREE.SphereGeometry(.1, 8, 6), new THREE.MeshBasicMaterial({color: '#fff6c9'})); bulb.position.set(-17.1, y, -2.2 + k * 1.1); scene.add(bulb); }
-    // compact doorway sign (was oversized 5.4 and filled the view)
-    fsSign('👗 PREP ROOM', -16.85, 4.35, 0, Math.PI / 2, 2.4, '#8b5cf6');
-    fsDeco(14.4, .25, .55, '#ff6fb5', X, 4.75, -11); fsDeco(14.4, .25, .55, '#ff6fb5', X, 4.75, 11); fsDeco(.55, .25, 22.6, '#ff6fb5', -30.9, 4.75, 0);
+    plat(-17.1, 1.6, -8.2, .3, 4.0, W, 1.6); plat(-17.1, 1.6, 8.2, .3, 4.0, W, 1.6);   // short pink stubs only — nothing across the open doorway
+    // NO mid-height lintel (it cut a magenta band across the camera). Tiny high marker above FOV instead.
+    fsDeco(.25, .18, 1.6, '#ff6fb5', -17.1, 5.6, 0);
+    fsSign('👗 PREP', -16.9, 5.85, 0, Math.PI / 2, 1.6, '#8b5cf6');
+    // thin wall-top trims pushed back so they don't read as a foreground band
+    fsDeco(14.4, .18, .4, '#ffb3d9', X, 5.1, -11); fsDeco(14.4, .18, .4, '#ffb3d9', X, 5.1, 11); fsDeco(.4, .18, 22.6, '#ffb3d9', -30.9, 5.1, 0);
     // wall mirrors on west wall — face into the room, gold frames, clearly lit
     [[-29.85, -5], [-29.85, 5]].forEach(([x, z]) => {
       const mir = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 3.4), new THREE.MeshBasicMaterial({color: '#e8fbff'})); mir.position.set(x, 2.3, z); mir.rotation.y = Math.PI / 2; scene.add(mir);
@@ -500,7 +499,7 @@
           return `<button class="fsit fsvip${on ? ' on' : ''}${lk ? ' lock' : ''}" data-fx="${r.s}" data-v="${r.v}"><i>${lk ? '🔒' : r.e}</i><small>${r.n}<br>${lk ? 'VIP only' : '👑 VIP'}</small></button>`; }).join('') + '</div>'; }
     else if (tab === 'pose') h = `<div class="fssub">Pick your runway pose — you can switch poses on the runway too!</div><div class="fsgrid">` + FS_POSES.map((p, i) => `<button class="fsit fspz${fs.myPose === i ? ' on' : ''}" data-pose="${i}"><i>${p.e}</i><small>${p.n}</small></button>`).join('') + '</div>';
     const saved = load('rubloxFsLook', null);
-    h += `<div class="fsrow fsmini"><button class="fsmb" id="fsRand">🎲 Surprise me</button>${saved ? '<button class="fsmb" id="fsLoad">💾 My saved look</button>' : ''}<button class="fsmb" id="fsReset">↩️ Start over</button><button class="fsmb fssave" id="fsKeepWard">💾 Save for next show</button></div>`;
+    h += `<div class="fsrow fsmini"><button class="fsmb" id="fsRand">🎲 Surprise me</button>${fsHasSavedLook() ? '<button class="fsmb" id="fsLoad">💾 Wear my saved look</button>' : ''}<button class="fsmb" id="fsReset">↩️ Start over</button><button class="fsmb fssave" id="fsKeepWard">💾 Save for next show</button></div>`;
     $('#fsItems').innerHTML = h;
     $('#fsItems').querySelectorAll('.fssw').forEach(b => b.onclick = () => b.dataset.fxc ? fsFx(b.dataset.fxc, b.dataset.c) : fsSet(b.dataset.k, b.dataset.c));
     $('#fsItems').querySelectorAll('.fsit[data-fx]').forEach(b => b.onclick = () => fsFx(b.dataset.fx, b.dataset.v));
@@ -529,7 +528,22 @@
   function fsSurprise(){ if (!fs || fs.ph !== 'dress') return; const o = fsNpcFit({base: {head: fs.fit.head, body: fs.fit.body, hair: fs.fit.hair, hairColor: fs.fit.hairColor}}, fs.th, .6);
     fs.fit = Object.assign({}, fs.fit, {shirt: o.av.shirt, pants: o.av.pants}); fs.fx = o.fx; fsChanged(); }
   function fsResetLook(){ if (!fs || fs.ph !== 'dress') return; fs.fit = fixAv(Object.assign({}, DEF, avatar)); fs.fx = fsCleanFx(null); fsChanged(); }
-  function fsLoadLook(){ const s = load('rubloxFsLook', null); if (!s || !fs || fs.ph !== 'dress') return; fs.fit = cleanAv(Object.assign({}, avatar, s.av || {})); fs.fx = fsCleanFx(s.fx); fsChanged(); toast('💾 Put on your saved look!'); }
+  function fsHasSavedLook(){ const s = load('rubloxFsLook', null); return !!(s && typeof s === 'object' && s.fx && typeof s.fx === 'object'); }
+  function fsApplySavedLook(silent){
+    const s = load('rubloxFsLook', null); if (!s || !fs || typeof s !== 'object') return false;
+    // merge saved colours onto your real avatar base; runway FX (incl. VIP pieces) come back via fsCleanFx
+    fs.fit = cleanAv(Object.assign({}, avatar, s.av || {}));
+    fs.fx = fsCleanFx(s.fx);
+    // drop VIP pieces if the player no longer has VIP (save can still keep them for when VIP returns)
+    if (!fsIsVip()){
+      ['top','bot','dress','shoe','hair','mk','pat'].forEach(k => { const r = fsList(k).find(q => q.v === fs.fx[k]); if (r && r.vip) fs.fx[k] = FS_FXDEF[k]; });
+      fs.fx.acc = fs.fx.acc.filter(v => { const r = fsList('acc').find(q => q.v === v); return !(r && r.vip); });
+    }
+    fsRebuild(fs.fit, fs.fx); fsVipBadge(); if (fs.ward) fsWardRender();
+    if (!silent) toast('💾 Wearing your saved look!');
+    return true;
+  }
+  function fsLoadLook(){ if (!fs || fs.ph !== 'dress') return; if (!fsApplySavedLook(false)) toast('💾 No saved look yet — style one and tap Save for next show'); }
   function fsReadyBtn(){
     if (!fs || fs.ph !== 'dress') return;
     fs.ready.add(fsUid()); fsWardClose(); banner('✅ Looking good! Waiting for the show to start...');
@@ -593,10 +607,15 @@
   function fsLocalDress(){
     fsHideAll(); choosing = false; over = false; fs.lobPanel = false;
     fs.endShown = false; fs.paid = false; fs.earned = 0; fs.tab = fs.tab || 'top'; fsClearWalkers();
-    fs.fit = fixAv(Object.assign({}, DEF, avatar)); fs.fx = fsCleanFx(null); fs.poses[fsUid()] = fs.myPose; fsRebuild(fs.fit, fs.fx); fsVipBadge();
+    fs.fit = fixAv(Object.assign({}, DEF, avatar)); fs.fx = fsCleanFx(null); fs.poses[fsUid()] = fs.myPose;
+    const restored = fsApplySavedLook(true);
+    if (!restored){ fsRebuild(fs.fit, fs.fx); fsVipBadge(); }
     const n = Math.max(0, fs.ord.indexOf(fsUid()));
-    Object.assign(P, {x: -19.6 - (n % 3) * .9, y: .05, z: ((n % 4) - 1.5) * 1.1, vx: 0, vy: 0, vz: 0}); P.face = -Math.PI / 2; cam.yaw = P.face + Math.PI; cam.pitch = .32; cam.dist = 6.5;
-    const T = FS_THEMES[fs.th]; banner('👗 ' + T.emoji + ' ' + T.name + '! You have ' + (fs.dl >= 60 ? fs.dl / 60 + ' min' : fs.dl + 's') + ' — go style!'); SND.cp();
+    // spawn DEEP inside the prep room so the camera never sits outside looking through the doorway lintel
+    Object.assign(P, {x: -23.5 - (n % 3) * .7, y: .05, z: ((n % 4) - 1.5) * 1.1, vx: 0, vy: 0, vz: 0}); P.face = -Math.PI / 2; cam.yaw = P.face + Math.PI; cam.pitch = .28; cam.dist = 5.2;
+    const T = FS_THEMES[fs.th];
+    banner('👗 ' + T.emoji + ' ' + T.name + '! You have ' + (fs.dl >= 60 ? fs.dl / 60 + ' min' : fs.dl + 's') + (restored ? ' · 💾 saved look on!' : ' — go style!')); SND.cp();
+    if (restored) toast('💾 Your saved look is on — tweak it or tap Wardrobe');
     $('#fsWardBtn').classList.add('show'); fsNpcsTo('room'); fsTip();
   }
   function fsBeginWalk(){
@@ -614,8 +633,10 @@
     fsHideAll(); choosing = false;
     fsClearWalkers();
     fs.ord.forEach(u => { const av = Object.assign({}, DEF, fs.fits[u] || {}), m = fsBuild(av, fs.fxs[u] || null); m.g.visible = false; scene.add(m.g);
-      const lab = label(u === fsUid() ? (fsIsVip() ? '👑 VIP You' : '⭐ You') : fsName(u), u === fsUid() && fsIsVip() ? 'rgba(232,168,0,.96)' : 'rgba(255,111,181,.92)'); lab.position.y = 3.55; if (u === fsUid() && fsIsVip()) lab.scale.set(.85, .85, .85); m.g.add(lab);
-      fs.walkers.push({u, m, av, ph: 0, lab, shown: false}); });
+      const meVip = u === fsUid() && fsIsVip();
+      const lab = label(meVip ? '👑 VIP You' : (u === fsUid() ? '⭐ You' : fsName(u)), meVip ? 'rgba(232,168,0,.98)' : 'rgba(255,111,181,.92)');
+      lab.position.y = meVip ? 4.35 : 3.55; if (meVip) lab.scale.set(1.15, 1.15, 1.15); m.g.add(lab);
+      fs.walkers.push({u, m, av, ph: 0, lab, shown: false, meVip}); });
     fsNpcsTo('hide');
     const s = fsSeat(); Object.assign(P, {x: s.x, y: s.y, z: s.z, vx: 0, vy: 0, vz: 0}); P.face = Math.PI;
     if (fs.fit) fsRebuild(fs.fit, fs.fx);
@@ -688,9 +709,14 @@
   function fsKeep(){
     // Fashion pieces stay INSIDE the Fashion Show only — they never go onto your normal Rublox avatar.
     if (!fs || !fs.fit) return;
-    save('rubloxFsLook', {av: cleanAv(fs.fit), fx: fsCleanFx(fs.fx)});
-    $('#fsKeep').disabled = true; $('#fsKeep').textContent = '✅ Saved for next show!';
+    const payload = {av: cleanAv(fs.fit), fx: fsCleanFx(fs.fx), t: Date.now()};
+    save('rubloxFsLook', payload);
+    // prove it stuck (some browsers are picky); fall back to a second write
+    const check = load('rubloxFsLook', null);
+    if (!check || !check.fx){ try { localStorage.setItem('rubloxFsLook', JSON.stringify(payload)); } catch (e){} }
+    ['#fsKeep', '#fsKeepWard', '#fsKeepWard2'].forEach(id => { const b = $(id); if (b){ b.disabled = true; b.textContent = '✅ Saved for next show!'; } });
     toast('💾 Saved for the next Fashion Show only — your normal character outfit is unchanged');
+    if (fs.ward) fsWardRender();   // reveal 💾 Wear my saved look
   }
   // one-time: strip any accidental fashion leftovers that an older "Save my look" may have written onto the normal avatar
   function fsMigrateAvatar(){
@@ -774,7 +800,7 @@
         else { const o = fs.ord.filter(u => !fs.pod.includes(u)).indexOf(W.u); M.g.position.set((o % 2 ? 1 : -1) * (5.6 + (o >> 1) * 1.6), .05, 31.2); M.g.rotation.y = Math.PI; applyPose(dt, FS_POSES[0].p(t), M); }
         return; }
       const lt = fs.wt - k * FS_WALK; if (fs.ph !== 'walk' || lt < 0 || lt > FS_WALK){ M.g.visible = false; return; }
-      M.g.visible = true; W.lab.visible = lt > 3.2 && lt < 7; let z, ry = 0, p = null;
+      M.g.visible = true; W.lab.visible = W.meVip || (lt > 3.2 && lt < 7); let z, ry = 0, p = null;
       if (lt < 3.2) z = z0 + (z1 - z0) * (lt / 3.2);
       else if (lt < 7){ z = z1; p = FS_POSES[fs.poses[W.u] != null ? fs.poses[W.u] : 0].p(lt - 3.2); }
       else { z = z1 - (lt - 7) * 10; ry = Math.PI; }
@@ -800,6 +826,8 @@
     if ($('#fsThB').textContent !== th) $('#fsThB').textContent = th;
     $('#fsT').textContent = fs.ph === 'dress' || fs.ph === 'intro' || fs.ph === 'podium' ? fmt(Math.max(0, Math.ceil(fs.t))) : fs.ph === 'walk' ? Math.min(fs.ord.length, Math.floor(fs.wt / FS_WALK) + 1) + '/' + fs.ord.length : '—';
     if (fs.ph === 'dress' && fs.ward) $('#fsWardT').textContent = '⏱️ ' + fmt(Math.max(0, Math.ceil(fs.t)));
+    // show the REAL Rublox coin balance (hud() otherwise overwrites #oCoins with runCoins, which is 0 here)
+    $('#oCoins').textContent = coins;
   }
   function fsPad(jp){
     if (!fs) return false;
