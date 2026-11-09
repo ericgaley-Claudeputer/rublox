@@ -33,13 +33,13 @@ rep("    else if (mode === 'icecream') banner(", "    else if (mode === 'stable'
 rep("mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream') && touchUI",
     "mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable') && touchUI")
 rep("    $('#icBox').style.display = $('#icOrders').style.display = mode === 'icecream' ? '' : 'none'; ['#icAct', '#icPanel'].forEach(id => $(id).classList.remove('show'));", """    $('#sbBox').style.display = mode === 'stable' ? '' : 'none'; ['#sbAct', '#sbPick'].forEach(id => $(id).classList.remove('show'));
-    if (mode === 'stable'){ if (!window.__sbBound){ window.__sbBound = true; $('#sbAct').onclick = () => sbAct(); }
+    if (mode === 'stable'){ if (!window.__sbBound){ window.__sbBound = true; sbBindAct(); }
       stableEnter(); }
     $('#icBox').style.display = $('#icOrders').style.display = mode === 'icecream' ? '' : 'none'; ['#icAct', '#icPanel'].forEach(id => $(id).classList.remove('show'));""")
 rep(" if (ic) iceCreamStop();", " if (ic) iceCreamStop(); if (sb) stableStop();")
 rep("    const line = mode === 'icecream' ?", "    const line = mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'icecream' ?")
 rep("    if (mode === 'icecream'){\n      $('#oTip').innerHTML", """    if (mode === 'stable'){
-      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · tap 🐴 actions' : '⌨️ WASD move · Space jump · E care / mount / show · Esc menu')
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · tap 🐴 actions' : '⌨️ WASD move · Space jump (with pony) · E care / mount / dismount · Esc menu')
         + "<br>🐴 Adopt a pony, brush · feed · groom, then ride to the 🏆 jumping show!";
       return;
     }
