@@ -10943,8 +10943,8 @@ const Obby = (() => {
     const body = new THREE.Mesh(new THREE.CapsuleGeometry(.46, 1.55, 6, 12), coat);
     body.rotation.x = Math.PI / 2; body.position.set(0, 1.18, 0); g.add(body);
     // chest fill so the thick neck base blends into the front of the barrel
-    const chest = new THREE.Mesh(new THREE.SphereGeometry(.42, 10, 8), coat);
-    chest.position.set(0, 1.28, .55); chest.scale.set(1.05, .95, 1.15); g.add(chest);
+    const chest = new THREE.Mesh(new THREE.SphereGeometry(.28, 10, 8), coat);
+    chest.position.set(0, 1.32, .52); chest.scale.set(1.0, .9, 1.05); g.add(chest);
     const bodyBounds = {minX: -.58, maxX: .58, minY: .68, maxY: 1.70, minZ: -1.25, maxZ: 1.15};
 
     // SHORT thick neck ~45° forward (llama was upright to y≈2.5; pony stops ~y=1.95)

@@ -21,8 +21,8 @@ const coat=0xf6e3b4, mane=0xff9f1c, soft=0xffe9c4, dark=0xd4c09a, hoof=0x5a4030,
 const g=new THREE.Group(); scene.add(g);
 const body=new THREE.Mesh(new THREE.CapsuleGeometry(.46,1.55,6,12), mat(coat));
 body.rotation.x=Math.PI/2; body.position.set(0,1.18,0); g.add(body);
-const chest=new THREE.Mesh(new THREE.SphereGeometry(.42,10,8), mat(coat));
-chest.position.set(0,1.28,.55); chest.scale.set(1.05,.95,1.15); g.add(chest);
+const chest=new THREE.Mesh(new THREE.SphereGeometry(.28,10,8), mat(coat));
+chest.position.set(0,1.32,.52); chest.scale.set(1.0,.9,1.05); g.add(chest);
 const base=new THREE.Vector3(0,1.40,.58), mid=new THREE.Vector3(0,1.68,.88), tip=new THREE.Vector3(0,1.95,1.18);
 const neck=new THREE.Group(); neck.position.copy(base); g.add(neck);
 const local=[base,mid,tip].map(function(p){ return new THREE.Vector3().subVectors(p,base); });
