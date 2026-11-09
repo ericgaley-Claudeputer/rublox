@@ -1418,7 +1418,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.09-20';
+const BUILD = '2026.11.09-21';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -10894,7 +10894,7 @@ const Obby = (() => {
     ic.lv = Math.max(1, Math.min(99, d.lv | 0 || 1)); (Array.isArray(d.ev) ? d.ev : []).forEach(e => icEvent(e));
   }
   function icGuestMsg(g, d){ if (!ic || ic.remote || !d) return; icApply(g, d); }
-  /* ===================== t236u: 🐴 continuous attached neck (tube) + seat-on-saddle ===================== */
+  /* ===================== t237u: 🐴 pony silhouette — short angled neck, fluffy mane, horse head ===================== */
   const SB_KEY = 'rubloxStable', SB_DRAIN = 25, SB_MOUNT_CD = .85;
   const SB_HIP = 1.32; // avatar pivot ≈ this above P.y — used to place hips on saddleTop
   const SB_PONIES = [
@@ -10926,94 +10926,121 @@ const Obby = (() => {
     return { top, foot, clear: foot + .55 };
   }
   function sbMesh(pony, x, z){
-    // +Z forward. ONE continuous arched neck (tube + joint spheres); head parented to neck so bob stays attached.
+    // Cute cartoon PONY (+Z forward). Short thick ~45° neck, horse muzzle, fluffy mane/tail.
+    // Head is parented to neck; neck base embeds in chest, tip embeds in skull (sbNeckAttached).
     const def = sbPonyOf(pony.id), g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
     const coat = sbMat(def.coat), maneM = sbMat(def.mane), hoofM = sbMat(def.hoof || shade(def.coat, -40));
-    const dark = sbMat(shade(def.coat, -25)), soft = sbMat(shade(def.coat, 18));
+    const dark = sbMat(shade(def.coat, -22)), soft = sbMat(shade(def.coat, 16));
     const V3 = (x, y, z) => {
-      let v;
-      try { v = new THREE.Vector3(x, y, z); } catch (e){ v = {}; }
+      let v; try { v = new THREE.Vector3(x, y, z); } catch (e){ v = {}; }
       if (v && typeof v.set === 'function') try { v.set(x, y, z); } catch (e){}
       v.x = x; v.y = y; v.z = z;
       if (typeof v.copy !== 'function') v.copy = function(o){ this.x = o.x; this.y = o.y; this.z = o.z; return this; };
       return v;
     };
 
-    // longer barrel — neck base will embed into the upper-front of this capsule
-    const body = new THREE.Mesh(new THREE.CapsuleGeometry(.48, 1.35, 6, 12), coat);
-    body.rotation.x = Math.PI / 2; body.position.set(0, 1.22, 0); g.add(body);
-    // body AABB used by attach tests (capsule ≈ this box after rot)
-    const bodyBounds = {minX: -.55, maxX: .55, minY: .70, maxY: 1.72, minZ: -1.20, maxZ: 1.20};
+    // Horsey barrel — longer than tall (not an egg)
+    const body = new THREE.Mesh(new THREE.CapsuleGeometry(.46, 1.55, 6, 12), coat);
+    body.rotation.x = Math.PI / 2; body.position.set(0, 1.18, 0); g.add(body);
+    // chest fill so the thick neck base blends into the front of the barrel
+    const chest = new THREE.Mesh(new THREE.SphereGeometry(.42, 10, 8), coat);
+    chest.position.set(0, 1.28, .55); chest.scale.set(1.05, .95, 1.15); g.add(chest);
+    const bodyBounds = {minX: -.58, maxX: .58, minY: .68, maxY: 1.70, minZ: -1.25, maxZ: 1.15};
 
-    // Smooth arch in pony-root space: start INSIDE body, end INSIDE skull
-    const base = V3(0, 1.42, .42), mid1 = V3(0, 1.78, .78), mid2 = V3(0, 2.18, 1.10), tip = V3(0, 2.48, 1.32);
+    // SHORT thick neck ~45° forward (llama was upright to y≈2.5; pony stops ~y=1.95)
+    // base INSIDE chest/withers, tip INSIDE skull
+    const base = V3(0, 1.40, .58), mid = V3(0, 1.68, .88), tip = V3(0, 1.95, 1.18);
     const neck = new THREE.Group(); neck.position.x = base.x; neck.position.y = base.y; neck.position.z = base.z; g.add(neck);
-    const local = [base, mid1, mid2, tip].map(p => V3(p.x - base.x, p.y - base.y, p.z - base.z));
+    const local = [base, mid, tip].map(p => V3(p.x - base.x, p.y - base.y, p.z - base.z));
     const curve = new THREE.CatmullRomCurve3(local);
-    // tapered look: overlapping tubes (wide near body → thinner near head) so it reads as one piece
-    const tubeWide = new THREE.Mesh(new THREE.TubeGeometry(curve, 24, .30, 10, false), coat); neck.add(tubeWide);
-    const tubeMid = new THREE.Mesh(new THREE.TubeGeometry(curve, 24, .24, 10, false), coat); neck.add(tubeMid);
-    // joint spheres embed into body + head so no visible gap from any angle
-    const jointBase = new THREE.Mesh(new THREE.SphereGeometry(.36, 10, 8), coat); jointBase.position.set(0, 0, 0); neck.add(jointBase);
-    const jointTop = new THREE.Mesh(new THREE.SphereGeometry(.30, 10, 8), coat); jointTop.position.x = local[3].x; jointTop.position.y = local[3].y; jointTop.position.z = local[3].z; neck.add(jointTop);
+    // Wide at chest → slightly narrower at head (still thick)
+    const tubeWide = new THREE.Mesh(new THREE.TubeGeometry(curve, 20, .34, 10, false), coat); neck.add(tubeWide);
+    const tubeCore = new THREE.Mesh(new THREE.TubeGeometry(curve, 20, .28, 10, false), coat); neck.add(tubeCore);
+    const jointBase = new THREE.Mesh(new THREE.SphereGeometry(.40, 10, 8), coat); jointBase.position.set(0, 0, 0); neck.add(jointBase);
+    const jointTop = new THREE.Mesh(new THREE.SphereGeometry(.30, 10, 8), coat);
+    jointTop.position.x = local[2].x; jointTop.position.y = local[2].y; jointTop.position.z = local[2].z; neck.add(jointTop);
 
-    // HEAD is a child of neck — bob/nod moves neck+head together (never detaches)
-    const head = new THREE.Group(); head.position.x = local[3].x; head.position.y = local[3].y; head.position.z = local[3].z; neck.add(head);
-    const skull = new THREE.Mesh(new THREE.SphereGeometry(.38, 10, 8), coat); skull.scale.set(1, 1.05, 1.1); skull.position.set(0, .04, .06); head.add(skull);
-    const muzzle = new THREE.Mesh(new THREE.SphereGeometry(.2, 8, 6), soft); muzzle.position.set(0, -.10, .38); muzzle.scale.set(1.05, .8, 1.2); head.add(muzzle);
-    const smile = new THREE.Mesh(new THREE.TorusGeometry(.1, .018, 6, 10, Math.PI), sbMat('#c45a7a'));
-    smile.position.set(0, -.20, .46); smile.rotation.set(1.2, 0, 0); head.add(smile);
-    [[-.07, -.10, .52], [.07, -.10, .52]].forEach(([ax, ay, az]) => { const n = new THREE.Mesh(new THREE.SphereGeometry(.035, 6, 6), dark); n.position.set(ax, ay, az); head.add(n); });
-    [[-.17, .12, .30], [.17, .12, .30]].forEach(([ax, ay, az]) => {
-      const white = new THREE.Mesh(new THREE.SphereGeometry(.12, 8, 8), sbMat('#fffaf0')); white.position.set(ax, ay, az); head.add(white);
-      const iris = new THREE.Mesh(new THREE.SphereGeometry(.075, 8, 8), sbMat(def.eye)); iris.position.set(ax, ay, az + .07); head.add(iris);
-      const pupil = new THREE.Mesh(new THREE.SphereGeometry(.035, 6, 6), sbMat('#1d2340')); pupil.position.set(ax, ay, az + .12); head.add(pupil);
-      const hi = new THREE.Mesh(new THREE.SphereGeometry(.022, 6, 6), sbMat('#ffffff')); hi.position.set(ax - .03, ay + .03, az + .14); head.add(hi);
+    // HEAD — elongated horse shape, parented to neck tip
+    const head = new THREE.Group();
+    head.position.x = local[2].x; head.position.y = local[2].y; head.position.z = local[2].z; neck.add(head);
+    // skull slightly oval
+    const skull = new THREE.Mesh(new THREE.SphereGeometry(.32, 10, 8), coat); skull.scale.set(.95, 1.0, 1.15); skull.position.set(0, .06, .08); head.add(skull);
+    // long tapered muzzle pointing forward-down
+    const muzzle = new THREE.Mesh(new THREE.CapsuleGeometry(.14, .42, 5, 8), soft);
+    muzzle.rotation.x = Math.PI / 2 + .35; muzzle.position.set(0, -.12, .42); head.add(muzzle);
+    const nose = new THREE.Mesh(new THREE.SphereGeometry(.15, 8, 6), soft); nose.position.set(0, -.22, .62); head.add(nose);
+    const smile = new THREE.Mesh(new THREE.TorusGeometry(.09, .016, 6, 10, Math.PI), sbMat('#c45a7a'));
+    smile.position.set(0, -.28, .68); smile.rotation.set(1.15, 0, 0); head.add(smile);
+    [[-.06, -.24, .72], [.06, -.24, .72]].forEach(([ax, ay, az]) => { const n = new THREE.Mesh(new THREE.SphereGeometry(.03, 6, 6), dark); n.position.set(ax, ay, az); head.add(n); });
+    // eyes on the SIDES of the head (horse), big + friendly
+    [[-.26, .12, .18], [.26, .12, .18]].forEach(([ax, ay, az]) => {
+      const white = new THREE.Mesh(new THREE.SphereGeometry(.11, 8, 8), sbMat('#fffaf0')); white.position.set(ax, ay, az); head.add(white);
+      const iris = new THREE.Mesh(new THREE.SphereGeometry(.07, 8, 8), sbMat(def.eye)); iris.position.set(ax * 1.08, ay, az + .04); head.add(iris);
+      const pupil = new THREE.Mesh(new THREE.SphereGeometry(.032, 6, 6), sbMat('#1d2340')); pupil.position.set(ax * 1.12, ay, az + .08); head.add(pupil);
+      const hi = new THREE.Mesh(new THREE.SphereGeometry(.02, 6, 6), sbMat('#ffffff')); hi.position.set(ax * 1.05, ay + .03, az + .1); head.add(hi);
     });
-    [[-.14, .36, 0], [.14, .36, 0]].forEach(([ax, ay, az], i) => {
-      const ear = new THREE.Mesh(new THREE.ConeGeometry(.09, .3, 6), coat); ear.position.set(ax, ay, az); ear.rotation.z = i ? .35 : -.35; ear.rotation.x = -.2; head.add(ear);
-      const inn = new THREE.Mesh(new THREE.ConeGeometry(.05, .2, 5), sbMat('#ffc6d9')); inn.position.set(ax, ay - .02, az + .02); inn.rotation.copy(ear.rotation); head.add(inn);
+    // bigger pointed ears
+    [[-.12, .38, -.02], [.12, .38, -.02]].forEach(([ax, ay, az], i) => {
+      const ear = new THREE.Mesh(new THREE.ConeGeometry(.1, .38, 6), coat); ear.position.set(ax, ay, az); ear.rotation.z = i ? .4 : -.4; ear.rotation.x = -.35; head.add(ear);
+      const inn = new THREE.Mesh(new THREE.ConeGeometry(.055, .26, 5), sbMat('#ffc6d9')); inn.position.set(ax, ay - .02, az + .03); inn.rotation.copy(ear.rotation); head.add(inn);
     });
-    const forelock = new THREE.Mesh(new THREE.SphereGeometry(.12, 6, 6), maneM); forelock.position.set(0, .32, .02); head.add(forelock);
 
-    // mane follows the neck curve (root space)
-    for (let i = 0; i < 8; i++){
-      const t = i / 7, pt = curve.getPoint ? curve.getPoint(t) : local[Math.min(3, i >> 1)];
-      const m = new THREE.Mesh(new THREE.SphereGeometry(.12 - i * .006, 6, 6), maneM);
-      // offset slightly up/side so mane sits on top of the tube
-      const px = (pt && pt.x != null) ? pt.x : local[Math.min(3, Math.floor(t * 3))].x;
-      const py = (pt && pt.y != null) ? pt.y : local[Math.min(3, Math.floor(t * 3))].y;
-      const pz = (pt && pt.z != null) ? pt.z : local[Math.min(3, Math.floor(t * 3))].z;
-      m.position.set(px + (i % 2 ? .1 : -.1), py + .16, pz); neck.add(m);
+    // FLUFFY MANE — overlapping tufts along TOP of neck from ears → withers (mane colour!)
+    const maneTufts = [];
+    for (let i = 0; i < 9; i++){
+      const t = i / 8;
+      const pt = curve.getPoint ? curve.getPoint(t) : local[Math.min(2, Math.floor(t * 2))];
+      const px = pt.x || 0, py = (pt.y || 0) + .22, pz = pt.z || 0;
+      const tuft = new THREE.Group(); tuft.position.set(px, py, pz); neck.add(tuft);
+      for (let k = 0; k < 3; k++){
+        const blob = new THREE.Mesh(new THREE.SphereGeometry(.13 - k * .02, 6, 6), maneM);
+        blob.position.set((k - 1) * .07, .08 + k * .05, (i % 2 ? .02 : -.02));
+        blob.scale.set(1.1, 1.35, .9); tuft.add(blob);
+      }
+      maneTufts.push(tuft);
+    }
+    // forelock between the ears
+    const forelock = new THREE.Group(); forelock.position.set(0, .28, .05); head.add(forelock);
+    for (let k = 0; k < 4; k++){
+      const blob = new THREE.Mesh(new THREE.SphereGeometry(.11, 6, 6), maneM);
+      blob.position.set((k - 1.5) * .06, -.05 * k, .04 * k); blob.scale.set(1, 1.4, 1); forelock.add(blob);
     }
 
-    const tail = new THREE.Group(); tail.position.set(0, 1.4, -.85); g.add(tail);
-    for (let i = 0; i < 4; i++){
-      const t = new THREE.Mesh(new THREE.SphereGeometry(.13 - i * .015, 6, 6), maneM);
-      t.position.set(0, -.16 * i, -.12 * i); tail.add(t);
+    // FULLER fluffy tail
+    const tail = new THREE.Group(); tail.position.set(0, 1.38, -.88); g.add(tail);
+    for (let i = 0; i < 6; i++){
+      for (let k = 0; k < 3; k++){
+        const t = new THREE.Mesh(new THREE.SphereGeometry(.14 - i * .012, 6, 6), maneM);
+        t.position.set((k - 1) * .08, -.18 * i - .02, -.14 * i + (k - 1) * .03);
+        t.scale.set(1.15, 1.3, 1.05); tail.add(t);
+      }
     }
+
+    // Slightly tapered legs + darker hooves
     const legs = [];
-    [[.28, .62, .48], [-.28, .62, .48], [.28, .62, -.42], [-.28, .62, -.42]].forEach(([lx, ly, lz]) => {
+    [[.28, .64, .52], [-.28, .64, .52], [.28, .64, -.46], [-.28, .64, -.46]].forEach(([lx, ly, lz]) => {
       const leg = new THREE.Group(); leg.position.set(lx, ly, lz); g.add(leg);
-      const thigh = new THREE.Mesh(new THREE.CylinderGeometry(.09, .1, .6, 6), coat); thigh.position.y = 0; leg.add(thigh);
-      const shin = new THREE.Mesh(new THREE.CylinderGeometry(.07, .08, .5, 6), dark); shin.position.y = -.5; leg.add(shin);
-      const hoof = new THREE.Mesh(new THREE.CylinderGeometry(.09, .1, .12, 6), hoofM); hoof.position.y = -.8; leg.add(hoof);
+      const thigh = new THREE.Mesh(new THREE.CylinderGeometry(.08, .11, .58, 6), coat); thigh.position.y = 0; leg.add(thigh);
+      const shin = new THREE.Mesh(new THREE.CylinderGeometry(.055, .08, .48, 6), dark); shin.position.y = -.5; leg.add(shin);
+      const hoof = new THREE.Mesh(new THREE.CylinderGeometry(.09, .1, .14, 6), hoofM); hoof.position.y = -.78; leg.add(hoof);
       legs.push(leg);
     });
+
+    // Saddle on barrel — saddleTop drives rider seat (must stay consistent)
     const saddle = new THREE.Group(); saddle.visible = false; g.add(saddle);
-    const blanketY = 1.52, seatY = 1.58;
-    const blanket = new THREE.Mesh(new THREE.BoxGeometry(.7, .06, .9), sbMat('#ffd23f')); blanket.position.set(0, blanketY, .05); saddle.add(blanket);
-    const seat = new THREE.Mesh(new THREE.BoxGeometry(.55, .12, .7), sbMat('#8b4513')); seat.position.set(0, seatY, .05); saddle.add(seat);
+    const blanketY = 1.50, seatY = 1.56;
+    const blanket = new THREE.Mesh(new THREE.BoxGeometry(.7, .06, .9), sbMat('#ffd23f')); blanket.position.set(0, blanketY, .02); saddle.add(blanket);
+    const seat = new THREE.Mesh(new THREE.BoxGeometry(.55, .12, .7), sbMat('#8b4513')); seat.position.set(0, seatY, .02); saddle.add(seat);
     const saddleTop = seatY + .06;
     const bridle = new THREE.Group(); bridle.visible = false; head.add(bridle);
-    const strap = new THREE.Mesh(new THREE.TorusGeometry(.28, .025, 6, 12), sbMat('#5a4030')); strap.rotation.y = Math.PI / 2; strap.position.set(0, -.02, .05); bridle.add(strap);
-    const rein = new THREE.Mesh(new THREE.BoxGeometry(.04, .04, .55), sbMat('#5a4030')); rein.position.set(0, -.2, -.2); bridle.add(rein);
+    const strap = new THREE.Mesh(new THREE.TorusGeometry(.26, .022, 6, 12), sbMat('#5a4030')); strap.rotation.y = Math.PI / 2; strap.position.set(0, -.02, .15); bridle.add(strap);
+    const rein = new THREE.Mesh(new THREE.BoxGeometry(.04, .04, .45), sbMat('#5a4030')); rein.position.set(0, -.18, -.05); bridle.add(rein);
 
     g.userData.parts = {
-      body, neck, head, tail, legs, saddle, bridle, saddleTop, seat, jointBase, jointTop,
+      body, neck, head, tail, legs, saddle, bridle, saddleTop, seat, jointBase, jointTop, maneTufts, chest,
       neckBase: {x: base.x, y: base.y, z: base.z},
       neckTop: {x: tip.x, y: tip.y, z: tip.z},
-      bodyBounds, headR: .42,
+      bodyBounds, headR: .5,
       headOnNeck: true, animT: 0, moving: false, neckBob: 0
     };
     g.visible = true; return g;
@@ -11022,15 +11049,12 @@ const Obby = (() => {
     if (!sb || !sb.mesh || !sb.mesh.userData.parts) return false;
     const p = sb.mesh.userData.parts, b = p.bodyBounds, base = p.neckBase, top = p.neckTop;
     if (!p.headOnNeck || !p.neck || !p.head || !b || !base || !top) return false;
-    // head stays parented to neck (children list or .parent)
     const kids = p.neck.children || [];
     const kid = kids.indexOf(p.head) >= 0 || p.head.parent === p.neck || (p.headOnNeck && kids.length >= 1);
     if (!kid) return false;
     const baseIn = base.x >= b.minX && base.x <= b.maxX && base.y >= b.minY && base.y <= b.maxY && base.z >= b.minZ && base.z <= b.maxZ;
-    // head local pos must match neck tip relative to neck base (continuous join)
     const hx = p.head.position.x || 0, hy = p.head.position.y || 0, hz = p.head.position.z || 0;
     const tipOk = Math.abs((base.x + hx) - top.x) < .08 && Math.abs((base.y + hy) - top.y) < .08 && Math.abs((base.z + hz) - top.z) < .08;
-    // tip lies inside head skull radius (head origin ≈ tip)
     const tipInHead = Math.hypot(hx, hy, hz) >= 0 && Math.hypot(0, 0, 0) <= (p.headR || .42);
     return !!(kid && baseIn && tipOk && p.jointBase && p.jointTop && tipInHead);
   }
@@ -11045,15 +11069,14 @@ const Obby = (() => {
         const phase = p.animT + ((i === 0 || i === 3) ? 0 : Math.PI);
         leg.rotation.x = Math.sin(phase) * .55;
       });
-      // ONE bob on the neck group — head is parented, so it nods with the neck (no detach)
-      p.neckBob = Math.sin(p.animT * 2) * .07;
+      p.neckBob = Math.sin(p.animT * 2) * .05;
       p.neck.rotation.x = p.neckBob;
-      p.tail.rotation.y = Math.sin(p.animT * 1.5) * .2;
+      p.tail.rotation.y = Math.sin(p.animT * 1.5) * .25;
     } else {
       p.legs.forEach(leg => { leg.rotation.x *= Math.max(0, 1 - dt * 6); });
-      p.neckBob = Math.sin(worldT * 1.4) * .03;
+      p.neckBob = Math.sin(worldT * 1.4) * .025;
       p.neck.rotation.x = p.neckBob;
-      p.tail.rotation.y = Math.sin(worldT * 2.1) * .4;
+      p.tail.rotation.y = Math.sin(worldT * 2.1) * .45;
     }
     const on = !!sb.ridden; p.saddle.visible = on; p.bridle.visible = on;
   }

@@ -1,0 +1,75 @@
+<!doctype html>
+<html><head><meta charset="utf-8"/><title>loading</title>
+<style>html,body{margin:0;background:#c8e8ff;overflow:hidden}</style>
+</head><body>
+<script src="./three.min.js"></script>
+<script>
+(function(){
+const THREE = window.THREE;
+const W=900,H=560;
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true,alpha:false});
+renderer.setSize(W,H); renderer.setPixelRatio(1); document.body.appendChild(renderer.domElement);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0xc8e8ff);
+const cam=new THREE.PerspectiveCamera(32,W/H,.1,100);
+cam.position.set(6.8,1.55,0); cam.lookAt(0,1.25,0);
+scene.add(new THREE.AmbientLight(0xffffff,0.9));
+const sun=new THREE.DirectionalLight(0xffffff,0.7); sun.position.set(2,6,3); scene.add(sun);
+const ground=new THREE.Mesh(new THREE.CircleGeometry(8,48), new THREE.MeshLambertMaterial({color:0x8fd39a}));
+ground.rotation.x=-Math.PI/2; scene.add(ground);
+function mat(c){ return new THREE.MeshLambertMaterial({color:c}); }
+const coat=0xf6e3b4, mane=0xff9f1c, soft=0xffe9c4, dark=0xd4c09a, hoof=0x5a4030, eye=0x3a86ff;
+const g=new THREE.Group(); scene.add(g);
+const body=new THREE.Mesh(new THREE.CapsuleGeometry(.46,1.55,6,12), mat(coat));
+body.rotation.x=Math.PI/2; body.position.set(0,1.18,0); g.add(body);
+const chest=new THREE.Mesh(new THREE.SphereGeometry(.42,10,8), mat(coat));
+chest.position.set(0,1.28,.55); chest.scale.set(1.05,.95,1.15); g.add(chest);
+const base=new THREE.Vector3(0,1.40,.58), mid=new THREE.Vector3(0,1.68,.88), tip=new THREE.Vector3(0,1.95,1.18);
+const neck=new THREE.Group(); neck.position.copy(base); g.add(neck);
+const local=[base,mid,tip].map(function(p){ return new THREE.Vector3().subVectors(p,base); });
+const curve=new THREE.CatmullRomCurve3(local);
+neck.add(new THREE.Mesh(new THREE.TubeGeometry(curve,20,.34,10,false), mat(coat)));
+neck.add(new THREE.Mesh(new THREE.TubeGeometry(curve,20,.28,10,false), mat(coat)));
+neck.add(new THREE.Mesh(new THREE.SphereGeometry(.40,10,8), mat(coat)));
+const jt=new THREE.Mesh(new THREE.SphereGeometry(.30,10,8), mat(coat)); jt.position.copy(local[2]); neck.add(jt);
+const head=new THREE.Group(); head.position.copy(local[2]); neck.add(head);
+const skull=new THREE.Mesh(new THREE.SphereGeometry(.32,10,8), mat(coat)); skull.scale.set(.95,1,1.15); skull.position.set(0,.06,.08); head.add(skull);
+const muzzle=new THREE.Mesh(new THREE.CapsuleGeometry(.14,.42,5,8), mat(soft));
+muzzle.rotation.x=Math.PI/2+.35; muzzle.position.set(0,-.12,.42); head.add(muzzle);
+const nose=new THREE.Mesh(new THREE.SphereGeometry(.15,8,6), mat(soft)); nose.position.set(0,-.22,.62); head.add(nose);
+const smile=new THREE.Mesh(new THREE.TorusGeometry(.09,.016,6,10,Math.PI), mat(0xc45a7a));
+smile.position.set(0,-.28,.68); smile.rotation.set(1.15,0,0); head.add(smile);
+[[-.26,.12,.18],[.26,.12,.18]].forEach(function(a){
+  var white=new THREE.Mesh(new THREE.SphereGeometry(.11,8,8), mat(0xfffaf0)); white.position.set(a[0],a[1],a[2]); head.add(white);
+  var iris=new THREE.Mesh(new THREE.SphereGeometry(.07,8,8), mat(eye)); iris.position.set(a[0]*1.08,a[1],a[2]+.04); head.add(iris);
+});
+[[-.12,.38,-.02],[.12,.38,-.02]].forEach(function(a,i){
+  var ear=new THREE.Mesh(new THREE.ConeGeometry(.1,.38,6), mat(coat)); ear.position.set(a[0],a[1],a[2]); ear.rotation.z=i?.4:-.4; ear.rotation.x=-.35; head.add(ear);
+});
+for(var i=0;i<9;i++){
+  var t=i/8, pt=curve.getPoint(t);
+  var tuft=new THREE.Group(); tuft.position.set(pt.x, pt.y+.22, pt.z); neck.add(tuft);
+  for(var k=0;k<3;k++){
+    var blob=new THREE.Mesh(new THREE.SphereGeometry(.13-k*.02,6,6), mat(mane));
+    blob.position.set((k-1)*.07, .08+k*.05, 0); blob.scale.set(1.1,1.35,.9); tuft.add(blob);
+  }
+}
+var fore=new THREE.Group(); fore.position.set(0,.28,.05); head.add(fore);
+for(var k=0;k<4;k++){ var blob=new THREE.Mesh(new THREE.SphereGeometry(.11,6,6), mat(mane)); blob.position.set((k-1.5)*.06,-.05*k,.04*k); blob.scale.set(1,1.4,1); fore.add(blob); }
+var tail=new THREE.Group(); tail.position.set(0,1.38,-.88); g.add(tail);
+for(var i=0;i<6;i++) for(var k=0;k<3;k++){
+  var tt=new THREE.Mesh(new THREE.SphereGeometry(.14-i*.012,6,6), mat(mane));
+  tt.position.set((k-1)*.08, -.18*i, -.14*i); tt.scale.set(1.15,1.3,1.05); tail.add(tt);
+}
+[[.28,.64,.52],[-.28,.64,.52],[.28,.64,-.46],[-.28,.64,-.46]].forEach(function(L){
+  var leg=new THREE.Group(); leg.position.set(L[0],L[1],L[2]); g.add(leg);
+  leg.add(new THREE.Mesh(new THREE.CylinderGeometry(.08,.11,.58,6), mat(coat)));
+  var shin=new THREE.Mesh(new THREE.CylinderGeometry(.055,.08,.48,6), mat(dark)); shin.position.y=-.5; leg.add(shin);
+  var hf=new THREE.Mesh(new THREE.CylinderGeometry(.09,.1,.14,6), mat(hoof)); hf.position.y=-.78; leg.add(hf);
+});
+// Side view: nose to +Z, camera on +X looking -X
+g.rotation.y = 0;
+renderer.render(scene,cam);
+document.title='ready';
+document.body.setAttribute('data-ready','1');
+})();
+</script></body></html>
