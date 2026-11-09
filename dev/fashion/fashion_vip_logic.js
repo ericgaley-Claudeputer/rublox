@@ -11,9 +11,12 @@ function world(store, coins0){
     console, Math, JSON, Object, Array, Number, String, Date, Set, Map, parseInt, parseFloat, isNaN, performance: {now:()=>1e6},
     THREE: new Proxy({}, {get:()=>function(){return O();}}), scene:{add(){},remove(){},background:null},
     load:(k,d)=>{ try{ return k in store ? JSON.parse(store[k]) : d; }catch(e){return d;} }, save:(k,v)=>{ store[k]=JSON.stringify(v); },
-    $: id => els[id] || (els[id] = {textContent:'',innerHTML:'',style:{},disabled:false,onclick:null,classList:{s:new Set(),add(c){this.s.add(c);},remove(c){this.s.delete(c);},toggle(c,on){(on===undefined?!this.s.has(c):on)?this.s.add(c):this.s.delete(c);},contains(c){return this.s.has(c);}},querySelectorAll:()=>[],querySelector:()=>null}),
+    $: id => els[id] || (els[id] = (()=>{ const s=new Set(); const kids=[]; const e={textContent:'',_html:'',style:{},disabled:false,onclick:null,dataset:{},childElementCount:0,children:kids,
+      get innerHTML(){return this._html;}, set innerHTML(v){ this._html=v; const n=(String(v).match(/<button/g)||[]).length; this.childElementCount=n; kids.length=0; for(let i=0;i<n;i++){ const b={dataset:{t:['top','bot','dress','shoe','hair','mk','acc','col','star','vip','pose'][i]}, classList:{s:new Set(),add(c){this.s.add(c);},remove(c){this.s.delete(c);},toggle(c,on){(on===undefined?!this.s.has(c):on)?this.s.add(c):this.s.delete(c);},contains(c){return this.s.has(c);}}}; kids.push(b);} },
+      classList:{add(c){s.add(c);},remove(c){s.delete(c);},toggle(c,on){(on===undefined?!s.has(c):on)?s.add(c):s.delete(c);},contains(c){return s.has(c);}},
+      querySelectorAll:(sel)=> kids, querySelector:()=>kids[0]||null}; return e; })()),
     coins: coins0 == null ? 500 : coins0, runCoins: 0, paused: false, choosing: false, over: false, worldT: 0, mode: 'fashion', banners: [], toasts: [],
-    P:{x:0,y:.05,z:23,face:0,vx:0,vy:0,vz:0}, cam:{yaw:0,pitch:.3,dist:6}, pad:{on:false}, touchUI:false, keys:{}, innerWidth:1280, camera:{position:{x:0,y:3,z:10,set(){},copy(){}},lookAt(){}}, solids:[], DEF:{shirt:'#3a86ff',pants:'#2d2d2d',head:'#f1c27d',hairColor:'#6b3e1f',hair:'short',body:'girl',hat:null,shirtPat:null,pantsPat:null,face:null,ears:null,tail:null,back:null,brow:null,lash:null},
+    P:{x:0,y:.05,z:23,face:0,vx:0,vy:0,vz:0}, cam:{yaw:0,pitch:.3,dist:6}, pad:{on:false}, touchUI:false, keys:{}, innerWidth:1280, camera:{position:{x:0,y:3,z:10,set(x,y,z){this.x=x;this.y=y;this.z=z;},copy(){}},lookAt(){}}, solids:[], DEF:{shirt:'#3a86ff',pants:'#2d2d2d',head:'#f1c27d',hairColor:'#6b3e1f',hair:'short',body:'girl',hat:null,shirtPat:null,pantsPat:null,face:null,ears:null,tail:null,back:null,brow:null,lash:null},
     avatar: null, model: {g:O()}, mp:{on:false,host:true,me:'H',guests:new Map(),ents:new Map()},
     ITEMS: [{slot:'hat',val:'crown',id:'hat_crown',emoji:'👑',name:'Crown'},{slot:'shirtPat',val:'startee',id:'sp1',emoji:'⭐',name:'Star Tee'}],
     plat:()=>({mesh:O()}), mat:()=>({}), shade:(c)=>c, label:()=>O(), buildPlayer:()=>({g:O(),pivot:{children:[O()]},head:O(),legs:[O(),O()],arms:[O(),O()]}),
@@ -29,7 +32,7 @@ function world(store, coins0){
   ctx.fmt = s => s; ctx.bxEsc = s => s; ctx.mpLook = () => null; ctx.mpGuest = () => false; ctx.mpSendTo = () => {};
   vm.createContext(ctx);
   // provide minimal FX consumer stubs used before decorate runs deeply
-  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_VIP_COST,fsProg,fsIsVip,fsBuyVip,fsVipBadge,fsList,fsKeep,fsHasSavedLook,fsApplySavedLook,fsLocalDress,fsCleanFx,FS_FXDEF,fsCleanFx,fsKeep,fsMigrateAvatar,fsLocked,fsVipRows,FX,FS_RACKS,FS_ST,fsWardRender,fsFx,buildFashion,fashionEnter,fashionStop,fsPickOpen,fsName,fsCount,fsShine,fsWardOpen,fsWardClose,fashionCam,fsRoom,fsLocalWalk};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_VIP_COST,fsProg,fsIsVip,fsBuyVip,fsVipBadge,fsList,fsKeep,fsHasSavedLook,fsApplySavedLook,fsLocalDress,fsCleanFx,FS_FXDEF,fsCleanFx,fsKeep,fsMigrateAvatar,fsLocked,fsVipRows,FX,FS_RACKS,FS_ST,fsWardRender,fsFx,buildFashion,fashionEnter,fashionStop,fsPickOpen,fsName,fsCount,fsShine,fsWardOpen,fsWardClose,fashionCam,fsRoom,fsLocalWalk,fsWardCamInfo,FS_CHANGE};`, ctx);
   return ctx;
 }
 const st = {rubloxCoins:'500', rubloxAvatar: JSON.stringify({shirt:'#111111',pants:'#222222',head:'#f1c27d',hairColor:'#6b3e1f',hair:'short'})};
@@ -97,8 +100,17 @@ chk('fsCount counts top+bot+shoe+hair with no dress (4)', W.A.fsCount() === 4, W
 W.A.fs.ward = false; W.A.fsWardOpen('top');
 chk('wardrobe open docks panel (fsward-dock) so avatar stays visible', W.document.body.classList.contains('fsward-dock'));
 chk('wardrobe open arms a front-facing preview camera', !!(W.A.fs.ward && W.A.fs.wardPos));
+chk('wardrobe parks avatar at the clear changing spot', Math.abs(W.P.x - W.A.FS_CHANGE.x) < .01 && Math.abs(W.P.z - W.A.FS_CHANGE.z) < .01, {x:W.P.x,z:W.P.z,spot:W.A.FS_CHANGE});
+chk('wardrobe faces the avatar toward the open doorway (+X)', Math.abs(W.P.face - W.A.FS_CHANGE.face) < .01, W.P.face);
+W.A.fashionCam();
+const ci = W.A.fsWardCamInfo();
+chk('wardrobe camera is IN FRONT of avatar facing direction (dot>0.7)', !!(ci && ci.dot > 0.7), ci);
+chk('wardrobe camera pulled back enough for full body (dist>=5.5)', !!(ci && ci.dist >= 5.5), ci);
 W.A.fsWardClose();
 chk('wardrobe close removes dock class and restores pose', !W.document.body.classList.contains('fsward-dock') && !W.A.fs.wardPos);
+// VIP badge offset (not overlapping nametag height 3.55)
+W.A.buildFashion(); if (!W.A.fsIsVip()){ W.coins=500; W.A.fsBuyVip(); } W.A.fsVipBadge();
+chk('VIP dressing-room badge is offset above normal nametag height', !!(W.A.fs.vipTag && W.A.fs.vipTag.position.y >= 4.0), W.A.fs.vipTag && W.A.fs.vipTag.position);
 // VIP runway label height (no clip): build walkers and check y
 W.coins = 500; if (!W.A.fsIsVip()) W.A.fsBuyVip();
 W.A.fs.ord = ['H']; W.A.fs.fits = {H: Object.assign({}, W.avatar)}; W.A.fs.fxs = {H: W.A.fsCleanFx(null)}; W.A.fs.poses = {H:0};

@@ -1317,7 +1317,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.09-4';
+const BUILD = '2026.11.09-5';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -8376,22 +8376,26 @@ const Obby = (() => {
   // DTI-style polish: soft rim/edge glow + subtle specular sheen (original art only)
   function fsShine(M){
     if (!M || !M.g) return;
-    const rim = new THREE.MeshBasicMaterial({color: '#ffe9ff', side: THREE.BackSide, transparent: true, opacity: .38, depthWrite: false});
-    const gloss = (col) => mat(col, shade(col, 55));
-    const shell = (mesh, s) => {
-      if (!mesh || !mesh.geometry) return;
-      const o = new THREE.Mesh(mesh.geometry, rim); o.scale.set(s, s, s); o.position.copy(mesh.position); o.rotation.copy(mesh.rotation); mesh.parent && mesh.parent.add(o);
+    // strong DTI-style rim (clearly visible in the bright boutique) + sparkle catch-lights
+    const rim = new THREE.MeshBasicMaterial({color: '#ffffff', side: THREE.BackSide, transparent: true, opacity: .72, depthWrite: false});
+    const rim2 = new THREE.MeshBasicMaterial({color: '#ffb3e8', side: THREE.BackSide, transparent: true, opacity: .4, depthWrite: false});
+    const shell = (mesh, s, mat0) => {
+      if (!mesh || !mesh.geometry) return null;
+      const o = new THREE.Mesh(mesh.geometry, mat0 || rim); o.scale.set(s, s, s); o.position.copy(mesh.position); o.rotation.copy(mesh.rotation); mesh.parent && mesh.parent.add(o); return o;
+    };
+    const spark = (par, x, y, z, r, col) => {
+      const o = new THREE.Mesh(new THREE.SphereGeometry(r, 8, 6), new THREE.MeshBasicMaterial({color: col || '#ffffff', transparent: true, opacity: .9, depthWrite: false}));
+      o.position.set(x, y, z); par.add(o); (M._fsSparks || (M._fsSparks = [])).push(o); return o;
     };
     try {
-      if (M.head){ shell(M.head, 1.08); // rim on head
-        // soft hair highlight orb (specular catch-light)
-        const hi = new THREE.Mesh(new THREE.SphereGeometry(.08, 8, 6), new THREE.MeshBasicMaterial({color: '#ffffff', transparent: true, opacity: .55, depthWrite: false}));
-        hi.position.set(.16, .55, .38); M.head.add(hi);
+      if (M.head){ shell(M.head, 1.14); shell(M.head, 1.22, rim2);
+        spark(M.head, .18, .58, .42, .1, '#ffffff'); spark(M.head, -.14, .5, .4, .07, '#ffe9ff'); spark(M.head, .05, .85, .1, .06, '#ffd23f');
       }
-      if (M.pivot && M.pivot.children && M.pivot.children[0]) shell(M.pivot.children[0], 1.06);
-      // light sheen accents on limbs
-      (M.arms || []).forEach(a => { if (a && a.children && a.children[0]) shell(a.children[0], 1.1); });
-      (M.legs || []).forEach(l => { if (l && l.children && l.children[0]) shell(l.children[0], 1.1); });
+      if (M.pivot && M.pivot.children && M.pivot.children[0]){ shell(M.pivot.children[0], 1.1); shell(M.pivot.children[0], 1.16, rim2);
+        spark(M.pivot.children[0], .35, 1.7, .3, .08, '#ffffff'); spark(M.pivot.children[0], -.3, 1.4, .28, .06, '#ffe9ff');
+      }
+      (M.arms || []).forEach(a => { if (a && a.children && a.children[0]) shell(a.children[0], 1.14); });
+      (M.legs || []).forEach(l => { if (l && l.children && l.children[0]) shell(l.children[0], 1.14); });
     } catch (e){}
     M._fsShine = true;
   }
@@ -8585,7 +8589,8 @@ const Obby = (() => {
     if (fs.vipTag){ try { model.g.remove(fs.vipTag); } catch (e){} fs.vipTag = null; }
     if (!fsIsVip()) return;
     const lab = label('👑 VIP', 'rgba(232,168,0,.96)', '#1d2340', 160);
-    lab.position.set(0, 3.55, 0); lab.scale.set(.5, .5, .5); model.g.add(lab); fs.vipTag = lab;
+    // offset above / beside the normal nametag so they don't overlap in the dressing room
+    lab.position.set(.45, 4.25, 0); lab.scale.set(.48, .48, .48); model.g.add(lab); fs.vipTag = lab;
   }
   function fsRoom(){
     const X = -24, W = '#fff0f8', H = 4.6;
@@ -8758,30 +8763,50 @@ const Obby = (() => {
     return c.toDataURL();
   }
   /* --- the wardrobe (tabs = the racks / stations in the room) --- */
+  // clear open floor near the boutique doorway — no racks/mirrors between here and a front camera
+  const FS_CHANGE = {x: -21.5, z: 0, face: Math.PI / 2};   // face east (+X) toward the open door
   function fsWardOpen(tab){
     if (!fs || fs.ph !== 'dress') return; if (tab) fs.tab = tab; fs.ward = true; fsWardRender();
     $('#fsWard').classList.add('show'); $('#fsWardBtn').classList.remove('show'); $('#fsNear').classList.remove('show'); fs.near = null;
-    // dock the panel so the 3D avatar stays visible beside it; lock a front-facing preview camera
     document.body.classList.add('fsward-dock');
     if (!fs.wardPos) fs.wardPos = {x: P.x, y: P.y, z: P.z, face: P.face, yaw: cam.yaw, pitch: cam.pitch, dist: cam.dist};
-    // stand the avatar in a clear spot facing the camera (panel is on the left / bottom)
-    P.vx = P.vz = 0; P.face = Math.PI * .15; cam.yaw = P.face + Math.PI; cam.pitch = .18; cam.dist = 4.4;
+    // park the avatar in the clear changing spot, facing the camera (front-on)
+    Object.assign(P, {x: FS_CHANGE.x, y: .05, z: FS_CHANGE.z, vx: 0, vy: 0, vz: 0}); P.face = FS_CHANGE.face;
+    cam.yaw = P.face; cam.pitch = .12; cam.dist = 6.2;
+    // hide boutique walls / doorway cheeks for the preview so nothing bands the view
+    if (fs.bld && fs.bld.walls) fs.bld.walls.forEach(w => { w.visible = false; });
+    // bright key light on the avatar while changing
+    try {
+      if (!fs.wardLight){ fs.wardLight = new THREE.PointLight('#ffffff', 1.6, 14); scene.add(fs.wardLight); }
+      fs.wardLight.visible = true; fs.wardLight.position.set(FS_CHANGE.x + 2.2, 3.2, FS_CHANGE.z);
+      if (!fs.wardFill){ fs.wardFill = new THREE.PointLight('#ffb3e8', .9, 10); scene.add(fs.wardFill); }
+      fs.wardFill.visible = true; fs.wardFill.position.set(FS_CHANGE.x - .8, 2.4, FS_CHANGE.z + 1.5);
+    } catch (e){}
   }
   function fsWardClose(){
     if (!fs) return; fs.ward = false; $('#fsWard').classList.remove('show'); if (fs.ph === 'dress') $('#fsWardBtn').classList.add('show');
     document.body.classList.remove('fsward-dock');
     if (fs.wardPos){ Object.assign(P, {x: fs.wardPos.x, y: fs.wardPos.y, z: fs.wardPos.z, vx: 0, vy: 0, vz: 0}); P.face = fs.wardPos.face; cam.yaw = fs.wardPos.yaw; cam.pitch = fs.wardPos.pitch; cam.dist = fs.wardPos.dist; fs.wardPos = null; }
+    if (fs.bld && fs.bld.walls) fs.bld.walls.forEach(w => { w.visible = true; });
+    if (fs.wardLight) fs.wardLight.visible = false; if (fs.wardFill) fs.wardFill.visible = false;
   }
   function fsLocked(r){
     if (r && r.vip && !fsIsVip()) return true;
     return !!r.lvl && fsLevel(fsProg().xp).lv < r.lvl;
   }
   function fsVipRows(){ const rows = []; Object.keys(FX).forEach(slot => fsList(slot).filter(r => r.vip).forEach(r => rows.push(Object.assign({s: slot}, r)))); return rows; }
-  function fsWardRender(){
-    const T = FS_THEMES[fs.th], tab = fs.tab || 'top', f = fs.fit, x = fs.fx;
+  function fsWardRender(opts){
+    const T = FS_THEMES[fs.th], tab = fs.tab || 'top', f = fs.fit, x = fs.fx; void (opts && opts.soft);
     $('#fsTheme').textContent = T.emoji + ' ' + T.name; $('#fsLikes').textContent = '💖 Voters love: ' + T.hint;
-    $('#fsTabs').innerHTML = FS_RACKS.map(([k, e, n]) => `<button class="fstab${k === tab ? ' on' : ''}" data-t="${k}">${e}<small>${n.split(' ')[0]}</small></button>`).join('');
-    $('#fsTabs').querySelectorAll('.fstab').forEach(b => b.onclick = () => { fs.tab = b.dataset.t; fsWardRender(); });
+    // build tab strip once; later calls just toggle .on (keeps tab switches snappy)
+    const tabsEl = $('#fsTabs');
+    if (!tabsEl.dataset.ready || tabsEl.childElementCount !== FS_RACKS.length){
+      tabsEl.innerHTML = FS_RACKS.map(([k, e, n]) => `<button class="fstab${k === tab ? ' on' : ''}" data-t="${k}">${e}<small>${n.split(' ')[0]}</small></button>`).join('');
+      tabsEl.dataset.ready = '1';
+      tabsEl.onclick = (ev) => { const b = ev.target && ev.target.closest && ev.target.closest('.fstab'); if (!b) return; if (fs.tab === b.dataset.t) return; fs.tab = b.dataset.t; fsWardRender({soft: true}); };
+    } else {
+      tabsEl.querySelectorAll('.fstab').forEach(b => b.classList.toggle('on', b.dataset.t === tab));
+    }
     const like = v => T.fx.includes(v);
     const grid = (slot, rows, multi) => '<div class="fsgrid">' + rows.map(r => { const on = multi ? x.acc.includes(r.v) : x[slot] === r.v, lk = fsLocked(r);
       const why = lk ? (r.vip && !fsIsVip() ? '<br>👑 VIP' : (r.lvl ? '<br>Lv ' + r.lvl : '')) : (r.vip ? '<br>👑' : '');
@@ -8835,7 +8860,7 @@ const Obby = (() => {
     if (f.ears) n++; if (f.tail) n++; if (f.back) n++;
     return n;
   }
-  function fsChanged(){ fsRebuild(fs.fit, fs.fx); fs.fitDirty = .5; SND.coin(); if (fs.ward) fsWardRender(); }
+  function fsChanged(){ fsRebuild(fs.fit, fs.fx); fs.fitDirty = .5; SND.coin(); if (fs.ward) fsWardRender({soft: true}); }
   function fsSet(k, v){ if (!fs || fs.ph !== 'dress') return; fs.fit[k] = v; if (k === 'hair' && v) fs.fx.hair = 'base'; fsChanged(); }
   function fsFx(k, v){
     if (!fs || fs.ph !== 'dress') return; const x = fs.fx;
@@ -8894,7 +8919,7 @@ const Obby = (() => {
       : '⌨️ WASD move · Space jump · ' + (ph === 'dress' ? 'E try on at a rack · C wardrobe' : 'C show menu') + ' · Esc menu';
     return a + '<br>' + (ph === 'dress' ? '👗 Walk up to a rack, mirror or the 👑 VIP Lounge! Fashion clothes stay in the show only. 💖 = voters love it' : '✨ Explore the lobby · unlock Star VIP with Rublox coins · then start the show!');
   }
-  function fsHideAll(){ ['#fsPick', '#fsEnd', '#fsWard', '#fsRate', '#fsPoses', '#fsIntro'].forEach(id => $(id).classList.remove('show')); ['#fsWardBtn', '#fsNear', '#fsShowBtn'].forEach(id => $(id).classList.remove('show')); document.body.classList.remove('fsward-dock'); if (fs){ fs.ward = false; fs.near = null; fs.wardPos = null; } }
+  function fsHideAll(){ ['#fsPick', '#fsEnd', '#fsWard', '#fsRate', '#fsPoses', '#fsIntro'].forEach(id => $(id).classList.remove('show')); ['#fsWardBtn', '#fsNear', '#fsShowBtn'].forEach(id => $(id).classList.remove('show')); document.body.classList.remove('fsward-dock'); if (fs){ fs.ward = false; fs.near = null; fs.wardPos = null; if (fs.wardLight) fs.wardLight.visible = false; if (fs.wardFill) fs.wardFill.visible = false; if (fs.bld && fs.bld.walls) fs.bld.walls.forEach(w => { w.visible = true; }); } }
   function fsPickOpen(){
     fsHideAll(); fs.ph = 'lobby'; fs.lobPanel = true; choosing = true; const g = mpGuest();
     fsClearWalkers(); fsNpcsTo('lobby');
@@ -9105,6 +9130,9 @@ const Obby = (() => {
     const t = worldT;
     (fs.cones || []).forEach(g => { g.rotation.z = Math.sin(t * .8 + g.userData.ph) * .35; g.rotation.x = Math.cos(t * .6 + g.userData.ph) * .2; });
     fs.spots.forEach((b, i) => b.material.color.setHSL((t * .3 + i * .07) % 1, .9, .75));
+    // pulse avatar sparkles so highlights read clearly in the bright boutique
+    if (model && model._fsSparks) model._fsSparks.forEach((o, i) => { if (o && o.material) o.material.opacity = .55 + Math.sin(t * 5 + i) * .35; });
+    if (fs.walkers) fs.walkers.forEach(W => { if (W.m && W.m._fsSparks) W.m._fsSparks.forEach((o, i) => { if (o && o.material) o.material.opacity = .55 + Math.sin(t * 5 + i) * .35; }); });
     // cutaway walls: hide boutique walls that sit between the camera and the player so they never band/block the view
     if (fs.bld && fs.bld.walls && fs.bld.walls.length && typeof camera !== 'undefined' && camera){
       const cx = camera.position.x;
@@ -9144,19 +9172,23 @@ const Obby = (() => {
   }
   function fashionCam(){
     if (!fs) return false;
-    // wardrobe open: front-facing preview of YOUR avatar in the free half of the screen (panel does not cover them)
+    // wardrobe open: camera IN FRONT of the avatar (along facing dir), pulled back for full head-to-toe
     if (fs.ward && fs.ph === 'dress' && model && model.g){
-      const px = P.x, pz = P.z, mobile = !!touchUI || (typeof innerWidth === 'number' && innerWidth < 760);
-      if (mobile){
-        // panel docks to the bottom — keep the avatar in the upper half
-        camera.position.set(px + Math.sin(P.face + Math.PI) * 3.2, 2.55, pz + Math.cos(P.face + Math.PI) * 3.2);
-        camera.lookAt(px, 1.55, pz);
-      } else {
-        // panel docks to the left — put the avatar in the right/center of the free view
-        const side = 1; // camera slightly to the player's right
-        camera.position.set(px + Math.sin(P.face + Math.PI) * 3.6 + Math.cos(P.face) * side * .9, 1.95, pz + Math.cos(P.face + Math.PI) * 3.6 - Math.sin(P.face) * side * .9);
-        camera.lookAt(px, 1.4, pz);
-      }
+      const px = P.x, pz = P.z, face = P.face;
+      const mobile = !!touchUI || (typeof innerWidth === 'number' && innerWidth < 760);
+      const dist = mobile ? 5.6 : 6.4;   // far enough to see head → toes
+      // IN FRONT of facing direction (NOT behind — third-person uses face+PI)
+      const fx = Math.sin(face), fz = Math.cos(face);
+      // desktop: nudge camera left so the avatar sits in the free RIGHT half beside the docked panel
+      // mobile: keep centered above the bottom-docked panel
+      const sx = mobile ? 0 : -Math.cos(face) * 1.15;
+      const sz = mobile ? 0 : Math.sin(face) * 1.15;
+      const camY = mobile ? 2.85 : 2.15;
+      const lookY = mobile ? 1.35 : 1.15;   // mid-body aim → full figure in frame
+      camera.position.set(px + fx * dist + sx, camY, pz + fz * dist + sz);
+      camera.lookAt(px - (mobile ? 0 : sx * .35), lookY, pz - (mobile ? 0 : sz * .35));
+      // keep walls hidden for the whole preview
+      if (fs.bld && fs.bld.walls) fs.bld.walls.forEach(w => { w.visible = false; });
       return true;
     }
     if (!(fs.ph === 'walk' || fs.ph === 'podium' || fs.ph === 'end')) return false;
@@ -9166,6 +9198,16 @@ const Obby = (() => {
       if (close) camera.position.set(2.2 + Math.sin(worldT * .4) * .8, 2.7, 11.2); else camera.position.set(4.2 + Math.sin(worldT * .25) * 1.2, 3.1, 9.9);
       camera.lookAt(tx, ty, tz); return true; }
     camera.position.set(Math.sin(worldT * .3) * 1.2, 3.4, 21.5); camera.lookAt(0, 2.4, 30); return true;
+  }
+
+  function fsWardCamInfo(){
+    if (!fs || !fs.ward) return null;
+    const px = P.x, pz = P.z, face = P.face, fx = Math.sin(face), fz = Math.cos(face);
+    const mobile = !!touchUI || (typeof innerWidth === 'number' && innerWidth < 760);
+    const dist = mobile ? 5.6 : 6.4;
+    const cx = px + fx * dist, cz = pz + fz * dist;
+    const dx = cx - px, dz = cz - pz, d = Math.hypot(dx, dz) || 1;
+    return {px, pz, face, cx, cz, dist: d, dot: (dx * fx + dz * fz) / d, spot: FS_CHANGE, camY: mobile ? 2.85 : 2.15};
   }
   function fashionHud(){
     if (!fs) return;
