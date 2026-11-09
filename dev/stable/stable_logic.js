@@ -3,12 +3,17 @@ let pass = 0, fail = 0; const chk = (n, c, i) => { if (c) pass++; else fail++; c
 const SRC = fs.readFileSync(__dirname + '/stable.js', 'utf8');
 function world(store0){
   const V = () => ({x: 0, y: 0, z: 0, set(x, y, z){ this.x = x; this.y = y; this.z = z; return this; }, setScalar(){ return this; }, multiplyScalar(){ return this; }, copy(){ return this; }});
-  const O = () => ({position: V(), rotation: V(), scale: V(), visible: true, children: [], material: {}, userData: {}, add(c){ this.children.push(c); return c; }, remove(){}, copy(o){ if(o&&o.x!==undefined){ this.x=o.x; this.y=o.y; this.z=o.z; } return this; }});
+  const O = () => ({position: V(), rotation: V(), scale: V(), visible: true, children: [], material: {}, userData: {}, parent: null, add(c){ this.children.push(c); if (c) c.parent = this; return c; }, remove(){}, copy(o){ if(o&&o.x!==undefined){ this.x=o.x; this.y=o.y; this.z=o.z; } return this; }, set(x,y,z){ this.x=x; this.y=y; this.z=z; return this; }});
   const store = Object.assign({}, store0 || {}), els = {};
   const ctx = {
     console, Math, JSON, Object, Array, Set, Number, String, Date, isFinite,
     document: {createElement: t => { const e = {className: '', innerHTML: '', onclick: null, dataset: {}, setAttribute(){}, addEventListener(){}, blur(){}, appendChild(c){ (this._c = this._c || []).push(c); }}; return e; }},
-    THREE: new Proxy({}, {get: () => function(){ return O(); }}), scene: {add(){}, remove(){}, background: null},
+    THREE: new Proxy({}, {get: (_, name) => function(...args){
+      const o = O();
+      if (name === 'Vector3'){ o.x = args[0]||0; o.y = args[1]||0; o.z = args[2]||0; o.set = function(x,y,z){ this.x=x; this.y=y; this.z=z; return this; }; }
+      if (name === 'CatmullRomCurve3'){ o.points = args[0]||[]; o.getPoint = function(t){ const pts=this.points; if(!pts.length) return {x:0,y:0,z:0}; const i=Math.min(pts.length-1, Math.floor(t*(pts.length-1))); return pts[i]; }; }
+      return o;
+    }}), scene: {add(){}, remove(){}, background: null},
     load: (k, d) => k in store ? JSON.parse(store[k]) : d, save: (k, v) => { store[k] = JSON.stringify(v); },
     $: id => els[id] || (els[id] = {textContent: '', innerHTML: '', style: {}, dataset: {}, classList: {add(){}, remove(){}}, appendChild(){}, querySelectorAll: () => [], setAttribute(){}, addEventListener(){}, blur(){}, onclick: null}),
     coins: 0, runCoins: 0, running: true, paused: false, choosing: false, worldT: 0, mode: 'stable', banners: [], nds: null,
@@ -19,7 +24,7 @@ function world(store0){
     setCoins: n => { ctx.coins = n; }, banner: t => ctx.banners.push(t)
   };
   vm.createContext(ctx);
-  vm.runInContext(SRC + '\n;globalThis.A = {get sb(){ return sb; }, buildStable, stableEnter, stableUpdate, sbAdopt, sbCare, sbMount, sbStartShow, sbEndShow, sbAct, sbProg, sbPose, sbSyncRider, sbPrompt, sbAnimPony, sbKey, sbSeat, SB_PONIES, SB_JUMPS, SB_DRAIN, SB_SHOW_T, SB_MOUNT_CD, SB_HIP, SB_SIT};', ctx);
+  vm.runInContext(SRC + '\n;globalThis.A = {get sb(){ return sb; }, buildStable, stableEnter, stableUpdate, sbAdopt, sbCare, sbMount, sbStartShow, sbEndShow, sbAct, sbProg, sbPose, sbSyncRider, sbPrompt, sbAnimPony, sbKey, sbSeat, sbNeckAttached, SB_PONIES, SB_JUMPS, SB_DRAIN, SB_SHOW_T, SB_MOUNT_CD, SB_HIP, SB_SIT};', ctx);
   return ctx;
 }
 const W = world(); W.A.buildStable(); W.A.stableEnter();
@@ -38,7 +43,12 @@ chk('straddle pose opens hips + bent knees', (() => { const p = W.A.sbPose(); re
 chk('mounted seat from saddle top (hips on seat, not floating)', (() => { const s = W.A.sbSeat(); return Math.abs(W.P.y - s.foot) < .05 && Math.abs(s.top - (W.P.y + W.A.SB_HIP)) < .12; })(), W.A.sbSeat());
 chk('mounted centred on pony', Math.hypot(W.A.sb.mesh.position.x - W.P.x, W.A.sb.mesh.position.z - W.P.z) < .01);
 chk('straddle not forward-over-neck', (() => { const p = W.A.sbPose(); return p.lLo > .7 && p.lRo > .7 && p.lL > -0.7 && p.y <= 0; })(), W.A.sbPose());
-chk('neck present unmounted and mounted', (() => { const n = W.A.sb.mesh.userData.parts.neck; return n && n.children && n.children.length >= 2 && n.position.y >= 1.4; })());
+chk('neck attached at rest (base⊂body, tip⊂head, head on neck)', W.A.sbNeckAttached(), W.A.sb.mesh.userData.parts.neckBase);
+// across trot animation frames, attachment holds and head stays on neck
+let attachOk = true; W.P.vx = 3; W.P.vz = 0; W.P.onGround = true;
+for (let i = 0; i < 12; i++){ W.A.stableUpdate(.05); if (!W.A.sbNeckAttached()){ attachOk = false; break; } }
+chk('neck stays attached across trot animation frames', attachOk && W.A.sb.mesh.userData.parts.head.parent === W.A.sb.mesh.userData.parts.neck);
+W.P.vx = 0;
 chk('rider yaw equals pony yaw while mounted', Math.abs(W.P.face - W.A.sb.mesh.rotation.y) < 1e-9, [W.P.face, W.A.sb.mesh.rotation.y]);
 chk('saddle+bridle visible when mounted', W.A.sb.mesh.userData.parts.saddle.visible && W.A.sb.mesh.userData.parts.bridle.visible);
 // prompt reflects mounted
