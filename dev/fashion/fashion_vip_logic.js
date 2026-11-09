@@ -32,7 +32,7 @@ function world(store, coins0){
   ctx.fmt = s => s; ctx.bxEsc = s => s; ctx.mpLook = () => null; ctx.mpGuest = () => false; ctx.mpSendTo = () => {};
   ctx.window = ctx; ctx.self = ctx; vm.createContext(ctx);
   // provide minimal FX consumer stubs used before decorate runs deeply
-  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_VIP_COST,fsProg,fsIsVip,fsBuyVip,fsVipBadge,fsList,fsKeep,fsHasSavedLook,fsApplySavedLook,fsLocalDress,fsCleanFx,FS_FXDEF,fsCleanFx,fsKeep,fsMigrateAvatar,fsLocked,fsVipRows,FX,FS_RACKS,FS_ST,fsWardRender,fsFx,buildFashion,fashionEnter,fashionStop,fsPickOpen,fsName,fsCount,fsShine,fsWardOpen,fsWardClose,fashionCam,fsRoom,fsLocalWalk,fsWardCamInfo,FS_CHANGE,fsMirrorInit,fsMirrorRefresh,fsMirrorStop,fsMirrorFit,fsMirrorFront,fsRebuild,fsVipBadge};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_VIP_COST,fsProg,fsIsVip,fsBuyVip,fsVipBadge,fsList,fsKeep,fsHasSavedLook,fsApplySavedLook,fsLoadLook,fsLocalDress,fsBeginDress,fsCleanFx,FS_FXDEF,fsBlankAv,fsBlankFx,fsCleanFx,fsKeep,fsMigrateAvatar,fsLocked,fsVipRows,FX,FS_RACKS,FS_ST,fsWardRender,fsFx,buildFashion,fashionEnter,fashionStop,fsPickOpen,fsName,fsCount,fsShine,fsWardOpen,fsWardClose,fashionCam,fsRoom,fsLocalWalk,fsWardCamInfo,FS_CHANGE,fsMirrorInit,fsMirrorRefresh,fsMirrorStop,fsMirrorFit,fsMirrorFront,fsRebuild,fsVipBadge,FS_TAGS,FS_TAGIDS,FS_TIPS,fsNpcTags,fsTagTotals,fsTopLiked,fsTipFor,fsFeedbackHtml,fsCleanTags,fsToggleTag,fsJudgeWalker,fsSendRate,fashionWire};`, ctx);
   return ctx;
 }
 const st = {rubloxCoins:'500', rubloxAvatar: JSON.stringify({shirt:'#111111',pants:'#222222',head:'#f1c27d',hairColor:'#6b3e1f',hair:'short'})};
@@ -63,22 +63,33 @@ const look = JSON.parse(st.rubloxFsLook);
 chk('Save for next show writes rubloxFsLook with runway FX', look.fx.top==='velvet' && look.fx.dress==='pastelg' && look.fx.acc.includes('vipcrown'));
 chk('Save for next show does NOT change the normal avatar', avAfter.shirt === avBefore.shirt && avAfter.pants === avBefore.pants);
 
-// --- save → re-enter dress → look restored (incl. VIP pieces) ---
+// --- save persists, but dress phase always starts BLANK (DTI-style); button loads saved look ---
 W.A.fs.fit = Object.assign({}, W.avatar, {shirt:'#ff6fb5', pants:'#8b5cf6'});
 W.A.fs.fx = W.A.fsCleanFx({top:'velvet', dress:'pastelg', shoe:'goldheel', hair:'pastel', mk:'vipglam', acc:['vipcrown','vipbadge'], pat:'hologram'});
 W.A.fsKeep();
 chk('Save for next show persists rubloxFsLook with VIP FX', (()=>{ const s=JSON.parse(st.rubloxFsLook||'null'); return s && s.fx && s.fx.top==='velvet' && s.fx.dress==='pastelg' && s.fx.acc.includes('vipcrown') && s.fx.acc.includes('vipbadge'); })());
 chk('hasSavedLook is true after save', W.A.fsHasSavedLook());
-// simulate a brand-new dress phase (what leaving + re-entering a show does)
+// simulate a brand-new dress phase — must start blank even with a saved look on disk
 W.A.fs.fit = null; W.A.fs.fx = null;
 W.A.fs.ord = ['H']; W.A.fs.th = 0; W.A.fs.dl = 180; W.A.fs.ph = 'dress';
 W.A.fsLocalDress();
-chk('re-entry auto-wears saved look (not plain Classic Tee)', W.A.fs.fx.top==='velvet' && W.A.fs.fx.dress==='pastelg' && W.A.fs.fx.shoe==='goldheel' && W.A.fs.fx.hair==='pastel' && W.A.fs.fx.acc.includes('vipcrown'), W.A.fs.fx);
-chk('re-entry keeps VIP accessories when still VIP', W.A.fs.fx.acc.includes('vipbadge') && W.A.fs.fx.mk==='vipglam');
-// strip VIP, re-apply: VIP pieces should drop
+chk('dress start is blank base (tee+shorts, no shoes/hair/mk/acc)', W.A.fs.fx.top==='tee' && W.A.fs.fx.bot==='shorts' && W.A.fs.fx.dress==='none' && W.A.fs.fx.shoe==='none' && W.A.fs.fx.hair==='base' && W.A.fs.fx.mk==='none' && (W.A.fs.fx.acc||[]).length===0, W.A.fs.fx);
+chk('dress start does NOT auto-wear the saved look', W.A.fs.fx.top!=='velvet' && W.A.fs.fx.dress!=='pastelg');
+chk('blank start pieces-on count is 0', W.A.fsCount()===0, W.A.fsCount());
+chk('blank fit strips normal avatar hat/extras', !W.A.fs.fit.hat && !W.A.fs.fit.ears && !W.A.fs.fit.tail && !W.A.fs.fit.back, W.A.fs.fit);
+// manual Wear my saved look still works
+W.A.fsApplySavedLook(false);
+chk('Wear my saved look button loads VIP saved look', W.A.fs.fx.top==='velvet' && W.A.fs.fx.dress==='pastelg' && W.A.fs.fx.shoe==='goldheel' && W.A.fs.fx.hair==='pastel' && W.A.fs.fx.acc.includes('vipcrown') && W.A.fs.fx.acc.includes('vipbadge') && W.A.fs.fx.mk==='vipglam', W.A.fs.fx);
+// strip VIP, apply saved: VIP pieces should drop
 const st2 = Object.assign({}, st); const p = JSON.parse(st2.rubloxFashion); p.vip=false; st2.rubloxFashion=JSON.stringify(p);
 const W3 = world(st2, 0); W3.A.buildFashion(); W3.A.fs.ord=['H']; W3.A.fs.th=0; W3.A.fs.dl=180; W3.A.fsLocalDress();
+chk('blank start even when VIP locked', W3.A.fs.fx.top==='tee' && W3.A.fs.fx.bot==='shorts' && W3.A.fsCount()===0);
+W3.A.fsApplySavedLook(false);
 chk('saved VIP pieces stripped when VIP is locked again', W3.A.fs.fx.top!=='velvet' && !W3.A.fs.fx.acc.includes('vipcrown'), W3.A.fs.fx);
+// NPC models also start blank in single-player dress
+W.mp.on = false; W.A.fs.ph='intro'; W.A.fs.th=0; W.A.fs.dl=180; W.A.fs.ord=['H','n0','n1','n2'];
+W.A.fsBeginDress();
+chk('NPC models start blank in dress phase', ['n0','n1','n2'].every(u => { const o=W.A.fs.npcFit[u]; return o && o.fx.top==='tee' && o.fx.bot==='shorts' && o.fx.shoe==='none' && (o.fx.acc||[]).length===0; }), W.A.fs.npcFit && Object.keys(W.A.fs.npcFit));
 
 chk('no real-money strings in fashion source', !/robux|real money|purchase|\$|credit card|stripe|paypal/i.test(SRC) || /never real money/i.test(SRC));
 
@@ -90,8 +101,10 @@ chk('boutique has enclosed walls', W.A.fs.bld.walls.length >= 3, W.A.fs.bld.wall
 chk('boutique has a ceiling/roof the camera can see under', W.A.fs.bld.ceiling.length >= 1, W.A.fs.bld.ceiling.length);
 chk('boutique has interior lights', W.A.fs.bld.lights.length >= 3, W.A.fs.bld.lights.length);
 W.A.fs.ph = 'dress'; W.A.fs.ord = ['H']; W.A.fs.th = 0; W.A.fs.dl = 180;
-W.A.fs.fit = Object.assign({}, W.avatar); W.A.fs.fx = W.A.fsCleanFx({top:'tee', bot:'pants', dress:'none', shoe:'sneak', hair:'base', mk:'none', pat:'none', acc:[]});
-chk('fsCount default streetwear is 2 (Classic Tee + Pants; sneakers free)', W.A.fsCount() === 2, W.A.fsCount());
+W.A.fs.fit = W.A.fsBlankAv(W.avatar); W.A.fs.fx = W.A.fsBlankFx();
+chk('fsCount blank base is 0 (tee+shorts+barefoot)', W.A.fsCount() === 0, W.A.fsCount());
+W.A.fs.fx = W.A.fsCleanFx({top:'tee', bot:'pants', dress:'none', shoe:'sneak', hair:'base', mk:'none', pat:'none', acc:[]});
+chk('fsCount tee+pants+sneakers = 2 (bot beyond shorts + any shoes)', W.A.fsCount() === 2, W.A.fsCount());
 W.A.fs.fx = W.A.fsCleanFx({top:'velvet', dress:'pastelg', shoe:'goldheel', hair:'pastel', mk:'vipglam', acc:['vipcrown'], pat:'none'});
 // top + dress + shoe + hair + mk + 1 acc = 6 (bot ignored while dress is on)
 chk('fsCount counts dress/gown + non-default top (no bottoms under dress)', W.A.fsCount() === 6, W.A.fsCount());
@@ -157,7 +170,7 @@ if (fs.existsSync(HTML)){
   const h = fs.readFileSync(HTML,'utf8');
   chk('built page: VIP lounge + Save for next show + coins-only unlock', /Star VIP/.test(h) && /Save for next show/.test(h) && /FS_VIP_COST = 250/.test(h) && /never real money/i.test(h));
   chk('built page: Save button in wardrobe panel (mini + footer)', /id="fsKeepWard"/.test(h) && /id="fsKeepWard2"/.test(h));
-  chk('built page: VIP badge + auto-restore + no doorway lintel band', /function fsVipBadge/.test(h) && /fsApplySavedLook/.test(h) && /fsLocalDress/.test(h) && /Wear my saved look/.test(h) && !/fsDeco\(\.4, \.5, 5\.2, '#ff6fb5'/.test(h) && /x: -23\.5/.test(h) && /oCoins'\)\.textContent = coins/.test(h) && /VIP You/.test(h));
+  chk('built page: VIP badge + blank start + saved-look button + no doorway lintel band', /function fsVipBadge/.test(h) && /fsBlankAv/.test(h) && /never auto-wear/.test(h) && /fsApplySavedLook/.test(h) && /fsLocalDress/.test(h) && /Wear my saved look/.test(h) && !/fsDeco\(\.4, \.5, 5\.2, '#ff6fb5'/.test(h) && /x: -23\.5/.test(h) && /oCoins'\)\.textContent = coins/.test(h) && /VIP You/.test(h));
   const km = h.match(/function fsKeep\(\)\{[\s\S]*?\n  \}/);
   chk('built page: fsKeep no longer writes rubloxAvatar', !!(km && km[0].includes('rubloxFsLook') && !km[0].includes("save('rubloxAvatar'")));
   chk('built page: fashionStop restores normal avatar model', /function fashionStop\(\)\{[\s\S]*buildPlayer\(avatar\)/.test(h));
