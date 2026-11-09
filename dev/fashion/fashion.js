@@ -53,7 +53,7 @@
     {id: 'top', x: -27.8, z: -6, r: [-29.9, -6]}, {id: 'bot', x: -27.8, z: -2, r: [-29.9, -2]}, {id: 'dress', x: -27.8, z: 2, r: [-29.9, 2]}, {id: 'shoe', x: -27.8, z: 6, r: [-29.9, 6]},
     {id: 'hair', x: -27, z: -8.4, r: [-27, -10.1]}, {id: 'mk', x: -22.3, z: -8.4, r: [-22.3, -10.1]}, {id: 'pose', x: -19.3, z: -8.2, r: [-19.3, -9.6]},
     {id: 'acc', x: -27, z: 8.4, r: [-27, 10.1]}, {id: 'col', x: -21.8, z: 8.4, r: [-21.8, 10.1]}, {id: 'star', x: -24, z: 0, r: [-24, 0]},
-    {id: 'vip', x: -20.5, z: 0, r: [-18.2, 0]},
+    {id: 'vip', x: -27.5, z: 0, r: [-29.5, 0]},   // deep west wall — must NOT sit in the doorway
   ];
   const FS_NPCS = [
     {uid: 'n0', name: 'Sunny', emoji: '☀️', base: {head: '#f1c27d', hairColor: '#ffd23f', hair: 'pigtails', body: 'girl'}},
@@ -93,7 +93,7 @@
     if (coins < FS_VIP_COST){ toast('🪙 Need ' + FS_VIP_COST + ' Rublox coins for Star VIP (you have ' + coins + ')'); return false; }
     setCoins(coins - FS_VIP_COST); const p = fsProg(); p.vip = true; save('rubloxFashion', p);
     banner('👑 Welcome to Star VIP Lounge!'); toast('👑 Star VIP unlocked with ' + FS_VIP_COST + ' 🪙 — exclusive clothes + a VIP badge!'); SND.win && SND.win();
-    if (fs){ fsPaintVip(); fsBoard(); if (fs.lobPanel) fsPickOpen(); if (fs.ward) fsWardRender(); }
+    if (fs){ fsPaintVip(); fsBoard(); if (fs.lobPanel) fsPickOpen(); if (fs.ward) fsWardRender(); fsVipBadge(); }
     return true;
   }
   function fsLevel(xp){ let i = 0; FS_TITLES.forEach((T, k) => { if (xp >= T[0]) i = k; }); const T = FS_TITLES[i], N = FS_TITLES[i + 1];
@@ -312,20 +312,35 @@
     fsRoom(); fsLobby();
     checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 23}, flag: new THREE.Object3D()};
   }
-  function fsPaintVip(){ /* VIP lounge props stay; badge/glow refresh when VIP unlocks mid-session */ if (!fs) return; if (fs.vipGlow) fs.vipGlow.visible = fsIsVip(); if (fs.vipLock) fs.vipLock.visible = !fsIsVip(); }
+  function fsPaintVip(){ if (!fs) return; if (fs.vipGlow) fs.vipGlow.visible = fsIsVip(); if (fs.vipLock) fs.vipLock.visible = !fsIsVip(); fsVipBadge(); }
+  // floating gold VIP nametag above YOUR avatar (dressing room + runway)
+  function fsVipBadge(){
+    if (!fs || !model || !model.g) return;
+    if (fs.vipTag){ try { model.g.remove(fs.vipTag); } catch (e){} fs.vipTag = null; }
+    if (!fsIsVip()) return;
+    const lab = label('👑 VIP', 'rgba(232,168,0,.96)', '#1d2340', 160);
+    lab.position.set(0, 4.15, 0); lab.scale.set(.55, .55, .55); model.g.add(lab); fs.vipTag = lab;
+  }
   function fsRoom(){
-    const X = -24, W = '#fff0f8', H = 5.4;
+    const X = -24, W = '#fff0f8', H = 4.6;
     // soft pastel pink floor + lavender carpet runner (DTI-inspired, our own art)
     fsDeco(14, .04, 22, '#ffe3f1', X, .02, 0); for (let i = 0; i < 6; i++) fsDeco(14, .045, .5, '#f6d2ff', X, .021, -10 + i * 4);
     fsDeco(3.2, .05, 20, '#e8c4ff', X + 2, .03, 0);
-    plat(-30.9, H, 0, .6, 22.6, W, H); plat(X, H, -11, 14.4, .6, W, H); plat(X, H, 11, 14.4, .6, W, H); plat(-17.1, H, -6.9, .6, 8.2, W, H); plat(-17.1, H, 6.9, .6, 8.2, W, H);
-    // glam vanity lights on the doorway arch
-    fsDeco(.62, 1, 5.6, '#ff6fb5', -17.1, 4.7, 0); [-1, 1].forEach(s => fsDeco(.64, 5.2, .3, '#ffd23f', -17.1, 2.6, s * 2.8));
-    for (let k = 0; k < 8; k++){ const y = .8 + k * .55, bulb = new THREE.Mesh(new THREE.SphereGeometry(.12, 8, 6), new THREE.MeshBasicMaterial({color: '#fff6c9'})); bulb.position.set(-17.1, y, -2.55); scene.add(bulb); const b2 = bulb.clone(); b2.position.z = 2.55; scene.add(b2); }
-    fsSign('👗 PASTEL PREP ROOM', -16.72, 4.7, 0, Math.PI / 2, 5.4, '#8b5cf6');
-    fsDeco(14.4, .3, .7, '#ff6fb5', X, 5.5, -11); fsDeco(14.4, .3, .7, '#ff6fb5', X, 5.5, 11); fsDeco(.7, .3, 22.6, '#ff6fb5', -30.9, 5.5, 0);
-    // big wall mirrors with glam frames
-    [[-29.7, -4], [-29.7, 4]].forEach(([x, z]) => { const mir = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 3.2), new THREE.MeshBasicMaterial({color: '#dff6ff'})); mir.position.set(x, 2.4, z); mir.rotation.y = Math.PI / 2; scene.add(mir); fsDeco(.08, 3.4, 2.6, '#ffd23f', x + .05, 2.4, z); });
+    // outer walls — doorway cheeks are SHORT stubs so they never fill the camera
+    plat(-30.9, H, 0, .6, 22.6, W, H); plat(X, H, -11, 14.4, .6, W, H); plat(X, H, 11, 14.4, .6, W, H);
+    plat(-17.1, 2.2, -7.6, .35, 5.2, W, 2.2); plat(-17.1, 2.2, 7.6, .35, 5.2, W, 2.2);   // low pink stubs only
+    // open arch + small vanity lights (no full-height purple slab)
+    fsDeco(.4, .5, 5.2, '#ff6fb5', -17.1, 4.0, 0); [-1, 1].forEach(s => fsDeco(.35, 2.0, .25, '#ffd23f', -17.1, 2.9, s * 2.7));
+    for (let k = 0; k < 5; k++){ const y = 3.5 + k * .18, bulb = new THREE.Mesh(new THREE.SphereGeometry(.1, 8, 6), new THREE.MeshBasicMaterial({color: '#fff6c9'})); bulb.position.set(-17.1, y, -2.2 + k * 1.1); scene.add(bulb); }
+    // compact doorway sign (was oversized 5.4 and filled the view)
+    fsSign('👗 PREP ROOM', -16.85, 4.35, 0, Math.PI / 2, 2.4, '#8b5cf6');
+    fsDeco(14.4, .25, .55, '#ff6fb5', X, 4.75, -11); fsDeco(14.4, .25, .55, '#ff6fb5', X, 4.75, 11); fsDeco(.55, .25, 22.6, '#ff6fb5', -30.9, 4.75, 0);
+    // wall mirrors on west wall — face into the room, gold frames, clearly lit
+    [[-29.85, -5], [-29.85, 5]].forEach(([x, z]) => {
+      const mir = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 3.4), new THREE.MeshBasicMaterial({color: '#e8fbff'})); mir.position.set(x, 2.3, z); mir.rotation.y = Math.PI / 2; scene.add(mir);
+      fsDeco(.1, 3.6, 2.85, '#ffd23f', x + .06, 2.3, z);
+      for (let k = 0; k < 6; k++){ const b = new THREE.Mesh(new THREE.SphereGeometry(.09, 8, 6), new THREE.MeshBasicMaterial({color: '#fff6c9'})); b.position.set(x + .08, 1.0 + k * .55, z - 1.15); scene.add(b); const b2 = b.clone(); b2.position.z = z + 1.15; scene.add(b2); }
+    });
     FS_ST.forEach(S => { const [rx, rz] = S.r, T = FS_RACKS.find(r => r[0] === S.id), west = rx < -29;
       if (west){ // a clothes rack against the west wall
         fsDeco(.1, 2.6, .1, '#bbb', rx + .3, 1.3, rz - 1.5); fsDeco(.1, 2.6, .1, '#bbb', rx + .3, 1.3, rz + 1.5); fsDeco(.1, .1, 3.1, '#ccc', rx + .3, 2.6, rz);
@@ -334,24 +349,25 @@
           else if (S.id === 'bot'){ fsDeco(.1, 1.2, .18, c, rx + .3, 1.95, z - .1); }
           else if (S.id === 'shoe'){ if (k < 3) fsDeco(.5, .06, 3, '#fff', rx + .3, .5 + k * .7, rz); fsDeco(.4, .2, .3, c, rx + .3, .62 + (k % 3) * .7, rz - 1 + (k >> 1) * .8); }
           else fsDeco(.12, 1.1, .44, c, rx + .3, 1.95, z); }
-        fsSign(T[1] + ' ' + T[2].toUpperCase(), rx + .02, 3.5, rz, Math.PI / 2, 3, '#ff6fb5');
+        fsSign(T[1] + ' ' + T[2].toUpperCase(), rx + .02, 3.35, rz, Math.PI / 2, 2.2, '#ff6fb5');
       } else if (S.id === 'star'){
         const ring = new THREE.Mesh(new THREE.TorusGeometry(1, .07, 8, 28), mat('#ffd23f', '#886600')); ring.rotation.x = Math.PI / 2; ring.position.set(rx, 2.6, rz); scene.add(ring);
         fsDeco(.12, 2.6, .12, '#ffd23f', rx, 1.3, rz);
         for (let k = 0; k < 6; k++){ const a = k / 6 * Math.PI * 2, d = new THREE.Mesh(new THREE.ConeGeometry(.3, 1.1, 8), mat(['#ffd23f', '#9ff3ff', '#ff6fb5'][k % 3], '#332200')); d.position.set(rx + Math.cos(a), 2.0, rz + Math.sin(a)); scene.add(d); }
         fs.star = new THREE.Mesh(new THREE.OctahedronGeometry(.4), mat('#ffd23f', '#aa8800')); fs.star.position.set(rx, 3.3, rz); scene.add(fs.star);
-        fsSign('🌟 STAR CLOSET', rx, 4.2, rz, Math.PI / 2, 3, '#e0a800');
+        fsSign('🌟 STAR CLOSET', rx, 3.85, rz, Math.PI / 2, 2.3, '#e0a800');
       } else if (S.id === 'vip'){
-        // 👑 Star VIP Lounge — exclusive rack, purple carpet, velvet curtains (coins unlock, never real money)
-        fsDeco(5.5, .06, 6.5, '#5b34c0', rx - 1.2, .03, rz);
-        [-1, 1].forEach(s => { fsDeco(.15, 4.2, 2.2, '#8b5cf6', rx + 1.6, 2.1, rz + s * 2.4); fsDeco(2.4, 4.2, .12, '#ffb3d9', rx + .4, 2.1, rz + s * 3.1); });
-        fsDeco(.12, 2.8, .12, '#ffd23f', rx - 1.5, 1.4, rz - 1.6); fsDeco(.12, 2.8, .12, '#ffd23f', rx - 1.5, 1.4, rz + 1.6); fsDeco(.12, .12, 3.4, '#ffd23f', rx - 1.5, 2.8, rz);
-        for (let k = 0; k < 7; k++){ const c = ['#ffd23f', '#ff6fb5', '#9ff3ff', '#8b5cf6'][k % 4], z = rz - 1.4 + k * .45;
-          const d = new THREE.Mesh(new THREE.ConeGeometry(.38, 1.4, 10), mat(c, '#332200')); d.position.set(rx - 1.5, 1.9, z); scene.add(d); }
-        const glow = new THREE.Mesh(new THREE.TorusGeometry(1.3, .08, 8, 28), new THREE.MeshBasicMaterial({color: '#ffd23f'})); glow.rotation.x = Math.PI / 2; glow.position.set(rx, 3.2, rz); scene.add(glow); fs.vipGlow = glow;
-        const crown = new THREE.Mesh(new THREE.ConeGeometry(.5, .7, 5), mat('#ffd23f', '#886600')); crown.position.set(rx, 3.7, rz); scene.add(crown);
-        const lock = label('🔒 Star VIP · 250 🪙', 'rgba(91,52,192,.95)', '#fff', 280); lock.position.set(rx, 4.5, rz); lock.scale.multiplyScalar(.7); scene.add(lock); fs.vipLock = lock;
-        fsSign('👑 STAR VIP LOUNGE', rx, 5.1, rz, Math.PI / 2, 3.6, '#5b34c0');
+        // 👑 Star VIP Lounge — against the BACK wall so it never blocks the doorway camera
+        fsDeco(4.2, .06, 5.2, '#5b34c0', rx + .4, .03, rz);
+        // soft pink side drapes behind the rack (west of player), not toward the entrance
+        [-1, 1].forEach(s => fsDeco(.12, 3.4, 1.6, '#ffb3d9', rx - .15, 1.7, rz + s * 2.2));
+        fsDeco(.1, 2.4, .1, '#ffd23f', rx + .35, 1.2, rz - 1.5); fsDeco(.1, 2.4, .1, '#ffd23f', rx + .35, 1.2, rz + 1.5); fsDeco(.1, .1, 3.1, '#ffd23f', rx + .35, 2.4, rz);
+        for (let k = 0; k < 6; k++){ const c = ['#ffd23f', '#ff6fb5', '#9ff3ff', '#8b5cf6'][k % 4], z = rz - 1.2 + k * .48;
+          const d = new THREE.Mesh(new THREE.ConeGeometry(.34, 1.25, 10), mat(c, '#332200')); d.position.set(rx + .35, 1.7, z); scene.add(d); }
+        const glow = new THREE.Mesh(new THREE.TorusGeometry(1.0, .06, 8, 24), new THREE.MeshBasicMaterial({color: '#ffd23f'})); glow.rotation.x = Math.PI / 2; glow.position.set(rx + .3, 2.9, rz); scene.add(glow); fs.vipGlow = glow;
+        const crown = new THREE.Mesh(new THREE.ConeGeometry(.4, .55, 5), mat('#ffd23f', '#886600')); crown.position.set(rx + .3, 3.35, rz); scene.add(crown);
+        const lock = label('🔒 Star VIP · 250 🪙', 'rgba(91,52,192,.95)', '#fff', 220); lock.position.set(rx + .3, 4.0, rz); lock.scale.set(.5, .5, .5); scene.add(lock); fs.vipLock = lock;
+        fsSign('👑 VIP', rx + .02, 3.7, rz, Math.PI / 2, 2.0, '#5b34c0');
         fsPaintVip();
       } else { // north / south wall stations
         const s = rz < 0 ? 1 : -1, ry = rz < 0 ? 0 : Math.PI;
@@ -364,7 +380,7 @@
         else if (S.id === 'col'){ for (let k = 0; k < 6; k++){ const b = new THREE.Mesh(new THREE.CylinderGeometry(.22, .2, .4, 12), mat(FS_COLS[k * 3])); b.position.set(rx - 1 + (k % 3), .2, rz + s * (.5 + (k > 2 ? .5 : 0))); scene.add(b); }
           const pal = new THREE.Mesh(new THREE.CircleGeometry(.9, 20), mat('#e9b949')); pal.position.set(rx, 2.1, rz + s * .02); pal.rotation.y = ry; scene.add(pal); }
         else if (S.id === 'pose'){ fsDeco(2.2, .12, 1.6, '#ffd23f', rx, 3.6, rz + s * .6); [-1, 1].forEach(k => fsDeco(.1, 3.6, .1, '#ffd23f', rx + k * 1.05, 1.8, rz + s * 1.35)); fsDeco(.06, 3.2, 1.4, '#c81e45', rx - 1.05, 1.9, rz + s * .65); fsDeco(1.8, .05, 1.4, '#fff', rx, .03, rz + s * .65); }
-        fsSign(T[1] + ' ' + T[2].toUpperCase(), rx, 3.9, rz + s * .04, ry, 3, S.id === 'pose' ? '#8b5cf6' : '#ff6fb5');
+        fsSign(T[1] + ' ' + T[2].toUpperCase(), rx, 4.15, rz + s * .04, ry, 2.2, S.id === 'pose' ? '#8b5cf6' : '#ff6fb5');
       }
     });
   }
@@ -426,7 +442,7 @@
     return s;
   }
   function fsStars(score){ return Math.max(1, Math.min(5, Math.round(1 + score / 3 + (Math.random() - .5) * 1.4))); }
-  function fsRebuild(av, fx){ if (!model) return; const g = model.g, pos = g.position.clone(), ry = g.rotation.y; scene.remove(g); model = fx ? fsBuild(av, fx) : buildPlayer(av); model.g.position.copy(pos); model.g.rotation.y = ry; scene.add(model.g); }
+  function fsRebuild(av, fx){ if (!model) return; const g = model.g, pos = g.position.clone(), ry = g.rotation.y; scene.remove(g); model = fx ? fsBuild(av, fx) : buildPlayer(av); model.g.position.copy(pos); model.g.rotation.y = ry; scene.add(model.g); fs.vipTag = null; fsVipBadge(); }
   function fsThumb(av, fx){
     const f = fsCleanFx(fx), c = document.createElement('canvas'); c.width = 60; c.height = 78; const x = c.getContext('2d');
     x.fillStyle = '#fff0f7'; x.fillRect(0, 0, 60, 78);
@@ -484,7 +500,7 @@
           return `<button class="fsit fsvip${on ? ' on' : ''}${lk ? ' lock' : ''}" data-fx="${r.s}" data-v="${r.v}"><i>${lk ? '🔒' : r.e}</i><small>${r.n}<br>${lk ? 'VIP only' : '👑 VIP'}</small></button>`; }).join('') + '</div>'; }
     else if (tab === 'pose') h = `<div class="fssub">Pick your runway pose — you can switch poses on the runway too!</div><div class="fsgrid">` + FS_POSES.map((p, i) => `<button class="fsit fspz${fs.myPose === i ? ' on' : ''}" data-pose="${i}"><i>${p.e}</i><small>${p.n}</small></button>`).join('') + '</div>';
     const saved = load('rubloxFsLook', null);
-    h += `<div class="fsrow fsmini"><button class="fsmb" id="fsRand">🎲 Surprise me</button>${saved ? '<button class="fsmb" id="fsLoad">💾 My saved look</button>' : ''}<button class="fsmb" id="fsReset">↩️ Start over</button></div>`;
+    h += `<div class="fsrow fsmini"><button class="fsmb" id="fsRand">🎲 Surprise me</button>${saved ? '<button class="fsmb" id="fsLoad">💾 My saved look</button>' : ''}<button class="fsmb" id="fsReset">↩️ Start over</button><button class="fsmb fssave" id="fsKeepWard">💾 Save for next show</button></div>`;
     $('#fsItems').innerHTML = h;
     $('#fsItems').querySelectorAll('.fssw').forEach(b => b.onclick = () => b.dataset.fxc ? fsFx(b.dataset.fxc, b.dataset.c) : fsSet(b.dataset.k, b.dataset.c));
     $('#fsItems').querySelectorAll('.fsit[data-fx]').forEach(b => b.onclick = () => fsFx(b.dataset.fx, b.dataset.v));
@@ -492,6 +508,7 @@
     $('#fsItems').querySelectorAll('.fspz').forEach(b => b.onclick = () => fsPose(+b.dataset.pose));
     $('#fsRand').onclick = () => fsSurprise(); $('#fsReset').onclick = () => fsResetLook(); if ($('#fsLoad')) $('#fsLoad').onclick = () => fsLoadLook();
     if ($('#fsVipBuy')) $('#fsVipBuy').onclick = () => fsBuyVip();
+    if ($('#fsKeepWard')) $('#fsKeepWard').onclick = () => fsKeep();
     $('#fsReady').textContent = fs.ready.has(fsUid()) ? '✅ Ready! (keep styling)' : '✅ I\'m ready!';
     $('#fsCount').textContent = '👗 ' + fsCount() + ' pieces on';
   }
@@ -576,7 +593,7 @@
   function fsLocalDress(){
     fsHideAll(); choosing = false; over = false; fs.lobPanel = false;
     fs.endShown = false; fs.paid = false; fs.earned = 0; fs.tab = fs.tab || 'top'; fsClearWalkers();
-    fs.fit = fixAv(Object.assign({}, DEF, avatar)); fs.fx = fsCleanFx(null); fs.poses[fsUid()] = fs.myPose; fsRebuild(fs.fit, fs.fx);
+    fs.fit = fixAv(Object.assign({}, DEF, avatar)); fs.fx = fsCleanFx(null); fs.poses[fsUid()] = fs.myPose; fsRebuild(fs.fit, fs.fx); fsVipBadge();
     const n = Math.max(0, fs.ord.indexOf(fsUid()));
     Object.assign(P, {x: -19.6 - (n % 3) * .9, y: .05, z: ((n % 4) - 1.5) * 1.1, vx: 0, vy: 0, vz: 0}); P.face = -Math.PI / 2; cam.yaw = P.face + Math.PI; cam.pitch = .32; cam.dist = 6.5;
     const T = FS_THEMES[fs.th]; banner('👗 ' + T.emoji + ' ' + T.name + '! You have ' + (fs.dl >= 60 ? fs.dl / 60 + ' min' : fs.dl + 's') + ' — go style!'); SND.cp();
@@ -597,7 +614,7 @@
     fsHideAll(); choosing = false;
     fsClearWalkers();
     fs.ord.forEach(u => { const av = Object.assign({}, DEF, fs.fits[u] || {}), m = fsBuild(av, fs.fxs[u] || null); m.g.visible = false; scene.add(m.g);
-      const lab = label(u === fsUid() ? '⭐ You' : fsName(u), 'rgba(255,111,181,.92)'); lab.position.y = 3.75; m.g.add(lab);
+      const lab = label(u === fsUid() ? (fsIsVip() ? '👑 VIP You' : '⭐ You') : fsName(u), u === fsUid() && fsIsVip() ? 'rgba(232,168,0,.96)' : 'rgba(255,111,181,.92)'); lab.position.y = 3.55; if (u === fsUid() && fsIsVip()) lab.scale.set(.85, .85, .85); m.g.add(lab);
       fs.walkers.push({u, m, av, ph: 0, lab, shown: false}); });
     fsNpcsTo('hide');
     const s = fsSeat(); Object.assign(P, {x: s.x, y: s.y, z: s.z, vx: 0, vy: 0, vz: 0}); P.face = Math.PI;
@@ -694,7 +711,7 @@
     const N = FS_NPCS.find(n => n.uid === u); if (!N || mp.on) return;
     const old = fs.npcM[u], pos = old ? old.m.g.position.clone() : null, rot = old ? old.m.g.rotation.y : 0, vis = old ? old.m.g.visible : true; if (old) scene.remove(old.m.g);
     const o = (fs.npcFit && fs.npcFit[u]) || {av: Object.assign({}, DEF, N.base), fx: null}, m = fsBuild(o.av, o.fx); scene.add(m.g); if (pos) m.g.position.copy(pos); m.g.rotation.y = rot; m.g.visible = vis;
-    const lab = label(N.emoji + ' ' + N.name, 'rgba(29,35,64,.75)'); lab.position.y = 3.75; m.g.add(lab);
+    const lab = label(N.emoji + ' ' + N.name, 'rgba(29,35,64,.75)'); lab.position.y = 3.35; lab.scale.set(.7, .7, .7); m.g.add(lab);
     fs.npcM[u] = Object.assign(old || {ph: 0, wait: 1 + Math.random() * 2, tgt: null}, {m});
   }
   function fsNpcsTo(where){

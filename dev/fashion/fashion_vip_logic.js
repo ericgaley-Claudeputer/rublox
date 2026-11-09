@@ -29,7 +29,7 @@ function world(store, coins0){
   ctx.fmt = s => s; ctx.bxEsc = s => s; ctx.mpLook = () => null; ctx.mpGuest = () => false; ctx.mpSendTo = () => {};
   vm.createContext(ctx);
   // provide minimal FX consumer stubs used before decorate runs deeply
-  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_VIP_COST,fsProg,fsIsVip,fsBuyVip,fsList,fsCleanFx,fsKeep,fsMigrateAvatar,fsLocked,fsVipRows,FX,FS_RACKS,FS_ST,fsWardRender,fsFx,buildFashion,fashionEnter,fashionStop,fsPickOpen,fsName};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_VIP_COST,fsProg,fsIsVip,fsBuyVip,fsVipBadge,fsList,fsCleanFx,fsKeep,fsMigrateAvatar,fsLocked,fsVipRows,FX,FS_RACKS,FS_ST,fsWardRender,fsFx,buildFashion,fashionEnter,fashionStop,fsPickOpen,fsName};`, ctx);
   return ctx;
 }
 const st = {rubloxCoins:'500', rubloxAvatar: JSON.stringify({shirt:'#111111',pants:'#222222',head:'#f1c27d',hairColor:'#6b3e1f',hair:'short'})};
@@ -48,7 +48,11 @@ chk('VIP unlock saved on device', JSON.parse(st.rubloxFashion).vip === true);
 chk('already VIP: buy is a no-op', !W.A.fsBuyVip() && W.coins === 250);
 const vipRow = W.A.fsVipRows(); chk('VIP rows list exclusive pieces', vipRow.length === vip && vipRow.every(r => r.vip));
 // fashion-only keep
-W.mode='fashion'; W.A.buildFashion(); W.A.fs.fit = Object.assign({}, W.avatar, {shirt:'#ff0000'}); W.A.fs.fx = W.A.fsCleanFx({top:'velvet',dress:'pastelg',acc:['vipcrown']});
+W.mode='fashion'; W.A.buildFashion(); W.A.fsVipBadge(); chk('VIP badge visible on avatar after unlock + rebuild', !!(W.A.fs.vipTag));
+W.A.fs.fit = Object.assign({}, W.avatar, {shirt:'#ff0000'});
+W.A.fsVipBadge(); chk('VIP badge visible on avatar after unlock + rebuild', !!(W.A.fs.vipTag));
+W.A.fs.fit = W.A.fs.fit; // keep
+ W.A.fs.fx = W.A.fsCleanFx({top:'velvet',dress:'pastelg',acc:['vipcrown']});
 const avBefore = JSON.parse(st.rubloxAvatar);
 W.A.fsKeep();
 const avAfter = JSON.parse(st.rubloxAvatar);
@@ -65,6 +69,8 @@ chk('migration clears unknown fashion leftovers from normal avatar', JSON.parse(
 if (fs.existsSync(HTML)){
   const h = fs.readFileSync(HTML,'utf8');
   chk('built page: VIP lounge + Save for next show + coins-only unlock', /Star VIP/.test(h) && /Save for next show/.test(h) && /FS_VIP_COST = 250/.test(h) && /never real money/i.test(h));
+  chk('built page: Save button in wardrobe panel (mini + footer)', /id="fsKeepWard"/.test(h) && /id="fsKeepWard2"/.test(h));
+  chk('built page: VIP nametag helper + small prep sign + VIP not in doorway', /function fsVipBadge/.test(h) && /PREP ROOM/.test(h) && !/PASTEL PREP ROOM/.test(h) && /id: 'vip', x: -27\.5/.test(h));
   const km = h.match(/function fsKeep\(\)\{[\s\S]*?\n  \}/);
   chk('built page: fsKeep no longer writes rubloxAvatar', !!(km && km[0].includes('rubloxFsLook') && !km[0].includes("save('rubloxAvatar'")));
   chk('built page: fashionStop restores normal avatar model', /function fashionStop\(\)\{[\s\S]*buildPlayer\(avatar\)/.test(h));

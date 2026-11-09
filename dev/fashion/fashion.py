@@ -36,7 +36,7 @@ rep("""  <div class="hsblind" id="hsBlind">""", """  <button class="fswardbtn" i
     <div class="fstabs" id="fsTabs"></div>
     <div class="fsitems" id="fsItems"></div>
     <div class="stats fscount" id="fsCount"></div>
-    <div class="owinbtns"><button class="big green" id="fsReady">✅ I'm ready!</button><button class="big blue" id="fsWardClose">👀 Look at me</button></div>
+    <div class="owinbtns"><button class="big green" id="fsReady">✅ I'm ready!</button><button class="big blue" id="fsKeepWard2">💾 Save for next show</button><button class="big blue" id="fsWardClose">👀 Look at me</button></div>
   </div></div>
   <div class="fsbar2" id="fsRate"><b id="fsRateN"></b><div class="fsstars" id="fsRateS"></div><small id="fsRateH"></small></div>
   <div class="fsbar2" id="fsPoses"><small id="fsPoseH"></small><div class="fsposes" id="fsPoseS"></div></div>
@@ -75,7 +75,7 @@ rep(".smode #oStam{display:none!important}", """.smode #oStam{display:none!impor
 .fssw{width:28px;height:28px;border-radius:50%;border:3px solid #fff;background:var(--c);box-shadow:0 0 0 1px #ccc;cursor:pointer}.fssw.on{box-shadow:0 0 0 3px #8b5cf6}
 .fsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:6px}
 .fsit{position:relative;border:2px solid #eee;background:#fff;border-radius:12px;padding:4px;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center}.fsit i{font-style:normal;font-size:22px}.fsit small{font-size:11px;font-weight:800;line-height:1.1}
-.fsit u{position:absolute;top:1px;right:3px;text-decoration:none;font-size:11px}.fsit.on{border-color:#ff6fb5;background:#fff0f7}.fsit.lock{opacity:.6;background:#f2f2f2}.fsit.fsvip{border-color:#ffd23f;box-shadow:0 0 0 1px #ffd23f inset}.fsvipb{margin:6px 0;padding:8px;border-radius:12px;background:linear-gradient(90deg,#5b34c0,#ff6fb5);color:#fff;font-weight:800;font-size:14px}.fsvipb small{opacity:.9;font-weight:700}.fsvipb .fsmb{margin-left:6px}
+.fsit u{position:absolute;top:1px;right:3px;text-decoration:none;font-size:11px}.fsit.on{border-color:#ff6fb5;background:#fff0f7}.fsit.lock{opacity:.6;background:#f2f2f2}.fsit.fsvip{border-color:#ffd23f;box-shadow:0 0 0 1px #ffd23f inset}.fsmb.fssave{background:#3a86ff;color:#fff;font-weight:900}#fsKeepWard2{flex:1 1 auto;min-width:140px}.fsvipb{margin:6px 0;padding:8px;border-radius:12px;background:linear-gradient(90deg,#5b34c0,#ff6fb5);color:#fff;font-weight:800;font-size:14px}.fsvipb small{opacity:.9;font-weight:700}.fsvipb .fsmb{margin-left:6px}
 .fsmini{justify-content:center;margin-top:8px}.fsmb{border:0;border-radius:12px;padding:6px 12px;background:#ffd23f;font:inherit;font-weight:900;cursor:pointer;box-shadow:0 3px 0 #d4a900}
 .fsbar2{display:none;position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:7;background:rgba(255,255,255,.95);border:3px solid #ff6fb5;border-radius:20px;padding:8px 16px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:96vw}
 .fsbar2.show{display:flex;flex-direction:column;align-items:center;gap:3px}.fsbar2 small{font-weight:800;color:#666}
@@ -105,7 +105,7 @@ rep("      hideEnter(); }\n    mpOnStart();", """      hideEnter(); }
         $('#fsHome').onclick = $('#fsHome2').onclick = stop; $('#fsGo').onclick = $('#fsAgain').onclick = () => fs && fsStart();
         $('#fsExplore').onclick = () => fsLobbyWalk(); $('#fsShowBtn').onclick = () => fs && fs.ph === 'lobby' && fsPickOpen(); $('#fsLobby').onclick = () => fsBackToLobby();
         $('#fsNear').onclick = () => fs && fs.near && fsWardOpen(fs.near);
-        $('#fsReady').onclick = () => fsReadyBtn(); $('#fsWardClose').onclick = () => fsWardClose(); $('#fsWardBtn').onclick = () => fsWardOpen(fs && fs.near || null); $('#fsKeep').onclick = () => fsKeep(); }
+        $('#fsReady').onclick = () => fsReadyBtn(); $('#fsWardClose').onclick = () => fsWardClose(); $('#fsWardBtn').onclick = () => fsWardOpen(fs && fs.near || null); $('#fsKeep').onclick = () => fsKeep(); $('#fsKeepWard2').onclick = () => fsKeep(); }
       fashionEnter(); }
     mpOnStart();""")
 rep("raceStop(); splashStop(); if (hs) hideStop();", "raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); }")
