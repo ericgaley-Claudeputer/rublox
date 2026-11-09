@@ -1418,7 +1418,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.09-22';
+const BUILD = '2026.11.09-23';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -10894,7 +10894,7 @@ const Obby = (() => {
     ic.lv = Math.max(1, Math.min(99, d.lv | 0 || 1)); (Array.isArray(d.ev) ? d.ev : []).forEach(e => icEvent(e));
   }
   function icGuestMsg(g, d){ if (!ic || ic.remote || !d) return; icApply(g, d); }
-  /* ===================== t238u: 🐴 pony silhouette — slimmer short neck + mane ===================== */
+  /* ===================== t239u: 🐴 compact pony torso + slim short neck ===================== */
   const SB_KEY = 'rubloxStable', SB_DRAIN = 25, SB_MOUNT_CD = .85;
   const SB_HIP = 1.32; // avatar pivot ≈ this above P.y — used to place hips on saddleTop
   const SB_PONIES = [
@@ -10926,7 +10926,7 @@ const Obby = (() => {
     return { top, foot, clear: foot + .55 };
   }
   function sbMesh(pony, x, z){
-    // Cute cartoon PONY (+Z forward). Short thick ~45° neck, horse muzzle, fluffy mane/tail.
+    // Cute cartoon PONY (+Z forward). Compact barrel, slim ~45° neck, horse muzzle, fluffy mane/tail.
     // Head is parented to neck; neck base embeds in chest, tip embeds in skull (sbNeckAttached).
     const def = sbPonyOf(pony.id), g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
     const coat = sbMat(def.coat), maneM = sbMat(def.mane), hoofM = sbMat(def.hoof || shade(def.coat, -40));
@@ -10939,21 +10939,24 @@ const Obby = (() => {
       return v;
     };
 
-    // Horsey barrel — longer than tall (not an egg)
-    const body = new THREE.Mesh(new THREE.CapsuleGeometry(.46, 1.55, 6, 12), coat);
-    body.rotation.x = Math.PI / 2; body.position.set(0, 1.18, 0); g.add(body);
-    // chest fill so the thick neck base blends into the front of the barrel
-    const chest = new THREE.Mesh(new THREE.SphereGeometry(.28, 10, 8), coat);
-    chest.position.set(0, 1.32, .52); chest.scale.set(1.0, .9, 1.05); g.add(chest);
-    const bodyBounds = {minX: -.58, maxX: .58, minY: .68, maxY: 1.70, minZ: -1.25, maxZ: 1.15};
+    // Compact pony barrel — ~70% length, ~78% girth, slight back dip, round chest/rump
+    const body = new THREE.Mesh(new THREE.CapsuleGeometry(.35, 1.08, 6, 12), coat);
+    body.rotation.x = Math.PI / 2; body.position.set(0, 1.14, 0); g.add(body);
+    // rounder chest (front of barrel, not filling the throat under the slim neck)
+    const chest = new THREE.Mesh(new THREE.SphereGeometry(.34, 10, 8), coat);
+    chest.position.set(0, 1.30, .48); chest.scale.set(1.12, 1.08, 1.15); g.add(chest);
+    // rounder rump; slightly higher than mid-barrel so the back reads a soft dip
+    const rump = new THREE.Mesh(new THREE.SphereGeometry(.33, 10, 8), coat);
+    rump.position.set(0, 1.30, -.48); rump.scale.set(1.12, 1.05, 1.12); g.add(rump);
+    const bodyBounds = {minX: -.50, maxX: .50, minY: .72, maxY: 1.70, minZ: -.95, maxZ: .90};
 
-    // SHORT thick neck ~45° forward (llama was upright to y≈2.5; pony stops ~y=1.95)
+    // SHORT slim neck ~45° forward — base at withers of compact torso
     // base INSIDE chest/withers, tip INSIDE skull
-    const base = V3(0, 1.40, .58), mid = V3(0, 1.68, .88), tip = V3(0, 1.95, 1.18);
+    const base = V3(0, 1.42, .42), mid = V3(0, 1.68, .70), tip = V3(0, 1.92, .98);
     const neck = new THREE.Group(); neck.position.x = base.x; neck.position.y = base.y; neck.position.z = base.z; g.add(neck);
     const local = [base, mid, tip].map(p => V3(p.x - base.x, p.y - base.y, p.z - base.z));
     const curve = new THREE.CatmullRomCurve3(local);
-    // Wide at chest → slightly narrower at head (still thick)
+    // Slim: ~60% of the old head-wide wedge
     const tubeWide = new THREE.Mesh(new THREE.TubeGeometry(curve, 20, .20, 10, false), coat); neck.add(tubeWide);
     const tubeCore = new THREE.Mesh(new THREE.TubeGeometry(curve, 20, .17, 10, false), coat); neck.add(tubeCore);
     const jointBase = new THREE.Mesh(new THREE.SphereGeometry(.26, 10, 8), coat); jointBase.position.set(0, 0, 0); neck.add(jointBase);
@@ -11007,7 +11010,7 @@ const Obby = (() => {
     }
 
     // FULLER fluffy tail
-    const tail = new THREE.Group(); tail.position.set(0, 1.38, -.88); g.add(tail);
+    const tail = new THREE.Group(); tail.position.set(0, 1.34, -.62); g.add(tail);
     for (let i = 0; i < 6; i++){
       for (let k = 0; k < 3; k++){
         const t = new THREE.Mesh(new THREE.SphereGeometry(.14 - i * .012, 6, 6), maneM);
@@ -11018,26 +11021,26 @@ const Obby = (() => {
 
     // Slightly tapered legs + darker hooves
     const legs = [];
-    [[.28, .64, .52], [-.28, .64, .52], [.28, .64, -.46], [-.28, .64, -.46]].forEach(([lx, ly, lz]) => {
+    [[.22, .98, .38], [-.22, .98, .38], [.22, .98, -.36], [-.22, .98, -.36]].forEach(([lx, ly, lz]) => {
       const leg = new THREE.Group(); leg.position.set(lx, ly, lz); g.add(leg);
-      const thigh = new THREE.Mesh(new THREE.CylinderGeometry(.08, .11, .58, 6), coat); thigh.position.y = 0; leg.add(thigh);
-      const shin = new THREE.Mesh(new THREE.CylinderGeometry(.055, .08, .48, 6), dark); shin.position.y = -.5; leg.add(shin);
-      const hoof = new THREE.Mesh(new THREE.CylinderGeometry(.09, .1, .14, 6), hoofM); hoof.position.y = -.78; leg.add(hoof);
+      const thigh = new THREE.Mesh(new THREE.CylinderGeometry(.07, .10, .68, 6), coat); thigh.position.y = 0; leg.add(thigh);
+      const shin = new THREE.Mesh(new THREE.CylinderGeometry(.05, .07, .55, 6), dark); shin.position.y = -.615; leg.add(shin);
+      const hoof = new THREE.Mesh(new THREE.CylinderGeometry(.08, .09, .14, 6), hoofM); hoof.position.y = -.96; leg.add(hoof);
       legs.push(leg);
     });
 
     // Saddle on barrel — saddleTop drives rider seat (must stay consistent)
     const saddle = new THREE.Group(); saddle.visible = false; g.add(saddle);
-    const blanketY = 1.50, seatY = 1.56;
-    const blanket = new THREE.Mesh(new THREE.BoxGeometry(.7, .06, .9), sbMat('#ffd23f')); blanket.position.set(0, blanketY, .02); saddle.add(blanket);
-    const seat = new THREE.Mesh(new THREE.BoxGeometry(.55, .12, .7), sbMat('#8b4513')); seat.position.set(0, seatY, .02); saddle.add(seat);
+    const blanketY = 1.48, seatY = 1.54;
+    const blanket = new THREE.Mesh(new THREE.BoxGeometry(.58, .06, .7), sbMat('#ffd23f')); blanket.position.set(0, blanketY, .02); saddle.add(blanket);
+    const seat = new THREE.Mesh(new THREE.BoxGeometry(.48, .12, .55), sbMat('#8b4513')); seat.position.set(0, seatY, .02); saddle.add(seat);
     const saddleTop = seatY + .06;
     const bridle = new THREE.Group(); bridle.visible = false; head.add(bridle);
     const strap = new THREE.Mesh(new THREE.TorusGeometry(.26, .022, 6, 12), sbMat('#5a4030')); strap.rotation.y = Math.PI / 2; strap.position.set(0, -.02, .15); bridle.add(strap);
     const rein = new THREE.Mesh(new THREE.BoxGeometry(.04, .04, .45), sbMat('#5a4030')); rein.position.set(0, -.18, -.05); bridle.add(rein);
 
     g.userData.parts = {
-      body, neck, head, tail, legs, saddle, bridle, saddleTop, seat, jointBase, jointTop, maneTufts, chest,
+      body, neck, head, tail, legs, saddle, bridle, saddleTop, seat, jointBase, jointTop, maneTufts, chest, rump,
       neckBase: {x: base.x, y: base.y, z: base.z},
       neckTop: {x: tip.x, y: tip.y, z: tip.z},
       bodyBounds, headR: .5,
