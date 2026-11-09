@@ -1418,7 +1418,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.09-16';
+const BUILD = '2026.11.09-17';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -10894,8 +10894,8 @@ const Obby = (() => {
     ic.lv = Math.max(1, Math.min(99, d.lv | 0 || 1)); (Array.isArray(d.ev) ? d.ev : []).forEach(e => icEvent(e));
   }
   function icGuestMsg(g, d){ if (!ic || ic.remote || !d) return; icApply(g, d); }
-  /* ===================== t227u: 🐴 CLOVER MEADOW STABLES — adopt, care, ride (sit on pony), jumping shows ===================== */
-  const SB_KEY = 'rubloxStable', SB_DRAIN = 25, SB_MOUNT_CD = .85;
+  /* ===================== t231u: 🐴 CLOVER MEADOW STABLES — facing mount (straddle, yaw-matched) ===================== */
+  const SB_KEY = 'rubloxStable', SB_DRAIN = 25, SB_MOUNT_CD = .85, SB_SADDLE_Y = 1.15;
   const SB_PONIES = [
     {id: 'buttercup', name: 'Buttercup', e: '🌼', coat: '#f6e3b4', mane: '#ff9f1c', eye: '#3a86ff', mark: 'star'},
     {id: 'thistle', name: 'Thistle', e: '💜', coat: '#c39bff', mane: '#5b34c0', eye: '#2ec27e', mark: 'heart'},
@@ -10906,7 +10906,8 @@ const Obby = (() => {
   ];
   const SB_CARE = [['brush', '🪥', 'Brush', 'shine'], ['feed', '🥕', 'Feed', 'energy'], ['groom', '✨', 'Groom', 'mood']];
   const SB_JUMPS = 8, SB_SHOW_T = 90;
-  const SB_SIT = {lL: -1.45, lR: -1.45, aL: -.4, aR: -.4, lean: .12, y: .55};
+  // Straddle sit: knees slightly bent (lL/lR), hips open down the flanks (lLo/lRo), seated up at saddle height (y)
+  const SB_SIT = {lL: -.95, lR: -.95, lLo: .68, lRo: .68, aL: -.3, aR: -.3, aLo: .15, aRo: .15, lean: .04, y: .7};
   let sb = null;
   function sbProg(){
     const o = load(SB_KEY, null), r = o && typeof o === 'object' ? o : {};
@@ -10917,47 +10918,56 @@ const Obby = (() => {
   function sbSave(p){ save(SB_KEY, p); }
   function sbPonyOf(id){ return SB_PONIES.find(p => p.id === id) || SB_PONIES[0]; }
   function sbMesh(pony, x, z){
+    // Parts are authored along +X; wrap in an inner group rotated −π/2 so the pony's nose is +Z —
+    // the same forward convention as P.face / the rider. Then mesh.rotation.y === P.face while mounted.
     const def = sbPonyOf(pony.id), g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
-    const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.1, .9), new THREE.MeshLambertMaterial({color: def.coat})); body.position.y = 1.1; g.add(body);
-    const neck = new THREE.Mesh(new THREE.BoxGeometry(.45, .9, .45), new THREE.MeshLambertMaterial({color: def.coat})); neck.position.set(.85, 1.7, 0); g.add(neck);
-    const head = new THREE.Mesh(new THREE.BoxGeometry(.55, .5, .5), new THREE.MeshLambertMaterial({color: def.coat})); head.position.set(1.2, 2.15, 0); g.add(head);
-    const mane = new THREE.Mesh(new THREE.BoxGeometry(.3, .9, .55), new THREE.MeshLambertMaterial({color: def.mane})); mane.position.set(.7, 1.85, 0); g.add(mane);
-    [[-.5, .55, .35], [-.5, .55, -.35], [.4, .55, .35], [.4, .55, -.35]].forEach(([a, b, c]) => { const leg = new THREE.Mesh(new THREE.BoxGeometry(.22, 1.1, .22), new THREE.MeshLambertMaterial({color: shade(def.coat, -20)})); leg.position.set(a, b, c); g.add(leg); });
-    g.visible = true; return g;
+    const inner = new THREE.Group(); inner.rotation.y = -Math.PI / 2; g.add(inner);
+    const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.1, .9), new THREE.MeshLambertMaterial({color: def.coat})); body.position.y = 1.1; inner.add(body);
+    const neck = new THREE.Mesh(new THREE.BoxGeometry(.45, .9, .45), new THREE.MeshLambertMaterial({color: def.coat})); neck.position.set(.85, 1.7, 0); inner.add(neck);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(.55, .5, .5), new THREE.MeshLambertMaterial({color: def.coat})); head.position.set(1.2, 2.15, 0); inner.add(head);
+    const mane = new THREE.Mesh(new THREE.BoxGeometry(.3, .9, .55), new THREE.MeshLambertMaterial({color: def.mane})); mane.position.set(.7, 1.85, 0); inner.add(mane);
+    [[-.5, .55, .35], [-.5, .55, -.35], [.4, .55, .35], [.4, .55, -.35]].forEach(([a, b, c]) => { const leg = new THREE.Mesh(new THREE.BoxGeometry(.22, 1.1, .22), new THREE.MeshLambertMaterial({color: shade(def.coat, -20)})); leg.position.set(a, b, c); inner.add(leg); });
+    g.userData = g.userData || {}; g.userData.forward = 'z'; g.visible = true; return g;
   }
   function sbSign(text, x, z, col){
     plat(x, .45, z, 2.6, 2.6, col, .3);
     const L = label(text, 'rgba(29,35,64,.92)'); L.position.set(x, 1.45, z); scene.add(L); return L;
   }
   function sbRailVisual(x, z, col){
-    // decorative only — NOT added to solids, so they never block walking outside a show
     const mat = new THREE.MeshLambertMaterial({color: col});
     const postL = new THREE.Mesh(new THREE.BoxGeometry(.25, 1.0, .25), mat); postL.position.set(x - 1.3, .5, z); scene.add(postL);
     const postR = new THREE.Mesh(new THREE.BoxGeometry(.25, 1.0, .25), mat); postR.position.set(x + 1.3, .5, z); scene.add(postR);
     const rail = new THREE.Mesh(new THREE.BoxGeometry(2.6, .18, .18), mat); rail.position.set(x, .85, z); scene.add(rail);
     return {x, z, rail, posts: [postL, postR], cleared: false};
   }
+  function sbSyncRider(){
+    // Keep rider + pony locked: same yaw, rider centred on the back at saddle height, no side offset.
+    if (!sb || !sb.ridden || !sb.mesh) return;
+    if (Math.hypot(P.vx || 0, P.vz || 0) > .12) sb.heading = Math.atan2(P.vx, P.vz);
+    if (typeof sb.heading !== 'number' || !isFinite(sb.heading)) sb.heading = P.face;
+    P.face = sb.heading;
+    sb.mesh.rotation.y = sb.heading;
+    sb.mesh.position.set(P.x, 0, P.z);
+    if (P.onGround !== false && !(P.vy > .4)) P.y = SB_SADDLE_Y;
+    else if (P.y < SB_SADDLE_Y) P.y = SB_SADDLE_Y;
+  }
   function buildStable(){
     const prog = sbProg();
-    sb = {ph: prog.pony ? 'care' : 'pick', t: 0, pony: prog.pony ? Object.assign({}, prog.pony) : null, mesh: null, near: -1, panel: false, show: null, score: 0, jumps: [], ridden: false, mountCd: 0, earned: 0, gates: [], labels: [], toastT: 0};
+    sb = {ph: prog.pony ? 'care' : 'pick', t: 0, pony: prog.pony ? Object.assign({}, prog.pony) : null, mesh: null, near: -1, panel: false, show: null, score: 0, jumps: [], ridden: false, mountCd: 0, heading: Math.PI, earned: 0, gates: [], labels: [], toastT: 0};
     scene.background = new THREE.Color('#c8e8ff');
     plat(0, 0, 0, 60, 60, '#8fd39a', .35);
-    // low see-through fence (transparent so camera pull-in ignores it; still solid for the player)
     sb.fences = [];
     [[0, 30, 62, .5], [0, -30, 62, .5], [30, 0, .5, 62], [-30, 0, .5, 62]].forEach(([x, z, w, d]) => {
       const f = plat(x, .7, z, w, d, '#e8a04a', .7); f.camSkip = true;
       if (f.mesh && f.mesh.material){ f.mesh.material.transparent = true; f.mesh.material.opacity = .55; }
       sb.fences.push(f);
     });
-    // big obvious barn behind the pads (−z). Camera looks toward −z so the barn fills the backdrop.
-    plat(-14, 7.0, -14, 16, 10, '#d4a574', 7.0);                 // walls up to eaves
-    plat(-14, 7.55, -14, 18, 12, '#8a5a3c', .9);                  // roof sits on walls (no floating bar)
-    plat(-14, 2.2, -8.6, 3.2, .5, '#6b3e1f', 2.2);                // door
-    plat(-19, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);                // window L
-    plat(-9, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);                 // window R
+    plat(-14, 7.0, -14, 16, 10, '#d4a574', 7.0);
+    plat(-14, 7.55, -14, 18, 12, '#8a5a3c', .9);
+    plat(-14, 2.2, -8.6, 3.2, .5, '#6b3e1f', 2.2);
+    plat(-19, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);
+    plat(-9, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);
     const barnSign = label('🐴 Clover Meadow Barn', 'rgba(139,92,246,.95)'); barnSign.position.set(-14, 5.6, -8.2); scene.add(barnSign);
-    // pads in front of barn. With cam.yaw = 0 (camera on +z looking −z), screen L→R = −x → +x
-    // so brush (−20) · feed (−14) · groom (−8) reads 🪥 🥕 ✨
     sb.stations = [
       {id: 'brush', x: -20, z: 2, e: '🪥', col: '#ffe08a'},
       {id: 'feed',  x: -14, z: 2, e: '🥕', col: '#9ff0c8'},
@@ -10971,13 +10981,12 @@ const Obby = (() => {
       sb.gates.push(sbRailVisual(x, z, i % 2 ? '#ff6fb5' : '#3a86ff'));
     }
     plat(12, .3, 22, 4, 4, '#ffd23f', .3);
-    // face the barn: camera behind the player on +z, looking toward −z
     Object.assign(P, {x: -14, y: .05, z: 14, vx: 0, vy: 0, vz: 0}); P.face = Math.PI; cam.yaw = 0; cam.pitch = .36; cam.dist = 15;
     checkpoints[0] = {idx: 0, spawn: {x: -14, y: .05, z: 14}, flag: new THREE.Object3D()};
     if (sb.pony){ sb.mesh = sbMesh(sb.pony, -14, 10); sb.mesh.visible = true; }
   }
   function sbFlash(msg){ if (!sb) return; sb.toastT = 2.4; const b = $('#oBig'); if (b) b.textContent = msg; banner(msg); }
-  function stableEnter(){ if (!sb) return; sb.panel = false; sb.near = -1; sb.ridden = false; sb.mountCd = 0; cam.yaw = 0; cam.dist = 15; cam.pitch = .36;
+  function stableEnter(){ if (!sb) return; sb.panel = false; sb.near = -1; sb.ridden = false; sb.mountCd = 0; sb.heading = P.face; cam.yaw = 0; cam.dist = 15; cam.pitch = .36;
     if (sb.pony && !sb.mesh) sb.mesh = sbMesh(sb.pony, -14, 10);
     if (sb.mesh) sb.mesh.visible = true;
     sbHud();
@@ -11011,12 +11020,13 @@ const Obby = (() => {
       if (sb.ridden) return true;
       if (sb.pony.energy < 15){ sbFlash('😴 ' + sb.pony.name + ' is too tired — feed them first!'); return false; }
       sb.ridden = true; sb.ph = 'ride'; sb.mountCd = SB_MOUNT_CD;
-      if (sb.mesh){ sb.mesh.visible = true; sb.mesh.position.set(P.x, 0, P.z); }
+      sb.heading = P.face; P.y = SB_SADDLE_Y;
+      if (sb.mesh){ sb.mesh.visible = true; sbSyncRider(); }
       sbFlash('🐎 Mounted! Ride to the 🏆 show pad'); SND.coin(); sbHud(); return true;
     }
     if (!sb.ridden) return true;
-    sb.ridden = false; sb.ph = 'care'; sb.mountCd = SB_MOUNT_CD;
-    if (sb.mesh){ sb.mesh.visible = true; sb.mesh.position.set(P.x, 0, P.z - 2); }
+    sb.ridden = false; sb.ph = 'care'; sb.mountCd = SB_MOUNT_CD; P.y = .05;
+    if (sb.mesh){ sb.mesh.visible = true; sb.mesh.position.set(P.x, 0, P.z - 2); sb.mesh.rotation.y = P.face; }
     sbFlash('🐴 You hopped off.'); sbHud(); return true;
   }
   function sbStartShow(){
@@ -11031,12 +11041,15 @@ const Obby = (() => {
     setCoins(coins + pay); sb.earned += pay; runCoins = (runCoins || 0) + pay; confetti(); SND.win();
     sbFlash('🏅 Show over! ' + sc + '/' + SB_JUMPS + ' · +' + pay + ' 🪙'); sb.show = null; sb.ph = 'ride'; sbHud();
   }
-  function sbPose(){ return sb && sb.ridden ? Object.assign({lLo: 0, lRo: 0, aLo: 0, aRo: 0}, SB_SIT) : null; }
+  function sbPose(){
+    if (!(sb && sb.ridden)) return null;
+    // explicit straddle — one leg each side of the pony
+    return Object.assign({}, SB_SIT);
+  }
   function stableUpdate(dt){
     if (!sb) return;
     if (sb.mountCd > 0) sb.mountCd -= dt;
     if (sb.toastT > 0){ sb.toastT -= dt; if (sb.toastT <= 0){ const b = $('#oBig'); if (b && !nds) b.textContent = ''; } }
-    // keep camera comfortable — never collapse into the avatar/barn
     if (cam.dist < 13) cam.dist += (13 - cam.dist) * Math.min(1, dt * 4);
     if (cam.pitch < .3) cam.pitch += (.3 - cam.pitch) * Math.min(1, dt * 3);
     let near = -1, best = 2.8; sb.stations.forEach((s, i) => { const d = Math.hypot(P.x - s.x, P.z - s.z); if (d < best){ best = d; near = i; } });
@@ -11048,10 +11061,9 @@ const Obby = (() => {
       sb.gates.forEach(g => { if (g.cleared) return; if (Math.hypot(P.x - g.x, P.z - g.z) < 1.7 && P.y > .5){ g.cleared = true; sb.show.score++; sb.show.done++; SND.cp(); banner('✨ Cleared! ' + sb.show.score + '/' + SB_JUMPS); } });
       if (sb.show.score >= SB_JUMPS) sbEndShow();
     }
-    // pony: follow when dismounted; sit under the rider when mounted
     if (sb.mesh && sb.pony && sb.ph !== 'pick'){
       sb.mesh.visible = true;
-      if (sb.ridden){ sb.mesh.position.set(P.x, 0, P.z); sb.mesh.rotation.y = P.face; }
+      if (sb.ridden) sbSyncRider();
       else { const m = sb.mesh.position, dx = P.x - m.x, dz = P.z - 2.2 - m.z, d = Math.hypot(dx, dz);
         if (d > 2.2){ m.x += dx / d * dt * 3.5; m.z += dz / d * dt * 3.5; sb.mesh.rotation.y = Math.atan2(dx, dz); } }
     }
