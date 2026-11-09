@@ -36,8 +36,8 @@ chk('left-to-right brush < feed < groom', (() => { const m = Object.fromEntries(
 chk('rails are visual-only (no plat solids on gates)', W.A.sb.gates.length === W.A.SB_JUMPS && W.A.sb.gates.every(g => g.rail && g.posts));
 chk('adopt + visible mesh', W.A.sbAdopt('buttercup') && W.A.sb.mesh.visible);
 chk('pony has cartoon parts (legs/head/tail/saddle/neck/mane)', (() => { const p = W.A.sb.mesh.userData.parts; return p && p.legs && p.legs.length === 4 && p.head && p.tail && p.saddle && p.bridle && p.neck && p.saddleTop > 1.4 && p.maneTufts && p.maneTufts.length >= 6; })());
-chk('neck is slim (~head-back width, not head-wide wedge)', (() => { const src = SRC; return /TubeGeometry\(curve, 20, \.20/.test(src) && /SphereGeometry\(\.26/.test(src) && /SphereGeometry\(\.18/.test(src); })());
-chk('pony body is compact (~70% length, slimmer girth)', (() => { const src = SRC; return /CapsuleGeometry\(\.35, 1\.08/.test(src) && /rump/.test(src); })());
+chk('neck is slim (~head-back width, not head-wide wedge)', (() => { const src = SRC; return /TubeGeometry\(curve, 28, \.20/.test(src) && /SphereGeometry\(\.22/.test(src) && /SphereGeometry\(\.18/.test(src); })());
+chk('pony body is one smooth continuous torso', (() => { const src = SRC; return /CapsuleGeometry\(\.35, 1\.08, 16, 32\)/.test(src) && /computeVertexNormals/.test(src) && /fuller chest/.test(src) && /rump/.test(src) && !/SphereGeometry\(\.34/.test(src) && !/SphereGeometry\(\.33/.test(src); })());
 chk('neck is short (not llama-tall)', W.A.sb.mesh.userData.parts.neckTop.y < 2.15 && W.A.sb.mesh.userData.parts.neckTop.y - W.A.sb.mesh.userData.parts.neckBase.y < .7, W.A.sb.mesh.userData.parts.neckTop);
 W.A.sbCare('groom'); chk('groom raises mood', W.A.sb.pony.mood >= 88);
 W.A.sbCare('feed');

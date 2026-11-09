@@ -1418,7 +1418,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.09-23';
+const BUILD = '2026.11.09-24';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -10894,7 +10894,7 @@ const Obby = (() => {
     ic.lv = Math.max(1, Math.min(99, d.lv | 0 || 1)); (Array.isArray(d.ev) ? d.ev : []).forEach(e => icEvent(e));
   }
   function icGuestMsg(g, d){ if (!ic || ic.remote || !d) return; icApply(g, d); }
-  /* ===================== t239u: 🐴 compact pony torso + slim short neck ===================== */
+  /* ===================== t240u: 🐴 smooth continuous torso + slim short neck ===================== */
   const SB_KEY = 'rubloxStable', SB_DRAIN = 25, SB_MOUNT_CD = .85;
   const SB_HIP = 1.32; // avatar pivot ≈ this above P.y — used to place hips on saddleTop
   const SB_PONIES = [
@@ -10939,15 +10939,39 @@ const Obby = (() => {
       return v;
     };
 
-    // Compact pony barrel — ~70% length, ~78% girth, slight back dip, round chest/rump
-    const body = new THREE.Mesh(new THREE.CapsuleGeometry(.35, 1.08, 6, 12), coat);
-    body.rotation.x = Math.PI / 2; body.position.set(0, 1.14, 0); g.add(body);
-    // rounder chest (front of barrel, not filling the throat under the slim neck)
-    const chest = new THREE.Mesh(new THREE.SphereGeometry(.34, 10, 8), coat);
-    chest.position.set(0, 1.30, .48); chest.scale.set(1.12, 1.08, 1.15); g.add(chest);
-    // rounder rump; slightly higher than mid-barrel so the back reads a soft dip
-    const rump = new THREE.Mesh(new THREE.SphereGeometry(.33, 10, 8), coat);
-    rump.position.set(0, 1.30, -.48); rump.scale.set(1.12, 1.05, 1.12); g.add(rump);
+    // ONE smooth continuous torso — high-segment capsule, gently shaped (same ~70% length / ~78% girth as -23)
+    // fuller chest + rump are blended by vertex radii; soft back dip; no separate chest/rump blobs
+    let torsoGeo = new THREE.CapsuleGeometry(.35, 1.08, 16, 32);
+    if (typeof torsoGeo.rotateX === 'function') torsoGeo.rotateX(Math.PI / 2); // length → Z
+    (function shapeTorso(geo){
+      const pos = geo && geo.attributes && geo.attributes.position;
+      if (!pos || typeof pos.getX !== 'function'){
+        if (geo && typeof geo.computeVertexNormals === 'function') geo.computeVertexNormals();
+        return;
+      }
+      const half = .89; // 1.08/2 + .35
+      for (let i = 0; i < pos.count; i++){
+        let x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+        const along = Math.max(-1, Math.min(1, z / half)); // -1 rump → +1 chest
+        const abs = along < 0 ? -along : along;
+        // subtle flare: mid stays ~1.0, chest ~1.08, rump ~1.05
+        const flare = along >= 0 ? 1.08 : 1.05;
+        const scale = 1 + (flare - 1) * Math.pow(abs, 1.1);
+        x *= scale; y *= scale;
+        // gentle back dip on the topline only
+        const mid = Math.exp(-along * along * 2.4);
+        if (y > 0) y -= .04 * mid;
+        else y += .012 * mid;
+        pos.setX(i, x); pos.setY(i, y); pos.setZ(i, z);
+      }
+      pos.needsUpdate = true;
+      if (typeof geo.computeVertexNormals === 'function') geo.computeVertexNormals();
+    })(torsoGeo);
+    const body = new THREE.Mesh(torsoGeo, coat);
+    if (body.material) body.material.flatShading = false;
+    body.position.set(0, 1.16, 0); g.add(body);
+    // aliases kept for parts compatibility (geometry is one mesh; chest/rump blended in, not separate)
+    const chest = body, rump = body;
     const bodyBounds = {minX: -.50, maxX: .50, minY: .72, maxY: 1.70, minZ: -.95, maxZ: .90};
 
     // SHORT slim neck ~45° forward — base at withers of compact torso
@@ -10956,22 +10980,22 @@ const Obby = (() => {
     const neck = new THREE.Group(); neck.position.x = base.x; neck.position.y = base.y; neck.position.z = base.z; g.add(neck);
     const local = [base, mid, tip].map(p => V3(p.x - base.x, p.y - base.y, p.z - base.z));
     const curve = new THREE.CatmullRomCurve3(local);
-    // Slim: ~60% of the old head-wide wedge
-    const tubeWide = new THREE.Mesh(new THREE.TubeGeometry(curve, 20, .20, 10, false), coat); neck.add(tubeWide);
-    const tubeCore = new THREE.Mesh(new THREE.TubeGeometry(curve, 20, .17, 10, false), coat); neck.add(tubeCore);
-    const jointBase = new THREE.Mesh(new THREE.SphereGeometry(.26, 10, 8), coat); jointBase.position.set(0, 0, 0); neck.add(jointBase);
-    const jointTop = new THREE.Mesh(new THREE.SphereGeometry(.18, 10, 8), coat);
+    // Slim: ~60% of the old head-wide wedge (higher radial segs to kill facets)
+    const tubeWide = new THREE.Mesh(new THREE.TubeGeometry(curve, 28, .20, 24, false), coat); neck.add(tubeWide);
+    const tubeCore = new THREE.Mesh(new THREE.TubeGeometry(curve, 28, .17, 24, false), coat); neck.add(tubeCore);
+    const jointBase = new THREE.Mesh(new THREE.SphereGeometry(.22, 24, 16), coat); jointBase.position.set(0, 0, 0); neck.add(jointBase);
+    const jointTop = new THREE.Mesh(new THREE.SphereGeometry(.18, 24, 16), coat);
     jointTop.position.x = local[2].x; jointTop.position.y = local[2].y; jointTop.position.z = local[2].z; neck.add(jointTop);
 
     // HEAD — elongated horse shape, parented to neck tip
     const head = new THREE.Group();
     head.position.x = local[2].x; head.position.y = local[2].y; head.position.z = local[2].z; neck.add(head);
-    // skull slightly oval
-    const skull = new THREE.Mesh(new THREE.SphereGeometry(.32, 10, 8), coat); skull.scale.set(.95, 1.0, 1.15); skull.position.set(0, .06, .08); head.add(skull);
+    // skull slightly oval (smooth)
+    const skull = new THREE.Mesh(new THREE.SphereGeometry(.32, 28, 20), coat); skull.scale.set(.95, 1.0, 1.15); skull.position.set(0, .06, .08); head.add(skull);
     // long tapered muzzle pointing forward-down
-    const muzzle = new THREE.Mesh(new THREE.CapsuleGeometry(.14, .42, 5, 8), soft);
+    const muzzle = new THREE.Mesh(new THREE.CapsuleGeometry(.14, .42, 8, 16), soft);
     muzzle.rotation.x = Math.PI / 2 + .35; muzzle.position.set(0, -.12, .42); head.add(muzzle);
-    const nose = new THREE.Mesh(new THREE.SphereGeometry(.15, 8, 6), soft); nose.position.set(0, -.22, .62); head.add(nose);
+    const nose = new THREE.Mesh(new THREE.SphereGeometry(.15, 16, 12), soft); nose.position.set(0, -.22, .62); head.add(nose);
     const smile = new THREE.Mesh(new THREE.TorusGeometry(.09, .016, 6, 10, Math.PI), sbMat('#c45a7a'));
     smile.position.set(0, -.28, .68); smile.rotation.set(1.15, 0, 0); head.add(smile);
     [[-.06, -.24, .72], [.06, -.24, .72]].forEach(([ax, ay, az]) => { const n = new THREE.Mesh(new THREE.SphereGeometry(.03, 6, 6), dark); n.position.set(ax, ay, az); head.add(n); });

@@ -14,61 +14,77 @@ const cam=new THREE.PerspectiveCamera(32,W/H,.1,100);
 const view=(location.search.match(/view=([^&]+)/)||[])[1]||'side';
 if(view==='34'){ cam.position.set(4.6,2.1,3.6); cam.lookAt(0,1.2,0); }
 else { cam.position.set(6.2,1.55,0); cam.lookAt(0,1.2,0); }
-scene.add(new THREE.AmbientLight(0xffffff,0.9));
-const sun=new THREE.DirectionalLight(0xffffff,0.7); sun.position.set(2,6,3); scene.add(sun);
+scene.add(new THREE.AmbientLight(0xffffff,0.95));
+const sun=new THREE.DirectionalLight(0xffffff,0.75); sun.position.set(2,6,3); scene.add(sun);
+const fill=new THREE.DirectionalLight(0xffffff,0.25); fill.position.set(-3,2,-2); scene.add(fill);
 const ground=new THREE.Mesh(new THREE.CircleGeometry(8,48), new THREE.MeshLambertMaterial({color:0x8fd39a}));
 ground.rotation.x=-Math.PI/2; scene.add(ground);
 function mat(c){ return new THREE.MeshLambertMaterial({color:c}); }
 const coat=0xf6e3b4, mane=0xff9f1c, soft=0xffe9c4, dark=0xd4c09a, hoof=0x5a4030, eye=0x3a86ff;
 const g=new THREE.Group(); scene.add(g);
-const body=new THREE.Mesh(new THREE.CapsuleGeometry(.35,1.08,6,12), mat(coat));
-body.rotation.x=Math.PI/2; body.position.set(0,1.14,0); g.add(body);
-const chest=new THREE.Mesh(new THREE.SphereGeometry(.34,10,8), mat(coat));
-chest.position.set(0,1.30,.48); chest.scale.set(1.12,1.08,1.15); g.add(chest);
-const rump=new THREE.Mesh(new THREE.SphereGeometry(.33,10,8), mat(coat));
-rump.position.set(0,1.30,-.48); rump.scale.set(1.12,1.05,1.12); g.add(rump);
+// smooth continuous torso — high-seg capsule + gentle shaping
+var torsoGeo=new THREE.CapsuleGeometry(.35,1.08,16,32);
+torsoGeo.rotateX(Math.PI/2);
+(function(geo){
+  var pos=geo.attributes.position, half=.89;
+  for(var i=0;i<pos.count;i++){
+    var x=pos.getX(i), y=pos.getY(i), z=pos.getZ(i);
+    var along=Math.max(-1,Math.min(1,z/half));
+    var abs=along<0?-along:along;
+    var flare=along>=0?1.08:1.05;
+    var scale=1+(flare-1)*Math.pow(abs,1.1);
+    x*=scale; y*=scale;
+    var mid=Math.exp(-along*along*2.4);
+    if(y>0) y-=.04*mid; else y+=.012*mid;
+    pos.setX(i,x); pos.setY(i,y); pos.setZ(i,z);
+  }
+  pos.needsUpdate=true; geo.computeVertexNormals();
+})(torsoGeo);
+const body=new THREE.Mesh(torsoGeo, mat(coat));
+if(body.material) body.material.flatShading=false;
+body.position.set(0,1.16,0); g.add(body);
 const base=new THREE.Vector3(0,1.42,.42), mid=new THREE.Vector3(0,1.68,.70), tip=new THREE.Vector3(0,1.92,.98);
 const neck=new THREE.Group(); neck.position.copy(base); g.add(neck);
 const local=[base,mid,tip].map(function(p){ return new THREE.Vector3().subVectors(p,base); });
 const curve=new THREE.CatmullRomCurve3(local);
-neck.add(new THREE.Mesh(new THREE.TubeGeometry(curve,20,.20,10,false), mat(coat)));
-neck.add(new THREE.Mesh(new THREE.TubeGeometry(curve,20,.17,10,false), mat(coat)));
-neck.add(new THREE.Mesh(new THREE.SphereGeometry(.26,10,8), mat(coat)));
-const jt=new THREE.Mesh(new THREE.SphereGeometry(.18,10,8), mat(coat)); jt.position.copy(local[2]); neck.add(jt);
+neck.add(new THREE.Mesh(new THREE.TubeGeometry(curve,28,.20,24,false), mat(coat)));
+neck.add(new THREE.Mesh(new THREE.TubeGeometry(curve,28,.17,24,false), mat(coat)));
+neck.add(new THREE.Mesh(new THREE.SphereGeometry(.22,24,16), mat(coat)));
+const jt=new THREE.Mesh(new THREE.SphereGeometry(.18,24,16), mat(coat)); jt.position.copy(local[2]); neck.add(jt);
 const head=new THREE.Group(); head.position.copy(local[2]); neck.add(head);
-const skull=new THREE.Mesh(new THREE.SphereGeometry(.32,10,8), mat(coat)); skull.scale.set(.95,1,1.15); skull.position.set(0,.06,.08); head.add(skull);
-const muzzle=new THREE.Mesh(new THREE.CapsuleGeometry(.14,.42,5,8), mat(soft));
+const skull=new THREE.Mesh(new THREE.SphereGeometry(.32,28,20), mat(coat)); skull.scale.set(.95,1,1.15); skull.position.set(0,.06,.08); head.add(skull);
+const muzzle=new THREE.Mesh(new THREE.CapsuleGeometry(.14,.42,8,16), mat(soft));
 muzzle.rotation.x=Math.PI/2+.35; muzzle.position.set(0,-.12,.42); head.add(muzzle);
-const nose=new THREE.Mesh(new THREE.SphereGeometry(.15,8,6), mat(soft)); nose.position.set(0,-.22,.62); head.add(nose);
+const nose=new THREE.Mesh(new THREE.SphereGeometry(.15,16,12), mat(soft)); nose.position.set(0,-.22,.62); head.add(nose);
 const smile=new THREE.Mesh(new THREE.TorusGeometry(.09,.016,6,10,Math.PI), mat(0xc45a7a));
 smile.position.set(0,-.28,.68); smile.rotation.set(1.15,0,0); head.add(smile);
 [[-.26,.12,.18],[.26,.12,.18]].forEach(function(a){
-  var white=new THREE.Mesh(new THREE.SphereGeometry(.11,8,8), mat(0xfffaf0)); white.position.set(a[0],a[1],a[2]); head.add(white);
-  var iris=new THREE.Mesh(new THREE.SphereGeometry(.07,8,8), mat(eye)); iris.position.set(a[0]*1.08,a[1],a[2]+.04); head.add(iris);
+  var white=new THREE.Mesh(new THREE.SphereGeometry(.11,16,12), mat(0xfffaf0)); white.position.set(a[0],a[1],a[2]); head.add(white);
+  var iris=new THREE.Mesh(new THREE.SphereGeometry(.07,12,10), mat(eye)); iris.position.set(a[0]*1.08,a[1],a[2]+.04); head.add(iris);
 });
 [[-.12,.38,-.02],[.12,.38,-.02]].forEach(function(a,i){
-  var ear=new THREE.Mesh(new THREE.ConeGeometry(.1,.38,6), mat(coat)); ear.position.set(a[0],a[1],a[2]); ear.rotation.z=i?.4:-.4; ear.rotation.x=-.35; head.add(ear);
+  var ear=new THREE.Mesh(new THREE.ConeGeometry(.1,.38,10), mat(coat)); ear.position.set(a[0],a[1],a[2]); ear.rotation.z=i?.4:-.4; ear.rotation.x=-.35; head.add(ear);
 });
 for(var i=0;i<9;i++){
   var t=i/8, pt=curve.getPoint(t);
   var tuft=new THREE.Group(); tuft.position.set(pt.x, pt.y+.16, pt.z); neck.add(tuft);
   for(var k=0;k<3;k++){
-    var blob=new THREE.Mesh(new THREE.SphereGeometry(.13-k*.02,6,6), mat(mane));
+    var blob=new THREE.Mesh(new THREE.SphereGeometry(.13-k*.02,10,8), mat(mane));
     blob.position.set((k-1)*.07, .08+k*.05, 0); blob.scale.set(1.1,1.35,.9); tuft.add(blob);
   }
 }
 var fore=new THREE.Group(); fore.position.set(0,.28,.05); head.add(fore);
-for(var k=0;k<4;k++){ var blob=new THREE.Mesh(new THREE.SphereGeometry(.11,6,6), mat(mane)); blob.position.set((k-1.5)*.06,-.05*k,.04*k); blob.scale.set(1,1.4,1); fore.add(blob); }
+for(var k=0;k<4;k++){ var blob=new THREE.Mesh(new THREE.SphereGeometry(.11,10,8), mat(mane)); blob.position.set((k-1.5)*.06,-.05*k,.04*k); blob.scale.set(1,1.4,1); fore.add(blob); }
 var tail=new THREE.Group(); tail.position.set(0,1.34,-.62); g.add(tail);
 for(var i=0;i<6;i++) for(var k=0;k<3;k++){
-  var tt=new THREE.Mesh(new THREE.SphereGeometry(.14-i*.012,6,6), mat(mane));
+  var tt=new THREE.Mesh(new THREE.SphereGeometry(.14-i*.012,10,8), mat(mane));
   tt.position.set((k-1)*.08, -.18*i, -.14*i); tt.scale.set(1.15,1.3,1.05); tail.add(tt);
 }
 [[.22,.98,.38],[-.22,.98,.38],[.22,.98,-.36],[-.22,.98,-.36]].forEach(function(L){
   var leg=new THREE.Group(); leg.position.set(L[0],L[1],L[2]); g.add(leg);
-  leg.add(new THREE.Mesh(new THREE.CylinderGeometry(.07,.10,.68,6), mat(coat)));
-  var shin=new THREE.Mesh(new THREE.CylinderGeometry(.05,.07,.55,6), mat(dark)); shin.position.y=-.615; leg.add(shin);
-  var hf=new THREE.Mesh(new THREE.CylinderGeometry(.08,.09,.14,6), mat(hoof)); hf.position.y=-.96; leg.add(hf);
+  leg.add(new THREE.Mesh(new THREE.CylinderGeometry(.07,.10,.68,12), mat(coat)));
+  var shin=new THREE.Mesh(new THREE.CylinderGeometry(.05,.07,.55,12), mat(dark)); shin.position.y=-.615; leg.add(shin);
+  var hf=new THREE.Mesh(new THREE.CylinderGeometry(.08,.09,.14,12), mat(hoof)); hf.position.y=-.96; leg.add(hf);
 });
 g.rotation.y = 0;
 renderer.render(scene,cam);
