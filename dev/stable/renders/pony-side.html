@@ -27,10 +27,10 @@ const base=new THREE.Vector3(0,1.40,.58), mid=new THREE.Vector3(0,1.68,.88), tip
 const neck=new THREE.Group(); neck.position.copy(base); g.add(neck);
 const local=[base,mid,tip].map(function(p){ return new THREE.Vector3().subVectors(p,base); });
 const curve=new THREE.CatmullRomCurve3(local);
-neck.add(new THREE.Mesh(new THREE.TubeGeometry(curve,20,.34,10,false), mat(coat)));
-neck.add(new THREE.Mesh(new THREE.TubeGeometry(curve,20,.28,10,false), mat(coat)));
-neck.add(new THREE.Mesh(new THREE.SphereGeometry(.40,10,8), mat(coat)));
-const jt=new THREE.Mesh(new THREE.SphereGeometry(.30,10,8), mat(coat)); jt.position.copy(local[2]); neck.add(jt);
+neck.add(new THREE.Mesh(new THREE.TubeGeometry(curve,20,.20,10,false), mat(coat)));
+neck.add(new THREE.Mesh(new THREE.TubeGeometry(curve,20,.17,10,false), mat(coat)));
+neck.add(new THREE.Mesh(new THREE.SphereGeometry(.26,10,8), mat(coat)));
+const jt=new THREE.Mesh(new THREE.SphereGeometry(.18,10,8), mat(coat)); jt.position.copy(local[2]); neck.add(jt);
 const head=new THREE.Group(); head.position.copy(local[2]); neck.add(head);
 const skull=new THREE.Mesh(new THREE.SphereGeometry(.32,10,8), mat(coat)); skull.scale.set(.95,1,1.15); skull.position.set(0,.06,.08); head.add(skull);
 const muzzle=new THREE.Mesh(new THREE.CapsuleGeometry(.14,.42,5,8), mat(soft));
@@ -47,7 +47,7 @@ smile.position.set(0,-.28,.68); smile.rotation.set(1.15,0,0); head.add(smile);
 });
 for(var i=0;i<9;i++){
   var t=i/8, pt=curve.getPoint(t);
-  var tuft=new THREE.Group(); tuft.position.set(pt.x, pt.y+.22, pt.z); neck.add(tuft);
+  var tuft=new THREE.Group(); tuft.position.set(pt.x, pt.y+.16, pt.z); neck.add(tuft);
   for(var k=0;k<3;k++){
     var blob=new THREE.Mesh(new THREE.SphereGeometry(.13-k*.02,6,6), mat(mane));
     blob.position.set((k-1)*.07, .08+k*.05, 0); blob.scale.set(1.1,1.35,.9); tuft.add(blob);

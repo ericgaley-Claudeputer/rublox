@@ -1,4 +1,4 @@
-  /* ===================== t237u: 🐴 pony silhouette — short angled neck, fluffy mane, horse head ===================== */
+  /* ===================== t238u: 🐴 pony silhouette — slimmer short neck + mane ===================== */
   const SB_KEY = 'rubloxStable', SB_DRAIN = 25, SB_MOUNT_CD = .85;
   const SB_HIP = 1.32; // avatar pivot ≈ this above P.y — used to place hips on saddleTop
   const SB_PONIES = [
@@ -58,10 +58,10 @@
     const local = [base, mid, tip].map(p => V3(p.x - base.x, p.y - base.y, p.z - base.z));
     const curve = new THREE.CatmullRomCurve3(local);
     // Wide at chest → slightly narrower at head (still thick)
-    const tubeWide = new THREE.Mesh(new THREE.TubeGeometry(curve, 20, .34, 10, false), coat); neck.add(tubeWide);
-    const tubeCore = new THREE.Mesh(new THREE.TubeGeometry(curve, 20, .28, 10, false), coat); neck.add(tubeCore);
-    const jointBase = new THREE.Mesh(new THREE.SphereGeometry(.40, 10, 8), coat); jointBase.position.set(0, 0, 0); neck.add(jointBase);
-    const jointTop = new THREE.Mesh(new THREE.SphereGeometry(.30, 10, 8), coat);
+    const tubeWide = new THREE.Mesh(new THREE.TubeGeometry(curve, 20, .20, 10, false), coat); neck.add(tubeWide);
+    const tubeCore = new THREE.Mesh(new THREE.TubeGeometry(curve, 20, .17, 10, false), coat); neck.add(tubeCore);
+    const jointBase = new THREE.Mesh(new THREE.SphereGeometry(.26, 10, 8), coat); jointBase.position.set(0, 0, 0); neck.add(jointBase);
+    const jointTop = new THREE.Mesh(new THREE.SphereGeometry(.18, 10, 8), coat);
     jointTop.position.x = local[2].x; jointTop.position.y = local[2].y; jointTop.position.z = local[2].z; neck.add(jointTop);
 
     // HEAD — elongated horse shape, parented to neck tip
@@ -94,7 +94,7 @@
     for (let i = 0; i < 9; i++){
       const t = i / 8;
       const pt = curve.getPoint ? curve.getPoint(t) : local[Math.min(2, Math.floor(t * 2))];
-      const px = pt.x || 0, py = (pt.y || 0) + .22, pz = pt.z || 0;
+      const px = pt.x || 0, py = (pt.y || 0) + .16, pz = pt.z || 0;
       const tuft = new THREE.Group(); tuft.position.set(px, py, pz); neck.add(tuft);
       for (let k = 0; k < 3; k++){
         const blob = new THREE.Mesh(new THREE.SphereGeometry(.13 - k * .02, 6, 6), maneM);
