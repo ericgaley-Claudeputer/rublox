@@ -7,7 +7,7 @@ function world(name, mpCfg){
   const O = () => ({position: V(), rotation: V(), scale: V(), visible: true, children: [], material: {}, add(c){ this.children.push(c); }, remove(){}});
   const store = {}, els = {}, out = [];
   const ctx = {
-    console, Math, JSON, Object, Array, Set, Number, String, Date, document: {createElement: () => ({className: '', innerHTML: '', onclick: null, appendChild(){}})},
+    console, Math, JSON, Object, Array, Set, Number, String, Date, document: {body: {appendChild(){}}, getElementById: () => null, createElement: () => ({id:'', className:'', innerHTML:'', classList:{add(){},remove(){}}, onclick:null, appendChild(){}})},
     THREE: new Proxy({}, {get: () => function(){ return O(); }}), scene: {add(){}, remove(){}, background: null},
     load: (k, d) => k in store ? JSON.parse(store[k]) : d, save: (k, v) => { store[k] = JSON.stringify(v); },
     $: id => els[id] || (els[id] = {textContent: '', innerHTML: '', style: {}, disabled: false, classList: {add(){}, remove(){}}, querySelectorAll: () => []}),

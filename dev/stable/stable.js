@@ -46,29 +46,42 @@
     sb = {ph: prog.pony ? 'care' : 'pick', t: 0, pony: prog.pony ? Object.assign({}, prog.pony) : null, mesh: null, near: -1, panel: false, show: null, score: 0, jumps: [], ridden: false, mountCd: 0, earned: 0, gates: [], labels: [], toastT: 0};
     scene.background = new THREE.Color('#c8e8ff');
     plat(0, 0, 0, 60, 60, '#8fd39a', .35);
-    [[0, 30, 62, .6], [0, -30, 62, .6], [30, 0, .6, 62], [-30, 0, .6, 62]].forEach(([x, z, w, d]) => plat(x, 1.35, z, w, d, '#d4a574', 1.35));
-    // barn far back (−z); open yard in front so the camera never clips through a wall to see the pads
-    plat(-14, 3.2, -16, 12, 8, '#d4a574', 3.2); plat(-14, 6.4, -16, 13, 9, '#8a5a3c', .5);
-    // pads well in front of the barn (z≈+3), left→right from default camera looking −z toward barn
+    // low see-through fence (transparent so camera pull-in ignores it; still solid for the player)
+    sb.fences = [];
+    [[0, 30, 62, .5], [0, -30, 62, .5], [30, 0, .5, 62], [-30, 0, .5, 62]].forEach(([x, z, w, d]) => {
+      const f = plat(x, .7, z, w, d, '#e8a04a', .7); f.camSkip = true;
+      if (f.mesh && f.mesh.material){ f.mesh.material.transparent = true; f.mesh.material.opacity = .55; }
+      sb.fences.push(f);
+    });
+    // big obvious barn behind the pads (−z). Camera looks toward −z so the barn fills the backdrop.
+    plat(-14, 4.2, -14, 16, 10, '#d4a574', 4.2);                 // walls
+    plat(-14, 7.6, -14, 18, 12, '#8a5a3c', .7);                   // roof
+    plat(-14, 2.2, -8.6, 3.2, .5, '#6b3e1f', 2.2);                // door
+    plat(-19, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);                // window L
+    plat(-9, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);                 // window R
+    const barnSign = label('🐴 Clover Meadow Barn', 'rgba(139,92,246,.95)'); barnSign.position.set(-14, 5.6, -8.2); scene.add(barnSign);
+    // pads in front of barn. With cam.yaw = 0 (camera on +z looking −z), screen L→R = −x → +x
+    // so brush (−20) · feed (−14) · groom (−8) reads 🪥 🥕 ✨
     sb.stations = [
-      {id: 'brush', x: -20, z: 3, e: '🪥', col: '#ffe08a'},
-      {id: 'feed',  x: -14, z: 3, e: '🥕', col: '#9ff0c8'},
-      {id: 'groom', x: -8,  z: 3, e: '✨', col: '#c39bff'},
-      {id: 'saddle',x: -14, z: 8, e: '🐎', col: '#7fd6ff'},
+      {id: 'brush', x: -20, z: 2, e: '🪥', col: '#ffe08a'},
+      {id: 'feed',  x: -14, z: 2, e: '🥕', col: '#9ff0c8'},
+      {id: 'groom', x: -8,  z: 2, e: '✨', col: '#c39bff'},
+      {id: 'saddle',x: -14, z: 7, e: '🐎', col: '#7fd6ff'},
       {id: 'show',  x: 12,  z: 6, e: '🏆', col: '#ffd23f'}
     ];
     sb.stations.forEach(s => { sb.labels.push(sbSign(s.e + ' ' + s.id, s.x, s.z, s.col)); });
     for (let i = 0; i < SB_JUMPS; i++){
-      const z = -18 + i * 5, x = 10 + (i % 2) * 4;
+      const z = -20 + i * 5, x = 10 + (i % 2) * 4;
       sb.gates.push(sbRailVisual(x, z, i % 2 ? '#ff6fb5' : '#3a86ff'));
     }
     plat(12, .3, 22, 4, 4, '#ffd23f', .3);
-    Object.assign(P, {x: -14, y: .05, z: 14, vx: 0, vy: 0, vz: 0}); P.face = Math.PI; cam.yaw = Math.PI; cam.pitch = .34; cam.dist = 14;
+    // face the barn: camera behind the player on +z, looking toward −z
+    Object.assign(P, {x: -14, y: .05, z: 14, vx: 0, vy: 0, vz: 0}); P.face = Math.PI; cam.yaw = 0; cam.pitch = .36; cam.dist = 15;
     checkpoints[0] = {idx: 0, spawn: {x: -14, y: .05, z: 14}, flag: new THREE.Object3D()};
     if (sb.pony){ sb.mesh = sbMesh(sb.pony, -14, 10); sb.mesh.visible = true; }
   }
   function sbFlash(msg){ if (!sb) return; sb.toastT = 2.4; const b = $('#oBig'); if (b) b.textContent = msg; banner(msg); }
-  function stableEnter(){ if (!sb) return; sb.panel = false; sb.near = -1; sb.ridden = false; sb.mountCd = 0; cam.dist = 14; cam.pitch = .34;
+  function stableEnter(){ if (!sb) return; sb.panel = false; sb.near = -1; sb.ridden = false; sb.mountCd = 0; cam.yaw = 0; cam.dist = 15; cam.pitch = .36;
     if (sb.pony && !sb.mesh) sb.mesh = sbMesh(sb.pony, -14, 10);
     if (sb.mesh) sb.mesh.visible = true;
     sbHud();
@@ -128,8 +141,8 @@
     if (sb.mountCd > 0) sb.mountCd -= dt;
     if (sb.toastT > 0){ sb.toastT -= dt; if (sb.toastT <= 0){ const b = $('#oBig'); if (b && !nds) b.textContent = ''; } }
     // keep camera comfortable — never collapse into the avatar/barn
-    if (cam.dist < 12) cam.dist += (12 - cam.dist) * Math.min(1, dt * 4);
-    if (cam.pitch < .28) cam.pitch += (.28 - cam.pitch) * Math.min(1, dt * 3);
+    if (cam.dist < 13) cam.dist += (13 - cam.dist) * Math.min(1, dt * 4);
+    if (cam.pitch < .3) cam.pitch += (.3 - cam.pitch) * Math.min(1, dt * 3);
     let near = -1, best = 2.8; sb.stations.forEach((s, i) => { const d = Math.hypot(P.x - s.x, P.z - s.z); if (d < best){ best = d; near = i; } });
     sb.near = near; const btn = $('#sbAct');
     if (btn){ if (near >= 0 && sb.pony){ const s = sb.stations[near]; let lab = s.e + ' ' + s.id; if (s.id === 'saddle') lab = sb.ridden ? '🐴 Dismount' : '🐎 Mount'; if (s.id === 'show') lab = '🏆 Start Show';

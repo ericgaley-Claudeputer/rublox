@@ -75,3 +75,37 @@ rep("dist = Math.max(mode === 'stable' ? 5.5 : 1.2, s - .5);",
 # longer, more visible banner animation while we're here
 rep(".obanner{position:absolute;top:22%;left:50%;transform:translate(-50%,-50%) scale(.5);opacity:0;font-size:34px;font-weight:900;color:#fff;text-shadow:3px 3px 0 #1f9460,0 0 18px rgba(0,0,0,.25);pointer-events:none;white-space:nowrap}",
     ".obanner{position:absolute;top:18%;left:50%;transform:translate(-50%,-50%) scale(.5);opacity:0;font-size:clamp(22px,4.5vw,36px);font-weight:900;color:#fff;text-shadow:3px 3px 0 #1f9460,0 0 18px rgba(0,0,0,.35);pointer-events:none;white-space:pre-line;text-align:center;max-width:90vw;z-index:12}")
+
+
+
+# ----- polish pass: ice cream wizard CSS + toast; camera skips fence -----
+rep("if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 8.5 : 1.2, s - .5); break; }",
+    "if (solids.some(b => b.active && !b.camSkip && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 9 : 1.2, s - .5); break; }")
+# Final ice-cream panel CSS (must win over earlier .mbox 420px and old #icItems grid)
+rep(".icbox{max-width:min(92vw,640px)!important;width:min(92vw,640px)}",
+    """.ictoast{display:none;position:absolute;left:50%;top:18%;transform:translate(-50%,-50%);z-index:20;pointer-events:none;min-width:min(90vw,420px);max-width:92vw;padding:22px 28px;border-radius:22px;background:rgba(29,35,64,.92);color:#fff;font-weight:900;font-size:clamp(28px,5vw,44px);line-height:1.25;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.25),0 0 30px rgba(255,111,181,.45);border:4px solid #ff6fb5}
+.ictoast.show{display:block;animation:icpop 2.5s ease forwards}
+@keyframes icpop{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.9)}}
+#icPanel.show{display:grid!important}
+#icPanel .mbox.icbox,#icPanel .icbox{max-width:min(92vw,720px)!important;width:min(92vw,720px)!important;padding:18px 16px 16px!important;text-align:left!important;overflow:visible!important;box-sizing:border-box}
+#icItems{display:block!important;width:100%!important;max-width:100%!important;max-height:none!important;overflow:visible!important;background:transparent!important;padding:0!important}
+.icstep{margin:0 0 8px;font-size:18px;font-weight:900;color:#5b34c0}
+.icstat{margin:0 0 10px;font-size:15px;font-weight:800;color:#1d2340;background:#f3e8ff;border-radius:10px;padding:8px 10px}
+.icgrid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(140px,1fr))!important;gap:10px!important;width:100%!important;margin:0 0 8px;box-sizing:border-box}
+.icb{border:2px solid #cfefff!important;background:#fff!important;border-radius:14px!important;padding:10px 8px!important;font:inherit!important;font-size:17px!important;min-width:0!important;min-height:72px!important;height:auto!important;cursor:pointer;display:flex!important;flex-direction:column!important;align-items:center;justify-content:center;gap:4px;width:100%!important;max-width:100%!important;white-space:normal!important;box-sizing:border-box}
+.icb .icbe{font-size:28px;line-height:1}
+.icb small{font-size:15px!important;font-weight:800!important;text-align:center;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.2;max-width:100%;display:block;word-break:break-word}
+.icb.on{border-color:#7fd6ff!important;background:#e8f7ff!important;box-shadow:0 0 0 2px #7fd6ff}
+#icPanel .row{flex-wrap:wrap;gap:8px;margin-top:10px}
+@media (max-width:760px),(max-height:520px){
+  #icPanel .mbox.icbox{width:min(96vw,720px)!important;padding:12px 10px!important}
+  .icgrid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))!important;gap:8px!important}
+  .icb{min-height:64px!important;font-size:15px!important}
+  .icb small{font-size:14px!important}
+  .ictoast{font-size:clamp(22px,6vw,34px);padding:16px 18px}
+}
+.icbox{max-width:min(92vw,720px)!important;width:min(92vw,720px)!important}""")
+
+# KILL88: remove the late override that forces #icItems into a narrow column grid
+rep(".icbox .fsitems,#icItems{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px;width:100%;max-width:min(96vw,680px)}\n.icb{border:2px solid #cfefff;background:#fff;border-radius:12px;padding:4px 8px;font:inherit;font-size:20px;min-width:0;min-height:48px;cursor:pointer;display:flex;flex-direction:column;align-items:center;width:100%}",
+    "/* ice cream: wizard uses .icgrid only — do not grid #icItems */\n#icItems{display:block!important;width:100%!important;max-width:none!important;background:transparent!important}\n.icb{border:2px solid #cfefff;background:#fff;border-radius:14px;padding:10px 8px;font:inherit;font-size:17px;min-width:0;min-height:72px;cursor:pointer;display:flex;flex-direction:column;align-items:center;width:100%;white-space:normal;box-sizing:border-box}")

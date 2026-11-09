@@ -474,7 +474,28 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .icord{position:relative;overflow:hidden;background:rgba(255,255,255,.92);border:3px solid #7fd6ff;border-radius:12px;padding:3px 9px 7px;font-size:20px;font-weight:900;color:#1d2340}
 .icord i{position:absolute;left:0;bottom:0;height:4px;background:#2ec27e}
 .icnear{background:#7fd6ff;box-shadow:0 4px 0 #3a9bc8}.icnear small{color:#7fd6ff}
-.icbox{max-width:min(92vw,640px)!important;width:min(92vw,640px)}
+.ictoast{display:none;position:absolute;left:50%;top:18%;transform:translate(-50%,-50%);z-index:20;pointer-events:none;min-width:min(90vw,420px);max-width:92vw;padding:22px 28px;border-radius:22px;background:rgba(29,35,64,.92);color:#fff;font-weight:900;font-size:clamp(28px,5vw,44px);line-height:1.25;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.25),0 0 30px rgba(255,111,181,.45);border:4px solid #ff6fb5}
+.ictoast.show{display:block;animation:icpop 2.5s ease forwards}
+@keyframes icpop{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.9)}}
+#icPanel.show{display:grid!important}
+#icPanel .mbox.icbox,#icPanel .icbox{max-width:min(92vw,720px)!important;width:min(92vw,720px)!important;padding:18px 16px 16px!important;text-align:left!important;overflow:visible!important;box-sizing:border-box}
+#icItems{display:block!important;width:100%!important;max-width:100%!important;max-height:none!important;overflow:visible!important;background:transparent!important;padding:0!important}
+.icstep{margin:0 0 8px;font-size:18px;font-weight:900;color:#5b34c0}
+.icstat{margin:0 0 10px;font-size:15px;font-weight:800;color:#1d2340;background:#f3e8ff;border-radius:10px;padding:8px 10px}
+.icgrid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(140px,1fr))!important;gap:10px!important;width:100%!important;margin:0 0 8px;box-sizing:border-box}
+.icb{border:2px solid #cfefff!important;background:#fff!important;border-radius:14px!important;padding:10px 8px!important;font:inherit!important;font-size:17px!important;min-width:0!important;min-height:72px!important;height:auto!important;cursor:pointer;display:flex!important;flex-direction:column!important;align-items:center;justify-content:center;gap:4px;width:100%!important;max-width:100%!important;white-space:normal!important;box-sizing:border-box}
+.icb .icbe{font-size:28px;line-height:1}
+.icb small{font-size:15px!important;font-weight:800!important;text-align:center;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.2;max-width:100%;display:block;word-break:break-word}
+.icb.on{border-color:#7fd6ff!important;background:#e8f7ff!important;box-shadow:0 0 0 2px #7fd6ff}
+#icPanel .row{flex-wrap:wrap;gap:8px;margin-top:10px}
+@media (max-width:760px),(max-height:520px){
+  #icPanel .mbox.icbox{width:min(96vw,720px)!important;padding:12px 10px!important}
+  .icgrid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))!important;gap:8px!important}
+  .icb{min-height:64px!important;font-size:15px!important}
+  .icb small{font-size:14px!important}
+  .ictoast{font-size:clamp(22px,6vw,34px);padding:16px 18px}
+}
+.icbox{max-width:min(92vw,720px)!important;width:min(92vw,720px)!important}
 #icPanel .mbox{max-width:min(92vw,640px);width:min(92vw,640px);overflow:visible}
 #icItems{max-height:none!important;overflow:visible!important;display:block!important;width:100%}
 .icgrid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;width:100%;margin:6px 0 10px}
@@ -484,8 +505,9 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .icb.on{border-color:#7fd6ff;background:#e8f7ff;box-shadow:0 0 0 2px #7fd6ff}.icb:disabled{opacity:.4;cursor:default}
 #icPanel h2{font-size:22px}
 @media (max-width:760px),(max-height:520px){.icgrid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px}.icb{min-height:56px;font-size:16px}.icb small{font-size:11px}}
-.icbox .fsitems,#icItems{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px;width:100%;max-width:min(96vw,680px)}
-.icb{border:2px solid #cfefff;background:#fff;border-radius:12px;padding:4px 8px;font:inherit;font-size:20px;min-width:0;min-height:48px;cursor:pointer;display:flex;flex-direction:column;align-items:center;width:100%}
+/* ice cream: wizard uses .icgrid only — do not grid #icItems */
+#icItems{display:block!important;width:100%!important;max-width:none!important;background:transparent!important}
+.icb{border:2px solid #cfefff;background:#fff;border-radius:14px;padding:10px 8px;font:inherit;font-size:17px;min-width:0;min-height:72px;cursor:pointer;display:flex;flex-direction:column;align-items:center;width:100%;white-space:normal;box-sizing:border-box}
 .icb small{font-size:10px;font-weight:900}.icb.on{border-color:#7fd6ff;background:#e8f7ff;box-shadow:0 0 0 2px #7fd6ff}.icb:disabled{opacity:.4;cursor:default}
 @media (max-width:760px),(max-height:520px){.icord{font-size:15px}.icb{font-size:16px;min-width:50px;min-height:42px}}
 .psnear{background:#ff6fb5;box-shadow:0 4px 0 #c94f8d}.psnear small{display:block;font-size:12px}.psgbtn{background:#8b5cf6;box-shadow:0 4px 0 #5b34c0}
@@ -1168,6 +1190,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   </div></div>
   <div class="pflash" id="pFlash"></div>
   <div class="fsbuild" id="fsBuild" aria-hidden="true"></div>
+  <div class="ictoast" id="icToast"></div>
   <div class="dblane" id="dbLane" style="display:none"></div>
   <button class="fsnear hmnear" id="hmAct"></button>
   <button class="fsnear sbnear" id="sbAct"></button>
@@ -1395,7 +1418,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.09-13';
+const BUILD = '2026.11.09-14';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -10744,7 +10767,13 @@ const Obby = (() => {
     }
     return false;
   }
-  function icHint(msg){ if (!ic) return; ic.toast = msg; ic.toastT = 2.5; const b = $('#oBig'); if (b) b.textContent = msg; banner(msg); }
+  function icHint(msg){
+    if (!ic) return; ic.toast = msg; ic.toastT = 2.5;
+    let el = $('#icToast'); if (!el){ el = document.createElement('div'); el.id = 'icToast'; el.className = 'ictoast'; (document.getElementById('obby') || document.body).appendChild(el); }
+    el.innerHTML = String(msg).replace(/\n/g, '<br>'); el.classList.add('show');
+    banner(msg);
+  }
+  function icClearToast(){ const el = $('#icToast'); if (el) el.classList.remove('show'); ic && (ic.toast = ''); }
   function icEvent(e){
     if (!ic || !e || ic.seen.has(e.id)) return; ic.seen.add(e.id); if (e.id > ic.lastEv) ic.lastEv = e.id;
     if (!ic.remote){ ic.ev.push(e); if (ic.ev.length > 12) ic.ev.shift(); }
@@ -10786,10 +10815,10 @@ const Obby = (() => {
   function iceCreamEnter(){ if (!ic) return; ic.panel = -1; ic.near = -1;
     if (!ic.remote && !ic.orders.length){ icNewOrder(); ic.nextO = 10; }
     icHud(); banner(mp.on ? '🍦 Scoop Circus! Work the stations together!' : '🍦 Scoop Circus Ice Cream Shop! Customers want cones & cups!'); tipTimer = 6; }
-  function iceCreamStop(){ if (ic && ic.panel >= 0) choosing = false; ic = null; ['#icAct', '#icPanel', '#icOrders'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
+  function iceCreamStop(){ if (ic && ic.panel >= 0) choosing = false; icClearToast(); ic = null; ['#icAct', '#icPanel', '#icOrders', '#icToast'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
   function iceCreamUpdate(dt){
     if (!ic) return; icTick(dt);
-    if (ic.toastT > 0){ ic.toastT -= dt; if (ic.toastT <= 0){ ic.toast = ''; const b = $('#oBig'); if (b && !nds) b.textContent = ''; } }
+    if (ic.toastT > 0){ ic.toastT -= dt; if (ic.toastT <= 0) icClearToast(); }
     // proximity to stations
     let near = -1, best = 2.4; ic.stations.forEach(s => { const d = Math.hypot(P.x - s.x, P.z - s.z); if (d < best){ best = d; near = s.i; } });
     ic.near = near; const btn = $('#icAct'); if (btn){ if (near >= 0){ btn.classList.add('show'); btn.innerHTML = '🍦 Station ' + ['L', 'M', 'R'][near] + '<small>E / Ⓧ</small>'; } else btn.classList.remove('show'); }
@@ -10818,16 +10847,41 @@ const Obby = (() => {
     const pan = $('#icPanel'); pan.classList.add('show'); $('#icAct').classList.remove('show');
     const S = ic.st[i]; $('#icPT').textContent = '🍦 Station ' + ['Left', 'Middle', 'Right'][i];
     const items = $('#icItems'); let html = '';
-    if (S.ph === 'empty'){
-      html += '<b>Vessel</b><div class="icgrid">'; IC_VES.forEach(v => { html += '<button class="icb' + (S.ves === v[0] ? ' on' : '') + '" data-a="set" data-k="ves" data-v="' + v[0] + '"><span class="icbe">' + v[1] + '</span><small>' + v[2] + '</small></button>'; }); html += '</div>';
-      if (S.ves){ html += '<b>Scoops</b><div class="icgrid">'; [1, 2, 3].forEach(n => { html += '<button class="icb' + (S.n === n ? ' on' : '') + '" data-a="set" data-k="n" data-v="' + n + '"><span class="icbe">' + n + '</span><small>scoops</small></button>'; }); html += '</div>';
-        html += '<b>Flavour (' + S.fl.length + '/' + S.n + ')</b><div class="icgrid">'; IC_FL.forEach(f => { html += '<button class="icb" data-a="set" data-k="scoop" data-v="' + f[0] + '"' + (S.fl.length >= S.n ? ' disabled' : '') + '><span class="icbe">' + f[1] + '</span><small>' + f[2] + '</small></button>'; }); html += '</div>'; }
+    // one step at a time so the grid always gets the full panel width
+    let step = 'ves';
+    if (!S.ves) step = 'ves';
+    else if (S.ph === 'empty' && S.fl.length < S.n) step = S.fl.length === 0 && !S._nSet ? 'n' : 'fl';
+    else if (S.ph === 'empty') step = 'fl'; // waiting for last scoop → still flavour
+    else step = 'tp';
+    // once n was chosen mark it
+    if (S.ves && S.n) S._nSet = true;
+    if (step === 'ves'){
+      html += '<p class="icstep">1 / 4 · Pick a vessel</p><div class="icgrid">';
+      IC_VES.forEach(v => { html += '<button class="icb' + (S.ves === v[0] ? ' on' : '') + '" data-a="set" data-k="ves" data-v="' + v[0] + '"><span class="icbe">' + v[1] + '</span><small>' + v[2] + '</small></button>'; });
+      html += '</div>';
+    } else if (step === 'n'){
+      html += '<p class="icstep">2 / 4 · How many scoops?</p><div class="icgrid">';
+      [1, 2, 3].forEach(n => { html += '<button class="icb' + (S.n === n ? ' on' : '') + '" data-a="set" data-k="n" data-v="' + n + '"><span class="icbe">' + n + '</span><small>scoop' + (n > 1 ? 's' : '') + '</small></button>'; });
+      html += '</div>';
+    } else if (step === 'fl' || (S.ph === 'empty')){
+      html += '<p class="icstep">3 / 4 · Flavour (' + S.fl.length + '/' + S.n + ')</p>';
+      html += '<p class="icstat">Vessel: ' + (IC_VES.find(v => v[0] === S.ves) || ['','?'])[1] + ' · scoops ' + S.n + '</p>';
+      html += '<div class="icgrid">';
+      IC_FL.forEach(f => { html += '<button class="icb" data-a="set" data-k="scoop" data-v="' + f[0] + '"' + (S.fl.length >= S.n ? ' disabled' : '') + '><span class="icbe">' + f[1] + '</span><small>' + f[2] + '</small></button>'; });
+      html += '</div>';
     } else {
-      html += '<b>Topping</b><div class="icgrid">'; const ul = icUnlocked(ic.lv); IC_TP.forEach(t => { const ok = ul.includes(t[0]); html += '<button class="icb' + (S.tp === t[0] ? ' on' : '') + '" data-a="set" data-k="tp" data-v="' + t[0] + '"' + (ok ? '' : ' disabled') + '><span class="icbe">' + t[1] + '</span><small>' + t[2] + (ok ? '' : ' 🔒') + '</small></button>'; }); html += '</div>';
-      html += '<div class="row"><small>Scooped: ' + S.fl.map(f => (IC_FL.find(x => x[0] === f) || ['?', '?'])[1]).join(' ') + ' · pick a topping, then Serve</small></div>';
+      html += '<p class="icstep">4 / 4 · Pick a topping</p>';
+      html += '<p class="icstat">Scooped: ' + S.fl.map(f => (IC_FL.find(x => x[0] === f) || ['?', '?'])[1]).join(' ') + '</p>';
+      html += '<div class="icgrid">';
+      const ul = icUnlocked(ic.lv); IC_TP.forEach(t => { const ok = ul.includes(t[0]); html += '<button class="icb' + (S.tp === t[0] ? ' on' : '') + '" data-a="set" data-k="tp" data-v="' + t[0] + '"' + (ok ? '' : ' disabled') + '><span class="icbe">' + t[1] + '</span><small>' + t[2] + (ok ? '' : ' 🔒') + '</small></button>'; });
+      html += '</div>';
     }
     items.innerHTML = html;
-    items.querySelectorAll('[data-a]').forEach(b => b.onclick = () => icDo({a: b.dataset.a, st: i, k: b.dataset.k, v: isNaN(+b.dataset.v) ? b.dataset.v : +b.dataset.v}));
+    items.querySelectorAll('[data-a]').forEach(b => b.onclick = () => {
+      const v = isNaN(+b.dataset.v) ? b.dataset.v : +b.dataset.v;
+      if (b.dataset.k === 'n'){ ic.st[i]._nSet = true; }
+      icDo({a: b.dataset.a, st: i, k: b.dataset.k, v});
+    });
   }
   function icHud(){ if (!ic) return; const n = $('#icN'); if (n) n.textContent = '🍦 ' + ic.served + ' · Lv ' + ic.lv; }
   function icPad(jp){ if (!ic) return false; if (ic.panel >= 0){ if (jp.b){ icPanel(-1); return true; } return false; } if (jp.x && ic.near >= 0){ icPanel(ic.near); return true; } return false; }
@@ -10888,29 +10942,42 @@ const Obby = (() => {
     sb = {ph: prog.pony ? 'care' : 'pick', t: 0, pony: prog.pony ? Object.assign({}, prog.pony) : null, mesh: null, near: -1, panel: false, show: null, score: 0, jumps: [], ridden: false, mountCd: 0, earned: 0, gates: [], labels: [], toastT: 0};
     scene.background = new THREE.Color('#c8e8ff');
     plat(0, 0, 0, 60, 60, '#8fd39a', .35);
-    [[0, 30, 62, .6], [0, -30, 62, .6], [30, 0, .6, 62], [-30, 0, .6, 62]].forEach(([x, z, w, d]) => plat(x, 1.35, z, w, d, '#d4a574', 1.35));
-    // barn far back (−z); open yard in front so the camera never clips through a wall to see the pads
-    plat(-14, 3.2, -16, 12, 8, '#d4a574', 3.2); plat(-14, 6.4, -16, 13, 9, '#8a5a3c', .5);
-    // pads well in front of the barn (z≈+3), left→right from default camera looking −z toward barn
+    // low see-through fence (transparent so camera pull-in ignores it; still solid for the player)
+    sb.fences = [];
+    [[0, 30, 62, .5], [0, -30, 62, .5], [30, 0, .5, 62], [-30, 0, .5, 62]].forEach(([x, z, w, d]) => {
+      const f = plat(x, .7, z, w, d, '#e8a04a', .7); f.camSkip = true;
+      if (f.mesh && f.mesh.material){ f.mesh.material.transparent = true; f.mesh.material.opacity = .55; }
+      sb.fences.push(f);
+    });
+    // big obvious barn behind the pads (−z). Camera looks toward −z so the barn fills the backdrop.
+    plat(-14, 4.2, -14, 16, 10, '#d4a574', 4.2);                 // walls
+    plat(-14, 7.6, -14, 18, 12, '#8a5a3c', .7);                   // roof
+    plat(-14, 2.2, -8.6, 3.2, .5, '#6b3e1f', 2.2);                // door
+    plat(-19, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);                // window L
+    plat(-9, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);                 // window R
+    const barnSign = label('🐴 Clover Meadow Barn', 'rgba(139,92,246,.95)'); barnSign.position.set(-14, 5.6, -8.2); scene.add(barnSign);
+    // pads in front of barn. With cam.yaw = 0 (camera on +z looking −z), screen L→R = −x → +x
+    // so brush (−20) · feed (−14) · groom (−8) reads 🪥 🥕 ✨
     sb.stations = [
-      {id: 'brush', x: -20, z: 3, e: '🪥', col: '#ffe08a'},
-      {id: 'feed',  x: -14, z: 3, e: '🥕', col: '#9ff0c8'},
-      {id: 'groom', x: -8,  z: 3, e: '✨', col: '#c39bff'},
-      {id: 'saddle',x: -14, z: 8, e: '🐎', col: '#7fd6ff'},
+      {id: 'brush', x: -20, z: 2, e: '🪥', col: '#ffe08a'},
+      {id: 'feed',  x: -14, z: 2, e: '🥕', col: '#9ff0c8'},
+      {id: 'groom', x: -8,  z: 2, e: '✨', col: '#c39bff'},
+      {id: 'saddle',x: -14, z: 7, e: '🐎', col: '#7fd6ff'},
       {id: 'show',  x: 12,  z: 6, e: '🏆', col: '#ffd23f'}
     ];
     sb.stations.forEach(s => { sb.labels.push(sbSign(s.e + ' ' + s.id, s.x, s.z, s.col)); });
     for (let i = 0; i < SB_JUMPS; i++){
-      const z = -18 + i * 5, x = 10 + (i % 2) * 4;
+      const z = -20 + i * 5, x = 10 + (i % 2) * 4;
       sb.gates.push(sbRailVisual(x, z, i % 2 ? '#ff6fb5' : '#3a86ff'));
     }
     plat(12, .3, 22, 4, 4, '#ffd23f', .3);
-    Object.assign(P, {x: -14, y: .05, z: 14, vx: 0, vy: 0, vz: 0}); P.face = Math.PI; cam.yaw = Math.PI; cam.pitch = .34; cam.dist = 14;
+    // face the barn: camera behind the player on +z, looking toward −z
+    Object.assign(P, {x: -14, y: .05, z: 14, vx: 0, vy: 0, vz: 0}); P.face = Math.PI; cam.yaw = 0; cam.pitch = .36; cam.dist = 15;
     checkpoints[0] = {idx: 0, spawn: {x: -14, y: .05, z: 14}, flag: new THREE.Object3D()};
     if (sb.pony){ sb.mesh = sbMesh(sb.pony, -14, 10); sb.mesh.visible = true; }
   }
   function sbFlash(msg){ if (!sb) return; sb.toastT = 2.4; const b = $('#oBig'); if (b) b.textContent = msg; banner(msg); }
-  function stableEnter(){ if (!sb) return; sb.panel = false; sb.near = -1; sb.ridden = false; sb.mountCd = 0; cam.dist = 14; cam.pitch = .34;
+  function stableEnter(){ if (!sb) return; sb.panel = false; sb.near = -1; sb.ridden = false; sb.mountCd = 0; cam.yaw = 0; cam.dist = 15; cam.pitch = .36;
     if (sb.pony && !sb.mesh) sb.mesh = sbMesh(sb.pony, -14, 10);
     if (sb.mesh) sb.mesh.visible = true;
     sbHud();
@@ -10970,8 +11037,8 @@ const Obby = (() => {
     if (sb.mountCd > 0) sb.mountCd -= dt;
     if (sb.toastT > 0){ sb.toastT -= dt; if (sb.toastT <= 0){ const b = $('#oBig'); if (b && !nds) b.textContent = ''; } }
     // keep camera comfortable — never collapse into the avatar/barn
-    if (cam.dist < 12) cam.dist += (12 - cam.dist) * Math.min(1, dt * 4);
-    if (cam.pitch < .28) cam.pitch += (.28 - cam.pitch) * Math.min(1, dt * 3);
+    if (cam.dist < 13) cam.dist += (13 - cam.dist) * Math.min(1, dt * 4);
+    if (cam.pitch < .3) cam.pitch += (.3 - cam.pitch) * Math.min(1, dt * 3);
     let near = -1, best = 2.8; sb.stations.forEach((s, i) => { const d = Math.hypot(P.x - s.x, P.z - s.z); if (d < best){ best = d; near = i; } });
     sb.near = near; const btn = $('#sbAct');
     if (btn){ if (near >= 0 && sb.pony){ const s = sb.stations[near]; let lab = s.e + ' ' + s.id; if (s.id === 'saddle') lab = sb.ridden ? '🐴 Dismount' : '🐎 Mount'; if (s.id === 'show') lab = '🏆 Start Show';
@@ -11474,7 +11541,7 @@ const Obby = (() => {
     if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance'){ // pull the camera in front of walls so buildings don't block the view
       for (let s = 1.2; s <= cam.dist; s += .4){
         const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
-        if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 8.5 : 1.2, s - .5); break; }
+        if (solids.some(b => b.active && !b.camSkip && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 9 : 1.2, s - .5); break; }
       }
     }
     camera.position.set(tx + Math.sin(cam.yaw) * cp * dist, ty + Math.sin(cam.pitch) * dist, tz + Math.cos(cam.yaw) * cp * dist);

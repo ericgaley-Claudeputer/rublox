@@ -63,7 +63,13 @@
     }
     return false;
   }
-  function icHint(msg){ if (!ic) return; ic.toast = msg; ic.toastT = 2.5; const b = $('#oBig'); if (b) b.textContent = msg; banner(msg); }
+  function icHint(msg){
+    if (!ic) return; ic.toast = msg; ic.toastT = 2.5;
+    let el = $('#icToast'); if (!el){ el = document.createElement('div'); el.id = 'icToast'; el.className = 'ictoast'; (document.getElementById('obby') || document.body).appendChild(el); }
+    el.innerHTML = String(msg).replace(/\n/g, '<br>'); el.classList.add('show');
+    banner(msg);
+  }
+  function icClearToast(){ const el = $('#icToast'); if (el) el.classList.remove('show'); ic && (ic.toast = ''); }
   function icEvent(e){
     if (!ic || !e || ic.seen.has(e.id)) return; ic.seen.add(e.id); if (e.id > ic.lastEv) ic.lastEv = e.id;
     if (!ic.remote){ ic.ev.push(e); if (ic.ev.length > 12) ic.ev.shift(); }
@@ -105,10 +111,10 @@
   function iceCreamEnter(){ if (!ic) return; ic.panel = -1; ic.near = -1;
     if (!ic.remote && !ic.orders.length){ icNewOrder(); ic.nextO = 10; }
     icHud(); banner(mp.on ? '🍦 Scoop Circus! Work the stations together!' : '🍦 Scoop Circus Ice Cream Shop! Customers want cones & cups!'); tipTimer = 6; }
-  function iceCreamStop(){ if (ic && ic.panel >= 0) choosing = false; ic = null; ['#icAct', '#icPanel', '#icOrders'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
+  function iceCreamStop(){ if (ic && ic.panel >= 0) choosing = false; icClearToast(); ic = null; ['#icAct', '#icPanel', '#icOrders', '#icToast'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
   function iceCreamUpdate(dt){
     if (!ic) return; icTick(dt);
-    if (ic.toastT > 0){ ic.toastT -= dt; if (ic.toastT <= 0){ ic.toast = ''; const b = $('#oBig'); if (b && !nds) b.textContent = ''; } }
+    if (ic.toastT > 0){ ic.toastT -= dt; if (ic.toastT <= 0) icClearToast(); }
     // proximity to stations
     let near = -1, best = 2.4; ic.stations.forEach(s => { const d = Math.hypot(P.x - s.x, P.z - s.z); if (d < best){ best = d; near = s.i; } });
     ic.near = near; const btn = $('#icAct'); if (btn){ if (near >= 0){ btn.classList.add('show'); btn.innerHTML = '🍦 Station ' + ['L', 'M', 'R'][near] + '<small>E / Ⓧ</small>'; } else btn.classList.remove('show'); }
@@ -137,16 +143,41 @@
     const pan = $('#icPanel'); pan.classList.add('show'); $('#icAct').classList.remove('show');
     const S = ic.st[i]; $('#icPT').textContent = '🍦 Station ' + ['Left', 'Middle', 'Right'][i];
     const items = $('#icItems'); let html = '';
-    if (S.ph === 'empty'){
-      html += '<b>Vessel</b><div class="icgrid">'; IC_VES.forEach(v => { html += '<button class="icb' + (S.ves === v[0] ? ' on' : '') + '" data-a="set" data-k="ves" data-v="' + v[0] + '"><span class="icbe">' + v[1] + '</span><small>' + v[2] + '</small></button>'; }); html += '</div>';
-      if (S.ves){ html += '<b>Scoops</b><div class="icgrid">'; [1, 2, 3].forEach(n => { html += '<button class="icb' + (S.n === n ? ' on' : '') + '" data-a="set" data-k="n" data-v="' + n + '"><span class="icbe">' + n + '</span><small>scoops</small></button>'; }); html += '</div>';
-        html += '<b>Flavour (' + S.fl.length + '/' + S.n + ')</b><div class="icgrid">'; IC_FL.forEach(f => { html += '<button class="icb" data-a="set" data-k="scoop" data-v="' + f[0] + '"' + (S.fl.length >= S.n ? ' disabled' : '') + '><span class="icbe">' + f[1] + '</span><small>' + f[2] + '</small></button>'; }); html += '</div>'; }
+    // one step at a time so the grid always gets the full panel width
+    let step = 'ves';
+    if (!S.ves) step = 'ves';
+    else if (S.ph === 'empty' && S.fl.length < S.n) step = S.fl.length === 0 && !S._nSet ? 'n' : 'fl';
+    else if (S.ph === 'empty') step = 'fl'; // waiting for last scoop → still flavour
+    else step = 'tp';
+    // once n was chosen mark it
+    if (S.ves && S.n) S._nSet = true;
+    if (step === 'ves'){
+      html += '<p class="icstep">1 / 4 · Pick a vessel</p><div class="icgrid">';
+      IC_VES.forEach(v => { html += '<button class="icb' + (S.ves === v[0] ? ' on' : '') + '" data-a="set" data-k="ves" data-v="' + v[0] + '"><span class="icbe">' + v[1] + '</span><small>' + v[2] + '</small></button>'; });
+      html += '</div>';
+    } else if (step === 'n'){
+      html += '<p class="icstep">2 / 4 · How many scoops?</p><div class="icgrid">';
+      [1, 2, 3].forEach(n => { html += '<button class="icb' + (S.n === n ? ' on' : '') + '" data-a="set" data-k="n" data-v="' + n + '"><span class="icbe">' + n + '</span><small>scoop' + (n > 1 ? 's' : '') + '</small></button>'; });
+      html += '</div>';
+    } else if (step === 'fl' || (S.ph === 'empty')){
+      html += '<p class="icstep">3 / 4 · Flavour (' + S.fl.length + '/' + S.n + ')</p>';
+      html += '<p class="icstat">Vessel: ' + (IC_VES.find(v => v[0] === S.ves) || ['','?'])[1] + ' · scoops ' + S.n + '</p>';
+      html += '<div class="icgrid">';
+      IC_FL.forEach(f => { html += '<button class="icb" data-a="set" data-k="scoop" data-v="' + f[0] + '"' + (S.fl.length >= S.n ? ' disabled' : '') + '><span class="icbe">' + f[1] + '</span><small>' + f[2] + '</small></button>'; });
+      html += '</div>';
     } else {
-      html += '<b>Topping</b><div class="icgrid">'; const ul = icUnlocked(ic.lv); IC_TP.forEach(t => { const ok = ul.includes(t[0]); html += '<button class="icb' + (S.tp === t[0] ? ' on' : '') + '" data-a="set" data-k="tp" data-v="' + t[0] + '"' + (ok ? '' : ' disabled') + '><span class="icbe">' + t[1] + '</span><small>' + t[2] + (ok ? '' : ' 🔒') + '</small></button>'; }); html += '</div>';
-      html += '<div class="row"><small>Scooped: ' + S.fl.map(f => (IC_FL.find(x => x[0] === f) || ['?', '?'])[1]).join(' ') + ' · pick a topping, then Serve</small></div>';
+      html += '<p class="icstep">4 / 4 · Pick a topping</p>';
+      html += '<p class="icstat">Scooped: ' + S.fl.map(f => (IC_FL.find(x => x[0] === f) || ['?', '?'])[1]).join(' ') + '</p>';
+      html += '<div class="icgrid">';
+      const ul = icUnlocked(ic.lv); IC_TP.forEach(t => { const ok = ul.includes(t[0]); html += '<button class="icb' + (S.tp === t[0] ? ' on' : '') + '" data-a="set" data-k="tp" data-v="' + t[0] + '"' + (ok ? '' : ' disabled') + '><span class="icbe">' + t[1] + '</span><small>' + t[2] + (ok ? '' : ' 🔒') + '</small></button>'; });
+      html += '</div>';
     }
     items.innerHTML = html;
-    items.querySelectorAll('[data-a]').forEach(b => b.onclick = () => icDo({a: b.dataset.a, st: i, k: b.dataset.k, v: isNaN(+b.dataset.v) ? b.dataset.v : +b.dataset.v}));
+    items.querySelectorAll('[data-a]').forEach(b => b.onclick = () => {
+      const v = isNaN(+b.dataset.v) ? b.dataset.v : +b.dataset.v;
+      if (b.dataset.k === 'n'){ ic.st[i]._nSet = true; }
+      icDo({a: b.dataset.a, st: i, k: b.dataset.k, v});
+    });
   }
   function icHud(){ if (!ic) return; const n = $('#icN'); if (n) n.textContent = '🍦 ' + ic.served + ' · Lv ' + ic.lv; }
   function icPad(jp){ if (!ic) return false; if (ic.panel >= 0){ if (jp.b){ icPanel(-1); return true; } return false; } if (jp.x && ic.near >= 0){ icPanel(ic.near); return true; } return false; }

@@ -11,7 +11,8 @@ rep("function drawTower(ctx){", r"""function drawIceCream(ctx){
 function drawTower(ctx){""")
 rep("""      <span id="tdBox" style="display:none">""", """      <span id="icBox" style="display:none"><b id="icN">🍦 0</b></span>
       <span id="tdBox" style="display:none">""")
-rep("""  <div class="psflash" id="psFlash"></div>""", """  <div class="icorders" id="icOrders" style="display:none"></div>
+rep("""  <div class="psflash" id="psFlash"></div>""", """  <div class="ictoast" id="icToast"></div>
+  <div class="icorders" id="icOrders" style="display:none"></div>
   <button class="fsnear icnear" id="icAct"></button>
   <div class="opanel" id="icPanel"><div class="mbox rcbox icbox">
     <h2 id="icPT">🍦 Station</h2>

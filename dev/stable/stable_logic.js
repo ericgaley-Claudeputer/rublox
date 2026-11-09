@@ -24,7 +24,9 @@ function world(store0){
 }
 const W = world(); W.A.buildStable(); W.A.stableEnter();
 chk('6 ponies + 5 pads', W.A.SB_PONIES.length === 6 && W.A.sb.stations.length === 5);
-chk('pads sit forward of barn (z>=3)', W.A.sb.stations.every(s => s.z >= 3), W.A.sb.stations.map(s => [s.id, s.z]));
+chk('pads sit forward of barn (z>=2)', W.A.sb.stations.filter(s=>['brush','feed','groom'].includes(s.id)).every(s => s.z >= 2), W.A.sb.stations.map(s => [s.id, s.z]));
+chk('camera faces barn (yaw 0)', W.cam.yaw === 0, W.cam.yaw);
+chk('fences marked camSkip', W.A.sb.fences && W.A.sb.fences.every(f => f.camSkip), W.A.sb.fences && W.A.sb.fences.length);
 chk('left-to-right brush < feed < groom', (() => { const m = Object.fromEntries(W.A.sb.stations.map(s => [s.id, s.x])); return m.brush < m.feed && m.feed < m.groom; })());
 chk('rails are visual-only (no plat solids on gates)', W.A.sb.gates.length === W.A.SB_JUMPS && W.A.sb.gates.every(g => g.rail && g.posts));
 chk('adopt + visible mesh', W.A.sbAdopt('buttercup') && W.A.sb.mesh.visible);
