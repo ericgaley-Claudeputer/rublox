@@ -134,7 +134,29 @@
     if (fx.top !== 'tee' || fx.dress !== 'none') a.shirtPat = null;
     return a;
   }
-  function fsBuild(av, fx){ const a = fsBaseAv(av, fx), M = buildPlayer(a); if (fx) fsDecorate(M, a, fsCleanFx(fx)); return M; }
+  function fsBuild(av, fx){ const a = fsBaseAv(av, fx), M = buildPlayer(a); if (fx) fsDecorate(M, a, fsCleanFx(fx)); fsShine(M); return M; }
+  // DTI-style polish: soft rim/edge glow + subtle specular sheen (original art only)
+  function fsShine(M){
+    if (!M || !M.g) return;
+    const rim = new THREE.MeshBasicMaterial({color: '#ffe9ff', side: THREE.BackSide, transparent: true, opacity: .38, depthWrite: false});
+    const gloss = (col) => mat(col, shade(col, 55));
+    const shell = (mesh, s) => {
+      if (!mesh || !mesh.geometry) return;
+      const o = new THREE.Mesh(mesh.geometry, rim); o.scale.set(s, s, s); o.position.copy(mesh.position); o.rotation.copy(mesh.rotation); mesh.parent && mesh.parent.add(o);
+    };
+    try {
+      if (M.head){ shell(M.head, 1.08); // rim on head
+        // soft hair highlight orb (specular catch-light)
+        const hi = new THREE.Mesh(new THREE.SphereGeometry(.08, 8, 6), new THREE.MeshBasicMaterial({color: '#ffffff', transparent: true, opacity: .55, depthWrite: false}));
+        hi.position.set(.16, .55, .38); M.head.add(hi);
+      }
+      if (M.pivot && M.pivot.children && M.pivot.children[0]) shell(M.pivot.children[0], 1.06);
+      // light sheen accents on limbs
+      (M.arms || []).forEach(a => { if (a && a.children && a.children[0]) shell(a.children[0], 1.1); });
+      (M.legs || []).forEach(l => { if (l && l.children && l.children[0]) shell(l.children[0], 1.1); });
+    } catch (e){}
+    M._fsShine = true;
+  }
   function fsDecorate(M, av, fx){
     const G = av.body === 'girl', TW = G ? .82 : .96, TD = G ? .44 : .5, LW = G ? .38 : .44, AW = G ? .34 : .4;
     const body = M.pivot.children[0], head = M.head, legs = M.legs, arms = M.arms;
@@ -291,6 +313,12 @@
     plat(0, .45, 8.6, 4.4, 1.2, '#ffd23f', .45);
     [-2.25, 2.25].forEach(x => fsDeco(.18, .14, 22, '#ff6fb5', x, .92, -3, new THREE.MeshBasicMaterial({color: '#ff6fb5'})));
     for (let z = -13; z <= 7; z += 2.2) [-2.25, 2.25].forEach(x => fs.spots.push(fsDeco(.26, .26, .26, '#fff', x, 1.08, z, new THREE.MeshBasicMaterial({color: '#fff6b0'}))));
+    // glam runway key lights (soft pink + warm white) for shinier character highlights
+    try {
+      [[0, 6.5, -3, '#ffe9ff', 1.1], [0, 5.5, 6, '#fff6c9', .8], [-3, 5, -8, '#ffd6ff', .55], [3, 5, -8, '#ffd6ff', .55]].forEach(([x, y, z, c, i]) => {
+        const l = new THREE.PointLight(c, i, 22); l.position.set(x, y, z); scene.add(l);
+      });
+    } catch (e){}
     // audience seating rows (pastel chairs) beside the runway
     [-1, 1].forEach(s => { for (let r = 0; r < 4; r++) for (let k = 0; k < 5; k++){
       const x = s * (4.8 + r * 1.15), z = -10 + k * 3.2, col = (r + k) % 2 ? '#ffb3d9' : '#c4b0ff';
@@ -319,20 +347,52 @@
     if (fs.vipTag){ try { model.g.remove(fs.vipTag); } catch (e){} fs.vipTag = null; }
     if (!fsIsVip()) return;
     const lab = label('👑 VIP', 'rgba(232,168,0,.96)', '#1d2340', 160);
-    lab.position.set(0, 4.15, 0); lab.scale.set(.55, .55, .55); model.g.add(lab); fs.vipTag = lab;
+    lab.position.set(0, 3.55, 0); lab.scale.set(.5, .5, .5); model.g.add(lab); fs.vipTag = lab;
   }
   function fsRoom(){
     const X = -24, W = '#fff0f8', H = 4.6;
+    fs.bld = {walls: [], ceiling: [], lights: []};
+    // plat walls = collision + mesh; track meshes for cutaway when the camera is outside looking in
+    const wallPlat = (x, top, z, w, d, col, h, cut) => { const b = plat(x, top, z, w, d, col, h); if (cut && b && b.mesh) fs.bld.walls.push(b.mesh); return b; };
     // soft pastel pink floor + lavender carpet runner (DTI-inspired, our own art)
     fsDeco(14, .04, 22, '#ffe3f1', X, .02, 0); for (let i = 0; i < 6; i++) fsDeco(14, .045, .5, '#f6d2ff', X, .021, -10 + i * 4);
     fsDeco(3.2, .05, 20, '#e8c4ff', X + 2, .03, 0);
-    // outer walls — doorway cheeks are SHORT stubs so they never fill the camera
-    plat(-30.9, H, 0, .6, 22.6, W, H); plat(X, H, -11, 14.4, .6, W, H); plat(X, H, 11, 14.4, .6, W, H);
-    plat(-17.1, 1.6, -8.2, .3, 4.0, W, 1.6); plat(-17.1, 1.6, 8.2, .3, 4.0, W, 1.6);   // short pink stubs only — nothing across the open doorway
-    // NO mid-height lintel (it cut a magenta band across the camera). Tiny high marker above FOV instead.
-    fsDeco(.25, .18, 1.6, '#ff6fb5', -17.1, 5.6, 0);
-    fsSign('👗 PREP', -16.9, 5.85, 0, Math.PI / 2, 1.6, '#8b5cf6');
-    // thin wall-top trims pushed back so they don't read as a foreground band
+    // 🏬 Boutique building shell — enclosed walls, roof the camera can see under, windows & a clear door
+    wallPlat(-30.9, H, 0, .6, 22.6, W, H, true);
+    wallPlat(X, H, -11, 14.4, .6, W, H, true);
+    wallPlat(X, H, 11, 14.4, .6, W, H, true);
+    // east facade cheeks (SHORT — never a mid lintel that bands the camera)
+    wallPlat(-17.1, 1.7, -8.0, .5, 4.2, W, 1.7, true);
+    wallPlat(-17.1, 1.7, 8.0, .5, 4.2, W, 1.7, true);
+    // door frame pillars + high arched marker ABOVE typical FOV
+    fsDeco(.35, 5.2, .35, '#ffd23f', -17.1, 2.6, -4.4);
+    fsDeco(.35, 5.2, .35, '#ffd23f', -17.1, 2.6, 4.4);
+    fsDeco(.3, .25, 9.0, '#ff6fb5', -17.1, 5.5, 0);
+    fsSign('👗 STAR BOUTIQUE', -16.85, 5.85, 0, Math.PI / 2, 2.6, '#8b5cf6');
+    // exterior awning / facade facing the lobby so it reads as a real building from outside
+    fsDeco(1.2, .18, 14, '#ff6fb5', -16.4, 5.35, 0);
+    fsDeco(.2, 5.0, 14.2, '#f7d6ea', -16.55, 2.5, 0);
+    // windows (north + south) — glass panes with gold frames
+    [[-24, -10.65], [-27.5, -10.65], [-20.5, -10.65], [-24, 10.65], [-27.5, 10.65], [-20.5, 10.65]].forEach(([x, z], i) => {
+      const ry = z < 0 ? 0 : Math.PI;
+      const glass = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 2.0), new THREE.MeshBasicMaterial({color: '#cff6ff', transparent: true, opacity: .55, side: THREE.DoubleSide}));
+      glass.position.set(x, 2.4, z); glass.rotation.y = ry; scene.add(glass);
+      fsDeco(2.05, .12, .12, '#ffd23f', x, 3.45, z); fsDeco(2.05, .12, .12, '#ffd23f', x, 1.35, z);
+    });
+    // ceiling / roof: high enough that the camera looks UNDER it; translucent skylight strip so the room stays bright
+    const roof = fsDeco(14.6, .18, 22.8, '#ffd6ec', X, 5.7, 0); fs.bld.ceiling.push(roof);
+    const sky = new THREE.Mesh(new THREE.PlaneGeometry(6, 16), new THREE.MeshBasicMaterial({color: '#fff7ff', transparent: true, opacity: .35, side: THREE.DoubleSide, depthWrite: false}));
+    sky.rotation.x = Math.PI / 2; sky.position.set(X, 5.58, 0); scene.add(sky); fs.bld.ceiling.push(sky);
+    // pitched roof ridges (visible from outside / lobby)
+    [-1, 1].forEach(s => { const r = fsDeco(14.8, .12, .9, '#ff6fb5', X, 6.15, s * 5.5); fs.bld.ceiling.push(r); });
+    fsDeco(14.8, .12, .9, '#8b5cf6', X, 6.45, 0);
+    // interior lighting — soft pink + warm key lights (DTI glam, original colours)
+    const addL = (c, x, y, z, i, dist) => { try { const l = new THREE.PointLight(c, i, dist || 16); l.position.set(x, y, z); scene.add(l); fs.bld.lights.push(l); } catch (e){} };
+    addL('#fff0ff', -24, 4.4, 0, .85, 18); addL('#fff6c9', -27, 3.9, -5, .55, 12); addL('#fff6c9', -27, 3.9, 5, .55, 12);
+    addL('#ffe0ff', -21, 4.0, -7, .4, 10); addL('#ffe0ff', -21, 4.0, 7, .4, 10);
+    // hanging pendant bulbs
+    for (let i = 0; i < 5; i++){ const z = -8 + i * 4; fsDeco(.06, .5, .06, '#ddd', -24, 5.2, z); const b = new THREE.Mesh(new THREE.SphereGeometry(.14, 8, 6), new THREE.MeshBasicMaterial({color: '#fff6c9'})); b.position.set(-24, 4.85, z); scene.add(b); }
+    // wall-top trims (thin, high — never a mid-height band)
     fsDeco(14.4, .18, .4, '#ffb3d9', X, 5.1, -11); fsDeco(14.4, .18, .4, '#ffb3d9', X, 5.1, 11); fsDeco(.4, .18, 22.6, '#ffb3d9', -30.9, 5.1, 0);
     // wall mirrors on west wall — face into the room, gold frames, clearly lit
     [[-29.85, -5], [-29.85, 5]].forEach(([x, z]) => {
@@ -460,8 +520,20 @@
     return c.toDataURL();
   }
   /* --- the wardrobe (tabs = the racks / stations in the room) --- */
-  function fsWardOpen(tab){ if (!fs || fs.ph !== 'dress') return; if (tab) fs.tab = tab; fs.ward = true; fsWardRender(); $('#fsWard').classList.add('show'); $('#fsWardBtn').classList.remove('show'); $('#fsNear').classList.remove('show'); fs.near = null; }
-  function fsWardClose(){ if (!fs) return; fs.ward = false; $('#fsWard').classList.remove('show'); if (fs.ph === 'dress') $('#fsWardBtn').classList.add('show'); }
+  function fsWardOpen(tab){
+    if (!fs || fs.ph !== 'dress') return; if (tab) fs.tab = tab; fs.ward = true; fsWardRender();
+    $('#fsWard').classList.add('show'); $('#fsWardBtn').classList.remove('show'); $('#fsNear').classList.remove('show'); fs.near = null;
+    // dock the panel so the 3D avatar stays visible beside it; lock a front-facing preview camera
+    document.body.classList.add('fsward-dock');
+    if (!fs.wardPos) fs.wardPos = {x: P.x, y: P.y, z: P.z, face: P.face, yaw: cam.yaw, pitch: cam.pitch, dist: cam.dist};
+    // stand the avatar in a clear spot facing the camera (panel is on the left / bottom)
+    P.vx = P.vz = 0; P.face = Math.PI * .15; cam.yaw = P.face + Math.PI; cam.pitch = .18; cam.dist = 4.4;
+  }
+  function fsWardClose(){
+    if (!fs) return; fs.ward = false; $('#fsWard').classList.remove('show'); if (fs.ph === 'dress') $('#fsWardBtn').classList.add('show');
+    document.body.classList.remove('fsward-dock');
+    if (fs.wardPos){ Object.assign(P, {x: fs.wardPos.x, y: fs.wardPos.y, z: fs.wardPos.z, vx: 0, vy: 0, vz: 0}); P.face = fs.wardPos.face; cam.yaw = fs.wardPos.yaw; cam.pitch = fs.wardPos.pitch; cam.dist = fs.wardPos.dist; fs.wardPos = null; }
+  }
   function fsLocked(r){
     if (r && r.vip && !fsIsVip()) return true;
     return !!r.lvl && fsLevel(fsProg().xp).lv < r.lvl;
@@ -511,7 +583,20 @@
     $('#fsReady').textContent = fs.ready.has(fsUid()) ? '✅ Ready! (keep styling)' : '✅ I\'m ready!';
     $('#fsCount').textContent = '👗 ' + fsCount() + ' pieces on';
   }
-  function fsCount(){ const x = fs.fx, f = fs.fit; return [x.top !== 'tee', x.dress === 'none', x.dress !== 'none', x.shoe !== 'none', x.hair !== 'base', x.mk !== 'none', x.pat !== 'none', f.hat && f.hat !== 'none', f.ears, f.tail, f.back].filter(Boolean).length + x.acc.length + 1; }
+  function fsCount(){
+    const x = fs.fx, f = fs.fit; let n = 0;
+    if (x.top !== 'tee') n++;                         // customized top
+    if (x.dress !== 'none') n++;                       // gown / dress counts once
+    else if (x.bot !== 'pants') n++;                   // bottoms only when no dress
+    if (x.shoe !== 'none') n++;
+    if (x.hair !== 'base') n++;
+    if (x.mk !== 'none') n++;
+    if (x.pat !== 'none') n++;
+    n += (x.acc || []).length;
+    if (f.hat && f.hat !== 'none') n++;
+    if (f.ears) n++; if (f.tail) n++; if (f.back) n++;
+    return n;
+  }
   function fsChanged(){ fsRebuild(fs.fit, fs.fx); fs.fitDirty = .5; SND.coin(); if (fs.ward) fsWardRender(); }
   function fsSet(k, v){ if (!fs || fs.ph !== 'dress') return; fs.fit[k] = v; if (k === 'hair' && v) fs.fx.hair = 'base'; fsChanged(); }
   function fsFx(k, v){
@@ -571,7 +656,7 @@
       : '⌨️ WASD move · Space jump · ' + (ph === 'dress' ? 'E try on at a rack · C wardrobe' : 'C show menu') + ' · Esc menu';
     return a + '<br>' + (ph === 'dress' ? '👗 Walk up to a rack, mirror or the 👑 VIP Lounge! Fashion clothes stay in the show only. 💖 = voters love it' : '✨ Explore the lobby · unlock Star VIP with Rublox coins · then start the show!');
   }
-  function fsHideAll(){ ['#fsPick', '#fsEnd', '#fsWard', '#fsRate', '#fsPoses', '#fsIntro'].forEach(id => $(id).classList.remove('show')); ['#fsWardBtn', '#fsNear', '#fsShowBtn'].forEach(id => $(id).classList.remove('show')); if (fs){ fs.ward = false; fs.near = null; } }
+  function fsHideAll(){ ['#fsPick', '#fsEnd', '#fsWard', '#fsRate', '#fsPoses', '#fsIntro'].forEach(id => $(id).classList.remove('show')); ['#fsWardBtn', '#fsNear', '#fsShowBtn'].forEach(id => $(id).classList.remove('show')); document.body.classList.remove('fsward-dock'); if (fs){ fs.ward = false; fs.near = null; fs.wardPos = null; } }
   function fsPickOpen(){
     fsHideAll(); fs.ph = 'lobby'; fs.lobPanel = true; choosing = true; const g = mpGuest();
     fsClearWalkers(); fsNpcsTo('lobby');
@@ -635,7 +720,8 @@
     fs.ord.forEach(u => { const av = Object.assign({}, DEF, fs.fits[u] || {}), m = fsBuild(av, fs.fxs[u] || null); m.g.visible = false; scene.add(m.g);
       const meVip = u === fsUid() && fsIsVip();
       const lab = label(meVip ? '👑 VIP You' : (u === fsUid() ? '⭐ You' : fsName(u)), meVip ? 'rgba(232,168,0,.98)' : 'rgba(255,111,181,.92)');
-      lab.position.y = meVip ? 4.35 : 3.55; if (meVip) lab.scale.set(1.15, 1.15, 1.15); m.g.add(lab);
+      // keep VIP label at the same height as normal so it is not clipped at the top of the runway camera
+      lab.position.y = 3.55; if (meVip) lab.scale.set(1.05, 1.05, 1.05); m.g.add(lab);
       fs.walkers.push({u, m, av, ph: 0, lab, shown: false, meVip}); });
     fsNpcsTo('hide');
     const s = fsSeat(); Object.assign(P, {x: s.x, y: s.y, z: s.z, vx: 0, vy: 0, vz: 0}); P.face = Math.PI;
@@ -781,6 +867,15 @@
     const t = worldT;
     (fs.cones || []).forEach(g => { g.rotation.z = Math.sin(t * .8 + g.userData.ph) * .35; g.rotation.x = Math.cos(t * .6 + g.userData.ph) * .2; });
     fs.spots.forEach((b, i) => b.material.color.setHSL((t * .3 + i * .07) % 1, .9, .75));
+    // cutaway walls: hide boutique walls that sit between the camera and the player so they never band/block the view
+    if (fs.bld && fs.bld.walls && fs.bld.walls.length && typeof camera !== 'undefined' && camera){
+      const cx = camera.position.x;
+      const inside = cx < -17.5;
+      fs.bld.walls.forEach(w => {
+        // hide the east doorway cheeks when the camera is still outside so they never band/block the view
+        if (!inside && w.position && w.position.x > -18) w.visible = false; else w.visible = true;
+      });
+    }
     if (fsIsVip() && fs.ph === 'walk'){ const me = fs.walkers.find(W => W.u === fsUid() && W.m && W.m.g.visible); if (me){
       if (!fs.vipSpark){ fs.vipSpark = new THREE.Mesh(new THREE.TorusGeometry(.9, .05, 6, 20), new THREE.MeshBasicMaterial({color: '#ffd23f'})); fs.vipSpark.rotation.x = Math.PI / 2; scene.add(fs.vipSpark); }
       fs.vipSpark.visible = true; fs.vipSpark.position.copy(me.m.g.position); fs.vipSpark.position.y += .15; fs.vipSpark.rotation.z = t * 2;
@@ -810,11 +905,27 @@
     });
   }
   function fashionCam(){
-    if (!fs || !(fs.ph === 'walk' || fs.ph === 'podium' || fs.ph === 'end')) return false;
-    if (fs.ph === 'walk'){ let tx = 0, ty = 2.2, tz = 2; const k = Math.min(fs.walkers.length - 1, Math.floor(fs.wt / FS_WALK)), W = fs.walkers[k];
-      if (W && W.m.g.visible){ tx = W.m.g.position.x; ty = W.m.g.position.y + 1.8; tz = W.m.g.position.z; }
+    if (!fs) return false;
+    // wardrobe open: front-facing preview of YOUR avatar in the free half of the screen (panel does not cover them)
+    if (fs.ward && fs.ph === 'dress' && model && model.g){
+      const px = P.x, pz = P.z, mobile = !!touchUI || (typeof innerWidth === 'number' && innerWidth < 760);
+      if (mobile){
+        // panel docks to the bottom — keep the avatar in the upper half
+        camera.position.set(px + Math.sin(P.face + Math.PI) * 3.2, 2.55, pz + Math.cos(P.face + Math.PI) * 3.2);
+        camera.lookAt(px, 1.55, pz);
+      } else {
+        // panel docks to the left — put the avatar in the right/center of the free view
+        const side = 1; // camera slightly to the player's right
+        camera.position.set(px + Math.sin(P.face + Math.PI) * 3.6 + Math.cos(P.face) * side * .9, 1.95, pz + Math.cos(P.face + Math.PI) * 3.6 - Math.sin(P.face) * side * .9);
+        camera.lookAt(px, 1.4, pz);
+      }
+      return true;
+    }
+    if (!(fs.ph === 'walk' || fs.ph === 'podium' || fs.ph === 'end')) return false;
+    if (fs.ph === 'walk'){ let tx = 0, ty = 2.05, tz = 2; const k = Math.min(fs.walkers.length - 1, Math.floor(fs.wt / FS_WALK)), W = fs.walkers[k];
+      if (W && W.m.g.visible){ tx = W.m.g.position.x; ty = W.m.g.position.y + 1.65; tz = W.m.g.position.z; }
       const lt = fs.wt - k * FS_WALK, close = lt > 3.2 && lt < 7;
-      if (close) camera.position.set(2.2 + Math.sin(worldT * .4) * .8, 2.9, 11.2); else camera.position.set(4.2 + Math.sin(worldT * .25) * 1.2, 3.3, 9.9);
+      if (close) camera.position.set(2.2 + Math.sin(worldT * .4) * .8, 2.7, 11.2); else camera.position.set(4.2 + Math.sin(worldT * .25) * 1.2, 3.1, 9.9);
       camera.lookAt(tx, ty, tz); return true; }
     camera.position.set(Math.sin(worldT * .3) * 1.2, 3.4, 21.5); camera.lookAt(0, 2.4, 30); return true;
   }
@@ -851,7 +962,7 @@
     if (fs.ph === 'lobby'){ fsToLobby(); fsPickOpen(); }
   }
   function fashionStop(){
-    fsHideAll(); document.body.classList.remove('fsnotip');
+    fsHideAll(); document.body.classList.remove('fsnotip'); document.body.classList.remove('fsward-dock');
     if (fs){ fsClearWalkers(); if (fs.vipSpark){ scene.remove(fs.vipSpark); fs.vipSpark = null; } try { if (model){ const g = model.g, pos = g.position.clone(), ry = g.rotation.y; scene.remove(g); model = buildPlayer(avatar); model.g.position.copy(pos); model.g.rotation.y = ry; scene.add(model.g); } } catch (e){} }
     fs = null;
   }

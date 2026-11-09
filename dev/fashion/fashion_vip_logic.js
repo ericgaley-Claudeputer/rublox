@@ -1,7 +1,7 @@
 // Non-GUI logic tests for Fashion Show VIP + fashion-only clothing (tests/p35/fashion.js via built page stubs)
 const fs = require('fs'), vm = require('vm'), path = require('path');
 let pass = 0, fail = 0; const chk = (n, c, i) => { if (c) pass++; else fail++; console.log((c ? 'PASS ' : 'FAIL ') + n, c ? '' : JSON.stringify(i === undefined ? '' : i)); };
-const SRC = fs.readFileSync(process.env.FS_SRC || path.join(__dirname, 'fashion.js'), 'utf8');
+const SRC = fs.readFileSync(process.env.FS_SRC || path.join(__dirname, '../p35/fashion.js'), 'utf8');
 const HTML = process.env.PS_HTML || path.join(__dirname, '../../index.html');
 function world(store, coins0){
   const V = () => ({x:0,y:0,z:0,set(x,y,z){this.x=x;this.y=y;this.z=z;},clone(){return V();},copy(o){this.x=o.x;this.y=o.y;this.z=o.z;return this;},multiplyScalar(){return this;}});
@@ -13,12 +13,12 @@ function world(store, coins0){
     load:(k,d)=>{ try{ return k in store ? JSON.parse(store[k]) : d; }catch(e){return d;} }, save:(k,v)=>{ store[k]=JSON.stringify(v); },
     $: id => els[id] || (els[id] = {textContent:'',innerHTML:'',style:{},disabled:false,onclick:null,classList:{s:new Set(),add(c){this.s.add(c);},remove(c){this.s.delete(c);},toggle(c,on){(on===undefined?!this.s.has(c):on)?this.s.add(c):this.s.delete(c);},contains(c){return this.s.has(c);}},querySelectorAll:()=>[],querySelector:()=>null}),
     coins: coins0 == null ? 500 : coins0, runCoins: 0, paused: false, choosing: false, over: false, worldT: 0, mode: 'fashion', banners: [], toasts: [],
-    P:{x:0,y:.05,z:23,face:0,vx:0,vy:0,vz:0}, cam:{yaw:0,pitch:.3,dist:6}, pad:{on:false}, touchUI:false, keys:{}, DEF:{shirt:'#3a86ff',pants:'#2d2d2d',head:'#f1c27d',hairColor:'#6b3e1f',hair:'short',body:'girl',hat:null,shirtPat:null,pantsPat:null,face:null,ears:null,tail:null,back:null,brow:null,lash:null},
+    P:{x:0,y:.05,z:23,face:0,vx:0,vy:0,vz:0}, cam:{yaw:0,pitch:.3,dist:6}, pad:{on:false}, touchUI:false, keys:{}, innerWidth:1280, camera:{position:{x:0,y:3,z:10,set(){},copy(){}},lookAt(){}}, solids:[], DEF:{shirt:'#3a86ff',pants:'#2d2d2d',head:'#f1c27d',hairColor:'#6b3e1f',hair:'short',body:'girl',hat:null,shirtPat:null,pantsPat:null,face:null,ears:null,tail:null,back:null,brow:null,lash:null},
     avatar: null, model: {g:O()}, mp:{on:false,host:true,me:'H',guests:new Map(),ents:new Map()},
     ITEMS: [{slot:'hat',val:'crown',id:'hat_crown',emoji:'👑',name:'Crown'},{slot:'shirtPat',val:'startee',id:'sp1',emoji:'⭐',name:'Star Tee'}],
     plat:()=>({mesh:O()}), mat:()=>({}), shade:(c)=>c, label:()=>O(), buildPlayer:()=>({g:O(),pivot:{children:[O()]},head:O(),legs:[O(),O()],arms:[O(),O()]}),
     canvasTex:()=>({wrapS:0,wrapT:0,repeat:{set(){}},dispose(){}}), confetti(){}, SND:{coin(){},cp(){},win(){},jump(){}},
-    checkpoints:[], running:true, muted:false, tipTimer:0, document:{body:{classList:{add(){},remove(){},toggle(){},contains:()=>false}}},
+    checkpoints:[], running:true, muted:false, tipTimer:0, document:(()=>{ const c=new Set(); return {body:{classList:{add:(...a)=>a.forEach(x=>c.add(x)),remove:(...a)=>a.forEach(x=>c.delete(x)),toggle:(x,on)=>{ (on===undefined?!c.has(x):on)?c.add(x):c.delete(x); },contains:x=>c.has(x)}}}; })(),
     FS_POSES:[{e:'a',n:'A',p:()=>({})}], // overwritten by src
   };
   ctx.avatar = Object.assign({}, ctx.DEF);
@@ -29,7 +29,7 @@ function world(store, coins0){
   ctx.fmt = s => s; ctx.bxEsc = s => s; ctx.mpLook = () => null; ctx.mpGuest = () => false; ctx.mpSendTo = () => {};
   vm.createContext(ctx);
   // provide minimal FX consumer stubs used before decorate runs deeply
-  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_VIP_COST,fsProg,fsIsVip,fsBuyVip,fsVipBadge,fsList,fsKeep,fsHasSavedLook,fsApplySavedLook,fsLocalDress,fsCleanFx,FS_FXDEF,fsCleanFx,fsKeep,fsMigrateAvatar,fsLocked,fsVipRows,FX,FS_RACKS,FS_ST,fsWardRender,fsFx,buildFashion,fashionEnter,fashionStop,fsPickOpen,fsName};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_VIP_COST,fsProg,fsIsVip,fsBuyVip,fsVipBadge,fsList,fsKeep,fsHasSavedLook,fsApplySavedLook,fsLocalDress,fsCleanFx,FS_FXDEF,fsCleanFx,fsKeep,fsMigrateAvatar,fsLocked,fsVipRows,FX,FS_RACKS,FS_ST,fsWardRender,fsFx,buildFashion,fashionEnter,fashionStop,fsPickOpen,fsName,fsCount,fsShine,fsWardOpen,fsWardClose,fashionCam,fsRoom,fsLocalWalk};`, ctx);
   return ctx;
 }
 const st = {rubloxCoins:'500', rubloxAvatar: JSON.stringify({shirt:'#111111',pants:'#222222',head:'#f1c27d',hairColor:'#6b3e1f',hair:'short'})};
@@ -78,6 +78,33 @@ const W3 = world(st2, 0); W3.A.buildFashion(); W3.A.fs.ord=['H']; W3.A.fs.th=0; 
 chk('saved VIP pieces stripped when VIP is locked again', W3.A.fs.fx.top!=='velvet' && !W3.A.fs.fx.acc.includes('vipcrown'), W3.A.fs.fx);
 
 chk('no real-money strings in fashion source', !/robux|real money|purchase|\$|credit card|stripe|paypal/i.test(SRC) || /never real money/i.test(SRC));
+
+// --- boutique polish: highlights, building, wardrobe preview, cosmetics ---
+chk('fsShine / rim highlights exist on fashion builds', typeof W.A.fsShine === 'function');
+W.A.buildFashion();
+chk('boutique building shell tracked (walls + ceiling + lights)', !!(W.A.fs.bld && W.A.fs.bld.walls && W.A.fs.bld.ceiling && W.A.fs.bld.lights), W.A.fs.bld && {walls:W.A.fs.bld.walls.length, ceil:W.A.fs.bld.ceiling.length, lights:W.A.fs.bld.lights.length});
+chk('boutique has enclosed walls', W.A.fs.bld.walls.length >= 3, W.A.fs.bld.walls.length);
+chk('boutique has a ceiling/roof the camera can see under', W.A.fs.bld.ceiling.length >= 1, W.A.fs.bld.ceiling.length);
+chk('boutique has interior lights', W.A.fs.bld.lights.length >= 3, W.A.fs.bld.lights.length);
+W.A.fs.ph = 'dress'; W.A.fs.ord = ['H']; W.A.fs.th = 0; W.A.fs.dl = 180;
+W.A.fs.fit = Object.assign({}, W.avatar); W.A.fs.fx = W.A.fsCleanFx({top:'tee', bot:'pants', dress:'none', shoe:'sneak', hair:'base', mk:'none', pat:'none', acc:[]});
+chk('fsCount default sneak-only outfit is 1 (not off-by-one)', W.A.fsCount() === 1, W.A.fsCount());
+W.A.fs.fx = W.A.fsCleanFx({top:'velvet', dress:'pastelg', shoe:'goldheel', hair:'pastel', mk:'vipglam', acc:['vipcrown'], pat:'none'});
+// top + dress + shoe + hair + mk + 1 acc = 6 (bot ignored while dress is on)
+chk('fsCount counts dress/gown and ignores bottoms under a dress', W.A.fsCount() === 6, W.A.fsCount());
+W.A.fs.fx = W.A.fsCleanFx({top:'crop', bot:'tutu', dress:'none', shoe:'heels', hair:'bob', mk:'none', pat:'none', acc:[]});
+chk('fsCount counts top+bot+shoe+hair with no dress (4)', W.A.fsCount() === 4, W.A.fsCount());
+W.A.fs.ward = false; W.A.fsWardOpen('top');
+chk('wardrobe open docks panel (fsward-dock) so avatar stays visible', W.document.body.classList.contains('fsward-dock'));
+chk('wardrobe open arms a front-facing preview camera', !!(W.A.fs.ward && W.A.fs.wardPos));
+W.A.fsWardClose();
+chk('wardrobe close removes dock class and restores pose', !W.document.body.classList.contains('fsward-dock') && !W.A.fs.wardPos);
+// VIP runway label height (no clip): build walkers and check y
+W.coins = 500; if (!W.A.fsIsVip()) W.A.fsBuyVip();
+W.A.fs.ord = ['H']; W.A.fs.fits = {H: Object.assign({}, W.avatar)}; W.A.fs.fxs = {H: W.A.fsCleanFx(null)}; W.A.fs.poses = {H:0};
+W.A.fs.ph = 'walk'; W.A.fsLocalWalk();
+const me = W.A.fs.walkers.find(w => w.u === 'H');
+chk('VIP You label sits at safe runway height (not clipped)', !!(me && me.meVip && me.lab && Math.abs(me.lab.position.y - 3.55) < .01), me && me.lab && me.lab.position.y);
 chk('VIP copy says Rublox coins / never real money', /Rublox coins/.test(SRC) && /never real money/i.test(SRC));
 // migrate: unknown slot value cleared
 st.rubloxAvatar = JSON.stringify({shirt:'#3a86ff',pants:'#2d2d2d',head:'#f1c27d',hairColor:'#6b3e1f',hair:'short',hat:'notARealShopHat_xyz'});
