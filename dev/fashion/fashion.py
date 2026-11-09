@@ -33,10 +33,18 @@ rep("""  <div class="hsblind" id="hsBlind">""", """  <button class="fswardbtn" i
   <div class="opanel" id="fsWard"><div class="mbox rcbox fsward">
     <div class="fshead"><b id="fsTheme"></b><span id="fsWardT"></span></div>
     <div class="stats fslikes" id="fsLikes"></div>
-    <div class="fstabs" id="fsTabs"></div>
-    <div class="fsitems" id="fsItems"></div>
-    <div class="stats fscount" id="fsCount"></div>
-    <div class="owinbtns"><button class="big green" id="fsReady">✅ I'm ready!</button><button class="big blue" id="fsKeepWard2">💾 Save for next show</button><button class="big blue" id="fsWardClose">👀 Look at me</button></div>
+    <div class="fslayout">
+      <div class="fsmirror" id="fsMirrorBox">
+        <canvas id="fsMirror" width="220" height="320" aria-label="Mirror preview"></canvas>
+        <small class="fsmirrorhint">⇆ drag / ←→ to turn</small>
+      </div>
+      <div class="fsbody">
+        <div class="fstabs" id="fsTabs"></div>
+        <div class="fsitems" id="fsItems"></div>
+        <div class="stats fscount" id="fsCount"></div>
+      </div>
+    </div>
+    <div class="owinbtns fsfoot"><button class="big green" id="fsReady">✅ I'm ready!</button><button class="big blue" id="fsKeepWard2">💾 Save for next show</button><button class="big blue" id="fsWardClose">👀 Look at me</button></div>
   </div></div>
   <div class="fsbar2" id="fsRate"><b id="fsRateN"></b><div class="fsstars" id="fsRateS"></div><small id="fsRateH"></small></div>
   <div class="fsbar2" id="fsPoses"><small id="fsPoseH"></small><div class="fsposes" id="fsPoseS"></div></div>
@@ -65,6 +73,17 @@ rep(".smode #oStam{display:none!important}", """.smode #oStam{display:none!impor
 .fstimes{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;font-weight:900;margin:4px 0}
 .fstm{border:2px solid #e3d6ff;background:#fff;border-radius:12px;padding:5px 12px;font:inherit;font-weight:900;cursor:pointer}.fstm.on{background:#8b5cf6;color:#fff;border-color:#8b5cf6}
 .fsward{max-width:680px;width:94vw}.fshead{display:flex;justify-content:space-between;align-items:center;font-size:20px;gap:10px}.fshead span{font-weight:900;color:#ff4d5e}
+/* wardrobe docks beside the avatar so you can see yourself while changing */
+body.fsward-dock #fsWard{display:flex!important;align-items:stretch;justify-content:flex-start;background:transparent;pointer-events:none;padding:8px}
+body.fsward-dock #fsWard .mbox.fsward{pointer-events:auto;max-width:min(760px,78vw);width:min(760px,78vw);margin:0;max-height:calc(100vh - 24px);overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.28);display:flex;flex-direction:column}
+.fslayout{display:flex;gap:10px;align-items:stretch;min-height:0;flex:1 1 auto;overflow:hidden}
+.fsmirror{flex:0 0 230px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px}
+.fsmirror canvas{width:220px;height:320px;border-radius:18px;background:#f3d4ff;box-shadow:inset 0 0 0 3px #ffb3d9,0 4px 0 rgba(0,0,0,.08);touch-action:none;cursor:grab}
+.fsmirrorhint{font-size:11px;font-weight:800;color:#8b5cf6}
+.fsbody{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+body.fsward-dock #fsWard .fsitems{flex:1 1 auto;min-height:0;max-height:none;overflow:auto}
+/* footer is a real flex row inside the dock — never absolute / never overlays the list */
+body.fsward-dock #fsWard .fsfoot,body.fsward-dock #fsWard .owinbtns.fsfoot{position:relative!important;flex:0 0 auto;flex-shrink:0;margin-top:8px;padding-top:6px;border-top:2px solid #f0e6ff;background:var(--card,#fff);z-index:2;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .fslikes{font-size:13px;margin:2px 0 6px}.fscount{font-size:12px;margin:2px 0}
 .fstabs{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-bottom:6px}
 .fstab{border:2px solid #e3d6ff;background:#fff;border-radius:12px;padding:3px 8px;font:inherit;font-size:19px;cursor:pointer;display:flex;flex-direction:column;align-items:center;min-width:52px}.fstab small{font-size:10px;font-weight:800}
@@ -83,7 +102,16 @@ rep(".smode #oStam{display:none!important}", """.smode #oStam{display:none!impor
 .fsposes{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}.fspose{border:2px solid #eee;background:#fff;border-radius:12px;padding:3px 6px;font:inherit;font-size:22px;cursor:pointer;display:flex;flex-direction:column;align-items:center;min-width:62px}.fspose small{font-size:10px;font-weight:800}.fspose.on{border-color:#ff6fb5;background:#fff0f7}
 .fsress{display:flex;flex-direction:column;gap:4px;margin:6px 0;max-height:30vh;overflow:auto}
 .fsres{display:flex;align-items:center;gap:8px;background:#f6f3ff;border-radius:12px;padding:3px 10px}.fsres img{width:34px;height:44px;border-radius:6px}.fsres span{flex:1;text-align:left;font-weight:800}.fsres.win{background:#fff4c2}.fsres small{font-size:11px;color:#777}
-@media (max-width:760px),(max-height:520px){#fsPick .emoji,#fsEnd .emoji{display:none}#fsPick h2,#fsEnd h2{font-size:18px;margin:0 0 2px}.fsitems{max-height:30vh}.fshead{font-size:15px}.fstab{font-size:15px;padding:2px 5px;min-width:42px}.fstab small{display:none}.fswardbtn{bottom:auto;top:64px;right:10px;font-size:14px;padding:7px 12px}.fsress{max-height:24vh}.fsintro b{font-size:28px}.fsstar{font-size:34px}.fspose{min-width:48px;font-size:18px}.fspose small{display:none}.fsnear{bottom:150px;font-size:15px}.hshelp{display:none}.fsgrid{grid-template-columns:repeat(auto-fill,minmax(68px,1fr))}}""")
+@media (max-width:760px),(max-height:520px){#fsPick .emoji,#fsEnd .emoji{display:none}#fsPick h2,#fsEnd h2{font-size:18px;margin:0 0 2px}.fsitems{max-height:30vh}.fshead{font-size:15px}.fstab{font-size:15px;padding:2px 5px;min-width:42px}.fstab small{display:none}.fswardbtn{bottom:auto;top:64px;right:10px;font-size:14px;padding:7px 12px}.fsress{max-height:24vh}.fsintro b{font-size:28px}.fsstar{font-size:34px}.fspose{min-width:48px;font-size:18px}.fspose small{display:none}.fsnear{bottom:150px;font-size:15px}.hshelp{display:none}.fsgrid{grid-template-columns:repeat(auto-fill,minmax(68px,1fr))}
+body.fsward-dock #fsWard{align-items:flex-end;justify-content:center;padding:0 6px 6px}
+body.fsward-dock #fsWard .mbox.fsward{max-width:96vw;width:96vw;max-height:70vh;margin:0 auto;overflow:hidden;padding:12px 12px 10px}
+.fslayout{flex-direction:column;gap:6px;flex:1 1 auto;min-height:0;overflow:hidden}
+.fsmirror{flex:0 0 auto;width:100%}
+.fsmirror canvas{width:100%;height:150px}
+.fsbody{min-height:0;flex:1 1 auto}
+body.fsward-dock #fsWard .fsitems{flex:1 1 auto;min-height:72px;max-height:none;overflow:auto}
+body.fsward-dock #fsWard .fsfoot{position:relative!important;flex:0 0 auto;margin-top:6px;padding-top:6px}
+body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}""")
 rep("  /* ---------- per-frame ---------- */\n", open('/workspace/rublox/tests/p35/fashion.js').read() + "  /* ---------- per-frame ---------- */\n")
 # engine hooks
 rep("rc = null; dsp = null; hs = null;\n    if (mode === 'hide') buildHide();", "rc = null; dsp = null; hs = null; fs = null;\n    if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide();")
