@@ -1,16 +1,17 @@
-  /* ===================== t227u: 🐴 CLOVER MEADOW STABLES — adopt, care, ride (sit on pony), jumping shows ===================== */
-  const SB_KEY = 'rubloxStable', SB_DRAIN = 25, SB_MOUNT_CD = .85;
+  /* ===================== t232u: 🐴 CLOVER MEADOW STABLES — real pony mesh, jump-while-mounted, prompt sync ===================== */
+  const SB_KEY = 'rubloxStable', SB_DRAIN = 25, SB_MOUNT_CD = .85, SB_SADDLE_Y = 1.25;
   const SB_PONIES = [
-    {id: 'buttercup', name: 'Buttercup', e: '🌼', coat: '#f6e3b4', mane: '#ff9f1c', eye: '#3a86ff', mark: 'star'},
-    {id: 'thistle', name: 'Thistle', e: '💜', coat: '#c39bff', mane: '#5b34c0', eye: '#2ec27e', mark: 'heart'},
-    {id: 'maple', name: 'Maple', e: '🍁', coat: '#d4a574', mane: '#7a4a1f', eye: '#ff6fb5', mark: 'blaze'},
-    {id: 'sky', name: 'Sky', e: '☁️', coat: '#bfe3ff', mane: '#3a86ff', eye: '#1d2340', mark: 'socks'},
-    {id: 'pepper', name: 'Pepper', e: '🖤', coat: '#3a3a48', mane: '#1d1d1d', eye: '#ffd23f', mark: 'star'},
-    {id: 'petal', name: 'Petal', e: '🌸', coat: '#ffb3c7', mane: '#ff6fb5', eye: '#8b5cf6', mark: 'heart'}
+    {id: 'buttercup', name: 'Buttercup', e: '🌼', coat: '#f6e3b4', mane: '#ff9f1c', eye: '#3a86ff', mark: 'star', hoof: '#5a4030'},
+    {id: 'thistle', name: 'Thistle', e: '💜', coat: '#c39bff', mane: '#5b34c0', eye: '#2ec27e', mark: 'heart', hoof: '#3a2a55'},
+    {id: 'maple', name: 'Maple', e: '🍁', coat: '#d4a574', mane: '#7a4a1f', eye: '#ff6fb5', mark: 'blaze', hoof: '#4a3020'},
+    {id: 'sky', name: 'Sky', e: '☁️', coat: '#bfe3ff', mane: '#3a86ff', eye: '#1d2340', mark: 'socks', hoof: '#445566'},
+    {id: 'pepper', name: 'Pepper', e: '🖤', coat: '#3a3a48', mane: '#1d1d1d', eye: '#ffd23f', mark: 'star', hoof: '#111118'},
+    {id: 'petal', name: 'Petal', e: '🌸', coat: '#ffb3c7', mane: '#ff6fb5', eye: '#8b5cf6', mark: 'heart', hoof: '#6a3048'}
   ];
   const SB_CARE = [['brush', '🪥', 'Brush', 'shine'], ['feed', '🥕', 'Feed', 'energy'], ['groom', '✨', 'Groom', 'mood']];
   const SB_JUMPS = 8, SB_SHOW_T = 90;
-  const SB_SIT = {lL: -1.45, lR: -1.45, aL: -.4, aR: -.4, lean: .12, y: .55};
+  // Upright straddle: hips open down the flanks, knees slightly bent, seated at saddle height
+  const SB_SIT = {lL: -.9, lR: -.9, lLo: .72, lRo: .72, aL: -.25, aR: -.25, aLo: .12, aRo: .12, lean: .02, y: .55};
   let sb = null;
   function sbProg(){
     const o = load(SB_KEY, null), r = o && typeof o === 'object' ? o : {};
@@ -20,48 +21,155 @@
   }
   function sbSave(p){ save(SB_KEY, p); }
   function sbPonyOf(id){ return SB_PONIES.find(p => p.id === id) || SB_PONIES[0]; }
+  function sbMat(col, opts){ return new THREE.MeshLambertMaterial(Object.assign({color: col}, opts || {})); }
   function sbMesh(pony, x, z){
+    // Cartoon pony built along +Z (nose = +Z) so mesh.rotation.y === P.face matches the rider.
     const def = sbPonyOf(pony.id), g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
-    const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.1, .9), new THREE.MeshLambertMaterial({color: def.coat})); body.position.y = 1.1; g.add(body);
-    const neck = new THREE.Mesh(new THREE.BoxGeometry(.45, .9, .45), new THREE.MeshLambertMaterial({color: def.coat})); neck.position.set(.85, 1.7, 0); g.add(neck);
-    const head = new THREE.Mesh(new THREE.BoxGeometry(.55, .5, .5), new THREE.MeshLambertMaterial({color: def.coat})); head.position.set(1.2, 2.15, 0); g.add(head);
-    const mane = new THREE.Mesh(new THREE.BoxGeometry(.3, .9, .55), new THREE.MeshLambertMaterial({color: def.mane})); mane.position.set(.7, 1.85, 0); g.add(mane);
-    [[-.5, .55, .35], [-.5, .55, -.35], [.4, .55, .35], [.4, .55, -.35]].forEach(([a, b, c]) => { const leg = new THREE.Mesh(new THREE.BoxGeometry(.22, 1.1, .22), new THREE.MeshLambertMaterial({color: shade(def.coat, -20)})); leg.position.set(a, b, c); g.add(leg); });
+    const coat = sbMat(def.coat), maneM = sbMat(def.mane), hoofM = sbMat(def.hoof || shade(def.coat, -40));
+    const dark = sbMat(shade(def.coat, -25)), soft = sbMat(shade(def.coat, 15));
+    // rounded barrel body (capsule along Z)
+    const body = new THREE.Mesh(new THREE.CapsuleGeometry(.52, 1.05, 6, 10), coat);
+    body.rotation.x = Math.PI / 2; body.position.set(0, 1.15, 0); g.add(body);
+    // arched neck angled up toward the head
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(.2, .28, .9, 8), coat);
+    neck.position.set(0, 1.65, .72); neck.rotation.x = -.7; g.add(neck);
+    // head + muzzle
+    const head = new THREE.Group(); head.position.set(0, 2.15, 1.15); g.add(head);
+    const skull = new THREE.Mesh(new THREE.SphereGeometry(.38, 10, 8), coat); head.add(skull);
+    const muzzle = new THREE.Mesh(new THREE.SphereGeometry(.22, 8, 6), soft); muzzle.position.set(0, -.08, .32); muzzle.scale.set(1, .85, 1.15); head.add(muzzle);
+    // nostrils
+    [[-.08, -.1, .48], [.08, -.1, .48]].forEach(([ax, ay, az]) => { const n = new THREE.Mesh(new THREE.SphereGeometry(.04, 6, 6), dark); n.position.set(ax, ay, az); head.add(n); });
+    // big friendly eyes + highlights
+    [[-.16, .08, .28], [.16, .08, .28]].forEach(([ax, ay, az]) => {
+      const white = new THREE.Mesh(new THREE.SphereGeometry(.1, 8, 8), sbMat('#fffaf0')); white.position.set(ax, ay, az); head.add(white);
+      const iris = new THREE.Mesh(new THREE.SphereGeometry(.06, 8, 8), sbMat(def.eye)); iris.position.set(ax, ay, az + .06); head.add(iris);
+      const pupil = new THREE.Mesh(new THREE.SphereGeometry(.03, 6, 6), sbMat('#1d2340')); pupil.position.set(ax, ay, az + .1); head.add(pupil);
+      const hi = new THREE.Mesh(new THREE.SphereGeometry(.018, 6, 6), sbMat('#ffffff')); hi.position.set(ax - .02, ay + .025, az + .12); head.add(hi);
+    });
+    // ears
+    [[-.14, .32, 0], [.14, .32, 0]].forEach(([ax, ay, az], i) => {
+      const ear = new THREE.Mesh(new THREE.ConeGeometry(.09, .28, 6), coat); ear.position.set(ax, ay, az); ear.rotation.z = i ? .35 : -.35; ear.rotation.x = -.15; head.add(ear);
+      const inn = new THREE.Mesh(new THREE.ConeGeometry(.05, .18, 5), sbMat('#ffc6d9')); inn.position.set(ax, ay - .02, az + .02); inn.rotation.copy(ear.rotation); head.add(inn);
+    });
+    // flowing mane along the neck
+    for (let i = 0; i < 6; i++){
+      const m = new THREE.Mesh(new THREE.SphereGeometry(.14 - i * .01, 6, 6), maneM);
+      m.position.set((i % 2 ? .12 : -.12), 1.85 + i * .06, .35 + i * .12);
+      g.add(m);
+    }
+    const forelock = new THREE.Mesh(new THREE.SphereGeometry(.12, 6, 6), maneM); forelock.position.set(0, .28, .05); head.add(forelock);
+    // tail
+    const tail = new THREE.Group(); tail.position.set(0, 1.35, -.7); g.add(tail);
+    for (let i = 0; i < 4; i++){
+      const t = new THREE.Mesh(new THREE.SphereGeometry(.13 - i * .015, 6, 6), maneM);
+      t.position.set(0, -.15 * i, -.12 * i); tail.add(t);
+    }
+    // four legs with hooves — refs for trot cycle (order: FL, FR, BL, BR)
+    const legs = [];
+    [[.28, .55, .42], [-.28, .55, .42], [.28, .55, -.38], [-.28, .55, -.38]].forEach(([lx, ly, lz]) => {
+      const leg = new THREE.Group(); leg.position.set(lx, ly, lz); g.add(leg);
+      const thigh = new THREE.Mesh(new THREE.CylinderGeometry(.09, .1, .55, 6), coat); thigh.position.y = 0; leg.add(thigh);
+      const shin = new THREE.Mesh(new THREE.CylinderGeometry(.07, .08, .45, 6), dark); shin.position.y = -.45; leg.add(shin);
+      const hoof = new THREE.Mesh(new THREE.CylinderGeometry(.09, .1, .12, 6), hoofM); hoof.position.y = -.72; leg.add(hoof);
+      legs.push(leg);
+    });
+    // little saddle + bridle (shown when mounted)
+    const saddle = new THREE.Group(); saddle.visible = false; g.add(saddle);
+    const seat = new THREE.Mesh(new THREE.BoxGeometry(.55, .12, .7), sbMat('#8b4513')); seat.position.set(0, 1.62, .05); saddle.add(seat);
+    const blanket = new THREE.Mesh(new THREE.BoxGeometry(.65, .06, .85), sbMat('#ffd23f')); blanket.position.set(0, 1.55, .05); saddle.add(blanket);
+    const bridle = new THREE.Group(); bridle.visible = false; head.add(bridle);
+    const strap = new THREE.Mesh(new THREE.TorusGeometry(.28, .025, 6, 12), sbMat('#5a4030')); strap.rotation.y = Math.PI / 2; strap.position.set(0, -.02, .05); bridle.add(strap);
+    const rein = new THREE.Mesh(new THREE.BoxGeometry(.04, .04, .5), sbMat('#5a4030')); rein.position.set(0, -.15, -.15); bridle.add(rein);
+
+    g.userData.parts = {body, neck, head, headY: head.position.y, tail, legs, saddle, bridle, animT: 0, moving: false};
     g.visible = true; return g;
+  }
+  function sbAnimPony(dt){
+    if (!sb || !sb.mesh || !sb.mesh.userData.parts) return;
+    const p = sb.mesh.userData.parts;
+    const spd = sb.ridden ? Math.hypot(P.vx || 0, P.vz || 0) : (p.moving ? 2.5 : 0);
+    const moving = spd > .25; p.moving = moving;
+    p.animT += dt * (moving ? 9 : 2.2);
+    if (moving){
+      p.legs.forEach((leg, i) => {
+        // diagonal pairs: FL+BR vs FR+BL
+        const phase = p.animT + ((i === 0 || i === 3) ? 0 : Math.PI);
+        leg.rotation.x = Math.sin(phase) * .55;
+      });
+      p.head.position.y = p.headY + Math.sin(p.animT * 2) * .045;
+      p.neck.rotation.x = -.7 + Math.sin(p.animT * 2) * .04;
+      p.tail.rotation.y = Math.sin(p.animT * 1.5) * .2;
+    } else {
+      p.legs.forEach(leg => { leg.rotation.x *= Math.max(0, 1 - dt * 6); });
+      p.head.position.y = p.headY + Math.sin(worldT * 1.4) * .02;
+      p.tail.rotation.y = Math.sin(worldT * 2.1) * .4; // idle swish
+      p.neck.rotation.x = -.7;
+    }
+    const on = !!sb.ridden; p.saddle.visible = on; p.bridle.visible = on;
   }
   function sbSign(text, x, z, col){
     plat(x, .45, z, 2.6, 2.6, col, .3);
     const L = label(text, 'rgba(29,35,64,.92)'); L.position.set(x, 1.45, z); scene.add(L); return L;
   }
   function sbRailVisual(x, z, col){
-    // decorative only — NOT added to solids, so they never block walking outside a show
     const mat = new THREE.MeshLambertMaterial({color: col});
     const postL = new THREE.Mesh(new THREE.BoxGeometry(.25, 1.0, .25), mat); postL.position.set(x - 1.3, .5, z); scene.add(postL);
     const postR = new THREE.Mesh(new THREE.BoxGeometry(.25, 1.0, .25), mat); postR.position.set(x + 1.3, .5, z); scene.add(postR);
     const rail = new THREE.Mesh(new THREE.BoxGeometry(2.6, .18, .18), mat); rail.position.set(x, .85, z); scene.add(rail);
     return {x, z, rail, posts: [postL, postR], cleared: false};
   }
+  function sbActKey(){ return (typeof pad !== 'undefined' && pad && pad.on) ? 'Ⓧ' : 'E'; }
+  function sbPrompt(){
+    if (!sb) return;
+    const btn = $('#sbAct'); if (!btn) return;
+    const key = sbActKey();
+    if (!sb.pony){ btn.classList.add('show'); btn.innerHTML = '🐴 Adopt<small>' + key + '</small>'; btn.dataset.state = 'adopt'; return; }
+    if (sb.ridden){
+      // always offer Dismount while mounted (E / Ⓧ / button) — never Space
+      if (sb.near >= 0 && sb.stations[sb.near].id === 'show'){ btn.classList.add('show'); btn.innerHTML = '🏆 Start Show<small>' + key + '</small>'; btn.dataset.state = 'show'; return; }
+      btn.classList.add('show'); btn.innerHTML = '🐴 Dismount<small>' + key + '</small>'; btn.dataset.state = 'dismount'; return;
+    }
+    if (sb.near < 0){ btn.classList.remove('show'); btn.innerHTML = ''; btn.dataset.state = ''; return; }
+    const s = sb.stations[sb.near];
+    let lab = s.e + ' ' + s.id; if (s.id === 'saddle') lab = '🐎 Mount'; if (s.id === 'show') lab = '🏆 Start Show';
+    btn.classList.add('show'); btn.innerHTML = lab + '<small>' + key + '</small>'; btn.dataset.state = s.id; 
+  }
+  function sbBindAct(){
+    const btn = $('#sbAct'); if (!btn || btn.dataset.bound) return;
+    btn.dataset.bound = '1'; btn.setAttribute('type', 'button');
+    btn.onclick = () => { sbAct(); try { btn.blur(); } catch (e){} };
+    // Space must NEVER activate this button (browser default on focused <button>) — Space is jump
+    btn.addEventListener('keydown', e => { if (e.code === 'Space' || e.key === ' '){ e.preventDefault(); e.stopPropagation(); } });
+  }
+  function sbSyncRider(){
+    if (!sb || !sb.ridden || !sb.mesh) return;
+    if (Math.hypot(P.vx || 0, P.vz || 0) > .12) sb.heading = Math.atan2(P.vx, P.vz);
+    if (typeof sb.heading !== 'number' || !isFinite(sb.heading)) sb.heading = P.face;
+    P.face = sb.heading;
+    sb.mesh.rotation.y = sb.heading; // pony nose (+Z) matches rider facing
+    // pony lifts with the rider on jumps; grounded seat at saddle height
+    const airborne = !P.onGround || (P.vy || 0) > .35;
+    if (!airborne) P.y = SB_SADDLE_Y;
+    else if (P.y < SB_SADDLE_Y) P.y = SB_SADDLE_Y;
+    sb.mesh.position.set(P.x, Math.max(0, P.y - SB_SADDLE_Y), P.z);
+  }
   function buildStable(){
     const prog = sbProg();
-    sb = {ph: prog.pony ? 'care' : 'pick', t: 0, pony: prog.pony ? Object.assign({}, prog.pony) : null, mesh: null, near: -1, panel: false, show: null, score: 0, jumps: [], ridden: false, mountCd: 0, earned: 0, gates: [], labels: [], toastT: 0};
+    sb = {ph: prog.pony ? 'care' : 'pick', t: 0, pony: prog.pony ? Object.assign({}, prog.pony) : null, mesh: null, near: -1, panel: false, show: null, score: 0, jumps: [], ridden: false, mountCd: 0, heading: Math.PI, earned: 0, gates: [], labels: [], toastT: 0};
     scene.background = new THREE.Color('#c8e8ff');
     plat(0, 0, 0, 60, 60, '#8fd39a', .35);
-    // low see-through fence (transparent so camera pull-in ignores it; still solid for the player)
     sb.fences = [];
     [[0, 30, 62, .5], [0, -30, 62, .5], [30, 0, .5, 62], [-30, 0, .5, 62]].forEach(([x, z, w, d]) => {
       const f = plat(x, .7, z, w, d, '#e8a04a', .7); f.camSkip = true;
       if (f.mesh && f.mesh.material){ f.mesh.material.transparent = true; f.mesh.material.opacity = .55; }
       sb.fences.push(f);
     });
-    // big obvious barn behind the pads (−z). Camera looks toward −z so the barn fills the backdrop.
-    plat(-14, 7.0, -14, 16, 10, '#d4a574', 7.0);                 // walls up to eaves
-    plat(-14, 7.55, -14, 18, 12, '#8a5a3c', .9);                  // roof sits on walls (no floating bar)
-    plat(-14, 2.2, -8.6, 3.2, .5, '#6b3e1f', 2.2);                // door
-    plat(-19, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);                // window L
-    plat(-9, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);                 // window R
+    plat(-14, 7.0, -14, 16, 10, '#d4a574', 7.0);
+    plat(-14, 7.55, -14, 18, 12, '#8a5a3c', .9);
+    plat(-14, 2.2, -8.6, 3.2, .5, '#6b3e1f', 2.2);
+    plat(-19, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);
+    plat(-9, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);
     const barnSign = label('🐴 Clover Meadow Barn', 'rgba(139,92,246,.95)'); barnSign.position.set(-14, 5.6, -8.2); scene.add(barnSign);
-    // pads in front of barn. With cam.yaw = 0 (camera on +z looking −z), screen L→R = −x → +x
-    // so brush (−20) · feed (−14) · groom (−8) reads 🪥 🥕 ✨
     sb.stations = [
       {id: 'brush', x: -20, z: 2, e: '🪥', col: '#ffe08a'},
       {id: 'feed',  x: -14, z: 2, e: '🥕', col: '#9ff0c8'},
@@ -75,20 +183,19 @@
       sb.gates.push(sbRailVisual(x, z, i % 2 ? '#ff6fb5' : '#3a86ff'));
     }
     plat(12, .3, 22, 4, 4, '#ffd23f', .3);
-    // face the barn: camera behind the player on +z, looking toward −z
     Object.assign(P, {x: -14, y: .05, z: 14, vx: 0, vy: 0, vz: 0}); P.face = Math.PI; cam.yaw = 0; cam.pitch = .36; cam.dist = 15;
     checkpoints[0] = {idx: 0, spawn: {x: -14, y: .05, z: 14}, flag: new THREE.Object3D()};
     if (sb.pony){ sb.mesh = sbMesh(sb.pony, -14, 10); sb.mesh.visible = true; }
   }
   function sbFlash(msg){ if (!sb) return; sb.toastT = 2.4; const b = $('#oBig'); if (b) b.textContent = msg; banner(msg); }
-  function stableEnter(){ if (!sb) return; sb.panel = false; sb.near = -1; sb.ridden = false; sb.mountCd = 0; cam.yaw = 0; cam.dist = 15; cam.pitch = .36;
+  function stableEnter(){ if (!sb) return; sb.panel = false; sb.near = -1; sb.ridden = false; sb.mountCd = 0; sb.heading = P.face; cam.yaw = 0; cam.dist = 15; cam.pitch = .36;
     if (sb.pony && !sb.mesh) sb.mesh = sbMesh(sb.pony, -14, 10);
     if (sb.mesh) sb.mesh.visible = true;
-    sbHud();
+    sbBindAct(); sbPrompt(); sbHud();
     if (sb.ph === 'pick' || !sb.pony){ sb.ph = 'pick'; banner('🐴 Pick a pony to adopt!'); sbShowPick(true); }
     else { sb.ph = 'care'; banner('🐴 ' + sb.pony.name + '! Pads left→right: 🪥 🥕 ✨ · 🐎 saddle closer to you · 🏆 show to the right'); }
     tipTimer = 7; }
-  function stableStop(){ sb = null; ['#sbAct', '#sbPick'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); const b = $('#oBig'); if (b && !nds) b.textContent = ''; }
+  function stableStop(){ sb = null; ['#sbAct', '#sbPick'].forEach(id => { const e = $(id); if (e){ e.classList.remove('show'); e.innerHTML = ''; } }); const b = $('#oBig'); if (b && !nds) b.textContent = ''; }
   function sbShowPick(on){
     const el = $('#sbPick'); if (!el) return; if (!on){ el.classList.remove('show'); sb.panel = false; return; }
     sb.panel = true; el.classList.add('show'); el.innerHTML = '<h2>🐴 Adopt a Pony</h2><div class="fsitems" id="sbPickList"></div><div class="row"><button class="big gray" id="sbPickClose">👋 Later</button></div>';
@@ -100,7 +207,7 @@
     const def = sbPonyOf(id); sb.pony = {id: def.id, name: def.name, shine: 70, energy: 70, mood: 70};
     const p = sbProg(); p.pony = sb.pony; sbSave(p);
     if (sb.mesh) scene.remove(sb.mesh); sb.mesh = sbMesh(sb.pony, -14, 10); sb.mesh.visible = true;
-    sb.ph = 'care'; sb.ridden = false; sbShowPick(false); sbFlash('🎉 You adopted ' + def.e + ' ' + def.name + '!'); confetti(); SND.coin(); sbHud(); return true;
+    sb.ph = 'care'; sb.ridden = false; sbShowPick(false); sbFlash('🎉 You adopted ' + def.e + ' ' + def.name + '!'); confetti(); SND.coin(); sbPrompt(); sbHud(); return true;
   }
   function sbCare(kind){
     if (!sb || !sb.pony || sb.ridden) return false;
@@ -115,61 +222,64 @@
       if (sb.ridden) return true;
       if (sb.pony.energy < 15){ sbFlash('😴 ' + sb.pony.name + ' is too tired — feed them first!'); return false; }
       sb.ridden = true; sb.ph = 'ride'; sb.mountCd = SB_MOUNT_CD;
-      if (sb.mesh){ sb.mesh.visible = true; sb.mesh.position.set(P.x, 0, P.z); }
-      sbFlash('🐎 Mounted! Ride to the 🏆 show pad'); SND.coin(); sbHud(); return true;
+      sb.heading = P.face; P.y = SB_SADDLE_Y; P.onGround = true;
+      if (sb.mesh){ sb.mesh.visible = true; sbSyncRider(); const pts = sb.mesh.userData.parts; if (pts){ pts.saddle.visible = true; pts.bridle.visible = true; } }
+      sbFlash('🐎 Mounted! Space jumps together · E / Ⓧ dismounts'); SND.coin(); sbPrompt(); sbHud(); return true;
     }
     if (!sb.ridden) return true;
-    sb.ridden = false; sb.ph = 'care'; sb.mountCd = SB_MOUNT_CD;
-    if (sb.mesh){ sb.mesh.visible = true; sb.mesh.position.set(P.x, 0, P.z - 2); }
-    sbFlash('🐴 You hopped off.'); sbHud(); return true;
+    sb.ridden = false; sb.ph = 'care'; sb.mountCd = SB_MOUNT_CD; P.y = .05; P.onGround = true;
+    if (sb.mesh){ sb.mesh.visible = true; sb.mesh.position.set(P.x, 0, P.z - 2); sb.mesh.rotation.y = P.face; const pts = sb.mesh.userData.parts; if (pts){ pts.saddle.visible = false; pts.bridle.visible = false; } }
+    sbFlash('🐴 You hopped off.'); sbPrompt(); sbHud(); return true;
   }
   function sbStartShow(){
     if (!sb || !sb.pony) return false;
     if (!sb.ridden){ sbFlash('🐎 Mount your pony first at the 🐎 saddle!'); return false; }
     sb.show = {t: SB_SHOW_T, score: 0, done: 0}; sb.gates.forEach(g => g.cleared = false); sb.ph = 'show';
-    sbFlash('🏆 Jumping Show! Clear the rails — 90s'); tipTimer = 5; sbHud(); return true;
+    sbFlash('🏆 Jumping Show! Space jumps the pony · clear the rails — 90s'); tipTimer = 5; sbPrompt(); sbHud(); return true;
   }
   function sbEndShow(){
     if (!sb || !sb.show) return; const sc = sb.show.score, p = sbProg(); p.shows++; p.best = Math.max(p.best, sc);
     const pay = 5 + sc * 4; p.coins += pay; if (sb.pony){ sb.pony.energy = Math.max(0, sb.pony.energy - 20); p.pony = Object.assign({}, sb.pony); } sbSave(p);
     setCoins(coins + pay); sb.earned += pay; runCoins = (runCoins || 0) + pay; confetti(); SND.win();
-    sbFlash('🏅 Show over! ' + sc + '/' + SB_JUMPS + ' · +' + pay + ' 🪙'); sb.show = null; sb.ph = 'ride'; sbHud();
+    sbFlash('🏅 Show over! ' + sc + '/' + SB_JUMPS + ' · +' + pay + ' 🪙'); sb.show = null; sb.ph = 'ride'; sbPrompt(); sbHud();
   }
-  function sbPose(){ return sb && sb.ridden ? Object.assign({lLo: 0, lRo: 0, aLo: 0, aRo: 0}, SB_SIT) : null; }
+  function sbPose(){ return sb && sb.ridden ? Object.assign({}, SB_SIT) : null; }
   function stableUpdate(dt){
     if (!sb) return;
     if (sb.mountCd > 0) sb.mountCd -= dt;
     if (sb.toastT > 0){ sb.toastT -= dt; if (sb.toastT <= 0){ const b = $('#oBig'); if (b && !nds) b.textContent = ''; } }
-    // keep camera comfortable — never collapse into the avatar/barn
     if (cam.dist < 13) cam.dist += (13 - cam.dist) * Math.min(1, dt * 4);
     if (cam.pitch < .3) cam.pitch += (.3 - cam.pitch) * Math.min(1, dt * 3);
     let near = -1, best = 2.8; sb.stations.forEach((s, i) => { const d = Math.hypot(P.x - s.x, P.z - s.z); if (d < best){ best = d; near = i; } });
-    sb.near = near; const btn = $('#sbAct');
-    if (btn){ if (near >= 0 && sb.pony){ const s = sb.stations[near]; let lab = s.e + ' ' + s.id; if (s.id === 'saddle') lab = sb.ridden ? '🐴 Dismount' : '🐎 Mount'; if (s.id === 'show') lab = '🏆 Start Show';
-      btn.classList.add('show'); btn.innerHTML = lab + '<small>E / Ⓧ</small>'; } else if (!sb.pony){ btn.classList.add('show'); btn.innerHTML = '🐴 Adopt<small>E / Ⓧ</small>'; } else btn.classList.remove('show'); }
+    sb.near = near; sbPrompt();
     if (sb.ph === 'show' && sb.show){
       sb.show.t -= dt; if (sb.show.t <= 0){ sbEndShow(); return; }
       sb.gates.forEach(g => { if (g.cleared) return; if (Math.hypot(P.x - g.x, P.z - g.z) < 1.7 && P.y > .5){ g.cleared = true; sb.show.score++; sb.show.done++; SND.cp(); banner('✨ Cleared! ' + sb.show.score + '/' + SB_JUMPS); } });
       if (sb.show.score >= SB_JUMPS) sbEndShow();
     }
-    // pony: follow when dismounted; sit under the rider when mounted
     if (sb.mesh && sb.pony && sb.ph !== 'pick'){
       sb.mesh.visible = true;
-      if (sb.ridden){ sb.mesh.position.set(P.x, 0, P.z); sb.mesh.rotation.y = P.face; }
+      if (sb.ridden) sbSyncRider();
       else { const m = sb.mesh.position, dx = P.x - m.x, dz = P.z - 2.2 - m.z, d = Math.hypot(dx, dz);
-        if (d > 2.2){ m.x += dx / d * dt * 3.5; m.z += dz / d * dt * 3.5; sb.mesh.rotation.y = Math.atan2(dx, dz); } }
+        if (d > 2.2){ m.x += dx / d * dt * 3.5; m.z += dz / d * dt * 3.5; m.y = 0; sb.mesh.rotation.y = Math.atan2(dx, dz); }
+        if (sb.mesh.userData.parts) sb.mesh.userData.parts.moving = d > 2.4; }
     }
+    sbAnimPony(dt);
     if (sb.pony && sb.ph !== 'pick'){ sb.t += dt; if (sb.t > SB_DRAIN){ sb.t = 0; sb.pony.shine = Math.max(0, sb.pony.shine - 1); sb.pony.energy = Math.max(0, sb.pony.energy - 1); sb.pony.mood = Math.max(0, sb.pony.mood - 1); const p = sbProg(); p.pony = Object.assign({}, sb.pony); sbSave(p); } }
     sbHud();
   }
-  function stableAnimate(dt){ if (sb && sb.mesh && !sb.ridden) sb.mesh.rotation.y += dt * .03; }
+  function stableAnimate(dt){ if (sb && sb.mesh && !sb.ridden){ /* idle spin removed — facing/anim handled in sbAnimPony */ } }
   function sbAct(){
     if (!sb) return false;
     if (!sb.pony){ sbShowPick(true); return true; }
-    if (sb.near < 0) return false; const s = sb.stations[sb.near];
-    if (s.id === 'brush' || s.id === 'feed' || s.id === 'groom') return sbCare(s.id);
-    if (s.id === 'saddle') return sbMount(!sb.ridden);
-    if (s.id === 'show') return sbStartShow();
+    if (sb.near >= 0){
+      const s = sb.stations[sb.near];
+      if (s.id === 'show') return sbStartShow();
+      if (s.id === 'saddle') return sbMount(!sb.ridden);
+      if (!sb.ridden && (s.id === 'brush' || s.id === 'feed' || s.id === 'groom')) return sbCare(s.id);
+    }
+    // E / Ⓧ / button while mounted (and not on show pad) → dismount. Space never reaches here.
+    if (sb.ridden) return sbMount(false);
     return false;
   }
   function sbHud(){
@@ -178,4 +288,11 @@
     n.textContent = sbPonyOf(sb.pony.id).e + ' ' + sb.pony.name + (sb.ridden ? ' 🐎' : '') + ' · ✨' + Math.round(sb.pony.shine) + ' 🥕' + Math.round(sb.pony.energy) + ' 💕' + Math.round(sb.pony.mood) + (sb.show ? ' · 🏆 ' + sb.show.score + '/' + SB_JUMPS + ' · ⏱️' + Math.ceil(sb.show.t) : '');
   }
   function sbPad(jp){ if (!sb) return false; if (jp.x){ sbAct(); return true; } return false; }
-  function sbKey(e){ if (!sb || e.repeat || paused) return false; if (e.code === 'KeyE'){ sbAct(); return true; } if (e.code === 'Escape' && sb.panel){ sbShowPick(false); return true; } return false; }
+  function sbKey(e){
+    if (!sb || e.repeat || paused) return false;
+    // Space is jump (handled globally) — never treat it as dismount
+    if (e.code === 'Space') return false;
+    if (e.code === 'KeyE'){ sbAct(); return true; }
+    if (e.code === 'Escape' && sb.panel){ sbShowPick(false); return true; }
+    return false;
+  }
