@@ -1418,7 +1418,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.09-14';
+const BUILD = '2026.11.09-15';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -11075,92 +11075,157 @@ const Obby = (() => {
   }
   function sbPad(jp){ if (!sb) return false; if (jp.x){ sbAct(); return true; } return false; }
   function sbKey(e){ if (!sb || e.repeat || paused) return false; if (e.code === 'KeyE'){ sbAct(); return true; } if (e.code === 'Escape' && sb.panel){ sbShowPick(false); return true; } return false; }
-  /* ===================== t227u: 👻 GIGGLE MANOR ESCAPE — mildly spooky puzzle rooms, friendly ghosts, escape before the timer ===================== */
-  const HM_KEY = 'rubloxHaunt', HM_TIME = 180;
+  /* ===================== t227u: 👻 GIGGLE MANOR ESCAPE — reachable rooms, auto key pickup, guide beacon ===================== */
+  const HM_KEY = 'rubloxHaunt', HM_TIME = 180, HM_PICK = 1.8;
+  const HM_COLS = [
+    {hex: '#ff6fb5', name: 'PINK', e: '💗'},
+    {hex: '#7fd6ff', name: 'BLUE', e: '💙'},
+    {hex: '#9ff0c8', name: 'GREEN', e: '💚'}
+  ];
   let hm = null;
   function hmProg(){ const o = load(HM_KEY, null), r = o && typeof o === 'object' ? o : {}; return {escapes: Math.max(0, r.escapes | 0), best: Math.max(0, r.best | 0), coins: Math.max(0, +r.coins || 0)}; }
+  function hmColInfo(){ return HM_COLS.find(c => c.hex === (hm && hm.needCol)) || HM_COLS[0]; }
+  function hmWall(x, top, z, w, d, h, col){ return plat(x, top, z, w, d, col || '#6b5b8a', h); }
   function buildHaunt(){
-    hm = {ph: 'play', t: HM_TIME, keys: 0, need: 3, pattern: [0, 2, 1, 3], pressed: [], colour: null, needCol: ['#ff6fb5', '#7fd6ff', '#ffe08a'][Math.random() * 3 | 0], levers: [false, false, false], doorOpen: false, ghosts: [], earned: 0, paid: false, remote: mpGuest(), near: -1};
+    const pick = HM_COLS[Math.random() * HM_COLS.length | 0];
+    hm = {ph: 'play', t: HM_TIME, keys: 0, need: 3, pattern: [0, 2, 1, 3], pressed: [], colour: null, needCol: pick.hex, levers: [false, false, false], doorOpen: false, ghosts: [], earned: 0, paid: false, remote: mpGuest(), near: -1, beacon: null, step: 'keys'};
     scene.background = new THREE.Color('#2a2450');
-    if (scene.fog){ scene.fog.color = new THREE.Color('#3a3060'); scene.fog.near = 8; scene.fog.far = 55; }
-    plat(0, 0, 0, 40, 40, '#4a3f6b', .4);
+    if (scene.fog){ scene.fog.color = new THREE.Color('#3a3060'); scene.fog.near = 10; scene.fog.far = 60; }
+    plat(0, 0, 0, 44, 44, '#4a3f6b', .4);
     // outer walls
-    [[0, 20, 42, 1], [0, -20, 42, 1], [20, 0, 1, 42], [-20, 0, 1, 42]].forEach(([x, z, w, d]) => plat(x, 3, z, w, d, '#5b4d7a', 3));
-    // three puzzle rooms + hall
-    plat(-10, 3, 0, .6, 18, '#6b5b8a', 3); plat(10, 3, 0, .6, 18, '#6b5b8a', 3); plat(0, 3, 8, 20, .6, '#6b5b8a', 3);
-    // key pedestals (room left)
-    [[-14, -6], [-14, 0], [-14, 6]].forEach(([x, z], i) => { plat(x, .9, z, 1.4, 1.4, '#ffd23f', .9); const L = label('🔑 Key ' + (i + 1), 'rgba(255,210,63,.92)'); L.position.set(x, 2.2, z); scene.add(L); hm.ghosts.push({kind: 'key', i, x, z, got: false}); });
-    // pattern pads (room right) — soft pastel, not scary
-    const cols = ['#ffb3c7', '#9ff0c8', '#7fd6ff', '#ffe08a'];
-    [[12, -4], [16, -4], [12, 0], [16, 0]].forEach(([x, z], i) => { plat(x, .5, z, 2, 2, cols[i], .4); const L = label('🎵 ' + (i + 1), 'rgba(127,214,255,.9)'); L.position.set(x, 1.8, z); scene.add(L); hm.ghosts.push({kind: 'pad', i, x, z}); });
-    // colour ghosts (back room) — friendly cartoon blobs
-    [['#ff6fb5', 'Pink'], ['#7fd6ff', 'Blue'], ['#ffe08a', 'Gold']].forEach(([c, n], i) => {
-      const x = -6 + i * 6, z = 14; plat(x, .4, z, 2.2, 2.2, c, .35);
-      const g = new THREE.Mesh(new THREE.SphereGeometry(1.1, 12, 10), new THREE.MeshLambertMaterial({color: c, transparent: true, opacity: .85})); g.position.set(x, 1.6, z); scene.add(g);
-      const L = label('👻 ' + n, 'rgba(255,255,255,.9)'); L.position.set(x, 3.2, z); scene.add(L);
-      hm.ghosts.push({kind: 'colour', i, x, z, col: c, mesh: g});
+    [[0, 22, 46, 1], [0, -22, 46, 1], [22, 0, 1, 46], [-22, 0, 1, 46]].forEach(([x, z, w, d]) => hmWall(x, 3, z, w, d, 3, '#5b4d7a'));
+    // room dividers WITH doorways (gaps) so every room is reachable from spawn
+    // left divider (x=-10): gap around z=0
+    hmWall(-10, 3, -8, .6, 8, 3); hmWall(-10, 3, 8, .6, 8, 3);
+    // right divider (x=10): gap around z=0
+    hmWall(10, 3, -8, .6, 8, 3); hmWall(10, 3, 8, .6, 8, 3);
+    // back divider (z=8): gap around x=0 toward ghost room
+    hmWall(-10, 3, 8, 8, .6, 3); hmWall(10, 3, 8, 8, .6, 3);
+    // doorway mats (visual)
+    [[-10, 0], [10, 0], [0, 8]].forEach(([x, z]) => plat(x, .08, z, 2.4, 2.4, '#c39bff', .08));
+    // KEYS — left room (x≈-14), all reachable via left doorway
+    [[-14, -6], [-14, 0], [-14, 6]].forEach(([x, z], i) => {
+      plat(x, .9, z, 1.6, 1.6, '#ffd23f', .9);
+      const L = label('🔑 Key ' + (i + 1), 'rgba(255,210,63,.92)'); L.position.set(x, 2.3, z); scene.add(L);
+      hm.ghosts.push({kind: 'key', i, x, z, got: false, label: L});
     });
-    // levers near exit
-    [[-3, -14], [0, -14], [3, -14]].forEach(([x, z], i) => { plat(x, 1.0, z, 1.2, 1.2, '#c39bff', 1.0); const L = label('🎚️ ' + (i + 1), 'rgba(195,155,255,.92)'); L.position.set(x, 2.4, z); scene.add(L); hm.ghosts.push({kind: 'lever', i, x, z}); });
-    // exit door
-    plat(0, 2.5, -18, 4, .8, '#ff9f6b', 2.5); const door = label('🚪 Exit', 'rgba(255,159,107,.95)'); door.position.set(0, 4.2, -18); scene.add(door); hm.door = {x: 0, z: -18};
-    Object.assign(P, {x: 0, y: .05, z: 2, vx: 0, vy: 0, vz: 0}); P.face = Math.PI; cam.yaw = Math.PI; cam.pitch = .3; cam.dist = 10;
+    // SONG PADS — right room
+    const cols = ['#ffb3c7', '#9ff0c8', '#7fd6ff', '#ffe08a'];
+    [[12, -4], [16, -4], [12, 0], [16, 0]].forEach(([x, z], i) => {
+      plat(x, .5, z, 2.2, 2.2, cols[i], .4);
+      const L = label('🎵 ' + (i + 1), 'rgba(127,214,255,.9)'); L.position.set(x, 1.9, z); scene.add(L);
+      hm.ghosts.push({kind: 'pad', i, x, z});
+    });
+    // COLOUR GHOSTS — back room (z≈14)
+    HM_COLS.forEach((c, i) => {
+      const x = -6 + i * 6, z = 14; plat(x, .4, z, 2.4, 2.4, c.hex, .35);
+      const g = new THREE.Mesh(new THREE.SphereGeometry(1.15, 12, 10), new THREE.MeshLambertMaterial({color: c.hex, transparent: true, opacity: .88}));
+      g.position.set(x, 1.7, z); scene.add(g);
+      const L = label(c.e + ' ' + c.name, 'rgba(255,255,255,.92)'); L.position.set(x, 3.3, z); scene.add(L);
+      hm.ghosts.push({kind: 'colour', i, x, z, col: c.hex, name: c.name, e: c.e, mesh: g});
+    });
+    // LEVERS — near exit (south)
+    [[-3, -14], [0, -14], [3, -14]].forEach(([x, z], i) => {
+      plat(x, 1.0, z, 1.3, 1.3, '#c39bff', 1.0);
+      const L = label('🎚️ ' + (i + 1), 'rgba(195,155,255,.92)'); L.position.set(x, 2.5, z); scene.add(L);
+      hm.ghosts.push({kind: 'lever', i, x, z});
+    });
+    // EXIT door
+    plat(0, 2.6, -19, 4.2, .8, '#ff9f6b', 2.6);
+    const door = label('🚪 Exit', 'rgba(255,159,107,.95)'); door.position.set(0, 4.3, -19); scene.add(door);
+    hm.door = {x: 0, z: -19};
+    // guide beacon (floating arrow)
+    const beacon = new THREE.Mesh(new THREE.ConeGeometry(.55, 1.2, 4), new THREE.MeshLambertMaterial({color: '#ffd23f', emissive: '#aa8800'}));
+    beacon.rotation.x = Math.PI; scene.add(beacon); hm.beacon = beacon;
+    Object.assign(P, {x: 0, y: .05, z: 2, vx: 0, vy: 0, vz: 0}); P.face = 0; cam.yaw = 0; cam.pitch = .34; cam.dist = 12;
     checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 2}, flag: new THREE.Object3D()};
   }
-  function hauntEnter(){ if (!hm) return; hm.ph = 'play'; hm.t = HM_TIME; hm.paid = false; over = false; choosing = false;
-    banner('👻 Giggle Manor! Find 3 keys, copy the song pads, hug the matching colour ghost, flip the levers — escape before time runs out!'); tipTimer = 8; hmHud(); }
-  function hauntStop(){ hm = null; const b = $('#hmAct'); if (b) b.classList.remove('show'); }
+  function hmObjective(){
+    if (!hm) return null;
+    if (hm.keys < hm.need){ const k = hm.ghosts.find(g => g.kind === 'key' && !g.got); return k ? {x: k.x, z: k.z, tip: '🔑 Get Key ' + (k.i + 1) + ' (' + hm.keys + '/' + hm.need + ') — walk onto it or press E'} : null; }
+    if (!hm.patternDone){ const next = hm.pattern[hm.pressed.length] | 0; const pad = hm.ghosts.find(g => g.kind === 'pad' && g.i === next); return pad ? {x: pad.x, z: pad.z, tip: '🎵 Song time! Step on pad ' + (next + 1) + ' (order: ' + hm.pattern.map(n => n + 1).join('-') + ')'} : null; }
+    if (hm.colour !== hm.needCol){ const c = hmColInfo(); const g = hm.ghosts.find(x => x.kind === 'colour' && x.col === hm.needCol); return g ? {x: g.x, z: g.z, tip: 'Hug the ' + c.e + ' ' + c.name + ' ghost!'} : null; }
+    if (!hm.levers.every(Boolean)){ const L = hm.ghosts.find(g => g.kind === 'lever' && !hm.levers[g.i]); return L ? {x: L.x, z: L.z, tip: '🎚️ Flip lever ' + (L.i + 1) + ' — turn all three ON'} : null; }
+    return {x: hm.door.x, z: hm.door.z, tip: '🚪 Door open — run to the Exit!'};
+  }
+  function hauntEnter(){
+    if (!hm) return; hm.ph = 'play'; hm.t = HM_TIME; hm.paid = false; over = false; choosing = false;
+    cam.yaw = 0; cam.dist = Math.max(cam.dist, 11); cam.pitch = .34;
+    const c = hmColInfo();
+    banner('👻 Giggle Manor! Later you will hug the ' + c.e + ' ' + c.name + ' ghost. First: grab 3 keys!');
+    tipTimer = 10; hmTip(); hmHud();
+  }
+  function hmTip(){ const o = hmObjective(); if (o){ $('#oTip').classList.remove('hide'); $('#oTip').innerHTML = '👻 ' + o.tip; tipTimer = 8; } }
+  function hauntStop(){ if (hm && hm.beacon) scene.remove(hm.beacon); hm = null; const b = $('#hmAct'); if (b) b.classList.remove('show'); }
   function hmNear(){
-    if (!hm) return -1; let best = 2.4, idx = -1;
+    if (!hm) return -1; let best = 2.6, idx = -1;
     hm.ghosts.forEach((g, i) => { if (g.got) return; const d = Math.hypot(P.x - g.x, P.z - g.z); if (d < best){ best = d; idx = i; } });
     return idx;
+  }
+  function hmTakeKey(g){
+    if (!g || g.got || g.kind !== 'key') return false;
+    g.got = true; hm.keys++; if (g.label) g.label.visible = false;
+    banner('🔑 Key ' + (g.i + 1) + '! (' + hm.keys + '/' + hm.need + ')'); SND.coin(); hmHud(); hmTip(); return true;
   }
   function hmAct(){
     if (!hm || hm.ph !== 'play' || over) return false;
     const i = hm.near; if (i < 0) return false; const g = hm.ghosts[i];
-    if (g.kind === 'key'){ g.got = true; hm.keys++; banner('🔑 Key ' + (g.i + 1) + '! (' + hm.keys + '/' + hm.need + ')'); SND.coin(); hmHud(); return true; }
+    if (g.kind === 'key') return hmTakeKey(g);
     if (g.kind === 'pad'){
       hm.pressed.push(g.i); banner('🎵 Pad ' + (g.i + 1)); SND.cp();
       const n = hm.pressed.length;
-      if (hm.pressed[n - 1] !== hm.pattern[n - 1]){ hm.pressed = []; banner('😅 Oops — try the song again!'); }
-      else if (n === hm.pattern.length){ banner('🎉 Song solved! The ghosts giggle!'); confetti(); hm.pressed = []; hm.patternDone = true; }
-      hmHud(); return true;
+      if (hm.pressed[n - 1] !== hm.pattern[n - 1]){ hm.pressed = []; banner('😅 Oops — try the song again! Order ' + hm.pattern.map(x => x + 1).join('-')); }
+      else if (n === hm.pattern.length){ banner('🎉 Song solved!'); confetti(); hm.pressed = []; hm.patternDone = true; }
+      hmHud(); hmTip(); return true;
     }
     if (g.kind === 'colour'){
-      if (g.col === hm.needCol){ hm.colour = g.col; banner('👻 Perfect hug! Colour match!'); SND.coin(); confetti(); }
-      else banner('👻 Heehee — try the ' + (hm.needCol === '#ff6fb5' ? 'Pink' : hm.needCol === '#7fd6ff' ? 'Blue' : 'Gold') + ' ghost!');
-      hmHud(); return true;
+      const c = hmColInfo();
+      if (g.col === hm.needCol){ hm.colour = g.col; banner('👻 Perfect hug! ' + c.e + ' ' + c.name + '!'); SND.coin(); confetti(); }
+      else banner('👻 Heehee — hug the ' + c.e + ' ' + c.name + ' ghost!');
+      hmHud(); hmTip(); return true;
     }
     if (g.kind === 'lever'){ hm.levers[g.i] = !hm.levers[g.i]; banner('🎚️ Lever ' + (g.i + 1) + (hm.levers[g.i] ? ' ON' : ' off')); SND.cp();
-      if (hm.levers.every(Boolean)) banner('✨ All levers on!'); hmHud(); return true; }
+      if (hm.levers.every(Boolean)) banner('✨ All levers on!'); hmHud(); hmTip(); return true; }
     return false;
   }
   function hmReady(){ return hm && hm.keys >= hm.need && hm.patternDone && hm.colour === hm.needCol && hm.levers.every(Boolean); }
   function hauntUpdate(dt){
     if (!hm || hm.ph !== 'play' || over || choosing) return;
     hm.t -= dt; if (hm.t <= 0){ hmLose(); return; }
+    // camera comfort (same idea as stables)
+    if (cam.dist < 10) cam.dist += (10 - cam.dist) * Math.min(1, dt * 4);
+    if (cam.pitch < .28) cam.pitch += (.28 - cam.pitch) * Math.min(1, dt * 3);
+    // auto-collect keys on touch
+    hm.ghosts.forEach(g => { if (g.kind === 'key' && !g.got && Math.hypot(P.x - g.x, P.z - g.z) <= HM_PICK) hmTakeKey(g); });
     hm.near = hmNear();
     const btn = $('#hmAct'); if (btn){ if (hm.near >= 0){ const g = hm.ghosts[hm.near]; btn.classList.add('show'); btn.innerHTML = (g.kind === 'key' ? '🔑 Take' : g.kind === 'pad' ? '🎵 Press' : g.kind === 'colour' ? '👻 Hug' : '🎚️ Flip') + '<small>E / Ⓧ</small>'; } else btn.classList.remove('show'); }
-    // bob friendly ghosts
-    hm.ghosts.forEach(g => { if (g.mesh) g.mesh.position.y = 1.6 + Math.sin(worldT * 2 + g.i) * .25; });
+    hm.ghosts.forEach(g => { if (g.mesh) g.mesh.position.y = 1.7 + Math.sin(worldT * 2 + g.i) * .28; });
+    // beacon over current objective
+    const obj = hmObjective();
+    if (hm.beacon && obj){ hm.beacon.visible = true; hm.beacon.position.set(obj.x, 3.2 + Math.sin(worldT * 3) * .35, obj.z); hm.beacon.rotation.y += dt * 2; }
+    else if (hm.beacon) hm.beacon.visible = false;
     if (hmReady()){ hm.doorOpen = true; if (Math.hypot(P.x - hm.door.x, P.z - hm.door.z) < 2.8) hmWin(); }
     hmHud();
   }
   function hauntAnimate(dt){}
   function hmLose(){ if (over) return; over = true; choosing = true; hm.ph = 'lose';
-    $('#oLose').classList.add('show'); const em = $('#oLose').querySelector('.emoji'), h2 = $('#oLose').querySelector('h2'); if (em) em.textContent = '👻'; if (h2) h2.textContent = 'Time\'s up — the ghosts want a rematch!';
-    $('#oLoseStats').innerHTML = '👻 So close! Keys ' + hm.keys + '/' + hm.need + '<br>Try again — they\'re friendly, promise!<br><small>Esc or 🏠 Home</small>'; }
+    const lose = $('#oLose'); if (lose){ const em = lose.querySelector('.emoji'), h2 = lose.querySelector('h2'); if (em) em.textContent = '👻'; if (h2) h2.textContent = 'Time\'s up — rematch with the giggles!'; lose.classList.add('show'); }
+    $('#oLoseStats').innerHTML = '👻 Keys ' + hm.keys + '/' + hm.need + '<br>They\'re friendly — try again!<br><small>Esc opens pause → Home</small>'; }
   function hmWin(){
     if (over || hm.paid) return; over = true; choosing = true; hm.ph = 'win'; hm.paid = true;
     const left = Math.max(0, Math.floor(hm.t)), bonus = 35 + Math.floor(left / 3), p = hmProg(); p.escapes++; p.best = Math.max(p.best, left); p.coins += bonus; save(HM_KEY, p);
     setCoins(coins + bonus); hm.earned = bonus; runCoins = (runCoins || 0) + bonus; confetti(); SND.win();
     banner('🚪 Escaped Giggle Manor! +' + bonus + ' 🪙');
+    const em = $('#oWinEmoji'), title = $('#oWinTitle'); if (em) em.textContent = '👻'; if (title) title.textContent = 'You escaped Giggle Manor!';
     $('#oWin').classList.add('show'); $('#oWinStats').innerHTML = '👻 Giggle Manor cleared!<br>⏱️ ' + left + 's left<br>🎁 +' + bonus + ' Rublox Coins'; }
-  function hmHud(){ if (!hm) return; const n = $('#hmN'); if (n) n.textContent = '👻 🔑' + hm.keys + '/' + hm.need + (hm.patternDone ? ' · 🎵✓' : ' · 🎵') + (hm.colour === hm.needCol ? ' · 👻✓' : ' · 👻') + (hm.levers.every(Boolean) ? ' · 🎚️✓' : ' · 🎚️') + ' · ⏱️' + Math.max(0, Math.ceil(hm.t)); }
+  function hmHud(){ if (!hm) return; const n = $('#hmN'); if (!n) return;
+    const c = hmColInfo();
+    n.textContent = '👻 🔑' + hm.keys + '/' + hm.need + (hm.patternDone ? ' · 🎵✓' : ' · 🎵') + (hm.colour === hm.needCol ? ' · ' + c.e + '✓' : ' · ' + c.e) + (hm.levers.every(Boolean) ? ' · 🎚️✓' : ' · 🎚️') + ' · ⏱️' + Math.max(0, Math.ceil(hm.t)); }
   function hmPad(jp){ if (!hm) return false; if (jp.x){ hmAct(); return true; } return false; }
-  function hmKey(e){ if (!hm || e.repeat || paused) return false; if (e.code === 'KeyE'){ hmAct(); return true; } if (e.code === 'Escape' && over){ stop(); return true; } return false; }
-  /* ===================== t227u: 💃 BOSSA BEAT DANCE BATTLE — original procedural bossa rhythm arrows, score, avatar dance ===================== */
-  const DB_KEY = 'rubloxDance', DB_LEN = 45, DB_BPM = 96;
+  function hmKey(e){ if (!hm || e.repeat || paused) return false; if (e.code === 'KeyE'){ hmAct(); return true; } return false; }
+  /* ===================== t227u: 💃 BOSSA BEAT DANCE BATTLE — wider hit window, own win title, AudioContext resume ===================== */
+  const DB_KEY = 'rubloxDance', DB_LEN = 45, DB_BPM = 88;
+  const DB_PERFECT = .07, DB_GOOD = .18;   // ±70ms perfect, ±180ms good
   const DB_ARROWS = ['ArrowLeft', 'ArrowDown', 'ArrowUp', 'ArrowRight'];
   const DB_LABEL = ['←', '↓', '↑', '→'];
   let db = null, dbAudio = null;
@@ -11169,79 +11234,91 @@ const Obby = (() => {
   function dbMakeChart(secs){
     const beat = dbBeatSec(), n = Math.floor(secs / beat), chart = [];
     let x = 12345; const rnd = () => { x = (x * 1103515245 + 12345) & 0x7fffffff; return (x >>> 0) / 0x7fffffff; };
-    for (let i = 2; i < n - 2; i++){ if (rnd() < .55) chart.push({t: i * beat, dir: (rnd() * 4) | 0, hit: false, miss: false, score: 0}); }
+    // first 8 beats: slower, one note every other beat (easier intro)
+    for (let i = 3; i < n - 2; i++){
+      const intro = i < 12, dens = intro ? (i % 2 === 0) : rnd() < .62;
+      if (dens) chart.push({t: i * beat, dir: (rnd() * 4) | 0, hit: false, miss: false, score: 0});
+    }
     return chart;
   }
-  function dbBossaStart(){
+  function dbEnsureAudio(){
     try {
-      const AC = window.AudioContext || window.webkitAudioContext; if (!AC || muted) return;
-      const ac = new AC(); dbAudio = {ac, t0: ac.currentTime + .05, nodes: []};
-      const schedule = () => {
-        if (!db || !dbAudio) return; const ac = dbAudio.ac, beat = dbBeatSec(), t0 = dbAudio.t0;
-        for (let i = 0; i < Math.ceil(DB_LEN / beat) + 2; i++){
-          const t = t0 + i * beat; if (t < ac.currentTime) continue;
-          // soft bossa-ish bass + chord pulse (original, not a copyrighted tune)
-          const bass = ac.createOscillator(), g = ac.createGain(); bass.type = 'triangle';
-          bass.frequency.value = [110, 130.81, 146.83, 164.81][i % 4];
-          g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(.06, t + .03); g.gain.exponentialRampToValueAtTime(0.0001, t + beat * .7);
-          bass.connect(g); g.connect(ac.destination); bass.start(t); bass.stop(t + beat);
-          if (i % 2 === 0){ const hi = ac.createOscillator(), hg = ac.createGain(); hi.type = 'sine'; hi.frequency.value = [523.25, 587.33, 659.25, 698.46][(i / 2 | 0) % 4];
-            hg.gain.setValueAtTime(0.0001, t); hg.gain.exponentialRampToValueAtTime(.03, t + .02); hg.gain.exponentialRampToValueAtTime(0.0001, t + .25);
-            hi.connect(hg); hg.connect(ac.destination); hi.start(t); hi.stop(t + .3); }
-        }
-      };
-      schedule();
-    } catch (e){ dbAudio = null; }
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC || muted) return null;
+      if (!dbAudio || !dbAudio.ac){ dbAudio = {ac: new AC(), t0: 0, started: false}; }
+      const ac = dbAudio.ac;
+      if (ac.state === 'suspended') ac.resume();
+      return ac;
+    } catch (e){ return null; }
+  }
+  function dbBossaStart(){
+    const ac = dbEnsureAudio(); if (!ac || (dbAudio && dbAudio.started)) return;
+    dbAudio.started = true; dbAudio.t0 = ac.currentTime + .08;
+    const beat = dbBeatSec(), t0 = dbAudio.t0;
+    for (let i = 0; i < Math.ceil(DB_LEN / beat) + 2; i++){
+      const t = t0 + i * beat;
+      const bass = ac.createOscillator(), g = ac.createGain(); bass.type = 'triangle';
+      bass.frequency.value = [110, 130.81, 146.83, 164.81][i % 4];
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(.055, t + .03); g.gain.exponentialRampToValueAtTime(0.0001, t + beat * .7);
+      bass.connect(g); g.connect(ac.destination); bass.start(t); bass.stop(t + beat);
+      if (i % 2 === 0){ const hi = ac.createOscillator(), hg = ac.createGain(); hi.type = 'sine'; hi.frequency.value = [523.25, 587.33, 659.25, 698.46][(i / 2 | 0) % 4];
+        hg.gain.setValueAtTime(0.0001, t); hg.gain.exponentialRampToValueAtTime(.028, t + .02); hg.gain.exponentialRampToValueAtTime(0.0001, t + .25);
+        hi.connect(hg); hg.connect(ac.destination); hi.start(t); hi.stop(t + .3); }
+    }
   }
   function dbBossaStop(){ try { if (dbAudio && dbAudio.ac) dbAudio.ac.close(); } catch (e){} dbAudio = null; }
   function buildDance(){
-    db = {ph: 'play', t: 0, chart: dbMakeChart(DB_LEN), score: 0, combo: 0, maxCombo: 0, hits: 0, misses: 0, earned: 0, paid: false, pose: 0, remote: mpGuest(), rival: mp.on ? 0 : null};
+    db = {ph: 'play', t: 0, chart: dbMakeChart(DB_LEN), score: 0, combo: 0, maxCombo: 0, hits: 0, misses: 0, earned: 0, paid: false, pose: 0, remote: mpGuest(), rival: mp.on ? 0 : null, audioArmed: false};
     scene.background = new THREE.Color('#1d2340');
     plat(0, 0, 0, 16, 12, '#2b2d42', .3); plat(0, .35, -2, 6, 4, '#ff6fb5', .3);
-    // stage lights
     [[-4, '#7fd6ff'], [0, '#ffd23f'], [4, '#c39bff']].forEach(([x, c]) => plat(x, 5, -4, .4, .4, c, .3));
     Object.assign(P, {x: 0, y: .05, z: 1, vx: 0, vy: 0, vz: 0}); P.face = Math.PI; cam.yaw = Math.PI; cam.pitch = .28; cam.dist = 8;
     checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 1}, flag: new THREE.Object3D()};
   }
-  function danceEnter(){ if (!db) return; db.ph = 'play'; db.t = 0; db.paid = false; over = false; choosing = false; dbBossaStart();
+  function danceEnter(){ if (!db) return; db.ph = 'play'; db.t = 0; db.paid = false; over = false; choosing = false;
+    // prime AudioContext on this user-gesture path (card click / start); resume again on first note key
+    dbEnsureAudio(); dbBossaStart();
     banner('💃 Bossa Beat! Hit ←↓↑→ (or A/S/W/D · d-pad) on the beat!'); tipTimer = 6; dbHud(); dbRender(); }
   function danceStop(){ dbBossaStop(); db = null; const el = $('#dbLane'); if (el) el.style.display = 'none'; }
   function dbHit(dir){
     if (!db || db.ph !== 'play' || over) return false;
+    dbEnsureAudio(); if (dbAudio && !dbAudio.started) dbBossaStart();
     const now = db.t; let best = null, bd = 9e9;
     db.chart.forEach(n => { if (n.hit || n.miss || n.dir !== dir) return; const d = Math.abs(n.t - now); if (d < bd){ bd = d; best = n; } });
-    if (!best || bd > .22){ db.combo = 0; db.misses++; db.pose = (db.pose + 1) % 4; banner('😅 Miss'); dbHud(); dbRender(); return true; }
-    best.hit = true; const pts = bd < .07 ? 100 : bd < .14 ? 70 : 40; best.score = pts;
-    db.score += pts + Math.min(50, db.combo * 2); db.combo++; db.maxCombo = Math.max(db.maxCombo, db.combo); db.hits++;
-    db.pose = best.dir; SND.cp(); if (pts === 100) banner('🌟 Perfect! +' + pts); dbHud(); dbRender(); return true;
+    if (!best || bd > DB_GOOD){ db.combo = 0; db.misses++; db.pose = (db.pose + 1) % 4; dbHud(); dbRender(); return true; }
+    best.hit = true; const pts = bd <= DB_PERFECT ? 100 : 60; best.score = pts;
+    db.combo++; db.maxCombo = Math.max(db.maxCombo, db.combo);
+    db.score += pts + Math.min(50, (db.combo - 1) * 2); db.hits++;
+    db.pose = best.dir; SND.cp(); if (pts === 100) banner('🌟 Perfect!'); dbHud(); dbRender(); return true;
   }
   function danceUpdate(dt){
     if (!db || db.ph !== 'play' || over || choosing) return;
     db.t += dt;
-    // auto-miss notes that passed
-    db.chart.forEach(n => { if (!n.hit && !n.miss && n.t < db.t - .25){ n.miss = true; db.combo = 0; db.misses++; } });
+    db.chart.forEach(n => { if (!n.hit && !n.miss && n.t < db.t - DB_GOOD){ n.miss = true; db.combo = 0; db.misses++; } });
     if (db.t >= DB_LEN) dbFinish();
     dbHud(); dbRender();
   }
-  function danceAnimate(dt){ /* avatar pose driven via applyPose hook if present */ }
+  function danceAnimate(dt){}
   function dbFinish(){
     if (!db || db.paid) return; db.ph = 'done'; db.paid = true; over = true; choosing = true; dbBossaStop();
     const bonus = 10 + Math.floor(db.score / 40), p = dbProg(); p.plays++; p.best = Math.max(p.best, db.score); p.coins += bonus; save(DB_KEY, p);
     setCoins(coins + bonus); db.earned = bonus; runCoins = (runCoins || 0) + bonus; confetti(); SND.win();
-    banner('💃 Dance done! Score ' + db.score + ' · +' + bonus + ' 🪙');
-    $('#oWin').classList.add('show'); $('#oWinStats').innerHTML = '💃 Bossa Beat results<br>⭐ Score <b>' + db.score + '</b> · 🔥 Combo ' + db.maxCombo + '<br>✅ ' + db.hits + ' hits · 😅 ' + db.misses + ' misses<br>🎁 +' + bonus + ' Rublox Coins'; }
-  function dbHud(){ if (!db) return; const n = $('#dbN'); if (n) n.textContent = '💃 ' + db.score + ' · 🔥' + db.combo + ' · ⏱️' + Math.max(0, Math.ceil(DB_LEN - db.t)); }
+    banner('💃 Dance done! Score ' + db.score + ' · best combo ' + db.maxCombo + ' · +' + bonus + ' 🪙');
+    const em = $('#oWinEmoji'), title = $('#oWinTitle'); if (em) em.textContent = '💃'; if (title) title.textContent = 'Bossa Beat complete!';
+    $('#oWin').classList.add('show');
+    $('#oWinStats').innerHTML = '💃 Bossa Beat results<br>⭐ Score <b>' + db.score + '</b><br>🔥 Best combo <b>' + db.maxCombo + '</b> · last combo ' + db.combo + '<br>✅ ' + db.hits + ' hits · 😅 ' + db.misses + ' misses<br>🎁 +' + bonus + ' Rublox Coins';
+  }
+  function dbHud(){ if (!db) return; const n = $('#dbN'); if (n) n.textContent = '💃 ' + db.score + ' · 🔥' + db.combo + ' (best ' + db.maxCombo + ') · ⏱️' + Math.max(0, Math.ceil(DB_LEN - db.t)); }
   function dbRender(){
     if (!db) return; const el = $('#dbLane'); if (!el) return; el.style.display = 'flex';
-    const now = db.t, window = 2.2;
-    const notes = db.chart.filter(n => !n.hit && !n.miss && n.t >= now - .2 && n.t <= now + window);
+    const now = db.t, window = 2.0;   // visual lead-in matches timing feel
+    const notes = db.chart.filter(n => !n.hit && !n.miss && n.t >= now - .15 && n.t <= now + window);
+    // hit line at 12% from bottom; note bottom% = 12 + ((t-now)/window)*100 so at t==now note sits on the ▼
     el.innerHTML = '<div class="dbhit">▼</div>' + notes.map(n => {
-      const y = ((n.t - now) / window) * 100; return '<div class="dbnote d' + n.dir + '" style="bottom:' + (12 + y) + '%">' + DB_LABEL[n.dir] + '</div>';
+      const y = 10 + ((n.t - now) / window) * 100; return '<div class="dbnote d' + n.dir + '" style="bottom:' + y + '%">' + DB_LABEL[n.dir] + '</div>';
     }).join('');
   }
   function dbPad(jp){
     if (!db || db.ph !== 'play') return false;
-    // d-pad / face: map common gamepad fields if present
     if (jp.left) return dbHit(0); if (jp.down) return dbHit(1); if (jp.up) return dbHit(2); if (jp.right) return dbHit(3);
     return false;
   }

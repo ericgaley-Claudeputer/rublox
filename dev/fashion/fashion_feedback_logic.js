@@ -95,6 +95,6 @@ if (fs.existsSync(HTML)){
   chk('built page: feedback tag UI + Your feedback card', /id="fsRateTags"/.test(h) && /id="fsEndFb"/.test(h) && /FS_TAGS/.test(h) && /Your feedback/.test(h));
   chk('built page: fsrate accepts tags + wire tg', /d\.tags/.test(h) && /w\.tg/.test(h) && /fsNpcTags/.test(h));
   chk('built page: blank start helpers present', /function fsBlankAv/.test(h) && /never auto-wear/.test(h) && /bot: 'shorts'/.test(h));
-  chk('built page: rate countdown + build stamp visible', /id="fsRateCd"/.test(h) && /id="fsBuild"/.test(h) && /FS_WALK = 14/.test(h) && /2026\.11\.09-14/.test(h));
+  chk('built page: rate countdown + build stamp visible', /id="fsRateCd"/.test(h) && /id="fsBuild"/.test(h) && /FS_WALK = 14/.test(h) && /2026\.11\.09-15/.test(h));
 }
 console.log('RESULT', pass, '/', pass+fail); process.exit(fail?1:0);
