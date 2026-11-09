@@ -1,5 +1,5 @@
   /* ===================== t207u/t211u: FASHION SHOW v2 — lobby, walk-in dressing room, themes, runway poses, 1-5 star ratings, podium, fashion levels ===================== */
-  const FS_TIMES = [60, 180, 300], FS_INTRO = 4.2, FS_WALK = 9, FS_POD = 7, FS_JOIN = 5, FS_PRIZE = [30, 20, 10], FS_ACCMAX = 4;
+  const FS_TIMES = [60, 180, 300], FS_INTRO = 4.2, FS_WALK = 14, FS_POSE_IN = 3.5, FS_POSE_OUT = 12, FS_POD = 7, FS_JOIN = 5, FS_PRIZE = [30, 20, 10], FS_ACCMAX = 4;
   const FS_THEMES = [
     {id: 'beach',  name: 'Beach Day',      emoji: '🏖️', cols: ['#ffd23f', '#3ac6ff', '#ff9f1c', '#2ec4b6'], likes: ['shorts', 'shades', 'backcap', 'star', 'sun', 'flower'], fx: ['shorts', 'sneak', 'sunnies', 'bag', 'tank', 'flowers', 'swoop', 'crop', 'pony'], hint: 'sunny colours, shorts, sunnies, a beach bag'},
     {id: 'hero',   name: 'Superhero',      emoji: '🦸', cols: ['#ff4d4d', '#3a86ff', '#ffd23f'], likes: ['lightning', 'hero', 'cape', 'star', 'mask', 'wings'], fx: ['armor', 'boots', 'jersey', 'gloves', 'belt', 'mohawk', 'leggings', 'stars'], hint: 'red, blue & yellow, hero armor, boots'},
@@ -36,7 +36,8 @@
     pat: [['none', '⬜', 'Plain'], ['dots', '⚪', 'Polka Dots'], ['stripes', '〰️', 'Stripes'], ['checks', '🏁', 'Checks'], ['stars', '⭐', 'Stars'], ['hearts', '💗', 'Hearts'], ['flowers', '🌼', 'Flowers'], ['spots', '🐆', 'Spots'], ['sparkle', '✨', 'Sparkles'],
       ['plaid', '🧣', 'Plaid'], ['ombre', '🌅', 'Ombré'], ['lace', '🕸️', 'Lace'], ['hologram', '🌈', 'Hologram', 0, 1]],
   };
-  const FS_FXDEF = {top: 'tee', bot: 'pants', dress: 'none', shoe: 'sneak', hair: 'base', mk: 'none', acc: [], pat: 'none', pc: '#ffffff', sc: '#f5f5f5', ac: '#ffd23f', mc: '#ff4d8d'};
+  // blank runway base (DTI-style): plain tee + shorts, bare feet, own hair, no makeup/acc — pieces-on starts at 0
+  const FS_FXDEF = {top: 'tee', bot: 'shorts', dress: 'none', shoe: 'none', hair: 'base', mk: 'none', acc: [], pat: 'none', pc: '#ffffff', sc: '#f5f5f5', ac: '#ffd23f', mc: '#ff4d8d'};
   const FS_POSES = [
     {e: '💁', n: 'Hand on Hip', p: t => ({aL: 0, aLo: .55, aR: -.2, aRo: .15, hz: .18, spin: .35, lRo: .12})},
     {e: '🌟', n: 'Superstar',   p: t => ({aLo: 2.5, aRo: 2.5, lLo: .25, lRo: .25, hz: Math.sin(t * 3) * .1})},
@@ -66,6 +67,17 @@
     {name: 'Lulu',         emoji: '🎀', av: {head: '#f1c27d', shirt: '#ffd23f', pants: '#ff6fb5', hair: 'ponytail', hairColor: '#d9601f', face: 'wink'}},
     {name: 'Mr. Pebbles',  emoji: '🐧', av: {head: '#e0ac69', shirt: '#2b2d42', pants: '#2b2d42', hair: 'short', hairColor: '#6b3e1f', face: 'shades'}},
   ];
+  // optional quick feedback tags voters can tap (kid-friendly; never required)
+  const FS_TAGS = [
+    {id: 'colors', e: '🎨', n: 'Colors'}, {id: 'theme', e: '🎯', n: 'On theme'}, {id: 'acc', e: '💎', n: 'Accessories'}, {id: 'hair', e: '💇', n: 'Hair'},
+    {id: 'makeup', e: '💄', n: 'Makeup'}, {id: 'creative', e: '✨', n: 'Creative'}, {id: 'shoes', e: '👟', n: 'Shoes'}, {id: 'pose', e: '🤩', n: 'Pose'},
+  ];
+  const FS_TAGIDS = new Set(FS_TAGS.map(t => t.id));
+  const FS_TIPS = {
+    theme: 'Try matching the theme more!', colors: 'Pick colours that go together next time!', acc: 'A cute accessory can steal the show!',
+    hair: 'Try a bold new hairstyle!', makeup: 'A little makeup sparkle goes a long way!', creative: 'Mix unexpected pieces for wow factor!',
+    shoes: 'Fun shoes finish the look!', pose: 'Strike a bigger pose on the runway!',
+  };
   const FS_COLS = ['#ff4d4d', '#ff9f1c', '#ffd23f', '#2ec27e', '#2ec4b6', '#3ac6ff', '#3a86ff', '#8b5cf6', '#ff6fb5', '#ffb3d9', '#c0f0ff', '#f5f5f5', '#9aa0ab', '#2b2d42', '#1d2340', '#b07a43', '#8a3b12', '#c0c7d6', '#e9b949', '#7bd389'];
   const FS_SKIN = ['#ffdbac', '#f1c27d', '#e0ac69', '#c68642', '#8d5524', '#5c3a1e', '#ffd23f', '#7bd389'];
   let fs = null, FS_MC = {};
@@ -83,6 +95,16 @@
     if (Array.isArray(o.acc)) f.acc = [...new Set(o.acc.filter(v => typeof v === 'string' && FS_OK.acc.has(v)))].slice(0, FS_ACCMAX);
     return f;
   }
+  function fsBlankAv(base){
+    // plain soft-slate body — mid-tone so white/cream jackets & light clothes read clearly over the blank tee
+    const b = base && typeof base === 'object' ? base : (typeof avatar !== 'undefined' ? avatar : DEF);
+    return fixAv(Object.assign({}, DEF, {
+      head: b.head || DEF.head, body: b.body || DEF.body, hair: 'short', hairColor: b.hairColor || DEF.hairColor,
+      shirt: '#9aa4bc', pants: '#7e8799',
+      hat: null, shirtPat: null, pantsPat: null, face: null, ears: null, tail: null, back: null, brow: null, lash: null,
+    }));
+  }
+  function fsBlankFx(){ return fsCleanFx(null); }
   /* --- fashion level (style stars → title) --- */
   const FS_VIP_COST = 250;   // Rublox coins only — never real money
   function fsProg(){ const p = load('rubloxFashion', null), o = Object.assign({xp: 0, shows: 0, wins: 0, best: 0, vip: false}, p && typeof p === 'object' ? p : {});
@@ -178,9 +200,20 @@
     if (top === 'tee'){ if (fx.pat !== 'none' && D === 'none'){ torsoOv(Pm); sleeves(Pm, .45); } }
     else if (top === 'crop'){ torsoOv(Pm, .55, 1.73); if (D === 'none') box(body, TW + .015, .44, TD + .015, skin, 0, 1.23, 0); sleeves(Pm, .32); }
     else if (top === 'puff'){ torsoOv(Pm); arms.forEach(a => ball(a, .3, Pm, 0, -.1, 0).scale.set(1, .85, 1)); }
-    else if (top === 'jacket'){ const J = mat(shade(av.shirt, -45)); torsoOv(mat('#f5f5f5'), 1, 1.5, .02);
-      [-1, 1].forEach(s => { box(body, TW * .34, 1.0, .07, J, s * (TW / 2 - TW * .17 + .02), 1.5, TD / 2 + .04); box(body, .12, .38, .04, mat(shade(av.shirt, -70)), s * TW * .2, 1.82, TD / 2 + .08).rotation.z = s * .5; });
-      box(body, TW + .05, 1.0, .06, J, 0, 1.5, -TD / 2 - .03); [-1, 1].forEach(s => box(body, .06, 1.0, TD + .06, J, s * (TW / 2 + .03), 1.5, 0)); sleeves(J, .84, .05); }
+    else if (top === 'jacket'){
+      // open jacket over a soft undershirt; push panels out so they never z-fight / disappear into the blank tee
+      const hex = h => { const n = parseInt(String(h || '#888').slice(1, 7), 16) || 0; return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+      const rgb = hex(av.shirt), lum = (rgb[0] * .3 + rgb[1] * .59 + rgb[2] * .11);
+      const J = mat(shade(av.shirt, lum > 160 ? -70 : -50)); // pale shirts deepen so the jacket still reads
+      torsoOv(mat('#dfe3ee'), 1.04, 1.5, .08);   // soft undershirt layer (always contrasts jacket)
+      [-1, 1].forEach(s => {
+        box(body, TW * .38, 1.05, .1, J, s * (TW / 2 - TW * .15 + .05), 1.5, TD / 2 + .08);
+        box(body, .14, .42, .05, mat(shade(av.shirt, -85)), s * TW * .24, 1.84, TD / 2 + .13).rotation.z = s * .5;
+      });
+      box(body, TW + .1, 1.05, .1, J, 0, 1.5, -TD / 2 - .06);
+      [-1, 1].forEach(s => box(body, .1, 1.05, TD + .12, J, s * (TW / 2 + .06), 1.5, 0));
+      sleeves(J, .88, .1);
+    }
     else if (top === 'sweater'){ torsoOv(Pm, 1.06, 1.49, .1); torus(body, .3, .1, Pm, 0, 2.0, 0).rotation.x = Math.PI / 2; sleeves(Pm, .86, .08); arms.forEach(a => box(a, AW + .1, .12, AW + .1, mat(shade(av.shirt, -25)), 0, -.78, 0)); }
     else if (top === 'tux'){ torsoOv(Pm, 1.0, 1.5, .04); box(body, TW * .3, .9, .02, '#ffffff', 0, 1.55, TD / 2 + .035); box(body, .3, .1, .05, '#1d1d1d', 0, 1.9, TD / 2 + .06); [1.62, 1.42].forEach(y => ball(body, .035, '#1d1d1d', 0, y, TD / 2 + .05)); sleeves(Pm, .84); arms.forEach(a => box(a, AW + .05, .1, AW + .05, '#ffffff', 0, -.79, 0)); }
     else if (top === 'sailor'){ torsoOv(Pm); box(body, TW * .86, .42, .04, '#1d2340', 0, 1.78, -TD / 2 - .04); [-1, 1].forEach(s => { box(body, .14, .5, .04, '#1d2340', s * .17, 1.8, TD / 2 + .04).rotation.z = s * .55; }); box(body, .2, .14, .06, '#ff4d4d', 0, 1.6, TD / 2 + .06); sleeves(Pm, .4); }
@@ -752,11 +785,11 @@
     $('#fsCount').textContent = '👗 ' + fsCount() + ' pieces on';
   }
   function fsCount(){
-    // consistent defaults: Classic Tee + Pants = 2 on a fresh open; sneakers are the free base shoe (not counted until changed)
+    // blank base (plain tee + shorts + bare feet + own hair) = 0; anything beyond that counts
     const x = fs.fx, f = fs.fit; let n = 0;
     if (x.dress !== 'none'){ n++; if (x.top !== 'tee') n++; }   // dress (+ non-default top overlay)
-    else { n++; n++; }                                         // always count top + bottoms (incl. tee/pants)
-    if (x.shoe !== 'none' && x.shoe !== 'sneak') n++;
+    else { if (x.top !== 'tee') n++; if (x.bot !== 'shorts') n++; }
+    if (x.shoe !== 'none') n++;                                 // any shoes count (blank starts barefoot)
     if (x.hair !== 'base') n++;
     if (x.mk !== 'none') n++;
     if (x.pat !== 'none') n++;
@@ -780,7 +813,7 @@
   }
   function fsSurprise(){ if (!fs || fs.ph !== 'dress') return; const o = fsNpcFit({base: {head: fs.fit.head, body: fs.fit.body, hair: fs.fit.hair, hairColor: fs.fit.hairColor}}, fs.th, .6);
     fs.fit = Object.assign({}, fs.fit, {shirt: o.av.shirt, pants: o.av.pants}); fs.fx = o.fx; fsChanged(); }
-  function fsResetLook(){ if (!fs || fs.ph !== 'dress') return; fs.fit = fixAv(Object.assign({}, DEF, avatar)); fs.fx = fsCleanFx(null); fsChanged(); }
+  function fsResetLook(){ if (!fs || fs.ph !== 'dress') return; fs.fit = fsBlankAv(avatar); fs.fx = fsBlankFx(); fsChanged(); }
   function fsHasSavedLook(){ const s = load('rubloxFsLook', null); return !!(s && typeof s === 'object' && s.fx && typeof s.fx === 'object'); }
   function fsApplySavedLook(silent){
     const s = load('rubloxFsLook', null); if (!s || !fs || typeof s !== 'object') return false;
@@ -848,7 +881,7 @@
     else ord = ['H', ...FS_NPCS.map(n => n.uid)];
     let th; do { th = Math.floor(Math.random() * FS_THEMES.length); } while (th === fs.lastTh);
     if (fs.forceTh != null) th = fs.forceTh;
-    fs.lastTh = th; fs.th = th; fs.ord = ord; fs.n++; fs.ph = 'intro'; fs.t = FS_INTRO; fs.wt = 0; fs.gfits = {}; fs.gfx = {}; fs.fits = {}; fs.fxs = {}; fs.rates = {}; fs.poses = {}; fs.ready = new Set(); fs.res = []; fs.pod = []; fs.done = {};
+    fs.lastTh = th; fs.th = th; fs.ord = ord; fs.n++; fs.ph = 'intro'; fs.t = FS_INTRO; fs.wt = 0; fs.gfits = {}; fs.gfx = {}; fs.fits = {}; fs.fxs = {}; fs.rates = {}; fs.tags = {}; fs.myTags = {}; fs.tagFocus = 'colors'; fs.poses = {}; fs.ready = new Set(); fs.res = []; fs.pod = []; fs.done = {};
     fsLocalIntro();
   }
   function fsLocalIntro(){
@@ -856,23 +889,23 @@
     fsClearWalkers(); fsNpcsTo('lobby'); fsToLobby(); fs.introT = 0; fs.endShown = false; fs.paid = false; fs.earned = 0; fs.rated = {};
     $('#fsIntro').classList.remove('lock'); $('#fsIntro').classList.add('show'); SND.cp(); fsTip();
   }
-  function fsBeginDress(){ fs.ph = 'dress'; fs.t = fs.dl; fs.ready = new Set(); if (!mp.on){ fs.npcFit = {}; FS_NPCS.forEach(N => { fs.npcFit[N.uid] = fsNpcFit(N, fs.th, .15); }); } fsLocalDress(); }
+  function fsBeginDress(){ fs.ph = 'dress'; fs.t = fs.dl; fs.ready = new Set(); if (!mp.on){ fs.npcFit = {}; FS_NPCS.forEach(N => { fs.npcFit[N.uid] = {av: fsBlankAv(N.base), fx: fsBlankFx()}; }); } fsLocalDress(); }
   function fsLocalDress(){
     fsHideAll(); choosing = false; over = false; fs.lobPanel = false;
     fs.endShown = false; fs.paid = false; fs.earned = 0; fs.tab = fs.tab || 'top'; fsClearWalkers();
-    fs.fit = fixAv(Object.assign({}, DEF, avatar)); fs.fx = fsCleanFx(null); fs.poses[fsUid()] = fs.myPose;
-    const restored = fsApplySavedLook(true);
-    if (!restored){ fsRebuild(fs.fit, fs.fx); fsVipBadge(); }
+    // EVERY show starts blank (DTI-style) — never auto-wear the normal avatar or a saved look
+    fs.fit = fsBlankAv(avatar); fs.fx = fsBlankFx(); fs.poses[fsUid()] = fs.myPose;
+    fsRebuild(fs.fit, fs.fx); fsVipBadge();
     const n = Math.max(0, fs.ord.indexOf(fsUid()));
     // spawn DEEP inside the prep room so the camera never sits outside looking through the doorway lintel
     Object.assign(P, {x: -23.5 - (n % 3) * .7, y: .05, z: ((n % 4) - 1.5) * 1.1, vx: 0, vy: 0, vz: 0}); P.face = -Math.PI / 2; cam.yaw = P.face + Math.PI; cam.pitch = .28; cam.dist = 5.2;
     const T = FS_THEMES[fs.th];
-    banner('👗 ' + T.emoji + ' ' + T.name + '! You have ' + (fs.dl >= 60 ? fs.dl / 60 + ' min' : fs.dl + 's') + (restored ? ' · 💾 saved look on!' : ' — go style!')); SND.cp();
-    if (restored) toast('💾 Your saved look is on — tweak it or tap Wardrobe');
+    banner('👗 ' + T.emoji + ' ' + T.name + '! You have ' + (fs.dl >= 60 ? fs.dl / 60 + ' min' : fs.dl + 's') + ' — start from blank and style!'); SND.cp();
+    if (fsHasSavedLook()) toast('💾 Tap Wardrobe → Wear my saved look anytime');
     $('#fsWardBtn').classList.add('show'); fsNpcsTo('room'); fsTip();
   }
   function fsBeginWalk(){
-    fs.ph = 'walk'; fs.wt = 0; fs.fits = {}; fs.fxs = {}; fs.rates = {}; fs.done = {};
+    fs.ph = 'walk'; fs.wt = 0; fs.fits = {}; fs.fxs = {}; fs.rates = {}; fs.tags = {}; fs.myTags = {}; fs.done = {};
     fs.ord.forEach(u => {
       if (u === fsUid()){ fs.fits[u] = cleanAv(fs.fit); fs.fxs[u] = fsCleanFx(fs.fx); fs.poses[u] = fs.myPose; }
       else if (!mp.on){ const N = FS_NPCS.find(n => n.uid === u), o = fsNpcFit(N, fs.th, .5 + Math.random() * .35); fs.fits[u] = o.av; fs.fxs[u] = o.fx; fs.poses[u] = Math.floor(Math.random() * FS_POSES.length); }
@@ -897,35 +930,118 @@
     banner('✨ The show begins! ' + FS_THEMES[fs.th].emoji + ' Rate every look 1-5 ⭐'); SND.win(); fsTip();
   }
   function fsCur(){ if (!fs || fs.ph !== 'walk') return null; const k = Math.floor(fs.wt / FS_WALK); return k >= 0 && k < fs.ord.length ? fs.ord[k] : null; }
+  function fsCleanTags(a){ return Array.isArray(a) ? [...new Set(a.filter(t => typeof t === 'string' && FS_TAGIDS.has(t)))].slice(0, 3) : []; }
+  function fsSendRate(u){
+    if (!u || u === fsUid()) return;
+    const n = fs.rated[u] || 0, tags = fsCleanTags(fs.myTags[u] || []);
+    if (fs.remote) mpSendTo(mp.hconn, {t: 'fsrate', u, n, tags});
+    else {
+      if (n >= 1 && n <= 5) (fs.rates[fsUid()] = fs.rates[fsUid()] || {})[u] = n;
+      (fs.tags[fsUid()] = fs.tags[fsUid()] || {})[u] = tags;
+    }
+  }
+  function fsToggleTag(u, id){
+    if (!u || u === fsUid() || !FS_TAGIDS.has(id)) return false;
+    if (!fs.myTags[u]) fs.myTags[u] = [];
+    const i = fs.myTags[u].indexOf(id);
+    if (i >= 0) fs.myTags[u].splice(i, 1);
+    else { if (fs.myTags[u].length >= 3) fs.myTags[u].shift(); fs.myTags[u].push(id); }
+    fs.tagFocus = id; fsSendRate(u); SND.coin(); fsRateBar(true); return true;
+  }
+  function fsNpcTags(av, fx, th){ // meaningful single-player tags from the same signals as scoring
+    const T = FS_THEMES[th], f = fsCleanFx(fx), a0 = Object.assign({}, DEF, av || {});
+    const hex = h => { const n = parseInt(String(h || '#000').slice(1, 7), 16) || 0; return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+    const near = c => { const a = hex(c); return Math.max(0, 1 - Math.min(...T.cols.map(t => { const b = hex(t); return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]); })) / 160); };
+    const scored = [];
+    const col = near(a0.shirt) + near(a0.pants) * (f.dress === 'none' ? 1 : .4) + near(a0.hairColor) * .5 + near(f.sc) * .4;
+    if (col >= .9) scored.push(['colors', col]);
+    const fv = [f.top, f.bot, f.dress, f.shoe, f.hair, f.mk, f.pat, ...f.acc];
+    const themeHits = fv.filter(v => T.fx.includes(v)).length;
+    if (themeHits >= 1) scored.push(['theme', themeHits * 1.4]);
+    if (f.acc.length) scored.push(['acc', f.acc.length * 1.1]);
+    if (f.hair !== 'base') scored.push(['hair', 1.3]);
+    if (f.mk !== 'none') scored.push(['makeup', 1.2]);
+    if (f.shoe !== 'none' && f.shoe !== 'sneak') scored.push(['shoes', 1.1]);
+    const fancy = fv.filter(v => v && v !== 'none' && v !== 'tee' && v !== 'pants' && v !== 'base' && v !== 'sneak').length;
+    if (f.pat !== 'none' || fancy >= 4) scored.push(['creative', fancy + (f.pat !== 'none' ? 2 : 0)]);
+    scored.push(['pose', .4 + Math.random() * .8]);
+    scored.sort((a, b) => b[1] - a[1]);
+    return scored.slice(0, 3).map(x => x[0]);
+  }
+  function fsTagTotals(u){
+    const counts = {};
+    Object.entries(fs.tags || {}).forEach(([v, by]) => {
+      if (v === u || !by || typeof by !== 'object') return;
+      fsCleanTags(by[u]).forEach(id => { counts[id] = (counts[id] || 0) + 1; });
+    });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  }
+  function fsTopLiked(u, n){
+    n = n == null ? 3 : n;
+    return fsTagTotals(u).slice(0, n).map(([id, c]) => { const T = FS_TAGS.find(t => t.id === id) || {id, e: '✨', n: id}; return {id, e: T.e, n: T.n, c}; });
+  }
+  function fsTipFor(u){
+    const have = new Set(fsTagTotals(u).map(x => x[0]));
+    for (const id of ['theme', 'colors', 'acc', 'hair', 'makeup', 'shoes', 'creative', 'pose']){
+      if (!have.has(id) && FS_TIPS[id]) return FS_TIPS[id];
+    }
+    return 'You looked amazing — keep creating!';
+  }
+  function fsFeedbackHtml(u){
+    const row = (fs.res || []).find(r => r[0] === u), avg = row ? row[1] / 10 : fsAvg(u);
+    const top = fsTopLiked(u, 3);
+    const likes = top.length
+      ? top.map(t => `<span class="fsfblike">${t.e} ${bxEsc(t.n)} <b>×${t.c}</b></span>`).join('')
+      : '<span class="fsfblike">✨ Keep shining — voters will share next time!</span>';
+    return `<div class="fsfeed"><b>💬 Your feedback</b><div class="fsfbavg">⭐ ${avg ? avg.toFixed(1) : '—'} average</div><div class="fsfbtop"><small>Voters liked:</small><div class="fsfblikes">${likes}</div></div><div class="fsfbtip">💡 ${bxEsc(fsTipFor(u))}</div></div>`;
+  }
   function fsRate(n){
     const u = fsCur(); n = n | 0; if (!u || u === fsUid() || n < 1 || n > 5) return false;
-    fs.rated[u] = n; if (fs.remote) mpSendTo(mp.hconn, {t: 'fsrate', u, n}); else (fs.rates[fsUid()] = fs.rates[fsUid()] || {})[u] = n;
-    SND.coin(); fsRateBar(true); return true;
+    fs.rated[u] = n; fsSendRate(u); SND.coin(); fsRateBar(true); return true;
   }
+  function fsRateLeft(){ if (!fs || fs.ph !== 'walk') return 0; return Math.max(0, Math.ceil((Math.floor(fs.wt / FS_WALK) + 1) * FS_WALK - fs.wt)); }
   function fsRateBar(force){
     const u = fsCur(), me = fsUid(), el = $('#fsRate'), pz = $('#fsPoses');
     if (!u){ el.classList.remove('show'); pz.classList.remove('show'); fs.rbU = null; return; }
     if (u === me){ el.classList.remove('show'); if (fs.rbU !== u || force) fsPoseBar(); pz.classList.add('show'); fs.rbU = u; return; }
     pz.classList.remove('show');
-    if (fs.rbU !== u || force){ fs.rbU = u; const v = fs.rated[u] || 0;
+    const left = fsRateLeft();
+    if (fs.rbU !== u || force){ fs.rbU = u; const v = fs.rated[u] || 0, mine = fsCleanTags(fs.myTags[u] || []);
+      if (!fs.tagFocus || !FS_TAGIDS.has(fs.tagFocus)) fs.tagFocus = 'colors';
       $('#fsRateN').textContent = '⭐ Rate ' + fsName(u) + '\'s look!';
       $('#fsRateS').innerHTML = [1, 2, 3, 4, 5].map(i => `<button class="fsstar${i <= v ? ' on' : ''}" data-n="${i}" aria-label="${i} stars">★</button>`).join('');
       $('#fsRateS').querySelectorAll('.fsstar').forEach(b => b.onclick = () => fsRate(+b.dataset.n));
-      $('#fsRateH').textContent = v ? '✅ You gave ' + v + ' ⭐' : (pad.on ? 'D-pad ⬅ ➡ to rate' : touchUI ? 'Tap a star' : 'Keys 1-5 or click a star');
+      const tg = $('#fsRateTags');
+      if (tg){
+        tg.innerHTML = FS_TAGS.map(t => `<button type="button" class="fstag${mine.includes(t.id) ? ' on' : ''}${fs.tagFocus === t.id ? ' foc' : ''}" data-id="${t.id}" aria-label="${t.n}" aria-pressed="${mine.includes(t.id) ? 'true' : 'false'}">${t.e}<small>${t.n}</small></button>`).join('');
+        tg.querySelectorAll('.fstag').forEach(b => b.onclick = () => fsToggleTag(u, b.dataset.id));
+      }
+      $('#fsRateH').textContent = v
+        ? ('✅ ' + v + ' ⭐ · optional: tap what you liked' + (pad.on ? ' (LB/RB + Ⓧ)' : ''))
+        : (pad.on ? 'D-pad ⬅ ➡ to rate · LB/RB tags' : touchUI ? 'Tap a star · optional tags below' : 'Keys 1-5 · click tags you liked');
     }
+    const cd = $('#fsRateCd'); if (cd){ cd.textContent = '⏱️ ' + left + 's'; cd.classList.toggle('low', left <= 3); }
     el.classList.add('show');
   }
   function fsPoseBar(){ const cur = fs.poses[fsUid()] != null ? fs.poses[fsUid()] : fs.myPose;
     $('#fsPoseS').innerHTML = FS_POSES.map((p, i) => `<button class="fspose${i === cur ? ' on' : ''}" data-i="${i}">${p.e}<small>${p.n}</small></button>`).join('');
     $('#fsPoseS').querySelectorAll('.fspose').forEach(b => b.onclick = () => fsPose(+b.dataset.i));
     $('#fsPoseH').textContent = '👠 Your turn! ' + (pad.on ? 'Ⓧ / Ⓨ switch pose' : touchUI ? 'Tap a pose!' : 'Keys 1-7 switch pose'); }
-  function fsJudgeWalker(u){ // single player: the judges + the other models rate this look (never yourself)
-    const sc = fsScore(fs.fits[u], fs.fxs[u], fs.th);
-    ['j0', 'j1', 'j2', 'j3', ...FS_NPCS.map(n => n.uid)].forEach(v => { if (v === u) return; (fs.rates[v] = fs.rates[v] || {})[u] = fsStars(sc); });
+  function fsJudgeWalker(u){ // single player only: judges + NPC models rate + leave meaningful feedback tags
+    if (mp.on) return; // multiplayer: only real players' tags
+    const sc = fsScore(fs.fits[u], fs.fxs[u], fs.th), base = fsNpcTags(fs.fits[u], fs.fxs[u], fs.th);
+    ['j0', 'j1', 'j2', 'j3', ...FS_NPCS.map(n => n.uid)].forEach(v => {
+      if (v === u) return;
+      (fs.rates[v] = fs.rates[v] || {})[u] = fsStars(sc);
+      const pick = base.filter(() => Math.random() < .78).slice(0, 3);
+      if (!pick.length && base.length) pick.push(base[0]);
+      (fs.tags[v] = fs.tags[v] || {})[u] = fsCleanTags(pick);
+    });
     fs.judges.forEach(J => J.voteT = 2.2);
-    banner('⭐ ' + (u === fsUid() ? 'You got' : fsName(u) + ' got') + ' ' + fsAvg(u).toFixed(1) + ' stars!');
+    const top = fsTopLiked(u, 2), liked = top.length ? ' · loved ' + top.map(t => t.e + ' ' + t.n).join(', ') : '';
+    banner('⭐ ' + (u === fsUid() ? 'You got' : fsName(u) + ' got') + ' ' + fsAvg(u).toFixed(1) + ' stars!' + liked);
   }
-  function fsAvg(u){ let s = 0, c = 0; Object.entries(fs.rates).forEach(([v, r]) => { if (v !== u && r[u]){ s += r[u]; c++; } }); return c ? s / c : 0; }
+  function fsAvg(u){ let s = 0, c = 0; Object.entries(fs.rates || {}).forEach(([v, r]) => { if (v !== u && r[u]){ s += r[u]; c++; } }); return c ? s / c : 0; }
   function fsTally(){
     const cnt = u => Object.entries(fs.rates).filter(([v, r]) => v !== u && r[u]).length;
     fs.res = fs.ord.map(u => [u, Math.round(fsAvg(u) * 10), cnt(u)]).sort((a, b) => b[1] - a[1] || b[2] - a[2]);
@@ -938,6 +1054,10 @@
     const k = fs.pod.indexOf(fsUid());
     banner(k >= 0 ? ['🥇 You came 1st!', '🥈 You came 2nd!', '🥉 You came 3rd!'][k] : fs.pod.length ? '🏆 ' + fsName(fs.pod[0]) + ' wins the show!' : '✨ What a show!');
     if (k >= 0) confetti(); SND.win(); fsBoard(); fsTip();
+    if (fs.ord.includes(fsUid())){
+      const top = fsTopLiked(fsUid(), 3);
+      if (top.length) toast('Voters loved: ' + top.map(t => t.e + ' ' + t.n).join(' · '));
+    }
   }
   function fsUnl(lv){ const r = []; ['dress', 'shoe', 'hair', 'acc'].forEach(s => fsList(s).forEach(x => { if (x.lvl === lv) r.push(x.e + ' ' + x.n); })); return r.length ? '<br>🌟 New in the Star Closet: ' + r.join(', ') : ''; }
   function fsEndLocal(){
@@ -954,6 +1074,7 @@
     $('#fsEndS').innerHTML = fs.res.map(([u, a, c], k) => `<div class="fsres${k < 3 && a > 0 ? ' win' : ''}"><img alt="" src="${fsThumb(Object.assign({}, DEF, fs.fits[u] || {}), fs.fxs[u])}"><span>${k < 3 && a > 0 ? ['🥇', '🥈', '🥉'][k] : '·'} ${bxEsc(fsName(u))}</span><b>${a ? '⭐ ' + (a / 10).toFixed(1) : '—'}</b><small>${c} vote${c === 1 ? '' : 's'}</small></div>`).join('');
     $('#fsEndC').textContent = fs.earned ? '🪙 +' + fs.earned + ' coins' + (place >= 0 ? ' (+' + FS_PRIZE[place] + ' for the podium!)' : '') + (fs.lvBonus ? ' · 🎉 +' + fs.lvBonus + ' level-up bonus' : '') : '';
     $('#fsEndL').innerHTML = mine ? (fs.xpGain ? '<div class="fssub">+' + fs.xpGain + ' style stars ⭐</div>' : '') + fsLvlHtml() + (lvUp ? `<div class="fslvup">🎉 LEVEL UP! You are now ${lvUp.e} ${lvUp.n}!${fsUnl(lvUp.lv)}</div>` : '') : '';
+    const fb = $('#fsEndFb'); if (fb) fb.innerHTML = mine ? fsFeedbackHtml(me) : '';
     if (lvUp){ confetti(); banner('🎉 Level up: ' + lvUp.e + ' ' + lvUp.n + '!'); }
     const g = mpGuest(); $('#fsAgain').style.display = g ? 'none' : ''; $('#fsLobby').style.display = g ? 'none' : ''; $('#fsEndW').style.display = g ? '' : 'none';
     $('#fsKeep').style.display = mine ? '' : 'none'; $('#fsKeep').disabled = false; $('#fsKeep').textContent = '💾 Save for next show';
@@ -1067,10 +1188,10 @@
         else { const o = fs.ord.filter(u => !fs.pod.includes(u)).indexOf(W.u); M.g.position.set((o % 2 ? 1 : -1) * (5.6 + (o >> 1) * 1.6), .05, 31.2); M.g.rotation.y = Math.PI; applyPose(dt, FS_POSES[0].p(t), M); }
         return; }
       const lt = fs.wt - k * FS_WALK; if (fs.ph !== 'walk' || lt < 0 || lt > FS_WALK){ M.g.visible = false; return; }
-      M.g.visible = true; W.lab.visible = W.meVip || (lt > 3.2 && lt < 7); let z, ry = 0, p = null;
-      if (lt < 3.2) z = z0 + (z1 - z0) * (lt / 3.2);
-      else if (lt < 7){ z = z1; p = FS_POSES[fs.poses[W.u] != null ? fs.poses[W.u] : 0].p(lt - 3.2); }
-      else { z = z1 - (lt - 7) * 10; ry = Math.PI; }
+      M.g.visible = true; W.lab.visible = W.meVip || (lt > FS_POSE_IN && lt < FS_POSE_OUT); let z, ry = 0, p = null;
+      if (lt < FS_POSE_IN) z = z0 + (z1 - z0) * (lt / FS_POSE_IN);
+      else if (lt < FS_POSE_OUT){ z = z1; p = FS_POSES[fs.poses[W.u] != null ? fs.poses[W.u] : 0].p(lt - FS_POSE_IN); }
+      else { z = z1 - (lt - FS_POSE_OUT) * 10; ry = Math.PI; }
       M.g.position.set(0, .95, z); M.g.rotation.y = ry; W.ph += dt * 6;
       applyPose(dt, p ? Object.assign({lL: 0, lR: 0}, p) : animPose('default', {state: 'walk', t: t + k, ph: W.ph, sp: .7}), M);
       if (!W.shown && lt > .05){ W.shown = true; banner('👠 ' + (W.u === fsUid() ? 'Your turn! Pick a pose! ✨' : fsName(W.u) + ' hits the runway!')); }
@@ -1083,7 +1204,7 @@
     if (!(fs.ph === 'walk' || fs.ph === 'podium' || fs.ph === 'end')) return false;
     if (fs.ph === 'walk'){ let tx = 0, ty = 2.05, tz = 2; const k = Math.min(fs.walkers.length - 1, Math.floor(fs.wt / FS_WALK)), W = fs.walkers[k];
       if (W && W.m.g.visible){ tx = W.m.g.position.x; ty = W.m.g.position.y + 1.65; tz = W.m.g.position.z; }
-      const lt = fs.wt - k * FS_WALK, close = lt > 3.2 && lt < 7;
+      const lt = fs.wt - k * FS_WALK, close = lt > FS_POSE_IN && lt < FS_POSE_OUT;
       if (close) camera.position.set(2.2 + Math.sin(worldT * .4) * .8, 2.7, 11.2); else camera.position.set(4.2 + Math.sin(worldT * .25) * 1.2, 3.1, 9.9);
       camera.lookAt(tx, ty, tz); return true; }
     camera.position.set(Math.sin(worldT * .3) * 1.2, 3.4, 21.5); camera.lookAt(0, 2.4, 30); return true;
@@ -1102,10 +1223,14 @@
     if ($('#fsPh').textContent !== ph) $('#fsPh').textContent = ph;
     const T = FS_THEMES[fs.th], L = fsLevel(fsProg().xp), th = fs.ph === 'lobby' ? ' · ' + L.e + ' Lv ' + L.lv : ' · ' + T.emoji + ' ' + T.name;
     if ($('#fsThB').textContent !== th) $('#fsThB').textContent = th;
-    $('#fsT').textContent = fs.ph === 'dress' || fs.ph === 'intro' || fs.ph === 'podium' ? fmt(Math.max(0, Math.ceil(fs.t))) : fs.ph === 'walk' ? Math.min(fs.ord.length, Math.floor(fs.wt / FS_WALK) + 1) + '/' + fs.ord.length : '—';
+    if (fs.ph === 'walk'){
+      const cur = fsCur(), left = fsRateLeft(), slot = Math.min(fs.ord.length, Math.floor(fs.wt / FS_WALK) + 1) + '/' + fs.ord.length;
+      $('#fsT').textContent = (cur && cur !== fsUid() ? left + 's · ' : '') + slot;
+    } else $('#fsT').textContent = fs.ph === 'dress' || fs.ph === 'intro' || fs.ph === 'podium' ? fmt(Math.max(0, Math.ceil(fs.t))) : '—';
     if (fs.ph === 'dress' && fs.ward) $('#fsWardT').textContent = '⏱️ ' + fmt(Math.max(0, Math.ceil(fs.t)));
     // show the REAL Rublox coin balance (hud() otherwise overwrites #oCoins with runCoins, which is 0 here)
     $('#oCoins').textContent = coins;
+    const bs = $('#fsBuild'); if (bs && bs.textContent !== (typeof BUILD !== 'undefined' ? BUILD : '')) bs.textContent = typeof BUILD !== 'undefined' ? BUILD : '';
   }
   function fsPad(jp){
     if (!fs) return false;
@@ -1113,7 +1238,11 @@
     if (fs.ph === 'dress' && jp[2]){ if (fs.ward) fsWardClose(); else fsWardOpen(fs.near || null); return true; }
     if (fs.ph === 'walk'){ const u = fsCur();
       if (u && u === fsUid() && (jp[2] || jp[3])){ fsPose(((fs.poses[u] != null ? fs.poses[u] : fs.myPose) + (jp[2] ? 1 : FS_POSES.length - 1)) % FS_POSES.length); return true; }
-      if (u && u !== fsUid() && (jp[14] || jp[15])){ const v = fs.rated[u] || 0; fsRate(jp[15] ? Math.min(5, v + 1) : Math.max(1, v - 1)); return true; } }
+      if (u && u !== fsUid()){
+        if (jp[14] || jp[15]){ const v = fs.rated[u] || 0; fsRate(jp[15] ? Math.min(5, v + 1) : Math.max(1, v - 1)); return true; }
+        if (jp[4] || jp[5]){ const i = Math.max(0, FS_TAGS.findIndex(t => t.id === fs.tagFocus)); fs.tagFocus = FS_TAGS[(i + (jp[5] ? 1 : FS_TAGS.length - 1)) % FS_TAGS.length].id; fsRateBar(true); return true; }
+        if (jp[2] && fs.tagFocus){ fsToggleTag(u, fs.tagFocus); return true; }
+      } }
     return false;
   }
   function fsKey(e){
@@ -1126,10 +1255,12 @@
     fsMigrateAvatar();
     fs.remote = mpGuest();
     if (fs.remote && mp.fsW) fashionFromHost(mp.fsW, true);
+    const bs = $('#fsBuild'); if (bs){ bs.textContent = typeof BUILD !== 'undefined' ? BUILD : ''; bs.classList.add('show'); }
     if (fs.ph === 'lobby'){ fsToLobby(); fsPickOpen(); }
   }
   function fashionStop(){
     fsHideAll(); document.body.classList.remove('fsnotip'); document.body.classList.remove('fsward-dock'); fsMirrorStop();
+    const bs = $('#fsBuild'); if (bs) bs.classList.remove('show');
     if (fs){ fsClearWalkers(); if (fs.vipSpark){ scene.remove(fs.vipSpark); fs.vipSpark = null; } try { if (model){ const g = model.g, pos = g.position.clone(), ry = g.rotation.y; scene.remove(g); model = buildPlayer(avatar); model.g.position.copy(pos); model.g.rotation.y = ry; scene.add(model.g); } } catch (e){} }
     fs = null;
   }
@@ -1137,7 +1268,7 @@
   function fashionWire(){
     const w = {ph: fs.ph, n: fs.n, t: +fs.t.toFixed(1), wt: +fs.wt.toFixed(2), th: fs.th, ord: fs.ord, rd: [...fs.ready], dl: fs.dl, po: fs.poses};
     if (fs.ph === 'walk' || fs.ph === 'podium' || fs.ph === 'end'){ w.fits = fs.fits; w.fxs = fs.fxs; }
-    if (fs.ph === 'podium' || fs.ph === 'end'){ w.res = fs.res; w.pod = fs.pod; }
+    if (fs.ph === 'podium' || fs.ph === 'end'){ w.res = fs.res; w.pod = fs.pod; w.tg = fs.tags; }
     return w;
   }
   function fashionFromHost(w, entering){
@@ -1152,8 +1283,20 @@
     const newRound = n !== fs.n; fs.n = n;
     if (ph === 'intro'){ fs.t = +w.t || 0; if (newRound || fs.ph !== 'intro'){ fs.ph = 'intro'; fsLocalIntro(); } return; }
     if (ph === 'dress'){ fs.t = +w.t || 0; if (newRound || fs.ph !== 'dress'){ fs.ph = 'dress'; fsLocalDress(); } return; }
-    if (ph === 'walk'){ if (fs.ph !== 'walk' || newRound){ fs.ph = 'walk'; fs.wt = +w.wt || 0; fs.rated = {}; fsLocalWalk(); } else if (Math.abs(fs.wt - (+w.wt || 0)) > .4) fs.wt = +w.wt || 0; return; }
-    const R = () => { fs.res = Array.isArray(w.res) ? w.res.filter(r => Array.isArray(r) && typeof r[0] === 'string').slice(0, 8).map(r => [r[0], Math.max(0, Math.min(50, r[1] | 0)), Math.max(0, r[2] | 0)]) : []; fs.pod = S(w.pod).slice(0, 3); };
+    if (ph === 'walk'){ if (fs.ph !== 'walk' || newRound){ fs.ph = 'walk'; fs.wt = +w.wt || 0; fs.rated = {}; fs.myTags = {}; fsLocalWalk(); } else if (Math.abs(fs.wt - (+w.wt || 0)) > .4) fs.wt = +w.wt || 0; return; }
+    const R = () => {
+      fs.res = Array.isArray(w.res) ? w.res.filter(r => Array.isArray(r) && typeof r[0] === 'string').slice(0, 8).map(r => [r[0], Math.max(0, Math.min(50, r[1] | 0)), Math.max(0, r[2] | 0)]) : [];
+      fs.pod = S(w.pod).slice(0, 3);
+      if (w.tg && typeof w.tg === 'object'){
+        const out = {};
+        Object.entries(w.tg).forEach(([v, by]) => {
+          if (typeof v !== 'string' || !by || typeof by !== 'object') return;
+          out[v] = {};
+          Object.entries(by).forEach(([tu, tags]) => { if (typeof tu === 'string') out[v][tu] = fsCleanTags(tags); });
+        });
+        fs.tags = out;
+      }
+    };
     if (ph === 'podium'){ fs.t = +w.t || 0; if (fs.ph !== 'podium' || newRound){ R(); if (!fs.walkers.length) fsLocalWalk(); fs.ph = 'podium'; fsLocalPodium(); } return; }
     if (ph === 'end'){ R(); if (fs.ph !== 'end' || newRound){ if (!fs.walkers.length) fsLocalWalk(); fs.endShown = false; fsEndLocal(); } }
   }
@@ -1162,5 +1305,8 @@
     if (d.t === 'fsfit' && fs.ph === 'dress' && d.av && typeof d.av === 'object'){ fs.gfits[g.uid] = cleanAv(d.av); fs.gfx[g.uid] = fsCleanFx(d.fx); }
     else if (d.t === 'fsready' && fs.ph === 'dress') fs.ready.add(g.uid);
     else if (d.t === 'fspose' && Number.isInteger(d.i) && d.i >= 0 && d.i < FS_POSES.length) fs.poses[g.uid] = d.i;
-    else if (d.t === 'fsrate' && fs.ph === 'walk' && typeof d.u === 'string' && fs.ord.includes(d.u) && d.u !== g.uid && Number.isInteger(d.n) && d.n >= 1 && d.n <= 5 && fsCur() === d.u) (fs.rates[g.uid] = fs.rates[g.uid] || {})[d.u] = d.n;
+    else if (d.t === 'fsrate' && fs.ph === 'walk' && typeof d.u === 'string' && fs.ord.includes(d.u) && d.u !== g.uid && fsCur() === d.u){
+      if (Number.isInteger(d.n) && d.n >= 1 && d.n <= 5) (fs.rates[g.uid] = fs.rates[g.uid] || {})[d.u] = d.n;
+      if (Array.isArray(d.tags)) (fs.tags[g.uid] = fs.tags[g.uid] || {})[d.u] = fsCleanTags(d.tags);
+    }
   }

@@ -18,7 +18,8 @@ function drawHide(ctx){""")
 rep("""      <span id="hsBox" style="display:none">""",
 """      <span id="fsBox" style="display:none"><b id="fsPh">👗 Fashion Show</b><span id="fsThB"></span> · ⏱️ <b id="fsT">0:00</b></span>
       <span id="hsBox" style="display:none">""")
-rep("""  <div class="hsblind" id="hsBlind">""", """  <button class="fswardbtn" id="fsWardBtn">👗 Wardrobe</button>
+rep("""  <div class="hsblind" id="hsBlind">""", """  <div class="fsbuild" id="fsBuild" aria-hidden="true"></div>
+  <button class="fswardbtn" id="fsWardBtn">👗 Wardrobe</button>
   <button class="fswardbtn fsshow" id="fsShowBtn">✨ Show menu</button>
   <button class="fsnear" id="fsNear"></button>
   <div class="fsintro" id="fsIntro"><small>✨ THIS SHOW'S THEME IS... ✨</small><b id="fsIntroT"></b><span id="fsIntroH"></span></div>
@@ -26,7 +27,7 @@ rep("""  <div class="hsblind" id="hsBlind">""", """  <button class="fswardbtn" i
     <span class="emoji">👗</span><h2>Fashion Show</h2>
     <div id="fsLv"></div>
     <div class="stats" id="fsPickS"></div>
-    <div class="stats hshelp">1️⃣ Get a surprise theme · 2️⃣ Style a look at the racks, salon & makeup stations · 3️⃣ Strike a pose on the runway · 4️⃣ Everyone rates 1-5 ⭐ · 🏆 Top 3 win coins!</div>
+    <div class="stats hshelp">1️⃣ Get a surprise theme · 2️⃣ Style a look at the racks, salon & makeup stations · 3️⃣ Strike a pose on the runway · 4️⃣ Everyone rates 1-5 ⭐ and can tap what they liked · 🏆 Top 3 win coins!</div>
     <div class="fstimes" id="fsTimes"></div>
     <div class="owinbtns"><button class="big green" id="fsGo">▶ Start the show</button><button class="big blue" id="fsExplore">🚶 Explore the lobby</button><button class="big gray" id="fsHome">🏠 Home</button></div>
   </div></div>
@@ -46,19 +47,21 @@ rep("""  <div class="hsblind" id="hsBlind">""", """  <button class="fswardbtn" i
     </div>
     <div class="owinbtns fsfoot"><button class="big green" id="fsReady">✅ I'm ready!</button><button class="big blue" id="fsKeepWard2">💾 Save for next show</button><button class="big blue" id="fsWardClose">👀 Look at me</button></div>
   </div></div>
-  <div class="fsbar2" id="fsRate"><b id="fsRateN"></b><div class="fsstars" id="fsRateS"></div><small id="fsRateH"></small></div>
+  <div class="fsbar2" id="fsRate"><div class="fsraten"><b id="fsRateN"></b><b class="fsratecd" id="fsRateCd">⏱️ 14s</b></div><div class="fsstars" id="fsRateS"></div><div class="fstags" id="fsRateTags"></div><small id="fsRateH"></small></div>
   <div class="fsbar2" id="fsPoses"><small id="fsPoseH"></small><div class="fsposes" id="fsPoseS"></div></div>
   <div class="opanel" id="fsEnd"><div class="mbox rcbox">
     <span class="emoji" id="fsEndE">👑</span><h2 id="fsEndT">Results</h2>
     <div class="fsress" id="fsEndS"></div>
     <div class="stats" id="fsEndC"></div>
     <div id="fsEndL"></div>
+    <div id="fsEndFb"></div>
     <div class="stats" id="fsEndW" style="display:none">⏳ Waiting for the host to start the next show...</div>
     <div class="owinbtns"><button class="big green" id="fsAgain">🔁 Another show</button><button class="big blue" id="fsKeep">💾 Save for next show</button><button class="big blue" id="fsLobby">🏛️ Lobby</button><button class="big gray" id="fsHome2">🏠 Home</button></div>
   </div></div>
   <div class="hsblind" id="hsBlind">""")
 rep(".smode #oStam{display:none!important}", """.smode #oStam{display:none!important}
 .fsnotip #oTip{display:none!important}
+.fsbuild{display:none;position:absolute;right:max(8px,env(safe-area-inset-right));bottom:max(6px,env(safe-area-inset-bottom));z-index:9;font-size:10px;font-weight:800;color:rgba(29,35,64,.42);background:rgba(255,255,255,.55);border-radius:8px;padding:2px 7px;pointer-events:none;letter-spacing:.2px}.fsbuild.show{display:block}
 .fswardbtn{display:none;position:absolute;right:14px;bottom:96px;z-index:6;border:0;border-radius:16px;padding:10px 16px;background:#ff6fb5;color:#fff;font:inherit;font-weight:900;font-size:17px;box-shadow:0 4px 0 #c94f8d;cursor:pointer}
 .fswardbtn.show{display:block}.fsshow{background:#8b5cf6;box-shadow:0 4px 0 #5b34c0}
 .fsnear{display:none;position:absolute;left:50%;bottom:120px;transform:translateX(-50%);z-index:6;border:3px solid #fff;border-radius:18px;padding:9px 18px;background:#8b5cf6;color:#fff;font:inherit;font-weight:900;font-size:18px;box-shadow:0 4px 0 #5b34c0;cursor:pointer;animation:fsbob 1s ease-in-out infinite alternate}
@@ -98,11 +101,20 @@ body.fsward-dock #fsWard .fsfoot,body.fsward-dock #fsWard .owinbtns.fsfoot{posit
 .fsmini{justify-content:center;margin-top:8px}.fsmb{border:0;border-radius:12px;padding:6px 12px;background:#ffd23f;font:inherit;font-weight:900;cursor:pointer;box-shadow:0 3px 0 #d4a900}
 .fsbar2{display:none;position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:7;background:rgba(255,255,255,.95);border:3px solid #ff6fb5;border-radius:20px;padding:8px 16px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:96vw}
 .fsbar2.show{display:flex;flex-direction:column;align-items:center;gap:3px}.fsbar2 small{font-weight:800;color:#666}
+.fsraten{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}.fsratecd{font-size:18px;font-weight:900;color:#8b5cf6;background:#f3e8ff;border-radius:999px;padding:2px 10px;min-width:58px}.fsratecd.low{color:#fff;background:#ff4d5e;animation:fsbob .5s ease-in-out infinite alternate}
 .fsstars{display:flex;gap:6px}.fsstar{border:0;background:none;font-size:42px;line-height:1;color:#ddd;cursor:pointer;padding:0 2px;text-shadow:0 2px 0 #bbb}.fsstar.on{color:#ffc400;text-shadow:0 2px 0 #d48a00}
+.fstags{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;max-width:min(520px,92vw);margin-top:2px}
+.fstag{border:2px solid #e3d6ff;background:#fff;border-radius:12px;padding:2px 7px;font:inherit;font-size:15px;cursor:pointer;display:flex;flex-direction:column;align-items:center;min-width:54px;line-height:1.05;box-shadow:0 2px 0 #e3d6ff}
+.fstag small{font-size:9px;font-weight:800;color:#666}.fstag.on{background:#fff0f7;border-color:#ff6fb5;box-shadow:0 2px 0 #ff6fb5}.fstag.foc{outline:3px solid #8b5cf6;outline-offset:1px}
 .fsposes{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}.fspose{border:2px solid #eee;background:#fff;border-radius:12px;padding:3px 6px;font:inherit;font-size:22px;cursor:pointer;display:flex;flex-direction:column;align-items:center;min-width:62px}.fspose small{font-size:10px;font-weight:800}.fspose.on{border-color:#ff6fb5;background:#fff0f7}
 .fsress{display:flex;flex-direction:column;gap:4px;margin:6px 0;max-height:30vh;overflow:auto}
 .fsres{display:flex;align-items:center;gap:8px;background:#f6f3ff;border-radius:12px;padding:3px 10px}.fsres img{width:34px;height:44px;border-radius:6px}.fsres span{flex:1;text-align:left;font-weight:800}.fsres.win{background:#fff4c2}.fsres small{font-size:11px;color:#777}
-@media (max-width:760px),(max-height:520px){#fsPick .emoji,#fsEnd .emoji{display:none}#fsPick h2,#fsEnd h2{font-size:18px;margin:0 0 2px}.fsitems{max-height:30vh}.fshead{font-size:15px}.fstab{font-size:15px;padding:2px 5px;min-width:42px}.fstab small{display:none}.fswardbtn{bottom:auto;top:64px;right:10px;font-size:14px;padding:7px 12px}.fsress{max-height:24vh}.fsintro b{font-size:28px}.fsstar{font-size:34px}.fspose{min-width:48px;font-size:18px}.fspose small{display:none}.fsnear{bottom:150px;font-size:15px}.hshelp{display:none}.fsgrid{grid-template-columns:repeat(auto-fill,minmax(68px,1fr))}
+.fsfeed{background:linear-gradient(135deg,#fff0f7,#f3e8ff);border:3px solid #ffb3d9;border-radius:16px;padding:8px 12px;margin:8px 0;text-align:left}
+.fsfeed>b{display:block;font-size:16px;margin-bottom:4px}.fsfbavg{font-weight:900;font-size:18px;margin:2px 0 6px}
+.fsfbtop small{font-weight:800;color:#666}.fsfblikes{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0}
+.fsfblike{background:#fff;border-radius:999px;padding:4px 10px;font-weight:800;font-size:13px;border:2px solid #e3d6ff}.fsfblike b{color:#8b5cf6}
+.fsfbtip{margin-top:6px;font-weight:800;color:#5b34c0;background:#fff;border-radius:12px;padding:6px 10px}
+@media (max-width:760px),(max-height:520px){#fsPick .emoji,#fsEnd .emoji{display:none}#fsPick h2,#fsEnd h2{font-size:18px;margin:0 0 2px}.fsitems{max-height:30vh}.fshead{font-size:15px}.fstab{font-size:15px;padding:2px 5px;min-width:42px}.fstab small{display:none}.fswardbtn{bottom:auto;top:64px;right:10px;font-size:14px;padding:7px 12px}.fsress{max-height:24vh}.fsintro b{font-size:28px}.fsstar{font-size:34px}.fstag{min-width:42px;font-size:14px;padding:2px 5px}.fstag small{display:none}.fspose{min-width:48px;font-size:18px}.fspose small{display:none}.fsnear{bottom:150px;font-size:15px}.fsfeed{padding:6px 8px}.fsfbavg{font-size:16px}.hshelp{display:none}.fsgrid{grid-template-columns:repeat(auto-fill,minmax(68px,1fr))}
 body.fsward-dock #fsWard{align-items:flex-end;justify-content:center;padding:0 6px 6px}
 body.fsward-dock #fsWard .mbox.fsward{max-width:96vw;width:96vw;max-height:70vh;margin:0 auto;overflow:hidden;padding:12px 12px 10px}
 .fslayout{flex-direction:column;gap:6px;flex:1 1 auto;min-height:0;overflow:hidden}
