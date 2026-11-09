@@ -54,8 +54,8 @@
       sb.fences.push(f);
     });
     // big obvious barn behind the pads (−z). Camera looks toward −z so the barn fills the backdrop.
-    plat(-14, 4.2, -14, 16, 10, '#d4a574', 4.2);                 // walls
-    plat(-14, 7.6, -14, 18, 12, '#8a5a3c', .7);                   // roof
+    plat(-14, 7.0, -14, 16, 10, '#d4a574', 7.0);                 // walls up to eaves
+    plat(-14, 7.55, -14, 18, 12, '#8a5a3c', .9);                  // roof sits on walls (no floating bar)
     plat(-14, 2.2, -8.6, 3.2, .5, '#6b3e1f', 2.2);                // door
     plat(-19, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);                // window L
     plat(-9, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);                 // window R

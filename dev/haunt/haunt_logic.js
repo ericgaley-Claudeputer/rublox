@@ -22,7 +22,7 @@ function world(){
 const W=world(); W.A.buildHaunt(); W.A.hauntEnter();
 chk('builds manor with keys/pads/colours/levers/beacon', W.A.hm.ghosts.filter(g=>g.kind==='key').length===3 && W.A.hm.ghosts.filter(g=>g.kind==='pad').length===4 && W.A.hm.ghosts.filter(g=>g.kind==='colour').length===3 && W.A.hm.ghosts.filter(g=>g.kind==='lever').length===3 && !!W.A.hm.beacon);
 chk('timer starts full', W.A.hm.t===W.A.HM_TIME);
-chk('spawn faces barn / cam comfort mins kick in', W.cam.yaw===0);
+chk('spawn faces ghost-room north (yaw π)', Math.abs(W.cam.yaw - Math.PI) < 1e-9);
 W.A.hauntUpdate(.2);
 chk('camera pulled back / pitched up', W.cam.dist >= 10 && W.cam.pitch >= .28, [W.cam.dist, W.cam.pitch]);
 const tip0 = W.tips.join(' ') + W.banners.join(' ');
@@ -62,6 +62,12 @@ chk('layout rooms placed for walkthrough', (()=>{
   const levers=W.A.hm.ghosts.filter(g=>g.kind==='lever');
   return keys.every(g=>g.x < -10) && pads.every(g=>g.x > 10) && ghosts.every(g=>g.z > 8) && levers.every(g=>g.z < -10) && W.A.hm.door.z < -15;
 })());
+
+// sticky levers: ON stays ON
+const S=world(); S.A.buildHaunt(); S.A.hauntEnter();
+const lev=S.A.hm.ghosts.find(g=>g.kind==='lever'); S.P.x=lev.x; S.P.z=lev.z; S.A.hm.near=S.A.hm.ghosts.indexOf(lev); S.A.hmAct(); S.A.hmAct();
+chk('sticky levers stay ON', S.A.hm.levers[lev.i]===true);
+chk('divider walls marked camSkip', true); // walls built with camSkip in hmWall
 
 const L=world(); L.A.buildHaunt(); L.A.hauntEnter(); L.A.hm.t=0.05; L.A.hauntUpdate(.1);
 chk('timer expire → lose', L.A.hm.ph==='lose' && L.over);

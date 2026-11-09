@@ -207,7 +207,7 @@ body.dark .sitem canvas{background:linear-gradient(#34427e,#26306a)}
 .opanel .stats{font-weight:800;font-size:18px;line-height:1.8;margin:6px 0 16px}
 .oflash{position:absolute;inset:0;background:#ff4d5e;opacity:0;pointer-events:none;transition:opacity .35s}
 .oflash.on{opacity:.45;transition:none}
-.obanner{position:absolute;top:18%;left:50%;transform:translate(-50%,-50%) scale(.5);opacity:0;font-size:clamp(22px,4.5vw,36px);font-weight:900;color:#fff;text-shadow:3px 3px 0 #1f9460,0 0 18px rgba(0,0,0,.35);pointer-events:none;white-space:pre-line;text-align:center;max-width:90vw;z-index:12}
+.obanner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.5);opacity:0;font-size:clamp(22px,4.5vw,36px);font-weight:900;color:#fff;text-shadow:3px 3px 0 #1f9460,0 0 18px rgba(0,0,0,.35);pointer-events:none;white-space:pre-line;text-align:center;max-width:90vw;z-index:12}
 .obanner.go{animation:oban 1.6s cubic-bezier(.3,1.6,.5,1)}
 @keyframes oban{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-70%) scale(1)}}
 .otouch{display:none}
@@ -474,7 +474,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .icord{position:relative;overflow:hidden;background:rgba(255,255,255,.92);border:3px solid #7fd6ff;border-radius:12px;padding:3px 9px 7px;font-size:20px;font-weight:900;color:#1d2340}
 .icord i{position:absolute;left:0;bottom:0;height:4px;background:#2ec27e}
 .icnear{background:#7fd6ff;box-shadow:0 4px 0 #3a9bc8}.icnear small{color:#7fd6ff}
-.ictoast{display:none;position:absolute;left:50%;top:18%;transform:translate(-50%,-50%);z-index:20;pointer-events:none;min-width:min(90vw,420px);max-width:92vw;padding:22px 28px;border-radius:22px;background:rgba(29,35,64,.92);color:#fff;font-weight:900;font-size:clamp(28px,5vw,44px);line-height:1.25;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.25),0 0 30px rgba(255,111,181,.45);border:4px solid #ff6fb5}
+.ictoast{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;pointer-events:none;min-width:min(90vw,420px);max-width:92vw;padding:22px 28px;border-radius:22px;background:rgba(29,35,64,.92);color:#fff;font-weight:900;font-size:clamp(28px,5vw,44px);line-height:1.25;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.25),0 0 30px rgba(255,111,181,.45);border:4px solid #ff6fb5}
 .ictoast.show{display:block;animation:icpop 2.5s ease forwards}
 @keyframes icpop{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.9)}}
 #icPanel.show{display:grid!important}
@@ -1418,7 +1418,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.09-15';
+const BUILD = '2026.11.09-16';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -10950,8 +10950,8 @@ const Obby = (() => {
       sb.fences.push(f);
     });
     // big obvious barn behind the pads (−z). Camera looks toward −z so the barn fills the backdrop.
-    plat(-14, 4.2, -14, 16, 10, '#d4a574', 4.2);                 // walls
-    plat(-14, 7.6, -14, 18, 12, '#8a5a3c', .7);                   // roof
+    plat(-14, 7.0, -14, 16, 10, '#d4a574', 7.0);                 // walls up to eaves
+    plat(-14, 7.55, -14, 18, 12, '#8a5a3c', .9);                  // roof sits on walls (no floating bar)
     plat(-14, 2.2, -8.6, 3.2, .5, '#6b3e1f', 2.2);                // door
     plat(-19, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);                // window L
     plat(-9, 3.2, -8.7, 2.2, .3, '#9fd8ff', 1.4);                 // window R
@@ -11075,8 +11075,8 @@ const Obby = (() => {
   }
   function sbPad(jp){ if (!sb) return false; if (jp.x){ sbAct(); return true; } return false; }
   function sbKey(e){ if (!sb || e.repeat || paused) return false; if (e.code === 'KeyE'){ sbAct(); return true; } if (e.code === 'Escape' && sb.panel){ sbShowPick(false); return true; } return false; }
-  /* ===================== t227u: 👻 GIGGLE MANOR ESCAPE — reachable rooms, auto key pickup, guide beacon ===================== */
-  const HM_KEY = 'rubloxHaunt', HM_TIME = 180, HM_PICK = 1.8;
+  /* ===================== t227u: 👻 GIGGLE MANOR — polish: facing, cam min, camSkip walls, sticky levers ===================== */
+  const HM_KEY = 'rubloxHaunt', HM_TIME = 180, HM_PICK = 1.8, HM_NEAR = 3.2;
   const HM_COLS = [
     {hex: '#ff6fb5', name: 'PINK', e: '💗'},
     {hex: '#7fd6ff', name: 'BLUE', e: '💙'},
@@ -11085,38 +11085,37 @@ const Obby = (() => {
   let hm = null;
   function hmProg(){ const o = load(HM_KEY, null), r = o && typeof o === 'object' ? o : {}; return {escapes: Math.max(0, r.escapes | 0), best: Math.max(0, r.best | 0), coins: Math.max(0, +r.coins || 0)}; }
   function hmColInfo(){ return HM_COLS.find(c => c.hex === (hm && hm.needCol)) || HM_COLS[0]; }
-  function hmWall(x, top, z, w, d, h, col){ return plat(x, top, z, w, d, col || '#6b5b8a', h); }
+  function hmWall(x, top, z, w, d, h, col){
+    const p = plat(x, top, z, w, d, col || '#6b5b8a', h);
+    // camera may pass through room dividers at doorways instead of sitting inside them
+    p.camSkip = true;
+    if (p.mesh && p.mesh.material){ p.mesh.material.transparent = true; p.mesh.material.opacity = .78; }
+    return p;
+  }
   function buildHaunt(){
     const pick = HM_COLS[Math.random() * HM_COLS.length | 0];
     hm = {ph: 'play', t: HM_TIME, keys: 0, need: 3, pattern: [0, 2, 1, 3], pressed: [], colour: null, needCol: pick.hex, levers: [false, false, false], doorOpen: false, ghosts: [], earned: 0, paid: false, remote: mpGuest(), near: -1, beacon: null, step: 'keys'};
     scene.background = new THREE.Color('#2a2450');
     if (scene.fog){ scene.fog.color = new THREE.Color('#3a3060'); scene.fog.near = 10; scene.fog.far = 60; }
     plat(0, 0, 0, 44, 44, '#4a3f6b', .4);
-    // outer walls
-    [[0, 22, 46, 1], [0, -22, 46, 1], [22, 0, 1, 46], [-22, 0, 1, 46]].forEach(([x, z, w, d]) => hmWall(x, 3, z, w, d, 3, '#5b4d7a'));
-    // room dividers WITH doorways (gaps) so every room is reachable from spawn
-    // left divider (x=-10): gap around z=0
+    // outer walls (solid for player+camera — keep occlusion)
+    [[0, 22, 46, 1], [0, -22, 46, 1], [22, 0, 1, 46], [-22, 0, 1, 46]].forEach(([x, z, w, d]) => plat(x, 3, z, w, d, '#5b4d7a', 3));
+    // room dividers WITH doorways (gaps); camSkip so camera never nests in the wall at a doorway
     hmWall(-10, 3, -8, .6, 8, 3); hmWall(-10, 3, 8, .6, 8, 3);
-    // right divider (x=10): gap around z=0
     hmWall(10, 3, -8, .6, 8, 3); hmWall(10, 3, 8, .6, 8, 3);
-    // back divider (z=8): gap around x=0 toward ghost room
     hmWall(-10, 3, 8, 8, .6, 3); hmWall(10, 3, 8, 8, .6, 3);
-    // doorway mats (visual)
     [[-10, 0], [10, 0], [0, 8]].forEach(([x, z]) => plat(x, .08, z, 2.4, 2.4, '#c39bff', .08));
-    // KEYS — left room (x≈-14), all reachable via left doorway
     [[-14, -6], [-14, 0], [-14, 6]].forEach(([x, z], i) => {
       plat(x, .9, z, 1.6, 1.6, '#ffd23f', .9);
       const L = label('🔑 Key ' + (i + 1), 'rgba(255,210,63,.92)'); L.position.set(x, 2.3, z); scene.add(L);
       hm.ghosts.push({kind: 'key', i, x, z, got: false, label: L});
     });
-    // SONG PADS — right room
     const cols = ['#ffb3c7', '#9ff0c8', '#7fd6ff', '#ffe08a'];
     [[12, -4], [16, -4], [12, 0], [16, 0]].forEach(([x, z], i) => {
       plat(x, .5, z, 2.2, 2.2, cols[i], .4);
       const L = label('🎵 ' + (i + 1), 'rgba(127,214,255,.9)'); L.position.set(x, 1.9, z); scene.add(L);
       hm.ghosts.push({kind: 'pad', i, x, z});
     });
-    // COLOUR GHOSTS — back room (z≈14)
     HM_COLS.forEach((c, i) => {
       const x = -6 + i * 6, z = 14; plat(x, .4, z, 2.4, 2.4, c.hex, .35);
       const g = new THREE.Mesh(new THREE.SphereGeometry(1.15, 12, 10), new THREE.MeshLambertMaterial({color: c.hex, transparent: true, opacity: .88}));
@@ -11124,20 +11123,19 @@ const Obby = (() => {
       const L = label(c.e + ' ' + c.name, 'rgba(255,255,255,.92)'); L.position.set(x, 3.3, z); scene.add(L);
       hm.ghosts.push({kind: 'colour', i, x, z, col: c.hex, name: c.name, e: c.e, mesh: g});
     });
-    // LEVERS — near exit (south)
+    // larger lever pads for forgiving collision
     [[-3, -14], [0, -14], [3, -14]].forEach(([x, z], i) => {
-      plat(x, 1.0, z, 1.3, 1.3, '#c39bff', 1.0);
+      plat(x, 1.0, z, 2.0, 2.0, '#c39bff', 1.0);
       const L = label('🎚️ ' + (i + 1), 'rgba(195,155,255,.92)'); L.position.set(x, 2.5, z); scene.add(L);
       hm.ghosts.push({kind: 'lever', i, x, z});
     });
-    // EXIT door
     plat(0, 2.6, -19, 4.2, .8, '#ff9f6b', 2.6);
     const door = label('🚪 Exit', 'rgba(255,159,107,.95)'); door.position.set(0, 4.3, -19); scene.add(door);
     hm.door = {x: 0, z: -19};
-    // guide beacon (floating arrow)
     const beacon = new THREE.Mesh(new THREE.ConeGeometry(.55, 1.2, 4), new THREE.MeshLambertMaterial({color: '#ffd23f', emissive: '#aa8800'}));
     beacon.rotation.x = Math.PI; scene.add(beacon); hm.beacon = beacon;
-    Object.assign(P, {x: 0, y: .05, z: 2, vx: 0, vy: 0, vz: 0}); P.face = 0; cam.yaw = 0; cam.pitch = .34; cam.dist = 12;
+    // Face +z (ghost room / "north" of the manor). yaw=π puts camera on −z looking toward +z — away from levers.
+    Object.assign(P, {x: 0, y: .05, z: 2, vx: 0, vy: 0, vz: 0}); P.face = 0; cam.yaw = Math.PI; cam.pitch = .38; cam.dist = 12;
     checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 2}, flag: new THREE.Object3D()};
   }
   function hmObjective(){
@@ -11150,7 +11148,7 @@ const Obby = (() => {
   }
   function hauntEnter(){
     if (!hm) return; hm.ph = 'play'; hm.t = HM_TIME; hm.paid = false; over = false; choosing = false;
-    cam.yaw = 0; cam.dist = Math.max(cam.dist, 11); cam.pitch = .34;
+    cam.yaw = Math.PI; cam.dist = Math.max(cam.dist, 11); cam.pitch = .38;
     const c = hmColInfo();
     banner('👻 Giggle Manor! Later you will hug the ' + c.e + ' ' + c.name + ' ghost. First: grab 3 keys!');
     tipTimer = 10; hmTip(); hmHud();
@@ -11158,8 +11156,12 @@ const Obby = (() => {
   function hmTip(){ const o = hmObjective(); if (o){ $('#oTip').classList.remove('hide'); $('#oTip').innerHTML = '👻 ' + o.tip; tipTimer = 8; } }
   function hauntStop(){ if (hm && hm.beacon) scene.remove(hm.beacon); hm = null; const b = $('#hmAct'); if (b) b.classList.remove('show'); }
   function hmNear(){
-    if (!hm) return -1; let best = 2.6, idx = -1;
-    hm.ghosts.forEach((g, i) => { if (g.got) return; const d = Math.hypot(P.x - g.x, P.z - g.z); if (d < best){ best = d; idx = i; } });
+    if (!hm) return -1; let best = HM_NEAR, idx = -1;
+    hm.ghosts.forEach((g, i) => {
+      if (g.got) return;
+      if (g.kind === 'lever' && hm.levers[g.i]) return; // already ON — don't prompt again
+      const d = Math.hypot(P.x - g.x, P.z - g.z); if (d < best){ best = d; idx = i; }
+    });
     return idx;
   }
   function hmTakeKey(g){
@@ -11184,23 +11186,24 @@ const Obby = (() => {
       else banner('👻 Heehee — hug the ' + c.e + ' ' + c.name + ' ghost!');
       hmHud(); hmTip(); return true;
     }
-    if (g.kind === 'lever'){ hm.levers[g.i] = !hm.levers[g.i]; banner('🎚️ Lever ' + (g.i + 1) + (hm.levers[g.i] ? ' ON' : ' off')); SND.cp();
-      if (hm.levers.every(Boolean)) banner('✨ All levers on!'); hmHud(); hmTip(); return true; }
+    if (g.kind === 'lever'){
+      if (hm.levers[g.i]){ banner('🎚️ Lever ' + (g.i + 1) + ' already ON'); return true; }
+      hm.levers[g.i] = true; banner('🎚️ Lever ' + (g.i + 1) + ' ON'); SND.cp();
+      if (hm.levers.every(Boolean)) banner('✨ All levers on!'); hmHud(); hmTip(); return true;
+    }
     return false;
   }
   function hmReady(){ return hm && hm.keys >= hm.need && hm.patternDone && hm.colour === hm.needCol && hm.levers.every(Boolean); }
   function hauntUpdate(dt){
     if (!hm || hm.ph !== 'play' || over || choosing) return;
     hm.t -= dt; if (hm.t <= 0){ hmLose(); return; }
-    // camera comfort (same idea as stables)
-    if (cam.dist < 10) cam.dist += (10 - cam.dist) * Math.min(1, dt * 4);
-    if (cam.pitch < .28) cam.pitch += (.28 - cam.pitch) * Math.min(1, dt * 3);
-    // auto-collect keys on touch
+    // camera comfort — never collapse into the avatar/walls (pairs with updateCamera haunt min)
+    if (cam.dist < 11) cam.dist += (11 - cam.dist) * Math.min(1, dt * 4);
+    if (cam.pitch < .32) cam.pitch += (.32 - cam.pitch) * Math.min(1, dt * 3);
     hm.ghosts.forEach(g => { if (g.kind === 'key' && !g.got && Math.hypot(P.x - g.x, P.z - g.z) <= HM_PICK) hmTakeKey(g); });
     hm.near = hmNear();
     const btn = $('#hmAct'); if (btn){ if (hm.near >= 0){ const g = hm.ghosts[hm.near]; btn.classList.add('show'); btn.innerHTML = (g.kind === 'key' ? '🔑 Take' : g.kind === 'pad' ? '🎵 Press' : g.kind === 'colour' ? '👻 Hug' : '🎚️ Flip') + '<small>E / Ⓧ</small>'; } else btn.classList.remove('show'); }
     hm.ghosts.forEach(g => { if (g.mesh) g.mesh.position.y = 1.7 + Math.sin(worldT * 2 + g.i) * .28; });
-    // beacon over current objective
     const obj = hmObjective();
     if (hm.beacon && obj){ hm.beacon.visible = true; hm.beacon.position.set(obj.x, 3.2 + Math.sin(worldT * 3) * .35, obj.z); hm.beacon.rotation.y += dt * 2; }
     else if (hm.beacon) hm.beacon.visible = false;
@@ -11618,7 +11621,7 @@ const Obby = (() => {
     if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance'){ // pull the camera in front of walls so buildings don't block the view
       for (let s = 1.2; s <= cam.dist; s += .4){
         const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
-        if (solids.some(b => b.active && !b.camSkip && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 9 : 1.2, s - .5); break; }
+        if (solids.some(b => b.active && !b.camSkip && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2, s - .5); break; }
       }
     }
     camera.position.set(tx + Math.sin(cam.yaw) * cp * dist, ty + Math.sin(cam.pitch) * dist, tz + Math.cos(cam.yaw) * cp * dist);

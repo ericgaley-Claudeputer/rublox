@@ -74,16 +74,16 @@ rep("dist = Math.max(mode === 'stable' ? 5.5 : 1.2, s - .5);",
     "dist = Math.max(mode === 'stable' ? 8.5 : 1.2, s - .5);")
 # longer, more visible banner animation while we're here
 rep(".obanner{position:absolute;top:22%;left:50%;transform:translate(-50%,-50%) scale(.5);opacity:0;font-size:34px;font-weight:900;color:#fff;text-shadow:3px 3px 0 #1f9460,0 0 18px rgba(0,0,0,.25);pointer-events:none;white-space:nowrap}",
-    ".obanner{position:absolute;top:18%;left:50%;transform:translate(-50%,-50%) scale(.5);opacity:0;font-size:clamp(22px,4.5vw,36px);font-weight:900;color:#fff;text-shadow:3px 3px 0 #1f9460,0 0 18px rgba(0,0,0,.35);pointer-events:none;white-space:pre-line;text-align:center;max-width:90vw;z-index:12}")
+    ".obanner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.5);opacity:0;font-size:clamp(22px,4.5vw,36px);font-weight:900;color:#fff;text-shadow:3px 3px 0 #1f9460,0 0 18px rgba(0,0,0,.35);pointer-events:none;white-space:pre-line;text-align:center;max-width:90vw;z-index:12}")
 
 
 
 # ----- polish pass: ice cream wizard CSS + toast; camera skips fence -----
 rep("if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 8.5 : 1.2, s - .5); break; }",
-    "if (solids.some(b => b.active && !b.camSkip && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 9 : 1.2, s - .5); break; }")
+    "if (solids.some(b => b.active && !b.camSkip && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2, s - .5); break; }")
 # Final ice-cream panel CSS (must win over earlier .mbox 420px and old #icItems grid)
 rep(".icbox{max-width:min(92vw,640px)!important;width:min(92vw,640px)}",
-    """.ictoast{display:none;position:absolute;left:50%;top:18%;transform:translate(-50%,-50%);z-index:20;pointer-events:none;min-width:min(90vw,420px);max-width:92vw;padding:22px 28px;border-radius:22px;background:rgba(29,35,64,.92);color:#fff;font-weight:900;font-size:clamp(28px,5vw,44px);line-height:1.25;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.25),0 0 30px rgba(255,111,181,.45);border:4px solid #ff6fb5}
+    """.ictoast{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;pointer-events:none;min-width:min(90vw,420px);max-width:92vw;padding:22px 28px;border-radius:22px;background:rgba(29,35,64,.92);color:#fff;font-weight:900;font-size:clamp(28px,5vw,44px);line-height:1.25;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.25),0 0 30px rgba(255,111,181,.45);border:4px solid #ff6fb5}
 .ictoast.show{display:block;animation:icpop 2.5s ease forwards}
 @keyframes icpop{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.9)}}
 #icPanel.show{display:grid!important}
