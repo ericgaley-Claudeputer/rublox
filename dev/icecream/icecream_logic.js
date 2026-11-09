@@ -11,7 +11,7 @@ function world(name, mpCfg){
     THREE: new Proxy({}, {get: () => function(){ return O(); }}), scene: {add(){}, remove(){}, background: null},
     load: (k, d) => k in store ? JSON.parse(store[k]) : d, save: (k, v) => { store[k] = JSON.stringify(v); },
     $: id => els[id] || (els[id] = {textContent: '', innerHTML: '', style: {}, disabled: false, classList: {add(){}, remove(){}}, querySelectorAll: () => []}),
-    coins: 0, runCoins: 0, running: true, paused: false, choosing: false, worldT: 0, mode: 'icecream', banners: [],
+    coins: 0, runCoins: 0, running: true, paused: false, choosing: false, worldT: 0, mode: 'icecream', banners: [], nds: null,
     P: {x: 0, y: .05, z: -2, face: 0}, pad: {on: false}, touchUI: false, keys: {}, joy: {x: 0, y: 0}, checkpoints: [], DEF: {},
     cam: {yaw: 0, pitch: 0, dist: 9}, tipTimer: 0,
     mp: mpCfg, mpGuest: () => mpCfg.on && !mpCfg.host, mpSendTo: (c, m) => out.push(m),
@@ -42,6 +42,13 @@ chk('set topping', S.A.icApply('H', {a: 'set', st: 0, k: 'tp', v: freeTp}) && S.
 const c0 = S.coins, n0 = S.A.ic.orders.length;
 chk('serve pays coins + clears station', S.A.icApply('H', {a: 'serve', st: 0}) && S.A.ic.st[0].ph === 'empty' && S.coins > c0, [S.coins - c0, S.A.ic.orders.length]);
 chk('progress saved', S.A.icProg().served >= 1, S.A.icProg());
+// serve without topping → hint, station stays ready
+S.A.icApply('H', {a: 'set', st: 1, k: 'ves', v: 'cone'}); S.A.icApply('H', {a: 'set', st: 1, k: 'n', v: 1});
+S.A.icApply('H', {a: 'set', st: 1, k: 'scoop', v: 'vanilla'});
+chk('ready without topping', S.A.ic.st[1].ph === 'ready' && !S.A.ic.st[1].tp);
+chk('serve without topping blocked + hint', !S.A.icApply('H', {a: 'serve', st: 1}) && S.A.ic.st[1].ph === 'ready' && /topping/i.test(S.A.ic.toast || S.banners.slice(-1)[0] || ''), [S.A.ic.toast, S.banners.slice(-1)]);
+S.A.icApply('H', {a: 'set', st: 1, k: 'tp', v: 'sprinkle'});
+const c1 = S.coins; chk('serve with topping pays + toast', S.A.icApply('H', {a: 'serve', st: 1}) && S.coins > c1 && S.A.ic.toastT > 0, [S.coins - c1, S.A.ic.toast]);
 // trash
 S.A.icApply('H', {a: 'set', st: 1, k: 'ves', v: 'cone'}); S.A.icApply('H', {a: 'trash', st: 1});
 chk('trash resets station', S.A.ic.st[1].ph === 'empty' && !S.A.ic.st[1].ves);

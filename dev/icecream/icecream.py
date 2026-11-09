@@ -43,7 +43,7 @@ rep("mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode
 rep("    $('#tdBox').style.display = mode === 'tower' ? '' : 'none';\n    if (mode === 'tower') towerEnter();", """    $('#icBox').style.display = $('#icOrders').style.display = mode === 'icecream' ? '' : 'none'; ['#icAct', '#icPanel'].forEach(id => $(id).classList.remove('show'));
     if (mode === 'icecream'){ if (!window.__icBound){ window.__icBound = true;
         $('#icAct').onclick = () => ic && ic.near >= 0 && icPanel(ic.near); $('#icClose').onclick = () => icPanel(-1);
-        $('#icServe').onclick = () => { if (ic){ icDo({a: 'serve', st: ic.panel}); icPanel(-1); } };
+        $('#icServe').onclick = () => { if (ic) icDo({a: 'serve', st: ic.panel}); };
         $('#icTrash').onclick = () => ic && icDo({a: 'trash', st: ic.panel}); }
       iceCreamEnter(); }
     $('#tdBox').style.display = mode === 'tower' ? '' : 'none';

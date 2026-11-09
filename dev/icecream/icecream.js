@@ -52,7 +52,9 @@
     }
     if (a.a === 'trash'){ ic.st[i] = icEmpty(); ic.dirty = true; return true; }
     if (a.a === 'serve'){
-      if (S.ph !== 'ready' || !S.tp || S.fl.length < S.n) return false; help();
+      if (S.ph !== 'ready' || S.fl.length < S.n){ icHint('🍦 Add your scoops first!'); return false; }
+      if (!S.tp){ icHint('🍒 Pick a topping first!'); return false; }
+      help();
       let best = null, bm = -1; ic.orders.forEach(o => { const m = icMatch(S, o); if (m > bm || (m === bm && best && o.t < best.t)){ bm = m; best = o; } });
       const m = best ? bm : 0, c = best ? icPrice(m, best) : 3, stars = best ? Math.max(1, Math.min(5, m)) : 1;
       if (best) ic.orders = ic.orders.filter(o => o !== best);
@@ -61,6 +63,7 @@
     }
     return false;
   }
+  function icHint(msg){ if (!ic) return; ic.toast = msg; ic.toastT = 2.5; const b = $('#oBig'); if (b) b.textContent = msg; banner(msg); }
   function icEvent(e){
     if (!ic || !e || ic.seen.has(e.id)) return; ic.seen.add(e.id); if (e.id > ic.lastEv) ic.lastEv = e.id;
     if (!ic.remote){ ic.ev.push(e); if (ic.ev.length > 12) ic.ev.shift(); }
@@ -70,8 +73,8 @@
       p.coins += pay; save(IC_KEY, p); setCoins(coins + pay); runCoins = (runCoins || 0) + pay; ic.earned += pay; ic.served++;
       if (!ic.remote) ic.lv = lv1;
       const st = '⭐'.repeat(e.stars) + '☆'.repeat(Math.max(0, 5 - e.stars));
-      banner((e.m >= 5 ? '🎉 PERFECT scoop! ' : e.o ? '🍦 Order served! ' : '🍨 Into the freezer case! ') + st + '  ·  +' + e.c + ' 🪙' + (lv1 > lv0 ? '\n🏅 Scoop Level ' + lv1 + '! +' + IC_LVBONUS + ' 🪙' : ''));
-      SND.coin(); if (e.m >= 5 || lv1 > lv0) confetti();
+      const msg = (e.m >= 5 ? '🎉 PERFECT!\n' : '🍦 Order served!\n') + st + '\n+' + pay + ' 🪙' + (lv1 > lv0 ? '\n🏅 Scoop Level ' + lv1 + '!' : '');
+      icHint(msg); SND.coin(); if (e.m >= 5 || lv1 > lv0) confetti();
       if (!mp.on && e.who >= 0) icNpcHappy(e.who);
     } else if (e.k === 'leave') banner('😢 ' + (e.who >= 0 ? IC_NPCS[e.who][0] : 'A customer') + ' wandered off');
     icHud();
@@ -86,7 +89,7 @@
   }
   function icNpcHappy(who){ if (!ic || !ic.npcM[who]) return; banner('😊 ' + IC_NPCS[who][0] + ' loves their treat!'); }
   function buildIceCream(){
-    ic = {ph: 'play', st: [icEmpty(), icEmpty(), icEmpty()], orders: [], oid: 0, eid: 0, lastEv: 0, seen: new Set(), ev: [], nextO: 0.01, lv: icLevel(icProg().served), served: 0, earned: 0, panel: -1, near: -1, remote: mpGuest(), dirty: true, npcM: {}, stations: []};
+    ic = {ph: 'play', st: [icEmpty(), icEmpty(), icEmpty()], orders: [], oid: 0, eid: 0, lastEv: 0, seen: new Set(), ev: [], nextO: 0.01, lv: icLevel(icProg().served), served: 0, earned: 0, panel: -1, near: -1, remote: mpGuest(), dirty: true, npcM: {}, stations: [], toast: '', toastT: 0};
     scene.background = new THREE.Color('#ffe8f5');
     plat(0, 0, 0, 28, 22, '#fff0f8', .3);
     // counter + three scoop stations
@@ -105,6 +108,7 @@
   function iceCreamStop(){ if (ic && ic.panel >= 0) choosing = false; ic = null; ['#icAct', '#icPanel', '#icOrders'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
   function iceCreamUpdate(dt){
     if (!ic) return; icTick(dt);
+    if (ic.toastT > 0){ ic.toastT -= dt; if (ic.toastT <= 0){ ic.toast = ''; const b = $('#oBig'); if (b && !nds) b.textContent = ''; } }
     // proximity to stations
     let near = -1, best = 2.4; ic.stations.forEach(s => { const d = Math.hypot(P.x - s.x, P.z - s.z); if (d < best){ best = d; near = s.i; } });
     ic.near = near; const btn = $('#icAct'); if (btn){ if (near >= 0){ btn.classList.add('show'); btn.innerHTML = '🍦 Station ' + ['L', 'M', 'R'][near] + '<small>E / Ⓧ</small>'; } else btn.classList.remove('show'); }
@@ -118,7 +122,14 @@
     icHud();
   }
   function iceCreamAnimate(dt){}
-  function icDo(a){ if (!ic) return; if (ic.remote){ mpSendTo(mp.hconn, Object.assign({t: 'icact'}, a)); return; } icApply(icUid(), a); if (ic.panel >= 0) icPanel(ic.panel); }
+  function icDo(a){
+    if (!ic) return false;
+    if (ic.remote){ mpSendTo(mp.hconn, Object.assign({t: 'icact'}, a)); return true; }
+    const ok = !!icApply(icUid(), a);
+    if (a.a === 'serve'){ if (ok) icPanel(-1); return ok; }   // keep panel open on failed serve so the hint is readable
+    if (ic.panel >= 0) icPanel(ic.panel);
+    return ok;
+  }
   function icPanel(i){
     if (!ic) return;
     if (i < 0){ ic.panel = -1; choosing = false; const pan = $('#icPanel'); if (pan) pan.classList.remove('show'); return; }
@@ -127,12 +138,12 @@
     const S = ic.st[i]; $('#icPT').textContent = '🍦 Station ' + ['Left', 'Middle', 'Right'][i];
     const items = $('#icItems'); let html = '';
     if (S.ph === 'empty'){
-      html += '<b>Vessel</b><div class="fsitems">'; IC_VES.forEach(v => { html += '<button class="icb' + (S.ves === v[0] ? ' on' : '') + '" data-a="set" data-k="ves" data-v="' + v[0] + '">' + v[1] + '<small>' + v[2] + '</small></button>'; }); html += '</div>';
-      if (S.ves){ html += '<b>Scoops</b><div class="fsitems">'; [1, 2, 3].forEach(n => { html += '<button class="icb' + (S.n === n ? ' on' : '') + '" data-a="set" data-k="n" data-v="' + n + '">' + n + '<small>scoops</small></button>'; }); html += '</div>';
-        html += '<b>Flavour (' + S.fl.length + '/' + S.n + ')</b><div class="fsitems">'; IC_FL.forEach(f => { html += '<button class="icb" data-a="set" data-k="scoop" data-v="' + f[0] + '"' + (S.fl.length >= S.n ? ' disabled' : '') + '>' + f[1] + '<small>' + f[2] + '</small></button>'; }); html += '</div>'; }
+      html += '<b>Vessel</b><div class="icgrid">'; IC_VES.forEach(v => { html += '<button class="icb' + (S.ves === v[0] ? ' on' : '') + '" data-a="set" data-k="ves" data-v="' + v[0] + '"><span class="icbe">' + v[1] + '</span><small>' + v[2] + '</small></button>'; }); html += '</div>';
+      if (S.ves){ html += '<b>Scoops</b><div class="icgrid">'; [1, 2, 3].forEach(n => { html += '<button class="icb' + (S.n === n ? ' on' : '') + '" data-a="set" data-k="n" data-v="' + n + '"><span class="icbe">' + n + '</span><small>scoops</small></button>'; }); html += '</div>';
+        html += '<b>Flavour (' + S.fl.length + '/' + S.n + ')</b><div class="icgrid">'; IC_FL.forEach(f => { html += '<button class="icb" data-a="set" data-k="scoop" data-v="' + f[0] + '"' + (S.fl.length >= S.n ? ' disabled' : '') + '><span class="icbe">' + f[1] + '</span><small>' + f[2] + '</small></button>'; }); html += '</div>'; }
     } else {
-      html += '<b>Topping</b><div class="fsitems">'; const ul = icUnlocked(ic.lv); IC_TP.forEach(t => { const ok = ul.includes(t[0]); html += '<button class="icb' + (S.tp === t[0] ? ' on' : '') + '" data-a="set" data-k="tp" data-v="' + t[0] + '"' + (ok ? '' : ' disabled') + '>' + t[1] + '<small>' + t[2] + (ok ? '' : ' 🔒') + '</small></button>'; }); html += '</div>';
-      html += '<div class="row"><small>Scooped: ' + S.fl.map(f => (IC_FL.find(x => x[0] === f) || ['?', '?'])[1]).join(' ') + '</small></div>';
+      html += '<b>Topping</b><div class="icgrid">'; const ul = icUnlocked(ic.lv); IC_TP.forEach(t => { const ok = ul.includes(t[0]); html += '<button class="icb' + (S.tp === t[0] ? ' on' : '') + '" data-a="set" data-k="tp" data-v="' + t[0] + '"' + (ok ? '' : ' disabled') + '><span class="icbe">' + t[1] + '</span><small>' + t[2] + (ok ? '' : ' 🔒') + '</small></button>'; }); html += '</div>';
+      html += '<div class="row"><small>Scooped: ' + S.fl.map(f => (IC_FL.find(x => x[0] === f) || ['?', '?'])[1]).join(' ') + ' · pick a topping, then Serve</small></div>';
     }
     items.innerHTML = html;
     items.querySelectorAll('[data-a]').forEach(b => b.onclick = () => icDo({a: b.dataset.a, st: i, k: b.dataset.k, v: isNaN(+b.dataset.v) ? b.dataset.v : +b.dataset.v}));

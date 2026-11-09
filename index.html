@@ -207,7 +207,7 @@ body.dark .sitem canvas{background:linear-gradient(#34427e,#26306a)}
 .opanel .stats{font-weight:800;font-size:18px;line-height:1.8;margin:6px 0 16px}
 .oflash{position:absolute;inset:0;background:#ff4d5e;opacity:0;pointer-events:none;transition:opacity .35s}
 .oflash.on{opacity:.45;transition:none}
-.obanner{position:absolute;top:22%;left:50%;transform:translate(-50%,-50%) scale(.5);opacity:0;font-size:34px;font-weight:900;color:#fff;text-shadow:3px 3px 0 #1f9460,0 0 18px rgba(0,0,0,.25);pointer-events:none;white-space:nowrap}
+.obanner{position:absolute;top:18%;left:50%;transform:translate(-50%,-50%) scale(.5);opacity:0;font-size:clamp(22px,4.5vw,36px);font-weight:900;color:#fff;text-shadow:3px 3px 0 #1f9460,0 0 18px rgba(0,0,0,.35);pointer-events:none;white-space:pre-line;text-align:center;max-width:90vw;z-index:12}
 .obanner.go{animation:oban 1.6s cubic-bezier(.3,1.6,.5,1)}
 @keyframes oban{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-70%) scale(1)}}
 .otouch{display:none}
@@ -474,7 +474,16 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .icord{position:relative;overflow:hidden;background:rgba(255,255,255,.92);border:3px solid #7fd6ff;border-radius:12px;padding:3px 9px 7px;font-size:20px;font-weight:900;color:#1d2340}
 .icord i{position:absolute;left:0;bottom:0;height:4px;background:#2ec27e}
 .icnear{background:#7fd6ff;box-shadow:0 4px 0 #3a9bc8}.icnear small{color:#7fd6ff}
-.icbox{max-width:min(96vw,720px)}
+.icbox{max-width:min(92vw,640px)!important;width:min(92vw,640px)}
+#icPanel .mbox{max-width:min(92vw,640px);width:min(92vw,640px);overflow:visible}
+#icItems{max-height:none!important;overflow:visible!important;display:block!important;width:100%}
+.icgrid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;width:100%;margin:6px 0 10px}
+.icb{border:2px solid #cfefff;background:#fff;border-radius:12px;padding:8px 6px;font:inherit;font-size:18px;min-width:0;min-height:64px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:100%;white-space:normal}
+.icb .icbe{font-size:26px;line-height:1}
+.icb small{font-size:12px;font-weight:800;text-align:center;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.15;max-width:100%;display:block;word-break:break-word}
+.icb.on{border-color:#7fd6ff;background:#e8f7ff;box-shadow:0 0 0 2px #7fd6ff}.icb:disabled{opacity:.4;cursor:default}
+#icPanel h2{font-size:22px}
+@media (max-width:760px),(max-height:520px){.icgrid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px}.icb{min-height:56px;font-size:16px}.icb small{font-size:11px}}
 .icbox .fsitems,#icItems{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px;width:100%;max-width:min(96vw,680px)}
 .icb{border:2px solid #cfefff;background:#fff;border-radius:12px;padding:4px 8px;font:inherit;font-size:20px;min-width:0;min-height:48px;cursor:pointer;display:flex;flex-direction:column;align-items:center;width:100%}
 .icb small{font-size:10px;font-weight:900}.icb.on{border-color:#7fd6ff;background:#e8f7ff;box-shadow:0 0 0 2px #7fd6ff}.icb:disabled{opacity:.4;cursor:default}
@@ -1386,7 +1395,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.09-12';
+const BUILD = '2026.11.09-13';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -10724,7 +10733,9 @@ const Obby = (() => {
     }
     if (a.a === 'trash'){ ic.st[i] = icEmpty(); ic.dirty = true; return true; }
     if (a.a === 'serve'){
-      if (S.ph !== 'ready' || !S.tp || S.fl.length < S.n) return false; help();
+      if (S.ph !== 'ready' || S.fl.length < S.n){ icHint('🍦 Add your scoops first!'); return false; }
+      if (!S.tp){ icHint('🍒 Pick a topping first!'); return false; }
+      help();
       let best = null, bm = -1; ic.orders.forEach(o => { const m = icMatch(S, o); if (m > bm || (m === bm && best && o.t < best.t)){ bm = m; best = o; } });
       const m = best ? bm : 0, c = best ? icPrice(m, best) : 3, stars = best ? Math.max(1, Math.min(5, m)) : 1;
       if (best) ic.orders = ic.orders.filter(o => o !== best);
@@ -10733,6 +10744,7 @@ const Obby = (() => {
     }
     return false;
   }
+  function icHint(msg){ if (!ic) return; ic.toast = msg; ic.toastT = 2.5; const b = $('#oBig'); if (b) b.textContent = msg; banner(msg); }
   function icEvent(e){
     if (!ic || !e || ic.seen.has(e.id)) return; ic.seen.add(e.id); if (e.id > ic.lastEv) ic.lastEv = e.id;
     if (!ic.remote){ ic.ev.push(e); if (ic.ev.length > 12) ic.ev.shift(); }
@@ -10742,8 +10754,8 @@ const Obby = (() => {
       p.coins += pay; save(IC_KEY, p); setCoins(coins + pay); runCoins = (runCoins || 0) + pay; ic.earned += pay; ic.served++;
       if (!ic.remote) ic.lv = lv1;
       const st = '⭐'.repeat(e.stars) + '☆'.repeat(Math.max(0, 5 - e.stars));
-      banner((e.m >= 5 ? '🎉 PERFECT scoop! ' : e.o ? '🍦 Order served! ' : '🍨 Into the freezer case! ') + st + '  ·  +' + e.c + ' 🪙' + (lv1 > lv0 ? '\n🏅 Scoop Level ' + lv1 + '! +' + IC_LVBONUS + ' 🪙' : ''));
-      SND.coin(); if (e.m >= 5 || lv1 > lv0) confetti();
+      const msg = (e.m >= 5 ? '🎉 PERFECT!\n' : '🍦 Order served!\n') + st + '\n+' + pay + ' 🪙' + (lv1 > lv0 ? '\n🏅 Scoop Level ' + lv1 + '!' : '');
+      icHint(msg); SND.coin(); if (e.m >= 5 || lv1 > lv0) confetti();
       if (!mp.on && e.who >= 0) icNpcHappy(e.who);
     } else if (e.k === 'leave') banner('😢 ' + (e.who >= 0 ? IC_NPCS[e.who][0] : 'A customer') + ' wandered off');
     icHud();
@@ -10758,7 +10770,7 @@ const Obby = (() => {
   }
   function icNpcHappy(who){ if (!ic || !ic.npcM[who]) return; banner('😊 ' + IC_NPCS[who][0] + ' loves their treat!'); }
   function buildIceCream(){
-    ic = {ph: 'play', st: [icEmpty(), icEmpty(), icEmpty()], orders: [], oid: 0, eid: 0, lastEv: 0, seen: new Set(), ev: [], nextO: 0.01, lv: icLevel(icProg().served), served: 0, earned: 0, panel: -1, near: -1, remote: mpGuest(), dirty: true, npcM: {}, stations: []};
+    ic = {ph: 'play', st: [icEmpty(), icEmpty(), icEmpty()], orders: [], oid: 0, eid: 0, lastEv: 0, seen: new Set(), ev: [], nextO: 0.01, lv: icLevel(icProg().served), served: 0, earned: 0, panel: -1, near: -1, remote: mpGuest(), dirty: true, npcM: {}, stations: [], toast: '', toastT: 0};
     scene.background = new THREE.Color('#ffe8f5');
     plat(0, 0, 0, 28, 22, '#fff0f8', .3);
     // counter + three scoop stations
@@ -10777,6 +10789,7 @@ const Obby = (() => {
   function iceCreamStop(){ if (ic && ic.panel >= 0) choosing = false; ic = null; ['#icAct', '#icPanel', '#icOrders'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
   function iceCreamUpdate(dt){
     if (!ic) return; icTick(dt);
+    if (ic.toastT > 0){ ic.toastT -= dt; if (ic.toastT <= 0){ ic.toast = ''; const b = $('#oBig'); if (b && !nds) b.textContent = ''; } }
     // proximity to stations
     let near = -1, best = 2.4; ic.stations.forEach(s => { const d = Math.hypot(P.x - s.x, P.z - s.z); if (d < best){ best = d; near = s.i; } });
     ic.near = near; const btn = $('#icAct'); if (btn){ if (near >= 0){ btn.classList.add('show'); btn.innerHTML = '🍦 Station ' + ['L', 'M', 'R'][near] + '<small>E / Ⓧ</small>'; } else btn.classList.remove('show'); }
@@ -10790,7 +10803,14 @@ const Obby = (() => {
     icHud();
   }
   function iceCreamAnimate(dt){}
-  function icDo(a){ if (!ic) return; if (ic.remote){ mpSendTo(mp.hconn, Object.assign({t: 'icact'}, a)); return; } icApply(icUid(), a); if (ic.panel >= 0) icPanel(ic.panel); }
+  function icDo(a){
+    if (!ic) return false;
+    if (ic.remote){ mpSendTo(mp.hconn, Object.assign({t: 'icact'}, a)); return true; }
+    const ok = !!icApply(icUid(), a);
+    if (a.a === 'serve'){ if (ok) icPanel(-1); return ok; }   // keep panel open on failed serve so the hint is readable
+    if (ic.panel >= 0) icPanel(ic.panel);
+    return ok;
+  }
   function icPanel(i){
     if (!ic) return;
     if (i < 0){ ic.panel = -1; choosing = false; const pan = $('#icPanel'); if (pan) pan.classList.remove('show'); return; }
@@ -10799,12 +10819,12 @@ const Obby = (() => {
     const S = ic.st[i]; $('#icPT').textContent = '🍦 Station ' + ['Left', 'Middle', 'Right'][i];
     const items = $('#icItems'); let html = '';
     if (S.ph === 'empty'){
-      html += '<b>Vessel</b><div class="fsitems">'; IC_VES.forEach(v => { html += '<button class="icb' + (S.ves === v[0] ? ' on' : '') + '" data-a="set" data-k="ves" data-v="' + v[0] + '">' + v[1] + '<small>' + v[2] + '</small></button>'; }); html += '</div>';
-      if (S.ves){ html += '<b>Scoops</b><div class="fsitems">'; [1, 2, 3].forEach(n => { html += '<button class="icb' + (S.n === n ? ' on' : '') + '" data-a="set" data-k="n" data-v="' + n + '">' + n + '<small>scoops</small></button>'; }); html += '</div>';
-        html += '<b>Flavour (' + S.fl.length + '/' + S.n + ')</b><div class="fsitems">'; IC_FL.forEach(f => { html += '<button class="icb" data-a="set" data-k="scoop" data-v="' + f[0] + '"' + (S.fl.length >= S.n ? ' disabled' : '') + '>' + f[1] + '<small>' + f[2] + '</small></button>'; }); html += '</div>'; }
+      html += '<b>Vessel</b><div class="icgrid">'; IC_VES.forEach(v => { html += '<button class="icb' + (S.ves === v[0] ? ' on' : '') + '" data-a="set" data-k="ves" data-v="' + v[0] + '"><span class="icbe">' + v[1] + '</span><small>' + v[2] + '</small></button>'; }); html += '</div>';
+      if (S.ves){ html += '<b>Scoops</b><div class="icgrid">'; [1, 2, 3].forEach(n => { html += '<button class="icb' + (S.n === n ? ' on' : '') + '" data-a="set" data-k="n" data-v="' + n + '"><span class="icbe">' + n + '</span><small>scoops</small></button>'; }); html += '</div>';
+        html += '<b>Flavour (' + S.fl.length + '/' + S.n + ')</b><div class="icgrid">'; IC_FL.forEach(f => { html += '<button class="icb" data-a="set" data-k="scoop" data-v="' + f[0] + '"' + (S.fl.length >= S.n ? ' disabled' : '') + '><span class="icbe">' + f[1] + '</span><small>' + f[2] + '</small></button>'; }); html += '</div>'; }
     } else {
-      html += '<b>Topping</b><div class="fsitems">'; const ul = icUnlocked(ic.lv); IC_TP.forEach(t => { const ok = ul.includes(t[0]); html += '<button class="icb' + (S.tp === t[0] ? ' on' : '') + '" data-a="set" data-k="tp" data-v="' + t[0] + '"' + (ok ? '' : ' disabled') + '>' + t[1] + '<small>' + t[2] + (ok ? '' : ' 🔒') + '</small></button>'; }); html += '</div>';
-      html += '<div class="row"><small>Scooped: ' + S.fl.map(f => (IC_FL.find(x => x[0] === f) || ['?', '?'])[1]).join(' ') + '</small></div>';
+      html += '<b>Topping</b><div class="icgrid">'; const ul = icUnlocked(ic.lv); IC_TP.forEach(t => { const ok = ul.includes(t[0]); html += '<button class="icb' + (S.tp === t[0] ? ' on' : '') + '" data-a="set" data-k="tp" data-v="' + t[0] + '"' + (ok ? '' : ' disabled') + '><span class="icbe">' + t[1] + '</span><small>' + t[2] + (ok ? '' : ' 🔒') + '</small></button>'; }); html += '</div>';
+      html += '<div class="row"><small>Scooped: ' + S.fl.map(f => (IC_FL.find(x => x[0] === f) || ['?', '?'])[1]).join(' ') + ' · pick a topping, then Serve</small></div>';
     }
     items.innerHTML = html;
     items.querySelectorAll('[data-a]').forEach(b => b.onclick = () => icDo({a: b.dataset.a, st: i, k: b.dataset.k, v: isNaN(+b.dataset.v) ? b.dataset.v : +b.dataset.v}));
@@ -10820,8 +10840,8 @@ const Obby = (() => {
     ic.lv = Math.max(1, Math.min(99, d.lv | 0 || 1)); (Array.isArray(d.ev) ? d.ev : []).forEach(e => icEvent(e));
   }
   function icGuestMsg(g, d){ if (!ic || ic.remote || !d) return; icApply(g, d); }
-  /* ===================== t227u: 🐴 CLOVER MEADOW STABLES — adopt original pony, brush/feed/groom, ride, jumping shows ===================== */
-  const SB_KEY = 'rubloxStable', SB_DRAIN = 25;
+  /* ===================== t227u: 🐴 CLOVER MEADOW STABLES — adopt, care, ride (sit on pony), jumping shows ===================== */
+  const SB_KEY = 'rubloxStable', SB_DRAIN = 25, SB_MOUNT_CD = .85;
   const SB_PONIES = [
     {id: 'buttercup', name: 'Buttercup', e: '🌼', coat: '#f6e3b4', mane: '#ff9f1c', eye: '#3a86ff', mark: 'star'},
     {id: 'thistle', name: 'Thistle', e: '💜', coat: '#c39bff', mane: '#5b34c0', eye: '#2ec27e', mark: 'heart'},
@@ -10832,6 +10852,7 @@ const Obby = (() => {
   ];
   const SB_CARE = [['brush', '🪥', 'Brush', 'shine'], ['feed', '🥕', 'Feed', 'energy'], ['groom', '✨', 'Groom', 'mood']];
   const SB_JUMPS = 8, SB_SHOW_T = 90;
+  const SB_SIT = {lL: -1.45, lR: -1.45, aL: -.4, aR: -.4, lean: .12, y: .55};
   let sb = null;
   function sbProg(){
     const o = load(SB_KEY, null), r = o && typeof o === 'object' ? o : {};
@@ -10851,49 +10872,52 @@ const Obby = (() => {
     g.visible = true; return g;
   }
   function sbSign(text, x, z, col){
-    plat(x, .55, z, 2.4, 2.4, col, .35);
-    const L = label(text, 'rgba(29,35,64,.92)'); L.position.set(x, 1.55, z); scene.add(L); return L;
+    plat(x, .45, z, 2.6, 2.6, col, .3);
+    const L = label(text, 'rgba(29,35,64,.92)'); L.position.set(x, 1.45, z); scene.add(L); return L;
+  }
+  function sbRailVisual(x, z, col){
+    // decorative only — NOT added to solids, so they never block walking outside a show
+    const mat = new THREE.MeshLambertMaterial({color: col});
+    const postL = new THREE.Mesh(new THREE.BoxGeometry(.25, 1.0, .25), mat); postL.position.set(x - 1.3, .5, z); scene.add(postL);
+    const postR = new THREE.Mesh(new THREE.BoxGeometry(.25, 1.0, .25), mat); postR.position.set(x + 1.3, .5, z); scene.add(postR);
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(2.6, .18, .18), mat); rail.position.set(x, .85, z); scene.add(rail);
+    return {x, z, rail, posts: [postL, postR], cleared: false};
   }
   function buildStable(){
     const prog = sbProg();
-    sb = {ph: prog.pony ? 'care' : 'pick', t: 0, pony: prog.pony ? Object.assign({}, prog.pony) : null, mesh: null, near: -1, panel: false, show: null, score: 0, jumps: [], ridden: false, earned: 0, gates: [], labels: []};
+    sb = {ph: prog.pony ? 'care' : 'pick', t: 0, pony: prog.pony ? Object.assign({}, prog.pony) : null, mesh: null, near: -1, panel: false, show: null, score: 0, jumps: [], ridden: false, mountCd: 0, earned: 0, gates: [], labels: [], toastT: 0};
     scene.background = new THREE.Color('#c8e8ff');
     plat(0, 0, 0, 60, 60, '#8fd39a', .35);
-    // fence around meadow so you can't fall off
     [[0, 30, 62, .6], [0, -30, 62, .6], [30, 0, .6, 62], [-30, 0, .6, 62]].forEach(([x, z, w, d]) => plat(x, 1.35, z, w, d, '#d4a574', 1.35));
-    // barn set back; yard in FRONT (toward +z / spawn)
-    plat(-14, 3, -12, 12, 8, '#d4a574', 3); plat(-14, 6.2, -12, 13, 9, '#8a5a3c', .5);
-    plat(-14, .2, -6, 10, 4, '#c9a06a', .2);
-    // care pads clearly in front of the barn at ground level (spawn faces them)
+    // barn far back (−z); open yard in front so the camera never clips through a wall to see the pads
+    plat(-14, 3.2, -16, 12, 8, '#d4a574', 3.2); plat(-14, 6.4, -16, 13, 9, '#8a5a3c', .5);
+    // pads well in front of the barn (z≈+3), left→right from default camera looking −z toward barn
     sb.stations = [
-      {id: 'brush', x: -20, z: -2, e: '🪥', col: '#ffe08a'},
-      {id: 'feed',  x: -14, z: -2, e: '🥕', col: '#9ff0c8'},
-      {id: 'groom', x: -8,  z: -2, e: '✨', col: '#c39bff'},
-      {id: 'saddle',x: -14, z: 4,  e: '🐎', col: '#7fd6ff'},
-      {id: 'show',  x: 10,  z: 8,  e: '🏆', col: '#ffd23f'}
+      {id: 'brush', x: -20, z: 3, e: '🪥', col: '#ffe08a'},
+      {id: 'feed',  x: -14, z: 3, e: '🥕', col: '#9ff0c8'},
+      {id: 'groom', x: -8,  z: 3, e: '✨', col: '#c39bff'},
+      {id: 'saddle',x: -14, z: 8, e: '🐎', col: '#7fd6ff'},
+      {id: 'show',  x: 12,  z: 6, e: '🏆', col: '#ffd23f'}
     ];
     sb.stations.forEach(s => { sb.labels.push(sbSign(s.e + ' ' + s.id, s.x, s.z, s.col)); });
-    // jumping course (east meadow)
     for (let i = 0; i < SB_JUMPS; i++){
-      const z = -18 + i * 5, x = 8 + (i % 2) * 4;
-      plat(x - 1.4, 1.1, z, .3, .3, '#fff', 1.1); plat(x + 1.4, 1.1, z, .3, .3, '#fff', 1.1);
-      const rail = plat(x, 1.0, z, 2.6, .2, i % 2 ? '#ff6fb5' : '#3a86ff', .25);
-      sb.gates.push({x, z, rail: rail.mesh, cleared: false, y: 1.0});
+      const z = -18 + i * 5, x = 10 + (i % 2) * 4;
+      sb.gates.push(sbRailVisual(x, z, i % 2 ? '#ff6fb5' : '#3a86ff'));
     }
-    plat(10, .3, 22, 4, 4, '#ffd23f', .3);
-    Object.assign(P, {x: -14, y: .05, z: 8, vx: 0, vy: 0, vz: 0}); P.face = Math.PI; cam.yaw = Math.PI; cam.pitch = .32; cam.dist = 12;
-    checkpoints[0] = {idx: 0, spawn: {x: -14, y: .05, z: 8}, flag: new THREE.Object3D()};
-    if (sb.pony){ sb.mesh = sbMesh(sb.pony, -14, 1); sb.mesh.visible = true; }
+    plat(12, .3, 22, 4, 4, '#ffd23f', .3);
+    Object.assign(P, {x: -14, y: .05, z: 14, vx: 0, vy: 0, vz: 0}); P.face = Math.PI; cam.yaw = Math.PI; cam.pitch = .34; cam.dist = 14;
+    checkpoints[0] = {idx: 0, spawn: {x: -14, y: .05, z: 14}, flag: new THREE.Object3D()};
+    if (sb.pony){ sb.mesh = sbMesh(sb.pony, -14, 10); sb.mesh.visible = true; }
   }
-  function stableEnter(){ if (!sb) return; sb.panel = false; sb.near = -1; cam.dist = Math.max(cam.dist, 11); cam.pitch = Math.max(cam.pitch, .3); sbHud();
-    if (sb.ph === 'pick') banner('🐴 Pick a pony to adopt — they\'re all original Clover Meadow friends!');
-    else {
-      if (sb.pony && !sb.mesh){ sb.mesh = sbMesh(sb.pony, -14, 1); }
-      if (sb.mesh) sb.mesh.visible = true;
-      banner('🐴 ' + sb.pony.name + ' is happy to see you! 🪥 brush · 🥕 feed · ✨ groom are in front of the barn. 🐎 saddle then 🏆 show!');
-    }
-    tipTimer = 7; if (sb.ph === 'pick') sbShowPick(true); }
-  function stableStop(){ sb = null; ['#sbAct', '#sbPick'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
+  function sbFlash(msg){ if (!sb) return; sb.toastT = 2.4; const b = $('#oBig'); if (b) b.textContent = msg; banner(msg); }
+  function stableEnter(){ if (!sb) return; sb.panel = false; sb.near = -1; sb.ridden = false; sb.mountCd = 0; cam.dist = 14; cam.pitch = .34;
+    if (sb.pony && !sb.mesh) sb.mesh = sbMesh(sb.pony, -14, 10);
+    if (sb.mesh) sb.mesh.visible = true;
+    sbHud();
+    if (sb.ph === 'pick' || !sb.pony){ sb.ph = 'pick'; banner('🐴 Pick a pony to adopt!'); sbShowPick(true); }
+    else { sb.ph = 'care'; banner('🐴 ' + sb.pony.name + '! Pads left→right: 🪥 🥕 ✨ · 🐎 saddle closer to you · 🏆 show to the right'); }
+    tipTimer = 7; }
+  function stableStop(){ sb = null; ['#sbAct', '#sbPick'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); const b = $('#oBig'); if (b && !nds) b.textContent = ''; }
   function sbShowPick(on){
     const el = $('#sbPick'); if (!el) return; if (!on){ el.classList.remove('show'); sb.panel = false; return; }
     sb.panel = true; el.classList.add('show'); el.innerHTML = '<h2>🐴 Adopt a Pony</h2><div class="fsitems" id="sbPickList"></div><div class="row"><button class="big gray" id="sbPickClose">👋 Later</button></div>';
@@ -10904,54 +10928,70 @@ const Obby = (() => {
     if (!sb || !SB_PONIES.some(p => p.id === id)) return false;
     const def = sbPonyOf(id); sb.pony = {id: def.id, name: def.name, shine: 70, energy: 70, mood: 70};
     const p = sbProg(); p.pony = sb.pony; sbSave(p);
-    if (sb.mesh) scene.remove(sb.mesh); sb.mesh = sbMesh(sb.pony, -14, 1); sb.mesh.visible = true;
-    sb.ph = 'care'; sbShowPick(false); banner('🎉 You adopted ' + def.e + ' ' + def.name + '!'); confetti(); SND.coin(); sbHud(); return true;
+    if (sb.mesh) scene.remove(sb.mesh); sb.mesh = sbMesh(sb.pony, -14, 10); sb.mesh.visible = true;
+    sb.ph = 'care'; sb.ridden = false; sbShowPick(false); sbFlash('🎉 You adopted ' + def.e + ' ' + def.name + '!'); confetti(); SND.coin(); sbHud(); return true;
   }
   function sbCare(kind){
-    if (!sb || !sb.pony) return false;
+    if (!sb || !sb.pony || sb.ridden) return false;
     const row = SB_CARE.find(c => c[0] === kind); if (!row) return false;
     const k = row[3]; sb.pony[k] = Math.min(100, sb.pony[k] + 18); const p = sbProg(); p.pony = Object.assign({}, sb.pony); sbSave(p);
-    banner(row[1] + ' ' + sb.pony.name + ' · ' + row[2] + ' → ' + row[3] + ' ' + Math.round(sb.pony[k])); SND.coin(); sbHud(); return true;
+    sbFlash(row[1] + ' ' + sb.pony.name + ' · ' + row[2] + ' → ' + Math.round(sb.pony[k])); SND.coin(); sbHud(); return true;
   }
   function sbMount(on){
     if (!sb || !sb.pony) return false;
-    if (on){ if (sb.pony.energy < 15){ banner('😴 ' + sb.pony.name + ' is too tired — feed them first!'); return false; } sb.ridden = true; sb.ph = 'ride';
-      if (sb.mesh) sb.mesh.visible = false; banner('🐎 Riding ' + sb.pony.name + '! Go to the 🏆 gold show pad (east meadow).'); }
-    else { sb.ridden = false; sb.ph = 'care'; if (sb.mesh){ sb.mesh.visible = true; sb.mesh.position.set(P.x, 0, P.z - 2); } banner('🐴 You hopped off.'); }
-    sbHud(); return true;
+    if (sb.mountCd > 0) return false;
+    if (on){
+      if (sb.ridden) return true;
+      if (sb.pony.energy < 15){ sbFlash('😴 ' + sb.pony.name + ' is too tired — feed them first!'); return false; }
+      sb.ridden = true; sb.ph = 'ride'; sb.mountCd = SB_MOUNT_CD;
+      if (sb.mesh){ sb.mesh.visible = true; sb.mesh.position.set(P.x, 0, P.z); }
+      sbFlash('🐎 Mounted! Ride to the 🏆 show pad'); SND.coin(); sbHud(); return true;
+    }
+    if (!sb.ridden) return true;
+    sb.ridden = false; sb.ph = 'care'; sb.mountCd = SB_MOUNT_CD;
+    if (sb.mesh){ sb.mesh.visible = true; sb.mesh.position.set(P.x, 0, P.z - 2); }
+    sbFlash('🐴 You hopped off.'); sbHud(); return true;
   }
   function sbStartShow(){
     if (!sb || !sb.pony) return false;
-    if (!sb.ridden){ banner('🐎 Mount your pony first at the 🐎 saddle pad!'); return false; }
+    if (!sb.ridden){ sbFlash('🐎 Mount your pony first at the 🐎 saddle!'); return false; }
     sb.show = {t: SB_SHOW_T, score: 0, done: 0}; sb.gates.forEach(g => g.cleared = false); sb.ph = 'show';
-    banner('🏆 Jumping Show! Clear the colourful rails — 90 seconds!'); tipTimer = 5; sbHud(); return true;
+    sbFlash('🏆 Jumping Show! Clear the rails — 90s'); tipTimer = 5; sbHud(); return true;
   }
   function sbEndShow(){
     if (!sb || !sb.show) return; const sc = sb.show.score, p = sbProg(); p.shows++; p.best = Math.max(p.best, sc);
     const pay = 5 + sc * 4; p.coins += pay; if (sb.pony){ sb.pony.energy = Math.max(0, sb.pony.energy - 20); p.pony = Object.assign({}, sb.pony); } sbSave(p);
     setCoins(coins + pay); sb.earned += pay; runCoins = (runCoins || 0) + pay; confetti(); SND.win();
-    banner('🏅 Show over! Score ' + sc + '/' + SB_JUMPS + ' · +' + pay + ' 🪙'); sb.show = null; sb.ph = 'ride'; sbHud();
+    sbFlash('🏅 Show over! ' + sc + '/' + SB_JUMPS + ' · +' + pay + ' 🪙'); sb.show = null; sb.ph = 'ride'; sbHud();
   }
+  function sbPose(){ return sb && sb.ridden ? Object.assign({lLo: 0, lRo: 0, aLo: 0, aRo: 0}, SB_SIT) : null; }
   function stableUpdate(dt){
     if (!sb) return;
-    // keep camera from clipping into the avatar near pads/barn
-    if (cam.dist < 9) cam.dist += (9 - cam.dist) * Math.min(1, dt * 3);
+    if (sb.mountCd > 0) sb.mountCd -= dt;
+    if (sb.toastT > 0){ sb.toastT -= dt; if (sb.toastT <= 0){ const b = $('#oBig'); if (b && !nds) b.textContent = ''; } }
+    // keep camera comfortable — never collapse into the avatar/barn
+    if (cam.dist < 12) cam.dist += (12 - cam.dist) * Math.min(1, dt * 4);
+    if (cam.pitch < .28) cam.pitch += (.28 - cam.pitch) * Math.min(1, dt * 3);
     let near = -1, best = 2.8; sb.stations.forEach((s, i) => { const d = Math.hypot(P.x - s.x, P.z - s.z); if (d < best){ best = d; near = i; } });
     sb.near = near; const btn = $('#sbAct');
     if (btn){ if (near >= 0 && sb.pony){ const s = sb.stations[near]; let lab = s.e + ' ' + s.id; if (s.id === 'saddle') lab = sb.ridden ? '🐴 Dismount' : '🐎 Mount'; if (s.id === 'show') lab = '🏆 Start Show';
       btn.classList.add('show'); btn.innerHTML = lab + '<small>E / Ⓧ</small>'; } else if (!sb.pony){ btn.classList.add('show'); btn.innerHTML = '🐴 Adopt<small>E / Ⓧ</small>'; } else btn.classList.remove('show'); }
     if (sb.ph === 'show' && sb.show){
       sb.show.t -= dt; if (sb.show.t <= 0){ sbEndShow(); return; }
-      sb.gates.forEach(g => { if (g.cleared) return; if (Math.hypot(P.x - g.x, P.z - g.z) < 1.6 && P.y > .55){ g.cleared = true; sb.show.score++; sb.show.done++; SND.cp(); banner('✨ Cleared! ' + sb.show.score + '/' + SB_JUMPS); } });
+      sb.gates.forEach(g => { if (g.cleared) return; if (Math.hypot(P.x - g.x, P.z - g.z) < 1.7 && P.y > .5){ g.cleared = true; sb.show.score++; sb.show.done++; SND.cp(); banner('✨ Cleared! ' + sb.show.score + '/' + SB_JUMPS); } });
       if (sb.show.score >= SB_JUMPS) sbEndShow();
     }
-    if (sb.mesh && sb.pony && !sb.ridden && sb.ph !== 'pick'){ const m = sb.mesh.position, dx = P.x - m.x, dz = P.z - 2 - m.z, d = Math.hypot(dx, dz);
-      if (d > 2.5){ m.x += dx / d * dt * 3.2; m.z += dz / d * dt * 3.2; sb.mesh.rotation.y = Math.atan2(dx, dz); } sb.mesh.visible = true; }
-    // gentle drain: 1 point every SB_DRAIN seconds
+    // pony: follow when dismounted; sit under the rider when mounted
+    if (sb.mesh && sb.pony && sb.ph !== 'pick'){
+      sb.mesh.visible = true;
+      if (sb.ridden){ sb.mesh.position.set(P.x, 0, P.z); sb.mesh.rotation.y = P.face; }
+      else { const m = sb.mesh.position, dx = P.x - m.x, dz = P.z - 2.2 - m.z, d = Math.hypot(dx, dz);
+        if (d > 2.2){ m.x += dx / d * dt * 3.5; m.z += dz / d * dt * 3.5; sb.mesh.rotation.y = Math.atan2(dx, dz); } }
+    }
     if (sb.pony && sb.ph !== 'pick'){ sb.t += dt; if (sb.t > SB_DRAIN){ sb.t = 0; sb.pony.shine = Math.max(0, sb.pony.shine - 1); sb.pony.energy = Math.max(0, sb.pony.energy - 1); sb.pony.mood = Math.max(0, sb.pony.mood - 1); const p = sbProg(); p.pony = Object.assign({}, sb.pony); sbSave(p); } }
     sbHud();
   }
-  function stableAnimate(dt){ if (sb && sb.mesh && !sb.ridden) sb.mesh.rotation.y += dt * .05; }
+  function stableAnimate(dt){ if (sb && sb.mesh && !sb.ridden) sb.mesh.rotation.y += dt * .03; }
   function sbAct(){
     if (!sb) return false;
     if (!sb.pony){ sbShowPick(true); return true; }
@@ -10964,7 +11004,7 @@ const Obby = (() => {
   function sbHud(){
     if (!sb) return; const n = $('#sbN'); if (!n) return;
     if (!sb.pony){ n.textContent = '🐴 Pick a pony'; return; }
-    n.textContent = sbPonyOf(sb.pony.id).e + ' ' + sb.pony.name + ' · ✨' + Math.round(sb.pony.shine) + ' 🥕' + Math.round(sb.pony.energy) + ' 💕' + Math.round(sb.pony.mood) + (sb.show ? ' · 🏆 ' + sb.show.score + '/' + SB_JUMPS + ' · ⏱️' + Math.ceil(sb.show.t) : '');
+    n.textContent = sbPonyOf(sb.pony.id).e + ' ' + sb.pony.name + (sb.ridden ? ' 🐎' : '') + ' · ✨' + Math.round(sb.pony.shine) + ' 🥕' + Math.round(sb.pony.energy) + ' 💕' + Math.round(sb.pony.mood) + (sb.show ? ' · 🏆 ' + sb.show.score + '/' + SB_JUMPS + ' · ⏱️' + Math.ceil(sb.show.t) : '');
   }
   function sbPad(jp){ if (!sb) return false; if (jp.x){ sbAct(); return true; } return false; }
   function sbKey(e){ if (!sb || e.repeat || paused) return false; if (e.code === 'KeyE'){ sbAct(); return true; } if (e.code === 'Escape' && sb.panel){ sbShowPick(false); return true; } return false; }
@@ -11188,7 +11228,7 @@ const Obby = (() => {
     if (mode === 'tag'){ const v = Math.round(run.stam / STAM_MAX * 100) + (run.tired ? 1000 : 0); if (v !== run.shown){ run.shown = v; $('#oStamF').style.width = (v % 1000) + '%'; $('#oStam').classList.toggle('tired', run.tired); $('#oStam').classList.toggle('full', v === 100); } }
     if (emote){ emote.t += dt; if (emote.t > EMOTES[emote.id].dur || (!P.onGround && P.airT > .25)) emote = null; }
     const st = {state: P.climbing ? 'climb' : !P.onGround && P.airT > .08 ? 'jump' : sp > .8 ? 'walk' : 'idle', t: worldT, ph: P.walk, sp: Math.min(sp > SPEED * 1.15 ? 1.3 : 1, sp / 5), air: P.airT, jumped: P.jumped};
-    applyPose(dt, (db && dbPose()) || psPosed() || (rc && rc.me ? rcPose(rc.me) : pt && pt.drive ? SIT_POSE : emote ? emotePose(emote.id, emote.t) : animPose(avatar.anim || 'default', st)));
+    applyPose(dt, (sb && sbPose()) || (db && dbPose()) || psPosed() || (rc && rc.me ? rcPose(rc.me) : pt && pt.drive ? SIT_POSE : emote ? emotePose(emote.id, emote.t) : animPose(avatar.anim || 'default', st)));
     if (pt && pt.drive){ model.g.rotation.y = pt.car.yaw; blob.visible = false; return; }
     if (rc){ raceAnimate(dt); blob.visible = false; return; }
     // shadow on the highest surface below
@@ -11434,7 +11474,7 @@ const Obby = (() => {
     if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance'){ // pull the camera in front of walls so buildings don't block the view
       for (let s = 1.2; s <= cam.dist; s += .4){
         const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
-        if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 5.5 : 1.2, s - .5); break; }
+        if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 8.5 : 1.2, s - .5); break; }
       }
     }
     camera.position.set(tx + Math.sin(cam.yaw) * cp * dist, ty + Math.sin(cam.pitch) * dist, tz + Math.cos(cam.yaw) * cp * dist);
@@ -11790,7 +11830,7 @@ const Obby = (() => {
     $('#icBox').style.display = $('#icOrders').style.display = mode === 'icecream' ? '' : 'none'; ['#icAct', '#icPanel'].forEach(id => $(id).classList.remove('show'));
     if (mode === 'icecream'){ if (!window.__icBound){ window.__icBound = true;
         $('#icAct').onclick = () => ic && ic.near >= 0 && icPanel(ic.near); $('#icClose').onclick = () => icPanel(-1);
-        $('#icServe').onclick = () => { if (ic){ icDo({a: 'serve', st: ic.panel}); icPanel(-1); } };
+        $('#icServe').onclick = () => { if (ic) icDo({a: 'serve', st: ic.panel}); };
         $('#icTrash').onclick = () => ic && icDo({a: 'trash', st: ic.panel}); }
       iceCreamEnter(); }
     $('#tdBox').style.display = mode === 'tower' ? '' : 'none';

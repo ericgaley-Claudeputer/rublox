@@ -53,3 +53,25 @@ rep("  window.obbyDebug = {\n", """  window.obbyDebug = {
     dance: () => db && {ph: db.ph, t: db.t, score: db.score, combo: db.combo, hits: db.hits, misses: db.misses, chart: db.chart.length, earned: db.earned, prog: dbProg()},
     dbHit: d => dbHit(d), dbTo(t){ if (db) db.t = t; },
 """)
+
+# ----- browser retest fixes: ice cream panel CSS + stable sit pose + camera floor -----
+rep(".icbox{max-width:min(96vw,720px)}",
+    """.icbox{max-width:min(92vw,640px)!important;width:min(92vw,640px)}
+#icPanel .mbox{max-width:min(92vw,640px);width:min(92vw,640px);overflow:visible}
+#icItems{max-height:none!important;overflow:visible!important;display:block!important;width:100%}
+.icgrid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;width:100%;margin:6px 0 10px}
+.icb{border:2px solid #cfefff;background:#fff;border-radius:12px;padding:8px 6px;font:inherit;font-size:18px;min-width:0;min-height:64px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:100%;white-space:normal}
+.icb .icbe{font-size:26px;line-height:1}
+.icb small{font-size:12px;font-weight:800;text-align:center;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.15;max-width:100%;display:block;word-break:break-word}
+.icb.on{border-color:#7fd6ff;background:#e8f7ff;box-shadow:0 0 0 2px #7fd6ff}.icb:disabled{opacity:.4;cursor:default}
+#icPanel h2{font-size:22px}
+@media (max-width:760px),(max-height:520px){.icgrid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px}.icb{min-height:56px;font-size:16px}.icb small{font-size:11px}}""")
+# sit pose when mounted (before dance pose)
+rep("    applyPose(dt, (db && dbPose()) || psPosed() || (rc && rc.me ? rcPose(rc.me) :",
+    "    applyPose(dt, (sb && sbPose()) || (db && dbPose()) || psPosed() || (rc && rc.me ? rcPose(rc.me) :")
+# stronger camera floor for stables
+rep("dist = Math.max(mode === 'stable' ? 5.5 : 1.2, s - .5);",
+    "dist = Math.max(mode === 'stable' ? 8.5 : 1.2, s - .5);")
+# longer, more visible banner animation while we're here
+rep(".obanner{position:absolute;top:22%;left:50%;transform:translate(-50%,-50%) scale(.5);opacity:0;font-size:34px;font-weight:900;color:#fff;text-shadow:3px 3px 0 #1f9460,0 0 18px rgba(0,0,0,.25);pointer-events:none;white-space:nowrap}",
+    ".obanner{position:absolute;top:18%;left:50%;transform:translate(-50%,-50%) scale(.5);opacity:0;font-size:clamp(22px,4.5vw,36px);font-weight:900;color:#fff;text-shadow:3px 3px 0 #1f9460,0 0 18px rgba(0,0,0,.35);pointer-events:none;white-space:pre-line;text-align:center;max-width:90vw;z-index:12}")
