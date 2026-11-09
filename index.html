@@ -504,7 +504,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .fssw{width:28px;height:28px;border-radius:50%;border:3px solid #fff;background:var(--c);box-shadow:0 0 0 1px #ccc;cursor:pointer}.fssw.on{box-shadow:0 0 0 3px #8b5cf6}
 .fsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:6px}
 .fsit{position:relative;border:2px solid #eee;background:#fff;border-radius:12px;padding:4px;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center}.fsit i{font-style:normal;font-size:22px}.fsit small{font-size:11px;font-weight:800;line-height:1.1}
-.fsit u{position:absolute;top:1px;right:3px;text-decoration:none;font-size:11px}.fsit.on{border-color:#ff6fb5;background:#fff0f7}.fsit.lock{opacity:.6;background:#f2f2f2}
+.fsit u{position:absolute;top:1px;right:3px;text-decoration:none;font-size:11px}.fsit.on{border-color:#ff6fb5;background:#fff0f7}.fsit.lock{opacity:.6;background:#f2f2f2}.fsit.fsvip{border-color:#ffd23f;box-shadow:0 0 0 1px #ffd23f inset}.fsmb.fssave{background:#3a86ff;color:#fff;font-weight:900}#fsKeepWard2{flex:1 1 auto;min-width:140px}.fsvipb{margin:6px 0;padding:8px;border-radius:12px;background:linear-gradient(90deg,#5b34c0,#ff6fb5);color:#fff;font-weight:800;font-size:14px}.fsvipb small{opacity:.9;font-weight:700}.fsvipb .fsmb{margin-left:6px}
 .fsmini{justify-content:center;margin-top:8px}.fsmb{border:0;border-radius:12px;padding:6px 12px;background:#ffd23f;font:inherit;font-weight:900;cursor:pointer;box-shadow:0 3px 0 #d4a900}
 .fsbar2{display:none;position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:7;background:rgba(255,255,255,.95);border:3px solid #ff6fb5;border-radius:20px;padding:8px 16px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:96vw}
 .fsbar2.show{display:flex;flex-direction:column;align-items:center;gap:3px}.fsbar2 small{font-weight:800;color:#666}
@@ -1157,7 +1157,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="fstabs" id="fsTabs"></div>
     <div class="fsitems" id="fsItems"></div>
     <div class="stats fscount" id="fsCount"></div>
-    <div class="owinbtns"><button class="big green" id="fsReady">✅ I'm ready!</button><button class="big blue" id="fsWardClose">👀 Look at me</button></div>
+    <div class="owinbtns"><button class="big green" id="fsReady">✅ I'm ready!</button><button class="big blue" id="fsKeepWard2">💾 Save for next show</button><button class="big blue" id="fsWardClose">👀 Look at me</button></div>
   </div></div>
   <div class="fsbar2" id="fsRate"><b id="fsRateN"></b><div class="fsstars" id="fsRateS"></div><small id="fsRateH"></small></div>
   <div class="fsbar2" id="fsPoses"><small id="fsPoseH"></small><div class="fsposes" id="fsPoseS"></div></div>
@@ -1167,7 +1167,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
     <div class="stats" id="fsEndC"></div>
     <div id="fsEndL"></div>
     <div class="stats" id="fsEndW" style="display:none">⏳ Waiting for the host to start the next show...</div>
-    <div class="owinbtns"><button class="big green" id="fsAgain">🔁 Another show</button><button class="big blue" id="fsKeep">💾 Save my look</button><button class="big blue" id="fsLobby">🏛️ Lobby</button><button class="big gray" id="fsHome2">🏠 Home</button></div>
+    <div class="owinbtns"><button class="big green" id="fsAgain">🔁 Another show</button><button class="big blue" id="fsKeep">💾 Save for next show</button><button class="big blue" id="fsLobby">🏛️ Lobby</button><button class="big gray" id="fsHome2">🏠 Home</button></div>
   </div></div>
   <div class="hsblind" id="hsBlind"><div>🙈</div><b id="hsBlindN">20</b><span>Counting... no peeking!</span></div>
   <div class="spwarn" id="hsWarn">👀 The seeker is close! Stay still or sneak away!</div>
@@ -1310,7 +1310,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.07-6';
+const BUILD = '2026.11.09-3';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2030,7 +2030,7 @@ const GAMES = [
   {id:'bakery', name:'Sweet Team Bakery', emoji:'🧁', tag:'Bake & decorate cakes with friends, fill orders, earn coins!', draw: drawBakery, playable: true, isNew: true},
   {id:'petisland', name:'Pet Adventure Island', emoji:'🏝️', tag:'Explore with your pet: dig up treasure, open secret caves, solve puzzles!', draw: drawPetIsland, playable: true, isNew: true},
   {id:'autumn', name:'Cozy Autumn Farm', emoji:'🍂', tag:'Jump in leaf piles, climb hay bales, find 12 pumpkins!', draw: drawAutumn, playable: true, isNew: true},
-  {id:'fashion', name:'Fashion Show', emoji:'👗', tag:'Style a look in the big dressing room, strike a pose, get 5 stars!', draw: drawFashion, playable: true, isNew: true},
+  {id:'fashion', name:'Fashion Show', emoji:'👗', tag:'Pastel prep room, Star VIP lounge, glam runway — fashion clothes stay in the show!', draw: drawFashion, playable: true, isNew: true},
   {id:'hide', name:'Hide and Seek', emoji:'🙈', tag:'Count, hide, seek! A whole town to hide in.', draw: drawHide, playable: true, isNew: true},
   {id:'splash', name:"Don't Splash!", emoji:'🌊', tag:'Hop the pads. Shh... something lives in the water!', draw: drawSplash, playable: true},
   {id:'race',  name:'Pet Kart Racing', emoji:'🏁', tag:'Race on animals or go-karts!', draw: drawRace, playable: true},
@@ -8250,14 +8250,22 @@ const Obby = (() => {
   ];
   // our own clothing catalog (runway pieces live in the dressing room; shop items can be borrowed too)
   const FX = {
-    top: [['tee', '👕', 'Classic Tee'], ['crop', '🎽', 'Crop Top'], ['puff', '👚', 'Puff Sleeves'], ['jacket', '🧥', 'Cool Jacket'], ['sweater', '🧶', 'Cozy Sweater'], ['tux', '🤵', 'Tux'], ['sailor', '⚓', 'Sailor Top'], ['armor', '🛡️', 'Hero Armor'], ['ruffle', '🌸', 'Ruffle Blouse'], ['jersey', '🏅', 'Team Jersey'], ['tank', '💪', 'Tank Top']],
-    bot: [['pants', '👖', 'Pants'], ['flare', '🕺', 'Flare Pants'], ['cargo', '🎒', 'Cargo Pants'], ['pleat', '🏫', 'Pleated Skirt'], ['tutu', '🩰', 'Tutu'], ['shorts', '🩳', 'Shorts'], ['leggings', '🧘', 'Print Leggings']],
-    dress: [['none', '🚫', 'No dress'], ['gown', '👗', 'Ball Gown'], ['princess', '👸', 'Princess Dress'], ['mini', '💃', 'Party Dress'], ['mermaid', '🧜', 'Mermaid Dress'], ['tiered', '🧁', 'Cupcake Dress'], ['starry', '🌌', 'Starry Gown'], ['pjs', '🌙', 'Comfy PJs'], ['goldgown', '🌟', 'Golden Gown', 3]],
-    shoe: [['none', '🦶', 'No shoes'], ['sneak', '👟', 'Sneakers'], ['boots', '👢', 'Boots'], ['heels', '👠', 'Heels'], ['sparkle', '✨', 'Sparkle Kicks'], ['skates', '🛼', 'Roller Skates'], ['bunny', '🐰', 'Bunny Slippers'], ['rain', '☔', 'Rain Boots'], ['crystal', '💎', 'Crystal Heels', 4]],
-    hair: [['base', '💇', 'My own hair'], ['long', '🌊', 'Long Waves'], ['bob', '💁', 'Bob'], ['puffs', '☁️', 'Puff Buns'], ['mohawk', '🦔', 'Mohawk'], ['braids', '🎀', 'Twin Braids'], ['pony', '🐴', 'High Pony'], ['afro', '🌳', 'Big Curls'], ['swoop', '🌀', 'Side Swoop'], ['rainbow', '🌈', 'Rainbow Waves', 2]],
-    mk: [['none', '🙂', 'No makeup'], ['blush', '😊', 'Rosy Blush'], ['lips', '💋', 'Lip Gloss'], ['glam', '💄', 'Full Glam'], ['freckles', '🌟', 'Freckles'], ['stars', '⭐', 'Star Stickers'], ['hearts', '💗', 'Heart Cheeks'], ['glitter', '✨', 'Glitter Eyes'], ['tiger', '🐯', 'Face Paint']],
-    acc: [['pearls', '📿', 'Pearl Necklace'], ['bag', '👜', 'Handbag'], ['sunnies', '🕶️', 'Sunnies'], ['earrings', '💎', 'Earrings'], ['bow', '🎀', 'Big Bow'], ['tiara', '👑', 'Tiara'], ['scarf', '🧣', 'Scarf'], ['wand', '🪄', 'Magic Wand'], ['flowers', '🌼', 'Flower Crown'], ['belt', '🔗', 'Belt'], ['gloves', '🧤', 'Gloves'], ['fairy', '🧚', 'Fairy Wings'], ['halo', '😇', 'Halo'], ['mic', '🎤', 'Microphone'], ['ball', '⚽', 'Ball'], ['headphones', '🎧', 'Headphones'], ['diamond', '💠', 'Diamond Tiara', 5], ['starwings', '🌠', 'Star Wings', 6]],
-    pat: [['none', '⬜', 'Plain'], ['dots', '⚪', 'Polka Dots'], ['stripes', '〰️', 'Stripes'], ['checks', '🏁', 'Checks'], ['stars', '⭐', 'Stars'], ['hearts', '💗', 'Hearts'], ['flowers', '🌼', 'Flowers'], ['spots', '🐆', 'Spots'], ['sparkle', '✨', 'Sparkles']],
+    top: [['tee', '👕', 'Classic Tee'], ['crop', '🎽', 'Crop Top'], ['puff', '👚', 'Puff Sleeves'], ['jacket', '🧥', 'Cool Jacket'], ['sweater', '🧶', 'Cozy Sweater'], ['tux', '🤵', 'Tux'], ['sailor', '⚓', 'Sailor Top'], ['armor', '🛡️', 'Hero Armor'], ['ruffle', '🌸', 'Ruffle Blouse'], ['jersey', '🏅', 'Team Jersey'], ['tank', '💪', 'Tank Top'],
+      ['blouse', '🎀', 'Satin Blouse'], ['hoodie', '🧥', 'Pastel Hoodie'], ['cardigan', '🧶', 'Soft Cardigan'], ['corset', '💜', 'Pastel Corset'], ['offsh', '💫', 'Off-Shoulder'], ['wrap', '🧣', 'Wrap Top'], ['polo', '⛳', 'Cute Polo'], ['kimono', '🪷', 'Kimono Wrap'], ['velvet', '💜', 'Velvet Blazer', 0, 1], ['sequin', '✨', 'Sequin Crop', 0, 1], ['silk', '🦢', 'Silk Halter', 0, 1]],
+    bot: [['pants', '👖', 'Pants'], ['flare', '🕺', 'Flare Pants'], ['cargo', '🎒', 'Cargo Pants'], ['pleat', '🏫', 'Pleated Skirt'], ['tutu', '🩰', 'Tutu'], ['shorts', '🩳', 'Shorts'], ['leggings', '🧘', 'Print Leggings'],
+      ['maxi', '🌙', 'Maxi Skirt'], ['pencil', '✏️', 'Pencil Skirt'], ['denim', '👖', 'Denim Skirt'], ['palazzo', '🌊', 'Palazzo Pants'], ['culotte', '✂️', 'Cute Culottes'], ['bike', '🚴', 'Bike Shorts'], ['ruffleb', '🌸', 'Ruffle Skirt'], ['velvetb', '💜', 'Velvet Skirt', 0, 1], ['silkp', '🦢', 'Silk Pants', 0, 1]],
+    dress: [['none', '🚫', 'No dress'], ['gown', '👗', 'Ball Gown'], ['princess', '👸', 'Princess Dress'], ['mini', '💃', 'Party Dress'], ['mermaid', '🧜', 'Mermaid Dress'], ['tiered', '🧁', 'Cupcake Dress'], ['starry', '🌌', 'Starry Gown'], ['pjs', '🌙', 'Comfy PJs'], ['goldgown', '🌟', 'Golden Gown', 3],
+      ['slip', '💗', 'Slip Dress'], ['babydoll', '👶', 'Babydoll Dress'], ['jumpsuit', '🤸', 'Cute Jumpsuit'], ['overall', '🎀', 'Overall Dress'], ['sundress', '☀️', 'Sundress'], ['tea', '🍵', 'Tea Party Dress'], ['bubble', '🫧', 'Bubble Dress'], ['peplum', '🌷', 'Peplum Dress'], ['ballerina', '🩰', 'Ballerina Dress'], ['pastelg', '🦄', 'Pastel Gown', 0, 1], ['crystalg', '💎', 'Crystal Gown', 0, 1], ['velvetg', '💜', 'Velvet Gown', 0, 1]],
+    shoe: [['none', '🦶', 'No shoes'], ['sneak', '👟', 'Sneakers'], ['boots', '👢', 'Boots'], ['heels', '👠', 'Heels'], ['sparkle', '✨', 'Sparkle Kicks'], ['skates', '🛼', 'Roller Skates'], ['bunny', '🐰', 'Bunny Slippers'], ['rain', '☔', 'Rain Boots'], ['crystal', '💎', 'Crystal Heels', 4],
+      ['flats', '🩰', 'Ballet Flats'], ['platforms', '🧱', 'Platforms'], ['sandals', '🩴', 'Glam Sandals'], ['loafers', '👞', 'Cute Loafers'], ['maryj', '🎀', 'Mary Janes'], ['wedges', '📐', 'Wedges'], ['combat', '⚔️', 'Combat Boots'], ['cowgirl', '🤠', 'Cowgirl Boots'], ['glass', '🔮', 'Glass Slippers', 0, 1], ['goldheel', '🌟', 'Gold Heels', 0, 1]],
+    hair: [['base', '💇', 'My own hair'], ['long', '🌊', 'Long Waves'], ['bob', '💁', 'Bob'], ['puffs', '☁️', 'Puff Buns'], ['mohawk', '🦔', 'Mohawk'], ['braids', '🎀', 'Twin Braids'], ['pony', '🐴', 'High Pony'], ['afro', '🌳', 'Big Curls'], ['swoop', '🌀', 'Side Swoop'], ['rainbow', '🌈', 'Rainbow Waves', 2],
+      ['bangs', '✂️', 'Soft Bangs'], ['spacebuns', '🪐', 'Space Buns'], ['beehive', '🐝', 'Beehive'], ['curtain', '🪟', 'Curtain Layers'], ['pixie', '🧚', 'Pixie Cut'], ['fishtail', '🐟', 'Fishtail Braid'], ['halfup', '🎀', 'Half-Up Heart'], ['wavy', '🌊', 'Beach Waves'], ['pastel', '🦄', 'Pastel Cloud', 0, 1], ['diamondh', '💎', 'Diamond Updo', 0, 1]],
+    mk: [['none', '🙂', 'No makeup'], ['blush', '😊', 'Rosy Blush'], ['lips', '💋', 'Lip Gloss'], ['glam', '💄', 'Full Glam'], ['freckles', '🌟', 'Freckles'], ['stars', '⭐', 'Star Stickers'], ['hearts', '💗', 'Heart Cheeks'], ['glitter', '✨', 'Glitter Eyes'], ['tiger', '🐯', 'Face Paint'],
+      ['wing', '🦋', 'Winged Liner'], ['soft', '🌸', 'Soft Glow'], ['berry', '🫐', 'Berry Lips'], ['cutcrease', '🌙', 'Cut Crease'], ['pearlmk', '🤍', 'Pearl Dots'], ['rainbowmk', '🌈', 'Rainbow Lids'], ['vipglam', '👑', 'VIP Glam', 0, 1], ['diamondmk', '💠', 'Diamond Liner', 0, 1]],
+    acc: [['pearls', '📿', 'Pearl Necklace'], ['bag', '👜', 'Handbag'], ['sunnies', '🕶️', 'Sunnies'], ['earrings', '💎', 'Earrings'], ['bow', '🎀', 'Big Bow'], ['tiara', '👑', 'Tiara'], ['scarf', '🧣', 'Scarf'], ['wand', '🪄', 'Magic Wand'], ['flowers', '🌼', 'Flower Crown'], ['belt', '🔗', 'Belt'], ['gloves', '🧤', 'Gloves'], ['fairy', '🧚', 'Fairy Wings'], ['halo', '😇', 'Halo'], ['mic', '🎤', 'Microphone'], ['ball', '⚽', 'Ball'], ['headphones', '🎧', 'Headphones'], ['diamond', '💠', 'Diamond Tiara', 5], ['starwings', '🌠', 'Star Wings', 6],
+      ['choker', '🖤', 'Heart Choker'], ['clutch', '💼', 'Glam Clutch'], ['bangles', '💫', 'Bangles'], ['ribbon', '🎀', 'Hair Ribbon'], ['cape', '🦸', 'Cute Cape'], ['fans', '🪭', 'Hand Fan'], ['parasol', '☂️', 'Parasol'], ['lollipop', '🍭', 'Candy Prop'], ['bunnyears', '🐰', 'Bunny Ears'], ['catEars', '🐱', 'Kitty Ears'], ['vipbadge', '👑', 'VIP Pin', 0, 1], ['vipcape', '💜', 'VIP Cape', 0, 1], ['vipwings', '🦋', 'VIP Butterfly Wings', 0, 1], ['vipcrown', '👑', 'VIP Crown', 0, 1]],
+    pat: [['none', '⬜', 'Plain'], ['dots', '⚪', 'Polka Dots'], ['stripes', '〰️', 'Stripes'], ['checks', '🏁', 'Checks'], ['stars', '⭐', 'Stars'], ['hearts', '💗', 'Hearts'], ['flowers', '🌼', 'Flowers'], ['spots', '🐆', 'Spots'], ['sparkle', '✨', 'Sparkles'],
+      ['plaid', '🧣', 'Plaid'], ['ombre', '🌅', 'Ombré'], ['lace', '🕸️', 'Lace'], ['hologram', '🌈', 'Hologram', 0, 1]],
   };
   const FS_FXDEF = {top: 'tee', bot: 'pants', dress: 'none', shoe: 'sneak', hair: 'base', mk: 'none', acc: [], pat: 'none', pc: '#ffffff', sc: '#f5f5f5', ac: '#ffd23f', mc: '#ff4d8d'};
   const FS_POSES = [
@@ -8270,12 +8278,13 @@ const Obby = (() => {
     {e: '🎉', n: 'Jump for Joy',p: t => ({y: Math.abs(Math.sin(t * 6)) * .55, aLo: 2.8, aRo: 2.8, lLo: .2, lRo: .2})},
   ];
   const FS_TITLES = [[0, '🌱', 'Fresh Face'], [20, '✨', 'Rising Sparkle'], [50, '👟', 'Street Styler'], [100, '🎀', 'Trend Spotter'], [170, '💎', 'Glam Star'], [260, '👑', 'Runway Royalty'], [380, '🌈', 'Style Legend'], [550, '🦄', 'Fashion Superstar']];
-  const FS_RACKS = [['top', '👕', 'Tops'], ['bot', '👖', 'Bottoms'], ['dress', '👗', 'Dresses'], ['shoe', '👟', 'Shoes'], ['hair', '💇', 'Hair Salon'], ['mk', '💄', 'Makeup'], ['acc', '💍', 'Accessories'], ['col', '🎨', 'Colours & Patterns'], ['star', '🌟', 'Star Closet'], ['pose', '🕺', 'Pose Booth']];
+  const FS_RACKS = [['top', '👕', 'Tops'], ['bot', '👖', 'Bottoms'], ['dress', '👗', 'Dresses'], ['shoe', '👟', 'Shoes'], ['hair', '💇', 'Hair Salon'], ['mk', '💄', 'Makeup'], ['acc', '💍', 'Accessories'], ['col', '🎨', 'Colours & Patterns'], ['star', '🌟', 'Star Closet'], ['vip', '👑', 'VIP Lounge'], ['pose', '🕺', 'Pose Booth']];
   // stations in the walk-in dressing room (x, z = where you stand; r = where the prop is)
   const FS_ST = [
     {id: 'top', x: -27.8, z: -6, r: [-29.9, -6]}, {id: 'bot', x: -27.8, z: -2, r: [-29.9, -2]}, {id: 'dress', x: -27.8, z: 2, r: [-29.9, 2]}, {id: 'shoe', x: -27.8, z: 6, r: [-29.9, 6]},
     {id: 'hair', x: -27, z: -8.4, r: [-27, -10.1]}, {id: 'mk', x: -22.3, z: -8.4, r: [-22.3, -10.1]}, {id: 'pose', x: -19.3, z: -8.2, r: [-19.3, -9.6]},
     {id: 'acc', x: -27, z: 8.4, r: [-27, 10.1]}, {id: 'col', x: -21.8, z: 8.4, r: [-21.8, 10.1]}, {id: 'star', x: -24, z: 0, r: [-24, 0]},
+    {id: 'vip', x: -27.5, z: 0, r: [-29.5, 0]},   // deep west wall — must NOT sit in the doorway
   ];
   const FS_NPCS = [
     {uid: 'n0', name: 'Sunny', emoji: '☀️', base: {head: '#f1c27d', hairColor: '#ffd23f', hair: 'pigtails', body: 'girl'}},
@@ -8293,10 +8302,10 @@ const Obby = (() => {
   let fs = null, FS_MC = {};
   const fsUid = () => mp.on ? mp.me : 'H';
   const fsRand = a => a[Math.floor(Math.random() * a.length)];
-  const fsList = slot => FX[slot].map(([v, e, n, lvl]) => ({v, e, n, lvl: lvl || 0}));
+  const fsList = slot => FX[slot].map(([v, e, n, lvl, vip]) => ({v, e, n, lvl: lvl || 0, vip: !!vip}));
   const FS_OK = Object.keys(FX).reduce((o, k) => (o[k] = new Set(FX[k].map(r => r[0])), o), {});
   function fsItems(slot){ return ITEMS.filter(it => it.slot === slot && !it.set && it.val != null); }
-  function fsName(u){ if (u === fsUid()) return 'You'; const N = FS_NPCS.find(n => n.uid === u); if (N) return N.emoji + ' ' + N.name; const L = mpLook(u); return L ? L.name : 'Player'; }
+  function fsName(u){ if (u === fsUid()) return (fsIsVip() ? '👑 ' : '') + 'You'; const N = FS_NPCS.find(n => n.uid === u); if (N) return N.emoji + ' ' + N.name; const L = mpLook(u); return L ? L.name : 'Player'; }
   function fsFrozen(){ return !!fs && (fs.ph === 'intro' || fs.ph === 'walk' || fs.ph === 'podium' || fs.ph === 'end' || fs.ward || fs.lobPanel); }
   function fsCleanFx(o){
     const f = JSON.parse(JSON.stringify(FS_FXDEF)); if (!o || typeof o !== 'object') return f;
@@ -8306,7 +8315,18 @@ const Obby = (() => {
     return f;
   }
   /* --- fashion level (style stars → title) --- */
-  function fsProg(){ const p = load('rubloxFashion', null); return Object.assign({xp: 0, shows: 0, wins: 0, best: 0}, p && typeof p === 'object' ? p : {}); }
+  const FS_VIP_COST = 250;   // Rublox coins only — never real money
+  function fsProg(){ const p = load('rubloxFashion', null), o = Object.assign({xp: 0, shows: 0, wins: 0, best: 0, vip: false}, p && typeof p === 'object' ? p : {});
+    o.vip = !!o.vip; o.xp = Math.max(0, o.xp | 0); o.shows = Math.max(0, o.shows | 0); o.wins = Math.max(0, o.wins | 0); o.best = Math.max(0, +o.best || 0); return o; }
+  function fsIsVip(){ return !!(fsProg().vip); }
+  function fsBuyVip(){
+    if (fsIsVip()){ toast('👑 You already have Star VIP!'); return false; }
+    if (coins < FS_VIP_COST){ toast('🪙 Need ' + FS_VIP_COST + ' Rublox coins for Star VIP (you have ' + coins + ')'); return false; }
+    setCoins(coins - FS_VIP_COST); const p = fsProg(); p.vip = true; save('rubloxFashion', p);
+    banner('👑 Welcome to Star VIP Lounge!'); toast('👑 Star VIP unlocked with ' + FS_VIP_COST + ' 🪙 — exclusive clothes + a VIP badge!'); SND.win && SND.win();
+    if (fs){ fsPaintVip(); fsBoard(); if (fs.lobPanel) fsPickOpen(); if (fs.ward) fsWardRender(); fsVipBadge(); }
+    return true;
+  }
   function fsLevel(xp){ let i = 0; FS_TITLES.forEach((T, k) => { if (xp >= T[0]) i = k; }); const T = FS_TITLES[i], N = FS_TITLES[i + 1];
     return {lv: i + 1, e: T[1], n: T[2], at: T[0], next: N ? N[0] : null, pct: N ? Math.min(1, (xp - T[0]) / (N[0] - T[0])) : 1}; }
   function fsLvlHtml(){ const p = fsProg(), L = fsLevel(p.xp);
@@ -8322,6 +8342,10 @@ const Obby = (() => {
     else if (pat === 'sparkle') for (let i = 0; i < 26; i++){ const x = (i * 37) % W, y = (i * 23 + (i % 3) * 11) % W; c.fillRect(x, y + 1, 3, 1); c.fillRect(x + 1, y, 1, 3); }
     else if (pat === 'flowers') for (let y = 0; y < W; y += g) for (let x = 0; x < W; x += g){ const cx = x + 8, cy = y + 8; c.fillStyle = pc; for (let k = 0; k < 5; k++){ c.beginPath(); c.arc(cx + Math.cos(k * 1.26) * 3, cy + Math.sin(k * 1.26) * 3, 2.2, 0, 6.3); c.fill(); } c.fillStyle = '#ffd23f'; c.fillRect(cx - 1, cy - 1, 2, 2); }
     else if (pat === 'stars' || pat === 'hearts'){ c.font = '12px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; for (let y = 0; y < W; y += g) for (let x = 0; x < W; x += g) c.fillText(pat === 'stars' ? '★' : '♥', x + (y / g % 2 ? 12 : 4), y + 8); }
+    else if (pat === 'plaid'){ for (let y = 0; y < W; y += g) c.fillRect(0, y, W, 3); for (let x = 0; x < W; x += g) c.fillRect(x, 0, 3, W); c.globalAlpha = .4; for (let y = 0; y < W; y += g * 2) c.fillRect(0, y, W, g); c.globalAlpha = 1; }
+    else if (pat === 'ombre'){ const og = c.createLinearGradient(0, 0, 0, W); og.addColorStop(0, col); og.addColorStop(1, pc); c.fillStyle = og; c.fillRect(0, 0, W, W); }
+    else if (pat === 'lace'){ c.fillStyle = pc; for (let y = 0; y < W; y += 8) for (let x = 0; x < W; x += 8){ c.beginPath(); c.arc(x + 4, y + 4, 2.2, 0, 6.3); c.stroke(); } }
+    else if (pat === 'hologram'){ ['#ff4d4d', '#ff9f1c', '#ffd23f', '#2ec27e', '#3a86ff', '#8b5cf6'].forEach((q, i) => { c.fillStyle = q; c.globalAlpha = .55; c.fillRect(i * W / 6, 0, W / 6 + 1, W); }); c.globalAlpha = 1; for (let i = 0; i < 18; i++){ c.fillStyle = '#fff'; c.fillRect((i * 29) % W, (i * 17) % W, 2, 2); } }
   }
   function fsPatMat(pat, col, pc, glow){
     if (!pat || pat === 'none') return mat(col, glow);
@@ -8371,6 +8395,11 @@ const Obby = (() => {
       const F = FS_MC[k] || (FS_MC[k] = new THREE.MeshLambertMaterial({map: canvasTex(64, 64, c => { c.fillStyle = av.shirt; c.fillRect(0, 0, 64, 64); c.fillStyle = fx.pc; c.fillRect(0, 0, 64, 8); c.font = '900 34px Nunito, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('7', 32, 38); })}));
       const Pl = mat(av.shirt); box(body, TW + .03, 1.0, TD + .03, [Pl, Pl, Pl, Pl, F, Pl], 0, 1.5, 0); sleeves(Pl, .36); arms.forEach(a => box(a, AW + .06, .08, AW + .06, mat(fx.pc), 0, -.3, 0)); }
     else if (top === 'tank'){ torsoOv(Pm); arms.forEach(a => box(a, AW + .02, .84, AW + .02, skin, 0, -.4, 0)); }
+    else if (top === 'blouse' || top === 'offsh' || top === 'silk'){ torsoOv(Pm); sleeves(Pm, .55); [-1, 1].forEach(s => box(body, .22, .08, .4, Pm, s * TW * .42, 1.95, 0)); }
+    else if (top === 'hoodie' || top === 'cardigan' || top === 'wrap' || top === 'kimono'){ torsoOv(Pm, 1.05, 1.48, .08); sleeves(Pm, .88, .06); }
+    else if (top === 'corset' || top === 'velvet' || top === 'sequin'){ torsoOv(top === 'sequin' ? fsPatMat('sparkle', av.shirt, '#ffffff', '#553300') : Pm, .7, 1.55, .05); if (D === 'none') box(body, TW + .01, .35, TD + .01, skin, 0, 1.15, 0); }
+    else if (top === 'polo'){ torsoOv(Pm); box(body, TW * .25, .12, .04, '#ffffff', 0, 1.92, TD / 2 + .04); sleeves(Pm, .4); }
+    else if (top !== 'tee'){ torsoOv(Pm); sleeves(Pm, .5); }   // any future top
     // bottoms (a dress replaces them)
     if (D === 'none'){
       const b = fx.bot;
@@ -8379,13 +8408,19 @@ const Obby = (() => {
       else if (b === 'pleat') cyl(body, .8, .81, .06, 14, '#ffffff', 0, .45, 0);
       else if (b === 'tutu'){ const T = new THREE.MeshLambertMaterial({color: av.pants, transparent: true, opacity: .82}); cyl(body, .72, .98, .14, 18, T, 0, .96, 0); cyl(body, .62, .86, .14, 18, T, 0, .84, 0); }
       else if (b === 'leggings') legs.forEach(l => box(l, LW + .02, .98, LW + .02, fsPatMat(fx.pat === 'none' ? 'stripes' : fx.pat, av.pants, fx.pc), 0, -.5, 0));
+      else if (b === 'maxi' || b === 'velvetb'){ cyl(body, .5, .95, 1.05, 16, av.pants, 0, .5, 0); }
+      else if (b === 'pencil' || b === 'denim' || b === 'ruffleb'){ cyl(body, .48, .7, .55, 14, av.pants, 0, .75, 0); skinLegs(); }
+      else if (b === 'palazzo' || b === 'culotte' || b === 'silkp'){ legs.forEach(l => cyl(l, LW * .55, LW * 1.05, .5, 10, av.pants, 0, -.76, 0)); }
+      else if (b === 'bike'){ legs.forEach(l => box(l, LW + .04, .42, LW + .04, av.pants, 0, -.22, 0)); skinLegs(); }
+      else if (b !== 'pants' && b !== 'shorts'){ cyl(body, .5, .78, .6, 14, av.pants, 0, .72, 0); skinLegs(); }
     } else {
-      const Dm = D === 'starry' ? fsPatMat('stars', '#1d2340', '#ffd23f', '#1d2340') : D === 'goldgown' ? fsPatMat('sparkle', '#ffd23f', '#ffffff', '#7a5a00') : Pm;
+      const Dm = D === 'starry' ? fsPatMat('stars', '#1d2340', '#ffd23f', '#1d2340') : D === 'goldgown' || D === 'crystalg' ? fsPatMat('sparkle', D === 'crystalg' ? '#9ff3ff' : '#ffd23f', '#ffffff', '#7a5a00') : D === 'pastelg' ? fsPatMat('hearts', '#ffb3d9', '#ffffff') : D === 'velvetg' ? mat('#5b34c0') : Pm;
       if (top === 'tee') torsoOv(D === 'pjs' ? Pm : Dm);
-      if (D === 'gown' || D === 'starry' || D === 'goldgown' || D === 'princess'){ const R = D === 'princess' ? 1.35 : 1.22; cyl(body, .47, R, 1.06, 20, Dm, 0, .53, 0);
+      if (D === 'gown' || D === 'starry' || D === 'goldgown' || D === 'princess' || D === 'pastelg' || D === 'crystalg' || D === 'velvetg' || D === 'tea' || D === 'ballerina'){ const R = D === 'princess' || D === 'pastelg' ? 1.35 : 1.22; cyl(body, .47, R, 1.06, 20, Dm, 0, .53, 0);
         torus(body, R - .02, .06, mat(shade(D === 'starry' ? '#1d2340' : D === 'goldgown' ? '#ffd23f' : av.shirt, 40)), 0, .04, 0).rotation.x = Math.PI / 2;
         if (D === 'princess'){ arms.forEach(a => ball(a, .3, Dm, 0, -.1, 0).scale.set(1, .85, 1)); box(body, .5, .24, .1, Am, 0, 1.06, -TD / 2 - .06); } }
-      else if (D === 'mini'){ cyl(body, .47, .8, .56, 14, Dm, 0, .78, 0); skinLegs(); }
+      else if (D === 'mini' || D === 'slip' || D === 'babydoll' || D === 'sundress' || D === 'bubble' || D === 'peplum'){ cyl(body, .47, D === 'bubble' ? .95 : .8, D === 'slip' ? .7 : .56, 14, Dm, 0, .78, 0); skinLegs(); }
+      else if (D === 'jumpsuit' || D === 'overall'){ torsoOv(Dm); legs.forEach(l => box(l, LW + .04, .98, LW + .04, Dm, 0, -.5, 0)); }
       else if (D === 'mermaid'){ cyl(body, .47, .36, .76, 14, Dm, 0, .68, 0); cyl(body, .36, .86, .34, 14, mat(shade(av.shirt, 35), '#113344'), 0, .17, 0); }
       else if (D === 'tiered'){ [[.56, .9], [.71, .67], [.87, .44]].forEach(([r, y], i) => cyl(body, r - .1, r, .24, 16, i % 2 ? mat(shade(av.shirt, 45)) : Dm, 0, y, 0)); skinLegs(); }
       else if (D === 'pjs'){ torsoOv(Pm, 1.0, 1.5, .06); sleeves(Pm, .84, .06); legs.forEach(l => box(l, LW + .05, .98, LW + .05, Pm, 0, -.5, 0)); }
@@ -8398,6 +8433,11 @@ const Obby = (() => {
       else if (sh === 'heels' || sh === 'crystal'){ const m = sh === 'crystal' ? fsBasic('#9ff3ff', .75) : Sm; box(l, LW + .03, .12, LW + .14, m, 0, -.95, .05); box(l, .08, .16, .08, m, 0, -.93, -LW / 2 + .02); box(l, LW + .05, .05, .05, m, 0, -.82, .05); }
       else if (sh === 'skates'){ box(l, LW + .06, .32, LW + .14, Sm, 0, -.85, .02); [-.13, .13].forEach(z => { cyl(l, .07, .07, .1, 10, '#ff6fb5', 0, -1.02, z).rotation.z = Math.PI / 2; }); }
       else if (sh === 'bunny'){ box(l, LW + .14, .2, LW + .3, '#ffffff', 0, -.92, .07); [-1, 1].forEach(s => { box(l, .07, .2, .04, '#ffffff', s * .09, -.74, .2); box(l, .035, .13, .045, '#ffb3d9', s * .09, -.74, .21); }); }
+      else if (sh === 'flats' || sh === 'loafers' || sh === 'maryj'){ box(l, LW + .05, .12, LW + .16, Sm, 0, -.95, .04); }
+      else if (sh === 'platforms' || sh === 'wedges'){ box(l, LW + .08, .22, LW + .18, Sm, 0, -.9, .05); }
+      else if (sh === 'sandals'){ box(l, LW + .04, .06, LW + .16, Sm, 0, -.97, .05); box(l, .04, .12, .04, Sm, 0, -.9, -.08); }
+      else if (sh === 'combat' || sh === 'cowgirl'){ box(l, LW + .08, .5, LW + .1, Sm, 0, -.76, 0); box(l, LW + .1, .08, LW + .2, mat(shade(fx.sc, -30)), 0, -.98, .04); }
+      else if (sh === 'glass' || sh === 'goldheel'){ const m = sh === 'glass' ? fsBasic('#9ff3ff', .65) : mat('#ffd23f', '#7a5a00'); box(l, LW + .03, .12, LW + .14, m, 0, -.95, .05); box(l, .08, .18, .08, m, 0, -.9, -LW / 2); }
     });
     // hair styles (the salon)
     const hs2 = fx.hair, HmR = hs2 === 'rainbow' ? fsPatMat('rainbow', '#fff', '#fff') : Hm;
@@ -8411,6 +8451,12 @@ const Obby = (() => {
       else if (hs2 === 'pony'){ cap(); ball(head, .18, Hm, 0, .86, -.42); cyl(head, .13, .06, .8, 8, Hm, 0, .42, -.6).rotation.x = .25; box(head, .3, .08, .1, Am, 0, .86, -.36); }
       else if (hs2 === 'afro') ball(head, .62, Hm, 0, .78, -.16).scale.set(1, .88, .8);
       else if (hs2 === 'swoop'){ cap(); box(head, .56, .16, .32, Hm, .15, .86, .32).rotation.z = -.25; box(head, .1, .5, .55, Hm, -.45, .56, -.1); box(head, .1, .3, .55, Hm, .45, .66, -.1); }
+      else if (hs2 === 'spacebuns'){ cap(); [-1, 1].forEach(s => ball(head, .24, Hm, s * .36, .98, -.02)); }
+      else if (hs2 === 'bangs' || hs2 === 'curtain' || hs2 === 'wavy' || hs2 === 'halfup'){ cap(); box(head, .7, .14, .2, Hm, 0, .82, .38); [-1, 1].forEach(s => box(head, .12, .7, .5, Hm, s * .44, .45, -.1)); }
+      else if (hs2 === 'beehive' || hs2 === 'diamondh' || hs2 === 'pastel'){ ball(head, hs2 === 'beehive' ? .45 : .5, hs2 === 'pastel' ? fsPatMat('hearts', av.hairColor || '#ffb3d9', '#fff') : HmR, 0, 1.05, -.1); cap(); }
+      else if (hs2 === 'pixie'){ cap(); box(head, .7, .2, .5, Hm, 0, .85, .1); }
+      else if (hs2 === 'fishtail'){ cap(); cyl(head, .1, .06, .9, 8, Hm, .2, .3, -.55).rotation.x = .4; }
+      else { cap(); [-1, 1].forEach(s => box(head, .1, .6, .5, Hm, s * .44, .48, -.12)); }
     }
     // makeup (on the face)
     const fp = (w, h, col, x, y, op = .85, rz = 0) => { const o = add(head, new THREE.PlaneGeometry(w, h), fsBasic(col, op), x, y, .403); o.rotation.z = rz; return o; };
@@ -8423,6 +8469,11 @@ const Obby = (() => {
     if (mk === 'hearts') [-1, 1].forEach(s => { fp(.08, .08, '#ff4d8d', s * CX, CY, 1, Math.PI / 4); [-.025, .025].forEach(d => ball(head, .035, fsBasic('#ff4d8d', 1), s * CX + d, CY + .03, .4)); });
     if (mk === 'glitter') for (let i = 0; i < 12; i++){ const s = i % 2 ? 1 : -1, k = i >> 1; fp(.03, .03, ['#ffffff', '#ffd23f', '#9ff3ff'][k % 3], s * (EX + Math.cos(k * 1.1) * .1), EY + .09 + Math.sin(k * 1.7) * .04, 1); }
     if (mk === 'tiger') [-1, 1].forEach(s => { [[.3, .32, .4], [.32, .24, .3]].forEach(([x, y, r]) => fp(.16, .035, fx.mc === '#ff4d8d' ? '#ff9f1c' : fx.mc, s * x, y, .95, s * r)); fp(.05, .14, '#1d1d1d', s * .07, .7, .8, s * .3); });
+    if (mk === 'wing' || mk === 'cutcrease' || mk === 'vipglam' || mk === 'diamondmk') [-1, 1].forEach(s => fp(.2, .04, mk === 'diamondmk' ? '#9ff3ff' : '#1d1d1d', s * EX, EY + .08, .9, s * -.3));
+    if (mk === 'soft' || mk === 'vipglam') [-1, 1].forEach(s => fp(.15, .08, '#ffb3d9', s * CX, CY, .55));
+    if (mk === 'berry') fp(.17, .05, '#8b1a4a', 0, MY, .95);
+    if (mk === 'pearlmk') [-1, 1].forEach(s => { ball(head, .03, '#fff', s * CX, CY, .41); });
+    if (mk === 'rainbowmk') [-1, 1].forEach(s => ['#ff4d4d','#ffd23f','#2ec27e','#3a86ff'].forEach((c, k) => fp(.16, .025, c, s * EX, EY + .12 - k * .03, .85)));
     // accessories (up to 4)
     fx.acc.forEach(a => {
       if (a === 'pearls') torus(body, .3, .05, '#fffaf0', 0, 2.0, .02).rotation.x = Math.PI / 2 - .25;
@@ -8442,8 +8493,18 @@ const Obby = (() => {
       else if (a === 'mic'){ cyl(arms[1], .04, .03, .32, 8, '#2b2d42', 0, -1.0, .12).rotation.x = .9; ball(arms[1], .075, '#9aa0ab', 0, -.9, .26); }
       else if (a === 'ball') ball(arms[0], .22, fsPatMat('checks', '#ffffff', '#1d1d1d'), 0, -1.0, .24);
       else if (a === 'headphones'){ torus(head, .46, .05, '#2b2d42', 0, .42, 0, Math.PI); [-1, 1].forEach(s => { cyl(head, .15, .15, .1, 12, Am, s * .45, .42, 0).rotation.z = Math.PI / 2; }); }
-      else if (a === 'starwings'){ const sh2 = new THREE.Shape(); for (let i = 0; i < 10; i++){ const r = i % 2 ? .22 : .55, an = i / 10 * Math.PI * 2; if (i) sh2.lineTo(Math.sin(an) * r, Math.cos(an) * r); else sh2.moveTo(Math.sin(an) * r, Math.cos(an) * r); }
-        [-1, 1].forEach(s => { add(body, new THREE.ShapeGeometry(sh2), fsBasic('#ffd23f', 1), s * .5, 1.75, -TD / 2 - .12).rotation.y = s * .45; }); }
+      else if (a === 'starwings' || a === 'vipwings'){ const sh2 = new THREE.Shape(); for (let i = 0; i < 10; i++){ const r = i % 2 ? .22 : .55, an = i / 10 * Math.PI * 2; if (i) sh2.lineTo(Math.sin(an) * r, Math.cos(an) * r); else sh2.moveTo(Math.sin(an) * r, Math.cos(an) * r); }
+        [-1, 1].forEach(s => { add(body, new THREE.ShapeGeometry(sh2), fsBasic(a === 'vipwings' ? '#c4b0ff' : '#ffd23f', 1), s * .5, 1.75, -TD / 2 - .12).rotation.y = s * .45; }); }
+      else if (a === 'choker') torus(body, .28, .04, '#ff4d8d', 0, 2.02, .02).rotation.x = Math.PI / 2 - .2;
+      else if (a === 'clutch') box(arms[1], .28, .18, .08, Am, .18, -1.0, 0);
+      else if (a === 'bangles') arms.forEach(r => { torus(r, AW + .02, .03, Am, 0, -.55, 0).rotation.x = Math.PI / 2; });
+      else if (a === 'ribbon') box(head, .35, .12, .08, Am, .2, .95, -.2);
+      else if (a === 'cape' || a === 'vipcape'){ const cm = a === 'vipcape' ? mat('#5b34c0', '#221144') : Am; box(body, TW + .2, 1.2, .05, cm, 0, 1.4, -TD / 2 - .08); }
+      else if (a === 'fans' || a === 'parasol'){ cyl(arms[0], .02, .02, .5, 6, '#ffffff', 0, -.9, .25).rotation.x = 1; add(arms[0], new THREE.CircleGeometry(.35, 12), fsBasic(fx.ac, .9), 0, -.7, .55); }
+      else if (a === 'lollipop'){ cyl(arms[1], .02, .02, .35, 6, '#ffffff', 0, -.95, .2).rotation.x = .8; ball(arms[1], .1, '#ff6fb5', 0, -.8, .4); }
+      else if (a === 'bunnyears' || a === 'catEars'){ [-1, 1].forEach(s => { box(head, .12, .32, .08, a === 'catEars' ? '#ffb3d9' : '#ffffff', s * .22, 1.05, -.1).rotation.z = s * .2; }); }
+      else if (a === 'vipbadge'){ box(body, .18, .18, .04, mat('#ffd23f', '#886600'), TW * .35, 1.7, TD / 2 + .06); box(body, .1, .08, .05, '#5b34c0', TW * .35, 1.7, TD / 2 + .08); }
+      else if (a === 'vipcrown'){ const Ti = mat('#ffd23f', '#886600'); box(head, .72, .06, .06, Ti, 0, .88, .2); [-.24, 0, .24].forEach((x, i) => add(head, new THREE.ConeGeometry(i === 1 ? .1 : .07, .28, 5), Ti, x, 1.02, .2)); }
     });
     return M;
   }
@@ -8452,15 +8513,19 @@ const Obby = (() => {
   function fsTex(text, w, h, bg, fg, size){ return canvasTex(w, h, c => { c.fillStyle = bg; c.fillRect(0, 0, w, h); c.fillStyle = fg; c.font = '900 ' + size + 'px Nunito, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(text, w / 2, h / 2 + 2); }); }
   function fsSign(text, x, y, z, ry, w = 3.2, bg = '#ff6fb5'){ const s = new THREE.Mesh(new THREE.PlaneGeometry(w, w * .22), new THREE.MeshBasicMaterial({map: fsTex(text, 512, 112, bg, '#ffffff', 50), side: THREE.DoubleSide})); s.position.set(x, y, z); s.rotation.y = ry; scene.add(s); return s; }
   function buildFashion(){
-    scene.background = new THREE.Color('#d7c4ff'); FS_MC = {};
+    scene.background = new THREE.Color('#f3d4ff'); FS_MC = {};
     const dl = load('rubloxFsTime', 180);
     fs = {ph: 'lobby', n: 0, t: 0, wt: 0, th: 0, dl: FS_TIMES.includes(dl) ? dl : 180, ord: [], fits: {}, fxs: {}, gfits: {}, gfx: {}, rates: {}, poses: {}, ready: new Set(), res: [], pod: [], walkers: [], judges: [], npcM: {}, npcFit: {}, spots: [], earned: 0, lastTh: -1, remote: false, fit: null, fx: null, myPose: 0, rated: {}, near: null, done: {}, lobPanel: false, tab: 'top', introT: 0};
     plat(0, 0, 0, 90, 90, '#f3c6dd', 2);
     // the runway
-    plat(0, .9, -3, 4, 22, '#ffffff', .9);
-    plat(0, .45, 8.6, 4, 1.2, '#ffd23f', .45);
-    [-2.08, 2.08].forEach(x => fsDeco(.16, .12, 22, '#ff6fb5', x, .92, -3, new THREE.MeshBasicMaterial({color: '#ff6fb5'})));
-    for (let z = -13; z <= 7; z += 2.5) [-2.08, 2.08].forEach(x => fs.spots.push(fsDeco(.22, .22, .22, '#fff', x, 1.05, z, new THREE.MeshBasicMaterial({color: '#fff6b0'}))));
+    plat(0, .9, -3, 4.4, 22, '#ffffff', .9);
+    plat(0, .45, 8.6, 4.4, 1.2, '#ffd23f', .45);
+    [-2.25, 2.25].forEach(x => fsDeco(.18, .14, 22, '#ff6fb5', x, .92, -3, new THREE.MeshBasicMaterial({color: '#ff6fb5'})));
+    for (let z = -13; z <= 7; z += 2.2) [-2.25, 2.25].forEach(x => fs.spots.push(fsDeco(.26, .26, .26, '#fff', x, 1.08, z, new THREE.MeshBasicMaterial({color: '#fff6b0'}))));
+    // audience seating rows (pastel chairs) beside the runway
+    [-1, 1].forEach(s => { for (let r = 0; r < 4; r++) for (let k = 0; k < 5; k++){
+      const x = s * (4.8 + r * 1.15), z = -10 + k * 3.2, col = (r + k) % 2 ? '#ffb3d9' : '#c4b0ff';
+      fsDeco(.7, .45, .7, col, x, .35, z); fsDeco(.7, .7, .12, shade(col, -25), x, .7, z + .28); } });
     plat(0, 9, -15, 26, 1, '#8b5cf6', 9);
     const sign = new THREE.Mesh(new THREE.PlaneGeometry(14, 2.6), new THREE.MeshBasicMaterial({map: fsTex('✨ RUBLOX RUNWAY ✨', 512, 96, '#ff6fb5', '#ffffff', 52)}));
     sign.position.set(0, 7, -14.45); scene.add(sign);
@@ -8478,13 +8543,34 @@ const Obby = (() => {
     fsRoom(); fsLobby();
     checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 23}, flag: new THREE.Object3D()};
   }
+  function fsPaintVip(){ if (!fs) return; if (fs.vipGlow) fs.vipGlow.visible = fsIsVip(); if (fs.vipLock) fs.vipLock.visible = !fsIsVip(); fsVipBadge(); }
+  // floating gold VIP nametag above YOUR avatar (dressing room + runway)
+  function fsVipBadge(){
+    if (!fs || !model || !model.g) return;
+    if (fs.vipTag){ try { model.g.remove(fs.vipTag); } catch (e){} fs.vipTag = null; }
+    if (!fsIsVip()) return;
+    const lab = label('👑 VIP', 'rgba(232,168,0,.96)', '#1d2340', 160);
+    lab.position.set(0, 4.15, 0); lab.scale.set(.55, .55, .55); model.g.add(lab); fs.vipTag = lab;
+  }
   function fsRoom(){
-    const X = -24, W = '#ffe3f1', H = 5;
-    fsDeco(14, .04, 22, '#fbe7ff', X, .02, 0); for (let i = 0; i < 6; i++) fsDeco(14, .045, .5, '#f6d2ff', X, .021, -10 + i * 4);
-    plat(-30.9, H, 0, .6, 22.6, W, H); plat(X, H, -11, 14.4, .6, W, H); plat(X, H, 11, 14.4, .6, W, H); plat(-17.1, H, -6.9, .6, 8.2, W, H); plat(-17.1, H, 6.9, .6, 8.2, W, H);
-    fsDeco(.62, 1, 5.6, '#ff6fb5', -17.1, 4.5, 0); [-1, 1].forEach(s => fsDeco(.64, 5, .3, '#ffd23f', -17.1, 2.5, s * 2.8));
-    fsSign('👗 DRESSING ROOM', -16.72, 4.5, 0, Math.PI / 2, 5, '#8b5cf6');
-    fsDeco(14.4, .3, .7, '#ff6fb5', X, 5.1, -11); fsDeco(14.4, .3, .7, '#ff6fb5', X, 5.1, 11); fsDeco(.7, .3, 22.6, '#ff6fb5', -30.9, 5.1, 0);
+    const X = -24, W = '#fff0f8', H = 4.6;
+    // soft pastel pink floor + lavender carpet runner (DTI-inspired, our own art)
+    fsDeco(14, .04, 22, '#ffe3f1', X, .02, 0); for (let i = 0; i < 6; i++) fsDeco(14, .045, .5, '#f6d2ff', X, .021, -10 + i * 4);
+    fsDeco(3.2, .05, 20, '#e8c4ff', X + 2, .03, 0);
+    // outer walls — doorway cheeks are SHORT stubs so they never fill the camera
+    plat(-30.9, H, 0, .6, 22.6, W, H); plat(X, H, -11, 14.4, .6, W, H); plat(X, H, 11, 14.4, .6, W, H);
+    plat(-17.1, 1.6, -8.2, .3, 4.0, W, 1.6); plat(-17.1, 1.6, 8.2, .3, 4.0, W, 1.6);   // short pink stubs only — nothing across the open doorway
+    // NO mid-height lintel (it cut a magenta band across the camera). Tiny high marker above FOV instead.
+    fsDeco(.25, .18, 1.6, '#ff6fb5', -17.1, 5.6, 0);
+    fsSign('👗 PREP', -16.9, 5.85, 0, Math.PI / 2, 1.6, '#8b5cf6');
+    // thin wall-top trims pushed back so they don't read as a foreground band
+    fsDeco(14.4, .18, .4, '#ffb3d9', X, 5.1, -11); fsDeco(14.4, .18, .4, '#ffb3d9', X, 5.1, 11); fsDeco(.4, .18, 22.6, '#ffb3d9', -30.9, 5.1, 0);
+    // wall mirrors on west wall — face into the room, gold frames, clearly lit
+    [[-29.85, -5], [-29.85, 5]].forEach(([x, z]) => {
+      const mir = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 3.4), new THREE.MeshBasicMaterial({color: '#e8fbff'})); mir.position.set(x, 2.3, z); mir.rotation.y = Math.PI / 2; scene.add(mir);
+      fsDeco(.1, 3.6, 2.85, '#ffd23f', x + .06, 2.3, z);
+      for (let k = 0; k < 6; k++){ const b = new THREE.Mesh(new THREE.SphereGeometry(.09, 8, 6), new THREE.MeshBasicMaterial({color: '#fff6c9'})); b.position.set(x + .08, 1.0 + k * .55, z - 1.15); scene.add(b); const b2 = b.clone(); b2.position.z = z + 1.15; scene.add(b2); }
+    });
     FS_ST.forEach(S => { const [rx, rz] = S.r, T = FS_RACKS.find(r => r[0] === S.id), west = rx < -29;
       if (west){ // a clothes rack against the west wall
         fsDeco(.1, 2.6, .1, '#bbb', rx + .3, 1.3, rz - 1.5); fsDeco(.1, 2.6, .1, '#bbb', rx + .3, 1.3, rz + 1.5); fsDeco(.1, .1, 3.1, '#ccc', rx + .3, 2.6, rz);
@@ -8493,13 +8579,26 @@ const Obby = (() => {
           else if (S.id === 'bot'){ fsDeco(.1, 1.2, .18, c, rx + .3, 1.95, z - .1); }
           else if (S.id === 'shoe'){ if (k < 3) fsDeco(.5, .06, 3, '#fff', rx + .3, .5 + k * .7, rz); fsDeco(.4, .2, .3, c, rx + .3, .62 + (k % 3) * .7, rz - 1 + (k >> 1) * .8); }
           else fsDeco(.12, 1.1, .44, c, rx + .3, 1.95, z); }
-        fsSign(T[1] + ' ' + T[2].toUpperCase(), rx + .02, 3.5, rz, Math.PI / 2, 3, '#ff6fb5');
+        fsSign(T[1] + ' ' + T[2].toUpperCase(), rx + .02, 3.35, rz, Math.PI / 2, 2.2, '#ff6fb5');
       } else if (S.id === 'star'){
         const ring = new THREE.Mesh(new THREE.TorusGeometry(1, .07, 8, 28), mat('#ffd23f', '#886600')); ring.rotation.x = Math.PI / 2; ring.position.set(rx, 2.6, rz); scene.add(ring);
         fsDeco(.12, 2.6, .12, '#ffd23f', rx, 1.3, rz);
         for (let k = 0; k < 6; k++){ const a = k / 6 * Math.PI * 2, d = new THREE.Mesh(new THREE.ConeGeometry(.3, 1.1, 8), mat(['#ffd23f', '#9ff3ff', '#ff6fb5'][k % 3], '#332200')); d.position.set(rx + Math.cos(a), 2.0, rz + Math.sin(a)); scene.add(d); }
         fs.star = new THREE.Mesh(new THREE.OctahedronGeometry(.4), mat('#ffd23f', '#aa8800')); fs.star.position.set(rx, 3.3, rz); scene.add(fs.star);
-        fsSign('🌟 STAR CLOSET', rx, 4.2, rz, Math.PI / 2, 3, '#e0a800');
+        fsSign('🌟 STAR CLOSET', rx, 3.85, rz, Math.PI / 2, 2.3, '#e0a800');
+      } else if (S.id === 'vip'){
+        // 👑 Star VIP Lounge — against the BACK wall so it never blocks the doorway camera
+        fsDeco(4.2, .06, 5.2, '#5b34c0', rx + .4, .03, rz);
+        // soft pink side drapes behind the rack (west of player), not toward the entrance
+        [-1, 1].forEach(s => fsDeco(.12, 3.4, 1.6, '#ffb3d9', rx - .15, 1.7, rz + s * 2.2));
+        fsDeco(.1, 2.4, .1, '#ffd23f', rx + .35, 1.2, rz - 1.5); fsDeco(.1, 2.4, .1, '#ffd23f', rx + .35, 1.2, rz + 1.5); fsDeco(.1, .1, 3.1, '#ffd23f', rx + .35, 2.4, rz);
+        for (let k = 0; k < 6; k++){ const c = ['#ffd23f', '#ff6fb5', '#9ff3ff', '#8b5cf6'][k % 4], z = rz - 1.2 + k * .48;
+          const d = new THREE.Mesh(new THREE.ConeGeometry(.34, 1.25, 10), mat(c, '#332200')); d.position.set(rx + .35, 1.7, z); scene.add(d); }
+        const glow = new THREE.Mesh(new THREE.TorusGeometry(1.0, .06, 8, 24), new THREE.MeshBasicMaterial({color: '#ffd23f'})); glow.rotation.x = Math.PI / 2; glow.position.set(rx + .3, 2.9, rz); scene.add(glow); fs.vipGlow = glow;
+        const crown = new THREE.Mesh(new THREE.ConeGeometry(.4, .55, 5), mat('#ffd23f', '#886600')); crown.position.set(rx + .3, 3.35, rz); scene.add(crown);
+        const lock = label('🔒 Star VIP · 250 🪙', 'rgba(91,52,192,.95)', '#fff', 220); lock.position.set(rx + .3, 4.0, rz); lock.scale.set(.5, .5, .5); scene.add(lock); fs.vipLock = lock;
+        fsSign('👑 VIP', rx + .02, 3.7, rz, Math.PI / 2, 2.0, '#5b34c0');
+        fsPaintVip();
       } else { // north / south wall stations
         const s = rz < 0 ? 1 : -1, ry = rz < 0 ? 0 : Math.PI;
         if (S.id === 'hair'){ const ch = new THREE.Mesh(new THREE.CylinderGeometry(.45, .35, .5, 12), mat('#ff6fb5')); ch.position.set(rx, .55, rz + s * 1.1); scene.add(ch); fsDeco(.9, .9, .15, '#ff6fb5', rx, 1.1, rz + s * .75);
@@ -8511,7 +8610,7 @@ const Obby = (() => {
         else if (S.id === 'col'){ for (let k = 0; k < 6; k++){ const b = new THREE.Mesh(new THREE.CylinderGeometry(.22, .2, .4, 12), mat(FS_COLS[k * 3])); b.position.set(rx - 1 + (k % 3), .2, rz + s * (.5 + (k > 2 ? .5 : 0))); scene.add(b); }
           const pal = new THREE.Mesh(new THREE.CircleGeometry(.9, 20), mat('#e9b949')); pal.position.set(rx, 2.1, rz + s * .02); pal.rotation.y = ry; scene.add(pal); }
         else if (S.id === 'pose'){ fsDeco(2.2, .12, 1.6, '#ffd23f', rx, 3.6, rz + s * .6); [-1, 1].forEach(k => fsDeco(.1, 3.6, .1, '#ffd23f', rx + k * 1.05, 1.8, rz + s * 1.35)); fsDeco(.06, 3.2, 1.4, '#c81e45', rx - 1.05, 1.9, rz + s * .65); fsDeco(1.8, .05, 1.4, '#fff', rx, .03, rz + s * .65); }
-        fsSign(T[1] + ' ' + T[2].toUpperCase(), rx, 3.9, rz + s * .04, ry, 3, S.id === 'pose' ? '#8b5cf6' : '#ff6fb5');
+        fsSign(T[1] + ' ' + T[2].toUpperCase(), rx, 4.15, rz + s * .04, ry, 2.2, S.id === 'pose' ? '#8b5cf6' : '#ff6fb5');
       }
     });
   }
@@ -8547,7 +8646,7 @@ const Obby = (() => {
   function fsNpcFit(N, th, effort){
     const T = FS_THEMES[th], av = Object.assign({}, DEF, N.base), on = () => Math.random() < effort;
     const pickB = (slot, liked) => { const all = fsItems(slot), good = all.filter(it => T.likes.some(l => String(it.val).includes(l) || it.id.includes(l))); return ((liked && good.length ? fsRand(good) : fsRand(all)) || {}).val; };
-    const free = slot => fsList(slot).filter(r => !r.lvl);
+    const free = slot => fsList(slot).filter(r => !r.lvl && !r.vip);
     const pickF = slot => { const all = free(slot), good = all.filter(r => T.fx.includes(r.v)); return (on() && good.length ? fsRand(good) : fsRand(all)).v; };
     av.shirt = on() ? fsRand(T.cols) : fsRand(FS_COLS); av.pants = on() ? fsRand(T.cols) : fsRand(FS_COLS); if (Math.random() < .3) av.hairColor = fsRand(FS_COLS);
     if (Math.random() < .5) av.hat = pickB('hat', on()) || 'none';
@@ -8573,7 +8672,7 @@ const Obby = (() => {
     return s;
   }
   function fsStars(score){ return Math.max(1, Math.min(5, Math.round(1 + score / 3 + (Math.random() - .5) * 1.4))); }
-  function fsRebuild(av, fx){ if (!model) return; const g = model.g, pos = g.position.clone(), ry = g.rotation.y; scene.remove(g); model = fx ? fsBuild(av, fx) : buildPlayer(av); model.g.position.copy(pos); model.g.rotation.y = ry; scene.add(model.g); }
+  function fsRebuild(av, fx){ if (!model) return; const g = model.g, pos = g.position.clone(), ry = g.rotation.y; scene.remove(g); model = fx ? fsBuild(av, fx) : buildPlayer(av); model.g.position.copy(pos); model.g.rotation.y = ry; scene.add(model.g); fs.vipTag = null; fsVipBadge(); }
   function fsThumb(av, fx){
     const f = fsCleanFx(fx), c = document.createElement('canvas'); c.width = 60; c.height = 78; const x = c.getContext('2d');
     x.fillStyle = '#fff0f7'; x.fillRect(0, 0, 60, 78);
@@ -8594,7 +8693,11 @@ const Obby = (() => {
   /* --- the wardrobe (tabs = the racks / stations in the room) --- */
   function fsWardOpen(tab){ if (!fs || fs.ph !== 'dress') return; if (tab) fs.tab = tab; fs.ward = true; fsWardRender(); $('#fsWard').classList.add('show'); $('#fsWardBtn').classList.remove('show'); $('#fsNear').classList.remove('show'); fs.near = null; }
   function fsWardClose(){ if (!fs) return; fs.ward = false; $('#fsWard').classList.remove('show'); if (fs.ph === 'dress') $('#fsWardBtn').classList.add('show'); }
-  function fsLocked(r){ return !!r.lvl && fsLevel(fsProg().xp).lv < r.lvl; }
+  function fsLocked(r){
+    if (r && r.vip && !fsIsVip()) return true;
+    return !!r.lvl && fsLevel(fsProg().xp).lv < r.lvl;
+  }
+  function fsVipRows(){ const rows = []; Object.keys(FX).forEach(slot => fsList(slot).filter(r => r.vip).forEach(r => rows.push(Object.assign({s: slot}, r)))); return rows; }
   function fsWardRender(){
     const T = FS_THEMES[fs.th], tab = fs.tab || 'top', f = fs.fit, x = fs.fx;
     $('#fsTheme').textContent = T.emoji + ' ' + T.name; $('#fsLikes').textContent = '💖 Voters love: ' + T.hint;
@@ -8602,7 +8705,8 @@ const Obby = (() => {
     $('#fsTabs').querySelectorAll('.fstab').forEach(b => b.onclick = () => { fs.tab = b.dataset.t; fsWardRender(); });
     const like = v => T.fx.includes(v);
     const grid = (slot, rows, multi) => '<div class="fsgrid">' + rows.map(r => { const on = multi ? x.acc.includes(r.v) : x[slot] === r.v, lk = fsLocked(r);
-      return `<button class="fsit${on ? ' on' : ''}${lk ? ' lock' : ''}" data-fx="${slot}" data-v="${r.v}"><i>${lk ? '🔒' : r.e}</i><small>${r.n}${lk ? '<br>Lv ' + r.lvl : ''}</small>${like(r.v) ? '<u>💖</u>' : ''}</button>`; }).join('') + '</div>';
+      const why = lk ? (r.vip && !fsIsVip() ? '<br>👑 VIP' : (r.lvl ? '<br>Lv ' + r.lvl : '')) : (r.vip ? '<br>👑' : '');
+      return `<button class="fsit${on ? ' on' : ''}${lk ? ' lock' : ''}${r.vip ? ' fsvip' : ''}" data-fx="${slot}" data-v="${r.v}"><i>${lk ? '🔒' : r.e}</i><small>${r.n}${why}</small>${like(r.v) ? '<u>💖</u>' : ''}</button>`; }).join('') + '</div>';
     const shop = (slots, label) => { const list = []; slots.forEach(slot => { if (slot === 'hat') list.push({slot, val: 'none', emoji: '🚫', name: 'No hat'});
         fsItems(slot).forEach(it => list.push({slot, val: it.val, emoji: it.emoji, name: it.name, own: isOwned(it), like: T.likes.some(l => String(it.val).includes(l) || it.id.includes(l))})); });
       const o = fs.list.length; fs.list = fs.list.concat(list);
@@ -8620,15 +8724,21 @@ const Obby = (() => {
     else if (tab === 'star'){ const rows = []; ['dress', 'shoe', 'hair', 'acc'].forEach(s => fsList(s).filter(r => r.lvl).forEach(r => rows.push(Object.assign({s}, r))));
       h = fsLvlHtml() + `<div class="fssub">🌟 Level up to unlock Star Closet pieces!</div><div class="fsgrid">` + rows.map(r => { const lk = fsLocked(r), on = r.s === 'acc' ? x.acc.includes(r.v) : x[r.s] === r.v;
         return `<button class="fsit${on ? ' on' : ''}${lk ? ' lock' : ''}" data-fx="${r.s}" data-v="${r.v}"><i>${lk ? '🔒' : r.e}</i><small>${r.n}<br>${lk ? 'Lv ' + r.lvl : '✅ Unlocked'}</small></button>`; }).join('') + '</div>'; }
+        else if (tab === 'vip'){ const vip = fsIsVip(), rows = fsVipRows();
+      h = (vip ? `<div class="fssub">👑 Star VIP Lounge — exclusive pieces just for you!</div>` : `<div class="fssub">👑 Star VIP Lounge · unlock with <b>${FS_VIP_COST} Rublox coins</b> (never real money)<br><button class="big blue" id="fsVipBuy">👑 Unlock Star VIP · ${FS_VIP_COST} 🪙</button></div>`)
+        + `<div class="fsgrid">` + rows.map(r => { const lk = fsLocked(r), on = r.s === 'acc' ? x.acc.includes(r.v) : x[r.s] === r.v;
+          return `<button class="fsit fsvip${on ? ' on' : ''}${lk ? ' lock' : ''}" data-fx="${r.s}" data-v="${r.v}"><i>${lk ? '🔒' : r.e}</i><small>${r.n}<br>${lk ? 'VIP only' : '👑 VIP'}</small></button>`; }).join('') + '</div>'; }
     else if (tab === 'pose') h = `<div class="fssub">Pick your runway pose — you can switch poses on the runway too!</div><div class="fsgrid">` + FS_POSES.map((p, i) => `<button class="fsit fspz${fs.myPose === i ? ' on' : ''}" data-pose="${i}"><i>${p.e}</i><small>${p.n}</small></button>`).join('') + '</div>';
     const saved = load('rubloxFsLook', null);
-    h += `<div class="fsrow fsmini"><button class="fsmb" id="fsRand">🎲 Surprise me</button>${saved ? '<button class="fsmb" id="fsLoad">💾 My saved look</button>' : ''}<button class="fsmb" id="fsReset">↩️ Start over</button></div>`;
+    h += `<div class="fsrow fsmini"><button class="fsmb" id="fsRand">🎲 Surprise me</button>${fsHasSavedLook() ? '<button class="fsmb" id="fsLoad">💾 Wear my saved look</button>' : ''}<button class="fsmb" id="fsReset">↩️ Start over</button><button class="fsmb fssave" id="fsKeepWard">💾 Save for next show</button></div>`;
     $('#fsItems').innerHTML = h;
     $('#fsItems').querySelectorAll('.fssw').forEach(b => b.onclick = () => b.dataset.fxc ? fsFx(b.dataset.fxc, b.dataset.c) : fsSet(b.dataset.k, b.dataset.c));
     $('#fsItems').querySelectorAll('.fsit[data-fx]').forEach(b => b.onclick = () => fsFx(b.dataset.fx, b.dataset.v));
     $('#fsItems').querySelectorAll('.fsit[data-i]').forEach(b => b.onclick = () => { const it = fs.list[+b.dataset.i]; fsSet(it.slot, fs.fit[it.slot] === it.val && it.slot !== 'hat' && it.slot !== 'face' ? null : it.val); });
     $('#fsItems').querySelectorAll('.fspz').forEach(b => b.onclick = () => fsPose(+b.dataset.pose));
     $('#fsRand').onclick = () => fsSurprise(); $('#fsReset').onclick = () => fsResetLook(); if ($('#fsLoad')) $('#fsLoad').onclick = () => fsLoadLook();
+    if ($('#fsVipBuy')) $('#fsVipBuy').onclick = () => fsBuyVip();
+    if ($('#fsKeepWard')) $('#fsKeepWard').onclick = () => fsKeep();
     $('#fsReady').textContent = fs.ready.has(fsUid()) ? '✅ Ready! (keep styling)' : '✅ I\'m ready!';
     $('#fsCount').textContent = '👗 ' + fsCount() + ' pieces on';
   }
@@ -8639,7 +8749,9 @@ const Obby = (() => {
     if (!fs || fs.ph !== 'dress') return; const x = fs.fx;
     if (['pc', 'sc', 'ac', 'mc'].includes(k)){ if (/^#[0-9a-f]{3,8}$/i.test(v)) x[k] = v; return fsChanged(); }
     if (!FS_OK[k] || !FS_OK[k].has(v)) return;
-    const r = fsList(k).find(q => q.v === v); if (r && fsLocked(r)){ const T = FS_TITLES[r.lvl - 1]; toast('🔒 Reach Lv ' + r.lvl + ' (' + T[1] + ' ' + T[2] + ') to unlock ' + r.n + '!'); return; }
+    const r = fsList(k).find(q => q.v === v); if (r && fsLocked(r)){
+      if (r.vip && !fsIsVip()){ toast('👑 Unlock Star VIP with ' + FS_VIP_COST + ' Rublox coins to wear ' + r.n + '!'); return; }
+      const T = FS_TITLES[r.lvl - 1]; toast('🔒 Reach Lv ' + r.lvl + ' (' + T[1] + ' ' + T[2] + ') to unlock ' + r.n + '!'); return; }
     if (k === 'acc'){ const i = x.acc.indexOf(v); if (i >= 0) x.acc.splice(i, 1); else { if (x.acc.length >= FS_ACCMAX){ toast('💍 ' + FS_ACCMAX + ' accessories max — took off the ' + FX.acc.find(a => a[0] === x.acc[0])[2]); x.acc.shift(); } x.acc.push(v); } }
     else { x[k] = v; if (k === 'bot' && x.dress !== 'none') x.dress = 'none'; if (k === 'dress' && v !== 'none' && !['tee', 'jacket', 'puff'].includes(x.top)) x.top = 'tee'; if (k === 'hair' && v !== 'base' && fs.fit.hat === 'pumpkin') fs.fit.hat = 'none'; }
     fsChanged();
@@ -8647,7 +8759,22 @@ const Obby = (() => {
   function fsSurprise(){ if (!fs || fs.ph !== 'dress') return; const o = fsNpcFit({base: {head: fs.fit.head, body: fs.fit.body, hair: fs.fit.hair, hairColor: fs.fit.hairColor}}, fs.th, .6);
     fs.fit = Object.assign({}, fs.fit, {shirt: o.av.shirt, pants: o.av.pants}); fs.fx = o.fx; fsChanged(); }
   function fsResetLook(){ if (!fs || fs.ph !== 'dress') return; fs.fit = fixAv(Object.assign({}, DEF, avatar)); fs.fx = fsCleanFx(null); fsChanged(); }
-  function fsLoadLook(){ const s = load('rubloxFsLook', null); if (!s || !fs || fs.ph !== 'dress') return; fs.fit = cleanAv(Object.assign({}, avatar, s.av || {})); fs.fx = fsCleanFx(s.fx); fsChanged(); toast('💾 Put on your saved look!'); }
+  function fsHasSavedLook(){ const s = load('rubloxFsLook', null); return !!(s && typeof s === 'object' && s.fx && typeof s.fx === 'object'); }
+  function fsApplySavedLook(silent){
+    const s = load('rubloxFsLook', null); if (!s || !fs || typeof s !== 'object') return false;
+    // merge saved colours onto your real avatar base; runway FX (incl. VIP pieces) come back via fsCleanFx
+    fs.fit = cleanAv(Object.assign({}, avatar, s.av || {}));
+    fs.fx = fsCleanFx(s.fx);
+    // drop VIP pieces if the player no longer has VIP (save can still keep them for when VIP returns)
+    if (!fsIsVip()){
+      ['top','bot','dress','shoe','hair','mk','pat'].forEach(k => { const r = fsList(k).find(q => q.v === fs.fx[k]); if (r && r.vip) fs.fx[k] = FS_FXDEF[k]; });
+      fs.fx.acc = fs.fx.acc.filter(v => { const r = fsList('acc').find(q => q.v === v); return !(r && r.vip); });
+    }
+    fsRebuild(fs.fit, fs.fx); fsVipBadge(); if (fs.ward) fsWardRender();
+    if (!silent) toast('💾 Wearing your saved look!');
+    return true;
+  }
+  function fsLoadLook(){ if (!fs || fs.ph !== 'dress') return; if (!fsApplySavedLook(false)) toast('💾 No saved look yet — style one and tap Save for next show'); }
   function fsReadyBtn(){
     if (!fs || fs.ph !== 'dress') return;
     fs.ready.add(fsUid()); fsWardClose(); banner('✅ Looking good! Waiting for the show to start...');
@@ -8673,17 +8800,20 @@ const Obby = (() => {
     const a = pad.on ? '🎮 Left stick move · Ⓐ jump · Ⓧ ' + (ph === 'dress' ? 'try on / wardrobe' : 'show menu') + ' · ☰ menu'
       : touchUI ? '🕹️ Left thumb moves · ⬆️ jump · ' + (ph === 'dress' ? 'tap 👗 to try on' : 'tap ✨ Show menu')
       : '⌨️ WASD move · Space jump · ' + (ph === 'dress' ? 'E try on at a rack · C wardrobe' : 'C show menu') + ' · Esc menu';
-    return a + '<br>' + (ph === 'dress' ? '👗 Walk up to a rack, mirror or station to try things on! 💖 = voters love it' : '✨ Explore the lobby, then start the show!');
+    return a + '<br>' + (ph === 'dress' ? '👗 Walk up to a rack, mirror or the 👑 VIP Lounge! Fashion clothes stay in the show only. 💖 = voters love it' : '✨ Explore the lobby · unlock Star VIP with Rublox coins · then start the show!');
   }
   function fsHideAll(){ ['#fsPick', '#fsEnd', '#fsWard', '#fsRate', '#fsPoses', '#fsIntro'].forEach(id => $(id).classList.remove('show')); ['#fsWardBtn', '#fsNear', '#fsShowBtn'].forEach(id => $(id).classList.remove('show')); if (fs){ fs.ward = false; fs.near = null; } }
   function fsPickOpen(){
     fsHideAll(); fs.ph = 'lobby'; fs.lobPanel = true; choosing = true; const g = mpGuest();
     fsClearWalkers(); fsNpcsTo('lobby');
-    $('#fsLv').innerHTML = fsLvlHtml();
-    $('#fsPickS').textContent = g ? '⏳ Waiting for the host to start the show...' : mp.on ? 'Everyone gets the same surprise theme, styles a look in the dressing room, walks the runway and rates each other 1-5 ⭐!' : 'Get a surprise theme, style a look in the big dressing room, strut the runway with a pose, and get rated by the other models and judges! 👑';
+    $('#fsLv').innerHTML = fsLvlHtml() + (fsIsVip()
+      ? '<div class="fsvipb">👑 Star VIP · exclusive lounge + clothes unlocked</div>'
+      : '<div class="fsvipb">👑 Star VIP Lounge · <button class="fsmb" id="fsVipBuyL">Unlock with ' + FS_VIP_COST + ' 🪙</button> <small>(Rublox coins only — never real money)</small></div>');
+    $('#fsPickS').textContent = g ? '⏳ Waiting for the host to start the show...' : mp.on ? 'Everyone gets the same surprise theme, styles a look in the pastel prep room, walks the glam runway and rates each other 1-5 ⭐!' : 'Get a surprise theme, style a look in the pastel prep room, strut the glam runway with a pose, and get rated by the other models and judges! 👑';
     $('#fsGo').style.display = g ? 'none' : ''; $('#fsTimes').style.display = g ? 'none' : '';
     $('#fsTimes').innerHTML = '⏱️ Dress time: ' + FS_TIMES.map(s => `<button class="fstm${fs.dl === s ? ' on' : ''}" data-s="${s}">${s / 60} min</button>`).join('');
     $('#fsTimes').querySelectorAll('.fstm').forEach(b => b.onclick = () => fsSetTime(+b.dataset.s));
+    if ($('#fsVipBuyL')) $('#fsVipBuyL').onclick = () => fsBuyVip();
     $('#fsPick').classList.add('show'); fsTip();
   }
   function fsSetTime(s){ if (!fs || !FS_TIMES.includes(s)) return; fs.dl = s; save('rubloxFsTime', s); if (fs.lobPanel) fsPickOpen(); }
@@ -8708,10 +8838,15 @@ const Obby = (() => {
   function fsLocalDress(){
     fsHideAll(); choosing = false; over = false; fs.lobPanel = false;
     fs.endShown = false; fs.paid = false; fs.earned = 0; fs.tab = fs.tab || 'top'; fsClearWalkers();
-    fs.fit = fixAv(Object.assign({}, DEF, avatar)); fs.fx = fsCleanFx(null); fs.poses[fsUid()] = fs.myPose; fsRebuild(fs.fit, fs.fx);
+    fs.fit = fixAv(Object.assign({}, DEF, avatar)); fs.fx = fsCleanFx(null); fs.poses[fsUid()] = fs.myPose;
+    const restored = fsApplySavedLook(true);
+    if (!restored){ fsRebuild(fs.fit, fs.fx); fsVipBadge(); }
     const n = Math.max(0, fs.ord.indexOf(fsUid()));
-    Object.assign(P, {x: -19.6 - (n % 3) * .9, y: .05, z: ((n % 4) - 1.5) * 1.1, vx: 0, vy: 0, vz: 0}); P.face = -Math.PI / 2; cam.yaw = P.face + Math.PI; cam.pitch = .32; cam.dist = 6.5;
-    const T = FS_THEMES[fs.th]; banner('👗 ' + T.emoji + ' ' + T.name + '! You have ' + (fs.dl >= 60 ? fs.dl / 60 + ' min' : fs.dl + 's') + ' — go style!'); SND.cp();
+    // spawn DEEP inside the prep room so the camera never sits outside looking through the doorway lintel
+    Object.assign(P, {x: -23.5 - (n % 3) * .7, y: .05, z: ((n % 4) - 1.5) * 1.1, vx: 0, vy: 0, vz: 0}); P.face = -Math.PI / 2; cam.yaw = P.face + Math.PI; cam.pitch = .28; cam.dist = 5.2;
+    const T = FS_THEMES[fs.th];
+    banner('👗 ' + T.emoji + ' ' + T.name + '! You have ' + (fs.dl >= 60 ? fs.dl / 60 + ' min' : fs.dl + 's') + (restored ? ' · 💾 saved look on!' : ' — go style!')); SND.cp();
+    if (restored) toast('💾 Your saved look is on — tweak it or tap Wardrobe');
     $('#fsWardBtn').classList.add('show'); fsNpcsTo('room'); fsTip();
   }
   function fsBeginWalk(){
@@ -8729,8 +8864,10 @@ const Obby = (() => {
     fsHideAll(); choosing = false;
     fsClearWalkers();
     fs.ord.forEach(u => { const av = Object.assign({}, DEF, fs.fits[u] || {}), m = fsBuild(av, fs.fxs[u] || null); m.g.visible = false; scene.add(m.g);
-      const lab = label(u === fsUid() ? '⭐ You' : fsName(u), 'rgba(255,111,181,.92)'); lab.position.y = 3.75; m.g.add(lab);
-      fs.walkers.push({u, m, av, ph: 0, lab, shown: false}); });
+      const meVip = u === fsUid() && fsIsVip();
+      const lab = label(meVip ? '👑 VIP You' : (u === fsUid() ? '⭐ You' : fsName(u)), meVip ? 'rgba(232,168,0,.98)' : 'rgba(255,111,181,.92)');
+      lab.position.y = meVip ? 4.35 : 3.55; if (meVip) lab.scale.set(1.15, 1.15, 1.15); m.g.add(lab);
+      fs.walkers.push({u, m, av, ph: 0, lab, shown: false, meVip}); });
     fsNpcsTo('hide');
     const s = fsSeat(); Object.assign(P, {x: s.x, y: s.y, z: s.z, vx: 0, vy: 0, vz: 0}); P.face = Math.PI;
     if (fs.fit) fsRebuild(fs.fit, fs.fx);
@@ -8796,26 +8933,42 @@ const Obby = (() => {
     $('#fsEndL').innerHTML = mine ? (fs.xpGain ? '<div class="fssub">+' + fs.xpGain + ' style stars ⭐</div>' : '') + fsLvlHtml() + (lvUp ? `<div class="fslvup">🎉 LEVEL UP! You are now ${lvUp.e} ${lvUp.n}!${fsUnl(lvUp.lv)}</div>` : '') : '';
     if (lvUp){ confetti(); banner('🎉 Level up: ' + lvUp.e + ' ' + lvUp.n + '!'); }
     const g = mpGuest(); $('#fsAgain').style.display = g ? 'none' : ''; $('#fsLobby').style.display = g ? 'none' : ''; $('#fsEndW').style.display = g ? '' : 'none';
-    $('#fsKeep').style.display = mine ? '' : 'none'; $('#fsKeep').disabled = false; $('#fsKeep').textContent = '💾 Save my look';
+    $('#fsKeep').style.display = mine ? '' : 'none'; $('#fsKeep').disabled = false; $('#fsKeep').textContent = '💾 Save for next show';
     $('#fsEnd').classList.add('show'); fsBoard(); fsTip();
   }
   function fsBackToLobby(){ if (!fs || mpGuest()) return; fs.ph = 'lobby'; fsHideAll(); fsClearWalkers(); if (fs.fit) fsRebuild(avatar); fsToLobby(); fsPickOpen(); }
   function fsKeep(){
+    // Fashion pieces stay INSIDE the Fashion Show only — they never go onto your normal Rublox avatar.
     if (!fs || !fs.fit) return;
-    save('rubloxFsLook', {av: cleanAv(fs.fit), fx: fsCleanFx(fs.fx)});
-    const keep = {}, slots = ['hat', 'shirtPat', 'pantsPat', 'hair', 'face', 'ears', 'tail', 'back', 'brow', 'lash'];
-    let lent = 0; ['shirt', 'pants', 'hairColor', 'head'].forEach(k => { if (fs.fit[k] !== avatar[k]) keep[k] = fs.fit[k]; });
-    slots.forEach(k => { const v = fs.fit[k]; if (v === avatar[k] || (v == null && avatar[k] == null)) return; const it = v == null || v === 'none' ? null : ITEMS.find(x => x.slot === k && x.val === v); if (!it || isOwned(it)) keep[k] = v; else lent++; });
-    avatar = fixAv(Object.assign({}, avatar, keep)); save('rubloxAvatar', avatar);
-    $('#fsKeep').disabled = true; $('#fsKeep').textContent = '✅ Saved!';
-    toast('💾 Saved! Your colours are on your avatar, and the whole runway look waits in the dressing room (💾 My saved look)' + (lent ? ' · borrowed shop items went back' : ''));
+    const payload = {av: cleanAv(fs.fit), fx: fsCleanFx(fs.fx), t: Date.now()};
+    save('rubloxFsLook', payload);
+    // prove it stuck (some browsers are picky); fall back to a second write
+    const check = load('rubloxFsLook', null);
+    if (!check || !check.fx){ try { localStorage.setItem('rubloxFsLook', JSON.stringify(payload)); } catch (e){} }
+    ['#fsKeep', '#fsKeepWard', '#fsKeepWard2'].forEach(id => { const b = $(id); if (b){ b.disabled = true; b.textContent = '✅ Saved for next show!'; } });
+    toast('💾 Saved for the next Fashion Show only — your normal character outfit is unchanged');
+    if (fs.ward) fsWardRender();   // reveal 💾 Wear my saved look
+  }
+  // one-time: strip any accidental fashion leftovers that an older "Save my look" may have written onto the normal avatar
+  function fsMigrateAvatar(){
+    try {
+      const raw = load('rubloxAvatar', null); if (!raw || typeof raw !== 'object') return;
+      const ok = new Set((ITEMS || []).filter(it => it && it.val != null).map(it => it.slot + ':' + it.val));
+      let dirty = false; const a = Object.assign({}, raw);
+      ['hat', 'shirtPat', 'pantsPat', 'hair', 'face', 'ears', 'tail', 'back', 'brow', 'lash'].forEach(k => {
+        const v = a[k]; if (v == null || v === 'none' || v === DEF[k]) return;
+        // keep only real shop items; anything unknown (never a shop id) is cleared
+        if (!ok.has(k + ':' + v) && !(k === 'hair' && ['short','long','curly','spiky','pigtails','bun','ponytail','afro'].includes(v))){ a[k] = DEF[k] ?? null; dirty = true; }
+      });
+      if (dirty){ avatar = fixAv(a); save('rubloxAvatar', avatar); if (typeof refreshLook === 'function') refreshLook(); }
+    } catch (e){}
   }
   /* --- NPC models (single player only) --- */
   function fsNpcShow(u){
     const N = FS_NPCS.find(n => n.uid === u); if (!N || mp.on) return;
     const old = fs.npcM[u], pos = old ? old.m.g.position.clone() : null, rot = old ? old.m.g.rotation.y : 0, vis = old ? old.m.g.visible : true; if (old) scene.remove(old.m.g);
     const o = (fs.npcFit && fs.npcFit[u]) || {av: Object.assign({}, DEF, N.base), fx: null}, m = fsBuild(o.av, o.fx); scene.add(m.g); if (pos) m.g.position.copy(pos); m.g.rotation.y = rot; m.g.visible = vis;
-    const lab = label(N.emoji + ' ' + N.name, 'rgba(29,35,64,.75)'); lab.position.y = 3.75; m.g.add(lab);
+    const lab = label(N.emoji + ' ' + N.name, 'rgba(29,35,64,.75)'); lab.position.y = 3.35; lab.scale.set(.7, .7, .7); m.g.add(lab);
     fs.npcM[u] = Object.assign(old || {ph: 0, wait: 1 + Math.random() * 2, tgt: null}, {m});
   }
   function fsNpcsTo(where){
@@ -8859,6 +9012,11 @@ const Obby = (() => {
     const t = worldT;
     (fs.cones || []).forEach(g => { g.rotation.z = Math.sin(t * .8 + g.userData.ph) * .35; g.rotation.x = Math.cos(t * .6 + g.userData.ph) * .2; });
     fs.spots.forEach((b, i) => b.material.color.setHSL((t * .3 + i * .07) % 1, .9, .75));
+    if (fsIsVip() && fs.ph === 'walk'){ const me = fs.walkers.find(W => W.u === fsUid() && W.m && W.m.g.visible); if (me){
+      if (!fs.vipSpark){ fs.vipSpark = new THREE.Mesh(new THREE.TorusGeometry(.9, .05, 6, 20), new THREE.MeshBasicMaterial({color: '#ffd23f'})); fs.vipSpark.rotation.x = Math.PI / 2; scene.add(fs.vipSpark); }
+      fs.vipSpark.visible = true; fs.vipSpark.position.copy(me.m.g.position); fs.vipSpark.position.y += .15; fs.vipSpark.rotation.z = t * 2;
+    } else if (fs.vipSpark) fs.vipSpark.visible = false; }
+    else if (fs.vipSpark) fs.vipSpark.visible = false;
     if (fs.star) fs.star.rotation.y = t * 1.5;
     if (fs.wheel && fs.ph === 'intro' && fs.introT < 2) fs.wheel.rotation.z = t * 12;
     if (!fs.judges.length && !mp.on){ FS_JUDGES.forEach((J, i) => { const m = buildPlayer(Object.assign({}, DEF, J.av)); m.g.position.set(-3.3 + i * 2.2, .05, 12.5); m.g.rotation.y = Math.PI; scene.add(m.g);
@@ -8873,7 +9031,7 @@ const Obby = (() => {
         else { const o = fs.ord.filter(u => !fs.pod.includes(u)).indexOf(W.u); M.g.position.set((o % 2 ? 1 : -1) * (5.6 + (o >> 1) * 1.6), .05, 31.2); M.g.rotation.y = Math.PI; applyPose(dt, FS_POSES[0].p(t), M); }
         return; }
       const lt = fs.wt - k * FS_WALK; if (fs.ph !== 'walk' || lt < 0 || lt > FS_WALK){ M.g.visible = false; return; }
-      M.g.visible = true; W.lab.visible = lt > 3.2 && lt < 7; let z, ry = 0, p = null;
+      M.g.visible = true; W.lab.visible = W.meVip || (lt > 3.2 && lt < 7); let z, ry = 0, p = null;
       if (lt < 3.2) z = z0 + (z1 - z0) * (lt / 3.2);
       else if (lt < 7){ z = z1; p = FS_POSES[fs.poses[W.u] != null ? fs.poses[W.u] : 0].p(lt - 3.2); }
       else { z = z1 - (lt - 7) * 10; ry = Math.PI; }
@@ -8899,6 +9057,8 @@ const Obby = (() => {
     if ($('#fsThB').textContent !== th) $('#fsThB').textContent = th;
     $('#fsT').textContent = fs.ph === 'dress' || fs.ph === 'intro' || fs.ph === 'podium' ? fmt(Math.max(0, Math.ceil(fs.t))) : fs.ph === 'walk' ? Math.min(fs.ord.length, Math.floor(fs.wt / FS_WALK) + 1) + '/' + fs.ord.length : '—';
     if (fs.ph === 'dress' && fs.ward) $('#fsWardT').textContent = '⏱️ ' + fmt(Math.max(0, Math.ceil(fs.t)));
+    // show the REAL Rublox coin balance (hud() otherwise overwrites #oCoins with runCoins, which is 0 here)
+    $('#oCoins').textContent = coins;
   }
   function fsPad(jp){
     if (!fs) return false;
@@ -8916,13 +9076,14 @@ const Obby = (() => {
     return false;
   }
   function fashionEnter(){
+    fsMigrateAvatar();
     fs.remote = mpGuest();
     if (fs.remote && mp.fsW) fashionFromHost(mp.fsW, true);
     if (fs.ph === 'lobby'){ fsToLobby(); fsPickOpen(); }
   }
   function fashionStop(){
     fsHideAll(); document.body.classList.remove('fsnotip');
-    if (fs) fsClearWalkers();
+    if (fs){ fsClearWalkers(); if (fs.vipSpark){ scene.remove(fs.vipSpark); fs.vipSpark = null; } try { if (model){ const g = model.g, pos = g.position.clone(), ry = g.rotation.y; scene.remove(g); model = buildPlayer(avatar); model.g.position.copy(pos); model.g.rotation.y = ry; scene.add(model.g); } } catch (e){} }
     fs = null;
   }
   /* --- multiplayer: the host runs the show; guests send outfits, ratings and poses --- */
@@ -10451,7 +10612,7 @@ const Obby = (() => {
         $('#fsHome').onclick = $('#fsHome2').onclick = stop; $('#fsGo').onclick = $('#fsAgain').onclick = () => fs && fsStart();
         $('#fsExplore').onclick = () => fsLobbyWalk(); $('#fsShowBtn').onclick = () => fs && fs.ph === 'lobby' && fsPickOpen(); $('#fsLobby').onclick = () => fsBackToLobby();
         $('#fsNear').onclick = () => fs && fs.near && fsWardOpen(fs.near);
-        $('#fsReady').onclick = () => fsReadyBtn(); $('#fsWardClose').onclick = () => fsWardClose(); $('#fsWardBtn').onclick = () => fsWardOpen(fs && fs.near || null); $('#fsKeep').onclick = () => fsKeep(); }
+        $('#fsReady').onclick = () => fsReadyBtn(); $('#fsWardClose').onclick = () => fsWardClose(); $('#fsWardBtn').onclick = () => fsWardOpen(fs && fs.near || null); $('#fsKeep').onclick = () => fsKeep(); $('#fsKeepWard2').onclick = () => fsKeep(); }
       fashionEnter(); }
     $('#auBox').style.display = mode === 'autumn' ? '' : 'none'; if (mode === 'autumn') autumnEnter();
     $('#psBox').style.display = mode === 'photostudio' ? '' : 'none'; ['#psBar', '#psCamBtn', '#psGal', '#psGalBtn'].forEach(id => $(id).classList.remove('show'));
