@@ -536,28 +536,30 @@
     catch (e){ return; }
     ren.setClearColor('#f3d4ff', 1);
     const sc = new THREE.Scene(); sc.background = new THREE.Color('#f3d4ff');
-    // soft pink stage
-    const floor = new THREE.Mesh(new THREE.CircleGeometry(2.6, 28), new THREE.MeshBasicMaterial({color: '#ffe3f1'})); floor.rotation.x = -Math.PI / 2; floor.position.y = 0; sc.add(floor);
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.1, .04, 8, 28), new THREE.MeshBasicMaterial({color: '#ffb3d9'})); ring.rotation.x = Math.PI / 2; ring.position.y = .02; sc.add(ring);
-    const bg = new THREE.Mesh(new THREE.PlaneGeometry(7, 7), new THREE.MeshBasicMaterial({color: '#ffd6ec'})); bg.position.set(0, 2.2, -2.2); sc.add(bg);
-    const cam = new THREE.PerspectiveCamera(32, 220 / 320, .1, 40);
-    cam.position.set(0, 1.55, 5.4); cam.lookAt(0, 1.15, 0);
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(3.2, 28), new THREE.MeshBasicMaterial({color: '#ffe3f1'})); floor.rotation.x = -Math.PI / 2; sc.add(floor);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.3, .04, 8, 28), new THREE.MeshBasicMaterial({color: '#ffb3d9'})); ring.rotation.x = Math.PI / 2; ring.position.y = .02; sc.add(ring);
+    const bg = new THREE.Mesh(new THREE.PlaneGeometry(9, 9), new THREE.MeshBasicMaterial({color: '#ffd6ec'})); bg.position.set(0, 2.6, -2.6); sc.add(bg);
+    const cam = new THREE.PerspectiveCamera(30, 220 / 320, .05, 60);
+    cam.position.set(0, 1.4, 5.8); cam.lookAt(0, 1.2, 0);
     try {
-      const key = new THREE.PointLight('#ffffff', 1.55, 22); key.position.set(2.2, 3.4, 3.2); sc.add(key);
+      const key = new THREE.PointLight('#ffffff', 1.55, 24); key.position.set(2.2, 3.4, 3.2); sc.add(key);
       const fill = new THREE.PointLight('#ffb3e8', 1.0, 18); fill.position.set(-2.4, 2.4, 2.4); sc.add(fill);
       const rim = new THREE.PointLight('#fff6c9', .7, 14); rim.position.set(0, 2.8, -2.5); sc.add(rim);
       sc.add(new THREE.AmbientLight('#ffffff', .6));
     } catch (e){}
-    const M = {ren, sc, cam, yaw: .2, drag: false, lastX: 0, avatar: null, keyBound: false};
+    const M = {ren, sc, cam, yaw: 0, baseYaw: 0, drag: false, lastX: 0, avatar: null, keyBound: false, idle: 0, manual: false, fit: null, floor, ring, bg};
     fs.mirror = M;
-    const onDown = (x) => { M.drag = true; M.lastX = x; };
-    const onMove = (x) => { if (!M.drag) return; M.yaw += (x - M.lastX) * .01; M.lastX = x; };
+    const touch = () => { M.manual = true; M.idle = 0; };
+    const onDown = (x) => { M.drag = true; M.lastX = x; touch(); };
+    const onMove = (x) => { if (!M.drag) return; M.yaw += (x - M.lastX) * .01; M.lastX = x; touch(); };
     const onUp = () => { M.drag = false; };
     canvas.onpointerdown = (e) => { try { canvas.setPointerCapture(e.pointerId); } catch (err){} onDown(e.clientX); e.preventDefault(); };
     canvas.onpointermove = (e) => { onMove(e.clientX); };
     canvas.onpointerup = canvas.onpointercancel = () => onUp();
     if (!M.keyBound){ M.keyBound = true;
-      const onKey = (e) => { if (!fs || !fs.ward || !fs.mirror) return; if (e.code === 'ArrowLeft'){ fs.mirror.yaw -= .12; e.preventDefault && e.preventDefault(); } if (e.code === 'ArrowRight'){ fs.mirror.yaw += .12; e.preventDefault && e.preventDefault(); } };
+      const onKey = (e) => { if (!fs || !fs.ward || !fs.mirror) return;
+        if (e.code === 'ArrowLeft'){ fs.mirror.yaw -= .12; touch(); e.preventDefault && e.preventDefault(); }
+        if (e.code === 'ArrowRight'){ fs.mirror.yaw += .12; touch(); e.preventDefault && e.preventDefault(); } };
       try { if (typeof addEventListener === 'function') addEventListener('keydown', onKey); else if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('keydown', onKey); } catch (e){}
       M._onKey = onKey;
     }
@@ -574,6 +576,7 @@
     if (canvas.width !== Math.floor(w * pr) || canvas.height !== Math.floor(h * pr)){
       fs.mirror.ren.setPixelRatio(pr); fs.mirror.ren.setSize(w, h, false);
       fs.mirror.cam.aspect = w / h; fs.mirror.cam.updateProjectionMatrix();
+      if (fs.mirror.fit) fsMirrorApplyFit();
     }
   }
   function fsMirrorDisposeAvatar(){
@@ -582,6 +585,50 @@
     try { fs.mirror.sc.remove(A.g); A.g.traverse(o => { if (o.geometry) o.geometry.dispose(); }); } catch (e){}
     fs.mirror.avatar = null;
   }
+  // fit camera to full bounding box (hair/hats/wings/shoes included) with padding
+  function fsMirrorFit(){
+    if (!fs || !fs.mirror || !fs.mirror.avatar || !fs.mirror.avatar.g) return;
+    const M = fs.mirror, g = M.avatar.g;
+    g.rotation.y = 0; try { g.updateMatrixWorld && g.updateMatrixWorld(true); } catch (e){}
+    let box;
+    try { box = new THREE.Box3().setFromObject(g); } catch (e){ return; }
+    if (!box || (box.isEmpty && box.isEmpty())) return;
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    // padding so tiaras / wings / shoes never clip
+    const padY = 1.28, padX = 1.35;
+    const h = Math.max(size.y * padY, 1.2);
+    const w = Math.max(size.x, size.z, .6) * padX;
+    const aspect = Math.max(.4, M.cam.aspect || (220 / 320));
+    const vFov = (M.cam.fov || 30) * Math.PI / 180;
+    const distY = (h * .5) / Math.tan(vFov * .5);
+    const distX = ((w * .5) / Math.tan(vFov * .5)) / aspect;
+    const dist = Math.max(distY, distX, 3.4) * 1.06;
+    M.fit = {cx: center.x, cy: center.y, cz: center.z, dist, h, w};
+    // enlarge stage under taller looks
+    try {
+      const sc = Math.max(1, h / 3.2);
+      if (M.floor) M.floor.scale.set(sc, sc, sc);
+      if (M.ring) M.ring.scale.set(sc, sc, sc);
+      if (M.bg){ M.bg.scale.set(sc, sc, 1); M.bg.position.y = center.y; M.bg.position.z = center.z - Math.max(2.2, dist * .35); }
+    } catch (e){}
+    fsMirrorApplyFit();
+  }
+  function fsMirrorApplyFit(){
+    if (!fs || !fs.mirror || !fs.mirror.fit) return;
+    const M = fs.mirror, f = M.fit;
+    // front view: camera on +Z looking at center
+    M.cam.position.set(f.cx, f.cy, f.cz + f.dist);
+    M.cam.near = Math.max(.05, f.dist / 100); M.cam.far = Math.max(40, f.dist * 8);
+    M.cam.updateProjectionMatrix();
+    M.cam.lookAt(f.cx, f.cy, f.cz);
+  }
+  function fsMirrorFront(){
+    if (!fs || !fs.mirror) return;
+    fs.mirror.yaw = 0; fs.mirror.baseYaw = 0; fs.mirror.manual = false; fs.mirror.idle = 0; fs.mirror.drag = false;
+    if (fs.mirror.avatar && fs.mirror.avatar.g) fs.mirror.avatar.g.rotation.y = 0;
+    fsMirrorApplyFit();
+  }
   function fsMirrorRefresh(){
     if (!fs || !fs.ward) return;
     if (!fs.mirror || !fs.mirror.ren) fsMirrorInit();
@@ -589,21 +636,39 @@
     fsMirrorDisposeAvatar();
     try {
       const A = fsBuild(fs.fit || Object.assign({}, DEF, avatar), fs.fx || fsCleanFx(null));
-      A.g.position.set(0, 0, 0); A.g.rotation.y = fs.mirror.yaw; fs.mirror.sc.add(A.g); fs.mirror.avatar = A;
+      A.g.position.set(0, 0, 0); A.g.rotation.y = 0; fs.mirror.sc.add(A.g); fs.mirror.avatar = A;
     } catch (e){}
     fsMirrorResize();
+    fsMirrorFit();      // recompute Box3 every rebuild
+    fsMirrorFront();    // snap to FRONT after every item change / open
   }
   function fsMirrorFrame(dt){
     if (!fs || !fs.ward || !fs.mirror || !fs.mirror.ren) return;
-    const M = fs.mirror;
-    if (!M.drag) M.yaw += (dt || .016) * .35;
-    // right stick (axes 2) turns the mirror when a gamepad is connected
+    const M = fs.mirror; dt = dt || .016;
+    // right stick turns the mirror
     try {
       const gps = (navigator.getGamepads && navigator.getGamepads()) || [];
-      for (const g of gps){ if (!g) continue; const rx = +g.axes[2] || 0; if (Math.abs(rx) > .25){ M.yaw += rx * (dt || .016) * 2.4; break; } }
+      for (const g of gps){ if (!g) continue; const rx = +g.axes[2] || 0; if (Math.abs(rx) > .25){ M.yaw += rx * dt * 2.4; M.manual = true; M.idle = 0; break; } }
     } catch (e){}
-    if (M.avatar && M.avatar.g) M.avatar.g.rotation.y = M.yaw;
+    if (M.manual && !M.drag){
+      M.idle += dt;
+      // after a few seconds idle, ease back to front
+      if (M.idle > 3.2){
+        M.yaw += (0 - M.yaw) * Math.min(1, dt * 2.8);
+        if (Math.abs(M.yaw) < .02){ M.yaw = 0; M.manual = false; M.idle = 0; }
+      }
+    }
+    // gentle sway only when facing front (not a continuous spin)
+    let showYaw = M.yaw;
+    if (!M.manual && !M.drag) showYaw = Math.sin(worldT * .65) * .1;
+    if (M.avatar && M.avatar.g) M.avatar.g.rotation.y = showYaw;
     if (M.avatar && M.avatar._fsSparks) M.avatar._fsSparks.forEach((o, i) => { if (o && o.material) o.material.opacity = .55 + Math.sin(worldT * 5 + i) * .35; });
+    // keep framing stable if fit exists
+    if (M.fit){
+      const f = M.fit;
+      M.cam.position.set(f.cx + Math.sin(showYaw) * f.dist * .02, f.cy, f.cz + f.dist);
+      M.cam.lookAt(f.cx, f.cy, f.cz);
+    }
     fsMirrorResize();
     try { M.ren.render(M.sc, M.cam); } catch (e){}
   }
@@ -687,11 +752,11 @@
     $('#fsCount').textContent = '👗 ' + fsCount() + ' pieces on';
   }
   function fsCount(){
+    // consistent defaults: Classic Tee + Pants = 2 on a fresh open; sneakers are the free base shoe (not counted until changed)
     const x = fs.fx, f = fs.fit; let n = 0;
-    if (x.top !== 'tee') n++;                         // customized top
-    if (x.dress !== 'none') n++;                       // gown / dress counts once
-    else if (x.bot !== 'pants') n++;                   // bottoms only when no dress
-    if (x.shoe !== 'none') n++;
+    if (x.dress !== 'none'){ n++; if (x.top !== 'tee') n++; }   // dress (+ non-default top overlay)
+    else { n++; n++; }                                         // always count top + bottoms (incl. tee/pants)
+    if (x.shoe !== 'none' && x.shoe !== 'sneak') n++;
     if (x.hair !== 'base') n++;
     if (x.mk !== 'none') n++;
     if (x.pat !== 'none') n++;
@@ -1026,11 +1091,10 @@
 
   function fsWardCamInfo(){
     if (!fs || !fs.ward || !fs.mirror || !fs.mirror.cam) return null;
-    const M = fs.mirror, c = M.cam.position, lookY = 1.1;
-    // mirror camera sits in front of the preview avatar (avatar faces +Z toward cam at yaw 0)
-    const dist = Math.hypot(c.x - 0, c.z - 0);
-    const dot = (0 * c.x + 1 * c.z) / (dist || 1);  // +Z is "front" of the mirror avatar at yaw 0
-    return {mode: 'mirror', dist, dot, camY: c.y, lookY, yaw: M.yaw, hasAvatar: !!M.avatar, canvas: !!M.ren};
+    const M = fs.mirror, f = M.fit, c = M.cam.position;
+    const dist = f ? f.dist : Math.hypot(c.x, c.z);
+    const dot = f ? 1 : ((c.z) / (Math.hypot(c.x, c.z) || 1));
+    return {mode: 'mirror', dist, dot, camY: c.y, yaw: M.yaw, hasAvatar: !!M.avatar, canvas: !!M.ren, fit: !!f, fitH: f && f.h, front: Math.abs(M.yaw) < .05 && !M.manual};
   }
   function fashionHud(){
     if (!fs) return;

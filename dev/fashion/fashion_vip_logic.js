@@ -9,7 +9,7 @@ function world(store, coins0){
   const els = {};
   const ctx = {
     console, Math, JSON, Object, Array, Number, String, Date, Set, Map, parseInt, parseFloat, isNaN, performance: {now:()=>1e6},
-    THREE: (()=>{ const O2=()=>O(); const P=new Proxy(function(){return O2();},{get:(t,k)=>{ if(k==='WebGLRenderer') return function(){ return {setClearColor(){},setPixelRatio(){},setSize(){},render(){},dispose(){},forceContextLoss(){},domElement:{}}; }; if(k==='PerspectiveCamera') return function(){ return {position:V(),aspect:1,updateProjectionMatrix(){},lookAt(){}}; }; if(k==='Scene') return function(){ return {add(){},remove(){},background:null,children:[]}; }; if(k==='Color') return function(c){ return {c}; }; if(k==='AmbientLight'||k==='PointLight'||k==='DirectionalLight'||k==='HemisphereLight') return function(){ return O2(); }; return function(){return O2();}; }, apply:()=>O2(), construct:()=>O2()}); return P; })(), scene:{add(){},remove(){},background:null},
+    THREE: (()=>{ const O2=()=>O(); const P=new Proxy(function(){return O2();},{get:(t,k)=>{ if(k==='WebGLRenderer') return function(){ return {setClearColor(){},setPixelRatio(){},setSize(){},render(){},dispose(){},forceContextLoss(){},domElement:{}}; }; if(k==='PerspectiveCamera') return function(){ return {position:V(),aspect:1,updateProjectionMatrix(){},lookAt(){}}; }; if(k==='Scene') return function(){ return {add(){},remove(){},background:null,children:[]}; }; if(k==='Color') return function(c){ return {c}; }; if(k==='Vector3') return function(x,y,z){ const o={x:x||0,y:y||0,z:z||0,set(a,b,c){this.x=a;this.y=b;this.z=c;return this;},copy(v){this.x=v.x;this.y=v.y;this.z=v.z;return this;}}; return o; }; if(k==='Box3') return function(){ return {min:{x:-.5,y:0,z:-.3},max:{x:.5,y:3.2,z:.3},isEmpty:()=>false,setFromObject(){ this.min={x:-.6,y:0,z:-.4}; this.max={x:.6,y:3.4,z:.5}; return this; }, getSize(v){ v.x=1.2;v.y=3.4;v.z=.9; return v; }, getCenter(v){ v.x=0;v.y=1.7;v.z=0; return v; } }; }; if(k==='AmbientLight'||k==='PointLight'||k==='DirectionalLight'||k==='HemisphereLight') return function(){ return O2(); }; return function(){return O2();}; }, apply:()=>O2(), construct:()=>O2()}); return P; })(), scene:{add(){},remove(){},background:null},
     load:(k,d)=>{ try{ return k in store ? JSON.parse(store[k]) : d; }catch(e){return d;} }, save:(k,v)=>{ store[k]=JSON.stringify(v); },
     $: id => els[id] || (els[id] = (()=>{ const s=new Set(); const kids=[]; const e={textContent:'',_html:'',style:{},disabled:false,onclick:null,dataset:{},childElementCount:0,children:kids,
       get innerHTML(){return this._html;}, set innerHTML(v){ this._html=v; const n=(String(v).match(/<button/g)||[]).length; this.childElementCount=n; kids.length=0; for(let i=0;i<n;i++){ const b={dataset:{t:['top','bot','dress','shoe','hair','mk','acc','col','star','vip','pose'][i]}, classList:{s:new Set(),add(c){this.s.add(c);},remove(c){this.s.delete(c);},toggle(c,on){(on===undefined?!this.s.has(c):on)?this.s.add(c):this.s.delete(c);},contains(c){return this.s.has(c);}}}; kids.push(b);} }, clientWidth:220, clientHeight:320, width:220, height:320, onpointerdown:null, onpointermove:null, onpointerup:null, onpointercancel:null, setPointerCapture(){},
@@ -19,7 +19,7 @@ function world(store, coins0){
     P:{x:0,y:.05,z:23,face:0,vx:0,vy:0,vz:0}, cam:{yaw:0,pitch:.3,dist:6}, pad:{on:false}, touchUI:false, keys:{}, innerWidth:1280, navigator:{getGamepads:()=>[]}, devicePixelRatio:1, addEventListener(){}, removeEventListener(){}, camera:{position:{x:0,y:3,z:10,set(x,y,z){this.x=x;this.y=y;this.z=z;},copy(){}},lookAt(){}}, solids:[], DEF:{shirt:'#3a86ff',pants:'#2d2d2d',head:'#f1c27d',hairColor:'#6b3e1f',hair:'short',body:'girl',hat:null,shirtPat:null,pantsPat:null,face:null,ears:null,tail:null,back:null,brow:null,lash:null},
     avatar: null, model: {g:O()}, mp:{on:false,host:true,me:'H',guests:new Map(),ents:new Map()},
     ITEMS: [{slot:'hat',val:'crown',id:'hat_crown',emoji:'👑',name:'Crown'},{slot:'shirtPat',val:'startee',id:'sp1',emoji:'⭐',name:'Star Tee'}],
-    plat:()=>({mesh:O()}), mat:()=>({}), shade:(c)=>c, label:()=>O(), buildPlayer:()=>({g:O(),pivot:{children:[O()]},head:O(),legs:[O(),O()],arms:[O(),O()]}),
+    plat:()=>({mesh:O()}), mat:()=>({}), shade:(c)=>c, label:()=>O(), buildPlayer:()=>({g:Object.assign(O(),{updateMatrixWorld(){}}),pivot:{children:[O()]},head:O(),legs:[O(),O()],arms:[O(),O()]}),
     canvasTex:()=>({wrapS:0,wrapT:0,repeat:{set(){}},dispose(){}}), confetti(){}, SND:{coin(){},cp(){},win(){},jump(){}},
     checkpoints:[], running:true, muted:false, tipTimer:0, document:(()=>{ const c=new Set(); return {body:{classList:{add:(...a)=>a.forEach(x=>c.add(x)),remove:(...a)=>a.forEach(x=>c.delete(x)),toggle:(x,on)=>{ (on===undefined?!c.has(x):on)?c.add(x):c.delete(x); },contains:x=>c.has(x)}}}; })(),
     FS_POSES:[{e:'a',n:'A',p:()=>({})}], // overwritten by src
@@ -32,7 +32,7 @@ function world(store, coins0){
   ctx.fmt = s => s; ctx.bxEsc = s => s; ctx.mpLook = () => null; ctx.mpGuest = () => false; ctx.mpSendTo = () => {};
   ctx.window = ctx; ctx.self = ctx; vm.createContext(ctx);
   // provide minimal FX consumer stubs used before decorate runs deeply
-  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_VIP_COST,fsProg,fsIsVip,fsBuyVip,fsVipBadge,fsList,fsKeep,fsHasSavedLook,fsApplySavedLook,fsLocalDress,fsCleanFx,FS_FXDEF,fsCleanFx,fsKeep,fsMigrateAvatar,fsLocked,fsVipRows,FX,FS_RACKS,FS_ST,fsWardRender,fsFx,buildFashion,fashionEnter,fashionStop,fsPickOpen,fsName,fsCount,fsShine,fsWardOpen,fsWardClose,fashionCam,fsRoom,fsLocalWalk,fsWardCamInfo,FS_CHANGE,fsMirrorInit,fsMirrorRefresh,fsMirrorStop,fsRebuild,fsVipBadge};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_VIP_COST,fsProg,fsIsVip,fsBuyVip,fsVipBadge,fsList,fsKeep,fsHasSavedLook,fsApplySavedLook,fsLocalDress,fsCleanFx,FS_FXDEF,fsCleanFx,fsKeep,fsMigrateAvatar,fsLocked,fsVipRows,FX,FS_RACKS,FS_ST,fsWardRender,fsFx,buildFashion,fashionEnter,fashionStop,fsPickOpen,fsName,fsCount,fsShine,fsWardOpen,fsWardClose,fashionCam,fsRoom,fsLocalWalk,fsWardCamInfo,FS_CHANGE,fsMirrorInit,fsMirrorRefresh,fsMirrorStop,fsMirrorFit,fsMirrorFront,fsRebuild,fsVipBadge};`, ctx);
   return ctx;
 }
 const st = {rubloxCoins:'500', rubloxAvatar: JSON.stringify({shirt:'#111111',pants:'#222222',head:'#f1c27d',hairColor:'#6b3e1f',hair:'short'})};
@@ -91,12 +91,12 @@ chk('boutique has a ceiling/roof the camera can see under', W.A.fs.bld.ceiling.l
 chk('boutique has interior lights', W.A.fs.bld.lights.length >= 3, W.A.fs.bld.lights.length);
 W.A.fs.ph = 'dress'; W.A.fs.ord = ['H']; W.A.fs.th = 0; W.A.fs.dl = 180;
 W.A.fs.fit = Object.assign({}, W.avatar); W.A.fs.fx = W.A.fsCleanFx({top:'tee', bot:'pants', dress:'none', shoe:'sneak', hair:'base', mk:'none', pat:'none', acc:[]});
-chk('fsCount default sneak-only outfit is 1 (not off-by-one)', W.A.fsCount() === 1, W.A.fsCount());
+chk('fsCount default streetwear is 2 (Classic Tee + Pants; sneakers free)', W.A.fsCount() === 2, W.A.fsCount());
 W.A.fs.fx = W.A.fsCleanFx({top:'velvet', dress:'pastelg', shoe:'goldheel', hair:'pastel', mk:'vipglam', acc:['vipcrown'], pat:'none'});
 // top + dress + shoe + hair + mk + 1 acc = 6 (bot ignored while dress is on)
-chk('fsCount counts dress/gown and ignores bottoms under a dress', W.A.fsCount() === 6, W.A.fsCount());
+chk('fsCount counts dress/gown + non-default top (no bottoms under dress)', W.A.fsCount() === 6, W.A.fsCount());
 W.A.fs.fx = W.A.fsCleanFx({top:'crop', bot:'tutu', dress:'none', shoe:'heels', hair:'bob', mk:'none', pat:'none', acc:[]});
-chk('fsCount counts top+bot+shoe+hair with no dress (4)', W.A.fsCount() === 4, W.A.fsCount());
+chk('fsCount counts top+bot+fancy shoe+hair with no dress (4)', W.A.fsCount() === 4, W.A.fsCount());
 W.A.fs.ward = false; W.P.x = -23; W.P.z = 1; W.P.face = -1;
 W.A.fsWardOpen('top');
 chk('wardrobe open docks panel (fsward-dock)', W.document.body.classList.contains('fsward-dock'));
@@ -107,6 +107,12 @@ const ci = W.A.fsWardCamInfo();
 chk('mirror camera sits in front of preview avatar (dot>0.7)', !!(ci && ci.mode==='mirror' && ci.dot > 0.7), ci);
 chk('mirror camera pulled back for full body (dist>=4.5)', !!(ci && ci.dist >= 4.5), ci);
 chk('mirror has a live avatar clone', !!(ci && ci.hasAvatar));
+chk('mirror fit computed from avatar bounding box', !!(ci && ci.fit && ci.fitH >= 1), ci);
+chk('mirror snaps to FRONT after open/refresh', !!(ci && ci.front), ci);
+W.A.fs.mirror.yaw = 1.2; W.A.fs.mirror.manual = true; W.A.fs.mirror.idle = 0;
+W.A.fsMirrorFront();
+chk('fsMirrorFront resets yaw to front', W.A.fs.mirror.yaw === 0 && !W.A.fs.mirror.manual);
+
 // item change refreshes mirror
 W.A.fs.fx = W.A.fsCleanFx({top:'velvet', dress:'pastelg', shoe:'heels', hair:'bob', mk:'glam', acc:['pearls']});
 W.A.fsRebuild(W.A.fs.fit, W.A.fs.fx);
@@ -132,6 +138,8 @@ W.A.buildFashion(); if (!W.A.fsIsVip()){ W.coins=500; W.A.fsBuyVip(); } W.A.fsVi
 chk('VIP dressing-room badge is offset above normal nametag height', !!(W.A.fs.vipTag && W.A.fs.vipTag.position.y >= 4.0), W.A.fs.vipTag && W.A.fs.vipTag.position);
 // built page includes mirror canvas
 chk('built page: wardrobe mirror canvas markup present', /id="fsMirror"/.test(require('fs').readFileSync(HTML,'utf8')));
+chk('built page: mirror Box3 fit + front snap helpers', /function fsMirrorFit/.test(require('fs').readFileSync(HTML,'utf8')) && /function fsMirrorFront/.test(require('fs').readFileSync(HTML,'utf8')));
+chk('built page: wardrobe footer is flex row (fsfoot)', /owinbtns fsfoot/.test(require('fs').readFileSync(HTML,'utf8')));
 chk('built page: fsMirrorInit + vipTag guard present', /function fsMirrorInit/.test(require('fs').readFileSync(HTML,'utf8')) && /if \(fs\)\{ fs\.vipTag = null/.test(require('fs').readFileSync(HTML,'utf8')));
 // VIP runway label height (no clip): build walkers and check y
 W.coins = 500; if (!W.A.fsIsVip()) W.A.fsBuyVip();
