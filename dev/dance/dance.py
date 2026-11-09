@@ -1,0 +1,55 @@
+# ===== t227u: 💃 Bossa Beat Dance Battle — original procedural bossa rhythm (stacked on Haunt) =====
+rep("""  {id:'haunt', name:'Giggle Manor Escape',""", """  {id:'dance', name:'Bossa Beat Dance Battle', emoji:'💃', tag:'Hit the arrows to original bossa beats — dance-off with friends!', draw: drawDance, playable: true, isNew: true},
+  {id:'haunt', name:'Giggle Manor Escape',""")
+rep("function drawHaunt(ctx){", r"""function drawDance(ctx){
+  sky(ctx, '#1d2340', '#5b34c0');
+  ctx.fillStyle = '#2b2d42'; ctx.fillRect(0, 150, 320, 50); ctx.fillStyle = '#ff6fb5'; ctx.fillRect(100, 130, 120, 30);
+  ctx.font = '26px sans-serif'; ['←','↓','↑','→'].forEach((a, i) => { ctx.fillStyle = '#fff'; ctx.fillText(a, 70 + i * 50, 80); });
+  guy(ctx, 160, 160, 12, '#ff6fb5'); ctx.font = '22px sans-serif'; ctx.fillText('💃', 40, 60); ctx.fillText('🎵', 260, 60);
+}
+function drawHaunt(ctx){""")
+rep("""      <span id="hmBox" style="display:none">""", """      <span id="dbBox" style="display:none"><b id="dbN">💃 Dance</b></span>
+      <span id="hmBox" style="display:none">""")
+rep("""  <button class="fsnear hmnear" id="hmAct"></button>""", """  <div class="dblane" id="dbLane" style="display:none"></div>
+  <button class="fsnear hmnear" id="hmAct"></button>""")
+rep(".hmnear{background:#8b5cf6;box-shadow:0 4px 0 #5b34c0}.hmnear small{color:#8b5cf6}", """.dblane{position:absolute;left:50%;bottom:110px;transform:translateX(-50%);width:min(280px,70vw);height:42vh;z-index:6;pointer-events:none;display:flex;justify-content:center;background:linear-gradient(180deg,rgba(29,35,64,.1),rgba(29,35,64,.55));border:3px solid rgba(255,111,181,.5);border-radius:16px;overflow:hidden}
+.dbhit{position:absolute;left:50%;bottom:10%;transform:translateX(-50%);font-size:22px;color:#ffd23f;text-shadow:0 2px 0 #000}
+.dbnote{position:absolute;left:50%;transform:translateX(-50%);width:48px;height:48px;border-radius:12px;background:#fff;color:#1d2340;font-weight:900;font-size:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.dbnote.d0{margin-left:-72px;background:#7fd6ff}.dbnote.d1{margin-left:-24px;background:#9ff0c8}.dbnote.d2{margin-left:24px;background:#ffe08a}.dbnote.d3{margin-left:72px;background:#ffb3c7}
+@media (max-width:760px),(max-height:520px){.dblane{height:36vh;bottom:150px}.dbnote{width:40px;height:40px;font-size:22px}}
+.hmnear{background:#8b5cf6;box-shadow:0 4px 0 #5b34c0}.hmnear small{color:#8b5cf6}""")
+rep("  /* ---------- per-frame ---------- */\n", open('/workspace/rublox/tests/p46/dance.js').read() + "  /* ---------- per-frame ---------- */\n")
+rep("isl = null; bk = null; wp = null; psx = null; td = null; ic = null; sb = null; hm = null;\n    if (mode === 'haunt') buildHaunt();", "isl = null; bk = null; wp = null; psx = null; td = null; ic = null; sb = null; hm = null; db = null;\n    if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt();")
+rep("mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt') && B.onGround && up > 0 && up <= .62)", "mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance') && B.onGround && up > 0 && up <= .62)")
+rep("mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt'){ if (P.y < -25) respawn(); return; }", "mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance'){ if (P.y < -25) respawn(); return; }")
+rep("mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt'){ // pull the camera", "mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance'){ // pull the camera")
+rep("      if (hm) hauntUpdate(dt);\n", "      if (hm) hauntUpdate(dt);\n      if (db) danceUpdate(dt);\n")
+rep("    if (hm) hauntAnimate(dt);\n", "    if (hm) hauntAnimate(dt);\n    if (db) danceAnimate(dt);\n")
+# dance pose hook into applyPose chain (photostudio style)
+rep("    applyPose(dt, psPosed() || (rc && rc.me ? rcPose(rc.me) :", "    applyPose(dt, (db && dbPose()) || psPosed() || (rc && rc.me ? rcPose(rc.me) :")
+rep("'tower', 'icecream', 'stable', 'haunt'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' ? null : d;",
+    "'tower', 'icecream', 'stable', 'haunt', 'dance'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' ? null : d;")
+rep("    else if (mode === 'haunt') banner(", "    else if (mode === 'dance') banner('💃 Bossa Beat Dance Battle — feel the groove!');\n    else if (mode === 'haunt') banner(")
+rep("mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt') && touchUI",
+    "mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance') && touchUI")
+rep("    $('#hmBox').style.display = mode === 'haunt' ? '' : 'none'; ['#hmAct'].forEach(id => $(id).classList.remove('show'));",
+    """    $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }
+    if (mode === 'dance') danceEnter();
+    $('#hmBox').style.display = mode === 'haunt' ? '' : 'none'; ['#hmAct'].forEach(id => $(id).classList.remove('show'));""")
+rep(" if (hm) hauntStop();", " if (hm) hauntStop(); if (db) danceStop();")
+rep("    const line = mode === 'haunt' ?", "    const line = mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'haunt' ?")
+rep("    if (mode === 'haunt'){\n      $('#oTip').innerHTML", """    if (mode === 'dance'){
+      $('#oTip').innerHTML = (on ? '🕹️ D-pad / face buttons hit ←↓↑→' : '⌨️ Arrow keys or WASD hit the notes · Esc pause')
+        + "<br>💃 Original bossa beats — time your presses for Perfect scores!";
+      return;
+    }
+    if (mode === 'haunt'){
+      $('#oTip').innerHTML""")
+rep("    if (mode === 'haunt' && hm && hmPad(jp)) return;", "    if (mode === 'dance' && db && dbPad(jp)) return;\n    if (mode === 'haunt' && hm && hmPad(jp)) return;")
+rep("      if (mode === 'haunt' && hm && hmKey(e)) return;", "      if (mode === 'dance' && db && dbKey(e)) return;\n      if (mode === 'haunt' && hm && hmKey(e)) return;")
+# swallow movement keys while dancing so WASD hits notes
+rep("|| (psx && (psx.cam || psx.gal)) || (ic && ic.panel >= 0) || (sb && sb.panel)) ?", "|| (psx && (psx.cam || psx.gal)) || (ic && ic.panel >= 0) || (sb && sb.panel) || (db && db.ph === 'play')) ?")
+rep("  window.obbyDebug = {\n", """  window.obbyDebug = {
+    dance: () => db && {ph: db.ph, t: db.t, score: db.score, combo: db.combo, hits: db.hits, misses: db.misses, chart: db.chart.length, earned: db.earned, prog: dbProg()},
+    dbHit: d => dbHit(d), dbTo(t){ if (db) db.t = t; },
+""")

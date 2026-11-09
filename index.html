@@ -460,6 +460,12 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .rmode #oEmoBtn,.rmode #oRun,.rmode #oStam{display:none!important}
 .smode #oStam{display:none!important}
 .tdBox b{color:#8b5cf6}
+.dblane{position:absolute;left:50%;bottom:110px;transform:translateX(-50%);width:min(280px,70vw);height:42vh;z-index:6;pointer-events:none;display:flex;justify-content:center;background:linear-gradient(180deg,rgba(29,35,64,.1),rgba(29,35,64,.55));border:3px solid rgba(255,111,181,.5);border-radius:16px;overflow:hidden}
+.dbhit{position:absolute;left:50%;bottom:10%;transform:translateX(-50%);font-size:22px;color:#ffd23f;text-shadow:0 2px 0 #000}
+.dbnote{position:absolute;left:50%;transform:translateX(-50%);width:48px;height:48px;border-radius:12px;background:#fff;color:#1d2340;font-weight:900;font-size:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.dbnote.d0{margin-left:-72px;background:#7fd6ff}.dbnote.d1{margin-left:-24px;background:#9ff0c8}.dbnote.d2{margin-left:24px;background:#ffe08a}.dbnote.d3{margin-left:72px;background:#ffb3c7}
+@media (max-width:760px),(max-height:520px){.dblane{height:36vh;bottom:150px}.dbnote{width:40px;height:40px;font-size:22px}}
+.hmnear{background:#8b5cf6;box-shadow:0 4px 0 #5b34c0}.hmnear small{color:#8b5cf6}
 .sbnear{background:#ff9f1c;box-shadow:0 4px 0 #c47a10}.sbnear small{color:#ff9f1c}
 #sbPick{z-index:8}#sbPick.show{display:flex}#sbPick .mbox,#sbPick{align-items:center;justify-content:center}
 #sbPick{position:absolute;inset:0;background:rgba(29,35,64,.55);flex-direction:column}
@@ -993,6 +999,8 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   <div class="ohud">
     <div class="ostats">
       <span id="oStageBox">🏁 Lv <b id="oLvl">1</b><span id="oCpWrap"> · 🚩 <b id="oStage">1</b>/<b id="oStageN">3</b></span></span>
+      <span id="dbBox" style="display:none"><b id="dbN">💃 Dance</b></span>
+      <span id="hmBox" style="display:none"><b id="hmN">👻 Escape</b></span>
       <span id="sbBox" style="display:none"><b id="sbN">🐴 Stable</b></span>
       <span id="icBox" style="display:none"><b id="icN">🍦 0</b></span>
       <span id="tdBox" style="display:none">🗼 <b id="tdH">0</b>m · 🫧 <b id="tdGoo">0</b></span>
@@ -1151,6 +1159,8 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   </div></div>
   <div class="pflash" id="pFlash"></div>
   <div class="fsbuild" id="fsBuild" aria-hidden="true"></div>
+  <div class="dblane" id="dbLane" style="display:none"></div>
+  <button class="fsnear hmnear" id="hmAct"></button>
   <button class="fsnear sbnear" id="sbAct"></button>
   <div class="opanel" id="sbPick"></div>
   <div class="icorders" id="icOrders" style="display:none"></div>
@@ -1376,7 +1386,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.09-11';
+const BUILD = '2026.11.09-12';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2091,6 +2101,8 @@ $('#saveAv').onclick = () => {
 
 /* ---------- games ---------- */
 const GAMES = [
+  {id:'dance', name:'Bossa Beat Dance Battle', emoji:'💃', tag:'Hit the arrows to original bossa beats — dance-off with friends!', draw: drawDance, playable: true, isNew: true},
+  {id:'haunt', name:'Giggle Manor Escape', emoji:'👻', tag:'Friendly ghosts, puzzle rooms, escape before the timer!', draw: drawHaunt, playable: true, isNew: true},
   {id:'stable', name:'Clover Meadow Stables', emoji:'🐴', tag:'Adopt a pony, brush & feed it, ride the meadow, and enter jumping shows!', draw: drawStable, playable: true, isNew: true},
   {id:'icecream', name:'Scoop Circus Ice Cream', emoji:'🍦', tag:'Scoop silly flavours, top cones & cups, serve customers for coins!', draw: drawIceCream, playable: true, isNew: true},
   {id:'tower', name:'Tower of Doom', emoji:'🗼', tag:'Climb a stacked tower while bubbly goo rises from below!', draw: drawTower, playable: true, isNew: true},
@@ -2159,6 +2171,19 @@ function drawLava(ctx){
   for (let x = 0; x <= 320; x += 10) ctx.lineTo(x, 150 + Math.sin(x/22 + t)*6);
   ctx.lineTo(320, 200); ctx.fill();
   ctx.fillStyle = '#ffd23f'; for (let i = 0; i < 8; i++){ ctx.fillRect((i*47 + t*20) % 320, 168 + (i%3)*8, 8, 8); }
+}
+function drawDance(ctx){
+  sky(ctx, '#1d2340', '#5b34c0');
+  ctx.fillStyle = '#2b2d42'; ctx.fillRect(0, 150, 320, 50); ctx.fillStyle = '#ff6fb5'; ctx.fillRect(100, 130, 120, 30);
+  ctx.font = '26px sans-serif'; ['←','↓','↑','→'].forEach((a, i) => { ctx.fillStyle = '#fff'; ctx.fillText(a, 70 + i * 50, 80); });
+  guy(ctx, 160, 160, 12, '#ff6fb5'); ctx.font = '22px sans-serif'; ctx.fillText('💃', 40, 60); ctx.fillText('🎵', 260, 60);
+}
+function drawHaunt(ctx){
+  sky(ctx, '#2a2450', '#5b4d7a');
+  ctx.fillStyle = '#4a3f6b'; ctx.fillRect(0, 140, 320, 60);
+  ctx.fillStyle = '#6b5b8a'; ctx.fillRect(40, 40, 240, 110); ctx.fillStyle = '#3a3060'; ctx.fillRect(60, 100, 40, 50); ctx.fillRect(220, 100, 40, 50);
+  ctx.font = '28px sans-serif'; ctx.fillText('👻', 90, 90); ctx.fillText('👻', 200, 90); ctx.fillText('🔑', 150, 70);
+  guy(ctx, 160, 176, 12, '#c39bff'); ctx.font = '20px sans-serif'; ctx.fillText('🚪', 150, 50);
 }
 function drawStable(ctx){
   sky(ctx, '#9fd8ff', '#e8ffe8');
@@ -3422,8 +3447,8 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; sb = null;
-    if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; sb = null; hm = null; db = null;
+    if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -4359,7 +4384,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
       if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
       else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
     }
@@ -4393,7 +4418,7 @@ const Obby = (() => {
     if (!SIM && mode === 'obby') obbyMech(dt);
     if (P.onGround && P.ground){ P.x += P.ground.dx || 0; P.y += P.ground.dy || 0; P.z += P.ground.dz || 0;
       if (P.ground.conv){ P.x += P.ground.conv.x * dt; P.z += P.ground.conv.z * dt; } }
-    const inp = ((hs && hsFrozen()) || (fs && fsFrozen()) || (isl && isl.panel) || (bk && bk.panel >= 0) || (wp && wp.menu) || (psx && (psx.cam || psx.gal)) || (ic && ic.panel >= 0) || (sb && sb.panel)) ? {x: 0, z: 0, mag: 0, jump: false} : tg && (tg.phase === 'ready' || (tg.phase === 'play' && tg.it === 0 && tg.freeze > 0)) ? {x: 0, z: 0, mag: 0, jump: false} : input();
+    const inp = ((hs && hsFrozen()) || (fs && fsFrozen()) || (isl && isl.panel) || (bk && bk.panel >= 0) || (wp && wp.menu) || (psx && (psx.cam || psx.gal)) || (ic && ic.panel >= 0) || (sb && sb.panel) || (db && db.ph === 'play')) ? {x: 0, z: 0, mag: 0, jump: false} : tg && (tg.phase === 'ready' || (tg.phase === 'play' && tg.it === 0 && tg.freeze > 0)) ? {x: 0, z: 0, mag: 0, jump: false} : input();
     const k = Math.min(1, dt * (P.onGround ? (slip || (P.ground && P.ground.ice) ? 1.4 : 14) : 6));
     const wantRun = !SIM && (keys.ShiftLeft || keys.ShiftRight || run.pad || run.touch) && inp.mag > .1;
     if (!SIM){ if ((mode === 'tag' && tg) || (mode === 'hide' && hs)){ if (wantRun && !run.tired){ run.stam -= dt; if (run.stam <= 0){ run.stam = 0; run.tired = true; } } else run.stam = Math.min(STAM_MAX, run.stam + dt * .8); if (run.tired && run.stam >= 1.5) run.tired = false; }
@@ -4429,7 +4454,7 @@ const Obby = (() => {
     if (mode === 'lava') return lavaChecks();
     if (mode === 'splash') return splashChecks();
     if (mode === 'nds') return ndsChecks();
-    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -10943,6 +10968,186 @@ const Obby = (() => {
   }
   function sbPad(jp){ if (!sb) return false; if (jp.x){ sbAct(); return true; } return false; }
   function sbKey(e){ if (!sb || e.repeat || paused) return false; if (e.code === 'KeyE'){ sbAct(); return true; } if (e.code === 'Escape' && sb.panel){ sbShowPick(false); return true; } return false; }
+  /* ===================== t227u: 👻 GIGGLE MANOR ESCAPE — mildly spooky puzzle rooms, friendly ghosts, escape before the timer ===================== */
+  const HM_KEY = 'rubloxHaunt', HM_TIME = 180;
+  let hm = null;
+  function hmProg(){ const o = load(HM_KEY, null), r = o && typeof o === 'object' ? o : {}; return {escapes: Math.max(0, r.escapes | 0), best: Math.max(0, r.best | 0), coins: Math.max(0, +r.coins || 0)}; }
+  function buildHaunt(){
+    hm = {ph: 'play', t: HM_TIME, keys: 0, need: 3, pattern: [0, 2, 1, 3], pressed: [], colour: null, needCol: ['#ff6fb5', '#7fd6ff', '#ffe08a'][Math.random() * 3 | 0], levers: [false, false, false], doorOpen: false, ghosts: [], earned: 0, paid: false, remote: mpGuest(), near: -1};
+    scene.background = new THREE.Color('#2a2450');
+    if (scene.fog){ scene.fog.color = new THREE.Color('#3a3060'); scene.fog.near = 8; scene.fog.far = 55; }
+    plat(0, 0, 0, 40, 40, '#4a3f6b', .4);
+    // outer walls
+    [[0, 20, 42, 1], [0, -20, 42, 1], [20, 0, 1, 42], [-20, 0, 1, 42]].forEach(([x, z, w, d]) => plat(x, 3, z, w, d, '#5b4d7a', 3));
+    // three puzzle rooms + hall
+    plat(-10, 3, 0, .6, 18, '#6b5b8a', 3); plat(10, 3, 0, .6, 18, '#6b5b8a', 3); plat(0, 3, 8, 20, .6, '#6b5b8a', 3);
+    // key pedestals (room left)
+    [[-14, -6], [-14, 0], [-14, 6]].forEach(([x, z], i) => { plat(x, .9, z, 1.4, 1.4, '#ffd23f', .9); const L = label('🔑 Key ' + (i + 1), 'rgba(255,210,63,.92)'); L.position.set(x, 2.2, z); scene.add(L); hm.ghosts.push({kind: 'key', i, x, z, got: false}); });
+    // pattern pads (room right) — soft pastel, not scary
+    const cols = ['#ffb3c7', '#9ff0c8', '#7fd6ff', '#ffe08a'];
+    [[12, -4], [16, -4], [12, 0], [16, 0]].forEach(([x, z], i) => { plat(x, .5, z, 2, 2, cols[i], .4); const L = label('🎵 ' + (i + 1), 'rgba(127,214,255,.9)'); L.position.set(x, 1.8, z); scene.add(L); hm.ghosts.push({kind: 'pad', i, x, z}); });
+    // colour ghosts (back room) — friendly cartoon blobs
+    [['#ff6fb5', 'Pink'], ['#7fd6ff', 'Blue'], ['#ffe08a', 'Gold']].forEach(([c, n], i) => {
+      const x = -6 + i * 6, z = 14; plat(x, .4, z, 2.2, 2.2, c, .35);
+      const g = new THREE.Mesh(new THREE.SphereGeometry(1.1, 12, 10), new THREE.MeshLambertMaterial({color: c, transparent: true, opacity: .85})); g.position.set(x, 1.6, z); scene.add(g);
+      const L = label('👻 ' + n, 'rgba(255,255,255,.9)'); L.position.set(x, 3.2, z); scene.add(L);
+      hm.ghosts.push({kind: 'colour', i, x, z, col: c, mesh: g});
+    });
+    // levers near exit
+    [[-3, -14], [0, -14], [3, -14]].forEach(([x, z], i) => { plat(x, 1.0, z, 1.2, 1.2, '#c39bff', 1.0); const L = label('🎚️ ' + (i + 1), 'rgba(195,155,255,.92)'); L.position.set(x, 2.4, z); scene.add(L); hm.ghosts.push({kind: 'lever', i, x, z}); });
+    // exit door
+    plat(0, 2.5, -18, 4, .8, '#ff9f6b', 2.5); const door = label('🚪 Exit', 'rgba(255,159,107,.95)'); door.position.set(0, 4.2, -18); scene.add(door); hm.door = {x: 0, z: -18};
+    Object.assign(P, {x: 0, y: .05, z: 2, vx: 0, vy: 0, vz: 0}); P.face = Math.PI; cam.yaw = Math.PI; cam.pitch = .3; cam.dist = 10;
+    checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 2}, flag: new THREE.Object3D()};
+  }
+  function hauntEnter(){ if (!hm) return; hm.ph = 'play'; hm.t = HM_TIME; hm.paid = false; over = false; choosing = false;
+    banner('👻 Giggle Manor! Find 3 keys, copy the song pads, hug the matching colour ghost, flip the levers — escape before time runs out!'); tipTimer = 8; hmHud(); }
+  function hauntStop(){ hm = null; const b = $('#hmAct'); if (b) b.classList.remove('show'); }
+  function hmNear(){
+    if (!hm) return -1; let best = 2.4, idx = -1;
+    hm.ghosts.forEach((g, i) => { if (g.got) return; const d = Math.hypot(P.x - g.x, P.z - g.z); if (d < best){ best = d; idx = i; } });
+    return idx;
+  }
+  function hmAct(){
+    if (!hm || hm.ph !== 'play' || over) return false;
+    const i = hm.near; if (i < 0) return false; const g = hm.ghosts[i];
+    if (g.kind === 'key'){ g.got = true; hm.keys++; banner('🔑 Key ' + (g.i + 1) + '! (' + hm.keys + '/' + hm.need + ')'); SND.coin(); hmHud(); return true; }
+    if (g.kind === 'pad'){
+      hm.pressed.push(g.i); banner('🎵 Pad ' + (g.i + 1)); SND.cp();
+      const n = hm.pressed.length;
+      if (hm.pressed[n - 1] !== hm.pattern[n - 1]){ hm.pressed = []; banner('😅 Oops — try the song again!'); }
+      else if (n === hm.pattern.length){ banner('🎉 Song solved! The ghosts giggle!'); confetti(); hm.pressed = []; hm.patternDone = true; }
+      hmHud(); return true;
+    }
+    if (g.kind === 'colour'){
+      if (g.col === hm.needCol){ hm.colour = g.col; banner('👻 Perfect hug! Colour match!'); SND.coin(); confetti(); }
+      else banner('👻 Heehee — try the ' + (hm.needCol === '#ff6fb5' ? 'Pink' : hm.needCol === '#7fd6ff' ? 'Blue' : 'Gold') + ' ghost!');
+      hmHud(); return true;
+    }
+    if (g.kind === 'lever'){ hm.levers[g.i] = !hm.levers[g.i]; banner('🎚️ Lever ' + (g.i + 1) + (hm.levers[g.i] ? ' ON' : ' off')); SND.cp();
+      if (hm.levers.every(Boolean)) banner('✨ All levers on!'); hmHud(); return true; }
+    return false;
+  }
+  function hmReady(){ return hm && hm.keys >= hm.need && hm.patternDone && hm.colour === hm.needCol && hm.levers.every(Boolean); }
+  function hauntUpdate(dt){
+    if (!hm || hm.ph !== 'play' || over || choosing) return;
+    hm.t -= dt; if (hm.t <= 0){ hmLose(); return; }
+    hm.near = hmNear();
+    const btn = $('#hmAct'); if (btn){ if (hm.near >= 0){ const g = hm.ghosts[hm.near]; btn.classList.add('show'); btn.innerHTML = (g.kind === 'key' ? '🔑 Take' : g.kind === 'pad' ? '🎵 Press' : g.kind === 'colour' ? '👻 Hug' : '🎚️ Flip') + '<small>E / Ⓧ</small>'; } else btn.classList.remove('show'); }
+    // bob friendly ghosts
+    hm.ghosts.forEach(g => { if (g.mesh) g.mesh.position.y = 1.6 + Math.sin(worldT * 2 + g.i) * .25; });
+    if (hmReady()){ hm.doorOpen = true; if (Math.hypot(P.x - hm.door.x, P.z - hm.door.z) < 2.8) hmWin(); }
+    hmHud();
+  }
+  function hauntAnimate(dt){}
+  function hmLose(){ if (over) return; over = true; choosing = true; hm.ph = 'lose';
+    $('#oLose').classList.add('show'); const em = $('#oLose').querySelector('.emoji'), h2 = $('#oLose').querySelector('h2'); if (em) em.textContent = '👻'; if (h2) h2.textContent = 'Time\'s up — the ghosts want a rematch!';
+    $('#oLoseStats').innerHTML = '👻 So close! Keys ' + hm.keys + '/' + hm.need + '<br>Try again — they\'re friendly, promise!<br><small>Esc or 🏠 Home</small>'; }
+  function hmWin(){
+    if (over || hm.paid) return; over = true; choosing = true; hm.ph = 'win'; hm.paid = true;
+    const left = Math.max(0, Math.floor(hm.t)), bonus = 35 + Math.floor(left / 3), p = hmProg(); p.escapes++; p.best = Math.max(p.best, left); p.coins += bonus; save(HM_KEY, p);
+    setCoins(coins + bonus); hm.earned = bonus; runCoins = (runCoins || 0) + bonus; confetti(); SND.win();
+    banner('🚪 Escaped Giggle Manor! +' + bonus + ' 🪙');
+    $('#oWin').classList.add('show'); $('#oWinStats').innerHTML = '👻 Giggle Manor cleared!<br>⏱️ ' + left + 's left<br>🎁 +' + bonus + ' Rublox Coins'; }
+  function hmHud(){ if (!hm) return; const n = $('#hmN'); if (n) n.textContent = '👻 🔑' + hm.keys + '/' + hm.need + (hm.patternDone ? ' · 🎵✓' : ' · 🎵') + (hm.colour === hm.needCol ? ' · 👻✓' : ' · 👻') + (hm.levers.every(Boolean) ? ' · 🎚️✓' : ' · 🎚️') + ' · ⏱️' + Math.max(0, Math.ceil(hm.t)); }
+  function hmPad(jp){ if (!hm) return false; if (jp.x){ hmAct(); return true; } return false; }
+  function hmKey(e){ if (!hm || e.repeat || paused) return false; if (e.code === 'KeyE'){ hmAct(); return true; } if (e.code === 'Escape' && over){ stop(); return true; } return false; }
+  /* ===================== t227u: 💃 BOSSA BEAT DANCE BATTLE — original procedural bossa rhythm arrows, score, avatar dance ===================== */
+  const DB_KEY = 'rubloxDance', DB_LEN = 45, DB_BPM = 96;
+  const DB_ARROWS = ['ArrowLeft', 'ArrowDown', 'ArrowUp', 'ArrowRight'];
+  const DB_LABEL = ['←', '↓', '↑', '→'];
+  let db = null, dbAudio = null;
+  function dbProg(){ const o = load(DB_KEY, null), r = o && typeof o === 'object' ? o : {}; return {plays: Math.max(0, r.plays | 0), best: Math.max(0, r.best | 0), coins: Math.max(0, +r.coins || 0)}; }
+  function dbBeatSec(){ return 60 / DB_BPM; }
+  function dbMakeChart(secs){
+    const beat = dbBeatSec(), n = Math.floor(secs / beat), chart = [];
+    let x = 12345; const rnd = () => { x = (x * 1103515245 + 12345) & 0x7fffffff; return (x >>> 0) / 0x7fffffff; };
+    for (let i = 2; i < n - 2; i++){ if (rnd() < .55) chart.push({t: i * beat, dir: (rnd() * 4) | 0, hit: false, miss: false, score: 0}); }
+    return chart;
+  }
+  function dbBossaStart(){
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC || muted) return;
+      const ac = new AC(); dbAudio = {ac, t0: ac.currentTime + .05, nodes: []};
+      const schedule = () => {
+        if (!db || !dbAudio) return; const ac = dbAudio.ac, beat = dbBeatSec(), t0 = dbAudio.t0;
+        for (let i = 0; i < Math.ceil(DB_LEN / beat) + 2; i++){
+          const t = t0 + i * beat; if (t < ac.currentTime) continue;
+          // soft bossa-ish bass + chord pulse (original, not a copyrighted tune)
+          const bass = ac.createOscillator(), g = ac.createGain(); bass.type = 'triangle';
+          bass.frequency.value = [110, 130.81, 146.83, 164.81][i % 4];
+          g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(.06, t + .03); g.gain.exponentialRampToValueAtTime(0.0001, t + beat * .7);
+          bass.connect(g); g.connect(ac.destination); bass.start(t); bass.stop(t + beat);
+          if (i % 2 === 0){ const hi = ac.createOscillator(), hg = ac.createGain(); hi.type = 'sine'; hi.frequency.value = [523.25, 587.33, 659.25, 698.46][(i / 2 | 0) % 4];
+            hg.gain.setValueAtTime(0.0001, t); hg.gain.exponentialRampToValueAtTime(.03, t + .02); hg.gain.exponentialRampToValueAtTime(0.0001, t + .25);
+            hi.connect(hg); hg.connect(ac.destination); hi.start(t); hi.stop(t + .3); }
+        }
+      };
+      schedule();
+    } catch (e){ dbAudio = null; }
+  }
+  function dbBossaStop(){ try { if (dbAudio && dbAudio.ac) dbAudio.ac.close(); } catch (e){} dbAudio = null; }
+  function buildDance(){
+    db = {ph: 'play', t: 0, chart: dbMakeChart(DB_LEN), score: 0, combo: 0, maxCombo: 0, hits: 0, misses: 0, earned: 0, paid: false, pose: 0, remote: mpGuest(), rival: mp.on ? 0 : null};
+    scene.background = new THREE.Color('#1d2340');
+    plat(0, 0, 0, 16, 12, '#2b2d42', .3); plat(0, .35, -2, 6, 4, '#ff6fb5', .3);
+    // stage lights
+    [[-4, '#7fd6ff'], [0, '#ffd23f'], [4, '#c39bff']].forEach(([x, c]) => plat(x, 5, -4, .4, .4, c, .3));
+    Object.assign(P, {x: 0, y: .05, z: 1, vx: 0, vy: 0, vz: 0}); P.face = Math.PI; cam.yaw = Math.PI; cam.pitch = .28; cam.dist = 8;
+    checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: 1}, flag: new THREE.Object3D()};
+  }
+  function danceEnter(){ if (!db) return; db.ph = 'play'; db.t = 0; db.paid = false; over = false; choosing = false; dbBossaStart();
+    banner('💃 Bossa Beat! Hit ←↓↑→ (or A/S/W/D · d-pad) on the beat!'); tipTimer = 6; dbHud(); dbRender(); }
+  function danceStop(){ dbBossaStop(); db = null; const el = $('#dbLane'); if (el) el.style.display = 'none'; }
+  function dbHit(dir){
+    if (!db || db.ph !== 'play' || over) return false;
+    const now = db.t; let best = null, bd = 9e9;
+    db.chart.forEach(n => { if (n.hit || n.miss || n.dir !== dir) return; const d = Math.abs(n.t - now); if (d < bd){ bd = d; best = n; } });
+    if (!best || bd > .22){ db.combo = 0; db.misses++; db.pose = (db.pose + 1) % 4; banner('😅 Miss'); dbHud(); dbRender(); return true; }
+    best.hit = true; const pts = bd < .07 ? 100 : bd < .14 ? 70 : 40; best.score = pts;
+    db.score += pts + Math.min(50, db.combo * 2); db.combo++; db.maxCombo = Math.max(db.maxCombo, db.combo); db.hits++;
+    db.pose = best.dir; SND.cp(); if (pts === 100) banner('🌟 Perfect! +' + pts); dbHud(); dbRender(); return true;
+  }
+  function danceUpdate(dt){
+    if (!db || db.ph !== 'play' || over || choosing) return;
+    db.t += dt;
+    // auto-miss notes that passed
+    db.chart.forEach(n => { if (!n.hit && !n.miss && n.t < db.t - .25){ n.miss = true; db.combo = 0; db.misses++; } });
+    if (db.t >= DB_LEN) dbFinish();
+    dbHud(); dbRender();
+  }
+  function danceAnimate(dt){ /* avatar pose driven via applyPose hook if present */ }
+  function dbFinish(){
+    if (!db || db.paid) return; db.ph = 'done'; db.paid = true; over = true; choosing = true; dbBossaStop();
+    const bonus = 10 + Math.floor(db.score / 40), p = dbProg(); p.plays++; p.best = Math.max(p.best, db.score); p.coins += bonus; save(DB_KEY, p);
+    setCoins(coins + bonus); db.earned = bonus; runCoins = (runCoins || 0) + bonus; confetti(); SND.win();
+    banner('💃 Dance done! Score ' + db.score + ' · +' + bonus + ' 🪙');
+    $('#oWin').classList.add('show'); $('#oWinStats').innerHTML = '💃 Bossa Beat results<br>⭐ Score <b>' + db.score + '</b> · 🔥 Combo ' + db.maxCombo + '<br>✅ ' + db.hits + ' hits · 😅 ' + db.misses + ' misses<br>🎁 +' + bonus + ' Rublox Coins'; }
+  function dbHud(){ if (!db) return; const n = $('#dbN'); if (n) n.textContent = '💃 ' + db.score + ' · 🔥' + db.combo + ' · ⏱️' + Math.max(0, Math.ceil(DB_LEN - db.t)); }
+  function dbRender(){
+    if (!db) return; const el = $('#dbLane'); if (!el) return; el.style.display = 'flex';
+    const now = db.t, window = 2.2;
+    const notes = db.chart.filter(n => !n.hit && !n.miss && n.t >= now - .2 && n.t <= now + window);
+    el.innerHTML = '<div class="dbhit">▼</div>' + notes.map(n => {
+      const y = ((n.t - now) / window) * 100; return '<div class="dbnote d' + n.dir + '" style="bottom:' + (12 + y) + '%">' + DB_LABEL[n.dir] + '</div>';
+    }).join('');
+  }
+  function dbPad(jp){
+    if (!db || db.ph !== 'play') return false;
+    // d-pad / face: map common gamepad fields if present
+    if (jp.left) return dbHit(0); if (jp.down) return dbHit(1); if (jp.up) return dbHit(2); if (jp.right) return dbHit(3);
+    return false;
+  }
+  function dbKey(e){
+    if (!db || e.repeat || paused) return false;
+    const map = {ArrowLeft: 0, KeyA: 0, ArrowDown: 1, KeyS: 1, ArrowUp: 2, KeyW: 2, ArrowRight: 3, KeyD: 3};
+    if (e.code in map){ dbHit(map[e.code]); return true; }
+    return false;
+  }
+  function dbPose(){ if (!db || db.ph !== 'play') return null; const poses = [
+    {lL: -.2, lR: .4, aL: -1.6, aR: .3, lean: .05}, {lL: .5, lR: -.3, aL: .2, aR: -1.5, lean: -.05},
+    {lL: -.4, lR: -.4, aL: -2.0, aR: -2.0, lean: 0}, {lL: .3, lR: .3, aL: -1.2, aR: 1.0, lean: .1}];
+    return Object.assign({lLo: 0, lRo: 0, aLo: 0, aRo: 0}, poses[db.pose % 4]); }
   /* ---------- per-frame ---------- */
   const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
   function animate(dt){
@@ -10962,6 +11167,8 @@ const Obby = (() => {
     if (td) towerAnimate(dt);
     if (ic) iceCreamAnimate(dt);
     if (sb) stableAnimate(dt);
+    if (hm) hauntAnimate(dt);
+    if (db) danceAnimate(dt);
     if (tg) animateTag(dt);
     if (pt) animatePets(dt);
     animateMp(dt);
@@ -10981,7 +11188,7 @@ const Obby = (() => {
     if (mode === 'tag'){ const v = Math.round(run.stam / STAM_MAX * 100) + (run.tired ? 1000 : 0); if (v !== run.shown){ run.shown = v; $('#oStamF').style.width = (v % 1000) + '%'; $('#oStam').classList.toggle('tired', run.tired); $('#oStam').classList.toggle('full', v === 100); } }
     if (emote){ emote.t += dt; if (emote.t > EMOTES[emote.id].dur || (!P.onGround && P.airT > .25)) emote = null; }
     const st = {state: P.climbing ? 'climb' : !P.onGround && P.airT > .08 ? 'jump' : sp > .8 ? 'walk' : 'idle', t: worldT, ph: P.walk, sp: Math.min(sp > SPEED * 1.15 ? 1.3 : 1, sp / 5), air: P.airT, jumped: P.jumped};
-    applyPose(dt, psPosed() || (rc && rc.me ? rcPose(rc.me) : pt && pt.drive ? SIT_POSE : emote ? emotePose(emote.id, emote.t) : animPose(avatar.anim || 'default', st)));
+    applyPose(dt, (db && dbPose()) || psPosed() || (rc && rc.me ? rcPose(rc.me) : pt && pt.drive ? SIT_POSE : emote ? emotePose(emote.id, emote.t) : animPose(avatar.anim || 'default', st)));
     if (pt && pt.drive){ model.g.rotation.y = pt.car.yaw; blob.visible = false; return; }
     if (rc){ raceAnimate(dt); blob.visible = false; return; }
     // shadow on the highest surface below
@@ -11018,7 +11225,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -11052,6 +11259,8 @@ const Obby = (() => {
       else { const t = $('#oTip'); padTip(); if (t.classList.contains('hide')){ t.classList.remove('hide'); tipTimer = 8; } else { t.classList.add('hide'); tipTimer = 0; } }
       return;
     }
+    if (mode === 'dance' && db && dbPad(jp)) return;
+    if (mode === 'haunt' && hm && hmPad(jp)) return;
     if (mode === 'stable' && sb && sbPad(jp)) return;
     if (mode === 'icecream' && ic && icPad(jp)) return;
     if (mode === 'tower' && td && tdPad(jp)) return;
@@ -11113,6 +11322,16 @@ const Obby = (() => {
   addEventListener('resize', () => setTimeout(hudMeasure, 50));
   function setTouchUIBase(on){
     hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
+    if (mode === 'dance'){
+      $('#oTip').innerHTML = (on ? '🕹️ D-pad / face buttons hit ←↓↑→' : '⌨️ Arrow keys or WASD hit the notes · Esc pause')
+        + "<br>💃 Original bossa beats — time your presses for Perfect scores!";
+      return;
+    }
+    if (mode === 'haunt'){
+      $('#oTip').innerHTML = (on ? '🕹️ Move · tap 👻 actions' : '⌨️ WASD · Space jump · E use · Esc Home on lose')
+        + "<br>👻 Keys · song pads · colour ghost hug · levers · then the 🚪 exit!";
+      return;
+    }
     if (mode === 'stable'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · tap 🐴 actions' : '⌨️ WASD move · Space jump · E care / mount / show · Esc menu')
         + "<br>🐴 Adopt a pony, brush · feed · groom, then ride to the 🏆 jumping show!";
@@ -11212,7 +11431,7 @@ const Obby = (() => {
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance'){ // pull the camera in front of walls so buildings don't block the view
       for (let s = 1.2; s <= cam.dist; s += .4){
         const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
         if (solids.some(b => b.active && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 5.5 : 1.2, s - .5); break; }
@@ -11280,6 +11499,8 @@ const Obby = (() => {
       if (td) towerUpdate(dt);
       if (ic) iceCreamUpdate(dt);
       if (sb) stableUpdate(dt);
+      if (hm) hauntUpdate(dt);
+      if (db) danceUpdate(dt);
       if (pt) petsUpdate(dt);
       if (lava && time > LAVA_GRACE && !over && !won){ lava.y += DIFFS[diff].speed * (1 + (time - LAVA_GRACE) / 150) * dt; if (time - dt <= LAVA_GRACE + 0.001 && time > LAVA_GRACE) banner('🌋 The lava is rising! Climb!'); }
       if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0) $('#oTip').classList.add('hide'); }
@@ -11313,6 +11534,7 @@ const Obby = (() => {
       if (dsp && mode === 'splash' && (e.code === 'KeyF' || e.code === 'KeyE') && !e.repeat){ splashThrow(); return; }
       if (dsp && mode === 'splash' && e.code === 'KeyQ' && !e.repeat){ splashShove(); return; }
       if (dsp && mode === 'splash' && e.code === 'KeyR' && !e.repeat){ splashPull(); return; }
+      if (mode === 'haunt' && hm && over && e.code === 'Escape' && !e.repeat){ stop(); return; }
       if (mode === 'tower' && td && over && e.code === 'Escape' && !e.repeat){ stop(); return; }
       if (mode === 'icecream' && ic && ic.panel >= 0 && e.code === 'Escape' && !e.repeat){ icPanel(-1); return; }
       if (mode === 'stable' && sb && sb.panel && e.code === 'Escape' && !e.repeat){ sbShowPick(false); return; }
@@ -11321,6 +11543,8 @@ const Obby = (() => {
       if (mode === 'fashion' && fs && fs.ph === 'walk' && /^Digit[1-7]$/.test(e.code) && fsKey(e)) return;
       const em = Object.keys(EMOTES).find(k => 'Digit' + EMOTES[k].key === e.code || 'Numpad' + EMOTES[k].key === e.code);
       if (em && !e.repeat){ playEmote(em); return; }
+      if (mode === 'dance' && db && dbKey(e)) return;
+      if (mode === 'haunt' && hm && hmKey(e)) return;
       if (mode === 'stable' && sb && sbKey(e)) return;
       if (mode === 'icecream' && ic && icKey(e)) return;
       if (mode === 'tower' && td && tdKey(e)) return;
@@ -11476,7 +11700,7 @@ const Obby = (() => {
 
   /* ---------- start / stop ---------- */
   function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'stable'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'stable', 'haunt', 'dance'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     $('#obby').classList.add('show'); document.body.style.overflow = 'hidden'; document.documentElement.classList.add('ingame');
@@ -11514,6 +11738,8 @@ const Obby = (() => {
     else if (mode === 'hide') banner('🙈 Hide and Seek on Maple Street!');
     else if (mode === 'fashion') banner('👗 Welcome to the Fashion Show!');
     else if (mode === 'autumn') banner('🍂 Welcome to the Cozy Autumn Farm! Find 12 pumpkins 🎃');
+    else if (mode === 'dance') banner('💃 Bossa Beat Dance Battle — feel the groove!');
+    else if (mode === 'haunt') banner('👻 Welcome to Giggle Manor — friendly ghosts ahead!');
     else if (mode === 'stable') banner('🐴 Welcome to Clover Meadow Stables!');
     else if (mode === 'icecream') banner(mp.on ? '🍦 Scoop Circus! Team up on the stations!' : '🍦 Scoop Circus! Customers want cones & cups!');
     else if (mode === 'tower') banner('🗼 Welcome to the Tower of Doom! Climb past the bubbly goo!');
@@ -11529,7 +11755,7 @@ const Obby = (() => {
         $('#rcBack').onclick = () => rc && rcPickOpen(1); $('#rcHome').onclick = $('#rcFinHome').onclick = stop; $('#rcAgain').onclick = () => rc && rcAgain();
         $('#rcItem').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (rc) rc.tapItem = true; }); }
       raceEnter(); }
-    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable') && touchUI && tipTimer > 4) tipTimer = 4;
+    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance') && touchUI && tipTimer > 4) tipTimer = 4;
     $('#obby').classList.toggle('smode', mode === 'splash'); ['#spLvBox', '#spRoundBox', '#spPeb', '#spShove'].forEach(id => $(id).style.display = mode === 'splash' ? '' : 'none'); if (mode !== 'splash') ['#spAliveBox', '#spPull'].forEach(id => $(id).style.display = 'none');
     ['#spPick', '#spEnd', '#spCode'].forEach(id => $(id).classList.remove('show')); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on');
     if (mode === 'splash'){ if (!window.__spBound){ window.__spBound = true;
@@ -11551,8 +11777,13 @@ const Obby = (() => {
         $('#fsReady').onclick = () => fsReadyBtn(); $('#fsWardClose').onclick = () => fsWardClose(); $('#fsWardBtn').onclick = () => fsWardOpen(fs && fs.near || null); $('#fsKeep').onclick = () => fsKeep(); $('#fsKeepWard2').onclick = () => fsKeep(); }
       fashionEnter(); }
     $('#auBox').style.display = mode === 'autumn' ? '' : 'none'; if (mode === 'autumn') autumnEnter();
-    ['#psCamBtn','#psGalBtn','#psBar','#bkAct','#icAct','#sbAct','#wpAct','#wpRides','#piAct','#piBook','#fsNear','#fsWardBtn','#fsShowBtn','#hsBlind'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); });
+    ['#psCamBtn','#psGalBtn','#psBar','#bkAct','#icAct','#sbAct','#hmAct','#dbLane','#wpAct','#wpRides','#piAct','#piBook','#fsNear','#fsWardBtn','#fsShowBtn','#hsBlind'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); });
     { const bs = $('#fsBuild'); if (bs){ bs.textContent = typeof BUILD !== 'undefined' ? BUILD : ''; bs.classList.add('show'); } }
+    $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }
+    if (mode === 'dance') danceEnter();
+    $('#hmBox').style.display = mode === 'haunt' ? '' : 'none'; ['#hmAct'].forEach(id => $(id).classList.remove('show'));
+    if (mode === 'haunt'){ if (!window.__hmBound){ window.__hmBound = true; $('#hmAct').onclick = () => hmAct(); }
+      hauntEnter(); }
     $('#sbBox').style.display = mode === 'stable' ? '' : 'none'; ['#sbAct', '#sbPick'].forEach(id => $(id).classList.remove('show'));
     if (mode === 'stable'){ if (!window.__sbBound){ window.__sbBound = true; $('#sbAct').onclick = () => sbAct(); }
       stableEnter(); }
@@ -11591,13 +11822,17 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (sb) stableStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (sb) stableStop(); if (hm) hauntStop(); if (db) danceStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
 
   // debug / test hook
   window.obbyDebug = {
+    dance: () => db && {ph: db.ph, t: db.t, score: db.score, combo: db.combo, hits: db.hits, misses: db.misses, chart: db.chart.length, earned: db.earned, prog: dbProg()},
+    dbHit: d => dbHit(d), dbTo(t){ if (db) db.t = t; },
+    haunt: () => hm && {ph: hm.ph, t: hm.t, keys: hm.keys, patternDone: !!hm.patternDone, colour: hm.colour, needCol: hm.needCol, levers: hm.levers.slice(), doorOpen: hm.doorOpen, near: hm.near, earned: hm.earned, prog: hmProg()},
+    hmAct: () => hmAct(), hmTo(x, z){ Object.assign(P, {x, y: .05, z, vx: 0, vy: 0, vz: 0}); },
     stable: () => sb && {ph: sb.ph, pony: sb.pony && Object.assign({}, sb.pony), near: sb.near, ridden: sb.ridden, show: sb.show && Object.assign({}, sb.show), earned: sb.earned, prog: sbProg()},
     sbAdopt: id => sbAdopt(id), sbCare: k => sbCare(k), sbMount: o => sbMount(o), sbShow: () => sbStartShow(), sbAct: () => sbAct(), sbTo(x, z){ Object.assign(P, {x, y: .05, z, vx: 0, vy: 0, vz: 0}); },
     icecream: () => ic && {st: ic.st, orders: ic.orders, lv: ic.lv, served: ic.served, earned: ic.earned, panel: ic.panel, near: ic.near, remote: ic.remote, prog: icProg()},
