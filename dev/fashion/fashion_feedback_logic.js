@@ -30,7 +30,7 @@ function world(store, coins0){
   ctx.isOwned = it => true; ctx.refreshLook = () => { ctx._refreshed = true; };
   ctx.fmt = s => s; ctx.bxEsc = s => s; ctx.mpLook = () => null; ctx.mpGuest = () => false; ctx.mpSendTo = (...a) => { ctx._sent = ctx._sent || []; ctx._sent.push(a); };
   ctx.window = ctx; ctx.self = ctx; vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_TAGS,FS_TAGIDS,FS_TIPS,FS_FXDEF,FS_THEMES,fsBlankAv,fsBlankFx,fsCleanFx,fsCleanTags,fsNpcTags,fsTagTotals,fsTopLiked,fsTipFor,fsFeedbackHtml,fsToggleTag,fsJudgeWalker,fsSendRate,fsLocalDress,fsBeginDress,fsApplySavedLook,fsHasSavedLook,fsKeep,fsCount,buildFashion,fashionWire,fsAvg};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_TAGS,FS_TAGIDS,FS_TIPS,FS_FXDEF,FS_THEMES,FS_WALK,FS_POSE_IN,FS_POSE_OUT,fsBlankAv,fsBlankFx,fsCleanFx,fsCleanTags,fsNpcTags,fsTagTotals,fsTopLiked,fsTipFor,fsFeedbackHtml,fsToggleTag,fsJudgeWalker,fsSendRate,fsLocalDress,fsBeginDress,fsApplySavedLook,fsHasSavedLook,fsKeep,fsCount,buildFashion,fashionWire,fsAvg,fsRateLeft,fsBuild};`, ctx);
   return ctx;
 }
 const st = {rubloxCoins:'500'};
@@ -85,11 +85,16 @@ chk('fsCleanTags drops junk and caps at 3', W.A.fsCleanTags(['theme','nope','hai
 W.A.fs.ph = 'dress'; W.A.fs.ord = ['H']; W.A.fs.th = 0; W.A.fs.dl = 180;
 W.A.fsLocalDress();
 chk('dress still starts blank with feedback build', W.A.fs.fx.top==='tee' && W.A.fs.fx.bot==='shorts' && W.A.fs.fx.shoe==='none' && W.A.fsCount()===0, W.A.fs.fx);
+chk('blank tee soft slate for jacket contrast', /^#9aa4bc$/i.test(W.A.fs.fit.shirt), W.A.fs.fit.shirt);
+chk('walk slot >=14s with ~8.5s+ pose/rate window', W.A.FS_WALK >= 14 && (W.A.FS_POSE_OUT - W.A.FS_POSE_IN) >= 8, {w:W.A.FS_WALK, pose:W.A.FS_POSE_OUT-W.A.FS_POSE_IN});
+W.A.fs.ph='walk'; W.A.fs.wt = 2; W.A.fs.ord=['n0','H'];
+chk('fsRateLeft counts down within the current look', W.A.fsRateLeft() === 12, W.A.fsRateLeft());
 
 if (fs.existsSync(HTML)){
   const h = fs.readFileSync(HTML,'utf8');
   chk('built page: feedback tag UI + Your feedback card', /id="fsRateTags"/.test(h) && /id="fsEndFb"/.test(h) && /FS_TAGS/.test(h) && /Your feedback/.test(h));
   chk('built page: fsrate accepts tags + wire tg', /d\.tags/.test(h) && /w\.tg/.test(h) && /fsNpcTags/.test(h));
   chk('built page: blank start helpers present', /function fsBlankAv/.test(h) && /never auto-wear/.test(h) && /bot: 'shorts'/.test(h));
+  chk('built page: rate countdown + build stamp visible', /id="fsRateCd"/.test(h) && /id="fsBuild"/.test(h) && /FS_WALK = 14/.test(h) && /2026\.11\.09-9/.test(h));
 }
 console.log('RESULT', pass, '/', pass+fail); process.exit(fail?1:0);

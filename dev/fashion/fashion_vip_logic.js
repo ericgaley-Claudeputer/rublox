@@ -5,7 +5,7 @@ const SRC = fs.readFileSync(process.env.FS_SRC || path.join(__dirname, '../p35/f
 const HTML = process.env.PS_HTML || path.join(__dirname, '../../index.html');
 function world(store, coins0){
   const V = () => ({x:0,y:0,z:0,set(x,y,z){this.x=x;this.y=y;this.z=z;},clone(){return V();},copy(o){this.x=o.x;this.y=o.y;this.z=o.z;return this;},multiplyScalar(){return this;}});
-  const O = () => { const o = {position:V(),rotation:V(),scale:V(),visible:true,add(){},remove(){},children:[],material:{color:{setHSL(){}},map:null,needsUpdate:false,dispose(){}},geometry:{dispose(){}},userData:{}}; o.clone = () => O(); return o; };
+  const O = () => { const o = {position:V(),rotation:V(),scale:V(),visible:true,children:[],material:{color:{setHSL(){}},map:null,needsUpdate:false,dispose(){}},geometry:{dispose(){}},userData:{}}; o.add = function(c){ this.children.push(c); c.parent=this; return c; }; o.remove = function(){}; o.clone = () => O(); return o; };
   const els = {};
   const ctx = {
     console, Math, JSON, Object, Array, Number, String, Date, Set, Map, parseInt, parseFloat, isNaN, performance: {now:()=>1e6},
@@ -32,7 +32,7 @@ function world(store, coins0){
   ctx.fmt = s => s; ctx.bxEsc = s => s; ctx.mpLook = () => null; ctx.mpGuest = () => false; ctx.mpSendTo = () => {};
   ctx.window = ctx; ctx.self = ctx; vm.createContext(ctx);
   // provide minimal FX consumer stubs used before decorate runs deeply
-  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_VIP_COST,fsProg,fsIsVip,fsBuyVip,fsVipBadge,fsList,fsKeep,fsHasSavedLook,fsApplySavedLook,fsLoadLook,fsLocalDress,fsBeginDress,fsCleanFx,FS_FXDEF,fsBlankAv,fsBlankFx,fsCleanFx,fsKeep,fsMigrateAvatar,fsLocked,fsVipRows,FX,FS_RACKS,FS_ST,fsWardRender,fsFx,buildFashion,fashionEnter,fashionStop,fsPickOpen,fsName,fsCount,fsShine,fsWardOpen,fsWardClose,fashionCam,fsRoom,fsLocalWalk,fsWardCamInfo,FS_CHANGE,fsMirrorInit,fsMirrorRefresh,fsMirrorStop,fsMirrorFit,fsMirrorFront,fsRebuild,fsVipBadge,FS_TAGS,FS_TAGIDS,FS_TIPS,fsNpcTags,fsTagTotals,fsTopLiked,fsTipFor,fsFeedbackHtml,fsCleanTags,fsToggleTag,fsJudgeWalker,fsSendRate,fashionWire};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A={get fs(){return fs;},FS_VIP_COST,FS_WALK,FS_POSE_IN,FS_POSE_OUT,fsProg,fsIsVip,fsBuyVip,fsVipBadge,fsList,fsKeep,fsHasSavedLook,fsApplySavedLook,fsLoadLook,fsLocalDress,fsBeginDress,fsCleanFx,FS_FXDEF,fsBlankAv,fsBlankFx,fsCleanFx,fsKeep,fsMigrateAvatar,fsLocked,fsVipRows,FX,FS_RACKS,FS_ST,fsWardRender,fsFx,buildFashion,fashionEnter,fashionStop,fsPickOpen,fsName,fsCount,fsShine,fsWardOpen,fsWardClose,fashionCam,fsRoom,fsLocalWalk,fsWardCamInfo,FS_CHANGE,fsMirrorInit,fsMirrorRefresh,fsMirrorStop,fsMirrorFit,fsMirrorFront,fsRebuild,fsVipBadge,fsDecorate,fsBuild,FS_TAGS,FS_TAGIDS,FS_TIPS,fsNpcTags,fsTagTotals,fsTopLiked,fsTipFor,fsFeedbackHtml,fsCleanTags,fsToggleTag,fsJudgeWalker,fsSendRate,fashionWire,fsRateLeft};`, ctx);
   return ctx;
 }
 const st = {rubloxCoins:'500', rubloxAvatar: JSON.stringify({shirt:'#111111',pants:'#222222',head:'#f1c27d',hairColor:'#6b3e1f',hair:'short'})};
@@ -77,6 +77,9 @@ chk('dress start is blank base (tee+shorts, no shoes/hair/mk/acc)', W.A.fs.fx.to
 chk('dress start does NOT auto-wear the saved look', W.A.fs.fx.top!=='velvet' && W.A.fs.fx.dress!=='pastelg');
 chk('blank start pieces-on count is 0', W.A.fsCount()===0, W.A.fsCount());
 chk('blank fit strips normal avatar hat/extras', !W.A.fs.fit.hat && !W.A.fs.fit.ears && !W.A.fs.fit.tail && !W.A.fs.fit.back, W.A.fs.fit);
+chk('blank tee is soft slate (contrasts light jackets)', /^#9aa4bc$/i.test(W.A.fs.fit.shirt) && /^#7e8799$/i.test(W.A.fs.fit.pants), W.A.fs.fit);
+chk('rating window per look is at least 10s', W.A.FS_WALK >= 10 && W.A.FS_POSE_OUT - W.A.FS_POSE_IN >= 8, {walk:W.A.FS_WALK, pose:W.A.FS_POSE_OUT - W.A.FS_POSE_IN});
+
 // manual Wear my saved look still works
 W.A.fsApplySavedLook(false);
 chk('Wear my saved look button loads VIP saved look', W.A.fs.fx.top==='velvet' && W.A.fs.fx.dress==='pastelg' && W.A.fs.fx.shoe==='goldheel' && W.A.fs.fx.hair==='pastel' && W.A.fs.fx.acc.includes('vipcrown') && W.A.fs.fx.acc.includes('vipbadge') && W.A.fs.fx.mk==='vipglam', W.A.fs.fx);
@@ -92,6 +95,15 @@ W.A.fsBeginDress();
 chk('NPC models start blank in dress phase', ['n0','n1','n2'].every(u => { const o=W.A.fs.npcFit[u]; return o && o.fx.top==='tee' && o.fx.bot==='shorts' && o.fx.shoe==='none' && (o.fx.acc||[]).length===0; }), W.A.fs.npcFit && Object.keys(W.A.fs.npcFit));
 
 chk('no real-money strings in fashion source', !/robux|real money|purchase|\$|credit card|stripe|paypal/i.test(SRC) || /never real money/i.test(SRC));
+// Cool Jacket must add visible overlay meshes on the body (not just recolour the blank tee)
+const blankM = W.A.fsBuild(W.A.fsBlankAv(W.avatar), W.A.fsBlankFx());
+const pale = Object.assign(W.A.fsBlankAv(W.avatar), {shirt:'#f5f5f5'});
+const jackM = W.A.fsBuild(pale, W.A.fsCleanFx({top:'jacket', bot:'shorts', dress:'none', shoe:'none', hair:'base', mk:'none', acc:[], pat:'none'}));
+const bodyBlank = blankM.pivot.children[0].children.length;
+const bodyJack = jackM.pivot.children[0].children.length;
+chk('Cool Jacket adds mesh overlays over blank tee (not invisible)', bodyJack >= bodyBlank + 5, {bodyBlank, bodyJack});
+chk('jacket code deepens pale shirts + soft undershirt', /lum > 160/.test(SRC) && /#dfe3ee/.test(SRC) && /TD \/ 2 \+ \.08/.test(SRC));
+
 
 // --- boutique polish: highlights, building, wardrobe preview, cosmetics ---
 chk('fsShine / rim highlights exist on fashion builds', typeof W.A.fsShine === 'function');
@@ -171,6 +183,8 @@ if (fs.existsSync(HTML)){
   chk('built page: VIP lounge + Save for next show + coins-only unlock', /Star VIP/.test(h) && /Save for next show/.test(h) && /FS_VIP_COST = 250/.test(h) && /never real money/i.test(h));
   chk('built page: Save button in wardrobe panel (mini + footer)', /id="fsKeepWard"/.test(h) && /id="fsKeepWard2"/.test(h));
   chk('built page: VIP badge + blank start + saved-look button + no doorway lintel band', /function fsVipBadge/.test(h) && /fsBlankAv/.test(h) && /never auto-wear/.test(h) && /fsApplySavedLook/.test(h) && /fsLocalDress/.test(h) && /Wear my saved look/.test(h) && !/fsDeco\(\.4, \.5, 5\.2, '#ff6fb5'/.test(h) && /x: -23\.5/.test(h) && /oCoins'\)\.textContent = coins/.test(h) && /VIP You/.test(h));
+  chk('built page: rating countdown + longer walk + build stamp', /id="fsRateCd"/.test(h) && /FS_WALK = 14/.test(h) && /id="fsBuild"/.test(h) && /fsRateLeft/.test(h));
+
   const km = h.match(/function fsKeep\(\)\{[\s\S]*?\n  \}/);
   chk('built page: fsKeep no longer writes rubloxAvatar', !!(km && km[0].includes('rubloxFsLook') && !km[0].includes("save('rubloxAvatar'")));
   chk('built page: fashionStop restores normal avatar model', /function fashionStop\(\)\{[\s\S]*buildPlayer\(avatar\)/.test(h));

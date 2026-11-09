@@ -1,5 +1,5 @@
   /* ===================== t207u/t211u: FASHION SHOW v2 — lobby, walk-in dressing room, themes, runway poses, 1-5 star ratings, podium, fashion levels ===================== */
-  const FS_TIMES = [60, 180, 300], FS_INTRO = 4.2, FS_WALK = 9, FS_POD = 7, FS_JOIN = 5, FS_PRIZE = [30, 20, 10], FS_ACCMAX = 4;
+  const FS_TIMES = [60, 180, 300], FS_INTRO = 4.2, FS_WALK = 14, FS_POSE_IN = 3.5, FS_POSE_OUT = 12, FS_POD = 7, FS_JOIN = 5, FS_PRIZE = [30, 20, 10], FS_ACCMAX = 4;
   const FS_THEMES = [
     {id: 'beach',  name: 'Beach Day',      emoji: '🏖️', cols: ['#ffd23f', '#3ac6ff', '#ff9f1c', '#2ec4b6'], likes: ['shorts', 'shades', 'backcap', 'star', 'sun', 'flower'], fx: ['shorts', 'sneak', 'sunnies', 'bag', 'tank', 'flowers', 'swoop', 'crop', 'pony'], hint: 'sunny colours, shorts, sunnies, a beach bag'},
     {id: 'hero',   name: 'Superhero',      emoji: '🦸', cols: ['#ff4d4d', '#3a86ff', '#ffd23f'], likes: ['lightning', 'hero', 'cape', 'star', 'mask', 'wings'], fx: ['armor', 'boots', 'jersey', 'gloves', 'belt', 'mohawk', 'leggings', 'stars'], hint: 'red, blue & yellow, hero armor, boots'},
@@ -96,11 +96,11 @@
     return f;
   }
   function fsBlankAv(base){
-    // plain neutral body — keep skin/body identity, strip every fashion accessory from the normal avatar
+    // plain soft-slate body — mid-tone so white/cream jackets & light clothes read clearly over the blank tee
     const b = base && typeof base === 'object' ? base : (typeof avatar !== 'undefined' ? avatar : DEF);
     return fixAv(Object.assign({}, DEF, {
       head: b.head || DEF.head, body: b.body || DEF.body, hair: 'short', hairColor: b.hairColor || DEF.hairColor,
-      shirt: '#f5f5f5', pants: '#e8e8e8',
+      shirt: '#9aa4bc', pants: '#7e8799',
       hat: null, shirtPat: null, pantsPat: null, face: null, ears: null, tail: null, back: null, brow: null, lash: null,
     }));
   }
@@ -200,9 +200,20 @@
     if (top === 'tee'){ if (fx.pat !== 'none' && D === 'none'){ torsoOv(Pm); sleeves(Pm, .45); } }
     else if (top === 'crop'){ torsoOv(Pm, .55, 1.73); if (D === 'none') box(body, TW + .015, .44, TD + .015, skin, 0, 1.23, 0); sleeves(Pm, .32); }
     else if (top === 'puff'){ torsoOv(Pm); arms.forEach(a => ball(a, .3, Pm, 0, -.1, 0).scale.set(1, .85, 1)); }
-    else if (top === 'jacket'){ const J = mat(shade(av.shirt, -45)); torsoOv(mat('#f5f5f5'), 1, 1.5, .02);
-      [-1, 1].forEach(s => { box(body, TW * .34, 1.0, .07, J, s * (TW / 2 - TW * .17 + .02), 1.5, TD / 2 + .04); box(body, .12, .38, .04, mat(shade(av.shirt, -70)), s * TW * .2, 1.82, TD / 2 + .08).rotation.z = s * .5; });
-      box(body, TW + .05, 1.0, .06, J, 0, 1.5, -TD / 2 - .03); [-1, 1].forEach(s => box(body, .06, 1.0, TD + .06, J, s * (TW / 2 + .03), 1.5, 0)); sleeves(J, .84, .05); }
+    else if (top === 'jacket'){
+      // open jacket over a soft undershirt; push panels out so they never z-fight / disappear into the blank tee
+      const hex = h => { const n = parseInt(String(h || '#888').slice(1, 7), 16) || 0; return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+      const rgb = hex(av.shirt), lum = (rgb[0] * .3 + rgb[1] * .59 + rgb[2] * .11);
+      const J = mat(shade(av.shirt, lum > 160 ? -70 : -50)); // pale shirts deepen so the jacket still reads
+      torsoOv(mat('#dfe3ee'), 1.04, 1.5, .08);   // soft undershirt layer (always contrasts jacket)
+      [-1, 1].forEach(s => {
+        box(body, TW * .38, 1.05, .1, J, s * (TW / 2 - TW * .15 + .05), 1.5, TD / 2 + .08);
+        box(body, .14, .42, .05, mat(shade(av.shirt, -85)), s * TW * .24, 1.84, TD / 2 + .13).rotation.z = s * .5;
+      });
+      box(body, TW + .1, 1.05, .1, J, 0, 1.5, -TD / 2 - .06);
+      [-1, 1].forEach(s => box(body, .1, 1.05, TD + .12, J, s * (TW / 2 + .06), 1.5, 0));
+      sleeves(J, .88, .1);
+    }
     else if (top === 'sweater'){ torsoOv(Pm, 1.06, 1.49, .1); torus(body, .3, .1, Pm, 0, 2.0, 0).rotation.x = Math.PI / 2; sleeves(Pm, .86, .08); arms.forEach(a => box(a, AW + .1, .12, AW + .1, mat(shade(av.shirt, -25)), 0, -.78, 0)); }
     else if (top === 'tux'){ torsoOv(Pm, 1.0, 1.5, .04); box(body, TW * .3, .9, .02, '#ffffff', 0, 1.55, TD / 2 + .035); box(body, .3, .1, .05, '#1d1d1d', 0, 1.9, TD / 2 + .06); [1.62, 1.42].forEach(y => ball(body, .035, '#1d1d1d', 0, y, TD / 2 + .05)); sleeves(Pm, .84); arms.forEach(a => box(a, AW + .05, .1, AW + .05, '#ffffff', 0, -.79, 0)); }
     else if (top === 'sailor'){ torsoOv(Pm); box(body, TW * .86, .42, .04, '#1d2340', 0, 1.78, -TD / 2 - .04); [-1, 1].forEach(s => { box(body, .14, .5, .04, '#1d2340', s * .17, 1.8, TD / 2 + .04).rotation.z = s * .55; }); box(body, .2, .14, .06, '#ff4d4d', 0, 1.6, TD / 2 + .06); sleeves(Pm, .4); }
@@ -988,11 +999,13 @@
     const u = fsCur(); n = n | 0; if (!u || u === fsUid() || n < 1 || n > 5) return false;
     fs.rated[u] = n; fsSendRate(u); SND.coin(); fsRateBar(true); return true;
   }
+  function fsRateLeft(){ if (!fs || fs.ph !== 'walk') return 0; return Math.max(0, Math.ceil((Math.floor(fs.wt / FS_WALK) + 1) * FS_WALK - fs.wt)); }
   function fsRateBar(force){
     const u = fsCur(), me = fsUid(), el = $('#fsRate'), pz = $('#fsPoses');
     if (!u){ el.classList.remove('show'); pz.classList.remove('show'); fs.rbU = null; return; }
     if (u === me){ el.classList.remove('show'); if (fs.rbU !== u || force) fsPoseBar(); pz.classList.add('show'); fs.rbU = u; return; }
     pz.classList.remove('show');
+    const left = fsRateLeft();
     if (fs.rbU !== u || force){ fs.rbU = u; const v = fs.rated[u] || 0, mine = fsCleanTags(fs.myTags[u] || []);
       if (!fs.tagFocus || !FS_TAGIDS.has(fs.tagFocus)) fs.tagFocus = 'colors';
       $('#fsRateN').textContent = '⭐ Rate ' + fsName(u) + '\'s look!';
@@ -1007,6 +1020,7 @@
         ? ('✅ ' + v + ' ⭐ · optional: tap what you liked' + (pad.on ? ' (LB/RB + Ⓧ)' : ''))
         : (pad.on ? 'D-pad ⬅ ➡ to rate · LB/RB tags' : touchUI ? 'Tap a star · optional tags below' : 'Keys 1-5 · click tags you liked');
     }
+    const cd = $('#fsRateCd'); if (cd){ cd.textContent = '⏱️ ' + left + 's'; cd.classList.toggle('low', left <= 3); }
     el.classList.add('show');
   }
   function fsPoseBar(){ const cur = fs.poses[fsUid()] != null ? fs.poses[fsUid()] : fs.myPose;
@@ -1174,10 +1188,10 @@
         else { const o = fs.ord.filter(u => !fs.pod.includes(u)).indexOf(W.u); M.g.position.set((o % 2 ? 1 : -1) * (5.6 + (o >> 1) * 1.6), .05, 31.2); M.g.rotation.y = Math.PI; applyPose(dt, FS_POSES[0].p(t), M); }
         return; }
       const lt = fs.wt - k * FS_WALK; if (fs.ph !== 'walk' || lt < 0 || lt > FS_WALK){ M.g.visible = false; return; }
-      M.g.visible = true; W.lab.visible = W.meVip || (lt > 3.2 && lt < 7); let z, ry = 0, p = null;
-      if (lt < 3.2) z = z0 + (z1 - z0) * (lt / 3.2);
-      else if (lt < 7){ z = z1; p = FS_POSES[fs.poses[W.u] != null ? fs.poses[W.u] : 0].p(lt - 3.2); }
-      else { z = z1 - (lt - 7) * 10; ry = Math.PI; }
+      M.g.visible = true; W.lab.visible = W.meVip || (lt > FS_POSE_IN && lt < FS_POSE_OUT); let z, ry = 0, p = null;
+      if (lt < FS_POSE_IN) z = z0 + (z1 - z0) * (lt / FS_POSE_IN);
+      else if (lt < FS_POSE_OUT){ z = z1; p = FS_POSES[fs.poses[W.u] != null ? fs.poses[W.u] : 0].p(lt - FS_POSE_IN); }
+      else { z = z1 - (lt - FS_POSE_OUT) * 10; ry = Math.PI; }
       M.g.position.set(0, .95, z); M.g.rotation.y = ry; W.ph += dt * 6;
       applyPose(dt, p ? Object.assign({lL: 0, lR: 0}, p) : animPose('default', {state: 'walk', t: t + k, ph: W.ph, sp: .7}), M);
       if (!W.shown && lt > .05){ W.shown = true; banner('👠 ' + (W.u === fsUid() ? 'Your turn! Pick a pose! ✨' : fsName(W.u) + ' hits the runway!')); }
@@ -1190,7 +1204,7 @@
     if (!(fs.ph === 'walk' || fs.ph === 'podium' || fs.ph === 'end')) return false;
     if (fs.ph === 'walk'){ let tx = 0, ty = 2.05, tz = 2; const k = Math.min(fs.walkers.length - 1, Math.floor(fs.wt / FS_WALK)), W = fs.walkers[k];
       if (W && W.m.g.visible){ tx = W.m.g.position.x; ty = W.m.g.position.y + 1.65; tz = W.m.g.position.z; }
-      const lt = fs.wt - k * FS_WALK, close = lt > 3.2 && lt < 7;
+      const lt = fs.wt - k * FS_WALK, close = lt > FS_POSE_IN && lt < FS_POSE_OUT;
       if (close) camera.position.set(2.2 + Math.sin(worldT * .4) * .8, 2.7, 11.2); else camera.position.set(4.2 + Math.sin(worldT * .25) * 1.2, 3.1, 9.9);
       camera.lookAt(tx, ty, tz); return true; }
     camera.position.set(Math.sin(worldT * .3) * 1.2, 3.4, 21.5); camera.lookAt(0, 2.4, 30); return true;
@@ -1209,10 +1223,14 @@
     if ($('#fsPh').textContent !== ph) $('#fsPh').textContent = ph;
     const T = FS_THEMES[fs.th], L = fsLevel(fsProg().xp), th = fs.ph === 'lobby' ? ' · ' + L.e + ' Lv ' + L.lv : ' · ' + T.emoji + ' ' + T.name;
     if ($('#fsThB').textContent !== th) $('#fsThB').textContent = th;
-    $('#fsT').textContent = fs.ph === 'dress' || fs.ph === 'intro' || fs.ph === 'podium' ? fmt(Math.max(0, Math.ceil(fs.t))) : fs.ph === 'walk' ? Math.min(fs.ord.length, Math.floor(fs.wt / FS_WALK) + 1) + '/' + fs.ord.length : '—';
+    if (fs.ph === 'walk'){
+      const cur = fsCur(), left = fsRateLeft(), slot = Math.min(fs.ord.length, Math.floor(fs.wt / FS_WALK) + 1) + '/' + fs.ord.length;
+      $('#fsT').textContent = (cur && cur !== fsUid() ? left + 's · ' : '') + slot;
+    } else $('#fsT').textContent = fs.ph === 'dress' || fs.ph === 'intro' || fs.ph === 'podium' ? fmt(Math.max(0, Math.ceil(fs.t))) : '—';
     if (fs.ph === 'dress' && fs.ward) $('#fsWardT').textContent = '⏱️ ' + fmt(Math.max(0, Math.ceil(fs.t)));
     // show the REAL Rublox coin balance (hud() otherwise overwrites #oCoins with runCoins, which is 0 here)
     $('#oCoins').textContent = coins;
+    const bs = $('#fsBuild'); if (bs && bs.textContent !== (typeof BUILD !== 'undefined' ? BUILD : '')) bs.textContent = typeof BUILD !== 'undefined' ? BUILD : '';
   }
   function fsPad(jp){
     if (!fs) return false;
@@ -1237,10 +1255,12 @@
     fsMigrateAvatar();
     fs.remote = mpGuest();
     if (fs.remote && mp.fsW) fashionFromHost(mp.fsW, true);
+    const bs = $('#fsBuild'); if (bs){ bs.textContent = typeof BUILD !== 'undefined' ? BUILD : ''; bs.classList.add('show'); }
     if (fs.ph === 'lobby'){ fsToLobby(); fsPickOpen(); }
   }
   function fashionStop(){
     fsHideAll(); document.body.classList.remove('fsnotip'); document.body.classList.remove('fsward-dock'); fsMirrorStop();
+    const bs = $('#fsBuild'); if (bs) bs.classList.remove('show');
     if (fs){ fsClearWalkers(); if (fs.vipSpark){ scene.remove(fs.vipSpark); fs.vipSpark = null; } try { if (model){ const g = model.g, pos = g.position.clone(), ry = g.rotation.y; scene.remove(g); model = buildPlayer(avatar); model.g.position.copy(pos); model.g.rotation.y = ry; scene.add(model.g); } } catch (e){} }
     fs = null;
   }
