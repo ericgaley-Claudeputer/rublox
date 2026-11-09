@@ -506,7 +506,7 @@
     return s;
   }
   function fsStars(score){ return Math.max(1, Math.min(5, Math.round(1 + score / 3 + (Math.random() - .5) * 1.4))); }
-  function fsRebuild(av, fx){ if (!model) return; const g = model.g, pos = g.position.clone(), ry = g.rotation.y; scene.remove(g); model = fx ? fsBuild(av, fx) : buildPlayer(av); model.g.position.copy(pos); model.g.rotation.y = ry; scene.add(model.g); fs.vipTag = null; fsVipBadge(); }
+  function fsRebuild(av, fx){ if (!model) return; const g = model.g, pos = g.position.clone(), ry = g.rotation.y; scene.remove(g); model = fx ? fsBuild(av, fx) : buildPlayer(av); model.g.position.copy(pos); model.g.rotation.y = ry; scene.add(model.g); if (fs){ fs.vipTag = null; fsVipBadge(); } if (fs && fs.ward) fsMirrorRefresh(); }
   function fsThumb(av, fx){
     const f = fsCleanFx(fx), c = document.createElement('canvas'); c.width = 60; c.height = 78; const x = c.getContext('2d');
     x.fillStyle = '#fff0f7'; x.fillRect(0, 0, 60, 78);
@@ -525,32 +525,110 @@
     return c.toDataURL();
   }
   /* --- the wardrobe (tabs = the racks / stations in the room) --- */
-  // clear open floor near the boutique doorway — no racks/mirrors between here and a front camera
-  const FS_CHANGE = {x: -21.5, z: 0, face: Math.PI / 2};   // face east (+X) toward the open door
+
+  /* --- wardrobe mirror preview: own scene/renderer so walls/world-cam can never blank "see me" --- */
+  function fsMirrorInit(){
+    if (!fs) return;
+    const canvas = $('#fsMirror'); if (!canvas) return;
+    if (fs.mirror && fs.mirror.ren){ fsMirrorResize(); return; }
+    let ren;
+    try { ren = new THREE.WebGLRenderer({canvas, antialias: true, alpha: false, powerPreference: 'high-performance'}); }
+    catch (e){ return; }
+    ren.setClearColor('#f3d4ff', 1);
+    const sc = new THREE.Scene(); sc.background = new THREE.Color('#f3d4ff');
+    // soft pink stage
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(2.6, 28), new THREE.MeshBasicMaterial({color: '#ffe3f1'})); floor.rotation.x = -Math.PI / 2; floor.position.y = 0; sc.add(floor);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.1, .04, 8, 28), new THREE.MeshBasicMaterial({color: '#ffb3d9'})); ring.rotation.x = Math.PI / 2; ring.position.y = .02; sc.add(ring);
+    const bg = new THREE.Mesh(new THREE.PlaneGeometry(7, 7), new THREE.MeshBasicMaterial({color: '#ffd6ec'})); bg.position.set(0, 2.2, -2.2); sc.add(bg);
+    const cam = new THREE.PerspectiveCamera(32, 220 / 320, .1, 40);
+    cam.position.set(0, 1.55, 5.4); cam.lookAt(0, 1.15, 0);
+    try {
+      const key = new THREE.PointLight('#ffffff', 1.55, 22); key.position.set(2.2, 3.4, 3.2); sc.add(key);
+      const fill = new THREE.PointLight('#ffb3e8', 1.0, 18); fill.position.set(-2.4, 2.4, 2.4); sc.add(fill);
+      const rim = new THREE.PointLight('#fff6c9', .7, 14); rim.position.set(0, 2.8, -2.5); sc.add(rim);
+      sc.add(new THREE.AmbientLight('#ffffff', .6));
+    } catch (e){}
+    const M = {ren, sc, cam, yaw: .2, drag: false, lastX: 0, avatar: null, keyBound: false};
+    fs.mirror = M;
+    const onDown = (x) => { M.drag = true; M.lastX = x; };
+    const onMove = (x) => { if (!M.drag) return; M.yaw += (x - M.lastX) * .01; M.lastX = x; };
+    const onUp = () => { M.drag = false; };
+    canvas.onpointerdown = (e) => { try { canvas.setPointerCapture(e.pointerId); } catch (err){} onDown(e.clientX); e.preventDefault(); };
+    canvas.onpointermove = (e) => { onMove(e.clientX); };
+    canvas.onpointerup = canvas.onpointercancel = () => onUp();
+    if (!M.keyBound){ M.keyBound = true;
+      const onKey = (e) => { if (!fs || !fs.ward || !fs.mirror) return; if (e.code === 'ArrowLeft'){ fs.mirror.yaw -= .12; e.preventDefault && e.preventDefault(); } if (e.code === 'ArrowRight'){ fs.mirror.yaw += .12; e.preventDefault && e.preventDefault(); } };
+      try { if (typeof addEventListener === 'function') addEventListener('keydown', onKey); else if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('keydown', onKey); } catch (e){}
+      M._onKey = onKey;
+    }
+    fsMirrorResize();
+  }
+  function fsMirrorResize(){
+    if (!fs || !fs.mirror || !fs.mirror.ren) return;
+    const canvas = $('#fsMirror'); if (!canvas) return;
+    const box = $('#fsMirrorBox');
+    const w = Math.max(120, Math.floor((box && box.clientWidth) || canvas.clientWidth || 220));
+    const mobile = !!touchUI || (typeof innerWidth === 'number' && innerWidth < 760);
+    const h = Math.max(140, Math.floor(mobile ? Math.min(180, w * .75) : Math.max(280, w * 1.35)));
+    const pr = Math.min((typeof devicePixelRatio === 'number' ? devicePixelRatio : 1), 2);
+    if (canvas.width !== Math.floor(w * pr) || canvas.height !== Math.floor(h * pr)){
+      fs.mirror.ren.setPixelRatio(pr); fs.mirror.ren.setSize(w, h, false);
+      fs.mirror.cam.aspect = w / h; fs.mirror.cam.updateProjectionMatrix();
+    }
+  }
+  function fsMirrorDisposeAvatar(){
+    if (!fs || !fs.mirror || !fs.mirror.avatar) return;
+    const A = fs.mirror.avatar;
+    try { fs.mirror.sc.remove(A.g); A.g.traverse(o => { if (o.geometry) o.geometry.dispose(); }); } catch (e){}
+    fs.mirror.avatar = null;
+  }
+  function fsMirrorRefresh(){
+    if (!fs || !fs.ward) return;
+    if (!fs.mirror || !fs.mirror.ren) fsMirrorInit();
+    if (!fs.mirror || !fs.mirror.ren) return;
+    fsMirrorDisposeAvatar();
+    try {
+      const A = fsBuild(fs.fit || Object.assign({}, DEF, avatar), fs.fx || fsCleanFx(null));
+      A.g.position.set(0, 0, 0); A.g.rotation.y = fs.mirror.yaw; fs.mirror.sc.add(A.g); fs.mirror.avatar = A;
+    } catch (e){}
+    fsMirrorResize();
+  }
+  function fsMirrorFrame(dt){
+    if (!fs || !fs.ward || !fs.mirror || !fs.mirror.ren) return;
+    const M = fs.mirror;
+    if (!M.drag) M.yaw += (dt || .016) * .35;
+    // right stick (axes 2) turns the mirror when a gamepad is connected
+    try {
+      const gps = (navigator.getGamepads && navigator.getGamepads()) || [];
+      for (const g of gps){ if (!g) continue; const rx = +g.axes[2] || 0; if (Math.abs(rx) > .25){ M.yaw += rx * (dt || .016) * 2.4; break; } }
+    } catch (e){}
+    if (M.avatar && M.avatar.g) M.avatar.g.rotation.y = M.yaw;
+    if (M.avatar && M.avatar._fsSparks) M.avatar._fsSparks.forEach((o, i) => { if (o && o.material) o.material.opacity = .55 + Math.sin(worldT * 5 + i) * .35; });
+    fsMirrorResize();
+    try { M.ren.render(M.sc, M.cam); } catch (e){}
+  }
+  function fsMirrorStop(){
+    if (!fs || !fs.mirror) return;
+    const M = fs.mirror;
+    fsMirrorDisposeAvatar();
+    try { if (M._onKey){ if (typeof removeEventListener === 'function') removeEventListener('keydown', M._onKey); else if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('keydown', M._onKey); } } catch (e){}
+    try { if (M.ren){ M.ren.dispose(); M.ren.forceContextLoss && M.ren.forceContextLoss(); } } catch (e){}
+    fs.mirror = null;
+  }
+
+  // kept for tests / debug — wardrobe no longer teleports the world camera here
+  const FS_CHANGE = {x: -21.5, z: 0, face: Math.PI / 2};
   function fsWardOpen(tab){
     if (!fs || fs.ph !== 'dress') return; if (tab) fs.tab = tab; fs.ward = true; fsWardRender();
     $('#fsWard').classList.add('show'); $('#fsWardBtn').classList.remove('show'); $('#fsNear').classList.remove('show'); fs.near = null;
     document.body.classList.add('fsward-dock');
-    if (!fs.wardPos) fs.wardPos = {x: P.x, y: P.y, z: P.z, face: P.face, yaw: cam.yaw, pitch: cam.pitch, dist: cam.dist};
-    // park the avatar in the clear changing spot, facing the camera (front-on)
-    Object.assign(P, {x: FS_CHANGE.x, y: .05, z: FS_CHANGE.z, vx: 0, vy: 0, vz: 0}); P.face = FS_CHANGE.face;
-    cam.yaw = P.face; cam.pitch = .12; cam.dist = 6.2;
-    // hide boutique walls / doorway cheeks for the preview so nothing bands the view
-    if (fs.bld && fs.bld.walls) fs.bld.walls.forEach(w => { w.visible = false; });
-    // bright key light on the avatar while changing
-    try {
-      if (!fs.wardLight){ fs.wardLight = new THREE.PointLight('#ffffff', 1.6, 14); scene.add(fs.wardLight); }
-      fs.wardLight.visible = true; fs.wardLight.position.set(FS_CHANGE.x + 2.2, 3.2, FS_CHANGE.z);
-      if (!fs.wardFill){ fs.wardFill = new THREE.PointLight('#ffb3e8', .9, 10); scene.add(fs.wardFill); }
-      fs.wardFill.visible = true; fs.wardFill.position.set(FS_CHANGE.x - .8, 2.4, FS_CHANGE.z + 1.5);
-    } catch (e){}
+    // do NOT move the world camera / player — that blanked the view behind walls. Mirror preview handles "see me".
+    fsMirrorInit(); fsMirrorRefresh();
   }
   function fsWardClose(){
     if (!fs) return; fs.ward = false; $('#fsWard').classList.remove('show'); if (fs.ph === 'dress') $('#fsWardBtn').classList.add('show');
     document.body.classList.remove('fsward-dock');
-    if (fs.wardPos){ Object.assign(P, {x: fs.wardPos.x, y: fs.wardPos.y, z: fs.wardPos.z, vx: 0, vy: 0, vz: 0}); P.face = fs.wardPos.face; cam.yaw = fs.wardPos.yaw; cam.pitch = fs.wardPos.pitch; cam.dist = fs.wardPos.dist; fs.wardPos = null; }
-    if (fs.bld && fs.bld.walls) fs.bld.walls.forEach(w => { w.visible = true; });
-    if (fs.wardLight) fs.wardLight.visible = false; if (fs.wardFill) fs.wardFill.visible = false;
+    fsMirrorStop();
   }
   function fsLocked(r){
     if (r && r.vip && !fsIsVip()) return true;
@@ -681,7 +759,7 @@
       : '⌨️ WASD move · Space jump · ' + (ph === 'dress' ? 'E try on at a rack · C wardrobe' : 'C show menu') + ' · Esc menu';
     return a + '<br>' + (ph === 'dress' ? '👗 Walk up to a rack, mirror or the 👑 VIP Lounge! Fashion clothes stay in the show only. 💖 = voters love it' : '✨ Explore the lobby · unlock Star VIP with Rublox coins · then start the show!');
   }
-  function fsHideAll(){ ['#fsPick', '#fsEnd', '#fsWard', '#fsRate', '#fsPoses', '#fsIntro'].forEach(id => $(id).classList.remove('show')); ['#fsWardBtn', '#fsNear', '#fsShowBtn'].forEach(id => $(id).classList.remove('show')); document.body.classList.remove('fsward-dock'); if (fs){ fs.ward = false; fs.near = null; fs.wardPos = null; if (fs.wardLight) fs.wardLight.visible = false; if (fs.wardFill) fs.wardFill.visible = false; if (fs.bld && fs.bld.walls) fs.bld.walls.forEach(w => { w.visible = true; }); } }
+  function fsHideAll(){ ['#fsPick', '#fsEnd', '#fsWard', '#fsRate', '#fsPoses', '#fsIntro'].forEach(id => $(id).classList.remove('show')); ['#fsWardBtn', '#fsNear', '#fsShowBtn'].forEach(id => $(id).classList.remove('show')); document.body.classList.remove('fsward-dock'); if (fs){ fs.ward = false; fs.near = null; fs.wardPos = null; fsMirrorStop(); } }
   function fsPickOpen(){
     fsHideAll(); fs.ph = 'lobby'; fs.lobPanel = true; choosing = true; const g = mpGuest();
     fsClearWalkers(); fsNpcsTo('lobby');
@@ -889,6 +967,7 @@
   }
   function fashionAnimate(dt){
     if (!fs) return;
+    if (fs.ward) fsMirrorFrame(dt);
     const t = worldT;
     (fs.cones || []).forEach(g => { g.rotation.z = Math.sin(t * .8 + g.userData.ph) * .35; g.rotation.x = Math.cos(t * .6 + g.userData.ph) * .2; });
     fs.spots.forEach((b, i) => b.material.color.setHSL((t * .3 + i * .07) % 1, .9, .75));
@@ -934,25 +1013,8 @@
   }
   function fashionCam(){
     if (!fs) return false;
-    // wardrobe open: camera IN FRONT of the avatar (along facing dir), pulled back for full head-to-toe
-    if (fs.ward && fs.ph === 'dress' && model && model.g){
-      const px = P.x, pz = P.z, face = P.face;
-      const mobile = !!touchUI || (typeof innerWidth === 'number' && innerWidth < 760);
-      const dist = mobile ? 5.6 : 6.4;   // far enough to see head → toes
-      // IN FRONT of facing direction (NOT behind — third-person uses face+PI)
-      const fx = Math.sin(face), fz = Math.cos(face);
-      // desktop: nudge camera left so the avatar sits in the free RIGHT half beside the docked panel
-      // mobile: keep centered above the bottom-docked panel
-      const sx = mobile ? 0 : -Math.cos(face) * 1.15;
-      const sz = mobile ? 0 : Math.sin(face) * 1.15;
-      const camY = mobile ? 2.85 : 2.15;
-      const lookY = mobile ? 1.35 : 1.15;   // mid-body aim → full figure in frame
-      camera.position.set(px + fx * dist + sx, camY, pz + fz * dist + sz);
-      camera.lookAt(px - (mobile ? 0 : sx * .35), lookY, pz - (mobile ? 0 : sz * .35));
-      // keep walls hidden for the whole preview
-      if (fs.bld && fs.bld.walls) fs.bld.walls.forEach(w => { w.visible = false; });
-      return true;
-    }
+    // wardrobe uses the dedicated mirror preview — never override the world camera (that blanked the view)
+    if (fs.ward && fs.ph === 'dress') return false;
     if (!(fs.ph === 'walk' || fs.ph === 'podium' || fs.ph === 'end')) return false;
     if (fs.ph === 'walk'){ let tx = 0, ty = 2.05, tz = 2; const k = Math.min(fs.walkers.length - 1, Math.floor(fs.wt / FS_WALK)), W = fs.walkers[k];
       if (W && W.m.g.visible){ tx = W.m.g.position.x; ty = W.m.g.position.y + 1.65; tz = W.m.g.position.z; }
@@ -963,13 +1025,12 @@
   }
 
   function fsWardCamInfo(){
-    if (!fs || !fs.ward) return null;
-    const px = P.x, pz = P.z, face = P.face, fx = Math.sin(face), fz = Math.cos(face);
-    const mobile = !!touchUI || (typeof innerWidth === 'number' && innerWidth < 760);
-    const dist = mobile ? 5.6 : 6.4;
-    const cx = px + fx * dist, cz = pz + fz * dist;
-    const dx = cx - px, dz = cz - pz, d = Math.hypot(dx, dz) || 1;
-    return {px, pz, face, cx, cz, dist: d, dot: (dx * fx + dz * fz) / d, spot: FS_CHANGE, camY: mobile ? 2.85 : 2.15};
+    if (!fs || !fs.ward || !fs.mirror || !fs.mirror.cam) return null;
+    const M = fs.mirror, c = M.cam.position, lookY = 1.1;
+    // mirror camera sits in front of the preview avatar (avatar faces +Z toward cam at yaw 0)
+    const dist = Math.hypot(c.x - 0, c.z - 0);
+    const dot = (0 * c.x + 1 * c.z) / (dist || 1);  // +Z is "front" of the mirror avatar at yaw 0
+    return {mode: 'mirror', dist, dot, camY: c.y, lookY, yaw: M.yaw, hasAvatar: !!M.avatar, canvas: !!M.ren};
   }
   function fashionHud(){
     if (!fs) return;
@@ -1004,7 +1065,7 @@
     if (fs.ph === 'lobby'){ fsToLobby(); fsPickOpen(); }
   }
   function fashionStop(){
-    fsHideAll(); document.body.classList.remove('fsnotip'); document.body.classList.remove('fsward-dock');
+    fsHideAll(); document.body.classList.remove('fsnotip'); document.body.classList.remove('fsward-dock'); fsMirrorStop();
     if (fs){ fsClearWalkers(); if (fs.vipSpark){ scene.remove(fs.vipSpark); fs.vipSpark = null; } try { if (model){ const g = model.g, pos = g.position.clone(), ry = g.rotation.y; scene.remove(g); model = buildPlayer(avatar); model.g.position.copy(pos); model.g.rotation.y = ry; scene.add(model.g); } } catch (e){} }
     fs = null;
   }

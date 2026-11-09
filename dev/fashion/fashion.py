@@ -33,9 +33,17 @@ rep("""  <div class="hsblind" id="hsBlind">""", """  <button class="fswardbtn" i
   <div class="opanel" id="fsWard"><div class="mbox rcbox fsward">
     <div class="fshead"><b id="fsTheme"></b><span id="fsWardT"></span></div>
     <div class="stats fslikes" id="fsLikes"></div>
-    <div class="fstabs" id="fsTabs"></div>
-    <div class="fsitems" id="fsItems"></div>
-    <div class="stats fscount" id="fsCount"></div>
+    <div class="fslayout">
+      <div class="fsmirror" id="fsMirrorBox">
+        <canvas id="fsMirror" width="220" height="320" aria-label="Mirror preview"></canvas>
+        <small class="fsmirrorhint">⇆ drag / ←→ to turn</small>
+      </div>
+      <div class="fsbody">
+        <div class="fstabs" id="fsTabs"></div>
+        <div class="fsitems" id="fsItems"></div>
+        <div class="stats fscount" id="fsCount"></div>
+      </div>
+    </div>
     <div class="owinbtns"><button class="big green" id="fsReady">✅ I'm ready!</button><button class="big blue" id="fsKeepWard2">💾 Save for next show</button><button class="big blue" id="fsWardClose">👀 Look at me</button></div>
   </div></div>
   <div class="fsbar2" id="fsRate"><b id="fsRateN"></b><div class="fsstars" id="fsRateS"></div><small id="fsRateH"></small></div>
@@ -67,8 +75,13 @@ rep(".smode #oStam{display:none!important}", """.smode #oStam{display:none!impor
 .fsward{max-width:680px;width:94vw}.fshead{display:flex;justify-content:space-between;align-items:center;font-size:20px;gap:10px}.fshead span{font-weight:900;color:#ff4d5e}
 /* wardrobe docks beside the avatar so you can see yourself while changing */
 body.fsward-dock #fsWard{display:flex!important;align-items:stretch;justify-content:flex-start;background:transparent;pointer-events:none;padding:8px}
-body.fsward-dock #fsWard .mbox.fsward{pointer-events:auto;max-width:min(420px,46vw);width:min(420px,46vw);margin:0;max-height:calc(100vh - 24px);overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.28)}
-body.fsward-dock #fsWard .fsitems{max-height:42vh}
+body.fsward-dock #fsWard .mbox.fsward{pointer-events:auto;max-width:min(760px,78vw);width:min(760px,78vw);margin:0;max-height:calc(100vh - 24px);overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.28);display:flex;flex-direction:column}
+.fslayout{display:flex;gap:10px;align-items:stretch;min-height:0;flex:1}
+.fsmirror{flex:0 0 230px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px}
+.fsmirror canvas{width:220px;height:320px;border-radius:18px;background:#f3d4ff;box-shadow:inset 0 0 0 3px #ffb3d9,0 4px 0 rgba(0,0,0,.08);touch-action:none;cursor:grab}
+.fsmirrorhint{font-size:11px;font-weight:800;color:#8b5cf6}
+.fsbody{flex:1;min-width:0;display:flex;flex-direction:column}
+body.fsward-dock #fsWard .fsitems{max-height:42vh;flex:1}
 .fslikes{font-size:13px;margin:2px 0 6px}.fscount{font-size:12px;margin:2px 0}
 .fstabs{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-bottom:6px}
 .fstab{border:2px solid #e3d6ff;background:#fff;border-radius:12px;padding:3px 8px;font:inherit;font-size:19px;cursor:pointer;display:flex;flex-direction:column;align-items:center;min-width:52px}.fstab small{font-size:10px;font-weight:800}
@@ -89,8 +102,11 @@ body.fsward-dock #fsWard .fsitems{max-height:42vh}
 .fsres{display:flex;align-items:center;gap:8px;background:#f6f3ff;border-radius:12px;padding:3px 10px}.fsres img{width:34px;height:44px;border-radius:6px}.fsres span{flex:1;text-align:left;font-weight:800}.fsres.win{background:#fff4c2}.fsres small{font-size:11px;color:#777}
 @media (max-width:760px),(max-height:520px){#fsPick .emoji,#fsEnd .emoji{display:none}#fsPick h2,#fsEnd h2{font-size:18px;margin:0 0 2px}.fsitems{max-height:30vh}.fshead{font-size:15px}.fstab{font-size:15px;padding:2px 5px;min-width:42px}.fstab small{display:none}.fswardbtn{bottom:auto;top:64px;right:10px;font-size:14px;padding:7px 12px}.fsress{max-height:24vh}.fsintro b{font-size:28px}.fsstar{font-size:34px}.fspose{min-width:48px;font-size:18px}.fspose small{display:none}.fsnear{bottom:150px;font-size:15px}.hshelp{display:none}.fsgrid{grid-template-columns:repeat(auto-fill,minmax(68px,1fr))}
 body.fsward-dock #fsWard{align-items:flex-end;justify-content:center;padding:0 6px 6px}
-body.fsward-dock #fsWard .mbox.fsward{max-width:96vw;width:96vw;max-height:46vh;margin:0 auto}
-body.fsward-dock #fsWard .fsitems{max-height:22vh}}""")
+body.fsward-dock #fsWard .mbox.fsward{max-width:96vw;width:96vw;max-height:58vh;margin:0 auto}
+.fslayout{flex-direction:column;gap:6px}
+.fsmirror{flex:0 0 auto;width:100%}
+.fsmirror canvas{width:100%;height:160px}
+body.fsward-dock #fsWard .fsitems{max-height:18vh}}""")
 rep("  /* ---------- per-frame ---------- */\n", open('/workspace/rublox/tests/p35/fashion.js').read() + "  /* ---------- per-frame ---------- */\n")
 # engine hooks
 rep("rc = null; dsp = null; hs = null;\n    if (mode === 'hide') buildHide();", "rc = null; dsp = null; hs = null; fs = null;\n    if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide();")
