@@ -263,12 +263,60 @@
       return tex;
     } catch (e){ return null; }
   }
-  function dhMat(col, opts){ return new THREE.MeshLambertMaterial(Object.assign({color: col}, opts || {})); }
+  function dhGfxLow(){ return typeof window !== 'undefined' && typeof window.gfxIsLow === 'function' && window.gfxIsLow(); }
+  function dhMatCtor(){
+    if (dhGfxLow() && THREE.MeshBasicMaterial) return THREE.MeshBasicMaterial;
+    return THREE.MeshLambertMaterial;
+  }
+  function dhMat(col, opts){
+    const o = Object.assign({color: col}, opts || {});
+    if (dhGfxLow() && o.emissive) delete o.emissive;
+    return new (dhMatCtor())(o);
+  }
   function dhMatTex(draw, fallback, opts){
     const tex = dhTex(function(ctx, s){ draw(ctx, s || 64); });
     const o = Object.assign({color: tex ? '#ffffff' : fallback}, opts || {});
     if (tex) o.map = tex;
-    return new THREE.MeshLambertMaterial(o);
+    if (dhGfxLow() && o.emissive) delete o.emissive;
+    return new (dhMatCtor())(o);
+  }
+  function dhSetHtml(el, html){
+    if (!el) return;
+    if (el._dhHtml === html) return;
+    el._dhHtml = html;
+    el.innerHTML = html;
+  }
+  function dhSetText(el, text){
+    if (!el) return;
+    if (el.textContent === text) return;
+    el.textContent = text;
+  }
+  function dhCamSig(){
+    const c = (typeof camera !== 'undefined' && camera && camera.position) ? camera.position : {x:0,y:0,z:0};
+    const yaw = (typeof cam !== 'undefined' && cam) ? cam.yaw : 0;
+    const pitch = (typeof cam !== 'undefined' && cam) ? cam.pitch : 0;
+    const px = (typeof P !== 'undefined' && P) ? (P.x || 0) : 0;
+    const pz = (typeof P !== 'undefined' && P) ? (P.z || 0) : 0;
+    return [c.x, c.y, c.z, yaw, pitch, px, pz].map(n => Math.round((+n || 0) * 200)).join(',');
+  }
+  function dhNeedRetarget(hz){
+    if (!dh) return true;
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    const sig = dhCamSig();
+    const interval = 1000 / (hz || 20);
+    if (dh._aimSig !== sig){ dh._aimSig = sig; dh._aimAt = now; return true; }
+    if (!dh._aimAt || now - dh._aimAt >= interval){ dh._aimAt = now; return true; }
+    return false;
+  }
+  function dhTargetSpotCached(job){
+    if (!dh) return (typeof dhTargetSpot === 'function') ? dhTargetSpot(job) : null;
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    const hz = dhGfxLow() ? 10 : 20;
+    const sig = String(job) + '|' + dhCamSig();
+    if (dh._tgtCache && dh._tgtCache.sig === sig && now - dh._tgtCache.at < 1000 / hz) return dh._tgtCache.val;
+    const val = dhTargetSpot(job);
+    dh._tgtCache = {sig, at: now, val};
+    return val;
   }
   function dhMakeMats(){
     const brick = dhMatTex((ctx, s) => {
@@ -669,17 +717,27 @@
     trunk.position.y = .7 * s; g.add(trunk);
     const leafCols = ['#2ec27e', '#3fb86b', '#24965a', '#57c47a', '#1f8a4c'];
     const col = leafCols[kind % leafCols.length];
+    const leafMat = (c) => {
+      dh._leafMats = dh._leafMats || {};
+      if (!dh._leafMats[c]) dh._leafMats[c] = dhMat(c);
+      return dh._leafMats[c];
+    };
     const leaf = (lx, ly, lz, r) => {
       let m;
-      try { m = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 0), dhMat(col)); }
-      catch (e){ m = new THREE.Mesh(new THREE.SphereGeometry(r, 8, 6), dhMat(col)); }
+      const mat = leafMat(col);
+      try { m = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 0), mat); }
+      catch (e){ m = new THREE.Mesh(new THREE.SphereGeometry(r, dhGfxLow() ? 5 : 8, dhGfxLow() ? 4 : 6), mat); }
+      m.userData.leafCol = col;
       m.position.set(lx, ly, lz); g.add(m);
     };
     if (kind % 3 === 0){ leaf(0, 1.85 * s, 0, 1.15 * s); leaf(.35 * s, 1.55 * s, .2 * s, .7 * s); }
     else if (kind % 3 === 1){
-      const cone = new THREE.Mesh(new THREE.ConeGeometry(1.05 * s, 2.2 * s, 7), dhMat(col));
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(1.05 * s, 2.2 * s, dhGfxLow() ? 5 : 7), leafMat(col));
+      cone.userData.leafCol = col;
       cone.position.y = 2.0 * s; g.add(cone);
-      const cone2 = new THREE.Mesh(new THREE.ConeGeometry(.8 * s, 1.4 * s, 7), dhMat(leafCols[(kind + 2) % leafCols.length]));
+      const c2 = leafCols[(kind + 2) % leafCols.length];
+      const cone2 = new THREE.Mesh(new THREE.ConeGeometry(.8 * s, 1.4 * s, dhGfxLow() ? 5 : 7), leafMat(c2));
+      cone2.userData.leafCol = c2;
       cone2.position.y = 2.7 * s; g.add(cone2);
     } else { leaf(0, 1.7 * s, 0, .95 * s); leaf(-.45 * s, 1.35 * s, .15 * s, .6 * s); leaf(.4 * s, 1.45 * s, -.2 * s, .55 * s); }
     if (typeof scene !== 'undefined') scene.add(g);
@@ -714,7 +772,8 @@
       const [ox, oz] = dhOrigin(i);
       const cx = ox + DH_N * DH_CELL / 2, cz = oz + DH_N * DH_CELL / 2;
       const rx = DH_N * DH_CELL / 2 + 3.2, rz = DH_N * DH_CELL / 2 + 3.2;
-      const n = 16;
+      const n = dhGfxLow() ? 8 : 16;
+      dh._treeN = n;
       for (let k = 0; k < n; k++){
         const t = (k / n) * Math.PI * 2 + i * .15;
         const x = cx + Math.cos(t) * rx, z = cz + Math.sin(t) * rz;
@@ -733,21 +792,41 @@
       }
     }
   }
+  function dhApplyTreeQuality(){
+    if (!dh) return;
+    const want = dhGfxLow() ? 8 : 16;
+    if (dh._treeN === want && dh.trees && dh.trees.length) return;
+    (dh.trees || []).forEach(t => { if (t.mesh && typeof scene !== 'undefined') scene.remove(t.mesh); });
+    dh.trees = [];
+    if (typeof dhPlantTrees === 'function') dhPlantTrees();
+  }
+  window.dhApplyTreeQuality = dhApplyTreeQuality;
   function dhFadeOccludingTrees(){
     if (!dh || !dh.trees || typeof camera === 'undefined' || !camera) return;
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    const iv = dhGfxLow() ? 200 : 100;
+    if (dh._fadeAt && now - dh._fadeAt < iv) return;
+    dh._fadeAt = now;
     const cx = camera.position.x, cz = camera.position.z, px = P.x || 0, pz = P.z || 0;
     const vx = px - cx, vz = pz - cz, L2 = vx * vx + vz * vz || 1;
+    const low = dhGfxLow();
     dh.trees.forEach(t => {
       if (!t.mesh) return;
       let u = ((t.x - cx) * vx + (t.z - cz) * vz) / L2;
       u = Math.max(0, Math.min(1, u));
       const d = Math.hypot(t.x - (cx + u * vx), t.z - (cz + u * vz));
       const occlude = d < 2.6 && u > .06 && u < .92;
+      if (low){ t.mesh.visible = !occlude; return; }
+      t.mesh.visible = true;
       const walk = (n, fn) => { fn(n); (n.children || []).forEach(c => walk(c, fn)); };
       walk(t.mesh, n => {
-        if (!n.material) return;
-        const mats = Array.isArray(n.material) ? n.material : [n.material];
-        mats.forEach(m => { m.transparent = true; m.opacity = occlude ? .15 : 1; if ('depthWrite' in m) m.depthWrite = !occlude; });
+        if (!n.material || !n.userData || !n.userData.leafCol) return;
+        dh._leafMats = dh._leafMats || {};
+        dh._leafFadeMats = dh._leafFadeMats || {};
+        const col = n.userData.leafCol;
+        if (!dh._leafMats[col]) dh._leafMats[col] = dhMat(col);
+        if (occlude && !dh._leafFadeMats[col]) dh._leafFadeMats[col] = dhMat(col, {transparent:true, opacity:.15, depthWrite:false});
+        n.material = occlude ? dh._leafFadeMats[col] : dh._leafMats[col];
       });
     });
   }
@@ -2029,6 +2108,7 @@
     if (dh.intro){ dh.intro = null; }
     if (dh.cut){ ['house', 'mom', 'water'].forEach(k => { if (dh.cut[k] && typeof scene !== 'undefined') scene.remove(dh.cut[k]); }); dh.cut = null; }
     if (dh.ghost) scene.remove(dh.ghost);
+    if (typeof dhDisposeBeaconPool === 'function') dhDisposeBeaconPool(true);
     if (dh.outlines){ scene.remove(dh.outlines); dh.outlines = null; }
     if (dh.hand){ if (dh.hand.parent) dh.hand.parent.remove(dh.hand); else if (typeof scene !== 'undefined') scene.remove(dh.hand); dh.hand = null; }
     Object.keys(dh.brickInst || {}).forEach(k => { const inst = dh.brickInst[k]; if (inst && typeof scene !== 'undefined') scene.remove(inst); });
@@ -2261,7 +2341,7 @@
     if (typeof dhClipFpCamera === 'function') dhClipFpCamera();
     dhFadeOccludingTrees();
     dhFadeYardSign();
-    dh.aim = dhAimCell();
+    if (dhNeedRetarget(dhGfxLow() ? 10 : 20) || !dh.aim) dh.aim = dhAimCell();
     // cure wet concrete
     (dh.pieces[dh.mine] || []).slice().forEach(rec => {
       if (rec[0] === 'wet'){ rec[6] = (rec[6] || 0) + dt; if (rec[6] > dhDryDone()){ const a = rec.slice(); dhRemoveAtKey(dh.mine, dhKeyOf(rec), true); a[0] = 'slab'; dhPut(dh.mine, a, true); } }
@@ -2288,10 +2368,14 @@
     if (b){
       const txt = dhActPrompt();
       const key = (typeof pad !== 'undefined' && pad && pad.on) ? 'Ⓧ' : (typeof touchUI !== 'undefined' && touchUI ? 'tap' : 'E');
-      if (txt){ b.innerHTML = txt + ' <small>' + key + '</small>'; b.classList.add('show'); b.style.display = ''; } else { b.classList.remove('show'); b.style.display = 'none'; b.innerHTML = ''; }
+      const html = txt ? (txt + ' <small>' + key + '</small>') : '';
+      dhSetHtml(b, html);
+      if (txt){ b.classList.add('show'); b.style.display = ''; } else { b.classList.remove('show'); b.style.display = 'none'; }
     }
     dh.saveT = (dh.saveT || 0) + dt; if (dh.saveT > 8){ dh.saveT = 0; dhSave(); }
-    dhHud();
+    dh._hudAcc = (dh._hudAcc || 0) + (dt || 0);
+    const hudIv = (typeof window !== 'undefined' && typeof window.gfxHudInterval === 'function') ? window.gfxHudInterval() : 0.1;
+    if (dh._hudAcc >= hudIv){ dh._hudAcc = 0; dhHud(); }
   }
   function dreamhouseAnimate(){}
   function dhStageId(){
@@ -2440,65 +2524,176 @@
     dh.tipsSeen[id] = true;
     dhShowTip(text);
   }
+  function dhDisposeBeaconPool(full){
+    if (!dh) return;
+    const pool = dh._beaconPool || [];
+    pool.forEach(g => {
+      if (g && g.parent) g.parent.remove(g);
+    });
+    dh._beaconPool = [];
+    dh._beaconUsed = 0;
+    if (dh.outlines && typeof scene !== 'undefined'){ try { scene.remove(dh.outlines); } catch (e){} }
+    dh.outlines = null;
+    if (!full) return;
+    const drop = (o) => { if (o && o.dispose) try { o.dispose(); } catch (e){} };
+    drop(dh._beaconGeoPad); drop(dh._beaconGeoBeam); drop(dh._beaconTex);
+    drop(dh._beaconMatPad); drop(dh._beaconMatBeam); drop(dh._beaconMatPadHot); drop(dh._beaconMatBeamHot);
+    drop(dh._beaconSprMat); drop(dh._beaconSprMatHot);
+    dh._beaconGeoPad = dh._beaconGeoBeam = dh._beaconTex = null;
+    dh._beaconMatPad = dh._beaconMatBeam = dh._beaconMatPadHot = dh._beaconMatBeamHot = null;
+    dh._beaconSprMat = dh._beaconSprMatHot = null;
+  }
+  function dhEnsureBeaconMats(){
+    if (!dh) return;
+    const low = dhGfxLow();
+    if (dh._beaconLow !== low){ dhDisposeBeaconPool(true); dh._beaconLow = low; }
+    if (low){
+      if (dh._beaconSprMat) return;
+      let tex = dh._beaconTex;
+      if (!tex && typeof document !== 'undefined' && document.createElement){
+        try {
+          const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          const ctx = c.getContext('2d');
+          const r = 32;
+          const grd = ctx.createRadialGradient(r, r, 0, r, r, r);
+          grd.addColorStop(0, 'rgba(255,220,80,1)');
+          grd.addColorStop(0.45, 'rgba(255,180,40,.7)');
+          grd.addColorStop(1, 'rgba(255,160,0,0)');
+          ctx.fillStyle = grd; ctx.fillRect(0, 0, 64, 64);
+          tex = new THREE.CanvasTexture(c);
+          dh._beaconTex = tex;
+        } catch (e){ tex = null; }
+      }
+      const mk = (col, op) => new THREE.SpriteMaterial({map: tex || undefined, color: col, transparent: true, depthWrite: false, opacity: op});
+      dh._beaconSprMat = mk('#ffc54a', 0.85);
+      dh._beaconSprMatHot = mk('#ffe27a', 1);
+    } else {
+      if (dh._beaconMatPad) return;
+      dh._beaconGeoPad = dh._beaconGeoPad || new THREE.BoxGeometry(DH_CELL * .92, .1, DH_CELL * .92);
+      dh._beaconGeoBeam = dh._beaconGeoBeam || new THREE.BoxGeometry(.18, 2.4, .18);
+      dh._beaconMatPad = dhMat('#ffc54a', {transparent:true, opacity:.55, depthWrite:false, emissive:'#ffb020'});
+      dh._beaconMatBeam = dhMat('#ffd36a', {transparent:true, opacity:.4, depthWrite:false, emissive:'#ffcc44'});
+      dh._beaconMatPadHot = dhMat('#ffe27a', {transparent:true, opacity:.85, depthWrite:false, emissive:'#ffee88'});
+      dh._beaconMatBeamHot = dhMat('#fff3a8', {transparent:true, opacity:.7, depthWrite:false, emissive:'#fff0a0'});
+    }
+  }
+  function dhAllocBeacon(){
+    dhEnsureBeaconMats();
+    dh._beaconPool = dh._beaconPool || [];
+    const used = dh._beaconUsed || 0;
+    if (used < dh._beaconPool.length) return dh._beaconPool[used];
+    const g = new THREE.Group();
+    if (dh._beaconLow){
+      const spr = new THREE.Sprite(dh._beaconSprMat);
+      spr.scale.set(1.15, 1.15, 1);
+      spr.position.y = 0.35;
+      g.add(spr);
+      g.userData.spr = spr;
+    } else {
+      const pad = new THREE.Mesh(dh._beaconGeoPad, dh._beaconMatPad);
+      pad.position.y = 0.04;
+      const beam = new THREE.Mesh(dh._beaconGeoBeam, dh._beaconMatBeam);
+      beam.position.y = 1.2;
+      g.add(pad); g.add(beam);
+      g.userData.pad = pad; g.userData.beam = beam;
+    }
+    dh._beaconPool.push(g);
+    return g;
+  }
+  function dhBeginBeacons(){
+    dhEnsureBeaconMats();
+    if (!dh.outlines){ dh.outlines = new THREE.Group(); if (typeof scene !== 'undefined') scene.add(dh.outlines); }
+    dh._beaconUsed = 0;
+  }
+  function dhAddPooledBeacon(x, y, z, on){
+    const g = dhAllocBeacon();
+    g.position.set(x, y, z);
+    g.visible = true;
+    const pulse = 0.95 + 0.12 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
+    if (g.userData.spr){
+      g.userData.spr.material = on ? dh._beaconSprMatHot : dh._beaconSprMat;
+      const sc = (on ? 1.35 : 1.1) * pulse;
+      g.userData.spr.scale.set(sc, sc, 1);
+    } else {
+      if (g.userData.pad) g.userData.pad.material = on ? dh._beaconMatPadHot : dh._beaconMatPad;
+      if (g.userData.beam) g.userData.beam.material = on ? dh._beaconMatBeamHot : dh._beaconMatBeam;
+    }
+    if (dh.outlines && g.parent !== dh.outlines) dh.outlines.add(g);
+    dh._beaconUsed++;
+  }
+  function dhEndBeacons(){
+    const pool = dh._beaconPool || [];
+    for (let i = dh._beaconUsed || 0; i < pool.length; i++) pool[i].visible = false;
+  }
+  function dhPulseBeacons(){
+    if (!dh) return;
+    const pulse = 0.55 + 0.25 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
+    if (dh._beaconMatPad) dh._beaconMatPad.opacity = pulse;
+    if (dh._beaconMatBeam) dh._beaconMatBeam.opacity = pulse * 0.75;
+    if (dh._beaconMatPadHot) dh._beaconMatPadHot.opacity = Math.min(1, pulse + 0.2);
+    if (dh._beaconMatBeamHot) dh._beaconMatBeamHot.opacity = Math.min(1, pulse + 0.1);
+    if (dh._beaconSprMat) dh._beaconSprMat.opacity = 0.7 + 0.2 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
+    if (dh._beaconSprMatHot) dh._beaconSprMatHot.opacity = 0.85 + 0.15 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
+    if (dh._beaconLow && dh._beaconPool){
+      const scPulse = 0.95 + 0.12 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
+      dh._beaconPool.forEach(g => {
+        if (!g.visible || !g.userData.spr) return;
+        const on = g.userData.spr.material === dh._beaconSprMatHot;
+        const sc = (on ? 1.35 : 1.1) * scPulse;
+        g.userData.spr.scale.set(sc, sc, 1);
+      });
+    }
+  }
+  function dhRefreshBeacons(){ if (dh){ dhDisposeBeaconPool(true); dh._ghostDirty = true; if (typeof dhUpdateGhost === 'function') dhUpdateGhost(); } }
+  window.dhRefreshBeacons = dhRefreshBeacons;
   function dhUpdateGhost(){
     if (!dh) return;
     const menus = dh.yardOpen || dh.shopOpen || dh.upOpen || dh.intro;
     const stage = dhStageId();
-    // Glowing outlines for the next brick / pour / stake slots
-    if (dh.outlines && typeof scene !== 'undefined'){ scene.remove(dh.outlines); dh.outlines = null; }
-    if (!menus && typeof THREE !== 'undefined' && typeof scene !== 'undefined'){
-      const g = new THREE.Group();
-      const pulse = 0.35 + 0.2 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 5);
-      const addBeacon = (x, y, z, on, ry) => {
-        const soft = on ? '#7CFF6A' : '#ffe08a';
-        const pad = new THREE.Mesh(new THREE.BoxGeometry(DH_CELL * (on ? .92 : .82), on ? .2 : .1, DH_CELL * (on ? .92 : .82)), dhMat(soft, {transparent: true, opacity: on ? (0.55 + pulse) : 0.32, emissive: soft, emissiveIntensity: on ? 1 : .35, depthWrite: false}));
-        pad.position.set(x, y, z); if (ry) pad.rotation.y = ry;
-        if (on) pad.scale.set(1.12, 1, 1.12);
-        g.add(pad);
-        const h = on ? 1.45 : 0.8;
-        const beam = new THREE.Mesh(new THREE.BoxGeometry(on ? .12 : .07, h, on ? .12 : .07), dhMat(soft, {transparent: true, opacity: on ? (0.7 + pulse * 0.4) : 0.4, emissive: soft, emissiveIntensity: on ? 1 : .3, depthWrite: false}));
-        beam.position.set(x, y + h / 2 + 0.08, z);
-        g.add(beam);
-      };
-      if (stage === 'brick'){
-        const aimedB = dhTargetSpot('brick');
-        let slots = typeof dhJobPoints === 'function' ? (dhJobPoints('brick') || []) : [];
-        if (slots.length){ const minY = Math.min.apply(null, slots.map(s => s.y)); slots = slots.filter(s => Math.abs((s.y||0) - minY) < 0.12); }
-        const seen = [];
-        slots.forEach(s => {
-          const on = !!(aimedB && Math.abs(s.x - aimedB.x) < 0.04 && Math.abs(s.y - aimedB.y) < 0.04 && Math.abs(s.z - aimedB.z) < 0.04);
-          addBeacon(s.x, s.y, s.z, on, s.ry || 0);
-          seen.push(s);
-        });
-        if (aimedB && !seen.some(s => Math.abs(s.x - aimedB.x) < 0.04 && Math.abs(s.z - aimedB.z) < 0.04 && Math.abs(s.y - aimedB.y) < 0.04)){
-          addBeacon(aimedB.x, aimedB.y, aimedB.z, true, aimedB.ry || 0);
+    dhPulseBeacons();
+    const hz = dhGfxLow() ? 10 : 20;
+    const retarget = dhNeedRetarget(hz) || dh._ghostDirty || !dh.outlines;
+    if (retarget){
+      dh._ghostDirty = false;
+      dhBeginBeacons();
+      if (!menus){
+        if (stage === 'brick'){
+          const spots = dhJobPoints('brick');
+          const aimed = dhTargetSpotCached('brick');
+          spots.forEach(s => {
+            if (s.filled) return;
+            const on = !!(aimed && aimed.plot === s.plot && aimed.ix === s.ix && aimed.iz === s.iz && aimed.course === s.course && aimed.slot === s.slot);
+            dhAddPooledBeacon(s.x, s.y, s.z, on);
+          });
         }
-      } else if (stage === 'stake' || stage === 'dig' || stage === 'pour'){
-        const job = stage === 'stake' ? 'mark' : stage;
-        const cells = [];
-        const foot = dhFoot();
-        for (let ix = foot.x0; ix <= foot.x1; ix++) for (let iz = foot.z0; iz <= foot.z1; iz++){
-          if (job === 'mark' && !dhFootTaken(dh.mine, ix, iz)) cells.push({ix, iz});
-          if (job === 'dig' && dhHas(dh.mine, 'mark', ix, iz) && !dhHas(dh.mine, 'trench', ix, iz) && !dhHas(dh.mine, 'wet', ix, iz) && !dhHas(dh.mine, 'slab', ix, iz)) cells.push({ix, iz});
-          if (job === 'pour' && (dhHas(dh.mine, 'trench', ix, iz) || dhHas(dh.mine, 'mark', ix, iz)) && !dhHas(dh.mine, 'wet', ix, iz) && !dhHas(dh.mine, 'slab', ix, iz)) cells.push({ix, iz});
+        if (stage === 'stake' || stage === 'dig' || stage === 'pour'){
+          const job = stage === 'stake' ? 'mark' : stage;
+          const cells = [];
+          const foot = dhFoot();
+          for (let ix = foot.x0; ix <= foot.x1; ix++) for (let iz = foot.z0; iz <= foot.z1; iz++){
+            if (job === 'mark' && !dhFootTaken(dh.mine, ix, iz)) cells.push({ix, iz});
+            if (job === 'dig' && dhHas(dh.mine, 'mark', ix, iz) && !dhHas(dh.mine, 'trench', ix, iz) && !dhHas(dh.mine, 'wet', ix, iz) && !dhHas(dh.mine, 'slab', ix, iz)) cells.push({ix, iz});
+            if (job === 'pour' && (dhHas(dh.mine, 'trench', ix, iz) || dhHas(dh.mine, 'mark', ix, iz)) && !dhHas(dh.mine, 'wet', ix, iz) && !dhHas(dh.mine, 'slab', ix, iz)) cells.push({ix, iz});
+          }
+          const aimed = dhTargetSpotCached(job);
+          cells.forEach(c => {
+            const w = dhCellWorld(dh.mine, c.ix, c.iz, .1);
+            const on = !!(aimed && aimed.ix === c.ix && aimed.iz === c.iz);
+            dhAddPooledBeacon(w.x, w.y, w.z, on);
+          });
         }
-        const aimed = dhTargetSpot(job);
-        cells.forEach(c => {
-          const w = dhCellWorld(dh.mine, c.ix, c.iz, .1);
-          const on = !!(aimed && aimed.ix === c.ix && aimed.iz === c.iz);
-          addBeacon(w.x, w.y, w.z, on, 0);
-        });
       }
-      if (g.children.length){ dh.outlines = g; scene.add(g); }
+      dhEndBeacons();
     }
     if (!dh.ghost) return;
     let pos = null, ok = false, can = true;
     if (stage === 'brick'){
-      const slot = dhTargetSpot('brick');
-      if (slot){ pos = slot; ok = true; can = !slot.filled && !!(dh.carry && dh.carry.id === 'brick' && dh.carry.n > 0); }
+      const slot = retarget ? dhTargetSpotCached('brick') : (dh._tgtCache && dh._tgtCache.val);
+      const s = slot || (retarget ? null : dhTargetSpotCached('brick'));
+      if (s){ pos = s; ok = true; can = !s.filled && !!(dh.carry && dh.carry.id === 'brick' && dh.carry.n > 0); }
     } else {
       const job = stage === 'stake' ? 'mark' : stage;
-      const ghostAt = (job === 'mark' || job === 'dig' || job === 'pour') ? dhTargetSpot(job) : dhTargetSpot(job);
+      const ghostAt = dhTargetSpotCached(job);
       if (ghostAt && ghostAt.plot === dh.mine){
         const w = dhCellWorld(ghostAt.plot, ghostAt.ix, ghostAt.iz, .08);
         pos = {x: w.x, y: w.y, z: w.z, ry: 0};
@@ -2517,7 +2712,6 @@
         glow.material.opacity = 0.45 + 0.25 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
         if (glow.material.color && glow.material.color.set) glow.material.color.set(col);
       }
-      // resize ghost to a brick when laying bricks
       const pole = dh.ghost.userData && dh.ghost.userData.pole;
       if (glow && glow.scale){
         if (stage === 'brick'){ glow.scale.set(DH_BRICK_W / (DH_CELL * .92), DH_BRICK_H / .16, DH_BRICK_D / (DH_CELL * .92)); if (pole) pole.visible = false; }
@@ -2525,6 +2719,7 @@
       }
     }
   }
+
   function dhHeldInfo(){
     if (!dh) return {emoji: '✋', label: 'Hands', carryText: 'Hands empty'};
     const mat = (id) => dhMatOf(id) || {e: '🧺', name: id};
@@ -2680,12 +2875,12 @@
   function dhHud(){
     if (!dh) return;
     if (!dh._syncingJob) dhSyncJobToStage();
-    const n = $('#dhN'); if (n) n.textContent = '🪙 ' + Math.floor(dh.bank);
+    const n = $('#dhN'); if (n) dhSetText(n, '🪙 ' + Math.floor(dh.bank));
     const goal = $('#dhGoal');
     if (goal){
       const hide = !!(dh.intro || dh.yardOpen || dh.shopOpen || dh.upOpen);
       goal.style.display = hide ? 'none' : '';
-      if (!hide){ goal.classList.add('show'); goal.textContent = dhGoalText() + dhNearestSpotHint(); }
+      if (!hide){ goal.classList.add('show'); dhSetText(goal, dhGoalText() + dhNearestSpotHint()); }
     }
     const steps = $('#dhSteps');
     if (steps){
@@ -2694,12 +2889,13 @@
       if (!hide){
         steps.classList.add('show');
         const cur = dhStageId();
-        steps.innerHTML = '<div class="dhstepsH">House steps</div>' + dhChecklist().map((line, i) => {
+        const stepsHtml =  '<div class="dhstepsH">House steps</div>' + dhChecklist().map((line, i) => {
           const ids = ['stake','dig','pour','brick','shingle','frame','furn'];
           const on = ids[i] === cur || (ids[i] === 'shingle' && (cur === 'stud' || cur === 'rafter' || cur === 'shingle')) || (ids[i] === 'frame' && (cur === 'frame' || cur === 'glass')) || (ids[i] === 'furn' && (cur === 'paint' || cur === 'furn'));
           const done = /✔/.test(line);
           return '<div class="dhstep' + (done ? ' done' : '') + (on && !done ? ' on' : '') + '">' + line + '</div>';
         }).join('');
+        dhSetHtml(steps, stepsHtml);
       }
     }
     const g = $('#dhGuide'), gt = $('#dhGuideT');
@@ -2841,12 +3037,12 @@
       if (hideStatus){ box.style.display = 'none'; }
       else {
         box.style.display = '';
-        box.innerHTML = bits.map(b => '<b>' + b.replace(/</g,'&lt;') + '</b>').join(' · ');
+        dhSetHtml(box, bits.map(b => '<b>' + b.replace(/</g,'&lt;') + '</b>').join(' · '));
       }
     }
     const inv = $('#dhInv');
-    if (inv){ inv.textContent = invParts.join(' ') || ''; if (hideStatus) inv.style.display = 'none'; else inv.style.display = ''; }
-    const n = $('#dhN'); if (n) n.textContent = dh ? ('🪙 ' + Math.floor(dh.bank)) : '';
+    if (inv){ dhSetText(inv, invParts.join(' ') || ''); if (hideStatus) inv.style.display = 'none'; else inv.style.display = ''; }
+    const n = $('#dhN'); if (n) dhSetText(n, dh ? ('🪙 ' + Math.floor(dh.bank)) : '');
     const c = $('#dhCarry');
     if (c){ const held = dh && dhHeldInfo(); c.textContent = (held && held.carryText) || ''; }
     const tb = $('#dhTool');
