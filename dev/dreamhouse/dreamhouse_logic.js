@@ -38,7 +38,7 @@ function world(store0, opts){
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind};`, ctx);
   return ctx;
 }
 
@@ -52,7 +52,7 @@ chk('starter grant added to global Rublox coins once', W.coins >= 120, W.coins);
 chk('four plots and a supply yard exist', W.A.DH_PLOTS === 4 && W.A.dh.bins && W.A.dh.bins.length >= 6 && W.A.DH_YARD.z < 0, W.A.dh.bins && W.A.dh.bins.length);
 chk('materials include bricks, cement, sand, wood, shingles, glass', ['brick','cement','sand','wood','shingle','glass'].every(id => W.A.DH_MATS.some(m => m.id === id)));
 chk('catalog is construction parts, not prefab wall slabs', W.A.DH_PARTS.some(p => p.id === 'brick') && W.A.DH_PARTS.some(p => p.id === 'slab') && !W.A.DH_PARTS.some(p => p.id === 'wall' && p.name === 'Wall'));
-chk('save key is unique (does not clobber stables/bakery)', W.A.DH_KEY === 'rubloxDreamHouse' && W.A.DH_VER === 3);
+chk('save key is unique (does not clobber stables/bakery)', W.A.DH_KEY === 'rubloxDreamHouse' && W.A.DH_VER === 4);
 
 // Buy at the yard, carry, dump on plot
 W.P.x = W.A.dh.bins[0].x; W.P.z = W.A.dh.bins[0].z;
@@ -234,10 +234,42 @@ W3.A.buildDreamHouse(); W3.A.dreamhouseEnter();
 chk('a returning player is not forced to rewatch the intro', !!(W3.A.dh && W3.A.dh.introSeen && !W3.A.dh.intro), W3.A.dh && {seen:W3.A.dh.introSeen, intro:W3.A.dh.intro});
 W3.A.dreamhouseStop();
 
+
+// Hands-on window glass
+chk('Glass is its own build tool, separate from framing', W.A.DH_JOBS.indexOf('glass') >= 0 && W.A.DH_JOBS.indexOf('glass') !== W.A.DH_JOBS.indexOf('frame'), W.A.DH_JOBS);
+W.P.x = ox + 3.5 * 1.4; W.P.z = oz + 3.5 * 1.4; W.P.face = Math.PI / 2;
+W.A.dreamhouseUpdate(0.02);
+W.A.dhSetJob('glass');
+W.A.dh.carry = {id: 'glass', n: 2};
+chk('glass will not go in until a window frame is set', W.A.dhInstallGlass() === false && !(W.A.dh.pieces[0]||[]).some(a => a[0]==='pane'));
+W.A.dh.carry = {id: 'wood', n: 2};
+W.A.dhSetJob('frame');
+const framed = W.A.dhPlaceKind('winframe');
+chk('the frame tool sets an empty window (no glass yet)', !!(framed && (W.A.dh.pieces[0]||[]).some(a => a[0]==='winframe') && !(W.A.dh.pieces[0]||[]).some(a => a[0]==='pane')), {framed, ids:(W.A.dh.pieces[0]||[]).map(a=>a[0])});
+// a second opening on the opposite wall
+W.A.dhPut(0, ['winframe', 0, 3, 0, 3, 0], true);
+W.A.dh.carry = null;
+W.A.dhSetJob('glass');
+chk('installing glass requires carrying a pane', W.A.dhInstallGlass() === false);
+W.A.dhGive('glass', 3);
+W.A.dhPickup('glass', 2);
+chk('inventory / carry HUD can hold bought glass panes', !!(W.A.dh.carry && W.A.dh.carry.id === 'glass' && W.A.dh.carry.n >= 1));
+const nPane = (W.A.dh.pieces[0]||[]).filter(a => a[0]==='pane').length;
+const g1 = W.A.dhInstallGlass();
+chk('a carried pane installs into an empty window frame', g1 && (W.A.dh.pieces[0]||[]).filter(a => a[0]==='pane').length === nPane + 1, {g1, carry:W.A.dh.carry});
+chk('other empty frames stay empty until you glaze them too', (W.A.dh.pieces[0]||[]).filter(a => a[0]==='winframe').length === 2 && (W.A.dh.pieces[0]||[]).filter(a => a[0]==='pane').length === 1 && !W.A.dhWindowsGlazed(W.A.dh.pieces[0]));
+const g2 = W.A.dhInstallGlass();
+W.A.dhCheckGoals();
+chk('glazing every window pays a coin milestone', !!(g2 && W.A.dh.goals.glaze && W.A.dhWindowsGlazed(W.A.dh.pieces[0])), {g2, goals:W.A.dh.goals, earned:W.A.dh.earned});
+const Wg = world({rubloxDreamHouse: JSON.stringify({ver:3, introSeen:true, granted:true, coins:10, pieces:[['winframe',0,3,0,1,0],['pane',0,3,0,1,0]], stock:{}, goals:{}, upgrades:{}})}, {coins:10});
+Wg.A.buildDreamHouse();
+chk('already-glazed windows stay glazed after the v4 migrate', (Wg.A.dh.pieces[0]||[]).some(a => a[0]==='pane') && (Wg.A.dh.pieces[0]||[]).some(a => a[0]==='winframe') && Wg.A.DH_VER === 4);
+Wg.A.dreamhouseStop();
+
 // Save / migrate / preserve other keys
 W.A.dhSave();
 const saved = W.store.rubloxDreamHouse;
-chk('house writes construction data to rubloxDreamHouse', !!(saved && /"ver":3/.test(saved) && /brick/.test(saved) && /introSeen/.test(saved)));
+chk('house writes construction data to rubloxDreamHouse', !!(saved && /"ver":4/.test(saved) && /brick/.test(saved) && /introSeen/.test(saved)));
 const v1 = {pieces: [[0,2,0,2,0,1],[1,2,1,2,0,1],[2,3,1,1,0,0],[5,2,2,2,0,1]], coins: 40, granted: true, goals: {floors:1}};
 const other = {rubloxStable: '{"pony":{"id":"buttercup"},"shows":2}', rubloxBakery: '{"served":4,"coins":9}', rubloxDreamHouse: JSON.stringify(v1)};
 const W2 = world(other, {coins: 50});

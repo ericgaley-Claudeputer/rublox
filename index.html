@@ -1460,7 +1460,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-3';
+const BUILD = '2026.11.11-4';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -11621,8 +11621,8 @@ const Obby = (() => {
     {lL: -.2, lR: .4, aL: -1.6, aR: .3, lean: .05}, {lL: .5, lR: -.3, aL: .2, aR: -1.5, lean: -.05},
     {lL: -.4, lR: -.4, aL: -2.0, aR: -2.0, lean: 0}, {lL: .3, lR: .3, aL: -1.2, aR: 1.0, lean: .1}];
     return Object.assign({lLo: 0, lRo: 0, aLo: 0, aRo: 0}, poses[db.pose % 4]); }
-  /* ===================== t246u: 🏡 DREAM HOUSE BUILDERS — intro cut-scene, trees, paint, shop & upgrades ===================== */
-  const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 3;
+  /* ===================== t248u: 🏡 DREAM HOUSE BUILDERS — install glass panes in empty window frames ===================== */
+  const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 4;
   const DH_FOOT = {x0: 1, z0: 1, x1: 6, z1: 6}; // slab footprint inside the plot
   const DH_BRICK_W = .5, DH_BRICK_H = .24, DH_BRICK_D = .28, DH_COURSES = 8;
   const DH_MATS = [
@@ -11631,7 +11631,7 @@ const Obby = (() => {
     {id: 'sand',    e: '🏖️', name: 'Sand',      cost: 2,  stack: 1,  carry: 2},
     {id: 'wood',    e: '🪵', name: 'Planks',    cost: 3,  stack: 4,  carry: 6},
     {id: 'shingle', e: '🏠', name: 'Shingles',  cost: 1,  stack: 8,  carry: 12},
-    {id: 'glass',   e: '🪟', name: 'Glass',     cost: 5,  stack: 1,  carry: 2},
+    {id: 'glass',   e: '🪟', name: 'Glass',     cost: 5,  stack: 2,  carry: 2},
     {id: 'paint',   e: '🎨', name: 'Paint',     cost: 3,  stack: 1,  carry: 2},
     {id: 'wetmix',  e: '🪣', name: 'Wet mix',   cost: 0,  stack: 1,  carry: 1, nosale: true},
     {id: 'mortar',  e: '🥣', name: 'Mortar',    cost: 0,  stack: 4,  carry: 4, nosale: true},
@@ -11653,7 +11653,7 @@ const Obby = (() => {
     {id: 'paint', e: '🎨', name: 'Paint'}, {id: 'sofa', e: '🛋️', name: 'Sofa'}, {id: 'bed', e: '🛏️', name: 'Bed'},
     {id: 'table', e: '🪑', name: 'Table'}, {id: 'lamp', e: '💡', name: 'Lamp'}, {id: 'plant', e: '🪴', name: 'Plant'}, {id: 'rug', e: '🧶', name: 'Rug'}, {id: 'tv', e: '📺', name: 'TV'}, {id: 'shelf', e: '📚', name: 'Bookshelf'}
   ];
-  const DH_JOBS = ['mark', 'dig', 'mix', 'pour', 'brick', 'stud', 'rafter', 'shingle', 'frame', 'paint', 'furn'];
+  const DH_JOBS = ['mark', 'dig', 'mix', 'pour', 'brick', 'stud', 'rafter', 'shingle', 'frame', 'glass', 'paint', 'furn'];
   const DH_GOALS = [
     {id: 'marked',  name: 'Stake the foundation', need: p => dhCount(p, 'mark') + dhCount(p, 'trench') + dhCount(p, 'wet') + dhCount(p, 'slab') >= 8, pay: 12},
     {id: 'slab',    name: 'Pour a concrete slab', need: p => dhCount(p, 'slab') >= 12, pay: 25},
@@ -11661,7 +11661,8 @@ const Obby = (() => {
     {id: 'walls',   name: 'Raise the brick walls', need: p => dhCount(p, 'brick') >= 40, pay: 35},
     {id: 'rafters', name: 'Set the rafters',     need: p => dhCount(p, 'rafter') >= 4, pay: 20},
     {id: 'roof',    name: 'Shingle the roof',    need: p => dhCount(p, 'shingle') >= 10, pay: 25},
-    {id: 'openings',name: 'Hang a door and window', need: p => dhCount(p, 'door') >= 1 && (dhCount(p, 'pane') + dhCount(p, 'winframe') >= 1), pay: 20},
+    {id: 'openings',name: 'Hang a door and window', need: p => dhCount(p, 'door') >= 1 && dhCount(p, 'winframe') >= 1, pay: 20},
+    {id: 'glaze',   name: 'Glaze the windows',   need: p => dhWindowsGlazed(p), pay: 15},
     {id: 'paint',   name: 'Paint the walls',     need: p => dhCount(p, 'paint') >= 4, pay: 20},
     {id: 'furnish', name: 'Furnish a room',      need: p => ['sofa','bed','table','lamp','plant','rug','tv','shelf'].reduce((n, id) => n + dhCount(p, id), 0) >= 3, pay: 30},
     {id: 'open',    name: 'Open house day',      need: p => dhCount(p, 'slab') >= 12 && dhCount(p, 'brick') >= 30 && dhCount(p, 'door') >= 1 && dhCount(p, 'shingle') >= 8, pay: 50}
@@ -11701,6 +11702,13 @@ const Obby = (() => {
   function dhInFoot(ix, iz){ const f = dhFoot(); return ix >= f.x0 && ix <= f.x1 && iz >= f.z0 && iz <= f.z1; }
   function dhCourses(){ return DH_COURSES + ((dh && dh.upgrades && dh.upgrades.story) ? 8 : 0); }
   function dhCount(pieces, id){ return (pieces || []).filter(a => a && a[0] === id).length; }
+  function dhSameOpening(a, b){ return !!a && !!b && (a[1]|0) === (b[1]|0) && (a[2]|0) === (b[2]|0) && (a[3]|0) === (b[3]|0) && (a[4]|0) === (b[4]|0); }
+  function dhWindowsGlazed(pieces){
+    const frames = (pieces || []).filter(a => a && a[0] === 'winframe');
+    if (!frames.length) return false;
+    const panes = (pieces || []).filter(a => a && a[0] === 'pane');
+    return frames.every(f => panes.some(pn => dhSameOpening(pn, f)));
+  }
   function dhKeyOf(a){ return (a[0] || '') + ':' + (a[1]|0) + ',' + (a[2]|0) + ',' + (a[3]|0) + ',' + (a[4]|0); }
   function dhEmptyStock(){ const o = {}; DH_MATS.forEach(m => { o[m.id] = 0; }); return o; }
   function dhEmptyUpgrades(){ const o = {}; DH_UPGRADES.forEach(u => { o[u.id] = 0; }); return o; }
@@ -11822,8 +11830,9 @@ const Obby = (() => {
       }
     }, '#5c4038');
     const mortar = dhMat('#c5c0b4');
-    const glass = dhMat('#bfe9ff', {transparent: true, opacity: .45, depthWrite: false});
-    return {brick, concrete, wet, dirt, wood, shingle, mortar, glass, paint: dhMat('#f6e3b4'), bag: dhMat('#cfc4a8'), rust: dhMat('#6d6f72'), dark: dhMat('#5a4030')};
+    const glass = dhMat('#9ad8ff', {transparent: true, opacity: .48, depthWrite: false, emissive: '#d7f4ff', emissiveIntensity: .18});
+    const glassShine = dhMat('#ffffff', {transparent: true, opacity: .55, depthWrite: false, emissive: '#ffffff', emissiveIntensity: .35});
+    return {brick, concrete, wet, dirt, wood, shingle, mortar, glass, glassShine, paint: dhMat('#f6e3b4'), bag: dhMat('#cfc4a8'), rust: dhMat('#6d6f72'), dark: dhMat('#5a4030')};
   }
 
   function dhMeshFor(rec, plot){
@@ -11853,10 +11862,17 @@ const Obby = (() => {
     }
     else if (id === 'door'){ add(box(.7, 1.7, .08, M.dark), 0, .1, 0); add(box(.06, .06, .04, dhMat('#d4a574')), .22, .15, .06); }
     else if (id === 'winframe'){
-      solid(.7, .1, .1, 0, .45, 0, M.wood); solid(.7, .1, .1, 0, -.45, 0, M.wood);
-      solid(.1, .9, .1, -.32, 0, 0, M.wood); solid(.1, .9, .1, .32, 0, 0, M.wood);
+      // chunky wood frame with a clearly empty opening (no glass fill)
+      solid(.9, .14, .16, 0, .54, 0, M.wood);
+      solid(.96, .16, .2, 0, -.54, 0, M.wood);
+      solid(.14, 1.08, .16, -.38, 0, 0, M.wood);
+      solid(.14, 1.08, .16, .38, 0, 0, M.wood);
     }
-    else if (id === 'pane'){ add(box(.58, .72, .04, M.glass), 0, 0, 0); }
+    else if (id === 'pane'){
+      add(box(.64, .92, .03, M.glass), 0, 0, 0);
+      add(box(.14, .62, .008, M.glassShine || M.glass), -.14, .1, .02);
+      add(box(.06, .28, .008, M.glassShine || M.glass), .16, -.14, .02);
+    }
     else if (id === 'paint'){ add(box(DH_CELL * .9, 1.8, .04, dhMat(dhPaintCol(rec[5] | 0))), 0, .2, 0); }
     else if (id === 'sofa'){ solid(.95, .32, .5, 0, -.2, 0, dhMat('#3a86ff')); add(box(.95, .35, .16, dhMat('#3a86ff')), 0, .08, -.22); }
     else if (id === 'bed'){ solid(1.1, .28, .7, 0, -.25, 0, dhMat('#fffaf0')); add(box(.4, .18, .68, dhMat('#ffe0ef')), 0, -.02, .28); }
@@ -12343,7 +12359,29 @@ const Obby = (() => {
     }
     return null;
   }
+  function dhOpenFrames(plot){
+    const list = dh.pieces[plot] || [];
+    return list.filter(a => a[0] === 'winframe' && !list.some(pn => pn[0] === 'pane' && dhSameOpening(pn, a)));
+  }
+  function dhInstallGlass(){
+    if (!dh) return false;
+    if (!dh.carry || dh.carry.id !== 'glass'){ banner('🪟 Carry a glass pane from the Supply Yard'); return false; }
+    const aim = dhAimCell(); if (!dhCanBuild(aim)) return false;
+    const frames = (dh.pieces[aim.plot] || []).filter(a => a[0] === 'winframe');
+    if (!frames.length){ banner('🪟 Set a window frame first'); return false; }
+    const face = dhWallFaceFromAim(aim);
+    const open = dhOpenFrames(aim.plot);
+    if (!open.length){ banner('🪟 Every window already has glass'); return false; }
+    const frame = (face != null && open.find(f => (f[4]|0) === face)) || open[0];
+    dhUseCarry(1);
+    const rec = ['pane', frame[1]|0, frame[2]|0, frame[3]|0, frame[4]|0, 0];
+    if (!dhPut(aim.plot, rec)) return false;
+    dhNet('place', {rec, plot: aim.plot});
+    banner('🪟 Set the glass in the frame');
+    return true;
+  }
   function dhPlaceKind(id, extra){
+    if (id === 'pane') return dhInstallGlass();
     const aim = dhAimCell(); if (!dhCanBuild(aim)) return false;
     const rec = [id, aim.ix, 0, aim.iz, dh.rot | 0, dh.color | 0];
     if (id === 'rafter' || id === 'shingle') rec[4] = (aim.iz < (DH_FOOT.z0 + DH_FOOT.z1) / 2) ? 0 : 1;
@@ -12355,7 +12393,6 @@ const Obby = (() => {
     if (id === 'shingle'){ if (!dh.carry || dh.carry.id !== 'shingle'){ banner('🏠 Carry shingles to the roof'); return false; } dhUseCarry(1); }
     if (id === 'doorframe' || id === 'winframe'){ if (!dh.carry || dh.carry.id !== 'wood'){ banner('🪵 Carry planks to frame the opening'); return false; } dhUseCarry(1); }
     if (id === 'door'){ if (!dhHas(aim.plot, 'doorframe', 0, 0) && !(dh.pieces[aim.plot] || []).some(a => a[0] === 'doorframe')){ banner('🚪 Set the door frame in the opening first'); return false; } if (dh.carry && dh.carry.id === 'wood') dhUseCarry(1); }
-    if (id === 'pane'){ if (!dh.carry || dh.carry.id !== 'glass'){ banner('🪟 Carry glass to the window'); return false; } dhUseCarry(1); }
     if (id === 'paint'){ if (!dh.carry || dh.carry.id !== 'paint'){ banner('🎨 Carry a paint can'); return false; } dhUseCarry(1); }
     if (['sofa','bed','table','lamp','plant','rug','tv','shelf'].indexOf(id) >= 0){ if (!dh.carry || dh.carry.id !== id){ banner('🛋️ Carry that piece from the shop or yard'); return false; } dhUseCarry(1); }
     if (!dhPut(aim.plot, rec)) return false;
@@ -12390,10 +12427,9 @@ const Obby = (() => {
     if (dh.job === 'stud') return dhPlaceKind('stud');
     if (dh.job === 'rafter') return dhPlaceKind('rafter');
     if (dh.job === 'shingle') return dhPlaceKind('shingle');
+    if (dh.job === 'glass' || (dh.carry && dh.carry.id === 'glass' && dh.job !== 'frame')) return dhInstallGlass();
     if (dh.job === 'frame'){
-      if (dh.carry && dh.carry.id === 'glass') return dhPlaceKind('pane');
       if ((dh.pieces[dh.mine] || []).some(a => a[0] === 'doorframe') && !((dh.pieces[dh.mine] || []).some(a => a[0] === 'door'))) return dhPlaceKind('door');
-      if ((dh.pieces[dh.mine] || []).some(a => a[0] === 'winframe')) return dhPlaceKind('pane');
       const aim = dhAimCell(); const face = aim && dhWallFaceFromAim(aim);
       if (face === 0) return dhPlaceKind('doorframe');
       return dhPlaceKind('winframe');
@@ -12434,7 +12470,7 @@ const Obby = (() => {
     if (dh.carry && dh.carry.id !== 'wetmix' && dhNearPile() && dh.job !== 'brick' && dh.job !== 'pour') return dhDump();
     const pile = dhNearPile();
     if (pile && !dh.carry){
-      const want = dh.job === 'brick' ? 'brick' : dh.job === 'rafter' || dh.job === 'stud' || dh.job === 'frame' ? 'wood' : dh.job === 'shingle' ? 'shingle' : dh.job === 'paint' ? 'paint' : dh.job === 'furn' ? (['sofa','bed','table','lamp','plant','rug'].find(id => (dh.stock[id]|0) > 0)) : null;
+      const want = dh.job === 'brick' ? 'brick' : dh.job === 'rafter' || dh.job === 'stud' || dh.job === 'frame' ? 'wood' : dh.job === 'shingle' ? 'shingle' : dh.job === 'glass' ? 'glass' : dh.job === 'paint' ? 'paint' : dh.job === 'furn' ? (['sofa','bed','table','lamp','plant','rug','tv','shelf'].find(id => (dh.stock[id]|0) > 0)) : null;
       if (want && (dh.stock[want]|0) > 0) return dhPickup(want, want === 'brick' ? 8 : 1);
       const first = ['brick','wood','shingle','cement','sand','glass','paint'].find(id => (dh.stock[id]|0) > 0);
       if (first) return dhPickup(first, first === 'brick' ? 8 : 1);
@@ -12755,10 +12791,11 @@ const Obby = (() => {
       else if (mxn && (mxn.mixed|0) >= 1) txt = '🪣 Fill wheelbarrow';
       else if (dh.carry && dh.carry.id === 'wetmix') txt = '🪣 Pour the form';
       else if (dh.carry && dh.carry.id === 'brick') txt = '🧱 Lay a brick';
+      else if (dh.carry && dh.carry.id === 'glass') txt = '🪟 Install glass';
       else if (pile && !dh.carry) txt = '📦 Pick up materials';
       else if (dh.carry && pile && dh.carry.id !== 'wetmix') txt = '📦 Dump on your plot';
       else if (dhCanBuild(dh.aim)){
-        const labels = {mark:'📍 Stake the form', dig:'🕳️ Dig the form', pour:'🪣 Pour concrete', brick:'🧱 Lay a brick', stud:'🪵 Set a stud', rafter:'🪜 Set a rafter', shingle:'🏠 Nail a shingle', frame:'🚪 Fit a frame', paint:'🎨 Paint', furn:'🛋️ Place furniture'};
+        const labels = {mark:'📍 Stake the form', dig:'🕳️ Dig the form', pour:'🪣 Pour concrete', brick:'🧱 Lay a brick', stud:'🪵 Set a stud', rafter:'🪜 Set a rafter', shingle:'🏠 Nail a shingle', frame:'🚪 Fit a frame', glass:'🪟 Install glass', paint:'🎨 Paint', furn:'🛋️ Place furniture'};
         txt = labels[dh.job] || '🏗️ Build';
       }
       if (txt){ b.innerHTML = txt + ' <small>' + key + '</small>'; b.classList.add('show'); } else b.classList.remove('show');
@@ -12780,14 +12817,14 @@ const Obby = (() => {
     }
     const c = $('#dhCarry');
     if (c) c.textContent = dh.carry ? ('Carrying ' + dh.carry.n + ' ' + (dhMatOf(dh.carry.id) || {name: dh.carry.id}).name) : 'Hands empty';
-    const tb = $('#dhTool'); if (tb) tb.textContent = dh.tool === 'delete' ? '🗑️' : ({mark:'📍', dig:'🕳️', mix:'🌀', pour:'🪣', brick:'🧱', stud:'🪵', rafter:'🪜', shingle:'🏠', frame:'🚪', paint:'🎨', furn:'🛋️'}[dh.job] || '🏗️');
+    const tb = $('#dhTool'); if (tb) tb.textContent = dh.tool === 'delete' ? '🗑️' : ({mark:'📍', dig:'🕳️', mix:'🌀', pour:'🪣', brick:'🧱', stud:'🪵', rafter:'🪜', shingle:'🏠', frame:'🚪', glass:'🪟', paint:'🎨', furn:'🛋️'}[dh.job] || '🏗️');
   }
   function dhBar(){
     if (!dh) return;
     const bar = $('#dhBar'); if (!bar) return;
     bar.style.display = ''; bar.classList.add('show');
     const jobs = '<div class="dhtools">' + DH_JOBS.map(j => {
-      const lab = {mark:'📍 Stake', dig:'🕳️ Dig', mix:'🌀 Mix', pour:'🪣 Pour', brick:'🧱 Brick', stud:'🪵 Stud', rafter:'🪜 Rafter', shingle:'🏠 Shingle', frame:'🚪 Frame', paint:'🎨 Paint', furn:'🛋️ Furnish'}[j];
+      const lab = {mark:'📍 Stake', dig:'🕳️ Dig', mix:'🌀 Mix', pour:'🪣 Pour', brick:'🧱 Brick', stud:'🪵 Stud', rafter:'🪜 Rafter', shingle:'🏠 Shingle', frame:'🚪 Frame', glass:'🪟 Glass', paint:'🎨 Paint', furn:'🛋️ Furnish'}[j];
       return '<button class="dhb' + (dh.job === j && dh.tool === 'place' ? ' on' : '') + '" data-dhjob="' + j + '">' + lab + '</button>';
     }).join('') + '<button class="dhb' + (dh.tool === 'delete' ? ' on' : '') + '" data-dhtool="delete">🗑️</button><button class="dhb" id="dhDumpBtn">📦 Dump</button><button class="dhb" id="dhShopBtn">🛒 Shop</button></div>';
     const cols = dh.job === 'paint' ? ('<div class="dhcols">' + DH_PAINT.map((c, i) => '<button class="dhc' + (dh.color === i ? ' on' : '') + '" data-dhcol="' + i + '" style="background:' + c.col + '" title="' + c.name + '"></button>').join('') + '</div>') : '';
