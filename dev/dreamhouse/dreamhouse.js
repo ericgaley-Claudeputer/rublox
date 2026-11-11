@@ -96,6 +96,9 @@
     if (P.x > bx) P.x = bx; else if (P.x < -bx) P.x = -bx;
     if (P.z > bz) P.z = bz; else if (P.z < -bz) P.z = -bz;
     if ((P.y || 0) < .05){ P.y = .05; if (P.vy < 0) P.vy = 0; }
+    const cap = dhWalkCap();
+    const sp = Math.hypot(P.vx || 0, P.vz || 0);
+    if (sp > cap){ P.vx *= cap / sp; P.vz *= cap / sp; }
     return P;
   }
   function dhPlotAt(x, z){
@@ -432,10 +435,21 @@
     curb(0, -z + .6, 100, .5); curb(0, z - .6, 100, .5); curb(-x + .6, 0, .5, 70); curb(x - .6, 0, .5, 70);
   }
   function dhSupplyMats(){ return DH_MATS.filter(m => m.free && !m.nosale && !m.furn); }
+  function dhSupplyOrder(){
+    const mats = dhSupplyMats().slice();
+    const want = (typeof dhWantedSupply === 'function') ? dhWantedSupply() : null;
+    const want2 = (want === 'cement') ? 'sand' : (want === 'sand') ? 'cement' : (typeof dhStageId === 'function' && dhStageId() === 'pour' ? 'sand' : null);
+    mats.sort((a, b) => {
+      const rank = m => (m.id === want ? 0 : m.id === want2 ? 1 : 10);
+      return rank(a) - rank(b);
+    });
+    return mats;
+  }
   function dhBinPos(i){
-    const mats = dhSupplyMats();
-    const k = i, col = k % 4, row = (k / 4) | 0;
-    // Keep the yard center clear so E in the open yard opens the menu, while E at a pallet grabs supplies.
+    const mats = (typeof dhSupplyOrder === 'function') ? dhSupplyOrder() : dhSupplyMats();
+    const k = i, row = (k / 4) | 0;
+    // Index 0 is the EAST column — closest to the path from the plot — so the needed pile is first.
+    const col = 3 - (k % 4);
     return {x: DH_YARD.x - 4.4 + col * 2.2, z: DH_YARD.z - 3.8 + row * 2.0, id: mats[k] && mats[k].id};
   }
   function dhFlag(x, z, col){
@@ -521,7 +535,7 @@
     dhFlag(DH_YARD.x + 5.6, DH_YARD.z - 4.4, '#3a86ff');
     dhBeaconAt(DH_YARD, '#ffd23f', 'yardBeacon');
     dh.bins = [];
-    dhSupplyMats().forEach((m, i) => {
+    dhSupplyOrder().forEach((m, i) => {
       const p = dhBinPos(i);
       const g = new THREE.Group(); g.position.set(p.x, 0, p.z);
       if (m.id === 'brick'){
@@ -601,8 +615,8 @@
   }
   function dhBuildMixer(plot){
     const [ox, oz] = dhOrigin(plot);
-    // Just south-west of the lot so it is in the first-person spawn view, next to the plot.
-    const x = ox + 2.0, z = oz - 2.4;
+    // West of the south edge: next to the plot and visible to the right of spawn, but not in your face.
+    const x = ox + 0.6, z = oz - 1.8;
     const g = new THREE.Group(); g.position.set(x, 0, z);
     const drum = new THREE.Mesh(new THREE.CylinderGeometry(.45, .5, .9, 12), dh.mats.rust);
     drum.rotation.z = Math.PI / 2; drum.position.set(0, .85, 0); g.add(drum);
@@ -620,9 +634,9 @@
       pole.position.set(0, 2.3, 0); g.add(pole);
       const glow = new THREE.Mesh(new THREE.SphereGeometry(.32, 10, 10), dhMat('#fff4a8'));
       glow.position.set(0, 4.55, 0); g.add(glow);
-      const big = dhPutSign(x, 3.5, z, '🚧 CEMENT MIXER', 10.2, 2.4);
-      if (big && big.material){ big.material.depthTest = false; }
-      dhPutSign(x, 2.45, z, 'Add Cement + Sand here', 8.2, 1.4);
+      const big = dhPutSign(x, 2.9, z, '🚧 CEMENT MIXER', 3.4, 0.7);
+      const sub = dhPutSign(x, 2.25, z, 'Cement + Sand', 2.8, 0.55);
+      dh.mixerSigns = [big, sub].filter(Boolean);
       dh.mixerLabel = big;
     }
     dh.mixers[plot] = {x, z, mesh: g, drum, cement: 0, sand: 0, mixed: 0, mixT: 0, phase: 'idle'};
@@ -726,13 +740,12 @@
     const vx = px - cx, vz = pz - cz, L2 = vx * vx + vz * vz || 1;
     const walk = (n, fn) => { fn(n); (n.children || []).forEach(c => walk(c, fn)); };
     const tmp = (typeof THREE !== 'undefined' && THREE.Vector3) ? new THREE.Vector3() : null;
-    (dh.plotSigns || []).forEach(sign => {
+    (dh.plotSigns || []).concat(dh.mixerSigns || []).forEach(sign => {
       if (!sign) return;
       const d = Math.hypot((sign.position.x || 0) - cx, (sign.position.y || 0) - cy, (sign.position.z || 0) - cz);
-      const fade = d < 8 ? Math.max(0.05, (d - 2.2) / 5.8) : 1;
+      const fade = d < 8 ? Math.max(0.04, (d - 2.4) / 5.6) : 1;
       const mats = sign.material ? (Array.isArray(sign.material) ? sign.material : [sign.material]) : [];
-      mats.forEach(m => { m.transparent = true; m.opacity = fade; if ('depthWrite' in m) m.depthWrite = fade > .6; });
-      if (sign.scale && sign.userData){ /* keep the shrunk plot-sign scale */ }
+      mats.forEach(m => { m.transparent = true; m.opacity = fade; if ('depthWrite' in m) m.depthWrite = fade > .6; if ('depthTest' in m) m.depthTest = true; });
     });
     if (!dh.yardSignParts || !dh.yardSignParts.length) return;
     dh.yardSignParts.forEach(root => {
@@ -807,7 +820,7 @@
     dhStockViz(dh.mine);
     const [ox, oz] = dhOrigin(dh.mine);
     const sp = dhSpawnPos(dh.mine);
-    Object.assign(P, {x: sp.x, y: sp.y, z: sp.z, vx: 0, vy: 0, vz: 0}); P.face = 0; cam.yaw = Math.PI; cam.pitch = .38; cam.dist = 12;
+    Object.assign(P, {x: sp.x, y: sp.y, z: sp.z, vx: 0, vy: 0, vz: 0}); P.face = 0; cam.yaw = Math.PI; cam.pitch = .37; cam.dist = .2;
     checkpoints[0] = {idx: 0, spawn: sp, flag: new THREE.Object3D()};
     dh.ghost = dhMakeGhost();
     scene.add(dh.ghost);
@@ -907,13 +920,46 @@
     if (ix < 0 || iz < 0 || ix >= DH_N || iz >= DH_N) return null;
     return {plot, ix, iz, wx: x, wz: z};
   }
+  function dhLookFromCam(){
+    const yaw = (typeof cam !== 'undefined' && cam && cam.yaw != null) ? cam.yaw : ((P && P.face) || 0);
+    const pitch = (typeof cam !== 'undefined' && cam && cam.pitch != null) ? cam.pitch : 0;
+    const cp = Math.cos(pitch), sp = Math.sin(pitch);
+    const fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+    const ey = ((P && P.y) || 0) + 2.45;
+    return {ox: ((P && P.x) || 0), oy: ey, oz: ((P && P.z) || 0), dx: fx * cp, dy: -sp, dz: fz * cp, yaw, pitch};
+  }
+  const DH_AIM_REACH = 6, DH_AIM_COS = Math.cos(12 * Math.PI / 180);
+  function dhAimCone(points, reach){
+    if (!points || !points.length) return null;
+    const ray = dhLookRay();
+    reach = reach || DH_AIM_REACH;
+    let best = null, bestScore = 1e9;
+    points.forEach(p => {
+      const ox = p.x - ray.ox, oy = p.y - ray.oy, oz = p.z - ray.oz;
+      const dist = Math.hypot(ox, oy, oz);
+      if (dist < 0.25 || dist > reach) return;
+      const inv = 1 / dist;
+      const dot = ox * inv * ray.dx + oy * inv * ray.dy + oz * inv * ray.dz;
+      if (dot < DH_AIM_COS) return;
+      const ang = Math.acos(Math.min(1, Math.max(-1, dot)));
+      const score = ang * 2 + dist * 0.04;
+      if (score < bestScore){ bestScore = score; best = p; best._aimDist = dist; best._aimAng = ang; }
+    });
+    return best;
+  }
+  function dhGroundHit(reach){
+    const ray = dhLookRay();
+    if (Math.abs(ray.dy) < 0.02) return null;
+    const t = (0.15 - ray.oy) / ray.dy;
+    if (t < 0.4 || t > (reach || 7)) return null;
+    return {x: ray.ox + ray.dx * t, y: 0.15, z: ray.oz + ray.dz * t, t};
+  }
   function dhAimFootCell(job){
     if (!dh) return null;
     job = job || dh.job;
     const plot = dh.mine;
-    const ray = dhLookRay();
     const cells = dhFootCells();
-    let best = null, bd = 0.95;
+    const pts = [];
     cells.forEach(c => {
       if (job === 'mark' && dhFootTaken(plot, c.ix, c.iz)) return;
       if (job === 'dig'){
@@ -925,25 +971,30 @@
         if (!ok) return;
       }
       const w = dhCellWorld(plot, c.ix, c.iz, 0.2);
-      const ox = w.x - ray.ox, oy = w.y - ray.oy, oz = w.z - ray.oz;
-      const t = ox * ray.dx + oy * ray.dy + oz * ray.dz;
-      if (t < 0.35 || t > 5.0) return;
-      const d = Math.hypot(w.x - (ray.ox + ray.dx * t), w.y - (ray.oy + ray.dy * t), w.z - (ray.oz + ray.dz * t));
-      if (d < bd){ bd = d; best = {plot, ix: c.ix, iz: c.iz, wx: w.x, wz: w.z, dist: t}; }
+      pts.push({plot, ix: c.ix, iz: c.iz, x: w.x, y: w.y, z: w.z, wx: w.x, wz: w.z});
+    });
+    const cone = dhAimCone(pts, DH_AIM_REACH);
+    if (cone) return cone;
+    const hit = dhGroundHit(7);
+    if (!hit) return null;
+    let best = null, bd = 1.05;
+    pts.forEach(p => {
+      const d = Math.hypot(p.x - hit.x, p.z - hit.z);
+      if (d < bd){ bd = d; best = p; }
     });
     return best;
   }
   function dhLookRay(){
+    // Keyboard / stick / touch all write cam.yaw and cam.pitch. Prefer those so a stale
+    // camera (or a chase-camera left over before first person sticks) cannot steal the aim.
+    if (typeof cam !== 'undefined' && cam && cam.yaw != null) return dhLookFromCam();
     if (typeof camera !== 'undefined' && camera && camera.position && typeof camera.getWorldDirection === 'function'){
       const d = (typeof THREE !== 'undefined' && THREE.Vector3) ? new THREE.Vector3() : {x:0,y:0,z:-1};
       camera.getWorldDirection(d);
       const o = camera.position;
       return {ox: o.x, oy: o.y, oz: o.z, dx: d.x, dy: d.y, dz: d.z};
     }
-    const yaw = (typeof cam !== 'undefined' && cam && cam.yaw != null) ? cam.yaw : ((P && P.face) || 0);
-    const pitch = (typeof cam !== 'undefined' && cam && cam.pitch != null) ? cam.pitch : 0;
-    const cp = Math.cos(pitch), sp = Math.sin(pitch);
-    return {ox: (P && P.x) || 0, oy: ((P && P.y) || 0) + 2.45, oz: (P && P.z) || 0, dx: -Math.sin(yaw) * cp, dy: -sp, dz: -Math.cos(yaw) * cp};
+    return dhLookFromCam();
   }
   function dhAimCell(){
     if (!dh) return null;
@@ -1071,9 +1122,14 @@
   function dhNearBin(){
     if (!dh || !dh.bins) return null;
     const r = (typeof dhNearYard === 'function' && dhNearYard()) ? DH_BIN_R_IN_YARD : DH_BIN_R;
-    let best = null, bd = r;
-    dh.bins.forEach(b => { const d = Math.hypot((P.x || 0) - b.x, (P.z || 0) - b.z); if (d < bd){ bd = d; best = b; } });
-    return best;
+    const want = (typeof dhWantedSupply === 'function') ? dhWantedSupply() : null;
+    let best = null, bd = r, wanted = null, wd = r + 0.8;
+    dh.bins.forEach(b => {
+      const d = Math.hypot((P.x || 0) - b.x, (P.z || 0) - b.z);
+      if (d < bd){ bd = d; best = b; }
+      if (want && b.id === want && d < wd){ wd = d; wanted = b; }
+    });
+    return wanted || best;
   }
   function dhNearMixer(){
     if (!dh) return null;
@@ -1129,11 +1185,30 @@
     const have = dh.carry ? ((dhMatOf(dh.carry.id) || {name: dh.carry.id}).name) : 'what you are carrying';
     return '🧺 You are already holding ' + have + '. Dump it (Q) first, or grab Cement + Sand together for the mixer.';
   }
+  function dhAutoReturn(keepId){
+    if (!dh) return [];
+    const put = [];
+    ['carry', 'bag'].forEach(slot => {
+      const rec = dh[slot];
+      if (!rec) return;
+      if (keepId && rec.id === keepId) return;
+      if (keepId && dhMixerPair(rec.id, keepId)) return;
+      if (rec.id === 'wetmix') return;
+      dh.stock[rec.id] = (dh.stock[rec.id] || 0) + rec.n;
+      put.push(rec.n + ' ' + ((dhMatOf(rec.id) || {name: rec.id}).name));
+      dh[slot] = null;
+    });
+    if (put.length) banner('📦 Put back ' + put.join(' and ') + ' so you can grab the next supply');
+    return put;
+  }
   function dhBuy(id, count){
     if (!dh) return false;
     if (dh.intro) return false;
     const m = dhMatOf(id); if (!m || m.nosale || m.furn) return false;
     const n = count || m.stack;
+    if (dh.carry && dh.carry.id !== id && !(dhMixerPair(dh.carry.id, id) && (!dh.bag || dh.bag.id === id))){
+      dhAutoReturn(id);
+    }
     const added = dhAddHeld(id, n);
     if (added <= 0){
       const msg = (dh.carry && dh.carry.id !== id && !(dhMixerPair(dh.carry.id, id) && !dh.bag)) ? dhHeldRefuseMsg(id) : '🧺 Your arms are full';
@@ -1150,7 +1225,6 @@
   }
   function dhDump(){
     if (!dh || !dhHasAnyCarry()) return false;
-    if (dhPlotAt(P.x, P.z) !== dh.mine && !dhNearPile()){ banner('🏡 Carry that back to your plot to dump it'); return false; }
     if (dh.carry && dh.carry.id === 'wetmix' && !dh.bag){ banner('🪣 Pour the wet mix into a dug form'); return false; }
     const bits = [];
     ['carry', 'bag'].forEach(slot => {
@@ -1170,6 +1244,7 @@
     n = n || 1;
     const have = dh.stock[id] || 0;
     if (have < n) return false;
+    if (dh.carry && dh.carry.id !== id && !(dhMixerPair(dh.carry.id, id) && (!dh.bag || dh.bag.id === id))) dhAutoReturn(id);
     const take = dhAddHeld(id, Math.min(n, have));
     if (take <= 0){ banner(dhHeldRefuseMsg(id)); return false; }
     dh.stock[id] -= take;
@@ -1240,8 +1315,8 @@
   function dhPour(){
     if (!dh || !dh.carry || dh.carry.id !== 'wetmix') return false;
     if (!dhNearOwnPlot()){ banner('🏡 Walk onto your plot'); return false; }
-    const aim = dhNextBuildCell('pour');
-    if (!aim){ banner(dhWhyNot() || '🕳️ Dig or stake the form first'); return false; }
+    const aim = dhAimFootCell('pour') || dhNextBuildCell('pour');
+    if (!aim){ banner(dhWhyNot() || '🎯 Aim at a dug foundation spot to pour'); return false; }
     if (!dhHas(aim.plot, 'trench', aim.ix, aim.iz) && !dhHas(aim.plot, 'mark', aim.ix, aim.iz)){ banner('🕳️ Dig or stake the form first'); return false; }
     if (dhHas(aim.plot, 'wet', aim.ix, aim.iz) || dhHas(aim.plot, 'slab', aim.ix, aim.iz)) return false;
     const trench = dhFind(aim.plot, 'trench', aim.ix, aim.iz) || dhFind(aim.plot, 'mark', aim.ix, aim.iz);
@@ -1318,19 +1393,21 @@
     if (!dh) return null;
     const slots = dhAllBrickSlots(dh.mine);
     if (!slots.length) return null;
-    const ray = dhLookRay();
-    let best = null, bd = 1.15;
-    slots.forEach(s => {
-      const ox = s.x - ray.ox, oy = s.y - ray.oy, oz = s.z - ray.oz;
-      const t = ox * ray.dx + oy * ray.dy + oz * ray.dz;
-      if (t < 0.4 || t > 9) return;
-      const d = Math.hypot(s.x - (ray.ox + ray.dx * t), s.y - (ray.oy + ray.dy * t), s.z - (ray.oz + ray.dz * t));
-      if (d < bd){ bd = d; best = s; }
-    });
-    if (best) return best;
-    // no close hit: snap to the next empty slot on the wall you are facing
+    const open = slots.filter(s => !s.filled).map(s => Object.assign({}, s, {x: s.x, y: s.y, z: s.z}));
+    const cone = dhAimCone(open, 6);
+    if (cone) return cone;
+    const hit = dhGroundHit(7);
+    if (hit){
+      let best = null, bd = 1.5;
+      open.forEach(s => {
+        const d = Math.hypot(s.x - hit.x, s.z - hit.z, (s.y - hit.y) * 0.4);
+        if (d < bd){ bd = d; best = s; }
+      });
+      if (best) return best;
+    }
+    // Only snap to the wall you are actually looking at, not a hidden far slot.
     const aim = dhAimCell();
-    if (!aim || aim.plot !== dh.mine) return slots.find(s => !s.filled) || null;
+    if (!aim || aim.plot !== dh.mine) return null;
     const face = dhWallFaceFromAim(aim);
     return dhNextBrick(aim.plot, face == null ? 0 : face, aim);
   }
@@ -1740,7 +1817,8 @@
     const wrap = $('#dhCut'); if (wrap){ wrap.style.display = 'none'; wrap.classList.remove('show'); }
     const [ox, oz] = dhOrigin(dh.mine);
     if (typeof P !== 'undefined') Object.assign(P, {x: ox + DH_CELL * 4, y: .05, z: oz - 2.8, vx: 0, vy: 0, vz: 0});
-    if (typeof cam !== 'undefined'){ cam.yaw = Math.PI; cam.pitch = .38; cam.dist = 12; }
+    if (typeof cam !== 'undefined'){ cam.yaw = Math.PI; cam.pitch = .37; cam.dist = .2; }
+    dhForceFirstPerson();
     dhHud(); dhBar();
     banner('🏡 An empty lot and a pile of materials — time to re-build your house!');
     dreamhouseUpdate(0);
@@ -1807,7 +1885,7 @@
     const replay = $('#dhReplay'); if (replay) replay.style.display = '';
     const resetBtn = $('#dhResetBtn'); if (resetBtn) resetBtn.style.display = '';
     if (typeof document !== 'undefined' && document.getElementById){ const root = document.getElementById('obby'); if (root && root.classList) root.classList.add('dhouse'); }
-    if (typeof cam !== 'undefined' && cam && !dh.intro){ cam.pitch = .08; cam.dist = .2; }
+    if (!dh.intro) dhForceFirstPerson();
     ['#dhGoal','#dhSteps'].forEach(id => { const el = $(id); if (el){ el.style.display = ''; el.classList.add('show'); } });
     const xh = $('#oCross'); if (xh) xh.style.display = '';
   }
@@ -1845,7 +1923,13 @@
       return c.need ? (' · ' + word + ' ' + c.have + '/' + c.need) : '';
     };
     if (dh.near >= 0 && dh.near !== dh.mine) return '💛 Like this house';
-    if (dhNearBin() && !dhNearMixer() && !dhNearPile()){ const b = dhNearBin(), m = dhMatOf(b && b.id); return (m ? m.e + ' ' : '') + key + ': Grab ' + ((m && m.name) || 'supplies'); }
+    if (dhNearBin() && !dhNearMixer() && !dhNearPile()){
+      const b = dhNearBin(), m = dhMatOf(b && b.id), want = dhWantedSupply(), wm = want && dhMatOf(want);
+      const name = (m && m.name) || 'supplies';
+      if (want && b && b.id === want) return (m ? m.e + ' ' : '') + key + ': Grab ' + name + ' (you need this!)';
+      if (want && b && b.id !== want) return (m ? m.e + ' ' : '') + key + ': Grab ' + name + ' — the ' + ((wm && wm.name) || 'needed') + ' pile is marked for your goal';
+      return (m ? m.e + ' ' : '') + key + ': Grab ' + name;
+    }
     if (dhNearYard() && !dhNearMixer() && !dhNearPile()) return key + ': Open the Supply Yard';
     if (dhNearFurn() && !dhNearMixer() && !dhNearPile()) return key + ': Open the Furniture Store';
     if (dhNearUp() && !dhNearMixer() && !dhNearPile()) return key + ': Talk to the builder';
@@ -1907,6 +1991,51 @@
     inst.count = list.length;
     if (inst.instanceMatrix) inst.instanceMatrix.needsUpdate = true;
   }
+  function dhForceFirstPerson(){
+    if (typeof setFP === 'function'){ try { setFP(true, true); } catch (e){} }
+    if (typeof cam !== 'undefined' && cam){
+      if (cam.dist > 1) cam.dist = .2;
+      if (cam.pitch < .25 || cam.pitch > .55) cam.pitch = .37;
+    }
+    if (typeof document !== 'undefined' && document.getElementById){
+      const root = document.getElementById('obby');
+      if (root && root.classList){ root.classList.add('dhouse'); root.classList.add('fpv'); }
+    }
+    if (typeof resize === 'function'){ try { resize(); } catch (e){} }
+  }
+  function dhLookWithKeys(dt){
+    if (!dh || dh.intro || typeof cam === 'undefined' || !cam) return false;
+    if (typeof keys === 'undefined' || !keys) return false;
+    const turn = 1.85 * (dt || 0);
+    if (turn <= 0) return false;
+    const yawK = ((keys.ArrowRight || keys.KeyL) ? 1 : 0) - ((keys.ArrowLeft || keys.KeyJ) ? 1 : 0);
+    const pitK = ((keys.KeyK || keys.ArrowDown) ? 1 : 0) - ((keys.KeyI || keys.ArrowUp) ? 1 : 0);
+    if (!yawK && !pitK) return false;
+    cam.yaw -= yawK * turn;
+    cam.pitch = Math.max(-1.3, Math.min(1.4, cam.pitch + pitK * turn * 0.9));
+    return true;
+  }
+  function dhClearHeldKeys(){
+    if (typeof keys !== 'undefined' && keys){ Object.keys(keys).forEach(k => { keys[k] = false; }); }
+    if (typeof joy !== 'undefined' && joy){ joy.x = joy.y = 0; joy.jump = false; }
+    if (typeof P !== 'undefined' && P){ P.vx = 0; P.vz = 0; }
+    return true;
+  }
+  function dhRefreshBins(){
+    if (!dh || !dh.bins || !dh.bins.length) return;
+    const order = dhSupplyOrder();
+    const key = order.map(m => m.id).join(',');
+    if (dh._binOrder === key) return;
+    dh._binOrder = key;
+    dh.bins.forEach(b => {
+      const i = order.findIndex(m => m.id === b.id);
+      if (i < 0) return;
+      const p = dhBinPos(i);
+      b.x = p.x; b.z = p.z;
+      if (b.mesh && b.mesh.position) b.mesh.position.set(p.x, 0, p.z);
+    });
+  }
+  function dhWalkCap(){ return (typeof keys !== 'undefined' && keys && (keys.ShiftLeft || keys.ShiftRight)) ? 7 : 4.5; }
   function dhCamComfort(dt){
     // Dream House is always first person after the intro. Do not force a follow camera.
     if (typeof cam === 'undefined' || !cam) return;
@@ -1920,6 +2049,8 @@
     if (!dh || over) return;
     if (dh.intro){ dhIntroTick(dt); return; }
     if (choosing) return;
+    dhLookWithKeys(dt);
+    dhRefreshBins();
     dhClampPlayer();
     dhCamComfort(dt);
     dhFadeOccludingTrees();
@@ -1996,7 +2127,10 @@
   function dhGoalText(){
     if (!dh) return '';
     const stage = dhStageId();
-    if (stage === 'stake') return 'Stake every corner of your house outline';
+    if (stage === 'stake'){
+      const c = dhJobCounts('mark');
+      return 'Stake every corner of your house outline (Stake ' + c.have + '/' + c.need + ')';
+    }
     if (stage === 'dig') return 'Dig each foundation spot where you placed a stake';
     if (stage === 'pour'){
       if (dhCarryOf('wetmix')) return 'Aim at a foundation spot and hold click to pour';
@@ -2072,9 +2206,13 @@
       if (stage === 'brick'){
         const slots = dhAllBrickSlots(dh.mine).filter(s => !s.filled);
         const show = slots.filter(s => s.course === (slots[0] && slots[0].course)).slice(0, 16);
+        const aimedB = dhAimBrickSlot();
         show.forEach(s => {
-          const m = new THREE.Mesh(new THREE.BoxGeometry(DH_BRICK_W - .04, DH_BRICK_H - .04, DH_BRICK_D + .02), dhMat('#7ad3ff', {transparent: true, opacity: pulse, emissive: '#7ad3ff', emissiveIntensity: .6, depthWrite: false}));
-          m.position.set(s.x, s.y, s.z); m.rotation.y = s.ry || 0; g.add(m);
+          const on = !!(aimedB && aimedB.face === s.face && aimedB.course === s.course && aimedB.along === s.along);
+          const m = new THREE.Mesh(new THREE.BoxGeometry(DH_BRICK_W - .04, DH_BRICK_H - .04, DH_BRICK_D + .02), dhMat(on ? '#7CFF6A' : '#7ad3ff', {transparent: true, opacity: on ? .95 : pulse, emissive: on ? '#7CFF6A' : '#7ad3ff', emissiveIntensity: on ? 1 : .6, depthWrite: false}));
+          m.position.set(s.x, s.y, s.z); m.rotation.y = s.ry || 0;
+          if (on) m.scale.set(1.15, 1.15, 1.15);
+          g.add(m);
         });
       } else if (stage === 'stake' || stage === 'dig' || stage === 'pour'){
         const job = stage === 'stake' ? 'mark' : stage;
@@ -2085,10 +2223,14 @@
           if (job === 'dig' && dhHas(dh.mine, 'mark', ix, iz) && !dhHas(dh.mine, 'trench', ix, iz) && !dhHas(dh.mine, 'wet', ix, iz) && !dhHas(dh.mine, 'slab', ix, iz)) cells.push({ix, iz});
           if (job === 'pour' && (dhHas(dh.mine, 'trench', ix, iz) || dhHas(dh.mine, 'mark', ix, iz)) && !dhHas(dh.mine, 'wet', ix, iz) && !dhHas(dh.mine, 'slab', ix, iz)) cells.push({ix, iz});
         }
+        const aimed = dhAimFootCell(job);
         cells.slice(0, 20).forEach(c => {
           const w = dhCellWorld(dh.mine, c.ix, c.iz, .1);
-          const m = new THREE.Mesh(new THREE.BoxGeometry(DH_CELL * .9, .08, DH_CELL * .9), dhMat('#ffe08a', {transparent: true, opacity: pulse, emissive: '#ffe08a', emissiveIntensity: .55, depthWrite: false}));
-          m.position.set(w.x, w.y, w.z); g.add(m);
+          const on = !!(aimed && aimed.ix === c.ix && aimed.iz === c.iz);
+          const m = new THREE.Mesh(new THREE.BoxGeometry(DH_CELL * .9, on ? .16 : .08, DH_CELL * .9), dhMat(on ? '#7CFF6A' : '#ffe08a', {transparent: true, opacity: on ? .9 : pulse, emissive: on ? '#7CFF6A' : '#ffe08a', emissiveIntensity: on ? 1 : .55, depthWrite: false}));
+          m.position.set(w.x, w.y, w.z);
+          if (on) m.scale.set(1.12, 1, 1.12);
+          g.add(m);
         });
       }
       if (g.children.length){ dh.outlines = g; scene.add(g); }
@@ -2137,7 +2279,11 @@
     if (dh.bag){ const m = mat(dh.bag.id); bits.push(dh.bag.n + ' ' + m.name); }
     if (bits.length){
       const m0 = mat(dh.carry ? dh.carry.id : dh.bag.id);
-      return {emoji: m0.e || '🧺', label: bits.join(' + '), carryText: 'Carrying ' + bits.join(' + ')};
+      const totals = [];
+      [dh.carry, dh.bag].forEach(rec => { if (rec) totals.push(dhInvCount(rec.id) + ' ' + mat(rec.id).name + ' total'); });
+      const uniq = totals.filter((t, i) => totals.indexOf(t) === i);
+      const extra = uniq.length ? ' · ' + uniq.join(', ') : '';
+      return {emoji: m0.e || '🧺', label: bits.join(' + ') + extra, carryText: 'Carrying ' + bits.join(' + ') + extra};
     }
     const j = jobIcon[dh.job] || ['🏗️', 'Build'];
     return {emoji: j[0], label: j[1], carryText: 'Holding the ' + j[1] + ' tool'};

@@ -39,7 +39,7 @@ function world(store0, opts){
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins};`, ctx);
   return ctx;
 }
 
@@ -174,10 +174,17 @@ W.A.dhCheckGoals();
 chk('house goals pay coins for a poured slab', !!(W.A.dh.goals.slab && W.A.dh.earned >= 25), W.A.dh.goals);
 
 // Lay individual bricks
+W.A.dh.carry = null; W.A.dh.bag = null;
 if ((W.A.dh.stock.brick|0) < 8) W.A.dhGive('brick', 16);
 W.A.dhPickup('brick', 8);
 W.A.dhSetJob('brick');
-W.P.x = ox + 3.5 * 1.4; W.P.z = oz + 0.2 * 1.4; W.P.face = 0;
+const slot0 = (W.A.dhAllBrickSlots(0) || []).find(s => !s.filled);
+if (slot0){
+  W.P.x = slot0.x; W.P.z = slot0.z + 2.4; W.P.y = .05; W.P.face = 0;
+  W.cam.yaw = 0; W.cam.pitch = Math.atan2(2.45 - slot0.y, 2.4);
+} else {
+  W.P.x = ox + 3.5 * 1.4; W.P.z = oz + 0.2 * 1.4; W.P.face = 0;
+}
 W.A.dreamhouseUpdate(0.05);
 const n0 = (W.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length;
 const laid = W.A.dhPlaceBrick();
@@ -188,6 +195,8 @@ chk('each brick is its own piece (not a prefab wall panel)', rec && rec[0]==='br
 let more = 0;
 for (let i = 0; i < 10; i++){
   if (!W.A.dh.carry || W.A.dh.carry.id !== 'brick') W.A.dhPickup('brick', 8) || (W.A.dhGive('brick', 8), W.A.dhPickup('brick', 8));
+  const nxt = (W.A.dhAllBrickSlots(0) || []).find(s => !s.filled);
+  if (nxt){ W.P.x = nxt.x; W.P.z = nxt.z + 2.4; W.cam.yaw = 0; W.cam.pitch = Math.atan2(2.45 - nxt.y, 2.4); }
   if (W.A.dhPlaceBrick()) more++;
 }
 chk('bricks lay one after another along the course', more >= 6, more);
@@ -725,6 +734,105 @@ Wg.A.dhBuy('cement'); Wg.A.dhBuy('sand');
 const gMix2 = Wg.A.dhGuideTarget();
 const mxg = Wg.A.dh.mixers[0];
 chk('after grabbing both mixer bags, the goal and arrow point at the Cement Mixer', /mixer/i.test(Wg.A.dhGoalText()) && !!(gMix2 && /mixer/i.test(gMix2.text)) && mxg && Math.hypot(gMix2.x - mxg.x, gMix2.z - mxg.z) < 0.2, {goal:Wg.A.dhGoalText(), guide:gMix2, mixer:mxg && {x:mxg.x,z:mxg.z}});
+})();
+
+
+(function(){
+/* Drive the real handlers (dhKey, dreamhouseUpdate, dump, buy) — not just helpers. */
+const Wh = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+Wh.A.buildDreamHouse();
+Wh.A.dh.introSeen = true; Wh.A.dh.intro = null;
+Wh.A.dreamhouseEnter();
+Wh.A.dhForceFirstPerson();
+chk('after the intro the camera is first person (not a chase cam at 12 m)', !!(Wh.cam && Wh.cam.dist <= 1 && Wh.cam.pitch >= .25), Wh.cam);
+const goal0 = Wh.A.dhGoalText(), list0 = Wh.A.dhChecklist();
+chk('the goal text and checklist both show Stake 0/16', /Stake 0\/16/.test(goal0) && list0.some(l => /Stake/.test(l) && /0\/16/.test(l)), {goal:goal0, list:list0});
+
+const pitch0 = Wh.cam.pitch, yaw0 = Wh.cam.yaw;
+Wh.keys.KeyI = true;
+Wh.A.dreamhouseUpdate(0.2);
+chk('holding I looks up through the real update loop (keyboard look fallback)', Wh.cam.pitch < pitch0 - 0.05, {pitch:Wh.cam.pitch, before:pitch0});
+Wh.keys.KeyI = false; Wh.keys.KeyK = true;
+Wh.A.dreamhouseUpdate(0.35);
+chk('holding K looks down through the real update loop', Wh.cam.pitch > pitch0, {pitch:Wh.cam.pitch, before:pitch0});
+Wh.keys.KeyK = false; Wh.keys.KeyJ = true;
+Wh.A.dreamhouseUpdate(0.2);
+chk('holding J turns left through the real update loop', Wh.cam.yaw !== yaw0, {yaw:Wh.cam.yaw, before:yaw0});
+Wh.keys.KeyJ = false;
+Wh.keys.ArrowRight = true;
+const yaw1 = Wh.cam.yaw;
+Wh.A.dreamhouseUpdate(0.2);
+chk('arrow keys also turn the camera (VNC / no-mouse fallback)', Wh.cam.yaw !== yaw1, {yaw:Wh.cam.yaw, before:yaw1});
+Wh.keys.ArrowRight = false;
+
+const sp = Wh.A.dhSpawnPos(0);
+Wh.P.x = sp.x; Wh.P.z = sp.z; Wh.P.y = .05;
+Wh.cam.yaw = Math.PI;
+Wh.cam.pitch = 0.28;
+Wh.keys.KeyK = true;
+Wh.A.dreamhouseUpdate(0.07);
+Wh.keys.KeyK = false;
+if (Wh.cam.pitch < 0.32 || Wh.cam.pitch > 0.5) Wh.cam.pitch = 0.37;
+const marksBefore = (Wh.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length;
+const aimed = Wh.A.dhAimFootCell('mark');
+Wh.A.dhKey({code:'KeyE', repeat:false});
+chk('after looking down with IJKL, E through dhKey places a stake on the glowing outline', (Wh.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length === marksBefore + 1, {aimed, marks:(Wh.A.dh.pieces[0]||[]).filter(a=>a[0]==='mark').length, cam:Wh.cam, P:{x:Wh.P.x,z:Wh.P.z}, banners:Wh.banners.slice(-3)});
+
+Wh.A.dh.carry = {id:'wood', n:6}; Wh.A.dh.bag = null;
+Wh.P.x = Wh.A.DH_YARD.x; Wh.P.z = Wh.A.DH_YARD.z;
+const dumped = Wh.A.dhKey({code:'KeyQ', repeat:false});
+chk('Q at the Supply Yard dumps carried planks through the real key handler', dumped === true && !Wh.A.dh.carry && (Wh.A.dh.stock.wood|0) >= 6, {dumped, carry:Wh.A.dh.carry, stock:Wh.A.dh.stock.wood, banners:Wh.banners.slice(-2)});
+
+Wh.A.dh.carry = {id:'wood', n:6}; Wh.A.dh.bag = null;
+const grabbed = Wh.A.dhBuy('sand', 1);
+chk('grabbing Sand in the yard auto-returns Planks and does not lock you out', grabbed === true && Wh.A.dhCarryOf('sand') >= 1 && !Wh.A.dhCarryOf('wood') && (Wh.A.dh.stock.wood|0) >= 6, {grabbed, carry:Wh.A.dh.carry, bag:Wh.A.dh.bag, stock:Wh.A.dh.stock});
+const both = Wh.A.dhBuy('cement', 1);
+chk('Cement + Sand can still be carried together after an auto-return', both === true && Wh.A.dhCarryOf('sand') >= 1 && Wh.A.dhCarryOf('cement') >= 1, {carry:Wh.A.dh.carry, bag:Wh.A.dh.bag});
+
+Wh.A.dhDump();
+Wh.A.dh.carry = {id:'wood', n:6};
+Wh.A.dhHud(); Wh.A.dhBar();
+const invN = Wh.A.dhInvCount('wood');
+const top = (Wh.els['#dhInv'] && Wh.els['#dhInv'].textContent) || '';
+const bar = (Wh.els['#dhBar'] && Wh.els['#dhBar'].innerHTML) || '';
+const held = Wh.A.dhHeldInfo();
+chk('toolbar, top HUD, and hand all share the same plank total', invN === ((Wh.A.dh.stock.wood|0) + Wh.A.dhCarryOf('wood')) && (top.includes(String(invN)) || top.includes('🪵'+invN) || top.includes('🪵 '+invN)) && bar.includes('>' + invN + '<') && held && String(held.label + held.carryText).includes(String(invN)), {invN, top, bar, held, stock:Wh.A.dh.stock.wood, carry:Wh.A.dh.carry});
+
+const Wpiles = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+Wpiles.A.buildDreamHouse();
+Wpiles.A.dh.introSeen = true; Wpiles.A.dh.intro = null;
+Wpiles.A.dreamhouseEnter();
+const footP = Wpiles.A.dhFoot();
+Wpiles.A.dhSetJob('mark');
+for (let ix = footP.x0; ix <= footP.x1; ix++) for (let iz = footP.z0; iz <= footP.z1; iz++){ aimFoot(Wpiles, ix, iz); Wpiles.A.dhMarkOrDig(); }
+Wpiles.A.dhSetJob('dig');
+for (let ix = footP.x0; ix <= footP.x1; ix++) for (let iz = footP.z0; iz <= footP.z1; iz++){ aimFoot(Wpiles, ix, iz); Wpiles.A.dhMarkOrDig(); }
+Wpiles.A.dhSetJob('pour');
+Wpiles.A.dhRefreshBins();
+const [pox, poz] = Wpiles.A.dhOrigin(0);
+const pcx = pox + 8 * 1.4 / 2, pcz = poz + 8 * 1.4 / 2;
+const cem = Wpiles.A.dh.bins.find(b => b.id === 'cement');
+const snd = Wpiles.A.dh.bins.find(b => b.id === 'sand');
+const plk = Wpiles.A.dh.bins.find(b => b.id === 'wood');
+const dCem = Math.hypot(cem.x - pcx, cem.z - pcz), dPlk = Math.hypot(plk.x - pcx, plk.z - pcz);
+chk('when the goal is Cement/Sand, those piles sit closer to the plot than Planks', dCem < dPlk && Math.hypot(snd.x - pcx, snd.z - pcz) < dPlk, {dCem, dSand:Math.hypot(snd.x-pcx,snd.z-pcz), dPlk, cem, snd, plk});
+// Stand at the yard entrance (east of the yard, toward the plot) and press E
+Wpiles.P.x = (cem.x + pcx) / 2; Wpiles.P.z = cem.z;
+if (!Wpiles.A.dhNearYard()){ Wpiles.P.x = cem.x; Wpiles.P.z = cem.z; }
+const promptGrab = Wpiles.A.dhActPrompt();
+const near = Wpiles.A.dhNearBin();
+const eGrab = Wpiles.A.dhKey({code:'KeyE', repeat:false});
+chk('E at the Supply Yard grabs the needed Cement/Sand, not Planks, and the prompt says so', near && (near.id === 'cement' || near.id === 'sand') && /Cement|Sand/.test(promptGrab) && /need/i.test(promptGrab) && eGrab && (Wpiles.A.dhCarryOf('cement') || Wpiles.A.dhCarryOf('sand')) && !Wpiles.A.dhCarryOf('wood'), {near, prompt:promptGrab, carry:Wpiles.A.dh.carry, bag:Wpiles.A.dh.bag, eGrab, banners:Wpiles.banners.slice(-3)});
+const guide = Wpiles.A.dhGuideTarget();
+chk('the guide arrow points at the needed pile', !!(guide && cem && (Math.hypot(guide.x - cem.x, guide.z - cem.z) < 0.3 || (snd && Math.hypot(guide.x - snd.x, guide.z - snd.z) < 0.3) || /Cement|Sand|mixer|Supply/i.test(guide.text))), guide);
+
+const Ws = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+Ws.A.buildDreamHouse(); Ws.A.dreamhouseEnter();
+Ws.P.vx = 20; Ws.P.vz = 0; Ws.A.dhClampPlayer();
+chk('first-person walk speed is capped near 4.5 m/s', Math.hypot(Ws.P.vx, Ws.P.vz) <= 4.51 && Ws.A.dhWalkCap() === 4.5, {v:Math.hypot(Ws.P.vx,Ws.P.vz), cap:Ws.A.dhWalkCap()});
+Ws.keys.KeyW = true; Ws.P.vx = 4; Ws.P.vz = 0;
+Ws.A.dhClearHeldKeys();
+chk('clearing keys on blur/pointer-lock stops a stuck W so you do not keep sliding', Ws.keys.KeyW === false && Math.abs(Ws.P.vx) < 0.01 && Math.abs(Ws.P.vz) < 0.01, {keys:Ws.keys, v:{x:Ws.P.vx,z:Ws.P.vz}});
 })();
 
 console.log('RESULT', pass, '/', pass + fail);
