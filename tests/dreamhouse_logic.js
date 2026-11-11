@@ -26,7 +26,7 @@ function world(store0, opts){
     scene: {add(){}, remove(){}, background: null, fog: null},
     load: (k, d) => k in store ? JSON.parse(store[k]) : d,
     save: (k, v) => { store[k] = JSON.stringify(v); },
-    $: id => els[id] || (els[id] = {textContent: '', innerHTML: '', style: {}, dataset: {}, classList: {add(){}, remove(){}, contains(){ return false; }}, appendChild(){}, querySelectorAll: () => [], setAttribute(){}, addEventListener(){}, blur(){}, onclick: null, closest: () => null}),
+    $: id => els[id] || (els[id] = {textContent: '', innerHTML: '', style: {}, dataset: {}, classList: {add(){}, remove(){}, contains(){ return false; }, toggle(){}}, appendChild(){}, querySelectorAll: () => [], setAttribute(){}, addEventListener(){}, blur(){}, onclick: null, closest: () => null}),
     coins: (opts && opts.coins) || 20, runCoins: 0, running: true, paused: false, choosing: false, worldT: 0, mode: 'dreamhouse', banners: [],
     P: {x: 0, y: .05, z: 0, face: 0, vx: 0, vy: 0, vz: 0, onGround: true}, pad: {on: false}, touchUI: false, keys: {},
     cam: {yaw: Math.PI, pitch: .34, dist: 12}, tipTimer: 0, mp: {on: false},
@@ -38,18 +38,21 @@ function world(store0, opts){
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, dhSave};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees};`, ctx);
   return ctx;
 }
 
 const W = world();
 W.A.buildDreamHouse(); W.A.dreamhouseEnter();
+chk('first visit starts Mom\'s intro cut-scene', !!(W.A.dh && W.A.dh.intro && W.A.dh.intro.stage === 'house' && !W.A.dh.introSeen), W.A.dh && {intro: W.A.dh.intro, seen: W.A.dh.introSeen});
+chk('Space skips the intro and remembers it was seen', W.A.dhKey({code:'Space', repeat:false}) === true && !W.A.dh.intro && !!W.A.dh.introSeen);
+chk('skipping leaves an empty lot with a starter material pile', (W.A.dh.pieces[0]||[]).length === 0 && (W.A.dh.stock.brick|0) >= 8 && (W.A.dh.stock.wood|0) >= 1, {pieces:(W.A.dh.pieces[0]||[]).length, stock:W.A.dh.stock});
 chk('mode boots on your own plot with starter coins', !!(W.A.dh && W.A.dh.mine === 0 && W.A.dh.bank >= 100), W.A.dh && {mine: W.A.dh.mine, bank: W.A.dh.bank});
 chk('starter grant added to global Rublox coins once', W.coins >= 120, W.coins);
 chk('four plots and a supply yard exist', W.A.DH_PLOTS === 4 && W.A.dh.bins && W.A.dh.bins.length >= 6 && W.A.DH_YARD.z < 0, W.A.dh.bins && W.A.dh.bins.length);
 chk('materials include bricks, cement, sand, wood, shingles, glass', ['brick','cement','sand','wood','shingle','glass'].every(id => W.A.DH_MATS.some(m => m.id === id)));
 chk('catalog is construction parts, not prefab wall slabs', W.A.DH_PARTS.some(p => p.id === 'brick') && W.A.DH_PARTS.some(p => p.id === 'slab') && !W.A.DH_PARTS.some(p => p.id === 'wall' && p.name === 'Wall'));
-chk('save key is unique (does not clobber stables/bakery)', W.A.DH_KEY === 'rubloxDreamHouse' && W.A.DH_VER === 2);
+chk('save key is unique (does not clobber stables/bakery)', W.A.DH_KEY === 'rubloxDreamHouse' && W.A.DH_VER === 3);
 
 // Buy at the yard, carry, dump on plot
 W.P.x = W.A.dh.bins[0].x; W.P.z = W.A.dh.bins[0].z;
@@ -174,10 +177,67 @@ W.A.dhKey({code:'KeyQ', repeat:false});
 chk('Q dumps a carried load onto the plot', !W.A.dh.carry, W.A.dh.carry);
 chk('Xbox Ⓧ acts and Ⓑ rotates', (() => { const r0 = W.A.dh.rot; W.A.dhPad({b:1}); return W.A.dh.rot === ((r0+1)%4); })());
 
+
+// Trees, shop, paint, upgrades, replay, no forced rewatch
+chk('a ring of trees surrounds the plots', (W.A.dh.trees||[]).length >= 24, W.A.dh.trees && W.A.dh.trees.length);
+(function(){
+  const yard = W.A.DH_YARD;
+  const ox = (0 - 1.5) * 18, oz = -8 * 1.4 / 2;
+  const cx = ox + 8 * 1.4 / 2, cz = oz + 8 * 1.4 / 2;
+  const blocked = (W.A.dh.trees||[]).filter(t => {
+    const toYx = yard.x - cx, toYz = yard.z - cz, len = Math.hypot(toYx, toYz) || 1;
+    const ux = toYx / len, uz = toYz / len;
+    const vx = t.x - cx, vz = t.z - cz;
+    const along = vx * ux + vz * uz, side = Math.abs(vx * uz - vz * ux);
+    return (t.plot|0) === 0 && along > 2 && along < 16 && side < 2.2;
+  });
+  chk('trees leave a path to the Supply Yard', blocked.length === 0, blocked);
+})();
+chk('catalog includes paint plus shop furniture (tv, bookshelf)', W.A.DH_MATS.some(m => m.id === 'paint') && W.A.DH_MATS.some(m => m.id === 'tv') && W.A.DH_MATS.some(m => m.id === 'shelf'));
+W.A.dh.bank += 80;
+const bankF = W.A.dh.bank;
+const sofaOk = W.A.dhShopBuyFurn('sofa');
+chk('the shop sells furniture for coins into your stock', sofaOk && (W.A.dh.stock.sofa|0) >= 1 && W.A.dh.bank === bankF - 10, {bank:W.A.dh.bank, stock:W.A.dh.stock.sofa, sofaOk});
+const cap0 = W.A.dhCarryCap('brick');
+W.A.dh.bank += 200;
+const upCarry = W.A.dhBuyUpgrade('carry');
+chk('carry upgrade increases how much you can hold', upCarry && W.A.dhCarryCap('brick') > cap0, {cap0, cap1:W.A.dhCarryCap('brick')});
+const dry0 = W.A.dhDryNeed();
+W.A.dhBuyUpgrade('dry');
+chk('faster drying upgrade shortens the concrete wait', W.A.dhDryNeed() < dry0, {dry0, dry1:W.A.dhDryNeed()});
+const bar0 = W.A.dhCarryCap('wetmix');
+W.A.dhBuyUpgrade('barrow');
+chk('wheelbarrow upgrade carries more wet mix', W.A.dhCarryCap('wetmix') > bar0);
+W.A.dhBuyUpgrade('story');
+W.A.dhBuyUpgrade('lot');
+chk('lot and second-story upgrades expand the footprint and wall height', W.A.dhFoot().x0 === 0 && W.A.dhCourses() > 8, {foot:W.A.dhFoot(), courses:W.A.dhCourses()});
+
+// Paint a wall cell
+W.A.dhGive('paint', 2);
+W.A.dhPickup('paint', 1);
+W.A.dhSetJob('paint');
+W.A.dh.color = 1;
+W.P.x = ox + 3.5 * 1.4; W.P.z = oz + 2.5 * 1.4; W.P.face = 0;
+W.A.dreamhouseUpdate(0.02);
+const painted = W.A.dhPlace();
+chk('paint places a colored wash on the house', painted && (W.A.dh.pieces[0]||[]).some(a => a[0]==='paint' && (a[5]|0)===1), {painted, recs:(W.A.dh.pieces[0]||[]).filter(a => a[0]==='paint')});
+
+// Replay + returning player
+const piecesBeforeReplay = (W.A.dh.pieces[0]||[]).length;
+W.A.dhReplayIntro();
+chk('menu replay starts the cut-scene again', !!(W.A.dh && W.A.dh.intro && W.A.dh.intro.replay));
+W.A.dhPad({a:1, 0:1});
+chk('Ⓐ / skip ends a replay without wiping the house or introSeen', !W.A.dh.intro && W.A.dh.introSeen && (W.A.dh.pieces[0]||[]).length === piecesBeforeReplay, {pieces:(W.A.dh.pieces[0]||[]).length, before:piecesBeforeReplay});
+
+const W3 = world({rubloxDreamHouse: JSON.stringify({ver:3, introSeen:true, granted:true, coins:15, pieces:[], stock:{}, goals:{}, upgrades:{}})}, {coins:15});
+W3.A.buildDreamHouse(); W3.A.dreamhouseEnter();
+chk('a returning player is not forced to rewatch the intro', !!(W3.A.dh && W3.A.dh.introSeen && !W3.A.dh.intro), W3.A.dh && {seen:W3.A.dh.introSeen, intro:W3.A.dh.intro});
+W3.A.dreamhouseStop();
+
 // Save / migrate / preserve other keys
 W.A.dhSave();
 const saved = W.store.rubloxDreamHouse;
-chk('house writes construction data to rubloxDreamHouse', !!(saved && /"ver":2/.test(saved) && /brick/.test(saved)));
+chk('house writes construction data to rubloxDreamHouse', !!(saved && /"ver":3/.test(saved) && /brick/.test(saved) && /introSeen/.test(saved)));
 const v1 = {pieces: [[0,2,0,2,0,1],[1,2,1,2,0,1],[2,3,1,1,0,0],[5,2,2,2,0,1]], coins: 40, granted: true, goals: {floors:1}};
 const other = {rubloxStable: '{"pony":{"id":"buttercup"},"shows":2}', rubloxBakery: '{"served":4,"coins":9}', rubloxDreamHouse: JSON.stringify(v1)};
 const W2 = world(other, {coins: 50});
