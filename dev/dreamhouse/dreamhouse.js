@@ -1,4 +1,4 @@
-  /* ===================== t249u: 🏡 DREAM HOUSE BUILDERS — stake targeting, yard guide, tools vs emotes, grant/plot fixes ===================== */
+  /* ===================== t250u: 🏡 DREAM HOUSE BUILDERS — yard by the plot, clear spawn view, world bounds, shop stays put ===================== */
   const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 4;
   const DH_FOOT = {x0: 1, z0: 1, x1: 6, z1: 6}; // slab footprint inside the plot
   const DH_BRICK_W = .5, DH_BRICK_H = .24, DH_BRICK_D = .28, DH_COURSES = 8;
@@ -58,12 +58,33 @@
     {id: 'lot',   name: 'Bigger lot',         e: '📐', cost: 90, max: 1, desc: 'Expand your house footprint'}
   ];
   const DH_YARD = {x: 0, z: -20};
+  const DH_BOUND = {x: 46, z: 31};
   let dh = null;
 
   function dhMatOf(id){ return DH_MATS.find(m => m.id === id); }
   function dhWho(){ return (typeof mp !== 'undefined' && mp && mp.on && mp.uid) ? String(mp.uid) : 'local'; }
   function dhIsGuest(){ return !!(typeof mp !== 'undefined' && mp && mp.on && typeof mpGuest === 'function' && mpGuest()); }
   function dhOrigin(plot){ return [(plot - 1.5) * DH_SPACING, -DH_N * DH_CELL / 2]; }
+  function dhSpawnPos(plot){
+    const [ox, oz] = dhOrigin(plot == null ? (dh && dh.mine) || 0 : plot);
+    return {x: ox + DH_CELL * 4, y: .05, z: oz - 2.8};
+  }
+  function dhLayoutYard(){
+    const plot = (dh && dh.mine) || 0;
+    const [ox, oz] = dhOrigin(plot);
+    // west of your lot, a little toward the camera so it's in view, ~14m from spawn,
+    // and not overlapping the material pile (which sits on the west-north corner)
+    DH_YARD.x = ox - 8;
+    DH_YARD.z = oz + 1;
+  }
+  function dhClampPlayer(){
+    if (typeof P === 'undefined' || !P) return P;
+    const bx = DH_BOUND.x, bz = DH_BOUND.z;
+    if (P.x > bx) P.x = bx; else if (P.x < -bx) P.x = -bx;
+    if (P.z > bz) P.z = bz; else if (P.z < -bz) P.z = -bz;
+    if ((P.y || 0) < .05){ P.y = .05; if (P.vy < 0) P.vy = 0; }
+    return P;
+  }
   function dhPlotAt(x, z){
     for (let i = 0; i < DH_PLOTS; i++){
       const [ox, oz] = dhOrigin(i);
@@ -327,9 +348,8 @@
   }
 
   function dhBinPos(i){
-    const n = DH_MATS.filter(m => !m.nosale).length;
-    const k = i; const col = k % 7, row = (k / 7) | 0;
-    return {x: DH_YARD.x - 9 + col * 2.6, z: DH_YARD.z - 1.2 + row * 2.8, id: DH_MATS.filter(m => !m.nosale)[k] && DH_MATS.filter(m => !m.nosale)[k].id};
+    const k = i, col = k % 5, row = (k / 5) | 0;
+    return {x: DH_YARD.x - 4.4 + col * 2.2, z: DH_YARD.z - 2.6 + row * 2.4, id: DH_MATS.filter(m => !m.nosale)[k] && DH_MATS.filter(m => !m.nosale)[k].id};
   }
   function dhMakeGhost(){
     const g = new THREE.Group(); g.visible = false;
@@ -340,26 +360,40 @@
     g.userData.glow = glow; g.userData.pole = pole;
     return g;
   }
+  function dhBuildBounds(){
+    const x = 50, z = 35, h = 6, t = 1.6;
+    const wall = (wx, wz, ww, wd) => {
+      const b = plat(wx, h, wz, ww, wd, '#3d8f4a', h);
+      b.camSkip = true;
+      if (b.mesh){ b.mesh.visible = false; if (b.mesh.material) b.mesh.material.visible = false; }
+    };
+    wall(0, -z, 104, t); wall(0, z, 104, t); wall(-x, 0, t, 74); wall(x, 0, t, 74);
+    // visible low curb so the edge of the grass is obvious
+    const curb = (wx, wz, ww, wd) => plat(wx, .28, wz, ww, wd, '#5a8f4a', .28);
+    curb(0, -z + .6, 100, .5); curb(0, z - .6, 100, .5); curb(-x + .6, 0, .5, 70); curb(x - .6, 0, .5, 70);
+  }
   function dhBuildYard(){
-    plat(DH_YARD.x, .12, DH_YARD.z, 22, 8, '#cfc4a8', .2);
-    plat(DH_YARD.x, 1.1, DH_YARD.z - 3.6, 18, .4, '#8b4513', 2.0);
-    // big readable sign facing the plots (plots are toward +z)
-    const board = new THREE.Mesh(new THREE.BoxGeometry(9.5, 2.6, .22), dhMat('#8b4513'));
-    board.position.set(DH_YARD.x, 4.4, DH_YARD.z + 4.2); scene.add(board);
-    const posts = [[-4.4, 2.1], [4.4, 2.1]];
-    posts.forEach(([x, y]) => { const p = new THREE.Mesh(new THREE.BoxGeometry(.22, 4.2, .22), dhMat('#5a4030')); p.position.set(DH_YARD.x + x, y, DH_YARD.z + 4.2); scene.add(p); });
-    const sign = label('📦 SUPPLY YARD', 'rgba(29,35,64,.95)');
-    if (sign && sign.position) sign.position.set(DH_YARD.x, 4.5, DH_YARD.z + 4.4);
-    if (sign && sign.scale) sign.scale.set(1.6, 1.6, 1.6);
-    if (sign) scene.add(sign);
-    // tall yellow beacon + bobbing arrow so you can spot the yard from your plot
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(.12, .18, 9, 8), dhMat('#ffd23f', {emissive: '#ffd23f', emissiveIntensity: .55}));
-    pole.position.set(DH_YARD.x, 4.6, DH_YARD.z); scene.add(pole);
-    const halo = new THREE.Mesh(new THREE.CylinderGeometry(.7, .7, 8, 12), dhMat('#ffe08a', {transparent: true, opacity: .22, emissive: '#ffd23f', emissiveIntensity: .35, depthWrite: false}));
-    halo.position.set(DH_YARD.x, 5, DH_YARD.z); scene.add(halo);
-    const arrow = new THREE.Mesh(new THREE.ConeGeometry(.7, 1.4, 8), dhMat('#ff4d5e', {emissive: '#ff4d5e', emissiveIntensity: .5}));
-    arrow.rotation.x = Math.PI; arrow.position.set(DH_YARD.x, 10.2, DH_YARD.z); scene.add(arrow);
-    dh.yardBeacon = {pole, halo, arrow, y0: 10.2};
+    plat(DH_YARD.x, .12, DH_YARD.z, 12, 9, '#cfc4a8', .2);
+    // short path from the west edge of your lot to the yard
+    const [pox, poz] = dhOrigin((dh && dh.mine) || 0);
+    plat((pox + DH_YARD.x) / 2, .14, DH_YARD.z, Math.max(4, pox - DH_YARD.x), 3.2, '#cfc4a8', .18);
+    // huge sign facing the plot / spawn (plot is toward +X)
+    const board = new THREE.Mesh(new THREE.BoxGeometry(.22, 3.2, 10), dhMat('#8b4513'));
+    board.position.set(DH_YARD.x + 5.6, 4.8, DH_YARD.z); scene.add(board);
+    const posts = [[5.6, 2.3, -4.6], [5.6, 2.3, 4.6]];
+    posts.forEach(([x, y, z]) => { const p = new THREE.Mesh(new THREE.BoxGeometry(.24, 4.6, .24), dhMat('#5a4030')); p.position.set(DH_YARD.x + x, y, DH_YARD.z + z); scene.add(p); });
+    const sign = (typeof label === 'function') ? label('📦 SUPPLY YARD', 'rgba(29,35,64,.95)', '#ffd23f', 512) : null;
+    if (sign && sign.position) sign.position.set(DH_YARD.x + 4.2, 5.4, DH_YARD.z + 1.6);
+    if (sign && sign.scale) sign.scale.set(9.5, 2.1, 1);
+    if (sign){ sign.renderOrder = 12; scene.add(sign); }
+    // tall yellow beacon + bobbing arrow, visible over the trees from spawn
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(.14, .2, 12, 8), dhMat('#ffd23f', {emissive: '#ffd23f', emissiveIntensity: .7}));
+    pole.position.set(DH_YARD.x, 6.2, DH_YARD.z); scene.add(pole);
+    const halo = new THREE.Mesh(new THREE.CylinderGeometry(.85, .85, 11, 12), dhMat('#ffe08a', {transparent: true, opacity: .28, emissive: '#ffd23f', emissiveIntensity: .45, depthWrite: false}));
+    halo.position.set(DH_YARD.x, 6.4, DH_YARD.z); scene.add(halo);
+    const arrow = new THREE.Mesh(new THREE.ConeGeometry(.9, 1.8, 8), dhMat('#ff4d5e', {emissive: '#ff4d5e', emissiveIntensity: .65}));
+    arrow.rotation.x = Math.PI; arrow.position.set(DH_YARD.x, 13.4, DH_YARD.z); scene.add(arrow);
+    dh.yardBeacon = {pole, halo, arrow, y0: 13.4};
     dh.bins = [];
     DH_MATS.filter(m => !m.nosale).forEach((m, i) => {
       const p = dhBinPos(i);
@@ -412,6 +446,17 @@
     if (typeof scene !== 'undefined') scene.add(g);
     return g;
   }
+  function dhTreeBlocked(x, z){
+    const plot = (dh && dh.mine) || 0;
+    const [ox, oz] = dhOrigin(plot);
+    const sp = dhSpawnPos(plot);
+    const x0 = ox - 1.2, x1 = ox + DH_N * DH_CELL + 1.2;
+    // spawn-to-plot + camera corridor (south of the lot, same x as the plot)
+    if (x > x0 && x < x1 && z < oz + 2.5 && z > oz - 18) return true;
+    if (Math.hypot(x - sp.x, z - sp.z) < 7) return true;
+    if (Math.hypot(x - DH_YARD.x, z - DH_YARD.z) < 10) return true;
+    return false;
+  }
   function dhPlantTrees(){
     dh.trees = [];
     const yard = {x: DH_YARD.x, z: DH_YARD.z};
@@ -423,16 +468,34 @@
       for (let k = 0; k < n; k++){
         const t = (k / n) * Math.PI * 2 + i * .15;
         const x = cx + Math.cos(t) * rx, z = cz + Math.sin(t) * rz;
-        // gap toward the supply yard (negative z / north path)
+        if (dhTreeBlocked(x, z)) continue;
         const towardYard = Math.atan2(yard.z - cz, yard.x - cx);
         let dAng = Math.abs(Math.atan2(Math.sin(t - towardYard), Math.cos(t - towardYard)));
-        if (dAng < .55) continue;
+        if (dAng < .7) continue;
         const kind = (i * 5 + k * 3) % 5;
         const sc = 0.85 + ((i * 7 + k * 13) % 5) * .08;
         const mesh = dhTree(x, z, kind, sc);
         dh.trees.push({x, z, plot: i, mesh, kind});
       }
     }
+  }
+  function dhFadeOccludingTrees(){
+    if (!dh || !dh.trees || typeof camera === 'undefined' || !camera) return;
+    const cx = camera.position.x, cz = camera.position.z, px = P.x || 0, pz = P.z || 0;
+    const vx = px - cx, vz = pz - cz, L2 = vx * vx + vz * vz || 1;
+    dh.trees.forEach(t => {
+      if (!t.mesh) return;
+      let u = ((t.x - cx) * vx + (t.z - cz) * vz) / L2;
+      u = Math.max(0, Math.min(1, u));
+      const d = Math.hypot(t.x - (cx + u * vx), t.z - (cz + u * vz));
+      const occlude = d < 2.6 && u > .06 && u < .92;
+      const walk = (n, fn) => { fn(n); (n.children || []).forEach(c => walk(c, fn)); };
+      walk(t.mesh, n => {
+        if (!n.material) return;
+        const mats = Array.isArray(n.material) ? n.material : [n.material];
+        mats.forEach(m => { m.transparent = true; m.opacity = occlude ? .15 : 1; if ('depthWrite' in m) m.depthWrite = !occlude; });
+      });
+    });
   }
   function dhMomMesh(){
     if (typeof buildPlayer === 'function'){
@@ -463,12 +526,12 @@
     scene.background = new THREE.Color('#b8e8ff');
     if (scene.fog){ scene.fog.color = new THREE.Color('#d7f3ff'); scene.fog.near = 50; scene.fog.far = 160; }
     plat(0, 0, 0, 100, 70, '#8fd39a', .35);
-    plat(0, .15, 12, 80, 6, '#cfc4a8', .2);
-    plat(0, .14, -14, 6, 18, '#cfc4a8', .2);
     const p0 = dhProg();
     dh.bank = p0.coins; dh.likes = p0.likes; dh.goals = Object.assign({}, p0.goals); dh.stock = Object.assign(dhEmptyStock(), p0.stock); dh.v1pieces = p0.v1pieces; dh.upgrades = Object.assign(dhEmptyUpgrades(), p0.upgrades || {}); dh.introSeen = !!p0.introSeen;
     if (!p0.granted){ dh.bank += DH_GRANT; dh.grantedNow = true; }
     dh.mine = dhAssignPlot();
+    dhLayoutYard();
+    dhBuildBounds();
     dhBuildYard();
     dhPlantTrees();
     for (let i = 0; i < DH_PLOTS; i++){
@@ -486,7 +549,7 @@
     (p0.pieces || []).forEach(rec => dhPut(dh.mine, rec, true));
     dhStockViz(dh.mine);
     const [ox, oz] = dhOrigin(dh.mine);
-    const sp = {x: ox + DH_CELL * 4, y: .05, z: oz - 2.8};
+    const sp = dhSpawnPos(dh.mine);
     Object.assign(P, {x: sp.x, y: sp.y, z: sp.z, vx: 0, vy: 0, vz: 0}); P.face = 0; cam.yaw = Math.PI; cam.pitch = .38; cam.dist = 12;
     checkpoints[0] = {idx: 0, spawn: sp, flag: new THREE.Object3D()};
     dh.ghost = dhMakeGhost();
@@ -641,7 +704,7 @@
   }
   function dhNearYard(){
     if (!dh) return false;
-    return Math.abs((P.x || 0) - DH_YARD.x) < 12 && Math.abs((P.z || 0) - DH_YARD.z) < 6;
+    return Math.hypot((P.x || 0) - DH_YARD.x, (P.z || 0) - DH_YARD.z) < 10;
   }
   function dhNearBin(){
     if (!dh || !dh.bins) return null;
@@ -958,8 +1021,9 @@
     if (dh.yardOpen){ dhToggleYard(false); return; }
     const plot = dhPlotAt(P.x, P.z);
     if (plot >= 0 && plot !== dh.mine) return dhLike();
-    if (dhNearYard()){ dhToggleYard(true); return true; }
     const mx = dhNearMixer();
+    const pileHere = dhNearPile();
+    if (dhNearYard() && !mx && !pileHere){ dhToggleYard(true); return true; }
     if (mx && !(dh.carry && dh.carry.id === 'wetmix')){
       if (dh.carry && (dh.carry.id === 'cement' || dh.carry.id === 'sand')) return dhMix();
       if ((mx.cement | 0) >= 1 && (mx.sand | 0) >= 1 && mx.phase !== 'ready') return dhMix();
@@ -1069,6 +1133,7 @@
   function dhToggleShop(on){
     if (!dh) return;
     if (dh.intro) return;
+    // opening Shop must never move the player or camera
     if (on !== false) dhToggleYard(false);
     dh.shopOpen = on == null ? !dh.shopOpen : !!on;
     const el = $('#dhShop');
@@ -1196,6 +1261,7 @@
     if (typeof cam !== 'undefined'){ cam.yaw = Math.PI; cam.pitch = .38; cam.dist = 12; }
     dhHud(); dhBar();
     banner('🏡 An empty lot and a pile of materials — time to re-build your house!');
+    dreamhouseUpdate(0);
   }
   function dhIntroCam(){
     if (!dh || !dh.intro) return false;
@@ -1254,6 +1320,7 @@
     } else {
       banner(mp && mp.on ? '🏡 Dream House Builders — buy materials, carry them, and build brick by brick!' : '🏡 Buy bricks and cement at the Supply Yard, carry them to your plot, and build it yourself!');
       tipTimer = 8; dhHud(); dhBar();
+      dreamhouseUpdate(0);
     }
     const replay = $('#dhReplay'); if (replay) replay.style.display = '';
   }
@@ -1273,10 +1340,22 @@
     dhSetFade(0); dhSay('');
     dh = null;
   }
+  function dhCamComfort(dt){
+    if (typeof cam === 'undefined' || !cam) return;
+    dt = dt || .016;
+    // keep a third-person follow camera; never pitch up into the sky from movement
+    if (cam.pitch < .18 || cam.pitch > .62) cam.pitch += (.38 - cam.pitch) * Math.min(1, dt * 3);
+    cam.pitch = Math.max(.16, Math.min(.62, cam.pitch));
+    if (cam.dist < 10) cam.dist += (12 - cam.dist) * Math.min(1, dt * 3);
+    if (cam.dist > 16) cam.dist = 16;
+  }
   function dreamhouseUpdate(dt){
     if (!dh || over) return;
     if (dh.intro){ dhIntroTick(dt); return; }
     if (choosing) return;
+    dhClampPlayer();
+    dhCamComfort(dt);
+    dhFadeOccludingTrees();
     dh.aim = dhAimCell();
     // cure wet concrete
     (dh.pieces[dh.mine] || []).slice().forEach(rec => {
@@ -1314,7 +1393,6 @@
       const mxn = dhNearMixer(), pile = dhNearPile();
       const ghostJob = (dh.job === 'mark' || dh.job === 'dig' || dh.job === 'pour') ? dhNextBuildCell(dh.job) : null;
       if (dh.near >= 0 && dh.near !== dh.mine) txt = '💛 Like this house';
-      else if (dhNearYard()) txt = '📦 Open the Supply Yard';
       else if (mxn && dh.carry && (dh.carry.id === 'cement' || dh.carry.id === 'sand')) txt = '🪨 Load the mixer';
       else if (mxn && mxn.phase === 'mixing') txt = '🌀 Mixing…';
       else if (mxn && ((mxn.cement|0) >= 1 && (mxn.sand|0) >= 1)) txt = '🌀 Mix concrete';
@@ -1324,6 +1402,7 @@
       else if (dh.carry && dh.carry.id === 'glass') txt = '🪟 Install glass';
       else if (pile && !dh.carry) txt = '📦 Pick up materials';
       else if (dh.carry && pile && dh.carry.id !== 'wetmix') txt = '📦 Dump on your plot';
+      else if (dhNearYard()) txt = key + ': Open the Supply Yard';
       else if (ghostJob && dh.job === 'mark') txt = key + ': Place stake here';
       else if (ghostJob && dh.job === 'dig') txt = key + ': Dig the form here';
       else if (ghostJob && dh.job === 'pour' && dh.carry && dh.carry.id === 'wetmix') txt = key + ': Pour concrete here';
@@ -1374,7 +1453,7 @@
     const jobs = '<div class="dhtools">' + DH_JOBS.map(j => {
       const lab = {mark:'📍 Stake', dig:'🕳️ Dig', mix:'🌀 Mix', pour:'🪣 Pour', brick:'🧱 Brick', stud:'🪵 Stud', rafter:'🪜 Rafter', shingle:'🏠 Shingle', frame:'🚪 Frame', glass:'🪟 Glass', paint:'🎨 Paint', furn:'🛋️ Furnish'}[j];
       return '<button class="dhb' + (dh.job === j && dh.tool === 'place' ? ' on' : '') + '" data-dhjob="' + j + '">' + lab + '</button>';
-    }).join('') + '<button class="dhb' + (dh.tool === 'delete' ? ' on' : '') + '" data-dhtool="delete">🗑️</button><button class="dhb" id="dhDumpBtn">📦 Dump</button><button class="dhb" id="dhShopBtn">🛒 Shop</button></div>';
+    }).join('') + '<button class="dhb' + (dh.tool === 'delete' ? ' on' : '') + '" data-dhtool="delete">🗑️</button><button class="dhb" id="dhDumpBtn">📦 Dump</button><button class="dhb" id="dhYardBtn">📦 Supply Yard</button><button class="dhb" id="dhShopBtn">🛒 Shop</button></div>';
     const cols = dh.job === 'paint' ? ('<div class="dhcols">' + DH_PAINT.map((c, i) => '<button class="dhc' + (dh.color === i ? ' on' : '') + '" data-dhcol="' + i + '" style="background:' + c.col + '" title="' + c.name + '"></button>').join('') + '</div>') : '';
     const inv = '<div class="dinv">' + DH_MATS.filter(m => !m.nosale).map(m => {
       const n = (dh.stock[m.id]|0);
@@ -1384,14 +1463,15 @@
     dhBindUI();
   }
   function dhBindUI(){
-    if (window.__dhBound3) return;
-    window.__dhBound3 = true;
+    if (window.__dhBound4) return;
+    window.__dhBound4 = true;
     const act = $('#dhAct'); if (act) act.onclick = () => dh && !dh.intro && dhAct();
     const bar = $('#dhBar');
     if (bar) bar.addEventListener('click', ev => {
-      const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhShopBtn');
+      const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhShopBtn,#dhYardBtn');
       if (!t || !dh || dh.intro) return;
       if (t.id === 'dhDumpBtn') dhDump();
+      else if (t.id === 'dhYardBtn') dhToggleYard(true);
       else if (t.id === 'dhShopBtn') dhToggleShop();
       else if (t.dataset.dhtool) dhSetTool(t.dataset.dhtool);
       else if (t.dataset.dhjob) dhSetJob(t.dataset.dhjob);

@@ -38,7 +38,7 @@ function world(store0, opts){
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhToggleYard, dhWhyNot};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhLayoutYard, dhTreeBlocked, DH_BOUND, dhCamComfort};`, ctx);
   return ctx;
 }
 
@@ -52,6 +52,16 @@ chk('mode boots on your own plot with starter coins', !!(W.A.dh && W.A.dh.mine =
 chk('starter building coins stay in the Dream House bank (not the home-page wallet)', W.A.dh.bank >= 100 && W.coins === 20, {bank: W.A.dh.bank, coins: W.coins});
 chk('four plots and a supply yard exist', W.A.DH_PLOTS === 4 && W.A.dh.bins && W.A.dh.bins.length >= 6 && W.A.DH_YARD.z < 0, W.A.dh.bins && W.A.dh.bins.length);
 chk('Supply Yard has a beacon you can follow from the plot', !!(W.A.dh.yardBeacon && W.A.dh.yardBeacon.arrow), W.A.dh.yardBeacon);
+(function(){
+  const sp = W.A.dhSpawnPos(0);
+  const d = Math.hypot(W.A.DH_YARD.x - sp.x, W.A.DH_YARD.z - sp.z);
+  chk('Supply Yard sits 10-15m from spawn, next to your plot', d >= 8 && d <= 15.5, {d, yard: W.A.DH_YARD, spawn: sp});
+  const camZ = sp.z + Math.cos(Math.PI) * Math.cos(.38) * 12; // chase cam sits south (more negative z) of spawn
+  chk('Supply Yard is in the spawn camera view, not behind the camera', W.A.DH_YARD.z > camZ + 2 && W.A.DH_YARD.z > sp.z - 2, {yard:W.A.DH_YARD, camZ, spawn:sp});
+  const blocked = (W.A.dh.trees||[]).filter(tr => W.A.dhTreeBlocked(tr.x, tr.z));
+  chk('no tree sits in the spawn-to-plot sightline or on the yard', blocked.length === 0, blocked);
+})();
+
 chk('materials include bricks, cement, sand, wood, shingles, glass', ['brick','cement','sand','wood','shingle','glass'].every(id => W.A.DH_MATS.some(m => m.id === id)));
 chk('catalog is construction parts, not prefab wall slabs', W.A.DH_PARTS.some(p => p.id === 'brick') && W.A.DH_PARTS.some(p => p.id === 'slab') && !W.A.DH_PARTS.some(p => p.id === 'wall' && p.name === 'Wall'));
 chk('save key is unique (does not clobber stables/bakery)', W.A.DH_KEY === 'rubloxDreamHouse' && W.A.DH_VER === 4);
@@ -381,6 +391,30 @@ Wf.P.x = Wf.A.DH_YARD.x; Wf.P.z = Wf.A.DH_YARD.z;
 chk('walking into the yard is detected so E can open the menu', Wf.A.dhNearYard() === true);
 Wf.A.dhKey({code:'KeyE', repeat:false});
 chk('E at the Supply Yard opens the yard menu', Wf.A.dh.yardOpen === true, {open:Wf.A.dh.yardOpen, found:Wf.A.dh.foundYard});
+
+
+/* World bounds, shop stays put, yard is reachable from spawn */
+const Wb = world({rubloxDreamHouse: JSON.stringify({ver:4, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, goals:{}, upgrades:{}})}, {coins:20});
+Wb.A.buildDreamHouse(); Wb.A.dreamhouseEnter();
+const spawnP = {x: Wb.P.x, z: Wb.P.z, y: Wb.P.y};
+Wb.A.dhToggleShop(true);
+chk('opening the Shop does not move the player', Wb.P.x === spawnP.x && Wb.P.z === spawnP.z && Wb.P.y === spawnP.y, {before:spawnP, after:{x:Wb.P.x,z:Wb.P.z,y:Wb.P.y}});
+Wb.A.dhToggleShop(false);
+Wb.A.dhToggleYard(true);
+chk('opening the Supply Yard menu does not move the player', Wb.P.x === spawnP.x && Wb.P.z === spawnP.z, {before:spawnP, after:{x:Wb.P.x,z:Wb.P.z}});
+Wb.A.dhToggleYard(false);
+Wb.P.x = 80; Wb.P.z = 90; Wb.P.y = -4; Wb.P.vy = -8;
+Wb.A.dhClampPlayer();
+chk('world bounds clamp you onto the grass instead of walking off the edge', Math.abs(Wb.P.x) <= Wb.A.DH_BOUND.x && Math.abs(Wb.P.z) <= Wb.A.DH_BOUND.z && Wb.P.y >= .05, {P: {x:Wb.P.x,z:Wb.P.z,y:Wb.P.y}, bound:Wb.A.DH_BOUND});
+Wb.P.x = spawnP.x; Wb.P.z = spawnP.z;
+const nearSpawn = Wb.A.dhNearYard();
+chk('E at spawn still stakes (yard trigger is not so huge it steals the first E)', nearSpawn === false && Wb.A.dhNearOwnPlot() === true, {nearYard:nearSpawn, nearPlot:Wb.A.dhNearOwnPlot()});
+// walk most of the way to the yard — E should then open it
+Wb.P.x = (spawnP.x + Wb.A.DH_YARD.x) / 2;
+Wb.P.z = (spawnP.z + Wb.A.DH_YARD.z) / 2;
+// if still far, step closer
+if (!Wb.A.dhNearYard()){ Wb.P.x = Wb.A.DH_YARD.x + 6; Wb.P.z = Wb.A.DH_YARD.z; }
+chk('walking toward the Supply Yard enters the E-to-open radius', Wb.A.dhNearYard() === true, {P:{x:Wb.P.x,z:Wb.P.z}, yard:Wb.A.DH_YARD, d:Math.hypot(Wb.P.x-Wb.A.DH_YARD.x, Wb.P.z-Wb.A.DH_YARD.z)});
 
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);
