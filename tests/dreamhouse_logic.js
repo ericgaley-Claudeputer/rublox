@@ -26,7 +26,7 @@ function world(store0, opts){
     scene: {add(){}, remove(){}, background: null, fog: null},
     load: (k, d) => k in store ? JSON.parse(store[k]) : d,
     save: (k, v) => { store[k] = JSON.stringify(v); },
-    $: id => els[id] || (els[id] = {textContent: '', innerHTML: '', style: {}, dataset: {}, classList: {add(){}, remove(){}, contains(){ return false; }, toggle(){}}, appendChild(){}, querySelectorAll: () => [], setAttribute(){}, addEventListener(){}, blur(){}, onclick: null, closest: () => null}),
+    $: id => els[id] || (els[id] = {textContent: '', innerHTML: '', style: {}, dataset: {}, classList: {add(){}, remove(){}, contains(){ return false; }, toggle(){}}, appendChild(){}, querySelector(){ return {style: {}, textContent: ''}; }, querySelectorAll: () => [], setAttribute(){}, removeAttribute(){}, addEventListener(){}, blur(){}, onclick: null, closest: () => null}),
     coins: (opts && opts.coins) || 20, runCoins: 0, running: true, paused: false, choosing: false, worldT: 0, mode: 'dreamhouse', banners: [],
     P: {x: 0, y: .05, z: 0, face: 0, vx: 0, vy: 0, vz: 0, onGround: true}, pad: {on: false}, touchUI: false, keys: {},
     cam: {yaw: Math.PI, pitch: .34, dist: 12}, tipTimer: 0, mp: {on: false},
@@ -38,7 +38,7 @@ function world(store0, opts){
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhToggleYard, dhWhyNot};`, ctx);
   return ctx;
 }
 
@@ -47,9 +47,11 @@ W.A.buildDreamHouse(); W.A.dreamhouseEnter();
 chk('first visit starts Mom\'s intro cut-scene', !!(W.A.dh && W.A.dh.intro && W.A.dh.intro.stage === 'house' && !W.A.dh.introSeen), W.A.dh && {intro: W.A.dh.intro, seen: W.A.dh.introSeen});
 chk('Space skips the intro and remembers it was seen', W.A.dhKey({code:'Space', repeat:false}) === true && !W.A.dh.intro && !!W.A.dh.introSeen);
 chk('skipping leaves an empty lot with a starter material pile', (W.A.dh.pieces[0]||[]).length === 0 && (W.A.dh.stock.brick|0) >= 8 && (W.A.dh.stock.wood|0) >= 1, {pieces:(W.A.dh.pieces[0]||[]).length, stock:W.A.dh.stock});
+chk('single-player other plots stay empty (no leftover show-home on Plot 2)', [1,2,3].every(i => !(W.A.dh.pieces[i]||[]).length), [1,2,3].map(i => (W.A.dh.pieces[i]||[]).length));
 chk('mode boots on your own plot with starter coins', !!(W.A.dh && W.A.dh.mine === 0 && W.A.dh.bank >= 100), W.A.dh && {mine: W.A.dh.mine, bank: W.A.dh.bank});
-chk('starter grant added to global Rublox coins once', W.coins >= 120, W.coins);
+chk('starter building coins stay in the Dream House bank (not the home-page wallet)', W.A.dh.bank >= 100 && W.coins === 20, {bank: W.A.dh.bank, coins: W.coins});
 chk('four plots and a supply yard exist', W.A.DH_PLOTS === 4 && W.A.dh.bins && W.A.dh.bins.length >= 6 && W.A.DH_YARD.z < 0, W.A.dh.bins && W.A.dh.bins.length);
+chk('Supply Yard has a beacon you can follow from the plot', !!(W.A.dh.yardBeacon && W.A.dh.yardBeacon.arrow), W.A.dh.yardBeacon);
 chk('materials include bricks, cement, sand, wood, shingles, glass', ['brick','cement','sand','wood','shingle','glass'].every(id => W.A.DH_MATS.some(m => m.id === id)));
 chk('catalog is construction parts, not prefab wall slabs', W.A.DH_PARTS.some(p => p.id === 'brick') && W.A.DH_PARTS.some(p => p.id === 'slab') && !W.A.DH_PARTS.some(p => p.id === 'wall' && p.name === 'Wall'));
 chk('save key is unique (does not clobber stables/bakery)', W.A.DH_KEY === 'rubloxDreamHouse' && W.A.DH_VER === 4);
@@ -290,6 +292,95 @@ chk('a visitor like awards the owner coins', W2.A.dh.likes >= 1, {likes: W2.A.dh
 
 W2.A.dreamhouseStop();
 chk('stop clears mode state after saving', W2.A.dh == null && !!W2.store.rubloxDreamHouse);
+
+
+/* Keyboard chain from the real spawn: stake -> dig -> mix -> pour -> bricks (no teleport onto a cell first). */
+const Wk = world({rubloxDreamHouse: JSON.stringify({ver:4, introSeen:true, granted:false, coins:0, pieces:[], stock:{}, goals:{}, upgrades:{}})}, {coins:20});
+Wk.A.buildDreamHouse();
+Wk.A.dreamhouseEnter();
+const spawnX = Wk.P.x, spawnZ = Wk.P.z;
+chk('a fresh game starts next to your lot with the Stake tool ready', Wk.A.dhNearOwnPlot() === true && Wk.A.dh.job === 'mark' && Wk.A.dh.bank >= 100 && Wk.coins === 20, {near: Wk.A.dhNearOwnPlot(), job: Wk.A.dh.job, P: {x:spawnX,z:spawnZ}, coins:Wk.coins, bank:Wk.A.dh.bank});
+chk('a glowing next-stake cell is chosen from spawn (no aiming required)', !!(Wk.A.dhNextBuildCell('mark') && Wk.A.dhNextBuildCell('mark').plot === 0), Wk.A.dhNextBuildCell('mark'));
+chk('number key 1 selects the Stake tool', Wk.A.dhKey({code:'Digit1', repeat:false}) === true && Wk.A.dh.job === 'mark');
+chk('number keys 2-5 pick Dig, Mix, Pour, and Bricks (not emotes)', ['Digit2','Digit3','Digit4','Digit5'].every((code, i) => Wk.A.dhKey({code, repeat:false}) && Wk.A.dh.job === Wk.A.DH_JOBS[i+1]) && (Wk.A.dhKey({code:'Digit1', repeat:false}), Wk.A.dh.job === 'mark'), Wk.A.dh.job);
+const marks0 = (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length;
+chk('E from spawn places the first stake without walking onto a tile first', Wk.A.dhKey({code:'KeyE', repeat:false}) === true && (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length === marks0 + 1 && Wk.P.x === spawnX && Wk.P.z === spawnZ, {marks:(Wk.A.dh.pieces[0]||[]).filter(a=>a[0]==='mark').length, P:{x:Wk.P.x,z:Wk.P.z}});
+for (let i = 0; i < 40; i++) Wk.A.dhKey({code:'KeyE', repeat:false});
+chk('repeated E auto-targets the next empty stake cells from the same spot', (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length >= 16, (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length);
+Wk.A.dhKey({code:'Digit2', repeat:false});
+for (let i = 0; i < 40; i++) Wk.A.dhKey({code:'KeyE', repeat:false});
+chk('Digit 2 then E digs the staked forms from the same standing spot', Wk.A.dh.job === 'dig' && (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='trench').length >= 16, {job:Wk.A.dh.job, trenches:(Wk.A.dh.pieces[0]||[]).filter(a=>a[0]==='trench').length});
+Wk.A.dhGive('cement', 8); Wk.A.dhGive('sand', 8);
+const mxk = Wk.A.dh.mixers[0];
+const pilek = Wk.A.dh.piles[0];
+function walkPile(){ Wk.P.x = pilek.x; Wk.P.z = pilek.z; }
+function walkMix(){ Wk.P.x = mxk.x; Wk.P.z = mxk.z; }
+function mixOneBarrow(){
+  if (Wk.A.dh.carry && Wk.A.dh.carry.id === 'wetmix') return true;
+  Wk.A.dhKey({code:'Digit3', repeat:false});
+  walkPile(); Wk.A.dhKey({code:'KeyE', repeat:false}); // pick cement
+  walkMix(); Wk.A.dhKey({code:'KeyE', repeat:false});  // load cement
+  walkPile(); Wk.A.dhKey({code:'KeyE', repeat:false}); // pick sand
+  walkMix(); Wk.A.dhKey({code:'KeyE', repeat:false});  // load sand
+  Wk.A.dhKey({code:'KeyE', repeat:false});             // start mix
+  Wk.A.dreamhouseUpdate(5);
+  Wk.A.dhKey({code:'KeyE', repeat:false});             // fill barrow
+  return !!(Wk.A.dh.carry && Wk.A.dh.carry.id === 'wetmix');
+}
+Wk.A.dhKey({code:'Digit3', repeat:false});
+walkPile(); Wk.A.dhKey({code:'KeyE', repeat:false});
+walkMix(); Wk.A.dhKey({code:'KeyE', repeat:false});
+walkPile(); Wk.A.dhKey({code:'KeyE', repeat:false});
+walkMix(); Wk.A.dhKey({code:'KeyE', repeat:false});
+Wk.A.dhKey({code:'KeyE', repeat:false});
+chk('at the mixer, E loads bags and starts mixing', Wk.A.dh.mixers[0].phase === 'mixing' || ((Wk.A.dh.mixers[0].cement|0) >= 1 && (Wk.A.dh.mixers[0].sand|0) >= 1), {phase:Wk.A.dh.mixers[0].phase, cement:Wk.A.dh.mixers[0].cement, sand:Wk.A.dh.mixers[0].sand, carry:Wk.A.dh.carry, stock:Wk.A.dh.stock});
+Wk.A.dreamhouseUpdate(5);
+chk('the mix finishes after a short wait', Wk.A.dh.mixers[0].phase === 'ready' && Wk.A.dh.mixers[0].mixed >= 1, {phase:Wk.A.dh.mixers[0].phase, mixed:Wk.A.dh.mixers[0].mixed});
+Wk.A.dhKey({code:'KeyE', repeat:false});
+chk('E fills the wheelbarrow with wet mix', !!(Wk.A.dh.carry && Wk.A.dh.carry.id === 'wetmix'), Wk.A.dh.carry);
+Wk.A.dhKey({code:'Digit4', repeat:false});
+Wk.A.dhKey({code:'KeyE', repeat:false});
+chk('Digit 4 then E pours wet mix into the nearest dug form', (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='wet').length >= 1, {wet:(Wk.A.dh.pieces[0]||[]).filter(a=>a[0]==='wet').length, job:Wk.A.dh.job, carry:Wk.A.dh.carry, banners:Wk.banners.slice(-5)});
+Wk.A.dhGive('cement', 12); Wk.A.dhGive('sand', 12);
+let pourTrace = [];
+for (let bags = 0; bags < 16; bags++){
+  const poured = (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='wet' || a[0]==='slab').length;
+  if (poured >= 8) break;
+  if (!(Wk.A.dh.carry && Wk.A.dh.carry.id === 'wetmix')){
+    const ok = mixOneBarrow();
+    pourTrace.push({bags, ok, phase:Wk.A.dh.mixers[0].phase, mixed:Wk.A.dh.mixers[0].mixed, carry:Wk.A.dh.carry, stockC:Wk.A.dh.stock.cement, stockS:Wk.A.dh.stock.sand, poured, banner:Wk.banners[Wk.banners.length-1]});
+  }
+  Wk.A.dhKey({code:'Digit4', repeat:false});
+  Wk.A.dhKey({code:'KeyE', repeat:false});
+}
+const pouredN = (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='wet' || a[0]==='slab').length;
+chk('enough forms are poured to make a slab', pouredN >= 8, {pouredN, wet:(Wk.A.dh.pieces[0]||[]).filter(a=>a[0]==='wet').length, slab:(Wk.A.dh.pieces[0]||[]).filter(a=>a[0]==='slab').length, trace:pourTrace});
+Wk.A.dreamhouseUpdate(6);
+for (let i = 0; i < 20; i++) Wk.A.dhKey({code:'KeyE', repeat:false});
+chk('poured concrete becomes a slab you can build on', (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='slab').length >= 8, (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='slab').length);
+Wk.A.dhGive('brick', 12);
+Wk.A.dhKey({code:'Digit5', repeat:false});
+walkPile(); Wk.A.dhKey({code:'KeyE', repeat:false}); // pick bricks
+const bricks0 = (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length;
+Wk.A.dhKey({code:'KeyE', repeat:false});
+chk('Digit 5 then E lays a brick on the new slab', Wk.A.dh.job === 'brick' && (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length === bricks0 + 1, {job:Wk.A.dh.job, bricks:(Wk.A.dh.pieces[0]||[]).filter(a=>a[0]==='brick').length, carry:Wk.A.dh.carry, banners:Wk.banners.slice(-6)});
+
+// hints when the action is not allowed
+const Wf = world({rubloxDreamHouse: JSON.stringify({ver:4, introSeen:true, granted:true, coins:0, pieces:[], stock:{}, goals:{}, upgrades:{}})}, {coins:20});
+Wf.A.buildDreamHouse(); Wf.A.dreamhouseEnter();
+Wf.P.x = 80; Wf.P.z = 80;
+Wf.banners.length = 0;
+Wf.A.dhKey({code:'KeyE', repeat:false});
+chk('E off the lot explains you need to walk onto your plot', Wf.banners.some(t => /Walk onto your plot/i.test(t)), Wf.banners);
+Wf.P.x = spawnX; Wf.P.z = spawnZ;
+Wf.A.dhKey({code:'Digit4', repeat:false});
+Wf.banners.length = 0;
+Wf.A.dhKey({code:'KeyE', repeat:false});
+chk('E with nothing to pour points you to the Supply Yard or digging first', Wf.banners.some(t => /Supply Yard|Dig the foundation|Walk onto your plot/i.test(t)), Wf.banners);
+Wf.P.x = Wf.A.DH_YARD.x; Wf.P.z = Wf.A.DH_YARD.z;
+chk('walking into the yard is detected so E can open the menu', Wf.A.dhNearYard() === true);
+Wf.A.dhKey({code:'KeyE', repeat:false});
+chk('E at the Supply Yard opens the yard menu', Wf.A.dh.yardOpen === true, {open:Wf.A.dh.yardOpen, found:Wf.A.dh.foundYard});
 
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);

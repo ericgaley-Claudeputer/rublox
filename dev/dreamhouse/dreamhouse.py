@@ -25,6 +25,8 @@ rep("""  <div class="dblane" id="dbLane" style="display:none"></div>""", """  <b
     <button class="dhskip" id="dhSkip" type="button">Skip</button>
   </div>
   <div class="dhshop" id="dhShop" style="display:none"></div>
+  <div class="dhshop" id="dhYard" style="display:none"></div>
+  <div class="dhguide" id="dhGuide" style="display:none"><span class="dhgarrow">➤</span> <span id="dhGuideT">Go to the Supply Yard</span></div>
   <div class="dblane" id="dbLane" style="display:none"></div>""")
 rep(".dblane{position:absolute;left:50%;bottom:110px;", """.dhnear{background:#2ec27e;box-shadow:0 4px 0 #1f9460}.dhnear small{color:#2ec27e}
 .dhbar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:6;width:min(96vw,820px);background:rgba(255,255,255,.94);border:3px solid #ffd23f;border-radius:16px;padding:6px 8px 8px;box-shadow:0 4px 0 rgba(0,0,0,.12);pointer-events:auto}
@@ -46,13 +48,17 @@ rep(".dblane{position:absolute;left:50%;bottom:110px;", """.dhnear{background:#2
 .dhbubble span{font-size:22px;line-height:1.25}
 .dhbubble:after{content:'';position:absolute;left:62%;bottom:-16px;border:16px solid transparent;border-top-color:#1d2340;border-bottom:0}
 .dhskip{position:absolute;right:max(16px,env(safe-area-inset-right));top:max(16px,env(safe-area-inset-top));z-index:10;background:#fff;border:3px solid #1d2340;border-radius:999px;padding:8px 18px;font:inherit;font-weight:900;color:#1d2340;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+
+.dhguide{position:absolute;top:max(54px,calc(env(safe-area-inset-top) + 44px));left:50%;transform:translateX(-50%);z-index:9;background:rgba(29,35,64,.92);color:#fff;padding:10px 18px;border-radius:18px;font-weight:800;font-size:18px;display:none;align-items:center;gap:10px;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.25);white-space:nowrap}
+.dhguide.show{display:flex}
+.dhgarrow{display:inline-block;font-size:26px;color:#ffd23f;transform-origin:center center;line-height:1}
 .dhshop{position:absolute;inset:0;z-index:7;background:rgba(29,35,64,.4);display:flex;align-items:center;justify-content:center;pointer-events:auto}
 .dhsbox{background:#fffaf0;border:3px solid #ffd23f;border-radius:20px;padding:14px 16px 16px;width:min(92vw,560px);max-height:min(84vh,640px);overflow:auto;box-shadow:0 8px 0 rgba(0,0,0,.12);color:#1d2340}
 .dhsbox h3{margin:0 0 6px;font-size:22px}.dhsbox h4{margin:12px 0 6px;font-size:16px}.dhsbank{margin:0 0 8px;font-weight:900}
 .dhsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
 .dhsitem{border:2px solid #ffe08a;background:#fff;border-radius:14px;padding:8px 8px 10px;font:inherit;font-weight:900;color:#1d2340;cursor:pointer;text-align:left}
 .dhsitem .dhe{font-size:22px;display:block}.dhsitem small{display:block;font-size:11px;color:#6b7290;font-weight:800;line-height:1.25;margin-top:2px}
-.dhsitem.max{opacity:.65;cursor:default}#dhShopX{display:block;margin:14px auto 0;min-width:120px}
+.dhsitem.max{opacity:.65;cursor:default}#dhShopX,#dhYardX{display:block;margin:14px auto 0;min-width:120px}
 .dblane{position:absolute;left:50%;bottom:110px;""")
 rep("  /* ---------- per-frame ---------- */\n", open('/workspace/rublox/tests/p47/dreamhouse.js').read() + "  /* ---------- per-frame ---------- */\n")
 rep("ic = null; sb = null; hm = null; db = null;\n    if (mode === 'dance') buildDance();", "ic = null; sb = null; hm = null; db = null; dh = null;\n    if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance();")
@@ -69,7 +75,7 @@ rep("mode === 'haunt' || mode === 'dance') $('#oTime').parentElement.style.displ
 rep("    $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }",
     """    $('#dhBox').style.display = mode === 'dreamhouse' ? '' : 'none';
     if (mode === 'dreamhouse'){ if ($('#dhBar')) $('#dhBar').style.display = ''; dreamhouseEnter(); }
-    else { ['#dhBar','#dhAct','#dhCut','#dhShop'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } }); const r = $('#dhReplay'); if (r) r.style.display = 'none'; }
+    else { ['#dhBar','#dhAct','#dhCut','#dhShop','#dhYard','#dhGuide'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } }); const r = $('#dhReplay'); if (r) r.style.display = 'none'; }
     $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }""")
 rep(" if (db) danceStop();", " if (db) danceStop(); if (dh) dreamhouseStop();")
 rep("    const line = mode === 'dance' ?", "    const line = mode === 'dreamhouse' ? '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · ⓁⓇ job · ☰ menu' : mode === 'dance' ?")
