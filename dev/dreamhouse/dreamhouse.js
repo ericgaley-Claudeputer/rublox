@@ -1,8 +1,15 @@
   /* ===================== t251u + t252u + t253u: first-person Dream House, place every brick yourself, clear concrete steps, reset house in Settings. ===================== */
-  const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 6;
+  const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 7;
   const DH_FOOT = {x0: 2, z0: 2, x1: 5, z1: 5}; // small house footprint (4x4 cells)
   const DH_FOOT_LEGACY = {x0: 1, z0: 1, x1: 6, z1: 6}; // v5 and earlier houses keep their larger slab
-  const DH_BRICK_W = .5, DH_BRICK_H = .24, DH_BRICK_D = .28, DH_COURSES = 6, DH_COURSES_LEGACY = 8;
+  // v7 human scale: player eye 1.6 m, body 1.8 m, walls 2.7 m (top 3.0 m), pitched roof apex 4.2 m.
+  const DH_EYE = 1.6, DH_PLAYER_H = 1.8;
+  const DH_SLAB_H = 0.30, DH_WALL_H = 2.70, DH_WALL_TOP = 3.00;
+  const DH_DOOR_H = 2.25, DH_WIN_SILL = 0.90, DH_WIN_HEAD = 2.25;
+  const DH_ROOF_RISE = 1.80, DH_ROOF_APEX = 4.80, DH_ROOF_OVERHANG = 0.30;
+  // Each placed 'brick' is a course segment (~0.56 x 0.45 x 0.30 m) so 6 tidy courses fill a tall wall without a huge click count.
+  const DH_BRICK_W = 0.56, DH_BRICK_H = 0.45, DH_BRICK_D = 0.30, DH_COURSES = 6, DH_COURSES_LEGACY = 8;
+  const DH_BRICKS_PER_CELL = 2.5, DH_SHINGLE_COLS = 4, DH_SHINGLE_ROWS = 2, DH_STUD_NEED = 8, DH_RAFTER_NEED = 4;
   const DH_MATS = [
     {id: 'brick',   e: '🧱', name: 'Bricks',    cost: 0,  stack: 8,  carry: 20, free: true},
     {id: 'cement',  e: '🪨', name: 'Cement',    cost: 0,  stack: 1,  carry: 2, free: true},
@@ -37,8 +44,8 @@
     {id: 'slab',    name: 'Pour a concrete slab', need: p => dhCount(p, 'slab') >= 12, pay: 25},
     {id: 'course',  name: 'Lay the first brick course', need: p => dhCount(p, 'brick') >= Math.max(8, (dhBrickAlongCount(0) || 8)), pay: 20},
     {id: 'walls',   name: 'Raise the brick walls', need: p => dhCount(p, 'brick') >= Math.max(40, Math.floor(dhBrickTotal() * .6)), pay: 35},
-    {id: 'rafters', name: 'Set the rafters',     need: p => dhCount(p, 'rafter') >= 4, pay: 20},
-    {id: 'roof',    name: 'Shingle the roof',    need: p => dhCount(p, 'shingle') >= 10, pay: 25},
+    {id: 'rafters', name: 'Set the rafters',     need: p => dhCount(p, 'rafter') >= dhRafterTotal(), pay: 20},
+    {id: 'roof',    name: 'Shingle the roof',    need: p => dhCount(p, 'shingle') >= dhShingleTotal(), pay: 25},
     {id: 'openings',name: 'Hang a door and window', need: p => dhCount(p, 'door') >= 1 && dhCount(p, 'winframe') >= 1, pay: 20},
     {id: 'glaze',   name: 'Glaze the windows',   need: p => dhWindowsGlazed(p), pay: 15},
     {id: 'paint',   name: 'Paint the walls',     need: p => dhCount(p, 'paint') >= 4, pay: 20},
@@ -77,6 +84,11 @@
   }
   function dhSpawnPos(plot){
     const [ox, oz] = dhOrigin(plot == null ? (dh && dh.mine) || 0 : plot);
+    // #dhtest=v6inside: stand in the room facing the back wall so indoor collision is a one-load check.
+    if (dhTestFixtureId() === 'v6inside'){
+      const b = dhFootWorld(plot == null ? ((dh && dh.mine) || 0) : plot);
+      return {x: (b.x0 + b.x1) / 2, y: DH_SLAB_H, z: (b.z0 + b.z1) / 2};
+    }
     return {x: ox + DH_CELL * 4, y: .05, z: oz - 2.8};
   }
   function dhLayoutYard(){
@@ -95,7 +107,10 @@
     const bx = DH_BOUND.x, bz = DH_BOUND.z;
     if (P.x > bx) P.x = bx; else if (P.x < -bx) P.x = -bx;
     if (P.z > bz) P.z = bz; else if (P.z < -bz) P.z = -bz;
-    if ((P.y || 0) < .05){ P.y = .05; if (P.vy < 0) P.vy = 0; }
+    // Do not hold the player at y=0.05: that sits above the grass top (y=0) so they
+    // never land, and it intersects the plot pad / curb AABBs, which then shove
+    // them sideways off the lot (walk-through / "Your Plot" sign).
+    if ((P.y || 0) < 0){ P.y = 0; if (P.vy < 0) P.vy = 0; }
     const cap = dhWalkCap();
     const sp = Math.hypot(P.vx || 0, P.vz || 0);
     if (sp > cap){ P.vx *= cap / sp; P.vz *= cap / sp; }
@@ -112,9 +127,44 @@
     const [ox, oz] = dhOrigin(plot);
     return {x: ox + (ix + .5) * DH_CELL, y: y == null ? .12 : y, z: oz + (iz + .5) * DH_CELL};
   }
-  function dhFoot(){ const big = !!(dh && dh.upgrades && dh.upgrades.lot); if (big) return {x0: 0, z0: 0, x1: DH_N - 1, z1: DH_N - 1}; return (dh && dh.legacyHouse) ? DH_FOOT_LEGACY : DH_FOOT; }
+  function dhSt(st){ return st || dh || {}; }
+  function dhFootOf(st){
+    const d = dhSt(st);
+    const big = !!(d.upgrades && d.upgrades.lot);
+    if (big) return {x0: 0, z0: 0, x1: DH_N - 1, z1: DH_N - 1};
+    return d.legacyHouse ? DH_FOOT_LEGACY : DH_FOOT;
+  }
+  function dhFoot(){ return dhFootOf(dh); }
   function dhInFoot(ix, iz){ const f = dhFoot(); return ix >= f.x0 && ix <= f.x1 && iz >= f.z0 && iz <= f.z1; }
-  function dhCourses(){ const base = (dh && dh.legacyHouse) ? DH_COURSES_LEGACY : DH_COURSES; return base + ((dh && dh.upgrades && dh.upgrades.story) ? (dh.legacyHouse ? 8 : 4) : 0); }
+  function dhCourses(st){
+    // v7: every house (including migrated legacy footprints) uses the same 2.7 m wall height.
+    return DH_COURSES + ((dhSt(st).upgrades && dhSt(st).upgrades.story) ? 4 : 0);
+  }
+  function dhEyeHeight(){ return DH_EYE; }
+  function dhPlayerHeight(){ return DH_PLAYER_H; }
+  function dhWallH(st){ return dhCourses(st) * DH_BRICK_H; }
+  function dhWallTop(st){ return DH_SLAB_H + dhWallH(st); }
+  function dhRoofApex(st){ return dhWallTop(st) + DH_ROOF_RISE; }
+  function dhWallLength(st){
+    const f = dhFootOf(st);
+    return (f.x1 - f.x0 + 1) * DH_CELL;
+  }
+  function dhBrickW(){ return DH_BRICK_W; }
+  function dhRoofPitch(st){
+    const half = dhWallLength(st) / 2 + DH_ROOF_OVERHANG;
+    return Math.atan(DH_ROOF_RISE / half);
+  }
+  function dhStudTotal(){ return DH_STUD_NEED; }
+  function dhRafterTotal(){ return DH_RAFTER_NEED; }
+  function dhShingleTotal(){ return DH_SHINGLE_COLS * DH_SHINGLE_ROWS * 2; }
+  function dhFootWorld(plot, st){
+    const [ox, oz] = dhOrigin(plot == null ? 0 : plot);
+    const f = dhFootOf(st);
+    return {
+      x0: ox + f.x0 * DH_CELL, z0: oz + f.z0 * DH_CELL,
+      x1: ox + (f.x1 + 1) * DH_CELL, z1: oz + (f.z1 + 1) * DH_CELL
+    };
+  }
   function dhCount(pieces, id){ return (pieces || []).filter(a => a && a[0] === id).length; }
   function dhSameOpening(a, b){ return !!a && !!b && (a[1]|0) === (b[1]|0) && (a[2]|0) === (b[2]|0) && (a[3]|0) === (b[3]|0) && (a[4]|0) === (b[4]|0); }
   function dhWindowsGlazed(pieces){
@@ -129,7 +179,84 @@
   function dhUp(id){ return (dh && dh.upgrades && dh.upgrades[id]) | 0; }
   function dhPaintCol(i){ return (DH_PAINT[i % DH_PAINT.length] || DH_PAINT[0]).col; }
 
+  function dhTestFixtureId(){
+    let hash = '';
+    try {
+      const loc = (typeof location !== 'undefined' && location) || (typeof window !== 'undefined' && window.location) || null;
+      if (loc && loc.hash) hash = String(loc.hash);
+    } catch (e){}
+    const m = /(?:^|#|&)dhtest=([A-Za-z0-9_-]+)/.exec(hash);
+    return m ? String(m[1]).toLowerCase() : '';
+  }
+  function dhTestActive(){
+    const id = dhTestFixtureId();
+    return id === 'v6furnish' || id === 'v7walls' || id === 'v6inside';
+  }
+  function dhTestV6FootSlabs(){
+    const recs = [];
+    for (let ix = 2; ix <= 5; ix++) for (let iz = 2; iz <= 5; iz++) recs.push(['slab', ix, 0, iz, 0, 0]);
+    return recs;
+  }
+  function dhTestV6BrickRecs(){
+    // Realistic v6 small-house grid: 11-brick south/north faces, 10-brick east/west, 6 courses, running-bond openings.
+    const recs = [];
+    for (let face = 0; face < 4; face++){
+      const span = (face === 1 || face === 3) ? 10 : 11;
+      const mid = (span / 2) | 0;
+      for (let c = 0; c < 6; c++) for (let k = 0; k < span; k++){
+        const door = face === 0 && k >= mid - 1 && k <= mid && c < 6;
+        const win = (face === 1 || face === 3) && k >= mid - 1 && k <= mid && c >= 2 && c <= 5;
+        if (door || win) continue;
+        recs.push(['brick', 0, c, k, face, 0]);
+      }
+    }
+    return recs;
+  }
+  function dhTestV6FurnishRaw(){
+    // A realistic live v6 save at Tessa's step: every earlier checklist item done, Paint & furnish 0/1.
+    const pieces = dhTestV6FootSlabs().concat(dhTestV6BrickRecs());
+    pieces.push(
+      ['stud', 2, 0, 2, 0, 0], ['stud', 5, 0, 2, 0, 0], ['stud', 5, 0, 5, 0, 0], ['stud', 2, 0, 5, 0, 0],
+      ['stud', 3, 0, 2, 0, 0], ['stud', 5, 0, 3, 0, 0], ['stud', 3, 0, 5, 0, 0], ['stud', 2, 0, 3, 0, 0],
+      ['rafter', 3, 0, 2, 0, 0], ['rafter', 4, 0, 2, 0, 0], ['rafter', 3, 0, 5, 1, 0], ['rafter', 4, 0, 5, 1, 0],
+      ['shingle', 2, 0, 2, 0, 0], ['shingle', 3, 0, 2, 0, 0], ['shingle', 4, 0, 2, 0, 0], ['shingle', 5, 0, 2, 0, 0],
+      ['shingle', 2, 0, 3, 0, 0], ['shingle', 3, 0, 3, 0, 0], ['shingle', 2, 0, 5, 1, 0], ['shingle', 3, 0, 5, 1, 0],
+      ['shingle', 4, 0, 5, 1, 0], ['shingle', 5, 0, 5, 1, 0],
+      ['doorframe', 0, 0, 0, 0, 0], ['door', 0, 0, 0, 0, 0],
+      ['winframe', 0, 3, 0, 1, 0], ['pane', 0, 3, 0, 1, 0],
+      ['winframe', 0, 3, 0, 3, 0], ['pane', 0, 3, 0, 3, 0]
+    );
+    return {
+      ver: 6, introSeen: true, granted: true, coins: 55, likes: 0,
+      pieces, stock: {paint: 2, sofa: 1, brick: 8, wood: 4, shingle: 2, glass: 1},
+      goals: {marked: 1, slab: 1, course: 1, walls: 1, rafters: 1, roof: 1, openings: 1, glaze: 1},
+      upgrades: {carry: 1}, tipsSeen: {}, legacyHouse: false
+    };
+  }
+  function dhTestV7WallsRaw(){
+    // Half-height tidy v7 walls (courses 0–2 on every face) plus a finished slab, so testers can inspect brick rows without a long build.
+    const st = {legacyHouse: false, upgrades: {}};
+    const pieces = dhTestV6FootSlabs();
+    dhAllBrickRecs(st).forEach(r => { if ((r[2] | 0) <= 2) pieces.push(r); });
+    return {
+      ver: 7, introSeen: true, granted: true, coins: 40, likes: 0,
+      pieces, stock: {brick: 40, wood: 8},
+      goals: {marked: 1, slab: 1, course: 1},
+      upgrades: {}, tipsSeen: {}, legacyHouse: false
+    };
+  }
+  function dhTestRawSave(id){
+    id = (id == null ? dhTestFixtureId() : id);
+    if (id === 'v6furnish' || id === 'v6inside') return dhTestV6FurnishRaw();
+    if (id === 'v7walls') return dhTestV7WallsRaw();
+    return null;
+  }
+  function dhTestBlockPersist(){
+    return dhTestActive();
+  }
   function dhProg(){
+    const raw = dhTestRawSave();
+    if (raw) return dhMigrate(raw);
     const o = load(DH_KEY, null), r = o && typeof o === 'object' ? o : {};
     return dhMigrate(r);
   }
@@ -162,6 +289,88 @@
     }
     const prev = +r.ver || 0;
     out.legacyHouse = !!r.legacyHouse || (prev > 0 && prev < 6 && (out.pieces || []).length > 0);
+    if (prev < 7) out.pieces = dhUpgradePiecesToV7(out.pieces, out);
+    out.ver = DH_VER;
+    return out;
+  }
+  function dhKindCounts(pieces){
+    const o = {};
+    (pieces || []).forEach(a => { if (a && a[0]) o[a[0]] = (o[a[0]] || 0) + 1; });
+    return o;
+  }
+  function dhFillKind(kind, slots){
+    return (slots || []).map(s => {
+      if (kind === 'stud') return ['stud', 0, 0, s.i, 0, 0];
+      if (kind === 'rafter') return ['rafter', 0, 0, s.i, s.side, 0];
+      if (kind === 'shingle') return ['shingle', s.col, s.row, 0, s.side, 0];
+      if (kind === 'doorframe' || kind === 'door' || kind === 'winframe' || kind === 'pane' || kind === 'paint') return [kind, 0, 0, 0, s.face, s.col || 0];
+      return null;
+    }).filter(Boolean);
+  }
+  function dhUpgradePiecesToV7(pieces, st){
+    const list = (pieces || []).filter(a => Array.isArray(a) && typeof a[0] === 'string').map(a => a.slice());
+    if (!list.length) return list;
+    const counts = dhKindCounts(list);
+    const later = (counts.stud || 0) + (counts.rafter || 0) + (counts.shingle || 0) + (counts.doorframe || 0) + (counts.door || 0) + (counts.winframe || 0) + (counts.pane || 0) + (counts.paint || 0) + ['sofa','bed','table','lamp','plant','rug','tv','shelf'].reduce((n, id) => n + (counts[id] || 0), 0);
+    const wallsDone = later > 0 || (counts.brick || 0) >= Math.max(40, Math.floor(dhBrickTotal(st) * 0.85));
+    const roofDone = (counts.shingle || 0) >= 10 || (counts.doorframe || 0) + (counts.door || 0) + (counts.winframe || 0) + (counts.pane || 0) + (counts.paint || 0) > 0 || ['sofa','bed','table','lamp','plant','rug','tv','shelf'].some(id => (counts[id] || 0) > 0);
+    const keep = [];
+    const take = (id) => { const hit = list.filter(a => a[0] === id); return hit; };
+    // Slabs, marks, trenches, wet mix, and furniture keep their cell coordinates.
+    ['mark','trench','wet','slab','sofa','bed','table','lamp','plant','rug','tv','shelf'].forEach(id => take(id).forEach(a => keep.push(a)));
+    const brickSlots = dhAllBrickRecs(st);
+    const oldBricks = take('brick');
+    if (wallsDone) brickSlots.forEach(r => keep.push(r));
+    else oldBricks.slice(0, brickSlots.length).forEach((_, i) => keep.push(brickSlots[i]));
+    const studSlots = dhAllStudSlots(null, st);
+    const oldStuds = take('stud');
+    if (wallsDone || oldStuds.length >= DH_STUD_NEED) studSlots.forEach((s, i) => keep.push(['stud', 0, 0, i, 0, 0]));
+    else oldStuds.forEach((_, i) => { if (studSlots[i]) keep.push(['stud', 0, 0, i, 0, 0]); });
+    const rafterSlots = dhAllRafterSlots(null, st);
+    const oldRafters = take('rafter');
+    if (roofDone || oldRafters.length >= DH_RAFTER_NEED) rafterSlots.forEach((s, i) => keep.push(['rafter', 0, 0, i, s.side, 0]));
+    else oldRafters.forEach((_, i) => { if (rafterSlots[i]) keep.push(['rafter', 0, 0, i, rafterSlots[i].side, 0]); });
+    const shingleSlots = dhAllShingleSlots(null, st);
+    const oldShingles = take('shingle');
+    if (roofDone) shingleSlots.forEach(s => keep.push(['shingle', s.col, s.row, 0, s.side, 0]));
+    else oldShingles.slice(0, shingleSlots.length).forEach((_, i) => {
+      const s = shingleSlots[i];
+      keep.push(['shingle', s.col, s.row, 0, s.side, 0]);
+    });
+    const facesUsed = {};
+    take('doorframe').forEach(a => { const f = a[4]|0; facesUsed['doorframe:'+f] = 1; keep.push(['doorframe', 0, 0, 0, f, 0]); });
+    take('door').forEach(a => { const f = (take('doorframe')[0] ? (take('doorframe')[0][4]|0) : (a[4]|0)); keep.push(['door', 0, 0, 0, f, 0]); });
+    const winFaces = [];
+    take('winframe').forEach(a => {
+      const f = a[4]|0;
+      if (winFaces.indexOf(f) < 0){ winFaces.push(f); keep.push(['winframe', 0, 0, 0, f, 0]); }
+    });
+    take('pane').forEach(a => {
+      const f = a[4]|0;
+      if (!keep.some(b => b[0] === 'pane' && (b[4]|0) === f)) keep.push(['pane', 0, 0, 0, f, 0]);
+    });
+    // A finished (glazed / furnish-step) house also gets the new front window, already glazed, so progress is not sent back to the glass step.
+    if (roofDone && (counts.winframe || counts.pane || counts.door)){
+      dhWindowFaces().forEach(f => {
+        if (!keep.some(b => b[0] === 'winframe' && (b[4]|0) === f)) keep.push(['winframe', 0, 0, 0, f, 0]);
+        if ((counts.pane || 0) > 0 && !keep.some(b => b[0] === 'pane' && (b[4]|0) === f)) keep.push(['pane', 0, 0, 0, f, 0]);
+      });
+    }
+    const paintCols = {};
+    take('paint').forEach(a => {
+      let f = a[4]|0;
+      if (f < 0 || f > 3) f = Object.keys(paintCols).length % 4;
+      if (paintCols[f] == null){ paintCols[f] = a[5]|0; keep.push(['paint', 0, 0, 0, f, a[5]|0]); }
+    });
+    // Deduplicate by key in case a v1 convert already overlapped.
+    const seen = {};
+    const out = [];
+    keep.forEach(a => {
+      const k = dhKeyOf(a);
+      if (seen[k]) return;
+      seen[k] = 1;
+      out.push(a);
+    });
     return out;
   }
   function dhLooksLegacy(pieces){
@@ -192,7 +401,7 @@
   function dhResetProgress(){
     // Only wipes the Dream House key. Main wallet, other games, and history stay put.
     if (dh) dh._skipSave = true;
-    if (typeof save === 'function') save(DH_KEY, dhFreshSave());
+    if (typeof save === 'function' && !dhTestBlockPersist()) save(DH_KEY, dhFreshSave());
     if (dh){
       dh.carry = null;
       dh.bag = null;
@@ -243,7 +452,7 @@
     p.tipsSeen = Object.assign({}, dh.tipsSeen || {});
     p.legacyHouse = !!dh.legacyHouse;
     if (extra) Object.assign(p, extra);
-    if (!dh._skipSave) save(DH_KEY, p);
+    if (!dh._skipSave && !dhTestBlockPersist()) save(DH_KEY, p);
   }
 
   function dhTex(draw, s){
@@ -381,39 +590,76 @@
     if (id === 'mark'){ add(box(.08, .7, .08, M.wood), 0, .35, 0); add(box(.28, .04, .04, dhMat('#ff6fb5')), 0, .7, 0); }
     else if (id === 'trench'){ solid(DH_CELL * .95, .28, DH_CELL * .95, 0, 0, 0, M.dirt); add(box(DH_CELL * .95, .12, .06, M.wood), 0, .16, DH_CELL * .44); add(box(DH_CELL * .95, .12, .06, M.wood), 0, .16, -DH_CELL * .44); }
     else if (id === 'wet'){ solid(DH_CELL * .95, .32, DH_CELL * .95, 0, 0, 0, M.wet); }
-    else if (id === 'slab'){ solid(DH_CELL, .28, DH_CELL, 0, 0, 0, M.concrete); }
+    else if (id === 'slab'){ solid(DH_CELL, DH_SLAB_H, DH_CELL, 0, 0, 0, M.concrete); }
     else if (id === 'brick'){ const vis = solid(DH_BRICK_W - .02, DH_BRICK_H - .02, DH_BRICK_D, 0, 0, 0, M.brick); if (dh && dh.brickInst && dh.brickInst[plot] && typeof dh.brickInst[plot].setMatrixAt === 'function') vis.visible = false; }
-    else if (id === 'stud'){ solid(.1, 2.05, .1, 0, 1.0, 0, M.wood); }
+    else if (id === 'stud'){ solid(.08, dhWallH(), .08, 0, 0, 0, M.wood); }
     else if (id === 'beam'){ solid(DH_CELL * 1.05, .1, .1, 0, 0, 0, M.wood); }
-    else if (id === 'rafter'){ const r = box(DH_CELL * 1.2, .08, .1, M.wood); r.rotation.x = rec[4] % 2 ? .42 : -.42; add(r, 0, 0, 0); solidsLocal.push({mesh: r, hw: .5, hh: .08, hd: .4, ox: 0, oy: 0, oz: 0}); }
-    else if (id === 'shingle'){ const r = box(DH_CELL * 1.05, .05, DH_CELL * .55, M.shingle); r.rotation.x = rec[4] % 2 ? .42 : -.42; add(r, 0, 0, 0); }
-    else if (id === 'doorframe'){
-      solid(.12, 1.9, .12, -.45, .2, 0, M.wood); solid(.12, 1.9, .12, .45, .2, 0, M.wood); add(box(.95, .12, .12, M.wood), 0, 1.15, 0);
+    else if (id === 'rafter'){
+      const slope = Math.hypot(dhWallLength() / 2 + DH_ROOF_OVERHANG, DH_ROOF_RISE);
+      const r = box(0.08, 0.08, slope, M.wood);
+      r.rotation.x = rec[4] % 2 ? dhRoofPitch() : -dhRoofPitch();
+      add(r, 0, 0, 0);
+      solidsLocal.push({mesh: r, hw: .06, hh: .06, hd: slope / 2, ox: 0, oy: 0, oz: 0});
     }
-    else if (id === 'door'){ add(box(.7, 1.7, .08, M.dark), 0, .1, 0); add(box(.06, .06, .04, dhMat('#d4a574')), .22, .15, .06); }
+    else if (id === 'shingle'){
+      const wall = dhWallLength(), cols = DH_SHINGLE_COLS, rows = DH_SHINGLE_ROWS;
+      const slope = Math.hypot(wall / 2 + DH_ROOF_OVERHANG, DH_ROOF_RISE);
+      const sx = (wall + DH_ROOF_OVERHANG * 2) / cols + 0.04;
+      const sz = slope / rows + 0.04;
+      const r = box(sx, 0.05, sz, M.shingle);
+      r.rotation.x = rec[4] % 2 ? dhRoofPitch() : -dhRoofPitch();
+      add(r, 0, 0, 0);
+    }
+    else if (id === 'doorframe'){
+      const w = DH_BRICK_W * 2, h = DH_DOOR_H;
+      solid(.08, h, .08, -w / 2, 0, 0, M.wood);
+      solid(.08, h, .08, w / 2, 0, 0, M.wood);
+      add(box(w + .08, .08, .08, M.wood), 0, h / 2, 0);
+    }
+    else if (id === 'door'){
+      // Hinged leaf, no collider — a finished door must never block the opening.
+      // Rest slightly ajar; dhTickDoors swings it open when the player is nearby.
+      const w = DH_BRICK_W * 2 - 0.08, h = DH_DOOR_H - 0.08;
+      const leaf = new THREE.Group();
+      leaf.position.set(-w / 2, 0, 0); // hinge at the left jamb (outside view)
+      const panel = box(w, h, .06, M.dark);
+      panel.position.set(w / 2, 0, 0);
+      leaf.add(panel);
+      const knob = box(.06, .06, .04, dhMat('#d4a574'));
+      knob.position.set(w * 0.78, 0, .05);
+      leaf.add(knob);
+      g.add(leaf);
+      g.userData.doorLeaf = leaf;
+      g.userData.doorWidth = w;
+      leaf.rotation.y = -0.45; // visibly ajar so the opening reads as a doorway
+    }
     else if (id === 'winframe'){
-      // chunky wood frame with a clearly empty opening (no glass fill)
-      solid(.9, .14, .16, 0, .54, 0, M.wood);
-      solid(.96, .16, .2, 0, -.54, 0, M.wood);
-      solid(.14, 1.08, .16, -.38, 0, 0, M.wood);
-      solid(.14, 1.08, .16, .38, 0, 0, M.wood);
+      const w = DH_BRICK_W * 2, h = DH_WIN_HEAD - DH_WIN_SILL;
+      solid(w + .08, .08, .08, 0, h / 2, 0, M.wood);
+      solid(w + .08, .08, .08, 0, -h / 2, 0, M.wood);
+      solid(.08, h, .08, -w / 2, 0, 0, M.wood);
+      solid(.08, h, .08, w / 2, 0, 0, M.wood);
     }
     else if (id === 'pane'){
-      add(box(.64, .92, .03, M.glass), 0, 0, 0);
-      add(box(.14, .62, .008, M.glassShine || M.glass), -.14, .1, .02);
-      add(box(.06, .28, .008, M.glassShine || M.glass), .16, -.14, .02);
+      const w = DH_BRICK_W * 2 - 0.12, h = DH_WIN_HEAD - DH_WIN_SILL - 0.12;
+      solid(w, h, .04, 0, 0, 0, M.glass);
+      add(box(w * .22, h * .6, .008, M.glassShine || M.glass), -w * .18, h * .08, .02);
+      add(box(w * .1, h * .28, .008, M.glassShine || M.glass), w * .2, -h * .12, .02);
     }
-    else if (id === 'paint'){ add(box(DH_CELL * .9, 1.8, .04, dhMat(dhPaintCol(rec[5] | 0))), 0, .2, 0); }
-    else if (id === 'sofa'){ solid(.95, .32, .5, 0, -.2, 0, dhMat('#3a86ff')); add(box(.95, .35, .16, dhMat('#3a86ff')), 0, .08, -.22); }
-    else if (id === 'bed'){ solid(1.1, .28, .7, 0, -.25, 0, dhMat('#fffaf0')); add(box(.4, .18, .68, dhMat('#ffe0ef')), 0, -.02, .28); }
-    else if (id === 'table'){ add(box(.7, .08, .7, M.wood), 0, .1, 0); [[-.28, -.28], [.28, -.28], [-.28, .28], [.28, .28]].forEach(([x, z]) => add(box(.08, .42, .08, M.dark), x, -.15, z)); solidsLocal.push({mesh: g, hw: .35, hh: .3, hd: .35, ox: 0, oy: 0, oz: 0}); }
-    else if (id === 'lamp'){ add(box(.12, .7, .12, M.dark), 0, -.1, 0); add(new THREE.Mesh(new THREE.SphereGeometry(.16, 10, 8), dhMat('#ffe08a', {emissive: '#ffe08a', emissiveIntensity: .4})), 0, .35, 0); }
-    else if (id === 'plant'){ add(box(.22, .16, .22, M.dark), 0, -.45, 0); add(new THREE.Mesh(new THREE.SphereGeometry(.22, 8, 6), dhMat('#2ec27e')), 0, -.15, 0); }
-    else if (id === 'rug'){ add(box(DH_CELL * .9, .04, DH_CELL * .7, dhMat('#c39bff')), 0, .16, 0); }
-    else if (id === 'tv'){ add(box(.22, .7, .16, M.dark), 0, -.15, 0); add(box(.9, .55, .08, M.dark), 0, .4, 0); add(box(.78, .44, .03, dhMat('#7ad3ff', {emissive: '#3a86ff', emissiveIntensity: .35})), 0, .4, .05); }
+    else if (id === 'paint'){
+      const len = dhWallLength() - 0.08, h = dhWallH() - 0.08;
+      add(box(len, h, 0.03, dhMat(dhPaintCol(rec[5] | 0))), 0, 0, 0);
+    }
+    else if (id === 'sofa'){ solid(1.80, .42, .85, 0, .21, 0, dhMat('#3a86ff')); add(box(1.80, .45, .16, dhMat('#3a86ff')), 0, 0.64, -.32); }
+    else if (id === 'bed'){ solid(2.00, .40, 1.40, 0, .20, 0, dhMat('#fffaf0')); add(box(.55, .22, 1.36, dhMat('#ffe0ef')), 0, 0.42, .40); }
+    else if (id === 'table'){ add(box(1.10, .06, 1.10, M.wood), 0, 0.74, 0); [[-.48, -.48], [.48, -.48], [-.48, .48], [.48, .48]].forEach(([x, z]) => add(box(.08, .74, .08, M.dark), x, 0.37, z)); solidsLocal.push({mesh: g, hw: .55, hh: .4, hd: .55, ox: 0, oy: 0.4, oz: 0}); }
+    else if (id === 'lamp'){ add(box(.14, .90, .14, M.dark), 0, 0.45, 0); add(new THREE.Mesh(new THREE.SphereGeometry(.16, 10, 8), dhMat('#ffe08a', {emissive: '#ffe08a', emissiveIntensity: .4})), 0, 1.00, 0); }
+    else if (id === 'plant'){ add(box(.24, .22, .24, M.dark), 0, 0.11, 0); add(new THREE.Mesh(new THREE.SphereGeometry(.22, 8, 6), dhMat('#2ec27e')), 0, 0.42, 0); }
+    else if (id === 'rug'){ add(box(1.80, .03, 1.20, dhMat('#c39bff')), 0, 0.02, 0); }
+    else if (id === 'tv'){ add(box(.28, .70, .20, M.dark), 0, 0.35, 0); add(box(1.10, .62, .08, M.dark), 0, 1.10, 0); add(box(.96, .50, .03, dhMat('#7ad3ff', {emissive: '#3a86ff', emissiveIntensity: .35})), 0, 1.10, .05); }
     else if (id === 'shelf'){
-      solid(.7, 1.2, .28, 0, .2, 0, M.wood);
-      ['#ff6fb5','#3a86ff','#ffd23f','#2ec27e','#ff9f1c'].forEach((c, i) => add(box(.1, .22, .2, dhMat(c)), -0.24 + (i % 3) * .22, (i < 3 ? .45 : -.05), .02));
+      solid(.90, 1.80, .32, 0, 0.90, 0, M.wood);
+      ['#ff6fb5','#3a86ff','#ffd23f','#2ec27e','#ff9f1c'].forEach((c, i) => add(box(.12, .24, .22, dhMat(c)), -0.28 + (i % 3) * .26, (i < 3 ? 1.35 : 0.70), .04));
     }
     g.userData.solids = solidsLocal; g.userData.rec = rec.slice(); g.userData.plot = plot;
     return g;
@@ -421,51 +667,213 @@
   function dhWorldRec(plot, rec){
     const id = rec[0], ix = rec[1]|0, iy = rec[2]|0, iz = rec[3]|0, face = rec[4]|0;
     if (id === 'brick'){
-      const [ox, oz] = dhOrigin(plot);
+      // Stack bond on a fixed grid (no running-bond offset) so courses line up and corners meet cleanly.
+      const b = dhFootWorld(plot);
+      const along = iz * DH_BRICK_W + DH_BRICK_W / 2;
+      const y = DH_SLAB_H + iy * DH_BRICK_H + DH_BRICK_H / 2;
       const f = face % 4;
-      const foot = dhFoot();
-      const x0 = ox + foot.x0 * DH_CELL, z0 = oz + foot.z0 * DH_CELL;
-      const x1 = ox + (foot.x1 + 1) * DH_CELL, z1 = oz + (foot.z1 + 1) * DH_CELL;
-      const off = (iy % 2) ? DH_BRICK_W / 2 : 0;
-      const along = (iz + 0) * DH_BRICK_W + off + DH_BRICK_W / 2;
-      const y = .28 + iy * DH_BRICK_H + DH_BRICK_H / 2;
-      if (f === 0) return {x: x0 + along, y, z: z0 + DH_BRICK_D / 2, ry: 0};          // south
-      if (f === 2) return {x: x1 - along, y, z: z1 - DH_BRICK_D / 2, ry: 0};          // north
-      if (f === 1) return {x: x1 - DH_BRICK_D / 2, y, z: z0 + along, ry: Math.PI / 2}; // east
-      return {x: x0 + DH_BRICK_D / 2, y, z: z1 - along, ry: Math.PI / 2};             // west
+      if (f === 0) return {x: b.x0 + along, y, z: b.z0 + DH_BRICK_D / 2, ry: 0};
+      if (f === 2) return {x: b.x1 - along, y, z: b.z1 - DH_BRICK_D / 2, ry: 0};
+      if (f === 1) return {x: b.x1 - DH_BRICK_D / 2, y, z: b.z0 + along, ry: Math.PI / 2};
+      return {x: b.x0 + DH_BRICK_D / 2, y, z: b.z1 - along, ry: Math.PI / 2};
     }
-    if (id === 'rafter' || id === 'shingle'){
-      const w = dhCellWorld(plot, ix, iz, (dh.upgrades && dh.upgrades.story ? 4.1 : 2.15) + iy * .12);
-      const side = (face % 2) ? 1 : -1;
-      w.z += side * .55; w.ry = 0; return w;
+    if (id === 'shingle'){
+      const s = dhShingleWorld(plot, face, ix, iy);
+      return s;
+    }
+    if (id === 'rafter'){
+      return dhRafterWorld(plot, iz, face);
+    }
+    if (id === 'stud'){
+      return dhStudWorld(plot, iz);
     }
     if (id === 'doorframe' || id === 'door' || id === 'winframe' || id === 'pane'){
-      const w = dhWallFaceWorld(plot, face, iz, iy);
+      const kind = (id === 'doorframe' || id === 'door') ? 'door' : 'window';
+      const w = dhOpeningWorld(plot, face, kind);
       w.ry = (face === 1 || face === 3) ? Math.PI / 2 : 0;
       return w;
     }
-    const baseY = id === 'slab' || id === 'wet' || id === 'trench' ? .16 : id === 'mark' ? .02 : id === 'stud' ? .28 : .35;
-    const w = dhCellWorld(plot, ix, iz, baseY + (id === 'paint' ? 1.0 : 0));
+    if (id === 'paint'){
+      const w = dhPaintWorld(plot, face);
+      w.ry = (face === 1 || face === 3) ? Math.PI / 2 : 0;
+      return w;
+    }
+    const furn = ['sofa','bed','table','lamp','plant','rug','tv','shelf'].indexOf(id) >= 0;
+    const baseY = (id === 'slab' || id === 'wet' || id === 'trench') ? (DH_SLAB_H / 2) : id === 'mark' ? .02 : furn ? DH_SLAB_H : .35;
+    const w = dhCellWorld(plot, ix, iz, baseY);
     w.ry = (face || 0) * Math.PI / 2;
     return w;
   }
   function dhWallFaceWorld(plot, face, along, course){
-    const [ox, oz] = dhOrigin(plot);
-    const foot = dhFoot();
-    const x0 = ox + foot.x0 * DH_CELL, z0 = oz + foot.z0 * DH_CELL;
-    const x1 = ox + (foot.x1 + 1) * DH_CELL, z1 = oz + (foot.z1 + 1) * DH_CELL;
-    const mid = (foot.x1 - foot.x0 + 1) * DH_CELL / 2;
-    const y = .28 + (course || 0) * DH_BRICK_H + .9;
-    const t = (along + 2) / 6 * (x1 - x0);
-    if (face === 0) return {x: x0 + mid, y, z: z0 + .12};
-    if (face === 2) return {x: x0 + mid, y, z: z1 - .12};
-    if (face === 1) return {x: x1 - .12, y, z: z0 + mid};
-    return {x: x0 + .12, y, z: z0 + mid};
+    return dhOpeningWorld(plot, face, 'door');
+  }
+  function dhOpeningAlongMeters(face, kind, st){
+    const mid = (dhBrickAlongCount(face, st) / 2) | 0;
+    const lo = (kind === 'window' && face === 0) ? mid + 2 : mid - 1;
+    const hi = lo + 1;
+    return ((lo + hi) / 2) * DH_BRICK_W + DH_BRICK_W / 2;
+  }
+  function dhOpeningWorld(plot, face, kind, st){
+    const b = dhFootWorld(plot, st);
+    const along = dhOpeningAlongMeters(face, kind, st);
+    const y = (kind === 'window')
+      ? (DH_SLAB_H + (DH_WIN_SILL + DH_WIN_HEAD) / 2)
+      : (DH_SLAB_H + DH_DOOR_H / 2);
+    const out = DH_BRICK_D / 2;
+    if (face === 0) return {x: b.x0 + along, y, z: b.z0 + out};
+    if (face === 2) return {x: b.x1 - along, y, z: b.z1 - out};
+    if (face === 1) return {x: b.x1 - out, y, z: b.z0 + along};
+    return {x: b.x0 + out, y, z: b.z1 - along};
+  }
+  function dhPaintWorld(plot, face){
+    const b = dhFootWorld(plot);
+    const mid = (b.x1 - b.x0) / 2;
+    const y = DH_SLAB_H + dhWallH() / 2;
+    const out = DH_BRICK_D + 0.02;
+    if (face === 0) return {x: b.x0 + mid, y, z: b.z0 - 0.02};
+    if (face === 2) return {x: b.x0 + mid, y, z: b.z1 + 0.02};
+    if (face === 1) return {x: b.x1 + 0.02, y, z: b.z0 + mid};
+    return {x: b.x0 - 0.02, y, z: b.z0 + mid};
+  }
+  function dhRoofPlane(plot, side, col, row){
+    const b = dhFootWorld(plot);
+    const wall = b.x1 - b.x0;
+    const midZ = (b.z0 + b.z1) / 2;
+    const half = wall / 2 + DH_ROOF_OVERHANG;
+    const cols = DH_SHINGLE_COLS, rows = DH_SHINGLE_ROWS;
+    const t = (row + 0.5) / rows; // 0 at eave, 1 at ridge
+    const x = (b.x0 - DH_ROOF_OVERHANG) + (col + 0.5) * ((wall + DH_ROOF_OVERHANG * 2) / cols);
+    const zOff = (1 - t) * half;
+    const y = dhWallTop() + t * DH_ROOF_RISE;
+    const z = midZ + ((side % 2) ? zOff : -zOff);
+    return {x, y, z, ry: 0, side: side % 2, col, row};
+  }
+  function dhShingleWorld(plot, side, col, row){
+    return dhRoofPlane(plot, side, col, row);
+  }
+  function dhRafterWorld(plot, index, side){
+    const b = dhFootWorld(plot);
+    const wall = b.x1 - b.x0;
+    const midZ = (b.z0 + b.z1) / 2;
+    const half = wall / 2 + DH_ROOF_OVERHANG;
+    const i = index % Math.max(1, DH_RAFTER_NEED / 2);
+    const along = (i + 1) / (DH_RAFTER_NEED / 2 + 1);
+    const x = b.x0 + along * wall;
+    const y = dhWallTop() + DH_ROOF_RISE / 2;
+    const z = midZ + ((side % 2) ? half / 2 : -half / 2);
+    return {x, y, z, ry: 0, side: side % 2};
+  }
+  function dhStudWorld(plot, index){
+    const b = dhFootWorld(plot);
+    const midX = (b.x0 + b.x1) / 2, midZ = (b.z0 + b.z1) / 2;
+    const spots = [
+      {x: b.x0, z: b.z0}, {x: b.x1, z: b.z0}, {x: b.x1, z: b.z1}, {x: b.x0, z: b.z1},
+      {x: midX, z: b.z0}, {x: b.x1, z: midZ}, {x: midX, z: b.z1}, {x: b.x0, z: midZ}
+    ];
+    const s = spots[index % spots.length];
+    return {x: s.x, y: DH_SLAB_H + dhWallH() / 2, z: s.z, ry: 0};
+  }
+  function dhAllStudSlots(plot, st){
+    const list = [];
+    for (let i = 0; i < DH_STUD_NEED; i++){
+      const w = plot == null ? {x:0,y: DH_SLAB_H + dhWallH(st)/2,z:0} : dhStudWorld(plot, i);
+      list.push({plot, i, x: w.x, y: w.y, z: w.z, kind: 'stud'});
+    }
+    return list;
+  }
+  function dhAllRafterSlots(plot, st){
+    const list = [];
+    let i = 0;
+    for (let side = 0; side < 2; side++) for (let k = 0; k < DH_RAFTER_NEED / 2; k++, i++){
+      const w = plot == null ? {x:0,y: dhWallTop(st)+DH_ROOF_RISE/2,z:0} : dhRafterWorld(plot, k, side);
+      list.push({plot, i, side, x: w.x, y: w.y, z: w.z, kind: 'rafter'});
+    }
+    return list;
+  }
+  function dhAllShingleSlots(plot, st){
+    const list = [];
+    for (let side = 0; side < 2; side++) for (let row = 0; row < DH_SHINGLE_ROWS; row++) for (let col = 0; col < DH_SHINGLE_COLS; col++){
+      const w = plot == null ? {x:0,y: dhWallTop(st)+DH_ROOF_RISE/2,z:0} : dhShingleWorld(plot, side, col, row);
+      list.push({plot, side, col, row, x: w.x, y: w.y, z: w.z, kind: 'shingle'});
+    }
+    return list;
+  }
+  function dhAllFrameSlots(plot){
+    const list = [];
+    const have = (dh && plot != null) ? (dh.pieces[plot] || []) : [];
+    const doorW = plot == null ? {x:0,y: DH_SLAB_H + DH_DOOR_H/2,z:0} : dhOpeningWorld(plot, 0, 'door');
+    const doorFilled = have.some(a => a[0] === 'doorframe' || a[0] === 'door');
+    if (!have.some(a => a[0] === 'doorframe')) list.push({plot, face: 0, kind: 'doorframe', x: doorW.x, y: doorW.y, z: doorW.z});
+    else if (!have.some(a => a[0] === 'door')) list.push({plot, face: 0, kind: 'door', x: doorW.x, y: doorW.y, z: doorW.z});
+    dhWindowFaces().forEach(face => {
+      if (have.some(a => a[0] === 'winframe' && (a[4]|0) === face)) return;
+      const w = plot == null ? {x:0,y: DH_SLAB_H + (DH_WIN_SILL+DH_WIN_HEAD)/2,z:0} : dhOpeningWorld(plot, face, 'window');
+      list.push({plot, face, kind: 'winframe', x: w.x, y: w.y, z: w.z});
+    });
+    return list;
+  }
+  function dhAllPaintSlots(plot){
+    const have = (dh && plot != null) ? (dh.pieces[plot] || []) : [];
+    const list = [];
+    for (let face = 0; face < 4; face++){
+      if (have.some(a => a[0] === 'paint' && (a[4]|0) === face)) continue;
+      const w = plot == null ? {x:0,y: DH_SLAB_H + dhWallH()/2,z:0} : dhPaintWorld(plot, face);
+      list.push({plot, face, kind: 'paint', x: w.x, y: w.y, z: w.z});
+    }
+    return list;
+  }
+  function dhAllBrickRecs(st){
+    const recs = [];
+    for (let face = 0; face < 4; face++){
+      const span = dhBrickAlongCount(face, st);
+      for (let c = 0; c < dhCourses(st); c++) for (let k = 0; k < span; k++){
+        if (dhIsOpening(face, c, k, st)) continue;
+        recs.push(['brick', 0, c, k, face, 0]);
+      }
+    }
+    return recs;
+  }
+  function dhBrickBoxes(plot, st){
+    const recs = (dh && plot != null && dh.pieces[plot])
+      ? (dh.pieces[plot] || []).filter(a => a[0] === 'brick')
+      : dhAllBrickRecs(st);
+    return recs.map(rec => {
+      const w = dhWorldRec(plot == null ? 0 : plot, rec);
+      const hx = ((rec[4]|0) === 1 || (rec[4]|0) === 3) ? DH_BRICK_D / 2 : DH_BRICK_W / 2;
+      const hz = ((rec[4]|0) === 1 || (rec[4]|0) === 3) ? DH_BRICK_W / 2 : DH_BRICK_D / 2;
+      return {rec, x: w.x, y: w.y, z: w.z, hx, hy: DH_BRICK_H / 2, hz, face: rec[4]|0, course: rec[2]|0, along: rec[3]|0};
+    });
+  }
+  function dhSolidWorld(group, s){
+    const gx = (group && group.position && group.position.x) || 0;
+    const gy = (group && group.position && group.position.y) || 0;
+    const gz = (group && group.position && group.position.z) || 0;
+    const ry = (group && group.rotation && group.rotation.y) || 0;
+    const c = Math.cos(ry), si = Math.sin(ry);
+    const ox = s.ox || 0, oy = s.oy || 0, oz = s.oz || 0;
+    // THREE.js Ry: x' = x*c + z*s, z' = -x*s + z*c
+    const x = gx + ox * c + oz * si;
+    const z = gz - ox * si + oz * c;
+    const y = gy + oy;
+    const absC = Math.abs(c), absS = Math.abs(si);
+    const hw = (s.hw || 0) * absC + (s.hd || 0) * absS;
+    const hd = (s.hw || 0) * absS + (s.hd || 0) * absC;
+    return {x, y, z, hw, hh: s.hh || 0, hd};
   }
   function dhBindSolids(mesh, on){
+    const rec = mesh && mesh.userData && mesh.userData.rec;
+    if (rec && (rec[0] === 'door' || rec[0] === 'doorframe')) return; // opening stays walkable; jambs are visual only
+    if (rec && (rec[0] === 'brick' || rec[0] === 'pane')){
+      if (on && typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
+      return;
+    }
     const list = (mesh && mesh.userData && mesh.userData.solids) || [];
     list.forEach(s => {
-      const b = {mesh: s.mesh, hw: s.hw, hh: s.hh, hd: s.hd, active: true, dx: 0, dy: 0, dz: 0, _dh: mesh};
+      const w = dhSolidWorld(mesh, s);
+      // Proxy in world space so the shared AABB resolver (which reads mesh.position) hits the wall, not the group origin.
+      if (!s._proxy) s._proxy = {position: {x: 0, y: 0, z: 0}, visible: true, userData: {dhProxy: true}};
+      s._proxy.position.x = w.x; s._proxy.position.y = w.y; s._proxy.position.z = w.z;
+      const b = {mesh: s._proxy, hw: w.hw, hh: w.hh, hd: w.hd, active: true, dx: 0, dy: 0, dz: 0, _dh: mesh};
       if (on){ if (typeof solids !== 'undefined') solids.push(b); s._solid = b; }
       else if (s._solid && typeof solids !== 'undefined'){ const i = solids.indexOf(s._solid); if (i >= 0) solids.splice(i, 1); s._solid = null; }
     });
@@ -497,7 +905,7 @@
     };
     wall(0, -z, 104, t); wall(0, z, 104, t); wall(-x, 0, t, 74); wall(x, 0, t, 74);
     // visible low curb so the edge of the grass is obvious
-    const curb = (wx, wz, ww, wd) => { const b = plat(wx, .16, wz, ww, wd, '#5a8f4a', .14); if (b) b.camSkip = true; return b; };
+    const curb = (wx, wz, ww, wd) => { const b = plat(wx, .16, wz, ww, wd, '#5a8f4a', .14); if (b){ b.camSkip = true; b.floorOnly = true; } return b; };
     curb(0, -z + .6, 100, .5); curb(0, z - .6, 100, .5); curb(-x + .6, 0, .5, 70); curb(x - .6, 0, .5, 70);
   }
   function dhSupplyMats(){ return DH_MATS.filter(m => m.free && !m.nosale && !m.furn); }
@@ -578,10 +986,12 @@
     return sign;
   }
   function dhBuildYard(){
-    plat(DH_YARD.x, .12, DH_YARD.z, 13, 10, '#cfc4a8', .2);
+    const yardPad = plat(DH_YARD.x, .12, DH_YARD.z, 13, 10, '#cfc4a8', .2);
+    if (yardPad) yardPad.floorOnly = true;
     const [pox, poz] = dhOrigin((dh && dh.mine) || 0);
     const px = pox + DH_N * DH_CELL, pz = poz + DH_N * DH_CELL / 2;
-    plat((px + DH_YARD.x) / 2, .14, (pz + DH_YARD.z) / 2, Math.max(4, Math.abs(DH_YARD.x - px) + 1), 3.0, '#cfc4a8', .18);
+    const yardPath = plat((px + DH_YARD.x) / 2, .14, (pz + DH_YARD.z) / 2, Math.max(4, Math.abs(DH_YARD.x - px) + 1), 3.0, '#cfc4a8', .18);
+    if (yardPath) yardPath.floorOnly = true;
     // Wooden sign sits on the yard's BACK (west) edge, away from the approach
     // from the plot, so the follow camera does not clip through the board.
     dh.yardSignParts = [];
@@ -639,8 +1049,10 @@
   }
   function dhBuildFurnitureStore(){
     const x = DH_FURN.x, z = DH_FURN.z;
-    plat(x, .1, z, 11, 9, '#e8d9c0', .18);
-    plat((x + 0) / 2, .12, (z + dhSpawnPos(0).z) / 2, 3.2, Math.abs(z - dhSpawnPos(0).z), '#e8d9c0', .16);
+    const furnPad = plat(x, .1, z, 11, 9, '#e8d9c0', .18);
+    if (furnPad) furnPad.floorOnly = true;
+    const furnPath = plat((x + 0) / 2, .12, (z + dhSpawnPos(0).z) / 2, 3.2, Math.abs(z - dhSpawnPos(0).z), '#e8d9c0', .16);
+    if (furnPath) furnPath.floorOnly = true;
     const wall = dhMat('#fff4dc');
     const room = new THREE.Mesh(new THREE.BoxGeometry(7.2, 3.2, 6.2), wall);
     room.position.set(x, 1.7, z); scene.add(room);
@@ -664,7 +1076,8 @@
   }
   function dhBuildUpgradeShop(){
     const x = DH_UP.x, z = DH_UP.z;
-    plat(x, .1, z, 9, 8, '#d7cbb3', .18);
+    const upPad = plat(x, .1, z, 9, 8, '#d7cbb3', .18);
+    if (upPad) upPad.floorOnly = true;
     // open workshop shed
     const wall = dhMat('#f0e4cc');
     const back = new THREE.Mesh(new THREE.BoxGeometry(6.2, 3.0, .3), wall); back.position.set(x, 1.55, z - 2.6); scene.add(back);
@@ -889,7 +1302,8 @@
     dh = {mine: 0, job: 'mark', rot: 0, color: 0, tool: 'place', aim: null, pieces: {}, meshes: {}, ghost: null, bank: 0, likes: 0, goals: {}, earned: 0, near: -1, liked: {}, saveT: 0, remote: dhIsGuest(), carry: null, bag: null, stock: dhEmptyStock(), bins: [], mixers: {}, piles: {}, mats: dhMakeMats(), v1pieces: null, cureT: 0, upgrades: dhEmptyUpgrades(), introSeen: false, intro: null, trees: [], shopOpen: false, yardOpen: false, upOpen: false, foundYard: false, foundFurn: false, foundUp: false, cut: null, yardBeacon: null, furnBeacon: null, upBeacon: null};
     scene.background = new THREE.Color('#b8e8ff');
     if (scene.fog){ scene.fog.color = new THREE.Color('#d7f3ff'); scene.fog.near = 50; scene.fog.far = 160; }
-    plat(0, 0, 0, 110, 84, '#8fd39a', .35);
+    const grass = plat(0, 0, 0, 110, 84, '#8fd39a', .35);
+    if (grass) grass.floorOnly = true; // huge ground AABB must never resolve on X/Z
     const p0 = dhProg();
     dh.bank = p0.coins; dh.likes = p0.likes; dh.goals = Object.assign({}, p0.goals); dh.stock = Object.assign(dhEmptyStock(), p0.stock); dh.v1pieces = p0.v1pieces; dh.upgrades = Object.assign(dhEmptyUpgrades(), p0.upgrades || {}); dh.introSeen = !!p0.introSeen; dh.tipsSeen = Object.assign({}, p0.tipsSeen || {}); dh.legacyHouse = !!p0.legacyHouse; dh.brickInst = {}; dh.hand = null; dh.outlines = null; dh.pourHold = false;
     if (!p0.granted){ dh.bank += DH_GRANT; dh.grantedNow = true; }
@@ -903,8 +1317,9 @@
     for (let i = 0; i < DH_PLOTS; i++){
       const [ox, oz] = dhOrigin(i);
       const cx = ox + DH_N * DH_CELL / 2, cz = oz + DH_N * DH_CELL / 2;
-      plat(cx, .08, cz, DH_N * DH_CELL + .4, DH_N * DH_CELL + .4, i === dh.mine ? '#b6e8a8' : '#9fd3a8', .16);
-      [[ox - .15, cz, .3, DH_N * DH_CELL + .6], [ox + DH_N * DH_CELL + .15, cz, .3, DH_N * DH_CELL + .6], [cx, oz - .15, DH_N * DH_CELL + .6, .3], [cx, oz + DH_N * DH_CELL + .15, DH_N * DH_CELL + .6, .3]].forEach(([x, z, w, d]) => { const b = plat(x, .16, z, w, d, '#d9d4cc', .14); if (b) b.camSkip = true; });
+      const pad = plat(cx, .08, cz, DH_N * DH_CELL + .4, DH_N * DH_CELL + .4, i === dh.mine ? '#b6e8a8' : '#9fd3a8', .16);
+      if (pad) pad.floorOnly = true; // visual lot; the big grass is the real floor — do not shove on X/Z
+      [[ox - .15, cz, .3, DH_N * DH_CELL + .6], [ox + DH_N * DH_CELL + .15, cz, .3, DH_N * DH_CELL + .6], [cx, oz - .15, DH_N * DH_CELL + .6, .3], [cx, oz + DH_N * DH_CELL + .15, DH_N * DH_CELL + .6, .3]].forEach(([x, z, w, d]) => { const b = plat(x, .16, z, w, d, '#d9d4cc', .14); if (b){ b.camSkip = true; b.floorOnly = true; } });
       const sign = label((i === dh.mine ? '🏡 Your Plot' : '🏡 Plot ' + (i + 1)), 'rgba(29,35,64,.92)');
       if (sign && sign.position) sign.position.set(cx, 3.15, oz + DH_N * DH_CELL + 1.05);
       if (sign && sign.scale) sign.scale.set(2.4, 0.62, 1);
@@ -914,6 +1329,7 @@
     }
     // single-player: other lots stay empty (real players only — no leftover show homes or intro houses)
     (p0.pieces || []).forEach(rec => dhPut(dh.mine, rec, true));
+    if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
     dhStockViz(dh.mine);
     const [ox, oz] = dhOrigin(dh.mine);
     const sp = dhSpawnPos(dh.mine);
@@ -942,28 +1358,35 @@
     dhPut(plot, ['table', 4, 0, 4, 0, 0], true);
     dhPut(plot, ['plant', 2, 0, 4, 0, 0], true);
   }
-  function dhBrickSpan(){
-    const foot = dhFoot();
-    return Math.max(1, Math.floor(((foot.x1 - foot.x0 + 1) * DH_CELL) / DH_BRICK_W));
+  function dhBrickSpan(st){
+    const foot = dhFootOf(st);
+    const cells = foot.x1 - foot.x0 + 1;
+    return Math.max(6, Math.round(cells * DH_BRICKS_PER_CELL));
   }
-  function dhBrickAlongCount(face){
-    const span = dhBrickSpan();
-    return (face === 1 || face === 3) ? Math.max(1, span - 1) : span;
+  function dhBrickAlongCount(face, st){
+    const span = dhBrickSpan(st);
+    // Faces 1 and 3 skip the two corner bricks, which belong to faces 0 and 2, so corners don't double up.
+    return (face === 1 || face === 3) ? Math.max(1, span - 2) : span;
   }
-  function dhBrickTotal(){
+  function dhBrickTotal(st){
     let n = 0;
-    for (let f = 0; f < 4; f++) for (let c = 0; c < dhCourses(); c++) for (let k = 0; k < dhBrickAlongCount(f); k++){
-      if (!dhIsOpening(f, c, k)) n++;
+    for (let f = 0; f < 4; f++) for (let c = 0; c < dhCourses(st); c++) for (let k = 0; k < dhBrickAlongCount(f, st); k++){
+      if (!dhIsOpening(f, c, k, st)) n++;
     }
     return n;
   }
-  function dhIsOpening(face, course, along){
-    const span = dhBrickAlongCount(face);
+  function dhIsOpening(face, course, along, st){
+    const span = dhBrickAlongCount(face, st);
     const mid = (span / 2) | 0;
-    if (face === 0 && along >= mid - 1 && along <= mid && course < 6) return true; // door
-    if ((face === 1 || face === 3) && along >= mid - 1 && along <= mid && course >= 2 && course <= 5) return true; // windows
+    // Door: two center bricks on face 0, courses 0-4 (2.25 m), leaving a lintel course on top.
+    if (face === 0 && along >= mid - 1 && along <= mid && course >= 0 && course <= 4) return true;
+    // Front window: two bricks to the right of the door (a one-brick pier between them).
+    if (face === 0 && along >= mid + 2 && along <= mid + 3 && course >= 2 && course <= 4) return true;
+    // Side windows: two center bricks on faces 1 and 3, sill at course 2 (0.90 m), head at 2.25 m.
+    if ((face === 1 || face === 3) && along >= mid - 1 && along <= mid && course >= 2 && course <= 4) return true;
     return false;
   }
+  function dhWindowFaces(){ return [0, 1, 3]; }
 
   function dhPut(plot, rec, quiet){
     if (!dh || plot < 0 || plot >= DH_PLOTS) return null;
@@ -976,8 +1399,27 @@
     dh.pieces[plot] = dh.pieces[plot] || []; dh.meshes[plot] = dh.meshes[plot] || [];
     dh.pieces[plot].push(rec); dh.meshes[plot].push(mesh);
     if (rec[0] === 'brick') dhSyncBricks(plot);
+    if (typeof dhRefreshFraming === 'function') dhRefreshFraming(plot);
     if (!quiet && plot === dh.mine){ dhCheckGoals(); dhSave(); }
     return mesh;
+  }
+  function dhFramingHidden(id, plot){
+    const list = (dh && dh.pieces[plot]) || [];
+    if (id === 'stud') return dhCount(list, 'brick') >= dhBrickTotal();
+    if (id === 'rafter' || id === 'beam') return dhCount(list, 'shingle') >= dhShingleTotal();
+    return false;
+  }
+  function dhRefreshFraming(plot){
+    if (!dh) return;
+    const list = dh.pieces[plot] || [];
+    const meshes = dh.meshes[plot] || [];
+    list.forEach((rec, i) => {
+      const m = meshes[i]; if (!m) return;
+      if (rec[0] !== 'stud' && rec[0] !== 'rafter' && rec[0] !== 'beam') return;
+      const hide = dhFramingHidden(rec[0], plot);
+      m.visible = !hide;
+      if (hide) dhBindSolids(m, false);
+    });
   }
   function dhRemoveAtKey(plot, key, quiet){
     const list = dh.pieces[plot] || [];
@@ -1005,6 +1447,8 @@
   function dhApplyPlot(plot, recs, quiet){
     dhClearPlot(plot);
     (recs || []).forEach(r => dhPut(plot, r, true));
+    if (typeof dhRefreshFraming === 'function') dhRefreshFraming(plot);
+    if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
     if (!quiet && plot === dh.mine) dhSave();
   }
   function dhHas(plot, id, ix, iz){ return (dh.pieces[plot] || []).some(a => a[0] === id && (a[1]|0) === ix && (a[3]|0) === iz); }
@@ -1027,7 +1471,7 @@
       ox = camera.position.x; oy = camera.position.y; oz = camera.position.z;
     } else {
       ox = ((P && P.x) || 0) + fx * .22;
-      oy = ((P && P.y) || 0) + 2.45;
+      oy = ((P && P.y) || 0) + dhEyeHeight();
       oz = ((P && P.z) || 0) + fz * .22;
     }
     return {ox, oy, oz, dx: fx * cp, dy: -sp, dz: fz * cp, yaw, pitch};
@@ -1123,6 +1567,27 @@
     const plot = dh.mine;
     if (job === 'brick'){
       return dhAllBrickSlots(plot).filter(s => !s.filled).map(s => Object.assign({}, s, {plot, x: s.x, y: s.y, z: s.z}));
+    }
+    if (job === 'stud'){
+      const have = (dh.pieces[plot] || []).filter(a => a[0] === 'stud');
+      return dhAllStudSlots(plot).filter(s => !have.some(a => (a[3]|0) === s.i));
+    }
+    if (job === 'rafter'){
+      const have = (dh.pieces[plot] || []).filter(a => a[0] === 'rafter');
+      return dhAllRafterSlots(plot).filter(s => !have.some(a => (a[3]|0) === s.i));
+    }
+    if (job === 'shingle'){
+      const have = (dh.pieces[plot] || []).filter(a => a[0] === 'shingle');
+      return dhAllShingleSlots(plot).filter(s => !have.some(a => (a[4]|0) === s.side && (a[1]|0) === s.col && (a[2]|0) === s.row));
+    }
+    if (job === 'frame') return dhAllFrameSlots(plot);
+    if (job === 'paint') return dhAllPaintSlots(plot);
+    if (job === 'glass'){
+      const open = dhOpenFrames(plot);
+      return open.map(f => {
+        const w = dhOpeningWorld(plot, f[4]|0, 'window');
+        return {plot, face: f[4]|0, kind: 'pane', x: w.x, y: w.y, z: w.z};
+      });
     }
     const cells = dhFootCells();
     const pts = [];
@@ -1623,21 +2088,37 @@
   }
   function dhPlaceKind(id, extra){
     if (id === 'pane') return dhInstallGlass();
-    const aim = dhAimCell(); if (!dhCanBuild(aim)) return false;
-    const rec = [id, aim.ix, 0, aim.iz, dh.rot | 0, dh.color | 0];
-    if (id === 'rafter' || id === 'shingle') rec[4] = (aim.iz < (DH_FOOT.z0 + DH_FOOT.z1) / 2) ? 0 : 1;
-    if (id === 'doorframe' || id === 'door' || id === 'winframe' || id === 'pane'){
-      rec[4] = dhWallFaceFromAim(aim) || 0; rec[1] = 0; rec[3] = 0;
+    const slotJob = (id === 'doorframe' || id === 'door' || id === 'winframe') ? 'frame' : id;
+    const slotty = ['stud','rafter','shingle','doorframe','door','winframe','paint'].indexOf(id) >= 0;
+    const spot = slotty ? dhTargetSpot(slotJob) : null;
+    const aim = spot || dhAimCell();
+    if (!aim || (aim.plot == null && !dhCanBuild(aim))) {
+      if (slotty){ banner('🎯 Look at the glowing spot, then press E'); return false; }
     }
-    if ((dh.pieces[aim.plot] || []).some(a => dhKeyOf(a) === dhKeyOf(rec))) return false;
+    if (!spot && !dhCanBuild(aim)) return false;
+    const plot = (spot && spot.plot != null) ? spot.plot : aim.plot;
+    let rec;
+    if (id === 'stud' && spot) rec = ['stud', 0, 0, spot.i, 0, 0];
+    else if (id === 'rafter' && spot) rec = ['rafter', 0, 0, spot.i, spot.side, 0];
+    else if (id === 'shingle' && spot) rec = ['shingle', spot.col, spot.row, 0, spot.side, 0];
+    else if ((id === 'doorframe' || id === 'door' || id === 'winframe') && spot) rec = [id, 0, 0, 0, spot.face, 0];
+    else if (id === 'paint' && spot) rec = ['paint', 0, 0, 0, spot.face, dh.color | 0];
+    else {
+      rec = [id, aim.ix, 0, aim.iz, dh.rot | 0, dh.color | 0];
+      if (id === 'rafter' || id === 'shingle') rec[4] = (aim.iz < (dhFoot().z0 + dhFoot().z1) / 2) ? 0 : 1;
+      if (id === 'doorframe' || id === 'door' || id === 'winframe' || id === 'pane' || id === 'paint'){
+        rec[4] = (spot && spot.face != null) ? spot.face : (dhWallFaceFromAim(aim) || 0); rec[1] = 0; rec[3] = 0;
+      }
+    }
+    if ((dh.pieces[plot] || []).some(a => dhKeyOf(a) === dhKeyOf(rec))) return false;
     if (id === 'stud' || id === 'rafter'){ if (!dh.carry || dh.carry.id !== 'wood'){ banner('🪵 Carry planks from the yard or your pile'); return false; } dhUseCarry(1); }
     if (id === 'shingle'){ if (!dh.carry || dh.carry.id !== 'shingle'){ banner('🏠 Carry shingles to the roof'); return false; } dhUseCarry(1); }
     if (id === 'doorframe' || id === 'winframe'){ if (!dh.carry || dh.carry.id !== 'wood'){ banner('🪵 Carry planks to frame the opening'); return false; } dhUseCarry(1); }
-    if (id === 'door'){ if (!dhHas(aim.plot, 'doorframe', 0, 0) && !(dh.pieces[aim.plot] || []).some(a => a[0] === 'doorframe')){ banner('🚪 Set the door frame in the opening first'); return false; } if (dh.carry && dh.carry.id === 'wood') dhUseCarry(1); }
+    if (id === 'door'){ if (!dhHas(plot, 'doorframe', 0, 0) && !(dh.pieces[plot] || []).some(a => a[0] === 'doorframe')){ banner('🚪 Set the door frame in the opening first'); return false; } if (dh.carry && dh.carry.id === 'wood') dhUseCarry(1); }
     if (id === 'paint'){ if (!dh.carry || dh.carry.id !== 'paint'){ banner('🎨 Carry a paint can'); return false; } dhUseCarry(1); }
     if (['sofa','bed','table','lamp','plant','rug','tv','shelf'].indexOf(id) >= 0){ if (!dh.carry || dh.carry.id !== id){ banner('🛋️ Carry that piece from the shop or yard'); return false; } dhUseCarry(1); }
-    if (!dhPut(aim.plot, rec)) return false;
-    dhNet('place', {rec, plot: aim.plot}); return true;
+    if (!dhPut(plot, rec)) return false;
+    dhNet('place', {rec, plot}); return true;
   }
   function dhMarkOrDig(){
     if (!dh) return false;
@@ -2098,6 +2579,31 @@
     const xh = $('#oCross'); if (xh) xh.style.display = '';
     if (typeof dhBar === 'function') dhBar();
     if (typeof dhHud === 'function') dhHud();
+    if (typeof dhShowTestNote === 'function') dhShowTestNote();
+    if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
+  }
+  function dhShowTestNote(){
+    if (!dh || !dhTestActive()) return false;
+    let el = null;
+    try {
+      if (typeof document !== 'undefined' && document.getElementById) el = document.getElementById('dhTestNote');
+      if (!el && typeof $ === 'function') el = $('#dhTestNote');
+    } catch (e){}
+    if (!el) return false;
+    const msg = '🧪 Test house only — your real Dream House save is not used or written';
+    if (el.textContent !== undefined) el.textContent = msg;
+    if (el.classList && el.classList.add) el.classList.add('show');
+    if (el.style) el.style.display = '';
+    dh._testNoteShown = true;
+    if (typeof setTimeout === 'function'){
+      if (dh._testNoteT) try { clearTimeout(dh._testNoteT); } catch (e){}
+      dh._testNoteT = setTimeout(() => {
+        if (el.classList && el.classList.remove) el.classList.remove('show');
+        if (el.style) el.style.display = 'none';
+        dh._testNoteT = 0;
+      }, 4000);
+    }
+    return true;
   }
   function dreamhouseStop(){
     if (typeof dhClosePauseMenus === 'function') try { dhClosePauseMenus(); } catch (e){}
@@ -2113,6 +2619,11 @@
     if (dh.hand){ if (dh.hand.parent) dh.hand.parent.remove(dh.hand); else if (typeof scene !== 'undefined') scene.remove(dh.hand); dh.hand = null; }
     Object.keys(dh.brickInst || {}).forEach(k => { const inst = dh.brickInst[k]; if (inst && typeof scene !== 'undefined') scene.remove(inst); });
     dh.brickInst = {};
+    if (dh._debugGroup && typeof scene !== 'undefined'){ try { scene.remove(dh._debugGroup); } catch (e){} dh._debugGroup = null; }
+    if (typeof solids !== 'undefined' && Array.isArray(solids)){
+      for (let i = solids.length - 1; i >= 0; i--){ if (solids[i] && solids[i]._dhWall) solids.splice(i, 1); }
+    }
+    dh._wallSolids = [];
     Object.keys(dh.meshes || {}).forEach(k => (dh.meshes[k] || []).forEach(m => { dhBindSolids(m, false); scene.remove(m); }));
     Object.keys(dh.piles || {}).forEach(k => dh.piles[k] && dh.piles[k].mesh && scene.remove(dh.piles[k].mesh));
     Object.keys(dh.mixers || {}).forEach(k => dh.mixers[k] && dh.mixers[k].mesh && scene.remove(dh.mixers[k].mesh));
@@ -2254,9 +2765,30 @@
     dh.lookHintT -= (dt || 0);
     if (dh.lookHintT <= 0) dhHideLookHint();
   }
+  const DH_DOOR_AJAR = 0.45;      // radians at rest — a visible gap, not a sealed panel
+  const DH_DOOR_OPEN = 1.7;       // ~97° inward once the player is close
+  const DH_DOOR_NEAR = 1.5;       // metres to auto-open
+  function dhTickDoors(dt){
+    if (!dh || dh.intro || typeof P === 'undefined' || !P) return;
+    const plot = dh.mine;
+    const list = (dh.meshes && dh.meshes[plot]) || [];
+    const k = Math.min(1, Math.max(0, (dt || 0) * 8));
+    list.forEach(g => {
+      const rec = g && g.userData && g.userData.rec;
+      const leaf = g && g.userData && g.userData.doorLeaf;
+      if (!leaf || !rec || rec[0] !== 'door') return;
+      const face = rec[4] | 0;
+      const w = (typeof dhOpeningWorld === 'function') ? dhOpeningWorld(plot, face, 'door') : g.position;
+      const dist = Math.hypot((P.x || 0) - (w.x || 0), (P.z || 0) - (w.z || 0));
+      const want = dist < DH_DOOR_NEAR ? -DH_DOOR_OPEN : -DH_DOOR_AJAR;
+      leaf.rotation.y += (want - leaf.rotation.y) * (k || 1);
+      if (!k) leaf.rotation.y = want;
+    });
+  }
   function dhLookWithKeys(dt){
     if (!dh || dh.intro || typeof cam === 'undefined' || !cam) return false;
     if (typeof keys === 'undefined' || !keys) return false;
+    // A/D are strafe only (see input()). Arrows and I/J/K/L turn. Never treat KeyA/KeyD as look.
     const yawK = ((keys.ArrowRight || keys.KeyL) ? 1 : 0) - ((keys.ArrowLeft || keys.KeyJ) ? 1 : 0);
     const pitK = ((keys.KeyK || keys.ArrowDown) ? 1 : 0) - ((keys.KeyI || keys.ArrowUp) ? 1 : 0);
     const dir = yawK * 10 + pitK;
@@ -2290,14 +2822,246 @@
       if (b.mesh && b.mesh.position) b.mesh.position.set(p.x, 0, p.z);
     });
   }
-  function dhWalkCap(){ return (typeof keys !== 'undefined' && keys && (keys.ShiftLeft || keys.ShiftRight)) ? 7 : 4.5; }
+  const DH_CAM_CLEAR = 0.30;
+  function dhWalkSpeed(){ return 3.6; }
+  function dhRunSpeed(){ return 6; }
+  function dhWalkCap(){ return (typeof keys !== 'undefined' && keys && (keys.ShiftLeft || keys.ShiftRight)) ? dhRunSpeed() : dhWalkSpeed(); }
+  function dhPlayerRadius(){ return (typeof R === 'number' && isFinite(R)) ? R : 0.45; }
+  function dhCamClearance(){ return DH_CAM_CLEAR; }
+  function dhDebugActive(){
+    try {
+      const loc = (typeof location !== 'undefined' && location) || (typeof window !== 'undefined' && window.location) || null;
+      const hash = loc && loc.hash ? String(loc.hash) : '';
+      return /(?:^|#|&|,)dhdebug(?:&|=|,|$)/.test(hash);
+    } catch (e){ return false; }
+  }
+  function dhBrickRunBox(plot, face, course, a0, a1){
+    const w0 = dhWorldRec(plot, ['brick', 0, course, a0, face]);
+    const w1 = dhWorldRec(plot, ['brick', 0, course, a1, face]);
+    let alongHalf = ((a1 - a0 + 1) * DH_BRICK_W) / 2;
+    const thickHalf = DH_BRICK_D / 2;
+    const side = (face === 1 || face === 3);
+    let x = (w0.x + w1.x) / 2, z = (w0.z + w1.z) / 2;
+    // Pull the collision run back from a door jamb so the opening is comfortably
+    // wider than the 0.90 m player. The visible bricks stay put; only the AABB shortens.
+    if (face === 0 && course <= 4){
+      const mid = (dhBrickAlongCount(0) / 2) | 0;
+      const trim = 0.18;
+      if (a1 + 1 === mid - 1){ // run ends just west of the door
+        alongHalf -= trim / 2;
+        x -= trim / 2;
+      }
+      if (a0 - 1 === mid){ // run starts just east of the door
+        alongHalf -= trim / 2;
+        x += trim / 2;
+      }
+    }
+    return {
+      x, y: w0.y, z,
+      hw: side ? thickHalf : alongHalf,
+      hh: DH_BRICK_H / 2,
+      hd: side ? alongHalf : thickHalf,
+      face: face, axis: side ? 'x' : 'z', id: 'brick'
+    };
+  }
+  function dhCollisionBoxes(plot){
+    // Continuous wall-segment AABBs from built bricks + glass panes. The doorway stays a hole.
+    // Segments (not per-brick boxes) so a 0.45 m radius cannot slip through mortar or get
+    // shortest-axis-pushed through a 0.30 m wall.
+    if (!dh) return [];
+    plot = (plot == null) ? dh.mine : plot;
+    const list = dh.pieces[plot] || [];
+    const runs = new Map();
+    list.forEach(rec => {
+      if (!rec || rec[0] !== 'brick') return;
+      const face = rec[4] | 0, course = rec[2] | 0, along = rec[3] | 0;
+      const k = face + ':' + course;
+      if (!runs.has(k)) runs.set(k, []);
+      runs.get(k).push(along);
+    });
+    const out = [];
+    runs.forEach((alongs, k) => {
+      const parts = k.split(':'), face = +parts[0], course = +parts[1];
+      alongs.sort((a, b) => a - b);
+      let i = 0;
+      while (i < alongs.length){
+        let j = i;
+        while (j + 1 < alongs.length && alongs[j + 1] === alongs[j] + 1) j++;
+        out.push(dhBrickRunBox(plot, face, course, alongs[i], alongs[j]));
+        i = j + 1;
+      }
+    });
+    list.forEach(rec => {
+      if (!rec || rec[0] !== 'pane') return;
+      const w = dhWorldRec(plot, rec);
+      const side = Math.abs(Math.sin(w.ry || 0)) > 0.5;
+      const hw = (DH_BRICK_W * 2 - 0.12) / 2;
+      const hh = (DH_WIN_HEAD - DH_WIN_SILL - 0.12) / 2;
+      const hd = 0.04;
+      out.push({
+        x: w.x, y: w.y, z: w.z,
+        hw: side ? hd : hw, hh, hd: side ? hw : hd,
+        face: rec[4] | 0, axis: side ? 'x' : 'z', id: 'pane'
+      });
+    });
+    return out;
+  }
+  function dhRefreshWallSolids(){
+    if (typeof solids === 'undefined' || !Array.isArray(solids)) return 0;
+    for (let i = solids.length - 1; i >= 0; i--){
+      if (solids[i] && solids[i]._dhWall) solids.splice(i, 1);
+    }
+    const boxes = dhCollisionBoxes();
+    const list = [];
+    boxes.forEach(box => {
+      const mesh = {position: {x: box.x, y: box.y, z: box.z}, visible: true, userData: {dhProxy: true, dhWall: true}};
+      const b = {mesh, hw: box.hw, hh: box.hh, hd: box.hd, active: true, dx: 0, dy: 0, dz: 0, _dh: true, _dhWall: true, camSkip: false};
+      solids.push(b);
+      list.push(b);
+    });
+    if (dh) dh._wallSolids = list;
+    if (typeof dhRefreshDebugColliders === 'function') dhRefreshDebugColliders();
+    return list.length;
+  }
+  function dhRefreshDebugColliders(){
+    if (typeof scene === 'undefined' || !scene) return false;
+    if (dh && dh._debugGroup){
+      try { scene.remove(dh._debugGroup); } catch (e){}
+      const g = dh._debugGroup;
+      if (g && g.traverse) g.traverse(o => { if (o.geometry && o.geometry.dispose) o.geometry.dispose(); });
+      dh._debugGroup = null;
+    }
+    if (!dh || !dhDebugActive() || typeof THREE === 'undefined') return false;
+    const boxes = dhCollisionBoxes();
+    const group = new THREE.Group();
+    group.name = 'dhDebugColliders';
+    group.userData.dhDebug = true;
+    const col = 0x22ff88;
+    boxes.forEach(box => {
+      let obj = null;
+      try {
+        if (typeof THREE.BoxGeometry === 'function' && typeof THREE.Mesh === 'function' && typeof THREE.BoxHelper === 'function'){
+          const m = new THREE.Mesh(new THREE.BoxGeometry(box.hw * 2, box.hh * 2, box.hd * 2));
+          m.position.set(box.x, box.y, box.z);
+          obj = new THREE.BoxHelper(m, col);
+        } else if (typeof THREE.LineSegments === 'function' && typeof THREE.EdgesGeometry === 'function' && typeof THREE.BoxGeometry === 'function'){
+          const geo = new THREE.EdgesGeometry(new THREE.BoxGeometry(box.hw * 2, box.hh * 2, box.hd * 2));
+          const mat = new THREE.LineBasicMaterial({color: col, depthTest: false, transparent: true, opacity: 0.95});
+          obj = new THREE.LineSegments(geo, mat);
+          obj.position.set(box.x, box.y, box.z);
+        }
+      } catch (e){ obj = null; }
+      if (obj){
+        if (obj.material){ obj.material.depthTest = false; obj.material.transparent = true; if (obj.material.opacity == null) obj.material.opacity = 0.95; }
+        obj.renderOrder = 999;
+        group.add(obj);
+      }
+    });
+    scene.add(group);
+    dh._debugGroup = group;
+    return boxes.length;
+  }
+  function dhBoxHitsPlayer(box, px, py, pz, pr, ph){
+    return px + pr > box.x - box.hw && px - pr < box.x + box.hw &&
+           pz + pr > box.z - box.hd && pz - pr < box.z + box.hd &&
+           py + ph > box.y - box.hh && py < box.y + box.hh;
+  }
+  function dhClipAxis(axis, from, to, boxes){
+    const pr = dhPlayerRadius(), ph = (typeof dhPlayerHeight === 'function') ? dhPlayerHeight() : 1.8;
+    const py = (P && P.y) || 0;
+    let v = to;
+    (boxes || []).forEach(box => {
+      // Face walls only clip on their normal. The tangent axis is clipped only when
+      // walking into an end cap (door jamb); never sideways-eject along a long wall.
+      const wallAxis = box.axis || (box.hw <= box.hd ? 'x' : 'z');
+      const c = axis === 'x' ? box.x : box.z;
+      const half = axis === 'x' ? box.hw : box.hd;
+      if (axis !== wallAxis && from > c - half - pr && from < c + half + pr) return;
+      const px = axis === 'x' ? v : P.x;
+      const pz = axis === 'z' ? v : P.z;
+      if (!dhBoxHitsPlayer(box, px, py, pz, pr, ph)) return;
+      if (axis === 'x'){
+        const lo = box.x - box.hw - pr, hi = box.x + box.hw + pr;
+        v = (from <= box.x) ? Math.min(v, lo) : Math.max(v, hi);
+      } else {
+        const lo = box.z - box.hd - pr, hi = box.z + box.hd + pr;
+        v = (from <= box.z) ? Math.min(v, lo) : Math.max(v, hi);
+      }
+    });
+    return v;
+  }
+  const dhPrevXZ = {x: 0, z: 0, on: false};
+  function dhRememberPlayer(){
+    if (typeof P === 'undefined' || !P) return;
+    dhPrevXZ.x = P.x; dhPrevXZ.z = P.z; dhPrevXZ.on = true;
+  }
+  function dhAfterPhysicsStep(){
+    // Clip against wall segments using the pre-move position so a crossed midpoint
+    // is pushed back to the entry side, never ejected through the far face.
+    if (typeof P === 'undefined' || !P) return P;
+    const boxes = dhCollisionBoxes();
+    const fromX = dhPrevXZ.on ? dhPrevXZ.x : P.x;
+    const fromZ = dhPrevXZ.on ? dhPrevXZ.z : P.z;
+    P.x = dhClipAxis('x', fromX, P.x, boxes);
+    P.z = dhClipAxis('z', fromZ, P.z, boxes);
+    dhRememberPlayer();
+    return P;
+  }
+  function dhMovePlayer(dx, dz){
+    if (typeof P === 'undefined' || !P) return P;
+    const dist = Math.hypot(dx || 0, dz || 0);
+    const steps = Math.max(1, Math.ceil(dist / 0.12));
+    const boxes = dhCollisionBoxes();
+    for (let i = 0; i < steps; i++){
+      const ox = P.x, oz = P.z;
+      P.x = dhClipAxis('x', ox, P.x + (dx || 0) / steps, boxes);
+      P.z = dhClipAxis('z', oz, P.z + (dz || 0) / steps, boxes);
+    }
+    dhRememberPlayer();
+    return P;
+  }
+  function dhClipPlayerToWalls(boxes){
+    if (typeof P === 'undefined' || !P) return P;
+    boxes = boxes || dhCollisionBoxes();
+    if (dhPrevXZ.on){
+      P.x = dhClipAxis('x', dhPrevXZ.x, P.x, boxes);
+      P.z = dhClipAxis('z', dhPrevXZ.z, P.z, boxes);
+    } else {
+      // Static depenetration: push out on the wall-normal axis to the nearer face only.
+      const pr = dhPlayerRadius(), ph = (typeof dhPlayerHeight === 'function') ? dhPlayerHeight() : 1.8;
+      const py = P.y || 0;
+      boxes.forEach(box => {
+        if (!dhBoxHitsPlayer(box, P.x, py, P.z, pr, ph)) return;
+        const useX = box.axis === 'x' || (!box.axis && box.hw <= box.hd);
+        if (useX){
+          const lo = box.x - box.hw - pr, hi = box.x + box.hw + pr;
+          P.x = (Math.abs(P.x - lo) <= Math.abs(P.x - hi)) ? lo : hi;
+        } else {
+          const lo = box.z - box.hd - pr, hi = box.z + box.hd + pr;
+          P.z = (Math.abs(P.z - lo) <= Math.abs(P.z - hi)) ? lo : hi;
+        }
+      });
+    }
+    dhRememberPlayer();
+    return P;
+  }
   function dhSolidAt(x, y, z, pad){
     pad = pad == null ? .08 : pad;
+    const boxes = (typeof dhCollisionBoxes === 'function') ? dhCollisionBoxes() : [];
+    for (let i = 0; i < boxes.length; i++){
+      const b = boxes[i];
+      if (x + pad > b.x - b.hw && x - pad < b.x + b.hw &&
+          z + pad > b.z - b.hd && z - pad < b.z + b.hd &&
+          y + pad > b.y - b.hh && y - pad < b.y + b.hh) return b;
+    }
     if (typeof solids === 'undefined' || !solids) return null;
     for (let i = 0; i < solids.length; i++){
       const b = solids[i];
-      if (!b || !b.active || b.camSkip || !b.mesh || (b.mesh.visible === false)) continue;
-      if (Math.abs(x - b.mesh.position.x) < b.hw + pad && Math.abs(y - b.mesh.position.y) < b.hh + pad && Math.abs(z - b.mesh.position.z) < b.hd + pad) return b;
+      if (!b || !b.active || b.camSkip || !b.mesh) continue;
+      // Hidden instance-source meshes still collide; only skip if the proxy/group was explicitly disabled.
+      if (b.mesh.visible === false && !(b.mesh.userData && b.mesh.userData.dhProxy) && !(b._dh)) continue;
+      const p = b.mesh.position;
+      if (Math.abs(x - p.x) < b.hw + pad && Math.abs(y - p.y) < b.hh + pad && Math.abs(z - p.z) < b.hd + pad) return b;
     }
     return null;
   }
@@ -2305,15 +3069,26 @@
     if (typeof camera === 'undefined' || !camera || typeof cam === 'undefined' || !cam || typeof P === 'undefined' || !P) return false;
     if (typeof fpOn === 'function' ? !fpOn() : (cam.dist > 1)) return false;
     const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw);
-    const ey = P.y + 2.45;
+    const ey = P.y + dhEyeHeight();
+    const clear = DH_CAM_CLEAR;
+    const boxes = (typeof dhCollisionBoxes === 'function') ? dhCollisionBoxes() : [];
+    function camBlocked(x, y, z){
+      for (let i = 0; i < boxes.length; i++){
+        const b = boxes[i];
+        if (x + clear > b.x - b.hw && x - clear < b.x + b.hw &&
+            z + clear > b.z - b.hd && z - clear < b.z + b.hd &&
+            y + clear > b.y - b.hh && y - clear < b.y + b.hh) return true;
+      }
+      return !!dhSolidAt(x, y, z, clear);
+    }
     let off = 0.22;
-    while (off > 0 && dhSolidAt(P.x + fx * off, ey, P.z + fz * off, 0.1)) off -= 0.05;
+    while (off > 0 && camBlocked(P.x + fx * off, ey, P.z + fz * off)) off -= 0.02;
     let x = P.x + fx * off, y = ey, z = P.z + fz * off;
     let guard = 0;
-    while (guard++ < 12 && dhSolidAt(x, y, z, 0.1)) y += 0.12;
+    while (guard++ < 12 && camBlocked(x, y, z)) y += 0.12;
     camera.position.set(x, y, z);
-    if (typeof camera.near === 'number' && camera.near > 0.08){
-      camera.near = 0.08;
+    if (typeof camera.near === 'number'){
+      camera.near = Math.min(camera.near, 0.08);
       if (typeof camera.updateProjectionMatrix === 'function') camera.updateProjectionMatrix();
     }
     const cp = Math.cos(cam.pitch);
@@ -2334,9 +3109,11 @@
     if (dh.intro){ dhIntroTick(dt); return; }
     if (choosing) return;
     dhLookWithKeys(dt);
+    dhTickDoors(dt);
     dhTickLookHint(dt);
     dhRefreshBins();
     dhClampPlayer();
+    if (typeof dhClipPlayerToWalls === 'function') dhClipPlayerToWalls();
     dhCamComfort(dt);
     if (typeof dhClipFpCamera === 'function') dhClipFpCamera();
     dhFadeOccludingTrees();
@@ -2386,9 +3163,9 @@
     if (cPour.have < cPour.need) return 'pour';
     const bricks = dhCount(dh.pieces[dh.mine], 'brick'), needB = dhBrickTotal();
     if (bricks < needB) return 'brick';
-    if (dhCount(dh.pieces[dh.mine], 'stud') < 8) return 'stud';
-    if (dhCount(dh.pieces[dh.mine], 'rafter') < 4) return 'rafter';
-    if (dhCount(dh.pieces[dh.mine], 'shingle') < 10) return 'shingle';
+    if (dhCount(dh.pieces[dh.mine], 'stud') < dhStudTotal()) return 'stud';
+    if (dhCount(dh.pieces[dh.mine], 'rafter') < dhRafterTotal()) return 'rafter';
+    if (dhCount(dh.pieces[dh.mine], 'shingle') < dhShingleTotal()) return 'shingle';
     if (dhCount(dh.pieces[dh.mine], 'door') < 1 || dhCount(dh.pieces[dh.mine], 'winframe') < 1) return 'frame';
     if (!dhWindowsGlazed(dh.pieces[dh.mine])) return 'glass';
     if (dhCount(dh.pieces[dh.mine], 'paint') < 4) return 'paint';
@@ -2409,7 +3186,7 @@
       item(2, 'Dig', cDig.have, cDig.need),
       item(3, 'Pour foundation', cPour.have, cPour.need),
       item(4, 'Lay bricks', bricks, needB),
-      item(5, 'Build the roof', dhCount((dh && dh.pieces[dh.mine]) || [], 'shingle'), 10),
+      item(5, 'Build the roof', dhCount((dh && dh.pieces[dh.mine]) || [], 'shingle'), dhShingleTotal()),
       item(6, 'Windows & door', (dhCount((dh && dh.pieces[dh.mine]) || [], 'door') >= 1 && dhCount((dh && dh.pieces[dh.mine]) || [], 'winframe') >= 1) ? 1 : 0, 1),
       item(7, 'Paint & furnish', (dhCount((dh && dh.pieces[dh.mine]) || [], 'paint') >= 4 && ['sofa','bed','table','lamp','plant','rug','tv','shelf'].reduce((n, id) => n + dhCount((dh && dh.pieces[dh.mine]) || [], id), 0) >= 3) ? 1 : 0, 1)
     ];
@@ -3230,12 +4007,16 @@
     const code = e.code || '';
     const map = {KeyW:[0,1], KeyS:[0,-1], KeyA:[-1,0], KeyD:[1,0]};
     if (!(code in map)) return false;
+    if (down !== false && e.repeat) return true; // held movement is the generic step()/resolve() path
+    if (down !== false && e._dhMoved) return true; // bind() and dhKey() both see the same event
+    if (down !== false) e._dhMoved = true;
     if (down !== false && typeof P !== 'undefined' && P && typeof cam !== 'undefined' && cam){
       const step = 0.45; // metres — a short W tap still takes a small step
       const sx = map[code][0], sz = map[code][1];
       const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), rx = -fz, rz = fx;
       const dx = (fx * sz + rx * sx) * step, dz = (fz * sz + rz * sx) * step;
-      P.x += dx; P.z += dz;
+      if (typeof dhMovePlayer === 'function') dhMovePlayer(dx, dz);
+      else { P.x += dx; P.z += dz; }
     }
     return true;
   }
