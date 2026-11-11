@@ -174,6 +174,21 @@
   function dhFreshSave(){
     return {ver: DH_VER, pieces: [], stock: dhEmptyStock(), goals: {}, coins: 0, likes: 0, granted: false, v1pieces: null, introSeen: false, upgrades: dhEmptyUpgrades(), tipsSeen: {}, legacyHouse: false};
   }
+  function dhClosePauseMenus(){
+    if (typeof dhCloseReset === 'function') try { dhCloseReset(); } catch (e){}
+    if (typeof paused !== 'undefined') paused = false;
+    if (typeof menuOpen !== 'undefined') menuOpen = false;
+    if (typeof document !== 'undefined' && document.getElementById){
+      const panel = document.getElementById('oPausePanel');
+      if (panel && panel.classList) panel.classList.remove('show');
+      const root = document.getElementById('obby');
+      if (root && root.classList){ root.classList.remove('paused', 'dh-paused'); root.classList.remove('dh-intro'); }
+      const tip = document.getElementById('dhTip');
+      if (tip){ tip.classList.remove('show'); tip.style.display = 'none'; }
+    }
+    if (typeof dhSyncPauseHud === 'function') try { dhSyncPauseHud(); } catch (e){}
+    return true;
+  }
   function dhResetProgress(){
     // Only wipes the Dream House key. Main wallet, other games, and history stay put.
     if (dh) dh._skipSave = true;
@@ -199,11 +214,13 @@
       } catch (e){ if (dh.pieces && dh.mine != null) dh.pieces[dh.mine] = []; }
       const inDh = (typeof mode !== 'undefined' && mode === 'dreamhouse');
       if (inDh){
+        if (typeof dhClosePauseMenus === 'function') dhClosePauseMenus();
         try { if (typeof dreamhouseStop === 'function') dreamhouseStop(); } catch (e){}
         try {
           if (typeof buildDreamHouse === 'function') buildDreamHouse();
           if (typeof dreamhouseEnter === 'function') dreamhouseEnter();
         } catch (e){}
+        if (typeof dhClosePauseMenus === 'function') dhClosePauseMenus();
       }
     }
     if (typeof banner === 'function') banner('🏡 Dream House was reset — time to build a new one!');
@@ -926,10 +943,17 @@
     const pitch = (typeof cam !== 'undefined' && cam && cam.pitch != null) ? cam.pitch : 0;
     const cp = Math.cos(pitch), sp = Math.sin(pitch);
     const fx = -Math.sin(yaw), fz = -Math.cos(yaw);
-    const ey = ((P && P.y) || 0) + 2.45;
-    return {ox: ((P && P.x) || 0), oy: ey, oz: ((P && P.z) || 0), dx: fx * cp, dy: -sp, dz: fz * cp, yaw, pitch};
+    let ox, oy, oz;
+    if (typeof camera !== 'undefined' && camera && camera.position && isFinite(camera.position.y)){
+      ox = camera.position.x; oy = camera.position.y; oz = camera.position.z;
+    } else {
+      ox = ((P && P.x) || 0) + fx * .22;
+      oy = ((P && P.y) || 0) + 2.45;
+      oz = ((P && P.z) || 0) + fz * .22;
+    }
+    return {ox, oy, oz, dx: fx * cp, dy: -sp, dz: fz * cp, yaw, pitch};
   }
-  const DH_AIM_REACH = 6, DH_AIM_COS = Math.cos(12 * Math.PI / 180);
+  const DH_AIM_REACH = 8, DH_AIM_COS = Math.cos(15 * Math.PI / 180);
   function dhAimCone(points, reach){
     if (!points || !points.length) return null;
     const ray = dhLookRay();
@@ -955,10 +979,72 @@
     if (t < 0.4 || t > (reach || 7)) return null;
     return {x: ray.ox + ray.dx * t, y: 0.15, z: ray.oz + ray.dz * t, t};
   }
-  function dhAimFootCell(job){
-    if (!dh) return null;
+  function dhRayPlaneHit(y, reach){
+    const ray = dhLookRay();
+    reach = reach == null ? 10 : reach;
+    if (!ray || Math.abs(ray.dy) < 1e-4) return null;
+    const t = (y - ray.oy) / ray.dy;
+    if (t < 0.05 || t > reach) return null;
+    return {x: ray.ox + ray.dx * t, y: y, z: ray.oz + ray.dz * t, t};
+  }
+  function dhAngleToPoint(p, ray){
+    ray = ray || dhLookRay();
+    const ox = p.x - ray.ox, oy = (p.y || 0) - ray.oy, oz = p.z - ray.oz;
+    const dist = Math.hypot(ox, oy, oz);
+    if (dist < 1e-4) return {dist: 0, ang: 0, dot: 1};
+    const inv = 1 / dist;
+    const dot = ox * inv * ray.dx + oy * inv * ray.dy + oz * inv * ray.dz;
+    const ang = Math.acos(Math.min(1, Math.max(-1, dot)));
+    return {dist, ang, dot};
+  }
+  // ONE targeting function for highlight and placement (stake, dig, pour, bricks).
+  // 1) Ground/slab plane hit up to 10 m, nearest spot within 1.2 m of that point.
+  // 2) Else the spot with the smallest angle to the crosshair within 15° and 8 m.
+  // 3) Else, if standing within 1 m of a spot and nothing else is targeted, that spot.
+  function dhTargetFromPoints(pts, planeY, anchors){
+    if (!pts || !pts.length) return null;
+    const ray = dhLookRay();
+    const y = (planeY == null) ? 0 : planeY;
+    const hit = dhRayPlaneHit(y, 10);
+    const same = (a, b) => a && b && ((a.ix != null && a.ix === b.ix && a.iz === b.iz && (a.face == null || a.face === b.face) && (a.along == null || a.along === b.along) && (a.course == null || a.course === b.course)) || (Math.hypot((a.x||0)-(b.x||0), (a.z||0)-(b.z||0), ((a.y||0)-(b.y||0))) < 0.05));
+    if (hit){
+      // Snap to the closest cell/slot under the crosshair (within 1.2 m).
+      // If that cell is already used, do not jump to a neighbor.
+      const pool = (anchors && anchors.length) ? anchors : pts;
+      let closest = null, cd = 1.2;
+      pool.forEach(p => {
+        const d = Math.hypot(p.x - hit.x, p.z - hit.z);
+        if (d < cd){ cd = d; closest = p; }
+      });
+      if (closest && pts.some(p => same(p, closest))) return pts.find(p => same(p, closest));
+      // Ground hit is not on a valid unplaced spot. Do not angle-snap to a neighbor.
+    } else {
+      const maxAng = 15 * Math.PI / 180;
+      let bestA = null, bestAng = maxAng;
+      pts.forEach(p => {
+        const a = dhAngleToPoint(p, ray);
+        if (a.dist > 8 || a.ang > maxAng || a.dot < 0) return;
+        if (a.ang < bestAng){ bestAng = a.ang; bestA = p; }
+      });
+      if (bestA) return bestA;
+    }
+    if (typeof P !== 'undefined' && P){
+      let near = null, nd = 1.0;
+      pts.forEach(p => {
+        const d = Math.hypot((P.x || 0) - p.x, (P.z || 0) - p.z);
+        if (d < nd){ nd = d; near = p; }
+      });
+      if (near) return near;
+    }
+    return null;
+  }
+  function dhJobPoints(job){
+    if (!dh) return [];
     job = job || dh.job;
     const plot = dh.mine;
+    if (job === 'brick'){
+      return dhAllBrickSlots(plot).filter(s => !s.filled).map(s => Object.assign({}, s, {plot, x: s.x, y: s.y, z: s.z}));
+    }
     const cells = dhFootCells();
     const pts = [];
     cells.forEach(c => {
@@ -971,11 +1057,34 @@
         const ok = (dhHas(plot, 'trench', c.ix, c.iz) || dhHas(plot, 'mark', c.ix, c.iz)) && !dhHas(plot, 'wet', c.ix, c.iz) && !dhHas(plot, 'slab', c.ix, c.iz);
         if (!ok) return;
       }
-      const w = dhCellWorld(plot, c.ix, c.iz, 0.2);
+      const w = dhCellWorld(plot, c.ix, c.iz, job === 'pour' ? 0.35 : 0);
       pts.push({plot, ix: c.ix, iz: c.iz, x: w.x, y: w.y, z: w.z, wx: w.x, wz: w.z});
     });
-    // Require the crosshair to be within ~12° of the spot (no generous ground-proximity snap).
-    return dhAimCone(pts, DH_AIM_REACH);
+    return pts;
+  }
+  function dhTargetSpot(job){
+    if (!dh) return null;
+    job = job || dh.job;
+    const pts = dhJobPoints(job);
+    const anchors = dhJobAnchors(job);
+    const planeY = (job === 'brick' && ((pts[0] && pts[0].y != null) || (anchors[0] && anchors[0].y != null))) ? (pts[0] || anchors[0]).y : (job === 'pour' ? 0.35 : 0);
+    const hit = dhTargetFromPoints(pts, planeY, anchors);
+    if (hit) return hit;
+    if (job === 'brick' && planeY !== 0) return dhTargetFromPoints(pts, 0, anchors);
+    return null;
+  }
+  function dhJobAnchors(job){
+    if (!dh) return [];
+    job = job || dh.job;
+    const plot = dh.mine;
+    if (job === 'brick') return (dhAllBrickSlots(plot) || []).map(s => Object.assign({}, s, {plot, x: s.x, y: s.y, z: s.z}));
+    return dhFootCells().map(c => {
+      const w = dhCellWorld(plot, c.ix, c.iz, job === 'pour' ? 0.35 : 0);
+      return {plot, ix: c.ix, iz: c.iz, x: w.x, y: w.y, z: w.z};
+    });
+  }
+  function dhAimFootCell(job){
+    return dhTargetSpot(job || 'mark');
   }
   function dhLookRay(){
     // Keyboard / stick / touch all write cam.yaw and cam.pitch. Prefer those so a stale
@@ -1071,7 +1180,7 @@
     if (job === 'mark'){
       const c = dhJobCounts('mark');
       if (c.have >= c.need) return '🕳️ The foundation is staked — switch to Dig';
-      if (!dhAimFootCell('mark')) return '🎯 Aim at a glowing outline, then press E to place a stake';
+      if (!dhTargetSpot('mark')) return '🎯 Look at a foundation spot so it glows, then press E to place a stake';
     }
     if (job === 'pour' && !dhNextBuildCell('pour')){
       const c = dhJobCounts('dig');
@@ -1308,8 +1417,8 @@
   function dhPour(){
     if (!dh || !dh.carry || dh.carry.id !== 'wetmix') return false;
     if (!dhNearOwnPlot()){ banner('🏡 Walk onto your plot'); return false; }
-    const aim = dhAimFootCell('pour') || dhNextBuildCell('pour');
-    if (!aim){ banner(dhWhyNot() || '🎯 Aim at a dug foundation spot to pour'); return false; }
+    const aim = dhTargetSpot('pour');
+    if (!aim){ banner(dhWhyNot() || '🎯 Aim at a dug foundation spot, then press E to pour'); return false; }
     if (!dhHas(aim.plot, 'trench', aim.ix, aim.iz) && !dhHas(aim.plot, 'mark', aim.ix, aim.iz)){ banner('🕳️ Dig or stake the form first'); return false; }
     if (dhHas(aim.plot, 'wet', aim.ix, aim.iz) || dhHas(aim.plot, 'slab', aim.ix, aim.iz)) return false;
     const trench = dhFind(aim.plot, 'trench', aim.ix, aim.iz) || dhFind(aim.plot, 'mark', aim.ix, aim.iz);
@@ -1383,18 +1492,7 @@
     return list;
   }
   function dhAimBrickSlot(){
-    if (!dh) return null;
-    const slots = dhAllBrickSlots(dh.mine);
-    if (!slots.length) return null;
-    const open = slots.filter(s => !s.filled).map(s => Object.assign({}, s, {x: s.x, y: s.y, z: s.z}));
-    const cone = dhAimCone(open, 6);
-    if (cone) return cone;
-    // Only snap to the wall you are actually looking at, and only if it is in the 12° cone.
-    const aim = dhAimCell();
-    if (!aim || aim.plot !== dh.mine) return null;
-    const face = dhWallFaceFromAim(aim);
-    const next = dhNextBrick(aim.plot, face == null ? 0 : face, aim);
-    return next ? dhAimCone([next], 6) : null;
+    return dhTargetSpot('brick');
   }
   function dhDryNeed(){ return 1.6 / (1 + dhUp('dry') * .7); }
   function dhDryDone(){ return 5 / (1 + dhUp('dry') * .8); }
@@ -1468,7 +1566,7 @@
     const digging = dh.job === 'dig';
     const aim = dhAimFootCell(digging ? 'dig' : 'mark');
     if (!aim){
-      banner(dhWhyNot() || (digging ? '🎯 Aim at a glowing foundation spot, then press E to dig' : '🎯 Aim at a glowing outline, then press E to place a stake'));
+      banner(dhWhyNot() || (digging ? '🎯 Look at a staked spot so it glows, then press E to dig' : '🎯 Look at a foundation spot so it glows, then press E to place a stake'));
       return false;
     }
     if (digging || dhHas(aim.plot, 'mark', aim.ix, aim.iz)){
@@ -1765,7 +1863,11 @@
     const cap = $('#dhCutCap'); if (cap){ cap.style.display = ''; cap.textContent = 'Story time — Mom is showing you the lot'; }
     dhSay('This is your new house!');
     dhSetFade(0);
-    ['#dhBar', '#dhAct'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); if (id === '#dhBar') el.style.display = 'none'; } });
+    ['#dhBar', '#dhAct', '#dhInv', '#dhCarry', '#dhHand'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
+    if (typeof document !== 'undefined' && document.getElementById){
+      const root = document.getElementById('obby');
+      if (root && root.classList){ root.classList.add('dh-intro'); root.classList.remove('paused', 'dh-paused'); }
+    }
     dhIntroCam();
     return true;
   }
@@ -1820,6 +1922,10 @@
     const wrap = $('#dhCut'); if (wrap){ wrap.style.display = 'none'; wrap.classList.remove('show'); }
     const skip = $('#dhSkip'); if (skip){ skip.style.display = 'none'; skip.classList.remove('show'); }
     const cap = $('#dhCutCap'); if (cap) cap.style.display = 'none';
+    if (typeof document !== 'undefined' && document.getElementById){
+      const root = document.getElementById('obby');
+      if (root && root.classList) root.classList.remove('dh-intro', 'paused', 'dh-paused');
+    }
     const [ox, oz] = dhOrigin(dh.mine);
     if (typeof P !== 'undefined') Object.assign(P, {x: ox + DH_CELL * 4, y: .05, z: oz - 2.8, vx: 0, vy: 0, vz: 0});
     if (typeof cam !== 'undefined'){ cam.yaw = Math.PI; cam.pitch = .37; cam.dist = .2; }
@@ -1881,6 +1987,7 @@
   function dreamhouseEnter(){
     if (!dh) return;
     choosing = false; over = false;
+    if (typeof dhClosePauseMenus === 'function') dhClosePauseMenus();
     dhBindUI();
     if (!dh.introSeen){
       dhStartIntro(false);
@@ -1893,10 +2000,25 @@
     const resetBtn = $('#dhResetBtn'); if (resetBtn) resetBtn.style.display = '';
     if (typeof document !== 'undefined' && document.getElementById){ const root = document.getElementById('obby'); if (root && root.classList) root.classList.add('dhouse'); }
     if (!dh.intro) dhForceFirstPerson();
-    ['#dhGoal','#dhSteps'].forEach(id => { const el = $(id); if (el){ el.style.display = ''; el.classList.add('show'); } });
+    if (dh.intro){
+      ['#dhGoal','#dhSteps','#dhBar','#dhInv','#dhCarry','#dhHand'].forEach(id => { const el = $(id); if (el){ el.style.display = 'none'; } });
+      if (typeof document !== 'undefined' && document.getElementById){
+        const root = document.getElementById('obby');
+        if (root && root.classList) root.classList.add('dh-intro');
+      }
+    } else {
+      ['#dhGoal','#dhSteps'].forEach(id => { const el = $(id); if (el){ el.style.display = ''; el.classList.add('show'); } });
+      if (typeof document !== 'undefined' && document.getElementById){
+        const root = document.getElementById('obby');
+        if (root && root.classList) root.classList.remove('dh-intro');
+      }
+    }
     const xh = $('#oCross'); if (xh) xh.style.display = '';
+    if (typeof dhBar === 'function') dhBar();
+    if (typeof dhHud === 'function') dhHud();
   }
   function dreamhouseStop(){
+    if (typeof dhClosePauseMenus === 'function') try { dhClosePauseMenus(); } catch (e){}
     if (typeof dhCloseReset === 'function') try { dhCloseReset(); } catch (e){}
     if (typeof dhHideLookHint === 'function') try { dhHideLookHint(); } catch (e){}
     if (!dh) return;
@@ -1926,7 +2048,7 @@
     const key = (typeof pad !== 'undefined' && pad && pad.on) ? 'Ⓧ' : (typeof touchUI !== 'undefined' && touchUI ? 'tap' : 'E');
     const mxn = dhNearMixer(), pile = dhNearPile();
     const onLot = dhNearOwnPlot();
-    const ghostJob = (onLot && (dh.job === 'mark' || dh.job === 'dig')) ? dhAimFootCell(dh.job) : ((onLot && dh.job === 'pour') ? dhNextBuildCell('pour') : null);
+    const ghostJob = (onLot && (dh.job === 'mark' || dh.job === 'dig' || dh.job === 'pour')) ? dhTargetSpot(dh.job) : ((onLot && dh.job === 'brick') ? dhTargetSpot('brick') : null);
     const prog = (job, word) => {
       const c = dhJobCounts(job);
       return c.need ? (' · ' + word + ' ' + c.have + '/' + c.need) : '';
@@ -2044,8 +2166,7 @@
     const step = Math.max(0, dt || 0);
     if (step <= 0) return false;
     dh._lookHold = (dh._lookHold || 0) + step;
-    const ease = Math.min(1, (dh._lookHold * dh._lookHold) / (0.22 * 0.22));
-    const turn = (Math.PI / 2) * ease * step; // 90°/s at full hold, ease-in so a 50–80 ms tap only nudges
+    const turn = (Math.PI / 2) * step; // 90°/s while held; short taps get a 4° keydown nudge
     cam.yaw -= yawK * turn;
     cam.pitch = Math.max(-1.3, Math.min(1.4, cam.pitch + pitK * turn * 0.9));
     return true;
@@ -2220,9 +2341,9 @@
     return 'Visit the Furniture Store and place furniture in your house';
   }
   const DH_TIPS = {
-    stake: 'Walk onto your glowing outline and press E (or click) to plant each stake. Finish every corner.',
-    dig: 'Stand on a stake and press E to dig that foundation spot.',
-    pour: 'Cement and Sand are free at the Supply Yard. Put both in the yellow Cement Mixer by your plot, fill the wheelbarrow, then aim at a dug spot and hold click to pour.',
+    stake: 'Look at a foundation spot so its outline glows, then press E or click to plant a stake. Standing next to a spot works too. Finish every corner.',
+    dig: 'Look at a staked spot so it glows, then press E or click to dig it. Standing next to it works too.',
+    pour: 'Cement and Sand are free at the Supply Yard. Put both in the yellow Cement Mixer by your plot, fill the wheelbarrow, then look at a dug spot so it glows and hold click or E to pour.',
     brick: 'Grab a stack of bricks (free at the Supply Yard). Look at the glowing brick outline and click, E, or RT to place ONE brick. When your hands are empty, go get more.',
     stud: 'Aim at the wall and click to place each wooden stud, one at a time.',
     rafter: 'Aim along the roof line and place each rafter yourself.',
@@ -2243,6 +2364,9 @@
     return true;
   }
   function dhShowTip(text){
+    if (!text) return;
+    const pausedNow = (typeof paused !== 'undefined' && paused) || (typeof menuOpen !== 'undefined' && menuOpen);
+    if (pausedNow){ if (dh) dh._tipQueue = text; return; }
     const tip = $('#dhTip'), t = $('#dhTipT');
     if (tip){ tip.style.display = ''; tip.classList.add('show'); }
     if (t) t.textContent = text;
@@ -2251,8 +2375,15 @@
       try { document.exitPointerLock(); } catch (e){}
     }
   }
+  function dhFlushTips(){
+    if (!dh || !dh._tipQueue) return;
+    if ((typeof paused !== 'undefined' && paused) || (typeof menuOpen !== 'undefined' && menuOpen)) return;
+    const text = dh._tipQueue; dh._tipQueue = null;
+    dhShowTip(text);
+  }
   function dhHintStage(){
     if (!dh || dh.intro || dh.yardOpen || dh.shopOpen || dh.upOpen) return;
+    if ((typeof paused !== 'undefined' && paused) || (typeof menuOpen !== 'undefined' && menuOpen)) return;
     const id = dhStageId();
     dh.tipsSeen = dh.tipsSeen || {};
     if (dh.tipsSeen[id]) return;
@@ -2270,16 +2401,13 @@
       const g = new THREE.Group();
       const pulse = 0.35 + 0.2 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 5);
       if (stage === 'brick'){
-        const slots = dhAllBrickSlots(dh.mine).filter(s => !s.filled);
-        const show = slots.filter(s => s.course === (slots[0] && slots[0].course)).slice(0, 16);
-        const aimedB = dhAimBrickSlot();
-        show.forEach(s => {
-          const on = !!(aimedB && aimedB.face === s.face && aimedB.course === s.course && aimedB.along === s.along);
-          const m = new THREE.Mesh(new THREE.BoxGeometry(DH_BRICK_W - .04, DH_BRICK_H - .04, DH_BRICK_D + .02), dhMat(on ? '#7CFF6A' : '#7ad3ff', {transparent: true, opacity: on ? .95 : pulse, emissive: on ? '#7CFF6A' : '#7ad3ff', emissiveIntensity: on ? 1 : .6, depthWrite: false}));
-          m.position.set(s.x, s.y, s.z); m.rotation.y = s.ry || 0;
-          if (on) m.scale.set(1.15, 1.15, 1.15);
+        const aimedB = dhTargetSpot('brick');
+        if (aimedB){
+          const m = new THREE.Mesh(new THREE.BoxGeometry(DH_BRICK_W - .04, DH_BRICK_H - .04, DH_BRICK_D + .02), dhMat('#7CFF6A', {transparent: true, opacity: .95, emissive: '#7CFF6A', emissiveIntensity: 1, depthWrite: false}));
+          m.position.set(aimedB.x, aimedB.y, aimedB.z); m.rotation.y = aimedB.ry || 0;
+          m.scale.set(1.15, 1.15, 1.15);
           g.add(m);
-        });
+        }
       } else if (stage === 'stake' || stage === 'dig' || stage === 'pour'){
         const job = stage === 'stake' ? 'mark' : stage;
         const cells = [];
@@ -2289,27 +2417,26 @@
           if (job === 'dig' && dhHas(dh.mine, 'mark', ix, iz) && !dhHas(dh.mine, 'trench', ix, iz) && !dhHas(dh.mine, 'wet', ix, iz) && !dhHas(dh.mine, 'slab', ix, iz)) cells.push({ix, iz});
           if (job === 'pour' && (dhHas(dh.mine, 'trench', ix, iz) || dhHas(dh.mine, 'mark', ix, iz)) && !dhHas(dh.mine, 'wet', ix, iz) && !dhHas(dh.mine, 'slab', ix, iz)) cells.push({ix, iz});
         }
-        const aimed = dhAimFootCell(job);
-        cells.slice(0, 20).forEach(c => {
-          const w = dhCellWorld(dh.mine, c.ix, c.iz, .1);
-          const on = !!(aimed && aimed.ix === c.ix && aimed.iz === c.iz);
-          const m = new THREE.Mesh(new THREE.BoxGeometry(DH_CELL * .9, on ? .16 : .08, DH_CELL * .9), dhMat(on ? '#7CFF6A' : '#ffe08a', {transparent: true, opacity: on ? .9 : pulse, emissive: on ? '#7CFF6A' : '#ffe08a', emissiveIntensity: on ? 1 : .55, depthWrite: false}));
+        const aimed = dhTargetSpot(job);
+        if (aimed){
+          const w = dhCellWorld(dh.mine, aimed.ix, aimed.iz, .1);
+          const m = new THREE.Mesh(new THREE.BoxGeometry(DH_CELL * .9, .18, DH_CELL * .9), dhMat('#7CFF6A', {transparent: true, opacity: .92, emissive: '#7CFF6A', emissiveIntensity: 1, depthWrite: false}));
           m.position.set(w.x, w.y, w.z);
-          if (on) m.scale.set(1.12, 1, 1.12);
+          m.scale.set(1.12, 1, 1.12);
           g.add(m);
-        });
+        }
       }
       if (g.children.length){ dh.outlines = g; scene.add(g); }
     }
     if (!dh.ghost) return;
     let pos = null, ok = false, can = true;
     if (stage === 'brick'){
-      const slot = dhAimBrickSlot() || (dhAllBrickSlots(dh.mine).find(s => !s.filled));
+      const slot = dhTargetSpot('brick');
       if (slot){ pos = slot; ok = true; can = !slot.filled && !!(dh.carry && dh.carry.id === 'brick' && dh.carry.n > 0); }
     } else {
       const job = stage === 'stake' ? 'mark' : stage;
-      const ghostAt = (job === 'mark' || job === 'dig' || job === 'pour') ? dhNextBuildCell(job) : (dhCanBuild(dh.aim) ? dh.aim : dhNextBuildCell(job));
-      if (ghostAt && ghostAt.plot === dh.mine && dhNearOwnPlot()){
+      const ghostAt = (job === 'mark' || job === 'dig' || job === 'pour') ? dhTargetSpot(job) : dhTargetSpot(job);
+      if (ghostAt && ghostAt.plot === dh.mine){
         const w = dhCellWorld(ghostAt.plot, ghostAt.ix, ghostAt.iz, .08);
         pos = {x: w.x, y: w.y, z: w.z, ry: 0};
         ok = true;
@@ -2528,11 +2655,15 @@
     }
     const inv = $('#dhInv');
     if (inv){
-      const bits = ['brick','cement','sand','wood','shingle','glass'].map(id => {
-        const m = dhMatOf(id); const v = dhInvCount(id);
-        return v ? (m.e + v) : '';
-      }).filter(Boolean);
-      inv.textContent = bits.join(' ') || 'no stock';
+      if (dh.intro){ inv.textContent = ''; inv.style.display = 'none'; }
+      else {
+        inv.style.display = '';
+        const bits = ['brick','cement','sand','wood','shingle','glass'].map(id => {
+          const m = dhMatOf(id); const v = dhInvCount(id);
+          return v ? (m.e + v) : '';
+        }).filter(Boolean);
+        inv.textContent = bits.join(' ') || 'no stock';
+      }
     }
     const c = $('#dhCarry');
     if (c){
@@ -2567,7 +2698,7 @@
   function dhBar(){
     if (!dh) return;
     const bar = $('#dhBar'); if (!bar) return;
-    if (dhMenusUp()){ bar.style.display = 'none'; bar.style.visibility = 'hidden'; bar.style.pointerEvents = 'none'; bar.classList.add('dh-paused-hide'); return; }
+    if (dhMenusUp() || (dh && dh.intro)){ bar.style.display = 'none'; bar.style.visibility = 'hidden'; bar.style.pointerEvents = 'none'; bar.classList.add('dh-paused-hide'); return; }
     bar.style.display = ''; bar.style.visibility = ''; bar.style.pointerEvents = ''; bar.classList.remove('dh-paused-hide'); bar.classList.add('show');
     const jobs = '<div class="dhtools">' + DH_JOBS.map(j => {
       const lab = {mark:'📍 Stake', dig:'🕳️ Dig', mix:'🌀 Mix', pour:'🪣 Pour', brick:'🧱 Brick', stud:'🪵 Stud', rafter:'🪜 Rafter', shingle:'🏠 Shingle', frame:'🚪 Frame', glass:'🪟 Glass', paint:'🎨 Paint', furn:'🛋️ Furnish'}[j];
@@ -2718,6 +2849,18 @@
     if (code === 'KeyJ' || key === 'j' || key === 'J') keys.KeyJ = on;
     if (code === 'KeyK' || key === 'k' || key === 'K') keys.KeyK = on;
     if (code === 'KeyL' || key === 'l' || key === 'L') keys.KeyL = on;
+    if (on && typeof cam !== 'undefined' && cam){
+      const nudge = 4 * Math.PI / 180; // ~4° immediate turn so a 50 ms tap still looks
+      const right = (code === 'ArrowRight' || code === 'KeyL' || key === 'ArrowRight' || key === 'Right');
+      const left = (code === 'ArrowLeft' || code === 'KeyJ' || key === 'ArrowLeft' || key === 'Left');
+      const down = (code === 'ArrowDown' || code === 'KeyK' || key === 'ArrowDown' || key === 'Down');
+      const up = (code === 'ArrowUp' || code === 'KeyI' || key === 'ArrowUp' || key === 'Up');
+      if (right) cam.yaw -= nudge;
+      else if (left) cam.yaw += nudge;
+      else if (down) cam.pitch = Math.max(-1.3, Math.min(1.4, cam.pitch + nudge));
+      else if (up) cam.pitch = Math.max(-1.3, Math.min(1.4, cam.pitch - nudge));
+      if (dh) dh._lookTick = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    }
     return true;
   }
   function dhKey(e){

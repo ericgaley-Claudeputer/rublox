@@ -115,9 +115,9 @@ test('start, bar render, tip hide, and resize all relayout the HUD', () => {
 });
 
 test('version is bumped and existing saves are not involved', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.11-16'"));
+  assert.ok(src.includes("const BUILD = '2026.11.11-17'"));
   const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
-  assert.strictEqual(v.build, '2026.11.11-16');
+  assert.strictEqual(v.build, '2026.11.11-17');
   assert.ok(src.includes("const DH_KEY = 'rubloxDreamHouse'") || dhSrc.includes("DH_KEY = 'rubloxDreamHouse'"));
 });
 
@@ -264,6 +264,30 @@ test('arrow look records e.key and e.code even when a button is focused', () => 
   assert.ok(dhSrc.includes('function dhNoteLookKey') && dhSrc.includes("e.key") && dhSrc.includes('ArrowRight'));
   assert.ok(src.includes('dhNoteLookKey(e, true)') && src.includes('dhNoteLookKey(e, false)'));
   assert.ok(dhSrc.includes("kind === 'key'") && dhSrc.includes('not merely because a leftover button'));
+});
+
+
+
+test('Esc unlocks first, then the next Esc pauses (no 400 ms swallow)', () => {
+  assert.ok(src.includes('fp.eatEsc = true'));
+  assert.ok(src.includes('fp.eatEsc') && src.includes('unlockT < 80'));
+  assert.ok(!src.includes("performance.now() - fp.unlockT < 400"));
+  assert.ok(src.includes("if (e.code === 'Escape' || e.code === 'KeyP'){ if (!won && !over && !choosing) setPause"));
+});
+
+test('pause menu sits above Quick Tips, and tips are not shown while paused', () => {
+  assert.ok(src.includes('.dhtip{') && /z-index:40/.test(src.match(/\.dhtip\{[^}]+\}/)[0]));
+  assert.ok(src.includes('.opanel{') && src.includes('z-index:60'));
+  assert.ok(src.includes('#obby.paused .dhtip') || src.includes('#obby.paused #dhTip'));
+  assert.ok(dhSrc.includes('dh._tipQueue') && dhSrc.includes('function dhFlushTips'));
+  assert.ok(src.includes('window.setPause = setPause') || src.includes('window.setPause=setPause'));
+});
+
+test('Yes, reset closes the pause menu and start/stop clear lingering paused classes', () => {
+  assert.ok(dhSrc.includes('function dhClosePauseMenus') && src.includes('dhClosePauseMenus()'));
+  assert.ok(src.includes("classList.remove('fpv', 'paused', 'dh-paused', 'dh-intro')") || src.includes("remove('paused', 'dh-paused', 'dh-intro')"));
+  assert.ok(src.includes("function dhConfirmReset()") && /dhConfirmReset\(\)\{[\s\S]*?dhClosePauseMenus/.test(src));
+  assert.ok(dhSrc.includes('dh-intro') && src.includes('#obby.dh-intro #dhBar'));
 });
 
 

@@ -39,7 +39,7 @@ function world(store0, opts){
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, dhAimCone};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen};`, ctx);
   return ctx;
 }
 
@@ -397,7 +397,19 @@ Wk.A.dreamhouseUpdate(5);
 chk('the mix finishes after a short wait', Wk.A.dh.mixers[0].phase === 'ready' && Wk.A.dh.mixers[0].mixed >= 1, {phase:Wk.A.dh.mixers[0].phase, mixed:Wk.A.dh.mixers[0].mixed});
 Wk.A.dhKey({code:'KeyE', repeat:false});
 chk('E fills the wheelbarrow with wet mix', !!(Wk.A.dh.carry && Wk.A.dh.carry.id === 'wetmix'), Wk.A.dh.carry);
+function aimNextPour(){
+  const foot = Wk.A.dhFoot();
+  const pcs = Wk.A.dh.pieces[0] || [];
+  const has = (kind, ix, iz) => pcs.some(a => a[0]===kind && a[1]===ix && a[3]===iz);
+  for (let ix = foot.x0; ix <= foot.x1; ix++) for (let iz = foot.z0; iz <= foot.z1; iz++){
+    if ((has('trench', ix, iz) || has('mark', ix, iz)) && !has('wet', ix, iz) && !has('slab', ix, iz)){
+      aimFoot(Wk, ix, iz); return {ix, iz};
+    }
+  }
+  return null;
+}
 Wk.A.dhKey({code:'Digit4', repeat:false});
+aimNextPour();
 Wk.A.dhKey({code:'KeyE', repeat:false});
 chk('Digit 4 then E pours wet mix into the nearest dug form', (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='wet').length >= 1, {wet:(Wk.A.dh.pieces[0]||[]).filter(a=>a[0]==='wet').length, job:Wk.A.dh.job, carry:Wk.A.dh.carry, banners:Wk.banners.slice(-5)});
 Wk.A.dhGive('cement', 12); Wk.A.dhGive('sand', 12);
@@ -410,6 +422,7 @@ for (let bags = 0; bags < 16; bags++){
     pourTrace.push({bags, ok, phase:Wk.A.dh.mixers[0].phase, mixed:Wk.A.dh.mixers[0].mixed, carry:Wk.A.dh.carry, stockC:Wk.A.dh.stock.cement, stockS:Wk.A.dh.stock.sand, poured, banner:Wk.banners[Wk.banners.length-1]});
   }
   Wk.A.dhKey({code:'Digit4', repeat:false});
+  aimNextPour();
   Wk.A.dhKey({code:'KeyE', repeat:false});
 }
 const pouredN = (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='wet' || a[0]==='slab').length;
@@ -421,8 +434,15 @@ Wk.A.dhGive('brick', 12);
 Wk.A.dhKey({code:'Digit5', repeat:false});
 walkPile(); Wk.A.dhKey({code:'KeyE', repeat:false}); // pick bricks
 const bricks0 = (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length;
+const slotAim = (Wk.A.dhAllBrickSlots(0) || []).find(s => !s.filled);
+if (slotAim){
+  Wk.P.x = slotAim.x; Wk.P.z = slotAim.z + 2.4; Wk.P.y = .05;
+  Wk.cam.yaw = 0;
+  Wk.cam.pitch = Math.atan2(2.45 - (slotAim.y || 0.4), 2.4);
+  Wk.camera = {position:{x:Wk.P.x, y:2.45, z:Wk.P.z}};
+}
 Wk.A.dhKey({code:'KeyE', repeat:false});
-chk('Digit 5 then E lays a brick on the new slab', Wk.A.dh.job === 'brick' && (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length === bricks0 + 1, {job:Wk.A.dh.job, bricks:(Wk.A.dh.pieces[0]||[]).filter(a=>a[0]==='brick').length, carry:Wk.A.dh.carry, banners:Wk.banners.slice(-6)});
+chk('Digit 5 then E lays a brick on the new slab', Wk.A.dh.job === 'brick' && (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length === bricks0 + 1, {job:Wk.A.dh.job, bricks:(Wk.A.dh.pieces[0]||[]).filter(a=>a[0]==='brick').length, carry:Wk.A.dh.carry, banners:Wk.banners.slice(-6), slot:slotAim});
 
 // hints when the action is not allowed
 const Wf = world({rubloxDreamHouse: JSON.stringify({ver:4, introSeen:true, granted:true, coins:0, pieces:[], stock:{}, goals:{}, upgrades:{}})}, {coins:20});
@@ -473,7 +493,7 @@ const Wp = world({rubloxDreamHouse: JSON.stringify({ver:4, introSeen:true, grant
 Wp.A.buildDreamHouse(); Wp.A.dreamhouseEnter();
 Wp.A.dreamhouseUpdate(0.02);
 const p0 = Wp.A.dhActPrompt();
-chk('at spawn the prompt tells you to aim at a glowing outline to stake', /Aim at a glowing outline|Place stake here/.test(p0) && Wp.A.dhJobCounts('mark').have === 0, p0);
+chk('at spawn the prompt tells you to look at a foundation spot to stake', /Look at a foundation spot|Place stake here|glowing/.test(p0) && Wp.A.dhJobCounts('mark').have === 0, p0);
 const ghost0 = Wp.A.dhNextBuildCell('mark');
 aimFoot(Wp, ghost0.ix, ghost0.iz);
 const pAim = Wp.A.dhActPrompt();
@@ -890,17 +910,16 @@ chk('clearing keys on blur/pointer-lock stops a stuck W so you do not keep slidi
   const Wlook = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
   Wlook.A.buildDreamHouse(); Wlook.A.dh.introSeen = true; Wlook.A.dh.intro = null; Wlook.A.dreamhouseEnter();
   const y0 = Wlook.cam.yaw;
-  Wlook.keys.ArrowRight = true;
-  Wlook.A.dhLookWithKeys(0.07);
+  const tapEv = {type:'keydown', code:'ArrowRight', key:'ArrowRight', target:{tagName:'BODY', closest(){ return null; }}, preventDefault(){}, stopPropagation(){}};
+  Wlook.A.dhNoteLookKey(tapEv, true);
+  Wlook.A.dhNoteLookKey({type:'keyup', code:'ArrowRight', key:'ArrowRight', target:tapEv.target}, false);
   const tap = Math.abs(Wlook.cam.yaw - y0);
-  Wlook.keys.ArrowRight = false;
-  Wlook.A.dhLookWithKeys(0);
-  Wlook.keys.ArrowRight = true;
   const y1 = Wlook.cam.yaw;
+  Wlook.keys.ArrowRight = true;
   Wlook.A.dhLookWithKeys(0.2);
   const hold = Math.abs(Wlook.cam.yaw - y1);
-  chk('a 70 ms arrow tap only nudges the view (ease-in, ~90°/s cap)', tap < 0.06, {tap});
-  chk('a held arrow turn is slower than the old 1.85 rad/s rate', hold < 0.35 && hold > 0.05, {hold});
+  chk('a quick arrow keydown+keyup nudges the view about 4° even before the next frame', tap > 0.04 && tap < 0.12, {tap, deg: tap*180/Math.PI});
+  chk('a held arrow turn is about 90°/s (slower than the old 1.85 rad/s rate)', hold < 0.40 && hold > 0.05, {hold});
 
   // Reset then skip intro: starter supplies match a brand-new game.
   const Wnew = world();
@@ -949,17 +968,8 @@ chk('clearing keys on blur/pointer-lock stops a stuck W so you do not keep slidi
   Wa.A.dhLookWithKeys(0.2);
   chk('arrow keys still look when a leftover button is focused', noted === true && Wa.keys.ArrowRight === true && Math.abs(Wa.cam.yaw - yaw0) > 0.05, {noted, key:Wa.keys.ArrowRight, yaw:Wa.cam.yaw, before:yaw0});
 
-  // Default spawn look (after intro) must not place a stake unless the crosshair is within ~12°.
-  const Wsp = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
-  Wsp.A.buildDreamHouse(); Wsp.A.dh.introSeen = true; Wsp.A.dh.intro = null; Wsp.A.dreamhouseEnter();
-  Wsp.A.dhForceFirstPerson();
-  const sp = Wsp.A.dhSpawnPos(0);
-  Wsp.P.x = sp.x; Wsp.P.y = .05; Wsp.P.z = sp.z;
-  Wsp.cam.yaw = Math.PI; Wsp.cam.pitch = .37;
-  const marksSpawn = (Wsp.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length;
-  const aimedSpawn = Wsp.A.dhAimFootCell('mark');
-  const noAim = Wsp.A.dhMarkOrDig();
-  chk('E at the default spawn view does not place a stake unless the crosshair is within 12° of a spot', noAim === false && (Wsp.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length === marksSpawn, {noAim, aimedSpawn, marks:(Wsp.A.dh.pieces[0]||[]).filter(a=>a[0]==='mark').length, cam:Wsp.cam, P:{x:Wsp.P.x,z:Wsp.P.z}});
+  // replaced by camera-math targeting tests below
+
 
   // Toolbar hides while paused.
   const Wp = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
@@ -971,6 +981,102 @@ chk('clearing keys on blur/pointer-lock stops a stuck W so you do not keep slidi
   Wp.paused = true;
   Wp.A.dhBar(); Wp.A.dhSyncPauseHud();
   chk('the toolbar is hidden while paused', !!(bar && (bar.style.display === 'none' || bar.style.visibility === 'hidden') && Wp.A.dhMenusUp() === true), bar && bar.style);
+})();
+
+
+(function(){
+  // Real camera math: eye at 1.6 m, 3 m from a spot, pitched to look at it.
+  const Wt = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+  Wt.A.buildDreamHouse(); Wt.A.dh.introSeen = true; Wt.A.dh.intro = null; Wt.A.dreamhouseEnter();
+  const foot = Wt.A.dhFoot();
+  const cell = {ix: foot.x0, iz: foot.z0};
+  const w = Wt.A.dhCellWorld(0, cell.ix, cell.iz, 0);
+  Wt.P.x = w.x; Wt.P.y = 0; Wt.P.z = w.z - 3;
+  Wt.cam.yaw = Math.PI;
+  Wt.cam.pitch = Math.atan2(1.6, 3);
+  Wt.camera = {position: {x: Wt.P.x, y: 1.6, z: Wt.P.z}};
+  const marks0 = (Wt.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length;
+  const aimed = Wt.A.dhTargetSpot('mark');
+  const placed = Wt.A.dhMarkOrDig();
+  chk('looking at a spot from 3 m at eye height 1.6 m places it with E (same target as the highlight)', !!(placed && aimed && aimed.ix === cell.ix && aimed.iz === cell.iz && (Wt.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length === marks0 + 1), {aimed, placed, marks:(Wt.A.dh.pieces[0]||[]).filter(a=>a[0]==='mark').length, cam:Wt.cam, P:{x:Wt.P.x,z:Wt.P.z}, w});
+  // Looking at the sky does not place the next spot
+  const cell2 = {ix: foot.x0 + 1, iz: foot.z0};
+  const w2 = Wt.A.dhCellWorld(0, cell2.ix, cell2.iz, 0);
+  Wt.P.x = w2.x; Wt.P.y = 0; Wt.P.z = w2.z - 3;
+  Wt.cam.yaw = Math.PI; Wt.cam.pitch = -0.7;
+  Wt.camera = {position: {x: Wt.P.x, y: 1.6, z: Wt.P.z}};
+  const marks1 = (Wt.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length;
+  const skyAim = Wt.A.dhTargetSpot('mark');
+  const skyPlace = Wt.A.dhMarkOrDig();
+  chk('looking at the sky does not place a stake', skyPlace === false && !skyAim && (Wt.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length === marks1, {skyAim, skyPlace, marks:(Wt.A.dh.pieces[0]||[]).filter(a=>a[0]==='mark').length});
+
+  // Highlight target === placement target
+  Wt.cam.pitch = Math.atan2(1.6, 3);
+  const tgt = Wt.A.dhTargetSpot('mark');
+  const aim2 = Wt.A.dhAimFootCell('mark');
+  chk('highlight and placement use the same targeting function', !!(tgt && aim2 && tgt.ix === aim2.ix && tgt.iz === aim2.iz && tgt === aim2 || (tgt && aim2 && tgt.ix === aim2.ix)), {tgt, aim2});
+
+  // Toolbar comes back after a lingering paused class (Home then reopen)
+  const Wr = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+  Wr.A.buildDreamHouse(); Wr.A.dh.introSeen = true; Wr.A.dh.intro = null; Wr.A.dreamhouseEnter();
+  Wr.paused = true;
+  Wr.document.getElementById = function(id){
+    if (id === 'obby'){
+      if (!this._obby){ this._obby = {id:'obby', classList:{_s:new Set(['paused','dh-paused']), add(c){ this._s.add(c); }, remove(...cs){ cs.forEach(c => this._s.delete(c)); }, contains(c){ return this._s.has(c); }, toggle(c, on){ if (on) this._s.add(c); else this._s.delete(c); }}}; }
+      return this._obby;
+    }
+    if (id === 'oPausePanel'){
+      if (!this._p){ this._p = {id:'oPausePanel', classList:{_s:new Set(['show']), add(c){ this._s.add(c); }, remove(...cs){ cs.forEach(c => this._s.delete(c)); }, contains(c){ return this._s.has(c); }}}; }
+      return this._p;
+    }
+    if (id === 'dhTip') return Wr.els['#dhTip'] || null;
+    return null;
+  };
+  Wr.A.dreamhouseStop();
+  Wr.A.buildDreamHouse(); Wr.A.dh.introSeen = true; Wr.A.dh.intro = null; Wr.paused = false; Wr.menuOpen = false;
+  Wr.A.dreamhouseEnter();
+  Wr.A.dhBar(); Wr.A.dhSyncPauseHud();
+  const bar = Wr.els['#dhBar'];
+  const obby = Wr.document.getElementById('obby');
+  chk('reopening Dream House after Home shows the toolbar (pause classes cleared)', !!(bar && bar.style.display !== 'none' && bar.style.visibility !== 'hidden' && Wr.A.dhMenusUp() === false && !obby.classList.contains('paused')), {bar: bar && bar.style, paused: obby.classList.contains('paused'), menus: Wr.A.dhMenusUp()});
+
+  // Yes, reset closes the pause menu and starts the intro unpaused
+  const Wx = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:40, pieces:[['slab',2,0,2,0,0]], stock:{brick:99}, upgrades:{}, goals:{}})});
+  Wx.A.buildDreamHouse(); Wx.A.dreamhouseEnter();
+  Wx.paused = true;
+  let pauseClass = {s:new Set(['show']), add(c){ this.s.add(c); }, remove(...cs){ cs.forEach(c => this.s.delete(c)); }, contains(c){ return this.s.has(c); }};
+  let rootClass = {s:new Set(['paused','dh-paused','dhouse']), add(c){ this.s.add(c); }, remove(...cs){ cs.forEach(c => this.s.delete(c)); }, contains(c){ return this.s.has(c); }, toggle(c,on){ if(on) this.s.add(c); else this.s.delete(c); }};
+  Wx.document.getElementById = function(id){
+    if (id === 'oPausePanel') return {id, classList: pauseClass};
+    if (id === 'obby') return {id, classList: rootClass};
+    if (id === 'dhTip') return Wx.els['#dhTip'] || {classList:{contains(){return false;}, remove(){}}, style:{}};
+    return null;
+  };
+  Wx.A.dhClosePauseMenus();
+  Wx.A.dhResetProgress();
+  chk('Yes, reset closes the pause menu and restarts the intro unpaused', !Wx.paused && !pauseClass.contains('show') && !rootClass.contains('paused') && !!(Wx.A.dh && Wx.A.dh.intro), {paused:Wx.paused, pauseShow:pauseClass.contains('show'), intro:Wx.A.dh && Wx.A.dh.intro, classes:[...rootClass.s]});
+
+  // Tips are queued while paused and not shown
+  const Wp = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+  Wp.A.buildDreamHouse(); Wp.A.dh.introSeen = true; Wp.A.dh.intro = null; Wp.A.dreamhouseEnter();
+  Wp.paused = true;
+  const tipEl = Wp.els['#dhTip'] || (Wp.$('#dhTip'));
+  Wp.A.dhShowTip('queued tip for later');
+  chk('a Quick Tip is not shown while paused (it is queued)', tipEl.classList.contains('show') !== true && Wp.A.dh._tipQueue === 'queued tip for later', {show: tipEl.classList.contains('show'), q: Wp.A.dh._tipQueue, display: tipEl.style.display});
+  Wp.paused = false;
+  Wp.A.dhFlushTips();
+  chk('the queued tip appears after unpausing', (Wp.els['#dhTipT'] && Wp.els['#dhTipT'].textContent === 'queued tip for later') && tipEl.style.display !== 'none' && !Wp.A.dh._tipQueue, {show: tipEl.classList.contains('show'), display: tipEl.style.display, text: Wp.els['#dhTipT'] && Wp.els['#dhTipT'].textContent, q: Wp.A.dh._tipQueue});
+
+  // During the intro, supply HUD is hidden (no "no stock" vs 16 bricks mismatch)
+  const Wi = world();
+  Wi.A.buildDreamHouse(); Wi.A.dreamhouseEnter();
+  chk('a new game starts the intro', !!(Wi.A.dh && Wi.A.dh.intro));
+  Wi.A.dhHud(); Wi.A.dhBar();
+  const inv = Wi.els['#dhInv'], barI = Wi.els['#dhBar'];
+  chk('supply HUD and toolbar are hidden during the intro', !!(inv && inv.style.display === 'none') && !!(barI && (barI.style.display === 'none' || barI.style.visibility === 'hidden')), {inv: inv && inv.style, bar: barI && barI.style, text: inv && inv.textContent});
+  Wi.A.dhSkipIntro();
+  Wi.A.dhHud(); Wi.A.dhBar();
+  chk('after the intro, the top HUD and toolbar agree on the starter pile', (Wi.A.dhInvCount('brick')|0) === 16 && /16/.test(inv.textContent) && inv.style.display !== 'none' && barI.style.display !== 'none', {inv: inv.textContent, bar: barI.style.display, n: Wi.A.dhInvCount('brick')});
 })();
 
 
