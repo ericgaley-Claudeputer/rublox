@@ -502,9 +502,9 @@ function notInWall(z, zFace, thick, r){
   return z <= lo + EPS || z >= hi - EPS;
 }
 
-test('BUILD is 2026.11.11-28 and matches version.json', () => {
-  assert.ok(html.includes("const BUILD = '2026.11.11-28'"));
-  assert.strictEqual(version.build, '2026.11.11-28');
+test('BUILD is 2026.11.11-29 and matches version.json', () => {
+  assert.ok(html.includes("const BUILD = '2026.11.11-29'"));
+  assert.strictEqual(version.build, '2026.11.11-29');
 });
 
 test('index.html wires DH clip into step() and exposes a #dhdebug collider path', () => {
@@ -852,6 +852,85 @@ test('#dhdebug draws wireframe collider boxes', () => {
   assert.ok(dbg.obbyDebug.dhDebugGroup(), 'expected a debug Group of collider wireframes in the scene');
   const n = (dbg.obbyDebug.dhBoxes() || []).length;
   assert.ok(n >= 8, 'debug colliders should cover wall segments, got ' + n);
+});
+
+test('walking into a wall at a glancing angle slides along it, and a near-jamb W walk is funneled through the door', () => {
+  const c = boot('#dhtest=v6furnish');
+  c.Obby.start('dreamhouse');
+  if (c.obbyDebug.dhIntro()) c.obbyDebug.skipDhIntro();
+  for (let i = 0; i < 45; i++) c.obbyDebug.stepFrame(1 / 60);
+  const foot = c.obbyDebug.dhFoot();
+  const thick = 0.30;
+  const boxes = c.obbyDebug.dhBoxes();
+  const front = boxes.filter(b => b.id === 'brick' && Math.abs(b.z - (foot.z0 + thick / 2)) < 0.08);
+  const pier = front.filter(b => Math.abs(b.x) > 0.8).sort((a, b) => Math.abs(a.x) - Math.abs(b.x))[0] || front[0];
+  const midX = (foot.x0 + foot.x1) / 2;
+
+  function settle(x, z, yaw){
+    ['KeyW','KeyA','KeyS','KeyD'].forEach(k => { try { c.__key(k, false); } catch (e){} c.obbyDebug.setKey(k, false); });
+    c.obbyDebug.teleport(x, 0.2, z);
+    c.obbyDebug.setCam(yaw, 0.37, 0.2);
+    for (let i = 0; i < 20; i++) c.obbyDebug.stepFrame(1 / 60);
+    const y = Math.max(0, c.obbyDebug.player().y);
+    c.obbyDebug.teleport(x, y, z);
+    c.obbyDebug.setCam(yaw, 0.37, 0.2);
+    c.obbyDebug.stepFrame(1 / 60);
+  }
+
+  // Glance into the front wall (not the door): yaw slightly left of north so W has +X.
+  settle(pier.x, foot.z0 - 2.0, Math.PI + 0.35);
+  const start = c.obbyDebug.player();
+  const yaw0 = c.obbyDebug.cam().yaw;
+  c.__key('KeyW', true, {repeat: false});
+  for (let i = 0; i < 90; i++){
+    if (i && i % 4 === 0) c.__key('KeyW', true, {repeat: true});
+    c.obbyDebug.stepFrame(1 / 60);
+  }
+  c.__key('KeyW', false);
+  const slid = c.obbyDebug.player();
+  assert.ok(Math.abs(c.obbyDebug.cam().yaw - yaw0) < 0.001, 'slide must not change yaw');
+  assert.ok(slid.z <= foot.z0 - R + 0.08, 'should still stop on the front wall, z=' + slid.z);
+  assert.ok(slid.x > start.x + 0.4, 'tangential motion should slide along the wall, startX=' + start.x + ' endX=' + slid.x + ' z=' + slid.z);
+
+  // Snagged-on-jamb pose: a bit off the door centerline, walking straight at the house.
+  settle(midX - 0.35, foot.z0 - 1.6, Math.PI);
+  const jamb = c.obbyDebug.player();
+  c.__key('KeyW', true, {repeat: false});
+  for (let i = 0; i < 150; i++){
+    if (i && i % 4 === 0) c.__key('KeyW', true, {repeat: true});
+    c.obbyDebug.stepFrame(1 / 60);
+  }
+  c.__key('KeyW', false);
+  const inside = c.obbyDebug.player();
+  assert.ok(inside.z > foot.z0 + 0.4 && inside.z < foot.z1 - 0.1, 'funnel + W should walk through the door without a strafe, z=' + inside.z + ' x=' + inside.x + ' start=' + JSON.stringify(jamb));
+});
+
+test('the first-person camera stays at least 0.30 m from a wall face and the near plane does not clip', () => {
+  const c = boot('#dhtest=v6furnish');
+  c.Obby.start('dreamhouse');
+  if (c.obbyDebug.dhIntro()) c.obbyDebug.skipDhIntro();
+  for (let i = 0; i < 45; i++) c.obbyDebug.stepFrame(1 / 60);
+  const foot = c.obbyDebug.dhFoot();
+  const thick = 0.30;
+  const boxes = c.obbyDebug.dhBoxes();
+  const front = boxes.filter(b => b.id === 'brick' && Math.abs(b.z - (foot.z0 + thick / 2)) < 0.08);
+  const pier = front.filter(b => Math.abs(b.x) > 0.8).sort((a, b) => Math.abs(a.x) - Math.abs(b.x))[0] || front[0];
+  c.obbyDebug.teleport(pier.x, 0.2, foot.z0 - 2.0);
+  c.obbyDebug.setCam(Math.PI, 0.37, 0.2);
+  c.__key('KeyW', true, {repeat: false});
+  for (let i = 0; i < 90; i++){
+    if (i && i % 4 === 0) c.__key('KeyW', true, {repeat: true});
+    c.obbyDebug.stepFrame(1 / 60);
+  }
+  c.__key('KeyW', false);
+  c.obbyDebug.stepFrame(1 / 60);
+  const p = c.obbyDebug.player();
+  const cam = c.obbyDebug.dhCam();
+  assert.ok(p.z <= foot.z0 - R + 0.08, 'should be pinned to the front wall, z=' + p.z);
+  assert.ok(cam && isFinite(cam.z) && isFinite(cam.near), 'camera pose missing ' + JSON.stringify(cam));
+  assert.ok(cam.z <= foot.z0 - 0.30 + 0.001, 'camera z=' + cam.z + ' is closer than 0.30 m to the south wall face at ' + foot.z0);
+  assert.ok(cam.near > 0 && cam.near <= 0.05 + 1e-9, 'near plane must stay well inside the 0.30 m clearance, near=' + cam.near);
+  assert.ok(cam.near < 0.30 - cam.z + foot.z0 || cam.z <= foot.z0 - cam.near - 0.20, 'near plane would clip the wall: cam.z=' + cam.z + ' near=' + cam.near + ' wall=' + foot.z0);
 });
 
 test('#dhtest=v6furnish still never writes rubloxDreamHouse during the loop', () => {

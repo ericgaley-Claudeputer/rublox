@@ -1597,7 +1597,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-28';
+const BUILD = '2026.11.11-29';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -15103,7 +15103,7 @@ const Obby = (() => {
            pz + pr > box.z - box.hd && pz - pr < box.z + box.hd &&
            py + ph > box.y - box.hh && py < box.y + box.hh;
   }
-  function dhClipAxis(axis, from, to, boxes){
+  function dhClipAxis(axis, from, to, boxes, other){
     const pr = dhPlayerRadius(), ph = (typeof dhPlayerHeight === 'function') ? dhPlayerHeight() : 1.8;
     const py = (P && P.y) || 0;
     let v = to;
@@ -15114,8 +15114,8 @@ const Obby = (() => {
       const c = axis === 'x' ? box.x : box.z;
       const half = axis === 'x' ? box.hw : box.hd;
       if (axis !== wallAxis && from > c - half - pr && from < c + half + pr) return;
-      const px = axis === 'x' ? v : P.x;
-      const pz = axis === 'z' ? v : P.z;
+      const px = axis === 'x' ? v : (other != null ? other : P.x);
+      const pz = axis === 'z' ? v : (other != null ? other : P.z);
       if (!dhBoxHitsPlayer(box, px, py, pz, pr, ph)) return;
       if (axis === 'x'){
         const lo = box.x - box.hw - pr, hi = box.x + box.hw + pr;
@@ -15127,6 +15127,76 @@ const Obby = (() => {
     });
     return v;
   }
+  // Per-axis slide: a hit on the wall normal keeps the tangent motion, so a
+  // glancing walk (or a jamb corner) slides along the surface instead of sticking.
+  function dhSlideTo(fromX, fromZ, wantX, wantZ, boxes){
+    boxes = boxes || dhCollisionBoxes();
+    let x = dhClipAxis('x', fromX, wantX, boxes, fromZ);
+    let z = dhClipAxis('z', fromZ, wantZ, boxes, fromX);
+    const hitX = Math.abs(x - wantX) > 1e-8;
+    const hitZ = Math.abs(z - wantZ) > 1e-8;
+    if (hitX && !hitZ){
+      z = dhClipAxis('z', fromZ, wantZ, boxes, x);
+    } else if (hitZ && !hitX){
+      x = dhClipAxis('x', fromX, wantX, boxes, z);
+    } else if (hitX && hitZ){
+      const ox = dhClipAxis('x', fromX, wantX, boxes, z);
+      const oz2 = dhClipAxis('z', fromZ, wantZ, boxes, x);
+      const d1 = (ox - wantX) * (ox - wantX) + (z - wantZ) * (z - wantZ);
+      const d2 = (x - wantX) * (x - wantX) + (oz2 - wantZ) * (oz2 - wantZ);
+      if (d1 <= d2) x = ox; else z = oz2;
+    }
+    return {x, z, hitX: Math.abs(x - wantX) > 1e-8, hitZ: Math.abs(z - wantZ) > 1e-8};
+  }
+  const DH_DOOR_FUNNEL = 0.4; // metres from the doorway centerline
+  function dhDoorOpenings(plot){
+    if (!dh) return [];
+    plot = (plot == null) ? dh.mine : plot;
+    const faces = [];
+    const seen = {};
+    ((dh.pieces && dh.pieces[plot]) || []).forEach(a => {
+      if (!a || (a[0] !== 'door' && a[0] !== 'doorframe')) return;
+      const f = a[4] | 0;
+      if (seen[f]) return;
+      seen[f] = true; faces.push(f);
+    });
+    if (!faces.length) faces.push(0);
+    return faces.map(face => {
+      const w = dhOpeningWorld(plot, face, 'door');
+      const side = (face === 1 || face === 3);
+      return {face, x: w.x, z: w.z, side, axis: side ? 'x' : 'z'};
+    });
+  }
+  function dhDoorFunnelDelta(fromX, fromZ, wantX, wantZ, cap){
+    cap = cap == null ? 0.08 : cap;
+    let dx = 0, dz = 0;
+    dhDoorOpenings().forEach(d => {
+      const along = d.side ? (fromZ - d.z) : (fromX - d.x);
+      const normal = d.side ? (fromX - d.x) : (fromZ - d.z);
+      if (Math.abs(along) >= DH_DOOR_FUNNEL || Math.abs(along) < 1e-4) return;
+      if (Math.abs(normal) > 1.6) return;
+      const movX = (wantX - fromX), movZ = (wantZ - fromZ);
+      const vx = (typeof P !== 'undefined' && P && P.vx) || 0;
+      const vz = (typeof P !== 'undefined' && P && P.vz) || 0;
+      const toward = d.side
+        ? ((d.x - fromX) * (movX + vx) > 0)
+        : ((d.z - fromZ) * (movZ + vz) > 0);
+      if (!toward) return;
+      const corr = Math.max(-cap, Math.min(cap, -along));
+      if (d.side) dz += corr; else dx += corr;
+    });
+    return {x: dx, z: dz};
+  }
+  function dhApplyDoorFunnel(cap){
+    if (typeof P === 'undefined' || !P) return P;
+    const f = dhDoorFunnelDelta(P.x, P.z, P.x, P.z, cap);
+    if (!f.x && !f.z) return P;
+    // Treat residual velocity as "moving toward" already checked; nudge, then slide-clip.
+    const boxes = dhCollisionBoxes();
+    const s = dhSlideTo(P.x, P.z, P.x + f.x, P.z + f.z, boxes);
+    P.x = s.x; P.z = s.z;
+    return P;
+  }
   const dhPrevXZ = {x: 0, z: 0, on: false};
   function dhRememberPlayer(){
     if (typeof P === 'undefined' || !P) return;
@@ -15135,12 +15205,15 @@ const Obby = (() => {
   function dhAfterPhysicsStep(){
     // Clip against wall segments using the pre-move position so a crossed midpoint
     // is pushed back to the entry side, never ejected through the far face.
+    // Per-axis slide keeps the tangential move when a face or jamb is hit.
     if (typeof P === 'undefined' || !P) return P;
     const boxes = dhCollisionBoxes();
     const fromX = dhPrevXZ.on ? dhPrevXZ.x : P.x;
     const fromZ = dhPrevXZ.on ? dhPrevXZ.z : P.z;
-    P.x = dhClipAxis('x', fromX, P.x, boxes);
-    P.z = dhClipAxis('z', fromZ, P.z, boxes);
+    const s = dhSlideTo(fromX, fromZ, P.x, P.z, boxes);
+    P.x = s.x; P.z = s.z;
+    if (s.hitX) P.vx = 0;
+    if (s.hitZ) P.vz = 0;
     dhRememberPlayer();
     return P;
   }
@@ -15151,8 +15224,11 @@ const Obby = (() => {
     const boxes = dhCollisionBoxes();
     for (let i = 0; i < steps; i++){
       const ox = P.x, oz = P.z;
-      P.x = dhClipAxis('x', ox, P.x + (dx || 0) / steps, boxes);
-      P.z = dhClipAxis('z', oz, P.z + (dz || 0) / steps, boxes);
+      const fx = dhDoorFunnelDelta(ox, oz, ox + (dx || 0) / steps, oz + (dz || 0) / steps, 0.08);
+      const s = dhSlideTo(ox, oz, ox + (dx || 0) / steps + fx.x, oz + (dz || 0) / steps + fx.z, boxes);
+      P.x = s.x; P.z = s.z;
+      if (s.hitX && P.vx) P.vx = 0;
+      if (s.hitZ && P.vz) P.vz = 0;
     }
     dhRememberPlayer();
     return P;
@@ -15161,8 +15237,10 @@ const Obby = (() => {
     if (typeof P === 'undefined' || !P) return P;
     boxes = boxes || dhCollisionBoxes();
     if (dhPrevXZ.on){
-      P.x = dhClipAxis('x', dhPrevXZ.x, P.x, boxes);
-      P.z = dhClipAxis('z', dhPrevXZ.z, P.z, boxes);
+      const s = dhSlideTo(dhPrevXZ.x, dhPrevXZ.z, P.x, P.z, boxes);
+      P.x = s.x; P.z = s.z;
+      if (s.hitX) P.vx = 0;
+      if (s.hitZ) P.vz = 0;
     } else {
       // Static depenetration: push out on the wall-normal axis to the nearer face only.
       const pr = dhPlayerRadius(), ph = (typeof dhPlayerHeight === 'function') ? dhPlayerHeight() : 1.8;
@@ -15221,11 +15299,33 @@ const Obby = (() => {
     let off = 0.22;
     while (off > 0 && camBlocked(P.x + fx * off, ey, P.z + fz * off)) off -= 0.02;
     let x = P.x + fx * off, y = ey, z = P.z + fz * off;
+    // Push out along wall normals so the eye stays a full 0.30 m from any wall
+    // face. Never only lift Y — that still lets the near plane clip a brick.
     let guard = 0;
-    while (guard++ < 12 && camBlocked(x, y, z)) y += 0.12;
+    while (guard++ < 16 && camBlocked(x, y, z)){
+      let pushed = false;
+      boxes.forEach(b => {
+        if (x + clear > b.x - b.hw && x - clear < b.x + b.hw &&
+            z + clear > b.z - b.hd && z - clear < b.z + b.hd &&
+            y + clear > b.y - b.hh && y - clear < b.y + b.hh){
+          const wallAxis = b.axis || (b.hw <= b.hd ? 'x' : 'z');
+          if (wallAxis === 'x'){
+            const lo = b.x - b.hw - clear, hi = b.x + b.hw + clear;
+            x = (Math.abs(x - lo) <= Math.abs(x - hi)) ? lo : hi;
+          } else {
+            const lo = b.z - b.hd - clear, hi = b.z + b.hd + clear;
+            z = (Math.abs(z - lo) <= Math.abs(z - hi)) ? lo : hi;
+          }
+          pushed = true;
+        }
+      });
+      if (!pushed) y += 0.12;
+    }
     camera.position.set(x, y, z);
     if (typeof camera.near === 'number'){
-      camera.near = Math.min(camera.near, 0.08);
+      // Near plane must stay well inside the 0.30 m clearance so pinned bricks
+      // fill the view without the wall intersecting the clip plane.
+      camera.near = Math.min(camera.near, 0.05);
       if (typeof camera.updateProjectionMatrix === 'function') camera.updateProjectionMatrix();
     }
     const cp = Math.cos(cam.pitch);
@@ -15251,6 +15351,9 @@ const Obby = (() => {
     dhRefreshBins();
     dhClampPlayer();
     if (typeof dhClipPlayerToWalls === 'function') dhClipPlayerToWalls();
+    // Once a frame: pull a player who is walking into the door, but snagged on a
+    // jamb, toward the opening centerline (up to ~2 m/s, 0.4 m half-width).
+    dhApplyDoorFunnel(Math.min(0.12, Math.max(0.02, (dt || 0) * 2)));
     dhCamComfort(dt);
     if (typeof dhClipFpCamera === 'function') dhClipFpCamera();
     dhFadeOccludingTrees();
