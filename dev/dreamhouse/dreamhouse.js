@@ -102,7 +102,10 @@
     const bx = DH_BOUND.x, bz = DH_BOUND.z;
     if (P.x > bx) P.x = bx; else if (P.x < -bx) P.x = -bx;
     if (P.z > bz) P.z = bz; else if (P.z < -bz) P.z = -bz;
-    if ((P.y || 0) < .05){ P.y = .05; if (P.vy < 0) P.vy = 0; }
+    // Do not hold the player at y=0.05: that sits above the grass top (y=0) so they
+    // never land, and it intersects the plot pad / curb AABBs, which then shove
+    // them sideways off the lot (walk-through / "Your Plot" sign).
+    if ((P.y || 0) < 0){ P.y = 0; if (P.vy < 0) P.vy = 0; }
     const cap = dhWalkCap();
     const sp = Math.hypot(P.vx || 0, P.vz || 0);
     if (sp > cap){ P.vx *= cap / sp; P.vz *= cap / sp; }
@@ -841,6 +844,11 @@
     return {x, y, z, hw, hh: s.hh || 0, hd};
   }
   function dhBindSolids(mesh, on){
+    const rec = mesh && mesh.userData && mesh.userData.rec;
+    if (rec && (rec[0] === 'brick' || rec[0] === 'pane')){
+      if (on && typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
+      return;
+    }
     const list = (mesh && mesh.userData && mesh.userData.solids) || [];
     list.forEach(s => {
       const w = dhSolidWorld(mesh, s);
@@ -1285,8 +1293,9 @@
     for (let i = 0; i < DH_PLOTS; i++){
       const [ox, oz] = dhOrigin(i);
       const cx = ox + DH_N * DH_CELL / 2, cz = oz + DH_N * DH_CELL / 2;
-      plat(cx, .08, cz, DH_N * DH_CELL + .4, DH_N * DH_CELL + .4, i === dh.mine ? '#b6e8a8' : '#9fd3a8', .16);
-      [[ox - .15, cz, .3, DH_N * DH_CELL + .6], [ox + DH_N * DH_CELL + .15, cz, .3, DH_N * DH_CELL + .6], [cx, oz - .15, DH_N * DH_CELL + .6, .3], [cx, oz + DH_N * DH_CELL + .15, DH_N * DH_CELL + .6, .3]].forEach(([x, z, w, d]) => { const b = plat(x, .16, z, w, d, '#d9d4cc', .14); if (b) b.camSkip = true; });
+      const pad = plat(cx, .08, cz, DH_N * DH_CELL + .4, DH_N * DH_CELL + .4, i === dh.mine ? '#b6e8a8' : '#9fd3a8', .16);
+      if (pad) pad.floorOnly = true; // visual lot; the big grass is the real floor — do not shove on X/Z
+      [[ox - .15, cz, .3, DH_N * DH_CELL + .6], [ox + DH_N * DH_CELL + .15, cz, .3, DH_N * DH_CELL + .6], [cx, oz - .15, DH_N * DH_CELL + .6, .3], [cx, oz + DH_N * DH_CELL + .15, DH_N * DH_CELL + .6, .3]].forEach(([x, z, w, d]) => { const b = plat(x, .16, z, w, d, '#d9d4cc', .14); if (b){ b.camSkip = true; b.floorOnly = true; } });
       const sign = label((i === dh.mine ? '🏡 Your Plot' : '🏡 Plot ' + (i + 1)), 'rgba(29,35,64,.92)');
       if (sign && sign.position) sign.position.set(cx, 3.15, oz + DH_N * DH_CELL + 1.05);
       if (sign && sign.scale) sign.scale.set(2.4, 0.62, 1);
@@ -1296,6 +1305,7 @@
     }
     // single-player: other lots stay empty (real players only — no leftover show homes or intro houses)
     (p0.pieces || []).forEach(rec => dhPut(dh.mine, rec, true));
+    if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
     dhStockViz(dh.mine);
     const [ox, oz] = dhOrigin(dh.mine);
     const sp = dhSpawnPos(dh.mine);
@@ -1414,6 +1424,7 @@
     dhClearPlot(plot);
     (recs || []).forEach(r => dhPut(plot, r, true));
     if (typeof dhRefreshFraming === 'function') dhRefreshFraming(plot);
+    if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
     if (!quiet && plot === dh.mine) dhSave();
   }
   function dhHas(plot, id, ix, iz){ return (dh.pieces[plot] || []).some(a => a[0] === id && (a[1]|0) === ix && (a[3]|0) === iz); }
@@ -2545,6 +2556,7 @@
     if (typeof dhBar === 'function') dhBar();
     if (typeof dhHud === 'function') dhHud();
     if (typeof dhShowTestNote === 'function') dhShowTestNote();
+    if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
   }
   function dhShowTestNote(){
     if (!dh || !dhTestActive()) return false;
@@ -2583,6 +2595,11 @@
     if (dh.hand){ if (dh.hand.parent) dh.hand.parent.remove(dh.hand); else if (typeof scene !== 'undefined') scene.remove(dh.hand); dh.hand = null; }
     Object.keys(dh.brickInst || {}).forEach(k => { const inst = dh.brickInst[k]; if (inst && typeof scene !== 'undefined') scene.remove(inst); });
     dh.brickInst = {};
+    if (dh._debugGroup && typeof scene !== 'undefined'){ try { scene.remove(dh._debugGroup); } catch (e){} dh._debugGroup = null; }
+    if (typeof solids !== 'undefined' && Array.isArray(solids)){
+      for (let i = solids.length - 1; i >= 0; i--){ if (solids[i] && solids[i]._dhWall) solids.splice(i, 1); }
+    }
+    dh._wallSolids = [];
     Object.keys(dh.meshes || {}).forEach(k => (dh.meshes[k] || []).forEach(m => { dhBindSolids(m, false); scene.remove(m); }));
     Object.keys(dh.piles || {}).forEach(k => dh.piles[k] && dh.piles[k].mesh && scene.remove(dh.piles[k].mesh));
     Object.keys(dh.mixers || {}).forEach(k => dh.mixers[k] && dh.mixers[k].mesh && scene.remove(dh.mixers[k].mesh));
@@ -2760,30 +2777,127 @@
       if (b.mesh && b.mesh.position) b.mesh.position.set(p.x, 0, p.z);
     });
   }
+  const DH_CAM_CLEAR = 0.30;
   function dhWalkCap(){ return (typeof keys !== 'undefined' && keys && (keys.ShiftLeft || keys.ShiftRight)) ? 7 : 4.5; }
   function dhPlayerRadius(){ return (typeof R === 'number' && isFinite(R)) ? R : 0.45; }
+  function dhCamClearance(){ return DH_CAM_CLEAR; }
+  function dhDebugActive(){
+    try {
+      const loc = (typeof location !== 'undefined' && location) || (typeof window !== 'undefined' && window.location) || null;
+      const hash = loc && loc.hash ? String(loc.hash) : '';
+      return /(?:^|#|&|,)dhdebug(?:&|=|,|$)/.test(hash);
+    } catch (e){ return false; }
+  }
+  function dhBrickRunBox(plot, face, course, a0, a1){
+    const w0 = dhWorldRec(plot, ['brick', 0, course, a0, face]);
+    const w1 = dhWorldRec(plot, ['brick', 0, course, a1, face]);
+    const alongHalf = ((a1 - a0 + 1) * DH_BRICK_W) / 2;
+    const thickHalf = DH_BRICK_D / 2;
+    const side = (face === 1 || face === 3);
+    return {
+      x: (w0.x + w1.x) / 2, y: w0.y, z: (w0.z + w1.z) / 2,
+      hw: side ? thickHalf : alongHalf,
+      hh: DH_BRICK_H / 2,
+      hd: side ? alongHalf : thickHalf,
+      face: face, axis: side ? 'x' : 'z', id: 'brick'
+    };
+  }
   function dhCollisionBoxes(plot){
+    // Continuous wall-segment AABBs from built bricks + glass panes. The doorway stays a hole.
+    // Segments (not per-brick boxes) so a 0.45 m radius cannot slip through mortar or get
+    // shortest-axis-pushed through a 0.30 m wall.
     if (!dh) return [];
     plot = (plot == null) ? dh.mine : plot;
     const list = dh.pieces[plot] || [];
-    const out = [];
+    const runs = new Map();
     list.forEach(rec => {
-      const id = rec[0];
-      if (id !== 'brick' && id !== 'pane') return;
-      const w = dhWorldRec(plot, rec);
-      const swap = Math.abs(Math.sin(w.ry || 0)) > 0.5;
-      let hw, hh, hd;
-      if (id === 'brick'){
-        hw = DH_BRICK_W / 2; hh = DH_BRICK_H / 2; hd = DH_BRICK_D / 2;
-      } else {
-        hw = (DH_BRICK_W * 2 - 0.12) / 2;
-        hh = (DH_WIN_HEAD - DH_WIN_SILL - 0.12) / 2;
-        hd = 0.04;
+      if (!rec || rec[0] !== 'brick') return;
+      const face = rec[4] | 0, course = rec[2] | 0, along = rec[3] | 0;
+      const k = face + ':' + course;
+      if (!runs.has(k)) runs.set(k, []);
+      runs.get(k).push(along);
+    });
+    const out = [];
+    runs.forEach((alongs, k) => {
+      const parts = k.split(':'), face = +parts[0], course = +parts[1];
+      alongs.sort((a, b) => a - b);
+      let i = 0;
+      while (i < alongs.length){
+        let j = i;
+        while (j + 1 < alongs.length && alongs[j + 1] === alongs[j] + 1) j++;
+        out.push(dhBrickRunBox(plot, face, course, alongs[i], alongs[j]));
+        i = j + 1;
       }
-      if (swap){ const t = hw; hw = hd; hd = t; }
-      out.push({x: w.x, y: w.y, z: w.z, hw, hh, hd, id});
+    });
+    list.forEach(rec => {
+      if (!rec || rec[0] !== 'pane') return;
+      const w = dhWorldRec(plot, rec);
+      const side = Math.abs(Math.sin(w.ry || 0)) > 0.5;
+      const hw = (DH_BRICK_W * 2 - 0.12) / 2;
+      const hh = (DH_WIN_HEAD - DH_WIN_SILL - 0.12) / 2;
+      const hd = 0.04;
+      out.push({
+        x: w.x, y: w.y, z: w.z,
+        hw: side ? hd : hw, hh, hd: side ? hw : hd,
+        face: rec[4] | 0, axis: side ? 'x' : 'z', id: 'pane'
+      });
     });
     return out;
+  }
+  function dhRefreshWallSolids(){
+    if (typeof solids === 'undefined' || !Array.isArray(solids)) return 0;
+    for (let i = solids.length - 1; i >= 0; i--){
+      if (solids[i] && solids[i]._dhWall) solids.splice(i, 1);
+    }
+    const boxes = dhCollisionBoxes();
+    const list = [];
+    boxes.forEach(box => {
+      const mesh = {position: {x: box.x, y: box.y, z: box.z}, visible: true, userData: {dhProxy: true, dhWall: true}};
+      const b = {mesh, hw: box.hw, hh: box.hh, hd: box.hd, active: true, dx: 0, dy: 0, dz: 0, _dh: true, _dhWall: true, camSkip: false};
+      solids.push(b);
+      list.push(b);
+    });
+    if (dh) dh._wallSolids = list;
+    if (typeof dhRefreshDebugColliders === 'function') dhRefreshDebugColliders();
+    return list.length;
+  }
+  function dhRefreshDebugColliders(){
+    if (typeof scene === 'undefined' || !scene) return false;
+    if (dh && dh._debugGroup){
+      try { scene.remove(dh._debugGroup); } catch (e){}
+      const g = dh._debugGroup;
+      if (g && g.traverse) g.traverse(o => { if (o.geometry && o.geometry.dispose) o.geometry.dispose(); });
+      dh._debugGroup = null;
+    }
+    if (!dh || !dhDebugActive() || typeof THREE === 'undefined') return false;
+    const boxes = dhCollisionBoxes();
+    const group = new THREE.Group();
+    group.name = 'dhDebugColliders';
+    group.userData.dhDebug = true;
+    const col = 0x22ff88;
+    boxes.forEach(box => {
+      let obj = null;
+      try {
+        if (typeof THREE.BoxGeometry === 'function' && typeof THREE.Mesh === 'function' && typeof THREE.BoxHelper === 'function'){
+          const m = new THREE.Mesh(new THREE.BoxGeometry(box.hw * 2, box.hh * 2, box.hd * 2));
+          m.position.set(box.x, box.y, box.z);
+          obj = new THREE.BoxHelper(m, col);
+        } else if (typeof THREE.LineSegments === 'function' && typeof THREE.EdgesGeometry === 'function' && typeof THREE.BoxGeometry === 'function'){
+          const geo = new THREE.EdgesGeometry(new THREE.BoxGeometry(box.hw * 2, box.hh * 2, box.hd * 2));
+          const mat = new THREE.LineBasicMaterial({color: col, depthTest: false, transparent: true, opacity: 0.95});
+          obj = new THREE.LineSegments(geo, mat);
+          obj.position.set(box.x, box.y, box.z);
+        }
+      } catch (e){ obj = null; }
+      if (obj){
+        if (obj.material){ obj.material.depthTest = false; obj.material.transparent = true; if (obj.material.opacity == null) obj.material.opacity = 0.95; }
+        obj.renderOrder = 999;
+        group.add(obj);
+      }
+    });
+    scene.add(group);
+    dh._debugGroup = group;
+    return boxes.length;
   }
   function dhBoxHitsPlayer(box, px, py, pz, pr, ph){
     return px + pr > box.x - box.hw && px - pr < box.x + box.hw &&
@@ -2795,6 +2909,12 @@
     const py = (P && P.y) || 0;
     let v = to;
     (boxes || []).forEach(box => {
+      // Face walls only clip on their normal. The tangent axis is clipped only when
+      // walking into an end cap (door jamb); never sideways-eject along a long wall.
+      const wallAxis = box.axis || (box.hw <= box.hd ? 'x' : 'z');
+      const c = axis === 'x' ? box.x : box.z;
+      const half = axis === 'x' ? box.hw : box.hd;
+      if (axis !== wallAxis && from > c - half - pr && from < c + half + pr) return;
       const px = axis === 'x' ? v : P.x;
       const pz = axis === 'z' ? v : P.z;
       if (!dhBoxHitsPlayer(box, px, py, pz, pr, ph)) return;
@@ -2808,6 +2928,23 @@
     });
     return v;
   }
+  const dhPrevXZ = {x: 0, z: 0, on: false};
+  function dhRememberPlayer(){
+    if (typeof P === 'undefined' || !P) return;
+    dhPrevXZ.x = P.x; dhPrevXZ.z = P.z; dhPrevXZ.on = true;
+  }
+  function dhAfterPhysicsStep(){
+    // Clip against wall segments using the pre-move position so a crossed midpoint
+    // is pushed back to the entry side, never ejected through the far face.
+    if (typeof P === 'undefined' || !P) return P;
+    const boxes = dhCollisionBoxes();
+    const fromX = dhPrevXZ.on ? dhPrevXZ.x : P.x;
+    const fromZ = dhPrevXZ.on ? dhPrevXZ.z : P.z;
+    P.x = dhClipAxis('x', fromX, P.x, boxes);
+    P.z = dhClipAxis('z', fromZ, P.z, boxes);
+    dhRememberPlayer();
+    return P;
+  }
   function dhMovePlayer(dx, dz){
     if (typeof P === 'undefined' || !P) return P;
     const dist = Math.hypot(dx || 0, dz || 0);
@@ -2818,37 +2955,51 @@
       P.x = dhClipAxis('x', ox, P.x + (dx || 0) / steps, boxes);
       P.z = dhClipAxis('z', oz, P.z + (dz || 0) / steps, boxes);
     }
-    dhClipPlayerToWalls(boxes);
+    dhRememberPlayer();
     return P;
   }
   function dhClipPlayerToWalls(boxes){
     if (typeof P === 'undefined' || !P) return P;
     boxes = boxes || dhCollisionBoxes();
-    const pr = dhPlayerRadius(), ph = (typeof dhPlayerHeight === 'function') ? dhPlayerHeight() : 1.8;
-    const py = P.y || 0;
-    boxes.forEach(box => {
-      if (!dhBoxHitsPlayer(box, P.x, py, P.z, pr, ph)) return;
-      const pxL = (P.x + pr) - (box.x - box.hw);
-      const pxR = (box.x + box.hw) - (P.x - pr);
-      const pzL = (P.z + pr) - (box.z - box.hd);
-      const pzR = (box.z + box.hd) - (P.z - pr);
-      const m = Math.min(pxL, pxR, pzL, pzR);
-      if (m === pxL) P.x -= pxL;
-      else if (m === pxR) P.x += pxR;
-      else if (m === pzL) P.z -= pzL;
-      else P.z += pzR;
-    });
+    if (dhPrevXZ.on){
+      P.x = dhClipAxis('x', dhPrevXZ.x, P.x, boxes);
+      P.z = dhClipAxis('z', dhPrevXZ.z, P.z, boxes);
+    } else {
+      // Static depenetration: push out on the wall-normal axis to the nearer face only.
+      const pr = dhPlayerRadius(), ph = (typeof dhPlayerHeight === 'function') ? dhPlayerHeight() : 1.8;
+      const py = P.y || 0;
+      boxes.forEach(box => {
+        if (!dhBoxHitsPlayer(box, P.x, py, P.z, pr, ph)) return;
+        const useX = box.axis === 'x' || (!box.axis && box.hw <= box.hd);
+        if (useX){
+          const lo = box.x - box.hw - pr, hi = box.x + box.hw + pr;
+          P.x = (Math.abs(P.x - lo) <= Math.abs(P.x - hi)) ? lo : hi;
+        } else {
+          const lo = box.z - box.hd - pr, hi = box.z + box.hd + pr;
+          P.z = (Math.abs(P.z - lo) <= Math.abs(P.z - hi)) ? lo : hi;
+        }
+      });
+    }
+    dhRememberPlayer();
     return P;
   }
   function dhSolidAt(x, y, z, pad){
     pad = pad == null ? .08 : pad;
+    const boxes = (typeof dhCollisionBoxes === 'function') ? dhCollisionBoxes() : [];
+    for (let i = 0; i < boxes.length; i++){
+      const b = boxes[i];
+      if (x + pad > b.x - b.hw && x - pad < b.x + b.hw &&
+          z + pad > b.z - b.hd && z - pad < b.z + b.hd &&
+          y + pad > b.y - b.hh && y - pad < b.y + b.hh) return b;
+    }
     if (typeof solids === 'undefined' || !solids) return null;
     for (let i = 0; i < solids.length; i++){
       const b = solids[i];
       if (!b || !b.active || b.camSkip || !b.mesh) continue;
       // Hidden instance-source meshes still collide; only skip if the proxy/group was explicitly disabled.
       if (b.mesh.visible === false && !(b.mesh.userData && b.mesh.userData.dhProxy) && !(b._dh)) continue;
-      if (Math.abs(x - b.mesh.position.x) < b.hw + pad && Math.abs(y - b.mesh.position.y) < b.hh + pad && Math.abs(z - b.mesh.position.z) < b.hd + pad) return b;
+      const p = b.mesh.position;
+      if (Math.abs(x - p.x) < b.hw + pad && Math.abs(y - p.y) < b.hh + pad && Math.abs(z - p.z) < b.hd + pad) return b;
     }
     return null;
   }
@@ -2857,14 +3008,25 @@
     if (typeof fpOn === 'function' ? !fpOn() : (cam.dist > 1)) return false;
     const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw);
     const ey = P.y + dhEyeHeight();
+    const clear = DH_CAM_CLEAR;
+    const boxes = (typeof dhCollisionBoxes === 'function') ? dhCollisionBoxes() : [];
+    function camBlocked(x, y, z){
+      for (let i = 0; i < boxes.length; i++){
+        const b = boxes[i];
+        if (x + clear > b.x - b.hw && x - clear < b.x + b.hw &&
+            z + clear > b.z - b.hd && z - clear < b.z + b.hd &&
+            y + clear > b.y - b.hh && y - clear < b.y + b.hh) return true;
+      }
+      return !!dhSolidAt(x, y, z, clear);
+    }
     let off = 0.22;
-    while (off > 0 && dhSolidAt(P.x + fx * off, ey, P.z + fz * off, 0.1)) off -= 0.05;
+    while (off > 0 && camBlocked(P.x + fx * off, ey, P.z + fz * off)) off -= 0.02;
     let x = P.x + fx * off, y = ey, z = P.z + fz * off;
     let guard = 0;
-    while (guard++ < 12 && dhSolidAt(x, y, z, 0.1)) y += 0.12;
+    while (guard++ < 12 && camBlocked(x, y, z)) y += 0.12;
     camera.position.set(x, y, z);
-    if (typeof camera.near === 'number' && camera.near > 0.08){
-      camera.near = 0.08;
+    if (typeof camera.near === 'number'){
+      camera.near = Math.min(camera.near, 0.08);
       if (typeof camera.updateProjectionMatrix === 'function') camera.updateProjectionMatrix();
     }
     const cp = Math.cos(cam.pitch);
@@ -3782,6 +3944,9 @@
     const code = e.code || '';
     const map = {KeyW:[0,1], KeyS:[0,-1], KeyA:[-1,0], KeyD:[1,0]};
     if (!(code in map)) return false;
+    if (down !== false && e.repeat) return true; // held movement is the generic step()/resolve() path
+    if (down !== false && e._dhMoved) return true; // bind() and dhKey() both see the same event
+    if (down !== false) e._dhMoved = true;
     if (down !== false && typeof P !== 'undefined' && P && typeof cam !== 'undefined' && cam){
       const step = 0.45; // metres — a short W tap still takes a small step
       const sx = map[code][0], sz = map[code][1];

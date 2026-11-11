@@ -41,7 +41,7 @@ function world(store0, opts){
   ctx.window = ctx;
   ctx.window.location = ctx.location;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec};`, ctx);
   return ctx;
 }
 
@@ -478,7 +478,7 @@ chk('opening the Supply Yard menu does not move the player', Wb.P.x === spawnP.x
 Wb.A.dhToggleYard(false);
 Wb.P.x = 80; Wb.P.z = 90; Wb.P.y = -4; Wb.P.vy = -8;
 Wb.A.dhClampPlayer();
-chk('world bounds clamp you onto the grass instead of walking off the edge', Math.abs(Wb.P.x) <= Wb.A.DH_BOUND.x && Math.abs(Wb.P.z) <= Wb.A.DH_BOUND.z && Wb.P.y >= .05, {P: {x:Wb.P.x,z:Wb.P.z,y:Wb.P.y}, bound:Wb.A.DH_BOUND});
+chk('world bounds clamp you onto the grass instead of walking off the edge', Math.abs(Wb.P.x) <= Wb.A.DH_BOUND.x && Math.abs(Wb.P.z) <= Wb.A.DH_BOUND.z && Wb.P.y >= 0, {P: {x:Wb.P.x,z:Wb.P.z,y:Wb.P.y}, bound:Wb.A.DH_BOUND});
 Wb.P.x = spawnP.x; Wb.P.z = spawnP.z;
 const nearSpawn = Wb.A.dhNearYard();
 chk('E at spawn still stakes (yard trigger is not so huge it steals the first E)', nearSpawn === false && Wb.A.dhNearOwnPlot() === true, {nearYard:nearSpawn, nearPlot:Wb.A.dhNearOwnPlot()});
@@ -1309,8 +1309,27 @@ chk('W taps into a built wall from inside also stop at the wall', Ww.P.z < foot.
 const boxes = Ww.A.dhCollisionBoxes();
 const bricks = boxes.filter(b => b.id === 'brick');
 const panes = boxes.filter(b => b.id === 'pane');
-chk('collision boxes follow the v7 brick grid (not a clump at the origin)', bricks.length === Ww.A.dhBrickTotal() && panes.length >= 2 && !bricks.every(b => Math.abs(b.x) < 0.3 && Math.abs(b.z) < 0.3), {n:bricks.length, total:Ww.A.dhBrickTotal(), panes:panes.length, sample:bricks[0]});
+chk('collision boxes are continuous wall segments on the v7 grid (not a clump at the origin)', bricks.length > 0 && bricks.length <= Ww.A.dhBrickTotal() && panes.length >= 2 && !bricks.every(b => Math.abs(b.x) < 0.3 && Math.abs(b.z) < 0.3) && bricks.some(b => Math.abs(b.z - (foot.z0 + thick / 2)) < 0.06), {n:bricks.length, total:Ww.A.dhBrickTotal(), panes:panes.length, sample:bricks[0], z0:foot.z0});
+
+// Front wall (not the door): stand south of a solid pier and walk north.
+const midAlong = (Ww.A.dhBrickAlongCount(0) / 2) | 0;
+const pier = Ww.A.dhWorldRec(0, ['brick', 0, 0, midAlong + 1, 0]); // one-brick pier between door and front window
+Ww.P.x = pier.x; Ww.P.y = 0.05; Ww.P.z = foot.z0 - 2;
+for (let i = 0; i < 40; i++) Ww.A.dhMovePlayer(0, 0.45);
+chk('walking into the front wall (beside the door) from outside stops at the wall', Ww.P.z <= foot.z0 - R + 0.05 && Ww.P.z > foot.z0 - 2, {z:Ww.P.z, z0:foot.z0, limit: foot.z0 - R, pierX:pier.x});
+Ww.P.x = pier.x; Ww.P.z = midZ;
+for (let i = 0; i < 40; i++) Ww.A.dhMovePlayer(0, -0.45);
+chk('walking into the front wall from inside also stops at the wall', Ww.P.z >= foot.z0 + thick + R - 0.05 && Ww.P.z < midZ, {z:Ww.P.z, z0:foot.z0, limit: foot.z0 + thick + R});
+
+// Approach-side clip must not eject the player through a thin wall.
+Ww.P.x = pier.x; Ww.P.z = foot.z0 - R + 0.02; // slightly overlapping from the south
+Ww.A.dhRememberPlayer();
+Ww.P.z = foot.z0 + thick / 2 + 0.02; // past the mid-plane, as a large step() hitch would
+Ww.A.dhAfterPhysicsStep();
+chk('crossing a wall midpoint still ejects back to the entry side', Ww.P.z <= foot.z0 - R + 0.05, {z:Ww.P.z, z0:foot.z0, limit: foot.z0 - R});
+
 chk('the front face has a window as well as the door', (Ww.A.dhWindowFaces() || []).indexOf(0) >= 0 && (Ww.A.dh.pieces[0]||[]).some(a => a[0]==='winframe' && (a[4]|0)===0), {faces:Ww.A.dhWindowFaces(), frames:(Ww.A.dh.pieces[0]||[]).filter(a=>a[0]==='winframe')});
+chk('#dhdebug is off without the hash and the helper exists', Ww.A.dhDebugActive() === false && typeof Ww.A.dhRefreshDebugColliders === 'function' && typeof Ww.A.dhCamClearance === 'function' && Ww.A.dhCamClearance() >= 0.3, {dbg:Ww.A.dhDebugActive(), clear:Ww.A.dhCamClearance && Ww.A.dhCamClearance()});
 Ww.A.dreamhouseStop();
 })();
 
