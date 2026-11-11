@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Dream House HUD — caption above the toolbar</title>
+<style>
+  html,body{margin:0;height:100%;font-family:Nunito,Trebuchet MS,Arial,sans-serif;background:#7ec8ff;overflow:hidden}
+  #obby{position:relative;width:100%;height:100%;background:linear-gradient(#9de0ff 0 46%, #b6ec9a 46% 100%);}
+  /* distant trees */
+  .tree{position:absolute;bottom:42%;width:0;height:0;border-left:28px solid transparent;border-right:28px solid transparent;border-bottom:64px solid #2ea44f;filter:drop-shadow(0 2px 0 rgba(0,0,0,.08))}
+  .tree:after{content:'';position:absolute;left:-18px;top:28px;border-left:18px solid transparent;border-right:18px solid transparent;border-bottom:40px solid #37b35a}
+  .lot{position:absolute;left:50%;bottom:38%;transform:translateX(-58%);width:280px;height:150px;background:#c8e89a;border:6px solid #e8d9a8;border-radius:8px;box-shadow:inset 0 0 0 3px rgba(255,255,255,.35)}
+  .avatar{position:absolute;left:50%;bottom:40%;transform:translateX(-50%);z-index:3}
+  .avatar .head{width:36px;height:36px;background:#f3c7a3;border-radius:8px;margin:0 auto;position:relative;z-index:1;box-shadow:0 0 0 3px #fff inset}
+  .avatar .hair{position:absolute;left:2px;right:2px;top:-8px;height:16px;background:#3a2a1c;border-radius:8px 8px 0 0}
+  .avatar .body{width:54px;height:58px;background:#3a7af0;border-radius:10px;margin-top:-4px;position:relative}
+  .avatar .leg{position:absolute;bottom:-28px;width:16px;height:30px;background:#f3c7a3;border-radius:0 0 6px 6px}
+  .avatar .leg.l{left:8px}.avatar .leg.r{right:8px}
+  .chip{position:absolute;top:14px;left:16px;background:rgba(255,255,255,.92);border-radius:14px;padding:6px 12px;font-weight:900;color:#1d2340;box-shadow:0 4px 0 rgba(0,0,0,.12);font-size:15px}
+  .exit{position:absolute;top:14px;right:16px;background:rgba(255,255,255,.92);border-radius:14px;padding:6px 12px;font-weight:900;color:#1d2340;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+  .guide{position:absolute;top:18px;left:50%;transform:translateX(-50%);background:rgba(29,35,64,.88);color:#fff;font-weight:900;padding:8px 16px;border-radius:999px;font-size:15px}
+
+  .otip{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);background:rgba(29,35,64,.85);color:#fff;font-weight:800;font-size:17px;padding:12px 20px;border-radius:16px;text-align:center;transition:opacity .6s;max-width:92vw}
+  .otip.hide{opacity:0;pointer-events:none}
+  .fsnear{display:none;position:absolute;left:50%;bottom:120px;transform:translateX(-50%);z-index:6;border:3px solid #fff;border-radius:18px;padding:9px 18px;background:#8b5cf6;color:#fff;font:inherit;font-weight:900;font-size:18px;box-shadow:0 4px 0 #5b34c0;cursor:pointer}
+  .fsnear.show{display:block}
+  .dhnear{background:#2ec27e;box-shadow:0 4px 0 #1f9460}.dhnear small{color:#2ec27e}
+  .dhbar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:14;width:min(96vw,820px);background:rgba(255,255,255,.94);border:3px solid #ffd23f;border-radius:16px;padding:6px 8px 8px;box-shadow:0 4px 0 rgba(0,0,0,.12);pointer-events:auto}
+  .dhtools,.dhcols,.dhparts{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:3px 0}
+  .dhb,.dhp{border:2px solid #ffe08a;background:#fff;border-radius:10px;padding:4px 8px;font:inherit;font-weight:900;font-size:14px;color:#1d2340;cursor:pointer;min-height:40px}
+  .dhb.on,.dhp.on{border-color:#2ec27e;background:#eafaf0;box-shadow:0 0 0 2px #2ec27e}
+  .dinv{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:4px}
+  .dhi{background:#fff8e8;border:2px solid #ffe08a;border-radius:10px;padding:2px 8px;font-weight:900;font-size:13px;color:#1d2340}
+  .dhi b{margin-left:3px}
+  #dhAct{bottom:214px;z-index:8;font-size:20px;padding:10px 22px}
+  @media (max-width:760px),(max-height:520px){#dhAct.dhnear{bottom:max(200px,calc(env(safe-area-inset-bottom) + 168px));font-size:16px}}
+  .touchui #dhAct.dhnear{bottom:max(248px,calc(env(safe-area-inset-bottom) + 214px))}
+  @media (max-width:760px),(max-height:520px){.dhbar{bottom:max(8px,env(safe-area-inset-bottom));padding:4px}.dhb,.dhp{font-size:12px;min-height:36px;min-width:48px;padding:3px 5px}.touchui .dhbar{bottom:max(118px,calc(env(safe-area-inset-bottom) + 96px))}}
+  /* t252u: Dream House caption sits above the toolbar; the E prompt sits above the caption (desktop, mobile, touch). */
+  #obby.dhmode .otip{bottom:calc(var(--dhbar-clear, 160px) + 8px);z-index:15;max-width:min(92vw,720px)}
+  #obby.dhmode #dhAct,
+  #obby.dhmode #dhAct.dhnear,
+  #obby.dhmode button.dhnear#dhAct,
+  #obby.touchui.dhmode #dhAct,
+  #obby.touchui.dhmode #dhAct.dhnear{bottom:calc(var(--dhbar-clear, 160px) + var(--dhtip-clear, 0px) + 8px);z-index:15}
+  @media (max-width:760px),(max-height:520px){
+    #obby.dhmode #dhAct,
+    #obby.dhmode #dhAct.dhnear,
+    #obby.touchui.dhmode #dhAct.dhnear{bottom:calc(var(--dhbar-clear, 160px) + var(--dhtip-clear, 0px) + 8px)}
+  }
+</style>
+<body>
+<div id="obby" class="dhmode">
+  <div class="tree" style="left:8%"></div>
+  <div class="tree" style="left:16%;bottom:44%"></div>
+  <div class="tree" style="left:24%"></div>
+  <div class="tree" style="right:10%;left:auto"></div>
+  <div class="tree" style="right:20%;left:auto;bottom:45%"></div>
+  <div class="lot"></div>
+  <div class="avatar"><div class="head"><i class="hair"></i></div><div class="body"><i class="leg l"></i><i class="leg r"></i></div></div>
+  <div class="chip">🏡 96 &nbsp;🧱 16 &nbsp; Hands empty</div>
+  <div class="guide">➤ Go to the Supply Yard</div>
+  <div class="exit">🚪 Exit</div>
+  <div class="otip" id="oTip">⌨️ WASD move · Space jump · E buy / carry / build · Q dump · R rotate · 1-9 job · Esc menu<br>🏡 Re-build your house with bricks, concrete and wood, then paint and furnish it from the shop!</div>
+  <button class="fsnear dhnear show" id="dhAct">E: Place stake here · Stakes 13/36 <small>E</small></button>
+  <div class="dhbar" id="dhBar">
+    <div class="dhtools">
+      <button class="dhb on">📍 Stake</button>
+      <button class="dhb">🕳️ Dig</button>
+      <button class="dhb">🌀 Mix</button>
+      <button class="dhb">🪣 Pour</button>
+      <button class="dhb">🧱 Brick</button>
+      <button class="dhb">🪵 Stud</button>
+      <button class="dhb">🪜 Rafter</button>
+      <button class="dhb">🏠 Shingle</button>
+      <button class="dhb">🚪 Frame</button>
+      <button class="dhb">🪟 Glass</button>
+      <button class="dhb">🎨 Paint</button>
+      <button class="dhb">🛋️ Furnish</button>
+      <button class="dhb">📦 Dump</button>
+      <button class="dhb">📦 Supply Yard</button>
+      <button class="dhb">🛒 Shop</button>
+    </div>
+    <div class="dinv">
+      <span class="dhi">🧱<b>16</b></span>
+      <span class="dhi">🪨<b>2</b></span>
+      <span class="dhi">🏖️<b>2</b></span>
+      <span class="dhi">🪵<b>8</b></span>
+      <span class="dhi">🏠<b>0</b></span>
+      <span class="dhi">🚪<b>0</b></span>
+      <span class="dhi">🪟<b>0</b></span>
+      <span class="dhi">🎨<b>0</b></span>
+      <span class="dhi">🛋️<b>0</b></span>
+    </div>
+  </div>
+</div>
+<script>
+function dhLayoutHud(){
+  const o = document.getElementById('obby');
+  const bar = document.getElementById('dhBar');
+  const tip = document.getElementById('oTip');
+  if (!o) return;
+  const playing = o.classList.contains('dhmode') && bar && bar.style.display !== 'none';
+  if (!playing){
+    o.style.removeProperty('--dhbar-clear');
+    o.style.removeProperty('--dhtip-clear');
+    return;
+  }
+  const ro = o.getBoundingClientRect();
+  const rb = bar.getBoundingClientRect();
+  const barClear = Math.max(0, Math.round(ro.bottom - rb.top));
+  o.style.setProperty('--dhbar-clear', barClear + 'px');
+  const tipHidden = !tip || tip.classList.contains('hide') || tip.style.display === 'none';
+  let tipClear = 0;
+  if (!tipHidden){
+    const h = Math.round(tip.getBoundingClientRect().height || tip.offsetHeight || 0);
+    if (h > 0) tipClear = h + 8;
+  }
+  o.style.setProperty('--dhtip-clear', tipClear + 'px');
+}
+document.fonts && document.fonts.ready.then(() => dhLayoutHud());
+dhLayoutHud();
+addEventListener('resize', dhLayoutHud);
+document.title = 'READY';
+</script>
+</body>
+</html>
