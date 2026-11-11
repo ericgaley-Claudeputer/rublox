@@ -39,7 +39,7 @@ function world(store0, opts){
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, dhAimCone};`, ctx);
   return ctx;
 }
 
@@ -772,7 +772,8 @@ Wh.cam.pitch = 0.28;
 Wh.keys.KeyK = true;
 Wh.A.dreamhouseUpdate(0.07);
 Wh.keys.KeyK = false;
-if (Wh.cam.pitch < 0.32 || Wh.cam.pitch > 0.5) Wh.cam.pitch = 0.37;
+const nextStake = Wh.A.dhNextBuildCell('mark');
+if (nextStake) aimFoot(Wh, nextStake.ix, nextStake.iz);
 const marksBefore = (Wh.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length;
 const aimed = Wh.A.dhAimFootCell('mark');
 Wh.A.dhKey({code:'KeyE', repeat:false});
@@ -913,6 +914,65 @@ chk('clearing keys on blur/pointer-lock stops a stuck W so you do not keep slidi
   if (Wr.A.dh.intro) Wr.A.dhSkipIntro();
   chk('after Reset, skipping the intro grants the same starter pile as a brand-new game (16 bricks and the rest)', (Wr.A.dh.stock.brick|0) === (newStock.brick|0) && (Wr.A.dh.stock.brick|0) === 16 && (Wr.A.dh.stock.cement|0) === (newStock.cement|0) && (Wr.A.dh.stock.sand|0) === (newStock.sand|0) && (Wr.A.dh.stock.wood|0) === (newStock.wood|0), {reset:Wr.A.dh.stock, fresh:newStock});
 })();
+
+(function(){
+  // Arrow keys must reach look code even if Skip / a HUD button still has focus.
+  const Wa = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+  Wa.A.buildDreamHouse(); Wa.A.dh.introSeen = true; Wa.A.dh.intro = null; Wa.A.dreamhouseEnter();
+  function node(id, tag, cls, parent){
+    const el = {id, tagName:(tag||'DIV').toUpperCase(), className: cls||'', parentElement: parent||null, parentNode: parent||null};
+    el.closest = function(sel){
+      let n = this;
+      const ids=[], tags=[], classes=[];
+      String(sel).split(',').forEach(part => {
+        part = part.trim();
+        if (part.startsWith('#')) ids.push(part.slice(1));
+        else if (part.startsWith('.')) classes.push(part.slice(1));
+        else tags.push(part.toLowerCase());
+      });
+      while (n){
+        if (ids.includes(n.id)) return n;
+        if (tags.includes((n.tagName||'').toLowerCase())) return n;
+        const cn = ' ' + (n.className||'') + ' ';
+        if (classes.some(c => cn.includes(' '+c+' '))) return n;
+        n = n.parentElement;
+      }
+      return null;
+    };
+    return el;
+  }
+  const skip = node('dhSkip', 'BUTTON', 'dhskip');
+  const yaw0 = Wa.cam.yaw;
+  const ev = {type:'keydown', code:'ArrowRight', key:'ArrowRight', target: skip, preventDefault(){}, stopPropagation(){}};
+  chk('a focused Skip / HUD button is not treated as a key-blocking UI target', Wa.A.dhIsUiEvent(ev, 'key') === false, {ui: Wa.A.dhIsUiEvent(ev, 'key')});
+  const noted = Wa.A.dhNoteLookKey(ev, true);
+  Wa.A.dhLookWithKeys(0.2);
+  chk('arrow keys still look when a leftover button is focused', noted === true && Wa.keys.ArrowRight === true && Math.abs(Wa.cam.yaw - yaw0) > 0.05, {noted, key:Wa.keys.ArrowRight, yaw:Wa.cam.yaw, before:yaw0});
+
+  // Default spawn look (after intro) must not place a stake unless the crosshair is within ~12°.
+  const Wsp = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+  Wsp.A.buildDreamHouse(); Wsp.A.dh.introSeen = true; Wsp.A.dh.intro = null; Wsp.A.dreamhouseEnter();
+  Wsp.A.dhForceFirstPerson();
+  const sp = Wsp.A.dhSpawnPos(0);
+  Wsp.P.x = sp.x; Wsp.P.y = .05; Wsp.P.z = sp.z;
+  Wsp.cam.yaw = Math.PI; Wsp.cam.pitch = .37;
+  const marksSpawn = (Wsp.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length;
+  const aimedSpawn = Wsp.A.dhAimFootCell('mark');
+  const noAim = Wsp.A.dhMarkOrDig();
+  chk('E at the default spawn view does not place a stake unless the crosshair is within 12° of a spot', noAim === false && (Wsp.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length === marksSpawn, {noAim, aimedSpawn, marks:(Wsp.A.dh.pieces[0]||[]).filter(a=>a[0]==='mark').length, cam:Wsp.cam, P:{x:Wsp.P.x,z:Wsp.P.z}});
+
+  // Toolbar hides while paused.
+  const Wp = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+  Wp.A.buildDreamHouse(); Wp.A.dh.introSeen = true; Wp.A.dh.intro = null; Wp.A.dreamhouseEnter();
+  Wp.paused = false;
+  Wp.A.dhBar(); Wp.A.dhSyncPauseHud();
+  const bar = Wp.els['#dhBar'];
+  chk('the toolbar is visible while playing', !!(bar && bar.style.display !== 'none' && bar.style.visibility !== 'hidden' && Wp.A.dhMenusUp() === false), bar && bar.style);
+  Wp.paused = true;
+  Wp.A.dhBar(); Wp.A.dhSyncPauseHud();
+  chk('the toolbar is hidden while paused', !!(bar && (bar.style.display === 'none' || bar.style.visibility === 'hidden') && Wp.A.dhMenusUp() === true), bar && bar.style);
+})();
+
 
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);

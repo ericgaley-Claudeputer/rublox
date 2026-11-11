@@ -115,9 +115,9 @@ test('start, bar render, tip hide, and resize all relayout the HUD', () => {
 });
 
 test('version is bumped and existing saves are not involved', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.11-15'"));
+  assert.ok(src.includes("const BUILD = '2026.11.11-16'"));
   const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
-  assert.strictEqual(v.build, '2026.11.11-15');
+  assert.strictEqual(v.build, '2026.11.11-16');
   assert.ok(src.includes("const DH_KEY = 'rubloxDreamHouse'") || dhSrc.includes("DH_KEY = 'rubloxDreamHouse'"));
 });
 
@@ -211,9 +211,22 @@ test('Yes, Cancel, and Esc close the reset confirm while Dream House is running,
   // Simulate DH running: pointer is locked, confirm is opened from the pause menu.
   document.pointerLockElement = canvas;
   ctx.dhOpenReset();
+  // Simulate start(): every body child except #obby is marked inert. The confirm must be exempt.
+  modal.attrs = modal.attrs || {};
+  modal.setAttribute = function(n, v){ this.attrs[n] = v == null ? '' : String(v); if (n === 'inert') this.inert = true; };
+  modal.removeAttribute = function(n){ delete this.attrs[n]; if (n === 'inert') this.inert = false; };
+  modal.getAttribute = function(n){ return this.attrs[n] != null ? this.attrs[n] : null; };
+  modal.attrs['inert'] = '';
+  modal.attrs['aria-hidden'] = 'true';
+  modal.inert = true;
+  ctx.dhClearDialogInert(modal);
+  ctx.dhOpenReset();
   assert.ok(ctx.dhResetModalIsOpen(), 'open should show the dialog');
   assert.ok(modal.open || modal.classList.contains('show'), 'showModal or .show');
   assert.strictEqual(document.pointerLockElement, null, 'opening the confirm must exit pointer lock');
+  assert.ok(!modal.inert && !modal.getAttribute('inert') && modal.getAttribute('aria-hidden') !== 'true', 'open confirm must not be inert or aria-hidden');
+  assert.ok(ctx.dhInertExempt(modal) === true && ctx.dhInertExempt({id:'obby'}) === true, 'confirm and #obby are inert-exempt');
+  assert.ok(ctx.dhInertExempt({id:'home', tagName:'DIV', classList:{contains(){ return false; }}}) === false);
   assert.ok(ctx.dhIsUiEvent({target: yes}), 'Yes is a UI target');
   assert.ok(ctx.dhIsUiEvent({target: no}), 'Cancel is a UI target');
   assert.ok(ctx.dhIsUiEvent({target: barBtn}), 'toolbar button is a UI target');
@@ -234,6 +247,25 @@ test('Yes, Cancel, and Esc close the reset confirm while Dream House is running,
   assert.ok(!ctx.dhResetModalIsOpen(), 'Yes closes the confirm');
   assert.strictEqual(ctx.confirmed, 1, 'Yes ran the reset');
 });
+
+
+test('pause buttons stay clickable and the DH toolbar is hidden while paused', () => {
+  assert.ok(/#oPausePanel\.show|\.opanel\.show\{display:grid;pointer-events:auto/.test(src));
+  assert.ok(src.includes('.opanel{') && src.includes('z-index:60'));
+  assert.ok(src.includes('padding-bottom:56px') || src.includes('padding-bottom: 56px'));
+  assert.ok(src.includes('#obby.paused .dhbar') && src.includes('display:none !important'));
+  assert.ok(src.includes("classList.toggle('paused'") && src.includes('dhSyncPauseHud'));
+  assert.ok(src.includes('z-index:70') && src.includes('id="oExit2"') && src.includes('id="dhResetBtn"'));
+  assert.ok(src.includes("e.target.closest('#oPausePanel, #oExit, #oExit2"));
+  assert.ok(src.includes('function setHomeInert') && src.includes('dhInertExempt'));
+});
+
+test('arrow look records e.key and e.code even when a button is focused', () => {
+  assert.ok(dhSrc.includes('function dhNoteLookKey') && dhSrc.includes("e.key") && dhSrc.includes('ArrowRight'));
+  assert.ok(src.includes('dhNoteLookKey(e, true)') && src.includes('dhNoteLookKey(e, false)'));
+  assert.ok(dhSrc.includes("kind === 'key'") && dhSrc.includes('not merely because a leftover button'));
+});
+
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed) process.exit(1);

@@ -974,16 +974,8 @@
       const w = dhCellWorld(plot, c.ix, c.iz, 0.2);
       pts.push({plot, ix: c.ix, iz: c.iz, x: w.x, y: w.y, z: w.z, wx: w.x, wz: w.z});
     });
-    const cone = dhAimCone(pts, DH_AIM_REACH);
-    if (cone) return cone;
-    const hit = dhGroundHit(7);
-    if (!hit) return null;
-    let best = null, bd = 1.05;
-    pts.forEach(p => {
-      const d = Math.hypot(p.x - hit.x, p.z - hit.z);
-      if (d < bd){ bd = d; best = p; }
-    });
-    return best;
+    // Require the crosshair to be within ~12° of the spot (no generous ground-proximity snap).
+    return dhAimCone(pts, DH_AIM_REACH);
   }
   function dhLookRay(){
     // Keyboard / stick / touch all write cam.yaw and cam.pitch. Prefer those so a stale
@@ -1397,20 +1389,12 @@
     const open = slots.filter(s => !s.filled).map(s => Object.assign({}, s, {x: s.x, y: s.y, z: s.z}));
     const cone = dhAimCone(open, 6);
     if (cone) return cone;
-    const hit = dhGroundHit(7);
-    if (hit){
-      let best = null, bd = 1.5;
-      open.forEach(s => {
-        const d = Math.hypot(s.x - hit.x, s.z - hit.z, (s.y - hit.y) * 0.4);
-        if (d < bd){ bd = d; best = s; }
-      });
-      if (best) return best;
-    }
-    // Only snap to the wall you are actually looking at, not a hidden far slot.
+    // Only snap to the wall you are actually looking at, and only if it is in the 12° cone.
     const aim = dhAimCell();
     if (!aim || aim.plot !== dh.mine) return null;
     const face = dhWallFaceFromAim(aim);
-    return dhNextBrick(aim.plot, face == null ? 0 : face, aim);
+    const next = dhNextBrick(aim.plot, face == null ? 0 : face, aim);
+    return next ? dhAimCone([next], 6) : null;
   }
   function dhDryNeed(){ return 1.6 / (1 + dhUp('dry') * .7); }
   function dhDryDone(){ return 5 / (1 + dhUp('dry') * .8); }
@@ -1792,6 +1776,11 @@
   }
   function dhSkipIntro(){
     if (!dh || !dh.intro) return false;
+    const skip = $('#dhSkip'); if (skip && skip.blur) try { skip.blur(); } catch (e){}
+    if (typeof document !== 'undefined' && document.activeElement && document.activeElement.blur){
+      const ae = document.activeElement;
+      if (ae && ae.closest && ae.closest('#dhSkip, #dhCut, .dhskip, button')) try { ae.blur(); } catch (e){}
+    }
     dhFinishIntro();
     return true;
   }
@@ -2368,11 +2357,13 @@
   function dhUpdateHandHud(){
     const el = $('#dhHand'); if (!el || !dh) return;
     const held = dhHeldInfo();
-    const hide = !!(dh.intro);
+    const hide = !!(dh.intro) || dhMenusUp();
     el.style.display = hide ? 'none' : 'flex';
+    el.style.visibility = hide ? 'hidden' : '';
     el.style.zIndex = '41';
     el.style.pointerEvents = 'none';
     el.classList.toggle('show', !hide);
+    el.classList.toggle('dh-paused-hide', hide);
     el.innerHTML = '<span class="dhhandE">' + held.emoji + '</span><small>' + held.label + '</small>';
   }
   function dhUpdateHand(){
@@ -2551,10 +2542,33 @@
     if (typeof dhUpdateHandHud === 'function') dhUpdateHandHud();
     const tb = $('#dhTool'); if (tb) tb.textContent = dh.tool === 'delete' ? '🗑️' : ({mark:'📍', dig:'🕳️', mix:'🌀', pour:'🪣', brick:'🧱', stud:'🪵', rafter:'🪜', shingle:'🏠', frame:'🚪', glass:'🪟', paint:'🎨', furn:'🛋️'}[dh.job] || '🏗️');
   }
+  function dhMenusUp(){
+    if (typeof paused !== 'undefined' && paused) return true;
+    if (typeof menuOpen !== 'undefined' && menuOpen) return true;
+    if (typeof dhResetModalIsOpen === 'function' && dhResetModalIsOpen()) return true;
+    if (dh && (dh.shopOpen || dh.yardOpen || dh.upOpen)) return true;
+    return false;
+  }
+  function dhSyncPauseHud(){
+    const hide = dhMenusUp();
+    if (typeof document !== 'undefined' && document.getElementById){
+      const root = document.getElementById('obby');
+      if (root && root.classList){ root.classList.toggle('dh-paused', hide); root.classList.toggle('paused', !!(typeof paused !== 'undefined' && paused)); }
+    }
+    ['#dhBar', '#dhHand', '#dhAct'].forEach(id => {
+      const el = $(id); if (!el) return;
+      if (hide){ el.style.display = 'none'; el.style.visibility = 'hidden'; el.style.pointerEvents = 'none'; el.classList.add('dh-paused-hide'); }
+      else { el.style.visibility = ''; el.style.pointerEvents = ''; el.classList.remove('dh-paused-hide'); }
+    });
+    if (!hide){
+      const bar = $('#dhBar'); if (bar){ bar.style.display = ''; bar.classList.add('show'); }
+    }
+  }
   function dhBar(){
     if (!dh) return;
     const bar = $('#dhBar'); if (!bar) return;
-    bar.style.display = ''; bar.classList.add('show');
+    if (dhMenusUp()){ bar.style.display = 'none'; bar.style.visibility = 'hidden'; bar.style.pointerEvents = 'none'; bar.classList.add('dh-paused-hide'); return; }
+    bar.style.display = ''; bar.style.visibility = ''; bar.style.pointerEvents = ''; bar.classList.remove('dh-paused-hide'); bar.classList.add('show');
     const jobs = '<div class="dhtools">' + DH_JOBS.map(j => {
       const lab = {mark:'📍 Stake', dig:'🕳️ Dig', mix:'🌀 Mix', pour:'🪣 Pour', brick:'🧱 Brick', stud:'🪵 Stud', rafter:'🪜 Rafter', shingle:'🏠 Shingle', frame:'🚪 Frame', glass:'🪟 Glass', paint:'🎨 Paint', furn:'🛋️ Furnish'}[j];
       return '<button class="dhb' + (dh.job === j && dh.tool === 'place' ? ' on' : '') + '" data-dhjob="' + j + '">' + lab + '</button>';
@@ -2645,9 +2659,31 @@
     if (jp.rb || jp[5]){ dhCycle(1); return true; }
     return false;
   }
-  function dhIsUiEvent(e){
-    const t = e && (e.target || e.srcElement);
+  function dhEventTarget(e){
+    if (e && (e.target || e.srcElement)) return e.target || e.srcElement;
+    if (typeof document !== 'undefined') return document.activeElement || null;
+    return null;
+  }
+  function dhNodeOpenMenu(n){
+    if (!n) return null;
+    const root = (n.closest) ? n.closest('dialog, .modal, .opanel, #dhResetModal, #oPausePanel, #setModal, #dhShop, #dhYard, #dhUp') : null;
+    if (!root) return null;
+    if (root.id === 'dhResetModal' && typeof dhResetModalIsOpen === 'function' && !dhResetModalIsOpen()) return null;
+    if (root.classList && root.classList.contains('opanel') && !root.classList.contains('show') && !root.open) return null;
+    if ((root.id === 'dhShop' || root.id === 'dhYard' || root.id === 'dhUp') && dh && !dh.shopOpen && !dh.yardOpen && !dh.upOpen) return null;
+    if (root.tagName && String(root.tagName).toLowerCase() === 'dialog' && root.open === false && !(root.classList && root.classList.contains('show'))) return null;
+    return root;
+  }
+  function dhIsUiEvent(e, kind){
+    const t = dhEventTarget(e);
     if (!t) return false;
+    const isKey = kind === 'key' || !!(e && e.type && /^key/i.test(e.type || ''));
+    if (isKey){
+      // Keys are only ignored when focus is inside an open menu/modal or a text input —
+      // not merely because a leftover button (Skip, toolbar, Exit) still has focus.
+      if (t.closest && t.closest('input, textarea, select, [contenteditable="true"]')) return true;
+      return !!dhNodeOpenMenu(t);
+    }
     if (typeof t.closest === 'function'){
       return !!t.closest('dialog, .modal, .menu, .opanel, .mbox, .dhbar, .dhhand, .obtns, .ohud, button, a, input, label, select, textarea, #dhResetModal, #dhBar, #dhTip, #dhSkip, #dhCut, #dhLookHint, #oPausePanel, #setModal');
     }
@@ -2663,10 +2699,32 @@
     }
     return false;
   }
+  function dhNoteLookKey(e, down){
+    if (!e || typeof keys === 'undefined' || !keys) return false;
+    if (dhIsUiEvent(e, 'key')) return false;
+    const code = e.code || '';
+    const key = e.key || '';
+    const isLook = /^(ArrowLeft|ArrowRight|ArrowUp|ArrowDown|KeyI|KeyJ|KeyK|KeyL)$/.test(code)
+      || key === 'ArrowLeft' || key === 'ArrowRight' || key === 'ArrowUp' || key === 'ArrowDown'
+      || key === 'Left' || key === 'Right' || key === 'Up' || key === 'Down';
+    if (!isLook) return false;
+    const on = down !== false;
+    if (code) keys[code] = on;
+    if (key === 'ArrowLeft' || key === 'Left' || code === 'ArrowLeft') keys.ArrowLeft = on;
+    if (key === 'ArrowRight' || key === 'Right' || code === 'ArrowRight') keys.ArrowRight = on;
+    if (key === 'ArrowUp' || key === 'Up' || code === 'ArrowUp') keys.ArrowUp = on;
+    if (key === 'ArrowDown' || key === 'Down' || code === 'ArrowDown') keys.ArrowDown = on;
+    if (code === 'KeyI' || key === 'i' || key === 'I') keys.KeyI = on;
+    if (code === 'KeyJ' || key === 'j' || key === 'J') keys.KeyJ = on;
+    if (code === 'KeyK' || key === 'k' || key === 'K') keys.KeyK = on;
+    if (code === 'KeyL' || key === 'l' || key === 'L') keys.KeyL = on;
+    return true;
+  }
   function dhKey(e){
     if (!e) return false;
     if (typeof dhOnResetKey === 'function' && dhOnResetKey(e)) return true;
-    if (dhIsUiEvent(e) && e.type && /pointer|mouse|click/i.test(e.type || '')) return true;
+    if (dhIsUiEvent(e, (e.type && /^key/i.test(e.type || '')) ? 'key' : 'pointer') && e.type && /pointer|mouse|click/i.test(e.type || '')) return true;
+    if (typeof dhNoteLookKey === 'function') dhNoteLookKey(e, true);
     if (!dh || e.repeat) return false;
     const k = e.code || '';
     if (dh.intro){
