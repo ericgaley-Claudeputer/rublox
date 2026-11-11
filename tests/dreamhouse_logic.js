@@ -852,7 +852,7 @@ chk('the guide arrow points at the needed pile', !!(guide && cem && (Math.hypot(
 const Ws = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
 Ws.A.buildDreamHouse(); Ws.A.dreamhouseEnter();
 Ws.P.vx = 20; Ws.P.vz = 0; Ws.A.dhClampPlayer();
-chk('first-person walk speed is capped near 4.5 m/s', Math.hypot(Ws.P.vx, Ws.P.vz) <= 4.51 && Ws.A.dhWalkCap() === 4.5, {v:Math.hypot(Ws.P.vx,Ws.P.vz), cap:Ws.A.dhWalkCap()});
+chk('first-person walk speed is capped near 3.6 m/s', Math.hypot(Ws.P.vx, Ws.P.vz) <= 3.61 && Math.abs(Ws.A.dhWalkCap() - 3.6) < 1e-6, {v:Math.hypot(Ws.P.vx,Ws.P.vz), cap:Ws.A.dhWalkCap()});
 Ws.keys.KeyW = true; Ws.P.vx = 4; Ws.P.vz = 0;
 Ws.A.dhClearHeldKeys();
 chk('clearing keys on blur/pointer-lock stops a stuck W so you do not keep sliding', Ws.keys.KeyW === false && Math.abs(Ws.P.vx) < 0.01 && Math.abs(Ws.P.vz) < 0.01, {keys:Ws.keys, v:{x:Ws.P.vx,z:Ws.P.vz}});
@@ -1261,6 +1261,18 @@ if (typeof Ww.A.dhResetProgress === 'function') Ww.A.dhResetProgress();
 const afterWalls = JSON.parse(Ww.store.rubloxDreamHouse);
 chk('#dhtest=v7walls never writes to localStorage (real rubloxDreamHouse is unchanged)', afterWalls && afterWalls.coins === 99 && afterWalls._sentinel === 'keep-me' && (afterWalls.pieces||[]).length === 2 && afterWalls.ver === 6, afterWalls);
 Ww.A.dreamhouseStop();
+
+const Win = world({rubloxDreamHouse: priorJson}, {coins:20, hash:'#dhtest=v6inside'});
+Win.A.buildDreamHouse(); Win.A.dreamhouseEnter();
+Win.A.dh.intro = null;
+const inList = Win.A.dh.pieces[0] || [];
+const inFoot = Win.A.dhFootWorld(0);
+const inSp = Win.A.dhSpawnPos(0);
+chk('#dhtest=v6inside is the furnish house, spawned inside facing the back wall', Win.A.dhTestActive() === true && Win.A.dhTestFixtureId() === 'v6inside' && inList.some(a => a[0]==='door') && inList.filter(a => a[0]==='brick').length === Win.A.dhBrickTotal() && inSp.x > inFoot.x0 + 0.5 && inSp.x < inFoot.x1 - 0.5 && inSp.z > inFoot.z0 + 0.5 && inSp.z < inFoot.z1 - 0.5 && Math.abs(Win.P.x - inSp.x) < 0.2 && Math.abs(Win.P.z - inSp.z) < 0.2 && Math.abs(((Win.cam.yaw % (Math.PI*2)) + Math.PI*2) % (Math.PI*2) - Math.PI) < 0.05, {id:Win.A.dhTestFixtureId(), sp:inSp, foot:inFoot, P:{x:Win.P.x,z:Win.P.z}, yaw:Win.cam.yaw});
+Win.A.dhSave();
+const afterIn = JSON.parse(Win.store.rubloxDreamHouse);
+chk('#dhtest=v6inside never writes to localStorage (real rubloxDreamHouse is unchanged)', afterIn && afterIn.coins === 99 && afterIn._sentinel === 'keep-me' && afterIn.ver === 6, afterIn);
+Win.A.dreamhouseStop();
 
 const Wn = world({rubloxDreamHouse: priorJson}, {coins:20, hash:''});
 Wn.A.buildDreamHouse();

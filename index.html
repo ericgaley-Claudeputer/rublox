@@ -1597,7 +1597,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-27';
+const BUILD = '2026.11.11-28';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -4946,9 +4946,14 @@ const Obby = (() => {
   /* ---------- physics ---------- */
   function overlaps(b, e = .001, B = P){
     const p = b.mesh.position;
+    // Feet exactly on a box top (y === top) still count as standing on it, so
+    // onGround stays true. X/Z resolve separately skips that case so a floor
+    // AABB cannot shove the player. The old `y < top - e` test dropped ground
+    // contact every frame and then treated the foundation slab as a wall
+    // across the doorway.
     return B.x + R > p.x - b.hw + e && B.x - R < p.x + b.hw - e &&
            B.z + R > p.z - b.hd + e && B.z - R < p.z + b.hd - e &&
-           B.y + bodyH() > p.y - b.hh + e && B.y < p.y + b.hh - e;
+           B.y + bodyH() > p.y - b.hh + e && B.y < p.y + b.hh + 0.02;
   }
   function resolve(axis, B = P){
     for (const b of solids){
@@ -4970,7 +4975,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
       if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
       else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
     }
@@ -5017,7 +5022,9 @@ const Obby = (() => {
     run.on = wantRun && !run.tired;
     let walk = SPEED, runMul = RUN_MUL;
     if (typeof mode !== 'undefined' && mode === 'dreamhouse' && typeof dh !== 'undefined' && dh && !dh.intro){
-      walk = 4.5; runMul = 7 / 4.5;
+      walk = (typeof dhWalkSpeed === 'function') ? dhWalkSpeed() : 3.6;
+      const runSpd = (typeof dhRunSpeed === 'function') ? dhRunSpeed() : 6;
+      runMul = runSpd / walk;
     }
     const spd = walk * (run.on ? runMul : 1) * (dsp && P.y < -.15 ? .55 : 1);   // wading is slow
     P.vx += (inp.x * spd - P.vx) * k; P.vz += (inp.z * spd - P.vz) * k;
@@ -12214,6 +12221,11 @@ const Obby = (() => {
   }
   function dhSpawnPos(plot){
     const [ox, oz] = dhOrigin(plot == null ? (dh && dh.mine) || 0 : plot);
+    // #dhtest=v6inside: stand in the room facing the back wall so indoor collision is a one-load check.
+    if (dhTestFixtureId() === 'v6inside'){
+      const b = dhFootWorld(plot == null ? ((dh && dh.mine) || 0) : plot);
+      return {x: (b.x0 + b.x1) / 2, y: DH_SLAB_H, z: (b.z0 + b.z1) / 2};
+    }
     return {x: ox + DH_CELL * 4, y: .05, z: oz - 2.8};
   }
   function dhLayoutYard(){
@@ -12315,7 +12327,7 @@ const Obby = (() => {
   }
   function dhTestActive(){
     const id = dhTestFixtureId();
-    return id === 'v6furnish' || id === 'v7walls';
+    return id === 'v6furnish' || id === 'v7walls' || id === 'v6inside';
   }
   function dhTestV6FootSlabs(){
     const recs = [];
@@ -12372,7 +12384,7 @@ const Obby = (() => {
   }
   function dhTestRawSave(id){
     id = (id == null ? dhTestFixtureId() : id);
-    if (id === 'v6furnish') return dhTestV6FurnishRaw();
+    if (id === 'v6furnish' || id === 'v6inside') return dhTestV6FurnishRaw();
     if (id === 'v7walls') return dhTestV7WallsRaw();
     return null;
   }
@@ -12742,9 +12754,21 @@ const Obby = (() => {
       add(box(w + .08, .08, .08, M.wood), 0, h / 2, 0);
     }
     else if (id === 'door'){
+      // Hinged leaf, no collider — a finished door must never block the opening.
+      // Rest slightly ajar; dhTickDoors swings it open when the player is nearby.
       const w = DH_BRICK_W * 2 - 0.08, h = DH_DOOR_H - 0.08;
-      add(box(w, h, .06, M.dark), 0, 0, 0);
-      add(box(.06, .06, .04, dhMat('#d4a574')), w * .28, 0, .05);
+      const leaf = new THREE.Group();
+      leaf.position.set(-w / 2, 0, 0); // hinge at the left jamb (outside view)
+      const panel = box(w, h, .06, M.dark);
+      panel.position.set(w / 2, 0, 0);
+      leaf.add(panel);
+      const knob = box(.06, .06, .04, dhMat('#d4a574'));
+      knob.position.set(w * 0.78, 0, .05);
+      leaf.add(knob);
+      g.add(leaf);
+      g.userData.doorLeaf = leaf;
+      g.userData.doorWidth = w;
+      leaf.rotation.y = -0.45; // visibly ajar so the opening reads as a doorway
     }
     else if (id === 'winframe'){
       const w = DH_BRICK_W * 2, h = DH_WIN_HEAD - DH_WIN_SILL;
@@ -12975,6 +12999,7 @@ const Obby = (() => {
   }
   function dhBindSolids(mesh, on){
     const rec = mesh && mesh.userData && mesh.userData.rec;
+    if (rec && (rec[0] === 'door' || rec[0] === 'doorframe')) return; // opening stays walkable; jambs are visual only
     if (rec && (rec[0] === 'brick' || rec[0] === 'pane')){
       if (on && typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
       return;
@@ -14877,9 +14902,30 @@ const Obby = (() => {
     dh.lookHintT -= (dt || 0);
     if (dh.lookHintT <= 0) dhHideLookHint();
   }
+  const DH_DOOR_AJAR = 0.45;      // radians at rest — a visible gap, not a sealed panel
+  const DH_DOOR_OPEN = 1.7;       // ~97° inward once the player is close
+  const DH_DOOR_NEAR = 1.5;       // metres to auto-open
+  function dhTickDoors(dt){
+    if (!dh || dh.intro || typeof P === 'undefined' || !P) return;
+    const plot = dh.mine;
+    const list = (dh.meshes && dh.meshes[plot]) || [];
+    const k = Math.min(1, Math.max(0, (dt || 0) * 8));
+    list.forEach(g => {
+      const rec = g && g.userData && g.userData.rec;
+      const leaf = g && g.userData && g.userData.doorLeaf;
+      if (!leaf || !rec || rec[0] !== 'door') return;
+      const face = rec[4] | 0;
+      const w = (typeof dhOpeningWorld === 'function') ? dhOpeningWorld(plot, face, 'door') : g.position;
+      const dist = Math.hypot((P.x || 0) - (w.x || 0), (P.z || 0) - (w.z || 0));
+      const want = dist < DH_DOOR_NEAR ? -DH_DOOR_OPEN : -DH_DOOR_AJAR;
+      leaf.rotation.y += (want - leaf.rotation.y) * (k || 1);
+      if (!k) leaf.rotation.y = want;
+    });
+  }
   function dhLookWithKeys(dt){
     if (!dh || dh.intro || typeof cam === 'undefined' || !cam) return false;
     if (typeof keys === 'undefined' || !keys) return false;
+    // A/D are strafe only (see input()). Arrows and I/J/K/L turn. Never treat KeyA/KeyD as look.
     const yawK = ((keys.ArrowRight || keys.KeyL) ? 1 : 0) - ((keys.ArrowLeft || keys.KeyJ) ? 1 : 0);
     const pitK = ((keys.KeyK || keys.ArrowDown) ? 1 : 0) - ((keys.KeyI || keys.ArrowUp) ? 1 : 0);
     const dir = yawK * 10 + pitK;
@@ -14914,7 +14960,9 @@ const Obby = (() => {
     });
   }
   const DH_CAM_CLEAR = 0.30;
-  function dhWalkCap(){ return (typeof keys !== 'undefined' && keys && (keys.ShiftLeft || keys.ShiftRight)) ? 7 : 4.5; }
+  function dhWalkSpeed(){ return 3.6; }
+  function dhRunSpeed(){ return 6; }
+  function dhWalkCap(){ return (typeof keys !== 'undefined' && keys && (keys.ShiftLeft || keys.ShiftRight)) ? dhRunSpeed() : dhWalkSpeed(); }
   function dhPlayerRadius(){ return (typeof R === 'number' && isFinite(R)) ? R : 0.45; }
   function dhCamClearance(){ return DH_CAM_CLEAR; }
   function dhDebugActive(){
@@ -14927,11 +14975,26 @@ const Obby = (() => {
   function dhBrickRunBox(plot, face, course, a0, a1){
     const w0 = dhWorldRec(plot, ['brick', 0, course, a0, face]);
     const w1 = dhWorldRec(plot, ['brick', 0, course, a1, face]);
-    const alongHalf = ((a1 - a0 + 1) * DH_BRICK_W) / 2;
+    let alongHalf = ((a1 - a0 + 1) * DH_BRICK_W) / 2;
     const thickHalf = DH_BRICK_D / 2;
     const side = (face === 1 || face === 3);
+    let x = (w0.x + w1.x) / 2, z = (w0.z + w1.z) / 2;
+    // Pull the collision run back from a door jamb so the opening is comfortably
+    // wider than the 0.90 m player. The visible bricks stay put; only the AABB shortens.
+    if (face === 0 && course <= 4){
+      const mid = (dhBrickAlongCount(0) / 2) | 0;
+      const trim = 0.18;
+      if (a1 + 1 === mid - 1){ // run ends just west of the door
+        alongHalf -= trim / 2;
+        x -= trim / 2;
+      }
+      if (a0 - 1 === mid){ // run starts just east of the door
+        alongHalf -= trim / 2;
+        x += trim / 2;
+      }
+    }
     return {
-      x: (w0.x + w1.x) / 2, y: w0.y, z: (w0.z + w1.z) / 2,
+      x, y: w0.y, z,
       hw: side ? thickHalf : alongHalf,
       hh: DH_BRICK_H / 2,
       hd: side ? alongHalf : thickHalf,
@@ -15183,6 +15246,7 @@ const Obby = (() => {
     if (dh.intro){ dhIntroTick(dt); return; }
     if (choosing) return;
     dhLookWithKeys(dt);
+    dhTickDoors(dt);
     dhTickLookHint(dt);
     dhRefreshBins();
     dhClampPlayer();
@@ -16514,10 +16578,17 @@ function dhLayoutHud(){
     if (!running) return;
     const my = loopId;
     raf = requestAnimationFrame(function(next){ if (!running || my !== loopId) return; loop(next); });
-    const dt = Math.min(.05, Math.max(0, (t - last) / 1000)); last = t;
+    // Use the real frame time. The old 50ms clamp dropped leftover time, so a 10–12 fps
+    // machine (often shown as “20 FPS Low”) walked at a fraction of the intended speed.
+    // Cap only a paused/background hitch, then catch up in 50ms physics slices.
+    const raw = Math.max(0, (t - last) / 1000); last = t;
+    let remain = Math.min(0.25, raw);
+    let dt = Math.min(0.05, remain);
     if (menuOpen){ for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false; pad.x = pad.y = 0; pad.jump = false; }
     if (!paused && !won && !over && !choosing){
-      time += dt; if (!(dh && dh.intro)) { for (let i = 0; i < 3 && !over; i++) step(dt / 3); }
+      do {
+        dt = Math.min(0.05, remain); remain -= dt;
+        time += dt; if (!(dh && dh.intro)) { for (let i = 0; i < 3 && !over; i++) step(dt / 3); }
       if (nds) ndsUpdate(dt);
       if (bw) buildUpdate(dt);
       if (tg) tagUpdate(dt);
@@ -16536,11 +16607,13 @@ function dhLayoutHud(){
       if (dh) dreamhouseUpdate(dt);
       if (pt) petsUpdate(dt);
       if (lava && time > LAVA_GRACE && !over && !won){ lava.y += DIFFS[diff].speed * (1 + (time - LAVA_GRACE) / 150) * dt; if (time - dt <= LAVA_GRACE + 0.001 && time > LAVA_GRACE) banner('🌋 The lava is rising! Climb!'); }
-      if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0){ $('#oTip').classList.add('hide'); if (typeof dhLayoutHud === 'function') dhLayoutHud(); } }
+        if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0){ $('#oTip').classList.add('hide'); if (typeof dhLayoutHud === 'function') dhLayoutHud(); } }
+      } while (remain > 0.0005 && !paused && !won && !over && !choosing);
     }
+    const frameDt = Math.min(0.25, raw);
     if (document.pointerLockElement && (!fpOn() || paused || menuOpen || choosing || won || over)) document.exitPointerLock();
-    animate(paused ? 0 : dt); updateCamera(); renderer.render(scene, camera); hud();
-    tickGfxFps(dt);
+    animate(paused ? 0 : frameDt); updateCamera(); renderer.render(scene, camera); hud();
+    tickGfxFps(frameDt);
   }
   function tickGfxFps(dt){
     if (typeof window === 'undefined' || !window.gfx) return;
@@ -16626,6 +16699,9 @@ function dhLayoutHud(){
     addEventListener('keydown', e => {
       if (!running) return;
       if (e.target && e.target.closest && e.target.closest('input, textarea, select')) return;   // typing a pet name etc.
+      // WASD must be recorded even if a later handler (dhKey) returns early.
+      // In Dream House first person A/D strafe; arrows/IJKL look.
+      if (e.code === 'KeyW' || e.code === 'KeyA' || e.code === 'KeyS' || e.code === 'KeyD') keys[e.code] = true;
       if (typeof dhNoteLookKey === 'function') dhNoteLookKey(e, true);
       if (typeof dhNoteMoveKey === 'function') dhNoteMoveKey(e, true);
       // While paused, let focused pause/HUD buttons (Home, Exit, Reset) receive Enter/Space.
@@ -17193,13 +17269,20 @@ function start(m = 'obby', d = null){
     },
     setKey(code, on){ keys[code] = !!on; },
     stepFrame(dt){
-      dt = Math.min(Math.max(0, dt == null ? 1 / 60 : +dt), 0.05);
+      // Honour the requested dt (tests pass 1/60 or 1/20). Catch up in 50ms slices so a
+      // low-fps frame is not silently shortened by the old clamp.
+      let remain = Math.min(0.25, Math.max(0, dt == null ? 1 / 60 : +dt));
       const before = {x: P.x, y: P.y, z: P.z, vy: P.vy, onGround: !!P.onGround};
-      if (!paused && !over && !choosing && !(hs && hsFrozen && hsFrozen())){
-        for (let i = 0; i < 3 && !over; i++) step(dt / 3);
+      let mid = before;
+      const frozen = !!(hs && hsFrozen && hsFrozen());
+      while (remain > 0.0005){
+        const slice = Math.min(0.05, remain); remain -= slice;
+        if (!paused && !over && !choosing && !frozen){
+          for (let i = 0; i < 3 && !over; i++) step(slice / 3);
+        }
+        mid = {x: P.x, y: P.y, z: P.z, vy: P.vy, onGround: !!P.onGround};
+        if (mode === 'dreamhouse' && typeof dreamhouseUpdate === 'function') dreamhouseUpdate(slice);
       }
-      const mid = {x: P.x, y: P.y, z: P.z, vy: P.vy, onGround: !!P.onGround};
-      if (mode === 'dreamhouse' && typeof dreamhouseUpdate === 'function') dreamhouseUpdate(dt);
       if (typeof animate === 'function') try { animate(); } catch (e){}
       if (typeof updateCamera === 'function') updateCamera();
       return {x: P.x, y: P.y, z: P.z, vx: P.vx, vy: P.vy, vz: P.vz, yaw: cam.yaw, onGround: !!P.onGround, before, mid};

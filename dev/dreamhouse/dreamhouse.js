@@ -84,6 +84,11 @@
   }
   function dhSpawnPos(plot){
     const [ox, oz] = dhOrigin(plot == null ? (dh && dh.mine) || 0 : plot);
+    // #dhtest=v6inside: stand in the room facing the back wall so indoor collision is a one-load check.
+    if (dhTestFixtureId() === 'v6inside'){
+      const b = dhFootWorld(plot == null ? ((dh && dh.mine) || 0) : plot);
+      return {x: (b.x0 + b.x1) / 2, y: DH_SLAB_H, z: (b.z0 + b.z1) / 2};
+    }
     return {x: ox + DH_CELL * 4, y: .05, z: oz - 2.8};
   }
   function dhLayoutYard(){
@@ -185,7 +190,7 @@
   }
   function dhTestActive(){
     const id = dhTestFixtureId();
-    return id === 'v6furnish' || id === 'v7walls';
+    return id === 'v6furnish' || id === 'v7walls' || id === 'v6inside';
   }
   function dhTestV6FootSlabs(){
     const recs = [];
@@ -242,7 +247,7 @@
   }
   function dhTestRawSave(id){
     id = (id == null ? dhTestFixtureId() : id);
-    if (id === 'v6furnish') return dhTestV6FurnishRaw();
+    if (id === 'v6furnish' || id === 'v6inside') return dhTestV6FurnishRaw();
     if (id === 'v7walls') return dhTestV7WallsRaw();
     return null;
   }
@@ -612,9 +617,21 @@
       add(box(w + .08, .08, .08, M.wood), 0, h / 2, 0);
     }
     else if (id === 'door'){
+      // Hinged leaf, no collider — a finished door must never block the opening.
+      // Rest slightly ajar; dhTickDoors swings it open when the player is nearby.
       const w = DH_BRICK_W * 2 - 0.08, h = DH_DOOR_H - 0.08;
-      add(box(w, h, .06, M.dark), 0, 0, 0);
-      add(box(.06, .06, .04, dhMat('#d4a574')), w * .28, 0, .05);
+      const leaf = new THREE.Group();
+      leaf.position.set(-w / 2, 0, 0); // hinge at the left jamb (outside view)
+      const panel = box(w, h, .06, M.dark);
+      panel.position.set(w / 2, 0, 0);
+      leaf.add(panel);
+      const knob = box(.06, .06, .04, dhMat('#d4a574'));
+      knob.position.set(w * 0.78, 0, .05);
+      leaf.add(knob);
+      g.add(leaf);
+      g.userData.doorLeaf = leaf;
+      g.userData.doorWidth = w;
+      leaf.rotation.y = -0.45; // visibly ajar so the opening reads as a doorway
     }
     else if (id === 'winframe'){
       const w = DH_BRICK_W * 2, h = DH_WIN_HEAD - DH_WIN_SILL;
@@ -845,6 +862,7 @@
   }
   function dhBindSolids(mesh, on){
     const rec = mesh && mesh.userData && mesh.userData.rec;
+    if (rec && (rec[0] === 'door' || rec[0] === 'doorframe')) return; // opening stays walkable; jambs are visual only
     if (rec && (rec[0] === 'brick' || rec[0] === 'pane')){
       if (on && typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
       return;
@@ -2747,9 +2765,30 @@
     dh.lookHintT -= (dt || 0);
     if (dh.lookHintT <= 0) dhHideLookHint();
   }
+  const DH_DOOR_AJAR = 0.45;      // radians at rest — a visible gap, not a sealed panel
+  const DH_DOOR_OPEN = 1.7;       // ~97° inward once the player is close
+  const DH_DOOR_NEAR = 1.5;       // metres to auto-open
+  function dhTickDoors(dt){
+    if (!dh || dh.intro || typeof P === 'undefined' || !P) return;
+    const plot = dh.mine;
+    const list = (dh.meshes && dh.meshes[plot]) || [];
+    const k = Math.min(1, Math.max(0, (dt || 0) * 8));
+    list.forEach(g => {
+      const rec = g && g.userData && g.userData.rec;
+      const leaf = g && g.userData && g.userData.doorLeaf;
+      if (!leaf || !rec || rec[0] !== 'door') return;
+      const face = rec[4] | 0;
+      const w = (typeof dhOpeningWorld === 'function') ? dhOpeningWorld(plot, face, 'door') : g.position;
+      const dist = Math.hypot((P.x || 0) - (w.x || 0), (P.z || 0) - (w.z || 0));
+      const want = dist < DH_DOOR_NEAR ? -DH_DOOR_OPEN : -DH_DOOR_AJAR;
+      leaf.rotation.y += (want - leaf.rotation.y) * (k || 1);
+      if (!k) leaf.rotation.y = want;
+    });
+  }
   function dhLookWithKeys(dt){
     if (!dh || dh.intro || typeof cam === 'undefined' || !cam) return false;
     if (typeof keys === 'undefined' || !keys) return false;
+    // A/D are strafe only (see input()). Arrows and I/J/K/L turn. Never treat KeyA/KeyD as look.
     const yawK = ((keys.ArrowRight || keys.KeyL) ? 1 : 0) - ((keys.ArrowLeft || keys.KeyJ) ? 1 : 0);
     const pitK = ((keys.KeyK || keys.ArrowDown) ? 1 : 0) - ((keys.KeyI || keys.ArrowUp) ? 1 : 0);
     const dir = yawK * 10 + pitK;
@@ -2784,7 +2823,9 @@
     });
   }
   const DH_CAM_CLEAR = 0.30;
-  function dhWalkCap(){ return (typeof keys !== 'undefined' && keys && (keys.ShiftLeft || keys.ShiftRight)) ? 7 : 4.5; }
+  function dhWalkSpeed(){ return 3.6; }
+  function dhRunSpeed(){ return 6; }
+  function dhWalkCap(){ return (typeof keys !== 'undefined' && keys && (keys.ShiftLeft || keys.ShiftRight)) ? dhRunSpeed() : dhWalkSpeed(); }
   function dhPlayerRadius(){ return (typeof R === 'number' && isFinite(R)) ? R : 0.45; }
   function dhCamClearance(){ return DH_CAM_CLEAR; }
   function dhDebugActive(){
@@ -2797,11 +2838,26 @@
   function dhBrickRunBox(plot, face, course, a0, a1){
     const w0 = dhWorldRec(plot, ['brick', 0, course, a0, face]);
     const w1 = dhWorldRec(plot, ['brick', 0, course, a1, face]);
-    const alongHalf = ((a1 - a0 + 1) * DH_BRICK_W) / 2;
+    let alongHalf = ((a1 - a0 + 1) * DH_BRICK_W) / 2;
     const thickHalf = DH_BRICK_D / 2;
     const side = (face === 1 || face === 3);
+    let x = (w0.x + w1.x) / 2, z = (w0.z + w1.z) / 2;
+    // Pull the collision run back from a door jamb so the opening is comfortably
+    // wider than the 0.90 m player. The visible bricks stay put; only the AABB shortens.
+    if (face === 0 && course <= 4){
+      const mid = (dhBrickAlongCount(0) / 2) | 0;
+      const trim = 0.18;
+      if (a1 + 1 === mid - 1){ // run ends just west of the door
+        alongHalf -= trim / 2;
+        x -= trim / 2;
+      }
+      if (a0 - 1 === mid){ // run starts just east of the door
+        alongHalf -= trim / 2;
+        x += trim / 2;
+      }
+    }
     return {
-      x: (w0.x + w1.x) / 2, y: w0.y, z: (w0.z + w1.z) / 2,
+      x, y: w0.y, z,
       hw: side ? thickHalf : alongHalf,
       hh: DH_BRICK_H / 2,
       hd: side ? alongHalf : thickHalf,
@@ -3053,6 +3109,7 @@
     if (dh.intro){ dhIntroTick(dt); return; }
     if (choosing) return;
     dhLookWithKeys(dt);
+    dhTickDoors(dt);
     dhTickLookHint(dt);
     dhRefreshBins();
     dhClampPlayer();

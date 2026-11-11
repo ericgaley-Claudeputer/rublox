@@ -115,9 +115,9 @@ test('start, bar render, tip hide, and resize all relayout the HUD', () => {
 });
 
 test('version is bumped and existing saves are not involved', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.11-27'"));
+  assert.ok(src.includes("const BUILD = '2026.11.11-28'"));
   const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
-  assert.strictEqual(v.build, '2026.11.11-27');
+  assert.strictEqual(v.build, '2026.11.11-28');
   assert.ok(src.includes("const DH_KEY = 'rubloxDreamHouse'") || dhSrc.includes("DH_KEY = 'rubloxDreamHouse'"));
 });
 
@@ -126,7 +126,7 @@ test('first-person HUD, concrete steps, and Reset Dream House are in the page', 
   assert.ok(src.includes('Reset Dream House') && src.includes('Are you sure? This starts your house over') && src.includes('id="dhResetYes"') && src.includes('id="setDhReset"') && src.includes('id="dhResetBtn"'));
   assert.ok(dhSrc.includes('function dhResetProgress') && dhSrc.includes("Grab Cement + Sand at the Supply Yard") && dhSrc.includes('Foundation spots poured') && dhSrc.includes('function dhAimBrickSlot') && dhSrc.includes('InstancedMesh'));
   assert.ok(dhSrc.includes('function dhAimFootCell') && dhSrc.includes('window.dhResetProgress') && dhSrc.includes('dhInvCount') && src.includes('id="dhHand"') && src.includes('#dhResetModal{z-index:10000') && src.includes('Always on in Dream House'));
-  assert.ok(src.includes('document.body.appendChild(m)') && src.includes('aria-label="Yes, reset Dream House"') && src.includes('body.dhreset-open') && src.includes('walk = 4.5') && dhSrc.includes('function dhLookWithKeys') && dhSrc.includes('function dhAimCone'));
+  assert.ok(src.includes('document.body.appendChild(m)') && src.includes('aria-label="Yes, reset Dream House"') && src.includes('body.dhreset-open') && src.includes('dhWalkSpeed') && src.includes('function dhWalkSpeed') && dhSrc.includes('function dhLookWithKeys') && dhSrc.includes('function dhAimCone'));
 });
 
 test('reset confirm is a top-layer dialog and Exit/Esc/buttons close it', () => {

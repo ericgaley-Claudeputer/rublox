@@ -502,9 +502,9 @@ function notInWall(z, zFace, thick, r){
   return z <= lo + EPS || z >= hi - EPS;
 }
 
-test('BUILD is 2026.11.11-27 and matches version.json', () => {
-  assert.ok(html.includes("const BUILD = '2026.11.11-27'"));
-  assert.strictEqual(version.build, '2026.11.11-27');
+test('BUILD is 2026.11.11-28 and matches version.json', () => {
+  assert.ok(html.includes("const BUILD = '2026.11.11-28'"));
+  assert.strictEqual(version.build, '2026.11.11-28');
 });
 
 test('index.html wires DH clip into step() and exposes a #dhdebug collider path', () => {
@@ -730,6 +730,115 @@ test('from fixture spawn, a slight ArrowRight then 1 s of held W walks to the fr
   const stopZ = foot.z0 - R;
   assert.ok(end.z <= foot.z0 + 0.05 && end.z >= stopZ - 0.35, 'should end at the front wall face, z=' + end.z + ' z0=' + foot.z0 + ' stop=' + stopZ + ' x=' + end.x);
   assert.ok(end.z < foot.z1 - 1, 'must not be on the far side of the house, z=' + end.z);
+});
+
+test('from fixture spawn, holding W walks through the finished door into the house', () => {
+  const ctx3 = boot('#dhtest=v6furnish');
+  ctx3.Obby.start('dreamhouse');
+  if (ctx3.obbyDebug.dhIntro()) ctx3.obbyDebug.skipDhIntro();
+  for (let i = 0; i < 45; i++) ctx3.obbyDebug.stepFrame(1 / 60);
+  const foot = ctx3.obbyDebug.dhFoot();
+  const spawn = ctx3.obbyDebug.player();
+  const yaw0 = ctx3.obbyDebug.cam().yaw;
+  assert.ok(spawn.z < foot.z0 - 2, 'expected outdoor spawn, z=' + spawn.z);
+  ctx3.__key('KeyW', true, {repeat: false});
+  for (let i = 0; i < 150; i++){ // 2.5 s at 60 fps — enough to cross the doorway at 3.6 m/s
+    if (i && i % 4 === 0) ctx3.__key('KeyW', true, {repeat: true});
+    ctx3.obbyDebug.stepFrame(1 / 60);
+  }
+  ctx3.__key('KeyW', false);
+  ctx3.obbyDebug.stepFrame(1 / 60);
+  const end = ctx3.obbyDebug.player();
+  const yaw1 = ctx3.obbyDebug.cam().yaw;
+  assert.ok(Math.abs(yaw1 - yaw0) < 0.001, 'walking through the door must not flip yaw: ' + yaw0 + ' -> ' + yaw1);
+  assert.ok(end.z > foot.z0 + 0.4 && end.z < foot.z1 - 0.1, 'should walk through the finished door into the house, z=' + end.z + ' x=' + end.x + ' z0=' + foot.z0 + ' z1=' + foot.z1);
+});
+
+test('A strafes in DH first person (yaw unchanged, position moves sideways)', () => {
+  const ctxA = boot('#dhtest=v6furnish');
+  ctxA.Obby.start('dreamhouse');
+  if (ctxA.obbyDebug.dhIntro()) ctxA.obbyDebug.skipDhIntro();
+  for (let i = 0; i < 45; i++) ctxA.obbyDebug.stepFrame(1 / 60);
+  const spawn = ctxA.obbyDebug.player();
+  // Face north, stand on open grass south of the house so A is a clear sideways move.
+  ctxA.obbyDebug.teleport(spawn.x, Math.max(0, spawn.y), spawn.z);
+  ctxA.obbyDebug.setCam(Math.PI, 0.37, 0.2);
+  ctxA.obbyDebug.stepFrame(1 / 60);
+  const start = ctxA.obbyDebug.player();
+  const yaw0 = ctxA.obbyDebug.cam().yaw;
+  ctxA.__key('KeyA', true, {repeat: false});
+  for (let i = 0; i < 48; i++){ // 0.8 s
+    if (i && i % 4 === 0) ctxA.__key('KeyA', true, {repeat: true});
+    ctxA.obbyDebug.stepFrame(1 / 60);
+    const yaw = ctxA.obbyDebug.cam().yaw;
+    assert.ok(Math.abs(yaw - yaw0) < 0.001, 'A turned the camera at frame ' + i + ': ' + yaw + ' (wanted ' + yaw0 + ')');
+  }
+  ctxA.__key('KeyA', false);
+  ctxA.obbyDebug.stepFrame(1 / 60);
+  const end = ctxA.obbyDebug.player();
+  const yaw1 = ctxA.obbyDebug.cam().yaw;
+  const dx = end.x - start.x, dz = end.z - start.z;
+  assert.ok(Math.abs(yaw1 - yaw0) < 0.001, 'A must not change yaw: ' + yaw0 + ' -> ' + yaw1);
+  assert.ok(Math.abs(dx) > 1.0, 'A should strafe sideways, dx=' + dx + ' dz=' + dz + ' start=' + JSON.stringify(start) + ' end=' + JSON.stringify(end));
+  assert.ok(Math.abs(dz) < Math.abs(dx) * 0.4, 'A should be mostly sideways, not forward, dx=' + dx + ' dz=' + dz);
+});
+
+test('walk distance at a 20 fps dt is about the same as at 60 fps', () => {
+  function walkSouth(dt, seconds){
+    const c = boot('#dhtest=v6furnish');
+    c.Obby.start('dreamhouse');
+    if (c.obbyDebug.dhIntro()) c.obbyDebug.skipDhIntro();
+    for (let i = 0; i < 45; i++) c.obbyDebug.stepFrame(1 / 60);
+    const spawn = c.obbyDebug.player();
+    // Face south, into open grass, so a wall cannot cap the measured distance.
+    c.obbyDebug.teleport(spawn.x, Math.max(0, spawn.y), spawn.z);
+    c.obbyDebug.setCam(0, 0.37, 0.2); // look -Z
+    c.obbyDebug.stepFrame(1 / 60);
+    const start = c.obbyDebug.player();
+    c.__key('KeyW', true, {repeat: false});
+    const frames = Math.round(seconds / dt);
+    for (let i = 0; i < frames; i++){
+      if (i && i % 4 === 0) c.__key('KeyW', true, {repeat: true});
+      c.obbyDebug.stepFrame(dt);
+    }
+    c.__key('KeyW', false);
+    c.obbyDebug.stepFrame(1 / 60);
+    const end = c.obbyDebug.player();
+    const dist = Math.hypot(end.x - start.x, end.z - start.z);
+    return {dist, start, end, speed: dist / seconds};
+  }
+  const a = walkSouth(1 / 60, 1);
+  const b = walkSouth(1 / 20, 1);
+  assert.ok(a.dist > 2.4 && a.dist < 5.0, '60 fps should walk about 3-4 m in 1 s, got ' + a.dist + ' m (' + a.speed.toFixed(2) + ' m/s)');
+  assert.ok(b.dist > 2.4 && b.dist < 5.0, '20 fps should walk about 3-4 m in 1 s, got ' + b.dist + ' m (' + b.speed.toFixed(2) + ' m/s)');
+  const ratio = b.dist / a.dist;
+  assert.ok(ratio > 0.85 && ratio < 1.15, '20 fps distance should match 60 fps, 60=' + a.dist.toFixed(3) + ' 20=' + b.dist.toFixed(3) + ' ratio=' + ratio.toFixed(3));
+});
+
+test('#dhtest=v6inside spawns inside facing the back wall, and the back wall stops a W hold', () => {
+  const ctxI = boot('#dhtest=v6inside');
+  ctxI.Obby.start('dreamhouse');
+  if (ctxI.obbyDebug.dhIntro()) ctxI.obbyDebug.skipDhIntro();
+  for (let i = 0; i < 45; i++) ctxI.obbyDebug.stepFrame(1 / 60);
+  const foot = ctxI.obbyDebug.dhFoot();
+  const spawn = ctxI.obbyDebug.player();
+  const yaw0 = ctxI.obbyDebug.cam().yaw;
+  assert.ok(ctxI.obbyDebug.dhTestId() === 'v6inside', 'fixture id ' + ctxI.obbyDebug.dhTestId());
+  assert.ok(spawn.x > foot.x0 + 0.4 && spawn.x < foot.x1 - 0.4 && spawn.z > foot.z0 + 0.4 && spawn.z < foot.z1 - 0.4, 'should spawn inside the house, ' + JSON.stringify(spawn) + ' foot=' + JSON.stringify(foot));
+  const yawN = ((yaw0 % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+  assert.ok(Math.abs(yawN - Math.PI) < 0.2, 'should face the back wall (yaw≈π), yaw=' + yaw0);
+  ctxI.__key('KeyW', true, {repeat: false});
+  for (let i = 0; i < 120; i++){
+    if (i && i % 4 === 0) ctxI.__key('KeyW', true, {repeat: true});
+    ctxI.obbyDebug.stepFrame(1 / 60);
+    const p = ctxI.obbyDebug.player();
+    assert.ok(p.z <= foot.z1 + 0.05, 'walked through the back wall, z=' + p.z + ' z1=' + foot.z1);
+  }
+  ctxI.__key('KeyW', false);
+  const end = ctxI.obbyDebug.player();
+  const thick = 0.30;
+  assert.ok(end.z <= foot.z1 - thick - R + 0.08 && end.z > spawn.z, 'should stop at the back wall face, z=' + end.z + ' z1=' + foot.z1 + ' spawn=' + spawn.z);
+  assert.ok(Math.abs(ctxI.obbyDebug.cam().yaw - yaw0) < 0.001, 'indoor walk must not change yaw');
 });
 
 test('#dhdebug draws wireframe collider boxes', () => {
