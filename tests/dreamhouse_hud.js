@@ -115,9 +115,9 @@ test('start, bar render, tip hide, and resize all relayout the HUD', () => {
 });
 
 test('version is bumped and existing saves are not involved', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.11-19'"));
+  assert.ok(src.includes("const BUILD = '2026.11.11-20'"));
   const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
-  assert.strictEqual(v.build, '2026.11.11-19');
+  assert.strictEqual(v.build, '2026.11.11-20');
   assert.ok(src.includes("const DH_KEY = 'rubloxDreamHouse'") || dhSrc.includes("DH_KEY = 'rubloxDreamHouse'"));
 });
 
@@ -301,12 +301,22 @@ test('updateDhChrome restores the toolbar after a menu close', () => {
 test('top-left status bar drops empty segments, stays in its corner, and sits below the pause menu', () => {
   assert.ok(src.includes('id="dhBox"') && src.includes('class="dhbox"'));
   assert.ok(!src.includes('id="dhInv">no stock') && !src.includes('id="dhCarry">Hands empty'));
-  assert.ok(src.includes('#dhBox{') && src.includes('max-width:min(42vw,360px)') && src.includes('overflow:hidden'));
+  assert.ok(src.includes('#dhBox{') && src.includes('overflow:hidden') && (src.includes('max-width:min(42vw,280px)') || src.includes('max-width:min(42vw,360px)') || src.includes('#dhBox{') && src.includes('max-width:100%')));
+  assert.ok(src.includes('.dhstack{') && src.includes('max-width:min(42vw,280px)'));
   assert.ok(/#dhBox\{[^}]*z-index:40/.test(src) || src.includes('#dhBox{') && src.includes('z-index:40'));
   assert.ok(src.includes('#obby.paused #dhBox') && src.includes('#obby.dh-intro #dhBox'));
   assert.ok(src.includes('.obtns{') && src.includes('z-index:70'));
   assert.ok(src.includes('.toast.toast-top{') && src.includes('top:max(88px') && src.includes("classList.toggle('toast-top'"));
   assert.ok(src.includes('#obby.dh-intro #oCross') || src.includes('#obby.dh-intro .ocross'));
+});
+
+test('top-left stack keeps the coin badge off the House Steps heading', () => {
+  assert.ok(src.includes('id="dhStack"') && src.includes('class="dhstack"'));
+  assert.ok(src.includes('.dhstack{') && src.includes('flex-direction:column') && src.includes('gap:10px'));
+  assert.ok(src.includes('id="dhBox"') && src.includes('id="dhSteps"'));
+  const stack = src.match(/<div class="dhstack"[^>]*>[\s\S]*?<\/div>\s*<\/div>/);
+  assert.ok(stack && stack[0].includes('id="dhBox"') && stack[0].includes('id="dhSteps"'), 'dhBox and dhSteps share #dhStack');
+  assert.ok(/\.dhsteps\{[^}]*position:relative/.test(src));
 });
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
