@@ -1600,7 +1600,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-30';
+const BUILD = '2026.11.11-31';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -12798,10 +12798,10 @@ const Obby = (() => {
       add(box(w * .1, h * .28, .008, M.glassShine || M.glass), w * .2, -h * .12, .02);
     }
     else if (id === 'paint'){
-      const len = dhWallLength() - 0.08, h = dhWallH() - 0.08;
+      const size = (typeof dhPaintSize === 'function') ? dhPaintSize() : {len: dhWallLength(), h: dhWallH()};
       const mat = dhMat(dhPaintCol(rec[5] | 0));
       const holes = (typeof dhPaintOpenings === 'function') ? dhPaintOpenings(plot, rec[4] | 0) : [];
-      const panels = (typeof dhRectsMinusHoles === 'function') ? dhRectsMinusHoles(len, h, holes) : [{x: -len / 2, y: -h / 2, w: len, h: h}];
+      const panels = (typeof dhRectsMinusHoles === 'function') ? dhRectsMinusHoles(size.len, size.h, holes) : [{x: -size.len / 2, y: -size.h / 2, w: size.len, h: size.h}];
       panels.forEach(r => add(box(r.w, r.h, 0.03, mat), r.x + r.w / 2, r.y + r.h / 2, 0));
     }
     else if (id === 'sofa'){ solid(1.80, .42, .85, 0, .21, 0, dhMat('#3a86ff')); add(box(1.80, .45, .16, dhMat('#3a86ff')), 0, 0.64, -.32); }
@@ -12879,11 +12879,18 @@ const Obby = (() => {
     if (face === 1) return {x: b.x1 - out, y, z: b.z0 + along};
     return {x: b.x0 + out, y, z: b.z1 - along};
   }
+  // Skin sits just outside the outer brick face (the footprint edge), not a brick-depth
+  // off the wall — that leftover offset left bare brick around openings and a corner gap.
+  function dhPaintOut(){ return 0.025; }
+  function dhPaintSize(st){
+    const out = dhPaintOut();
+    return {len: dhWallLength(st) + out * 2, h: dhWallH(st), out};
+  }
   function dhPaintWorld(plot, face){
     const b = dhFootWorld(plot);
     const mid = (b.x1 - b.x0) / 2;
     const y = DH_SLAB_H + dhWallH() / 2;
-    const out = DH_BRICK_D + 0.02;
+    const out = dhPaintOut();
     if (face === 0) return {x: b.x0 + mid, y, z: b.z0 - out};
     if (face === 2) return {x: b.x0 + mid, y, z: b.z1 + out};
     if (face === 1) return {x: b.x1 + out, y, z: (b.z0 + b.z1) / 2};
@@ -12897,11 +12904,12 @@ const Obby = (() => {
       if (kind === 'door' && (face % 4) !== 0) return;
       if (kind === 'window' && (dhWindowFaces() || []).indexOf(face % 4) < 0) return;
       const along = dhOpeningAlongMeters(face % 4, kind);
-      const w = DH_BRICK_W * 2 + 0.04;
+      // Hole matches the wood frame outer size so paint runs up to the trim, not a brick-wide gap.
+      const w = DH_BRICK_W * 2;
       const y0 = (kind === 'door') ? DH_SLAB_H : (DH_SLAB_H + DH_WIN_SILL);
       const y1 = (kind === 'door') ? (DH_SLAB_H + DH_DOOR_H) : (DH_SLAB_H + DH_WIN_HEAD);
       const lx = (face === 0 || face === 1) ? (along - mid) : (mid - along);
-      holes.push({kind, x: lx, y: (y0 + y1) / 2 - paintY, w, h: (y1 - y0) + 0.04});
+      holes.push({kind, x: lx, y: (y0 + y1) / 2 - paintY, w, h: y1 - y0});
     };
     add('door'); add('window');
     return holes;
@@ -12930,9 +12938,9 @@ const Obby = (() => {
     const face = rec[4] | 0;
     const pos = dhPaintWorld(plot, rec);
     const ry = (face === 1 || face === 3) ? Math.PI / 2 : 0;
-    const len = dhWallLength() - 0.08, h = dhWallH() - 0.08;
+    const size = dhPaintSize();
     const holes = dhPaintOpenings(plot, face);
-    return dhRectsMinusHoles(len, h, holes).map(r => {
+    return dhRectsMinusHoles(size.len, size.h, holes).map(r => {
       const lx = r.x + r.w / 2, ly = r.y + r.h / 2;
       const ca = Math.cos(ry), sa = Math.sin(ry);
       return {x: pos.x + lx * ca, y: pos.y + ly, z: pos.z + lx * sa, w: r.w, h: r.h, d: 0.03, face};
@@ -12963,6 +12971,116 @@ const Obby = (() => {
     const hole = dhOpeningAabb(plot, face, kind);
     // Require a real intrusion into the opening, not just a shared edge.
     return panels.some(p => dhAabbOverlap(p, hole, 0.06));
+  }
+  function dhPaintOpeningClearance(plot, face, kind){
+    const holes = dhPaintOpenings(plot, face) || [];
+    const hole = holes.find(h => h.kind === kind);
+    if (!hole) return {ok: false, reason: 'no-hole'};
+    const mid = dhWallLength() / 2;
+    const paintY = DH_SLAB_H + dhWallH() / 2;
+    const along = dhOpeningAlongMeters(face, kind);
+    const y0 = (kind === 'door') ? DH_SLAB_H : (DH_SLAB_H + DH_WIN_SILL);
+    const y1 = (kind === 'door') ? (DH_SLAB_H + DH_DOOR_H) : (DH_SLAB_H + DH_WIN_HEAD);
+    const lx = (face === 0 || face === 1) ? (along - mid) : (mid - along);
+    const dw = Math.abs(hole.w - DH_BRICK_W * 2);
+    const dhg = Math.abs(hole.h - (y1 - y0));
+    const dx = Math.abs(hole.x - lx);
+    const dy = Math.abs(hole.y - ((y0 + y1) / 2 - paintY));
+    const worst = Math.max(dw, dhg, dx, dy);
+    return {ok: worst <= 0.04, worst, dw, dh: dhg, dx, dy, hole, openW: DH_BRICK_W * 2, openH: y1 - y0};
+  }
+  function dhPaintCornerMeet(plot, fa, fb){
+    fa = fa == null ? 0 : fa; fb = fb == null ? 1 : fb;
+    const size = dhPaintSize();
+    const A = dhPaintWorld(plot, fa), B = dhPaintWorld(plot, fb);
+    const half = size.len / 2;
+    const end = (face, pos, sign) => {
+      const ry = (face === 1 || face === 3) ? Math.PI / 2 : 0;
+      return {x: pos.x + Math.cos(ry) * sign * half, y: pos.y, z: pos.z + Math.sin(ry) * sign * half};
+    };
+    let gap = 99, pair = null;
+    [-1, 1].forEach(sa => [-1, 1].forEach(sb => {
+      const p = end(fa, A, sa), q = end(fb, B, sb);
+      const d = Math.hypot(p.x - q.x, p.z - q.z);
+      if (d < gap){ gap = d; pair = {p, q}; }
+    }));
+    return {ok: gap <= 0.05 && size.out <= 0.05, gap, out: size.out, pair, faces: [fa, fb]};
+  }
+  function dhRoofComplete(plot){
+    const list = (dh && dh.pieces[plot != null ? plot : dh.mine]) || [];
+    return dhCount(list, 'shingle') >= dhShingleTotal() && dhCount(list, 'brick') >= dhBrickTotal();
+  }
+  function dhGableFaces(){ return [1, 3]; }
+  function dhDisposeGables(){
+    if (!dh || !dh.gables) return;
+    Object.keys(dh.gables).forEach(k => {
+      const g = dh.gables[k];
+      if (g && typeof scene !== 'undefined') try { scene.remove(g); } catch (e){}
+    });
+    dh.gables = {};
+  }
+  function dhGableInfo(plot){
+    if (!dhRoofComplete(plot)) return {ready: false, faces: [], wallTop: dhWallTop(), apex: dhRoofApex(), rise: DH_ROOF_RISE, width: dhWallLength()};
+    return {ready: true, faces: dhGableFaces().slice(), wallTop: dhWallTop(), apex: dhRoofApex(), rise: DH_ROOF_RISE, width: dhWallLength()};
+  }
+  function dhMakeGableMesh(plot, face){
+    const wall = dhWallLength(), rise = DH_ROOF_RISE, depth = DH_BRICK_D;
+    const list = (dh && dh.pieces[plot]) || [];
+    const paint = list.find(a => a[0] === 'paint' && (a[4]|0) === face);
+    const col = paint ? dhPaintCol(paint[5] | 0) : '#b54a32';
+    const mat = dhMat(col, {side: dhDoubleSide()});
+    const g = new THREE.Group();
+    let mesh = null;
+    const sh = (typeof THREE !== 'undefined' && THREE.Shape) ? new THREE.Shape() : null;
+    if (sh && typeof sh.moveTo === 'function' && (THREE.ExtrudeGeometry || THREE.ShapeGeometry)){
+      sh.moveTo(-wall / 2, 0); sh.lineTo(0, rise); sh.lineTo(wall / 2, 0); sh.closePath();
+      const geo = THREE.ExtrudeGeometry
+        ? new THREE.ExtrudeGeometry(sh, {depth: depth, bevelEnabled: false, steps: 1})
+        : new THREE.ShapeGeometry(sh);
+      mesh = new THREE.Mesh(geo, mat);
+      // Extrude goes +Z (0..depth). After the face rotation, +Z is inward, so z=0 stays on the outer wall.
+    } else if (typeof THREE !== 'undefined' && THREE.BufferGeometry && THREE.BufferAttribute){
+      const geo = new THREE.BufferGeometry();
+      const z0 = 0, z1 = -depth;
+      const pts = [
+        -wall/2, 0, z0,  0, rise, z0,  wall/2, 0, z0,
+        -wall/2, 0, z1,  wall/2, 0, z1,  0, rise, z1,
+        -wall/2, 0, z0,  -wall/2, 0, z1,  0, rise, z1,
+        -wall/2, 0, z0,  0, rise, z1,  0, rise, z0,
+        wall/2, 0, z0,  0, rise, z0,  0, rise, z1,
+        wall/2, 0, z0,  0, rise, z1,  wall/2, 0, z1,
+        -wall/2, 0, z0,  wall/2, 0, z0,  wall/2, 0, z1,
+        -wall/2, 0, z0,  wall/2, 0, z1,  -wall/2, 0, z1
+      ];
+      if (geo.setAttribute) geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pts), 3));
+      mesh = new THREE.Mesh(geo, mat);
+    } else {
+      mesh = new THREE.Mesh(new THREE.BoxGeometry(wall, rise / 2, depth), mat);
+      mesh.position.y = rise / 4;
+    }
+    if (mesh) g.add(mesh);
+    const b = dhFootWorld(plot);
+    const midZ = (b.z0 + b.z1) / 2;
+    g.position.set(face === 1 ? b.x1 : b.x0, dhWallTop(), midZ);
+    g.rotation.y = face === 1 ? Math.PI / 2 : -Math.PI / 2;
+    g.userData.gable = true;
+    g.userData.face = face;
+    g.userData.painted = !!paint;
+    return g;
+  }
+  function dhSyncGables(plot){
+    if (!dh || plot == null) return false;
+    dh.gables = dh.gables || {};
+    const old = dh.gables[plot];
+    if (old && typeof scene !== 'undefined') try { scene.remove(old); } catch (e){}
+    dh.gables[plot] = null;
+    if (!dhRoofComplete(plot)) return false;
+    const wrap = new THREE.Group();
+    wrap.userData.gables = true;
+    dhGableFaces().forEach(face => wrap.add(dhMakeGableMesh(plot, face)));
+    if (typeof scene !== 'undefined') scene.add(wrap);
+    dh.gables[plot] = wrap;
+    return true;
   }
   function dhRoofTilt(side){ return (side % 2) ? dhRoofPitch() : -dhRoofPitch(); }
   function dhRoofPlaneYat(plot, z){
@@ -13594,6 +13712,7 @@ const Obby = (() => {
     }
     // single-player: other lots stay empty (real players only — no leftover show homes or intro houses)
     (p0.pieces || []).forEach(rec => dhPut(dh.mine, rec, true));
+    if (typeof dhSyncGables === 'function') dhSyncGables(dh.mine);
     if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
     dhStockViz(dh.mine);
     const [ox, oz] = dhOrigin(dh.mine);
@@ -13698,6 +13817,7 @@ const Obby = (() => {
       m.visible = !hide;
       if (hide) dhBindSolids(m, false);
     });
+    if (typeof dhSyncGables === 'function') dhSyncGables(plot);
   }
   function dhRemoveAtKey(plot, key, quiet){
     const list = dh.pieces[plot] || [];
@@ -13708,6 +13828,7 @@ const Obby = (() => {
     const id = list[idx] && list[idx][0];
     list.splice(idx, 1); (dh.meshes[plot] || []).splice(idx, 1);
     if (id === 'brick') dhSyncBricks(plot);
+    if (typeof dhSyncGables === 'function') dhSyncGables(plot);
     if (!quiet && plot === dh.mine) dhSave();
     return true;
   }
@@ -14899,6 +15020,7 @@ const Obby = (() => {
     if (dh.intro){ dh.intro = null; }
     if (dh.cut){ ['house', 'mom', 'water'].forEach(k => { if (dh.cut[k] && typeof scene !== 'undefined') scene.remove(dh.cut[k]); }); dh.cut = null; }
     if (dh.ghost) scene.remove(dh.ghost);
+    if (typeof dhDisposeGables === 'function') dhDisposeGables();
     if (typeof dhDisposeBeaconPool === 'function') dhDisposeBeaconPool(true);
     if (dh.outlines){ scene.remove(dh.outlines); dh.outlines = null; }
     if (dh.hand){ if (dh.hand.parent) dh.hand.parent.remove(dh.hand); else if (typeof scene !== 'undefined') scene.remove(dh.hand); dh.hand = null; }
