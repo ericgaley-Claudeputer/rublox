@@ -887,7 +887,7 @@
     };
     wall(0, -z, 104, t); wall(0, z, 104, t); wall(-x, 0, t, 74); wall(x, 0, t, 74);
     // visible low curb so the edge of the grass is obvious
-    const curb = (wx, wz, ww, wd) => { const b = plat(wx, .16, wz, ww, wd, '#5a8f4a', .14); if (b) b.camSkip = true; return b; };
+    const curb = (wx, wz, ww, wd) => { const b = plat(wx, .16, wz, ww, wd, '#5a8f4a', .14); if (b){ b.camSkip = true; b.floorOnly = true; } return b; };
     curb(0, -z + .6, 100, .5); curb(0, z - .6, 100, .5); curb(-x + .6, 0, .5, 70); curb(x - .6, 0, .5, 70);
   }
   function dhSupplyMats(){ return DH_MATS.filter(m => m.free && !m.nosale && !m.furn); }
@@ -968,10 +968,12 @@
     return sign;
   }
   function dhBuildYard(){
-    plat(DH_YARD.x, .12, DH_YARD.z, 13, 10, '#cfc4a8', .2);
+    const yardPad = plat(DH_YARD.x, .12, DH_YARD.z, 13, 10, '#cfc4a8', .2);
+    if (yardPad) yardPad.floorOnly = true;
     const [pox, poz] = dhOrigin((dh && dh.mine) || 0);
     const px = pox + DH_N * DH_CELL, pz = poz + DH_N * DH_CELL / 2;
-    plat((px + DH_YARD.x) / 2, .14, (pz + DH_YARD.z) / 2, Math.max(4, Math.abs(DH_YARD.x - px) + 1), 3.0, '#cfc4a8', .18);
+    const yardPath = plat((px + DH_YARD.x) / 2, .14, (pz + DH_YARD.z) / 2, Math.max(4, Math.abs(DH_YARD.x - px) + 1), 3.0, '#cfc4a8', .18);
+    if (yardPath) yardPath.floorOnly = true;
     // Wooden sign sits on the yard's BACK (west) edge, away from the approach
     // from the plot, so the follow camera does not clip through the board.
     dh.yardSignParts = [];
@@ -1029,8 +1031,10 @@
   }
   function dhBuildFurnitureStore(){
     const x = DH_FURN.x, z = DH_FURN.z;
-    plat(x, .1, z, 11, 9, '#e8d9c0', .18);
-    plat((x + 0) / 2, .12, (z + dhSpawnPos(0).z) / 2, 3.2, Math.abs(z - dhSpawnPos(0).z), '#e8d9c0', .16);
+    const furnPad = plat(x, .1, z, 11, 9, '#e8d9c0', .18);
+    if (furnPad) furnPad.floorOnly = true;
+    const furnPath = plat((x + 0) / 2, .12, (z + dhSpawnPos(0).z) / 2, 3.2, Math.abs(z - dhSpawnPos(0).z), '#e8d9c0', .16);
+    if (furnPath) furnPath.floorOnly = true;
     const wall = dhMat('#fff4dc');
     const room = new THREE.Mesh(new THREE.BoxGeometry(7.2, 3.2, 6.2), wall);
     room.position.set(x, 1.7, z); scene.add(room);
@@ -1054,7 +1058,8 @@
   }
   function dhBuildUpgradeShop(){
     const x = DH_UP.x, z = DH_UP.z;
-    plat(x, .1, z, 9, 8, '#d7cbb3', .18);
+    const upPad = plat(x, .1, z, 9, 8, '#d7cbb3', .18);
+    if (upPad) upPad.floorOnly = true;
     // open workshop shed
     const wall = dhMat('#f0e4cc');
     const back = new THREE.Mesh(new THREE.BoxGeometry(6.2, 3.0, .3), wall); back.position.set(x, 1.55, z - 2.6); scene.add(back);
@@ -1279,7 +1284,8 @@
     dh = {mine: 0, job: 'mark', rot: 0, color: 0, tool: 'place', aim: null, pieces: {}, meshes: {}, ghost: null, bank: 0, likes: 0, goals: {}, earned: 0, near: -1, liked: {}, saveT: 0, remote: dhIsGuest(), carry: null, bag: null, stock: dhEmptyStock(), bins: [], mixers: {}, piles: {}, mats: dhMakeMats(), v1pieces: null, cureT: 0, upgrades: dhEmptyUpgrades(), introSeen: false, intro: null, trees: [], shopOpen: false, yardOpen: false, upOpen: false, foundYard: false, foundFurn: false, foundUp: false, cut: null, yardBeacon: null, furnBeacon: null, upBeacon: null};
     scene.background = new THREE.Color('#b8e8ff');
     if (scene.fog){ scene.fog.color = new THREE.Color('#d7f3ff'); scene.fog.near = 50; scene.fog.far = 160; }
-    plat(0, 0, 0, 110, 84, '#8fd39a', .35);
+    const grass = plat(0, 0, 0, 110, 84, '#8fd39a', .35);
+    if (grass) grass.floorOnly = true; // huge ground AABB must never resolve on X/Z
     const p0 = dhProg();
     dh.bank = p0.coins; dh.likes = p0.likes; dh.goals = Object.assign({}, p0.goals); dh.stock = Object.assign(dhEmptyStock(), p0.stock); dh.v1pieces = p0.v1pieces; dh.upgrades = Object.assign(dhEmptyUpgrades(), p0.upgrades || {}); dh.introSeen = !!p0.introSeen; dh.tipsSeen = Object.assign({}, p0.tipsSeen || {}); dh.legacyHouse = !!p0.legacyHouse; dh.brickInst = {}; dh.hand = null; dh.outlines = null; dh.pourHold = false;
     if (!p0.granted){ dh.bank += DH_GRANT; dh.grantedNow = true; }

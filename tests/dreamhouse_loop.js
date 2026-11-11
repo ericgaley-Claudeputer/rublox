@@ -502,9 +502,9 @@ function notInWall(z, zFace, thick, r){
   return z <= lo + EPS || z >= hi - EPS;
 }
 
-test('BUILD is 2026.11.11-26 and matches version.json', () => {
-  assert.ok(html.includes("const BUILD = '2026.11.11-26'"));
-  assert.strictEqual(version.build, '2026.11.11-26');
+test('BUILD is 2026.11.11-27 and matches version.json', () => {
+  assert.ok(html.includes("const BUILD = '2026.11.11-27'"));
+  assert.strictEqual(version.build, '2026.11.11-27');
 });
 
 test('index.html wires DH clip into step() and exposes a #dhdebug collider path', () => {
@@ -673,6 +673,63 @@ test('15 short W taps and a 2 s hold from outside and inside never cross a wall,
   ctx.__key('KeyW', false);
   const pDoorStop = ctx.obbyDebug.player();
   assert.ok(pDoorStop.z <= foot.z1 - thick - R + EPS, 'after walking in the door, a continued hold must stop at the back wall, z=' + pDoorStop.z);
+});
+
+test('from fixture spawn, a slight ArrowRight then 1 s of held W walks to the front wall without flipping yaw or leaving the plot', () => {
+  // Exact tester sequence on tip 2876d96: #dhtest=v6furnish, spawn facing the
+  // door, turn slightly right with the arrow keys, hold W. Must not be yeeted
+  // off the lot (the old test teleported past the south curb / never used spawn).
+  const ctx2 = boot('#dhtest=v6furnish&dhdebug');
+  ctx2.Obby.start('dreamhouse');
+  if (ctx2.obbyDebug.dhIntro()) ctx2.obbyDebug.skipDhIntro();
+  for (let i = 0; i < 45; i++) ctx2.obbyDebug.stepFrame(1 / 60);
+  const spawn = ctx2.obbyDebug.player();
+  const foot = ctx2.obbyDebug.dhFoot();
+  const R = 0.45, thick = 0.30;
+  assert.ok(foot, 'missing foot');
+  assert.ok(Math.abs(spawn.x) < 0.2 && spawn.z < foot.z0 - 2, 'expected fixture spawn south of the front wall, got ' + JSON.stringify(spawn) + ' foot=' + JSON.stringify(foot));
+  assert.ok(spawn.onGround && spawn.y >= 0 && spawn.y < 0.2, 'player should have landed on the grass, ' + JSON.stringify(spawn));
+
+  const yawSpawn = ctx2.obbyDebug.cam().yaw;
+  ctx2.__key('ArrowRight', true, {repeat: false});
+  ctx2.obbyDebug.stepFrame(1 / 60);
+  ctx2.obbyDebug.stepFrame(1 / 60);
+  ctx2.__key('ArrowRight', false);
+  const yawTurned = ctx2.obbyDebug.cam().yaw;
+  assert.ok(Math.abs(yawTurned - yawSpawn) > 0.02 && Math.abs(yawTurned - yawSpawn) < 0.4, 'ArrowRight should nudge yaw a little, before=' + yawSpawn + ' after=' + yawTurned);
+
+  ctx2.__key('KeyW', true, {repeat: false});
+  const track = [];
+  for (let i = 0; i < 60; i++){ // 1 s at 60 fps, real dt
+    if (i && i % 4 === 0) ctx2.__key('KeyW', true, {repeat: true});
+    ctx2.obbyDebug.stepFrame(1 / 60);
+    const p = ctx2.obbyDebug.player();
+    const yaw = ctx2.obbyDebug.cam().yaw;
+    track.push({i, x: p.x, z: p.z, y: p.y, yaw});
+    assert.ok(Math.abs(yaw - yawTurned) < 0.001, 'yaw was changed by movement at frame ' + i + ': ' + yaw + ' (wanted ' + yawTurned + ')');
+    assert.ok(Math.abs(p.x) < 8 && p.z < foot.z1 + 2 && p.z > spawn.z - 1, 'player left the plot at frame ' + i + ': ' + JSON.stringify(p) + ' spawn=' + JSON.stringify(spawn));
+  }
+  const mid = ctx2.obbyDebug.player();
+  assert.ok(mid.z > spawn.z + 2, 'after 1 s of W the player should have walked toward the house, z=' + mid.z + ' spawn=' + spawn.z);
+
+  // Keep walking until the wall (1 s may be a few decimetres short).
+  for (let i = 0; i < 90; i++){
+    if (i % 4 === 0) ctx2.__key('KeyW', true, {repeat: true});
+    ctx2.obbyDebug.stepFrame(1 / 60);
+    const p = ctx2.obbyDebug.player();
+    const yaw = ctx2.obbyDebug.cam().yaw;
+    assert.ok(Math.abs(yaw - yawTurned) < 0.001, 'yaw changed while approaching the wall: ' + yaw);
+    assert.ok(Math.abs(p.x) < 8 && p.z <= foot.z0 + thick + 0.2, 'walked through the front wall or off the plot: ' + JSON.stringify(p) + ' z0=' + foot.z0);
+  }
+  ctx2.__key('KeyW', false);
+  ctx2.obbyDebug.stepFrame(1 / 60);
+  const end = ctx2.obbyDebug.player();
+  const yawEnd = ctx2.obbyDebug.cam().yaw;
+  assert.ok(Math.abs(yawEnd - yawTurned) < 0.001, 'final yaw changed: ' + yawEnd + ' vs ' + yawTurned);
+  // Stopped at the south face of the front wall (door may still be slightly open in front of spawn x=0; after a right turn we should meet brick or the jamb).
+  const stopZ = foot.z0 - R;
+  assert.ok(end.z <= foot.z0 + 0.05 && end.z >= stopZ - 0.35, 'should end at the front wall face, z=' + end.z + ' z0=' + foot.z0 + ' stop=' + stopZ + ' x=' + end.x);
+  assert.ok(end.z < foot.z1 - 1, 'must not be on the far side of the house, z=' + end.z);
 });
 
 test('#dhdebug draws wireframe collider boxes', () => {
