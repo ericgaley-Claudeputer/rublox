@@ -115,10 +115,198 @@ test('start, bar render, tip hide, and resize all relayout the HUD', () => {
 });
 
 test('version is bumped and existing saves are not involved', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.11-11'"));
+  assert.ok(src.includes("const BUILD = '2026.11.11-19'"));
   const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
-  assert.strictEqual(v.build, '2026.11.11-11');
+  assert.strictEqual(v.build, '2026.11.11-19');
   assert.ok(src.includes("const DH_KEY = 'rubloxDreamHouse'") || dhSrc.includes("DH_KEY = 'rubloxDreamHouse'"));
+});
+
+test('first-person HUD, concrete steps, and Reset Dream House are in the page', () => {
+  assert.ok(src.includes('id="dhGoal"') && src.includes('id="dhSteps"') && src.includes('id="dhTip"'));
+  assert.ok(src.includes('Reset Dream House') && src.includes('Are you sure? This starts your house over') && src.includes('id="dhResetYes"') && src.includes('id="setDhReset"') && src.includes('id="dhResetBtn"'));
+  assert.ok(dhSrc.includes('function dhResetProgress') && dhSrc.includes("Grab Cement + Sand at the Supply Yard") && dhSrc.includes('Foundation spots poured') && dhSrc.includes('function dhAimBrickSlot') && dhSrc.includes('InstancedMesh'));
+  assert.ok(dhSrc.includes('function dhAimFootCell') && dhSrc.includes('window.dhResetProgress') && dhSrc.includes('dhInvCount') && src.includes('id="dhHand"') && src.includes('#dhResetModal{z-index:10000') && src.includes('Always on in Dream House'));
+  assert.ok(src.includes('document.body.appendChild(m)') && src.includes('aria-label="Yes, reset Dream House"') && src.includes('body.dhreset-open') && src.includes('walk = 4.5') && dhSrc.includes('function dhLookWithKeys') && dhSrc.includes('function dhAimCone'));
+});
+
+test('reset confirm is a top-layer dialog and Exit/Esc/buttons close it', () => {
+  assert.ok(src.includes('<dialog') && src.includes('id="dhResetModal"') && src.includes('m.showModal()'));
+  assert.ok(src.includes('function dhCloseReset') && src.includes('function stop()'));
+  assert.ok(/function stop\(\)\{[\s\S]{0,200}dhCloseReset/.test(src));
+  assert.ok(src.includes("if (e.code === 'Escape' && typeof dhOnResetKey === 'function' && dhOnResetKey(e)) return"));
+  assert.ok(src.includes('dhOnResetKey') && src.includes('dhOnResetClick') && src.includes("addEventListener('cancel'"));
+  assert.ok(src.includes('Skip ▶') && src.includes('id="dhCutCap"') && src.includes('id="dhLookHint"'));
+  assert.ok(src.includes('Click the view to look around'));
+  assert.ok(dhSrc.includes('Math.PI / 2') && dhSrc.includes('dh._lookHold') && dhSrc.includes('dhGrantStarterStock') && dhSrc.includes('dhClipFpCamera') && dhSrc.includes('dhShowLookHint'));
+});
+
+test('opening a modal exits pointer lock and click-to-lock ignores UI targets', () => {
+  assert.ok(src.includes('function dhExitPointerLock') && src.includes('dhExitPointerLock()') && src.includes('function setPause(p)'));
+  assert.ok(src.includes("if (typeof dhIsUiEvent === 'function' && dhIsUiEvent(e)) return") && src.includes('requestPointerLock()'));
+  assert.ok(src.includes('z-index:40') && src.includes('z-index:41'));
+  assert.ok(src.includes('#obbyView,#obbyView canvas') && src.includes('z-index:0'));
+});
+
+test('Yes, Cancel, and Esc close the reset confirm while Dream House is running, and UI clicks are not consumed by the game', () => {
+  const block = src.match(/\/\* ---------- dh ui events \(t253u\) ---------- \*\/([\s\S]*?)\nfunction dhConfirmReset/);
+  assert.ok(block, 'dh ui events block missing from index.html');
+  function classList(){
+    const s = new Set();
+    return { add(c){ s.add(c); }, remove(c){ s.delete(c); }, contains(c){ return s.has(c); } };
+  }
+  function node(id, tag, cls){
+    return {
+      id, tagName: (tag || 'DIV').toUpperCase(), className: cls || '',
+      classList: classList(), style: {}, open: false, parentElement: null, parentNode: null,
+      attrs: {},
+      getAttribute(n){ return this.attrs[n] || null; },
+      closest(sel){
+        let n = this;
+        const ids = [], tags = [], classes = [];
+        String(sel).split(',').forEach(part => {
+          part = part.trim();
+          if (part.startsWith('#')) ids.push(part.slice(1));
+          else if (part.startsWith('.')) classes.push(part.slice(1));
+          else tags.push(part.toLowerCase());
+        });
+        while (n){
+          if (ids.includes(n.id)) return n;
+          if (tags.includes((n.tagName || '').toLowerCase())) return n;
+          const cn = ' ' + (n.className || '') + ' ';
+          if (classes.some(c => cn.includes(' ' + c + ' '))) return n;
+          n = n.parentElement;
+        }
+        return null;
+      },
+      focus(){},
+      showModal(){ this.open = true; this.classList.add('show'); },
+      close(){ this.open = false; this.classList.remove('show'); },
+    };
+  }
+  const body = node('', 'BODY', '');
+  body.classList = classList();
+  const modal = node('dhResetModal', 'DIALOG', 'modal dhresetbox');
+  modal.parentElement = body;
+  const yes = node('dhResetYes', 'BUTTON', 'big red');
+  yes.attrs = {'aria-label': 'Yes, reset Dream House'};
+  yes.parentElement = modal;
+  const no = node('dhResetNo', 'BUTTON', 'big gray');
+  no.attrs = {'aria-label': 'Cancel reset'};
+  no.parentElement = modal;
+  const bar = node('dhBar', 'DIV', 'dhbar');
+  const barBtn = node('dhJobMark', 'BUTTON', '');
+  barBtn.parentElement = bar;
+  const canvas = node('', 'CANVAS', '');
+  const document = {
+    body,
+    pointerLockElement: canvas,
+    exitPointerLock(){ this.pointerLockElement = null; this.exited = true; },
+    getElementById(id){
+      return {dhResetModal: modal, dhResetYes: yes, dhResetNo: no, dhBar: bar}[id] || null;
+    },
+  };
+  const $ = sel => document.getElementById(String(sel).replace('#',''));
+  const ctx = { document, $, console, confirmed: 0 };
+  vm.runInNewContext(block[1] + '\nfunction dhConfirmReset(){ confirmed++; dhCloseReset(); }\n', ctx);
+  // Simulate DH running: pointer is locked, confirm is opened from the pause menu.
+  document.pointerLockElement = canvas;
+  ctx.dhOpenReset();
+  // Simulate start(): every body child except #obby is marked inert. The confirm must be exempt.
+  modal.attrs = modal.attrs || {};
+  modal.setAttribute = function(n, v){ this.attrs[n] = v == null ? '' : String(v); if (n === 'inert') this.inert = true; };
+  modal.removeAttribute = function(n){ delete this.attrs[n]; if (n === 'inert') this.inert = false; };
+  modal.getAttribute = function(n){ return this.attrs[n] != null ? this.attrs[n] : null; };
+  modal.attrs['inert'] = '';
+  modal.attrs['aria-hidden'] = 'true';
+  modal.inert = true;
+  ctx.dhClearDialogInert(modal);
+  ctx.dhOpenReset();
+  assert.ok(ctx.dhResetModalIsOpen(), 'open should show the dialog');
+  assert.ok(modal.open || modal.classList.contains('show'), 'showModal or .show');
+  assert.strictEqual(document.pointerLockElement, null, 'opening the confirm must exit pointer lock');
+  assert.ok(!modal.inert && !modal.getAttribute('inert') && modal.getAttribute('aria-hidden') !== 'true', 'open confirm must not be inert or aria-hidden');
+  assert.ok(ctx.dhInertExempt(modal) === true && ctx.dhInertExempt({id:'obby'}) === true, 'confirm and #obby are inert-exempt');
+  assert.ok(ctx.dhInertExempt({id:'home', tagName:'DIV', classList:{contains(){ return false; }}}) === false);
+  assert.ok(ctx.dhIsUiEvent({target: yes}), 'Yes is a UI target');
+  assert.ok(ctx.dhIsUiEvent({target: no}), 'Cancel is a UI target');
+  assert.ok(ctx.dhIsUiEvent({target: barBtn}), 'toolbar button is a UI target');
+  assert.ok(!ctx.dhIsUiEvent({target: canvas}), 'the 3D canvas is not a UI target');
+  // Cancel while DH would still be "running"
+  let mode = 'dreamhouse';
+  ctx.dhOnResetClick({target: no, preventDefault(){}, stopPropagation(){}});
+  assert.ok(!ctx.dhResetModalIsOpen(), 'Cancel closes the confirm');
+  // Re-open and Esc
+  ctx.dhOpenReset();
+  assert.ok(ctx.dhResetModalIsOpen());
+  const escHandled = ctx.dhOnResetKey({code: 'Escape', preventDefault(){}, stopPropagation(){}, stopImmediatePropagation(){}});
+  assert.strictEqual(escHandled, true);
+  assert.ok(!ctx.dhResetModalIsOpen(), 'Esc closes the confirm first');
+  // Re-open and Yes
+  ctx.dhOpenReset();
+  ctx.dhOnResetClick({target: yes, preventDefault(){}, stopPropagation(){}});
+  assert.ok(!ctx.dhResetModalIsOpen(), 'Yes closes the confirm');
+  assert.strictEqual(ctx.confirmed, 1, 'Yes ran the reset');
+});
+
+
+test('pause buttons stay clickable and the DH toolbar is hidden while paused', () => {
+  assert.ok(/#oPausePanel\.show|\.opanel\.show\{display:grid;pointer-events:auto/.test(src));
+  assert.ok(src.includes('.opanel{') && src.includes('z-index:60'));
+  assert.ok(src.includes('padding-bottom:56px') || src.includes('padding-bottom: 56px'));
+  assert.ok(src.includes('#obby.paused .dhbar') && src.includes('display:none !important'));
+  assert.ok(src.includes("classList.toggle('paused'") && src.includes('dhSyncPauseHud'));
+  assert.ok(src.includes('z-index:70') && src.includes('id="oExit2"') && src.includes('id="dhResetBtn"'));
+  assert.ok(src.includes("e.target.closest('#oPausePanel, #oExit, #oExit2"));
+  assert.ok(src.includes('function setHomeInert') && src.includes('dhInertExempt'));
+});
+
+test('arrow look records e.key and e.code even when a button is focused', () => {
+  assert.ok(dhSrc.includes('function dhNoteLookKey') && dhSrc.includes("e.key") && dhSrc.includes('ArrowRight'));
+  assert.ok(src.includes('dhNoteLookKey(e, true)') && src.includes('dhNoteLookKey(e, false)'));
+  assert.ok(dhSrc.includes("kind === 'key'") && dhSrc.includes('not merely because a leftover button'));
+});
+
+
+
+test('Esc unlocks first, then the next Esc pauses (no 400 ms swallow)', () => {
+  assert.ok(src.includes('fp.eatEsc = true'));
+  assert.ok(src.includes('fp.eatEsc') && src.includes('unlockT < 80'));
+  assert.ok(!src.includes("performance.now() - fp.unlockT < 400"));
+  assert.ok(src.includes("if (e.code === 'Escape' || e.code === 'KeyP'){ if (!won && !over && !choosing) setPause"));
+});
+
+test('pause menu sits above Quick Tips, and tips are not shown while paused', () => {
+  assert.ok(src.includes('.dhtip{') && /z-index:40/.test(src.match(/\.dhtip\{[^}]+\}/)[0]));
+  assert.ok(src.includes('.opanel{') && src.includes('z-index:60'));
+  assert.ok(src.includes('#obby.paused .dhtip') || src.includes('#obby.paused #dhTip'));
+  assert.ok(dhSrc.includes('dh._tipQueue') && dhSrc.includes('function dhFlushTips'));
+  assert.ok(src.includes('window.setPause = setPause') || src.includes('window.setPause=setPause'));
+});
+
+test('Yes, reset closes the pause menu and start/stop clear lingering paused classes', () => {
+  assert.ok(dhSrc.includes('function dhClosePauseMenus') && src.includes('dhClosePauseMenus()'));
+  assert.ok(src.includes("classList.remove('fpv', 'paused', 'dh-paused', 'dh-intro')") || src.includes("remove('paused', 'dh-paused', 'dh-intro')"));
+  assert.ok(src.includes("function dhConfirmReset()") && /dhConfirmReset\(\)\{[\s\S]*?dhClosePauseMenus/.test(src));
+  assert.ok(dhSrc.includes('dh-intro') && src.includes('#obby.dh-intro #dhBar'));
+});
+
+
+test('updateDhChrome restores the toolbar after a menu close', () => {
+  assert.ok(dhSrc.includes('function updateDhChrome') && dhSrc.includes('function dhStatusBits'));
+  assert.ok(dhSrc.includes('if (dh.yardOpen) dhRenderYard();') && dhSrc.includes('updateDhChrome();'));
+  assert.ok(src.includes('function dhCloseReset()') && src.includes('updateDhChrome()'));
+  assert.ok(src.includes('function dhDismissTip') && dhSrc.includes('updateDhChrome();'));
+});
+
+test('top-left status bar drops empty segments, stays in its corner, and sits below the pause menu', () => {
+  assert.ok(src.includes('id="dhBox"') && src.includes('class="dhbox"'));
+  assert.ok(!src.includes('id="dhInv">no stock') && !src.includes('id="dhCarry">Hands empty'));
+  assert.ok(src.includes('#dhBox{') && src.includes('max-width:min(42vw,360px)') && src.includes('overflow:hidden'));
+  assert.ok(/#dhBox\{[^}]*z-index:40/.test(src) || src.includes('#dhBox{') && src.includes('z-index:40'));
+  assert.ok(src.includes('#obby.paused #dhBox') && src.includes('#obby.dh-intro #dhBox'));
+  assert.ok(src.includes('.obtns{') && src.includes('z-index:70'));
+  assert.ok(src.includes('.toast.toast-top{') && src.includes('top:max(88px') && src.includes("classList.toggle('toast-top'"));
+  assert.ok(src.includes('#obby.dh-intro #oCross') || src.includes('#obby.dh-intro .ocross'));
 });
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
