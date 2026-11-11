@@ -39,7 +39,7 @@ function world(store0, opts){
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen};`, ctx);
   return ctx;
 }
 
@@ -1072,11 +1072,45 @@ chk('clearing keys on blur/pointer-lock stops a stuck W so you do not keep slidi
   Wi.A.buildDreamHouse(); Wi.A.dreamhouseEnter();
   chk('a new game starts the intro', !!(Wi.A.dh && Wi.A.dh.intro));
   Wi.A.dhHud(); Wi.A.dhBar();
-  const inv = Wi.els['#dhInv'], barI = Wi.els['#dhBar'];
-  chk('supply HUD and toolbar are hidden during the intro', !!(inv && inv.style.display === 'none') && !!(barI && (barI.style.display === 'none' || barI.style.visibility === 'hidden')), {inv: inv && inv.style, bar: barI && barI.style, text: inv && inv.textContent});
+  const boxI = Wi.els['#dhBox'], barI = Wi.els['#dhBar'], crossI = Wi.els['#oCross'];
+  chk('supply HUD, toolbar and crosshair are hidden during the intro', !!(boxI && boxI.style.display === 'none') && !!(barI && (barI.style.display === 'none' || barI.style.visibility === 'hidden')) && !!(crossI && crossI.style.display === 'none'), {box: boxI && boxI.style, bar: barI && barI.style, cross: crossI && crossI.style});
   Wi.A.dhSkipIntro();
   Wi.A.dhHud(); Wi.A.dhBar();
-  chk('after the intro, the top HUD and toolbar agree on the starter pile', (Wi.A.dhInvCount('brick')|0) === 16 && /16/.test(inv.textContent) && inv.style.display !== 'none' && barI.style.display !== 'none', {inv: inv.textContent, bar: barI.style.display, n: Wi.A.dhInvCount('brick')});
+  const bitsI = (Wi.A.dhStatusBits() || []).join(' ');
+  chk('after the intro, the top HUD and toolbar agree on the starter pile', (Wi.A.dhInvCount('brick')|0) === 16 && /16/.test(bitsI) && /16/.test(boxI.innerHTML) && boxI.style.display !== 'none' && barI.style.display !== 'none', {bits: bitsI, box: boxI.innerHTML, bar: barI.style.display, n: Wi.A.dhInvCount('brick')});
+
+  // Closing Supply Yard (and other menus) must restore the toolbar
+  const Wy = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{brick:16}, upgrades:{}, goals:{}})});
+  Wy.A.buildDreamHouse(); Wy.A.dh.introSeen = true; Wy.A.dh.intro = null; Wy.A.dreamhouseEnter();
+  Wy.A.dhBar();
+  Wy.A.dhToggleYard(true);
+  Wy.A.dhBar(); // a buy/refresh while the yard is open used to leave the bar display:none
+  chk('toolbar is hidden while the Supply Yard is open', !!(Wy.els['#dhBar'] && (Wy.els['#dhBar'].style.display === 'none' || Wy.els['#dhBar'].style.visibility === 'hidden')), {bar: Wy.els['#dhBar'] && Wy.els['#dhBar'].style, yard: Wy.A.dh.yardOpen});
+  Wy.A.dhToggleYard(false);
+  const barY = Wy.els['#dhBar'];
+  chk('closing the Supply Yard restores the toolbar while playing and unpaused', !Wy.A.dh.yardOpen && !!barY && barY.style.display !== 'none' && barY.style.visibility !== 'hidden' && !barY.classList.contains('dh-paused-hide'), {open: Wy.A.dh.yardOpen, bar: barY && barY.style, classes: barY && barY.classList});
+  Wy.A.dhToggleShop(true); Wy.A.dhBar(); Wy.A.dhToggleShop(false);
+  chk('closing the Furniture store restores the toolbar', Wy.els['#dhBar'].style.display !== 'none' && !Wy.A.dh.shopOpen, {bar: Wy.els['#dhBar'].style.display, shop: Wy.A.dh.shopOpen});
+  Wy.A.dhToggleUp(true); Wy.A.dhBar(); Wy.A.dhToggleUp(false);
+  chk('closing Upgrades restores the toolbar', Wy.els['#dhBar'].style.display !== 'none' && !Wy.A.dh.upOpen, {bar: Wy.els['#dhBar'].style.display, up: Wy.A.dh.upOpen});
+
+  // Top-left status bar drops empty segments, hides while paused
+  const Ws = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:100, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+  Ws.A.buildDreamHouse(); Ws.A.dh.introSeen = true; Ws.A.dh.intro = null; Ws.A.dh.stock = {}; Ws.A.dreamhouseEnter();
+  Ws.A.dhHud();
+  const bitsEmpty = Ws.A.dhStatusBits();
+  const joined = bitsEmpty.join(' · ');
+  chk('status bar drops empty inventory and carry segments', bitsEmpty.length >= 1 && !bitsEmpty.some(b => !String(b).trim()) && !/·\s*·/.test(joined) && !/no stock/i.test(joined) && !/Hands empty/i.test(joined) && /100/.test(joined), {bits: bitsEmpty, joined});
+  Ws.A.dh.carry = {id:'cement', n:1}; Ws.A.dh.bag = {id:'sand', n:1};
+  const bitsCarry = Ws.A.dhStatusBits();
+  chk('status bar includes a Carrying segment only when hands are full', bitsCarry.some(b => /Carrying/.test(b)) && bitsCarry.every(b => String(b).trim()), {bits: bitsCarry});
+  Ws.A.dhHud();
+  const boxS = Ws.els['#dhBox'];
+  chk('status bar is visible while playing', boxS && boxS.style.display !== 'none' && /Carrying/.test(boxS.innerHTML), {display: boxS && boxS.style.display, html: boxS && boxS.innerHTML});
+  Ws.paused = true; Ws.A.updateDhChrome();
+  chk('status bar is hidden while paused', boxS.style.display === 'none', {display: boxS.style.display});
+  Ws.paused = false; Ws.A.updateDhChrome();
+  chk('status bar returns after unpausing', boxS.style.display !== 'none', {display: boxS.style.display});
 })();
 
 

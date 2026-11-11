@@ -115,9 +115,9 @@ test('start, bar render, tip hide, and resize all relayout the HUD', () => {
 });
 
 test('version is bumped and existing saves are not involved', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.11-17'"));
+  assert.ok(src.includes("const BUILD = '2026.11.11-18'"));
   const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
-  assert.strictEqual(v.build, '2026.11.11-17');
+  assert.strictEqual(v.build, '2026.11.11-18');
   assert.ok(src.includes("const DH_KEY = 'rubloxDreamHouse'") || dhSrc.includes("DH_KEY = 'rubloxDreamHouse'"));
 });
 
@@ -290,6 +290,24 @@ test('Yes, reset closes the pause menu and start/stop clear lingering paused cla
   assert.ok(dhSrc.includes('dh-intro') && src.includes('#obby.dh-intro #dhBar'));
 });
 
+
+test('updateDhChrome restores the toolbar after a menu close', () => {
+  assert.ok(dhSrc.includes('function updateDhChrome') && dhSrc.includes('function dhStatusBits'));
+  assert.ok(dhSrc.includes('if (dh.yardOpen) dhRenderYard();') && dhSrc.includes('updateDhChrome();'));
+  assert.ok(src.includes('function dhCloseReset()') && src.includes('updateDhChrome()'));
+  assert.ok(src.includes('function dhDismissTip') && dhSrc.includes('updateDhChrome();'));
+});
+
+test('top-left status bar drops empty segments, stays in its corner, and sits below the pause menu', () => {
+  assert.ok(src.includes('id="dhBox"') && src.includes('class="dhbox"'));
+  assert.ok(!src.includes('id="dhInv">no stock') && !src.includes('id="dhCarry">Hands empty'));
+  assert.ok(src.includes('#dhBox{') && src.includes('max-width:min(42vw,360px)') && src.includes('overflow:hidden'));
+  assert.ok(/#dhBox\{[^}]*z-index:40/.test(src) || src.includes('#dhBox{') && src.includes('z-index:40'));
+  assert.ok(src.includes('#obby.paused #dhBox') && src.includes('#obby.dh-intro #dhBox'));
+  assert.ok(src.includes('.obtns{') && src.includes('z-index:70'));
+  assert.ok(src.includes('.toast.toast-top{') && src.includes('top:max(88px') && src.includes("classList.toggle('toast-top'"));
+  assert.ok(src.includes('#obby.dh-intro #oCross') || src.includes('#obby.dh-intro .ocross'));
+});
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed) process.exit(1);

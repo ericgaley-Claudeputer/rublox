@@ -1747,6 +1747,7 @@
     const el = $('#dhYard');
     if (el){ el.style.display = dh.yardOpen ? '' : 'none'; if (dh.yardOpen) el.classList.add('show'); else el.classList.remove('show'); }
     if (dh.yardOpen) dhRenderYard();
+    updateDhChrome();
   }
   function dhRenderYard(){
     const el = $('#dhYard'); if (!el || !dh) return;
@@ -1767,6 +1768,7 @@
     const el = $('#dhShop');
     if (el){ el.style.display = dh.shopOpen ? '' : 'none'; if (dh.shopOpen) el.classList.add('show'); else el.classList.remove('show'); }
     if (dh.shopOpen) dhRenderShop();
+    updateDhChrome();
   }
   function dhRenderShop(){
     const el = $('#dhShop'); if (!el || !dh) return;
@@ -1785,6 +1787,7 @@
     const el = $('#dhUp');
     if (el){ el.style.display = dh.upOpen ? '' : 'none'; if (dh.upOpen) el.classList.add('show'); else el.classList.remove('show'); }
     if (dh.upOpen) dhRenderUp();
+    updateDhChrome();
   }
   function dhRenderUp(){
     const el = $('#dhUp'); if (!el || !dh) return;
@@ -2311,6 +2314,34 @@
       item(7, 'Paint & furnish', (dhCount((dh && dh.pieces[dh.mine]) || [], 'paint') >= 4 && ['sofa','bed','table','lamp','plant','rug','tv','shelf'].reduce((n, id) => n + dhCount((dh && dh.pieces[dh.mine]) || [], id), 0) >= 3) ? 1 : 0, 1)
     ];
   }
+  function dhSpotInView(p){
+    if (!p) return false;
+    const look = typeof dhLookFromCam === 'function' ? dhLookFromCam() : null;
+    if (!look) return false;
+    const a = dhAngleToPoint({x:p.x, y:p.y || 0, z:p.z}, look);
+    return a.dist < 18 && a.dot > 0 && a.ang < (52 * Math.PI / 180);
+  }
+  function dhNearestSpotHint(){
+    if (!dh || dh.intro) return '';
+    const stage = dhStageId();
+    const job = stage === 'stake' ? 'mark' : stage;
+    if (!['mark','dig','pour','brick'].includes(job)) return '';
+    const pts = typeof dhJobPoints === 'function' ? dhJobPoints(job) : [];
+    if (!pts.length) return '';
+    if (pts.some(dhSpotInView)) return '';
+    const px = (typeof P !== 'undefined' && P && P.x) || 0, pz = (typeof P !== 'undefined' && P && P.z) || 0;
+    let best = pts[0], bestD = Infinity;
+    pts.forEach(p => { const d = Math.hypot((p.x||0) - px, (p.z||0) - pz); if (d < bestD){ bestD = d; best = p; } });
+    const yaw = (typeof cam !== 'undefined' && cam && cam.yaw) || 0;
+    const ang = Math.atan2((best.x||0) - px, (best.z||0) - pz) - yaw;
+    const a = Math.atan2(Math.sin(ang), Math.cos(ang));
+    let dir = 'behind you';
+    if (Math.abs(a) < 0.6) dir = 'ahead';
+    else if (a > 0 && a < 2.2) dir = 'to your right';
+    else if (a < 0 && a > -2.2) dir = 'to your left';
+    const name = job === 'mark' ? 'stake' : job === 'dig' ? 'dig spot' : job === 'pour' ? 'pour spot' : 'brick slot';
+    return '  ➤ Next ' + name + ' is ' + dir;
+  }
   function dhGoalText(){
     if (!dh) return '';
     const stage = dhStageId();
@@ -2361,6 +2392,7 @@
     if (!dhTipOpen()) return false;
     const tip = $('#dhTip');
     if (tip){ tip.classList.remove('show'); tip.style.display = 'none'; }
+    updateDhChrome();
     return true;
   }
   function dhShowTip(text){
@@ -2374,6 +2406,7 @@
     if (typeof document !== 'undefined' && document.pointerLockElement && document.exitPointerLock){
       try { document.exitPointerLock(); } catch (e){}
     }
+    updateDhChrome();
   }
   function dhFlushTips(){
     if (!dh || !dh._tipQueue) return;
@@ -2400,13 +2433,29 @@
     if (!menus && typeof THREE !== 'undefined' && typeof scene !== 'undefined'){
       const g = new THREE.Group();
       const pulse = 0.35 + 0.2 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 5);
+      const addBeacon = (x, y, z, on, ry) => {
+        const soft = on ? '#7CFF6A' : '#ffe08a';
+        const pad = new THREE.Mesh(new THREE.BoxGeometry(DH_CELL * (on ? .92 : .82), on ? .2 : .1, DH_CELL * (on ? .92 : .82)), dhMat(soft, {transparent: true, opacity: on ? (0.55 + pulse) : 0.32, emissive: soft, emissiveIntensity: on ? 1 : .35, depthWrite: false}));
+        pad.position.set(x, y, z); if (ry) pad.rotation.y = ry;
+        if (on) pad.scale.set(1.12, 1, 1.12);
+        g.add(pad);
+        const h = on ? 1.45 : 0.8;
+        const beam = new THREE.Mesh(new THREE.BoxGeometry(on ? .12 : .07, h, on ? .12 : .07), dhMat(soft, {transparent: true, opacity: on ? (0.7 + pulse * 0.4) : 0.4, emissive: soft, emissiveIntensity: on ? 1 : .3, depthWrite: false}));
+        beam.position.set(x, y + h / 2 + 0.08, z);
+        g.add(beam);
+      };
       if (stage === 'brick'){
         const aimedB = dhTargetSpot('brick');
-        if (aimedB){
-          const m = new THREE.Mesh(new THREE.BoxGeometry(DH_BRICK_W - .04, DH_BRICK_H - .04, DH_BRICK_D + .02), dhMat('#7CFF6A', {transparent: true, opacity: .95, emissive: '#7CFF6A', emissiveIntensity: 1, depthWrite: false}));
-          m.position.set(aimedB.x, aimedB.y, aimedB.z); m.rotation.y = aimedB.ry || 0;
-          m.scale.set(1.15, 1.15, 1.15);
-          g.add(m);
+        let slots = typeof dhJobPoints === 'function' ? (dhJobPoints('brick') || []) : [];
+        if (slots.length){ const minY = Math.min.apply(null, slots.map(s => s.y)); slots = slots.filter(s => Math.abs((s.y||0) - minY) < 0.12); }
+        const seen = [];
+        slots.forEach(s => {
+          const on = !!(aimedB && Math.abs(s.x - aimedB.x) < 0.04 && Math.abs(s.y - aimedB.y) < 0.04 && Math.abs(s.z - aimedB.z) < 0.04);
+          addBeacon(s.x, s.y, s.z, on, s.ry || 0);
+          seen.push(s);
+        });
+        if (aimedB && !seen.some(s => Math.abs(s.x - aimedB.x) < 0.04 && Math.abs(s.z - aimedB.z) < 0.04 && Math.abs(s.y - aimedB.y) < 0.04)){
+          addBeacon(aimedB.x, aimedB.y, aimedB.z, true, aimedB.ry || 0);
         }
       } else if (stage === 'stake' || stage === 'dig' || stage === 'pour'){
         const job = stage === 'stake' ? 'mark' : stage;
@@ -2418,13 +2467,11 @@
           if (job === 'pour' && (dhHas(dh.mine, 'trench', ix, iz) || dhHas(dh.mine, 'mark', ix, iz)) && !dhHas(dh.mine, 'wet', ix, iz) && !dhHas(dh.mine, 'slab', ix, iz)) cells.push({ix, iz});
         }
         const aimed = dhTargetSpot(job);
-        if (aimed){
-          const w = dhCellWorld(dh.mine, aimed.ix, aimed.iz, .1);
-          const m = new THREE.Mesh(new THREE.BoxGeometry(DH_CELL * .9, .18, DH_CELL * .9), dhMat('#7CFF6A', {transparent: true, opacity: .92, emissive: '#7CFF6A', emissiveIntensity: 1, depthWrite: false}));
-          m.position.set(w.x, w.y, w.z);
-          m.scale.set(1.12, 1, 1.12);
-          g.add(m);
-        }
+        cells.forEach(c => {
+          const w = dhCellWorld(dh.mine, c.ix, c.iz, .1);
+          const on = !!(aimed && aimed.ix === c.ix && aimed.iz === c.iz);
+          addBeacon(w.x, w.y, w.z, on, 0);
+        });
       }
       if (g.children.length){ dh.outlines = g; scene.add(g); }
     }
@@ -2621,7 +2668,7 @@
     if (goal){
       const hide = !!(dh.intro || dh.yardOpen || dh.shopOpen || dh.upOpen);
       goal.style.display = hide ? 'none' : '';
-      if (!hide){ goal.classList.add('show'); goal.textContent = dhGoalText(); }
+      if (!hide){ goal.classList.add('show'); goal.textContent = dhGoalText() + dhNearestSpotHint(); }
     }
     const steps = $('#dhSteps');
     if (steps){
@@ -2653,25 +2700,8 @@
         if (gt) gt.textContent = tgt.text;
       } else g.classList.remove('show');
     }
-    const inv = $('#dhInv');
-    if (inv){
-      if (dh.intro){ inv.textContent = ''; inv.style.display = 'none'; }
-      else {
-        inv.style.display = '';
-        const bits = ['brick','cement','sand','wood','shingle','glass'].map(id => {
-          const m = dhMatOf(id); const v = dhInvCount(id);
-          return v ? (m.e + v) : '';
-        }).filter(Boolean);
-        inv.textContent = bits.join(' ') || 'no stock';
-      }
-    }
-    const c = $('#dhCarry');
-    if (c){
-      const held = dhHeldInfo();
-      c.textContent = held.carryText;
-    }
     if (typeof dhUpdateHandHud === 'function') dhUpdateHandHud();
-    const tb = $('#dhTool'); if (tb) tb.textContent = dh.tool === 'delete' ? '🗑️' : ({mark:'📍', dig:'🕳️', mix:'🌀', pour:'🪣', brick:'🧱', stud:'🪵', rafter:'🪜', shingle:'🏠', frame:'🚪', glass:'🪟', paint:'🎨', furn:'🛋️'}[dh.job] || '🏗️');
+    updateDhChrome();
   }
   function dhMenusUp(){
     if (typeof paused !== 'undefined' && paused) return true;
@@ -2680,26 +2710,77 @@
     if (dh && (dh.shopOpen || dh.yardOpen || dh.upOpen)) return true;
     return false;
   }
-  function dhSyncPauseHud(){
-    const hide = dhMenusUp();
+  function dhStatusBits(){
+    if (!dh) return [];
+    const bits = [];
+    bits.push('🪙 ' + Math.floor(dh.bank));
+    const invParts = ['brick','cement','sand','wood','shingle','glass'].map(id => {
+      const m = dhMatOf(id); const v = dhInvCount(id);
+      return v ? (m.e + v) : '';
+    }).filter(Boolean);
+    if (invParts.length) bits.push(invParts.join(' '));
+    const held = dhHeldInfo();
+    const carry = held && held.carryText;
+    if (carry && carry !== 'Hands empty') bits.push(carry);
+    const tool = dh.tool === 'delete' ? '🗑️' : ({mark:'📍', dig:'🕳️', mix:'🌀', pour:'🪣', brick:'🧱', stud:'🪵', rafter:'🪜', shingle:'🏠', frame:'🚪', glass:'🪟', paint:'🎨', furn:'🛋️'}[dh.job] || '');
+    if (tool) bits.push(tool);
+    return bits;
+  }
+  function updateDhChrome(){
+    const intro = !!(dh && dh.intro);
+    const inDh = (typeof mode === 'undefined' || mode === 'dreamhouse') && !!dh;
+    const playing = inDh && !intro;
+    const pausedNow = !!(typeof paused !== 'undefined' && paused) || !!(typeof menuOpen !== 'undefined' && menuOpen);
+    const menus = !!(dh && (dh.shopOpen || dh.yardOpen || dh.upOpen));
+    const modal = typeof dhResetModalIsOpen === 'function' && dhResetModalIsOpen();
+    const hideBar = !playing || pausedNow || menus || modal;
+    const hideStatus = !playing || pausedNow;
+    const hideCross = !playing || pausedNow;
     if (typeof document !== 'undefined' && document.getElementById){
       const root = document.getElementById('obby');
-      if (root && root.classList){ root.classList.toggle('dh-paused', hide); root.classList.toggle('paused', !!(typeof paused !== 'undefined' && paused)); }
+      if (root && root.classList){
+        root.classList.toggle('dhouse', inDh);
+        root.classList.toggle('dh-intro', intro);
+        root.classList.toggle('paused', pausedNow);
+        root.classList.toggle('dh-paused', pausedNow || menus || modal);
+      }
     }
     ['#dhBar', '#dhHand', '#dhAct'].forEach(id => {
       const el = $(id); if (!el) return;
-      if (hide){ el.style.display = 'none'; el.style.visibility = 'hidden'; el.style.pointerEvents = 'none'; el.classList.add('dh-paused-hide'); }
-      else { el.style.visibility = ''; el.style.pointerEvents = ''; el.classList.remove('dh-paused-hide'); }
+      if (hideBar){ el.style.display = 'none'; el.style.visibility = 'hidden'; el.style.pointerEvents = 'none'; el.classList.add('dh-paused-hide'); el.classList.remove('show'); }
+      else { el.style.display = ''; el.style.visibility = ''; el.style.pointerEvents = (id === '#dhHand' ? 'none' : ''); el.classList.remove('dh-paused-hide'); if (id === '#dhBar') el.classList.add('show'); }
     });
-    if (!hide){
-      const bar = $('#dhBar'); if (bar){ bar.style.display = ''; bar.classList.add('show'); }
+    const bits = dh ? dhStatusBits() : [];
+    const invParts = dh ? ['brick','cement','sand','wood','shingle','glass'].map(id => {
+      const m = dhMatOf(id); const v = dhInvCount(id);
+      return v ? (m.e + v) : '';
+    }).filter(Boolean) : [];
+    const box = $('#dhBox');
+    if (box){
+      if (hideStatus){ box.style.display = 'none'; }
+      else {
+        box.style.display = '';
+        box.innerHTML = bits.map(b => '<b>' + b + '</b>').join('<span class="dhsep"> · </span>');
+      }
     }
+    const inv = $('#dhInv');
+    if (inv){ inv.textContent = invParts.join(' ') || ''; if (hideStatus) inv.style.display = 'none'; else inv.style.display = ''; }
+    const n = $('#dhN'); if (n) n.textContent = dh ? ('🪙 ' + Math.floor(dh.bank)) : '';
+    const c = $('#dhCarry');
+    if (c){ const held = dh && dhHeldInfo(); c.textContent = (held && held.carryText) || ''; }
+    const tb = $('#dhTool');
+    if (tb){ tb.textContent = dh && dh.tool === 'delete' ? '🗑️' : (dh ? (({mark:'📍', dig:'🕳️', mix:'🌀', pour:'🪣', brick:'🧱', stud:'🪵', rafter:'🪜', shingle:'🏠', frame:'🚪', glass:'🪟', paint:'🎨', furn:'🛋️'}[dh.job]) || '') : ''); }
+    const xh = $('#oCross');
+    if (xh){ xh.style.display = hideCross ? 'none' : ''; }
+    if (typeof window !== 'undefined') window.updateDhChrome = updateDhChrome;
+    return !hideBar;
   }
+  function dhSyncPauseHud(){ return updateDhChrome(); }
   function dhBar(){
     if (!dh) return;
     const bar = $('#dhBar'); if (!bar) return;
-    if (dhMenusUp() || (dh && dh.intro)){ bar.style.display = 'none'; bar.style.visibility = 'hidden'; bar.style.pointerEvents = 'none'; bar.classList.add('dh-paused-hide'); return; }
-    bar.style.display = ''; bar.style.visibility = ''; bar.style.pointerEvents = ''; bar.classList.remove('dh-paused-hide'); bar.classList.add('show');
+    // Always rebuild the toolbar, then let updateDhChrome show or hide it.
+    bar.classList.add('show');
     const jobs = '<div class="dhtools">' + DH_JOBS.map(j => {
       const lab = {mark:'📍 Stake', dig:'🕳️ Dig', mix:'🌀 Mix', pour:'🪣 Pour', brick:'🧱 Brick', stud:'🪵 Stud', rafter:'🪜 Rafter', shingle:'🏠 Shingle', frame:'🚪 Frame', glass:'🪟 Glass', paint:'🎨 Paint', furn:'🛋️ Furnish'}[j];
       return '<button class="dhb' + (dh.job === j && dh.tool === 'place' ? ' on' : '') + '" data-dhjob="' + j + '">' + lab + '</button>';
@@ -2712,6 +2793,7 @@
     bar.innerHTML = jobs + cols + inv;
     dhBindUI();
     if (typeof dhLayoutHud === 'function') dhLayoutHud();
+    updateDhChrome();
   }
   function dhBindUI(){
     if (window.__dhBound5) return;
@@ -2758,7 +2840,7 @@
     const skip = $('#dhSkip'); if (skip) skip.onclick = ev => { ev.stopPropagation(); if (dh && dh.intro) dhSkipIntro(); };
     const replay = $('#dhReplay'); if (replay) replay.onclick = () => dh && dhReplayIntro();
     const tipX = $('#dhTipX'); if (tipX) tipX.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); dhDismissTip(); };
-    const tip = $('#dhTip'); if (tip) tip.onclick = ev => { if (ev.target && ev.target.id === 'dhTip'){ tip.classList.remove('show'); tip.style.display = 'none'; } };
+    const tip = $('#dhTip'); if (tip) tip.onclick = ev => { if (ev.target && ev.target.id === 'dhTip'){ dhDismissTip(); } };
   }
   function dhPointer(down){
     if (!dh || dh.intro) return false;

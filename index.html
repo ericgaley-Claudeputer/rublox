@@ -112,6 +112,8 @@ body.dhreset-open #dhResetModal, body.dhreset-open #dhResetModal .mbox, body.dhr
 .mbox input:focus{border-color:var(--blue)}
 .mbox .swatches{justify-content:center}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(calc(100% + 140px));visibility:hidden;transition:transform .35s cubic-bezier(.3,1.8,.5,1),visibility 0s .35s;background:var(--green);color:#fff;font-weight:900;padding:12px 22px;border-radius:16px;box-shadow:0 6px 0 #1f9460;z-index:60}
+.toast.toast-top{top:max(88px, calc(env(safe-area-inset-top) + 76px));bottom:auto;transform:translateX(-50%) translateY(-140%);z-index:50}
+.toast.toast-top.show{transform:translateX(-50%) translateY(0)}
 .toast.show{transform:translateX(-50%) translateY(0);visibility:visible;transition:transform .35s cubic-bezier(.3,1.8,.5,1),visibility 0s}
 .confetti{position:fixed;width:10px;height:10px;top:-12px;z-index:70;pointer-events:none;border-radius:2px}
 @media (max-width:760px){
@@ -177,10 +179,15 @@ body.dark .sitem canvas{background:linear-gradient(#34427e,#26306a)}
 .obby{position:fixed;inset:0;z-index:45;display:none;background:#8fd3ff;user-select:none;-webkit-user-select:none}
 .obby.show{display:block}
 #obbyView,#obbyView canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;z-index:0;pointer-events:auto}
-.ohud{position:absolute;top:10px;left:10px;right:10px;z-index:70;display:flex;justify-content:space-between;gap:10px;pointer-events:none;flex-wrap:wrap}
-.ostats{display:flex;gap:8px;flex-wrap:wrap}
+.ohud{position:absolute;top:10px;left:10px;right:10px;z-index:auto;display:flex;justify-content:space-between;gap:10px;pointer-events:none;flex-wrap:wrap}
+.ostats{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;max-width:min(46vw,380px);position:relative;z-index:40}
+#dhBox{display:flex;flex-wrap:wrap;align-items:center;gap:0 2px;max-width:min(42vw,360px);overflow:hidden;text-overflow:ellipsis;line-height:1.25;position:relative;z-index:40}
+#dhBox b{font-weight:900}
+#obby.paused #dhBox, #obby.dh-intro #dhBox, #obby.dh-intro #oCross, #obby.dh-intro .ocross{
+  display:none !important;
+}
 .ostats>span,.obtns button{pointer-events:auto;background:rgba(255,255,255,.92);color:#1d2340;font-weight:900;font-size:17px;padding:8px 14px;border-radius:14px;box-shadow:0 4px 0 rgba(0,0,0,.18);display:flex;align-items:center;gap:6px}
-.obtns{display:flex;gap:8px}
+.obtns{display:flex;gap:8px;position:relative;z-index:70}
 .obtns button{border:0;font-family:inherit;cursor:pointer;transition:transform .15s}
 .obtns button:hover{transform:translateY(-2px)}
 .otip{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);background:rgba(29,35,64,.85);color:#fff;font-weight:800;font-size:17px;padding:12px 20px;border-radius:16px;text-align:center;transition:opacity .6s;max-width:92vw}
@@ -533,7 +540,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 #obby.paused .dhtip, #obby.dh-paused .dhtip, #obby.paused #dhTip, #obby.dh-paused #dhTip{
   display:none !important; visibility:hidden !important; pointer-events:none !important;
 }
-#obby.dh-intro #dhBar, #obby.dh-intro #dhInv, #obby.dh-intro #dhCarry, #obby.dh-intro #dhHand, #obby.dh-intro #dhAct{
+#obby.dh-intro #dhBar, #obby.dh-intro #dhInv, #obby.dh-intro #dhCarry, #obby.dh-intro #dhHand, #obby.dh-intro #dhAct, #obby.dh-intro #dhBox, #obby.dh-intro #oCross, #obby.dh-intro .ocross{
   display:none !important;
 }
 .dhtip b{display:block;color:#3a86ff;font-size:13px;text-transform:uppercase;margin-bottom:4px}
@@ -1158,7 +1165,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   <div class="ohud">
     <div class="ostats">
       <span id="oStageBox">🏁 Lv <b id="oLvl">1</b><span id="oCpWrap"> · 🚩 <b id="oStage">1</b>/<b id="oStageN">3</b></span></span>
-      <span id="dhBox" style="display:none">🏡 <b id="dhN">🪙 0</b> · <b id="dhInv">no stock</b> · <b id="dhCarry">Hands empty</b> <b id="dhTool">📍</b></span>
+      <span id="dhBox" class="dhbox" style="display:none"></span>
       <span id="dbBox" style="display:none"><b id="dbN">💃 Dance</b></span>
       <span id="hmBox" style="display:none"><b id="hmN">👻 Escape</b></span>
       <span id="sbBox" style="display:none"><b id="sbN">🐴 Stable</b></span>
@@ -1566,7 +1573,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-17';
+const BUILD = '2026.11.11-18';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2865,7 +2872,12 @@ function showMsg(emoji, title, text){
 $('#soonOk').onclick = () => $('#soonModal').classList.remove('show');
 $('#soonModal').onclick = e => { if (e.target.id === 'soonModal') $('#soonModal').classList.remove('show'); };
 let toastT;
-function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800); }
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg;
+  const inDh = (typeof mode !== 'undefined' && mode === 'dreamhouse') || !!(document.getElementById('obby') && document.getElementById('obby').classList.contains('dhouse'));
+  t.classList.toggle('toast-top', !!inDh);
+  t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800);
+}
 function confetti(){
   for (let i = 0; i < 40; i++){
     const c = document.createElement('div'); c.className = 'confetti';
@@ -3009,6 +3021,7 @@ function dhOpenReset(){
   try { if (typeof m.showModal === 'function' && !m.open) m.showModal(); } catch (e){}
   if (typeof dhClearDialogInert === 'function') dhClearDialogInert(m);
   const no = $('#dhResetNo'); if (no) try { no.focus(); } catch (e){}
+  if (typeof updateDhChrome === 'function') updateDhChrome();
 }
 function dhCloseReset(){
   const m = $('#dhResetModal');
@@ -3017,6 +3030,7 @@ function dhCloseReset(){
     try { if (typeof m.close === 'function' && m.open) m.close(); } catch (e){}
   }
   if (document.body) document.body.classList.remove('dhreset-open');
+  if (typeof updateDhChrome === 'function') updateDhChrome();
 }
 function dhConfirmReset(){
   dhCloseReset();
@@ -13708,6 +13722,7 @@ const Obby = (() => {
     const el = $('#dhYard');
     if (el){ el.style.display = dh.yardOpen ? '' : 'none'; if (dh.yardOpen) el.classList.add('show'); else el.classList.remove('show'); }
     if (dh.yardOpen) dhRenderYard();
+    updateDhChrome();
   }
   function dhRenderYard(){
     const el = $('#dhYard'); if (!el || !dh) return;
@@ -13728,6 +13743,7 @@ const Obby = (() => {
     const el = $('#dhShop');
     if (el){ el.style.display = dh.shopOpen ? '' : 'none'; if (dh.shopOpen) el.classList.add('show'); else el.classList.remove('show'); }
     if (dh.shopOpen) dhRenderShop();
+    updateDhChrome();
   }
   function dhRenderShop(){
     const el = $('#dhShop'); if (!el || !dh) return;
@@ -13746,6 +13762,7 @@ const Obby = (() => {
     const el = $('#dhUp');
     if (el){ el.style.display = dh.upOpen ? '' : 'none'; if (dh.upOpen) el.classList.add('show'); else el.classList.remove('show'); }
     if (dh.upOpen) dhRenderUp();
+    updateDhChrome();
   }
   function dhRenderUp(){
     const el = $('#dhUp'); if (!el || !dh) return;
@@ -14272,6 +14289,34 @@ const Obby = (() => {
       item(7, 'Paint & furnish', (dhCount((dh && dh.pieces[dh.mine]) || [], 'paint') >= 4 && ['sofa','bed','table','lamp','plant','rug','tv','shelf'].reduce((n, id) => n + dhCount((dh && dh.pieces[dh.mine]) || [], id), 0) >= 3) ? 1 : 0, 1)
     ];
   }
+  function dhSpotInView(p){
+    if (!p) return false;
+    const look = typeof dhLookFromCam === 'function' ? dhLookFromCam() : null;
+    if (!look) return false;
+    const a = dhAngleToPoint({x:p.x, y:p.y || 0, z:p.z}, look);
+    return a.dist < 18 && a.dot > 0 && a.ang < (52 * Math.PI / 180);
+  }
+  function dhNearestSpotHint(){
+    if (!dh || dh.intro) return '';
+    const stage = dhStageId();
+    const job = stage === 'stake' ? 'mark' : stage;
+    if (!['mark','dig','pour','brick'].includes(job)) return '';
+    const pts = typeof dhJobPoints === 'function' ? dhJobPoints(job) : [];
+    if (!pts.length) return '';
+    if (pts.some(dhSpotInView)) return '';
+    const px = (typeof P !== 'undefined' && P && P.x) || 0, pz = (typeof P !== 'undefined' && P && P.z) || 0;
+    let best = pts[0], bestD = Infinity;
+    pts.forEach(p => { const d = Math.hypot((p.x||0) - px, (p.z||0) - pz); if (d < bestD){ bestD = d; best = p; } });
+    const yaw = (typeof cam !== 'undefined' && cam && cam.yaw) || 0;
+    const ang = Math.atan2((best.x||0) - px, (best.z||0) - pz) - yaw;
+    const a = Math.atan2(Math.sin(ang), Math.cos(ang));
+    let dir = 'behind you';
+    if (Math.abs(a) < 0.6) dir = 'ahead';
+    else if (a > 0 && a < 2.2) dir = 'to your right';
+    else if (a < 0 && a > -2.2) dir = 'to your left';
+    const name = job === 'mark' ? 'stake' : job === 'dig' ? 'dig spot' : job === 'pour' ? 'pour spot' : 'brick slot';
+    return '  ➤ Next ' + name + ' is ' + dir;
+  }
   function dhGoalText(){
     if (!dh) return '';
     const stage = dhStageId();
@@ -14322,6 +14367,7 @@ const Obby = (() => {
     if (!dhTipOpen()) return false;
     const tip = $('#dhTip');
     if (tip){ tip.classList.remove('show'); tip.style.display = 'none'; }
+    updateDhChrome();
     return true;
   }
   function dhShowTip(text){
@@ -14335,6 +14381,7 @@ const Obby = (() => {
     if (typeof document !== 'undefined' && document.pointerLockElement && document.exitPointerLock){
       try { document.exitPointerLock(); } catch (e){}
     }
+    updateDhChrome();
   }
   function dhFlushTips(){
     if (!dh || !dh._tipQueue) return;
@@ -14361,13 +14408,29 @@ const Obby = (() => {
     if (!menus && typeof THREE !== 'undefined' && typeof scene !== 'undefined'){
       const g = new THREE.Group();
       const pulse = 0.35 + 0.2 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 5);
+      const addBeacon = (x, y, z, on, ry) => {
+        const soft = on ? '#7CFF6A' : '#ffe08a';
+        const pad = new THREE.Mesh(new THREE.BoxGeometry(DH_CELL * (on ? .92 : .82), on ? .2 : .1, DH_CELL * (on ? .92 : .82)), dhMat(soft, {transparent: true, opacity: on ? (0.55 + pulse) : 0.32, emissive: soft, emissiveIntensity: on ? 1 : .35, depthWrite: false}));
+        pad.position.set(x, y, z); if (ry) pad.rotation.y = ry;
+        if (on) pad.scale.set(1.12, 1, 1.12);
+        g.add(pad);
+        const h = on ? 1.45 : 0.8;
+        const beam = new THREE.Mesh(new THREE.BoxGeometry(on ? .12 : .07, h, on ? .12 : .07), dhMat(soft, {transparent: true, opacity: on ? (0.7 + pulse * 0.4) : 0.4, emissive: soft, emissiveIntensity: on ? 1 : .3, depthWrite: false}));
+        beam.position.set(x, y + h / 2 + 0.08, z);
+        g.add(beam);
+      };
       if (stage === 'brick'){
         const aimedB = dhTargetSpot('brick');
-        if (aimedB){
-          const m = new THREE.Mesh(new THREE.BoxGeometry(DH_BRICK_W - .04, DH_BRICK_H - .04, DH_BRICK_D + .02), dhMat('#7CFF6A', {transparent: true, opacity: .95, emissive: '#7CFF6A', emissiveIntensity: 1, depthWrite: false}));
-          m.position.set(aimedB.x, aimedB.y, aimedB.z); m.rotation.y = aimedB.ry || 0;
-          m.scale.set(1.15, 1.15, 1.15);
-          g.add(m);
+        let slots = typeof dhJobPoints === 'function' ? (dhJobPoints('brick') || []) : [];
+        if (slots.length){ const minY = Math.min.apply(null, slots.map(s => s.y)); slots = slots.filter(s => Math.abs((s.y||0) - minY) < 0.12); }
+        const seen = [];
+        slots.forEach(s => {
+          const on = !!(aimedB && Math.abs(s.x - aimedB.x) < 0.04 && Math.abs(s.y - aimedB.y) < 0.04 && Math.abs(s.z - aimedB.z) < 0.04);
+          addBeacon(s.x, s.y, s.z, on, s.ry || 0);
+          seen.push(s);
+        });
+        if (aimedB && !seen.some(s => Math.abs(s.x - aimedB.x) < 0.04 && Math.abs(s.z - aimedB.z) < 0.04 && Math.abs(s.y - aimedB.y) < 0.04)){
+          addBeacon(aimedB.x, aimedB.y, aimedB.z, true, aimedB.ry || 0);
         }
       } else if (stage === 'stake' || stage === 'dig' || stage === 'pour'){
         const job = stage === 'stake' ? 'mark' : stage;
@@ -14379,13 +14442,11 @@ const Obby = (() => {
           if (job === 'pour' && (dhHas(dh.mine, 'trench', ix, iz) || dhHas(dh.mine, 'mark', ix, iz)) && !dhHas(dh.mine, 'wet', ix, iz) && !dhHas(dh.mine, 'slab', ix, iz)) cells.push({ix, iz});
         }
         const aimed = dhTargetSpot(job);
-        if (aimed){
-          const w = dhCellWorld(dh.mine, aimed.ix, aimed.iz, .1);
-          const m = new THREE.Mesh(new THREE.BoxGeometry(DH_CELL * .9, .18, DH_CELL * .9), dhMat('#7CFF6A', {transparent: true, opacity: .92, emissive: '#7CFF6A', emissiveIntensity: 1, depthWrite: false}));
-          m.position.set(w.x, w.y, w.z);
-          m.scale.set(1.12, 1, 1.12);
-          g.add(m);
-        }
+        cells.forEach(c => {
+          const w = dhCellWorld(dh.mine, c.ix, c.iz, .1);
+          const on = !!(aimed && aimed.ix === c.ix && aimed.iz === c.iz);
+          addBeacon(w.x, w.y, w.z, on, 0);
+        });
       }
       if (g.children.length){ dh.outlines = g; scene.add(g); }
     }
@@ -14582,7 +14643,7 @@ const Obby = (() => {
     if (goal){
       const hide = !!(dh.intro || dh.yardOpen || dh.shopOpen || dh.upOpen);
       goal.style.display = hide ? 'none' : '';
-      if (!hide){ goal.classList.add('show'); goal.textContent = dhGoalText(); }
+      if (!hide){ goal.classList.add('show'); goal.textContent = dhGoalText() + dhNearestSpotHint(); }
     }
     const steps = $('#dhSteps');
     if (steps){
@@ -14614,25 +14675,8 @@ const Obby = (() => {
         if (gt) gt.textContent = tgt.text;
       } else g.classList.remove('show');
     }
-    const inv = $('#dhInv');
-    if (inv){
-      if (dh.intro){ inv.textContent = ''; inv.style.display = 'none'; }
-      else {
-        inv.style.display = '';
-        const bits = ['brick','cement','sand','wood','shingle','glass'].map(id => {
-          const m = dhMatOf(id); const v = dhInvCount(id);
-          return v ? (m.e + v) : '';
-        }).filter(Boolean);
-        inv.textContent = bits.join(' ') || 'no stock';
-      }
-    }
-    const c = $('#dhCarry');
-    if (c){
-      const held = dhHeldInfo();
-      c.textContent = held.carryText;
-    }
     if (typeof dhUpdateHandHud === 'function') dhUpdateHandHud();
-    const tb = $('#dhTool'); if (tb) tb.textContent = dh.tool === 'delete' ? '🗑️' : ({mark:'📍', dig:'🕳️', mix:'🌀', pour:'🪣', brick:'🧱', stud:'🪵', rafter:'🪜', shingle:'🏠', frame:'🚪', glass:'🪟', paint:'🎨', furn:'🛋️'}[dh.job] || '🏗️');
+    updateDhChrome();
   }
   function dhMenusUp(){
     if (typeof paused !== 'undefined' && paused) return true;
@@ -14641,26 +14685,77 @@ const Obby = (() => {
     if (dh && (dh.shopOpen || dh.yardOpen || dh.upOpen)) return true;
     return false;
   }
-  function dhSyncPauseHud(){
-    const hide = dhMenusUp();
+  function dhStatusBits(){
+    if (!dh) return [];
+    const bits = [];
+    bits.push('🪙 ' + Math.floor(dh.bank));
+    const invParts = ['brick','cement','sand','wood','shingle','glass'].map(id => {
+      const m = dhMatOf(id); const v = dhInvCount(id);
+      return v ? (m.e + v) : '';
+    }).filter(Boolean);
+    if (invParts.length) bits.push(invParts.join(' '));
+    const held = dhHeldInfo();
+    const carry = held && held.carryText;
+    if (carry && carry !== 'Hands empty') bits.push(carry);
+    const tool = dh.tool === 'delete' ? '🗑️' : ({mark:'📍', dig:'🕳️', mix:'🌀', pour:'🪣', brick:'🧱', stud:'🪵', rafter:'🪜', shingle:'🏠', frame:'🚪', glass:'🪟', paint:'🎨', furn:'🛋️'}[dh.job] || '');
+    if (tool) bits.push(tool);
+    return bits;
+  }
+  function updateDhChrome(){
+    const intro = !!(dh && dh.intro);
+    const inDh = (typeof mode === 'undefined' || mode === 'dreamhouse') && !!dh;
+    const playing = inDh && !intro;
+    const pausedNow = !!(typeof paused !== 'undefined' && paused) || !!(typeof menuOpen !== 'undefined' && menuOpen);
+    const menus = !!(dh && (dh.shopOpen || dh.yardOpen || dh.upOpen));
+    const modal = typeof dhResetModalIsOpen === 'function' && dhResetModalIsOpen();
+    const hideBar = !playing || pausedNow || menus || modal;
+    const hideStatus = !playing || pausedNow;
+    const hideCross = !playing || pausedNow;
     if (typeof document !== 'undefined' && document.getElementById){
       const root = document.getElementById('obby');
-      if (root && root.classList){ root.classList.toggle('dh-paused', hide); root.classList.toggle('paused', !!(typeof paused !== 'undefined' && paused)); }
+      if (root && root.classList){
+        root.classList.toggle('dhouse', inDh);
+        root.classList.toggle('dh-intro', intro);
+        root.classList.toggle('paused', pausedNow);
+        root.classList.toggle('dh-paused', pausedNow || menus || modal);
+      }
     }
     ['#dhBar', '#dhHand', '#dhAct'].forEach(id => {
       const el = $(id); if (!el) return;
-      if (hide){ el.style.display = 'none'; el.style.visibility = 'hidden'; el.style.pointerEvents = 'none'; el.classList.add('dh-paused-hide'); }
-      else { el.style.visibility = ''; el.style.pointerEvents = ''; el.classList.remove('dh-paused-hide'); }
+      if (hideBar){ el.style.display = 'none'; el.style.visibility = 'hidden'; el.style.pointerEvents = 'none'; el.classList.add('dh-paused-hide'); el.classList.remove('show'); }
+      else { el.style.display = ''; el.style.visibility = ''; el.style.pointerEvents = (id === '#dhHand' ? 'none' : ''); el.classList.remove('dh-paused-hide'); if (id === '#dhBar') el.classList.add('show'); }
     });
-    if (!hide){
-      const bar = $('#dhBar'); if (bar){ bar.style.display = ''; bar.classList.add('show'); }
+    const bits = dh ? dhStatusBits() : [];
+    const invParts = dh ? ['brick','cement','sand','wood','shingle','glass'].map(id => {
+      const m = dhMatOf(id); const v = dhInvCount(id);
+      return v ? (m.e + v) : '';
+    }).filter(Boolean) : [];
+    const box = $('#dhBox');
+    if (box){
+      if (hideStatus){ box.style.display = 'none'; }
+      else {
+        box.style.display = '';
+        box.innerHTML = bits.map(b => '<b>' + b + '</b>').join('<span class="dhsep"> · </span>');
+      }
     }
+    const inv = $('#dhInv');
+    if (inv){ inv.textContent = invParts.join(' ') || ''; if (hideStatus) inv.style.display = 'none'; else inv.style.display = ''; }
+    const n = $('#dhN'); if (n) n.textContent = dh ? ('🪙 ' + Math.floor(dh.bank)) : '';
+    const c = $('#dhCarry');
+    if (c){ const held = dh && dhHeldInfo(); c.textContent = (held && held.carryText) || ''; }
+    const tb = $('#dhTool');
+    if (tb){ tb.textContent = dh && dh.tool === 'delete' ? '🗑️' : (dh ? (({mark:'📍', dig:'🕳️', mix:'🌀', pour:'🪣', brick:'🧱', stud:'🪵', rafter:'🪜', shingle:'🏠', frame:'🚪', glass:'🪟', paint:'🎨', furn:'🛋️'}[dh.job]) || '') : ''); }
+    const xh = $('#oCross');
+    if (xh){ xh.style.display = hideCross ? 'none' : ''; }
+    if (typeof window !== 'undefined') window.updateDhChrome = updateDhChrome;
+    return !hideBar;
   }
+  function dhSyncPauseHud(){ return updateDhChrome(); }
   function dhBar(){
     if (!dh) return;
     const bar = $('#dhBar'); if (!bar) return;
-    if (dhMenusUp() || (dh && dh.intro)){ bar.style.display = 'none'; bar.style.visibility = 'hidden'; bar.style.pointerEvents = 'none'; bar.classList.add('dh-paused-hide'); return; }
-    bar.style.display = ''; bar.style.visibility = ''; bar.style.pointerEvents = ''; bar.classList.remove('dh-paused-hide'); bar.classList.add('show');
+    // Always rebuild the toolbar, then let updateDhChrome show or hide it.
+    bar.classList.add('show');
     const jobs = '<div class="dhtools">' + DH_JOBS.map(j => {
       const lab = {mark:'📍 Stake', dig:'🕳️ Dig', mix:'🌀 Mix', pour:'🪣 Pour', brick:'🧱 Brick', stud:'🪵 Stud', rafter:'🪜 Rafter', shingle:'🏠 Shingle', frame:'🚪 Frame', glass:'🪟 Glass', paint:'🎨 Paint', furn:'🛋️ Furnish'}[j];
       return '<button class="dhb' + (dh.job === j && dh.tool === 'place' ? ' on' : '') + '" data-dhjob="' + j + '">' + lab + '</button>';
@@ -14673,6 +14768,7 @@ const Obby = (() => {
     bar.innerHTML = jobs + cols + inv;
     dhBindUI();
     if (typeof dhLayoutHud === 'function') dhLayoutHud();
+    updateDhChrome();
   }
   function dhBindUI(){
     if (window.__dhBound5) return;
@@ -14719,7 +14815,7 @@ const Obby = (() => {
     const skip = $('#dhSkip'); if (skip) skip.onclick = ev => { ev.stopPropagation(); if (dh && dh.intro) dhSkipIntro(); };
     const replay = $('#dhReplay'); if (replay) replay.onclick = () => dh && dhReplayIntro();
     const tipX = $('#dhTipX'); if (tipX) tipX.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); dhDismissTip(); };
-    const tip = $('#dhTip'); if (tip) tip.onclick = ev => { if (ev.target && ev.target.id === 'dhTip'){ tip.classList.remove('show'); tip.style.display = 'none'; } };
+    const tip = $('#dhTip'); if (tip) tip.onclick = ev => { if (ev.target && ev.target.id === 'dhTip'){ dhDismissTip(); } };
   }
   function dhPointer(down){
     if (!dh || dh.intro) return false;
@@ -14850,6 +14946,7 @@ const Obby = (() => {
     if (/^Digit[1-9]$/.test(k) || /^Numpad[1-9]$/.test(k)){ const i = (k.slice(-1)|0) - 1; if (DH_JOBS[i]) dhSetJob(DH_JOBS[i]); return true; }
     return false;
   }
+
   /* ---------- per-frame ---------- */
   const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
   function animate(dt){
@@ -15598,8 +15695,7 @@ function start(m = 'obby', d = null){
     $('#auBox').style.display = mode === 'autumn' ? '' : 'none'; if (mode === 'autumn') autumnEnter();
     ['#psCamBtn','#psGalBtn','#psBar','#bkAct','#icAct','#sbAct','#hmAct','#dbLane','#wpAct','#wpRides','#piAct','#piBook','#fsNear','#fsWardBtn','#fsShowBtn','#hsBlind'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); });
     { const bs = $('#fsBuild'); if (bs){ bs.textContent = typeof BUILD !== 'undefined' ? BUILD : ''; bs.classList.add('show'); } }
-    $('#dhBox').style.display = mode === 'dreamhouse' ? '' : 'none';
-    if (mode === 'dreamhouse'){ if ($('#dhBar')) $('#dhBar').style.display = ''; dreamhouseEnter(); }
+    if (mode === 'dreamhouse'){ dreamhouseEnter(); if (typeof updateDhChrome === 'function') updateDhChrome(); } else { const box = $('#dhBox'); if (box) box.style.display = 'none'; }
     else { ['#dhBar','#dhAct','#dhCut','#dhShop','#dhYard','#dhUp','#dhGuide','#dhGoal','#dhSteps','#dhTip'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } }); const r = $('#dhReplay'); if (r) r.style.display = 'none'; }
     $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }
     if (mode === 'dance') danceEnter();
