@@ -189,6 +189,7 @@
       dh.tipsSeen = {};
       dh.legacyHouse = false;
       dh.grantedNow = false;
+      dh._starterGranted = false;
       dh.yardMsg = '';
       try {
         if (dh.pieces) Object.keys(dh.pieces).forEach(k => {
@@ -431,7 +432,7 @@
     };
     wall(0, -z, 104, t); wall(0, z, 104, t); wall(-x, 0, t, 74); wall(x, 0, t, 74);
     // visible low curb so the edge of the grass is obvious
-    const curb = (wx, wz, ww, wd) => plat(wx, .28, wz, ww, wd, '#5a8f4a', .28);
+    const curb = (wx, wz, ww, wd) => { const b = plat(wx, .16, wz, ww, wd, '#5a8f4a', .14); if (b) b.camSkip = true; return b; };
     curb(0, -z + .6, 100, .5); curb(0, z - .6, 100, .5); curb(-x + .6, 0, .5, 70); curb(x - .6, 0, .5, 70);
   }
   function dhSupplyMats(){ return DH_MATS.filter(m => m.free && !m.nosale && !m.furn); }
@@ -807,7 +808,7 @@
       const [ox, oz] = dhOrigin(i);
       const cx = ox + DH_N * DH_CELL / 2, cz = oz + DH_N * DH_CELL / 2;
       plat(cx, .08, cz, DH_N * DH_CELL + .4, DH_N * DH_CELL + .4, i === dh.mine ? '#b6e8a8' : '#9fd3a8', .16);
-      [[ox - .15, cz, .3, DH_N * DH_CELL + .6], [ox + DH_N * DH_CELL + .15, cz, .3, DH_N * DH_CELL + .6], [cx, oz - .15, DH_N * DH_CELL + .6, .3], [cx, oz + DH_N * DH_CELL + .15, DH_N * DH_CELL + .6, .3]].forEach(([x, z, w, d]) => plat(x, .45, z, w, d, '#fffaf0', .5));
+      [[ox - .15, cz, .3, DH_N * DH_CELL + .6], [ox + DH_N * DH_CELL + .15, cz, .3, DH_N * DH_CELL + .6], [cx, oz - .15, DH_N * DH_CELL + .6, .3], [cx, oz + DH_N * DH_CELL + .15, DH_N * DH_CELL + .6, .3]].forEach(([x, z, w, d]) => { const b = plat(x, .16, z, w, d, '#d9d4cc', .14); if (b) b.camSkip = true; });
       const sign = label((i === dh.mine ? '🏡 Your Plot' : '🏡 Plot ' + (i + 1)), 'rgba(29,35,64,.92)');
       if (sign && sign.position) sign.position.set(cx, 3.15, oz + DH_N * DH_CELL + 1.05);
       if (sign && sign.scale) sign.scale.set(2.4, 0.62, 1);
@@ -1742,10 +1743,16 @@
     if (s) s.textContent = text || '';
     if (b){ b.style.display = text ? '' : 'none'; if (text) b.classList.add('show'); else b.classList.remove('show'); }
   }
+  function dhSetCutCap(text){
+    const cap = $('#dhCutCap');
+    if (!cap) return;
+    cap.textContent = text || 'Story time — Mom is showing you the lot';
+    cap.style.display = '';
+  }
   function dhSetFade(a){
     const f = $('#dhFade'); if (!f) return;
     f.style.opacity = String(Math.max(0, Math.min(1, a)));
-    f.style.pointerEvents = a > .6 ? 'auto' : 'none';
+    f.style.pointerEvents = 'none';
   }
   function dhStartIntro(replay){
     if (!dh) return false;
@@ -1770,7 +1777,8 @@
     if (typeof scene !== 'undefined') scene.add(water);
     dh.cut = {house, mom, water, c};
     const wrap = $('#dhCut'); if (wrap){ wrap.style.display = ''; wrap.classList.add('show'); }
-    const skip = $('#dhSkip'); if (skip) skip.style.display = '';
+    const skip = $('#dhSkip'); if (skip){ skip.style.display = 'block'; skip.classList.add('show'); skip.textContent = 'Skip ▶'; }
+    const cap = $('#dhCutCap'); if (cap){ cap.style.display = ''; cap.textContent = 'Story time — Mom is showing you the lot'; }
     dhSay('This is your new house!');
     dhSetFade(0);
     ['#dhBar', '#dhAct'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); if (id === '#dhBar') el.style.display = 'none'; } });
@@ -1787,6 +1795,21 @@
     dhFinishIntro();
     return true;
   }
+  function dhGrantStarterStock(){
+    if (!dh) return false;
+    const empty = !(dh.pieces[dh.mine] || []).length;
+    if (!empty) return false;
+    if (dh._starterGranted) return false;
+    dh.stock.brick = (dh.stock.brick | 0) + 16;
+    dh.stock.cement = (dh.stock.cement | 0) + 2;
+    dh.stock.sand = (dh.stock.sand | 0) + 2;
+    dh.stock.wood = (dh.stock.wood | 0) + 8;
+    dh.stock.shingle = (dh.stock.shingle | 0) + 12;
+    dh.stock.paint = (dh.stock.paint | 0) + 1;
+    dh._starterGranted = true;
+    dhStockViz(dh.mine);
+    return true;
+  }
   function dhFinishIntro(){
     if (!dh) return;
     const first = !dh.introSeen;
@@ -1799,26 +1822,20 @@
     if (typeof model !== 'undefined' && model && model.g) model.g.visible = true;
     dh.intro = null;
     dh.introSeen = true;
-    if (first && !replay){
-      const empty = !(dh.pieces[dh.mine] || []).length;
-      if (empty){
-        dh.stock.brick = (dh.stock.brick | 0) + 16;
-        dh.stock.cement = (dh.stock.cement | 0) + 2;
-        dh.stock.sand = (dh.stock.sand | 0) + 2;
-        dh.stock.wood = (dh.stock.wood | 0) + 8;
-        dh.stock.shingle = (dh.stock.shingle | 0) + 12;
-        dh.stock.paint = (dh.stock.paint | 0) + 1;
-        dhStockViz(dh.mine);
-      }
-    }
+    // A reset is the same as a brand-new game: after the intro (or Skip) an empty
+    // lot gets the starter pile (16 bricks, 2 cement, 2 sand, 8 planks, 12 shingles, 1 paint).
+    if (first && !replay) dhGrantStarterStock();
     dhSave();
     dhSetFade(0);
     dhSay('');
     const wrap = $('#dhCut'); if (wrap){ wrap.style.display = 'none'; wrap.classList.remove('show'); }
+    const skip = $('#dhSkip'); if (skip){ skip.style.display = 'none'; skip.classList.remove('show'); }
+    const cap = $('#dhCutCap'); if (cap) cap.style.display = 'none';
     const [ox, oz] = dhOrigin(dh.mine);
     if (typeof P !== 'undefined') Object.assign(P, {x: ox + DH_CELL * 4, y: .05, z: oz - 2.8, vx: 0, vy: 0, vz: 0});
     if (typeof cam !== 'undefined'){ cam.yaw = Math.PI; cam.pitch = .37; cam.dist = .2; }
     dhForceFirstPerson();
+    dhShowLookHint();
     dhHud(); dhBar();
     banner('🏡 An empty lot and a pile of materials — time to re-build your house!');
     dreamhouseUpdate(0);
@@ -1840,9 +1857,10 @@
     intro.t = (intro.t || 0) + dt;
     const order = ['house', 'flood', 'rebuild', 'fadeout', 'fadein'];
     const dur = intro.dur[intro.stage] || 2;
-    if (intro.stage === 'house'){ dhSay('This is your new house!'); dhSetFade(0); }
+    if (intro.stage === 'house'){ dhSay('This is your new house!'); dhSetCutCap('Story time — Mom is showing you the lot'); dhSetFade(0); }
     if (intro.stage === 'flood' && dh.cut){
-      dhSay('');
+      dhSay('Oh no — a flood!');
+      dhSetCutCap('Story time — a flood washes the house away');
       const u = Math.min(1, intro.t / dur);
       if (dh.cut.water){ dh.cut.water.visible = true; dh.cut.water.position.y = -0.8 + u * 2.0; }
       if (dh.cut.house){
@@ -1853,8 +1871,8 @@
         dh.cut.house.rotation.x = u * .08;
       }
     }
-    if (intro.stage === 'rebuild'){ dhSay('Re-build it!'); if (dh.cut && dh.cut.house) dh.cut.house.visible = false; }
-    if (intro.stage === 'fadeout'){ dhSay(''); dhSetFade(Math.min(1, intro.t / Math.max(.2, dur))); }
+    if (intro.stage === 'rebuild'){ dhSay('Re-build it!'); dhSetCutCap('Story time — time to rebuild'); if (dh.cut && dh.cut.house) dh.cut.house.visible = false; }
+    if (intro.stage === 'fadeout'){ dhSetCutCap('Story time — almost ready'); dhSetFade(Math.min(1, intro.t / Math.max(.2, dur))); }
     if (intro.stage === 'fadein'){
       const u = Math.min(1, intro.t / Math.max(.2, dur));
       dhSetFade(1 - u);
@@ -1890,6 +1908,8 @@
     const xh = $('#oCross'); if (xh) xh.style.display = '';
   }
   function dreamhouseStop(){
+    if (typeof dhCloseReset === 'function') try { dhCloseReset(); } catch (e){}
+    if (typeof dhHideLookHint === 'function') try { dhHideLookHint(); } catch (e){}
     if (!dh) return;
     if (!dh._skipSave) dhSave();
     if (dh.intro){ dh.intro = null; }
@@ -1994,23 +2014,49 @@
   function dhForceFirstPerson(){
     if (typeof setFP === 'function'){ try { setFP(true, true); } catch (e){} }
     if (typeof cam !== 'undefined' && cam){
-      if (cam.dist > 1) cam.dist = .2;
+      cam.dist = .2;
       if (cam.pitch < .25 || cam.pitch > .55) cam.pitch = .37;
     }
+    if (typeof fp !== 'undefined' && fp) fp.on = true;
+    if (typeof model !== 'undefined' && model){ if (model.g) model.g.visible = false; if (model.head) model.head.visible = false; }
     if (typeof document !== 'undefined' && document.getElementById){
       const root = document.getElementById('obby');
       if (root && root.classList){ root.classList.add('dhouse'); root.classList.add('fpv'); }
     }
     if (typeof resize === 'function'){ try { resize(); } catch (e){} }
   }
+  function dhShowLookHint(){
+    const el = $('#dhLookHint');
+    if (!el) return;
+    el.textContent = 'Click the view to look around · Esc or Tab to click buttons';
+    el.style.display = 'block';
+    el.classList.add('show');
+    if (dh) dh.lookHintT = 8;
+  }
+  function dhHideLookHint(){
+    const el = $('#dhLookHint');
+    if (el){ el.style.display = 'none'; el.classList.remove('show'); }
+    if (dh) dh.lookHintT = 0;
+  }
+  function dhTickLookHint(dt){
+    if (!dh || !dh.lookHintT) return;
+    if (typeof document !== 'undefined' && document.pointerLockElement){ dhHideLookHint(); return; }
+    dh.lookHintT -= (dt || 0);
+    if (dh.lookHintT <= 0) dhHideLookHint();
+  }
   function dhLookWithKeys(dt){
     if (!dh || dh.intro || typeof cam === 'undefined' || !cam) return false;
     if (typeof keys === 'undefined' || !keys) return false;
-    const turn = 1.85 * (dt || 0);
-    if (turn <= 0) return false;
     const yawK = ((keys.ArrowRight || keys.KeyL) ? 1 : 0) - ((keys.ArrowLeft || keys.KeyJ) ? 1 : 0);
     const pitK = ((keys.KeyK || keys.ArrowDown) ? 1 : 0) - ((keys.KeyI || keys.ArrowUp) ? 1 : 0);
-    if (!yawK && !pitK) return false;
+    const dir = yawK * 10 + pitK;
+    if (!yawK && !pitK){ dh._lookHold = 0; dh._lookDir = 0; return false; }
+    if (dh._lookDir !== dir){ dh._lookHold = 0; dh._lookDir = dir; }
+    const step = Math.max(0, dt || 0);
+    if (step <= 0) return false;
+    dh._lookHold = (dh._lookHold || 0) + step;
+    const ease = Math.min(1, (dh._lookHold * dh._lookHold) / (0.22 * 0.22));
+    const turn = (Math.PI / 2) * ease * step; // 90°/s at full hold, ease-in so a 50–80 ms tap only nudges
     cam.yaw -= yawK * turn;
     cam.pitch = Math.max(-1.3, Math.min(1.4, cam.pitch + pitK * turn * 0.9));
     return true;
@@ -2036,6 +2082,35 @@
     });
   }
   function dhWalkCap(){ return (typeof keys !== 'undefined' && keys && (keys.ShiftLeft || keys.ShiftRight)) ? 7 : 4.5; }
+  function dhSolidAt(x, y, z, pad){
+    pad = pad == null ? .08 : pad;
+    if (typeof solids === 'undefined' || !solids) return null;
+    for (let i = 0; i < solids.length; i++){
+      const b = solids[i];
+      if (!b || !b.active || b.camSkip || !b.mesh || (b.mesh.visible === false)) continue;
+      if (Math.abs(x - b.mesh.position.x) < b.hw + pad && Math.abs(y - b.mesh.position.y) < b.hh + pad && Math.abs(z - b.mesh.position.z) < b.hd + pad) return b;
+    }
+    return null;
+  }
+  function dhClipFpCamera(){
+    if (typeof camera === 'undefined' || !camera || typeof cam === 'undefined' || !cam || typeof P === 'undefined' || !P) return false;
+    if (typeof fpOn === 'function' ? !fpOn() : (cam.dist > 1)) return false;
+    const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw);
+    const ey = P.y + 2.45;
+    let off = 0.22;
+    while (off > 0 && dhSolidAt(P.x + fx * off, ey, P.z + fz * off, 0.1)) off -= 0.05;
+    let x = P.x + fx * off, y = ey, z = P.z + fz * off;
+    let guard = 0;
+    while (guard++ < 12 && dhSolidAt(x, y, z, 0.1)) y += 0.12;
+    camera.position.set(x, y, z);
+    if (typeof camera.near === 'number' && camera.near > 0.08){
+      camera.near = 0.08;
+      if (typeof camera.updateProjectionMatrix === 'function') camera.updateProjectionMatrix();
+    }
+    const cp = Math.cos(cam.pitch);
+    camera.lookAt(P.x + fx * (off + cp * 10), y - Math.sin(cam.pitch) * 10, P.z + fz * (off + cp * 10));
+    return true;
+  }
   function dhCamComfort(dt){
     // Dream House is always first person after the intro. Do not force a follow camera.
     if (typeof cam === 'undefined' || !cam) return;
@@ -2050,9 +2125,11 @@
     if (dh.intro){ dhIntroTick(dt); return; }
     if (choosing) return;
     dhLookWithKeys(dt);
+    dhTickLookHint(dt);
     dhRefreshBins();
     dhClampPlayer();
     dhCamComfort(dt);
+    if (typeof dhClipFpCamera === 'function') dhClipFpCamera();
     dhFadeOccludingTrees();
     dhFadeYardSign();
     dh.aim = dhAimCell();
@@ -2293,6 +2370,8 @@
     const held = dhHeldInfo();
     const hide = !!(dh.intro);
     el.style.display = hide ? 'none' : 'flex';
+    el.style.zIndex = '41';
+    el.style.pointerEvents = 'none';
     el.classList.toggle('show', !hide);
     el.innerHTML = '<span class="dhhandE">' + held.emoji + '</span><small>' + held.label + '</small>';
   }
@@ -2306,8 +2385,9 @@
       if (!camera.children || camera.children.indexOf(g) < 0){ try { camera.add(g); } catch (e){ if (typeof scene !== 'undefined') scene.add(g); } }
     }
     const g = dh.hand;
-    g.position.set(.18, -.30, -.62);
-    g.rotation.set(.15, -.4, -.1);
+    g.position.set(.34, -.32, -.46);
+    g.rotation.set(.18, -.35, -.08);
+    g.scale.set(1.35, 1.35, 1.35);
     // rebuild child when the held item changes
     const holdId = (dh.carry && dh.carry.id) || (dh.job === 'pour' ? 'trowel' : dh.job === 'dig' ? 'shovel' : dh.job === 'mark' ? 'stake' : dh.job === 'paint' ? 'paint' : dh.job);
     if (g.userData.holdId !== holdId){
@@ -2565,7 +2645,28 @@
     if (jp.rb || jp[5]){ dhCycle(1); return true; }
     return false;
   }
+  function dhIsUiEvent(e){
+    const t = e && (e.target || e.srcElement);
+    if (!t) return false;
+    if (typeof t.closest === 'function'){
+      return !!t.closest('dialog, .modal, .menu, .opanel, .mbox, .dhbar, .dhhand, .obtns, .ohud, button, a, input, label, select, textarea, #dhResetModal, #dhBar, #dhTip, #dhSkip, #dhCut, #dhLookHint, #oPausePanel, #setModal');
+    }
+    let n = t;
+    while (n){
+      const id = n.id || '';
+      const tag = (n.tagName || '').toLowerCase();
+      const cls = ' ' + (n.className || '') + ' ';
+      if (id === 'dhResetModal' || id === 'dhBar' || id === 'dhTip' || id === 'dhSkip' || id === 'dhCut' || id === 'dhLookHint' || id === 'oPausePanel' || id === 'setModal') return true;
+      if (/ (modal|menu|opanel|mbox|dhbar|dhhand|obtns|ohud) /.test(cls)) return true;
+      if (tag === 'dialog' || tag === 'button' || tag === 'a' || tag === 'input' || tag === 'label' || tag === 'select' || tag === 'textarea') return true;
+      n = n.parentElement || n.parentNode || null;
+    }
+    return false;
+  }
   function dhKey(e){
+    if (!e) return false;
+    if (typeof dhOnResetKey === 'function' && dhOnResetKey(e)) return true;
+    if (dhIsUiEvent(e) && e.type && /pointer|mouse|click/i.test(e.type || '')) return true;
     if (!dh || e.repeat) return false;
     const k = e.code || '';
     if (dh.intro){

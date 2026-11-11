@@ -39,7 +39,7 @@ function world(store0, opts){
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint};`, ctx);
   return ctx;
 }
 
@@ -833,6 +833,85 @@ chk('first-person walk speed is capped near 4.5 m/s', Math.hypot(Ws.P.vx, Ws.P.v
 Ws.keys.KeyW = true; Ws.P.vx = 4; Ws.P.vz = 0;
 Ws.A.dhClearHeldKeys();
 chk('clearing keys on blur/pointer-lock stops a stuck W so you do not keep sliding', Ws.keys.KeyW === false && Math.abs(Ws.P.vx) < 0.01 && Math.abs(Ws.P.vz) < 0.01, {keys:Ws.keys, v:{x:Ws.P.vx,z:Ws.P.vz}});
+})();
+
+
+(function(){
+  const Wu = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+  Wu.A.buildDreamHouse(); Wu.A.dreamhouseEnter();
+  function node(id, tag, cls, parent){
+    const el = {id, tagName:(tag||'DIV').toUpperCase(), className: cls||'', parentElement: parent||null, parentNode: parent||null};
+    el.closest = function(sel){
+      let n = this;
+      const ids=[], tags=[], classes=[];
+      String(sel).split(',').forEach(part => {
+        part = part.trim();
+        if (part.startsWith('#')) ids.push(part.slice(1));
+        else if (part.startsWith('.')) classes.push(part.slice(1));
+        else tags.push(part.toLowerCase());
+      });
+      while (n){
+        if (ids.includes(n.id)) return n;
+        if (tags.includes((n.tagName||'').toLowerCase())) return n;
+        const cn = ' ' + (n.className||'') + ' ';
+        if (classes.some(c => cn.includes(' '+c+' '))) return n;
+        n = n.parentElement;
+      }
+      return null;
+    };
+    return el;
+  }
+  const modal = node('dhResetModal', 'DIALOG', 'modal');
+  const yes = node('dhResetYes', 'BUTTON', '', modal); yes.parentElement = modal;
+  const cancel = node('dhResetNo', 'BUTTON', '', modal); cancel.parentElement = modal;
+  const bar = node('dhBar', 'DIV', 'dhbar');
+  const tool = node('stakeBtn', 'BUTTON', '', bar); tool.parentElement = bar;
+  const canvas = node('', 'CANVAS', '');
+  chk('clicks on the reset confirm are UI events the game must not consume', Wu.A.dhIsUiEvent({target: yes}) === true && Wu.A.dhIsUiEvent({target: cancel}) === true && Wu.A.dhIsUiEvent({target: modal}) === true);
+  chk('clicks on toolbar / HUD buttons are UI events the game must not consume', Wu.A.dhIsUiEvent({target: tool}) === true && Wu.A.dhIsUiEvent({target: bar}) === true);
+  chk('clicks on the 3D canvas are not treated as UI', Wu.A.dhIsUiEvent({target: canvas}) === false);
+
+  // Modal Yes / Cancel / Esc while DH is running (handlers live in the page; also
+  // dhKey must treat Esc as "close the confirm first" when dhOnResetKey says so).
+  let closed = 0, confirmed = 0;
+  const openModal = {open: true, classList:{contains: c => c === 'show'}};
+  Wu.document.getElementById = id => id === 'dhResetModal' ? openModal : null;
+  Wu.dhCloseReset = () => { closed++; openModal.open = false; };
+  Wu.dhOnResetKey = e => { if ((e.code === 'Escape') && openModal.open){ Wu.dhCloseReset(); return true; } return false; };
+  Wu.dhConfirmReset = () => { confirmed++; Wu.dhCloseReset(); };
+  openModal.open = true; closed = 0;
+  const esc = Wu.A.dhKey({code:'Escape', repeat:false, target: modal});
+  chk('Esc while the confirm is open closes it and is consumed (DH still running)', esc === true && closed === 1 && openModal.open === false, {esc, closed, open:openModal.open});
+  // Cancel-equivalent: a click on the Cancel button is filtered as UI
+  chk('a Cancel button click is ignored by dhKey (not treated as a game key)', Wu.A.dhKey({code:'KeyE', type:'click', repeat:false, target: cancel}) === true);
+
+  // Keyboard look: a short 70 ms tap only nudges; a 0.2 s hold still looks up enough for the existing test.
+  const Wlook = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+  Wlook.A.buildDreamHouse(); Wlook.A.dh.introSeen = true; Wlook.A.dh.intro = null; Wlook.A.dreamhouseEnter();
+  const y0 = Wlook.cam.yaw;
+  Wlook.keys.ArrowRight = true;
+  Wlook.A.dhLookWithKeys(0.07);
+  const tap = Math.abs(Wlook.cam.yaw - y0);
+  Wlook.keys.ArrowRight = false;
+  Wlook.A.dhLookWithKeys(0);
+  Wlook.keys.ArrowRight = true;
+  const y1 = Wlook.cam.yaw;
+  Wlook.A.dhLookWithKeys(0.2);
+  const hold = Math.abs(Wlook.cam.yaw - y1);
+  chk('a 70 ms arrow tap only nudges the view (ease-in, ~90°/s cap)', tap < 0.06, {tap});
+  chk('a held arrow turn is slower than the old 1.85 rad/s rate', hold < 0.35 && hold > 0.05, {hold});
+
+  // Reset then skip intro: starter supplies match a brand-new game.
+  const Wnew = world();
+  Wnew.A.buildDreamHouse(); Wnew.A.dreamhouseEnter();
+  if (Wnew.A.dh.intro) Wnew.A.dhSkipIntro();
+  const newStock = Object.assign({}, Wnew.A.dh.stock);
+  const Wr = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:40, pieces:[['slab',2,0,2,0,0]], stock:{brick:99,cement:9}, upgrades:{carry:2}, goals:{slab:1}})});
+  Wr.A.buildDreamHouse(); Wr.A.dreamhouseEnter();
+  Wr.A.dhResetProgress();
+  Wr.A.buildDreamHouse(); Wr.A.dreamhouseEnter();
+  if (Wr.A.dh.intro) Wr.A.dhSkipIntro();
+  chk('after Reset, skipping the intro grants the same starter pile as a brand-new game (16 bricks and the rest)', (Wr.A.dh.stock.brick|0) === (newStock.brick|0) && (Wr.A.dh.stock.brick|0) === 16 && (Wr.A.dh.stock.cement|0) === (newStock.cement|0) && (Wr.A.dh.stock.sand|0) === (newStock.sand|0) && (Wr.A.dh.stock.wood|0) === (newStock.wood|0), {reset:Wr.A.dh.stock, fresh:newStock});
 })();
 
 console.log('RESULT', pass, '/', pass + fail);

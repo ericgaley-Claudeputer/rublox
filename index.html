@@ -97,9 +97,11 @@ body.dark .preview{background:linear-gradient(#3b4a8a,#2a3570)}
 footer{text-align:center;color:var(--muted);margin-top:40px;font-weight:700}
 /* modal */
 .modal{position:fixed;inset:0;background:rgba(10,14,35,.55);display:none;place-items:center;z-index:50;padding:16px}
-#dhResetModal{z-index:200;pointer-events:auto}
+#dhResetModal{z-index:10000;pointer-events:auto;border:0;padding:16px;background:transparent;max-width:none;width:auto;height:auto;margin:auto}
+dialog#dhResetModal[open],dialog#dhResetModal.show{display:grid;place-items:center;pointer-events:auto}
+#dhResetModal::backdrop{background:rgba(10,14,35,.62);pointer-events:auto}
 body.dhreset-open #obby, body.dhreset-open #setModal, body.dhreset-open #oPausePanel{pointer-events:none}
-body.dhreset-open #dhResetModal, body.dhreset-open #dhResetModal .mbox, body.dhreset-open #dhResetYes, body.dhreset-open #dhResetNo{pointer-events:auto}
+body.dhreset-open #dhResetModal, body.dhreset-open #dhResetModal .mbox, body.dhreset-open #dhResetYes, body.dhreset-open #dhResetNo{pointer-events:auto !important}
 .modal.show{display:grid;animation:fade .2s}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .mbox{background:var(--card);color:var(--text);border-radius:26px;padding:28px;max-width:420px;width:100%;text-align:center;box-shadow:0 12px 0 rgba(0,0,0,.2);animation:boing .5s cubic-bezier(.3,1.8,.5,1)}
@@ -174,7 +176,7 @@ body.dark .sitem canvas{background:linear-gradient(#34427e,#26306a)}
 /* ===== Obby Rush ===== */
 .obby{position:fixed;inset:0;z-index:45;display:none;background:#8fd3ff;user-select:none;-webkit-user-select:none}
 .obby.show{display:block}
-#obbyView,#obbyView canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#obbyView,#obbyView canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;z-index:0;pointer-events:auto}
 .ohud{position:absolute;top:10px;left:10px;right:10px;z-index:16;display:flex;justify-content:space-between;gap:10px;pointer-events:none;flex-wrap:wrap}
 .ostats{display:flex;gap:8px;flex-wrap:wrap}
 .ostats>span,.obtns button{pointer-events:auto;background:rgba(255,255,255,.92);color:#1d2340;font-weight:900;font-size:17px;padding:8px 14px;border-radius:14px;box-shadow:0 4px 0 rgba(0,0,0,.18);display:flex;align-items:center;gap:6px}
@@ -464,7 +466,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .smode #oStam{display:none!important}
 .tdBox b{color:#8b5cf6}
 .dhnear{background:#2ec27e;box-shadow:0 4px 0 #1f9460}.dhnear small{color:#2ec27e}
-.dhbar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:14;width:min(96vw,820px);background:rgba(255,255,255,.94);border:3px solid #ffd23f;border-radius:16px;padding:6px 8px 8px;box-shadow:0 4px 0 rgba(0,0,0,.12);pointer-events:auto}
+.dhbar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:40;width:min(96vw,820px);background:rgba(255,255,255,.94);border:3px solid #ffd23f;border-radius:16px;padding:6px 8px 8px;box-shadow:0 4px 0 rgba(0,0,0,.12);pointer-events:auto}
 .dhtools,.dhcols,.dhparts{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:3px 0}
 .dhb,.dhp{border:2px solid #ffe08a;background:#fff;border-radius:10px;padding:4px 8px;font:inherit;font-weight:900;font-size:14px;color:#1d2340;cursor:pointer;min-height:40px}
 .dhp{display:flex;flex-direction:column;align-items:center;min-width:58px;line-height:1.1}
@@ -493,13 +495,16 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   #obby.dhmode #dhAct.dhnear,
   #obby.touchui.dhmode #dhAct.dhnear{bottom:calc(var(--dhbar-clear, 160px) + var(--dhtip-clear, 0px) + 8px)}
 }
-.dhcut{position:absolute;inset:0;z-index:8;pointer-events:auto}
+.dhcut{position:absolute;inset:0;z-index:35;pointer-events:auto}
 .dhfade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}
 .dhbubble{position:absolute;left:50%;top:16%;transform:translateX(-50%);background:#fffaf0;border:3px solid #1d2340;border-radius:22px;padding:12px 22px 16px;font-weight:900;color:#1d2340;box-shadow:0 6px 0 rgba(0,0,0,.15);max-width:min(90vw,460px);text-align:center;z-index:9}
 .dhbubble b{display:block;color:#ff6fb5;font-size:13px;letter-spacing:.04em;margin-bottom:4px;text-transform:uppercase}
 .dhbubble span{font-size:22px;line-height:1.25}
 .dhbubble:after{content:'';position:absolute;left:62%;bottom:-16px;border:16px solid transparent;border-top-color:#1d2340;border-bottom:0}
-.dhskip{position:absolute;right:max(16px,env(safe-area-inset-right));top:max(16px,env(safe-area-inset-top));z-index:10;background:#fff;border:3px solid #1d2340;border-radius:999px;padding:8px 18px;font:inherit;font-weight:900;color:#1d2340;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+.dhcut{z-index:35}
+.dhskip{position:absolute;left:50%;bottom:max(28px,calc(env(safe-area-inset-bottom) + 24px));right:auto;top:auto;transform:translateX(-50%);z-index:40;background:#ffd23f;border:3px solid #1d2340;border-radius:999px;padding:14px 28px;font:inherit;font-weight:900;font-size:22px;color:#1d2340;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.18);pointer-events:auto;display:none}
+.dhskip.show,.dhcut.show .dhskip{display:block}
+.dhcutcap{position:absolute;left:50%;bottom:max(88px,calc(env(safe-area-inset-bottom) + 84px));transform:translateX(-50%);z-index:40;background:rgba(29,35,64,.92);color:#fff;font-weight:800;font-size:16px;padding:8px 16px;border-radius:14px;pointer-events:none;text-align:center;max-width:min(90vw,420px)}
 
 .dhguide{position:absolute;top:max(54px,calc(env(safe-area-inset-top) + 44px));left:50%;transform:translateX(-50%);z-index:9;background:rgba(29,35,64,.92);color:#fff;padding:10px 18px;border-radius:18px;font-weight:800;font-size:18px;display:none;align-items:center;gap:10px;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.25);white-space:nowrap}
 
@@ -514,11 +519,13 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .dhstep.on{background:#fff3c4;box-shadow:0 0 0 2px #ffd23f}
 .dhtip{display:none;position:absolute;left:50%;bottom:max(110px,calc(env(safe-area-inset-bottom) + 96px));transform:translateX(-50%);z-index:70;background:#fffaf0;border:3px solid #3a86ff;border-radius:18px;padding:14px 16px 12px;max-width:min(92vw,480px);box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:auto;color:#1d2340;font-weight:800;font-size:16px;line-height:1.35}
 .dhtip.show{display:block}
-.dhhand{position:absolute;right:calc(max(24px,calc(env(safe-area-inset-right) + 16px)) + 170px);bottom:calc(var(--dhbar-clear, 160px) + 16px);z-index:18;width:90px;min-height:90px;border-radius:18px;background:rgba(255,250,240,.96);border:3px solid #ffd23f;display:none;flex-direction:column;align-items:center;justify-content:center;gap:2px;pointer-events:none;box-shadow:0 4px 0 rgba(0,0,0,.12);padding:8px 6px 6px}
+.dhhand{position:absolute;right:max(16px,env(safe-area-inset-right));bottom:calc(var(--dhbar-clear, 160px) + 16px);z-index:41;width:120px;min-height:120px;border-radius:18px;background:rgba(255,250,240,.96);border:3px solid #ffd23f;display:none;flex-direction:column;align-items:center;justify-content:center;gap:2px;pointer-events:none;box-shadow:0 4px 0 rgba(0,0,0,.12);padding:8px 6px 6px}
 .dhhand.show{display:flex}
-.dhhand .dhhandE{font-size:42px;line-height:1}
+.dhhand .dhhandE{font-size:64px;line-height:1}
 .dhhand small{font-size:11px;font-weight:900;color:#1d2340;text-align:center;line-height:1.15}
 .dhyardmsg{color:#9b1c1c;font-weight:800;margin:0 0 10px}
+.dhlookhint{position:absolute;left:50%;bottom:calc(var(--dhbar-clear, 160px) + 132px);transform:translateX(-50%);z-index:42;background:rgba(29,35,64,.92);color:#fff;font-weight:800;font-size:16px;padding:8px 16px;border-radius:14px;pointer-events:none;text-align:center;max-width:min(90vw,520px)}
+.dhlookhint.show{display:block !important}
 .dhtip b{display:block;color:#3a86ff;font-size:13px;text-transform:uppercase;margin-bottom:4px}
 #dhTipX{display:block;margin:10px auto 0;border:0;background:#3a86ff;color:#fff;font:inherit;font-weight:900;border-radius:12px;padding:8px 18px;cursor:pointer;min-height:40px}
 .dhresetbox .mbox{max-width:420px;text-align:center}
@@ -1123,16 +1130,16 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
     <button class="big green" id="setOk">Done ✅</button>
   </div>
 </div>
-<div class="modal dhresetbox" id="dhResetModal">
+<dialog class="modal dhresetbox" id="dhResetModal" aria-labelledby="dhResetTitle">
   <div class="mbox">
     <span class="emoji">🏡</span>
-    <h2>Reset Dream House?</h2>
+    <h2 id="dhResetTitle">Reset Dream House?</h2>
     <div class="stats">Are you sure? This starts your house over.</div>
     <div class="stats" style="font-size:14px">Your other Rublox games, coins, and saves stay the same.</div>
     <button class="big red" id="dhResetYes" type="button" aria-label="Yes, reset Dream House">Yes, reset</button>
     <button class="big gray" id="dhResetNo" type="button" aria-label="Cancel reset" style="margin-left:6px">Cancel</button>
   </div>
-</div>
+</dialog>
 <div class="toast" id="toast">Saved! ✅</div>
 
 <!-- ===== Obby Rush game view ===== -->
@@ -1308,7 +1315,8 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   <div class="dhcut" id="dhCut" style="display:none">
     <div class="dhfade" id="dhFade"></div>
     <div class="dhbubble" id="dhBubble" style="display:none"><b>Mom</b><span id="dhSay"></span></div>
-    <button class="dhskip" id="dhSkip" type="button">Skip</button>
+    <div class="dhcutcap" id="dhCutCap">Story time — Mom is showing you the lot</div>
+    <button class="dhskip" id="dhSkip" type="button" aria-label="Skip intro">Skip ▶</button>
   </div>
   <div class="dhshop" id="dhShop" style="display:none"></div>
   <div class="dhshop" id="dhYard" style="display:none"></div>
@@ -1318,6 +1326,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   <div class="dhsteps" id="dhSteps" style="display:none"></div>
   <div class="dhtip" id="dhTip" style="display:none"><b>Quick tip</b><span id="dhTipT"></span><button type="button" id="dhTipX">OK</button></div>
   <div class="dhhand" id="dhHand" style="display:none"></div>
+  <div class="dhlookhint" id="dhLookHint" style="display:none">Click the view to look around · Esc or Tab to click buttons</div>
   <div class="dblane" id="dbLane" style="display:none"></div>
   <button class="fsnear hmnear" id="hmAct"></button>
   <button class="fsnear sbnear" id="sbAct"></button>
@@ -1547,7 +1556,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-14';
+const BUILD = '2026.11.11-15';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2907,18 +2916,66 @@ syncInvert();
 $('#setBtn').onclick = () => { syncInvert(); $('#setModal').classList.add('show'); };
 $('#setOk').onclick = () => $('#setModal').classList.remove('show');
 $('#setModal').onclick = e => { if (e.target.id === 'setModal') $('#setModal').classList.remove('show'); };
+/* ---------- dh ui events (t253u) ---------- */
+function dhIsUiEvent(e){
+  const t = e && (e.target || e.srcElement);
+  if (!t) return false;
+  if (typeof t.closest === 'function'){
+    return !!t.closest('dialog, .modal, .menu, .opanel, .mbox, .dhbar, .dhhand, .obtns, .ohud, button, a, input, label, select, textarea, #dhResetModal, #dhBar, #dhTip, #dhSkip, #dhCut, #dhLookHint, #oPausePanel, #setModal');
+  }
+  let n = t;
+  while (n){
+    const id = n.id || '';
+    const tag = (n.tagName || '').toLowerCase();
+    const cls = ' ' + (n.className || '') + ' ';
+    if (id === 'dhResetModal' || id === 'dhBar' || id === 'dhTip' || id === 'dhSkip' || id === 'dhCut' || id === 'dhLookHint' || id === 'oPausePanel' || id === 'setModal') return true;
+    if (/ (modal|menu|opanel|mbox|dhbar|dhhand|obtns|ohud) /.test(cls)) return true;
+    if (tag === 'dialog' || tag === 'button' || tag === 'a' || tag === 'input' || tag === 'label' || tag === 'select' || tag === 'textarea') return true;
+    n = n.parentElement || n.parentNode || null;
+  }
+  return false;
+}
+function dhResetModalIsOpen(){
+  const m = typeof document !== 'undefined' && document.getElementById && document.getElementById('dhResetModal');
+  return !!(m && (m.open || (m.classList && m.classList.contains('show')) || (document.body && document.body.classList && document.body.classList.contains('dhreset-open'))));
+}
+function dhExitPointerLock(){
+  try { if (typeof document !== 'undefined' && document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e){}
+}
+function dhOnResetKey(e){
+  if (!e) return false;
+  const code = e.code || e.key;
+  if ((code === 'Escape' || code === 'Esc') && dhResetModalIsOpen()){ if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation(); dhCloseReset(); return true; }
+  return false;
+}
+function dhOnResetClick(e){
+  if (!dhResetModalIsOpen() || !e) return false;
+  const t = e.target || e.srcElement;
+  if (!t) return false;
+  const id = t.id || (t.closest && (t.closest('#dhResetYes, #dhResetNo, #dhResetModal') || {}).id) || '';
+  const label = (t.getAttribute && t.getAttribute('aria-label')) || '';
+  if (id === 'dhResetYes' || label === 'Yes, reset Dream House'){ if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); dhConfirmReset(); return true; }
+  if (id === 'dhResetNo' || label === 'Cancel reset'){ if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); dhCloseReset(); return true; }
+  if (t.id === 'dhResetModal'){ if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); dhCloseReset(); return true; }
+  return false;
+}
 function dhOpenReset(){
+  dhExitPointerLock();
   const m = $('#dhResetModal'); if (!m) return;
   if (typeof document !== 'undefined' && document.body && m.parentElement !== document.body) document.body.appendChild(m);
   m.classList.add('show');
-  m.style.zIndex = '200';
+  m.style.zIndex = '10000';
   m.style.pointerEvents = 'auto';
   if (document.body) document.body.classList.add('dhreset-open');
-  const no = $('#dhResetNo'); if (no) no.focus();
+  try { if (typeof m.showModal === 'function' && !m.open) m.showModal(); } catch (e){}
+  const no = $('#dhResetNo'); if (no) try { no.focus(); } catch (e){}
 }
 function dhCloseReset(){
   const m = $('#dhResetModal');
-  if (m){ m.classList.remove('show'); }
+  if (m){
+    m.classList.remove('show');
+    try { if (typeof m.close === 'function' && m.open) m.close(); } catch (e){}
+  }
   if (document.body) document.body.classList.remove('dhreset-open');
 }
 function dhConfirmReset(){
@@ -2935,7 +2992,14 @@ const setDhReset = $('#setDhReset'); if (setDhReset) setDhReset.onclick = ev => 
 const pDhReset = $('#dhResetBtn'); if (pDhReset) pDhReset.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); dhOpenReset(); };
 const dhYes = $('#dhResetYes'); if (dhYes) dhYes.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); dhConfirmReset(); };
 const dhNo = $('#dhResetNo'); if (dhNo) dhNo.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); dhCloseReset(); };
-const dhResetModal = $('#dhResetModal'); if (dhResetModal) dhResetModal.onclick = e => { if (e.target.id === 'dhResetModal') dhCloseReset(); };
+const dhResetModal = $('#dhResetModal');
+if (dhResetModal){
+  dhResetModal.onclick = e => { if (e.target === dhResetModal || e.target.id === 'dhResetModal') dhCloseReset(); };
+  dhResetModal.addEventListener('cancel', ev => { ev.preventDefault(); ev.stopPropagation(); dhCloseReset(); });
+}
+document.addEventListener('keydown', ev => { dhOnResetKey(ev); }, true);
+document.addEventListener('pointerdown', ev => { if (dhResetModalIsOpen() && dhIsUiEvent(ev)) ev.stopPropagation(); dhOnResetClick(ev); }, true);
+document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEvent(ev)) ev.stopPropagation(); dhOnResetClick(ev); }, true);
 
 
 /* ---------- hero floating blocks ---------- */
@@ -11852,7 +11916,7 @@ const Obby = (() => {
     {lL: -.2, lR: .4, aL: -1.6, aR: .3, lean: .05}, {lL: .5, lR: -.3, aL: .2, aR: -1.5, lean: -.05},
     {lL: -.4, lR: -.4, aL: -2.0, aR: -2.0, lean: 0}, {lL: .3, lR: .3, aL: -1.2, aR: 1.0, lean: .1}];
     return Object.assign({lLo: 0, lRo: 0, aLo: 0, aRo: 0}, poses[db.pose % 4]); }
-  /* ===================== t251u + t252u + t253u: first-person Dream House, place every brick yourself, clear concrete steps, reset house in Settings. ===================== */
+      /* ===================== t251u + t252u + t253u: first-person Dream House, place every brick yourself, clear concrete steps, reset house in Settings. ===================== */
   const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 6;
   const DH_FOOT = {x0: 2, z0: 2, x1: 5, z1: 5}; // small house footprint (4x4 cells)
   const DH_FOOT_LEGACY = {x0: 1, z0: 1, x1: 6, z1: 6}; // v5 and earlier houses keep their larger slab
@@ -12043,6 +12107,7 @@ const Obby = (() => {
       dh.tipsSeen = {};
       dh.legacyHouse = false;
       dh.grantedNow = false;
+      dh._starterGranted = false;
       dh.yardMsg = '';
       try {
         if (dh.pieces) Object.keys(dh.pieces).forEach(k => {
@@ -12285,7 +12350,7 @@ const Obby = (() => {
     };
     wall(0, -z, 104, t); wall(0, z, 104, t); wall(-x, 0, t, 74); wall(x, 0, t, 74);
     // visible low curb so the edge of the grass is obvious
-    const curb = (wx, wz, ww, wd) => plat(wx, .28, wz, ww, wd, '#5a8f4a', .28);
+    const curb = (wx, wz, ww, wd) => { const b = plat(wx, .16, wz, ww, wd, '#5a8f4a', .14); if (b) b.camSkip = true; return b; };
     curb(0, -z + .6, 100, .5); curb(0, z - .6, 100, .5); curb(-x + .6, 0, .5, 70); curb(x - .6, 0, .5, 70);
   }
   function dhSupplyMats(){ return DH_MATS.filter(m => m.free && !m.nosale && !m.furn); }
@@ -12661,7 +12726,7 @@ const Obby = (() => {
       const [ox, oz] = dhOrigin(i);
       const cx = ox + DH_N * DH_CELL / 2, cz = oz + DH_N * DH_CELL / 2;
       plat(cx, .08, cz, DH_N * DH_CELL + .4, DH_N * DH_CELL + .4, i === dh.mine ? '#b6e8a8' : '#9fd3a8', .16);
-      [[ox - .15, cz, .3, DH_N * DH_CELL + .6], [ox + DH_N * DH_CELL + .15, cz, .3, DH_N * DH_CELL + .6], [cx, oz - .15, DH_N * DH_CELL + .6, .3], [cx, oz + DH_N * DH_CELL + .15, DH_N * DH_CELL + .6, .3]].forEach(([x, z, w, d]) => plat(x, .45, z, w, d, '#fffaf0', .5));
+      [[ox - .15, cz, .3, DH_N * DH_CELL + .6], [ox + DH_N * DH_CELL + .15, cz, .3, DH_N * DH_CELL + .6], [cx, oz - .15, DH_N * DH_CELL + .6, .3], [cx, oz + DH_N * DH_CELL + .15, DH_N * DH_CELL + .6, .3]].forEach(([x, z, w, d]) => { const b = plat(x, .16, z, w, d, '#d9d4cc', .14); if (b) b.camSkip = true; });
       const sign = label((i === dh.mine ? '🏡 Your Plot' : '🏡 Plot ' + (i + 1)), 'rgba(29,35,64,.92)');
       if (sign && sign.position) sign.position.set(cx, 3.15, oz + DH_N * DH_CELL + 1.05);
       if (sign && sign.scale) sign.scale.set(2.4, 0.62, 1);
@@ -13596,10 +13661,16 @@ const Obby = (() => {
     if (s) s.textContent = text || '';
     if (b){ b.style.display = text ? '' : 'none'; if (text) b.classList.add('show'); else b.classList.remove('show'); }
   }
+  function dhSetCutCap(text){
+    const cap = $('#dhCutCap');
+    if (!cap) return;
+    cap.textContent = text || 'Story time — Mom is showing you the lot';
+    cap.style.display = '';
+  }
   function dhSetFade(a){
     const f = $('#dhFade'); if (!f) return;
     f.style.opacity = String(Math.max(0, Math.min(1, a)));
-    f.style.pointerEvents = a > .6 ? 'auto' : 'none';
+    f.style.pointerEvents = 'none';
   }
   function dhStartIntro(replay){
     if (!dh) return false;
@@ -13624,7 +13695,8 @@ const Obby = (() => {
     if (typeof scene !== 'undefined') scene.add(water);
     dh.cut = {house, mom, water, c};
     const wrap = $('#dhCut'); if (wrap){ wrap.style.display = ''; wrap.classList.add('show'); }
-    const skip = $('#dhSkip'); if (skip) skip.style.display = '';
+    const skip = $('#dhSkip'); if (skip){ skip.style.display = 'block'; skip.classList.add('show'); skip.textContent = 'Skip ▶'; }
+    const cap = $('#dhCutCap'); if (cap){ cap.style.display = ''; cap.textContent = 'Story time — Mom is showing you the lot'; }
     dhSay('This is your new house!');
     dhSetFade(0);
     ['#dhBar', '#dhAct'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); if (id === '#dhBar') el.style.display = 'none'; } });
@@ -13641,6 +13713,21 @@ const Obby = (() => {
     dhFinishIntro();
     return true;
   }
+  function dhGrantStarterStock(){
+    if (!dh) return false;
+    const empty = !(dh.pieces[dh.mine] || []).length;
+    if (!empty) return false;
+    if (dh._starterGranted) return false;
+    dh.stock.brick = (dh.stock.brick | 0) + 16;
+    dh.stock.cement = (dh.stock.cement | 0) + 2;
+    dh.stock.sand = (dh.stock.sand | 0) + 2;
+    dh.stock.wood = (dh.stock.wood | 0) + 8;
+    dh.stock.shingle = (dh.stock.shingle | 0) + 12;
+    dh.stock.paint = (dh.stock.paint | 0) + 1;
+    dh._starterGranted = true;
+    dhStockViz(dh.mine);
+    return true;
+  }
   function dhFinishIntro(){
     if (!dh) return;
     const first = !dh.introSeen;
@@ -13653,26 +13740,20 @@ const Obby = (() => {
     if (typeof model !== 'undefined' && model && model.g) model.g.visible = true;
     dh.intro = null;
     dh.introSeen = true;
-    if (first && !replay){
-      const empty = !(dh.pieces[dh.mine] || []).length;
-      if (empty){
-        dh.stock.brick = (dh.stock.brick | 0) + 16;
-        dh.stock.cement = (dh.stock.cement | 0) + 2;
-        dh.stock.sand = (dh.stock.sand | 0) + 2;
-        dh.stock.wood = (dh.stock.wood | 0) + 8;
-        dh.stock.shingle = (dh.stock.shingle | 0) + 12;
-        dh.stock.paint = (dh.stock.paint | 0) + 1;
-        dhStockViz(dh.mine);
-      }
-    }
+    // A reset is the same as a brand-new game: after the intro (or Skip) an empty
+    // lot gets the starter pile (16 bricks, 2 cement, 2 sand, 8 planks, 12 shingles, 1 paint).
+    if (first && !replay) dhGrantStarterStock();
     dhSave();
     dhSetFade(0);
     dhSay('');
     const wrap = $('#dhCut'); if (wrap){ wrap.style.display = 'none'; wrap.classList.remove('show'); }
+    const skip = $('#dhSkip'); if (skip){ skip.style.display = 'none'; skip.classList.remove('show'); }
+    const cap = $('#dhCutCap'); if (cap) cap.style.display = 'none';
     const [ox, oz] = dhOrigin(dh.mine);
     if (typeof P !== 'undefined') Object.assign(P, {x: ox + DH_CELL * 4, y: .05, z: oz - 2.8, vx: 0, vy: 0, vz: 0});
     if (typeof cam !== 'undefined'){ cam.yaw = Math.PI; cam.pitch = .37; cam.dist = .2; }
     dhForceFirstPerson();
+    dhShowLookHint();
     dhHud(); dhBar();
     banner('🏡 An empty lot and a pile of materials — time to re-build your house!');
     dreamhouseUpdate(0);
@@ -13694,9 +13775,10 @@ const Obby = (() => {
     intro.t = (intro.t || 0) + dt;
     const order = ['house', 'flood', 'rebuild', 'fadeout', 'fadein'];
     const dur = intro.dur[intro.stage] || 2;
-    if (intro.stage === 'house'){ dhSay('This is your new house!'); dhSetFade(0); }
+    if (intro.stage === 'house'){ dhSay('This is your new house!'); dhSetCutCap('Story time — Mom is showing you the lot'); dhSetFade(0); }
     if (intro.stage === 'flood' && dh.cut){
-      dhSay('');
+      dhSay('Oh no — a flood!');
+      dhSetCutCap('Story time — a flood washes the house away');
       const u = Math.min(1, intro.t / dur);
       if (dh.cut.water){ dh.cut.water.visible = true; dh.cut.water.position.y = -0.8 + u * 2.0; }
       if (dh.cut.house){
@@ -13707,8 +13789,8 @@ const Obby = (() => {
         dh.cut.house.rotation.x = u * .08;
       }
     }
-    if (intro.stage === 'rebuild'){ dhSay('Re-build it!'); if (dh.cut && dh.cut.house) dh.cut.house.visible = false; }
-    if (intro.stage === 'fadeout'){ dhSay(''); dhSetFade(Math.min(1, intro.t / Math.max(.2, dur))); }
+    if (intro.stage === 'rebuild'){ dhSay('Re-build it!'); dhSetCutCap('Story time — time to rebuild'); if (dh.cut && dh.cut.house) dh.cut.house.visible = false; }
+    if (intro.stage === 'fadeout'){ dhSetCutCap('Story time — almost ready'); dhSetFade(Math.min(1, intro.t / Math.max(.2, dur))); }
     if (intro.stage === 'fadein'){
       const u = Math.min(1, intro.t / Math.max(.2, dur));
       dhSetFade(1 - u);
@@ -13744,6 +13826,8 @@ const Obby = (() => {
     const xh = $('#oCross'); if (xh) xh.style.display = '';
   }
   function dreamhouseStop(){
+    if (typeof dhCloseReset === 'function') try { dhCloseReset(); } catch (e){}
+    if (typeof dhHideLookHint === 'function') try { dhHideLookHint(); } catch (e){}
     if (!dh) return;
     if (!dh._skipSave) dhSave();
     if (dh.intro){ dh.intro = null; }
@@ -13848,23 +13932,49 @@ const Obby = (() => {
   function dhForceFirstPerson(){
     if (typeof setFP === 'function'){ try { setFP(true, true); } catch (e){} }
     if (typeof cam !== 'undefined' && cam){
-      if (cam.dist > 1) cam.dist = .2;
+      cam.dist = .2;
       if (cam.pitch < .25 || cam.pitch > .55) cam.pitch = .37;
     }
+    if (typeof fp !== 'undefined' && fp) fp.on = true;
+    if (typeof model !== 'undefined' && model){ if (model.g) model.g.visible = false; if (model.head) model.head.visible = false; }
     if (typeof document !== 'undefined' && document.getElementById){
       const root = document.getElementById('obby');
       if (root && root.classList){ root.classList.add('dhouse'); root.classList.add('fpv'); }
     }
     if (typeof resize === 'function'){ try { resize(); } catch (e){} }
   }
+  function dhShowLookHint(){
+    const el = $('#dhLookHint');
+    if (!el) return;
+    el.textContent = 'Click the view to look around · Esc or Tab to click buttons';
+    el.style.display = 'block';
+    el.classList.add('show');
+    if (dh) dh.lookHintT = 8;
+  }
+  function dhHideLookHint(){
+    const el = $('#dhLookHint');
+    if (el){ el.style.display = 'none'; el.classList.remove('show'); }
+    if (dh) dh.lookHintT = 0;
+  }
+  function dhTickLookHint(dt){
+    if (!dh || !dh.lookHintT) return;
+    if (typeof document !== 'undefined' && document.pointerLockElement){ dhHideLookHint(); return; }
+    dh.lookHintT -= (dt || 0);
+    if (dh.lookHintT <= 0) dhHideLookHint();
+  }
   function dhLookWithKeys(dt){
     if (!dh || dh.intro || typeof cam === 'undefined' || !cam) return false;
     if (typeof keys === 'undefined' || !keys) return false;
-    const turn = 1.85 * (dt || 0);
-    if (turn <= 0) return false;
     const yawK = ((keys.ArrowRight || keys.KeyL) ? 1 : 0) - ((keys.ArrowLeft || keys.KeyJ) ? 1 : 0);
     const pitK = ((keys.KeyK || keys.ArrowDown) ? 1 : 0) - ((keys.KeyI || keys.ArrowUp) ? 1 : 0);
-    if (!yawK && !pitK) return false;
+    const dir = yawK * 10 + pitK;
+    if (!yawK && !pitK){ dh._lookHold = 0; dh._lookDir = 0; return false; }
+    if (dh._lookDir !== dir){ dh._lookHold = 0; dh._lookDir = dir; }
+    const step = Math.max(0, dt || 0);
+    if (step <= 0) return false;
+    dh._lookHold = (dh._lookHold || 0) + step;
+    const ease = Math.min(1, (dh._lookHold * dh._lookHold) / (0.22 * 0.22));
+    const turn = (Math.PI / 2) * ease * step; // 90°/s at full hold, ease-in so a 50–80 ms tap only nudges
     cam.yaw -= yawK * turn;
     cam.pitch = Math.max(-1.3, Math.min(1.4, cam.pitch + pitK * turn * 0.9));
     return true;
@@ -13890,6 +14000,35 @@ const Obby = (() => {
     });
   }
   function dhWalkCap(){ return (typeof keys !== 'undefined' && keys && (keys.ShiftLeft || keys.ShiftRight)) ? 7 : 4.5; }
+  function dhSolidAt(x, y, z, pad){
+    pad = pad == null ? .08 : pad;
+    if (typeof solids === 'undefined' || !solids) return null;
+    for (let i = 0; i < solids.length; i++){
+      const b = solids[i];
+      if (!b || !b.active || b.camSkip || !b.mesh || (b.mesh.visible === false)) continue;
+      if (Math.abs(x - b.mesh.position.x) < b.hw + pad && Math.abs(y - b.mesh.position.y) < b.hh + pad && Math.abs(z - b.mesh.position.z) < b.hd + pad) return b;
+    }
+    return null;
+  }
+  function dhClipFpCamera(){
+    if (typeof camera === 'undefined' || !camera || typeof cam === 'undefined' || !cam || typeof P === 'undefined' || !P) return false;
+    if (typeof fpOn === 'function' ? !fpOn() : (cam.dist > 1)) return false;
+    const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw);
+    const ey = P.y + 2.45;
+    let off = 0.22;
+    while (off > 0 && dhSolidAt(P.x + fx * off, ey, P.z + fz * off, 0.1)) off -= 0.05;
+    let x = P.x + fx * off, y = ey, z = P.z + fz * off;
+    let guard = 0;
+    while (guard++ < 12 && dhSolidAt(x, y, z, 0.1)) y += 0.12;
+    camera.position.set(x, y, z);
+    if (typeof camera.near === 'number' && camera.near > 0.08){
+      camera.near = 0.08;
+      if (typeof camera.updateProjectionMatrix === 'function') camera.updateProjectionMatrix();
+    }
+    const cp = Math.cos(cam.pitch);
+    camera.lookAt(P.x + fx * (off + cp * 10), y - Math.sin(cam.pitch) * 10, P.z + fz * (off + cp * 10));
+    return true;
+  }
   function dhCamComfort(dt){
     // Dream House is always first person after the intro. Do not force a follow camera.
     if (typeof cam === 'undefined' || !cam) return;
@@ -13904,9 +14043,11 @@ const Obby = (() => {
     if (dh.intro){ dhIntroTick(dt); return; }
     if (choosing) return;
     dhLookWithKeys(dt);
+    dhTickLookHint(dt);
     dhRefreshBins();
     dhClampPlayer();
     dhCamComfort(dt);
+    if (typeof dhClipFpCamera === 'function') dhClipFpCamera();
     dhFadeOccludingTrees();
     dhFadeYardSign();
     dh.aim = dhAimCell();
@@ -14147,6 +14288,8 @@ const Obby = (() => {
     const held = dhHeldInfo();
     const hide = !!(dh.intro);
     el.style.display = hide ? 'none' : 'flex';
+    el.style.zIndex = '41';
+    el.style.pointerEvents = 'none';
     el.classList.toggle('show', !hide);
     el.innerHTML = '<span class="dhhandE">' + held.emoji + '</span><small>' + held.label + '</small>';
   }
@@ -14160,8 +14303,9 @@ const Obby = (() => {
       if (!camera.children || camera.children.indexOf(g) < 0){ try { camera.add(g); } catch (e){ if (typeof scene !== 'undefined') scene.add(g); } }
     }
     const g = dh.hand;
-    g.position.set(.18, -.30, -.62);
-    g.rotation.set(.15, -.4, -.1);
+    g.position.set(.34, -.32, -.46);
+    g.rotation.set(.18, -.35, -.08);
+    g.scale.set(1.35, 1.35, 1.35);
     // rebuild child when the held item changes
     const holdId = (dh.carry && dh.carry.id) || (dh.job === 'pour' ? 'trowel' : dh.job === 'dig' ? 'shovel' : dh.job === 'mark' ? 'stake' : dh.job === 'paint' ? 'paint' : dh.job);
     if (g.userData.holdId !== holdId){
@@ -14419,7 +14563,28 @@ const Obby = (() => {
     if (jp.rb || jp[5]){ dhCycle(1); return true; }
     return false;
   }
+  function dhIsUiEvent(e){
+    const t = e && (e.target || e.srcElement);
+    if (!t) return false;
+    if (typeof t.closest === 'function'){
+      return !!t.closest('dialog, .modal, .menu, .opanel, .mbox, .dhbar, .dhhand, .obtns, .ohud, button, a, input, label, select, textarea, #dhResetModal, #dhBar, #dhTip, #dhSkip, #dhCut, #dhLookHint, #oPausePanel, #setModal');
+    }
+    let n = t;
+    while (n){
+      const id = n.id || '';
+      const tag = (n.tagName || '').toLowerCase();
+      const cls = ' ' + (n.className || '') + ' ';
+      if (id === 'dhResetModal' || id === 'dhBar' || id === 'dhTip' || id === 'dhSkip' || id === 'dhCut' || id === 'dhLookHint' || id === 'oPausePanel' || id === 'setModal') return true;
+      if (/ (modal|menu|opanel|mbox|dhbar|dhhand|obtns|ohud) /.test(cls)) return true;
+      if (tag === 'dialog' || tag === 'button' || tag === 'a' || tag === 'input' || tag === 'label' || tag === 'select' || tag === 'textarea') return true;
+      n = n.parentElement || n.parentNode || null;
+    }
+    return false;
+  }
   function dhKey(e){
+    if (!e) return false;
+    if (typeof dhOnResetKey === 'function' && dhOnResetKey(e)) return true;
+    if (dhIsUiEvent(e) && e.type && /pointer|mouse|click/i.test(e.type || '')) return true;
     if (!dh || e.repeat) return false;
     const k = e.code || '';
     if (dh.intro){
@@ -14763,6 +14928,7 @@ function dhLayoutHud(){
       const cp = Math.cos(cam.pitch), fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), ey = P.y + 2.45;
       camera.position.set(P.x + fx * .22, ey, P.z + fz * .22);
       camera.lookAt(P.x + fx * (.22 + cp * 10), ey - Math.sin(cam.pitch) * 10, P.z + fz * (.22 + cp * 10));
+      if (typeof dhClipFpCamera === 'function') dhClipFpCamera();
       if (shake > 0 && !paused){ camera.position.x += (Math.random() - .5) * shake * .5; camera.position.y += (Math.random() - .5) * shake * .5; }
       return;
     }
@@ -14887,6 +15053,9 @@ function dhLayoutHud(){
       if (mode === 'stable' && sb && sb.panel && e.code === 'Escape' && !e.repeat){ sbShowPick(false); return; }
       if (mode === 'photostudio' && psx && (psx.cam || psx.gal) && e.code === 'Escape' && !e.repeat && psKey(e)) return;
       if (mode === 'dreamhouse' && dh && (dh.shopOpen || dh.yardOpen || dh.upOpen) && (e.code === 'Escape' || e.code === 'KeyB') && !e.repeat){ dhKey(e); return; }
+      if (e.code === 'Escape' && typeof dhOnResetKey === 'function' && dhOnResetKey(e)) return;
+      if (e.code === 'Escape' && document.pointerLockElement){ document.exitPointerLock(); fp.unlockT = performance.now(); return; }
+      if (e.code === 'Tab' && document.pointerLockElement){ document.exitPointerLock(); e.preventDefault(); return; }
       if (e.code === 'Escape' || e.code === 'KeyP'){ if (e.code === 'Escape' && performance.now() - fp.unlockT < 400) return; if (!won && !over && !choosing) setPause(!(paused || menuOpen)); return; }
       if (mode === 'fashion' && fs && fs.ph === 'walk' && /^Digit[1-7]$/.test(e.code) && fsKey(e)) return;
       if (mode === 'dreamhouse' && dh && dhKey(e)) return;
@@ -14925,7 +15094,7 @@ function dhLayoutHud(){
     // first person on a computer: click the game to lock the mouse for mouse-look (Esc lets go)
     el.addEventListener('mousemove', e => { if (document.pointerLockElement !== el || !running || paused) return; const inv = window.rubloxInvert || {}, k = window.rubloxMouseSens || 1;
       cam.yaw -= e.movementX * .0026 * k * (inv.x ? -1 : 1); cam.pitch = Math.max(-1.3, Math.min(1.4, cam.pitch + e.movementY * .0024 * k * (inv.y ? -1 : 1))); });
-    el.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse' && fpOn() && !paused && !choosing && !fp.noLock && document.pointerLockElement !== el){ fp.req = true; try { const r = el.requestPointerLock(); if (r && r.catch) r.catch(() => { fp.noLock = true; }); } catch(_){ fp.noLock = true; } return; }
+    el.addEventListener('pointerdown', e => { if (typeof dhIsUiEvent === 'function' && dhIsUiEvent(e)) return; if (e.pointerType === 'mouse' && fpOn() && !paused && !choosing && !fp.noLock && document.pointerLockElement !== el){ fp.req = true; try { const r = el.requestPointerLock(); if (r && r.catch) r.catch(() => { fp.noLock = true; }); } catch(_){ fp.noLock = true; } return; }
       if (mode === 'dreamhouse' && dh && !paused && !choosing && typeof dhPointer === 'function' && (document.pointerLockElement === el || e.pointerType !== 'mouse')){ if (e.button === 0 || e.pointerType !== 'mouse') dhPointer(true); } });
     el.addEventListener('pointerup', e => { if (mode === 'dreamhouse' && typeof dhPointer === 'function') dhPointer(false); });
     document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement !== el){ fp.unlockT = performance.now(); clearHeldKeys(); } else { clearHeldKeys(); } });
@@ -15056,6 +15225,8 @@ function dhLayoutHud(){
     const m = document.querySelector('.padmap'); $('#pMap').innerHTML = m ? m.innerHTML : '';
   }
   function setPause(p){
+    if (p && typeof dhExitPointerLock === 'function') dhExitPointerLock();
+    else if (p && document.pointerLockElement && document.exitPointerLock) document.exitPointerLock();
     if (mp.on){   // multiplayer: the menu opens but the world (and the host's simulation) keeps running; only your own controls stop
       menuOpen = !!p; paused = false; $('#oPausePanel').classList.toggle('show', menuOpen); $('#oPause').textContent = '⏸️'; for (const k in keys) keys[k] = false; if (menuOpen) syncMenu(); return; }
     if (p && mp.on && mp.host && mode === 'fashion' && fs && fs.ph !== 'lobby' && fs.ph !== 'end'){ banner('⏸️ No pausing during the show!'); return; }
@@ -15201,6 +15372,7 @@ function start(m = 'obby', d = null){
     mpOnStart();
   }
   function stop(){
+    if (typeof dhCloseReset === 'function') dhCloseReset();
     running = false; cancelAnimationFrame(raf); raf = 0; if (document.pointerLockElement) document.exitPointerLock(); fp.shown = null; menuOpen = false; $('#obby').classList.remove('fpv'); if (model){ model.g.visible = true; if (model.head) model.head.visible = true; }
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame'); setHomeInert(false);
