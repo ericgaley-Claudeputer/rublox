@@ -34,12 +34,23 @@ function world(store0, opts){
     plat: (x,y,z,w,d,col,h) => { const m = O(); m.position.set(x,y,z); const b = {mesh: m, hw: (w||1)/2, hh: (h||.4)/2, hd: (d||1)/2, active: true}; solids.push(b); return {mesh: m}; },
     confetti(){}, SND: {coin(){}, cp(){}, win(){}, jump(){}}, store,
     setCoins: n => { ctx.coins = n; }, banner: t => ctx.banners.push(t),
+    els,
     window: {__dhBound: false}
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar};`, ctx);
   return ctx;
+}
+
+function aimFoot(W, ix, iz){
+  const w = W.A.dhCellWorld(0, ix, iz, 0.2);
+  const back = 2.0;
+  W.P.x = w.x; W.P.z = w.z - back; W.P.y = 0.05;
+  W.cam.yaw = Math.PI;
+  W.cam.pitch = Math.atan2(2.45 - 0.2, back);
+  if (W.A.dreamhouseUpdate) W.A.dreamhouseUpdate(0.01);
+  return w;
 }
 
 const W = world();
@@ -59,6 +70,9 @@ chk('Supply Yard has a beacon you can follow from the plot', !!(W.A.dh.yardBeaco
   const dPlot = Math.hypot(cx, cz);
   chk('the house plot sits in the center of the map', dPlot < 1.5 && Math.hypot(sp.x - cx, sp.z - (oz - 2.8)) < 1, {center:{cx,cz}, origin:{ox,oz}, spawn:sp});
   chk('the player spawns just south of the plot', sp.z < oz && Math.hypot(sp.x - cx, sp.z - oz) < 12, {sp, oz, cx});
+  const mx0 = W.A.dh.mixers && W.A.dh.mixers[0];
+  const camZ0 = sp.z + Math.cos(Math.PI) * Math.cos(.38) * 12;
+  chk('the Cement Mixer sits next to the plot and is visible from the spawn view', !!(mx0 && Math.hypot(mx0.x - cx, mx0.z - oz) < 8 && mx0.z < cz && mx0.z > camZ0 + 1), {mixer: mx0 && {x:mx0.x,z:mx0.z}, c:{cx,cz,oz}, camZ0, spawn:sp});
   // Chase camera looks north with +X on the left, so "right of the plot" is smaller x.
   const yardNE = W.A.DH_YARD.x < cx && W.A.DH_YARD.z > cz - 4;
   const furnSW = W.A.DH_FURN.x > cx && W.A.DH_FURN.z < cz;
@@ -320,16 +334,32 @@ Wk.A.buildDreamHouse();
 Wk.A.dreamhouseEnter();
 const spawnX = Wk.P.x, spawnZ = Wk.P.z;
 chk('a fresh game starts next to your lot with the Stake tool ready', Wk.A.dhNearOwnPlot() === true && Wk.A.dh.job === 'mark' && Wk.A.dh.bank >= 100 && Wk.coins === 20, {near: Wk.A.dhNearOwnPlot(), job: Wk.A.dh.job, P: {x:spawnX,z:spawnZ}, coins:Wk.coins, bank:Wk.A.dh.bank});
-chk('a glowing next-stake cell is chosen from spawn (no aiming required)', !!(Wk.A.dhNextBuildCell('mark') && Wk.A.dhNextBuildCell('mark').plot === 0), Wk.A.dhNextBuildCell('mark'));
+chk('a glowing next-stake cell is chosen from spawn for the outline', !!(Wk.A.dhNextBuildCell('mark') && Wk.A.dhNextBuildCell('mark').plot === 0), Wk.A.dhNextBuildCell('mark'));
 chk('number key 1 selects the Stake tool', Wk.A.dhKey({code:'Digit1', repeat:false}) === true && Wk.A.dh.job === 'mark');
 chk('number keys 2-5 pick Dig, Mix, Pour, and Bricks (not emotes)', ['Digit2','Digit3','Digit4','Digit5'].every((code, i) => Wk.A.dhKey({code, repeat:false}) && Wk.A.dh.job === Wk.A.DH_JOBS[i+1]) && (Wk.A.dhKey({code:'Digit1', repeat:false}), Wk.A.dh.job === 'mark'), Wk.A.dh.job);
+const firstCell = Wk.A.dhNextBuildCell('mark');
 const marks0 = (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length;
-chk('E from spawn places the first stake without walking onto a tile first', Wk.A.dhKey({code:'KeyE', repeat:false}) === true && (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length === marks0 + 1 && Wk.P.x === spawnX && Wk.P.z === spawnZ, {marks:(Wk.A.dh.pieces[0]||[]).filter(a=>a[0]==='mark').length, P:{x:Wk.P.x,z:Wk.P.z}});
-for (let i = 0; i < 40; i++) Wk.A.dhKey({code:'KeyE', repeat:false});
-chk('repeated E auto-targets the next empty stake cells from the same spot', (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length >= 16, (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length);
+Wk.P.x = spawnX; Wk.P.z = spawnZ; Wk.cam.yaw = 0; Wk.cam.pitch = 0;
+chk('E without aiming at a glowing spot does not place a stake', Wk.A.dhMarkOrDig() === false && (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length === marks0, {marks:(Wk.A.dh.pieces[0]||[]).filter(a=>a[0]==='mark').length, banners:Wk.banners.slice(-2)});
+aimFoot(Wk, firstCell.ix, firstCell.iz);
+chk('E places the first stake when you aim at the glowing spot (you do not have to stand on the tile)', Wk.A.dhKey({code:'KeyE', repeat:false}) === true && (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length === marks0 + 1, {marks:(Wk.A.dh.pieces[0]||[]).filter(a=>a[0]==='mark').length, P:{x:Wk.P.x,z:Wk.P.z}, cell:firstCell});
+const marksBeforeRepeat = (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length;
+for (let i = 0; i < 8; i++) Wk.A.dhKey({code:'KeyE', repeat:false});
+chk('repeated E from the same aim does not auto-stake the rest of the foundation', (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length === marksBeforeRepeat, (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length);
+const footK = Wk.A.dhFoot();
+for (let ix = footK.x0; ix <= footK.x1; ix++) for (let iz = footK.z0; iz <= footK.z1; iz++){
+  aimFoot(Wk, ix, iz);
+  Wk.A.dhKey({code:'Digit1', repeat:false});
+  Wk.A.dhKey({code:'KeyE', repeat:false});
+}
+chk('aiming at each glowing cell places a stake', (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length >= 16, (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length);
 Wk.A.dhKey({code:'Digit2', repeat:false});
-for (let i = 0; i < 40; i++) Wk.A.dhKey({code:'KeyE', repeat:false});
-chk('Digit 2 then E digs the staked forms from the same standing spot', Wk.A.dh.job === 'dig' && (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='trench').length >= 16, {job:Wk.A.dh.job, trenches:(Wk.A.dh.pieces[0]||[]).filter(a=>a[0]==='trench').length});
+for (let ix = footK.x0; ix <= footK.x1; ix++) for (let iz = footK.z0; iz <= footK.z1; iz++){
+  aimFoot(Wk, ix, iz);
+  Wk.A.dhKey({code:'KeyE', repeat:false});
+}
+chk('Digit 2 then aiming at each staked form digs it', Wk.A.dh.job === 'dig' && (Wk.A.dh.pieces[0]||[]).filter(a => a[0]==='trench').length >= 16, {job:Wk.A.dh.job, trenches:(Wk.A.dh.pieces[0]||[]).filter(a=>a[0]==='trench').length, prompt:Wk.A.dhActPrompt()});
+chk('after Stake and Dig are done, the prompt matches the next checklist step (not Stake first)', !/Stake the foundation first/i.test(Wk.A.dhActPrompt() + ' ' + (Wk.A.dhWhyNot()||'')) && /Cement \+ Sand|mixer|Dig is done|Foundation spots are dug/i.test(Wk.A.dhActPrompt() + ' ' + Wk.A.dhWhyNot() + ' ' + Wk.A.dhGoalText()), {prompt:Wk.A.dhActPrompt(), why:Wk.A.dhWhyNot(), goal:Wk.A.dhGoalText()});
 Wk.A.dhGive('cement', 8); Wk.A.dhGive('sand', 8);
 const mxk = Wk.A.dh.mixers[0];
 const pilek = Wk.A.dh.piles[0];
@@ -434,10 +464,15 @@ const Wp = world({rubloxDreamHouse: JSON.stringify({ver:4, introSeen:true, grant
 Wp.A.buildDreamHouse(); Wp.A.dreamhouseEnter();
 Wp.A.dreamhouseUpdate(0.02);
 const p0 = Wp.A.dhActPrompt();
-chk('at spawn the prompt offers to place a stake and shows Stakes 0/N', /Place stake here/.test(p0) && /Stakes 0\/\d+/.test(p0), p0);
+chk('at spawn the prompt tells you to aim at a glowing outline to stake', /Aim at a glowing outline|Place stake here/.test(p0) && Wp.A.dhJobCounts('mark').have === 0, p0);
 const ghost0 = Wp.A.dhNextBuildCell('mark');
+aimFoot(Wp, ghost0.ix, ghost0.iz);
+const pAim = Wp.A.dhActPrompt();
+chk('aiming at the glowing cell offers to place a stake and shows Stakes 0/N', /Place stake here/.test(pAim) && /Stakes 0\/\d+/.test(pAim), pAim);
 Wp.A.dhKey({code:'KeyE', repeat:false});
 Wp.A.dreamhouseUpdate(0.02);
+const nextGhost = Wp.A.dhNextBuildCell('mark');
+aimFoot(Wp, nextGhost.ix, nextGhost.iz);
 const p1 = Wp.A.dhActPrompt();
 const ghost1 = Wp.A.dhNextBuildCell('mark');
 const counts = Wp.A.dhJobCounts('mark');
@@ -581,16 +616,12 @@ const footF = Wfd.A.dhFoot();
 let staked = 0, dug = 0, poured = 0;
 Wfd.A.dhSetJob('mark');
 for (let ix = footF.x0; ix <= footF.x1; ix++) for (let iz = footF.z0; iz <= footF.z1; iz++){
-  Wfd.P.x = Wfd.A.dhOrigin(0)[0] + (ix + .5) * 1.4;
-  Wfd.P.z = Wfd.A.dhOrigin(0)[1] + (iz + .5) * 1.4;
-  Wfd.A.dreamhouseUpdate(0.01);
+  aimFoot(Wfd, ix, iz);
   if (Wfd.A.dhMarkOrDig()) staked++;
 }
 Wfd.A.dhSetJob('dig');
 for (let ix = footF.x0; ix <= footF.x1; ix++) for (let iz = footF.z0; iz <= footF.z1; iz++){
-  Wfd.P.x = Wfd.A.dhOrigin(0)[0] + (ix + .5) * 1.4;
-  Wfd.P.z = Wfd.A.dhOrigin(0)[1] + (iz + .5) * 1.4;
-  Wfd.A.dreamhouseUpdate(0.01);
+  aimFoot(Wfd, ix, iz);
   if (Wfd.A.dhMarkOrDig()) dug++;
 }
 // Free supplies only — never spend coins. Grab cement + sand at the yard, mix, pour.
@@ -631,6 +662,69 @@ const after = JSON.parse(Wfd.store.rubloxDreamHouse);
 chk('Reset Dream House clears only the house save and starts over', didReset && after && after.ver === 6 && (after.pieces||[]).length === 0 && (after.coins|0) === 0 && !after.introSeen && !(after.upgrades && after.upgrades.carry) && !(after.stock && after.stock.brick), after);
 chk('reset does not touch other Rublox saves, the Continue history, or the main wallet', Wfd.store.rubloxStables === stablesBefore && Wfd.store.rubloxRecentGames === recentBefore && Wfd.coins === fdWalletBefore, {stables:Wfd.store.rubloxStables, recent:Wfd.store.rubloxRecentGames, coins:Wfd.coins, fdWalletBefore});
 
+})();
+
+(function(){
+/* In-memory reset, dual mixer carry, HUD count sync, held tool, and foundation-via-goal. */
+const Wr = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:40, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+Wr.A.buildDreamHouse();
+Wr.A.dh.introSeen = true; Wr.A.dh.intro = null;
+Wr.A.dreamhouseEnter();
+const footR = Wr.A.dhFoot();
+Wr.A.dhSetJob('mark');
+let rStakes = 0;
+for (let ix = footR.x0; ix <= footR.x1; ix++) for (let iz = footR.z0; iz <= footR.z1; iz++){
+  aimFoot(Wr, ix, iz);
+  if (Wr.A.dhMarkOrDig()) rStakes++;
+}
+Wr.A.dhBuy('cement', 3);
+chk('pre-reset memory has stakes and carried cement', rStakes >= 1 && (Wr.A.dh.pieces[0]||[]).some(a => a[0]==='mark') && Wr.A.dh.carry && Wr.A.dh.carry.id === 'cement', {stakes:rStakes, carry:Wr.A.dh.carry, pieces:(Wr.A.dh.pieces[0]||[]).length});
+chk('reset is exposed on window so Settings can call it', typeof Wr.dhResetProgress === 'function' && Wr.dhResetProgress === Wr.A.dhResetProgress);
+const didMem = Wr.A.dhResetProgress();
+chk('reset clears in-memory stakes, carry, stock, and checklist progress', didMem && Wr.A.dh && !(Wr.A.dh.carry) && !(Wr.A.dh.bag) && !(Wr.A.dh.pieces[0]||[]).length && Wr.A.dhJobCounts('mark').have === 0 && (Wr.A.dh.stock.cement|0) === 0, {carry:Wr.A.dh && Wr.A.dh.carry, pieces:Wr.A.dh && (Wr.A.dh.pieces[0]||[]).length, have:Wr.A.dh && Wr.A.dhJobCounts('mark').have, stock:Wr.A.dh && Wr.A.dh.stock});
+const savedR = JSON.parse(Wr.store.rubloxDreamHouse);
+chk('reset also writes an empty house save', (savedR.pieces||[]).length === 0 && !savedR.introSeen, savedR);
+
+const Wc = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{cement:2}, upgrades:{}, goals:{}})});
+Wc.A.buildDreamHouse();
+Wc.A.dh.introSeen = true; Wc.A.dh.intro = null;
+Wc.A.dreamhouseEnter();
+Wc.A.dh.stock.cement = 2;
+Wc.A.dhBuy('cement', 1);
+chk('you can carry sand together with cement for the mixer', Wc.A.dhBuy('sand', 2) === true && Wc.A.dhCarryOf('cement') >= 1 && Wc.A.dhCarryOf('sand') >= 1, {carry:Wc.A.dh.carry, bag:Wc.A.dh.bag});
+Wc.A.dhHud(); Wc.A.dhBar();
+const topCement = (Wc.els['#dhInv'] && Wc.els['#dhInv'].textContent) || '';
+const barHtml = (Wc.els['#dhBar'] && Wc.els['#dhBar'].innerHTML) || '';
+const invN = Wc.A.dhInvCount('cement');
+chk('top HUD and toolbar both use the same cement count (stock plus carried)', invN === ((Wc.A.dh.stock.cement|0) + Wc.A.dhCarryOf('cement')) && invN === 3 && topCement.includes('3') && barHtml.includes('>3<'), {invN, top:topCement, bar:barHtml, stock:Wc.A.dh.stock.cement, carry:Wc.A.dh.carry, bag:Wc.A.dh.bag, keys:Object.keys(Wc.els||{})});
+const held = Wc.A.dhHeldInfo();
+chk('held-item HUD names the carried mixer bags, not Hands empty', held && /cement/i.test(held.carryText) && !/Hands empty/.test(held.carryText), held);
+const dumpAt = Wc.A.dhSpawnPos(0);
+Wc.P.x = dumpAt.x; Wc.P.z = dumpAt.z;
+Wc.A.dhDump();
+Wc.A.dh.carry = null; Wc.A.dh.bag = null;
+Wc.A.dhSetJob('mark');
+const toolHeld = Wc.A.dhHeldInfo();
+chk('with the Stake tool selected, the hand shows Stake, not Hands empty', toolHeld && /Stake/i.test(toolHeld.carryText + toolHeld.label) && !/Hands empty/.test(toolHeld.carryText), toolHeld);
+
+const Wg = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+Wg.A.buildDreamHouse();
+Wg.A.dh.introSeen = true; Wg.A.dh.intro = null;
+Wg.A.dreamhouseEnter();
+chk('a fresh game goal tells you to stake first', /Stake/i.test(Wg.A.dhGoalText()), Wg.A.dhGoalText());
+const footG = Wg.A.dhFoot();
+Wg.A.dhSetJob('mark');
+for (let ix = footG.x0; ix <= footG.x1; ix++) for (let iz = footG.z0; iz <= footG.z1; iz++){ aimFoot(Wg, ix, iz); Wg.A.dhMarkOrDig(); }
+chk('after staking, the on-screen goal tells you to dig', /Dig/i.test(Wg.A.dhGoalText()) && Wg.A.dhStageId() === 'dig', Wg.A.dhGoalText());
+Wg.A.dhSetJob('dig');
+for (let ix = footG.x0; ix <= footG.x1; ix++) for (let iz = footG.z0; iz <= footG.z1; iz++){ aimFoot(Wg, ix, iz); Wg.A.dhMarkOrDig(); }
+chk('after digging, the on-screen goal tells you to grab Cement + Sand', /Cement \+ Sand/i.test(Wg.A.dhGoalText()) && Wg.A.dhStageId() === 'pour', Wg.A.dhGoalText());
+const gMix = Wg.A.dhGuideTarget();
+chk('when the goal is Cement + Sand, the guide arrow points to the Supply Yard or a pile', !!(gMix && /Supply Yard|Cement|Sand|supplies/i.test(gMix.text)), gMix);
+Wg.A.dhBuy('cement'); Wg.A.dhBuy('sand');
+const gMix2 = Wg.A.dhGuideTarget();
+const mxg = Wg.A.dh.mixers[0];
+chk('after grabbing both mixer bags, the goal and arrow point at the Cement Mixer', /mixer/i.test(Wg.A.dhGoalText()) && !!(gMix2 && /mixer/i.test(gMix2.text)) && mxg && Math.hypot(gMix2.x - mxg.x, gMix2.z - mxg.z) < 0.2, {goal:Wg.A.dhGoalText(), guide:gMix2, mixer:mxg && {x:mxg.x,z:mxg.z}});
 })();
 
 console.log('RESULT', pass, '/', pass + fail);
