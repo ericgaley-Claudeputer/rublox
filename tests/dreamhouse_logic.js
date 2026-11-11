@@ -41,7 +41,7 @@ function world(store0, opts){
   ctx.window = ctx;
   ctx.window.location = ctx.location;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrickSlots, dhBrickSupported, dhEnsureHeld, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec, dhShowSpots, dhSpotTick, dhSpotFade, dhSpotVisuals, DH_SPOT_SHOW, DH_SPOT_FADE, DH_SPOT_NEAR, DH_SPOT_AIM, dhUpdateGhost, dhPulseBeacons, dhBeaconWorlds, dhSpotDims, dhSetGfxLow, dhGfxLow, dhPaintOpenings, dhRectsMinusHoles, dhPaintPanelWorldBoxes, dhPaintCoversOpening, dhOpeningAabb, dhShingleCorners, dhRafterEnds, dhRoofPlaneYat, dhRoofTilt, dhRoofPitch, DH_ROOF_RISE, DH_ROOF_OVERHANG, DH_SHINGLE_COLS, DH_SHINGLE_ROWS, DH_RAFTER_NEED, dhAllShingleSlots, dhAllRafterSlots, dhShingleWorld, dhRafterWorld, dhHasAnyCarry, dhPaintWorld, dhPaintOut, dhPaintSize, dhPaintOpeningClearance, dhPaintCornerMeet, dhRoofComplete, dhGableFaces, dhGableInfo, dhSyncGables, dhDisposeGables, dhMakeGableMesh};`, ctx);
   return ctx;
 }
 
@@ -632,7 +632,13 @@ Wnew.A.dhPlaceBrick();
 chk('the brick upgrade does not auto-place extra bricks — still one at a time', (Wnew.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length === n2 + 1, {n2, after:(Wnew.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length});
 chk('after placing, the goal still tells you to aim at the glowing outline', /glowing outline|place a brick|Grab bricks/i.test(Wnew.A.dhGoalText()), Wnew.A.dhGoalText());
 Wnew.A.dh.carry = null;
-chk('when your hands are empty the goal says to grab more bricks', /Grab bricks/i.test(Wnew.A.dhGoalText()), Wnew.A.dhGoalText());
+chk('when your hands are empty but inventory still has bricks, the goal does not send you to the Supply Yard', /inventory|Press E|lay a brick/i.test(Wnew.A.dhGoalText()) && !/Supply Yard/i.test(Wnew.A.dhGoalText()), Wnew.A.dhGoalText());
+const stockLeft = Wnew.A.dh.stock.brick | 0;
+const nInv = (Wnew.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length;
+const fromStock = Wnew.A.dhPlaceBrick();
+chk('E places a brick from inventory when hands are empty', !!(fromStock && ((Wnew.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length === nInv + 1) && (Wnew.A.dh.stock.brick|0) < stockLeft), {fromStock, nInv, stockLeft, stock:Wnew.A.dh.stock.brick, carry:Wnew.A.dh.carry});
+Wnew.A.dh.carry = null; Wnew.A.dh.stock.brick = 0;
+chk('when your hands and inventory are empty the goal says to grab more bricks', /Grab bricks/i.test(Wnew.A.dhGoalText()), Wnew.A.dhGoalText());
 
 /* Foundation stage is completable from a new save with only free yard supplies */
 const Wfd = world({coins: 44});
@@ -1343,6 +1349,259 @@ chk('crossing a wall midpoint still ejects back to the entry side', Ww.P.z <= fo
 chk('the front face has a window as well as the door', (Ww.A.dhWindowFaces() || []).indexOf(0) >= 0 && (Ww.A.dh.pieces[0]||[]).some(a => a[0]==='winframe' && (a[4]|0)===0), {faces:Ww.A.dhWindowFaces(), frames:(Ww.A.dh.pieces[0]||[]).filter(a=>a[0]==='winframe')});
 chk('#dhdebug is off without the hash and the helper exists', Ww.A.dhDebugActive() === false && typeof Ww.A.dhRefreshDebugColliders === 'function' && typeof Ww.A.dhCamClearance === 'function' && Ww.A.dhCamClearance() >= 0.3, {dbg:Ww.A.dhDebugActive(), clear:Ww.A.dhCamClearance && Ww.A.dhCamClearance()});
 Ww.A.dreamhouseStop();
+})();
+
+
+// t261u: remaining-spot glows show for ~4s, then fade ~1s; re-show on tool, supply, new step, place (nearby), Q/Tab/pad
+(function(){
+  const Wg = world();
+  Wg.A.buildDreamHouse(); Wg.A.dreamhouseEnter();
+  Wg.A.dhSkipIntro();
+  chk('show-spots API and timings are available', typeof Wg.A.dhShowSpots === 'function' && Wg.A.DH_SPOT_SHOW === 4 && Wg.A.DH_SPOT_FADE === 1, {show:Wg.A.DH_SPOT_SHOW, fade:Wg.A.DH_SPOT_FADE});
+  Wg.A.dhShowSpots();
+  Wg.A.dreamhouseUpdate(0);
+  const v0 = Wg.A.dhSpotVisuals();
+  chk('spot glows start fully shown after a show', !!(v0 && v0.shown && v0.group === 1 && v0.mode === 'all'), v0);
+
+  Wg.A.dreamhouseUpdate(3.9);
+  const vHold = Wg.A.dhSpotVisuals();
+  chk('spot glows stay fully visible for about 4 seconds', !!(vHold && vHold.shown && vHold.group === 1 && vHold.age >= 3.9 && vHold.age < 4.05), vHold);
+
+  Wg.A.dreamhouseUpdate(0.5);
+  const vMid = Wg.A.dhSpotVisuals();
+  chk('spot glows fade smoothly during the fifth second', !!(vMid && vMid.group > 0.2 && vMid.group < 0.85 && !vMid.shown && !vMid.faded), vMid);
+
+  Wg.A.dreamhouseUpdate(1.0);
+  const vGone = Wg.A.dhSpotVisuals();
+  chk('spot glows are gone after the fade', !!(vGone && vGone.faded && vGone.group === 0), vGone);
+
+  Wg.A.dhSetTool('delete');
+  Wg.A.dreamhouseUpdate(0);
+  const vTool = Wg.A.dhSpotVisuals();
+  chk('switching tools re-shows the remaining-spot glows', !!(vTool && vTool.shown && vTool.group === 1 && vTool.mode === 'all'), vTool);
+  Wg.A.dhSetTool('place');
+
+  Wg.A.dreamhouseUpdate(6);
+  chk('glows fade again after a tool-switch flash', !!Wg.A.dhSpotVisuals().faded, Wg.A.dhSpotVisuals());
+  const job0 = Wg.A.dh.job;
+  Wg.A.dhSetJob(job0 === 'mark' ? 'dig' : 'mark');
+  Wg.A.dreamhouseUpdate(0);
+  chk('switching jobs re-shows the remaining-spot glows', !!Wg.A.dhSpotVisuals().shown, Wg.A.dhSpotVisuals());
+  Wg.A.dhSetJob('mark');
+
+  Wg.A.dreamhouseUpdate(6);
+  const picked = Wg.A.dhPickup('brick', 8);
+  Wg.A.dreamhouseUpdate(0);
+  chk('picking up a new supply re-shows the remaining-spot glows', !!(picked && Wg.A.dhSpotVisuals().shown), {picked, v:Wg.A.dhSpotVisuals(), carry:Wg.A.dh.carry});
+
+  Wg.A.dreamhouseUpdate(6);
+  const stage0 = Wg.A.dhStageId();
+  const foot = Wg.A.dhFoot();
+  for (let ix = foot.x0; ix <= foot.x1; ix++) for (let iz = foot.z0; iz <= foot.z1; iz++){
+    Wg.A.dhPut(0, ['mark', ix, 0, iz, 0]);
+  }
+  Wg.A.dreamhouseUpdate(0);
+  chk('starting a new step re-shows the remaining-spot glows', Wg.A.dhStageId() !== stage0 && !!Wg.A.dhSpotVisuals().shown, {stage:Wg.A.dhStageId(), before:stage0, v:Wg.A.dhSpotVisuals()});
+
+  Wg.A.dreamhouseUpdate(6);
+  chk('glows faded before a place re-show', !!Wg.A.dhSpotVisuals().faded, Wg.A.dhSpotVisuals());
+  Wg.A.dhPut(0, ['trench', foot.x0, 0, foot.z0, 0]);
+  Wg.A.dreamhouseUpdate(0);
+  const vPlace = Wg.A.dhSpotVisuals();
+  chk('placing a piece briefly re-shows nearby remaining spots', !!(vPlace && vPlace.shown && vPlace.mode === 'nearby' && vPlace.used > 0 && vPlace.used <= 8), vPlace);
+
+  Wg.A.dreamhouseUpdate(6);
+  if (Wg.A.dhHasAnyCarry && Wg.A.dhHasAnyCarry()) Wg.A.dhDump();
+  else if (Wg.A.dh.carry) Wg.A.dhDump();
+  Wg.A.dhKey({code:'KeyQ', repeat:false});
+  Wg.A.dreamhouseUpdate(0);
+  chk('Q re-shows the remaining-spot glows', !!Wg.A.dhSpotVisuals().shown, Wg.A.dhSpotVisuals());
+
+  Wg.A.dreamhouseUpdate(6);
+  Wg.A.dhKey({code:'Tab', repeat:false});
+  Wg.A.dreamhouseUpdate(0);
+  chk('Tab re-shows the remaining-spot glows', !!Wg.A.dhSpotVisuals().shown, Wg.A.dhSpotVisuals());
+
+  Wg.A.dreamhouseUpdate(6);
+  Wg.A.dhPad({dd:1, 13:true});
+  Wg.A.dreamhouseUpdate(0);
+  chk('gamepad D-pad down re-shows the remaining-spot glows', !!Wg.A.dhSpotVisuals().shown, Wg.A.dhSpotVisuals());
+
+  Wg.A.dreamhouseUpdate(6);
+  const next = Wg.A.dhNextBuildCell('dig') || Wg.A.dhNextBuildCell('mark');
+  if (next) aimFoot(Wg, next.ix, next.iz);
+  Wg.A.dh._ghostDirty = true;
+  Wg.A.dreamhouseUpdate(0);
+  const vAim = Wg.A.dhSpotVisuals();
+  chk('the aimed spot still has a soft highlight after the glows fade', !!(vAim && vAim.faded && vAim.aimed && vAim.aim >= 0.2 && vAim.aim < 0.8 && vAim.group === 0), vAim);
+
+  Wg.A.updateDhChrome();
+  const hint = Wg.els['#dhSpotHint'];
+  chk('HUD hint says Q: show spots', !!(hint && /Q: show spots/.test(hint.textContent) && hint.style.display === 'block'), hint);
+  const bar = (Wg.els['#dhBar'] && Wg.els['#dhBar'].innerHTML) || '';
+  if (!bar){ Wg.A.dhBar(); }
+  const barHtml = (Wg.els['#dhBar'] && Wg.els['#dhBar'].innerHTML) || '';
+  chk('a small Spots button is on the toolbar', /dhSpotBtn/.test(barHtml), barHtml.slice(0, 200));
+
+  Wg.A.dreamhouseStop();
+})();
+
+
+// t261u follow-up: beacons sit on slots in Low and High; Tab hint while carrying; paint leaves openings; roof sits on v7 walls
+(function(){
+  function maxSlotError(W, kind){
+    const beacons = W.A.dhBeaconWorlds() || [];
+    const slots = (kind === 'brick')
+      ? (W.A.dhNextBrickSlots(0) || []).filter(s => !s.filled)
+      : (W.A.dhJobPoints(kind) || []).filter(s => !s.filled);
+    if (!slots.length || !beacons.length) return {ok:false, reason:'empty', slots:slots.length, beacons:beacons.length};
+    let worst = 0, miss = 0, sample = null;
+    slots.forEach(s => {
+      let best = Infinity, hit = null;
+      beacons.forEach(b => {
+        const d = Math.hypot((b.x||0)-(s.x||0), (b.y||0)-(s.y||0), (b.z||0)-(s.z||0));
+        if (d < best){ best = d; hit = b; }
+      });
+      if (best > worst){ worst = best; sample = {slot:{x:s.x,y:s.y,z:s.z,face:s.face,course:s.course,along:s.along}, beacon:hit, d:best}; }
+      if (best > 0.05) miss++;
+    });
+    return {ok: miss===0 && worst <= 0.05, worst, miss, slots:slots.length, beacons:beacons.length, sample};
+  }
+  function bootGfx(low){
+    const W = world({}, {hash: '#dhtest=v7walls'});
+    W.A.buildDreamHouse(); W.A.dreamhouseEnter();
+    if (W.A.dh && W.A.dh.intro) W.A.dhSkipIntro();
+    W.A.dhSetGfxLow(!!low);
+    W.A.dhShowSpots();
+    W.A.dh._ghostDirty = true;
+    W.A.dreamhouseUpdate(0);
+    return W;
+  }
+  const Wlo = bootGfx(true);
+  const rLo = maxSlotError(Wlo, 'brick');
+  chk('Low-graphics remaining-spot beacons sit on the brick slots (within 5 cm)', !!rLo.ok, rLo);
+  const nextLo = Wlo.A.dhNextBrickSlots(0) || [];
+  const allOpen = (Wlo.A.dhAllBrickSlots(0) || []).filter(s => !s.filled);
+  const ysLo = (Wlo.A.dhBeaconWorlds() || []).map(b => b.y);
+  chk('v7walls Low spots sit on the next wall-top course, not the floating upper courses', !!(rLo.ok && nextLo.length && rLo.beacons === nextLo.length && nextLo.every(s => (s.course|0) === 3) && ysLo.length === nextLo.length && ysLo.every(y => Math.abs(y - 1.875) <= 0.05) && allOpen.some(s => (s.course|0) >= 4)), {next:nextLo.length, open:allOpen.length, beacons:rLo.beacons, courses:[...new Set(nextLo.map(s=>s.course))], y:{min:Math.min.apply(null,ysLo), max:Math.max.apply(null,ysLo)}});
+  Wlo.A.dreamhouseStop();
+  const Whi = bootGfx(false);
+  const rHi = maxSlotError(Whi, 'brick');
+  chk('High-graphics remaining-spot beacons sit on the brick slots (within 5 cm)', !!rHi.ok, rHi);
+  const nextHi = Whi.A.dhNextBrickSlots(0) || [];
+  const ysHi = (Whi.A.dhBeaconWorlds() || []).map(b => b.y);
+  chk('v7walls High spots sit on the next wall-top course, not the floating upper courses', !!(rHi.ok && nextHi.length && rHi.beacons === nextHi.length && ysHi.every(y => Math.abs(y - 1.875) <= 0.05)), {next:nextHi.length, beacons:rHi.beacons, y:{min:Math.min.apply(null,ysHi||[0]), max:Math.max.apply(null,ysHi||[0])}});
+  Whi.A.dreamhouseStop();
+
+  // v7walls fixture: stock has 40 bricks, hands are empty — E must still place, and the banner must agree.
+  const WpE = world({}, {hash: '#dhtest=v7walls'});
+  WpE.A.buildDreamHouse(); WpE.A.dreamhouseEnter();
+  if (WpE.A.dh && WpE.A.dh.intro) WpE.A.dhSkipIntro();
+  WpE.A.dhSetJob('brick');
+  WpE.A.dh.carry = null;
+  const goalE = WpE.A.dhGoalText() || '';
+  chk('v7walls goal agrees with the inventory (does not say Supply Yard while you have 40 bricks)', /40/.test(String(WpE.A.dh.stock.brick)) && /inventory|Press E|lay a brick/i.test(goalE) && !/Supply Yard/i.test(goalE), {goal:goalE, stock:WpE.A.dh.stock, carry:WpE.A.dh.carry});
+  const n96 = (WpE.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length;
+  const slotE = (WpE.A.dhNextBrickSlots(0)||[])[0];
+  if (slotE){ WpE.P.x = slotE.x; WpE.P.z = slotE.z + 2.2; WpE.P.y = .05; WpE.cam.yaw = 0; WpE.cam.pitch = Math.atan2(1.6 - slotE.y, 2.2); }
+  const placedE = WpE.A.dhPlaceBrick();
+  const n97 = (WpE.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length;
+  chk('v7walls E places a brick from inventory (96/188 goes up)', !!(placedE && n96 === 96 && n97 === 97), {placedE, n96, n97, carry:WpE.A.dh.carry, stock:WpE.A.dh.stock.brick});
+  WpE.A.dreamhouseStop();
+
+  const Wh = world();
+  Wh.A.buildDreamHouse(); Wh.A.dreamhouseEnter();
+  if (Wh.A.dh.intro) Wh.A.dhSkipIntro();
+  Wh.A.dhPickup('brick', 4);
+  Wh.A.dhHud(); Wh.A.updateDhChrome();
+  const hintC = Wh.els['#dhSpotHint'];
+  chk('HUD hint says Tab: show spots while carrying', !!(hintC && /Tab: show spots/.test(hintC.textContent)), hintC);
+  Wh.A.dhDump();
+  Wh.A.updateDhChrome();
+  const hintE = Wh.els['#dhSpotHint'];
+  chk('HUD hint says Q: show spots when hands are empty', !!(hintE && /Q: show spots/.test(hintE.textContent)), hintE);
+
+  // Paint must leave the door and windows open (a solid wall slab used to cover them).
+  const Wp = world({}, {hash: '#dhtest=v6furnish'});
+  Wp.A.buildDreamHouse(); Wp.A.dreamhouseEnter();
+  if (Wp.A.dh && Wp.A.dh.intro) Wp.A.dhSkipIntro();
+  const facesPainted = [];
+  for (let face = 0; face < 4; face++){
+    if (!(Wp.A.dh.pieces[0]||[]).some(a => a[0]==='paint' && (a[4]|0)===face)){
+      Wp.A.dhPut(0, ['paint', 0, 0, 0, face, 0], true);
+    }
+    facesPainted.push(face);
+  }
+  const doorCovered = Wp.A.dhPaintCoversOpening(0, 0, 'door');
+  const winCovered = [0,1,3].some(f => Wp.A.dhPaintCoversOpening(0, f, 'window'));
+  const doorMesh = (Wp.A.dh.meshes[0]||[]).find((m,i) => (Wp.A.dh.pieces[0]||[])[i] && Wp.A.dh.pieces[0][i][0]==='door');
+  chk('paint leaves the door opening cut out', doorCovered === false, {doorCovered, panels: Wp.A.dhPaintPanelWorldBoxes(0, ['paint',0,0,0,0,0]).length, holes: Wp.A.dhPaintOpenings(0, 0)});
+  chk('paint leaves the window openings cut out', winCovered === false, {winCovered});
+  chk('the door mesh is still present and visible after painting', !!(doorMesh && doorMesh.visible !== false), {has:!!doorMesh, visible: doorMesh && doorMesh.visible});
+
+  // Pitched roof: shingles and rafters rest on v7 wall tops and meet at apex 4.8 m.
+  const b = Wp.A.dhFootWorld(0);
+  const midZ = (b.z0 + b.z1) / 2;
+  const half = (b.x1 - b.x0) / 2 + Wp.A.DH_ROOF_OVERHANG;
+  const wallTop = Wp.A.dhWallTop();
+  const apex = Wp.A.dhRoofApex();
+  chk('finished house roof apex is 4.8 m on v7 wall tops', Math.abs(apex - 4.8) < 0.02 && Math.abs(wallTop - 3.0) < 0.02, {apex, wallTop});
+  const tiles = Wp.A.dhAllShingleSlots(0);
+  let tileWorst = 0, tileOut = 0, eaveY = [], ridgeY = [], xOut = 0;
+  tiles.forEach(s => {
+    const corners = Wp.A.dhShingleCorners(0, s.side, s.col, s.row);
+    corners.forEach(c => {
+      const planeY = Wp.A.dhRoofPlaneYat(0, c.z);
+      const d = Math.abs(c.y - planeY);
+      if (d > tileWorst) tileWorst = d;
+      if (d > 0.08) tileOut++; // thickness is 5 cm, allow 8 cm
+      if (c.x < b.x0 - Wp.A.DH_ROOF_OVERHANG - 0.08 || c.x > b.x1 + Wp.A.DH_ROOF_OVERHANG + 0.08) xOut++;
+    });
+    if (s.row === 0) eaveY.push(s.y);
+    if (s.row === (Wp.A.DH_SHINGLE_ROWS - 1)) ridgeY.push(s.y);
+  });
+  const eaveAvg = eaveY.reduce((a,v)=>a+v,0)/Math.max(1,eaveY.length);
+  const ridgeAvg = ridgeY.reduce((a,v)=>a+v,0)/Math.max(1,ridgeY.length);
+  chk('shingles lie on the pitched roof plane (within 8 cm) and do not overshoot the walls past the overhang', tileOut===0 && xOut===0 && tiles.length===Wp.A.dhShingleTotal(), {tileWorst, tileOut, xOut, n:tiles.length, eaveAvg, ridgeAvg, wallTop, apex});
+  chk('lowest shingles rest on the wall top and the ridge reaches the 4.8 m apex', eaveAvg > wallTop - 0.05 && eaveAvg < wallTop + Wp.A.DH_ROOF_RISE * 0.6 && ridgeAvg > apex - 0.55 && ridgeAvg <= apex + 0.05, {eaveAvg, ridgeAvg, wallTop, apex, rise:Wp.A.DH_ROOF_RISE});
+  const rafters = [];
+  for (let side=0; side<2; side++) for (let k=0; k<(Wp.A.DH_RAFTER_NEED/2); k++){
+    rafters.push(Wp.A.dhRafterEnds(0, k, side));
+  }
+  let rMiss=0, rWorst=0;
+  rafters.forEach(ends => {
+    const ys = ends.map(e => e.y).sort((a,b)=>a-b);
+    const zs = ends.map(e => e.z);
+    const eave = ends.reduce((a,e)=> e.y < a.y ? e : a, ends[0]);
+    const ridge = ends.reduce((a,e)=> e.y > a.y ? e : a, ends[0]);
+    const de = Math.abs(eave.y - wallTop);
+    const dr = Math.abs(ridge.y - apex);
+    if (de > rWorst) rWorst = de;
+    if (dr > rWorst) rWorst = dr;
+    if (de > 0.08 || dr > 0.08) rMiss++;
+  });
+  chk('rafters run from the v7 wall top up to the 4.8 m apex', rMiss===0 && rafters.length===Wp.A.DH_RAFTER_NEED, {rMiss, rWorst, n:rafters.length, sample:rafters[0]});
+
+  const trimDoor = Wp.A.dhPaintOpeningClearance(0, 0, 'door');
+  const trimWin = [0,1,3].map(f => Wp.A.dhPaintOpeningClearance(0, f, 'window'));
+  chk('paint runs up to the door and window trim (no wide bare-brick border)', !!(trimDoor && trimDoor.ok && trimWin.every(c => c.ok)), {door:trimDoor, windows:trimWin});
+  const corner = Wp.A.dhPaintCornerMeet(0, 0, 1);
+  chk('front and side paint meet cleanly at the corner (no offset gap)', !!(corner && corner.ok), corner);
+
+  const wallsOnly = world({}, {hash: '#dhtest=v7walls'});
+  wallsOnly.A.buildDreamHouse(); wallsOnly.A.dreamhouseEnter();
+  if (wallsOnly.A.dh && wallsOnly.A.dh.intro) wallsOnly.A.dhSkipIntro();
+  const gBefore = wallsOnly.A.dhGableInfo(0);
+  chk('gables are not added before the roof is finished', !gBefore.ready && !(wallsOnly.A.dh.gables && wallsOnly.A.dh.gables[0]), gBefore);
+  wallsOnly.A.dreamhouseStop();
+
+  const gAfter = Wp.A.dhGableInfo(0);
+  const gSync = Wp.A.dhSyncGables(0);
+  const gMesh = Wp.A.dh.gables && Wp.A.dh.gables[0];
+  const gKids = gMesh && (gMesh.children || []);
+  chk('finished walls and roof get gable ends automatically (no hole under the roof, saves unchanged)', !!(gAfter.ready && gSync && gMesh && gKids && gKids.length >= 2 && Math.abs(gAfter.apex - 4.8) < 0.02 && Math.abs(gAfter.wallTop - 3.0) < 0.02), {info:gAfter, sync:gSync, kids: gKids && gKids.length, recs:(Wp.A.dh.pieces[0]||[]).some(a => a[0]==='gable')});
+
+  Wp.A.dreamhouseStop();
 })();
 
 
