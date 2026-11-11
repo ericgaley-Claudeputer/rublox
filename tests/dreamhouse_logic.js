@@ -35,11 +35,13 @@ function world(store0, opts){
     confetti(){}, SND: {coin(){}, cp(){}, win(){}, jump(){}}, store,
     setCoins: n => { ctx.coins = n; }, banner: t => ctx.banners.push(t),
     els,
-    window: {__dhBound: false}
+    window: {__dhBound: false},
+    location: {hash: (opts && opts.hash) || ''}
   };
   ctx.window = ctx;
+  ctx.window.location = ctx.location;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw};`, ctx);
   return ctx;
 }
 
@@ -1223,6 +1225,47 @@ chk('a v6 house at the furnish step migrates to v7 and keeps its progress', Wm.A
 chk('after the v6→v7 migrate the house is still on Paint & furnish with earlier steps checked', earlier.every(s => /✔/.test(s)) && /Paint & furnish 0\/1/.test(last) && (Wm.A.dhStageId() === 'paint' || Wm.A.dhStageId() === 'furn'), {checklist, stage:Wm.A.dhStageId()});
 chk('migrated bricks snap to the tidy v7 grid with no duplicates', brickKeys.length === new Set(brickKeys).size && nBrick === Wm.A.dhBrickTotal(), {nBrick, unique:new Set(brickKeys).size});
 Wm.A.dreamhouseStop();
+})();
+
+
+
+(function(){
+/* t257u follow-up: #dhtest= fixtures are in-memory only and never touch rubloxDreamHouse */
+const prior = {ver:6, introSeen:true, granted:true, coins:99, pieces:[['slab',2,0,2,0,0],['brick',0,0,0,0,0]], stock:{brick:7, cement:3}, goals:{slab:1}, upgrades:{}, _sentinel:'keep-me'};
+const priorJson = JSON.stringify(prior);
+
+const Wf = world({rubloxDreamHouse: priorJson}, {coins:20, hash:'#dhtest=v6furnish'});
+Wf.A.buildDreamHouse(); Wf.A.dreamhouseEnter();
+Wf.A.dh.intro = null;
+const furnList = Wf.A.dh.pieces[0] || [];
+const furnCheck = Wf.A.dhChecklist();
+const furnLast = furnCheck[furnCheck.length - 1] || '';
+chk('#dhtest=v6furnish loads a furnish-step house through the real v6→v7 migrate', Wf.A.dhTestActive() === true && Wf.A.dhTestFixtureId() === 'v6furnish' && Wf.A.DH_VER === 7 && furnList.filter(a => a[0]==='brick').length === Wf.A.dhBrickTotal() && furnList.filter(a => a[0]==='shingle').length === Wf.A.dhShingleTotal() && furnList.some(a => a[0]==='door') && (furnCheck.slice(0, -1).every(s => /✔/.test(s)) && /Paint & furnish 0\/1/.test(furnLast)), {id:Wf.A.dhTestFixtureId(), bricks:furnList.filter(a=>a[0]==='brick').length, check:furnCheck, stage:Wf.A.dhStageId()});
+Wf.A.dhSave();
+Wf.A.dhPut(0, ['paint', 0, 0, 0, 0, 1], false);
+if (typeof Wf.A.dhResetProgress === 'function') Wf.A.dhResetProgress();
+const afterFurn = JSON.parse(Wf.store.rubloxDreamHouse);
+chk('#dhtest=v6furnish never writes to localStorage (real rubloxDreamHouse is unchanged)', afterFurn && afterFurn.coins === 99 && (afterFurn.stock && afterFurn.stock.brick) === 7 && afterFurn._sentinel === 'keep-me' && (afterFurn.pieces||[]).length === 2 && afterFurn.ver === 6, afterFurn);
+Wf.A.dreamhouseStop();
+
+const Ww = world({rubloxDreamHouse: priorJson}, {coins:20, hash:'#dhtest=v7walls'});
+Ww.A.buildDreamHouse(); Ww.A.dreamhouseEnter();
+Ww.A.dh.intro = null;
+const wallList = Ww.A.dh.pieces[0] || [];
+const wallBricks = wallList.filter(a => a[0]==='brick');
+const maxCourse = wallBricks.reduce((m, a) => Math.max(m, a[2]|0), -1);
+chk('#dhtest=v7walls loads a half-built tidy wall (courses 0-2) and skips the intro', Ww.A.dhTestFixtureId() === 'v7walls' && wallBricks.length > 0 && wallBricks.length < Ww.A.dhBrickTotal() && maxCourse === 2 && wallList.some(a => a[0]==='slab') && Ww.A.dhStageId() === 'brick', {n:wallBricks.length, total:Ww.A.dhBrickTotal(), maxCourse, stage:Ww.A.dhStageId()});
+Ww.A.dhSave();
+Ww.A.dhPlaceBrick && Ww.A.dh.carry;
+if (typeof Ww.A.dhResetProgress === 'function') Ww.A.dhResetProgress();
+const afterWalls = JSON.parse(Ww.store.rubloxDreamHouse);
+chk('#dhtest=v7walls never writes to localStorage (real rubloxDreamHouse is unchanged)', afterWalls && afterWalls.coins === 99 && afterWalls._sentinel === 'keep-me' && (afterWalls.pieces||[]).length === 2 && afterWalls.ver === 6, afterWalls);
+Ww.A.dreamhouseStop();
+
+const Wn = world({rubloxDreamHouse: priorJson}, {coins:20, hash:''});
+Wn.A.buildDreamHouse();
+chk('without a dhtest hash the real save still loads', (Wn.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length === 1 && Wn.A.dh.bank === 99 && !Wn.A.dhTestActive(), {bricks:(Wn.A.dh.pieces[0]||[]).length, bank:Wn.A.dh.bank, active:Wn.A.dhTestActive()});
+Wn.A.dreamhouseStop();
 })();
 
 

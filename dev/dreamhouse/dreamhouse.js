@@ -171,7 +171,84 @@
   function dhUp(id){ return (dh && dh.upgrades && dh.upgrades[id]) | 0; }
   function dhPaintCol(i){ return (DH_PAINT[i % DH_PAINT.length] || DH_PAINT[0]).col; }
 
+  function dhTestFixtureId(){
+    let hash = '';
+    try {
+      const loc = (typeof location !== 'undefined' && location) || (typeof window !== 'undefined' && window.location) || null;
+      if (loc && loc.hash) hash = String(loc.hash);
+    } catch (e){}
+    const m = /(?:^|#|&)dhtest=([A-Za-z0-9_-]+)/.exec(hash);
+    return m ? String(m[1]).toLowerCase() : '';
+  }
+  function dhTestActive(){
+    const id = dhTestFixtureId();
+    return id === 'v6furnish' || id === 'v7walls';
+  }
+  function dhTestV6FootSlabs(){
+    const recs = [];
+    for (let ix = 2; ix <= 5; ix++) for (let iz = 2; iz <= 5; iz++) recs.push(['slab', ix, 0, iz, 0, 0]);
+    return recs;
+  }
+  function dhTestV6BrickRecs(){
+    // Realistic v6 small-house grid: 11-brick south/north faces, 10-brick east/west, 6 courses, running-bond openings.
+    const recs = [];
+    for (let face = 0; face < 4; face++){
+      const span = (face === 1 || face === 3) ? 10 : 11;
+      const mid = (span / 2) | 0;
+      for (let c = 0; c < 6; c++) for (let k = 0; k < span; k++){
+        const door = face === 0 && k >= mid - 1 && k <= mid && c < 6;
+        const win = (face === 1 || face === 3) && k >= mid - 1 && k <= mid && c >= 2 && c <= 5;
+        if (door || win) continue;
+        recs.push(['brick', 0, c, k, face, 0]);
+      }
+    }
+    return recs;
+  }
+  function dhTestV6FurnishRaw(){
+    // A realistic live v6 save at Tessa's step: every earlier checklist item done, Paint & furnish 0/1.
+    const pieces = dhTestV6FootSlabs().concat(dhTestV6BrickRecs());
+    pieces.push(
+      ['stud', 2, 0, 2, 0, 0], ['stud', 5, 0, 2, 0, 0], ['stud', 5, 0, 5, 0, 0], ['stud', 2, 0, 5, 0, 0],
+      ['stud', 3, 0, 2, 0, 0], ['stud', 5, 0, 3, 0, 0], ['stud', 3, 0, 5, 0, 0], ['stud', 2, 0, 3, 0, 0],
+      ['rafter', 3, 0, 2, 0, 0], ['rafter', 4, 0, 2, 0, 0], ['rafter', 3, 0, 5, 1, 0], ['rafter', 4, 0, 5, 1, 0],
+      ['shingle', 2, 0, 2, 0, 0], ['shingle', 3, 0, 2, 0, 0], ['shingle', 4, 0, 2, 0, 0], ['shingle', 5, 0, 2, 0, 0],
+      ['shingle', 2, 0, 3, 0, 0], ['shingle', 3, 0, 3, 0, 0], ['shingle', 2, 0, 5, 1, 0], ['shingle', 3, 0, 5, 1, 0],
+      ['shingle', 4, 0, 5, 1, 0], ['shingle', 5, 0, 5, 1, 0],
+      ['doorframe', 0, 0, 0, 0, 0], ['door', 0, 0, 0, 0, 0],
+      ['winframe', 0, 3, 0, 1, 0], ['pane', 0, 3, 0, 1, 0],
+      ['winframe', 0, 3, 0, 3, 0], ['pane', 0, 3, 0, 3, 0]
+    );
+    return {
+      ver: 6, introSeen: true, granted: true, coins: 55, likes: 0,
+      pieces, stock: {paint: 2, sofa: 1, brick: 8, wood: 4, shingle: 2, glass: 1},
+      goals: {marked: 1, slab: 1, course: 1, walls: 1, rafters: 1, roof: 1, openings: 1, glaze: 1},
+      upgrades: {carry: 1}, tipsSeen: {}, legacyHouse: false
+    };
+  }
+  function dhTestV7WallsRaw(){
+    // Half-height tidy v7 walls (courses 0–2 on every face) plus a finished slab, so testers can inspect brick rows without a long build.
+    const st = {legacyHouse: false, upgrades: {}};
+    const pieces = dhTestV6FootSlabs();
+    dhAllBrickRecs(st).forEach(r => { if ((r[2] | 0) <= 2) pieces.push(r); });
+    return {
+      ver: 7, introSeen: true, granted: true, coins: 40, likes: 0,
+      pieces, stock: {brick: 40, wood: 8},
+      goals: {marked: 1, slab: 1, course: 1},
+      upgrades: {}, tipsSeen: {}, legacyHouse: false
+    };
+  }
+  function dhTestRawSave(id){
+    id = (id == null ? dhTestFixtureId() : id);
+    if (id === 'v6furnish') return dhTestV6FurnishRaw();
+    if (id === 'v7walls') return dhTestV7WallsRaw();
+    return null;
+  }
+  function dhTestBlockPersist(){
+    return dhTestActive();
+  }
   function dhProg(){
+    const raw = dhTestRawSave();
+    if (raw) return dhMigrate(raw);
     const o = load(DH_KEY, null), r = o && typeof o === 'object' ? o : {};
     return dhMigrate(r);
   }
@@ -309,7 +386,7 @@
   function dhResetProgress(){
     // Only wipes the Dream House key. Main wallet, other games, and history stay put.
     if (dh) dh._skipSave = true;
-    if (typeof save === 'function') save(DH_KEY, dhFreshSave());
+    if (typeof save === 'function' && !dhTestBlockPersist()) save(DH_KEY, dhFreshSave());
     if (dh){
       dh.carry = null;
       dh.bag = null;
@@ -360,7 +437,7 @@
     p.tipsSeen = Object.assign({}, dh.tipsSeen || {});
     p.legacyHouse = !!dh.legacyHouse;
     if (extra) Object.assign(p, extra);
-    if (!dh._skipSave) save(DH_KEY, p);
+    if (!dh._skipSave && !dhTestBlockPersist()) save(DH_KEY, p);
   }
 
   function dhTex(draw, s){
@@ -1165,6 +1242,7 @@
     const p0 = dhProg();
     dh.bank = p0.coins; dh.likes = p0.likes; dh.goals = Object.assign({}, p0.goals); dh.stock = Object.assign(dhEmptyStock(), p0.stock); dh.v1pieces = p0.v1pieces; dh.upgrades = Object.assign(dhEmptyUpgrades(), p0.upgrades || {}); dh.introSeen = !!p0.introSeen; dh.tipsSeen = Object.assign({}, p0.tipsSeen || {}); dh.legacyHouse = !!p0.legacyHouse; dh.brickInst = {}; dh.hand = null; dh.outlines = null; dh.pourHold = false;
     if (!p0.granted){ dh.bank += DH_GRANT; dh.grantedNow = true; }
+    if (dhTestActive() && typeof banner === 'function') banner('🧪 Test house only — your real Dream House save is not used or written');
     dh.mine = dhAssignPlot();
     dhLayoutYard();
     dhBuildBounds();
