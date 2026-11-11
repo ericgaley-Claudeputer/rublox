@@ -38,7 +38,7 @@ function world(store0, opts){
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhLayoutYard, dhTreeBlocked, DH_BOUND, dhCamComfort};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhLayoutYard, dhTreeBlocked, DH_BOUND, dhCamComfort, dhActPrompt, dhJobCounts};`, ctx);
   return ctx;
 }
 
@@ -415,6 +415,38 @@ Wb.P.z = (spawnP.z + Wb.A.DH_YARD.z) / 2;
 // if still far, step closer
 if (!Wb.A.dhNearYard()){ Wb.P.x = Wb.A.DH_YARD.x + 6; Wb.P.z = Wb.A.DH_YARD.z; }
 chk('walking toward the Supply Yard enters the E-to-open radius', Wb.A.dhNearYard() === true, {P:{x:Wb.P.x,z:Wb.P.z}, yard:Wb.A.DH_YARD, d:Math.hypot(Wb.P.x-Wb.A.DH_YARD.x, Wb.P.z-Wb.A.DH_YARD.z)});
+
+
+/* Menu prompt hiding, Escape closes menus, prompt matches allowed state */
+const Wp = world({rubloxDreamHouse: JSON.stringify({ver:4, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, goals:{}, upgrades:{}})}, {coins:20});
+Wp.A.buildDreamHouse(); Wp.A.dreamhouseEnter();
+Wp.A.dreamhouseUpdate(0.02);
+const p0 = Wp.A.dhActPrompt();
+chk('at spawn the prompt offers to place a stake and shows Stakes 0/N', /Place stake here/.test(p0) && /Stakes 0\/\d+/.test(p0), p0);
+const ghost0 = Wp.A.dhNextBuildCell('mark');
+Wp.A.dhKey({code:'KeyE', repeat:false});
+Wp.A.dreamhouseUpdate(0.02);
+const p1 = Wp.A.dhActPrompt();
+const ghost1 = Wp.A.dhNextBuildCell('mark');
+const counts = Wp.A.dhJobCounts('mark');
+chk('after a stake the prompt and ghost move on and show progress', counts.have === 1 && /Stakes 1\//.test(p1) && !!(ghost1 && ghost0 && (ghost1.ix !== ghost0.ix || ghost1.iz !== ghost0.iz)), {p1, counts, ghost0, ghost1});
+Wp.A.dhToggleShop(true);
+Wp.A.dreamhouseUpdate(0.02);
+chk('opening the Shop hides the action prompt so Close stays clickable', Wp.A.dhActPrompt() === '' && Wp.A.dh.shopOpen === true, {prompt:Wp.A.dhActPrompt(), shop:Wp.A.dh.shopOpen});
+chk('Escape closes the open Shop instead of leaving it open', Wp.A.dhKey({code:'Escape', repeat:false}) === true && Wp.A.dh.shopOpen === false);
+Wp.A.dhToggleYard(true);
+chk('opening the Yard menu hides the action prompt', Wp.A.dhActPrompt() === '' && Wp.A.dh.yardOpen === true);
+chk('Escape closes the open Supply Yard menu', Wp.A.dhKey({code:'Escape', repeat:false}) === true && Wp.A.dh.yardOpen === false);
+Wp.A.dhToggleShop(true);
+chk('B key closes the open Shop', Wp.A.dhKey({code:'KeyB', repeat:false}) === true && Wp.A.dh.shopOpen === false);
+Wp.A.dhToggleYard(true);
+chk('controller Ⓑ closes the open Yard menu', Wp.A.dhPad({b:1}) === true && Wp.A.dh.yardOpen === false);
+const farX = Wp.P.x, farZ = Wp.P.z;
+Wp.P.x = 40; Wp.P.z = 28;
+Wp.A.dreamhouseUpdate(0.02);
+const pFar = Wp.A.dhActPrompt();
+chk('off the plot the prompt says to walk onto your plot, not to place a stake', /Walk onto your plot/i.test(pFar) && !/Place stake here/.test(pFar), pFar);
+Wp.P.x = farX; Wp.P.z = farZ;
 
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);

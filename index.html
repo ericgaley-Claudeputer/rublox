@@ -172,7 +172,7 @@ body.dark .sitem canvas{background:linear-gradient(#34427e,#26306a)}
 .obby{position:fixed;inset:0;z-index:45;display:none;background:#8fd3ff;user-select:none;-webkit-user-select:none}
 .obby.show{display:block}
 #obbyView,#obbyView canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
-.ohud{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;gap:10px;pointer-events:none;flex-wrap:wrap}
+.ohud{position:absolute;top:10px;left:10px;right:10px;z-index:16;display:flex;justify-content:space-between;gap:10px;pointer-events:none;flex-wrap:wrap}
 .ostats{display:flex;gap:8px;flex-wrap:wrap}
 .ostats>span,.obtns button{pointer-events:auto;background:rgba(255,255,255,.92);color:#1d2340;font-weight:900;font-size:17px;padding:8px 14px;border-radius:14px;box-shadow:0 4px 0 rgba(0,0,0,.18);display:flex;align-items:center;gap:6px}
 .obtns{display:flex;gap:8px}
@@ -461,7 +461,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .smode #oStam{display:none!important}
 .tdBox b{color:#8b5cf6}
 .dhnear{background:#2ec27e;box-shadow:0 4px 0 #1f9460}.dhnear small{color:#2ec27e}
-.dhbar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:6;width:min(96vw,820px);background:rgba(255,255,255,.94);border:3px solid #ffd23f;border-radius:16px;padding:6px 8px 8px;box-shadow:0 4px 0 rgba(0,0,0,.12);pointer-events:auto}
+.dhbar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:14;width:min(96vw,820px);background:rgba(255,255,255,.94);border:3px solid #ffd23f;border-radius:16px;padding:6px 8px 8px;box-shadow:0 4px 0 rgba(0,0,0,.12);pointer-events:auto}
 .dhtools,.dhcols,.dhparts{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:3px 0}
 .dhb,.dhp{border:2px solid #ffe08a;background:#fff;border-radius:10px;padding:4px 8px;font:inherit;font-weight:900;font-size:14px;color:#1d2340;cursor:pointer;min-height:40px}
 .dhp{display:flex;flex-direction:column;align-items:center;min-width:58px;line-height:1.1}
@@ -489,7 +489,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .dhguide{position:absolute;top:max(54px,calc(env(safe-area-inset-top) + 44px));left:50%;transform:translateX(-50%);z-index:9;background:rgba(29,35,64,.92);color:#fff;padding:10px 18px;border-radius:18px;font-weight:800;font-size:18px;display:none;align-items:center;gap:10px;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.25);white-space:nowrap}
 .dhguide.show{display:flex}
 .dhgarrow{display:inline-block;font-size:26px;color:#ffd23f;transform-origin:center center;line-height:1}
-.dhshop{position:absolute;inset:0;z-index:7;background:rgba(29,35,64,.4);display:flex;align-items:center;justify-content:center;pointer-events:auto}
+.dhshop{position:absolute;inset:0;z-index:12;background:rgba(29,35,64,.4);display:flex;align-items:center;justify-content:center;pointer-events:auto}
 .dhsbox{background:#fffaf0;border:3px solid #ffd23f;border-radius:20px;padding:14px 16px 16px;width:min(92vw,560px);max-height:min(84vh,640px);overflow:auto;box-shadow:0 8px 0 rgba(0,0,0,.12);color:#1d2340}
 .dhsbox h3{margin:0 0 6px;font-size:22px}
 .dhsbox h4{margin:12px 0 6px;font-size:16px}
@@ -864,7 +864,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 .musmode{flex:1;font-size:15px}
 .musmode.sel{background:#2ec27e;color:#fff;box-shadow:0 3px 0 #1f9460}
 .musnow{flex:1;text-align:center;line-height:1.2;min-width:0}
-.obby .opanel.show{z-index:8}   /* menus sit above HUD pieces like the pet goal banner */
+.obby .opanel.show{z-index:20}   /* menus sit above HUD pieces like the pet goal banner */
 #musSpot .spmsg{font-weight:800;font-size:14px;padding:8px 10px;border-radius:12px;background:rgba(255,190,11,.18);margin-top:8px;white-space:pre-line}
 #musSpot [hidden]{display:none!important}
 #musSpot .spnote{display:block;font-size:12px;opacity:.75;margin-top:6px}
@@ -1471,7 +1471,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-6';
+const BUILD = '2026.11.11-7';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -11632,7 +11632,7 @@ const Obby = (() => {
     {lL: -.2, lR: .4, aL: -1.6, aR: .3, lean: .05}, {lL: .5, lR: -.3, aL: .2, aR: -1.5, lean: -.05},
     {lL: -.4, lR: -.4, aL: -2.0, aR: -2.0, lean: 0}, {lL: .3, lR: .3, aL: -1.2, aR: 1.0, lean: .1}];
     return Object.assign({lLo: 0, lRo: 0, aLo: 0, aRo: 0}, poses[db.pose % 4]); }
-  /* ===================== t250u: 🏡 DREAM HOUSE BUILDERS — yard by the plot, clear spawn view, world bounds, shop stays put ===================== */
+  /* ===================== t251u: 🏡 DREAM HOUSE BUILDERS — menus hide the prompt, Escape closes shop, tidy yard, honest prompts ===================== */
   const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 4;
   const DH_FOOT = {x0: 1, z0: 1, x1: 6, z1: 6}; // slab footprint inside the plot
   const DH_BRICK_W = .5, DH_BRICK_H = .24, DH_BRICK_D = .28, DH_COURSES = 8;
@@ -12035,9 +12035,6 @@ const Obby = (() => {
       plat(p.x, .45, p.z, 1.4, 1.4, '#8a5a2b', .7);
       const crate = new THREE.Mesh(new THREE.BoxGeometry(1.1, .7, 1.1), col);
       crate.position.set(p.x, .85, p.z); scene.add(crate);
-      const lb = label(m.e + ' ' + m.name + ' · ' + m.cost + '🪙', 'rgba(29,35,64,.92)');
-      if (lb && lb.position) lb.position.set(p.x, 1.6, p.z);
-      if (lb) scene.add(lb);
       dh.bins.push({id: m.id, x: p.x, z: p.z, mesh: crate});
     });
   }
@@ -12335,6 +12332,19 @@ const Obby = (() => {
     if (job === 'mark' && !dhNextBuildCell('mark')) return '📍 The foundation is already staked';
     if (job === 'pour' && !dhNextBuildCell('pour')) return '🕳️ Dig the foundation forms first';
     return '';
+  }
+  function dhJobCounts(job){
+    if (!dh) return {have: 0, need: 0};
+    job = job || dh.job;
+    const plot = dh.mine, foot = dhFoot();
+    let need = 0, have = 0;
+    for (let ix = foot.x0; ix <= foot.x1; ix++) for (let iz = foot.z0; iz <= foot.z1; iz++){
+      need++;
+      if (job === 'mark'){ if (dhFootTaken(plot, ix, iz)) have++; }
+      else if (job === 'dig'){ if (dhHas(plot, 'trench', ix, iz) || dhHas(plot, 'wet', ix, iz) || dhHas(plot, 'slab', ix, iz)) have++; }
+      else if (job === 'pour'){ if (dhHas(plot, 'wet', ix, iz) || dhHas(plot, 'slab', ix, iz)) have++; }
+    }
+    return {have, need};
   }
   function dhNearYard(){
     if (!dh) return false;
@@ -12974,6 +12984,40 @@ const Obby = (() => {
     dhSetFade(0); dhSay('');
     dh = null;
   }
+  function dhActPrompt(){
+    if (!dh) return '';
+    if (dh.intro || dh.shopOpen || dh.yardOpen) return '';
+    const key = (typeof pad !== 'undefined' && pad && pad.on) ? 'Ⓧ' : (typeof touchUI !== 'undefined' && touchUI ? 'tap' : 'E');
+    const mxn = dhNearMixer(), pile = dhNearPile();
+    const onLot = dhNearOwnPlot();
+    const ghostJob = (onLot && (dh.job === 'mark' || dh.job === 'dig' || dh.job === 'pour')) ? dhNextBuildCell(dh.job) : null;
+    const prog = (job, word) => {
+      const c = dhJobCounts(job);
+      return c.need ? (' · ' + word + ' ' + c.have + '/' + c.need) : '';
+    };
+    if (dh.near >= 0 && dh.near !== dh.mine) return '💛 Like this house';
+    if (mxn && dh.carry && (dh.carry.id === 'cement' || dh.carry.id === 'sand')) return '🪨 Load the mixer';
+    if (mxn && mxn.phase === 'mixing') return '🌀 Mixing…';
+    if (mxn && ((mxn.cement|0) >= 1 && (mxn.sand|0) >= 1)) return '🌀 Mix concrete';
+    if (mxn && (mxn.mixed|0) >= 1) return '🪣 Fill wheelbarrow';
+    if (dh.carry && dh.carry.id === 'wetmix' && onLot) return '🪣 Pour the form' + prog('pour', 'Forms');
+    if (dh.carry && dh.carry.id === 'brick' && onLot) return '🧱 Lay a brick';
+    if (dh.carry && dh.carry.id === 'glass' && onLot) return '🪟 Install glass';
+    if (pile && !dh.carry) return '📦 Pick up materials';
+    if (dh.carry && pile && dh.carry.id !== 'wetmix') return '📦 Dump on your plot';
+    if (dhNearYard()) return key + ': Open the Supply Yard';
+    if (!onLot) return '🏡 Walk onto your plot';
+    if (ghostJob && dh.job === 'mark') return key + ': Place stake here' + prog('mark', 'Stakes');
+    if (ghostJob && dh.job === 'dig') return key + ': Dig the form here' + prog('dig', 'Forms');
+    if (ghostJob && dh.job === 'pour' && dh.carry && dh.carry.id === 'wetmix') return key + ': Pour concrete here' + prog('pour', 'Forms');
+    const why = dhWhyNot();
+    if (why) return why;
+    if (dhCanBuild(dh.aim) || onLot){
+      const labels = {mark: key + ': Place stake here' + prog('mark', 'Stakes'), dig: key + ': Dig the form here' + prog('dig', 'Forms'), pour: key + ': Pour concrete here' + prog('pour', 'Forms'), brick:'🧱 Lay a brick', stud:'🪵 Set a stud', rafter:'🪜 Set a rafter', shingle:'🏠 Nail a shingle', frame:'🚪 Fit a frame', glass:'🪟 Install glass', paint:'🎨 Paint', furn:'🛋️ Place furniture'};
+      return labels[dh.job] || '🏗️ Build';
+    }
+    return '';
+  }
   function dhCamComfort(dt){
     if (typeof cam === 'undefined' || !cam) return;
     dt = dt || .016;
@@ -13003,7 +13047,7 @@ const Obby = (() => {
     }
     const ghostAt = (dh.job === 'mark' || dh.job === 'dig' || dh.job === 'pour') ? dhNextBuildCell(dh.job) : (dhCanBuild(dh.aim) ? dh.aim : dhNextBuildCell(dh.job));
     if (dh.ghost){
-      const ok = !!(ghostAt && ghostAt.plot === dh.mine);
+      const ok = !!(ghostAt && ghostAt.plot === dh.mine && dhNearOwnPlot());
       dh.ghost.visible = ok && !dh.yardOpen && !dh.shopOpen;
       if (ok){
         const w = dhCellWorld(ghostAt.plot, ghostAt.ix, ghostAt.iz, .08);
@@ -13022,30 +13066,9 @@ const Obby = (() => {
     dh.near = dhPlotAt(P.x, P.z);
     const b = $('#dhAct');
     if (b){
+      const txt = dhActPrompt();
       const key = (typeof pad !== 'undefined' && pad && pad.on) ? 'Ⓧ' : (typeof touchUI !== 'undefined' && touchUI ? 'tap' : 'E');
-      let txt = '';
-      const mxn = dhNearMixer(), pile = dhNearPile();
-      const ghostJob = (dh.job === 'mark' || dh.job === 'dig' || dh.job === 'pour') ? dhNextBuildCell(dh.job) : null;
-      if (dh.near >= 0 && dh.near !== dh.mine) txt = '💛 Like this house';
-      else if (mxn && dh.carry && (dh.carry.id === 'cement' || dh.carry.id === 'sand')) txt = '🪨 Load the mixer';
-      else if (mxn && mxn.phase === 'mixing') txt = '🌀 Mixing…';
-      else if (mxn && ((mxn.cement|0) >= 1 && (mxn.sand|0) >= 1)) txt = '🌀 Mix concrete';
-      else if (mxn && (mxn.mixed|0) >= 1) txt = '🪣 Fill wheelbarrow';
-      else if (dh.carry && dh.carry.id === 'wetmix') txt = '🪣 Pour the form';
-      else if (dh.carry && dh.carry.id === 'brick') txt = '🧱 Lay a brick';
-      else if (dh.carry && dh.carry.id === 'glass') txt = '🪟 Install glass';
-      else if (pile && !dh.carry) txt = '📦 Pick up materials';
-      else if (dh.carry && pile && dh.carry.id !== 'wetmix') txt = '📦 Dump on your plot';
-      else if (dhNearYard()) txt = key + ': Open the Supply Yard';
-      else if (ghostJob && dh.job === 'mark') txt = key + ': Place stake here';
-      else if (ghostJob && dh.job === 'dig') txt = key + ': Dig the form here';
-      else if (ghostJob && dh.job === 'pour' && dh.carry && dh.carry.id === 'wetmix') txt = key + ': Pour concrete here';
-      else if (dhWhyNot()) txt = dhWhyNot();
-      else if (dhCanBuild(dh.aim) || dhNearOwnPlot()){
-        const labels = {mark: key + ': Place stake here', dig: key + ': Dig the form here', pour: key + ': Pour concrete here', brick:'🧱 Lay a brick', stud:'🪵 Set a stud', rafter:'🪜 Set a rafter', shingle:'🏠 Nail a shingle', frame:'🚪 Fit a frame', glass:'🪟 Install glass', paint:'🎨 Paint', furn:'🛋️ Place furniture'};
-        txt = labels[dh.job] || '🏗️ Build';
-      }
-      if (txt){ b.innerHTML = txt + ' <small>' + key + '</small>'; b.classList.add('show'); } else b.classList.remove('show');
+      if (txt){ b.innerHTML = txt + ' <small>' + key + '</small>'; b.classList.add('show'); b.style.display = ''; } else { b.classList.remove('show'); b.style.display = 'none'; b.innerHTML = ''; }
     }
     dh.saveT = (dh.saveT || 0) + dt; if (dh.saveT > 8){ dh.saveT = 0; dhSave(); }
     dhHud();
@@ -13569,6 +13592,7 @@ const Obby = (() => {
       if (mode === 'icecream' && ic && ic.panel >= 0 && e.code === 'Escape' && !e.repeat){ icPanel(-1); return; }
       if (mode === 'stable' && sb && sb.panel && e.code === 'Escape' && !e.repeat){ sbShowPick(false); return; }
       if (mode === 'photostudio' && psx && (psx.cam || psx.gal) && e.code === 'Escape' && !e.repeat && psKey(e)) return;
+      if (mode === 'dreamhouse' && dh && (dh.shopOpen || dh.yardOpen) && (e.code === 'Escape' || e.code === 'KeyB') && !e.repeat){ dhKey(e); return; }
       if (e.code === 'Escape' || e.code === 'KeyP'){ if (e.code === 'Escape' && performance.now() - fp.unlockT < 400) return; if (!won && !over && !choosing) setPause(!(paused || menuOpen)); return; }
       if (mode === 'fashion' && fs && fs.ph === 'walk' && /^Digit[1-7]$/.test(e.code) && fsKey(e)) return;
       if (mode === 'dreamhouse' && dh && dhKey(e)) return;

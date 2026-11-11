@@ -1,4 +1,4 @@
-  /* ===================== t250u: 🏡 DREAM HOUSE BUILDERS — yard by the plot, clear spawn view, world bounds, shop stays put ===================== */
+  /* ===================== t251u: 🏡 DREAM HOUSE BUILDERS — menus hide the prompt, Escape closes shop, tidy yard, honest prompts ===================== */
   const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 4;
   const DH_FOOT = {x0: 1, z0: 1, x1: 6, z1: 6}; // slab footprint inside the plot
   const DH_BRICK_W = .5, DH_BRICK_H = .24, DH_BRICK_D = .28, DH_COURSES = 8;
@@ -401,9 +401,6 @@
       plat(p.x, .45, p.z, 1.4, 1.4, '#8a5a2b', .7);
       const crate = new THREE.Mesh(new THREE.BoxGeometry(1.1, .7, 1.1), col);
       crate.position.set(p.x, .85, p.z); scene.add(crate);
-      const lb = label(m.e + ' ' + m.name + ' · ' + m.cost + '🪙', 'rgba(29,35,64,.92)');
-      if (lb && lb.position) lb.position.set(p.x, 1.6, p.z);
-      if (lb) scene.add(lb);
       dh.bins.push({id: m.id, x: p.x, z: p.z, mesh: crate});
     });
   }
@@ -701,6 +698,19 @@
     if (job === 'mark' && !dhNextBuildCell('mark')) return '📍 The foundation is already staked';
     if (job === 'pour' && !dhNextBuildCell('pour')) return '🕳️ Dig the foundation forms first';
     return '';
+  }
+  function dhJobCounts(job){
+    if (!dh) return {have: 0, need: 0};
+    job = job || dh.job;
+    const plot = dh.mine, foot = dhFoot();
+    let need = 0, have = 0;
+    for (let ix = foot.x0; ix <= foot.x1; ix++) for (let iz = foot.z0; iz <= foot.z1; iz++){
+      need++;
+      if (job === 'mark'){ if (dhFootTaken(plot, ix, iz)) have++; }
+      else if (job === 'dig'){ if (dhHas(plot, 'trench', ix, iz) || dhHas(plot, 'wet', ix, iz) || dhHas(plot, 'slab', ix, iz)) have++; }
+      else if (job === 'pour'){ if (dhHas(plot, 'wet', ix, iz) || dhHas(plot, 'slab', ix, iz)) have++; }
+    }
+    return {have, need};
   }
   function dhNearYard(){
     if (!dh) return false;
@@ -1340,6 +1350,40 @@
     dhSetFade(0); dhSay('');
     dh = null;
   }
+  function dhActPrompt(){
+    if (!dh) return '';
+    if (dh.intro || dh.shopOpen || dh.yardOpen) return '';
+    const key = (typeof pad !== 'undefined' && pad && pad.on) ? 'Ⓧ' : (typeof touchUI !== 'undefined' && touchUI ? 'tap' : 'E');
+    const mxn = dhNearMixer(), pile = dhNearPile();
+    const onLot = dhNearOwnPlot();
+    const ghostJob = (onLot && (dh.job === 'mark' || dh.job === 'dig' || dh.job === 'pour')) ? dhNextBuildCell(dh.job) : null;
+    const prog = (job, word) => {
+      const c = dhJobCounts(job);
+      return c.need ? (' · ' + word + ' ' + c.have + '/' + c.need) : '';
+    };
+    if (dh.near >= 0 && dh.near !== dh.mine) return '💛 Like this house';
+    if (mxn && dh.carry && (dh.carry.id === 'cement' || dh.carry.id === 'sand')) return '🪨 Load the mixer';
+    if (mxn && mxn.phase === 'mixing') return '🌀 Mixing…';
+    if (mxn && ((mxn.cement|0) >= 1 && (mxn.sand|0) >= 1)) return '🌀 Mix concrete';
+    if (mxn && (mxn.mixed|0) >= 1) return '🪣 Fill wheelbarrow';
+    if (dh.carry && dh.carry.id === 'wetmix' && onLot) return '🪣 Pour the form' + prog('pour', 'Forms');
+    if (dh.carry && dh.carry.id === 'brick' && onLot) return '🧱 Lay a brick';
+    if (dh.carry && dh.carry.id === 'glass' && onLot) return '🪟 Install glass';
+    if (pile && !dh.carry) return '📦 Pick up materials';
+    if (dh.carry && pile && dh.carry.id !== 'wetmix') return '📦 Dump on your plot';
+    if (dhNearYard()) return key + ': Open the Supply Yard';
+    if (!onLot) return '🏡 Walk onto your plot';
+    if (ghostJob && dh.job === 'mark') return key + ': Place stake here' + prog('mark', 'Stakes');
+    if (ghostJob && dh.job === 'dig') return key + ': Dig the form here' + prog('dig', 'Forms');
+    if (ghostJob && dh.job === 'pour' && dh.carry && dh.carry.id === 'wetmix') return key + ': Pour concrete here' + prog('pour', 'Forms');
+    const why = dhWhyNot();
+    if (why) return why;
+    if (dhCanBuild(dh.aim) || onLot){
+      const labels = {mark: key + ': Place stake here' + prog('mark', 'Stakes'), dig: key + ': Dig the form here' + prog('dig', 'Forms'), pour: key + ': Pour concrete here' + prog('pour', 'Forms'), brick:'🧱 Lay a brick', stud:'🪵 Set a stud', rafter:'🪜 Set a rafter', shingle:'🏠 Nail a shingle', frame:'🚪 Fit a frame', glass:'🪟 Install glass', paint:'🎨 Paint', furn:'🛋️ Place furniture'};
+      return labels[dh.job] || '🏗️ Build';
+    }
+    return '';
+  }
   function dhCamComfort(dt){
     if (typeof cam === 'undefined' || !cam) return;
     dt = dt || .016;
@@ -1369,7 +1413,7 @@
     }
     const ghostAt = (dh.job === 'mark' || dh.job === 'dig' || dh.job === 'pour') ? dhNextBuildCell(dh.job) : (dhCanBuild(dh.aim) ? dh.aim : dhNextBuildCell(dh.job));
     if (dh.ghost){
-      const ok = !!(ghostAt && ghostAt.plot === dh.mine);
+      const ok = !!(ghostAt && ghostAt.plot === dh.mine && dhNearOwnPlot());
       dh.ghost.visible = ok && !dh.yardOpen && !dh.shopOpen;
       if (ok){
         const w = dhCellWorld(ghostAt.plot, ghostAt.ix, ghostAt.iz, .08);
@@ -1388,30 +1432,9 @@
     dh.near = dhPlotAt(P.x, P.z);
     const b = $('#dhAct');
     if (b){
+      const txt = dhActPrompt();
       const key = (typeof pad !== 'undefined' && pad && pad.on) ? 'Ⓧ' : (typeof touchUI !== 'undefined' && touchUI ? 'tap' : 'E');
-      let txt = '';
-      const mxn = dhNearMixer(), pile = dhNearPile();
-      const ghostJob = (dh.job === 'mark' || dh.job === 'dig' || dh.job === 'pour') ? dhNextBuildCell(dh.job) : null;
-      if (dh.near >= 0 && dh.near !== dh.mine) txt = '💛 Like this house';
-      else if (mxn && dh.carry && (dh.carry.id === 'cement' || dh.carry.id === 'sand')) txt = '🪨 Load the mixer';
-      else if (mxn && mxn.phase === 'mixing') txt = '🌀 Mixing…';
-      else if (mxn && ((mxn.cement|0) >= 1 && (mxn.sand|0) >= 1)) txt = '🌀 Mix concrete';
-      else if (mxn && (mxn.mixed|0) >= 1) txt = '🪣 Fill wheelbarrow';
-      else if (dh.carry && dh.carry.id === 'wetmix') txt = '🪣 Pour the form';
-      else if (dh.carry && dh.carry.id === 'brick') txt = '🧱 Lay a brick';
-      else if (dh.carry && dh.carry.id === 'glass') txt = '🪟 Install glass';
-      else if (pile && !dh.carry) txt = '📦 Pick up materials';
-      else if (dh.carry && pile && dh.carry.id !== 'wetmix') txt = '📦 Dump on your plot';
-      else if (dhNearYard()) txt = key + ': Open the Supply Yard';
-      else if (ghostJob && dh.job === 'mark') txt = key + ': Place stake here';
-      else if (ghostJob && dh.job === 'dig') txt = key + ': Dig the form here';
-      else if (ghostJob && dh.job === 'pour' && dh.carry && dh.carry.id === 'wetmix') txt = key + ': Pour concrete here';
-      else if (dhWhyNot()) txt = dhWhyNot();
-      else if (dhCanBuild(dh.aim) || dhNearOwnPlot()){
-        const labels = {mark: key + ': Place stake here', dig: key + ': Dig the form here', pour: key + ': Pour concrete here', brick:'🧱 Lay a brick', stud:'🪵 Set a stud', rafter:'🪜 Set a rafter', shingle:'🏠 Nail a shingle', frame:'🚪 Fit a frame', glass:'🪟 Install glass', paint:'🎨 Paint', furn:'🛋️ Place furniture'};
-        txt = labels[dh.job] || '🏗️ Build';
-      }
-      if (txt){ b.innerHTML = txt + ' <small>' + key + '</small>'; b.classList.add('show'); } else b.classList.remove('show');
+      if (txt){ b.innerHTML = txt + ' <small>' + key + '</small>'; b.classList.add('show'); b.style.display = ''; } else { b.classList.remove('show'); b.style.display = 'none'; b.innerHTML = ''; }
     }
     dh.saveT = (dh.saveT || 0) + dt; if (dh.saveT > 8){ dh.saveT = 0; dhSave(); }
     dhHud();
