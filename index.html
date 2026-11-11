@@ -460,6 +460,16 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .rmode #oEmoBtn,.rmode #oRun,.rmode #oStam{display:none!important}
 .smode #oStam{display:none!important}
 .tdBox b{color:#8b5cf6}
+.dhnear{background:#2ec27e;box-shadow:0 4px 0 #1f9460}.dhnear small{color:#2ec27e}
+.dhbar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:6;width:min(96vw,820px);background:rgba(255,255,255,.94);border:3px solid #ffd23f;border-radius:16px;padding:6px 8px 8px;box-shadow:0 4px 0 rgba(0,0,0,.12);pointer-events:auto}
+.dhtools,.dhcols,.dhparts{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:3px 0}
+.dhb,.dhp{border:2px solid #ffe08a;background:#fff;border-radius:10px;padding:4px 8px;font:inherit;font-weight:900;font-size:14px;color:#1d2340;cursor:pointer;min-height:40px}
+.dhp{display:flex;flex-direction:column;align-items:center;min-width:58px;line-height:1.1}
+.dhp small{font-size:9px;color:#6b7290}
+.dhb.on,.dhp.on{border-color:#2ec27e;background:#eafaf0;box-shadow:0 0 0 2px #2ec27e}
+.dhc{width:22px;height:22px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px #cfc4a8;cursor:pointer;padding:0}
+.dhc.on{box-shadow:0 0 0 3px #1d2340}
+@media (max-width:760px),(max-height:520px){.dhbar{bottom:max(8px,env(safe-area-inset-bottom));padding:4px}.dhb,.dhp{font-size:12px;min-height:36px;min-width:48px;padding:3px 5px}.touchui .dhbar{bottom:max(118px,calc(env(safe-area-inset-bottom) + 96px))}}
 .dblane{position:absolute;left:50%;bottom:110px;transform:translateX(-50%);width:min(280px,70vw);height:42vh;z-index:6;pointer-events:none;display:flex;justify-content:center;background:linear-gradient(180deg,rgba(29,35,64,.1),rgba(29,35,64,.55));border:3px solid rgba(255,111,181,.5);border-radius:16px;overflow:hidden}
 .dbhit{position:absolute;left:50%;bottom:10%;transform:translateX(-50%);font-size:22px;color:#ffd23f;text-shadow:0 2px 0 #000}
 .dbnote{position:absolute;left:50%;transform:translateX(-50%);width:48px;height:48px;border-radius:12px;background:#fff;color:#1d2340;font-weight:900;font-size:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 rgba(0,0,0,.25)}
@@ -1030,6 +1040,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   <div class="ohud">
     <div class="ostats">
       <span id="oStageBox">🏁 Lv <b id="oLvl">1</b><span id="oCpWrap"> · 🚩 <b id="oStage">1</b>/<b id="oStageN">3</b></span></span>
+      <span id="dhBox" style="display:none">🏡 <b id="dhN">🪙 0</b> · <b id="dhStory">1F</b> <b id="dhTool">🏗️</b></span>
       <span id="dbBox" style="display:none"><b id="dbN">💃 Dance</b></span>
       <span id="hmBox" style="display:none"><b id="hmN">👻 Escape</b></span>
       <span id="sbBox" style="display:none"><b id="sbN">🐴 Stable</b></span>
@@ -1191,6 +1202,8 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   <div class="pflash" id="pFlash"></div>
   <div class="fsbuild" id="fsBuild" aria-hidden="true"></div>
   <div class="ictoast" id="icToast"></div>
+  <button class="fsnear dhnear" id="dhAct"></button>
+  <div class="dhbar" id="dhBar" style="display:none"></div>
   <div class="dblane" id="dbLane" style="display:none"></div>
   <button class="fsnear hmnear" id="hmAct"></button>
   <button class="fsnear sbnear" id="sbAct"></button>
@@ -1418,7 +1431,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.09-24';
+const BUILD = '2026.11.11-1';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2133,6 +2146,7 @@ $('#saveAv').onclick = () => {
 
 /* ---------- games ---------- */
 const GAMES = [
+  {id:'dreamhouse', name:'Dream House Builders', emoji:'🏡', tag:'Claim a plot, snap walls, roofs and furniture into your dream house!', draw: drawDreamHouse, playable: true, isNew: true},
   {id:'dance', name:'Bossa Beat Dance Battle', emoji:'💃', tag:'Hit the arrows to original bossa beats — dance-off with friends!', draw: drawDance, playable: true, isNew: true},
   {id:'haunt', name:'Giggle Manor Escape', emoji:'👻', tag:'Friendly ghosts, puzzle rooms, escape before the timer!', draw: drawHaunt, playable: true, isNew: true},
   {id:'stable', name:'Clover Meadow Stables', emoji:'🐴', tag:'Adopt a pony, brush & feed it, ride the meadow, and enter jumping shows!', draw: drawStable, playable: true, isNew: true},
@@ -2203,6 +2217,17 @@ function drawLava(ctx){
   for (let x = 0; x <= 320; x += 10) ctx.lineTo(x, 150 + Math.sin(x/22 + t)*6);
   ctx.lineTo(320, 200); ctx.fill();
   ctx.fillStyle = '#ffd23f'; for (let i = 0; i < 8; i++){ ctx.fillRect((i*47 + t*20) % 320, 168 + (i%3)*8, 8, 8); }
+}
+function drawDreamHouse(ctx){
+  sky(ctx, '#9fd8ff', '#fff6d8');
+  ctx.fillStyle = '#8fd39a'; ctx.fillRect(0, 150, 320, 50);
+  ctx.fillStyle = '#cfc4a8'; ctx.fillRect(0, 165, 320, 12);
+  ctx.fillStyle = '#f6e3b4'; ctx.fillRect(110, 100, 100, 60);
+  ctx.fillStyle = '#ff9f6b'; ctx.beginPath(); ctx.moveTo(100, 100); ctx.lineTo(160, 60); ctx.lineTo(220, 100); ctx.fill();
+  ctx.fillStyle = '#8b4513'; ctx.fillRect(150, 128, 22, 32);
+  ctx.fillStyle = '#bfe9ff'; ctx.fillRect(122, 112, 22, 18); ctx.fillRect(176, 112, 22, 18);
+  guy(ctx, 70, 168, 11, '#ff6fb5'); guy(ctx, 240, 168, 11, '#3a86ff');
+  ctx.font = '22px sans-serif'; ctx.fillText('🏡', 40, 70); ctx.fillText('🪙', 260, 80);
 }
 function drawDance(ctx){
   sky(ctx, '#1d2340', '#5b34c0');
@@ -3479,8 +3504,8 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; sb = null; hm = null; db = null;
-    if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; sb = null; hm = null; db = null; dh = null;
+    if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -4416,7 +4441,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') && B.onGround && up > 0 && up <= .62){ B.y = p.y + b.hh; continue; } // walk up low steps (ramps)
       if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
       else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
     }
@@ -4486,7 +4511,7 @@ const Obby = (() => {
     if (mode === 'lava') return lavaChecks();
     if (mode === 'splash') return splashChecks();
     if (mode === 'nds') return ndsChecks();
-    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -5037,6 +5062,7 @@ const Obby = (() => {
       if (running && dsp && !dsp.remote && mode === 'splash') msg.sp = splashWire();
       if (running && hs && !hs.remote && mode === 'hide') msg.hs = hideWire();
       if (running && fs && !fs.remote && mode === 'fashion') msg.fs = fashionWire();
+      if (running && dh && mode === 'dreamhouse') msg.dh = dhWire();
       if (running && bk && !bk.remote && mode === 'bakery') msg.bk = bakeryWire();
       if (running && ic && !ic.remote && mode === 'icecream') msg.ic = iceCreamWire();
       if (running && wp && mp.host && mode === 'waterpark') msg.wp = waterparkWire();
@@ -5151,6 +5177,7 @@ const Obby = (() => {
     else if (d.t === 'racefin') raceGuestFin(g, d);
     else if (d.t === 'splashev') splashGuestEv(g, d);
     else if (d.t === 'fsfit' || d.t === 'fsready' || d.t === 'fspose' || d.t === 'fsrate') fsGuestMsg(g, d);
+    else if (d.t === 'dhact') dhGuestMsg(g, d);
     else if (d.t === 'bkact') bkGuestMsg(g, d);
     else if (d.t === 'wpprog') wpGuestMsg(g, d);
     else if (d.t === 'icact') icGuestMsg(g, d);
@@ -5217,6 +5244,7 @@ const Obby = (() => {
     if (d.sp) splashFromHost(d.sp);
     if (d.hs) hideFromHost(d.hs);
     if (d.fs) fashionFromHost(d.fs);
+    if (d.dh) dhFromHost(d.dh);
     if (d.bk) bakeryFromHost(d.bk);
     if (d.ic) iceCreamFromHost(d.ic);
     if (d.wp) waterparkFromHost(d.wp);
@@ -11559,6 +11587,436 @@ const Obby = (() => {
     {lL: -.2, lR: .4, aL: -1.6, aR: .3, lean: .05}, {lL: .5, lR: -.3, aL: .2, aR: -1.5, lean: -.05},
     {lL: -.4, lR: -.4, aL: -2.0, aR: -2.0, lean: 0}, {lL: .3, lR: .3, aL: -1.2, aR: 1.0, lean: .1}];
     return Object.assign({lLo: 0, lRo: 0, aLo: 0, aRo: 0}, poses[db.pose % 4]); }
+  /* ===================== t242u: 🏡 DREAM HOUSE BUILDERS — own plot, grid-snap house building ===================== */
+  const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 80;
+  const DH_COLORS = ['#f6e3b4', '#ffb3c7', '#bfe3ff', '#c8f0c0', '#ffe08a', '#c39bff', '#ff9f6b', '#fffaf0', '#d4a574', '#7fd6ff'];
+  const DH_PARTS = [
+    {id: 'floor',  e: '🟫', name: 'Floor',  cost: 2,  kind: 'floor'},
+    {id: 'wall',   e: '🧱', name: 'Wall',   cost: 3,  kind: 'wall'},
+    {id: 'door',   e: '🚪', name: 'Door',   cost: 6,  kind: 'wall'},
+    {id: 'window', e: '🪟', name: 'Window', cost: 5,  kind: 'wall'},
+    {id: 'stairs', e: '🪜', name: 'Stairs', cost: 8,  kind: 'wall'},
+    {id: 'roof',   e: '🏠', name: 'Roof',   cost: 4,  kind: 'roof'},
+    {id: 'sofa',   e: '🛋️', name: 'Sofa',   cost: 10, kind: 'furn'},
+    {id: 'bed',    e: '🛏️', name: 'Bed',    cost: 12, kind: 'furn'},
+    {id: 'table',  e: '🪑', name: 'Table',  cost: 8,  kind: 'furn'},
+    {id: 'lamp',   e: '💡', name: 'Lamp',   cost: 6,  kind: 'furn'},
+    {id: 'plant',  e: '🪴', name: 'Plant',  cost: 4,  kind: 'furn'},
+    {id: 'rug',    e: '🧶', name: 'Rug',    cost: 5,  kind: 'floor'}
+  ];
+  const DH_GOALS = [
+    {id: 'floors',   name: 'Lay a floor',        need: p => dhCount(p, 'floor') >= 6,  pay: 15},
+    {id: 'walls',    name: 'Raise the walls',    need: p => dhCount(p, 'wall') >= 8,   pay: 20},
+    {id: 'door',     name: 'Hang a front door',  need: p => dhCount(p, 'door') >= 1,   pay: 15},
+    {id: 'roof',     name: 'Put a roof on it',   need: p => dhCount(p, 'roof') >= 6,   pay: 25},
+    {id: 'furnish',  name: 'Furnish a room',     need: p => dhCountKind(p, 'furn') >= 3, pay: 30},
+    {id: 'upstairs', name: 'Build a 2nd story',  need: p => p.some(x => x[2] >= 3) && dhCount(p, 'stairs') >= 1, pay: 40},
+    {id: 'open',     name: 'Open house day',     need: p => dhCount(p, 'door') >= 1 && dhCount(p, 'roof') >= 4 && dhCountKind(p, 'furn') >= 2, pay: 50}
+  ];
+  let dh = null;
+  function dhProg(){
+    const o = load(DH_KEY, null), r = o && typeof o === 'object' ? o : {};
+    const pieces = Array.isArray(r.pieces) ? r.pieces.filter(a => Array.isArray(a) && a.length >= 4) : [];
+    const goals = r.goals && typeof r.goals === 'object' ? r.goals : {};
+    return {pieces, goals, coins: Math.max(0, +r.coins || 0), likes: Math.max(0, r.likes | 0), granted: !!r.granted};
+  }
+  function dhSave(extra){
+    if (!dh) return;
+    const p = dhProg();
+    p.pieces = dhSerialize(dh.mine);
+    p.goals = dh.goals;
+    p.coins = dh.bank;
+    p.likes = dh.likes | 0;
+    p.granted = true;
+    if (extra) Object.assign(p, extra);
+    save(DH_KEY, p);
+  }
+  function dhWho(){ return (typeof mp !== 'undefined' && mp && mp.on && mp.uid) ? String(mp.uid) : 'local'; }
+  function dhIsGuest(){ return !!(typeof mp !== 'undefined' && mp && mp.on && typeof mpGuest === 'function' && mpGuest()); }
+  function dhOrigin(plot){ return [(plot - 1.5) * DH_SPACING, -DH_N * DH_CELL / 2]; }
+  function dhCellWorld(plot, ix, iy, iz){
+    const [ox, oz] = dhOrigin(plot);
+    const story = Math.floor(iy / 3), typ = iy % 3;
+    const y0 = story * 2.3;
+    const y = typ === 0 ? y0 + .12 : typ === 1 ? y0 + 1.15 : y0 + 2.2;
+    return {x: ox + (ix + .5) * DH_CELL, y, z: oz + (iz + .5) * DH_CELL, story, typ};
+  }
+  function dhPlotAt(x, z){
+    for (let i = 0; i < DH_PLOTS; i++){
+      const [ox, oz] = dhOrigin(i);
+      if (x >= ox && x < ox + DH_N * DH_CELL && z >= oz && z < oz + DH_N * DH_CELL) return i;
+    }
+    return -1;
+  }
+  function dhCount(pieces, id){ return (pieces || []).filter(a => DH_PARTS[a[0]] && DH_PARTS[a[0]].id === id).length; }
+  function dhCountKind(pieces, kind){ return (pieces || []).filter(a => DH_PARTS[a[0]] && DH_PARTS[a[0]].kind === kind).length; }
+  function dhPart(id){ return DH_PARTS.find(p => p.id === id) || DH_PARTS[0]; }
+  function dhKeyOf(ix, iy, iz){ return ix + ',' + iy + ',' + iz; }
+  function dhMat(col, opts){ return new THREE.MeshLambertMaterial(Object.assign({color: col}, opts || {})); }
+  function dhTint(i){ return DH_COLORS[((i | 0) % DH_COLORS.length + DH_COLORS.length) % DH_COLORS.length]; }
+
+  function dhMeshFor(rec, plot){
+    const part = DH_PARTS[rec[0]] || DH_PARTS[0], col = dhTint(rec[5] | 0), g = new THREE.Group();
+    const rot = (rec[4] | 0) % 4, w = dhCellWorld(plot, rec[1], rec[2], rec[3]);
+    g.position.set(w.x, w.y, w.z); g.rotation.y = rot * Math.PI / 2;
+    const coat = dhMat(col), dark = dhMat('#5a4030'), glass = dhMat('#bfe9ff', {transparent: true, opacity: .45, depthWrite: false});
+    const add = (mesh, x, y, z) => { mesh.position.set(x || 0, y || 0, z || 0); g.add(mesh); return mesh; };
+    const box = (sx, sy, sz, mat) => new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat || coat);
+    let solidsLocal = [];
+    const solid = (sx, sy, sz, lx, ly, lz, mat) => {
+      const m = add(box(sx, sy, sz, mat), lx, ly, lz);
+      solidsLocal.push({mesh: m, hw: sx / 2, hh: sy / 2, hd: sz / 2, ox: lx || 0, oy: ly || 0, oz: lz || 0});
+      return m;
+    };
+    const id = part.id;
+    if (id === 'floor'){ solid(DH_CELL, .18, DH_CELL, 0, 0, 0); }
+    else if (id === 'rug'){ add(box(DH_CELL * .9, .04, DH_CELL * .7, dhMat(col)), 0, .1, 0); }
+    else if (id === 'wall'){ solid(DH_CELL, 2.1, .22, 0, 0, DH_CELL * .35); }
+    else if (id === 'door'){
+      solid(.28, 2.0, .22, -DH_CELL * .35, 0, DH_CELL * .35);
+      solid(.28, 2.0, .22, DH_CELL * .35, 0, DH_CELL * .35);
+      add(box(DH_CELL * .9, .22, .22), 0, .95, DH_CELL * .35);
+      add(box(.55, 1.55, .08, dhMat('#8b4513')), 0, -.15, DH_CELL * .35);
+    }
+    else if (id === 'window'){
+      solid(DH_CELL, .4, .22, 0, -.75, DH_CELL * .35);
+      solid(DH_CELL, .4, .22, 0, .85, DH_CELL * .35);
+      solid(.2, 1.3, .22, -DH_CELL * .4, .05, DH_CELL * .35);
+      solid(.2, 1.3, .22, DH_CELL * .4, .05, DH_CELL * .35);
+      add(box(DH_CELL * .7, 1.1, .08, glass), 0, .05, DH_CELL * .35);
+    }
+    else if (id === 'stairs'){
+      for (let s = 0; s < 4; s++) solid(DH_CELL * .7, .28, .4, 0, -.7 + s * .5, .5 - s * .35);
+    }
+    else if (id === 'roof'){
+      const r = box(DH_CELL * 1.15, .22, DH_CELL * 1.15); r.rotation.x = .45; add(r, 0, .1, 0); solidsLocal.push({mesh: r, hw: DH_CELL / 2, hh: .2, hd: DH_CELL / 2, ox: 0, oy: .1, oz: 0});
+    }
+    else if (id === 'sofa'){
+      solid(.95, .32, .5, 0, -.2, 0); add(box(.95, .35, .16), 0, .08, -.22); add(box(.14, .35, .5), -.42, .08, 0); add(box(.14, .35, .5), .42, .08, 0);
+    }
+    else if (id === 'bed'){
+      solid(1.1, .28, .7, 0, -.25, 0, dhMat('#fffaf0')); add(box(.4, .18, .68, dhMat('#ffe0ef')), 0, -.02, .28);
+    }
+    else if (id === 'table'){
+      add(box(.7, .08, .7), 0, .1, 0); [[-.28, -.28], [.28, -.28], [-.28, .28], [.28, .28]].forEach(([x, z]) => add(box(.08, .42, .08, dark), x, -.15, z));
+      solidsLocal.push({mesh: g, hw: .35, hh: .3, hd: .35, ox: 0, oy: 0, oz: 0});
+    }
+    else if (id === 'lamp'){
+      add(box(.12, .7, .12, dark), 0, -.1, 0); add(new THREE.Mesh(new THREE.SphereGeometry(.16, 10, 8), dhMat('#ffe08a', {emissive: '#ffe08a', emissiveIntensity: .4})), 0, .35, 0);
+    }
+    else if (id === 'plant'){
+      add(box(.22, .16, .22, dark), 0, -.45, 0); add(new THREE.Mesh(new THREE.SphereGeometry(.22, 8, 6), dhMat('#2ec27e')), 0, -.15, 0);
+    }
+    g.userData.solids = solidsLocal; g.userData.rec = rec.slice(); g.userData.plot = plot;
+    return g;
+  }
+  function dhBindSolids(mesh, on){
+    const list = (mesh && mesh.userData && mesh.userData.solids) || [];
+    list.forEach(s => {
+      const world = mesh.position;
+      const b = {mesh: {position: {x: world.x + (s.ox || 0), y: world.y + (s.oy || 0), z: world.z + (s.oz || 0)}}, hw: s.hw, hh: s.hh, hd: s.hd, active: true, dx: 0, dy: 0, dz: 0, _dh: mesh};
+      // keep the actual mesh reference so collision uses the group position + offset via a wrapper object that plat-like solids understand
+      b.mesh = s.mesh; s.mesh.userData = s.mesh.userData || {};
+      if (on){ if (typeof solids !== 'undefined') solids.push(b); s._solid = b; }
+      else if (s._solid && typeof solids !== 'undefined'){ const i = solids.indexOf(s._solid); if (i >= 0) solids.splice(i, 1); s._solid = null; }
+    });
+  }
+  function dhAssignPlot(){
+    if (typeof mp !== 'undefined' && mp && mp.on){
+      const ids = [dhWho()].concat((mp.roster && mp.roster()) || (mp.peers && Object.keys(mp.peers)) || []).filter(Boolean);
+      const uniq = []; ids.forEach(id => { if (uniq.indexOf(id) < 0) uniq.push(id); });
+      const i = Math.max(0, uniq.indexOf(dhWho()));
+      return i % DH_PLOTS;
+    }
+    return 0;
+  }
+
+  function buildDreamHouse(){
+    dh = {mine: 0, story: 0, sel: 0, color: 0, rot: 0, tool: 'place', aim: null, pieces: {}, meshes: {}, ghost: null, bank: 0, likes: 0, goals: {}, earned: 0, near: -1, liked: {}, saveT: 0, remote: dhIsGuest(), layerBump: 0};
+    scene.background = new THREE.Color('#b8e8ff');
+    if (scene.fog){ scene.fog.color = new THREE.Color('#d7f3ff'); scene.fog.near = 50; scene.fog.far = 160; }
+    plat(0, 0, 0, 90, 50, '#8fd39a', .35);
+    plat(0, .15, 14, 80, 6, '#cfc4a8', .2);
+    const p0 = dhProg();
+    dh.bank = p0.coins; dh.likes = p0.likes; dh.goals = Object.assign({}, p0.goals);
+    if (!p0.granted){ dh.bank += DH_GRANT; if (typeof setCoins === 'function') setCoins((typeof coins === 'number' ? coins : 0) + DH_GRANT); dh.grantedNow = true; }
+    dh.mine = dhAssignPlot();
+    for (let i = 0; i < DH_PLOTS; i++){
+      const [ox, oz] = dhOrigin(i);
+      const cx = ox + DH_N * DH_CELL / 2, cz = oz + DH_N * DH_CELL / 2;
+      plat(cx, .08, cz, DH_N * DH_CELL + .4, DH_N * DH_CELL + .4, i === dh.mine ? '#b6e8a8' : '#9fd3a8', .16);
+      [[ox - .15, cz, .3, DH_N * DH_CELL + .6], [ox + DH_N * DH_CELL + .15, cz, .3, DH_N * DH_CELL + .6], [cx, oz - .15, DH_N * DH_CELL + .6, .3], [cx, oz + DH_N * DH_CELL + .15, DH_N * DH_CELL + .6, .3]].forEach(([x, z, w, d]) => plat(x, .45, z, w, d, '#fffaf0', .5));
+      const sign = label((i === dh.mine ? '🏡 Your Plot' : '🏡 Plot ' + (i + 1)), 'rgba(29,35,64,.92)');
+      if (sign && sign.position) sign.position.set(cx, 2.2, oz - .6);
+      if (typeof scene !== 'undefined' && sign) scene.add(sign);
+      dh.pieces[i] = []; dh.meshes[i] = [];
+    }
+    // SP only: modest model cottages on the other plots (decor, not other players)
+    if (!(typeof mp !== 'undefined' && mp && mp.on)){
+      [1, 2, 3].forEach((plot, n) => dhSeedShowHome(plot, n));
+    }
+    (p0.pieces || []).forEach(rec => dhPut(dh.mine, rec, true));
+    const [ox, oz] = dhOrigin(dh.mine);
+    const sp = {x: ox + DH_CELL * 4, y: .05, z: oz - 2.5};
+    Object.assign(P, {x: sp.x, y: sp.y, z: sp.z, vx: 0, vy: 0, vz: 0}); P.face = 0; cam.yaw = Math.PI; cam.pitch = .38; cam.dist = 12;
+    checkpoints[0] = {idx: 0, spawn: sp, flag: new THREE.Object3D()};
+    const gm = new THREE.MeshLambertMaterial({color: '#ffffff', transparent: true, opacity: .38, depthWrite: false});
+    dh.ghost = new THREE.Mesh(new THREE.BoxGeometry(DH_CELL * .95, .2, DH_CELL * .95), gm);
+    dh.ghost.visible = false; scene.add(dh.ghost);
+    dhHud(); dhBar();
+  }
+  function dhSeedShowHome(plot, n){
+    const pal = (n + 2) % DH_COLORS.length;
+    const floor = [[2,0,2],[3,0,2],[4,0,2],[2,0,3],[3,0,3],[4,0,3],[2,0,4],[3,0,4],[4,0,4]];
+    floor.forEach(([x, y, z]) => dhPut(plot, [0, x, y, z, 0, pal], true));
+    [[2,1,2,1],[4,1,2,1],[2,1,4,3],[4,1,4,3],[2,1,3,2],[4,1,3,0],[3,1,4,0]].forEach(([x, y, z, r], i) => dhPut(plot, [i === 6 ? 2 : 1, x, y, z, r, pal], true));
+    [[2,2,2],[3,2,2],[4,2,2],[2,2,3],[3,2,3],[4,2,3],[2,2,4],[3,2,4],[4,2,4]].forEach(([x, y, z]) => dhPut(plot, [5, x, y, z, 0, pal], true));
+    dhPut(plot, [6, 3, 1, 3, 0, (pal + 1) % DH_COLORS.length], true);
+    dhPut(plot, [10, 2, 1, 3, 0, 3], true);
+  }
+  function dhPut(plot, rec, quiet){
+    if (!dh || plot < 0 || plot >= DH_PLOTS) return null;
+    rec = rec.slice(); rec[0] = rec[0] | 0; rec[1] = rec[1] | 0; rec[2] = rec[2] | 0; rec[3] = rec[3] | 0; rec[4] = (rec[4] | 0) % 4; rec[5] = rec[5] | 0;
+    if (rec[1] < 0 || rec[3] < 0 || rec[1] >= DH_N || rec[3] >= DH_N || rec[2] < 0 || rec[2] > 8) return null;
+    const k = dhKeyOf(rec[1], rec[2], rec[3]);
+    if ((dh.pieces[plot] || []).some(a => dhKeyOf(a[1], a[2], a[3]) === k)) return null;
+    const mesh = dhMeshFor(rec, plot);
+    if (typeof scene !== 'undefined') scene.add(mesh);
+    dhBindSolids(mesh, true);
+    dh.pieces[plot] = dh.pieces[plot] || []; dh.meshes[plot] = dh.meshes[plot] || [];
+    dh.pieces[plot].push(rec); dh.meshes[plot].push(mesh);
+    if (!quiet && plot === dh.mine){ dhCheckGoals(); dhSave(); }
+    return mesh;
+  }
+  function dhRemoveAt(plot, ix, iy, iz, quiet){
+    if (!dh) return false;
+    const k = dhKeyOf(ix, iy, iz);
+    const list = dh.pieces[plot] || [];
+    const idx = list.findIndex(a => dhKeyOf(a[1], a[2], a[3]) === k);
+    if (idx < 0) return false;
+    const mesh = (dh.meshes[plot] || [])[idx];
+    if (mesh){ dhBindSolids(mesh, false); if (typeof scene !== 'undefined') scene.remove(mesh); }
+    list.splice(idx, 1); (dh.meshes[plot] || []).splice(idx, 1);
+    if (!quiet && plot === dh.mine) dhSave();
+    return true;
+  }
+  function dhSerialize(plot){ return (dh && dh.pieces[plot] ? dh.pieces[plot] : []).map(a => a.slice()); }
+  function dhClearPlot(plot){
+    (dh.meshes[plot] || []).slice().forEach(() => {
+      const rec = dh.pieces[plot] && dh.pieces[plot][0];
+      if (rec) dhRemoveAt(plot, rec[1], rec[2], rec[3], true);
+    });
+  }
+  function dhApplyPlot(plot, recs, quiet){
+    dhClearPlot(plot);
+    (recs || []).forEach(r => dhPut(plot, r, true));
+    if (!quiet && plot === dh.mine) dhSave();
+  }
+  function dhAim(){
+    if (!dh) return null;
+    const face = (P && P.face) || 0;
+    const wx = (P.x || 0) + Math.sin(face) * 2.1, wz = (P.z || 0) + Math.cos(face) * 2.1;
+    const plot = dhPlotAt(wx, wz);
+    if (plot < 0) return null;
+    const [ox, oz] = dhOrigin(plot);
+    const ix = Math.round((wx - ox) / DH_CELL - .5), iz = Math.round((wz - oz) / DH_CELL - .5);
+    if (ix < 0 || iz < 0 || ix >= DH_N || iz >= DH_N) return null;
+    const part = DH_PARTS[dh.sel] || DH_PARTS[0];
+    const typ = part.kind === 'floor' ? 0 : part.kind === 'roof' ? 2 : 1;
+    const iy = dh.story * 3 + typ;
+    return {plot, ix, iy, iz, rec: [dh.sel, ix, iy, iz, dh.rot | 0, dh.color | 0]};
+  }
+  function dhOccupied(plot, ix, iy, iz){ return (dh.pieces[plot] || []).some(a => a[1] === ix && a[2] === iy && a[3] === iz); }
+  function dhCanBuild(aim){ return !!(aim && aim.plot === dh.mine); }
+  function dhPay(cost){
+    const global = (typeof coins === 'number' ? coins : 0);
+    if (dh.bank >= cost){ dh.bank -= cost; return true; }
+    if (global >= cost && typeof setCoins === 'function'){ setCoins(global - cost); return true; }
+    if (dh.bank + global >= cost && typeof setCoins === 'function'){ const use = cost - dh.bank; dh.bank = 0; setCoins(global - use); return true; }
+    return false;
+  }
+  function dhPlace(){
+    if (!dh) return false;
+    const aim = dh.aim || dhAim();
+    if (!dhCanBuild(aim)) return false;
+    if (dh.tool === 'delete'){ const ok = dhRemoveAt(aim.plot, aim.ix, aim.iy, aim.iz); if (ok){ dhNet('del', aim); dhHud(); } return ok; }
+    if (dh.tool === 'paint'){
+      const hit = (dh.pieces[aim.plot] || []).find(a => a[1] === aim.ix && a[3] === aim.iz && Math.abs(a[2] - aim.iy) <= 1);
+      if (!hit) return false;
+      hit[5] = dh.color | 0; dhApplyPlot(aim.plot, dh.pieces[aim.plot], true); dhSave(); dhNet('paint', {plot: aim.plot, pieces: dhSerialize(aim.plot)}); dhHud(); return true;
+    }
+    if (dhOccupied(aim.plot, aim.ix, aim.iy, aim.iz)) return false;
+    const part = DH_PARTS[dh.sel] || DH_PARTS[0];
+    if (!dhPay(part.cost)){ banner('🪙 Need ' + part.cost + ' coins for a ' + part.name + '. Finish a house goal!'); return false; }
+    const rec = [dh.sel, aim.ix, aim.iy, aim.iz, dh.rot | 0, dh.color | 0];
+    if (!dhPut(aim.plot, rec)){ dh.bank += part.cost; return false; }
+    dhNet('place', {rec, plot: aim.plot}); dhHud(); dhBar();
+    return true;
+  }
+  function dhRotate(){ if (!dh) return false; dh.rot = ((dh.rot | 0) + 1) % 4; dhHud(); return true; }
+  function dhCycle(dir){ if (!dh) return; dh.sel = (dh.sel + dir + DH_PARTS.length) % DH_PARTS.length; dhBar(); dhHud(); }
+  function dhCycleColor(dir){ if (!dh) return; dh.color = (dh.color + dir + DH_COLORS.length) % DH_COLORS.length; dhBar(); dhHud(); }
+  function dhSetTool(t){ if (!dh) return; dh.tool = t; dhBar(); dhHud(); }
+  function dhSetStory(s){ if (!dh) return; dh.story = s ? 1 : 0; dhHud(); }
+
+  function dhCheckGoals(){
+    if (!dh) return;
+    const mine = dh.pieces[dh.mine] || [];
+    DH_GOALS.forEach(g => {
+      if (dh.goals[g.id]) return;
+      if (g.need(mine)){
+        dh.goals[g.id] = 1;
+        dh.bank += g.pay; dh.earned += g.pay;
+        if (typeof setCoins === 'function') setCoins((typeof coins === 'number' ? coins : 0) + g.pay);
+        if (typeof runCoins !== 'undefined') runCoins = (runCoins || 0) + g.pay;
+        if (typeof SND !== 'undefined' && SND.coin) SND.coin();
+        banner('✨ ' + g.name + '! +' + g.pay + ' 🪙');
+      }
+    });
+    dhSave();
+  }
+  function dhLike(){
+    if (!dh) return false;
+    const plot = dhPlotAt(P.x, P.z);
+    if (plot < 0 || plot === dh.mine) return false;
+    if (dh.liked[plot]){ banner('💛 You already liked this house!'); return false; }
+    dh.liked[plot] = 1;
+    dhNet('like', {plot, from: dhWho()});
+    banner('💛 Loved that house!');
+    return true;
+  }
+  function dhTakeLike(){ if (!dh) return; dh.likes = (dh.likes | 0) + 1; dh.bank += 5; dh.earned += 5; if (typeof setCoins === 'function') setCoins((typeof coins === 'number' ? coins : 0) + 5); dhSave(); banner('💛 A visitor liked your house! +5 🪙'); dhHud(); }
+
+  function dhNet(a, data){
+    if (!dh || typeof mp === 'undefined' || !mp || !mp.on) return;
+    const msg = Object.assign({t: 'dhact', a, who: dhWho(), plot: dh.mine}, data || {});
+    if (typeof mpSendTo === 'function' && dhIsGuest() && mp.hconn) mpSendTo(mp.hconn, msg);
+    else if (typeof mpBroadcast === 'function') mpBroadcast(msg);
+  }
+  function dhWire(){ return dh && {mine: dh.mine, who: dhWho(), plots: Object.fromEntries(Object.keys(dh.pieces).map(k => [k, dhSerialize(+k)])), likes: dh.likes, bank: dh.bank}; }
+  function dhFromHost(w){
+    if (!dh || !w || !w.plots) return;
+    Object.keys(w.plots).forEach(k => {
+      const plot = +k; if (plot === dh.mine) return;
+      const recs = w.plots[k] || [];
+      const cur = JSON.stringify(dhSerialize(plot)), next = JSON.stringify(recs);
+      if (cur !== next) dhApplyPlot(plot, recs, true);
+    });
+  }
+  function dhGuestMsg(g, d){
+    if (!dh || !d) return;
+    const plot = (d.plot | 0);
+    if (d.a === 'like'){ if (plot === dh.mine) dhTakeLike(); return; }
+    const who = d.who || (g && g.uid);
+    // only the owner of that plot may edit it
+    if (d.a === 'place' && d.rec && plot !== dh.mine) dhPut(plot, d.rec, true);
+    if (d.a === 'del' && plot !== dh.mine) dhRemoveAt(plot, d.ix, d.iy, d.iz, true);
+    if (d.a === 'paint' && d.pieces && plot !== dh.mine) dhApplyPlot(plot, d.pieces, true);
+  }
+
+  function dreamhouseEnter(){
+    if (!dh) return;
+    choosing = false; over = false;
+    banner(mp && mp.on ? '🏡 Dream House Builders — build on your plot, visit friends!' : '🏡 Dream House Builders — snap pieces on your plot and earn coins for house goals!');
+    tipTimer = 7; dhHud(); dhBar();
+  }
+  function dreamhouseStop(){
+    if (!dh) return;
+    dhSave();
+    if (dh.ghost && typeof scene !== 'undefined') scene.remove(dh.ghost);
+    Object.keys(dh.meshes || {}).forEach(k => (dh.meshes[k] || []).forEach(m => { dhBindSolids(m, false); if (typeof scene !== 'undefined') scene.remove(m); }));
+    ['#dhBar', '#dhAct', '#dhGoals'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
+    dh = null;
+  }
+  function dreamhouseUpdate(dt){
+    if (!dh || choosing || over) return;
+    dh.aim = dhAim();
+    if (dh.ghost){
+      const aim = dh.aim, ok = dhCanBuild(aim);
+      dh.ghost.visible = !!(aim && (ok || dh.tool !== 'place'));
+      if (aim){
+        const w = dhCellWorld(aim.plot, aim.ix, aim.iy, aim.iz);
+        dh.ghost.position.set(w.x, w.y, w.z);
+        dh.ghost.material.color = new THREE.Color(ok ? (dh.tool === 'delete' ? '#ff4d5e' : dhTint(dh.color)) : '#ffe08a');
+      }
+    }
+    const plot = dhPlotAt(P.x, P.z);
+    dh.near = plot;
+    const b = $('#dhAct');
+    if (b){
+      const key = (typeof pad !== 'undefined' && pad && pad.on) ? 'Ⓧ' : (typeof touchUI !== 'undefined' && touchUI ? 'tap' : 'E');
+      if (plot >= 0 && plot !== dh.mine){ b.innerHTML = '💛 Like this house <small>' + key + '</small>'; b.classList.add('show'); }
+      else if (dhCanBuild(dh.aim)){ const part = DH_PARTS[dh.sel]; b.innerHTML = (dh.tool === 'delete' ? '🗑️ Delete' : dh.tool === 'paint' ? '🎨 Paint' : (part.e + ' Place ' + part.name + ' · ' + part.cost + '🪙')) + ' <small>' + key + '</small>'; b.classList.add('show'); }
+      else b.classList.remove('show');
+    }
+    dh.saveT = (dh.saveT || 0) + dt; if (dh.saveT > 8){ dh.saveT = 0; dhSave(); }
+    dhHud();
+  }
+  function dreamhouseAnimate(){}
+  function dhHud(){
+    if (!dh) return;
+    const n = $('#dhN'); if (n) n.textContent = '🪙 ' + Math.floor(dh.bank) + ' · 🧱 ' + (dh.pieces[dh.mine] || []).length;
+    const st = $('#dhStory'); if (st) st.textContent = dh.story ? '2F' : '1F';
+    const tb = $('#dhTool'); if (tb) tb.textContent = dh.tool === 'delete' ? '🗑️' : dh.tool === 'paint' ? '🎨' : '🏗️';
+  }
+  function dhBar(){
+    if (!dh) return;
+    const bar = $('#dhBar'); if (!bar) return;
+    bar.style.display = ''; bar.classList.add('show');
+    const tools = '<div class="dhtools">'
+      + ['place', 'paint', 'delete'].map(t => '<button class="dhb' + (dh.tool === t ? ' on' : '') + '" data-dhtool="' + t + '">' + (t === 'place' ? '🏗️ Place' : t === 'paint' ? '🎨 Paint' : '🗑️ Delete') + '</button>').join('')
+      + '<button class="dhb' + (dh.story === 0 ? ' on' : '') + '" data-dhstory="0">1F</button>'
+      + '<button class="dhb' + (dh.story === 1 ? ' on' : '') + '" data-dhstory="1">2F</button>'
+      + '<button class="dhb" id="dhRotBtn">↻</button>'
+      + '</div>';
+    const cols = '<div class="dhcols">' + DH_COLORS.map((c, i) => '<button class="dhc' + (i === dh.color ? ' on' : '') + '" data-dhcol="' + i + '" style="background:' + c + '"></button>').join('') + '</div>';
+    const parts = '<div class="dhparts">' + DH_PARTS.map((p, i) => '<button class="dhp' + (i === dh.sel ? ' on' : '') + '" data-dhpart="' + i + '">' + p.e + '<small>' + p.name + ' · ' + p.cost + '</small></button>').join('') + '</div>';
+    bar.innerHTML = tools + cols + parts;
+    if (!window.__dhBound){
+      window.__dhBound = true;
+      const act = $('#dhAct'); if (act) act.onclick = () => dh && dhAct();
+      bar.addEventListener('click', ev => {
+        const t = ev.target.closest('[data-dhtool],[data-dhpart],[data-dhcol],[data-dhstory],#dhRotBtn');
+        if (!t || !dh) return;
+        if (t.id === 'dhRotBtn') dhRotate();
+        else if (t.dataset.dhtool) dhSetTool(t.dataset.dhtool);
+        else if (t.dataset.dhpart != null){ dh.sel = +t.dataset.dhpart; dh.tool = 'place'; dhBar(); dhHud(); }
+        else if (t.dataset.dhcol != null){ dh.color = +t.dataset.dhcol; dhBar(); dhHud(); }
+        else if (t.dataset.dhstory != null){ dhSetStory(+t.dataset.dhstory); dhBar(); }
+      });
+    } else {
+      // rebinding innerHTML drops nothing if we use delegation on bar — already bound
+    }
+  }
+  function dhAct(){
+    if (!dh) return;
+    const plot = dhPlotAt(P.x, P.z);
+    if (plot >= 0 && plot !== dh.mine) return dhLike();
+    return dhPlace();
+  }
+  function dhPad(jp){
+    if (!dh) return false;
+    if (jp.x || jp[2]){ dhAct(); return true; }
+    if (jp.b || jp[1]){ dhRotate(); return true; }
+    if (jp.y || jp[3]){ dhSetTool(dh.tool === 'delete' ? 'place' : 'delete'); return true; }
+    if (jp.lb || jp[4] || jp.lt){ dhCycle(-1); return true; }
+    if (jp.rb || jp[5] || jp.rt){ dhCycle(1); return true; }
+    return false;
+  }
+  function dhKey(e){
+    if (!dh || e.repeat) return false;
+    const k = e.code || '', key = (e.key || '').toLowerCase();
+    if (k === 'KeyE'){ dhAct(); return true; }
+    if (k === 'KeyR'){ dhRotate(); return true; }
+    if (k === 'KeyX' || k === 'Backspace' || k === 'Delete'){ dhSetTool(dh.tool === 'delete' ? 'place' : 'delete'); return true; }
+    if (k === 'KeyC'){ dhCycleColor(1); return true; }
+    if (k === 'KeyT'){ dhSetStory(dh.story ? 0 : 1); dhBar(); return true; }
+    if (k === 'KeyQ'){ dhSetTool(dh.tool === 'paint' ? 'place' : 'paint'); return true; }
+    if (k === 'BracketLeft' || k === 'Comma'){ dhCycle(-1); return true; }
+    if (k === 'BracketRight' || k === 'Period'){ dhCycle(1); return true; }
+    if (/^Digit[1-9]$/.test(k) || /^Numpad[1-9]$/.test(k)){ dh.sel = Math.min(DH_PARTS.length - 1, (k.slice(-1) | 0) - 1); dh.tool = 'place'; dhBar(); dhHud(); return true; }
+    return false;
+  }
   /* ---------- per-frame ---------- */
   const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
   function animate(dt){
@@ -11580,6 +12038,7 @@ const Obby = (() => {
     if (sb) stableAnimate(dt);
     if (hm) hauntAnimate(dt);
     if (db) danceAnimate(dt);
+    if (dh) dreamhouseAnimate(dt);
     if (tg) animateTag(dt);
     if (pt) animatePets(dt);
     animateMp(dt);
@@ -11636,7 +12095,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'dreamhouse' ? '🎮 Left stick move · Ⓐ jump · Ⓧ place / like · Ⓑ rotate · ⓁⓇ catalog · ☰ menu' : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -11670,6 +12129,7 @@ const Obby = (() => {
       else { const t = $('#oTip'); padTip(); if (t.classList.contains('hide')){ t.classList.remove('hide'); tipTimer = 8; } else { t.classList.add('hide'); tipTimer = 0; } }
       return;
     }
+    if (mode === 'dreamhouse' && dh && dhPad(jp)) return;
     if (mode === 'dance' && db && dbPad(jp)) return;
     if (mode === 'haunt' && hm && hmPad(jp)) return;
     if (mode === 'stable' && sb && sbPad(jp)) return;
@@ -11733,6 +12193,11 @@ const Obby = (() => {
   addEventListener('resize', () => setTimeout(hudMeasure, 50));
   function setTouchUIBase(on){
     hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
+    if (mode === 'dreamhouse'){
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · tap 🏡 buttons to place' : '⌨️ WASD move · Space jump · E place · R rotate · X delete · 1-9 catalog · C color · T story · Esc menu')
+        + "<br>🏡 Snap floors, walls, doors, windows, roofs and furniture on your plot — finish house goals for 🪙!";
+      return;
+    }
     if (mode === 'dance'){
       $('#oTip').innerHTML = (on ? '🕹️ D-pad / face buttons hit ←↓↑→' : '⌨️ Arrow keys or WASD hit the notes · Esc pause')
         + "<br>💃 Original bossa beats — time your presses for Perfect scores!";
@@ -11842,7 +12307,7 @@ const Obby = (() => {
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ // pull the camera in front of walls so buildings don't block the view
       for (let s = 1.2; s <= cam.dist; s += .4){
         const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
         if (solids.some(b => b.active && !b.camSkip && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2, s - .5); break; }
@@ -11912,6 +12377,7 @@ const Obby = (() => {
       if (sb) stableUpdate(dt);
       if (hm) hauntUpdate(dt);
       if (db) danceUpdate(dt);
+      if (dh) dreamhouseUpdate(dt);
       if (pt) petsUpdate(dt);
       if (lava && time > LAVA_GRACE && !over && !won){ lava.y += DIFFS[diff].speed * (1 + (time - LAVA_GRACE) / 150) * dt; if (time - dt <= LAVA_GRACE + 0.001 && time > LAVA_GRACE) banner('🌋 The lava is rising! Climb!'); }
       if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0) $('#oTip').classList.add('hide'); }
@@ -11954,6 +12420,7 @@ const Obby = (() => {
       if (mode === 'fashion' && fs && fs.ph === 'walk' && /^Digit[1-7]$/.test(e.code) && fsKey(e)) return;
       const em = Object.keys(EMOTES).find(k => 'Digit' + EMOTES[k].key === e.code || 'Numpad' + EMOTES[k].key === e.code);
       if (em && !e.repeat){ playEmote(em); return; }
+      if (mode === 'dreamhouse' && dh && dhKey(e)) return;
       if (mode === 'dance' && db && dbKey(e)) return;
       if (mode === 'haunt' && hm && hmKey(e)) return;
       if (mode === 'stable' && sb && sbKey(e)) return;
@@ -12111,7 +12578,7 @@ const Obby = (() => {
 
   /* ---------- start / stop ---------- */
   function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'stable', 'haunt', 'dance'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'stable', 'haunt', 'dance', 'dreamhouse'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     $('#obby').classList.add('show'); document.body.style.overflow = 'hidden'; document.documentElement.classList.add('ingame');
@@ -12149,6 +12616,7 @@ const Obby = (() => {
     else if (mode === 'hide') banner('🙈 Hide and Seek on Maple Street!');
     else if (mode === 'fashion') banner('👗 Welcome to the Fashion Show!');
     else if (mode === 'autumn') banner('🍂 Welcome to the Cozy Autumn Farm! Find 12 pumpkins 🎃');
+    else if (mode === 'dreamhouse') banner('🏡 Welcome to Dream House Builders — snap a home together on your plot!');
     else if (mode === 'dance') banner('💃 Bossa Beat Dance Battle — feel the groove!');
     else if (mode === 'haunt') banner('👻 Welcome to Giggle Manor — friendly ghosts ahead!');
     else if (mode === 'stable') banner('🐴 Welcome to Clover Meadow Stables!');
@@ -12166,7 +12634,7 @@ const Obby = (() => {
         $('#rcBack').onclick = () => rc && rcPickOpen(1); $('#rcHome').onclick = $('#rcFinHome').onclick = stop; $('#rcAgain').onclick = () => rc && rcAgain();
         $('#rcItem').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (rc) rc.tapItem = true; }); }
       raceEnter(); }
-    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance') && touchUI && tipTimer > 4) tipTimer = 4;
+    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') && touchUI && tipTimer > 4) tipTimer = 4;
     $('#obby').classList.toggle('smode', mode === 'splash'); ['#spLvBox', '#spRoundBox', '#spPeb', '#spShove'].forEach(id => $(id).style.display = mode === 'splash' ? '' : 'none'); if (mode !== 'splash') ['#spAliveBox', '#spPull'].forEach(id => $(id).style.display = 'none');
     ['#spPick', '#spEnd', '#spCode'].forEach(id => $(id).classList.remove('show')); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on');
     if (mode === 'splash'){ if (!window.__spBound){ window.__spBound = true;
@@ -12190,6 +12658,9 @@ const Obby = (() => {
     $('#auBox').style.display = mode === 'autumn' ? '' : 'none'; if (mode === 'autumn') autumnEnter();
     ['#psCamBtn','#psGalBtn','#psBar','#bkAct','#icAct','#sbAct','#hmAct','#dbLane','#wpAct','#wpRides','#piAct','#piBook','#fsNear','#fsWardBtn','#fsShowBtn','#hsBlind'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); });
     { const bs = $('#fsBuild'); if (bs){ bs.textContent = typeof BUILD !== 'undefined' ? BUILD : ''; bs.classList.add('show'); } }
+    $('#dhBox').style.display = mode === 'dreamhouse' ? '' : 'none';
+    if (mode === 'dreamhouse'){ if ($('#dhBar')) $('#dhBar').style.display = ''; dreamhouseEnter(); }
+    else { ['#dhBar','#dhAct'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); if (id === '#dhBar') el.style.display = 'none'; } }); }
     $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }
     if (mode === 'dance') danceEnter();
     $('#hmBox').style.display = mode === 'haunt' ? '' : 'none'; ['#hmAct'].forEach(id => $(id).classList.remove('show'));
@@ -12233,13 +12704,15 @@ const Obby = (() => {
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame');
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (sb) stableStop(); if (hm) hauntStop(); if (db) danceStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (sb) stableStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
 
   // debug / test hook
   window.obbyDebug = {
+    dreamhouse: () => dh && {mine: dh.mine, sel: dh.sel, tool: dh.tool, story: dh.story, color: dh.color, rot: dh.rot, bank: dh.bank, likes: dh.likes, earned: dh.earned, pieces: (dh.pieces[dh.mine] || []).length, goals: Object.assign({}, dh.goals), prog: dhProg()},
+    dhPlace: () => dhPlace(), dhAct: () => dhAct(), dhRotate: () => dhRotate(), dhCycle, dhSetTool, dhSetStory, dhCycleColor, dhAim, dhWire, dhTo(x, z){ Object.assign(P, {x, y: .05, z, vx: 0, vy: 0, vz: 0}); },
     dance: () => db && {ph: db.ph, t: db.t, score: db.score, combo: db.combo, hits: db.hits, misses: db.misses, chart: db.chart.length, earned: db.earned, prog: dbProg()},
     dbHit: d => dbHit(d), dbTo(t){ if (db) db.t = t; },
     haunt: () => hm && {ph: hm.ph, t: hm.t, keys: hm.keys, patternDone: !!hm.patternDone, colour: hm.colour, needCol: hm.needCol, levers: hm.levers.slice(), doorOpen: hm.doorOpen, near: hm.near, earned: hm.earned, prog: hmProg()},
