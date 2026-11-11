@@ -1573,7 +1573,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-18';
+const BUILD = '2026.11.11-19';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -15695,8 +15695,12 @@ function start(m = 'obby', d = null){
     $('#auBox').style.display = mode === 'autumn' ? '' : 'none'; if (mode === 'autumn') autumnEnter();
     ['#psCamBtn','#psGalBtn','#psBar','#bkAct','#icAct','#sbAct','#hmAct','#dbLane','#wpAct','#wpRides','#piAct','#piBook','#fsNear','#fsWardBtn','#fsShowBtn','#hsBlind'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); });
     { const bs = $('#fsBuild'); if (bs){ bs.textContent = typeof BUILD !== 'undefined' ? BUILD : ''; bs.classList.add('show'); } }
-    if (mode === 'dreamhouse'){ dreamhouseEnter(); if (typeof updateDhChrome === 'function') updateDhChrome(); } else { const box = $('#dhBox'); if (box) box.style.display = 'none'; }
-    else { ['#dhBar','#dhAct','#dhCut','#dhShop','#dhYard','#dhUp','#dhGuide','#dhGoal','#dhSteps','#dhTip'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } }); const r = $('#dhReplay'); if (r) r.style.display = 'none'; }
+    if (mode === 'dreamhouse'){ dreamhouseEnter(); if (typeof updateDhChrome === 'function') updateDhChrome(); }
+    else {
+      const box = $('#dhBox'); if (box) box.style.display = 'none';
+      ['#dhBar','#dhAct','#dhCut','#dhShop','#dhYard','#dhUp','#dhGuide','#dhGoal','#dhSteps','#dhTip'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
+      const r = $('#dhReplay'); if (r) r.style.display = 'none';
+    }
     $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }
     if (mode === 'dance') danceEnter();
     $('#hmBox').style.display = mode === 'haunt' ? '' : 'none'; ['#hmAct'].forEach(id => $(id).classList.remove('show'));
