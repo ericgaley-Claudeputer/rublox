@@ -39,7 +39,7 @@ function world(store0, opts){
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen};`, ctx);
   return ctx;
 }
 
@@ -918,8 +918,8 @@ chk('clearing keys on blur/pointer-lock stops a stuck W so you do not keep slidi
   Wlook.keys.ArrowRight = true;
   Wlook.A.dhLookWithKeys(0.2);
   const hold = Math.abs(Wlook.cam.yaw - y1);
-  chk('a quick arrow keydown+keyup nudges the view about 4° even before the next frame', tap > 0.04 && tap < 0.12, {tap, deg: tap*180/Math.PI});
-  chk('a held arrow turn is about 90°/s (slower than the old 1.85 rad/s rate)', hold < 0.40 && hold > 0.05, {hold});
+  chk('a quick arrow keydown+keyup nudges the view about 2° even before the next frame', tap > 0.02 && tap < 0.05, {tap, deg: tap*180/Math.PI});
+  chk('a held arrow turn is about 70°/s', hold > 0.18 && hold < 0.32, {hold, deg: hold*180/Math.PI, perSec: (hold/0.2)*180/Math.PI});
 
   // Reset then skip intro: starter supplies match a brand-new game.
   const Wnew = world();
@@ -1111,6 +1111,51 @@ chk('clearing keys on blur/pointer-lock stops a stuck W so you do not keep slidi
   chk('status bar is hidden while paused', boxS.style.display === 'none', {display: boxS.style.display});
   Ws.paused = false; Ws.A.updateDhChrome();
   chk('status bar returns after unpausing', boxS.style.display !== 'none', {display: boxS.style.display});
+
+  // Status bits never keep empty parts or trailing dots
+  const bitsJoin = (Ws.A.dhStatusBits() || []).join(' · ');
+  chk('status bar joins only non-empty parts (no leading, trailing, or double dots)', bitsJoin.length > 0 && !/^[·\s]|[·\s]$/.test(bitsJoin) && !/·\s*·/.test(bitsJoin), {bitsJoin, bits: Ws.A.dhStatusBits()});
+
+  // Auto-switch the held tool when the stage advances to Dig
+  const Wg = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:40, pieces:[], stock:{glass:4, brick:16}, upgrades:{}, goals:{}})});
+  Wg.A.buildDreamHouse(); Wg.A.dh.introSeen = true; Wg.A.dh.intro = null; Wg.A.dreamhouseEnter();
+  Wg.A.dhSetJob('mark');
+  const footG = Wg.A.dhFootCells();
+  footG.forEach(c => Wg.A.dhPut(0, ['mark', c.ix, 0, c.iz, 0, 0], true));
+  Wg.A.dhSyncJobToStage();
+  Wg.A.dhHud();
+  const heldDig = Wg.A.dhHeldInfo();
+  chk('after staking finishes, the held tool switches to Dig / Shovel', Wg.A.dhStageId() === 'dig' && Wg.A.dh.job === 'dig' && /Shovel|Dig/i.test(heldDig.carryText) && !/Stake/i.test(heldDig.carryText), {stage: Wg.A.dhStageId(), job: Wg.A.dh.job, held: heldDig});
+
+  // Carrying glass during Dig must not say Install glass
+  Wg.P.x = Wg.A.dhCellWorld(0, footG[0].ix, footG[0].iz, 0).x;
+  Wg.P.z = Wg.A.dhCellWorld(0, footG[0].ix, footG[0].iz, 0).z;
+  Wg.A.dh.carry = {id:'glass', n:2};
+  const prompt = Wg.A.dhActPrompt();
+  chk('carrying glass in the Dig step does not prompt to install glass', /later/i.test(prompt) && /dig the foundation now/i.test(prompt) && !/^🪟?\s*Install glass\s*$/i.test(prompt), {prompt, stage: Wg.A.dhStageId(), job: Wg.A.dh.job, carry: Wg.A.dh.carry});
+
+  // Arrow / look keys must not undo or remove stakes
+  const Wu2 = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+  Wu2.A.buildDreamHouse(); Wu2.A.dh.introSeen = true; Wu2.A.dh.intro = null; Wu2.A.dreamhouseEnter();
+  const cellsU = Wu2.A.dhFootCells().slice(0, 4);
+  cellsU.forEach(c => Wu2.A.dhPut(0, ['mark', c.ix, 0, c.iz, 0, 0], true));
+  const marksU0 = (Wu2.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length;
+  ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyI','KeyK'].forEach(code => {
+    const ev = {code, key: code, type:'keydown', repeat:false, preventDefault(){}, stopPropagation(){}};
+    Wu2.A.dhNoteLookKey(ev, true);
+    Wu2.A.dhKey(ev);
+    Wu2.A.dhNoteLookKey(ev, false);
+  });
+  const marksU1 = (Wu2.A.dh.pieces[0]||[]).filter(a => a[0]==='mark').length;
+  chk('arrow and look keys do not undo or remove stakes', marksU0 === 4 && marksU1 === 4 && Wu2.A.dh.tool !== 'delete', {marksU0, marksU1, tool: Wu2.A.dh.tool});
+
+  // A single W tap takes a small step even before the next frame
+  const Ww = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, upgrades:{}, goals:{}})});
+  Ww.A.buildDreamHouse(); Ww.A.dh.introSeen = true; Ww.A.dh.intro = null; Ww.A.dreamhouseEnter();
+  const xW = Ww.P.x, zW = Ww.P.z;
+  Ww.A.dhNoteMoveKey({code:'KeyW', key:'w', type:'keydown', repeat:false}, true);
+  const distW = Math.hypot(Ww.P.x - xW, Ww.P.z - zW);
+  chk('a single W tap moves a small step on keydown', distW > 0.2 && distW < 1.0, {distW, xW, zW, x:Ww.P.x, z:Ww.P.z});
 })();
 
 

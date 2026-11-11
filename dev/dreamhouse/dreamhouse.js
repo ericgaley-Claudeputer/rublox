@@ -2071,9 +2071,21 @@
     if (mxn && mxn.phase === 'mixing') return '🌀 Mixing…';
     if (mxn && ((mxn.cement|0) >= 1 && (mxn.sand|0) >= 1)) return '🌀 Mix concrete';
     if (mxn && (mxn.mixed|0) >= 1) return '🪣 Fill wheelbarrow';
-    if (dh.carry && dh.carry.id === 'wetmix' && onLot) return '🪣 Hold click to pour concrete' + prog('pour', 'Foundation spots poured');
-    if (dh.carry && dh.carry.id === 'brick' && onLot) return '🧱 Aim at the glowing outline and click to place a brick';
-    if (dh.carry && dh.carry.id === 'glass' && onLot) return '🪟 Install glass';
+    if (dh.carry && dh.carry.id === 'wetmix' && onLot){
+      const later = dhCarryLaterPrompt('wetmix');
+      if (later) return later;
+      return '🪣 Hold click to pour concrete' + prog('pour', 'Foundation spots poured');
+    }
+    if (dh.carry && dh.carry.id === 'brick' && onLot){
+      const later = dhCarryLaterPrompt('brick');
+      if (later) return later;
+      return '🧱 Aim at the glowing outline and click to place a brick';
+    }
+    if (dh.carry && dh.carry.id === 'glass' && onLot){
+      const later = dhCarryLaterPrompt('glass');
+      if (later) return later;
+      return '🪟 Install glass';
+    }
     if (pile && !dh.carry) return '📦 Pick up materials';
     if (dh.carry && pile && dh.carry.id !== 'wetmix') return '📦 Dump on your plot';
     if (dhNearYard()) return key + ': Open the Supply Yard';
@@ -2084,8 +2096,12 @@
     const why = dhWhyNot();
     if (why) return why;
     if (dhCanBuild(dh.aim) || onLot){
+      const stageJob = dhJobForStage();
+      const useJob = stageJob || dh.job;
+      const later = dh.carry && dhCarryLaterPrompt(dh.carry.id);
+      if (later) return later;
       const labels = {mark: key + ': Place stake here' + prog('mark', 'Stakes'), dig: key + ': Dig the foundation spot here' + prog('dig', 'Foundation spots dug'), pour: key + ': Hold to pour concrete here' + prog('pour', 'Foundation spots poured'), brick:'🧱 Lay a brick', stud:'🪵 Set a stud', rafter:'🪜 Set a rafter', shingle:'🏠 Nail a shingle', frame:'🚪 Fit a frame', glass:'🪟 Install glass', paint:'🎨 Paint', furn:'🛋️ Place furniture'};
-      return labels[dh.job] || '🏗️ Build';
+      return labels[useJob] || labels[dh.job] || '🏗️ Build';
     }
     return '';
   }
@@ -2169,7 +2185,7 @@
     const step = Math.max(0, dt || 0);
     if (step <= 0) return false;
     dh._lookHold = (dh._lookHold || 0) + step;
-    const turn = (Math.PI / 2) * step; // 90°/s while held; short taps get a 4° keydown nudge
+    const turn = (70 * Math.PI / 180) * step; // ~70°/s while held; short taps get a 2° keydown nudge
     cam.yaw -= yawK * turn;
     cam.pitch = Math.max(-1.3, Math.min(1.4, cam.pitch + pitK * turn * 0.9));
     return true;
@@ -2663,6 +2679,7 @@
   }
   function dhHud(){
     if (!dh) return;
+    if (!dh._syncingJob) dhSyncJobToStage();
     const n = $('#dhN'); if (n) n.textContent = '🪙 ' + Math.floor(dh.bank);
     const goal = $('#dhGoal');
     if (goal){
@@ -2722,9 +2739,67 @@
     const held = dhHeldInfo();
     const carry = held && held.carryText;
     if (carry && carry !== 'Hands empty') bits.push(carry);
+    // Don't also append the tool emoji when the carry line already names the held tool,
+    // and never keep empty or separator-only pieces.
     const tool = dh.tool === 'delete' ? '🗑️' : ({mark:'📍', dig:'🕳️', mix:'🌀', pour:'🪣', brick:'🧱', stud:'🪵', rafter:'🪜', shingle:'🏠', frame:'🚪', glass:'🪟', paint:'🎨', furn:'🛋️'}[dh.job] || '');
-    if (tool) bits.push(tool);
-    return bits;
+    if (tool && !(carry && carry !== 'Hands empty' && carry.indexOf(tool) >= 0)) bits.push(tool);
+    return bits.map(b => String(b).replace(/^[·\s]+|[·\s]+$/g, '').trim()).filter(Boolean);
+  }
+  function dhJobForStage(stage){
+    stage = stage || (dh && dhStageId());
+    return ({stake:'mark', dig:'dig', pour:'pour', brick:'brick', stud:'stud', rafter:'rafter', shingle:'shingle', frame:'frame', glass:'glass', paint:'paint', furn:'furn'})[stage] || null;
+  }
+  function dhSyncJobToStage(){
+    if (!dh || dh.intro) return false;
+    const stage = dhStageId();
+    const job = dhJobForStage(stage);
+    if (!job){ dh._stageId = stage; return false; }
+    const advanced = !!(dh._stageId && dh._stageId !== stage);
+    const first = !dh._stageId;
+    dh._stageId = stage;
+    if (dh.job === job) return false;
+    if (!advanced && !first) return false;
+    dh.job = job;
+    if (dh.tool !== 'delete') dh.tool = 'place';
+    if (dh._syncingJob) return true;
+    dh._syncingJob = true;
+    try {
+      if (typeof dhBar === 'function') dhBar();
+      if (typeof updateDhChrome === 'function') updateDhChrome();
+    } finally { dh._syncingJob = false; }
+    return true;
+  }
+  function dhStageHint(){
+    const stage = dh && dhStageId();
+    return ({
+      stake: 'stake the outline now',
+      dig: 'dig the foundation now',
+      pour: 'pour the foundation now',
+      brick: 'lay bricks now',
+      stud: 'set studs now',
+      rafter: 'set rafters now',
+      shingle: 'nail shingles now',
+      frame: 'fit frames now',
+      glass: 'install glass now',
+      paint: 'paint now',
+      furn: 'place furniture now'
+    })[stage] || 'keep building';
+  }
+  function dhCarryLaterPrompt(id){
+    if (!id) return null;
+    const stage = dhStageId();
+    const ready = {
+      glass: ['glass'],
+      brick: ['brick'],
+      wood: ['stud', 'rafter', 'frame'],
+      shingle: ['shingle'],
+      paint: ['paint'],
+      wetmix: ['pour']
+    };
+    const ok = (ready[id] || [id]).includes(stage);
+    if (ok) return null;
+    const names = {glass:'install glass', brick:'lay bricks', wood:'build with wood', shingle:'nail shingles', paint:'paint', wetmix:'pour concrete'};
+    return 'You can ' + (names[id] || 'use that') + ' later; ' + dhStageHint();
   }
   function updateDhChrome(){
     const intro = !!(dh && dh.intro);
@@ -2755,12 +2830,18 @@
       const m = dhMatOf(id); const v = dhInvCount(id);
       return v ? (m.e + v) : '';
     }).filter(Boolean) : [];
+    const stack = $('#dhStack');
+    if (stack){
+      const showStack = inDh && !intro;
+      stack.style.display = showStack ? 'flex' : 'none';
+      if (showStack) stack.classList.add('show'); else stack.classList.remove('show');
+    }
     const box = $('#dhBox');
     if (box){
       if (hideStatus){ box.style.display = 'none'; }
       else {
         box.style.display = '';
-        box.innerHTML = bits.map(b => '<b>' + b + '</b>').join('<span class="dhsep"> · </span>');
+        box.innerHTML = bits.map(b => '<b>' + b.replace(/</g,'&lt;') + '</b>').join(' · ');
       }
     }
     const inv = $('#dhInv');
@@ -2932,7 +3013,7 @@
     if (code === 'KeyK' || key === 'k' || key === 'K') keys.KeyK = on;
     if (code === 'KeyL' || key === 'l' || key === 'L') keys.KeyL = on;
     if (on && typeof cam !== 'undefined' && cam){
-      const nudge = 4 * Math.PI / 180; // ~4° immediate turn so a 50 ms tap still looks
+      const nudge = 2 * Math.PI / 180; // ~2° immediate turn so a short tap still looks, but not a big swing
       const right = (code === 'ArrowRight' || code === 'KeyL' || key === 'ArrowRight' || key === 'Right');
       const left = (code === 'ArrowLeft' || code === 'KeyJ' || key === 'ArrowLeft' || key === 'Left');
       const down = (code === 'ArrowDown' || code === 'KeyK' || key === 'ArrowDown' || key === 'Down');
@@ -2945,11 +3026,36 @@
     }
     return true;
   }
+  function dhNoteMoveKey(e, down){
+    if (!e || !dh || dh.intro) return false;
+    if (typeof paused !== 'undefined' && paused) return false;
+    if (typeof dhMenusUp === 'function' && dhMenusUp()) return false;
+    if (dhIsUiEvent(e, 'key')) return false;
+    const code = e.code || '';
+    const map = {KeyW:[0,1], KeyS:[0,-1], KeyA:[-1,0], KeyD:[1,0]};
+    if (!(code in map)) return false;
+    if (down !== false && typeof P !== 'undefined' && P && typeof cam !== 'undefined' && cam){
+      const step = 0.45; // metres — a short W tap still takes a small step
+      const sx = map[code][0], sz = map[code][1];
+      const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), rx = -fz, rz = fx;
+      const dx = (fx * sz + rx * sx) * step, dz = (fz * sz + rz * sx) * step;
+      P.x += dx; P.z += dz;
+    }
+    return true;
+  }
+
   function dhKey(e){
     if (!e) return false;
     if (typeof dhOnResetKey === 'function' && dhOnResetKey(e)) return true;
     if (dhIsUiEvent(e, (e.type && /^key/i.test(e.type || '')) ? 'key' : 'pointer') && e.type && /pointer|mouse|click/i.test(e.type || '')) return true;
     if (typeof dhNoteLookKey === 'function') dhNoteLookKey(e, true);
+    const code0 = (e.code || ''), key0 = (e.key || '');
+    const isLook = /^(ArrowLeft|ArrowRight|ArrowUp|ArrowDown|KeyI|KeyJ|KeyK|KeyL)$/.test(code0)
+      || key0 === 'ArrowLeft' || key0 === 'ArrowRight' || key0 === 'ArrowUp' || key0 === 'ArrowDown'
+      || key0 === 'Left' || key0 === 'Right' || key0 === 'Up' || key0 === 'Down';
+    // Look keys only turn the camera — never act, undo, or remove pieces.
+    if (isLook) return true;
+    if (typeof dhNoteMoveKey === 'function') dhNoteMoveKey(e, true);
     if (!dh || e.repeat) return false;
     const k = e.code || '';
     if (dh.intro){

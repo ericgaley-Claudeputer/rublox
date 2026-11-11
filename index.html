@@ -181,7 +181,9 @@ body.dark .sitem canvas{background:linear-gradient(#34427e,#26306a)}
 #obbyView,#obbyView canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;z-index:0;pointer-events:auto}
 .ohud{position:absolute;top:10px;left:10px;right:10px;z-index:auto;display:flex;justify-content:space-between;gap:10px;pointer-events:none;flex-wrap:wrap}
 .ostats{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;max-width:min(46vw,380px);position:relative;z-index:40}
-#dhBox{display:flex;flex-wrap:wrap;align-items:center;gap:0 2px;max-width:min(42vw,360px);overflow:hidden;text-overflow:ellipsis;line-height:1.25;position:relative;z-index:40}
+.dhstack{position:absolute;top:max(10px,calc(env(safe-area-inset-top) + 8px));left:max(10px,env(safe-area-inset-left));z-index:40;display:none;flex-direction:column;align-items:stretch;gap:10px;max-width:min(42vw,280px);pointer-events:none}
+.dhstack.show{display:flex}
+#dhBox{display:none;background:rgba(255,255,255,.92);color:#1d2340;font-weight:900;font-size:17px;padding:8px 14px;border-radius:14px;box-shadow:0 4px 0 rgba(0,0,0,.18);max-width:100%;overflow:hidden;line-height:1.3;position:relative;z-index:40;pointer-events:auto;white-space:normal;word-break:break-word}
 #dhBox b{font-weight:900}
 #obby.paused #dhBox, #obby.dh-intro #dhBox, #obby.dh-intro #oCross, #obby.dh-intro .ocross{
   display:none !important;
@@ -518,7 +520,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .dhguide.show{display:flex}
 .dhgoal{display:none;position:absolute;top:max(10px,calc(env(safe-area-inset-top) + 8px));left:50%;transform:translateX(-50%);z-index:10;background:rgba(29,35,64,.94);color:#fff;padding:12px 22px;border-radius:20px;font-weight:900;font-size:22px;line-height:1.25;text-align:center;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.28);max-width:min(92vw,720px)}
 .dhgoal.show{display:block}
-.dhsteps{display:none;position:absolute;top:max(86px,calc(env(safe-area-inset-top) + 78px));left:max(10px,env(safe-area-inset-left));z-index:10;background:rgba(255,250,240,.94);border:3px solid #ffd23f;border-radius:16px;padding:8px 10px 10px;width:min(46vw,260px);box-shadow:0 4px 0 rgba(0,0,0,.12);pointer-events:none;font-weight:800;color:#1d2340}
+.dhsteps{display:none;position:relative;top:auto;left:auto;z-index:10;background:rgba(255,250,240,.94);border:3px solid #ffd23f;border-radius:16px;padding:8px 10px 10px;width:100%;max-width:100%;box-shadow:0 4px 0 rgba(0,0,0,.12);pointer-events:none;font-weight:800;color:#1d2340}
 .dhsteps.show{display:block}
 .dhstepsH{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#6b7290;margin-bottom:4px}
 .dhstep{font-size:14px;line-height:1.35;padding:3px 6px;border-radius:8px}
@@ -540,7 +542,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 #obby.paused .dhtip, #obby.dh-paused .dhtip, #obby.paused #dhTip, #obby.dh-paused #dhTip{
   display:none !important; visibility:hidden !important; pointer-events:none !important;
 }
-#obby.dh-intro #dhBar, #obby.dh-intro #dhInv, #obby.dh-intro #dhCarry, #obby.dh-intro #dhHand, #obby.dh-intro #dhAct, #obby.dh-intro #dhBox, #obby.dh-intro #oCross, #obby.dh-intro .ocross{
+#obby.dh-intro #dhBar, #obby.dh-intro #dhInv, #obby.dh-intro #dhCarry, #obby.dh-intro #dhHand, #obby.dh-intro #dhAct, #obby.dh-intro #dhBox, #obby.dh-intro #dhStack, #obby.dh-intro #oCross, #obby.dh-intro .ocross{
   display:none !important;
 }
 .dhtip b{display:block;color:#3a86ff;font-size:13px;text-transform:uppercase;margin-bottom:4px}
@@ -1165,7 +1167,6 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   <div class="ohud">
     <div class="ostats">
       <span id="oStageBox">🏁 Lv <b id="oLvl">1</b><span id="oCpWrap"> · 🚩 <b id="oStage">1</b>/<b id="oStageN">3</b></span></span>
-      <span id="dhBox" class="dhbox" style="display:none"></span>
       <span id="dbBox" style="display:none"><b id="dbN">💃 Dance</b></span>
       <span id="hmBox" style="display:none"><b id="hmN">👻 Escape</b></span>
       <span id="sbBox" style="display:none"><b id="sbN">🐴 Stable</b></span>
@@ -1340,7 +1341,10 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   <div class="dhshop" id="dhUp" style="display:none"></div>
   <div class="dhguide" id="dhGuide" style="display:none"><span class="dhgarrow">➤</span> <span id="dhGuideT">Go to the Supply Yard</span></div>
   <div class="dhgoal" id="dhGoal" style="display:none">Stake every corner of your house outline</div>
-  <div class="dhsteps" id="dhSteps" style="display:none"></div>
+  <div class="dhstack" id="dhStack" style="display:none">
+    <div id="dhBox" class="dhbox" style="display:none"></div>
+    <div class="dhsteps" id="dhSteps" style="display:none"></div>
+  </div>
   <div class="dhtip" id="dhTip" style="display:none"><b>Quick tip</b><span id="dhTipT"></span><button type="button" id="dhTipX">OK</button></div>
   <div class="dhhand" id="dhHand" style="display:none"></div>
   <div class="dhlookhint" id="dhLookHint" style="display:none">Click the view to look around · Esc or Tab to click buttons</div>
@@ -1573,7 +1577,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-19';
+const BUILD = '2026.11.11-20';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -14046,9 +14050,21 @@ const Obby = (() => {
     if (mxn && mxn.phase === 'mixing') return '🌀 Mixing…';
     if (mxn && ((mxn.cement|0) >= 1 && (mxn.sand|0) >= 1)) return '🌀 Mix concrete';
     if (mxn && (mxn.mixed|0) >= 1) return '🪣 Fill wheelbarrow';
-    if (dh.carry && dh.carry.id === 'wetmix' && onLot) return '🪣 Hold click to pour concrete' + prog('pour', 'Foundation spots poured');
-    if (dh.carry && dh.carry.id === 'brick' && onLot) return '🧱 Aim at the glowing outline and click to place a brick';
-    if (dh.carry && dh.carry.id === 'glass' && onLot) return '🪟 Install glass';
+    if (dh.carry && dh.carry.id === 'wetmix' && onLot){
+      const later = dhCarryLaterPrompt('wetmix');
+      if (later) return later;
+      return '🪣 Hold click to pour concrete' + prog('pour', 'Foundation spots poured');
+    }
+    if (dh.carry && dh.carry.id === 'brick' && onLot){
+      const later = dhCarryLaterPrompt('brick');
+      if (later) return later;
+      return '🧱 Aim at the glowing outline and click to place a brick';
+    }
+    if (dh.carry && dh.carry.id === 'glass' && onLot){
+      const later = dhCarryLaterPrompt('glass');
+      if (later) return later;
+      return '🪟 Install glass';
+    }
     if (pile && !dh.carry) return '📦 Pick up materials';
     if (dh.carry && pile && dh.carry.id !== 'wetmix') return '📦 Dump on your plot';
     if (dhNearYard()) return key + ': Open the Supply Yard';
@@ -14059,8 +14075,12 @@ const Obby = (() => {
     const why = dhWhyNot();
     if (why) return why;
     if (dhCanBuild(dh.aim) || onLot){
+      const stageJob = dhJobForStage();
+      const useJob = stageJob || dh.job;
+      const later = dh.carry && dhCarryLaterPrompt(dh.carry.id);
+      if (later) return later;
       const labels = {mark: key + ': Place stake here' + prog('mark', 'Stakes'), dig: key + ': Dig the foundation spot here' + prog('dig', 'Foundation spots dug'), pour: key + ': Hold to pour concrete here' + prog('pour', 'Foundation spots poured'), brick:'🧱 Lay a brick', stud:'🪵 Set a stud', rafter:'🪜 Set a rafter', shingle:'🏠 Nail a shingle', frame:'🚪 Fit a frame', glass:'🪟 Install glass', paint:'🎨 Paint', furn:'🛋️ Place furniture'};
-      return labels[dh.job] || '🏗️ Build';
+      return labels[useJob] || labels[dh.job] || '🏗️ Build';
     }
     return '';
   }
@@ -14144,7 +14164,7 @@ const Obby = (() => {
     const step = Math.max(0, dt || 0);
     if (step <= 0) return false;
     dh._lookHold = (dh._lookHold || 0) + step;
-    const turn = (Math.PI / 2) * step; // 90°/s while held; short taps get a 4° keydown nudge
+    const turn = (70 * Math.PI / 180) * step; // ~70°/s while held; short taps get a 2° keydown nudge
     cam.yaw -= yawK * turn;
     cam.pitch = Math.max(-1.3, Math.min(1.4, cam.pitch + pitK * turn * 0.9));
     return true;
@@ -14638,6 +14658,7 @@ const Obby = (() => {
   }
   function dhHud(){
     if (!dh) return;
+    if (!dh._syncingJob) dhSyncJobToStage();
     const n = $('#dhN'); if (n) n.textContent = '🪙 ' + Math.floor(dh.bank);
     const goal = $('#dhGoal');
     if (goal){
@@ -14697,9 +14718,67 @@ const Obby = (() => {
     const held = dhHeldInfo();
     const carry = held && held.carryText;
     if (carry && carry !== 'Hands empty') bits.push(carry);
+    // Don't also append the tool emoji when the carry line already names the held tool,
+    // and never keep empty or separator-only pieces.
     const tool = dh.tool === 'delete' ? '🗑️' : ({mark:'📍', dig:'🕳️', mix:'🌀', pour:'🪣', brick:'🧱', stud:'🪵', rafter:'🪜', shingle:'🏠', frame:'🚪', glass:'🪟', paint:'🎨', furn:'🛋️'}[dh.job] || '');
-    if (tool) bits.push(tool);
-    return bits;
+    if (tool && !(carry && carry !== 'Hands empty' && carry.indexOf(tool) >= 0)) bits.push(tool);
+    return bits.map(b => String(b).replace(/^[·\s]+|[·\s]+$/g, '').trim()).filter(Boolean);
+  }
+  function dhJobForStage(stage){
+    stage = stage || (dh && dhStageId());
+    return ({stake:'mark', dig:'dig', pour:'pour', brick:'brick', stud:'stud', rafter:'rafter', shingle:'shingle', frame:'frame', glass:'glass', paint:'paint', furn:'furn'})[stage] || null;
+  }
+  function dhSyncJobToStage(){
+    if (!dh || dh.intro) return false;
+    const stage = dhStageId();
+    const job = dhJobForStage(stage);
+    if (!job){ dh._stageId = stage; return false; }
+    const advanced = !!(dh._stageId && dh._stageId !== stage);
+    const first = !dh._stageId;
+    dh._stageId = stage;
+    if (dh.job === job) return false;
+    if (!advanced && !first) return false;
+    dh.job = job;
+    if (dh.tool !== 'delete') dh.tool = 'place';
+    if (dh._syncingJob) return true;
+    dh._syncingJob = true;
+    try {
+      if (typeof dhBar === 'function') dhBar();
+      if (typeof updateDhChrome === 'function') updateDhChrome();
+    } finally { dh._syncingJob = false; }
+    return true;
+  }
+  function dhStageHint(){
+    const stage = dh && dhStageId();
+    return ({
+      stake: 'stake the outline now',
+      dig: 'dig the foundation now',
+      pour: 'pour the foundation now',
+      brick: 'lay bricks now',
+      stud: 'set studs now',
+      rafter: 'set rafters now',
+      shingle: 'nail shingles now',
+      frame: 'fit frames now',
+      glass: 'install glass now',
+      paint: 'paint now',
+      furn: 'place furniture now'
+    })[stage] || 'keep building';
+  }
+  function dhCarryLaterPrompt(id){
+    if (!id) return null;
+    const stage = dhStageId();
+    const ready = {
+      glass: ['glass'],
+      brick: ['brick'],
+      wood: ['stud', 'rafter', 'frame'],
+      shingle: ['shingle'],
+      paint: ['paint'],
+      wetmix: ['pour']
+    };
+    const ok = (ready[id] || [id]).includes(stage);
+    if (ok) return null;
+    const names = {glass:'install glass', brick:'lay bricks', wood:'build with wood', shingle:'nail shingles', paint:'paint', wetmix:'pour concrete'};
+    return 'You can ' + (names[id] || 'use that') + ' later; ' + dhStageHint();
   }
   function updateDhChrome(){
     const intro = !!(dh && dh.intro);
@@ -14730,12 +14809,18 @@ const Obby = (() => {
       const m = dhMatOf(id); const v = dhInvCount(id);
       return v ? (m.e + v) : '';
     }).filter(Boolean) : [];
+    const stack = $('#dhStack');
+    if (stack){
+      const showStack = inDh && !intro;
+      stack.style.display = showStack ? 'flex' : 'none';
+      if (showStack) stack.classList.add('show'); else stack.classList.remove('show');
+    }
     const box = $('#dhBox');
     if (box){
       if (hideStatus){ box.style.display = 'none'; }
       else {
         box.style.display = '';
-        box.innerHTML = bits.map(b => '<b>' + b + '</b>').join('<span class="dhsep"> · </span>');
+        box.innerHTML = bits.map(b => '<b>' + b.replace(/</g,'&lt;') + '</b>').join(' · ');
       }
     }
     const inv = $('#dhInv');
@@ -14907,7 +14992,7 @@ const Obby = (() => {
     if (code === 'KeyK' || key === 'k' || key === 'K') keys.KeyK = on;
     if (code === 'KeyL' || key === 'l' || key === 'L') keys.KeyL = on;
     if (on && typeof cam !== 'undefined' && cam){
-      const nudge = 4 * Math.PI / 180; // ~4° immediate turn so a 50 ms tap still looks
+      const nudge = 2 * Math.PI / 180; // ~2° immediate turn so a short tap still looks, but not a big swing
       const right = (code === 'ArrowRight' || code === 'KeyL' || key === 'ArrowRight' || key === 'Right');
       const left = (code === 'ArrowLeft' || code === 'KeyJ' || key === 'ArrowLeft' || key === 'Left');
       const down = (code === 'ArrowDown' || code === 'KeyK' || key === 'ArrowDown' || key === 'Down');
@@ -14920,11 +15005,37 @@ const Obby = (() => {
     }
     return true;
   }
+  function dhNoteMoveKey(e, down){
+    if (!e || !dh || dh.intro) return false;
+    if (typeof paused !== 'undefined' && paused) return false;
+    if (typeof dhMenusUp === 'function' && dhMenusUp()) return false;
+    if (dhIsUiEvent(e, 'key')) return false;
+    const code = e.code || '';
+    const map = {KeyW:[0,1], KeyS:[0,-1], KeyA:[-1,0], KeyD:[1,0]};
+    if (!(code in map)) return false;
+    if (down !== false && typeof P !== 'undefined' && P && typeof cam !== 'undefined' && cam){
+      const step = 0.45; // metres — a short W tap still takes a small step
+      const sx = map[code][0], sz = map[code][1];
+      const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), rx = -fz, rz = fx;
+      const dx = (fx * sz + rx * sx) * step, dz = (fz * sz + rz * sx) * step;
+      P.x += dx; P.z += dz;
+    }
+    return true;
+  }
+
   function dhKey(e){
     if (!e) return false;
     if (typeof dhOnResetKey === 'function' && dhOnResetKey(e)) return true;
     if (dhIsUiEvent(e, (e.type && /^key/i.test(e.type || '')) ? 'key' : 'pointer') && e.type && /pointer|mouse|click/i.test(e.type || '')) return true;
     if (typeof dhNoteLookKey === 'function') dhNoteLookKey(e, true);
+      if (typeof dhNoteMoveKey === 'function') dhNoteMoveKey(e, true);
+    const code0 = (e.code || ''), key0 = (e.key || '');
+    const isLook = /^(ArrowLeft|ArrowRight|ArrowUp|ArrowDown|KeyI|KeyJ|KeyK|KeyL)$/.test(code0)
+      || key0 === 'ArrowLeft' || key0 === 'ArrowRight' || key0 === 'ArrowUp' || key0 === 'ArrowDown'
+      || key0 === 'Left' || key0 === 'Right' || key0 === 'Up' || key0 === 'Down';
+    // Look keys only turn the camera — never act, undo, or remove pieces.
+    if (isLook) return true;
+    if (typeof dhNoteMoveKey === 'function') dhNoteMoveKey(e, true);
     if (!dh || e.repeat) return false;
     const k = e.code || '';
     if (dh.intro){
@@ -15374,6 +15485,7 @@ function dhLayoutHud(){
       if (!running) return;
       if (e.target && e.target.closest && e.target.closest('input, textarea, select')) return;   // typing a pet name etc.
       if (typeof dhNoteLookKey === 'function') dhNoteLookKey(e, true);
+      if (typeof dhNoteMoveKey === 'function') dhNoteMoveKey(e, true);
       // While paused, let focused pause/HUD buttons (Home, Exit, Reset) receive Enter/Space.
       if ((paused || menuOpen) && e.target && e.target.closest && e.target.closest('#oPausePanel, #oExit, #oExit2, #oExit3, #oHome, #oHome2, #dhResetBtn, .obtns, button') && e.code !== 'Escape' && e.code !== 'KeyP') return;
       if (menuOpen && e.code !== 'Escape' && e.code !== 'KeyP') return;
