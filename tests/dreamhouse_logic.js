@@ -38,7 +38,7 @@ function world(store0, opts){
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign};`, ctx);
   return ctx;
 }
 
@@ -399,8 +399,10 @@ Wf.A.dhKey({code:'KeyE', repeat:false});
 chk('E with nothing to pour points you to the Supply Yard or digging first', Wf.banners.some(t => /Supply Yard|Dig the foundation|Walk onto your plot/i.test(t)), Wf.banners);
 Wf.P.x = Wf.A.DH_YARD.x; Wf.P.z = Wf.A.DH_YARD.z;
 chk('walking into the yard is detected so E can open the menu', Wf.A.dhNearYard() === true);
+// Stand on the north edge, away from the south piles, so E still opens the menu.
+Wf.P.z = Wf.A.DH_YARD.z + 3.5;
 Wf.A.dhKey({code:'KeyE', repeat:false});
-chk('E at the Supply Yard opens the yard menu', Wf.A.dh.yardOpen === true, {open:Wf.A.dh.yardOpen, found:Wf.A.dh.foundYard});
+chk('E at the Supply Yard opens the yard menu', Wf.A.dh.yardOpen === true, {open:Wf.A.dh.yardOpen, found:Wf.A.dh.foundYard, bin:Wf.A.dhNearBin(), P:{x:Wf.P.x,z:Wf.P.z}});
 
 
 /* World bounds, shop stays put, yard is reachable from spawn */
@@ -481,6 +483,44 @@ Wp.A.dreamhouseUpdate(0.02);
 const pFar = Wp.A.dhActPrompt();
 chk('off the plot the prompt says to walk onto your plot, not to place a stake', /Walk onto your plot/i.test(pFar) && !/Place stake here/.test(pFar), pFar);
 Wp.P.x = farX; Wp.P.z = farZ;
+
+
+/* Map polish: sign on the back edge, easier pile E, guide stays after arriving at the yard */
+const Wpol = world({rubloxDreamHouse: JSON.stringify({ver:5, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, goals:{}, upgrades:{}})}, {coins:20});
+Wpol.A.buildDreamHouse(); Wpol.A.dreamhouseEnter();
+const polSignX = (Wpol.A.dh.yardSignParts && Wpol.A.dh.yardSignParts[0] && Wpol.A.dh.yardSignParts[0].position.x);
+const [polOx] = Wpol.A.dhOrigin(0);
+const polPlotX = polOx + 8 * 1.4 / 2;
+chk('the Supply Yard wooden sign sits on the back edge, farther from the plot than the yard center', typeof polSignX === 'number' && Math.abs(polSignX - polPlotX) > Math.abs(Wpol.A.DH_YARD.x - polPlotX) && (Wpol.A.dh.yardSignParts||[]).length >= 3, {polSignX, yard:Wpol.A.DH_YARD.x, polPlotX, parts:(Wpol.A.dh.yardSignParts||[]).length});
+chk('save version stays at v5 so existing houses are not migrated away', Wpol.A.DH_VER === 5 && Wpol.A.DH_KEY === 'rubloxDreamHouse');
+chk('pile grab radius is larger than the old 1.25 m reach', Wpol.A.DH_BIN_R >= 2.5 && Wpol.A.DH_BIN_R_IN_YARD >= Wpol.A.DH_BIN_R, {r:Wpol.A.DH_BIN_R, inYard:Wpol.A.DH_BIN_R_IN_YARD});
+
+const polBin = (Wpol.A.dh.bins||[])[0];
+// Stand south of the first row so a neighboring aisle pile is not closer.
+Wpol.P.x = polBin.x; Wpol.P.z = polBin.z - 2.4;
+const polNear = Wpol.A.dhNearBin();
+chk('a pile is in grab reach from 2.4 m away (was 1.25)', !!polNear && polNear.id === polBin.id, {near:polNear && polNear.id, expect:polBin.id, at:{x:Wpol.P.x,z:Wpol.P.z}, pile:{x:polBin.x,z:polBin.z}});
+const polPrompt = Wpol.A.dhActPrompt();
+const polBinName = ((Wpol.A.DH_MATS.find(m => m.id === polBin.id) || {}).name) || 'supplies';
+chk('near a pile the prompt is E: Grab <item>', /Grab /i.test(polPrompt) && polPrompt.indexOf(polBinName) >= 0, {polPrompt, polBinName, id:polBin.id});
+const polBank = Wpol.A.dh.bank;
+Wpol.A.dhKey({code:'KeyE', repeat:false});
+chk('E from 2.4 m grabs free supplies from the nearest pile', !!(Wpol.A.dh.carry && Wpol.A.dh.carry.id === polBin.id) && Wpol.A.dh.bank === polBank, {carry:Wpol.A.dh.carry, bank:Wpol.A.dh.bank, before:polBank});
+
+Wpol.A.dh.carry = null;
+Wpol.A.dh.foundYard = true;
+Wpol.A.dh.stock = {};
+Wpol.A.dhSetJob('brick');
+Wpol.P.x = Wpol.A.DH_YARD.x + 8; Wpol.P.z = Wpol.A.DH_YARD.z + 8;
+const polG1 = Wpol.A.dhGuideTarget();
+chk('after finding the yard, empty hands still get a guide arrow to the nearest supply pile', !!(polG1 && /Bricks|Cement|Sand|Wood|supplies|Supply/i.test(polG1.text)), polG1);
+Wpol.A.dh.carry = {id: 'brick', n: 4};
+const polG2 = Wpol.A.dhGuideTarget();
+chk('while carrying, the guide arrow points back to the plot', !!(polG2 && /plot/i.test(polG2.text)), polG2);
+const polSpawn = Wpol.A.dhSpawnPos(0);
+Wpol.P.x = polSpawn.x; Wpol.P.z = polSpawn.z;
+const polG3 = Wpol.A.dhGuideTarget();
+chk('the plot guide hides once you are on your lot with materials', polG3 == null, polG3);
 
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);

@@ -1,4 +1,4 @@
-  /* ===================== t251u + t249u/t253u: Tessa's map — plot in the center, free Supply Yard (NE), Furniture Store (SW), Upgrades builder (SE). Coins from milestones buy furniture and upgrades only. ===================== */
+  /* ===================== t251u + t249u/t253u + map polish: Supply Yard sign on the back edge (fades if the camera is near), guide arrow to the nearest pile or back to the plot, easier E-to-grab at piles. ===================== */
   const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 5;
   const DH_FOOT = {x0: 1, z0: 1, x1: 6, z1: 6}; // slab footprint inside the plot
   const DH_BRICK_W = .5, DH_BRICK_H = .24, DH_BRICK_D = .28, DH_COURSES = 8;
@@ -451,15 +451,21 @@
     const [pox, poz] = dhOrigin((dh && dh.mine) || 0);
     const px = pox + DH_N * DH_CELL, pz = poz + DH_N * DH_CELL / 2;
     plat((px + DH_YARD.x) / 2, .14, (pz + DH_YARD.z) / 2, Math.max(4, Math.abs(DH_YARD.x - px) + 1), 3.0, '#cfc4a8', .18);
-    // board + posts facing the plot (west)
+    // Wooden sign sits on the yard's BACK (west) edge, away from the approach
+    // from the plot, so the follow camera does not clip through the board.
+    dh.yardSignParts = [];
     const board = new THREE.Mesh(new THREE.BoxGeometry(.22, 3.6, 8.4), dhMat('#8b4513'));
-    board.position.set(DH_YARD.x + 5.8, 4.4, DH_YARD.z); scene.add(board);
-    [[5.8, 2.2, -3.8], [5.8, 2.2, 3.8]].forEach(([x, y, z]) => {
+    board.position.set(DH_YARD.x - 5.8, 4.4, DH_YARD.z); scene.add(board);
+    dh.yardSignParts.push(board);
+    [[-5.8, 2.2, -3.8], [-5.8, 2.2, 3.8]].forEach(([x, y, z]) => {
       const post = new THREE.Mesh(new THREE.BoxGeometry(.24, 4.4, .24), dhMat('#5a4030'));
       post.position.set(DH_YARD.x + x, y, DH_YARD.z + z); scene.add(post);
+      dh.yardSignParts.push(post);
     });
-    dhPutSign(DH_YARD.x + 4.4, 5.5, DH_YARD.z + 1.1, '📦 SUPPLY YARD', 9.2, 1.8);
-    dhPutSign(DH_YARD.x + 4.4, 4.2, DH_YARD.z + 1.1, 'FREE SUPPLIES', 8.2, 1.4);
+    const sYard = dhPutSign(DH_YARD.x - 5.4, 5.5, DH_YARD.z + 1.1, '📦 SUPPLY YARD', 9.2, 1.8);
+    const sFree = dhPutSign(DH_YARD.x - 5.4, 4.2, DH_YARD.z + 1.1, 'FREE SUPPLIES', 8.2, 1.4);
+    if (sYard) dh.yardSignParts.push(sYard);
+    if (sFree) dh.yardSignParts.push(sFree);
     dhFlag(DH_YARD.x - 5.8, DH_YARD.z - 4.4, '#e23d3d');
     dhFlag(DH_YARD.x + 5.6, DH_YARD.z - 4.4, '#3a86ff');
     dhBeaconAt(DH_YARD, '#ffd23f', 'yardBeacon');
@@ -644,6 +650,29 @@
         if (!n.material) return;
         const mats = Array.isArray(n.material) ? n.material : [n.material];
         mats.forEach(m => { m.transparent = true; m.opacity = occlude ? .15 : 1; if ('depthWrite' in m) m.depthWrite = !occlude; });
+      });
+    });
+  }
+  function dhFadeYardSign(){
+    if (!dh || !dh.yardSignParts || !dh.yardSignParts.length || typeof camera === 'undefined' || !camera) return;
+    const cx = camera.position.x, cy = camera.position.y, cz = camera.position.z;
+    const px = P.x || 0, pz = P.z || 0;
+    const vx = px - cx, vz = pz - cz, L2 = vx * vx + vz * vz || 1;
+    const walk = (n, fn) => { fn(n); (n.children || []).forEach(c => walk(c, fn)); };
+    const tmp = (typeof THREE !== 'undefined' && THREE.Vector3) ? new THREE.Vector3() : null;
+    dh.yardSignParts.forEach(root => {
+      if (!root) return;
+      let wx = root.position.x, wy = root.position.y, wz = root.position.z;
+      if (tmp && root.getWorldPosition){ root.getWorldPosition(tmp); wx = tmp.x; wy = tmp.y; wz = tmp.z; }
+      let u = ((wx - cx) * vx + (wz - cz) * vz) / L2;
+      u = Math.max(0, Math.min(1, u));
+      const d = Math.hypot(wx - (cx + u * vx), wz - (cz + u * vz));
+      const camDist = Math.hypot(wx - cx, wy - cy, wz - cz);
+      const occlude = (d < 3.4 && u > .04 && u < .96) || camDist < 5;
+      walk(root, n => {
+        if (!n.material) return;
+        const mats = Array.isArray(n.material) ? n.material : [n.material];
+        mats.forEach(m => { m.transparent = true; m.opacity = occlude ? .12 : 1; if ('depthWrite' in m) m.depthWrite = !occlude; });
       });
     });
   }
@@ -879,9 +908,17 @@
     if (!dh) return false;
     return Math.hypot((P.x || 0) - DH_UP.x, (P.z || 0) - DH_UP.z) < 7;
   }
+  function dhNearestBin(){
+    if (!dh || !dh.bins) return null;
+    let best = null, bd = 1e9;
+    dh.bins.forEach(b => { const d = Math.hypot((P.x || 0) - b.x, (P.z || 0) - b.z); if (d < bd){ bd = d; best = b; } });
+    return best;
+  }
+  const DH_BIN_R = 2.8, DH_BIN_R_IN_YARD = 4.5;
   function dhNearBin(){
     if (!dh || !dh.bins) return null;
-    let best = null, bd = 1.25;
+    const r = (typeof dhNearYard === 'function' && dhNearYard()) ? DH_BIN_R_IN_YARD : DH_BIN_R;
+    let best = null, bd = r;
     dh.bins.forEach(b => { const d = Math.hypot((P.x || 0) - b.x, (P.z || 0) - b.z); if (d < bd){ bd = d; best = b; } });
     return best;
   }
@@ -1555,7 +1592,7 @@
       return c.need ? (' · ' + word + ' ' + c.have + '/' + c.need) : '';
     };
     if (dh.near >= 0 && dh.near !== dh.mine) return '💛 Like this house';
-    if (dhNearBin() && !dhNearMixer() && !dhNearPile()){ const b = dhNearBin(), m = dhMatOf(b && b.id); return (m ? m.e + ' ' : '') + key + ': Take free ' + ((m && m.name) || 'supplies'); }
+    if (dhNearBin() && !dhNearMixer() && !dhNearPile()){ const b = dhNearBin(), m = dhMatOf(b && b.id); return (m ? m.e + ' ' : '') + key + ': Grab ' + ((m && m.name) || 'supplies'); }
     if (dhNearYard() && !dhNearMixer() && !dhNearPile()) return key + ': Open the Supply Yard';
     if (dhNearFurn() && !dhNearMixer() && !dhNearPile()) return key + ': Open the Furniture Store';
     if (dhNearUp() && !dhNearMixer() && !dhNearPile()) return key + ': Talk to the builder';
@@ -1597,6 +1634,7 @@
     dhClampPlayer();
     dhCamComfort(dt);
     dhFadeOccludingTrees();
+    dhFadeYardSign();
     dh.aim = dhAimCell();
     // cure wet concrete
     (dh.pieces[dh.mine] || []).slice().forEach(rec => {
@@ -1637,21 +1675,80 @@
     dhHud();
   }
   function dreamhouseAnimate(){}
+  function dhWantedSupply(){
+    if (!dh) return null;
+    const job = dh.job;
+    if (job === 'brick') return 'brick';
+    if (job === 'stud' || job === 'rafter' || job === 'frame') return 'wood';
+    if (job === 'shingle') return 'shingle';
+    if (job === 'glass') return 'glass';
+    if (job === 'paint') return 'paint';
+    if (job === 'mix' || job === 'pour'){
+      const mx = dh.mixers && dh.mixers[dh.mine];
+      if (mx && (mx.cement|0) >= 1 && (mx.sand|0) < 1) return 'sand';
+      if (mx && (mx.sand|0) >= 1 && (mx.cement|0) < 1) return 'cement';
+      return 'cement';
+    }
+    return null;
+  }
+  function dhNeedYardSupplies(){
+    if (!dh || dh.carry) return false;
+    const want = dhWantedSupply();
+    if (!want) return !dh.foundYard;
+    return !(dh.stock[want]|0);
+  }
+  function dhGuideTarget(){
+    if (!dh || dh.intro || dh.yardOpen || dh.shopOpen || dh.upOpen) return null;
+    const px = P.x || 0, pz = P.z || 0;
+    if (dh.carry){
+      if (dhNearOwnPlot()) return null;
+      const [ox, oz] = dhOrigin(dh.mine);
+      return {x: ox + DH_N * DH_CELL / 2, z: oz + DH_N * DH_CELL / 2, text: 'Go to your plot'};
+    }
+    const want = dhWantedSupply();
+    const need = dhNeedYardSupplies();
+    const dYard = Math.hypot(px - DH_YARD.x, pz - DH_YARD.z);
+    // Once you're at or around the yard, keep pointing at the nearest pile
+    // (the old arrow hid as soon as foundYard flipped, leaving no hint).
+    if (dYard < 16){
+      const bins = dh.bins || [];
+      let best = null, bd = 1e9;
+      bins.forEach(b => {
+        if (want && b.id !== want) return;
+        const d = Math.hypot(px - b.x, pz - b.z);
+        if (d < bd){ bd = d; best = b; }
+      });
+      if (!best){
+        bins.forEach(b => {
+          const d = Math.hypot(px - b.x, pz - b.z);
+          if (d < bd){ bd = d; best = b; }
+        });
+      }
+      if (best && (need || dYard < 10) && bd > 1.15){
+        const m = dhMatOf(best.id);
+        return {x: best.x, z: best.z, text: 'Go to the ' + (m ? m.name : 'supplies')};
+      }
+      return null;
+    }
+    if (need) return {x: DH_YARD.x, z: DH_YARD.z, text: 'Go to the Supply Yard'};
+    return null;
+  }
   function dhHud(){
     if (!dh) return;
     const n = $('#dhN'); if (n) n.textContent = '🪙 ' + Math.floor(dh.bank);
     const g = $('#dhGuide'), gt = $('#dhGuideT');
     if (g){
-      const show = !dh.foundYard && !dh.yardOpen && !dh.shopOpen && !dh.upOpen && !dh.intro;
+      const tgt = dhGuideTarget();
+      const show = !!tgt;
       g.style.display = show ? '' : 'none';
       if (show){
         g.classList.add('show');
-        const dx = DH_YARD.x - (P.x || 0), dz = DH_YARD.z - (P.z || 0);
+        const dx = tgt.x - (P.x || 0), dz = tgt.z - (P.z || 0);
         const yaw = (typeof cam !== 'undefined' && cam && cam.yaw) || 0;
         const ang = Math.atan2(dx, dz) - yaw;
         const arrow = g.querySelector('.dhgarrow');
         if (arrow) arrow.style.transform = 'rotate(' + (ang * 180 / Math.PI) + 'deg)';
-        if (gt) gt.textContent = 'Go to the Supply Yard';
+        if (gt) gt.textContent = tgt.text;
       } else g.classList.remove('show');
     }
     const inv = $('#dhInv');
