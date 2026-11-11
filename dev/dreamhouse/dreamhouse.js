@@ -1,4 +1,4 @@
-  /* ===================== t251u: 🏡 DREAM HOUSE BUILDERS — menus hide the prompt, Escape closes shop, tidy yard, honest prompts ===================== */
+  /* ===================== t251u: 🏡 DREAM HOUSE BUILDERS — menus hide the prompt, Escape closes shop, tidy yard, honest prompts. t243u: sticky Shop/Yard Close at top of panel ===================== */
   const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 4;
   const DH_FOOT = {x0: 1, z0: 1, x1: 6, z1: 6}; // slab footprint inside the plot
   const DH_BRICK_W = .5, DH_BRICK_H = .24, DH_BRICK_D = .28, DH_COURSES = 8;
@@ -1138,7 +1138,7 @@
       const n = (dh.stock[m.id]|0) + (dh.carry && dh.carry.id === m.id ? dh.carry.n : 0);
       return '<button class="dhsitem" data-dhbuy="' + m.id + '"><span class="dhe">' + m.e + '</span><b>' + m.name + '</b><small>' + m.cost + '🪙' + (n ? ' · have ' + n : '') + '</small></button>';
     }).join('');
-    el.innerHTML = '<div class="dhsbox"><h3>📦 Supply Yard</h3><p class="dhsbank">🪙 ' + Math.floor(dh.bank) + ' building coins · walk up and press E to shop</p><div class="dhsgrid">' + items + '</div><button class="dhb" id="dhYardX">Close</button></div>';
+    el.innerHTML = '<div class="dhsbox"><div class="dhshead"><h3>📦 Supply Yard</h3><button class="dhb" id="dhYardX">Close</button></div><div class="dhsbody"><p class="dhsbank">🪙 ' + Math.floor(dh.bank) + ' building coins · walk up and press E to shop</p><div class="dhsgrid">' + items + '</div></div></div>';
   }
   function dhToggleShop(on){
     if (!dh) return;
@@ -1161,7 +1161,7 @@
       const maxed = have >= u.max;
       return '<button class="dhsitem' + (maxed ? ' max' : '') + '" data-dhup="' + u.id + '"' + (maxed ? ' disabled' : '') + '><span class="dhe">' + u.e + '</span><b>' + u.name + '</b><small>' + (maxed ? 'Max ' + have + '/' + u.max : u.cost + '🪙 · ' + have + '/' + u.max) + '<br>' + u.desc + '</small></button>';
     }).join('');
-    el.innerHTML = '<div class="dhsbox"><h3>🛒 Dream House Shop</h3><p class="dhsbank">🪙 ' + Math.floor(dh.bank) + ' coins · earned from build milestones</p><h4>Furniture</h4><div class="dhsgrid">' + furn + '</div><h4>Upgrades</h4><div class="dhsgrid">' + ups + '</div><button class="dhb" id="dhShopX">Close</button></div>';
+    el.innerHTML = '<div class="dhsbox"><div class="dhshead"><h3>🛒 Dream House Shop</h3><button class="dhb" id="dhShopX">Close</button></div><div class="dhsbody"><p class="dhsbank">🪙 ' + Math.floor(dh.bank) + ' coins · earned from build milestones</p><h4>Furniture</h4><div class="dhsgrid">' + furn + '</div><h4>Upgrades</h4><div class="dhsgrid">' + ups + '</div></div></div>';
   }
   function dhCineRecs(){
     const recs = [];
