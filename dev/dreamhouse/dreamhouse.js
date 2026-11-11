@@ -6,7 +6,7 @@
   const DH_EYE = 1.6, DH_PLAYER_H = 1.8;
   const DH_SLAB_H = 0.30, DH_WALL_H = 2.70, DH_WALL_TOP = 3.00;
   const DH_DOOR_H = 2.25, DH_WIN_SILL = 0.90, DH_WIN_HEAD = 2.25;
-  const DH_ROOF_RISE = 1.20, DH_ROOF_APEX = 4.20, DH_ROOF_OVERHANG = 0.30;
+  const DH_ROOF_RISE = 1.80, DH_ROOF_APEX = 4.80, DH_ROOF_OVERHANG = 0.30;
   // Each placed 'brick' is a course segment (~0.56 x 0.45 x 0.30 m) so 6 tidy courses fill a tall wall without a huge click count.
   const DH_BRICK_W = 0.56, DH_BRICK_H = 0.45, DH_BRICK_D = 0.30, DH_COURSES = 6, DH_COURSES_LEGACY = 8;
   const DH_BRICKS_PER_CELL = 2.5, DH_SHINGLE_COLS = 4, DH_SHINGLE_ROWS = 2, DH_STUD_NEED = 8, DH_RAFTER_NEED = 4;
@@ -341,6 +341,13 @@
       const f = a[4]|0;
       if (!keep.some(b => b[0] === 'pane' && (b[4]|0) === f)) keep.push(['pane', 0, 0, 0, f, 0]);
     });
+    // A finished (glazed / furnish-step) house also gets the new front window, already glazed, so progress is not sent back to the glass step.
+    if (roofDone && (counts.winframe || counts.pane || counts.door)){
+      dhWindowFaces().forEach(f => {
+        if (!keep.some(b => b[0] === 'winframe' && (b[4]|0) === f)) keep.push(['winframe', 0, 0, 0, f, 0]);
+        if ((counts.pane || 0) > 0 && !keep.some(b => b[0] === 'pane' && (b[4]|0) === f)) keep.push(['pane', 0, 0, 0, f, 0]);
+      });
+    }
     const paintCols = {};
     take('paint').forEach(a => {
       let f = a[4]|0;
@@ -615,7 +622,7 @@
     }
     else if (id === 'pane'){
       const w = DH_BRICK_W * 2 - 0.12, h = DH_WIN_HEAD - DH_WIN_SILL - 0.12;
-      add(box(w, h, .03, M.glass), 0, 0, 0);
+      solid(w, h, .04, 0, 0, 0, M.glass);
       add(box(w * .22, h * .6, .008, M.glassShine || M.glass), -w * .18, h * .08, .02);
       add(box(w * .1, h * .28, .008, M.glassShine || M.glass), w * .2, -h * .12, .02);
     }
@@ -680,17 +687,23 @@
   function dhWallFaceWorld(plot, face, along, course){
     return dhOpeningWorld(plot, face, 'door');
   }
-  function dhOpeningWorld(plot, face, kind){
-    const b = dhFootWorld(plot);
-    const mid = (b.x1 - b.x0) / 2;
+  function dhOpeningAlongMeters(face, kind, st){
+    const mid = (dhBrickAlongCount(face, st) / 2) | 0;
+    const lo = (kind === 'window' && face === 0) ? mid + 2 : mid - 1;
+    const hi = lo + 1;
+    return ((lo + hi) / 2) * DH_BRICK_W + DH_BRICK_W / 2;
+  }
+  function dhOpeningWorld(plot, face, kind, st){
+    const b = dhFootWorld(plot, st);
+    const along = dhOpeningAlongMeters(face, kind, st);
     const y = (kind === 'window')
       ? (DH_SLAB_H + (DH_WIN_SILL + DH_WIN_HEAD) / 2)
       : (DH_SLAB_H + DH_DOOR_H / 2);
     const out = DH_BRICK_D / 2;
-    if (face === 0) return {x: b.x0 + mid, y, z: b.z0 + out};
-    if (face === 2) return {x: b.x0 + mid, y, z: b.z1 - out};
-    if (face === 1) return {x: b.x1 - out, y, z: b.z0 + mid};
-    return {x: b.x0 + out, y, z: b.z0 + mid};
+    if (face === 0) return {x: b.x0 + along, y, z: b.z0 + out};
+    if (face === 2) return {x: b.x1 - along, y, z: b.z1 - out};
+    if (face === 1) return {x: b.x1 - out, y, z: b.z0 + along};
+    return {x: b.x0 + out, y, z: b.z1 - along};
   }
   function dhPaintWorld(plot, face){
     const b = dhFootWorld(plot);
@@ -772,7 +785,7 @@
     const doorFilled = have.some(a => a[0] === 'doorframe' || a[0] === 'door');
     if (!have.some(a => a[0] === 'doorframe')) list.push({plot, face: 0, kind: 'doorframe', x: doorW.x, y: doorW.y, z: doorW.z});
     else if (!have.some(a => a[0] === 'door')) list.push({plot, face: 0, kind: 'door', x: doorW.x, y: doorW.y, z: doorW.z});
-    [1, 3].forEach(face => {
+    dhWindowFaces().forEach(face => {
       if (have.some(a => a[0] === 'winframe' && (a[4]|0) === face)) return;
       const w = plot == null ? {x:0,y: DH_SLAB_H + (DH_WIN_SILL+DH_WIN_HEAD)/2,z:0} : dhOpeningWorld(plot, face, 'window');
       list.push({plot, face, kind: 'winframe', x: w.x, y: w.y, z: w.z});
@@ -811,10 +824,30 @@
       return {rec, x: w.x, y: w.y, z: w.z, hx, hy: DH_BRICK_H / 2, hz, face: rec[4]|0, course: rec[2]|0, along: rec[3]|0};
     });
   }
+  function dhSolidWorld(group, s){
+    const gx = (group && group.position && group.position.x) || 0;
+    const gy = (group && group.position && group.position.y) || 0;
+    const gz = (group && group.position && group.position.z) || 0;
+    const ry = (group && group.rotation && group.rotation.y) || 0;
+    const c = Math.cos(ry), si = Math.sin(ry);
+    const ox = s.ox || 0, oy = s.oy || 0, oz = s.oz || 0;
+    // THREE.js Ry: x' = x*c + z*s, z' = -x*s + z*c
+    const x = gx + ox * c + oz * si;
+    const z = gz - ox * si + oz * c;
+    const y = gy + oy;
+    const absC = Math.abs(c), absS = Math.abs(si);
+    const hw = (s.hw || 0) * absC + (s.hd || 0) * absS;
+    const hd = (s.hw || 0) * absS + (s.hd || 0) * absC;
+    return {x, y, z, hw, hh: s.hh || 0, hd};
+  }
   function dhBindSolids(mesh, on){
     const list = (mesh && mesh.userData && mesh.userData.solids) || [];
     list.forEach(s => {
-      const b = {mesh: s.mesh, hw: s.hw, hh: s.hh, hd: s.hd, active: true, dx: 0, dy: 0, dz: 0, _dh: mesh};
+      const w = dhSolidWorld(mesh, s);
+      // Proxy in world space so the shared AABB resolver (which reads mesh.position) hits the wall, not the group origin.
+      if (!s._proxy) s._proxy = {position: {x: 0, y: 0, z: 0}, visible: true, userData: {dhProxy: true}};
+      s._proxy.position.x = w.x; s._proxy.position.y = w.y; s._proxy.position.z = w.z;
+      const b = {mesh: s._proxy, hw: w.hw, hh: w.hh, hd: w.hd, active: true, dx: 0, dy: 0, dz: 0, _dh: mesh};
       if (on){ if (typeof solids !== 'undefined') solids.push(b); s._solid = b; }
       else if (s._solid && typeof solids !== 'undefined'){ const i = solids.indexOf(s._solid); if (i >= 0) solids.splice(i, 1); s._solid = null; }
     });
@@ -1242,7 +1275,6 @@
     const p0 = dhProg();
     dh.bank = p0.coins; dh.likes = p0.likes; dh.goals = Object.assign({}, p0.goals); dh.stock = Object.assign(dhEmptyStock(), p0.stock); dh.v1pieces = p0.v1pieces; dh.upgrades = Object.assign(dhEmptyUpgrades(), p0.upgrades || {}); dh.introSeen = !!p0.introSeen; dh.tipsSeen = Object.assign({}, p0.tipsSeen || {}); dh.legacyHouse = !!p0.legacyHouse; dh.brickInst = {}; dh.hand = null; dh.outlines = null; dh.pourHold = false;
     if (!p0.granted){ dh.bank += DH_GRANT; dh.grantedNow = true; }
-    if (dhTestActive() && typeof banner === 'function') banner('🧪 Test house only — your real Dream House save is not used or written');
     dh.mine = dhAssignPlot();
     dhLayoutYard();
     dhBuildBounds();
@@ -1314,10 +1346,13 @@
     const mid = (span / 2) | 0;
     // Door: two center bricks on face 0, courses 0-4 (2.25 m), leaving a lintel course on top.
     if (face === 0 && along >= mid - 1 && along <= mid && course >= 0 && course <= 4) return true;
-    // Windows: two center bricks on faces 1 and 3, sill at course 2 (0.90 m), head at course 5 (2.25 m).
+    // Front window: two bricks to the right of the door (a one-brick pier between them).
+    if (face === 0 && along >= mid + 2 && along <= mid + 3 && course >= 2 && course <= 4) return true;
+    // Side windows: two center bricks on faces 1 and 3, sill at course 2 (0.90 m), head at 2.25 m.
     if ((face === 1 || face === 3) && along >= mid - 1 && along <= mid && course >= 2 && course <= 4) return true;
     return false;
   }
+  function dhWindowFaces(){ return [0, 1, 3]; }
 
   function dhPut(plot, rec, quiet){
     if (!dh || plot < 0 || plot >= DH_PLOTS) return null;
@@ -2509,6 +2544,30 @@
     const xh = $('#oCross'); if (xh) xh.style.display = '';
     if (typeof dhBar === 'function') dhBar();
     if (typeof dhHud === 'function') dhHud();
+    if (typeof dhShowTestNote === 'function') dhShowTestNote();
+  }
+  function dhShowTestNote(){
+    if (!dh || !dhTestActive()) return false;
+    let el = null;
+    try {
+      if (typeof document !== 'undefined' && document.getElementById) el = document.getElementById('dhTestNote');
+      if (!el && typeof $ === 'function') el = $('#dhTestNote');
+    } catch (e){}
+    if (!el) return false;
+    const msg = '🧪 Test house only — your real Dream House save is not used or written';
+    if (el.textContent !== undefined) el.textContent = msg;
+    if (el.classList && el.classList.add) el.classList.add('show');
+    if (el.style) el.style.display = '';
+    dh._testNoteShown = true;
+    if (typeof setTimeout === 'function'){
+      if (dh._testNoteT) try { clearTimeout(dh._testNoteT); } catch (e){}
+      dh._testNoteT = setTimeout(() => {
+        if (el.classList && el.classList.remove) el.classList.remove('show');
+        if (el.style) el.style.display = 'none';
+        dh._testNoteT = 0;
+      }, 4000);
+    }
+    return true;
   }
   function dreamhouseStop(){
     if (typeof dhClosePauseMenus === 'function') try { dhClosePauseMenus(); } catch (e){}
@@ -2702,12 +2761,93 @@
     });
   }
   function dhWalkCap(){ return (typeof keys !== 'undefined' && keys && (keys.ShiftLeft || keys.ShiftRight)) ? 7 : 4.5; }
+  function dhPlayerRadius(){ return (typeof R === 'number' && isFinite(R)) ? R : 0.45; }
+  function dhCollisionBoxes(plot){
+    if (!dh) return [];
+    plot = (plot == null) ? dh.mine : plot;
+    const list = dh.pieces[plot] || [];
+    const out = [];
+    list.forEach(rec => {
+      const id = rec[0];
+      if (id !== 'brick' && id !== 'pane') return;
+      const w = dhWorldRec(plot, rec);
+      const swap = Math.abs(Math.sin(w.ry || 0)) > 0.5;
+      let hw, hh, hd;
+      if (id === 'brick'){
+        hw = DH_BRICK_W / 2; hh = DH_BRICK_H / 2; hd = DH_BRICK_D / 2;
+      } else {
+        hw = (DH_BRICK_W * 2 - 0.12) / 2;
+        hh = (DH_WIN_HEAD - DH_WIN_SILL - 0.12) / 2;
+        hd = 0.04;
+      }
+      if (swap){ const t = hw; hw = hd; hd = t; }
+      out.push({x: w.x, y: w.y, z: w.z, hw, hh, hd, id});
+    });
+    return out;
+  }
+  function dhBoxHitsPlayer(box, px, py, pz, pr, ph){
+    return px + pr > box.x - box.hw && px - pr < box.x + box.hw &&
+           pz + pr > box.z - box.hd && pz - pr < box.z + box.hd &&
+           py + ph > box.y - box.hh && py < box.y + box.hh;
+  }
+  function dhClipAxis(axis, from, to, boxes){
+    const pr = dhPlayerRadius(), ph = (typeof dhPlayerHeight === 'function') ? dhPlayerHeight() : 1.8;
+    const py = (P && P.y) || 0;
+    let v = to;
+    (boxes || []).forEach(box => {
+      const px = axis === 'x' ? v : P.x;
+      const pz = axis === 'z' ? v : P.z;
+      if (!dhBoxHitsPlayer(box, px, py, pz, pr, ph)) return;
+      if (axis === 'x'){
+        const lo = box.x - box.hw - pr, hi = box.x + box.hw + pr;
+        v = (from <= box.x) ? Math.min(v, lo) : Math.max(v, hi);
+      } else {
+        const lo = box.z - box.hd - pr, hi = box.z + box.hd + pr;
+        v = (from <= box.z) ? Math.min(v, lo) : Math.max(v, hi);
+      }
+    });
+    return v;
+  }
+  function dhMovePlayer(dx, dz){
+    if (typeof P === 'undefined' || !P) return P;
+    const dist = Math.hypot(dx || 0, dz || 0);
+    const steps = Math.max(1, Math.ceil(dist / 0.12));
+    const boxes = dhCollisionBoxes();
+    for (let i = 0; i < steps; i++){
+      const ox = P.x, oz = P.z;
+      P.x = dhClipAxis('x', ox, P.x + (dx || 0) / steps, boxes);
+      P.z = dhClipAxis('z', oz, P.z + (dz || 0) / steps, boxes);
+    }
+    dhClipPlayerToWalls(boxes);
+    return P;
+  }
+  function dhClipPlayerToWalls(boxes){
+    if (typeof P === 'undefined' || !P) return P;
+    boxes = boxes || dhCollisionBoxes();
+    const pr = dhPlayerRadius(), ph = (typeof dhPlayerHeight === 'function') ? dhPlayerHeight() : 1.8;
+    const py = P.y || 0;
+    boxes.forEach(box => {
+      if (!dhBoxHitsPlayer(box, P.x, py, P.z, pr, ph)) return;
+      const pxL = (P.x + pr) - (box.x - box.hw);
+      const pxR = (box.x + box.hw) - (P.x - pr);
+      const pzL = (P.z + pr) - (box.z - box.hd);
+      const pzR = (box.z + box.hd) - (P.z - pr);
+      const m = Math.min(pxL, pxR, pzL, pzR);
+      if (m === pxL) P.x -= pxL;
+      else if (m === pxR) P.x += pxR;
+      else if (m === pzL) P.z -= pzL;
+      else P.z += pzR;
+    });
+    return P;
+  }
   function dhSolidAt(x, y, z, pad){
     pad = pad == null ? .08 : pad;
     if (typeof solids === 'undefined' || !solids) return null;
     for (let i = 0; i < solids.length; i++){
       const b = solids[i];
-      if (!b || !b.active || b.camSkip || !b.mesh || (b.mesh.visible === false)) continue;
+      if (!b || !b.active || b.camSkip || !b.mesh) continue;
+      // Hidden instance-source meshes still collide; only skip if the proxy/group was explicitly disabled.
+      if (b.mesh.visible === false && !(b.mesh.userData && b.mesh.userData.dhProxy) && !(b._dh)) continue;
       if (Math.abs(x - b.mesh.position.x) < b.hw + pad && Math.abs(y - b.mesh.position.y) < b.hh + pad && Math.abs(z - b.mesh.position.z) < b.hd + pad) return b;
     }
     return null;
@@ -2748,6 +2888,7 @@
     dhTickLookHint(dt);
     dhRefreshBins();
     dhClampPlayer();
+    if (typeof dhClipPlayerToWalls === 'function') dhClipPlayerToWalls();
     dhCamComfort(dt);
     if (typeof dhClipFpCamera === 'function') dhClipFpCamera();
     dhFadeOccludingTrees();
@@ -3646,7 +3787,8 @@
       const sx = map[code][0], sz = map[code][1];
       const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), rx = -fz, rz = fx;
       const dx = (fx * sz + rx * sx) * step, dz = (fz * sz + rz * sx) * step;
-      P.x += dx; P.z += dz;
+      if (typeof dhMovePlayer === 'function') dhMovePlayer(dx, dz);
+      else { P.x += dx; P.z += dz; }
     }
     return true;
   }
