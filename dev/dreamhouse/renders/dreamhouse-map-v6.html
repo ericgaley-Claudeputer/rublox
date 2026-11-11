@@ -1,0 +1,211 @@
+<!doctype html>
+<html><head><meta charset="utf-8"/><title>Dream House map v6</title>
+<style>
+html,body{margin:0;background:#b8e8ff;overflow:hidden;font-family:Nunito,Trebuchet MS,system-ui,sans-serif}
+#ui{position:absolute;inset:0;pointer-events:none}
+#guide{position:absolute;top:54px;left:50%;transform:translateX(-50%);background:rgba(29,35,64,.92);color:#fff;padding:10px 18px;border-radius:18px;font-weight:800;font-size:18px}
+#act{position:absolute;left:50%;bottom:214px;transform:translateX(-50%);background:#2ec27e;color:#fff;border:3px solid #fff;border-radius:18px;padding:10px 22px;font-weight:900;font-size:20px;box-shadow:0 4px 0 #1f9460}
+#act small{background:#fff;color:#2ec27e;border-radius:8px;padding:1px 6px;margin-left:6px}
+#bar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:min(96vw,900px);background:rgba(255,255,255,.94);border:3px solid #ffd23f;border-radius:16px;padding:8px;text-align:center;font-weight:800;color:#1d2340}
+#bar button{border:2px solid #ffe08a;background:#fff;border-radius:10px;padding:6px 10px;font:inherit;font-weight:900;margin:2px}
+#bar button.on{border-color:#2ec27e;background:#eafaf0}
+#coins{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.94);border:3px solid #ffd23f;border-radius:999px;padding:6px 14px;font-weight:900;color:#1d2340}
+#mapkey{position:absolute;right:14px;top:12px;background:rgba(255,255,255,.94);border-radius:14px;padding:8px 12px;font-weight:800;color:#1d2340;font-size:14px;line-height:1.45;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+.topui #act,.topui #bar,.topui #guide{display:none}
+</style>
+</head><body>
+<div id="ui">
+  <div id="coins">🪙 100 · Hands empty</div>
+  <div id="mapkey">🏡 House plot (center)<br>📦 Supply Yard — Free Supplies (NE)<br>🛋️ Furniture Store (SW)<br>🔧 Upgrades (SE)<br>🧍 You spawn by the plot</div>
+  <div id="guide">➤ Go to the Supply Yard</div>
+  <div id="act">E: Place stake here · Stakes 0/36 <small>E</small></div>
+  <div id="bar">
+    <button class="on">📍 Stake</button>
+    <button>🕳️ Dig</button>
+    <button>🌀 Mix</button>
+    <button>🪣 Pour</button>
+    <button>🧱 Brick</button>
+    <button>📦 Supply Yard</button>
+    <button>🛋️ Furniture</button>
+    <button>🔧 Upgrades</button>
+  </div>
+</div>
+<script src="three.min.js"></script>
+<script>
+const view = new URLSearchParams(location.search).get('view') || 'spawn';
+if (view === 'top') document.body.classList.add('topui');
+const DH_CELL=1.4, DH_N=8, size=DH_N*DH_CELL;
+const ox=-size/2, oz=-size/2, cx=0, cz=0;
+const spawn={x:ox+DH_CELL*4, y:.05, z:oz-2.8};
+const yard={x:cx-16, z:cz+7};
+const furn={x:cx+18, z:cz-16};
+const up={x:cx-18, z:cz-16};
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color('#b8e8ff');
+scene.fog=new THREE.Fog('#d7f3ff', 70, 180);
+const camera=new THREE.PerspectiveCamera(55, innerWidth/innerHeight, .1, 240);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight('#fff6d5', '#7fbf88', 0.95));
+const sun=new THREE.DirectionalLight('#fff4d0', 0.9);
+sun.position.set(-18, 36, 12); scene.add(sun);
+
+function mat(c,o={}){ return new THREE.MeshLambertMaterial(Object.assign({color:c}, o)); }
+function box(w,h,d,c,x,y,z){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat(c)); m.position.set(x,y,z); scene.add(m); return m; }
+function cyl(rt,rb,h,c,x,y,z){ const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,8), mat(c)); m.position.set(x,y,z); scene.add(m); return m; }
+function sph(r,c,x,y,z){ const m=new THREE.Mesh(new THREE.SphereGeometry(r,10,8), mat(c)); m.position.set(x,y,z); scene.add(m); return m; }
+
+box(110,.35,84,'#8fd39a',0,-.175,0);
+// plot
+box(size,.16,size,'#b6e8a8',cx,.08,cz);
+box(size+.6,.5,.3,'#fffaf0',cx,.25,oz);
+box(size+.6,.5,.3,'#fffaf0',cx,.25,oz+size);
+box(.3,.5,size+.6,'#fffaf0',ox,.25,cz);
+box(.3,.5,size+.6,'#fffaf0',ox+size,.25,cz);
+
+// paths
+function path(ax,az,bx,bz,w){
+  const mx=(ax+bx)/2, mz=(az+bz)/2, dx=bx-ax, dz=bz-az, len=Math.hypot(dx,dz);
+  const m=box(Math.max(w,len), .16, w, '#cfc4a8', mx, .08, mz);
+  m.rotation.y=Math.atan2(dx,dz);
+}
+path(ox+size, cz, yard.x, yard.z, 3);
+path(spawn.x, spawn.z, furn.x, furn.z, 3);
+path(spawn.x, spawn.z, up.x, up.z, 3);
+
+// yard
+box(13,.2,10,'#cfc4a8',yard.x,.1,yard.z);
+box(.22,3.6,8.4,'#8b4513',yard.x+5.8,4.4,yard.z);
+[[5.8,2.2,-3.8],[5.8,2.2,3.8]].forEach(([x,y,z])=>box(.24,4.4,.24,'#5a4030',yard.x+x,y,yard.z+z));
+// flags
+function flag(x,z,col){
+  cyl(.07,.09,4.6,'#f4f0e6',x,2.3,z);
+  box(1.6,.9,.05,col,x+.85,3.9,z);
+  sph(.11,'#ffd23f',x,4.65,z);
+}
+flag(yard.x-5.8, yard.z-4.4, '#e23d3d');
+flag(yard.x+5.6, yard.z-4.4, '#3a86ff');
+// pallets / bags / blocks
+for (let i=0;i<7;i++){
+  const col=i%4, row=(i/4)|0;
+  const x=yard.x-4.4+col*2.2, z=yard.z-3.8+row*2.0;
+  if (i===0){ box(1.4,.12,1.2,'#8a5a2b',x,.1,z); for(let r=0;r<4;r++) for(let c=0;c<3;c++) box(.28,.14,.16,'#b54a32',x-.4+c*.3,.2+r*.15,z); }
+  else if (i===1||i===2){ for(let k=0;k<4;k++) box(.55,.22,.38,i===2?'#e5c574':'#cfc4a8',x- .2+(k%2)*.4,.16+((k/2)|0)*.22,z); }
+  else if (i===3||i===4) box(1.3,.7,.8,'#c9a36a',x,.4,z);
+  else box(1,.7,1, i===6?'#8b5cf6':'#d9ecff',x,.45,z);
+}
+for (let r=0;r<3;r++) for(let c=0;c<3;c++) box(.42,.22,.28,'#b8b3a8',yard.x+3.4-.5+c*.45,.16+r*.23,yard.z+3.2);
+cyl(.12,.18,10,'#ffd23f',yard.x,5.2,yard.z);
+const yardCone=new THREE.Mesh(new THREE.ConeGeometry(.7,1.5,8), mat('#ff4d5e'));
+yardCone.rotation.x=Math.PI; yardCone.position.set(yard.x,11.2,yard.z); scene.add(yardCone);
+
+// furniture store
+box(11,.18,9,'#e8d9c0',furn.x,.09,furn.z);
+box(7.2,3.2,6.2,'#fff4dc',furn.x,1.7,furn.z);
+box(8,.35,7,'#e07a9a',furn.x,3.45,furn.z);
+box(6.4,.12,1.6,'#ff8fab',furn.x,2.7,furn.z+3.6);
+box(1.4,2.2,.2,'#8b4513',furn.x,1.2,furn.z+3.15);
+box(1.2,1,.12,'#bfe9ff',furn.x-2.1,1.8,furn.z+3.16);
+box(1.2,1,.12,'#bfe9ff',furn.x+2.1,1.8,furn.z+3.16);
+[[-3.6,-3.1],[3.6,-3.1],[-3.6,3.1],[3.6,3.1]].forEach(([bx,bz])=>sph(.55,'#3fa85a',furn.x+bx,.45,furn.z+bz));
+function person(x,z,shirt,hat){
+  box(.42,.42,.42,'#f3c7a3',x,1.55,z);
+  box(.46,.16,.46,'#3a2a1c',x,1.78,z);
+  box(.55,.62,.32,shirt,x,1.05,z);
+  box(.16,.55,.16,'#3d4a80',x-.14,.35,z);
+  box(.16,.55,.16,'#3d4a80',x+.14,.35,z);
+  if(hat){ cyl(.28,.32,.16,'#f0c14a',x,1.86,z); cyl(.42,.42,.05,'#f0c14a',x,1.78,z); }
+}
+person(furn.x, furn.z+1.4, '#ff8fab', false);
+cyl(.12,.18,10,'#ff8fab',furn.x,5.2,furn.z);
+
+// upgrades workshop
+box(9,.18,8,'#d7cbb3',up.x,.09,up.z);
+box(6.2,3,.3,'#f0e4cc',up.x,1.55,up.z-2.6);
+box(.3,3,5.2,'#f0e4cc',up.x-3.05,1.55,up.z);
+box(.3,3,5.2,'#f0e4cc',up.x+3.05,1.55,up.z);
+box(7.2,.28,6.2,'#c9842a',up.x,3.2,up.z);
+box(2.4,.55,1,'#8a5a2b',up.x-1.2,.45,up.z+.4);
+person(up.x+.6, up.z+1.6, '#4aa3df', true);
+cyl(.12,.18,10,'#f0c14a',up.x,5.2,up.z);
+
+// mixer + pile
+box(.9,.9,.9,'#7a5a4a', ox+size+1.6,.45,oz+1.4);
+box(1.2,.6,1.2,'#c47a3a', ox-1.5,.3,oz+size-1.2);
+
+// trees (ring, skip blocked corridors)
+function tree(x,z,s){
+  const g=new THREE.Group(); g.position.set(x,0,z);
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.16*s,.22*s,1.4*s,6), mat('#5a4030'));
+  trunk.position.y=.7*s; g.add(trunk);
+  const leaf=new THREE.Mesh(new THREE.ConeGeometry(1.1*s,2.4*s,8), mat('#2ea44f'));
+  leaf.position.y=2.1*s; g.add(leaf);
+  scene.add(g);
+}
+function blocked(x,z){
+  if (x>ox-1.2 && x<ox+size+1.2 && z<oz+2.5 && z>oz-18) return true;
+  if (Math.hypot(x-spawn.x,z-spawn.z)<7) return true;
+  if (Math.hypot(x-yard.x,z-yard.z)<11) return true;
+  if (Math.hypot(x-furn.x,z-furn.z)<10) return true;
+  if (Math.hypot(x-up.x,z-up.z)<9) return true;
+  return false;
+}
+for (let k=0;k<16;k++){
+  const t=(k/16)*Math.PI*2;
+  const x=cx+Math.cos(t)*(size/2+3.2), z=cz+Math.sin(t)*(size/2+3.2);
+  if (!blocked(x,z)) tree(x,z, 0.9+(k%3)*0.08);
+}
+// a few outer trees
+[[-28,-6],[-24,12],[8,22],[-8,20],[28,4],[-22,-26],[6,-28]].forEach(([x,z],i)=>{ if(!blocked(x,z)) tree(x,z,1); });
+
+// player
+const you=new THREE.Group(); you.position.set(spawn.x,0,spawn.z);
+box(.45,.55,.3,'#3a7af0',0,1.05,0);
+box(.38,.38,.38,'#f3c7a3',0,1.52,0);
+box(.16,.5,.16,'#f3c7a3',-.12,.35,0);
+box(.16,.5,.16,'#f3c7a3',.12,.35,0);
+you.children.forEach(m=>{ m.position.x+=spawn.x; m.position.z+=spawn.z; }); // already in world via box()? 
+// The box() helper adds to scene at absolute coords; redo player simply:
+// already added wrongly inside group AND scene. Clean: player boxes were added to scene at local 0. Fix by placing a simple body at spawn.
+box(.5,.7,.32,'#3a7af0', spawn.x, 1.1, spawn.z);
+box(.4,.4,.4,'#f3c7a3', spawn.x, 1.6, spawn.z);
+
+// labels as sprites
+function spr(text, x, y, z, scale=8){
+  const c=document.createElement('canvas'); c.width=512; c.height=128;
+  const g=c.getContext('2d');
+  g.fillStyle="rgba(29,35,64,0.92)"; g.beginPath(); g.rect(8,16,496,96); g.fill();
+  g.fillStyle='#ffd23f'; g.font='bold 48px sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+  g.fillText(text, 256, 64);
+  const tex=new THREE.CanvasTexture(c);
+  const m=new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true, depthTest:false}));
+  m.position.set(x,y,z); m.scale.set(scale, scale*0.25, 1); scene.add(m);
+}
+spr('🏡 Your Plot', cx, 2.4, oz-0.8, 9);
+spr('📦 SUPPLY YARD', yard.x+1, 6.2, yard.z+1.2, 10);
+spr('FREE SUPPLIES', yard.x+1, 5.0, yard.z+1.2, 8);
+spr('🛋️ FURNITURE STORE', furn.x, 4.8, furn.z+2.6, 9);
+spr('🔧 UPGRADES', up.x, 4.5, up.z+2.4, 8);
+if (view==='top') spr('you', spawn.x, 3.2, spawn.z, 6);
+
+if (view==='top'){
+  const cam=new THREE.OrthographicCamera(-38, 38, 32, -32, 0.1, 200);
+  cam.position.set(0, 80, 0);
+  cam.up.set(0, 0, 1);
+  cam.lookAt(0, 0, 0);
+  renderer.render(scene, cam);
+} else {
+  const pitch=.38, dist=12, yaw=Math.PI;
+  const px=spawn.x + Math.sin(yaw)*Math.cos(pitch)*dist;
+  const pz=spawn.z + Math.cos(yaw)*Math.cos(pitch)*dist;
+  const py=1.2 + Math.sin(pitch)*dist;
+  camera.position.set(px, py, pz);
+  camera.lookAt(spawn.x, 1.1, spawn.z+2);
+  renderer.render(scene, camera);
+}
+document.title='READY';
+</script>
+</body></html>

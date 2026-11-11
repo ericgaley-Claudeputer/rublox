@@ -515,7 +515,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .dhshead h3{margin:0;font-size:22px}
 .dhsbody{overflow:auto;padding:10px 16px 16px;flex:1 1 auto;min-height:0}
 .dhsbox{display:flex;flex-direction:column;padding:0;overflow:hidden}
-#dhShopX,#dhYardX{display:inline-block;margin:0;min-width:88px;flex:0 0 auto}
+#dhShopX,#dhYardX,#dhUpX{display:inline-block;margin:0;min-width:88px;flex:0 0 auto}
 
 /* Continue row (t243u / t244u) */
 .continue{margin:22px 0 8px}
@@ -1275,6 +1275,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   </div>
   <div class="dhshop" id="dhShop" style="display:none"></div>
   <div class="dhshop" id="dhYard" style="display:none"></div>
+  <div class="dhshop" id="dhUp" style="display:none"></div>
   <div class="dhguide" id="dhGuide" style="display:none"><span class="dhgarrow">➤</span> <span id="dhGuideT">Go to the Supply Yard</span></div>
   <div class="dblane" id="dbLane" style="display:none"></div>
   <button class="fsnear hmnear" id="hmAct"></button>
@@ -1504,7 +1505,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-9';
+const BUILD = '2026.11.11-10';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -11768,18 +11769,18 @@ const Obby = (() => {
     {lL: -.2, lR: .4, aL: -1.6, aR: .3, lean: .05}, {lL: .5, lR: -.3, aL: .2, aR: -1.5, lean: -.05},
     {lL: -.4, lR: -.4, aL: -2.0, aR: -2.0, lean: 0}, {lL: .3, lR: .3, aL: -1.2, aR: 1.0, lean: .1}];
     return Object.assign({lLo: 0, lRo: 0, aLo: 0, aRo: 0}, poses[db.pose % 4]); }
-  /* ===================== t251u: 🏡 DREAM HOUSE BUILDERS — menus hide the prompt, Escape closes shop, tidy yard, honest prompts. t243u: sticky Shop/Yard Close at top of panel. t252u: caption sits above the toolbar ===================== */
-  const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 4;
+  /* ===================== t251u + t249u/t253u: Tessa's map — plot in the center, free Supply Yard (NE), Furniture Store (SW), Upgrades builder (SE). Coins from milestones buy furniture and upgrades only. ===================== */
+  const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 5;
   const DH_FOOT = {x0: 1, z0: 1, x1: 6, z1: 6}; // slab footprint inside the plot
   const DH_BRICK_W = .5, DH_BRICK_H = .24, DH_BRICK_D = .28, DH_COURSES = 8;
   const DH_MATS = [
-    {id: 'brick',   e: '🧱', name: 'Bricks',    cost: 1,  stack: 8,  carry: 8},
-    {id: 'cement',  e: '🪨', name: 'Cement',    cost: 4,  stack: 1,  carry: 2},
-    {id: 'sand',    e: '🏖️', name: 'Sand',      cost: 2,  stack: 1,  carry: 2},
-    {id: 'wood',    e: '🪵', name: 'Planks',    cost: 3,  stack: 4,  carry: 6},
-    {id: 'shingle', e: '🏠', name: 'Shingles',  cost: 1,  stack: 8,  carry: 12},
-    {id: 'glass',   e: '🪟', name: 'Glass',     cost: 5,  stack: 2,  carry: 2},
-    {id: 'paint',   e: '🎨', name: 'Paint',     cost: 3,  stack: 1,  carry: 2},
+    {id: 'brick',   e: '🧱', name: 'Bricks',    cost: 0,  stack: 8,  carry: 8, free: true},
+    {id: 'cement',  e: '🪨', name: 'Cement',    cost: 0,  stack: 1,  carry: 2, free: true},
+    {id: 'sand',    e: '🏖️', name: 'Sand',      cost: 0,  stack: 1,  carry: 2, free: true},
+    {id: 'wood',    e: '🪵', name: 'Planks',    cost: 0,  stack: 4,  carry: 6, free: true},
+    {id: 'shingle', e: '🏠', name: 'Shingles',  cost: 0,  stack: 8,  carry: 12, free: true},
+    {id: 'glass',   e: '🪟', name: 'Glass',     cost: 0,  stack: 2,  carry: 2, free: true},
+    {id: 'paint',   e: '🎨', name: 'Paint',     cost: 0,  stack: 1,  carry: 2, free: true},
     {id: 'wetmix',  e: '🪣', name: 'Wet mix',   cost: 0,  stack: 1,  carry: 1, nosale: true},
     {id: 'mortar',  e: '🥣', name: 'Mortar',    cost: 0,  stack: 4,  carry: 4, nosale: true},
     {id: 'sofa',    e: '🛋️', name: 'Sofa',      cost: 10, stack: 1,  carry: 1, furn: true},
@@ -11827,25 +11828,37 @@ const Obby = (() => {
     {id: 'story', name: 'Second story',       e: '🏠', cost: 80, max: 1, desc: 'Build a taller second floor'},
     {id: 'lot',   name: 'Bigger lot',         e: '📐', cost: 90, max: 1, desc: 'Expand your house footprint'}
   ];
-  const DH_YARD = {x: 0, z: -20};
-  const DH_BOUND = {x: 46, z: 31};
+  const DH_YARD = {x: 14, z: 7};
+  const DH_FURN = {x: -18, z: -16};
+  const DH_UP = {x: 18, z: -16};
+  const DH_BOUND = {x: 44, z: 36};
   let dh = null;
 
   function dhMatOf(id){ return DH_MATS.find(m => m.id === id); }
   function dhWho(){ return (typeof mp !== 'undefined' && mp && mp.on && mp.uid) ? String(mp.uid) : 'local'; }
   function dhIsGuest(){ return !!(typeof mp !== 'undefined' && mp && mp.on && typeof mpGuest === 'function' && mpGuest()); }
-  function dhOrigin(plot){ return [(plot - 1.5) * DH_SPACING, -DH_N * DH_CELL / 2]; }
+  function dhOrigin(plot){
+    const size = DH_N * DH_CELL;
+    // Plot 0 (single-player, and the first MP lot) sits in the center of the map, as in Tessa's drawing.
+    // Other lots are parked out of the way to the west so they don't cover the corner shops.
+    if ((plot | 0) === 0) return [-size / 2, -size / 2];
+    const i = (plot | 0) - 2; // -1, 0, 1
+    return [-36 - size / 2, i * DH_SPACING - size / 2];
+  }
   function dhSpawnPos(plot){
     const [ox, oz] = dhOrigin(plot == null ? (dh && dh.mine) || 0 : plot);
     return {x: ox + DH_CELL * 4, y: .05, z: oz - 2.8};
   }
   function dhLayoutYard(){
-    const plot = (dh && dh.mine) || 0;
-    const [ox, oz] = dhOrigin(plot);
-    // west of your lot, a little toward the camera so it's in view, ~14m from spawn,
-    // and not overlapping the material pile (which sits on the west-north corner)
-    DH_YARD.x = ox - 8;
-    DH_YARD.z = oz + 1;
+    const [ox, oz] = dhOrigin(0);
+    const cx = ox + DH_N * DH_CELL / 2, cz = oz + DH_N * DH_CELL / 2;
+    // Tessa's map, north up: plot in the center, Supply Yard NE, Furniture SW, Upgrades SE.
+    // X is flipped vs a standard map because the chase camera looks north
+    // with +X on the left. These values put the Supply Yard on the player's
+    // right (forward-right), Furniture back-left, and Upgrades back-right.
+    DH_YARD.x = cx - 16; DH_YARD.z = cz + 7;
+    DH_FURN.x = cx + 18; DH_FURN.z = cz - 16;
+    DH_UP.x = cx - 18; DH_UP.z = cz - 16;
   }
   function dhClampPlayer(){
     if (typeof P === 'undefined' || !P) return P;
@@ -12117,10 +12130,6 @@ const Obby = (() => {
     return 0;
   }
 
-  function dhBinPos(i){
-    const k = i, col = k % 5, row = (k / 5) | 0;
-    return {x: DH_YARD.x - 4.4 + col * 2.2, z: DH_YARD.z - 2.6 + row * 2.4, id: DH_MATS.filter(m => !m.nosale)[k] && DH_MATS.filter(m => !m.nosale)[k].id};
-  }
   function dhMakeGhost(){
     const g = new THREE.Group(); g.visible = false;
     const glow = new THREE.Mesh(new THREE.BoxGeometry(DH_CELL * .92, .16, DH_CELL * .92), dhMat('#ffe08a', {transparent: true, opacity: .55, emissive: '#ffe08a', emissiveIntensity: .7, depthWrite: false}));
@@ -12131,7 +12140,7 @@ const Obby = (() => {
     return g;
   }
   function dhBuildBounds(){
-    const x = 50, z = 35, h = 6, t = 1.6;
+    const x = 52, z = 40, h = 6, t = 1.6;
     const wall = (wx, wz, ww, wd) => {
       const b = plat(wx, h, wz, ww, wd, '#3d8f4a', h);
       b.camSkip = true;
@@ -12142,37 +12151,167 @@ const Obby = (() => {
     const curb = (wx, wz, ww, wd) => plat(wx, .28, wz, ww, wd, '#5a8f4a', .28);
     curb(0, -z + .6, 100, .5); curb(0, z - .6, 100, .5); curb(-x + .6, 0, .5, 70); curb(x - .6, 0, .5, 70);
   }
-  function dhBuildYard(){
-    plat(DH_YARD.x, .12, DH_YARD.z, 12, 9, '#cfc4a8', .2);
-    // short path from the west edge of your lot to the yard
-    const [pox, poz] = dhOrigin((dh && dh.mine) || 0);
-    plat((pox + DH_YARD.x) / 2, .14, DH_YARD.z, Math.max(4, pox - DH_YARD.x), 3.2, '#cfc4a8', .18);
-    // huge sign facing the plot / spawn (plot is toward +X)
-    const board = new THREE.Mesh(new THREE.BoxGeometry(.22, 3.2, 10), dhMat('#8b4513'));
-    board.position.set(DH_YARD.x + 5.6, 4.8, DH_YARD.z); scene.add(board);
-    const posts = [[5.6, 2.3, -4.6], [5.6, 2.3, 4.6]];
-    posts.forEach(([x, y, z]) => { const p = new THREE.Mesh(new THREE.BoxGeometry(.24, 4.6, .24), dhMat('#5a4030')); p.position.set(DH_YARD.x + x, y, DH_YARD.z + z); scene.add(p); });
-    const sign = (typeof label === 'function') ? label('📦 SUPPLY YARD', 'rgba(29,35,64,.95)', '#ffd23f', 512) : null;
-    if (sign && sign.position) sign.position.set(DH_YARD.x + 4.2, 5.4, DH_YARD.z + 1.6);
-    if (sign && sign.scale) sign.scale.set(9.5, 2.1, 1);
+  function dhSupplyMats(){ return DH_MATS.filter(m => m.free && !m.nosale && !m.furn); }
+  function dhBinPos(i){
+    const mats = dhSupplyMats();
+    const k = i, col = k % 4, row = (k / 4) | 0;
+    // Keep the yard center clear so E in the open yard opens the menu, while E at a pallet grabs supplies.
+    return {x: DH_YARD.x - 4.4 + col * 2.2, z: DH_YARD.z - 3.8 + row * 2.0, id: mats[k] && mats[k].id};
+  }
+  function dhFlag(x, z, col){
+    const g = new THREE.Group(); g.position.set(x, 0, z);
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(.07, .09, 4.6, 8), dhMat('#f4f0e6'));
+    pole.position.y = 2.3; g.add(pole);
+    const flag = new THREE.Mesh(new THREE.PlaneGeometry(1.6, .9), dhMat(col || '#e23d3d', {side: (THREE.DoubleSide || 2), emissive: col || '#e23d3d', emissiveIntensity: .15}));
+    flag.position.set(.85, 3.9, 0); g.add(flag);
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(.11, 8, 8), dhMat('#ffd23f'));
+    ball.position.y = 4.65; g.add(ball);
+    scene.add(g); return g;
+  }
+  function dhPerson(x, z, opt){
+    opt = opt || {};
+    const g = new THREE.Group(); g.position.set(x, 0, z);
+    if (opt.yaw) g.rotation.y = opt.yaw;
+    const skin = dhMat(opt.skin || '#f3c7a3');
+    const shirt = dhMat(opt.shirt || '#ff8fab');
+    const pants = dhMat(opt.pants || '#3d4a80');
+    const head = new THREE.Mesh(new THREE.BoxGeometry(.42, .42, .42), skin); head.position.y = 1.55; g.add(head);
+    const hair = new THREE.Mesh(new THREE.BoxGeometry(.46, .16, .46), dhMat(opt.hair || '#3a2a1c')); hair.position.y = 1.78; g.add(hair);
+    const body = new THREE.Mesh(new THREE.BoxGeometry(.55, .62, .32), shirt); body.position.y = 1.05; g.add(body);
+    const leg = (lx) => { const m = new THREE.Mesh(new THREE.BoxGeometry(.16, .55, .16), pants); m.position.set(lx, .35, 0); g.add(m); };
+    leg(-.14); leg(.14);
+    const arm = (lx, col) => { const m = new THREE.Mesh(new THREE.BoxGeometry(.12, .5, .12), col || shirt); m.position.set(lx, 1.08, 0); g.add(m); };
+    arm(-.38); arm(.38);
+    if (opt.hat){
+      const hat = new THREE.Mesh(new THREE.CylinderGeometry(.28, .32, .16, 10), dhMat(opt.hatCol || '#f0c14a'));
+      hat.position.y = 1.86; g.add(hat);
+      const brim = new THREE.Mesh(new THREE.CylinderGeometry(.42, .42, .05, 10), dhMat(opt.hatCol || '#f0c14a'));
+      brim.position.y = 1.78; g.add(brim);
+    }
+    if (opt.smile){
+      const eye = (ex) => { const e = new THREE.Mesh(new THREE.BoxGeometry(.07, .07, .05), dhMat('#1d2340')); e.position.set(ex, 1.58, .2); g.add(e); };
+      eye(-.1); eye(.1);
+    }
+    if (opt.tool){
+      const t = new THREE.Mesh(new THREE.BoxGeometry(.08, .7, .08), dhMat('#8a5a2b'));
+      t.position.set(.48, 1.15, .15); t.rotation.z = -.4; g.add(t);
+      const head2 = new THREE.Mesh(new THREE.BoxGeometry(.28, .1, .18), dhMat('#8d8f8c'));
+      head2.position.set(.62, 1.42, .15); g.add(head2);
+    }
+    scene.add(g); return g;
+  }
+  function dhBeaconAt(pos, col, key){
+    const c = col || '#ffd23f';
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(.12, .18, 10, 8), dhMat(c, {emissive: c, emissiveIntensity: .7}));
+    pole.position.set(pos.x, 5.2, pos.z); scene.add(pole);
+    const halo = new THREE.Mesh(new THREE.CylinderGeometry(.7, .7, 9, 12), dhMat(c, {transparent: true, opacity: .25, emissive: c, emissiveIntensity: .4, depthWrite: false}));
+    halo.position.set(pos.x, 5.4, pos.z); scene.add(halo);
+    const arrow = new THREE.Mesh(new THREE.ConeGeometry(.7, 1.5, 8), dhMat('#ff4d5e', {emissive: '#ff4d5e', emissiveIntensity: .65}));
+    arrow.rotation.x = Math.PI; arrow.position.set(pos.x, 11.2, pos.z); scene.add(arrow);
+    dh[key] = {pole, halo, arrow, y0: 11.2};
+  }
+  function dhPutSign(x, y, z, text, scaleX, scaleY){
+    const sign = (typeof label === 'function') ? label(text, 'rgba(29,35,64,.95)', '#ffd23f', 512) : null;
+    if (sign && sign.position) sign.position.set(x, y, z);
+    if (sign && sign.scale) sign.scale.set(scaleX || 8, scaleY || 1.8, 1);
     if (sign){ sign.renderOrder = 12; scene.add(sign); }
-    // tall yellow beacon + bobbing arrow, visible over the trees from spawn
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(.14, .2, 12, 8), dhMat('#ffd23f', {emissive: '#ffd23f', emissiveIntensity: .7}));
-    pole.position.set(DH_YARD.x, 6.2, DH_YARD.z); scene.add(pole);
-    const halo = new THREE.Mesh(new THREE.CylinderGeometry(.85, .85, 11, 12), dhMat('#ffe08a', {transparent: true, opacity: .28, emissive: '#ffd23f', emissiveIntensity: .45, depthWrite: false}));
-    halo.position.set(DH_YARD.x, 6.4, DH_YARD.z); scene.add(halo);
-    const arrow = new THREE.Mesh(new THREE.ConeGeometry(.9, 1.8, 8), dhMat('#ff4d5e', {emissive: '#ff4d5e', emissiveIntensity: .65}));
-    arrow.rotation.x = Math.PI; arrow.position.set(DH_YARD.x, 13.4, DH_YARD.z); scene.add(arrow);
-    dh.yardBeacon = {pole, halo, arrow, y0: 13.4};
-    dh.bins = [];
-    DH_MATS.filter(m => !m.nosale).forEach((m, i) => {
-      const p = dhBinPos(i);
-      const col = m.id === 'brick' ? dh.mats.brick : m.id === 'wood' || m.id === 'shingle' ? dh.mats.wood : m.id === 'sand' ? dhMat('#e5c574') : dh.mats.bag;
-      plat(p.x, .45, p.z, 1.4, 1.4, '#8a5a2b', .7);
-      const crate = new THREE.Mesh(new THREE.BoxGeometry(1.1, .7, 1.1), col);
-      crate.position.set(p.x, .85, p.z); scene.add(crate);
-      dh.bins.push({id: m.id, x: p.x, z: p.z, mesh: crate});
+    return sign;
+  }
+  function dhBuildYard(){
+    plat(DH_YARD.x, .12, DH_YARD.z, 13, 10, '#cfc4a8', .2);
+    const [pox, poz] = dhOrigin((dh && dh.mine) || 0);
+    const px = pox + DH_N * DH_CELL, pz = poz + DH_N * DH_CELL / 2;
+    plat((px + DH_YARD.x) / 2, .14, (pz + DH_YARD.z) / 2, Math.max(4, Math.abs(DH_YARD.x - px) + 1), 3.0, '#cfc4a8', .18);
+    // board + posts facing the plot (west)
+    const board = new THREE.Mesh(new THREE.BoxGeometry(.22, 3.6, 8.4), dhMat('#8b4513'));
+    board.position.set(DH_YARD.x + 5.8, 4.4, DH_YARD.z); scene.add(board);
+    [[5.8, 2.2, -3.8], [5.8, 2.2, 3.8]].forEach(([x, y, z]) => {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(.24, 4.4, .24), dhMat('#5a4030'));
+      post.position.set(DH_YARD.x + x, y, DH_YARD.z + z); scene.add(post);
     });
+    dhPutSign(DH_YARD.x + 4.4, 5.5, DH_YARD.z + 1.1, '📦 SUPPLY YARD', 9.2, 1.8);
+    dhPutSign(DH_YARD.x + 4.4, 4.2, DH_YARD.z + 1.1, 'FREE SUPPLIES', 8.2, 1.4);
+    dhFlag(DH_YARD.x - 5.8, DH_YARD.z - 4.4, '#e23d3d');
+    dhFlag(DH_YARD.x + 5.6, DH_YARD.z - 4.4, '#3a86ff');
+    dhBeaconAt(DH_YARD, '#ffd23f', 'yardBeacon');
+    dh.bins = [];
+    dhSupplyMats().forEach((m, i) => {
+      const p = dhBinPos(i);
+      const g = new THREE.Group(); g.position.set(p.x, 0, p.z);
+      if (m.id === 'brick'){
+        const pal = new THREE.Mesh(new THREE.BoxGeometry(1.4, .12, 1.2), dhMat('#8a5a2b')); pal.position.y = .1; g.add(pal);
+        for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++){
+          const b = new THREE.Mesh(new THREE.BoxGeometry(.3, .14, .16), dh.mats.brick || dhMat('#b54a32'));
+          b.position.set(-.5 + c * .32, .2 + r * .15, -.3 + (r % 2) * .12); g.add(b);
+        }
+      } else if (m.id === 'cement' || m.id === 'sand'){
+        const col = m.id === 'sand' ? dhMat('#e5c574') : (dh.mats.bag || dhMat('#cfc4a8'));
+        for (let k = 0; k < 5; k++){
+          const bag = new THREE.Mesh(new THREE.BoxGeometry(.55, .22, .38), col);
+          bag.position.set(-.3 + (k % 2) * .5, .16 + Math.floor(k / 2) * .22, -.15 + (k % 3) * .15);
+          bag.rotation.y = (k * .2); g.add(bag);
+        }
+      } else if (m.id === 'wood' || m.id === 'shingle'){
+        const col = dh.mats.wood || dhMat('#c9a36a');
+        const stack = new THREE.Mesh(new THREE.BoxGeometry(1.3, .7, .8), col);
+        stack.position.y = .4; g.add(stack);
+      } else {
+        // glass, paint, or leftover — crate + block stack
+        const crate = new THREE.Mesh(new THREE.BoxGeometry(1.0, .7, 1.0), m.id === 'paint' ? dhMat('#8b5cf6') : dhMat('#d9ecff'));
+        crate.position.y = .45; g.add(crate);
+      }
+      scene.add(g);
+      dh.bins.push({id: m.id, x: p.x, z: p.z, mesh: g});
+    });
+    // decorative cinder-block stacks (as in Tessa's drawing)
+    const blocks = new THREE.Group(); blocks.position.set(DH_YARD.x + 3.4, 0, DH_YARD.z + 3.2);
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++){
+      const b = new THREE.Mesh(new THREE.BoxGeometry(.42, .22, .28), dhMat('#b8b3a8'));
+      b.position.set(-.5 + c * .45, .16 + r * .23, 0); blocks.add(b);
+    }
+    scene.add(blocks);
+  }
+  function dhBuildFurnitureStore(){
+    const x = DH_FURN.x, z = DH_FURN.z;
+    plat(x, .1, z, 11, 9, '#e8d9c0', .18);
+    plat((x + 0) / 2, .12, (z + dhSpawnPos(0).z) / 2, 3.2, Math.abs(z - dhSpawnPos(0).z), '#e8d9c0', .16);
+    const wall = dhMat('#fff4dc');
+    const room = new THREE.Mesh(new THREE.BoxGeometry(7.2, 3.2, 6.2), wall);
+    room.position.set(x, 1.7, z); scene.add(room);
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(8, .35, 7), dhMat('#e07a9a'));
+    roof.position.set(x, 3.45, z); scene.add(roof);
+    const awning = new THREE.Mesh(new THREE.BoxGeometry(6.4, .12, 1.6), dhMat('#ff8fab'));
+    awning.position.set(x, 2.7, z + 3.6); scene.add(awning);
+    // door opening toward the plot / north-east
+    const door = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.2, .2), dhMat('#8b4513'));
+    door.position.set(x, 1.2, z + 3.15); scene.add(door);
+    const win = (wx) => { const w = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.0, .12), dhMat('#bfe9ff', {emissive:'#bfe9ff', emissiveIntensity:.2})); w.position.set(x + wx, 1.8, z + 3.16); scene.add(w); };
+    win(-2.1); win(2.1);
+    [[-3.6, -3.1], [3.6, -3.1], [-3.6, 3.1], [3.6, 3.1]].forEach(([bx, bz]) => {
+      const bush = new THREE.Mesh(new THREE.SphereGeometry(.55, 10, 8), dhMat('#3fa85a'));
+      bush.position.set(x + bx, .45, z + bz); scene.add(bush);
+    });
+    dhPerson(x, z + 1.4, {shirt: '#ff8fab', hair: '#5a3a22', smile: true, yaw: 0});
+    dhPutSign(x, 4.6, z + 2.4, '🛋️ FURNITURE STORE', 8.5, 1.7);
+    dhBeaconAt(DH_FURN, '#ff8fab', 'furnBeacon');
+    plat((dhSpawnPos(0).x + x) / 2, .13, (dhSpawnPos(0).z + z) / 2, Math.max(3, Math.abs(dhSpawnPos(0).x - x) * .35 + 3), Math.max(3, Math.abs(dhSpawnPos(0).z - z)), '#e8d9c0', .15);
+  }
+  function dhBuildUpgradeShop(){
+    const x = DH_UP.x, z = DH_UP.z;
+    plat(x, .1, z, 9, 8, '#d7cbb3', .18);
+    // open workshop shed
+    const wall = dhMat('#f0e4cc');
+    const back = new THREE.Mesh(new THREE.BoxGeometry(6.2, 3.0, .3), wall); back.position.set(x, 1.55, z - 2.6); scene.add(back);
+    const side = (sx) => { const m = new THREE.Mesh(new THREE.BoxGeometry(.3, 3.0, 5.2), wall); m.position.set(x + sx, 1.55, z); scene.add(m); };
+    side(-3.05); side(3.05);
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(7.2, .28, 6.2), dhMat('#c9842a'));
+    roof.position.set(x, 3.2, z); roof.rotation.x = -.08; scene.add(roof);
+    const bench = new THREE.Mesh(new THREE.BoxGeometry(2.4, .55, 1.0), dhMat('#8a5a2b'));
+    bench.position.set(x - 1.2, .45, z + .4); scene.add(bench);
+    dhPerson(x + .6, z + 1.6, {shirt: '#4aa3df', pants: '#4a5568', hat: true, hatCol: '#f0c14a', tool: true, smile: true, yaw: -0.4});
+    dhPutSign(x, 4.3, z + 2.2, '🔧 UPGRADES', 7.4, 1.7);
+    dhBeaconAt(DH_UP, '#f0c14a', 'upBeacon');
+    plat((dhSpawnPos(0).x + x) / 2, .13, (dhSpawnPos(0).z + z) / 2, Math.max(3, Math.abs(dhSpawnPos(0).x - x) * .35 + 3), Math.max(3, Math.abs(dhSpawnPos(0).z - z)), '#d7cbb3', .15);
   }
   function dhBuildMixer(plot){
     const [ox, oz] = dhOrigin(plot);
@@ -12221,7 +12360,18 @@ const Obby = (() => {
     // spawn-to-plot + camera corridor (south of the lot, same x as the plot)
     if (x > x0 && x < x1 && z < oz + 2.5 && z > oz - 18) return true;
     if (Math.hypot(x - sp.x, z - sp.z) < 7) return true;
-    if (Math.hypot(x - DH_YARD.x, z - DH_YARD.z) < 10) return true;
+    if (Math.hypot(x - DH_YARD.x, z - DH_YARD.z) < 11) return true;
+    if (Math.hypot(x - DH_FURN.x, z - DH_FURN.z) < 10) return true;
+    if (Math.hypot(x - DH_UP.x, z - DH_UP.z) < 9) return true;
+    // leave walking paths from spawn/plot to each corner shop
+    const pathHit = (ax, az, bx, bz, w) => {
+      const dx = bx - ax, dz = bz - az, len = Math.hypot(dx, dz) || 1;
+      const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (len * len)));
+      return Math.hypot(x - (ax + dx * t), z - (az + dz * t)) < w;
+    };
+    if (pathHit(ox + DH_N * DH_CELL, oz + DH_N * DH_CELL / 2, DH_YARD.x, DH_YARD.z, 3.2)) return true;
+    if (pathHit(sp.x, sp.z, DH_FURN.x, DH_FURN.z, 3.2)) return true;
+    if (pathHit(sp.x, sp.z, DH_UP.x, DH_UP.z, 3.2)) return true;
     return false;
   }
   function dhPlantTrees(){
@@ -12236,9 +12386,13 @@ const Obby = (() => {
         const t = (k / n) * Math.PI * 2 + i * .15;
         const x = cx + Math.cos(t) * rx, z = cz + Math.sin(t) * rz;
         if (dhTreeBlocked(x, z)) continue;
-        const towardYard = Math.atan2(yard.z - cz, yard.x - cx);
-        let dAng = Math.abs(Math.atan2(Math.sin(t - towardYard), Math.cos(t - towardYard)));
-        if (dAng < .7) continue;
+        const toward = (px, pz) => {
+          const ang = Math.atan2(pz - cz, px - cx);
+          return Math.abs(Math.atan2(Math.sin(t - ang), Math.cos(t - ang)));
+        };
+        if (toward(DH_YARD.x, DH_YARD.z) < .7) continue;
+        if (toward(DH_FURN.x, DH_FURN.z) < .55) continue;
+        if (toward(DH_UP.x, DH_UP.z) < .55) continue;
         const kind = (i * 5 + k * 3) % 5;
         const sc = 0.85 + ((i * 7 + k * 13) % 5) * .08;
         const mesh = dhTree(x, z, kind, sc);
@@ -12289,10 +12443,10 @@ const Obby = (() => {
   }
 
   function buildDreamHouse(){
-    dh = {mine: 0, job: 'mark', rot: 0, color: 0, tool: 'place', aim: null, pieces: {}, meshes: {}, ghost: null, bank: 0, likes: 0, goals: {}, earned: 0, near: -1, liked: {}, saveT: 0, remote: dhIsGuest(), carry: null, stock: dhEmptyStock(), bins: [], mixers: {}, piles: {}, mats: dhMakeMats(), v1pieces: null, cureT: 0, upgrades: dhEmptyUpgrades(), introSeen: false, intro: null, trees: [], shopOpen: false, yardOpen: false, foundYard: false, cut: null, yardBeacon: null};
+    dh = {mine: 0, job: 'mark', rot: 0, color: 0, tool: 'place', aim: null, pieces: {}, meshes: {}, ghost: null, bank: 0, likes: 0, goals: {}, earned: 0, near: -1, liked: {}, saveT: 0, remote: dhIsGuest(), carry: null, stock: dhEmptyStock(), bins: [], mixers: {}, piles: {}, mats: dhMakeMats(), v1pieces: null, cureT: 0, upgrades: dhEmptyUpgrades(), introSeen: false, intro: null, trees: [], shopOpen: false, yardOpen: false, upOpen: false, foundYard: false, foundFurn: false, foundUp: false, cut: null, yardBeacon: null, furnBeacon: null, upBeacon: null};
     scene.background = new THREE.Color('#b8e8ff');
     if (scene.fog){ scene.fog.color = new THREE.Color('#d7f3ff'); scene.fog.near = 50; scene.fog.far = 160; }
-    plat(0, 0, 0, 100, 70, '#8fd39a', .35);
+    plat(0, 0, 0, 110, 84, '#8fd39a', .35);
     const p0 = dhProg();
     dh.bank = p0.coins; dh.likes = p0.likes; dh.goals = Object.assign({}, p0.goals); dh.stock = Object.assign(dhEmptyStock(), p0.stock); dh.v1pieces = p0.v1pieces; dh.upgrades = Object.assign(dhEmptyUpgrades(), p0.upgrades || {}); dh.introSeen = !!p0.introSeen;
     if (!p0.granted){ dh.bank += DH_GRANT; dh.grantedNow = true; }
@@ -12300,6 +12454,8 @@ const Obby = (() => {
     dhLayoutYard();
     dhBuildBounds();
     dhBuildYard();
+    dhBuildFurnitureStore();
+    dhBuildUpgradeShop();
     dhPlantTrees();
     for (let i = 0; i < DH_PLOTS; i++){
       const [ox, oz] = dhOrigin(i);
@@ -12458,12 +12614,12 @@ const Obby = (() => {
     if (!dh) return '';
     if (!dhNearOwnPlot() && dhPlotAt(P.x, P.z) !== dh.mine) return '🏡 Walk onto your plot';
     const job = dh.job;
-    if (job === 'brick' && !(dh.carry && dh.carry.id === 'brick') && !(dh.stock.brick|0)) return '🛒 Buy bricks at the Supply Yard first';
-    if ((job === 'pour' || job === 'mix') && !(dh.carry && (dh.carry.id === 'wetmix' || dh.carry.id === 'cement' || dh.carry.id === 'sand')) && !(dh.stock.cement|0) && !(dh.stock.sand|0)) return '🛒 Buy cement at the Supply Yard first';
-    if ((job === 'stud' || job === 'rafter' || job === 'frame') && !(dh.carry && dh.carry.id === 'wood') && !(dh.stock.wood|0)) return '🛒 Buy wood at the Supply Yard first';
-    if (job === 'shingle' && !(dh.carry && dh.carry.id === 'shingle') && !(dh.stock.shingle|0)) return '🛒 Buy shingles at the Supply Yard first';
-    if (job === 'glass' && !(dh.carry && dh.carry.id === 'glass') && !(dh.stock.glass|0)) return '🛒 Buy glass at the Supply Yard first';
-    if (job === 'paint' && !(dh.carry && dh.carry.id === 'paint') && !(dh.stock.paint|0)) return '🛒 Buy paint at the Supply Yard first';
+    if (job === 'brick' && !(dh.carry && dh.carry.id === 'brick') && !(dh.stock.brick|0)) return '📦 Grab free bricks at the Supply Yard first';
+    if ((job === 'pour' || job === 'mix') && !(dh.carry && (dh.carry.id === 'wetmix' || dh.carry.id === 'cement' || dh.carry.id === 'sand')) && !(dh.stock.cement|0) && !(dh.stock.sand|0)) return '📦 Grab free cement at the Supply Yard first';
+    if ((job === 'stud' || job === 'rafter' || job === 'frame') && !(dh.carry && dh.carry.id === 'wood') && !(dh.stock.wood|0)) return '📦 Grab free wood at the Supply Yard first';
+    if (job === 'shingle' && !(dh.carry && dh.carry.id === 'shingle') && !(dh.stock.shingle|0)) return '📦 Grab free shingles at the Supply Yard first';
+    if (job === 'glass' && !(dh.carry && dh.carry.id === 'glass') && !(dh.stock.glass|0)) return '📦 Grab free glass at the Supply Yard first';
+    if (job === 'paint' && !(dh.carry && dh.carry.id === 'paint') && !(dh.stock.paint|0)) return '📦 Grab free paint at the Supply Yard first';
     if (job === 'dig' && !dhNextBuildCell('dig')) return '📍 Stake the foundation first';
     if (job === 'mark' && !dhNextBuildCell('mark')) return '📍 The foundation is already staked';
     if (job === 'pour' && !dhNextBuildCell('pour')) return '🕳️ Dig the foundation forms first';
@@ -12484,11 +12640,19 @@ const Obby = (() => {
   }
   function dhNearYard(){
     if (!dh) return false;
-    return Math.hypot((P.x || 0) - DH_YARD.x, (P.z || 0) - DH_YARD.z) < 10;
+    return Math.hypot((P.x || 0) - DH_YARD.x, (P.z || 0) - DH_YARD.z) < 8;
+  }
+  function dhNearFurn(){
+    if (!dh) return false;
+    return Math.hypot((P.x || 0) - DH_FURN.x, (P.z || 0) - DH_FURN.z) < 7;
+  }
+  function dhNearUp(){
+    if (!dh) return false;
+    return Math.hypot((P.x || 0) - DH_UP.x, (P.z || 0) - DH_UP.z) < 7;
   }
   function dhNearBin(){
     if (!dh || !dh.bins) return null;
-    let best = null, bd = 2.0;
+    let best = null, bd = 1.25;
     dh.bins.forEach(b => { const d = Math.hypot((P.x || 0) - b.x, (P.z || 0) - b.z); if (d < bd){ bd = d; best = b; } });
     return best;
   }
@@ -12504,10 +12668,11 @@ const Obby = (() => {
   }
 
   function dhPay(cost){
-    const global = (typeof coins === 'number' ? coins : 0);
+    cost = +cost || 0;
+    if (cost <= 0) return true;
+    if (!dh) return false;
+    // Milestone coins live in the Dream House bank and are spent only on furniture and upgrades.
     if (dh.bank >= cost){ dh.bank -= cost; return true; }
-    if (global >= cost && typeof setCoins === 'function'){ setCoins(global - cost); return true; }
-    if (dh.bank + global >= cost && typeof setCoins === 'function'){ const use = cost - dh.bank; dh.bank = 0; setCoins(global - use); return true; }
     return false;
   }
   function dhGive(id, n){ if (!dh) return; dh.stock[id] = (dh.stock[id] || 0) + (n || 1); dhStockViz(dh.mine); }
@@ -12516,15 +12681,16 @@ const Obby = (() => {
   function dhBuy(id, count){
     if (!dh) return false;
     if (dh.intro) return false;
-    const m = dhMatOf(id); if (!m || m.nosale) return false;
+    const m = dhMatOf(id); if (!m || m.nosale || m.furn) return false;
     const n = count || m.stack;
     if (dh.carry && dh.carry.id !== id){ banner('🧺 Dump what you are carrying first (Q)'); return false; }
     const have = dh.carry && dh.carry.id === id ? dh.carry.n : 0;
     const add = Math.min(n, dhCarryCap(id) - have);
     if (add <= 0){ banner('🧺 Your arms are full'); return false; }
-    if (!dhPay(m.cost * add)){ banner('🪙 Need ' + (m.cost * add) + ' coins for ' + m.name); return false; }
+    // Construction supplies are free at the Supply Yard; only the carry limit applies.
     dhSetCarry(id, have + add);
-    banner(m.e + ' Picked up ' + add + ' ' + m.name.toLowerCase());
+    dh.foundYard = true;
+    banner(m.e + ' Grabbed ' + add + ' ' + m.name.toLowerCase() + ' — free!');
     dhSave(); dhHud(); dhBar();
     return true;
   }
@@ -12799,11 +12965,17 @@ const Obby = (() => {
     if (!dh) return;
     if (dh.intro) return dhSkipIntro();
     if (dh.yardOpen){ dhToggleYard(false); return; }
+    if (dh.shopOpen){ dhToggleShop(false); return; }
+    if (dh.upOpen){ dhToggleUp(false); return; }
     const plot = dhPlotAt(P.x, P.z);
     if (plot >= 0 && plot !== dh.mine) return dhLike();
     const mx = dhNearMixer();
     const pileHere = dhNearPile();
+    const bin = dhNearBin();
+    if (bin && !mx && !pileHere){ return dhBuy(bin.id); }
     if (dhNearYard() && !mx && !pileHere){ dhToggleYard(true); return true; }
+    if (dhNearFurn() && !mx && !pileHere){ dhToggleShop(true); return true; }
+    if (dhNearUp() && !mx && !pileHere){ dhToggleUp(true); return true; }
     if (mx && !(dh.carry && dh.carry.id === 'wetmix')){
       if (dh.carry && (dh.carry.id === 'cement' || dh.carry.id === 'sand')) return dhMix();
       if ((mx.cement | 0) >= 1 && (mx.sand | 0) >= 1 && mx.phase !== 'ready') return dhMix();
@@ -12889,13 +13061,20 @@ const Obby = (() => {
     if (!dhPay(u.cost)){ banner('🪙 Need ' + u.cost + ' coins for ' + u.name); return false; }
     dh.upgrades[id] = have + 1;
     banner(u.e + ' ' + u.name + ' upgraded!');
-    dhSave(); dhHud(); dhBar(); dhRenderShop();
+    dhSave(); dhHud(); dhBar(); dhRenderUp();
     return true;
   }
+  function dhCloseMenus(){
+    if (!dh) return;
+    if (dh.yardOpen) dhToggleYard(false);
+    if (dh.shopOpen) dhToggleShop(false);
+    if (dh.upOpen) dhToggleUp(false);
+  }
+  function dhAnyMenuOpen(){ return !!(dh && (dh.yardOpen || dh.shopOpen || dh.upOpen)); }
   function dhToggleYard(on){
     if (!dh) return;
     if (dh.intro) return;
-    dhToggleShop(false);
+    if (on !== false){ dhToggleShop(false); dhToggleUp(false); }
     dh.yardOpen = on == null ? !dh.yardOpen : !!on;
     if (dh.yardOpen) dh.foundYard = true;
     const el = $('#dhYard');
@@ -12904,18 +13083,19 @@ const Obby = (() => {
   }
   function dhRenderYard(){
     const el = $('#dhYard'); if (!el || !dh) return;
-    const items = DH_MATS.filter(m => !m.nosale).map(m => {
+    const items = dhSupplyMats().map(m => {
       const n = (dh.stock[m.id]|0) + (dh.carry && dh.carry.id === m.id ? dh.carry.n : 0);
-      return '<button class="dhsitem" data-dhbuy="' + m.id + '"><span class="dhe">' + m.e + '</span><b>' + m.name + '</b><small>' + m.cost + '🪙' + (n ? ' · have ' + n : '') + '</small></button>';
+      return '<button class="dhsitem" data-dhbuy="' + m.id + '"><span class="dhe">' + m.e + '</span><b>' + m.name + '</b><small>Free' + (n ? ' · have ' + n : '') + '</small></button>';
     }).join('');
-    el.innerHTML = '<div class="dhsbox"><div class="dhshead"><h3>📦 Supply Yard</h3><button class="dhb" id="dhYardX">Close</button></div><div class="dhsbody"><p class="dhsbank">🪙 ' + Math.floor(dh.bank) + ' building coins · walk up and press E to shop</p><div class="dhsgrid">' + items + '</div></div></div>';
+    el.innerHTML = '<div class="dhsbox"><div class="dhshead"><h3>📦 Supply Yard — Free Supplies</h3><button class="dhb" id="dhYardX">Close</button></div><div class="dhsbody"><p class="dhsbank">Press E at a pile to grab supplies. Carry what you can — no coins needed!</p><div class="dhsgrid">' + items + '</div></div></div>';
   }
   function dhToggleShop(on){
     if (!dh) return;
     if (dh.intro) return;
-    // opening Shop must never move the player or camera
-    if (on !== false) dhToggleYard(false);
+    // opening a shop must never move the player or camera
+    if (on !== false){ dhToggleYard(false); dhToggleUp(false); }
     dh.shopOpen = on == null ? !dh.shopOpen : !!on;
+    if (dh.shopOpen) dh.foundFurn = true;
     const el = $('#dhShop');
     if (el){ el.style.display = dh.shopOpen ? '' : 'none'; if (dh.shopOpen) el.classList.add('show'); else el.classList.remove('show'); }
     if (dh.shopOpen) dhRenderShop();
@@ -12926,12 +13106,26 @@ const Obby = (() => {
       const n = dh.stock[m.id] | 0;
       return '<button class="dhsitem" data-dhbuy="' + m.id + '"><span class="dhe">' + m.e + '</span><b>' + m.name + '</b><small>' + m.cost + '🪙' + (n ? ' · have ' + n : '') + '</small></button>';
     }).join('');
+    el.innerHTML = '<div class="dhsbox"><div class="dhshead"><h3>🛋️ Furniture Store</h3><button class="dhb" id="dhShopX">Close</button></div><div class="dhsbody"><p class="dhsbank">🪙 ' + Math.floor(dh.bank) + ' coins · earned from build milestones</p><div class="dhsgrid">' + furn + '</div></div></div>';
+  }
+  function dhToggleUp(on){
+    if (!dh) return;
+    if (dh.intro) return;
+    if (on !== false){ dhToggleYard(false); dhToggleShop(false); }
+    dh.upOpen = on == null ? !dh.upOpen : !!on;
+    if (dh.upOpen) dh.foundUp = true;
+    const el = $('#dhUp');
+    if (el){ el.style.display = dh.upOpen ? '' : 'none'; if (dh.upOpen) el.classList.add('show'); else el.classList.remove('show'); }
+    if (dh.upOpen) dhRenderUp();
+  }
+  function dhRenderUp(){
+    const el = $('#dhUp'); if (!el || !dh) return;
     const ups = DH_UPGRADES.map(u => {
       const have = dhUp(u.id);
       const maxed = have >= u.max;
       return '<button class="dhsitem' + (maxed ? ' max' : '') + '" data-dhup="' + u.id + '"' + (maxed ? ' disabled' : '') + '><span class="dhe">' + u.e + '</span><b>' + u.name + '</b><small>' + (maxed ? 'Max ' + have + '/' + u.max : u.cost + '🪙 · ' + have + '/' + u.max) + '<br>' + u.desc + '</small></button>';
     }).join('');
-    el.innerHTML = '<div class="dhsbox"><div class="dhshead"><h3>🛒 Dream House Shop</h3><button class="dhb" id="dhShopX">Close</button></div><div class="dhsbody"><p class="dhsbank">🪙 ' + Math.floor(dh.bank) + ' coins · earned from build milestones</p><h4>Furniture</h4><div class="dhsgrid">' + furn + '</div><h4>Upgrades</h4><div class="dhsgrid">' + ups + '</div></div></div>';
+    el.innerHTML = '<div class="dhsbox"><div class="dhshead"><h3>🔧 Upgrades</h3><button class="dhb" id="dhUpX">Close</button></div><div class="dhsbody"><p class="dhsbank">🪙 ' + Math.floor(dh.bank) + ' coins · earned from build milestones</p><div class="dhsgrid">' + ups + '</div></div></div>';
   }
   function dhCineRecs(){
     const recs = [];
@@ -13098,7 +13292,7 @@ const Obby = (() => {
     if (!dh.introSeen){
       dhStartIntro(false);
     } else {
-      banner(mp && mp.on ? '🏡 Dream House Builders — buy materials, carry them, and build brick by brick!' : '🏡 Buy bricks and cement at the Supply Yard, carry them to your plot, and build it yourself!');
+      banner(mp && mp.on ? '🏡 Dream House Builders — buy materials, carry them, and build brick by brick!' : '🏡 Grab free bricks and cement at the Supply Yard, carry them to your plot, and build it yourself!');
       tipTimer = 8; dhHud(); dhBar();
       dreamhouseUpdate(0);
     }
@@ -13115,14 +13309,14 @@ const Obby = (() => {
     Object.keys(dh.mixers || {}).forEach(k => dh.mixers[k] && dh.mixers[k].mesh && scene.remove(dh.mixers[k].mesh));
     (dh.trees || []).forEach(t => t.mesh && scene.remove(t.mesh));
     if (typeof model !== 'undefined' && model && model.g) model.g.visible = true;
-    ['#dhBar', '#dhAct', '#dhCut', '#dhShop', '#dhYard', '#dhGuide'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
+    ['#dhBar', '#dhAct', '#dhCut', '#dhShop', '#dhYard', '#dhUp', '#dhGuide'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
     const replay = $('#dhReplay'); if (replay) replay.style.display = 'none';
     dhSetFade(0); dhSay('');
     dh = null;
   }
   function dhActPrompt(){
     if (!dh) return '';
-    if (dh.intro || dh.shopOpen || dh.yardOpen) return '';
+    if (dh.intro || dh.shopOpen || dh.yardOpen || dh.upOpen) return '';
     const key = (typeof pad !== 'undefined' && pad && pad.on) ? 'Ⓧ' : (typeof touchUI !== 'undefined' && touchUI ? 'tap' : 'E');
     const mxn = dhNearMixer(), pile = dhNearPile();
     const onLot = dhNearOwnPlot();
@@ -13132,6 +13326,10 @@ const Obby = (() => {
       return c.need ? (' · ' + word + ' ' + c.have + '/' + c.need) : '';
     };
     if (dh.near >= 0 && dh.near !== dh.mine) return '💛 Like this house';
+    if (dhNearBin() && !dhNearMixer() && !dhNearPile()){ const b = dhNearBin(), m = dhMatOf(b && b.id); return (m ? m.e + ' ' : '') + key + ': Take free ' + ((m && m.name) || 'supplies'); }
+    if (dhNearYard() && !dhNearMixer() && !dhNearPile()) return key + ': Open the Supply Yard';
+    if (dhNearFurn() && !dhNearMixer() && !dhNearPile()) return key + ': Open the Furniture Store';
+    if (dhNearUp() && !dhNearMixer() && !dhNearPile()) return key + ': Talk to the builder';
     if (mxn && dh.carry && (dh.carry.id === 'cement' || dh.carry.id === 'sand')) return '🪨 Load the mixer';
     if (mxn && mxn.phase === 'mixing') return '🌀 Mixing…';
     if (mxn && ((mxn.cement|0) >= 1 && (mxn.sand|0) >= 1)) return '🌀 Mix concrete';
@@ -13215,7 +13413,7 @@ const Obby = (() => {
     const n = $('#dhN'); if (n) n.textContent = '🪙 ' + Math.floor(dh.bank);
     const g = $('#dhGuide'), gt = $('#dhGuideT');
     if (g){
-      const show = !dh.foundYard && !dh.yardOpen && !dh.intro;
+      const show = !dh.foundYard && !dh.yardOpen && !dh.shopOpen && !dh.upOpen && !dh.intro;
       g.style.display = show ? '' : 'none';
       if (show){
         g.classList.add('show');
@@ -13246,7 +13444,7 @@ const Obby = (() => {
     const jobs = '<div class="dhtools">' + DH_JOBS.map(j => {
       const lab = {mark:'📍 Stake', dig:'🕳️ Dig', mix:'🌀 Mix', pour:'🪣 Pour', brick:'🧱 Brick', stud:'🪵 Stud', rafter:'🪜 Rafter', shingle:'🏠 Shingle', frame:'🚪 Frame', glass:'🪟 Glass', paint:'🎨 Paint', furn:'🛋️ Furnish'}[j];
       return '<button class="dhb' + (dh.job === j && dh.tool === 'place' ? ' on' : '') + '" data-dhjob="' + j + '">' + lab + '</button>';
-    }).join('') + '<button class="dhb' + (dh.tool === 'delete' ? ' on' : '') + '" data-dhtool="delete">🗑️</button><button class="dhb" id="dhDumpBtn">📦 Dump</button><button class="dhb" id="dhYardBtn">📦 Supply Yard</button><button class="dhb" id="dhShopBtn">🛒 Shop</button></div>';
+    }).join('') + '<button class="dhb' + (dh.tool === 'delete' ? ' on' : '') + '" data-dhtool="delete">🗑️</button><button class="dhb" id="dhDumpBtn">📦 Dump</button><button class="dhb" id="dhYardBtn">📦 Supply Yard</button><button class="dhb" id="dhShopBtn">🛋️ Furniture</button><button class="dhb" id="dhUpBtn">🔧 Upgrades</button></div>';
     const cols = dh.job === 'paint' ? ('<div class="dhcols">' + DH_PAINT.map((c, i) => '<button class="dhc' + (dh.color === i ? ' on' : '') + '" data-dhcol="' + i + '" style="background:' + c.col + '" title="' + c.name + '"></button>').join('') + '</div>') : '';
     const inv = '<div class="dinv">' + DH_MATS.filter(m => !m.nosale).map(m => {
       const n = (dh.stock[m.id]|0);
@@ -13257,16 +13455,17 @@ const Obby = (() => {
     if (typeof dhLayoutHud === 'function') dhLayoutHud();
   }
   function dhBindUI(){
-    if (window.__dhBound4) return;
-    window.__dhBound4 = true;
+    if (window.__dhBound5) return;
+    window.__dhBound5 = true;
     const act = $('#dhAct'); if (act) act.onclick = () => dh && !dh.intro && dhAct();
     const bar = $('#dhBar');
     if (bar) bar.addEventListener('click', ev => {
-      const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhShopBtn,#dhYardBtn');
+      const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhShopBtn,#dhYardBtn,#dhUpBtn');
       if (!t || !dh || dh.intro) return;
       if (t.id === 'dhDumpBtn') dhDump();
       else if (t.id === 'dhYardBtn') dhToggleYard(true);
-      else if (t.id === 'dhShopBtn') dhToggleShop();
+      else if (t.id === 'dhShopBtn') dhToggleShop(true);
+      else if (t.id === 'dhUpBtn') dhToggleUp(true);
       else if (t.dataset.dhtool) dhSetTool(t.dataset.dhtool);
       else if (t.dataset.dhjob) dhSetJob(t.dataset.dhjob);
       else if (t.dataset.dhcol != null){ dh.color = t.dataset.dhcol | 0; dhBar(); }
@@ -13286,8 +13485,14 @@ const Obby = (() => {
       const x = ev.target.closest('#dhShopX');
       if (x || ev.target === shop){ dhToggleShop(false); return; }
       const buy = ev.target.closest('[data-dhbuy]');
-      const up = ev.target.closest('[data-dhup]');
       if (buy) dhShopBuyFurn(buy.dataset.dhbuy);
+    });
+    const upPanel = $('#dhUp');
+    if (upPanel) upPanel.addEventListener('click', ev => {
+      if (!dh) return;
+      const x = ev.target.closest('#dhUpX');
+      if (x || ev.target === upPanel){ dhToggleUp(false); return; }
+      const up = ev.target.closest('[data-dhup]');
       if (up) dhBuyUpgrade(up.dataset.dhup);
     });
     const cut = $('#dhCut'); if (cut) cut.addEventListener('click', ev => { if (dh && dh.intro) dhSkipIntro(); });
@@ -13302,6 +13507,7 @@ const Obby = (() => {
     }
     if (dh.yardOpen && (jp.b || jp[1])){ dhToggleYard(false); return true; }
     if (dh.shopOpen && (jp.b || jp[1])){ dhToggleShop(false); return true; }
+    if (dh.upOpen && (jp.b || jp[1])){ dhToggleUp(false); return true; }
     if (jp.x || jp[2]){ dhAct(); return true; }
     if (jp.b || jp[1]){ dhRotate(); return true; }
     if (jp.y || jp[3]){ if (dh.carry) dhDump(); else dhSetTool(dh.tool === 'delete' ? 'place' : 'delete'); return true; }
@@ -13318,6 +13524,7 @@ const Obby = (() => {
     }
     if (dh.yardOpen && (k === 'Escape' || k === 'KeyQ' || k === 'KeyB')){ dhToggleYard(false); return true; }
     if (dh.shopOpen && (k === 'Escape' || k === 'KeyB' || k === 'KeyQ')){ dhToggleShop(false); return true; }
+    if (dh.upOpen && (k === 'Escape' || k === 'KeyB' || k === 'KeyQ')){ dhToggleUp(false); return true; }
     if (k === 'KeyB'){ dhToggleShop(); return true; }
     if (k === 'KeyE'){ dhAct(); return true; }
     if (k === 'KeyR'){ dhRotate(); return true; }
@@ -13760,7 +13967,7 @@ function dhLayoutHud(){
       if (mode === 'icecream' && ic && ic.panel >= 0 && e.code === 'Escape' && !e.repeat){ icPanel(-1); return; }
       if (mode === 'stable' && sb && sb.panel && e.code === 'Escape' && !e.repeat){ sbShowPick(false); return; }
       if (mode === 'photostudio' && psx && (psx.cam || psx.gal) && e.code === 'Escape' && !e.repeat && psKey(e)) return;
-      if (mode === 'dreamhouse' && dh && (dh.shopOpen || dh.yardOpen) && (e.code === 'Escape' || e.code === 'KeyB') && !e.repeat){ dhKey(e); return; }
+      if (mode === 'dreamhouse' && dh && (dh.shopOpen || dh.yardOpen || dh.upOpen) && (e.code === 'Escape' || e.code === 'KeyB') && !e.repeat){ dhKey(e); return; }
       if (e.code === 'Escape' || e.code === 'KeyP'){ if (e.code === 'Escape' && performance.now() - fp.unlockT < 400) return; if (!won && !over && !choosing) setPause(!(paused || menuOpen)); return; }
       if (mode === 'fashion' && fs && fs.ph === 'walk' && /^Digit[1-7]$/.test(e.code) && fsKey(e)) return;
       if (mode === 'dreamhouse' && dh && dhKey(e)) return;
@@ -14019,7 +14226,7 @@ function start(m = 'obby', d = null){
     { const bs = $('#fsBuild'); if (bs){ bs.textContent = typeof BUILD !== 'undefined' ? BUILD : ''; bs.classList.add('show'); } }
     $('#dhBox').style.display = mode === 'dreamhouse' ? '' : 'none';
     if (mode === 'dreamhouse'){ if ($('#dhBar')) $('#dhBar').style.display = ''; dreamhouseEnter(); }
-    else { ['#dhBar','#dhAct','#dhCut','#dhShop','#dhYard','#dhGuide'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } }); const r = $('#dhReplay'); if (r) r.style.display = 'none'; }
+    else { ['#dhBar','#dhAct','#dhCut','#dhShop','#dhYard','#dhUp','#dhGuide'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } }); const r = $('#dhReplay'); if (r) r.style.display = 'none'; }
     $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }
     if (mode === 'dance') danceEnter();
     $('#hmBox').style.display = mode === 'haunt' ? '' : 'none'; ['#hmAct'].forEach(id => $(id).classList.remove('show'));

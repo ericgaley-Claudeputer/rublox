@@ -231,12 +231,13 @@ test('Shop and Yard Close sit in a sticky top header, not below the item list', 
   for (const f of files){
     const t = fs.readFileSync(f, 'utf8');
     assert.ok(t.includes('class="dhshead"'), f + ' missing dhshead');
-    assert.ok(/<div class="dhshead"><h3>🛒 Dream House Shop<\/h3><button class="dhb" id="dhShopX">Close<\/button><\/div>/.test(t), f + ' shop close not in header');
-    assert.ok(/<div class="dhshead"><h3>📦 Supply Yard<\/h3><button class="dhb" id="dhYardX">Close<\/button><\/div>/.test(t), f + ' yard close not in header');
+    assert.ok(/<div class="dhshead"><h3>🛋️ Furniture Store<\/h3><button class="dhb" id="dhShopX">Close<\/button><\/div>/.test(t), f + ' furniture close not in header');
+    assert.ok(/<div class="dhshead"><h3>📦 Supply Yard[^<]*<\/h3><button class="dhb" id="dhYardX">Close<\/button><\/div>/.test(t), f + ' yard close not in header');
+    assert.ok(/<div class="dhshead"><h3>🔧 Upgrades<\/h3><button class="dhb" id="dhUpX">Close<\/button><\/div>/.test(t), f + ' upgrades close not in header');
     // Close must not appear after the grids anymore
     assert.ok(!/<div class="dhsgrid">.*<\/div><button class="dhb" id="dh(Shop|Yard)X">Close<\/button>/.test(t), f + ' close still after grid');
   }
-  assert.ok(src.includes('.dhshead{') && src.includes('#dhShopX,#dhYardX{'));
+  assert.ok(src.includes('.dhshead{') && (src.includes('#dhShopX,#dhYardX,#dhUpX{') || src.includes('#dhShopX,#dhYardX{')));
   assert.ok(src.includes('overflow:hidden') && src.includes('.dhsbody{'));
 });
 
@@ -261,9 +262,9 @@ test('live page has a single Continue section between Home and Games', () => {
 
 test('history key is new and version is bumped', () => {
   assert.ok(src.includes("const RECENT_KEY = 'rubloxRecentGames'"));
-  assert.ok(src.includes("const BUILD = '2026.11.11-9'"));
+  assert.ok(src.includes("const BUILD = '2026.11.11-10'"));
   const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
-  assert.strictEqual(v.build, '2026.11.11-9');
+  assert.strictEqual(v.build, '2026.11.11-10');
 });
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

@@ -38,7 +38,7 @@ function world(store0, opts){
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhLayoutYard, dhTreeBlocked, DH_BOUND, dhCamComfort, dhActPrompt, dhJobCounts};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats};`, ctx);
   return ctx;
 }
 
@@ -50,21 +50,30 @@ chk('skipping leaves an empty lot with a starter material pile', (W.A.dh.pieces[
 chk('single-player other plots stay empty (no leftover show-home on Plot 2)', [1,2,3].every(i => !(W.A.dh.pieces[i]||[]).length), [1,2,3].map(i => (W.A.dh.pieces[i]||[]).length));
 chk('mode boots on your own plot with starter coins', !!(W.A.dh && W.A.dh.mine === 0 && W.A.dh.bank >= 100), W.A.dh && {mine: W.A.dh.mine, bank: W.A.dh.bank});
 chk('starter building coins stay in the Dream House bank (not the home-page wallet)', W.A.dh.bank >= 100 && W.coins === 20, {bank: W.A.dh.bank, coins: W.coins});
-chk('four plots and a supply yard exist', W.A.DH_PLOTS === 4 && W.A.dh.bins && W.A.dh.bins.length >= 6 && W.A.DH_YARD.z < 0, W.A.dh.bins && W.A.dh.bins.length);
+chk('four plots and a supply yard exist', W.A.DH_PLOTS === 4 && W.A.dh.bins && W.A.dh.bins.length >= 6, W.A.dh.bins && W.A.dh.bins.length);
 chk('Supply Yard has a beacon you can follow from the plot', !!(W.A.dh.yardBeacon && W.A.dh.yardBeacon.arrow), W.A.dh.yardBeacon);
 (function(){
   const sp = W.A.dhSpawnPos(0);
-  const d = Math.hypot(W.A.DH_YARD.x - sp.x, W.A.DH_YARD.z - sp.z);
-  chk('Supply Yard sits 10-15m from spawn, next to your plot', d >= 8 && d <= 15.5, {d, yard: W.A.DH_YARD, spawn: sp});
-  const camZ = sp.z + Math.cos(Math.PI) * Math.cos(.38) * 12; // chase cam sits south (more negative z) of spawn
+  const [ox, oz] = W.A.dhOrigin(0);
+  const cx = ox + 8 * 1.4 / 2, cz = oz + 8 * 1.4 / 2;
+  const dPlot = Math.hypot(cx, cz);
+  chk('the house plot sits in the center of the map', dPlot < 1.5 && Math.hypot(sp.x - cx, sp.z - (oz - 2.8)) < 1, {center:{cx,cz}, origin:{ox,oz}, spawn:sp});
+  chk('the player spawns just south of the plot', sp.z < oz && Math.hypot(sp.x - cx, sp.z - oz) < 12, {sp, oz, cx});
+  // Chase camera looks north with +X on the left, so "right of the plot" is smaller x.
+  const yardNE = W.A.DH_YARD.x < cx && W.A.DH_YARD.z > cz - 4;
+  const furnSW = W.A.DH_FURN.x > cx && W.A.DH_FURN.z < cz;
+  const upSE = W.A.DH_UP.x < cx && W.A.DH_UP.z < cz;
+  chk('Supply Yard, Furniture Store, and Upgrades sit in the NE, SW, and SE corners (as you look at the plot)', yardNE && furnSW && upSE, {yard:W.A.DH_YARD, furn:W.A.DH_FURN, up:W.A.DH_UP, c:{cx,cz}});
+  const camZ = sp.z + Math.cos(Math.PI) * Math.cos(.38) * 12;
   chk('Supply Yard is in the spawn camera view, not behind the camera', W.A.DH_YARD.z > camZ + 2 && W.A.DH_YARD.z > sp.z - 2, {yard:W.A.DH_YARD, camZ, spawn:sp});
   const blocked = (W.A.dh.trees||[]).filter(tr => W.A.dhTreeBlocked(tr.x, tr.z));
-  chk('no tree sits in the spawn-to-plot sightline or on the yard', blocked.length === 0, blocked);
+  chk('no tree sits in the spawn-to-plot sightline or on the yard or shops', blocked.length === 0, blocked);
+  chk('Furniture Store and Upgrades have beacons', !!(W.A.dh.furnBeacon && W.A.dh.furnBeacon.arrow) && !!(W.A.dh.upBeacon && W.A.dh.upBeacon.arrow));
 })();
 
 chk('materials include bricks, cement, sand, wood, shingles, glass', ['brick','cement','sand','wood','shingle','glass'].every(id => W.A.DH_MATS.some(m => m.id === id)));
 chk('catalog is construction parts, not prefab wall slabs', W.A.DH_PARTS.some(p => p.id === 'brick') && W.A.DH_PARTS.some(p => p.id === 'slab') && !W.A.DH_PARTS.some(p => p.id === 'wall' && p.name === 'Wall'));
-chk('save key is unique (does not clobber stables/bakery)', W.A.DH_KEY === 'rubloxDreamHouse' && W.A.DH_VER === 4);
+chk('save key is unique (does not clobber stables/bakery)', W.A.DH_KEY === 'rubloxDreamHouse' && W.A.DH_VER === 5);
 
 // Buy at the yard, carry, dump on plot
 W.P.x = W.A.dh.bins[0].x; W.P.z = W.A.dh.bins[0].z;
@@ -72,8 +81,9 @@ const brickBin = W.A.dh.bins.find(b => b.id === 'brick');
 W.P.x = brickBin.x; W.P.z = brickBin.z;
 const bank0 = W.A.dh.bank;
 const bought = W.A.dhBuy('brick');
-chk('buying bricks at the yard spends coins and fills your arms', bought && W.A.dh.carry && W.A.dh.carry.id === 'brick' && W.A.dh.carry.n >= 1 && W.A.dh.bank < bank0, W.A.dh.carry);
-const [ox, oz] = [(0 - 1.5) * 18, -8 * 1.4 / 2];
+chk('taking bricks at the yard is free and fills your arms', bought && W.A.dh.carry && W.A.dh.carry.id === 'brick' && W.A.dh.carry.n >= 1 && W.A.dh.bank === bank0, {carry:W.A.dh.carry, bank:W.A.dh.bank, bank0});
+chk('construction supplies are marked free', W.A.dhSupplyMats().every(m => m.cost === 0 && m.free) && W.A.dhSupplyMats().length >= 6);
+const [ox, oz] = W.A.dhOrigin(0);
 W.P.x = ox + 0.2; W.P.z = oz + 8 * 1.4 - 1.0;
 const dumped = W.A.dhDump();
 chk('dumping on your plot stocks a material pile', dumped && (W.A.dh.stock.brick|0) >= 1 && !W.A.dh.carry, {stock: W.A.dh.stock.brick, dumped});
@@ -171,8 +181,8 @@ chk('inventory HUD still tracks leftover bricks', (W.A.dh.stock.brick|0) + (W.A.
 
 // Cannot build on another plot
 W.A.dh.carry = {id: 'brick', n: 4};
-const [ox2] = [(1 - 1.5) * 18];
-W.P.x = ox2 + 3 * 1.4; W.P.z = oz + 2 * 1.4; W.P.face = 0;
+const [ox2, oz2] = W.A.dhOrigin(1);
+W.P.x = ox2 + 3 * 1.4; W.P.z = oz2 + 2 * 1.4; W.P.face = 0;
 W.A.dreamhouseUpdate(0.05);
 const aim2 = W.A.dhAim();
 chk('aiming at another plot is not buildable', !!(aim2 && aim2.plot === 1 && !W.A.dhCanBuild(aim2)), aim2);
@@ -194,7 +204,7 @@ chk('Xbox Ⓧ acts and Ⓑ rotates', (() => { const r0 = W.A.dh.rot; W.A.dhPad({
 chk('a ring of trees surrounds the plots', (W.A.dh.trees||[]).length >= 24, W.A.dh.trees && W.A.dh.trees.length);
 (function(){
   const yard = W.A.DH_YARD;
-  const ox = (0 - 1.5) * 18, oz = -8 * 1.4 / 2;
+  const [ox, oz] = W.A.dhOrigin(0);
   const cx = ox + 8 * 1.4 / 2, cz = oz + 8 * 1.4 / 2;
   const blocked = (W.A.dh.trees||[]).filter(t => {
     const toYx = yard.x - cx, toYz = yard.z - cz, len = Math.hypot(toYx, toYz) || 1;
@@ -275,13 +285,13 @@ W.A.dhCheckGoals();
 chk('glazing every window pays a coin milestone', !!(g2 && W.A.dh.goals.glaze && W.A.dhWindowsGlazed(W.A.dh.pieces[0])), {g2, goals:W.A.dh.goals, earned:W.A.dh.earned});
 const Wg = world({rubloxDreamHouse: JSON.stringify({ver:3, introSeen:true, granted:true, coins:10, pieces:[['winframe',0,3,0,1,0],['pane',0,3,0,1,0]], stock:{}, goals:{}, upgrades:{}})}, {coins:10});
 Wg.A.buildDreamHouse();
-chk('already-glazed windows stay glazed after the v4 migrate', (Wg.A.dh.pieces[0]||[]).some(a => a[0]==='pane') && (Wg.A.dh.pieces[0]||[]).some(a => a[0]==='winframe') && Wg.A.DH_VER === 4);
+chk('already-glazed windows stay glazed after the v5 migrate', (Wg.A.dh.pieces[0]||[]).some(a => a[0]==='pane') && (Wg.A.dh.pieces[0]||[]).some(a => a[0]==='winframe') && Wg.A.DH_VER === 5);
 Wg.A.dreamhouseStop();
 
 // Save / migrate / preserve other keys
 W.A.dhSave();
 const saved = W.store.rubloxDreamHouse;
-chk('house writes construction data to rubloxDreamHouse', !!(saved && /"ver":4/.test(saved) && /brick/.test(saved) && /introSeen/.test(saved)));
+chk('house writes construction data to rubloxDreamHouse', !!(saved && /"ver":5/.test(saved) && /brick/.test(saved) && /introSeen/.test(saved)));
 const v1 = {pieces: [[0,2,0,2,0,1],[1,2,1,2,0,1],[2,3,1,1,0,0],[5,2,2,2,0,1]], coins: 40, granted: true, goals: {floors:1}};
 const other = {rubloxStable: '{"pony":{"id":"buttercup"},"shows":2}', rubloxBakery: '{"served":4,"coins":9}', rubloxDreamHouse: JSON.stringify(v1)};
 const W2 = world(other, {coins: 50});
@@ -441,6 +451,30 @@ Wp.A.dhToggleShop(true);
 chk('B key closes the open Shop', Wp.A.dhKey({code:'KeyB', repeat:false}) === true && Wp.A.dh.shopOpen === false);
 Wp.A.dhToggleYard(true);
 chk('controller Ⓑ closes the open Yard menu', Wp.A.dhPad({b:1}) === true && Wp.A.dh.yardOpen === false);
+// Split shops, free supplies vs paid furniture/upgrades, migrate keeps the house
+Wp.A.dhToggleYard(false);
+const bankShop = Wp.A.dh.bank;
+Wp.P.x = Wp.A.DH_FURN.x; Wp.P.z = Wp.A.DH_FURN.z;
+chk('walking into the Furniture Store is detected', Wp.A.dhNearFurn() === true);
+Wp.A.dhKey({code:'KeyE', repeat:false});
+chk('E at the Furniture Store opens the furniture menu (not upgrades)', Wp.A.dh.shopOpen === true && Wp.A.dh.upOpen !== true, {shop:Wp.A.dh.shopOpen, up:Wp.A.dh.upOpen});
+Wp.A.dhToggleShop(false);
+Wp.P.x = Wp.A.DH_UP.x; Wp.P.z = Wp.A.DH_UP.z;
+chk('walking up to the builder is detected', Wp.A.dhNearUp() === true);
+Wp.A.dhKey({code:'KeyE', repeat:false});
+chk('E at the Upgrades shop opens the upgrades menu (not furniture)', Wp.A.dh.upOpen === true && Wp.A.dh.shopOpen !== true, {up:Wp.A.dh.upOpen, shop:Wp.A.dh.shopOpen});
+chk('Escape closes the Upgrades menu first', Wp.A.dhKey({code:'Escape', repeat:false}) === true && Wp.A.dh.upOpen === false);
+Wp.A.dh.bank = 200;
+const bankU = Wp.A.dh.bank;
+const upOk = Wp.A.dhBuyUpgrade('carry');
+chk('upgrades are paid with milestone coins from the house bank', upOk && Wp.A.dh.bank === bankU - 40, {ok:upOk, bank:Wp.A.dh.bank, before:bankU});
+const bankF2 = Wp.A.dh.bank;
+const sofaOk2 = Wp.A.dhShopBuyFurn('sofa');
+chk('furniture is paid with milestone coins, not free like yard supplies', sofaOk2 && Wp.A.dh.bank === bankF2 - 10, {ok:sofaOk2, bank:Wp.A.dh.bank, before:bankF2});
+const Wv = world({rubloxDreamHouse: JSON.stringify({ver:4, introSeen:true, granted:true, coins:33, pieces:[['slab',2,0,2,0,0],['brick',2,0,2,0,0]], stock:{brick:4}, goals:{slab:1}, upgrades:{carry:1}})}, {coins:20});
+Wv.A.buildDreamHouse();
+chk('a v4 house save migrates into v5 and keeps the lot, stock, and upgrades', Wv.A.DH_VER === 5 && (Wv.A.dh.pieces[0]||[]).some(a => a[0]==='slab') && (Wv.A.dh.stock.brick|0) >= 4 && (Wv.A.dh.upgrades.carry|0) === 1 && Wv.A.dh.introSeen === true, {ver:Wv.A.DH_VER, pieces:Wv.A.dh.pieces[0], stock:Wv.A.dh.stock, up:Wv.A.dh.upgrades});
+
 const farX = Wp.P.x, farZ = Wp.P.z;
 Wp.P.x = 40; Wp.P.z = 28;
 Wp.A.dreamhouseUpdate(0.02);
