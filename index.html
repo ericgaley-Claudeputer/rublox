@@ -478,6 +478,18 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .touchui #dhAct.dhnear{bottom:max(248px,calc(env(safe-area-inset-bottom) + 214px))}
 
 @media (max-width:760px),(max-height:520px){.dhbar{bottom:max(8px,env(safe-area-inset-bottom));padding:4px}.dhb,.dhp{font-size:12px;min-height:36px;min-width:48px;padding:3px 5px}.touchui .dhbar{bottom:max(118px,calc(env(safe-area-inset-bottom) + 96px))}}
+/* t252u: Dream House caption sits above the toolbar; the E prompt sits above the caption (desktop, mobile, touch). */
+#obby.dhmode .otip{bottom:calc(var(--dhbar-clear, 160px) + 8px);z-index:15;max-width:min(92vw,720px)}
+#obby.dhmode #dhAct,
+#obby.dhmode #dhAct.dhnear,
+#obby.dhmode button.dhnear#dhAct,
+#obby.touchui.dhmode #dhAct,
+#obby.touchui.dhmode #dhAct.dhnear{bottom:calc(var(--dhbar-clear, 160px) + var(--dhtip-clear, 0px) + 8px);z-index:15}
+@media (max-width:760px),(max-height:520px){
+  #obby.dhmode #dhAct,
+  #obby.dhmode #dhAct.dhnear,
+  #obby.touchui.dhmode #dhAct.dhnear{bottom:calc(var(--dhbar-clear, 160px) + var(--dhtip-clear, 0px) + 8px)}
+}
 .dhcut{position:absolute;inset:0;z-index:8;pointer-events:auto}
 .dhfade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}
 .dhbubble{position:absolute;left:50%;top:16%;transform:translateX(-50%);background:#fffaf0;border:3px solid #1d2340;border-radius:22px;padding:12px 22px 16px;font-weight:900;color:#1d2340;box-shadow:0 6px 0 rgba(0,0,0,.15);max-width:min(90vw,460px);text-align:center;z-index:9}
@@ -1492,7 +1504,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-8';
+const BUILD = '2026.11.11-9';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -11756,7 +11768,7 @@ const Obby = (() => {
     {lL: -.2, lR: .4, aL: -1.6, aR: .3, lean: .05}, {lL: .5, lR: -.3, aL: .2, aR: -1.5, lean: -.05},
     {lL: -.4, lR: -.4, aL: -2.0, aR: -2.0, lean: 0}, {lL: .3, lR: .3, aL: -1.2, aR: 1.0, lean: .1}];
     return Object.assign({lLo: 0, lRo: 0, aLo: 0, aRo: 0}, poses[db.pose % 4]); }
-  /* ===================== t251u: 🏡 DREAM HOUSE BUILDERS — menus hide the prompt, Escape closes shop, tidy yard, honest prompts. t243u: sticky Shop/Yard Close at top of panel ===================== */
+  /* ===================== t251u: 🏡 DREAM HOUSE BUILDERS — menus hide the prompt, Escape closes shop, tidy yard, honest prompts. t243u: sticky Shop/Yard Close at top of panel. t252u: caption sits above the toolbar ===================== */
   const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 4;
   const DH_FOOT = {x0: 1, z0: 1, x1: 6, z1: 6}; // slab footprint inside the plot
   const DH_BRICK_W = .5, DH_BRICK_H = .24, DH_BRICK_D = .28, DH_COURSES = 8;
@@ -13242,6 +13254,7 @@ const Obby = (() => {
     }).join('') + (dh.carry ? '<span class="dhi on">🧺 ' + dh.carry.n + ' ' + dh.carry.id + '</span>' : '') + '</div>';
     bar.innerHTML = jobs + cols + inv;
     dhBindUI();
+    if (typeof dhLayoutHud === 'function') dhLayoutHud();
   }
   function dhBindUI(){
     if (window.__dhBound4) return;
@@ -13487,14 +13500,45 @@ const Obby = (() => {
     const h = $('#obby .ohud'), o = $('#obby'); if (!h || !o) return;
     const r = h.getBoundingClientRect(), ro = o.getBoundingClientRect();
     o.style.setProperty('--hudb', Math.round(r.bottom - ro.top) + 'px');
+    if (typeof dhLayoutHud === 'function') dhLayoutHud();
   }
-  if (window.ResizeObserver) setTimeout(() => { const h = document.querySelector('#obby .ohud'); if (h) new ResizeObserver(hudMeasure).observe(h); }, 0);
+/* ---------- dh hud caption (t252u) ---------- */
+function dhLayoutHud(){
+  const o = document.getElementById('obby');
+  const bar = document.getElementById('dhBar');
+  const tip = document.getElementById('oTip');
+  if (!o) return;
+  const playing = (typeof mode === 'string' ? mode === 'dreamhouse' : o.classList.contains('dhmode')) && bar && bar.style.display !== 'none';
+  if (!playing){
+    o.style.removeProperty('--dhbar-clear');
+    o.style.removeProperty('--dhtip-clear');
+    return;
+  }
+  const ro = o.getBoundingClientRect();
+  const rb = bar.getBoundingClientRect();
+  const barClear = Math.max(0, Math.round(ro.bottom - rb.top));
+  o.style.setProperty('--dhbar-clear', barClear + 'px');
+  const tipHidden = !tip || (tip.classList && tip.classList.contains('hide')) || (tip.style && tip.style.display === 'none');
+  let tipClear = 0;
+  if (!tipHidden){
+    const h = Math.round((tip.getBoundingClientRect && tip.getBoundingClientRect().height) || tip.offsetHeight || 0);
+    if (h > 0) tipClear = h + 8;
+  }
+  o.style.setProperty('--dhtip-clear', tipClear + 'px');
+}
+/* ---------- /dh hud caption ---------- */
+  if (window.ResizeObserver) setTimeout(() => {
+    const h = document.querySelector('#obby .ohud'); if (h) new ResizeObserver(hudMeasure).observe(h);
+    const bar = document.getElementById('dhBar'); if (bar) new ResizeObserver(() => { if (typeof dhLayoutHud === 'function') dhLayoutHud(); }).observe(bar);
+    const tip = document.getElementById('oTip'); if (tip) new ResizeObserver(() => { if (typeof dhLayoutHud === 'function') dhLayoutHud(); }).observe(tip);
+  }, 0);
   addEventListener('resize', () => setTimeout(hudMeasure, 50));
   function setTouchUIBase(on){
     hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
     if (mode === 'dreamhouse'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · tap 🏡 to buy, carry, mix and lay bricks' : '⌨️ WASD move · Space jump · E buy / carry / build · Q dump · R rotate · 1-9 job · Esc menu')
         + "<br>🏡 Re-build your house with bricks, concrete and wood, then paint and furnish it from the shop!";
+      if (typeof dhLayoutHud === 'function') dhLayoutHud();
       return;
     }
     if (mode === 'dance'){
@@ -13680,7 +13724,7 @@ const Obby = (() => {
       if (dh) dreamhouseUpdate(dt);
       if (pt) petsUpdate(dt);
       if (lava && time > LAVA_GRACE && !over && !won){ lava.y += DIFFS[diff].speed * (1 + (time - LAVA_GRACE) / 150) * dt; if (time - dt <= LAVA_GRACE + 0.001 && time > LAVA_GRACE) banner('🌋 The lava is rising! Climb!'); }
-      if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0) $('#oTip').classList.add('hide'); }
+      if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0){ $('#oTip').classList.add('hide'); if (typeof dhLayoutHud === 'function') dhLayoutHud(); } }
     }
     if (document.pointerLockElement && (!fpOn() || paused || menuOpen || choosing || won || over)) document.exitPointerLock();
     animate(paused ? 0 : dt); updateCamera(); renderer.render(scene, camera); hud();
@@ -13913,7 +13957,7 @@ function start(m = 'obby', d = null){
     ['#oDisBox','#oRTBox','#oHpBox','#oSurvBox'].forEach(id => $(id).style.display = mode === 'nds' ? '' : 'none'); $('#oTime').parentElement.style.display = mode === 'nds' || mode === 'tag' || mode === 'pets' ? 'none' : '';
     $('#oBlkBox').style.display = mode === 'build' ? '' : 'none'; ['#oItBox','#oTagTBox','#oMyItBox'].forEach(id => $(id).style.display = mode === 'tag' ? '' : 'none');
     $('#obby').classList.remove('btest'); ['#bTestEnd', '#bShare'].forEach(id => $(id).classList.remove('show')); mp.bt = null;
-    $('#obby').classList.toggle('bmode', mode === 'build'); $('#obby').classList.toggle('pmode', mode === 'pets'); $('#obby').classList.remove('pdrive'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  ptr.has = false;
+    $('#obby').classList.toggle('bmode', mode === 'build'); $('#obby').classList.toggle('pmode', mode === 'pets'); $('#obby').classList.toggle('dhmode', mode === 'dreamhouse'); $('#obby').classList.remove('pdrive'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  ptr.has = false;
     ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); pt && (pt.gas = pt.brake = 0); $('#oPause').textContent = '⏸️';
     $('#oMute').textContent = muted ? '🔇' : '🔊';
     emote = null; P.airT = 0; P.jumped = false; P.climbing = false; Object.assign(run, {pad: false, touch: false, on: false, stam: STAM_MAX, tired: false, shown: -1}); $('#oRun').classList.remove('on'); $('#oFP').classList.toggle('on', fp.on); $('#oStam').style.display = mode === 'tag' || mode === 'hide' ? '' : 'none';

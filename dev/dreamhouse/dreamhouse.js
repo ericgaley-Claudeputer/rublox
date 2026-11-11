@@ -1,4 +1,4 @@
-  /* ===================== t251u: 🏡 DREAM HOUSE BUILDERS — menus hide the prompt, Escape closes shop, tidy yard, honest prompts. t243u: sticky Shop/Yard Close at top of panel ===================== */
+  /* ===================== t251u: 🏡 DREAM HOUSE BUILDERS — menus hide the prompt, Escape closes shop, tidy yard, honest prompts. t243u: sticky Shop/Yard Close at top of panel. t252u: caption sits above the toolbar ===================== */
   const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 4;
   const DH_FOOT = {x0: 1, z0: 1, x1: 6, z1: 6}; // slab footprint inside the plot
   const DH_BRICK_W = .5, DH_BRICK_H = .24, DH_BRICK_D = .28, DH_COURSES = 8;
@@ -1484,6 +1484,7 @@
     }).join('') + (dh.carry ? '<span class="dhi on">🧺 ' + dh.carry.n + ' ' + dh.carry.id + '</span>' : '') + '</div>';
     bar.innerHTML = jobs + cols + inv;
     dhBindUI();
+    if (typeof dhLayoutHud === 'function') dhLayoutHud();
   }
   function dhBindUI(){
     if (window.__dhBound4) return;
