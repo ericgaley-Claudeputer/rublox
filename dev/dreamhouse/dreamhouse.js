@@ -1,8 +1,15 @@
   /* ===================== t251u + t252u + t253u: first-person Dream House, place every brick yourself, clear concrete steps, reset house in Settings. ===================== */
-  const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 6;
+  const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 7;
   const DH_FOOT = {x0: 2, z0: 2, x1: 5, z1: 5}; // small house footprint (4x4 cells)
   const DH_FOOT_LEGACY = {x0: 1, z0: 1, x1: 6, z1: 6}; // v5 and earlier houses keep their larger slab
-  const DH_BRICK_W = .5, DH_BRICK_H = .24, DH_BRICK_D = .28, DH_COURSES = 6, DH_COURSES_LEGACY = 8;
+  // v7 human scale: player eye 1.6 m, body 1.8 m, walls 2.7 m (top 3.0 m), pitched roof apex 4.2 m.
+  const DH_EYE = 1.6, DH_PLAYER_H = 1.8;
+  const DH_SLAB_H = 0.30, DH_WALL_H = 2.70, DH_WALL_TOP = 3.00;
+  const DH_DOOR_H = 2.25, DH_WIN_SILL = 0.90, DH_WIN_HEAD = 2.25;
+  const DH_ROOF_RISE = 1.20, DH_ROOF_APEX = 4.20, DH_ROOF_OVERHANG = 0.30;
+  // Each placed 'brick' is a course segment (~0.56 x 0.45 x 0.30 m) so 6 tidy courses fill a tall wall without a huge click count.
+  const DH_BRICK_W = 0.56, DH_BRICK_H = 0.45, DH_BRICK_D = 0.30, DH_COURSES = 6, DH_COURSES_LEGACY = 8;
+  const DH_BRICKS_PER_CELL = 2.5, DH_SHINGLE_COLS = 4, DH_SHINGLE_ROWS = 2, DH_STUD_NEED = 8, DH_RAFTER_NEED = 4;
   const DH_MATS = [
     {id: 'brick',   e: '🧱', name: 'Bricks',    cost: 0,  stack: 8,  carry: 20, free: true},
     {id: 'cement',  e: '🪨', name: 'Cement',    cost: 0,  stack: 1,  carry: 2, free: true},
@@ -37,8 +44,8 @@
     {id: 'slab',    name: 'Pour a concrete slab', need: p => dhCount(p, 'slab') >= 12, pay: 25},
     {id: 'course',  name: 'Lay the first brick course', need: p => dhCount(p, 'brick') >= Math.max(8, (dhBrickAlongCount(0) || 8)), pay: 20},
     {id: 'walls',   name: 'Raise the brick walls', need: p => dhCount(p, 'brick') >= Math.max(40, Math.floor(dhBrickTotal() * .6)), pay: 35},
-    {id: 'rafters', name: 'Set the rafters',     need: p => dhCount(p, 'rafter') >= 4, pay: 20},
-    {id: 'roof',    name: 'Shingle the roof',    need: p => dhCount(p, 'shingle') >= 10, pay: 25},
+    {id: 'rafters', name: 'Set the rafters',     need: p => dhCount(p, 'rafter') >= dhRafterTotal(), pay: 20},
+    {id: 'roof',    name: 'Shingle the roof',    need: p => dhCount(p, 'shingle') >= dhShingleTotal(), pay: 25},
     {id: 'openings',name: 'Hang a door and window', need: p => dhCount(p, 'door') >= 1 && dhCount(p, 'winframe') >= 1, pay: 20},
     {id: 'glaze',   name: 'Glaze the windows',   need: p => dhWindowsGlazed(p), pay: 15},
     {id: 'paint',   name: 'Paint the walls',     need: p => dhCount(p, 'paint') >= 4, pay: 20},
@@ -112,9 +119,44 @@
     const [ox, oz] = dhOrigin(plot);
     return {x: ox + (ix + .5) * DH_CELL, y: y == null ? .12 : y, z: oz + (iz + .5) * DH_CELL};
   }
-  function dhFoot(){ const big = !!(dh && dh.upgrades && dh.upgrades.lot); if (big) return {x0: 0, z0: 0, x1: DH_N - 1, z1: DH_N - 1}; return (dh && dh.legacyHouse) ? DH_FOOT_LEGACY : DH_FOOT; }
+  function dhSt(st){ return st || dh || {}; }
+  function dhFootOf(st){
+    const d = dhSt(st);
+    const big = !!(d.upgrades && d.upgrades.lot);
+    if (big) return {x0: 0, z0: 0, x1: DH_N - 1, z1: DH_N - 1};
+    return d.legacyHouse ? DH_FOOT_LEGACY : DH_FOOT;
+  }
+  function dhFoot(){ return dhFootOf(dh); }
   function dhInFoot(ix, iz){ const f = dhFoot(); return ix >= f.x0 && ix <= f.x1 && iz >= f.z0 && iz <= f.z1; }
-  function dhCourses(){ const base = (dh && dh.legacyHouse) ? DH_COURSES_LEGACY : DH_COURSES; return base + ((dh && dh.upgrades && dh.upgrades.story) ? (dh.legacyHouse ? 8 : 4) : 0); }
+  function dhCourses(st){
+    // v7: every house (including migrated legacy footprints) uses the same 2.7 m wall height.
+    return DH_COURSES + ((dhSt(st).upgrades && dhSt(st).upgrades.story) ? 4 : 0);
+  }
+  function dhEyeHeight(){ return DH_EYE; }
+  function dhPlayerHeight(){ return DH_PLAYER_H; }
+  function dhWallH(st){ return dhCourses(st) * DH_BRICK_H; }
+  function dhWallTop(st){ return DH_SLAB_H + dhWallH(st); }
+  function dhRoofApex(st){ return dhWallTop(st) + DH_ROOF_RISE; }
+  function dhWallLength(st){
+    const f = dhFootOf(st);
+    return (f.x1 - f.x0 + 1) * DH_CELL;
+  }
+  function dhBrickW(){ return DH_BRICK_W; }
+  function dhRoofPitch(st){
+    const half = dhWallLength(st) / 2 + DH_ROOF_OVERHANG;
+    return Math.atan(DH_ROOF_RISE / half);
+  }
+  function dhStudTotal(){ return DH_STUD_NEED; }
+  function dhRafterTotal(){ return DH_RAFTER_NEED; }
+  function dhShingleTotal(){ return DH_SHINGLE_COLS * DH_SHINGLE_ROWS * 2; }
+  function dhFootWorld(plot, st){
+    const [ox, oz] = dhOrigin(plot == null ? 0 : plot);
+    const f = dhFootOf(st);
+    return {
+      x0: ox + f.x0 * DH_CELL, z0: oz + f.z0 * DH_CELL,
+      x1: ox + (f.x1 + 1) * DH_CELL, z1: oz + (f.z1 + 1) * DH_CELL
+    };
+  }
   function dhCount(pieces, id){ return (pieces || []).filter(a => a && a[0] === id).length; }
   function dhSameOpening(a, b){ return !!a && !!b && (a[1]|0) === (b[1]|0) && (a[2]|0) === (b[2]|0) && (a[3]|0) === (b[3]|0) && (a[4]|0) === (b[4]|0); }
   function dhWindowsGlazed(pieces){
@@ -162,6 +204,81 @@
     }
     const prev = +r.ver || 0;
     out.legacyHouse = !!r.legacyHouse || (prev > 0 && prev < 6 && (out.pieces || []).length > 0);
+    if (prev < 7) out.pieces = dhUpgradePiecesToV7(out.pieces, out);
+    out.ver = DH_VER;
+    return out;
+  }
+  function dhKindCounts(pieces){
+    const o = {};
+    (pieces || []).forEach(a => { if (a && a[0]) o[a[0]] = (o[a[0]] || 0) + 1; });
+    return o;
+  }
+  function dhFillKind(kind, slots){
+    return (slots || []).map(s => {
+      if (kind === 'stud') return ['stud', 0, 0, s.i, 0, 0];
+      if (kind === 'rafter') return ['rafter', 0, 0, s.i, s.side, 0];
+      if (kind === 'shingle') return ['shingle', s.col, s.row, 0, s.side, 0];
+      if (kind === 'doorframe' || kind === 'door' || kind === 'winframe' || kind === 'pane' || kind === 'paint') return [kind, 0, 0, 0, s.face, s.col || 0];
+      return null;
+    }).filter(Boolean);
+  }
+  function dhUpgradePiecesToV7(pieces, st){
+    const list = (pieces || []).filter(a => Array.isArray(a) && typeof a[0] === 'string').map(a => a.slice());
+    if (!list.length) return list;
+    const counts = dhKindCounts(list);
+    const later = (counts.stud || 0) + (counts.rafter || 0) + (counts.shingle || 0) + (counts.doorframe || 0) + (counts.door || 0) + (counts.winframe || 0) + (counts.pane || 0) + (counts.paint || 0) + ['sofa','bed','table','lamp','plant','rug','tv','shelf'].reduce((n, id) => n + (counts[id] || 0), 0);
+    const wallsDone = later > 0 || (counts.brick || 0) >= Math.max(40, Math.floor(dhBrickTotal(st) * 0.85));
+    const roofDone = (counts.shingle || 0) >= 10 || (counts.doorframe || 0) + (counts.door || 0) + (counts.winframe || 0) + (counts.pane || 0) + (counts.paint || 0) > 0 || ['sofa','bed','table','lamp','plant','rug','tv','shelf'].some(id => (counts[id] || 0) > 0);
+    const keep = [];
+    const take = (id) => { const hit = list.filter(a => a[0] === id); return hit; };
+    // Slabs, marks, trenches, wet mix, and furniture keep their cell coordinates.
+    ['mark','trench','wet','slab','sofa','bed','table','lamp','plant','rug','tv','shelf'].forEach(id => take(id).forEach(a => keep.push(a)));
+    const brickSlots = dhAllBrickRecs(st);
+    const oldBricks = take('brick');
+    if (wallsDone) brickSlots.forEach(r => keep.push(r));
+    else oldBricks.slice(0, brickSlots.length).forEach((_, i) => keep.push(brickSlots[i]));
+    const studSlots = dhAllStudSlots(null, st);
+    const oldStuds = take('stud');
+    if (wallsDone || oldStuds.length >= DH_STUD_NEED) studSlots.forEach((s, i) => keep.push(['stud', 0, 0, i, 0, 0]));
+    else oldStuds.forEach((_, i) => { if (studSlots[i]) keep.push(['stud', 0, 0, i, 0, 0]); });
+    const rafterSlots = dhAllRafterSlots(null, st);
+    const oldRafters = take('rafter');
+    if (roofDone || oldRafters.length >= DH_RAFTER_NEED) rafterSlots.forEach((s, i) => keep.push(['rafter', 0, 0, i, s.side, 0]));
+    else oldRafters.forEach((_, i) => { if (rafterSlots[i]) keep.push(['rafter', 0, 0, i, rafterSlots[i].side, 0]); });
+    const shingleSlots = dhAllShingleSlots(null, st);
+    const oldShingles = take('shingle');
+    if (roofDone) shingleSlots.forEach(s => keep.push(['shingle', s.col, s.row, 0, s.side, 0]));
+    else oldShingles.slice(0, shingleSlots.length).forEach((_, i) => {
+      const s = shingleSlots[i];
+      keep.push(['shingle', s.col, s.row, 0, s.side, 0]);
+    });
+    const facesUsed = {};
+    take('doorframe').forEach(a => { const f = a[4]|0; facesUsed['doorframe:'+f] = 1; keep.push(['doorframe', 0, 0, 0, f, 0]); });
+    take('door').forEach(a => { const f = (take('doorframe')[0] ? (take('doorframe')[0][4]|0) : (a[4]|0)); keep.push(['door', 0, 0, 0, f, 0]); });
+    const winFaces = [];
+    take('winframe').forEach(a => {
+      const f = a[4]|0;
+      if (winFaces.indexOf(f) < 0){ winFaces.push(f); keep.push(['winframe', 0, 0, 0, f, 0]); }
+    });
+    take('pane').forEach(a => {
+      const f = a[4]|0;
+      if (!keep.some(b => b[0] === 'pane' && (b[4]|0) === f)) keep.push(['pane', 0, 0, 0, f, 0]);
+    });
+    const paintCols = {};
+    take('paint').forEach(a => {
+      let f = a[4]|0;
+      if (f < 0 || f > 3) f = Object.keys(paintCols).length % 4;
+      if (paintCols[f] == null){ paintCols[f] = a[5]|0; keep.push(['paint', 0, 0, 0, f, a[5]|0]); }
+    });
+    // Deduplicate by key in case a v1 convert already overlapped.
+    const seen = {};
+    const out = [];
+    keep.forEach(a => {
+      const k = dhKeyOf(a);
+      if (seen[k]) return;
+      seen[k] = 1;
+      out.push(a);
+    });
     return out;
   }
   function dhLooksLegacy(pieces){
@@ -381,39 +498,64 @@
     if (id === 'mark'){ add(box(.08, .7, .08, M.wood), 0, .35, 0); add(box(.28, .04, .04, dhMat('#ff6fb5')), 0, .7, 0); }
     else if (id === 'trench'){ solid(DH_CELL * .95, .28, DH_CELL * .95, 0, 0, 0, M.dirt); add(box(DH_CELL * .95, .12, .06, M.wood), 0, .16, DH_CELL * .44); add(box(DH_CELL * .95, .12, .06, M.wood), 0, .16, -DH_CELL * .44); }
     else if (id === 'wet'){ solid(DH_CELL * .95, .32, DH_CELL * .95, 0, 0, 0, M.wet); }
-    else if (id === 'slab'){ solid(DH_CELL, .28, DH_CELL, 0, 0, 0, M.concrete); }
+    else if (id === 'slab'){ solid(DH_CELL, DH_SLAB_H, DH_CELL, 0, 0, 0, M.concrete); }
     else if (id === 'brick'){ const vis = solid(DH_BRICK_W - .02, DH_BRICK_H - .02, DH_BRICK_D, 0, 0, 0, M.brick); if (dh && dh.brickInst && dh.brickInst[plot] && typeof dh.brickInst[plot].setMatrixAt === 'function') vis.visible = false; }
-    else if (id === 'stud'){ solid(.1, 2.05, .1, 0, 1.0, 0, M.wood); }
+    else if (id === 'stud'){ solid(.08, dhWallH(), .08, 0, 0, 0, M.wood); }
     else if (id === 'beam'){ solid(DH_CELL * 1.05, .1, .1, 0, 0, 0, M.wood); }
-    else if (id === 'rafter'){ const r = box(DH_CELL * 1.2, .08, .1, M.wood); r.rotation.x = rec[4] % 2 ? .42 : -.42; add(r, 0, 0, 0); solidsLocal.push({mesh: r, hw: .5, hh: .08, hd: .4, ox: 0, oy: 0, oz: 0}); }
-    else if (id === 'shingle'){ const r = box(DH_CELL * 1.05, .05, DH_CELL * .55, M.shingle); r.rotation.x = rec[4] % 2 ? .42 : -.42; add(r, 0, 0, 0); }
-    else if (id === 'doorframe'){
-      solid(.12, 1.9, .12, -.45, .2, 0, M.wood); solid(.12, 1.9, .12, .45, .2, 0, M.wood); add(box(.95, .12, .12, M.wood), 0, 1.15, 0);
+    else if (id === 'rafter'){
+      const slope = Math.hypot(dhWallLength() / 2 + DH_ROOF_OVERHANG, DH_ROOF_RISE);
+      const r = box(0.08, 0.08, slope, M.wood);
+      r.rotation.x = rec[4] % 2 ? dhRoofPitch() : -dhRoofPitch();
+      add(r, 0, 0, 0);
+      solidsLocal.push({mesh: r, hw: .06, hh: .06, hd: slope / 2, ox: 0, oy: 0, oz: 0});
     }
-    else if (id === 'door'){ add(box(.7, 1.7, .08, M.dark), 0, .1, 0); add(box(.06, .06, .04, dhMat('#d4a574')), .22, .15, .06); }
+    else if (id === 'shingle'){
+      const wall = dhWallLength(), cols = DH_SHINGLE_COLS, rows = DH_SHINGLE_ROWS;
+      const slope = Math.hypot(wall / 2 + DH_ROOF_OVERHANG, DH_ROOF_RISE);
+      const sx = (wall + DH_ROOF_OVERHANG * 2) / cols + 0.04;
+      const sz = slope / rows + 0.04;
+      const r = box(sx, 0.05, sz, M.shingle);
+      r.rotation.x = rec[4] % 2 ? dhRoofPitch() : -dhRoofPitch();
+      add(r, 0, 0, 0);
+    }
+    else if (id === 'doorframe'){
+      const w = DH_BRICK_W * 2, h = DH_DOOR_H;
+      solid(.08, h, .08, -w / 2, 0, 0, M.wood);
+      solid(.08, h, .08, w / 2, 0, 0, M.wood);
+      add(box(w + .08, .08, .08, M.wood), 0, h / 2, 0);
+    }
+    else if (id === 'door'){
+      const w = DH_BRICK_W * 2 - 0.08, h = DH_DOOR_H - 0.08;
+      add(box(w, h, .06, M.dark), 0, 0, 0);
+      add(box(.06, .06, .04, dhMat('#d4a574')), w * .28, 0, .05);
+    }
     else if (id === 'winframe'){
-      // chunky wood frame with a clearly empty opening (no glass fill)
-      solid(.9, .14, .16, 0, .54, 0, M.wood);
-      solid(.96, .16, .2, 0, -.54, 0, M.wood);
-      solid(.14, 1.08, .16, -.38, 0, 0, M.wood);
-      solid(.14, 1.08, .16, .38, 0, 0, M.wood);
+      const w = DH_BRICK_W * 2, h = DH_WIN_HEAD - DH_WIN_SILL;
+      solid(w + .08, .08, .08, 0, h / 2, 0, M.wood);
+      solid(w + .08, .08, .08, 0, -h / 2, 0, M.wood);
+      solid(.08, h, .08, -w / 2, 0, 0, M.wood);
+      solid(.08, h, .08, w / 2, 0, 0, M.wood);
     }
     else if (id === 'pane'){
-      add(box(.64, .92, .03, M.glass), 0, 0, 0);
-      add(box(.14, .62, .008, M.glassShine || M.glass), -.14, .1, .02);
-      add(box(.06, .28, .008, M.glassShine || M.glass), .16, -.14, .02);
+      const w = DH_BRICK_W * 2 - 0.12, h = DH_WIN_HEAD - DH_WIN_SILL - 0.12;
+      add(box(w, h, .03, M.glass), 0, 0, 0);
+      add(box(w * .22, h * .6, .008, M.glassShine || M.glass), -w * .18, h * .08, .02);
+      add(box(w * .1, h * .28, .008, M.glassShine || M.glass), w * .2, -h * .12, .02);
     }
-    else if (id === 'paint'){ add(box(DH_CELL * .9, 1.8, .04, dhMat(dhPaintCol(rec[5] | 0))), 0, .2, 0); }
-    else if (id === 'sofa'){ solid(.95, .32, .5, 0, -.2, 0, dhMat('#3a86ff')); add(box(.95, .35, .16, dhMat('#3a86ff')), 0, .08, -.22); }
-    else if (id === 'bed'){ solid(1.1, .28, .7, 0, -.25, 0, dhMat('#fffaf0')); add(box(.4, .18, .68, dhMat('#ffe0ef')), 0, -.02, .28); }
-    else if (id === 'table'){ add(box(.7, .08, .7, M.wood), 0, .1, 0); [[-.28, -.28], [.28, -.28], [-.28, .28], [.28, .28]].forEach(([x, z]) => add(box(.08, .42, .08, M.dark), x, -.15, z)); solidsLocal.push({mesh: g, hw: .35, hh: .3, hd: .35, ox: 0, oy: 0, oz: 0}); }
-    else if (id === 'lamp'){ add(box(.12, .7, .12, M.dark), 0, -.1, 0); add(new THREE.Mesh(new THREE.SphereGeometry(.16, 10, 8), dhMat('#ffe08a', {emissive: '#ffe08a', emissiveIntensity: .4})), 0, .35, 0); }
-    else if (id === 'plant'){ add(box(.22, .16, .22, M.dark), 0, -.45, 0); add(new THREE.Mesh(new THREE.SphereGeometry(.22, 8, 6), dhMat('#2ec27e')), 0, -.15, 0); }
-    else if (id === 'rug'){ add(box(DH_CELL * .9, .04, DH_CELL * .7, dhMat('#c39bff')), 0, .16, 0); }
-    else if (id === 'tv'){ add(box(.22, .7, .16, M.dark), 0, -.15, 0); add(box(.9, .55, .08, M.dark), 0, .4, 0); add(box(.78, .44, .03, dhMat('#7ad3ff', {emissive: '#3a86ff', emissiveIntensity: .35})), 0, .4, .05); }
+    else if (id === 'paint'){
+      const len = dhWallLength() - 0.08, h = dhWallH() - 0.08;
+      add(box(len, h, 0.03, dhMat(dhPaintCol(rec[5] | 0))), 0, 0, 0);
+    }
+    else if (id === 'sofa'){ solid(1.80, .42, .85, 0, .21, 0, dhMat('#3a86ff')); add(box(1.80, .45, .16, dhMat('#3a86ff')), 0, 0.64, -.32); }
+    else if (id === 'bed'){ solid(2.00, .40, 1.40, 0, .20, 0, dhMat('#fffaf0')); add(box(.55, .22, 1.36, dhMat('#ffe0ef')), 0, 0.42, .40); }
+    else if (id === 'table'){ add(box(1.10, .06, 1.10, M.wood), 0, 0.74, 0); [[-.48, -.48], [.48, -.48], [-.48, .48], [.48, .48]].forEach(([x, z]) => add(box(.08, .74, .08, M.dark), x, 0.37, z)); solidsLocal.push({mesh: g, hw: .55, hh: .4, hd: .55, ox: 0, oy: 0.4, oz: 0}); }
+    else if (id === 'lamp'){ add(box(.14, .90, .14, M.dark), 0, 0.45, 0); add(new THREE.Mesh(new THREE.SphereGeometry(.16, 10, 8), dhMat('#ffe08a', {emissive: '#ffe08a', emissiveIntensity: .4})), 0, 1.00, 0); }
+    else if (id === 'plant'){ add(box(.24, .22, .24, M.dark), 0, 0.11, 0); add(new THREE.Mesh(new THREE.SphereGeometry(.22, 8, 6), dhMat('#2ec27e')), 0, 0.42, 0); }
+    else if (id === 'rug'){ add(box(1.80, .03, 1.20, dhMat('#c39bff')), 0, 0.02, 0); }
+    else if (id === 'tv'){ add(box(.28, .70, .20, M.dark), 0, 0.35, 0); add(box(1.10, .62, .08, M.dark), 0, 1.10, 0); add(box(.96, .50, .03, dhMat('#7ad3ff', {emissive: '#3a86ff', emissiveIntensity: .35})), 0, 1.10, .05); }
     else if (id === 'shelf'){
-      solid(.7, 1.2, .28, 0, .2, 0, M.wood);
-      ['#ff6fb5','#3a86ff','#ffd23f','#2ec27e','#ff9f1c'].forEach((c, i) => add(box(.1, .22, .2, dhMat(c)), -0.24 + (i % 3) * .22, (i < 3 ? .45 : -.05), .02));
+      solid(.90, 1.80, .32, 0, 0.90, 0, M.wood);
+      ['#ff6fb5','#3a86ff','#ffd23f','#2ec27e','#ff9f1c'].forEach((c, i) => add(box(.12, .24, .22, dhMat(c)), -0.28 + (i % 3) * .26, (i < 3 ? 1.35 : 0.70), .04));
     }
     g.userData.solids = solidsLocal; g.userData.rec = rec.slice(); g.userData.plot = plot;
     return g;
@@ -421,46 +563,176 @@
   function dhWorldRec(plot, rec){
     const id = rec[0], ix = rec[1]|0, iy = rec[2]|0, iz = rec[3]|0, face = rec[4]|0;
     if (id === 'brick'){
-      const [ox, oz] = dhOrigin(plot);
+      // Stack bond on a fixed grid (no running-bond offset) so courses line up and corners meet cleanly.
+      const b = dhFootWorld(plot);
+      const along = iz * DH_BRICK_W + DH_BRICK_W / 2;
+      const y = DH_SLAB_H + iy * DH_BRICK_H + DH_BRICK_H / 2;
       const f = face % 4;
-      const foot = dhFoot();
-      const x0 = ox + foot.x0 * DH_CELL, z0 = oz + foot.z0 * DH_CELL;
-      const x1 = ox + (foot.x1 + 1) * DH_CELL, z1 = oz + (foot.z1 + 1) * DH_CELL;
-      const off = (iy % 2) ? DH_BRICK_W / 2 : 0;
-      const along = (iz + 0) * DH_BRICK_W + off + DH_BRICK_W / 2;
-      const y = .28 + iy * DH_BRICK_H + DH_BRICK_H / 2;
-      if (f === 0) return {x: x0 + along, y, z: z0 + DH_BRICK_D / 2, ry: 0};          // south
-      if (f === 2) return {x: x1 - along, y, z: z1 - DH_BRICK_D / 2, ry: 0};          // north
-      if (f === 1) return {x: x1 - DH_BRICK_D / 2, y, z: z0 + along, ry: Math.PI / 2}; // east
-      return {x: x0 + DH_BRICK_D / 2, y, z: z1 - along, ry: Math.PI / 2};             // west
+      if (f === 0) return {x: b.x0 + along, y, z: b.z0 + DH_BRICK_D / 2, ry: 0};
+      if (f === 2) return {x: b.x1 - along, y, z: b.z1 - DH_BRICK_D / 2, ry: 0};
+      if (f === 1) return {x: b.x1 - DH_BRICK_D / 2, y, z: b.z0 + along, ry: Math.PI / 2};
+      return {x: b.x0 + DH_BRICK_D / 2, y, z: b.z1 - along, ry: Math.PI / 2};
     }
-    if (id === 'rafter' || id === 'shingle'){
-      const w = dhCellWorld(plot, ix, iz, (dh.upgrades && dh.upgrades.story ? 4.1 : 2.15) + iy * .12);
-      const side = (face % 2) ? 1 : -1;
-      w.z += side * .55; w.ry = 0; return w;
+    if (id === 'shingle'){
+      const s = dhShingleWorld(plot, face, ix, iy);
+      return s;
+    }
+    if (id === 'rafter'){
+      return dhRafterWorld(plot, iz, face);
+    }
+    if (id === 'stud'){
+      return dhStudWorld(plot, iz);
     }
     if (id === 'doorframe' || id === 'door' || id === 'winframe' || id === 'pane'){
-      const w = dhWallFaceWorld(plot, face, iz, iy);
+      const kind = (id === 'doorframe' || id === 'door') ? 'door' : 'window';
+      const w = dhOpeningWorld(plot, face, kind);
       w.ry = (face === 1 || face === 3) ? Math.PI / 2 : 0;
       return w;
     }
-    const baseY = id === 'slab' || id === 'wet' || id === 'trench' ? .16 : id === 'mark' ? .02 : id === 'stud' ? .28 : .35;
-    const w = dhCellWorld(plot, ix, iz, baseY + (id === 'paint' ? 1.0 : 0));
+    if (id === 'paint'){
+      const w = dhPaintWorld(plot, face);
+      w.ry = (face === 1 || face === 3) ? Math.PI / 2 : 0;
+      return w;
+    }
+    const furn = ['sofa','bed','table','lamp','plant','rug','tv','shelf'].indexOf(id) >= 0;
+    const baseY = (id === 'slab' || id === 'wet' || id === 'trench') ? (DH_SLAB_H / 2) : id === 'mark' ? .02 : furn ? DH_SLAB_H : .35;
+    const w = dhCellWorld(plot, ix, iz, baseY);
     w.ry = (face || 0) * Math.PI / 2;
     return w;
   }
   function dhWallFaceWorld(plot, face, along, course){
-    const [ox, oz] = dhOrigin(plot);
-    const foot = dhFoot();
-    const x0 = ox + foot.x0 * DH_CELL, z0 = oz + foot.z0 * DH_CELL;
-    const x1 = ox + (foot.x1 + 1) * DH_CELL, z1 = oz + (foot.z1 + 1) * DH_CELL;
-    const mid = (foot.x1 - foot.x0 + 1) * DH_CELL / 2;
-    const y = .28 + (course || 0) * DH_BRICK_H + .9;
-    const t = (along + 2) / 6 * (x1 - x0);
-    if (face === 0) return {x: x0 + mid, y, z: z0 + .12};
-    if (face === 2) return {x: x0 + mid, y, z: z1 - .12};
-    if (face === 1) return {x: x1 - .12, y, z: z0 + mid};
-    return {x: x0 + .12, y, z: z0 + mid};
+    return dhOpeningWorld(plot, face, 'door');
+  }
+  function dhOpeningWorld(plot, face, kind){
+    const b = dhFootWorld(plot);
+    const mid = (b.x1 - b.x0) / 2;
+    const y = (kind === 'window')
+      ? (DH_SLAB_H + (DH_WIN_SILL + DH_WIN_HEAD) / 2)
+      : (DH_SLAB_H + DH_DOOR_H / 2);
+    const out = DH_BRICK_D / 2;
+    if (face === 0) return {x: b.x0 + mid, y, z: b.z0 + out};
+    if (face === 2) return {x: b.x0 + mid, y, z: b.z1 - out};
+    if (face === 1) return {x: b.x1 - out, y, z: b.z0 + mid};
+    return {x: b.x0 + out, y, z: b.z0 + mid};
+  }
+  function dhPaintWorld(plot, face){
+    const b = dhFootWorld(plot);
+    const mid = (b.x1 - b.x0) / 2;
+    const y = DH_SLAB_H + dhWallH() / 2;
+    const out = DH_BRICK_D + 0.02;
+    if (face === 0) return {x: b.x0 + mid, y, z: b.z0 - 0.02};
+    if (face === 2) return {x: b.x0 + mid, y, z: b.z1 + 0.02};
+    if (face === 1) return {x: b.x1 + 0.02, y, z: b.z0 + mid};
+    return {x: b.x0 - 0.02, y, z: b.z0 + mid};
+  }
+  function dhRoofPlane(plot, side, col, row){
+    const b = dhFootWorld(plot);
+    const wall = b.x1 - b.x0;
+    const midZ = (b.z0 + b.z1) / 2;
+    const half = wall / 2 + DH_ROOF_OVERHANG;
+    const cols = DH_SHINGLE_COLS, rows = DH_SHINGLE_ROWS;
+    const t = (row + 0.5) / rows; // 0 at eave, 1 at ridge
+    const x = (b.x0 - DH_ROOF_OVERHANG) + (col + 0.5) * ((wall + DH_ROOF_OVERHANG * 2) / cols);
+    const zOff = (1 - t) * half;
+    const y = dhWallTop() + t * DH_ROOF_RISE;
+    const z = midZ + ((side % 2) ? zOff : -zOff);
+    return {x, y, z, ry: 0, side: side % 2, col, row};
+  }
+  function dhShingleWorld(plot, side, col, row){
+    return dhRoofPlane(plot, side, col, row);
+  }
+  function dhRafterWorld(plot, index, side){
+    const b = dhFootWorld(plot);
+    const wall = b.x1 - b.x0;
+    const midZ = (b.z0 + b.z1) / 2;
+    const half = wall / 2 + DH_ROOF_OVERHANG;
+    const i = index % Math.max(1, DH_RAFTER_NEED / 2);
+    const along = (i + 1) / (DH_RAFTER_NEED / 2 + 1);
+    const x = b.x0 + along * wall;
+    const y = dhWallTop() + DH_ROOF_RISE / 2;
+    const z = midZ + ((side % 2) ? half / 2 : -half / 2);
+    return {x, y, z, ry: 0, side: side % 2};
+  }
+  function dhStudWorld(plot, index){
+    const b = dhFootWorld(plot);
+    const midX = (b.x0 + b.x1) / 2, midZ = (b.z0 + b.z1) / 2;
+    const spots = [
+      {x: b.x0, z: b.z0}, {x: b.x1, z: b.z0}, {x: b.x1, z: b.z1}, {x: b.x0, z: b.z1},
+      {x: midX, z: b.z0}, {x: b.x1, z: midZ}, {x: midX, z: b.z1}, {x: b.x0, z: midZ}
+    ];
+    const s = spots[index % spots.length];
+    return {x: s.x, y: DH_SLAB_H + dhWallH() / 2, z: s.z, ry: 0};
+  }
+  function dhAllStudSlots(plot, st){
+    const list = [];
+    for (let i = 0; i < DH_STUD_NEED; i++){
+      const w = plot == null ? {x:0,y: DH_SLAB_H + dhWallH(st)/2,z:0} : dhStudWorld(plot, i);
+      list.push({plot, i, x: w.x, y: w.y, z: w.z, kind: 'stud'});
+    }
+    return list;
+  }
+  function dhAllRafterSlots(plot, st){
+    const list = [];
+    let i = 0;
+    for (let side = 0; side < 2; side++) for (let k = 0; k < DH_RAFTER_NEED / 2; k++, i++){
+      const w = plot == null ? {x:0,y: dhWallTop(st)+DH_ROOF_RISE/2,z:0} : dhRafterWorld(plot, k, side);
+      list.push({plot, i, side, x: w.x, y: w.y, z: w.z, kind: 'rafter'});
+    }
+    return list;
+  }
+  function dhAllShingleSlots(plot, st){
+    const list = [];
+    for (let side = 0; side < 2; side++) for (let row = 0; row < DH_SHINGLE_ROWS; row++) for (let col = 0; col < DH_SHINGLE_COLS; col++){
+      const w = plot == null ? {x:0,y: dhWallTop(st)+DH_ROOF_RISE/2,z:0} : dhShingleWorld(plot, side, col, row);
+      list.push({plot, side, col, row, x: w.x, y: w.y, z: w.z, kind: 'shingle'});
+    }
+    return list;
+  }
+  function dhAllFrameSlots(plot){
+    const list = [];
+    const have = (dh && plot != null) ? (dh.pieces[plot] || []) : [];
+    const doorW = plot == null ? {x:0,y: DH_SLAB_H + DH_DOOR_H/2,z:0} : dhOpeningWorld(plot, 0, 'door');
+    const doorFilled = have.some(a => a[0] === 'doorframe' || a[0] === 'door');
+    if (!have.some(a => a[0] === 'doorframe')) list.push({plot, face: 0, kind: 'doorframe', x: doorW.x, y: doorW.y, z: doorW.z});
+    else if (!have.some(a => a[0] === 'door')) list.push({plot, face: 0, kind: 'door', x: doorW.x, y: doorW.y, z: doorW.z});
+    [1, 3].forEach(face => {
+      if (have.some(a => a[0] === 'winframe' && (a[4]|0) === face)) return;
+      const w = plot == null ? {x:0,y: DH_SLAB_H + (DH_WIN_SILL+DH_WIN_HEAD)/2,z:0} : dhOpeningWorld(plot, face, 'window');
+      list.push({plot, face, kind: 'winframe', x: w.x, y: w.y, z: w.z});
+    });
+    return list;
+  }
+  function dhAllPaintSlots(plot){
+    const have = (dh && plot != null) ? (dh.pieces[plot] || []) : [];
+    const list = [];
+    for (let face = 0; face < 4; face++){
+      if (have.some(a => a[0] === 'paint' && (a[4]|0) === face)) continue;
+      const w = plot == null ? {x:0,y: DH_SLAB_H + dhWallH()/2,z:0} : dhPaintWorld(plot, face);
+      list.push({plot, face, kind: 'paint', x: w.x, y: w.y, z: w.z});
+    }
+    return list;
+  }
+  function dhAllBrickRecs(st){
+    const recs = [];
+    for (let face = 0; face < 4; face++){
+      const span = dhBrickAlongCount(face, st);
+      for (let c = 0; c < dhCourses(st); c++) for (let k = 0; k < span; k++){
+        if (dhIsOpening(face, c, k, st)) continue;
+        recs.push(['brick', 0, c, k, face, 0]);
+      }
+    }
+    return recs;
+  }
+  function dhBrickBoxes(plot, st){
+    const recs = (dh && plot != null && dh.pieces[plot])
+      ? (dh.pieces[plot] || []).filter(a => a[0] === 'brick')
+      : dhAllBrickRecs(st);
+    return recs.map(rec => {
+      const w = dhWorldRec(plot == null ? 0 : plot, rec);
+      const hx = ((rec[4]|0) === 1 || (rec[4]|0) === 3) ? DH_BRICK_D / 2 : DH_BRICK_W / 2;
+      const hz = ((rec[4]|0) === 1 || (rec[4]|0) === 3) ? DH_BRICK_W / 2 : DH_BRICK_D / 2;
+      return {rec, x: w.x, y: w.y, z: w.z, hx, hy: DH_BRICK_H / 2, hz, face: rec[4]|0, course: rec[2]|0, along: rec[3]|0};
+    });
   }
   function dhBindSolids(mesh, on){
     const list = (mesh && mesh.userData && mesh.userData.solids) || [];
@@ -942,26 +1214,30 @@
     dhPut(plot, ['table', 4, 0, 4, 0, 0], true);
     dhPut(plot, ['plant', 2, 0, 4, 0, 0], true);
   }
-  function dhBrickSpan(){
-    const foot = dhFoot();
-    return Math.max(1, Math.floor(((foot.x1 - foot.x0 + 1) * DH_CELL) / DH_BRICK_W));
+  function dhBrickSpan(st){
+    const foot = dhFootOf(st);
+    const cells = foot.x1 - foot.x0 + 1;
+    return Math.max(6, Math.round(cells * DH_BRICKS_PER_CELL));
   }
-  function dhBrickAlongCount(face){
-    const span = dhBrickSpan();
-    return (face === 1 || face === 3) ? Math.max(1, span - 1) : span;
+  function dhBrickAlongCount(face, st){
+    const span = dhBrickSpan(st);
+    // Faces 1 and 3 skip the two corner bricks, which belong to faces 0 and 2, so corners don't double up.
+    return (face === 1 || face === 3) ? Math.max(1, span - 2) : span;
   }
-  function dhBrickTotal(){
+  function dhBrickTotal(st){
     let n = 0;
-    for (let f = 0; f < 4; f++) for (let c = 0; c < dhCourses(); c++) for (let k = 0; k < dhBrickAlongCount(f); k++){
-      if (!dhIsOpening(f, c, k)) n++;
+    for (let f = 0; f < 4; f++) for (let c = 0; c < dhCourses(st); c++) for (let k = 0; k < dhBrickAlongCount(f, st); k++){
+      if (!dhIsOpening(f, c, k, st)) n++;
     }
     return n;
   }
-  function dhIsOpening(face, course, along){
-    const span = dhBrickAlongCount(face);
+  function dhIsOpening(face, course, along, st){
+    const span = dhBrickAlongCount(face, st);
     const mid = (span / 2) | 0;
-    if (face === 0 && along >= mid - 1 && along <= mid && course < 6) return true; // door
-    if ((face === 1 || face === 3) && along >= mid - 1 && along <= mid && course >= 2 && course <= 5) return true; // windows
+    // Door: two center bricks on face 0, courses 0-4 (2.25 m), leaving a lintel course on top.
+    if (face === 0 && along >= mid - 1 && along <= mid && course >= 0 && course <= 4) return true;
+    // Windows: two center bricks on faces 1 and 3, sill at course 2 (0.90 m), head at course 5 (2.25 m).
+    if ((face === 1 || face === 3) && along >= mid - 1 && along <= mid && course >= 2 && course <= 4) return true;
     return false;
   }
 
@@ -976,8 +1252,27 @@
     dh.pieces[plot] = dh.pieces[plot] || []; dh.meshes[plot] = dh.meshes[plot] || [];
     dh.pieces[plot].push(rec); dh.meshes[plot].push(mesh);
     if (rec[0] === 'brick') dhSyncBricks(plot);
+    if (typeof dhRefreshFraming === 'function') dhRefreshFraming(plot);
     if (!quiet && plot === dh.mine){ dhCheckGoals(); dhSave(); }
     return mesh;
+  }
+  function dhFramingHidden(id, plot){
+    const list = (dh && dh.pieces[plot]) || [];
+    if (id === 'stud') return dhCount(list, 'brick') >= dhBrickTotal();
+    if (id === 'rafter' || id === 'beam') return dhCount(list, 'shingle') >= dhShingleTotal();
+    return false;
+  }
+  function dhRefreshFraming(plot){
+    if (!dh) return;
+    const list = dh.pieces[plot] || [];
+    const meshes = dh.meshes[plot] || [];
+    list.forEach((rec, i) => {
+      const m = meshes[i]; if (!m) return;
+      if (rec[0] !== 'stud' && rec[0] !== 'rafter' && rec[0] !== 'beam') return;
+      const hide = dhFramingHidden(rec[0], plot);
+      m.visible = !hide;
+      if (hide) dhBindSolids(m, false);
+    });
   }
   function dhRemoveAtKey(plot, key, quiet){
     const list = dh.pieces[plot] || [];
@@ -1005,6 +1300,7 @@
   function dhApplyPlot(plot, recs, quiet){
     dhClearPlot(plot);
     (recs || []).forEach(r => dhPut(plot, r, true));
+    if (typeof dhRefreshFraming === 'function') dhRefreshFraming(plot);
     if (!quiet && plot === dh.mine) dhSave();
   }
   function dhHas(plot, id, ix, iz){ return (dh.pieces[plot] || []).some(a => a[0] === id && (a[1]|0) === ix && (a[3]|0) === iz); }
@@ -1027,7 +1323,7 @@
       ox = camera.position.x; oy = camera.position.y; oz = camera.position.z;
     } else {
       ox = ((P && P.x) || 0) + fx * .22;
-      oy = ((P && P.y) || 0) + 2.45;
+      oy = ((P && P.y) || 0) + dhEyeHeight();
       oz = ((P && P.z) || 0) + fz * .22;
     }
     return {ox, oy, oz, dx: fx * cp, dy: -sp, dz: fz * cp, yaw, pitch};
@@ -1123,6 +1419,27 @@
     const plot = dh.mine;
     if (job === 'brick'){
       return dhAllBrickSlots(plot).filter(s => !s.filled).map(s => Object.assign({}, s, {plot, x: s.x, y: s.y, z: s.z}));
+    }
+    if (job === 'stud'){
+      const have = (dh.pieces[plot] || []).filter(a => a[0] === 'stud');
+      return dhAllStudSlots(plot).filter(s => !have.some(a => (a[3]|0) === s.i));
+    }
+    if (job === 'rafter'){
+      const have = (dh.pieces[plot] || []).filter(a => a[0] === 'rafter');
+      return dhAllRafterSlots(plot).filter(s => !have.some(a => (a[3]|0) === s.i));
+    }
+    if (job === 'shingle'){
+      const have = (dh.pieces[plot] || []).filter(a => a[0] === 'shingle');
+      return dhAllShingleSlots(plot).filter(s => !have.some(a => (a[4]|0) === s.side && (a[1]|0) === s.col && (a[2]|0) === s.row));
+    }
+    if (job === 'frame') return dhAllFrameSlots(plot);
+    if (job === 'paint') return dhAllPaintSlots(plot);
+    if (job === 'glass'){
+      const open = dhOpenFrames(plot);
+      return open.map(f => {
+        const w = dhOpeningWorld(plot, f[4]|0, 'window');
+        return {plot, face: f[4]|0, kind: 'pane', x: w.x, y: w.y, z: w.z};
+      });
     }
     const cells = dhFootCells();
     const pts = [];
@@ -1623,21 +1940,37 @@
   }
   function dhPlaceKind(id, extra){
     if (id === 'pane') return dhInstallGlass();
-    const aim = dhAimCell(); if (!dhCanBuild(aim)) return false;
-    const rec = [id, aim.ix, 0, aim.iz, dh.rot | 0, dh.color | 0];
-    if (id === 'rafter' || id === 'shingle') rec[4] = (aim.iz < (DH_FOOT.z0 + DH_FOOT.z1) / 2) ? 0 : 1;
-    if (id === 'doorframe' || id === 'door' || id === 'winframe' || id === 'pane'){
-      rec[4] = dhWallFaceFromAim(aim) || 0; rec[1] = 0; rec[3] = 0;
+    const slotJob = (id === 'doorframe' || id === 'door' || id === 'winframe') ? 'frame' : id;
+    const slotty = ['stud','rafter','shingle','doorframe','door','winframe','paint'].indexOf(id) >= 0;
+    const spot = slotty ? dhTargetSpot(slotJob) : null;
+    const aim = spot || dhAimCell();
+    if (!aim || (aim.plot == null && !dhCanBuild(aim))) {
+      if (slotty){ banner('🎯 Look at the glowing spot, then press E'); return false; }
     }
-    if ((dh.pieces[aim.plot] || []).some(a => dhKeyOf(a) === dhKeyOf(rec))) return false;
+    if (!spot && !dhCanBuild(aim)) return false;
+    const plot = (spot && spot.plot != null) ? spot.plot : aim.plot;
+    let rec;
+    if (id === 'stud' && spot) rec = ['stud', 0, 0, spot.i, 0, 0];
+    else if (id === 'rafter' && spot) rec = ['rafter', 0, 0, spot.i, spot.side, 0];
+    else if (id === 'shingle' && spot) rec = ['shingle', spot.col, spot.row, 0, spot.side, 0];
+    else if ((id === 'doorframe' || id === 'door' || id === 'winframe') && spot) rec = [id, 0, 0, 0, spot.face, 0];
+    else if (id === 'paint' && spot) rec = ['paint', 0, 0, 0, spot.face, dh.color | 0];
+    else {
+      rec = [id, aim.ix, 0, aim.iz, dh.rot | 0, dh.color | 0];
+      if (id === 'rafter' || id === 'shingle') rec[4] = (aim.iz < (dhFoot().z0 + dhFoot().z1) / 2) ? 0 : 1;
+      if (id === 'doorframe' || id === 'door' || id === 'winframe' || id === 'pane' || id === 'paint'){
+        rec[4] = (spot && spot.face != null) ? spot.face : (dhWallFaceFromAim(aim) || 0); rec[1] = 0; rec[3] = 0;
+      }
+    }
+    if ((dh.pieces[plot] || []).some(a => dhKeyOf(a) === dhKeyOf(rec))) return false;
     if (id === 'stud' || id === 'rafter'){ if (!dh.carry || dh.carry.id !== 'wood'){ banner('🪵 Carry planks from the yard or your pile'); return false; } dhUseCarry(1); }
     if (id === 'shingle'){ if (!dh.carry || dh.carry.id !== 'shingle'){ banner('🏠 Carry shingles to the roof'); return false; } dhUseCarry(1); }
     if (id === 'doorframe' || id === 'winframe'){ if (!dh.carry || dh.carry.id !== 'wood'){ banner('🪵 Carry planks to frame the opening'); return false; } dhUseCarry(1); }
-    if (id === 'door'){ if (!dhHas(aim.plot, 'doorframe', 0, 0) && !(dh.pieces[aim.plot] || []).some(a => a[0] === 'doorframe')){ banner('🚪 Set the door frame in the opening first'); return false; } if (dh.carry && dh.carry.id === 'wood') dhUseCarry(1); }
+    if (id === 'door'){ if (!dhHas(plot, 'doorframe', 0, 0) && !(dh.pieces[plot] || []).some(a => a[0] === 'doorframe')){ banner('🚪 Set the door frame in the opening first'); return false; } if (dh.carry && dh.carry.id === 'wood') dhUseCarry(1); }
     if (id === 'paint'){ if (!dh.carry || dh.carry.id !== 'paint'){ banner('🎨 Carry a paint can'); return false; } dhUseCarry(1); }
     if (['sofa','bed','table','lamp','plant','rug','tv','shelf'].indexOf(id) >= 0){ if (!dh.carry || dh.carry.id !== id){ banner('🛋️ Carry that piece from the shop or yard'); return false; } dhUseCarry(1); }
-    if (!dhPut(aim.plot, rec)) return false;
-    dhNet('place', {rec, plot: aim.plot}); return true;
+    if (!dhPut(plot, rec)) return false;
+    dhNet('place', {rec, plot}); return true;
   }
   function dhMarkOrDig(){
     if (!dh) return false;
@@ -2305,7 +2638,7 @@
     if (typeof camera === 'undefined' || !camera || typeof cam === 'undefined' || !cam || typeof P === 'undefined' || !P) return false;
     if (typeof fpOn === 'function' ? !fpOn() : (cam.dist > 1)) return false;
     const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw);
-    const ey = P.y + 2.45;
+    const ey = P.y + dhEyeHeight();
     let off = 0.22;
     while (off > 0 && dhSolidAt(P.x + fx * off, ey, P.z + fz * off, 0.1)) off -= 0.05;
     let x = P.x + fx * off, y = ey, z = P.z + fz * off;
@@ -2386,9 +2719,9 @@
     if (cPour.have < cPour.need) return 'pour';
     const bricks = dhCount(dh.pieces[dh.mine], 'brick'), needB = dhBrickTotal();
     if (bricks < needB) return 'brick';
-    if (dhCount(dh.pieces[dh.mine], 'stud') < 8) return 'stud';
-    if (dhCount(dh.pieces[dh.mine], 'rafter') < 4) return 'rafter';
-    if (dhCount(dh.pieces[dh.mine], 'shingle') < 10) return 'shingle';
+    if (dhCount(dh.pieces[dh.mine], 'stud') < dhStudTotal()) return 'stud';
+    if (dhCount(dh.pieces[dh.mine], 'rafter') < dhRafterTotal()) return 'rafter';
+    if (dhCount(dh.pieces[dh.mine], 'shingle') < dhShingleTotal()) return 'shingle';
     if (dhCount(dh.pieces[dh.mine], 'door') < 1 || dhCount(dh.pieces[dh.mine], 'winframe') < 1) return 'frame';
     if (!dhWindowsGlazed(dh.pieces[dh.mine])) return 'glass';
     if (dhCount(dh.pieces[dh.mine], 'paint') < 4) return 'paint';
@@ -2409,7 +2742,7 @@
       item(2, 'Dig', cDig.have, cDig.need),
       item(3, 'Pour foundation', cPour.have, cPour.need),
       item(4, 'Lay bricks', bricks, needB),
-      item(5, 'Build the roof', dhCount((dh && dh.pieces[dh.mine]) || [], 'shingle'), 10),
+      item(5, 'Build the roof', dhCount((dh && dh.pieces[dh.mine]) || [], 'shingle'), dhShingleTotal()),
       item(6, 'Windows & door', (dhCount((dh && dh.pieces[dh.mine]) || [], 'door') >= 1 && dhCount((dh && dh.pieces[dh.mine]) || [], 'winframe') >= 1) ? 1 : 0, 1),
       item(7, 'Paint & furnish', (dhCount((dh && dh.pieces[dh.mine]) || [], 'paint') >= 4 && ['sofa','bed','table','lamp','plant','rug','tv','shelf'].reduce((n, id) => n + dhCount((dh && dh.pieces[dh.mine]) || [], id), 0) >= 3) ? 1 : 0, 1)
     ];
