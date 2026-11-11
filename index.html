@@ -1600,7 +1600,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-29';
+const BUILD = '2026.11.11-30';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -12612,11 +12612,20 @@ const Obby = (() => {
       return tex;
     } catch (e){ return null; }
   }
-  function dhGfxLow(){ return typeof window !== 'undefined' && typeof window.gfxIsLow === 'function' && window.gfxIsLow(); }
+  function dhGfxLow(){
+    if (typeof window !== 'undefined' && window._dhTestGfxLow != null) return !!window._dhTestGfxLow;
+    return typeof window !== 'undefined' && typeof window.gfxIsLow === 'function' && window.gfxIsLow();
+  }
+  function dhSetGfxLow(on){
+    if (typeof window !== 'undefined') window._dhTestGfxLow = (on == null) ? null : !!on;
+    if (typeof dhRefreshBeacons === 'function') dhRefreshBeacons();
+    return dhGfxLow();
+  }
   function dhMatCtor(){
     if (dhGfxLow() && THREE.MeshBasicMaterial) return THREE.MeshBasicMaterial;
     return THREE.MeshLambertMaterial;
   }
+  function dhDoubleSide(){ return (typeof THREE !== 'undefined' && THREE.DoubleSide != null) ? THREE.DoubleSide : 2; }
   function dhMat(col, opts){
     const o = Object.assign({color: col}, opts || {});
     if (dhGfxLow() && o.emissive) delete o.emissive;
@@ -12737,7 +12746,8 @@ const Obby = (() => {
     else if (id === 'rafter'){
       const slope = Math.hypot(dhWallLength() / 2 + DH_ROOF_OVERHANG, DH_ROOF_RISE);
       const r = box(0.08, 0.08, slope, M.wood);
-      r.rotation.x = rec[4] % 2 ? dhRoofPitch() : -dhRoofPitch();
+      if (r.material) r.material.side = dhDoubleSide();
+      r.rotation.x = dhRoofTilt(rec[4]);
       add(r, 0, 0, 0);
       solidsLocal.push({mesh: r, hw: .06, hh: .06, hd: slope / 2, ox: 0, oy: 0, oz: 0});
     }
@@ -12747,7 +12757,8 @@ const Obby = (() => {
       const sx = (wall + DH_ROOF_OVERHANG * 2) / cols + 0.04;
       const sz = slope / rows + 0.04;
       const r = box(sx, 0.05, sz, M.shingle);
-      r.rotation.x = rec[4] % 2 ? dhRoofPitch() : -dhRoofPitch();
+      if (r.material) r.material.side = dhDoubleSide();
+      r.rotation.x = dhRoofTilt(rec[4]);
       add(r, 0, 0, 0);
     }
     else if (id === 'doorframe'){
@@ -12788,7 +12799,10 @@ const Obby = (() => {
     }
     else if (id === 'paint'){
       const len = dhWallLength() - 0.08, h = dhWallH() - 0.08;
-      add(box(len, h, 0.03, dhMat(dhPaintCol(rec[5] | 0))), 0, 0, 0);
+      const mat = dhMat(dhPaintCol(rec[5] | 0));
+      const holes = (typeof dhPaintOpenings === 'function') ? dhPaintOpenings(plot, rec[4] | 0) : [];
+      const panels = (typeof dhRectsMinusHoles === 'function') ? dhRectsMinusHoles(len, h, holes) : [{x: -len / 2, y: -h / 2, w: len, h: h}];
+      panels.forEach(r => add(box(r.w, r.h, 0.03, mat), r.x + r.w / 2, r.y + r.h / 2, 0));
     }
     else if (id === 'sofa'){ solid(1.80, .42, .85, 0, .21, 0, dhMat('#3a86ff')); add(box(1.80, .45, .16, dhMat('#3a86ff')), 0, 0.64, -.32); }
     else if (id === 'bed'){ solid(2.00, .40, 1.40, 0, .20, 0, dhMat('#fffaf0')); add(box(.55, .22, 1.36, dhMat('#ffe0ef')), 0, 0.42, .40); }
@@ -12870,10 +12884,121 @@ const Obby = (() => {
     const mid = (b.x1 - b.x0) / 2;
     const y = DH_SLAB_H + dhWallH() / 2;
     const out = DH_BRICK_D + 0.02;
-    if (face === 0) return {x: b.x0 + mid, y, z: b.z0 - 0.02};
-    if (face === 2) return {x: b.x0 + mid, y, z: b.z1 + 0.02};
-    if (face === 1) return {x: b.x1 + 0.02, y, z: b.z0 + mid};
-    return {x: b.x0 - 0.02, y, z: b.z0 + mid};
+    if (face === 0) return {x: b.x0 + mid, y, z: b.z0 - out};
+    if (face === 2) return {x: b.x0 + mid, y, z: b.z1 + out};
+    if (face === 1) return {x: b.x1 + out, y, z: (b.z0 + b.z1) / 2};
+    return {x: b.x0 - out, y, z: (b.z0 + b.z1) / 2};
+  }
+  function dhPaintOpenings(plot, face){
+    const mid = dhWallLength() / 2;
+    const paintY = DH_SLAB_H + dhWallH() / 2;
+    const holes = [];
+    const add = (kind) => {
+      if (kind === 'door' && (face % 4) !== 0) return;
+      if (kind === 'window' && (dhWindowFaces() || []).indexOf(face % 4) < 0) return;
+      const along = dhOpeningAlongMeters(face % 4, kind);
+      const w = DH_BRICK_W * 2 + 0.04;
+      const y0 = (kind === 'door') ? DH_SLAB_H : (DH_SLAB_H + DH_WIN_SILL);
+      const y1 = (kind === 'door') ? (DH_SLAB_H + DH_DOOR_H) : (DH_SLAB_H + DH_WIN_HEAD);
+      const lx = (face === 0 || face === 1) ? (along - mid) : (mid - along);
+      holes.push({kind, x: lx, y: (y0 + y1) / 2 - paintY, w, h: (y1 - y0) + 0.04});
+    };
+    add('door'); add('window');
+    return holes;
+  }
+  function dhRectsMinusHoles(width, height, holes){
+    let rects = [{x: -width / 2, y: -height / 2, w: width, h: height}];
+    (holes || []).forEach(hole => {
+      const hx0 = hole.x - hole.w / 2, hx1 = hole.x + hole.w / 2;
+      const hy0 = hole.y - hole.h / 2, hy1 = hole.y + hole.h / 2;
+      const next = [];
+      rects.forEach(r => {
+        const rx1 = r.x + r.w, ry1 = r.y + r.h;
+        const ix0 = Math.max(r.x, hx0), ix1 = Math.min(rx1, hx1);
+        const iy0 = Math.max(r.y, hy0), iy1 = Math.min(ry1, hy1);
+        if (ix1 <= ix0 + 0.001 || iy1 <= iy0 + 0.001){ next.push(r); return; }
+        if (ix0 > r.x + 0.001) next.push({x: r.x, y: r.y, w: ix0 - r.x, h: r.h});
+        if (ix1 < rx1 - 0.001) next.push({x: ix1, y: r.y, w: rx1 - ix1, h: r.h});
+        if (iy0 > r.y + 0.001) next.push({x: ix0, y: r.y, w: ix1 - ix0, h: iy0 - r.y});
+        if (iy1 < ry1 - 0.001) next.push({x: ix0, y: iy1, w: ix1 - ix0, h: ry1 - iy1});
+      });
+      rects = next;
+    });
+    return rects.filter(r => r.w > 0.02 && r.h > 0.02);
+  }
+  function dhPaintPanelWorldBoxes(plot, rec){
+    const face = rec[4] | 0;
+    const pos = dhPaintWorld(plot, rec);
+    const ry = (face === 1 || face === 3) ? Math.PI / 2 : 0;
+    const len = dhWallLength() - 0.08, h = dhWallH() - 0.08;
+    const holes = dhPaintOpenings(plot, face);
+    return dhRectsMinusHoles(len, h, holes).map(r => {
+      const lx = r.x + r.w / 2, ly = r.y + r.h / 2;
+      const ca = Math.cos(ry), sa = Math.sin(ry);
+      return {x: pos.x + lx * ca, y: pos.y + ly, z: pos.z + lx * sa, w: r.w, h: r.h, d: 0.03, face};
+    });
+  }
+  function dhOpeningAabb(plot, face, kind){
+    const w = dhOpeningWorld(plot, face, kind);
+    const width = DH_BRICK_W * 2;
+    const height = (kind === 'door') ? DH_DOOR_H : (DH_WIN_HEAD - DH_WIN_SILL);
+    const alongX = (face === 0 || face === 2);
+    return {
+      x: w.x, y: w.y, z: w.z,
+      hw: alongX ? width / 2 : 0.12,
+      hh: height / 2,
+      hd: alongX ? 0.12 : width / 2,
+      kind, face
+    };
+  }
+  function dhAabbOverlap(a, b, pad){
+    pad = pad || 0;
+    return Math.abs(a.x - b.x) < (a.w || a.hw * 2 || 0) / 2 + (b.hw || b.w / 2 || 0) - pad
+      && Math.abs(a.y - b.y) < (a.h || a.hh * 2 || 0) / 2 + (b.hh || b.h / 2 || 0) - pad
+      && Math.abs(a.z - b.z) < (a.d || a.hd * 2 || 0) / 2 + (b.hd || b.d / 2 || 0) - pad;
+  }
+  function dhPaintCoversOpening(plot, face, kind){
+    const rec = ['paint', 0, 0, 0, face, 0];
+    const panels = dhPaintPanelWorldBoxes(plot, rec);
+    const hole = dhOpeningAabb(plot, face, kind);
+    // Require a real intrusion into the opening, not just a shared edge.
+    return panels.some(p => dhAabbOverlap(p, hole, 0.06));
+  }
+  function dhRoofTilt(side){ return (side % 2) ? dhRoofPitch() : -dhRoofPitch(); }
+  function dhRoofPlaneYat(plot, z){
+    const b = dhFootWorld(plot);
+    const midZ = (b.z0 + b.z1) / 2;
+    const half = (b.x1 - b.x0) / 2 + DH_ROOF_OVERHANG;
+    const t = 1 - Math.min(1, Math.abs((z || 0) - midZ) / Math.max(0.001, half));
+    return dhWallTop() + t * DH_ROOF_RISE;
+  }
+  function dhShingleCorners(plot, side, col, row){
+    const w = dhShingleWorld(plot, side, col, row);
+    const wall = dhWallLength(), cols = DH_SHINGLE_COLS, rows = DH_SHINGLE_ROWS;
+    const slope = Math.hypot(wall / 2 + DH_ROOF_OVERHANG, DH_ROOF_RISE);
+    const sx = (wall + DH_ROOF_OVERHANG * 2) / cols + 0.04;
+    const sz = slope / rows + 0.04;
+    const a = dhRoofTilt(side);
+    const ca = Math.cos(a), sa = Math.sin(a);
+    const out = [];
+    [ -sx / 2, sx / 2 ].forEach(lx => {
+      [ -0.025, 0.025 ].forEach(ly => {
+        [ -sz / 2, sz / 2 ].forEach(lz => {
+          const y = ly * ca - lz * sa;
+          const z = ly * sa + lz * ca;
+          out.push({x: w.x + lx, y: w.y + y, z: w.z + z});
+        });
+      });
+    });
+    return out;
+  }
+  function dhRafterEnds(plot, index, side){
+    const w = dhRafterWorld(plot, index, side);
+    const slope = Math.hypot(dhWallLength() / 2 + DH_ROOF_OVERHANG, DH_ROOF_RISE);
+    const a = dhRoofTilt(side);
+    const ca = Math.cos(a), sa = Math.sin(a);
+    const end = (lz) => ({x: w.x, y: w.y - lz * sa, z: w.z + lz * ca});
+    return [end(-slope / 2), end(slope / 2)];
   }
   function dhRoofPlane(plot, side, col, row){
     const b = dhFootWorld(plot);
@@ -15474,10 +15599,10 @@ const Obby = (() => {
     dh.outlines = null;
     if (!full) return;
     const drop = (o) => { if (o && o.dispose) try { o.dispose(); } catch (e){} };
-    drop(dh._beaconGeoPad); drop(dh._beaconGeoBeam); drop(dh._beaconTex);
+    drop(dh._beaconGeoPad); drop(dh._beaconGeoBeam); drop(dh._beaconGeoBox); drop(dh._beaconTex);
     drop(dh._beaconMatPad); drop(dh._beaconMatBeam); drop(dh._beaconMatPadHot); drop(dh._beaconMatBeamHot);
     drop(dh._beaconSprMat); drop(dh._beaconSprMatHot);
-    dh._beaconGeoPad = dh._beaconGeoBeam = dh._beaconTex = null;
+    dh._beaconGeoPad = dh._beaconGeoBeam = dh._beaconGeoBox = dh._beaconTex = null;
     dh._beaconMatPad = dh._beaconMatBeam = dh._beaconMatPadHot = dh._beaconMatBeamHot = null;
     dh._beaconSprMat = dh._beaconSprMatHot = null;
   }
@@ -15502,17 +15627,15 @@ const Obby = (() => {
           dh._beaconTex = tex;
         } catch (e){ tex = null; }
       }
-      const mk = (col, op) => new THREE.SpriteMaterial({map: tex || undefined, color: col, transparent: true, depthWrite: false, opacity: op});
+      const mk = (col, op) => new THREE.SpriteMaterial({map: tex || undefined, color: col, transparent: true, depthWrite: false, opacity: op, sizeAttenuation: true});
       dh._beaconSprMat = mk('#ffc54a', 0.85);
       dh._beaconSprMatHot = mk('#ffe27a', 1);
     } else {
       if (dh._beaconMatPad) return;
-      dh._beaconGeoPad = dh._beaconGeoPad || new THREE.BoxGeometry(DH_CELL * .92, .1, DH_CELL * .92);
-      dh._beaconGeoBeam = dh._beaconGeoBeam || new THREE.BoxGeometry(.18, 2.4, .18);
-      dh._beaconMatPad = dhMat('#ffc54a', {transparent:true, opacity:.55, depthWrite:false, emissive:'#ffb020'});
-      dh._beaconMatBeam = dhMat('#ffd36a', {transparent:true, opacity:.4, depthWrite:false, emissive:'#ffcc44'});
-      dh._beaconMatPadHot = dhMat('#ffe27a', {transparent:true, opacity:.85, depthWrite:false, emissive:'#ffee88'});
-      dh._beaconMatBeamHot = dhMat('#fff3a8', {transparent:true, opacity:.7, depthWrite:false, emissive:'#fff0a0'});
+      // Unit box, scaled per slot so a brick marker is brick-sized (no 2.4 m pole).
+      dh._beaconGeoBox = dh._beaconGeoBox || new THREE.BoxGeometry(1, 1, 1);
+      dh._beaconMatPad = dhMat('#ffc54a', {transparent:true, opacity:.55, depthWrite:false, emissive:'#ffb020', side: dhDoubleSide()});
+      dh._beaconMatPadHot = dhMat('#ffe27a', {transparent:true, opacity:.85, depthWrite:false, emissive:'#ffee88', side: dhDoubleSide()});
     }
   }
   function dhAllocBeacon(){
@@ -15523,17 +15646,16 @@ const Obby = (() => {
     const g = new THREE.Group();
     if (dh._beaconLow){
       const spr = new THREE.Sprite(dh._beaconSprMat);
-      spr.scale.set(1.15, 1.15, 1);
-      spr.position.y = 0.35;
+      if (spr.center && spr.center.set) spr.center.set(0.5, 0.5);
+      spr.position.set(0, 0, 0);
+      spr.scale.set(0.6, 0.6, 1);
       g.add(spr);
       g.userData.spr = spr;
     } else {
-      const pad = new THREE.Mesh(dh._beaconGeoPad, dh._beaconMatPad);
-      pad.position.y = 0.04;
-      const beam = new THREE.Mesh(dh._beaconGeoBeam, dh._beaconMatBeam);
-      beam.position.y = 1.2;
-      g.add(pad); g.add(beam);
-      g.userData.pad = pad; g.userData.beam = beam;
+      const box = new THREE.Mesh(dh._beaconGeoBox || new THREE.BoxGeometry(1, 1, 1), dh._beaconMatPad);
+      box.position.set(0, 0, 0);
+      g.add(box);
+      g.userData.box = box;
     }
     dh._beaconPool.push(g);
     return g;
@@ -15543,22 +15665,57 @@ const Obby = (() => {
     if (!dh.outlines){ dh.outlines = new THREE.Group(); if (typeof scene !== 'undefined') scene.add(dh.outlines); }
     dh._beaconUsed = 0;
   }
-  function dhAddPooledBeacon(x, y, z, on){
+  function dhSpotDims(kind, s){
+    s = s || {};
+    if (kind === 'brick' || (s.course != null && (s.along != null || s.slot != null))){
+      return {w: DH_BRICK_W * 0.96, h: DH_BRICK_H * 0.92, d: DH_BRICK_D * 1.2, ry: s.ry || 0};
+    }
+    return {w: DH_CELL * 0.72, h: 0.12, d: DH_CELL * 0.72, ry: 0};
+  }
+  function dhAddPooledBeacon(x, y, z, on, dim){
     const g = dhAllocBeacon();
     g.position.set(x, y, z);
+    g.rotation.y = 0;
     g.visible = true;
-    const pulse = 0.95 + 0.12 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
+    dim = dim || {w: 0.6, h: 0.6, d: 0.6, ry: 0};
+    const pulse = 0.95 + 0.08 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
     if (g.userData.spr){
       g.userData.spr.material = on ? dh._beaconSprMatHot : dh._beaconSprMat;
-      const sc = (on ? 1.35 : 1.1) * pulse;
+      g.userData.spr.position.set(0, 0, 0);
+      const sc = Math.max(dim.w || 0.6, dim.h || 0.6, dim.d || 0.6) * (on ? 1.05 : 0.95) * pulse;
       g.userData.spr.scale.set(sc, sc, 1);
+      g.userData.sprBase = Math.max(dim.w || 0.6, dim.h || 0.6, dim.d || 0.6) * (on ? 1.05 : 0.95);
+    } else if (g.userData.box){
+      g.userData.box.material = on ? dh._beaconMatPadHot : dh._beaconMatPad;
+      g.userData.box.position.set(0, 0, 0);
+      g.userData.box.scale.set(dim.w || 0.6, dim.h || 0.6, dim.d || 0.6);
+      g.userData.box.rotation.y = dim.ry || 0;
     } else {
-      if (g.userData.pad) g.userData.pad.material = on ? dh._beaconMatPadHot : dh._beaconMatPad;
-      if (g.userData.beam) g.userData.beam.material = on ? dh._beaconMatBeamHot : dh._beaconMatBeam;
+      // Legacy pad+beam pool leftovers: hide the pole and sit the pad on the slot.
+      if (g.userData.pad){
+        g.userData.pad.material = on ? dh._beaconMatPadHot : dh._beaconMatPad;
+        g.userData.pad.position.set(0, 0, 0);
+        if (g.userData.pad.scale && g.userData.pad.scale.set) g.userData.pad.scale.set(1, 1, 1);
+      }
+      if (g.userData.beam) g.userData.beam.visible = false;
     }
     if (dh.outlines && g.parent !== dh.outlines) dh.outlines.add(g);
     dh._beaconUsed++;
     return g;
+  }
+  function dhBeaconWorlds(){
+    const out = [];
+    const pool = (dh && dh._beaconPool) || [];
+    const used = (dh && dh._beaconUsed) || 0;
+    for (let i = 0; i < used; i++){
+      const g = pool[i]; if (!g || g.visible === false) continue;
+      const vis = g.userData.spr || g.userData.box || g.userData.pad || null;
+      const lx = (vis && vis.position) ? (vis.position.x || 0) : 0;
+      const ly = (vis && vis.position) ? (vis.position.y || 0) : 0;
+      const lz = (vis && vis.position) ? (vis.position.z || 0) : 0;
+      out.push({x: (g.position.x || 0) + lx, y: (g.position.y || 0) + ly, z: (g.position.z || 0) + lz, on: !!(g.userData && g.userData.spotOn)});
+    }
+    return out;
   }
   function dhEndBeacons(){
     const pool = dh._beaconPool || [];
@@ -15644,12 +15801,12 @@ const Obby = (() => {
     if (!dh) return;
     dhApplySpotFade();
     if (dh._beaconLow && dh._beaconPool){
-      const scPulse = 0.95 + 0.12 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
+      const scPulse = 0.95 + 0.08 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
       dh._beaconPool.forEach(g => {
         if (!g.visible || !g.userData.spr) return;
-        const on = g.userData.spr.material === dh._beaconSprMatHot;
-        const sc = (on ? 1.35 : 1.1) * scPulse;
+        const sc = (g.userData.sprBase || 0.6) * scPulse;
         g.userData.spr.scale.set(sc, sc, 1);
+        if (g.userData.spr.position && g.userData.spr.position.set) g.userData.spr.position.set(0, 0, 0);
       });
     }
   }
@@ -15675,7 +15832,7 @@ const Obby = (() => {
             const show = on || dhSpotIsNear(s.x, s.z);
             if (!show && dhSpotFade() <= 0.02) return;
             if (!show) return;
-            const g = dhAddPooledBeacon(s.x, s.y, s.z, on);
+            const g = dhAddPooledBeacon(s.x, s.y, s.z, on, dhSpotDims('brick', s));
             if (g && g.userData){ g.userData.spotOn = on; g.userData.spotShow = show; }
             if (on) dh._spotAimed = true;
           });
@@ -15699,7 +15856,7 @@ const Obby = (() => {
             const on = !!(aimed && aimed.ix === s.ix && aimed.iz === s.iz);
             const show = on || dhSpotIsNear(s.x, s.z);
             if (!show) return;
-            const g = dhAddPooledBeacon(s.x, s.y, s.z, on);
+            const g = dhAddPooledBeacon(s.x, s.y, s.z, on, dhSpotDims(job, s));
             if (g && g.userData){ g.userData.spotOn = on; g.userData.spotShow = show; }
             if (on) dh._spotAimed = true;
           });
@@ -16044,7 +16201,8 @@ const Obby = (() => {
     if (hint){
       const padOn = typeof pad !== 'undefined' && pad && pad.on;
       const touch = typeof touchUI !== 'undefined' && touchUI;
-      hint.textContent = padOn ? '✚▼: show spots' : (touch ? '✨ Spots' : 'Q: show spots');
+      const carrying = typeof dhHasAnyCarry === 'function' && dhHasAnyCarry();
+      hint.textContent = padOn ? '✚▼: show spots' : (touch ? '✨ Spots' : (carrying ? 'Tab: show spots' : 'Q: show spots'));
       const showHint = playing && !pausedNow && !menus && !modal;
       hint.style.display = showHint ? 'block' : 'none';
       hint.classList.toggle('show', showHint);
@@ -16525,7 +16683,7 @@ function dhLayoutHud(){
   function setTouchUIBase(on){
     hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
     if (mode === 'dreamhouse'){
-      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · tap 🏡 to buy, carry, mix and lay bricks' : '⌨️ WASD move · Space jump · E buy / carry / build · Q/Tab show spots · Q dump · R rotate · 1-9 job · Esc menu')
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · tap 🏡 to buy, carry, mix and lay bricks' : '⌨️ WASD move · Space jump · E buy / carry / build · Q: show spots when hands are empty, dump when carrying · Tab: show spots · R rotate · 1-9 job · Esc menu')
         + "<br>🏡 Re-build your house with bricks, concrete and wood, then paint and furnish it from the shop!";
       if (typeof dhLayoutHud === 'function') dhLayoutHud();
       return;
@@ -16703,8 +16861,10 @@ function dhLayoutHud(){
     // Use the real frame time. The old 50ms clamp dropped leftover time, so a 10–12 fps
     // machine (often shown as “20 FPS Low”) walked at a fraction of the intended speed.
     // Cap only a paused/background hitch, then catch up in 50ms physics slices.
+    // 0.45s covers a heavy 14 fps frame that spiked past the old 0.25s cap (a view full
+    // of transparent beacons can hitch that long and made W feel like it "barely moved").
     const raw = Math.max(0, (t - last) / 1000); last = t;
-    let remain = Math.min(0.25, raw);
+    let remain = Math.min(0.45, raw);
     let dt = Math.min(0.05, remain);
     if (menuOpen){ for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false; pad.x = pad.y = 0; pad.jump = false; }
     if (!paused && !won && !over && !choosing){
@@ -16732,7 +16892,7 @@ function dhLayoutHud(){
         if (tipTimer > 0){ tipTimer -= dt; if (tipTimer <= 0){ $('#oTip').classList.add('hide'); if (typeof dhLayoutHud === 'function') dhLayoutHud(); } }
       } while (remain > 0.0005 && !paused && !won && !over && !choosing);
     }
-    const frameDt = Math.min(0.25, raw);
+    const frameDt = Math.min(0.45, raw);
     if (document.pointerLockElement && (!fpOn() || paused || menuOpen || choosing || won || over)) document.exitPointerLock();
     animate(paused ? 0 : frameDt); updateCamera(); renderer.render(scene, camera); hud();
     tickGfxFps(frameDt);
@@ -17392,9 +17552,9 @@ function start(m = 'obby', d = null){
     },
     setKey(code, on){ keys[code] = !!on; },
     stepFrame(dt){
-      // Honour the requested dt (tests pass 1/60 or 1/20). Catch up in 50ms slices so a
-      // low-fps frame is not silently shortened by the old clamp.
-      let remain = Math.min(0.25, Math.max(0, dt == null ? 1 / 60 : +dt));
+      // Honour the requested dt (tests pass 1/60, 1/20, or 1/14). Catch up in 50ms slices
+      // so a low-fps or hitchy frame is not silently shortened by the old 50ms/0.25s caps.
+      let remain = Math.min(0.45, Math.max(0, dt == null ? 1 / 60 : +dt));
       const before = {x: P.x, y: P.y, z: P.z, vy: P.vy, onGround: !!P.onGround};
       let mid = before;
       const frozen = !!(hs && hsFrozen && hsFrozen());

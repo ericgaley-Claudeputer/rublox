@@ -502,9 +502,9 @@ function notInWall(z, zFace, thick, r){
   return z <= lo + EPS || z >= hi - EPS;
 }
 
-test('BUILD is 2026.11.11-29 and matches version.json', () => {
-  assert.ok(html.includes("const BUILD = '2026.11.11-29'"));
-  assert.strictEqual(version.build, '2026.11.11-29');
+test('BUILD is 2026.11.11-30 and matches version.json', () => {
+  assert.ok(html.includes("const BUILD = '2026.11.11-30'"));
+  assert.strictEqual(version.build, '2026.11.11-30');
 });
 
 test('index.html wires DH clip into step() and exposes a #dhdebug collider path', () => {
@@ -813,6 +813,13 @@ test('walk distance at a 20 fps dt is about the same as at 60 fps', () => {
   assert.ok(b.dist > 2.4 && b.dist < 5.0, '20 fps should walk about 3-4 m in 1 s, got ' + b.dist + ' m (' + b.speed.toFixed(2) + ' m/s)');
   const ratio = b.dist / a.dist;
   assert.ok(ratio > 0.85 && ratio < 1.15, '20 fps distance should match 60 fps, 60=' + a.dist.toFixed(3) + ' 20=' + b.dist.toFixed(3) + ' ratio=' + ratio.toFixed(3));
+  const c14 = walkSouth(1 / 14, 1);
+  assert.ok(c14.dist > 2.4 && c14.dist < 5.0, '14 fps should walk about 3-4 m in 1 s, got ' + c14.dist + ' m (' + c14.speed.toFixed(2) + ' m/s)');
+  const r14 = c14.dist / a.dist;
+  assert.ok(r14 > 0.85 && r14 < 1.15, '14 fps distance should match 60 fps, 60=' + a.dist.toFixed(3) + ' 14=' + c14.dist.toFixed(3) + ' ratio=' + r14.toFixed(3));
+  // A heavy ~350 ms hitch must still simulate the real time (the old 0.25 s cap cut this short).
+  const hitch = walkSouth(0.35, 1.05);
+  assert.ok(hitch.dist > 2.4 && hitch.dist < 5.5, 'a 350 ms hitch frame should still walk about a full second, got ' + hitch.dist + ' m');
 });
 
 test('#dhtest=v6inside spawns inside facing the back wall, and the back wall stops a W hold', () => {

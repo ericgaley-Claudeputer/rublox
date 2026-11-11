@@ -15,9 +15,9 @@ function test(name, fn){
   catch (e){ failed++; console.log('not ok  ' + name); console.log('  ' + (e.stack || e.message)); }
 }
 
-test('BUILD is 2026.11.11-29 and matches version.json', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.11-29'"));
-  assert.strictEqual(version.build, '2026.11.11-29');
+test('BUILD is 2026.11.11-30 and matches version.json', () => {
+  assert.ok(src.includes("const BUILD = '2026.11.11-30'"));
+  assert.strictEqual(version.build, '2026.11.11-30');
 });
 
 test('only one game RAF loop can run: armGameLoop cancels and bumps loopId', () => {

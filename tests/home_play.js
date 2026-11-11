@@ -63,9 +63,9 @@ function makeEl(id){
   return el;
 }
 
-test('BUILD is 2026.11.11-29 and matches version.json', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.11-29'"));
-  assert.strictEqual(version.build, '2026.11.11-29');
+test('BUILD is 2026.11.11-30 and matches version.json', () => {
+  assert.ok(src.includes("const BUILD = '2026.11.11-30'"));
+  assert.strictEqual(version.build, '2026.11.11-30');
 });
 
 test('every inline script in index.html parses (a syntax error would make every Play button do nothing)', () => {
