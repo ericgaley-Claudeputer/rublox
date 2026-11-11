@@ -179,7 +179,8 @@ body.dark .sitem canvas{background:linear-gradient(#34427e,#26306a)}
 .obby{position:fixed;inset:0;z-index:45;display:none;background:#8fd3ff;user-select:none;-webkit-user-select:none}
 .obby.show{display:block}
 #obbyView,#obbyView canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;z-index:0;pointer-events:auto}
-.ofps{position:absolute;top:max(10px,calc(env(safe-area-inset-top) + 8px));right:max(10px,env(safe-area-inset-right));z-index:80;background:rgba(29,35,64,.88);color:#fff;font-weight:900;font-size:13px;padding:4px 8px;border-radius:8px;pointer-events:none;display:none}
+.ofps{position:absolute;top:auto;right:auto;left:max(10px,env(safe-area-inset-left));bottom:max(12px,calc(env(safe-area-inset-bottom) + 12px));z-index:41;background:rgba(29,35,64,.88);color:#fff;font-weight:900;font-size:13px;padding:4px 8px;border-radius:8px;pointer-events:none;display:none}
+#obby.dhouse .ofps{bottom:calc(var(--dhbar-clear, 160px) + 12px);left:max(10px,env(safe-area-inset-left))}
 .ofps.on{display:block}
 #setGfx{font:inherit;font-weight:900;border:2px solid var(--line,#d9dcec);border-radius:10px;padding:6px 10px;background:#fff}
 .gfxset .padsens{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0}
@@ -1593,7 +1594,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-21';
+const BUILD = '2026.11.11-22';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2956,28 +2957,52 @@ document.querySelectorAll('.invX,.invY').forEach(c => c.addEventListener('change
 }));
 syncInvert();
 function detectWeakGpu(){
+  if (window.gfx && window.gfx._probeDone) return !!window.gfx.weak;
   const nav = (typeof navigator !== 'undefined') ? navigator : {};
   const cores = +nav.hardwareConcurrency || 0;
   const mem = +nav.deviceMemory || 0;
-  if ((cores && cores <= 4) || (mem && mem <= 4)) return true;
-  try {
-    const coarse = (typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches) || (nav.maxTouchPoints > 0);
-    if (coarse && typeof screen !== 'undefined' && Math.min(screen.width, screen.height) < 900) return true;
-  } catch (e){}
-  try {
-    if (typeof document === 'undefined' || !document.createElement) return false;
-    const c = document.createElement('canvas');
-    const gl = c.getContext('webgl') || c.getContext('experimental-webgl');
-    if (!gl) return true;
-    let name = '';
+  let weak = false, name = '';
+  if ((cores && cores <= 4) || (mem && mem <= 4)) weak = true;
+  if (!weak){
     try {
-      const ext = gl.getExtension('WEBGL_debug_renderer_info');
-      if (ext) name = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) || '';
+      const coarse = (typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches) || (nav.maxTouchPoints > 0);
+      if (coarse && typeof screen !== 'undefined' && Math.min(screen.width, screen.height) < 900) weak = true;
     } catch (e){}
-    if (!name){ try { name = gl.getParameter(gl.RENDERER) || ''; } catch (e){} }
-    if (/Intel\s*(HD|UHD|GMA)|GMA\s|SwiftShader|llvmpipe|softpipe|Microsoft Basic Render|Software Rasterizer|Apple Software Renderer/i.test(String(name))) return true;
-  } catch (e){}
-  return false;
+  }
+  // Only open a WebGL context when we still need the renderer string. Probe once,
+  // then drop the context so home-page previews and the game keep theirs.
+  if (!weak){
+    let c = null, gl = null;
+    try {
+      if (typeof document !== 'undefined' && document.createElement){
+        c = document.createElement('canvas');
+        c.width = 1; c.height = 1;
+        gl = c.getContext('webgl', {antialias:false, depth:false, stencil:false, failIfMajorPerformanceCaveat:false})
+          || c.getContext('experimental-webgl');
+        if (!gl) weak = true;
+        else {
+          try {
+            const ext = gl.getExtension('WEBGL_debug_renderer_info');
+            if (ext) name = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) || '';
+          } catch (e){}
+          if (!name){ try { name = gl.getParameter(gl.RENDERER) || ''; } catch (e){} }
+          if (/Intel\s*(HD|UHD|GMA)|GMA\s|SwiftShader|llvmpipe|softpipe|Microsoft Basic Render|Software Rasterizer|Apple Software Renderer/i.test(String(name))) weak = true;
+        }
+      }
+    } catch (e){ weak = true; }
+    try {
+      if (gl){
+        const lose = gl.getExtension && gl.getExtension('WEBGL_lose_context');
+        if (lose && lose.loseContext) lose.loseContext();
+      }
+    } catch (e){}
+    c = null; gl = null;
+  }
+  window.gfx = window.gfx || {};
+  window.gfx.weak = !!weak;
+  window.gfx.renderer = name;
+  window.gfx._probeDone = true;
+  return !!weak;
 }
 function gfxChoice(){
   let v = 'auto';
@@ -2988,13 +3013,17 @@ window.gfx = window.gfx || {choice:'auto', effective:'high', autoLow:false, show
 function gfxRecompute(){
   const g = window.gfx;
   g.choice = gfxChoice();
-  g.weak = detectWeakGpu();
+  if (!g._probeDone) g.weak = detectWeakGpu();
   if (g.choice === 'low') g.effective = 'low';
   else if (g.choice === 'high'){ g.effective = 'high'; }
   else g.effective = (g.autoLow || g.weak) ? 'low' : 'high';
   return g.effective;
 }
-function gfxIsLow(){ gfxRecompute(); return window.gfx.effective === 'low'; }
+function gfxIsLow(){
+  const g = window.gfx;
+  if (!g || !g.effective) gfxRecompute();
+  return window.gfx.effective === 'low';
+}
 function gfxPixelRatio(){
   const dpr = (typeof devicePixelRatio === 'number' && devicePixelRatio) || 1;
   if (gfxIsLow()) return Math.max(0.75, Math.min(1, dpr));
@@ -15805,6 +15834,7 @@ function dhLayoutHud(){
     const haveAA = !!(renderer && renderer.getContext && renderer.getContext() && renderer.getContext().getContextAttributes && renderer.getContext().getContextAttributes().antialias);
     if (!renderer || haveAA !== wantAA){
       if (renderer){
+        try { if (renderer.forceContextLoss) renderer.forceContextLoss(); } catch (e){}
         try { if (renderer.domElement && renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement); } catch (e){}
         try { renderer.dispose(); } catch (e){}
         renderer = null;
@@ -15841,7 +15871,7 @@ function dhLayoutHud(){
     const view = document.getElementById('obbyView') || (renderer.domElement && renderer.domElement.parentElement);
     const w = Math.max(1, (view && view.clientWidth) || innerWidth);
     const h = Math.max(1, (view && view.clientHeight) || innerHeight);
-    const pr = Math.min((typeof devicePixelRatio !== 'undefined' && devicePixelRatio) || 1, 2);
+    const pr = (typeof gfxPixelRatio === 'function') ? gfxPixelRatio() : Math.min((typeof devicePixelRatio !== 'undefined' && devicePixelRatio) || 1, 1.5);
     if (renderer.setPixelRatio) renderer.setPixelRatio(pr);
     renderer.setSize(w, h, true);
     if (renderer.setViewport) renderer.setViewport(0, 0, w, h);

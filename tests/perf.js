@@ -15,9 +15,9 @@ function test(name, fn){
   catch (e){ failed++; console.log('not ok  ' + name); console.log('  ' + (e.stack || e.message)); }
 }
 
-test('BUILD is 2026.11.11-21 and matches version.json', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.11-21'"));
-  assert.strictEqual(version.build, '2026.11.11-21');
+test('BUILD is 2026.11.11-22 and matches version.json', () => {
+  assert.ok(src.includes("const BUILD = '2026.11.11-22'"));
+  assert.strictEqual(version.build, '2026.11.11-22');
 });
 
 test('only one game RAF loop can run: armGameLoop cancels and bumps loopId', () => {
@@ -125,13 +125,21 @@ test('Settings offers Graphics Auto/Low/High (default Auto) and Show FPS, saved 
 
 function gfxSandbox(nav, stored, rendererName){
   const store = Object.assign({}, stored || {});
+  const counts = {webgl: 0, lose: 0};
   const gl = {
-    getExtension(name){ return name === 'WEBGL_debug_renderer_info' ? {UNMASKED_RENDERER_WEBGL: 0x9246} : null; },
+    getExtension(name){
+      if (name === 'WEBGL_debug_renderer_info') return {UNMASKED_RENDERER_WEBGL: 0x9246};
+      if (name === 'WEBGL_lose_context') return {loseContext(){ counts.lose++; }};
+      return null;
+    },
     getParameter(){ return rendererName == null ? 'NVIDIA GeForce' : rendererName; },
     RENDERER: 0x1F01,
   };
   const document = {
-    createElement(){ return { getContext(type){ return (type === 'webgl' || type === 'experimental-webgl') ? gl : null; } }; },
+    createElement(){ return { width: 0, height: 0, getContext(type){
+      if (type === 'webgl' || type === 'experimental-webgl'){ counts.webgl++; return gl; }
+      return null;
+    } }; },
     getElementById(){ return null; },
   };
   const sandbox = {
@@ -152,6 +160,7 @@ function gfxSandbox(nav, stored, rendererName){
   vm.createContext(sandbox);
   vm.runInContext(src.slice(start, end), sandbox);
   sandbox._store = store;
+  sandbox._counts = counts;
   return sandbox;
 }
 
@@ -250,6 +259,62 @@ test('Dream House low path: shared leaf mats, pooled beacons, throttled HUD, spr
   assert.ok(dhSrc.includes('dhNeedRetarget'));
   assert.ok(dhSrc.includes('dhDisposeBeaconPool(true)'));
   assert.ok(!/scene\.remove\(dh\.outlines\);\s*dh\.outlines = new THREE\.Group/.test(dhSrc), 'must not recreate outline group from scratch every frame without pooling');
+});
+
+
+test('GPU probe opens at most one WebGL context and then loses it, even if gfxIsLow is called every frame', () => {
+  const s = gfxSandbox({hardwareConcurrency: 8, deviceMemory: 8}, {}, 'NVIDIA GeForce GTX 1060');
+  assert.ok(s._counts.webgl <= 2, 'home/init probe should be 0-1 contexts, got ' + s._counts.webgl);
+  const afterInit = s._counts.webgl;
+  for (let i = 0; i < 200; i++) s.gfxIsLow();
+  for (let i = 0; i < 50; i++) s.detectWeakGpu();
+  s.gfxRecompute();
+  s.gfxPixelRatio();
+  s.gfxAntialias();
+  s.gfxHudInterval();
+  assert.strictEqual(s._counts.webgl, afterInit, 'must not create another WebGL context after the cached probe');
+  assert.ok(afterInit <= 1);
+  assert.ok(s._counts.lose >= 1, 'throwaway probe must call loseContext()');
+});
+
+test('weak CPU/RAM Auto path does not open a WebGL probe at all', () => {
+  const s = gfxSandbox({hardwareConcurrency: 4, deviceMemory: 2});
+  assert.strictEqual(s.detectWeakGpu(), true);
+  assert.strictEqual(s._counts.webgl, 0);
+  for (let i = 0; i < 50; i++) s.gfxIsLow();
+  assert.strictEqual(s._counts.webgl, 0);
+});
+
+test('the game loop still renders while unpaused (not only on the pause path)', () => {
+  const loopAt = src.indexOf('  function loop(t){');
+  const loopSrc = src.slice(loopAt, src.indexOf('\n  function armGameLoop', loopAt) > loopAt ? src.indexOf('\n  function tickGfxFps', loopAt) : src.indexOf('function tickGfxFps', loopAt) + 1);
+  // Safer: take until tickGfxFps definition after the render line
+  const body = src.slice(loopAt, src.indexOf('function tickGfxFps(dt){', loopAt));
+  assert.ok(body.includes('renderer.render(scene, camera)'));
+  // render must not be gated on paused
+  assert.ok(!/if\s*\(\s*paused[\s\S]{0,80}renderer\.render/.test(body));
+  const renderLine = body.split('\n').find(l => l.includes('renderer.render(scene, camera)'));
+  assert.ok(renderLine, 'missing render call');
+  assert.ok(!/paused/.test(renderLine) || /paused \? 0 : dt/.test(renderLine), renderLine);
+});
+
+test('no opaque full-screen overlay covers the canvas during Dream House play, and the FPS badge is not over Exit', () => {
+  assert.ok(/id="dhCut"[^>]*style="display:none"/.test(src));
+  const fade = src.match(/\.dhfade\{[^}]+\}/);
+  assert.ok(fade && /opacity:\s*0/.test(fade[0]) && /background:#000/.test(fade[0]), fade && fade[0]);
+  const ofps = src.match(/\.ofps\{[^}]+\}/);
+  assert.ok(ofps, 'missing .ofps rule');
+  assert.ok(/left:\s*max\(10px/.test(ofps[0]) && /bottom:/.test(ofps[0]), 'FPS badge should sit bottom-left, not over 🚪 Exit: ' + ofps[0]);
+  assert.ok(/top:\s*auto/.test(ofps[0]) && /right:\s*auto/.test(ofps[0]), ofps[0]);
+  // Exit is in the top-right .obtns cluster
+  assert.ok(src.includes('id="oExit"') && src.includes('🚪'));
+  assert.ok(src.includes('#obby.dhouse .ofps') && src.includes('--dhbar-clear'));
+});
+
+test('detectWeakGpu cache and WEBGL_lose_context are in the page source', () => {
+  assert.ok(src.includes('window.gfx._probeDone') || src.includes('gfx._probeDone'));
+  assert.ok(src.includes('WEBGL_lose_context') && src.includes('loseContext'));
+  assert.ok(src.includes('forceContextLoss'));
 });
 
 console.log(passed + ' passed, ' + failed + ' failed');
