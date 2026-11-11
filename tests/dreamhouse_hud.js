@@ -115,14 +115,14 @@ test('start, bar render, tip hide, and resize all relayout the HUD', () => {
 });
 
 test('version is bumped and existing saves are not involved', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.11-28'"));
+  assert.ok(src.includes("const BUILD = '2026.11.11-29'"));
   const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
-  assert.strictEqual(v.build, '2026.11.11-28');
+  assert.strictEqual(v.build, '2026.11.11-29');
   assert.ok(src.includes("const DH_KEY = 'rubloxDreamHouse'") || dhSrc.includes("DH_KEY = 'rubloxDreamHouse'"));
 });
 
 test('first-person HUD, concrete steps, and Reset Dream House are in the page', () => {
-  assert.ok(src.includes('id="dhGoal"') && src.includes('id="dhSteps"') && src.includes('id="dhTip"'));
+  assert.ok(src.includes('id="dhGoal"') && src.includes('id="dhSteps"') && src.includes('id="dhTip"') && src.includes('id="dhSpotHint"') && src.includes('Q: show spots') && src.includes('id="dhSpotBtn"'));
   assert.ok(src.includes('Reset Dream House') && src.includes('Are you sure? This starts your house over') && src.includes('id="dhResetYes"') && src.includes('id="setDhReset"') && src.includes('id="dhResetBtn"'));
   assert.ok(dhSrc.includes('function dhResetProgress') && dhSrc.includes("Grab Cement + Sand at the Supply Yard") && dhSrc.includes('Foundation spots poured') && dhSrc.includes('function dhAimBrickSlot') && dhSrc.includes('InstancedMesh'));
   assert.ok(dhSrc.includes('function dhAimFootCell') && dhSrc.includes('window.dhResetProgress') && dhSrc.includes('dhInvCount') && src.includes('id="dhHand"') && src.includes('#dhResetModal{z-index:10000') && src.includes('Always on in Dream House'));

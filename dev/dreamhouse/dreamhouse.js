@@ -1393,6 +1393,7 @@
     rec = rec.slice();
     const k = dhKeyOf(rec);
     if ((dh.pieces[plot] || []).some(a => dhKeyOf(a) === k)) return null;
+    const stage0 = (!quiet && plot === dh.mine && typeof dhStageId === 'function') ? dhStageId() : null;
     const mesh = dhMeshFor(rec, plot);
     if (typeof scene !== 'undefined') scene.add(mesh);
     dhBindSolids(mesh, true);
@@ -1400,7 +1401,19 @@
     dh.pieces[plot].push(rec); dh.meshes[plot].push(mesh);
     if (rec[0] === 'brick') dhSyncBricks(plot);
     if (typeof dhRefreshFraming === 'function') dhRefreshFraming(plot);
-    if (!quiet && plot === dh.mine){ dhCheckGoals(); dhSave(); }
+    if (!quiet && plot === dh.mine){
+      dhCheckGoals(); dhSave();
+      const stage1 = (typeof dhStageId === 'function') ? dhStageId() : stage0;
+      if (stage1 && stage0 && stage1 !== stage0){
+        if (typeof dhShowSpots === 'function') dhShowSpots();
+      } else {
+        const w = (typeof dhWorldRec === 'function') ? dhWorldRec(plot, rec) : null;
+        if (typeof dhShowSpots === 'function') dhShowSpots({nearby: true, around: w && {x: w.x, z: w.z}});
+      }
+      // Remember the new stage so the next HUD sync does not treat it as a fresh advance
+      // (and flash the glows again). Job auto-switch still happens on the HUD interval.
+      if (stage1) dh._stageId = stage1;
+    }
     return mesh;
   }
   function dhFramingHidden(id, plot){
@@ -1867,6 +1880,7 @@
     const extra = (dh.bag && dh.carry) ? ' You can carry Cement + Sand together for the mixer.' : '';
     banner(m.e + ' Grabbed ' + added + ' ' + m.name.toLowerCase() + ' — free!' + extra);
     dhSave(); dhHud(); dhBar();
+    if (typeof dhShowSpots === 'function') dhShowSpots();
     return true;
   }
   function dhDump(){
@@ -1894,7 +1908,9 @@
     const take = dhAddHeld(id, Math.min(n, have));
     if (take <= 0){ banner(dhHeldRefuseMsg(id)); return false; }
     dh.stock[id] -= take;
-    dhStockViz(dh.mine); dhHud(); return true;
+    dhStockViz(dh.mine); dhHud();
+    if (typeof dhShowSpots === 'function') dhShowSpots();
+    return true;
   }
   function dhUseCarry(n, id){
     if (!dh) return false;
@@ -1956,6 +1972,7 @@
     mx.mixed--; dhSetCarry('wetmix', 1);
     if ((mx.mixed | 0) < 1) mx.phase = 'idle';
     banner('🪣 Wheelbarrow filled with wet concrete');
+    if (typeof dhShowSpots === 'function') dhShowSpots();
     return true;
   }
   function dhPour(){
@@ -2182,11 +2199,11 @@
     return false;
   }
   function dhRotate(){ if (!dh) return false; dh.rot = ((dh.rot | 0) + 1) % 4; dhHud(); return true; }
-  function dhCycle(dir){ if (!dh) return; const i = DH_JOBS.indexOf(dh.job); dh.job = DH_JOBS[(i + dir + DH_JOBS.length) % DH_JOBS.length]; dhBar(); dhHud(); }
+  function dhCycle(dir){ if (!dh) return; const i = DH_JOBS.indexOf(dh.job); const next = DH_JOBS[(i + dir + DH_JOBS.length) % DH_JOBS.length]; const ch = next !== dh.job; dh.job = next; dhBar(); dhHud(); if (ch && typeof dhShowSpots === 'function') dhShowSpots(); }
   function dhCycleColor(dir){ if (!dh) return; dh.color = (dh.color + dir + DH_PAINT.length) % DH_PAINT.length; dhHud(); dhBar(); }
-  function dhSetTool(t){ if (!dh) return; dh.tool = t; dhBar(); dhHud(); }
+  function dhSetTool(t){ if (!dh) return; const ch = dh.tool !== t; dh.tool = t; dhBar(); dhHud(); if (ch && typeof dhShowSpots === 'function') dhShowSpots(); }
   function dhSetStory(){ return false; }
-  function dhSetJob(j){ if (!dh) return; dh.job = j; dh.tool = 'place'; dhBar(); dhHud(); }
+  function dhSetJob(j){ if (!dh) return; const ch = dh.job !== j; dh.job = j; dh.tool = 'place'; dhBar(); dhHud(); if (ch && typeof dhShowSpots === 'function') dhShowSpots(); }
 
   function dhAct(){
     if (!dh) return;
@@ -2494,6 +2511,7 @@
     if (typeof cam !== 'undefined'){ cam.yaw = Math.PI; cam.pitch = .37; cam.dist = .2; }
     dhForceFirstPerson();
     dhShowLookHint();
+    if (typeof dhShowSpots === 'function') dhShowSpots();
     dhHud(); dhBar();
     banner('🏡 An empty lot and a pile of materials — time to re-build your house!');
     dreamhouseUpdate(0);
@@ -2556,7 +2574,9 @@
       dhStartIntro(false);
     } else {
       banner(mp && mp.on ? '🏡 Dream House Builders — grab free supplies and place every piece yourself!' : '🏡 First person: grab free supplies at the Supply Yard, then aim and place every brick yourself!');
-      tipTimer = 8; dhHud(); dhBar();
+      tipTimer = 8;
+      if (typeof dhShowSpots === 'function') dhShowSpots();
+      dhHud(); dhBar();
       dreamhouseUpdate(0);
     }
     const replay = $('#dhReplay'); if (replay) replay.style.display = '';
@@ -3134,6 +3154,7 @@
       dh.pourAcc = (dh.pourAcc || 0) + (dt || .016);
       if (dh.pourAcc > .22){ dh.pourAcc = 0; dhPour(); }
     }
+    dhSpotTick(dt);
     dhUpdateGhost();
     dhHintStage();
     if (dh.yardBeacon && dh.yardBeacon.arrow){
@@ -3397,20 +3418,91 @@
     }
     if (dh.outlines && g.parent !== dh.outlines) dh.outlines.add(g);
     dh._beaconUsed++;
+    return g;
   }
   function dhEndBeacons(){
     const pool = dh._beaconPool || [];
     for (let i = dh._beaconUsed || 0; i < pool.length; i++) pool[i].visible = false;
   }
+  const DH_SPOT_SHOW = 4;   // seconds at full brightness
+  const DH_SPOT_FADE = 1;   // seconds to fade out
+  const DH_SPOT_NEAR = 8;   // nearby spots to re-show after a place
+  const DH_SPOT_AIM = 0.42; // soft highlight on the aimed spot while faded
+  function dhShowSpots(opts){
+    if (!dh) return false;
+    opts = opts || {};
+    dh._spotMode = opts.nearby ? 'nearby' : 'all';
+    dh._spotAround = opts.around || (typeof P !== 'undefined' && P ? {x: P.x, z: P.z} : null);
+    dh._spotShowFor = opts.nearby ? 2 : DH_SPOT_SHOW;
+    dh._spotAge = 0;
+    dh._ghostDirty = true;
+    return true;
+  }
+  function dhSpotTick(dt){
+    if (!dh || dh.intro) return;
+    dh._spotAge = (dh._spotAge == null ? 0 : dh._spotAge) + Math.max(0, dt || 0);
+  }
+  function dhSpotFade(){
+    if (!dh) return 0;
+    const age = dh._spotAge == null ? 0 : dh._spotAge;
+    const hold = (dh._spotShowFor != null) ? dh._spotShowFor : DH_SPOT_SHOW;
+    if (age < hold) return 1;
+    if (age < hold + DH_SPOT_FADE) return Math.max(0, 1 - (age - hold) / DH_SPOT_FADE);
+    return 0;
+  }
+  function dhSpotVisuals(){
+    const fade = dhSpotFade();
+    const aimed = !!(dh && dh._spotAimed);
+    return {
+      age: dh ? (dh._spotAge || 0) : 0,
+      mode: (dh && dh._spotMode) || 'all',
+      group: fade,
+      aim: fade > 0.05 ? Math.min(1, fade + 0.15) : (aimed ? DH_SPOT_AIM : 0),
+      faded: fade <= 0.001,
+      shown: fade >= 0.999,
+      used: (dh && dh._beaconUsed) || 0,
+      aimed: aimed
+    };
+  }
+  function dhSpotIsNear(x, z){
+    if (!dh || dh._spotMode !== 'nearby') return true;
+    const around = dh._spotAround;
+    const list = dh._spotNearList;
+    if (list && list.length){
+      return list.some(p => Math.abs((p.x || 0) - x) < 0.05 && Math.abs((p.z || 0) - z) < 0.05);
+    }
+    if (!around) return true;
+    return Math.hypot((x || 0) - (around.x || 0), (z || 0) - (around.z || 0)) < 4.5;
+  }
+  function dhPickNearbySpots(pts, n){
+    const around = (dh && dh._spotAround) || (typeof P !== 'undefined' && P) || {x:0,z:0};
+    const ranked = (pts || []).slice().sort((a, b) => Math.hypot((a.x||0)-(around.x||0), (a.z||0)-(around.z||0)) - Math.hypot((b.x||0)-(around.x||0), (b.z||0)-(around.z||0)));
+    return ranked.slice(0, n || DH_SPOT_NEAR);
+  }
+  function dhApplySpotFade(){
+    if (!dh) return;
+    const v = dhSpotVisuals();
+    const pulse = 0.55 + 0.25 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
+    const group = v.group;
+    const aimOp = v.aim;
+    if (dh._beaconMatPad) dh._beaconMatPad.opacity = pulse * group;
+    if (dh._beaconMatBeam) dh._beaconMatBeam.opacity = pulse * 0.75 * group;
+    if (dh._beaconMatPadHot) dh._beaconMatPadHot.opacity = aimOp || (pulse + 0.2) * group;
+    if (dh._beaconMatBeamHot) dh._beaconMatBeamHot.opacity = (aimOp ? aimOp * 0.85 : (pulse + 0.1) * group);
+    if (dh._beaconSprMat) dh._beaconSprMat.opacity = (0.7 + 0.2 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6)) * group;
+    if (dh._beaconSprMatHot) dh._beaconSprMatHot.opacity = aimOp || (0.85 * Math.max(group, 0.2));
+    const pool = dh._beaconPool || [];
+    const used = dh._beaconUsed || 0;
+    for (let i = 0; i < used; i++){
+      const g = pool[i]; if (!g) continue;
+      const on = !!g.userData.spotOn;
+      // While faded, hide the crowd and leave only the aimed highlight visible.
+      g.visible = on ? (aimOp > 0.02) : (group > 0.02 && g.userData.spotShow !== false);
+    }
+  }
   function dhPulseBeacons(){
     if (!dh) return;
-    const pulse = 0.55 + 0.25 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
-    if (dh._beaconMatPad) dh._beaconMatPad.opacity = pulse;
-    if (dh._beaconMatBeam) dh._beaconMatBeam.opacity = pulse * 0.75;
-    if (dh._beaconMatPadHot) dh._beaconMatPadHot.opacity = Math.min(1, pulse + 0.2);
-    if (dh._beaconMatBeamHot) dh._beaconMatBeamHot.opacity = Math.min(1, pulse + 0.1);
-    if (dh._beaconSprMat) dh._beaconSprMat.opacity = 0.7 + 0.2 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
-    if (dh._beaconSprMatHot) dh._beaconSprMatHot.opacity = 0.85 + 0.15 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
+    dhApplySpotFade();
     if (dh._beaconLow && dh._beaconPool){
       const scPulse = 0.95 + 0.12 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
       dh._beaconPool.forEach(g => {
@@ -3427,20 +3519,25 @@
     if (!dh) return;
     const menus = dh.yardOpen || dh.shopOpen || dh.upOpen || dh.intro;
     const stage = dhStageId();
-    dhPulseBeacons();
     const hz = dhGfxLow() ? 10 : 20;
     const retarget = dhNeedRetarget(hz) || dh._ghostDirty || !dh.outlines;
     if (retarget){
       dh._ghostDirty = false;
       dhBeginBeacons();
+      dh._spotAimed = false;
       if (!menus){
         if (stage === 'brick'){
-          const spots = dhJobPoints('brick');
+          const spots = dhJobPoints('brick').filter(s => s && !s.filled);
           const aimed = dhTargetSpotCached('brick');
+          if (dh._spotMode === 'nearby') dh._spotNearList = dhPickNearbySpots(spots, DH_SPOT_NEAR);
           spots.forEach(s => {
-            if (s.filled) return;
             const on = !!(aimed && aimed.plot === s.plot && aimed.ix === s.ix && aimed.iz === s.iz && aimed.course === s.course && aimed.slot === s.slot);
-            dhAddPooledBeacon(s.x, s.y, s.z, on);
+            const show = on || dhSpotIsNear(s.x, s.z);
+            if (!show && dhSpotFade() <= 0.02) return;
+            if (!show) return;
+            const g = dhAddPooledBeacon(s.x, s.y, s.z, on);
+            if (g && g.userData){ g.userData.spotOn = on; g.userData.spotShow = show; }
+            if (on) dh._spotAimed = true;
           });
         }
         if (stage === 'stake' || stage === 'dig' || stage === 'pour'){
@@ -3453,15 +3550,24 @@
             if (job === 'pour' && (dhHas(dh.mine, 'trench', ix, iz) || dhHas(dh.mine, 'mark', ix, iz)) && !dhHas(dh.mine, 'wet', ix, iz) && !dhHas(dh.mine, 'slab', ix, iz)) cells.push({ix, iz});
           }
           const aimed = dhTargetSpotCached(job);
-          cells.forEach(c => {
+          const pts = cells.map(c => {
             const w = dhCellWorld(dh.mine, c.ix, c.iz, .1);
-            const on = !!(aimed && aimed.ix === c.ix && aimed.iz === c.iz);
-            dhAddPooledBeacon(w.x, w.y, w.z, on);
+            return {ix: c.ix, iz: c.iz, x: w.x, y: w.y, z: w.z};
+          });
+          if (dh._spotMode === 'nearby') dh._spotNearList = dhPickNearbySpots(pts, DH_SPOT_NEAR);
+          pts.forEach(s => {
+            const on = !!(aimed && aimed.ix === s.ix && aimed.iz === s.iz);
+            const show = on || dhSpotIsNear(s.x, s.z);
+            if (!show) return;
+            const g = dhAddPooledBeacon(s.x, s.y, s.z, on);
+            if (g && g.userData){ g.userData.spotOn = on; g.userData.spotShow = show; }
+            if (on) dh._spotAimed = true;
           });
         }
       }
       dhEndBeacons();
     }
+    dhPulseBeacons();
     if (!dh.ghost) return;
     let pos = null, ok = false, can = true;
     if (stage === 'brick'){
@@ -3730,6 +3836,7 @@
     const advanced = !!(dh._stageId && dh._stageId !== stage);
     const first = !dh._stageId;
     dh._stageId = stage;
+    if ((advanced || first) && typeof dhShowSpots === 'function') dhShowSpots();
     if (dh.job === job) return false;
     if (!advanced && !first) return false;
     dh.job = job;
@@ -3793,6 +3900,15 @@
         root.classList.toggle('dh-paused', pausedNow || menus || modal);
       }
     }
+    const hint = $('#dhSpotHint');
+    if (hint){
+      const padOn = typeof pad !== 'undefined' && pad && pad.on;
+      const touch = typeof touchUI !== 'undefined' && touchUI;
+      hint.textContent = padOn ? '✚▼: show spots' : (touch ? '✨ Spots' : 'Q: show spots');
+      const showHint = playing && !pausedNow && !menus && !modal;
+      hint.style.display = showHint ? 'block' : 'none';
+      hint.classList.toggle('show', showHint);
+    }
     ['#dhBar', '#dhHand', '#dhAct'].forEach(id => {
       const el = $(id); if (!el) return;
       if (hideBar){ el.style.display = 'none'; el.style.visibility = 'hidden'; el.style.pointerEvents = 'none'; el.classList.add('dh-paused-hide'); el.classList.remove('show'); }
@@ -3838,7 +3954,7 @@
     const jobs = '<div class="dhtools">' + DH_JOBS.map(j => {
       const lab = {mark:'📍 Stake', dig:'🕳️ Dig', mix:'🌀 Mix', pour:'🪣 Pour', brick:'🧱 Brick', stud:'🪵 Stud', rafter:'🪜 Rafter', shingle:'🏠 Shingle', frame:'🚪 Frame', glass:'🪟 Glass', paint:'🎨 Paint', furn:'🛋️ Furnish'}[j];
       return '<button class="dhb' + (dh.job === j && dh.tool === 'place' ? ' on' : '') + '" data-dhjob="' + j + '">' + lab + '</button>';
-    }).join('') + '<button class="dhb' + (dh.tool === 'delete' ? ' on' : '') + '" data-dhtool="delete">🗑️</button><button class="dhb" id="dhDumpBtn">📦 Dump</button><button class="dhb" id="dhYardBtn">📦 Supply Yard</button><button class="dhb" id="dhShopBtn">🛋️ Furniture</button><button class="dhb" id="dhUpBtn">🔧 Upgrades</button></div>';
+    }).join('') + '<button class="dhb' + (dh.tool === 'delete' ? ' on' : '') + '" data-dhtool="delete">🗑️</button><button class="dhb" id="dhDumpBtn">📦 Dump</button><button class="dhb" id="dhSpotBtn" title="Show remaining spots">✨ Spots</button><button class="dhb" id="dhYardBtn">📦 Supply Yard</button><button class="dhb" id="dhShopBtn">🛋️ Furniture</button><button class="dhb" id="dhUpBtn">🔧 Upgrades</button></div>';
     const cols = dh.job === 'paint' ? ('<div class="dhcols">' + DH_PAINT.map((c, i) => '<button class="dhc' + (dh.color === i ? ' on' : '') + '" data-dhcol="' + i + '" style="background:' + c.col + '" title="' + c.name + '"></button>').join('') + '</div>') : '';
     const inv = '<div class="dinv">' + DH_MATS.filter(m => !m.nosale).map(m => {
       const n = dhInvCount(m.id);
@@ -3855,9 +3971,10 @@
     const act = $('#dhAct'); if (act) act.onclick = () => dh && !dh.intro && dhAct();
     const bar = $('#dhBar');
     if (bar) bar.addEventListener('click', ev => {
-      const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhShopBtn,#dhYardBtn,#dhUpBtn');
+      const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhSpotBtn,#dhShopBtn,#dhYardBtn,#dhUpBtn');
       if (!t || !dh || dh.intro) return;
       if (t.id === 'dhDumpBtn') dhDump();
+      else if (t.id === 'dhSpotBtn'){ if (typeof dhShowSpots === 'function') dhShowSpots(); }
       else if (t.id === 'dhYardBtn') dhToggleYard(true);
       else if (t.id === 'dhShopBtn') dhToggleShop(true);
       else if (t.id === 'dhUpBtn') dhToggleUp(true);
@@ -3924,6 +4041,7 @@
     if (jp.y || jp[3]){ if (dh.carry) dhDump(); else dhSetTool(dh.tool === 'delete' ? 'place' : 'delete'); return true; }
     if (jp.lb || jp[4]){ dhCycle(-1); return true; }
     if (jp.rb || jp[5]){ dhCycle(1); return true; }
+    if (jp.dd || jp[13] || jp.down){ if (typeof dhShowSpots === 'function') dhShowSpots(); return true; }
     return false;
   }
   function dhEventTarget(e){
@@ -4046,7 +4164,8 @@
     if (k === 'KeyB'){ dhToggleShop(); return true; }
     if (k === 'KeyE'){ dhAct(); return true; }
     if (k === 'KeyR'){ dhRotate(); return true; }
-    if (k === 'KeyQ'){ dhDump(); return true; }
+    if (k === 'Tab' || k === 'KeyTab'){ if (typeof dhShowSpots === 'function') dhShowSpots(); return true; }
+    if (k === 'KeyQ'){ if (dhHasAnyCarry()) dhDump(); if (typeof dhShowSpots === 'function') dhShowSpots(); return true; }
     if (k === 'KeyX' || k === 'Backspace' || k === 'Delete'){ dhSetTool(dh.tool === 'delete' ? 'place' : 'delete'); return true; }
     if (k === 'KeyC'){ dhCycleColor(1); return true; }
     if (k === 'BracketLeft' || k === 'Comma'){ dhCycle(-1); return true; }

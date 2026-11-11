@@ -41,7 +41,7 @@ function world(store0, opts){
   ctx.window = ctx;
   ctx.window.location = ctx.location;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec, dhShowSpots, dhSpotTick, dhSpotFade, dhSpotVisuals, DH_SPOT_SHOW, DH_SPOT_FADE, DH_SPOT_NEAR, DH_SPOT_AIM, dhUpdateGhost, dhPulseBeacons};`, ctx);
   return ctx;
 }
 
@@ -1343,6 +1343,101 @@ chk('crossing a wall midpoint still ejects back to the entry side', Ww.P.z <= fo
 chk('the front face has a window as well as the door', (Ww.A.dhWindowFaces() || []).indexOf(0) >= 0 && (Ww.A.dh.pieces[0]||[]).some(a => a[0]==='winframe' && (a[4]|0)===0), {faces:Ww.A.dhWindowFaces(), frames:(Ww.A.dh.pieces[0]||[]).filter(a=>a[0]==='winframe')});
 chk('#dhdebug is off without the hash and the helper exists', Ww.A.dhDebugActive() === false && typeof Ww.A.dhRefreshDebugColliders === 'function' && typeof Ww.A.dhCamClearance === 'function' && Ww.A.dhCamClearance() >= 0.3, {dbg:Ww.A.dhDebugActive(), clear:Ww.A.dhCamClearance && Ww.A.dhCamClearance()});
 Ww.A.dreamhouseStop();
+})();
+
+
+// t261u: remaining-spot glows show for ~4s, then fade ~1s; re-show on tool, supply, new step, place (nearby), Q/Tab/pad
+(function(){
+  const Wg = world();
+  Wg.A.buildDreamHouse(); Wg.A.dreamhouseEnter();
+  Wg.A.dhSkipIntro();
+  chk('show-spots API and timings are available', typeof Wg.A.dhShowSpots === 'function' && Wg.A.DH_SPOT_SHOW === 4 && Wg.A.DH_SPOT_FADE === 1, {show:Wg.A.DH_SPOT_SHOW, fade:Wg.A.DH_SPOT_FADE});
+  Wg.A.dhShowSpots();
+  Wg.A.dreamhouseUpdate(0);
+  const v0 = Wg.A.dhSpotVisuals();
+  chk('spot glows start fully shown after a show', !!(v0 && v0.shown && v0.group === 1 && v0.mode === 'all'), v0);
+
+  Wg.A.dreamhouseUpdate(3.9);
+  const vHold = Wg.A.dhSpotVisuals();
+  chk('spot glows stay fully visible for about 4 seconds', !!(vHold && vHold.shown && vHold.group === 1 && vHold.age >= 3.9 && vHold.age < 4.05), vHold);
+
+  Wg.A.dreamhouseUpdate(0.5);
+  const vMid = Wg.A.dhSpotVisuals();
+  chk('spot glows fade smoothly during the fifth second', !!(vMid && vMid.group > 0.2 && vMid.group < 0.85 && !vMid.shown && !vMid.faded), vMid);
+
+  Wg.A.dreamhouseUpdate(1.0);
+  const vGone = Wg.A.dhSpotVisuals();
+  chk('spot glows are gone after the fade', !!(vGone && vGone.faded && vGone.group === 0), vGone);
+
+  Wg.A.dhSetTool('delete');
+  Wg.A.dreamhouseUpdate(0);
+  const vTool = Wg.A.dhSpotVisuals();
+  chk('switching tools re-shows the remaining-spot glows', !!(vTool && vTool.shown && vTool.group === 1 && vTool.mode === 'all'), vTool);
+  Wg.A.dhSetTool('place');
+
+  Wg.A.dreamhouseUpdate(6);
+  chk('glows fade again after a tool-switch flash', !!Wg.A.dhSpotVisuals().faded, Wg.A.dhSpotVisuals());
+  const job0 = Wg.A.dh.job;
+  Wg.A.dhSetJob(job0 === 'mark' ? 'dig' : 'mark');
+  Wg.A.dreamhouseUpdate(0);
+  chk('switching jobs re-shows the remaining-spot glows', !!Wg.A.dhSpotVisuals().shown, Wg.A.dhSpotVisuals());
+  Wg.A.dhSetJob('mark');
+
+  Wg.A.dreamhouseUpdate(6);
+  const picked = Wg.A.dhPickup('brick', 8);
+  Wg.A.dreamhouseUpdate(0);
+  chk('picking up a new supply re-shows the remaining-spot glows', !!(picked && Wg.A.dhSpotVisuals().shown), {picked, v:Wg.A.dhSpotVisuals(), carry:Wg.A.dh.carry});
+
+  Wg.A.dreamhouseUpdate(6);
+  const stage0 = Wg.A.dhStageId();
+  const foot = Wg.A.dhFoot();
+  for (let ix = foot.x0; ix <= foot.x1; ix++) for (let iz = foot.z0; iz <= foot.z1; iz++){
+    Wg.A.dhPut(0, ['mark', ix, 0, iz, 0]);
+  }
+  Wg.A.dreamhouseUpdate(0);
+  chk('starting a new step re-shows the remaining-spot glows', Wg.A.dhStageId() !== stage0 && !!Wg.A.dhSpotVisuals().shown, {stage:Wg.A.dhStageId(), before:stage0, v:Wg.A.dhSpotVisuals()});
+
+  Wg.A.dreamhouseUpdate(6);
+  chk('glows faded before a place re-show', !!Wg.A.dhSpotVisuals().faded, Wg.A.dhSpotVisuals());
+  Wg.A.dhPut(0, ['trench', foot.x0, 0, foot.z0, 0]);
+  Wg.A.dreamhouseUpdate(0);
+  const vPlace = Wg.A.dhSpotVisuals();
+  chk('placing a piece briefly re-shows nearby remaining spots', !!(vPlace && vPlace.shown && vPlace.mode === 'nearby' && vPlace.used > 0 && vPlace.used <= 8), vPlace);
+
+  Wg.A.dreamhouseUpdate(6);
+  if (Wg.A.dhHasAnyCarry && Wg.A.dhHasAnyCarry()) Wg.A.dhDump();
+  else if (Wg.A.dh.carry) Wg.A.dhDump();
+  Wg.A.dhKey({code:'KeyQ', repeat:false});
+  Wg.A.dreamhouseUpdate(0);
+  chk('Q re-shows the remaining-spot glows', !!Wg.A.dhSpotVisuals().shown, Wg.A.dhSpotVisuals());
+
+  Wg.A.dreamhouseUpdate(6);
+  Wg.A.dhKey({code:'Tab', repeat:false});
+  Wg.A.dreamhouseUpdate(0);
+  chk('Tab re-shows the remaining-spot glows', !!Wg.A.dhSpotVisuals().shown, Wg.A.dhSpotVisuals());
+
+  Wg.A.dreamhouseUpdate(6);
+  Wg.A.dhPad({dd:1, 13:true});
+  Wg.A.dreamhouseUpdate(0);
+  chk('gamepad D-pad down re-shows the remaining-spot glows', !!Wg.A.dhSpotVisuals().shown, Wg.A.dhSpotVisuals());
+
+  Wg.A.dreamhouseUpdate(6);
+  const next = Wg.A.dhNextBuildCell('dig') || Wg.A.dhNextBuildCell('mark');
+  if (next) aimFoot(Wg, next.ix, next.iz);
+  Wg.A.dh._ghostDirty = true;
+  Wg.A.dreamhouseUpdate(0);
+  const vAim = Wg.A.dhSpotVisuals();
+  chk('the aimed spot still has a soft highlight after the glows fade', !!(vAim && vAim.faded && vAim.aimed && vAim.aim >= 0.2 && vAim.aim < 0.8 && vAim.group === 0), vAim);
+
+  Wg.A.updateDhChrome();
+  const hint = Wg.els['#dhSpotHint'];
+  chk('HUD hint says Q: show spots', !!(hint && /Q: show spots/.test(hint.textContent) && hint.style.display === 'block'), hint);
+  const bar = (Wg.els['#dhBar'] && Wg.els['#dhBar'].innerHTML) || '';
+  if (!bar){ Wg.A.dhBar(); }
+  const barHtml = (Wg.els['#dhBar'] && Wg.els['#dhBar'].innerHTML) || '';
+  chk('a small Spots button is on the toolbar', /dhSpotBtn/.test(barHtml), barHtml.slice(0, 200));
+
+  Wg.A.dreamhouseStop();
 })();
 
 

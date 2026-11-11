@@ -526,6 +526,8 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .dhgoal{display:none;position:absolute;top:max(10px,calc(env(safe-area-inset-top) + 8px));left:50%;transform:translateX(-50%);z-index:10;background:rgba(29,35,64,.94);color:#fff;padding:12px 22px;border-radius:20px;font-weight:900;font-size:22px;line-height:1.25;text-align:center;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.28);max-width:min(92vw,720px)}
 .dhgoal.show{display:block}
 .dhsteps{display:none;position:relative;top:auto;left:auto;z-index:10;background:rgba(255,250,240,.94);border:3px solid #ffd23f;border-radius:16px;padding:8px 10px 10px;width:100%;max-width:100%;box-shadow:0 4px 0 rgba(0,0,0,.12);pointer-events:none;font-weight:800;color:#1d2340}
+.dhspothint{display:none;background:rgba(29,35,64,.82);color:#fffaf0;border-radius:10px;padding:4px 8px;font-weight:800;font-size:12px;line-height:1.3;pointer-events:none;max-width:100%}
+.dhspothint.show{display:block}
 .dhsteps.show{display:block}
 .dhstepsH{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#6b7290;margin-bottom:4px}
 .dhstep{font-size:14px;line-height:1.35;padding:3px 6px;border-radius:8px}
@@ -1363,6 +1365,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   <div class="dhstack" id="dhStack" style="display:none">
     <div id="dhBox" class="dhbox" style="display:none"></div>
     <div class="dhsteps" id="dhSteps" style="display:none"></div>
+    <div class="dhspothint" id="dhSpotHint" style="display:none">Q: show spots</div>
   </div>
   <div class="dhtestnote" id="dhTestNote" style="display:none"></div>
   <div class="dhtip" id="dhTip" style="display:none"><b>Quick tip</b><span id="dhTipT"></span><button type="button" id="dhTipX">OK</button></div>
@@ -1597,7 +1600,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-28';
+const BUILD = '2026.11.11-29';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -13530,6 +13533,7 @@ const Obby = (() => {
     rec = rec.slice();
     const k = dhKeyOf(rec);
     if ((dh.pieces[plot] || []).some(a => dhKeyOf(a) === k)) return null;
+    const stage0 = (!quiet && plot === dh.mine && typeof dhStageId === 'function') ? dhStageId() : null;
     const mesh = dhMeshFor(rec, plot);
     if (typeof scene !== 'undefined') scene.add(mesh);
     dhBindSolids(mesh, true);
@@ -13537,7 +13541,19 @@ const Obby = (() => {
     dh.pieces[plot].push(rec); dh.meshes[plot].push(mesh);
     if (rec[0] === 'brick') dhSyncBricks(plot);
     if (typeof dhRefreshFraming === 'function') dhRefreshFraming(plot);
-    if (!quiet && plot === dh.mine){ dhCheckGoals(); dhSave(); }
+    if (!quiet && plot === dh.mine){
+      dhCheckGoals(); dhSave();
+      const stage1 = (typeof dhStageId === 'function') ? dhStageId() : stage0;
+      if (stage1 && stage0 && stage1 !== stage0){
+        if (typeof dhShowSpots === 'function') dhShowSpots();
+      } else {
+        const w = (typeof dhWorldRec === 'function') ? dhWorldRec(plot, rec) : null;
+        if (typeof dhShowSpots === 'function') dhShowSpots({nearby: true, around: w && {x: w.x, z: w.z}});
+      }
+      // Remember the new stage so the next HUD sync does not treat it as a fresh advance
+      // (and flash the glows again). Job auto-switch still happens on the HUD interval.
+      if (stage1) dh._stageId = stage1;
+    }
     return mesh;
   }
   function dhFramingHidden(id, plot){
@@ -14004,6 +14020,7 @@ const Obby = (() => {
     const extra = (dh.bag && dh.carry) ? ' You can carry Cement + Sand together for the mixer.' : '';
     banner(m.e + ' Grabbed ' + added + ' ' + m.name.toLowerCase() + ' — free!' + extra);
     dhSave(); dhHud(); dhBar();
+    if (typeof dhShowSpots === 'function') dhShowSpots();
     return true;
   }
   function dhDump(){
@@ -14031,7 +14048,9 @@ const Obby = (() => {
     const take = dhAddHeld(id, Math.min(n, have));
     if (take <= 0){ banner(dhHeldRefuseMsg(id)); return false; }
     dh.stock[id] -= take;
-    dhStockViz(dh.mine); dhHud(); return true;
+    dhStockViz(dh.mine); dhHud();
+    if (typeof dhShowSpots === 'function') dhShowSpots();
+    return true;
   }
   function dhUseCarry(n, id){
     if (!dh) return false;
@@ -14093,6 +14112,7 @@ const Obby = (() => {
     mx.mixed--; dhSetCarry('wetmix', 1);
     if ((mx.mixed | 0) < 1) mx.phase = 'idle';
     banner('🪣 Wheelbarrow filled with wet concrete');
+    if (typeof dhShowSpots === 'function') dhShowSpots();
     return true;
   }
   function dhPour(){
@@ -14319,11 +14339,11 @@ const Obby = (() => {
     return false;
   }
   function dhRotate(){ if (!dh) return false; dh.rot = ((dh.rot | 0) + 1) % 4; dhHud(); return true; }
-  function dhCycle(dir){ if (!dh) return; const i = DH_JOBS.indexOf(dh.job); dh.job = DH_JOBS[(i + dir + DH_JOBS.length) % DH_JOBS.length]; dhBar(); dhHud(); }
+  function dhCycle(dir){ if (!dh) return; const i = DH_JOBS.indexOf(dh.job); const next = DH_JOBS[(i + dir + DH_JOBS.length) % DH_JOBS.length]; const ch = next !== dh.job; dh.job = next; dhBar(); dhHud(); if (ch && typeof dhShowSpots === 'function') dhShowSpots(); }
   function dhCycleColor(dir){ if (!dh) return; dh.color = (dh.color + dir + DH_PAINT.length) % DH_PAINT.length; dhHud(); dhBar(); }
-  function dhSetTool(t){ if (!dh) return; dh.tool = t; dhBar(); dhHud(); }
+  function dhSetTool(t){ if (!dh) return; const ch = dh.tool !== t; dh.tool = t; dhBar(); dhHud(); if (ch && typeof dhShowSpots === 'function') dhShowSpots(); }
   function dhSetStory(){ return false; }
-  function dhSetJob(j){ if (!dh) return; dh.job = j; dh.tool = 'place'; dhBar(); dhHud(); }
+  function dhSetJob(j){ if (!dh) return; const ch = dh.job !== j; dh.job = j; dh.tool = 'place'; dhBar(); dhHud(); if (ch && typeof dhShowSpots === 'function') dhShowSpots(); }
 
   function dhAct(){
     if (!dh) return;
@@ -14631,6 +14651,7 @@ const Obby = (() => {
     if (typeof cam !== 'undefined'){ cam.yaw = Math.PI; cam.pitch = .37; cam.dist = .2; }
     dhForceFirstPerson();
     dhShowLookHint();
+    if (typeof dhShowSpots === 'function') dhShowSpots();
     dhHud(); dhBar();
     banner('🏡 An empty lot and a pile of materials — time to re-build your house!');
     dreamhouseUpdate(0);
@@ -14693,7 +14714,9 @@ const Obby = (() => {
       dhStartIntro(false);
     } else {
       banner(mp && mp.on ? '🏡 Dream House Builders — grab free supplies and place every piece yourself!' : '🏡 First person: grab free supplies at the Supply Yard, then aim and place every brick yourself!');
-      tipTimer = 8; dhHud(); dhBar();
+      tipTimer = 8;
+      if (typeof dhShowSpots === 'function') dhShowSpots();
+      dhHud(); dhBar();
       dreamhouseUpdate(0);
     }
     const replay = $('#dhReplay'); if (replay) replay.style.display = '';
@@ -15271,6 +15294,7 @@ const Obby = (() => {
       dh.pourAcc = (dh.pourAcc || 0) + (dt || .016);
       if (dh.pourAcc > .22){ dh.pourAcc = 0; dhPour(); }
     }
+    dhSpotTick(dt);
     dhUpdateGhost();
     dhHintStage();
     if (dh.yardBeacon && dh.yardBeacon.arrow){
@@ -15534,20 +15558,91 @@ const Obby = (() => {
     }
     if (dh.outlines && g.parent !== dh.outlines) dh.outlines.add(g);
     dh._beaconUsed++;
+    return g;
   }
   function dhEndBeacons(){
     const pool = dh._beaconPool || [];
     for (let i = dh._beaconUsed || 0; i < pool.length; i++) pool[i].visible = false;
   }
+  const DH_SPOT_SHOW = 4;   // seconds at full brightness
+  const DH_SPOT_FADE = 1;   // seconds to fade out
+  const DH_SPOT_NEAR = 8;   // nearby spots to re-show after a place
+  const DH_SPOT_AIM = 0.42; // soft highlight on the aimed spot while faded
+  function dhShowSpots(opts){
+    if (!dh) return false;
+    opts = opts || {};
+    dh._spotMode = opts.nearby ? 'nearby' : 'all';
+    dh._spotAround = opts.around || (typeof P !== 'undefined' && P ? {x: P.x, z: P.z} : null);
+    dh._spotShowFor = opts.nearby ? 2 : DH_SPOT_SHOW;
+    dh._spotAge = 0;
+    dh._ghostDirty = true;
+    return true;
+  }
+  function dhSpotTick(dt){
+    if (!dh || dh.intro) return;
+    dh._spotAge = (dh._spotAge == null ? 0 : dh._spotAge) + Math.max(0, dt || 0);
+  }
+  function dhSpotFade(){
+    if (!dh) return 0;
+    const age = dh._spotAge == null ? 0 : dh._spotAge;
+    const hold = (dh._spotShowFor != null) ? dh._spotShowFor : DH_SPOT_SHOW;
+    if (age < hold) return 1;
+    if (age < hold + DH_SPOT_FADE) return Math.max(0, 1 - (age - hold) / DH_SPOT_FADE);
+    return 0;
+  }
+  function dhSpotVisuals(){
+    const fade = dhSpotFade();
+    const aimed = !!(dh && dh._spotAimed);
+    return {
+      age: dh ? (dh._spotAge || 0) : 0,
+      mode: (dh && dh._spotMode) || 'all',
+      group: fade,
+      aim: fade > 0.05 ? Math.min(1, fade + 0.15) : (aimed ? DH_SPOT_AIM : 0),
+      faded: fade <= 0.001,
+      shown: fade >= 0.999,
+      used: (dh && dh._beaconUsed) || 0,
+      aimed: aimed
+    };
+  }
+  function dhSpotIsNear(x, z){
+    if (!dh || dh._spotMode !== 'nearby') return true;
+    const around = dh._spotAround;
+    const list = dh._spotNearList;
+    if (list && list.length){
+      return list.some(p => Math.abs((p.x || 0) - x) < 0.05 && Math.abs((p.z || 0) - z) < 0.05);
+    }
+    if (!around) return true;
+    return Math.hypot((x || 0) - (around.x || 0), (z || 0) - (around.z || 0)) < 4.5;
+  }
+  function dhPickNearbySpots(pts, n){
+    const around = (dh && dh._spotAround) || (typeof P !== 'undefined' && P) || {x:0,z:0};
+    const ranked = (pts || []).slice().sort((a, b) => Math.hypot((a.x||0)-(around.x||0), (a.z||0)-(around.z||0)) - Math.hypot((b.x||0)-(around.x||0), (b.z||0)-(around.z||0)));
+    return ranked.slice(0, n || DH_SPOT_NEAR);
+  }
+  function dhApplySpotFade(){
+    if (!dh) return;
+    const v = dhSpotVisuals();
+    const pulse = 0.55 + 0.25 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
+    const group = v.group;
+    const aimOp = v.aim;
+    if (dh._beaconMatPad) dh._beaconMatPad.opacity = pulse * group;
+    if (dh._beaconMatBeam) dh._beaconMatBeam.opacity = pulse * 0.75 * group;
+    if (dh._beaconMatPadHot) dh._beaconMatPadHot.opacity = aimOp || (pulse + 0.2) * group;
+    if (dh._beaconMatBeamHot) dh._beaconMatBeamHot.opacity = (aimOp ? aimOp * 0.85 : (pulse + 0.1) * group);
+    if (dh._beaconSprMat) dh._beaconSprMat.opacity = (0.7 + 0.2 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6)) * group;
+    if (dh._beaconSprMatHot) dh._beaconSprMatHot.opacity = aimOp || (0.85 * Math.max(group, 0.2));
+    const pool = dh._beaconPool || [];
+    const used = dh._beaconUsed || 0;
+    for (let i = 0; i < used; i++){
+      const g = pool[i]; if (!g) continue;
+      const on = !!g.userData.spotOn;
+      // While faded, hide the crowd and leave only the aimed highlight visible.
+      g.visible = on ? (aimOp > 0.02) : (group > 0.02 && g.userData.spotShow !== false);
+    }
+  }
   function dhPulseBeacons(){
     if (!dh) return;
-    const pulse = 0.55 + 0.25 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
-    if (dh._beaconMatPad) dh._beaconMatPad.opacity = pulse;
-    if (dh._beaconMatBeam) dh._beaconMatBeam.opacity = pulse * 0.75;
-    if (dh._beaconMatPadHot) dh._beaconMatPadHot.opacity = Math.min(1, pulse + 0.2);
-    if (dh._beaconMatBeamHot) dh._beaconMatBeamHot.opacity = Math.min(1, pulse + 0.1);
-    if (dh._beaconSprMat) dh._beaconSprMat.opacity = 0.7 + 0.2 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
-    if (dh._beaconSprMatHot) dh._beaconSprMatHot.opacity = 0.85 + 0.15 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
+    dhApplySpotFade();
     if (dh._beaconLow && dh._beaconPool){
       const scPulse = 0.95 + 0.12 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
       dh._beaconPool.forEach(g => {
@@ -15564,20 +15659,25 @@ const Obby = (() => {
     if (!dh) return;
     const menus = dh.yardOpen || dh.shopOpen || dh.upOpen || dh.intro;
     const stage = dhStageId();
-    dhPulseBeacons();
     const hz = dhGfxLow() ? 10 : 20;
     const retarget = dhNeedRetarget(hz) || dh._ghostDirty || !dh.outlines;
     if (retarget){
       dh._ghostDirty = false;
       dhBeginBeacons();
+      dh._spotAimed = false;
       if (!menus){
         if (stage === 'brick'){
-          const spots = dhJobPoints('brick');
+          const spots = dhJobPoints('brick').filter(s => s && !s.filled);
           const aimed = dhTargetSpotCached('brick');
+          if (dh._spotMode === 'nearby') dh._spotNearList = dhPickNearbySpots(spots, DH_SPOT_NEAR);
           spots.forEach(s => {
-            if (s.filled) return;
             const on = !!(aimed && aimed.plot === s.plot && aimed.ix === s.ix && aimed.iz === s.iz && aimed.course === s.course && aimed.slot === s.slot);
-            dhAddPooledBeacon(s.x, s.y, s.z, on);
+            const show = on || dhSpotIsNear(s.x, s.z);
+            if (!show && dhSpotFade() <= 0.02) return;
+            if (!show) return;
+            const g = dhAddPooledBeacon(s.x, s.y, s.z, on);
+            if (g && g.userData){ g.userData.spotOn = on; g.userData.spotShow = show; }
+            if (on) dh._spotAimed = true;
           });
         }
         if (stage === 'stake' || stage === 'dig' || stage === 'pour'){
@@ -15590,15 +15690,24 @@ const Obby = (() => {
             if (job === 'pour' && (dhHas(dh.mine, 'trench', ix, iz) || dhHas(dh.mine, 'mark', ix, iz)) && !dhHas(dh.mine, 'wet', ix, iz) && !dhHas(dh.mine, 'slab', ix, iz)) cells.push({ix, iz});
           }
           const aimed = dhTargetSpotCached(job);
-          cells.forEach(c => {
+          const pts = cells.map(c => {
             const w = dhCellWorld(dh.mine, c.ix, c.iz, .1);
-            const on = !!(aimed && aimed.ix === c.ix && aimed.iz === c.iz);
-            dhAddPooledBeacon(w.x, w.y, w.z, on);
+            return {ix: c.ix, iz: c.iz, x: w.x, y: w.y, z: w.z};
+          });
+          if (dh._spotMode === 'nearby') dh._spotNearList = dhPickNearbySpots(pts, DH_SPOT_NEAR);
+          pts.forEach(s => {
+            const on = !!(aimed && aimed.ix === s.ix && aimed.iz === s.iz);
+            const show = on || dhSpotIsNear(s.x, s.z);
+            if (!show) return;
+            const g = dhAddPooledBeacon(s.x, s.y, s.z, on);
+            if (g && g.userData){ g.userData.spotOn = on; g.userData.spotShow = show; }
+            if (on) dh._spotAimed = true;
           });
         }
       }
       dhEndBeacons();
     }
+    dhPulseBeacons();
     if (!dh.ghost) return;
     let pos = null, ok = false, can = true;
     if (stage === 'brick'){
@@ -15867,6 +15976,7 @@ const Obby = (() => {
     const advanced = !!(dh._stageId && dh._stageId !== stage);
     const first = !dh._stageId;
     dh._stageId = stage;
+    if ((advanced || first) && typeof dhShowSpots === 'function') dhShowSpots();
     if (dh.job === job) return false;
     if (!advanced && !first) return false;
     dh.job = job;
@@ -15930,6 +16040,15 @@ const Obby = (() => {
         root.classList.toggle('dh-paused', pausedNow || menus || modal);
       }
     }
+    const hint = $('#dhSpotHint');
+    if (hint){
+      const padOn = typeof pad !== 'undefined' && pad && pad.on;
+      const touch = typeof touchUI !== 'undefined' && touchUI;
+      hint.textContent = padOn ? '✚▼: show spots' : (touch ? '✨ Spots' : 'Q: show spots');
+      const showHint = playing && !pausedNow && !menus && !modal;
+      hint.style.display = showHint ? 'block' : 'none';
+      hint.classList.toggle('show', showHint);
+    }
     ['#dhBar', '#dhHand', '#dhAct'].forEach(id => {
       const el = $(id); if (!el) return;
       if (hideBar){ el.style.display = 'none'; el.style.visibility = 'hidden'; el.style.pointerEvents = 'none'; el.classList.add('dh-paused-hide'); el.classList.remove('show'); }
@@ -15975,7 +16094,7 @@ const Obby = (() => {
     const jobs = '<div class="dhtools">' + DH_JOBS.map(j => {
       const lab = {mark:'📍 Stake', dig:'🕳️ Dig', mix:'🌀 Mix', pour:'🪣 Pour', brick:'🧱 Brick', stud:'🪵 Stud', rafter:'🪜 Rafter', shingle:'🏠 Shingle', frame:'🚪 Frame', glass:'🪟 Glass', paint:'🎨 Paint', furn:'🛋️ Furnish'}[j];
       return '<button class="dhb' + (dh.job === j && dh.tool === 'place' ? ' on' : '') + '" data-dhjob="' + j + '">' + lab + '</button>';
-    }).join('') + '<button class="dhb' + (dh.tool === 'delete' ? ' on' : '') + '" data-dhtool="delete">🗑️</button><button class="dhb" id="dhDumpBtn">📦 Dump</button><button class="dhb" id="dhYardBtn">📦 Supply Yard</button><button class="dhb" id="dhShopBtn">🛋️ Furniture</button><button class="dhb" id="dhUpBtn">🔧 Upgrades</button></div>';
+    }).join('') + '<button class="dhb' + (dh.tool === 'delete' ? ' on' : '') + '" data-dhtool="delete">🗑️</button><button class="dhb" id="dhDumpBtn">📦 Dump</button><button class="dhb" id="dhSpotBtn" title="Show remaining spots">✨ Spots</button><button class="dhb" id="dhYardBtn">📦 Supply Yard</button><button class="dhb" id="dhShopBtn">🛋️ Furniture</button><button class="dhb" id="dhUpBtn">🔧 Upgrades</button></div>';
     const cols = dh.job === 'paint' ? ('<div class="dhcols">' + DH_PAINT.map((c, i) => '<button class="dhc' + (dh.color === i ? ' on' : '') + '" data-dhcol="' + i + '" style="background:' + c.col + '" title="' + c.name + '"></button>').join('') + '</div>') : '';
     const inv = '<div class="dinv">' + DH_MATS.filter(m => !m.nosale).map(m => {
       const n = dhInvCount(m.id);
@@ -15992,9 +16111,10 @@ const Obby = (() => {
     const act = $('#dhAct'); if (act) act.onclick = () => dh && !dh.intro && dhAct();
     const bar = $('#dhBar');
     if (bar) bar.addEventListener('click', ev => {
-      const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhShopBtn,#dhYardBtn,#dhUpBtn');
+      const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhSpotBtn,#dhShopBtn,#dhYardBtn,#dhUpBtn');
       if (!t || !dh || dh.intro) return;
       if (t.id === 'dhDumpBtn') dhDump();
+      else if (t.id === 'dhSpotBtn'){ if (typeof dhShowSpots === 'function') dhShowSpots(); }
       else if (t.id === 'dhYardBtn') dhToggleYard(true);
       else if (t.id === 'dhShopBtn') dhToggleShop(true);
       else if (t.id === 'dhUpBtn') dhToggleUp(true);
@@ -16061,6 +16181,7 @@ const Obby = (() => {
     if (jp.y || jp[3]){ if (dh.carry) dhDump(); else dhSetTool(dh.tool === 'delete' ? 'place' : 'delete'); return true; }
     if (jp.lb || jp[4]){ dhCycle(-1); return true; }
     if (jp.rb || jp[5]){ dhCycle(1); return true; }
+    if (jp.dd || jp[13] || jp.down){ if (typeof dhShowSpots === 'function') dhShowSpots(); return true; }
     return false;
   }
   function dhEventTarget(e){
@@ -16183,7 +16304,8 @@ const Obby = (() => {
     if (k === 'KeyB'){ dhToggleShop(); return true; }
     if (k === 'KeyE'){ dhAct(); return true; }
     if (k === 'KeyR'){ dhRotate(); return true; }
-    if (k === 'KeyQ'){ dhDump(); return true; }
+    if (k === 'Tab' || k === 'KeyTab'){ if (typeof dhShowSpots === 'function') dhShowSpots(); return true; }
+    if (k === 'KeyQ'){ if (dhHasAnyCarry()) dhDump(); if (typeof dhShowSpots === 'function') dhShowSpots(); return true; }
     if (k === 'KeyX' || k === 'Backspace' || k === 'Delete'){ dhSetTool(dh.tool === 'delete' ? 'place' : 'delete'); return true; }
     if (k === 'KeyC'){ dhCycleColor(1); return true; }
     if (k === 'BracketLeft' || k === 'Comma'){ dhCycle(-1); return true; }
@@ -16269,7 +16391,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'dreamhouse' ? '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · ⓁⓇ job · ☰ menu' : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'dreamhouse' ? '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · ⓁⓇ job · ✚▼ show spots · ☰ menu' : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -16403,7 +16525,7 @@ function dhLayoutHud(){
   function setTouchUIBase(on){
     hudBar(on); touchUI = on; $('#oTouch').classList.toggle('show', on); $('#obby').classList.toggle('touchui', on);
     if (mode === 'dreamhouse'){
-      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · tap 🏡 to buy, carry, mix and lay bricks' : '⌨️ WASD move · Space jump · E buy / carry / build · Q dump · R rotate · 1-9 job · Esc menu')
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · tap 🏡 to buy, carry, mix and lay bricks' : '⌨️ WASD move · Space jump · E buy / carry / build · Q/Tab show spots · Q dump · R rotate · 1-9 job · Esc menu')
         + "<br>🏡 Re-build your house with bricks, concrete and wood, then paint and furnish it from the shop!";
       if (typeof dhLayoutHud === 'function') dhLayoutHud();
       return;
@@ -16729,6 +16851,7 @@ function dhLayoutHud(){
       if (mode === 'dreamhouse' && dh && (dh.shopOpen || dh.yardOpen || dh.upOpen) && (e.code === 'Escape' || e.code === 'KeyB') && !e.repeat){ dhKey(e); return; }
       if (e.code === 'Escape' && typeof dhOnResetKey === 'function' && dhOnResetKey(e)) return;
       if (e.code === 'Escape' && document.pointerLockElement){ document.exitPointerLock(); fp.unlockT = performance.now(); fp.eatEsc = true; return; }
+      if (e.code === 'Tab' && mode === 'dreamhouse' && typeof dh !== 'undefined' && dh && !dh.intro){ e.preventDefault(); if (typeof dhShowSpots === 'function') dhShowSpots(); return; }
       if (e.code === 'Tab' && document.pointerLockElement){ document.exitPointerLock(); e.preventDefault(); return; }
       if (e.code === 'Escape' && fp.eatEsc){ const same = performance.now() - fp.unlockT < 80; fp.eatEsc = false; if (same) return; }
       if (e.code === 'Escape' || e.code === 'KeyP'){ if (!won && !over && !choosing) setPause(!(paused || menuOpen)); return; }
