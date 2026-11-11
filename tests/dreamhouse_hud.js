@@ -115,9 +115,9 @@ test('start, bar render, tip hide, and resize all relayout the HUD', () => {
 });
 
 test('version is bumped and existing saves are not involved', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.11-31'"));
+  assert.ok(src.includes("const BUILD = '2026.11.11-32'"));
   const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
-  assert.strictEqual(v.build, '2026.11.11-31');
+  assert.strictEqual(v.build, '2026.11.11-32');
   assert.ok(src.includes("const DH_KEY = 'rubloxDreamHouse'") || dhSrc.includes("DH_KEY = 'rubloxDreamHouse'"));
 });
 
@@ -144,7 +144,7 @@ test('opening a modal exits pointer lock and click-to-lock ignores UI targets', 
   assert.ok(src.includes('function dhExitPointerLock') && src.includes('dhExitPointerLock()') && src.includes('function setPause(p)'));
   assert.ok(src.includes("if (typeof dhIsUiEvent === 'function' && dhIsUiEvent(e)) return") && src.includes('requestPointerLock()'));
   assert.ok(src.includes('z-index:40') && src.includes('z-index:41'));
-  assert.ok(src.includes('#obbyView,#obbyView canvas') && src.includes('z-index:0'));
+  assert.ok((src.includes('#obbyView,#obbyView canvas') || (src.includes('#obbyView{') && src.includes('#obbyView canvas{'))) && src.includes('z-index:0'));
 });
 
 test('Yes, Cancel, and Esc close the reset confirm while Dream House is running, and UI clicks are not consumed by the game', () => {
@@ -317,6 +317,23 @@ test('top-left stack keeps the coin badge off the House Steps heading', () => {
   const stack = src.match(/<div class="dhstack"[^>]*>[\s\S]*?<\/div>\s*<\/div>/);
   assert.ok(stack && stack[0].includes('id="dhBox"') && stack[0].includes('id="dhSteps"'), 'dhBox and dhSteps share #dhStack');
   assert.ok(/\.dhsteps\{[^}]*position:relative/.test(src));
+});
+
+test('Escape closes the settings dialog', () => {
+  assert.ok(/setModal[\s\S]{0,200}classList\.remove\('show'\)/.test(src), 'settings modal can be closed');
+  const closes = src.includes("if (sm && sm.classList.contains('show')){ sm.classList.remove('show')")
+    || src.includes('setModal') && src.includes("e.code === 'Escape'") && src.includes("sm.classList.remove('show')");
+  assert.ok(closes, 'Escape closes #setModal');
+  assert.ok(src.includes("e.code === 'Escape'") && src.includes("getElementById('setModal')"));
+});
+
+test('the Dream House toolbar sits above the canvas and keeps pointer events', () => {
+  const src = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const bar = src.match(/#obby\.dhmode \.dhbar,#obby\.dhmode #dhBar[^{]*\{[^}]+\}/) || src.match(/\.dhbar\{[^}]+\}/);
+  assert.ok(bar, 'dhbar css present');
+  assert.ok(/z-index:\s*(8[0-9]|[9-9][0-9]|[1-9][0-9]{2,})/.test(bar[0]) || /z-index:\s*80/.test(src), 'toolbar z-index is above the canvas (0)');
+  assert.ok(/#obby\.dhmode \.dhbar/.test(src) && /pointer-events:\s*auto/.test(src));
+  assert.ok(/#obbyView\{[^}]*pointer-events:\s*none/.test(src) || /#obby\.dhmode #obbyView\{[^}]*pointer-events:\s*none/.test(src), 'view wrapper does not steal clicks from the toolbar');
 });
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

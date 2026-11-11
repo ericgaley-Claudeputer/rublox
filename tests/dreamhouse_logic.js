@@ -41,7 +41,7 @@ function world(store0, opts){
   ctx.window = ctx;
   ctx.window.location = ctx.location;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec, dhShowSpots, dhSpotTick, dhSpotFade, dhSpotVisuals, DH_SPOT_SHOW, DH_SPOT_FADE, DH_SPOT_NEAR, DH_SPOT_AIM, dhUpdateGhost, dhPulseBeacons, dhBeaconWorlds, dhSpotDims, dhSetGfxLow, dhGfxLow, dhPaintOpenings, dhRectsMinusHoles, dhPaintPanelWorldBoxes, dhPaintCoversOpening, dhOpeningAabb, dhShingleCorners, dhRafterEnds, dhRoofPlaneYat, dhRoofTilt, dhRoofPitch, DH_ROOF_RISE, DH_ROOF_OVERHANG, DH_SHINGLE_COLS, DH_SHINGLE_ROWS, DH_RAFTER_NEED, dhAllShingleSlots, dhAllRafterSlots, dhShingleWorld, dhRafterWorld, dhHasAnyCarry, dhPaintWorld, dhPaintOut, dhPaintSize, dhPaintOpeningClearance, dhPaintCornerMeet, dhRoofComplete, dhGableFaces, dhGableInfo, dhSyncGables, dhDisposeGables, dhMakeGableMesh};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrickSlots, dhBrickSupported, dhEnsureHeld, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec, dhShowSpots, dhSpotTick, dhSpotFade, dhSpotVisuals, DH_SPOT_SHOW, DH_SPOT_FADE, DH_SPOT_NEAR, DH_SPOT_AIM, dhUpdateGhost, dhPulseBeacons, dhBeaconWorlds, dhSpotDims, dhSetGfxLow, dhGfxLow, dhPaintOpenings, dhRectsMinusHoles, dhPaintPanelWorldBoxes, dhPaintCoversOpening, dhOpeningAabb, dhShingleCorners, dhRafterEnds, dhRoofPlaneYat, dhRoofTilt, dhRoofPitch, DH_ROOF_RISE, DH_ROOF_OVERHANG, DH_SHINGLE_COLS, DH_SHINGLE_ROWS, DH_RAFTER_NEED, dhAllShingleSlots, dhAllRafterSlots, dhShingleWorld, dhRafterWorld, dhHasAnyCarry, dhPaintWorld, dhPaintOut, dhPaintSize, dhPaintOpeningClearance, dhPaintCornerMeet, dhRoofComplete, dhGableFaces, dhGableInfo, dhSyncGables, dhDisposeGables, dhMakeGableMesh};`, ctx);
   return ctx;
 }
 
@@ -632,7 +632,13 @@ Wnew.A.dhPlaceBrick();
 chk('the brick upgrade does not auto-place extra bricks — still one at a time', (Wnew.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length === n2 + 1, {n2, after:(Wnew.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length});
 chk('after placing, the goal still tells you to aim at the glowing outline', /glowing outline|place a brick|Grab bricks/i.test(Wnew.A.dhGoalText()), Wnew.A.dhGoalText());
 Wnew.A.dh.carry = null;
-chk('when your hands are empty the goal says to grab more bricks', /Grab bricks/i.test(Wnew.A.dhGoalText()), Wnew.A.dhGoalText());
+chk('when your hands are empty but inventory still has bricks, the goal does not send you to the Supply Yard', /inventory|Press E|lay a brick/i.test(Wnew.A.dhGoalText()) && !/Supply Yard/i.test(Wnew.A.dhGoalText()), Wnew.A.dhGoalText());
+const stockLeft = Wnew.A.dh.stock.brick | 0;
+const nInv = (Wnew.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length;
+const fromStock = Wnew.A.dhPlaceBrick();
+chk('E places a brick from inventory when hands are empty', !!(fromStock && ((Wnew.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length === nInv + 1) && (Wnew.A.dh.stock.brick|0) < stockLeft), {fromStock, nInv, stockLeft, stock:Wnew.A.dh.stock.brick, carry:Wnew.A.dh.carry});
+Wnew.A.dh.carry = null; Wnew.A.dh.stock.brick = 0;
+chk('when your hands and inventory are empty the goal says to grab more bricks', /Grab bricks/i.test(Wnew.A.dhGoalText()), Wnew.A.dhGoalText());
 
 /* Foundation stage is completable from a new save with only free yard supplies */
 const Wfd = world({coins: 44});
@@ -1446,7 +1452,7 @@ Ww.A.dreamhouseStop();
   function maxSlotError(W, kind){
     const beacons = W.A.dhBeaconWorlds() || [];
     const slots = (kind === 'brick')
-      ? (W.A.dhAllBrickSlots(0) || []).filter(s => !s.filled)
+      ? (W.A.dhNextBrickSlots(0) || []).filter(s => !s.filled)
       : (W.A.dhJobPoints(kind) || []).filter(s => !s.filled);
     if (!slots.length || !beacons.length) return {ok:false, reason:'empty', slots:slots.length, beacons:beacons.length};
     let worst = 0, miss = 0, sample = null;
@@ -1474,11 +1480,34 @@ Ww.A.dreamhouseStop();
   const Wlo = bootGfx(true);
   const rLo = maxSlotError(Wlo, 'brick');
   chk('Low-graphics remaining-spot beacons sit on the brick slots (within 5 cm)', !!rLo.ok, rLo);
+  const nextLo = Wlo.A.dhNextBrickSlots(0) || [];
+  const allOpen = (Wlo.A.dhAllBrickSlots(0) || []).filter(s => !s.filled);
+  const ysLo = (Wlo.A.dhBeaconWorlds() || []).map(b => b.y);
+  chk('v7walls Low spots sit on the next wall-top course, not the floating upper courses', !!(rLo.ok && nextLo.length && rLo.beacons === nextLo.length && nextLo.every(s => (s.course|0) === 3) && ysLo.length === nextLo.length && ysLo.every(y => Math.abs(y - 1.875) <= 0.05) && allOpen.some(s => (s.course|0) >= 4)), {next:nextLo.length, open:allOpen.length, beacons:rLo.beacons, courses:[...new Set(nextLo.map(s=>s.course))], y:{min:Math.min.apply(null,ysLo), max:Math.max.apply(null,ysLo)}});
   Wlo.A.dreamhouseStop();
   const Whi = bootGfx(false);
   const rHi = maxSlotError(Whi, 'brick');
   chk('High-graphics remaining-spot beacons sit on the brick slots (within 5 cm)', !!rHi.ok, rHi);
+  const nextHi = Whi.A.dhNextBrickSlots(0) || [];
+  const ysHi = (Whi.A.dhBeaconWorlds() || []).map(b => b.y);
+  chk('v7walls High spots sit on the next wall-top course, not the floating upper courses', !!(rHi.ok && nextHi.length && rHi.beacons === nextHi.length && ysHi.every(y => Math.abs(y - 1.875) <= 0.05)), {next:nextHi.length, beacons:rHi.beacons, y:{min:Math.min.apply(null,ysHi||[0]), max:Math.max.apply(null,ysHi||[0])}});
   Whi.A.dreamhouseStop();
+
+  // v7walls fixture: stock has 40 bricks, hands are empty — E must still place, and the banner must agree.
+  const WpE = world({}, {hash: '#dhtest=v7walls'});
+  WpE.A.buildDreamHouse(); WpE.A.dreamhouseEnter();
+  if (WpE.A.dh && WpE.A.dh.intro) WpE.A.dhSkipIntro();
+  WpE.A.dhSetJob('brick');
+  WpE.A.dh.carry = null;
+  const goalE = WpE.A.dhGoalText() || '';
+  chk('v7walls goal agrees with the inventory (does not say Supply Yard while you have 40 bricks)', /40/.test(String(WpE.A.dh.stock.brick)) && /inventory|Press E|lay a brick/i.test(goalE) && !/Supply Yard/i.test(goalE), {goal:goalE, stock:WpE.A.dh.stock, carry:WpE.A.dh.carry});
+  const n96 = (WpE.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length;
+  const slotE = (WpE.A.dhNextBrickSlots(0)||[])[0];
+  if (slotE){ WpE.P.x = slotE.x; WpE.P.z = slotE.z + 2.2; WpE.P.y = .05; WpE.cam.yaw = 0; WpE.cam.pitch = Math.atan2(1.6 - slotE.y, 2.2); }
+  const placedE = WpE.A.dhPlaceBrick();
+  const n97 = (WpE.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length;
+  chk('v7walls E places a brick from inventory (96/188 goes up)', !!(placedE && n96 === 96 && n97 === 97), {placedE, n96, n97, carry:WpE.A.dh.carry, stock:WpE.A.dh.stock.brick});
+  WpE.A.dreamhouseStop();
 
   const Wh = world();
   Wh.A.buildDreamHouse(); Wh.A.dreamhouseEnter();

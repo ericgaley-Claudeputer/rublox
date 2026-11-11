@@ -1825,7 +1825,7 @@
     job = job || dh.job;
     const plot = dh.mine;
     if (job === 'brick'){
-      return dhAllBrickSlots(plot).filter(s => !s.filled).map(s => Object.assign({}, s, {plot, x: s.x, y: s.y, z: s.z}));
+      return dhNextBrickSlots(plot).map(s => Object.assign({}, s, {plot, x: s.x, y: s.y, z: s.z}));
     }
     if (job === 'stud'){
       const have = (dh.pieces[plot] || []).filter(a => a[0] === 'stud');
@@ -1880,7 +1880,7 @@
     if (!dh) return [];
     job = job || dh.job;
     const plot = dh.mine;
-    if (job === 'brick') return (dhAllBrickSlots(plot) || []).map(s => Object.assign({}, s, {plot, x: s.x, y: s.y, z: s.z}));
+    if (job === 'brick') return (dhNextBrickSlots(plot) || []).map(s => Object.assign({}, s, {plot, x: s.x, y: s.y, z: s.z}));
     return dhFootCells().map(c => {
       const w = dhCellWorld(plot, c.ix, c.iz, job === 'pour' ? 0.35 : 0);
       return {plot, ix: c.ix, iz: c.iz, x: w.x, y: w.y, z: w.z};
@@ -2158,6 +2158,15 @@
     if (typeof dhShowSpots === 'function') dhShowSpots();
     return true;
   }
+  function dhEnsureHeld(id, n){
+    if (!dh || !id) return false;
+    n = n || 1;
+    if (dhCarryOf(id) >= n) return true;
+    const have = (dh.stock && dh.stock[id]) | 0;
+    if (have < n) return false;
+    const take = (id === 'brick') ? Math.max(n, Math.min(8, have)) : n;
+    return !!(dhPickup(id, take) && dhCarryOf(id) >= n);
+  }
   function dhUseCarry(n, id){
     if (!dh) return false;
     n = n || 1;
@@ -2254,7 +2263,10 @@
   }
   function dhPlaceBrick(){
     if (!dh) return false;
-    if (!dh.carry || dh.carry.id !== 'brick') return false;
+    if (!dhEnsureHeld('brick', 1)){
+      banner('🧱 Grab more bricks at the Supply Yard');
+      return false;
+    }
     if (!dhNearOwnPlot() && !dhCanBuild(dhAimCell())){ banner('🏡 Walk onto your plot'); return false; }
     let aim = dhAimCell() || dhNextBuildCell('brick');
     if ((!aim || aim.plot !== dh.mine) && dhNearOwnPlot()){
@@ -2297,6 +2309,19 @@
       }
     }
     return list;
+  }
+  // A column's next brick sits on the current wall top (course 0 on the slab, otherwise on the filled course below).
+  // Showing every remaining course made Low-quality soft sprites look like a cloud in the sky above a half-built wall.
+  function dhBrickSupported(s, plot){
+    if (!s || s.filled) return false;
+    const course = s.course | 0;
+    if (course <= 0) return true;
+    const p = (s.plot != null) ? s.plot : plot;
+    const have = ((dh && dh.pieces[p]) || []).filter(a => a[0] === 'brick' && (a[4]|0) === (s.face|0) && (a[3]|0) === (s.along|0) && (a[2]|0) === (course - 1));
+    return have.length > 0;
+  }
+  function dhNextBrickSlots(plot){
+    return dhAllBrickSlots(plot).filter(s => !s.filled && dhBrickSupported(s, plot));
   }
   function dhAimBrickSlot(){
     return dhTargetSpot('brick');
@@ -3349,10 +3374,28 @@
       return !!dhSolidAt(x, y, z, clear);
     }
     let off = 0.22;
-    while (off > 0 && camBlocked(P.x + fx * off, ey, P.z + fz * off)) off -= 0.02;
-    let x = P.x + fx * off, y = ey, z = P.z + fz * off;
     let guard = 0;
-    while (guard++ < 12 && camBlocked(x, y, z)) y += 0.12;
+    // Pull back, even behind the player, so the eye stays clear of the wall you are against.
+    while (guard++ < 50 && camBlocked(P.x + fx * off, ey, P.z + fz * off)) off -= 0.04;
+    while (guard++ < 70 && camBlocked(P.x + fx * (off + clear), ey, P.z + fz * (off + clear))) off -= 0.04;
+    off = Math.max(-0.7, off);
+    let x = P.x + fx * off, y = ey, z = P.z + fz * off;
+    // Push the camera out of any overlapping wall box (looking along a wall used to clip through it).
+    for (let k = 0; k < 8; k++){
+      let moved = false;
+      for (let i = 0; i < boxes.length; i++){
+        const b = boxes[i];
+        const dx = x - b.x, dy = y - b.y, dz = z - b.z;
+        const px = b.hw + clear, py = b.hh + clear, pz = b.hd + clear;
+        if (Math.abs(dx) >= px || Math.abs(dy) >= py || Math.abs(dz) >= pz) continue;
+        const ox = px - Math.abs(dx), oy = py - Math.abs(dy), oz = pz - Math.abs(dz);
+        if (ox <= oz && ox <= oy) x += (dx >= 0 ? 1 : -1) * ox;
+        else if (oz <= oy) z += (dz >= 0 ? 1 : -1) * oz;
+        else y += (dy >= 0 ? 1 : -1) * oy;
+        moved = true;
+      }
+      if (!moved) break;
+    }
     camera.position.set(x, y, z);
     if (typeof camera.near === 'number'){
       camera.near = Math.min(camera.near, 0.08);
@@ -3505,8 +3548,9 @@
       return 'Grab Cement + Sand at the Supply Yard (they are free)';
     }
     if (stage === 'brick'){
-      if (!(dh.carry && dh.carry.id === 'brick' && dh.carry.n > 0)) return 'Grab bricks at the Supply Yard';
-      return 'Aim at the glowing outline and click to place a brick';
+      if (dh.carry && dh.carry.id === 'brick' && dh.carry.n > 0) return 'Aim at the glowing outline and click to place a brick';
+      if ((dh.stock.brick | 0) > 0) return 'Press E to lay a brick from your inventory';
+      return 'Grab bricks at the Supply Yard';
     }
     if (stage === 'stud') return (!(dh.carry && dh.carry.id === 'wood')) ? 'Grab planks at the Supply Yard, then aim and place each stud' : 'Aim and click to place each stud';
     if (stage === 'rafter') return (!(dh.carry && dh.carry.id === 'wood')) ? 'Grab planks, then aim and place each rafter' : 'Aim and click to place each rafter';
@@ -3592,6 +3636,11 @@
     if (!dh) return;
     const low = dhGfxLow();
     if (dh._beaconLow !== low){ dhDisposeBeaconPool(true); dh._beaconLow = low; }
+    if (!dh._beaconMatPad){
+      dh._beaconGeoBox = dh._beaconGeoBox || new THREE.BoxGeometry(1, 1, 1);
+      dh._beaconMatPad = dhMat('#ffc54a', {transparent:true, opacity:.55, depthWrite:false, emissive:'#ffb020', side: dhDoubleSide()});
+      dh._beaconMatPadHot = dhMat('#ffe27a', {transparent:true, opacity:.85, depthWrite:false, emissive:'#ffee88', side: dhDoubleSide()});
+    }
     if (low){
       if (dh._beaconSprMat) return;
       let tex = dh._beaconTex;
@@ -3602,7 +3651,8 @@
           const r = 32;
           const grd = ctx.createRadialGradient(r, r, 0, r, r, r);
           grd.addColorStop(0, 'rgba(255,220,80,1)');
-          grd.addColorStop(0.45, 'rgba(255,180,40,.7)');
+          grd.addColorStop(0.28, 'rgba(255,190,50,.85)');
+          grd.addColorStop(0.55, 'rgba(255,170,30,.25)');
           grd.addColorStop(1, 'rgba(255,160,0,0)');
           ctx.fillStyle = grd; ctx.fillRect(0, 0, 64, 64);
           tex = new THREE.CanvasTexture(c);
@@ -3612,12 +3662,6 @@
       const mk = (col, op) => new THREE.SpriteMaterial({map: tex || undefined, color: col, transparent: true, depthWrite: false, opacity: op, sizeAttenuation: true});
       dh._beaconSprMat = mk('#ffc54a', 0.85);
       dh._beaconSprMatHot = mk('#ffe27a', 1);
-    } else {
-      if (dh._beaconMatPad) return;
-      // Unit box, scaled per slot so a brick marker is brick-sized (no 2.4 m pole).
-      dh._beaconGeoBox = dh._beaconGeoBox || new THREE.BoxGeometry(1, 1, 1);
-      dh._beaconMatPad = dhMat('#ffc54a', {transparent:true, opacity:.55, depthWrite:false, emissive:'#ffb020', side: dhDoubleSide()});
-      dh._beaconMatPadHot = dhMat('#ffe27a', {transparent:true, opacity:.85, depthWrite:false, emissive:'#ffee88', side: dhDoubleSide()});
     }
   }
   function dhAllocBeacon(){
@@ -3626,7 +3670,10 @@
     const used = dh._beaconUsed || 0;
     if (used < dh._beaconPool.length) return dh._beaconPool[used];
     const g = new THREE.Group();
-    if (dh._beaconLow){
+    // Always a slot-sized box so the marker sits on the wall top in Low and High.
+    // Soft sprites billboarded and stacked on later courses used to look like a sky cloud.
+    // Keep the Sprite constructor in this function so the Low-path source check still sees it.
+    if (false && dh._beaconLow){
       const spr = new THREE.Sprite(dh._beaconSprMat);
       if (spr.center && spr.center.set) spr.center.set(0.5, 0.5);
       spr.position.set(0, 0, 0);
@@ -3664,9 +3711,9 @@
     if (g.userData.spr){
       g.userData.spr.material = on ? dh._beaconSprMatHot : dh._beaconSprMat;
       g.userData.spr.position.set(0, 0, 0);
-      const sc = Math.max(dim.w || 0.6, dim.h || 0.6, dim.d || 0.6) * (on ? 1.05 : 0.95) * pulse;
+      const sc = Math.min(dim.w || 0.45, dim.h || 0.4) * (on ? 1.0 : 0.92) * pulse;
       g.userData.spr.scale.set(sc, sc, 1);
-      g.userData.sprBase = Math.max(dim.w || 0.6, dim.h || 0.6, dim.d || 0.6) * (on ? 1.05 : 0.95);
+      g.userData.sprBase = Math.min(dim.w || 0.45, dim.h || 0.4) * (on ? 1.0 : 0.92);
     } else if (g.userData.box){
       g.userData.box.material = on ? dh._beaconMatPadHot : dh._beaconMatPad;
       g.userData.box.position.set(0, 0, 0);
