@@ -1,9 +1,10 @@
-  /* ===================== t251u + t249u/t253u + map polish: Supply Yard sign on the back edge (fades if the camera is near), guide arrow to the nearest pile or back to the plot, easier E-to-grab at piles. ===================== */
-  const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 5;
-  const DH_FOOT = {x0: 1, z0: 1, x1: 6, z1: 6}; // slab footprint inside the plot
-  const DH_BRICK_W = .5, DH_BRICK_H = .24, DH_BRICK_D = .28, DH_COURSES = 8;
+  /* ===================== t251u + t252u + t253u: first-person Dream House, place every brick yourself, clear concrete steps, reset house in Settings. ===================== */
+  const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 6;
+  const DH_FOOT = {x0: 2, z0: 2, x1: 5, z1: 5}; // small house footprint (4x4 cells)
+  const DH_FOOT_LEGACY = {x0: 1, z0: 1, x1: 6, z1: 6}; // v5 and earlier houses keep their larger slab
+  const DH_BRICK_W = .5, DH_BRICK_H = .24, DH_BRICK_D = .28, DH_COURSES = 6, DH_COURSES_LEGACY = 8;
   const DH_MATS = [
-    {id: 'brick',   e: '🧱', name: 'Bricks',    cost: 0,  stack: 8,  carry: 8, free: true},
+    {id: 'brick',   e: '🧱', name: 'Bricks',    cost: 0,  stack: 8,  carry: 20, free: true},
     {id: 'cement',  e: '🪨', name: 'Cement',    cost: 0,  stack: 1,  carry: 2, free: true},
     {id: 'sand',    e: '🏖️', name: 'Sand',      cost: 0,  stack: 1,  carry: 2, free: true},
     {id: 'wood',    e: '🪵', name: 'Planks',    cost: 0,  stack: 4,  carry: 6, free: true},
@@ -34,8 +35,8 @@
   const DH_GOALS = [
     {id: 'marked',  name: 'Stake the foundation', need: p => dhCount(p, 'mark') + dhCount(p, 'trench') + dhCount(p, 'wet') + dhCount(p, 'slab') >= 8, pay: 12},
     {id: 'slab',    name: 'Pour a concrete slab', need: p => dhCount(p, 'slab') >= 12, pay: 25},
-    {id: 'course',  name: 'Lay the first brick course', need: p => dhCount(p, 'brick') >= 8, pay: 20},
-    {id: 'walls',   name: 'Raise the brick walls', need: p => dhCount(p, 'brick') >= 40, pay: 35},
+    {id: 'course',  name: 'Lay the first brick course', need: p => dhCount(p, 'brick') >= Math.max(8, (dhBrickAlongCount(0) || 8)), pay: 20},
+    {id: 'walls',   name: 'Raise the brick walls', need: p => dhCount(p, 'brick') >= Math.max(40, Math.floor(dhBrickTotal() * .6)), pay: 35},
     {id: 'rafters', name: 'Set the rafters',     need: p => dhCount(p, 'rafter') >= 4, pay: 20},
     {id: 'roof',    name: 'Shingle the roof',    need: p => dhCount(p, 'shingle') >= 10, pay: 25},
     {id: 'openings',name: 'Hang a door and window', need: p => dhCount(p, 'door') >= 1 && dhCount(p, 'winframe') >= 1, pay: 20},
@@ -52,7 +53,7 @@
   const DH_UPGRADES = [
     {id: 'carry', name: 'Bigger arms',        e: '💪', cost: 40, max: 3, desc: 'Carry more bricks and bags at once'},
     {id: 'dry',   name: 'Faster drying',      e: '☀️', cost: 35, max: 2, desc: 'Concrete sets sooner'},
-    {id: 'brick', name: 'Faster brick laying',e: '🧱', cost: 45, max: 2, desc: 'Lay extra bricks with each placement'},
+    {id: 'brick', name: 'Bigger brick stacks',e: '🧱', cost: 45, max: 2, desc: 'Carry even more bricks at a time'},
     {id: 'barrow',name: 'Big wheelbarrow',    e: '🪣', cost: 30, max: 1, desc: 'Carry two loads of wet mix'},
     {id: 'story', name: 'Second story',       e: '🏠', cost: 80, max: 1, desc: 'Build a taller second floor'},
     {id: 'lot',   name: 'Bigger lot',         e: '📐', cost: 90, max: 1, desc: 'Expand your house footprint'}
@@ -108,9 +109,9 @@
     const [ox, oz] = dhOrigin(plot);
     return {x: ox + (ix + .5) * DH_CELL, y: y == null ? .12 : y, z: oz + (iz + .5) * DH_CELL};
   }
-  function dhFoot(){ const big = !!(dh && dh.upgrades && dh.upgrades.lot); return big ? {x0: 0, z0: 0, x1: DH_N - 1, z1: DH_N - 1} : DH_FOOT; }
+  function dhFoot(){ const big = !!(dh && dh.upgrades && dh.upgrades.lot); if (big) return {x0: 0, z0: 0, x1: DH_N - 1, z1: DH_N - 1}; return (dh && dh.legacyHouse) ? DH_FOOT_LEGACY : DH_FOOT; }
   function dhInFoot(ix, iz){ const f = dhFoot(); return ix >= f.x0 && ix <= f.x1 && iz >= f.z0 && iz <= f.z1; }
-  function dhCourses(){ return DH_COURSES + ((dh && dh.upgrades && dh.upgrades.story) ? 8 : 0); }
+  function dhCourses(){ const base = (dh && dh.legacyHouse) ? DH_COURSES_LEGACY : DH_COURSES; return base + ((dh && dh.upgrades && dh.upgrades.story) ? (dh.legacyHouse ? 8 : 4) : 0); }
   function dhCount(pieces, id){ return (pieces || []).filter(a => a && a[0] === id).length; }
   function dhSameOpening(a, b){ return !!a && !!b && (a[1]|0) === (b[1]|0) && (a[2]|0) === (b[2]|0) && (a[3]|0) === (b[3]|0) && (a[4]|0) === (b[4]|0); }
   function dhWindowsGlazed(pieces){
@@ -130,7 +131,8 @@
     return dhMigrate(r);
   }
   function dhMigrate(r){
-    const out = {ver: DH_VER, pieces: [], stock: dhEmptyStock(), goals: (r.goals && typeof r.goals === 'object') ? Object.assign({}, r.goals) : {}, coins: Math.max(0, +r.coins || 0), likes: Math.max(0, r.likes | 0), granted: !!r.granted, v1pieces: null, introSeen: !!r.introSeen, upgrades: dhEmptyUpgrades()};
+    const out = {ver: DH_VER, pieces: [], stock: dhEmptyStock(), goals: (r.goals && typeof r.goals === 'object') ? Object.assign({}, r.goals) : {}, coins: Math.max(0, +r.coins || 0), likes: Math.max(0, r.likes | 0), granted: !!r.granted, v1pieces: null, introSeen: !!r.introSeen, upgrades: dhEmptyUpgrades(), tipsSeen: {}, legacyHouse: false};
+    if (r.tipsSeen && typeof r.tipsSeen === 'object') Object.keys(r.tipsSeen).forEach(k => { if (r.tipsSeen[k]) out.tipsSeen[k] = true; });
     if (r.stock && typeof r.stock === 'object') Object.keys(out.stock).forEach(k => { out.stock[k] = Math.max(0, +r.stock[k] || 0); });
     if (r.upgrades && typeof r.upgrades === 'object') DH_UPGRADES.forEach(u => { out.upgrades[u.id] = Math.max(0, Math.min(u.max, +r.upgrades[u.id] || 0)); });
     const raw = Array.isArray(r.pieces) ? r.pieces : [];
@@ -155,7 +157,46 @@
     } else {
       out.pieces = raw.filter(a => Array.isArray(a) && typeof a[0] === 'string');
     }
+    const prev = +r.ver || 0;
+    out.legacyHouse = !!r.legacyHouse || (prev > 0 && prev < 6 && (out.pieces || []).length > 0);
     return out;
+  }
+  function dhLooksLegacy(pieces){
+    return (pieces || []).some(a => {
+      if (!a) return false;
+      if (a[0] === 'brick') return (a[2]|0) >= DH_COURSES || (a[3]|0) >= 11;
+      return (a[1]|0) < DH_FOOT.x0 || (a[1]|0) > DH_FOOT.x1 || (a[3]|0) < DH_FOOT.z0 || (a[3]|0) > DH_FOOT.z1;
+    });
+  }
+  function dhFreshSave(){
+    return {ver: DH_VER, pieces: [], stock: dhEmptyStock(), goals: {}, coins: 0, likes: 0, granted: false, v1pieces: null, introSeen: false, upgrades: dhEmptyUpgrades(), tipsSeen: {}, legacyHouse: false};
+  }
+  function dhResetProgress(){
+    if (typeof save !== 'function') return false;
+    // Only wipes the Dream House key. Main wallet, other games, and history stay put.
+    save(DH_KEY, dhFreshSave());
+    if (dh){
+      dh._skipSave = true;
+      dh.carry = null;
+      dh.stock = dhEmptyStock();
+      dh.goals = {};
+      dh.bank = 0;
+      dh.upgrades = dhEmptyUpgrades();
+      dh.introSeen = false;
+      dh.tipsSeen = {};
+      dh.legacyHouse = false;
+      dh.grantedNow = false;
+      if (typeof dhClearPlot === 'function') dhClearPlot(dh.mine);
+      if (typeof mode !== 'undefined' && mode === 'dreamhouse'){
+        try { if (typeof dreamhouseStop === 'function') dreamhouseStop(); } catch (e){}
+        try {
+          if (typeof buildDreamHouse === 'function') buildDreamHouse();
+          if (typeof dreamhouseEnter === 'function') dreamhouseEnter();
+        } catch (e){}
+      }
+    }
+    if (typeof banner === 'function') banner('🏡 Dream House was reset — time to build a new one!');
+    return true;
   }
   function dhSave(extra){
     if (!dh) return;
@@ -170,8 +211,10 @@
     p.v1pieces = dh.v1pieces || p.v1pieces;
     p.introSeen = !!(dh.introSeen);
     p.upgrades = Object.assign(dhEmptyUpgrades(), dh.upgrades || {});
+    p.tipsSeen = Object.assign({}, dh.tipsSeen || {});
+    p.legacyHouse = !!dh.legacyHouse;
     if (extra) Object.assign(p, extra);
-    save(DH_KEY, p);
+    if (!dh._skipSave) save(DH_KEY, p);
   }
 
   function dhTex(draw, s){
@@ -262,7 +305,7 @@
     else if (id === 'trench'){ solid(DH_CELL * .95, .28, DH_CELL * .95, 0, 0, 0, M.dirt); add(box(DH_CELL * .95, .12, .06, M.wood), 0, .16, DH_CELL * .44); add(box(DH_CELL * .95, .12, .06, M.wood), 0, .16, -DH_CELL * .44); }
     else if (id === 'wet'){ solid(DH_CELL * .95, .32, DH_CELL * .95, 0, 0, 0, M.wet); }
     else if (id === 'slab'){ solid(DH_CELL, .28, DH_CELL, 0, 0, 0, M.concrete); }
-    else if (id === 'brick'){ solid(DH_BRICK_W - .02, DH_BRICK_H - .02, DH_BRICK_D, 0, 0, 0, M.brick); }
+    else if (id === 'brick'){ const vis = solid(DH_BRICK_W - .02, DH_BRICK_H - .02, DH_BRICK_D, 0, 0, 0, M.brick); if (dh && dh.brickInst && dh.brickInst[plot] && typeof dh.brickInst[plot].setMatrixAt === 'function') vis.visible = false; }
     else if (id === 'stud'){ solid(.1, 2.05, .1, 0, 1.0, 0, M.wood); }
     else if (id === 'beam'){ solid(DH_CELL * 1.05, .1, .1, 0, 0, 0, M.wood); }
     else if (id === 'rafter'){ const r = box(DH_CELL * 1.2, .08, .1, M.wood); r.rotation.x = rec[4] % 2 ? .42 : -.42; add(r, 0, 0, 0); solidsLocal.push({mesh: r, hw: .5, hh: .08, hd: .4, ox: 0, oy: 0, oz: 0}); }
@@ -558,7 +601,15 @@
     leg(-.35); leg(.35);
     const barrow = new THREE.Mesh(new THREE.BoxGeometry(.7, .25, .45), dh.mats.rust);
     barrow.position.set(1.1, .35, 0); g.add(barrow);
+    const hop = new THREE.Mesh(new THREE.BoxGeometry(.7, .2, .7), dh.mats.dark);
+    hop.position.set(0, 1.45, 0); g.add(hop);
+    const pad = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, .08, 16), dhMat('#f4c542'));
+    pad.position.set(.4, .04, 0); g.add(pad);
     scene.add(g);
+    if (plot === ((dh && dh.mine) || 0)){
+      dhPutSign(x, 2.6, z, '🚧 CEMENT MIXER', 7.2, 1.5);
+      dhPutSign(x, 1.95, z, 'Cement + Sand in  →  Concrete out', 8.6, 1.2);
+    }
     dh.mixers[plot] = {x, z, mesh: g, drum, cement: 0, sand: 0, mixed: 0, mixT: 0, phase: 'idle'};
     return dh.mixers[plot];
   }
@@ -706,7 +757,7 @@
     if (scene.fog){ scene.fog.color = new THREE.Color('#d7f3ff'); scene.fog.near = 50; scene.fog.far = 160; }
     plat(0, 0, 0, 110, 84, '#8fd39a', .35);
     const p0 = dhProg();
-    dh.bank = p0.coins; dh.likes = p0.likes; dh.goals = Object.assign({}, p0.goals); dh.stock = Object.assign(dhEmptyStock(), p0.stock); dh.v1pieces = p0.v1pieces; dh.upgrades = Object.assign(dhEmptyUpgrades(), p0.upgrades || {}); dh.introSeen = !!p0.introSeen;
+    dh.bank = p0.coins; dh.likes = p0.likes; dh.goals = Object.assign({}, p0.goals); dh.stock = Object.assign(dhEmptyStock(), p0.stock); dh.v1pieces = p0.v1pieces; dh.upgrades = Object.assign(dhEmptyUpgrades(), p0.upgrades || {}); dh.introSeen = !!p0.introSeen; dh.tipsSeen = Object.assign({}, p0.tipsSeen || {}); dh.legacyHouse = !!p0.legacyHouse; dh.brickInst = {}; dh.hand = null; dh.outlines = null; dh.pourHold = false;
     if (!p0.granted){ dh.bank += DH_GRANT; dh.grantedNow = true; }
     dh.mine = dhAssignPlot();
     dhLayoutYard();
@@ -756,8 +807,23 @@
     dhPut(plot, ['table', 4, 0, 4, 0, 0], true);
     dhPut(plot, ['plant', 2, 0, 4, 0, 0], true);
   }
+  function dhBrickSpan(){
+    const foot = dhFoot();
+    return Math.max(1, Math.floor(((foot.x1 - foot.x0 + 1) * DH_CELL) / DH_BRICK_W));
+  }
+  function dhBrickAlongCount(face){
+    const span = dhBrickSpan();
+    return (face === 1 || face === 3) ? Math.max(1, span - 1) : span;
+  }
+  function dhBrickTotal(){
+    let n = 0;
+    for (let f = 0; f < 4; f++) for (let c = 0; c < dhCourses(); c++) for (let k = 0; k < dhBrickAlongCount(f); k++){
+      if (!dhIsOpening(f, c, k)) n++;
+    }
+    return n;
+  }
   function dhIsOpening(face, course, along){
-    const span = Math.floor(((DH_FOOT.x1 - DH_FOOT.x0 + 1) * DH_CELL) / DH_BRICK_W);
+    const span = dhBrickAlongCount(face);
     const mid = (span / 2) | 0;
     if (face === 0 && along >= mid - 1 && along <= mid && course < 6) return true; // door
     if ((face === 1 || face === 3) && along >= mid - 1 && along <= mid && course >= 2 && course <= 5) return true; // windows
@@ -774,6 +840,7 @@
     dhBindSolids(mesh, true);
     dh.pieces[plot] = dh.pieces[plot] || []; dh.meshes[plot] = dh.meshes[plot] || [];
     dh.pieces[plot].push(rec); dh.meshes[plot].push(mesh);
+    if (rec[0] === 'brick') dhSyncBricks(plot);
     if (!quiet && plot === dh.mine){ dhCheckGoals(); dhSave(); }
     return mesh;
   }
@@ -783,7 +850,9 @@
     if (idx < 0) return false;
     const mesh = (dh.meshes[plot] || [])[idx];
     if (mesh){ dhBindSolids(mesh, false); if (typeof scene !== 'undefined') scene.remove(mesh); }
+    const id = list[idx] && list[idx][0];
     list.splice(idx, 1); (dh.meshes[plot] || []).splice(idx, 1);
+    if (id === 'brick') dhSyncBricks(plot);
     if (!quiet && plot === dh.mine) dhSave();
     return true;
   }
@@ -813,8 +882,28 @@
     if (ix < 0 || iz < 0 || ix >= DH_N || iz >= DH_N) return null;
     return {plot, ix, iz, wx: x, wz: z};
   }
+  function dhLookRay(){
+    if (typeof camera !== 'undefined' && camera && camera.position && typeof camera.getWorldDirection === 'function'){
+      const d = (typeof THREE !== 'undefined' && THREE.Vector3) ? new THREE.Vector3() : {x:0,y:0,z:-1};
+      camera.getWorldDirection(d);
+      const o = camera.position;
+      return {ox: o.x, oy: o.y, oz: o.z, dx: d.x, dy: d.y, dz: d.z};
+    }
+    const yaw = (typeof cam !== 'undefined' && cam && cam.yaw != null) ? cam.yaw : ((P && P.face) || 0);
+    const pitch = (typeof cam !== 'undefined' && cam && cam.pitch != null) ? cam.pitch : 0;
+    const cp = Math.cos(pitch), sp = Math.sin(pitch);
+    return {ox: (P && P.x) || 0, oy: ((P && P.y) || 0) + 2.45, oz: (P && P.z) || 0, dx: -Math.sin(yaw) * cp, dy: -sp, dz: -Math.cos(yaw) * cp};
+  }
   function dhAimCell(){
     if (!dh) return null;
+    const ray = dhLookRay();
+    // step along the look ray onto the plot
+    let hit = null;
+    for (let t = 0.8; t <= 8; t += 0.35){
+      const cell = dhCellAt(ray.ox + ray.dx * t, ray.oz + ray.dz * t);
+      if (cell){ hit = cell; if (cell.plot === dh.mine && dhInFoot(cell.ix, cell.iz)) break; }
+    }
+    if (hit) return hit;
     const face = (P && P.face) || 0;
     const front = dhCellAt((P.x || 0) + Math.sin(face) * 2.0, (P.z || 0) + Math.cos(face) * 2.0);
     if (front) return front;
@@ -942,7 +1031,7 @@
     return false;
   }
   function dhGive(id, n){ if (!dh) return; dh.stock[id] = (dh.stock[id] || 0) + (n || 1); dhStockViz(dh.mine); }
-  function dhCarryCap(id){ const m = dhMatOf(id); const base = m ? m.carry : 1; if (id === 'wetmix') return base + dhUp('barrow'); return base + dhUp('carry') * (id === 'brick' || id === 'shingle' || id === 'wood' ? 4 : 1); }
+  function dhCarryCap(id){ const m = dhMatOf(id); const base = m ? m.carry : 1; if (id === 'wetmix') return base + dhUp('barrow'); const carryUp = dhUp('carry') * (id === 'brick' || id === 'shingle' || id === 'wood' ? 4 : 1); const brickUp = (id === 'brick') ? dhUp('brick') * 8 : 0; return base + carryUp + brickUp; }
   function dhSetCarry(id, n){ dh.carry = (n > 0 && id) ? {id, n} : null; dhHud(); }
   function dhBuy(id, count){
     if (!dh) return false;
@@ -1080,21 +1169,56 @@
     if (face == null) return false;
     // require a slab under the wall line
     if (!dhSlabReady(aim.plot)){ banner('⬜ Pour and smooth a concrete slab first'); return false; }
-    const next = dhNextBrick(aim.plot, face, aim);
-    if (!next){ banner('🧱 That stretch is already laid (or it is an opening)'); return false; }
-    const extra = dhUp('brick');
-    let laid = 0;
-    for (let n = 0; n < 1 + extra; n++){
-      const slot = n === 0 ? next : dhNextBrick(aim.plot, face, aim);
-      if (!slot) break;
-      if (!dh.carry || dh.carry.id !== 'brick' || dh.carry.n < 1) break;
-      dhUseCarry(1);
-      if ((dh.stock.mortar | 0) > 0) dh.stock.mortar--;
-      dhPut(aim.plot, ['brick', 0, slot.course, slot.along, face, 0]);
-      dhNet('place', {rec: ['brick', 0, slot.course, slot.along, face, 0], plot: aim.plot});
-      laid++;
+    const aimed = dhAimBrickSlot();
+    const slotFace = (aimed && aimed.face != null) ? aimed.face : face;
+    const slot = (aimed && !aimed.filled) ? aimed : dhNextBrick(aim.plot, slotFace, aim);
+    if (!slot || slot.filled){ banner('🧱 That stretch is already laid (or it is an opening)'); return false; }
+    if (!dh.carry || dh.carry.id !== 'brick' || dh.carry.n < 1){ banner('🧱 Grab more bricks at the Supply Yard'); return false; }
+    // One brick per click / E / RT — never auto-lay a row.
+    dhUseCarry(1);
+    if ((dh.stock.mortar | 0) > 0) dh.stock.mortar--;
+    const rec = ['brick', 0, slot.course, slot.along, slot.face, 0];
+    dhPut(aim.plot, rec);
+    dhNet('place', {rec, plot: aim.plot});
+    dhSyncBricks(aim.plot);
+    return true;
+  }
+  function dhSlotWorld(plot, face, course, along){
+    return dhWorldRec(plot, ['brick', 0, course, along, face, 0]);
+  }
+  function dhAllBrickSlots(plot){
+    const list = [];
+    const have = (dh.pieces[plot] || []).filter(a => a[0] === 'brick');
+    for (let face = 0; face < 4; face++){
+      const span = dhBrickAlongCount(face);
+      for (let c = 0; c < dhCourses(); c++) for (let k = 0; k < span; k++){
+        if (dhIsOpening(face, c, k)) continue;
+        const filled = have.some(a => (a[4]|0) === face && (a[2]|0) === c && (a[3]|0) === k);
+        const w = dhSlotWorld(plot, face, c, k);
+        list.push({plot, face, course: c, along: k, filled, x: w.x, y: w.y, z: w.z, ry: w.ry || 0});
+      }
     }
-    return laid > 0;
+    return list;
+  }
+  function dhAimBrickSlot(){
+    if (!dh) return null;
+    const slots = dhAllBrickSlots(dh.mine);
+    if (!slots.length) return null;
+    const ray = dhLookRay();
+    let best = null, bd = 1.15;
+    slots.forEach(s => {
+      const ox = s.x - ray.ox, oy = s.y - ray.oy, oz = s.z - ray.oz;
+      const t = ox * ray.dx + oy * ray.dy + oz * ray.dz;
+      if (t < 0.4 || t > 9) return;
+      const d = Math.hypot(s.x - (ray.ox + ray.dx * t), s.y - (ray.oy + ray.dy * t), s.z - (ray.oz + ray.dz * t));
+      if (d < bd){ bd = d; best = s; }
+    });
+    if (best) return best;
+    // no close hit: snap to the next empty slot on the wall you are facing
+    const aim = dhAimCell();
+    if (!aim || aim.plot !== dh.mine) return slots.find(s => !s.filled) || null;
+    const face = dhWallFaceFromAim(aim);
+    return dhNextBrick(aim.plot, face == null ? 0 : face, aim);
   }
   function dhDryNeed(){ return 1.6 / (1 + dhUp('dry') * .7); }
   function dhDryDone(){ return 5 / (1 + dhUp('dry') * .8); }
@@ -1111,12 +1235,15 @@
     if (m === ds) return 0; if (m === dn) return 2; if (m === de) return 1; return 3;
   }
   function dhNextBrick(plot, face, aim){
-    const foot = dhFoot();
-    const span = Math.floor(((foot.x1 - foot.x0 + 1) * DH_CELL) / DH_BRICK_W);
+    face = (face == null) ? 0 : face;
+    const span = dhBrickAlongCount(face);
     const have = (dh.pieces[plot] || []).filter(a => a[0] === 'brick' && (a[4]|0) === face);
     for (let c = 0; c < dhCourses(); c++) for (let k = 0; k < span; k++){
       if (dhIsOpening(face, c, k)) continue;
-      if (!have.some(a => (a[2]|0) === c && (a[3]|0) === k)) return {course: c, along: k};
+      if (!have.some(a => (a[2]|0) === c && (a[3]|0) === k)){
+        const w = dhSlotWorld(plot, face, c, k);
+        return {plot, face, course: c, along: k, filled: false, x: w.x, y: w.y, z: w.z, ry: w.ry || 0};
+      }
     }
     return null;
   }
@@ -1558,25 +1685,36 @@
     if (!dh.introSeen){
       dhStartIntro(false);
     } else {
-      banner(mp && mp.on ? '🏡 Dream House Builders — buy materials, carry them, and build brick by brick!' : '🏡 Grab free bricks and cement at the Supply Yard, carry them to your plot, and build it yourself!');
+      banner(mp && mp.on ? '🏡 Dream House Builders — grab free supplies and place every piece yourself!' : '🏡 First person: grab free supplies at the Supply Yard, then aim and place every brick yourself!');
       tipTimer = 8; dhHud(); dhBar();
       dreamhouseUpdate(0);
     }
     const replay = $('#dhReplay'); if (replay) replay.style.display = '';
+    const resetBtn = $('#dhResetBtn'); if (resetBtn) resetBtn.style.display = '';
+    if (typeof document !== 'undefined' && document.getElementById){ const root = document.getElementById('obby'); if (root && root.classList) root.classList.add('dhouse'); }
+    if (typeof cam !== 'undefined' && cam && !dh.intro){ cam.pitch = .08; cam.dist = .2; }
+    ['#dhGoal','#dhSteps'].forEach(id => { const el = $(id); if (el){ el.style.display = ''; el.classList.add('show'); } });
+    const xh = $('#oCross'); if (xh) xh.style.display = '';
   }
   function dreamhouseStop(){
     if (!dh) return;
-    dhSave();
+    if (!dh._skipSave) dhSave();
     if (dh.intro){ dh.intro = null; }
     if (dh.cut){ ['house', 'mom', 'water'].forEach(k => { if (dh.cut[k] && typeof scene !== 'undefined') scene.remove(dh.cut[k]); }); dh.cut = null; }
     if (dh.ghost) scene.remove(dh.ghost);
+    if (dh.outlines){ scene.remove(dh.outlines); dh.outlines = null; }
+    if (dh.hand){ if (dh.hand.parent) dh.hand.parent.remove(dh.hand); else if (typeof scene !== 'undefined') scene.remove(dh.hand); dh.hand = null; }
+    Object.keys(dh.brickInst || {}).forEach(k => { const inst = dh.brickInst[k]; if (inst && typeof scene !== 'undefined') scene.remove(inst); });
+    dh.brickInst = {};
     Object.keys(dh.meshes || {}).forEach(k => (dh.meshes[k] || []).forEach(m => { dhBindSolids(m, false); scene.remove(m); }));
     Object.keys(dh.piles || {}).forEach(k => dh.piles[k] && dh.piles[k].mesh && scene.remove(dh.piles[k].mesh));
     Object.keys(dh.mixers || {}).forEach(k => dh.mixers[k] && dh.mixers[k].mesh && scene.remove(dh.mixers[k].mesh));
     (dh.trees || []).forEach(t => t.mesh && scene.remove(t.mesh));
     if (typeof model !== 'undefined' && model && model.g) model.g.visible = true;
-    ['#dhBar', '#dhAct', '#dhCut', '#dhShop', '#dhYard', '#dhUp', '#dhGuide'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
+    ['#dhBar', '#dhAct', '#dhCut', '#dhShop', '#dhYard', '#dhUp', '#dhGuide', '#dhGoal', '#dhSteps', '#dhTip'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
     const replay = $('#dhReplay'); if (replay) replay.style.display = 'none';
+    const resetBtn = $('#dhResetBtn'); if (resetBtn) resetBtn.style.display = 'none';
+    if (typeof document !== 'undefined' && document.getElementById){ const root = document.getElementById('obby'); if (root && root.classList) root.classList.remove('dhouse'); }
     dhSetFade(0); dhSay('');
     dh = null;
   }
@@ -1600,32 +1738,68 @@
     if (mxn && mxn.phase === 'mixing') return '🌀 Mixing…';
     if (mxn && ((mxn.cement|0) >= 1 && (mxn.sand|0) >= 1)) return '🌀 Mix concrete';
     if (mxn && (mxn.mixed|0) >= 1) return '🪣 Fill wheelbarrow';
-    if (dh.carry && dh.carry.id === 'wetmix' && onLot) return '🪣 Pour the form' + prog('pour', 'Forms');
-    if (dh.carry && dh.carry.id === 'brick' && onLot) return '🧱 Lay a brick';
+    if (dh.carry && dh.carry.id === 'wetmix' && onLot) return '🪣 Hold click to pour concrete' + prog('pour', 'Foundation spots poured');
+    if (dh.carry && dh.carry.id === 'brick' && onLot) return '🧱 Aim at the glowing outline and click to place a brick';
     if (dh.carry && dh.carry.id === 'glass' && onLot) return '🪟 Install glass';
     if (pile && !dh.carry) return '📦 Pick up materials';
     if (dh.carry && pile && dh.carry.id !== 'wetmix') return '📦 Dump on your plot';
     if (dhNearYard()) return key + ': Open the Supply Yard';
     if (!onLot) return '🏡 Walk onto your plot';
     if (ghostJob && dh.job === 'mark') return key + ': Place stake here' + prog('mark', 'Stakes');
-    if (ghostJob && dh.job === 'dig') return key + ': Dig the form here' + prog('dig', 'Forms');
-    if (ghostJob && dh.job === 'pour' && dh.carry && dh.carry.id === 'wetmix') return key + ': Pour concrete here' + prog('pour', 'Forms');
+    if (ghostJob && dh.job === 'dig') return key + ': Dig the foundation spot here' + prog('dig', 'Foundation spots dug');
+    if (ghostJob && dh.job === 'pour' && dh.carry && dh.carry.id === 'wetmix') return key + ': Hold to pour concrete here' + prog('pour', 'Foundation spots poured');
     const why = dhWhyNot();
     if (why) return why;
     if (dhCanBuild(dh.aim) || onLot){
-      const labels = {mark: key + ': Place stake here' + prog('mark', 'Stakes'), dig: key + ': Dig the form here' + prog('dig', 'Forms'), pour: key + ': Pour concrete here' + prog('pour', 'Forms'), brick:'🧱 Lay a brick', stud:'🪵 Set a stud', rafter:'🪜 Set a rafter', shingle:'🏠 Nail a shingle', frame:'🚪 Fit a frame', glass:'🪟 Install glass', paint:'🎨 Paint', furn:'🛋️ Place furniture'};
+      const labels = {mark: key + ': Place stake here' + prog('mark', 'Stakes'), dig: key + ': Dig the foundation spot here' + prog('dig', 'Foundation spots dug'), pour: key + ': Hold to pour concrete here' + prog('pour', 'Foundation spots poured'), brick:'🧱 Lay a brick', stud:'🪵 Set a stud', rafter:'🪜 Set a rafter', shingle:'🏠 Nail a shingle', frame:'🚪 Fit a frame', glass:'🪟 Install glass', paint:'🎨 Paint', furn:'🛋️ Place furniture'};
       return labels[dh.job] || '🏗️ Build';
     }
     return '';
   }
+  function dhEnsureBrickInst(plot){
+    if (!dh) return null;
+    dh.brickInst = dh.brickInst || {};
+    if (dh.brickInst[plot] && typeof dh.brickInst[plot].setMatrixAt === 'function') return dh.brickInst[plot];
+    if (typeof THREE === 'undefined' || typeof THREE.InstancedMesh !== 'function' || typeof scene === 'undefined') return null;
+    try {
+      const geo = new THREE.BoxGeometry(DH_BRICK_W - .02, DH_BRICK_H - .02, DH_BRICK_D);
+      const mat = ((dh.mats && dh.mats.brick) || dhMat('#b54a32')).clone ? ((dh.mats && dh.mats.brick) || dhMat('#b54a32')).clone() : ((dh.mats && dh.mats.brick) || dhMat('#b54a32'));
+      const inst = new THREE.InstancedMesh(geo, mat, 512);
+      if (!inst || typeof inst.setMatrixAt !== 'function') return null;
+      if (inst.instanceMatrix && THREE.DynamicDrawUsage) inst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      inst.count = 0;
+      inst.frustumCulled = false;
+      scene.add(inst);
+      dh.brickInst[plot] = inst;
+      return inst;
+    } catch (e){ return null; }
+  }
+  function dhSyncBricks(plot){
+    if (!dh) return;
+    const inst = dhEnsureBrickInst(plot);
+    if (!inst || typeof inst.setMatrixAt !== 'function') return;
+    const list = (dh.pieces[plot] || []).filter(a => a[0] === 'brick');
+    const dummy = (typeof THREE !== 'undefined' && THREE.Object3D) ? new THREE.Object3D() : null;
+    if (!dummy || typeof dummy.updateMatrix !== 'function') return;
+    list.forEach((rec, i) => {
+      const w = dhWorldRec(plot, rec);
+      dummy.position.set(w.x, w.y, w.z);
+      dummy.rotation.set(0, w.ry || 0, 0);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      inst.setMatrixAt(i, dummy.matrix);
+    });
+    inst.count = list.length;
+    if (inst.instanceMatrix) inst.instanceMatrix.needsUpdate = true;
+  }
   function dhCamComfort(dt){
+    // Dream House is always first person after the intro. Do not force a follow camera.
     if (typeof cam === 'undefined' || !cam) return;
-    dt = dt || .016;
-    // keep a third-person follow camera; never pitch up into the sky from movement
-    if (cam.pitch < .18 || cam.pitch > .62) cam.pitch += (.38 - cam.pitch) * Math.min(1, dt * 3);
-    cam.pitch = Math.max(.16, Math.min(.62, cam.pitch));
-    if (cam.dist < 10) cam.dist += (12 - cam.dist) * Math.min(1, dt * 3);
-    if (cam.dist > 16) cam.dist = 16;
+    if (dh && dh.intro) return;
+    if (cam.dist > 4) cam.dist = .2;
+    if (cam.pitch > 1.3) cam.pitch = 1.3;
+    if (cam.pitch < -1.2) cam.pitch = -1.2;
+    dhUpdateHand(dt);
   }
   function dreamhouseUpdate(dt){
     if (!dh || over) return;
@@ -1646,20 +1820,13 @@
       if (mx.drum) mx.drum.rotation.x = (mx.drum.rotation.x || 0) + dt * 4;
       if (mx.mixT <= 0){ mx.phase = 'ready'; mx.mixed = (mx.mixed | 0) + 2; banner('🌀 Mix is ready — fill the wheelbarrow!'); }
     }
-    const ghostAt = (dh.job === 'mark' || dh.job === 'dig' || dh.job === 'pour') ? dhNextBuildCell(dh.job) : (dhCanBuild(dh.aim) ? dh.aim : dhNextBuildCell(dh.job));
-    if (dh.ghost){
-      const ok = !!(ghostAt && ghostAt.plot === dh.mine && dhNearOwnPlot());
-      dh.ghost.visible = ok && !dh.yardOpen && !dh.shopOpen;
-      if (ok){
-        const w = dhCellWorld(ghostAt.plot, ghostAt.ix, ghostAt.iz, .08);
-        dh.ghost.position.set(w.x, w.y, w.z);
-        const glow = dh.ghost.userData && dh.ghost.userData.glow;
-        if (glow && glow.material){
-          glow.material.opacity = 0.4 + 0.2 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
-          if (glow.material.color && glow.material.color.set) glow.material.color.set(dh.tool === 'delete' ? '#ff4d5e' : '#ffe08a');
-        }
-      }
+    const eHeld = (typeof keys !== 'undefined' && keys && (keys.KeyE || keys.Enter));
+    if ((dh.pourHold || eHeld) && dh.job === 'pour' && dh.carry && dh.carry.id === 'wetmix'){
+      dh.pourAcc = (dh.pourAcc || 0) + (dt || .016);
+      if (dh.pourAcc > .22){ dh.pourAcc = 0; dhPour(); }
     }
+    dhUpdateGhost();
+    dhHintStage();
     if (dh.yardBeacon && dh.yardBeacon.arrow){
       dh.yardBeacon.arrow.position.y = dh.yardBeacon.y0 + Math.sin((typeof worldT === 'number' ? worldT : 0) * 3) * .45;
     }
@@ -1675,6 +1842,191 @@
     dhHud();
   }
   function dreamhouseAnimate(){}
+  function dhStageId(){
+    if (!dh) return 'stake';
+    const cMark = dhJobCounts('mark'), cDig = dhJobCounts('dig'), cPour = dhJobCounts('pour');
+    if (cMark.have < cMark.need) return 'stake';
+    if (cDig.have < cDig.need) return 'dig';
+    if (cPour.have < cPour.need) return 'pour';
+    const bricks = dhCount(dh.pieces[dh.mine], 'brick'), needB = dhBrickTotal();
+    if (bricks < needB) return 'brick';
+    if (dhCount(dh.pieces[dh.mine], 'stud') < 8) return 'stud';
+    if (dhCount(dh.pieces[dh.mine], 'rafter') < 4) return 'rafter';
+    if (dhCount(dh.pieces[dh.mine], 'shingle') < 10) return 'shingle';
+    if (dhCount(dh.pieces[dh.mine], 'door') < 1 || dhCount(dh.pieces[dh.mine], 'winframe') < 1) return 'frame';
+    if (!dhWindowsGlazed(dh.pieces[dh.mine])) return 'glass';
+    if (dhCount(dh.pieces[dh.mine], 'paint') < 4) return 'paint';
+    return 'furn';
+  }
+  function dhChecklist(){
+    const cMark = dhJobCounts('mark'), cDig = dhJobCounts('dig'), cPour = dhJobCounts('pour');
+    const bricks = dhCount((dh && dh.pieces[dh.mine]) || [], 'brick');
+    const needB = dhBrickTotal();
+    const done = (have, need) => have >= need;
+    const item = (n, label, have, need) => {
+      const ok = done(have, need);
+      const bit = ok ? '✔' : (have + '/' + need);
+      return n + ' ' + label + ' ' + bit;
+    };
+    return [
+      item(1, 'Stake the corners', cMark.have, cMark.need),
+      item(2, 'Dig', cDig.have, cDig.need),
+      item(3, 'Pour foundation', cPour.have, cPour.need),
+      item(4, 'Lay bricks', bricks, needB),
+      item(5, 'Build the roof', dhCount((dh && dh.pieces[dh.mine]) || [], 'shingle'), 10),
+      item(6, 'Windows & door', (dhCount((dh && dh.pieces[dh.mine]) || [], 'door') >= 1 && dhCount((dh && dh.pieces[dh.mine]) || [], 'winframe') >= 1) ? 1 : 0, 1),
+      item(7, 'Paint & furnish', (dhCount((dh && dh.pieces[dh.mine]) || [], 'paint') >= 4 && ['sofa','bed','table','lamp','plant','rug','tv','shelf'].reduce((n, id) => n + dhCount((dh && dh.pieces[dh.mine]) || [], id), 0) >= 3) ? 1 : 0, 1)
+    ];
+  }
+  function dhGoalText(){
+    if (!dh) return '';
+    const stage = dhStageId();
+    if (stage === 'stake') return 'Stake every corner of your house outline';
+    if (stage === 'dig') return 'Dig each foundation spot where you placed a stake';
+    if (stage === 'pour'){
+      if (dh.carry && dh.carry.id === 'wetmix') return 'Aim at a foundation spot and hold click to pour';
+      const mx = dh.mixers && dh.mixers[dh.mine];
+      if (mx && mx.phase === 'mixing') return 'Wait for the mixer — then fill the wheelbarrow';
+      if (mx && (mx.mixed|0) >= 1) return 'E at the mixer: fill the wheelbarrow with concrete';
+      if (mx && ((mx.cement|0) >= 1 && (mx.sand|0) >= 1)) return 'E at the mixer to mix Cement + Sand into concrete';
+      if (dh.carry && (dh.carry.id === 'cement' || dh.carry.id === 'sand')) return 'Put them in the mixer (walk up and press E)';
+      return 'Grab Cement + Sand at the Supply Yard (they are free)';
+    }
+    if (stage === 'brick'){
+      if (!(dh.carry && dh.carry.id === 'brick' && dh.carry.n > 0)) return 'Grab bricks at the Supply Yard';
+      return 'Aim at the glowing outline and click to place a brick';
+    }
+    if (stage === 'stud') return (!(dh.carry && dh.carry.id === 'wood')) ? 'Grab planks at the Supply Yard, then aim and place each stud' : 'Aim and click to place each stud';
+    if (stage === 'rafter') return (!(dh.carry && dh.carry.id === 'wood')) ? 'Grab planks, then aim and place each rafter' : 'Aim and click to place each rafter';
+    if (stage === 'shingle') return (!(dh.carry && dh.carry.id === 'shingle')) ? 'Grab shingles at the Supply Yard' : 'Aim and click to place each shingle';
+    if (stage === 'frame') return 'Aim at a wall opening and place a door or window frame';
+    if (stage === 'glass') return (!(dh.carry && dh.carry.id === 'glass')) ? 'Grab glass at the Supply Yard, then aim at an empty window' : 'Aim at an empty window and click to set a pane';
+    if (stage === 'paint') return 'Pick a color and paint the walls';
+    return 'Visit the Furniture Store and place furniture in your house';
+  }
+  const DH_TIPS = {
+    stake: 'Walk onto your glowing outline and press E (or click) to plant each stake. Finish every corner.',
+    dig: 'Stand on a stake and press E to dig that foundation spot.',
+    pour: 'Cement and Sand are free at the Supply Yard. Put both in the yellow Cement Mixer by your plot, fill the wheelbarrow, then aim at a dug spot and hold click to pour.',
+    brick: 'Grab a stack of bricks (free at the Supply Yard). Look at the glowing brick outline and click, E, or RT to place ONE brick. When your hands are empty, go get more.',
+    stud: 'Aim at the wall and click to place each wooden stud, one at a time.',
+    rafter: 'Aim along the roof line and place each rafter yourself.',
+    shingle: 'Aim at the roof and click to set each shingle.',
+    frame: 'Aim at the door or window opening and place the frame.',
+    glass: 'Carry a glass pane and click an empty window to set it.',
+    paint: 'Choose a color and paint your walls.',
+    furn: 'Buy furniture at the Furniture Store, then place it in the room.'
+  };
+  function dhHintStage(){
+    if (!dh || dh.intro || dh.yardOpen || dh.shopOpen || dh.upOpen) return;
+    const id = dhStageId();
+    dh.tipsSeen = dh.tipsSeen || {};
+    if (dh.tipsSeen[id]) return;
+    const text = DH_TIPS[id]; if (!text) return;
+    dh.tipsSeen[id] = true;
+    const tip = $('#dhTip'), t = $('#dhTipT');
+    if (tip){ tip.style.display = ''; tip.classList.add('show'); }
+    if (t) t.textContent = text;
+    else if (typeof banner === 'function') banner(text);
+  }
+  function dhUpdateGhost(){
+    if (!dh) return;
+    const menus = dh.yardOpen || dh.shopOpen || dh.upOpen || dh.intro;
+    const stage = dhStageId();
+    // Glowing outlines for the next brick / pour / stake slots
+    if (dh.outlines && typeof scene !== 'undefined'){ scene.remove(dh.outlines); dh.outlines = null; }
+    if (!menus && typeof THREE !== 'undefined' && typeof scene !== 'undefined'){
+      const g = new THREE.Group();
+      const pulse = 0.35 + 0.2 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 5);
+      if (stage === 'brick'){
+        const slots = dhAllBrickSlots(dh.mine).filter(s => !s.filled);
+        const show = slots.filter(s => s.course === (slots[0] && slots[0].course)).slice(0, 16);
+        show.forEach(s => {
+          const m = new THREE.Mesh(new THREE.BoxGeometry(DH_BRICK_W - .04, DH_BRICK_H - .04, DH_BRICK_D + .02), dhMat('#7ad3ff', {transparent: true, opacity: pulse, emissive: '#7ad3ff', emissiveIntensity: .6, depthWrite: false}));
+          m.position.set(s.x, s.y, s.z); m.rotation.y = s.ry || 0; g.add(m);
+        });
+      } else if (stage === 'stake' || stage === 'dig' || stage === 'pour'){
+        const job = stage === 'stake' ? 'mark' : stage;
+        const cells = [];
+        const foot = dhFoot();
+        for (let ix = foot.x0; ix <= foot.x1; ix++) for (let iz = foot.z0; iz <= foot.z1; iz++){
+          if (job === 'mark' && !dhFootTaken(dh.mine, ix, iz)) cells.push({ix, iz});
+          if (job === 'dig' && dhHas(dh.mine, 'mark', ix, iz) && !dhHas(dh.mine, 'trench', ix, iz) && !dhHas(dh.mine, 'wet', ix, iz) && !dhHas(dh.mine, 'slab', ix, iz)) cells.push({ix, iz});
+          if (job === 'pour' && (dhHas(dh.mine, 'trench', ix, iz) || dhHas(dh.mine, 'mark', ix, iz)) && !dhHas(dh.mine, 'wet', ix, iz) && !dhHas(dh.mine, 'slab', ix, iz)) cells.push({ix, iz});
+        }
+        cells.slice(0, 20).forEach(c => {
+          const w = dhCellWorld(dh.mine, c.ix, c.iz, .1);
+          const m = new THREE.Mesh(new THREE.BoxGeometry(DH_CELL * .9, .08, DH_CELL * .9), dhMat('#ffe08a', {transparent: true, opacity: pulse, emissive: '#ffe08a', emissiveIntensity: .55, depthWrite: false}));
+          m.position.set(w.x, w.y, w.z); g.add(m);
+        });
+      }
+      if (g.children.length){ dh.outlines = g; scene.add(g); }
+    }
+    if (!dh.ghost) return;
+    let pos = null, ok = false, can = true;
+    if (stage === 'brick'){
+      const slot = dhAimBrickSlot() || (dhAllBrickSlots(dh.mine).find(s => !s.filled));
+      if (slot){ pos = slot; ok = true; can = !slot.filled && !!(dh.carry && dh.carry.id === 'brick' && dh.carry.n > 0); }
+    } else {
+      const job = stage === 'stake' ? 'mark' : stage;
+      const ghostAt = (job === 'mark' || job === 'dig' || job === 'pour') ? dhNextBuildCell(job) : (dhCanBuild(dh.aim) ? dh.aim : dhNextBuildCell(job));
+      if (ghostAt && ghostAt.plot === dh.mine && dhNearOwnPlot()){
+        const w = dhCellWorld(ghostAt.plot, ghostAt.ix, ghostAt.iz, .08);
+        pos = {x: w.x, y: w.y, z: w.z, ry: 0};
+        ok = true;
+        if (job === 'pour') can = !!(dh.carry && dh.carry.id === 'wetmix');
+        if (job === 'brick') can = !!(dh.carry && dh.carry.id === 'brick');
+      }
+    }
+    dh.ghost.visible = !!(ok && pos && !menus);
+    if (ok && pos){
+      dh.ghost.position.set(pos.x, pos.y, pos.z);
+      dh.ghost.rotation.y = pos.ry || 0;
+      const glow = dh.ghost.userData && dh.ghost.userData.glow;
+      const col = !can || dh.tool === 'delete' ? '#ff4d5e' : '#2ec27e';
+      if (glow && glow.material){
+        glow.material.opacity = 0.45 + 0.25 * Math.sin((typeof worldT === 'number' ? worldT : 0) * 6);
+        if (glow.material.color && glow.material.color.set) glow.material.color.set(col);
+      }
+      // resize ghost to a brick when laying bricks
+      const pole = dh.ghost.userData && dh.ghost.userData.pole;
+      if (glow && glow.scale){
+        if (stage === 'brick'){ glow.scale.set(DH_BRICK_W / (DH_CELL * .92), DH_BRICK_H / .16, DH_BRICK_D / (DH_CELL * .92)); if (pole) pole.visible = false; }
+        else { glow.scale.set(1, 1, 1); if (pole) pole.visible = true; }
+      }
+    }
+  }
+  function dhUpdateHand(){
+    if (!dh || typeof camera === 'undefined' || !camera || typeof THREE === 'undefined') return;
+    if (!dh.hand){
+      const g = new THREE.Group();
+      dh.hand = g;
+      camera.add(g);
+      if (!camera.children || camera.children.indexOf(g) < 0){ try { camera.add(g); } catch (e){ if (typeof scene !== 'undefined') scene.add(g); } }
+    }
+    const g = dh.hand;
+    g.position.set(.38, -.32, -.58);
+    g.rotation.set(.15, -.4, -.1);
+    // rebuild child when the held item changes
+    const holdId = (dh.carry && dh.carry.id) || (dh.job === 'pour' ? 'trowel' : dh.job === 'dig' ? 'shovel' : dh.job === 'mark' ? 'stake' : dh.job === 'paint' ? 'paint' : dh.job);
+    if (g.userData.holdId !== holdId){
+      while (g.children.length) g.remove(g.children[0]);
+      g.userData.holdId = holdId;
+      const add = (m, x, y, z) => { m.position.set(x || 0, y || 0, z || 0); g.add(m); };
+      const box = (sx, sy, sz, col) => new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), dhMat(col));
+      if (holdId === 'brick') add(box(.28, .12, .16, '#b54a32'), 0, 0, 0);
+      else if (holdId === 'wood' || holdId === 'stud' || holdId === 'rafter') add(box(.08, .08, .7, '#c9955a'), 0, 0, -.1);
+      else if (holdId === 'shingle') add(box(.3, .04, .2, '#5a4030'), 0, 0, 0);
+      else if (holdId === 'glass') add(box(.28, .22, .03, '#7ad3ff'), 0, 0, 0);
+      else if (holdId === 'cement' || holdId === 'sand') add(box(.2, .14, .14, holdId === 'sand' ? '#e5c574' : '#cfc4a8'), 0, 0, 0);
+      else if (holdId === 'wetmix' || holdId === 'trowel'){ add(box(.06, .06, .4, '#8a8a8a'), 0, 0, -.05); add(box(.18, .02, .12, '#cfc4a8'), 0, -.02, .16); }
+      else if (holdId === 'shovel' || holdId === 'dig'){ add(box(.05, .05, .5, '#8a5a2b'), 0, 0, -.08); add(box(.16, .02, .12, '#8a8a8a'), 0, 0, .18); }
+      else if (holdId === 'stake' || holdId === 'mark') add(box(.05, .4, .05, '#c9955a'), 0, 0, 0);
+      else if (holdId === 'paint') add(box(.1, .16, .1, dhPaintCol(dh.color | 0)), 0, 0, 0);
+      else add(box(.12, .12, .12, '#ffd23f'), 0, 0, 0);
+    }
+  }
+
   function dhWantedSupply(){
     if (!dh) return null;
     const job = dh.job;
@@ -1736,6 +2088,27 @@
   function dhHud(){
     if (!dh) return;
     const n = $('#dhN'); if (n) n.textContent = '🪙 ' + Math.floor(dh.bank);
+    const goal = $('#dhGoal');
+    if (goal){
+      const hide = !!(dh.intro || dh.yardOpen || dh.shopOpen || dh.upOpen);
+      goal.style.display = hide ? 'none' : '';
+      if (!hide){ goal.classList.add('show'); goal.textContent = dhGoalText(); }
+    }
+    const steps = $('#dhSteps');
+    if (steps){
+      const hide = !!(dh.intro);
+      steps.style.display = hide ? 'none' : '';
+      if (!hide){
+        steps.classList.add('show');
+        const cur = dhStageId();
+        steps.innerHTML = '<div class="dhstepsH">House steps</div>' + dhChecklist().map((line, i) => {
+          const ids = ['stake','dig','pour','brick','shingle','frame','furn'];
+          const on = ids[i] === cur || (ids[i] === 'shingle' && (cur === 'stud' || cur === 'rafter' || cur === 'shingle')) || (ids[i] === 'frame' && (cur === 'frame' || cur === 'glass')) || (ids[i] === 'furn' && (cur === 'paint' || cur === 'furn'));
+          const done = /✔/.test(line);
+          return '<div class="dhstep' + (done ? ' done' : '') + (on && !done ? ' on' : '') + '">' + line + '</div>';
+        }).join('');
+      }
+    }
     const g = $('#dhGuide'), gt = $('#dhGuideT');
     if (g){
       const tgt = dhGuideTarget();
@@ -1824,7 +2197,22 @@
     const cut = $('#dhCut'); if (cut) cut.addEventListener('click', ev => { if (dh && dh.intro) dhSkipIntro(); });
     const skip = $('#dhSkip'); if (skip) skip.onclick = ev => { ev.stopPropagation(); if (dh && dh.intro) dhSkipIntro(); };
     const replay = $('#dhReplay'); if (replay) replay.onclick = () => dh && dhReplayIntro();
+    const tipX = $('#dhTipX'); if (tipX) tipX.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); const tip = $('#dhTip'); if (tip){ tip.classList.remove('show'); tip.style.display = 'none'; } };
+    const tip = $('#dhTip'); if (tip) tip.onclick = ev => { if (ev.target && ev.target.id === 'dhTip'){ tip.classList.remove('show'); tip.style.display = 'none'; } };
   }
+  function dhPointer(down){
+    if (!dh || dh.intro) return false;
+    if (dh.yardOpen || dh.shopOpen || dh.upOpen) return false;
+    if (down){
+      dh.pourHold = true;
+      dh.pourAcc = .2;
+      dhAct();
+      return true;
+    }
+    dh.pourHold = false;
+    return false;
+  }
+
   function dhPad(jp){
     if (!dh) return false;
     if (dh.intro){
@@ -1834,11 +2222,11 @@
     if (dh.yardOpen && (jp.b || jp[1])){ dhToggleYard(false); return true; }
     if (dh.shopOpen && (jp.b || jp[1])){ dhToggleShop(false); return true; }
     if (dh.upOpen && (jp.b || jp[1])){ dhToggleUp(false); return true; }
-    if (jp.x || jp[2]){ dhAct(); return true; }
+    if (jp.x || jp[2] || jp.a || jp[0] || jp.rt || jp[7]){ dhAct(); if (typeof pad !== 'undefined' && pad) pad.jump = false; return true; }
     if (jp.b || jp[1]){ dhRotate(); return true; }
     if (jp.y || jp[3]){ if (dh.carry) dhDump(); else dhSetTool(dh.tool === 'delete' ? 'place' : 'delete'); return true; }
-    if (jp.lb || jp[4] || jp.lt){ dhCycle(-1); return true; }
-    if (jp.rb || jp[5] || jp.rt){ dhCycle(1); return true; }
+    if (jp.lb || jp[4]){ dhCycle(-1); return true; }
+    if (jp.rb || jp[5]){ dhCycle(1); return true; }
     return false;
   }
   function dhKey(e){

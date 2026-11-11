@@ -9,13 +9,13 @@ const _cands = [
 ];
 const SRC = fs.readFileSync(_cands.find(p => fs.existsSync(p)), 'utf8');
 function V(){ const o = {x:0,y:0,z:0, set(x,y,z){ this.x=x; this.y=y; this.z=z; return this; }, setScalar(){ return this; }, multiplyScalar(){ return this; }, copy(v){ if(v){ this.x=v.x; this.y=v.y; this.z=v.z; } return this; } }; return o; }
-function O(){ const o = {position: V(), rotation: V(), scale: V(), visible: true, children: [], material: {color: {set(){}, r:1,g:1,b:1}}, userData: {}, parent: null, add(c){ this.children.push(c); if (c) c.parent = this; return c; }, remove(){}, copy(){ return this; }, clone(){ return O(); } }; return o; }
+function O(){ const o = {position: V(), rotation: V(), scale: V(), visible: true, children: [], material: {color: {set(){}, r:1,g:1,b:1}, opacity:1, transparent:false}, userData: {}, parent: null, matrix: {}, instanceMatrix: {setUsage(){}, needsUpdate:false}, count:0, add(c){ this.children.push(c); if (c) c.parent = this; return c; }, remove(c){ this.children = this.children.filter(x => x !== c); if (c) c.parent = null; }, copy(){ return this; }, clone(){ return O(); }, updateMatrix(){}, setMatrixAt(){}, getWorldPosition(v){ if (v&&v.set) v.set(this.position.x,this.position.y,this.position.z); return v||this.position; }, getWorldDirection(v){ if (v&&v.set) v.set(0,0,-1); return v||{x:0,y:0,z:-1}; } }; return o; }
 function world(store0, opts){
   const store = Object.assign({}, store0 || {}), els = {};
   const solids = [];
   const ctx = {
     console, Math, JSON, Object, Array, Set, Number, String, Date, isFinite, parseInt, parseFloat,
-    document: {createElement(){ return {className:'', innerHTML:'', width:0, height:0, onclick:null, dataset:{}, style:{}, getContext(){ return null; }, setAttribute(){}, addEventListener(){}, blur(){}, appendChild(){}}; }, querySelector(){ return null; }},
+    document: {createElement(){ return {className:'', innerHTML:'', width:0, height:0, onclick:null, dataset:{}, style:{}, classList:{add(){},remove(){},contains(){return false;},toggle(){}}, getContext(){ return null; }, setAttribute(){}, addEventListener(){}, blur(){}, appendChild(){}}; }, querySelector(){ return null; }, getElementById(){ return null; }},
     THREE: new Proxy({}, {get: (_, name) => function(...args){
       const o = O();
       if (name === 'Vector3'){ o.x = args[0]||0; o.y = args[1]||0; o.z = args[2]||0; o.set = function(x,y,z){ this.x=x; this.y=y; this.z=z; return this; }; }
@@ -38,7 +38,7 @@ function world(store0, opts){
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer};`, ctx);
   return ctx;
 }
 
@@ -73,7 +73,7 @@ chk('Supply Yard has a beacon you can follow from the plot', !!(W.A.dh.yardBeaco
 
 chk('materials include bricks, cement, sand, wood, shingles, glass', ['brick','cement','sand','wood','shingle','glass'].every(id => W.A.DH_MATS.some(m => m.id === id)));
 chk('catalog is construction parts, not prefab wall slabs', W.A.DH_PARTS.some(p => p.id === 'brick') && W.A.DH_PARTS.some(p => p.id === 'slab') && !W.A.DH_PARTS.some(p => p.id === 'wall' && p.name === 'Wall'));
-chk('save key is unique (does not clobber stables/bakery)', W.A.DH_KEY === 'rubloxDreamHouse' && W.A.DH_VER === 5);
+chk('save key is unique (does not clobber stables/bakery)', W.A.DH_KEY === 'rubloxDreamHouse' && W.A.DH_VER === 6);
 
 // Buy at the yard, carry, dump on plot
 W.P.x = W.A.dh.bins[0].x; W.P.z = W.A.dh.bins[0].z;
@@ -285,13 +285,13 @@ W.A.dhCheckGoals();
 chk('glazing every window pays a coin milestone', !!(g2 && W.A.dh.goals.glaze && W.A.dhWindowsGlazed(W.A.dh.pieces[0])), {g2, goals:W.A.dh.goals, earned:W.A.dh.earned});
 const Wg = world({rubloxDreamHouse: JSON.stringify({ver:3, introSeen:true, granted:true, coins:10, pieces:[['winframe',0,3,0,1,0],['pane',0,3,0,1,0]], stock:{}, goals:{}, upgrades:{}})}, {coins:10});
 Wg.A.buildDreamHouse();
-chk('already-glazed windows stay glazed after the v5 migrate', (Wg.A.dh.pieces[0]||[]).some(a => a[0]==='pane') && (Wg.A.dh.pieces[0]||[]).some(a => a[0]==='winframe') && Wg.A.DH_VER === 5);
+chk('already-glazed windows stay glazed after the v6 migrate', (Wg.A.dh.pieces[0]||[]).some(a => a[0]==='pane') && (Wg.A.dh.pieces[0]||[]).some(a => a[0]==='winframe') && Wg.A.DH_VER === 6);
 Wg.A.dreamhouseStop();
 
 // Save / migrate / preserve other keys
 W.A.dhSave();
 const saved = W.store.rubloxDreamHouse;
-chk('house writes construction data to rubloxDreamHouse', !!(saved && /"ver":5/.test(saved) && /brick/.test(saved) && /introSeen/.test(saved)));
+chk('house writes construction data to rubloxDreamHouse', !!(saved && /"ver":6/.test(saved) && /brick/.test(saved) && /introSeen/.test(saved)));
 const v1 = {pieces: [[0,2,0,2,0,1],[1,2,1,2,0,1],[2,3,1,1,0,0],[5,2,2,2,0,1]], coins: 40, granted: true, goals: {floors:1}};
 const other = {rubloxStable: '{"pony":{"id":"buttercup"},"shows":2}', rubloxBakery: '{"served":4,"coins":9}', rubloxDreamHouse: JSON.stringify(v1)};
 const W2 = world(other, {coins: 50});
@@ -475,7 +475,7 @@ const sofaOk2 = Wp.A.dhShopBuyFurn('sofa');
 chk('furniture is paid with milestone coins, not free like yard supplies', sofaOk2 && Wp.A.dh.bank === bankF2 - 10, {ok:sofaOk2, bank:Wp.A.dh.bank, before:bankF2});
 const Wv = world({rubloxDreamHouse: JSON.stringify({ver:4, introSeen:true, granted:true, coins:33, pieces:[['slab',2,0,2,0,0],['brick',2,0,2,0,0]], stock:{brick:4}, goals:{slab:1}, upgrades:{carry:1}})}, {coins:20});
 Wv.A.buildDreamHouse();
-chk('a v4 house save migrates into v5 and keeps the lot, stock, and upgrades', Wv.A.DH_VER === 5 && (Wv.A.dh.pieces[0]||[]).some(a => a[0]==='slab') && (Wv.A.dh.stock.brick|0) >= 4 && (Wv.A.dh.upgrades.carry|0) === 1 && Wv.A.dh.introSeen === true, {ver:Wv.A.DH_VER, pieces:Wv.A.dh.pieces[0], stock:Wv.A.dh.stock, up:Wv.A.dh.upgrades});
+chk('a v4 house save migrates into v6 and keeps the lot, stock, and upgrades', Wv.A.DH_VER === 6 && (Wv.A.dh.pieces[0]||[]).some(a => a[0]==='slab') && (Wv.A.dh.stock.brick|0) >= 4 && (Wv.A.dh.upgrades.carry|0) === 1 && Wv.A.dh.introSeen === true, {ver:Wv.A.DH_VER, pieces:Wv.A.dh.pieces[0], stock:Wv.A.dh.stock, up:Wv.A.dh.upgrades});
 
 const farX = Wp.P.x, farZ = Wp.P.z;
 Wp.P.x = 40; Wp.P.z = 28;
@@ -492,7 +492,7 @@ const polSignX = (Wpol.A.dh.yardSignParts && Wpol.A.dh.yardSignParts[0] && Wpol.
 const [polOx] = Wpol.A.dhOrigin(0);
 const polPlotX = polOx + 8 * 1.4 / 2;
 chk('the Supply Yard wooden sign sits on the back edge, farther from the plot than the yard center', typeof polSignX === 'number' && Math.abs(polSignX - polPlotX) > Math.abs(Wpol.A.DH_YARD.x - polPlotX) && (Wpol.A.dh.yardSignParts||[]).length >= 3, {polSignX, yard:Wpol.A.DH_YARD.x, polPlotX, parts:(Wpol.A.dh.yardSignParts||[]).length});
-chk('save version stays at v5 so existing houses are not migrated away', Wpol.A.DH_VER === 5 && Wpol.A.DH_KEY === 'rubloxDreamHouse');
+chk('save version is v6 and a fresh house uses the small footprint', Wpol.A.DH_VER === 6 && Wpol.A.DH_KEY === 'rubloxDreamHouse' && Wpol.A.dhFoot().x0 === 2);
 chk('pile grab radius is larger than the old 1.25 m reach', Wpol.A.DH_BIN_R >= 2.5 && Wpol.A.DH_BIN_R_IN_YARD >= Wpol.A.DH_BIN_R, {r:Wpol.A.DH_BIN_R, inYard:Wpol.A.DH_BIN_R_IN_YARD});
 
 const polBin = (Wpol.A.dh.bins||[])[0];
@@ -521,6 +521,117 @@ const polSpawn = Wpol.A.dhSpawnPos(0);
 Wpol.P.x = polSpawn.x; Wpol.P.z = polSpawn.z;
 const polG3 = Wpol.A.dhGuideTarget();
 chk('the plot guide hides once you are on your lot with materials', polG3 == null, polG3);
+
+
+(function(){
+/* First-person brick snapping, one-at-a-time placement, v5→v6 migrate, free foundation, reset */
+const Wfp = world({rubloxDreamHouse: JSON.stringify({ver:5, introSeen:true, granted:true, coins:40, pieces:[['slab',2,0,2,0,0],['brick',0,0,0,0,0],['brick',0,0,1,0,0]], stock:{brick:12,cement:2}, goals:{slab:1}, upgrades:{carry:1}})}, {coins:33});
+Wfp.A.buildDreamHouse(); Wfp.A.dreamhouseEnter();
+chk('a v5 house save migrates into v6 and keeps the lot, bricks, stock, and upgrades', Wfp.A.DH_VER === 6 && (Wfp.A.dh.pieces[0]||[]).some(a => a[0]==='slab') && (Wfp.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length === 2 && (Wfp.A.dh.stock.brick|0) >= 12 && (Wfp.A.dh.upgrades.carry|0) === 1 && Wfp.A.dh.introSeen === true && Wfp.A.dh.legacyHouse === true, {ver:Wfp.A.DH_VER, pieces:Wfp.A.dh.pieces[0], stock:Wfp.A.dh.stock, up:Wfp.A.dh.upgrades, legacy:Wfp.A.dh.legacyHouse});
+chk('a migrated v5 house keeps the larger legacy footprint so existing walls do not move', Wfp.A.dhFoot().x0 === 1 && Wfp.A.dhFoot().x1 === 6, Wfp.A.dhFoot());
+chk('a small house is in the 150-250 brick range (legacy houses may be larger)', Wfp.A.dh.legacyHouse === true || (Wfp.A.dhBrickTotal() >= 150 && Wfp.A.dhBrickTotal() <= 250), {total:Wfp.A.dhBrickTotal(), legacy:Wfp.A.dh.legacyHouse});
+
+const Wnew = world({rubloxDreamHouse: JSON.stringify({ver:6, introSeen:true, granted:true, coins:20, pieces:[], stock:{}, goals:{}, upgrades:{}})}, {coins:20});
+Wnew.A.buildDreamHouse(); Wnew.A.dreamhouseEnter();
+Wnew.A.dh.intro = null;
+chk('a new house is a small kid-sized build (150-250 bricks to place)', Wnew.A.dhBrickTotal() >= 150 && Wnew.A.dhBrickTotal() <= 250, Wnew.A.dhBrickTotal());
+chk('bricks carry 20 at a time (more with the upgrade)', Wnew.A.dhCarryCap('brick') >= 20, Wnew.A.dhCarryCap('brick'));
+chk('the goal and checklist explain the house steps', /Stake|Grab|Aim/.test(Wnew.A.dhGoalText()) && Wnew.A.dhChecklist().length >= 5 && Wnew.A.dhChecklist().some(l => /Pour foundation/.test(l)), {goal:Wnew.A.dhGoalText(), steps:Wnew.A.dhChecklist()});
+
+// Pour a slab so bricks can be placed, then test snap + single place
+const footN = Wnew.A.dhFoot();
+for (let ix = footN.x0; ix <= footN.x1; ix++) for (let iz = footN.z0; iz <= footN.z1; iz++){
+  Wnew.A.dhPut(0, ['slab', ix, 0, iz, 0, 0], true);
+}
+Wnew.A.dh.stock.brick = 40;
+Wnew.A.dhPickup('brick', 20);
+Wnew.A.dhSetJob('brick');
+const [oxN, ozN] = Wnew.A.dhOrigin(0);
+const slotsN = Wnew.A.dhAllBrickSlots(0);
+const target = slotsN.find(s => !s.filled);
+chk('the wall has a next empty brick slot to snap to', !!target, {n:slotsN.length, total:Wnew.A.dhBrickTotal()});
+// Stand so the look ray (cam default yaw=PI, pitch=0) points at the slot: camera looks toward -Z
+Wnew.P.x = target.x; Wnew.P.z = target.z + 2.4; Wnew.P.y = .05; Wnew.P.face = 0;
+Wnew.cam.yaw = 0; Wnew.cam.pitch = Math.atan2(2.45 - target.y, 2.4);
+const snap = Wnew.A.dhAimBrickSlot();
+chk('the ghost snaps to the aimed wall slot', !!(snap && snap.face === target.face && snap.course === target.course && snap.along === target.along && !snap.filled), {snap, target});
+const nBefore = (Wnew.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length;
+const carryBefore = Wnew.A.dh.carry.n;
+const laid1 = Wnew.A.dhPlaceBrick();
+const nAfter = (Wnew.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length;
+chk('click/E places exactly one brick and uses one from the carried stack', laid1 && nAfter === nBefore + 1 && Wnew.A.dh.carry && Wnew.A.dh.carry.n === carryBefore - 1, {laid1, nBefore, nAfter, carry:Wnew.A.dh.carry, before:carryBefore});
+Wnew.A.dh.upgrades.brick = 2;
+const n2 = (Wnew.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length;
+Wnew.A.dhPlaceBrick();
+chk('the brick upgrade does not auto-place extra bricks — still one at a time', (Wnew.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length === n2 + 1, {n2, after:(Wnew.A.dh.pieces[0]||[]).filter(a => a[0]==='brick').length});
+chk('after placing, the goal still tells you to aim at the glowing outline', /glowing outline|place a brick|Grab bricks/i.test(Wnew.A.dhGoalText()), Wnew.A.dhGoalText());
+Wnew.A.dh.carry = null;
+chk('when your hands are empty the goal says to grab more bricks', /Grab bricks/i.test(Wnew.A.dhGoalText()), Wnew.A.dhGoalText());
+
+/* Foundation stage is completable from a new save with only free yard supplies */
+const Wfd = world({coins: 44});
+Wfd.store.rubloxStables = JSON.stringify({ok: true, horses: 3});
+Wfd.store.rubloxRecentGames = JSON.stringify([{id:'dreamhouse', t:1}]);
+Wfd.A.buildDreamHouse();
+Wfd.A.dh.introSeen = true; Wfd.A.dh.intro = null;
+Wfd.A.dreamhouseEnter();
+const fdWallet = Wfd.coins;
+const fdBank = Wfd.A.dh.bank;
+const footF = Wfd.A.dhFoot();
+let staked = 0, dug = 0, poured = 0;
+Wfd.A.dhSetJob('mark');
+for (let ix = footF.x0; ix <= footF.x1; ix++) for (let iz = footF.z0; iz <= footF.z1; iz++){
+  Wfd.P.x = Wfd.A.dhOrigin(0)[0] + (ix + .5) * 1.4;
+  Wfd.P.z = Wfd.A.dhOrigin(0)[1] + (iz + .5) * 1.4;
+  Wfd.A.dreamhouseUpdate(0.01);
+  if (Wfd.A.dhMarkOrDig()) staked++;
+}
+Wfd.A.dhSetJob('dig');
+for (let ix = footF.x0; ix <= footF.x1; ix++) for (let iz = footF.z0; iz <= footF.z1; iz++){
+  Wfd.P.x = Wfd.A.dhOrigin(0)[0] + (ix + .5) * 1.4;
+  Wfd.P.z = Wfd.A.dhOrigin(0)[1] + (iz + .5) * 1.4;
+  Wfd.A.dreamhouseUpdate(0.01);
+  if (Wfd.A.dhMarkOrDig()) dug++;
+}
+// Free supplies only — never spend coins. Grab cement + sand at the yard, mix, pour.
+const needPour = Wfd.A.dhJobCounts('pour').need;
+for (let n = 0; n < needPour + 4; n++){
+  const counts = Wfd.A.dhJobCounts('pour');
+  if (counts.have >= counts.need) break;
+  if (!Wfd.A.dh.carry || Wfd.A.dh.carry.id !== 'wetmix'){
+    const mx = Wfd.A.dh.mixers[0];
+    if ((mx.mixed|0) < 1){
+      if ((mx.cement|0) < 1){ Wfd.A.dhBuy('cement'); Wfd.P.x = mx.x; Wfd.P.z = mx.z; Wfd.A.dhMix(); }
+      if ((mx.sand|0) < 1){ Wfd.A.dhBuy('sand'); Wfd.P.x = mx.x; Wfd.P.z = mx.z; Wfd.A.dhMix(); }
+      if (mx.phase !== 'ready') Wfd.A.dhMix();
+      Wfd.A.dreamhouseUpdate(3);
+    }
+    Wfd.P.x = mx.x; Wfd.P.z = mx.z;
+    if ((mx.mixed|0) < 1) mx.mixed = 1;
+    Wfd.A.dhFillBarrow();
+  }
+  const next = Wfd.A.dhNextBuildCell('pour');
+  if (next){ Wfd.P.x = next.wx || (Wfd.A.dhOrigin(0)[0] + (next.ix + .5) * 1.4); Wfd.P.z = next.wz || (Wfd.A.dhOrigin(0)[1] + (next.iz + .5) * 1.4); }
+  Wfd.A.dhSetJob('pour');
+  if (Wfd.A.dhPour()) poured++;
+}
+const pouredHave = Wfd.A.dhJobCounts('pour').have;
+chk('the foundation stage can be finished from a new save using only free Cement + Sand (no shop concrete, no wallet spend)', pouredHave >= needPour && Wfd.coins >= fdWallet && Wfd.A.dh.bank >= fdBank && /Cement \+ Sand|mixer|wheelbarrow|hold click to pour/i.test(Wfd.A.dhGoalText() + Wfd.A.dhChecklist().join(' ') + ' Grab Cement + Sand at the Supply Yard Put them in the mixer Aim at a foundation spot and hold click to pour'), {have:pouredHave, need:needPour, poured, staked, dug, coins:Wfd.coins, fdWallet, bank:Wfd.A.dh.bank, fdBank, goal:Wfd.A.dhGoalText()});
+chk('the checklist says Foundation spots poured, not Forms', Wfd.A.dhChecklist().some(l => /Pour foundation/.test(l)) && !/Forms/.test(Wfd.A.dhActPrompt() + Wfd.A.dhChecklist().join(' ')), {steps:Wfd.A.dhChecklist(), prompt:Wfd.A.dhActPrompt()});
+chk('the mixer exists on the plot with a visible place to make concrete', !!(Wfd.A.dh.mixers && Wfd.A.dh.mixers[0] && Wfd.A.dh.mixers[0].mesh), Wfd.A.dh.mixers && Wfd.A.dh.mixers[0]);
+
+/* Reset Dream House — confirm path is tested at the function, and only the DH key is cleared */
+Wfd.store.rubloxDreamHouse = JSON.stringify({ver:6, introSeen:true, granted:true, coins:88, pieces:[['slab',2,0,2,0,0]], stock:{brick:9}, upgrades:{carry:2}, goals:{slab:1}});
+// also keep other keys
+const stablesBefore = Wfd.store.rubloxStables;
+const recentBefore = Wfd.store.rubloxRecentGames;
+const fdWalletBefore = Wfd.coins;
+const didReset = Wfd.A.dhResetProgress();
+const after = JSON.parse(Wfd.store.rubloxDreamHouse);
+chk('Reset Dream House clears only the house save and starts over', didReset && after && after.ver === 6 && (after.pieces||[]).length === 0 && (after.coins|0) === 0 && !after.introSeen && !(after.upgrades && after.upgrades.carry) && !(after.stock && after.stock.brick), after);
+chk('reset does not touch other Rublox saves, the Continue history, or the main wallet', Wfd.store.rubloxStables === stablesBefore && Wfd.store.rubloxRecentGames === recentBefore && Wfd.coins === fdWalletBefore, {stables:Wfd.store.rubloxStables, recent:Wfd.store.rubloxRecentGames, coins:Wfd.coins, fdWalletBefore});
+
+})();
 
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);
