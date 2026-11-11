@@ -1,0 +1,206 @@
+<!doctype html>
+<html><head><meta charset="utf-8"/><title>Dream House spawn v5</title>
+<style>
+html,body{margin:0;background:#b8e8ff;overflow:hidden;font-family:system-ui,sans-serif}
+#ui{position:absolute;inset:0;pointer-events:none}
+#guide{position:absolute;top:54px;left:50%;transform:translateX(-50%);background:rgba(29,35,64,.92);color:#fff;padding:10px 18px;border-radius:18px;font-weight:800;font-size:18px;display:flex;align-items:center;gap:8px}
+#guide b{color:#ffd23f;font-size:22px}
+#act{position:absolute;left:50%;bottom:214px;transform:translateX(-50%);background:#2ec27e;color:#fff;border:3px solid #fff;border-radius:18px;padding:10px 22px;font-weight:900;font-size:20px;box-shadow:0 4px 0 #1f9460}
+#act small{background:#fff;color:#2ec27e;border-radius:8px;padding:1px 6px;margin-left:6px}
+#bar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:min(96vw,820px);background:rgba(255,255,255,.94);border:3px solid #ffd23f;border-radius:16px;padding:8px;text-align:center;font-weight:800;color:#1d2340}
+#bar button{border:2px solid #ffe08a;background:#fff;border-radius:10px;padding:6px 10px;font:inherit;font-weight:900;margin:2px}
+#bar button.on{border-color:#2ec27e;background:#eafaf0}
+#coins{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.94);border:3px solid #ffd23f;border-radius:999px;padding:6px 14px;font-weight:900;color:#1d2340}
+</style>
+</head><body>
+<div id="ui">
+  <div id="coins">🪙 100 · Hands empty</div>
+  <div id="guide"><b>➤</b> Go to the Supply Yard</div>
+  <div id="act">E: Place stake here <small>E</small></div>
+  <div id="bar">
+    <button class="on">📍 Stake</button>
+    <button>🕳️ Dig</button>
+    <button>🌀 Mix</button>
+    <button>🪣 Pour</button>
+    <button>🧱 Brick</button>
+    <button>📦 Supply Yard</button>
+    <button>🛒 Shop</button>
+  </div>
+</div>
+<script src="three.min.js"></script>
+<script>
+const DH_CELL=1.4, DH_N=8, DH_SPACING=18;
+const ox=(0-1.5)*DH_SPACING, oz=-DH_N*DH_CELL/2;
+const spawn={x:ox+DH_CELL*4, y:.05, z:oz-2.8};
+const yard={x:ox-8, z:oz+1};
+const scene=new THREE.Scene();
+scene.background=new THREE.Color('#b8e8ff');
+scene.fog=new THREE.Fog('#d7f3ff', 50, 160);
+const camera=new THREE.PerspectiveCamera(55, innerWidth/innerHeight, .1, 200);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight('#fff6d5', '#7fbf88', 0.95));
+const sun=new THREE.DirectionalLight('#fff4d0', 0.85);
+sun.position.set(-20, 30, 10); scene.add(sun);
+
+function mat(c, o={}){ return new THREE.MeshLambertMaterial(Object.assign({color:c}, o)); }
+function box(w,h,d,c,x,y,z,o){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat(c,o||{})); m.position.set(x,y,z); scene.add(m); return m; }
+function cyl(rt,rb,h,c,x,y,z,o){ const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,8), mat(c,o||{})); m.position.set(x,y,z); scene.add(m); return m; }
+
+box(100,.35,70,'#8fd39a',0,-.175,0); // grass
+// curb
+box(100,.28,.5,'#5a8f4a',0,.14,-34.4);
+box(100,.28,.5,'#5a8f4a',0,.14,34.4);
+
+// plot
+box(DH_N*DH_CELL, .08, DH_N*DH_CELL, '#b7e3a3', ox+DH_N*DH_CELL/2, .04, oz+DH_N*DH_CELL/2);
+// plot border
+const bw=DH_N*DH_CELL, bh=.2, t=.16;
+box(bw,.3,t,'#d9d3c4', ox+bw/2, .15, oz);
+box(bw,.3,t,'#d9d3c4', ox+bw/2, .15, oz+bw);
+box(t,.3,bw,'#d9d3c4', ox, .15, oz+bw/2);
+box(t,.3,bw,'#d9d3c4', ox+bw, .15, oz+bw/2);
+
+// path to yard
+box(Math.max(4, ox-yard.x), .18, 3.2, '#cfc4a8', (ox+yard.x)/2, .09, yard.z);
+
+// mixer east of plot
+box(.9,.9,.9,'#7a5a4a', ox+DH_N*DH_CELL+1.6, .45, oz+1.4);
+box(.7,.25,.45,'#b85c38', ox+DH_N*DH_CELL+2.7, .35, oz+1.4);
+// pile
+box(1.2,.6,1.2,'#c47a3a', ox-1.5, .3, oz+DH_N*DH_CELL-1.2);
+box(1,.5,1,'#e5c574', ox-1.5, .7, oz+DH_N*DH_CELL-1.0);
+
+function tree(x,z,kind,s){
+  s=s||1;
+  const g=new THREE.Group(); g.position.set(x,0,z);
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.16*s,.22*s,1.4*s,6), mat('#5a4030'));
+  trunk.position.y=.7*s; g.add(trunk);
+  const cols=['#2ec27e','#3fb86b','#24965a','#57c47a','#1f8a4c'];
+  if(kind%5===0){ // pine
+    const c=new THREE.Mesh(new THREE.ConeGeometry(1.1*s, 2.4*s, 8), mat(cols[0]));
+    c.position.y=2.1*s; g.add(c);
+  } else {
+    for(let i=0;i<4;i++){
+      const r=.7+s*(.3+(i%3)*.15);
+      const leaf=new THREE.Mesh(new THREE.SphereGeometry(r,8,6), mat(cols[(kind+i)%cols.length]));
+      leaf.position.set((i-1.5)*.35*s, 1.5*s+(i%2)*.3, (i%2?-1:1)*.25*s);
+      g.add(leaf);
+    }
+  }
+  scene.add(g);
+}
+function treeBlocked(x,z){
+  const spx=spawn.x, spz=spawn.z;
+  const x0=ox-1.2, x1=ox+DH_N*DH_CELL+1.2;
+  if(x>x0 && x<x1 && z<oz+2.5 && z>oz-18) return true;
+  if(Math.hypot(x-spx,z-spz)<7) return true;
+  if(Math.hypot(x-yard.x,z-yard.z)<10) return true;
+  return false;
+}
+for(let i=0;i<4;i++){
+  const [px,pz]=[(i-1.5)*DH_SPACING, oz];
+  const cx=px+DH_N*DH_CELL/2, cz=pz+DH_N*DH_CELL/2;
+  const rx=DH_N*DH_CELL/2+3.2, rz=rx;
+  // faint other plots
+  if(i!==0) box(DH_N*DH_CELL,.06,DH_N*DH_CELL,'#c5e8b8',cx,.03,cz);
+  for(let k=0;k<16;k++){
+    const t=(k/16)*Math.PI*2+i*.15;
+    const x=cx+Math.cos(t)*rx, z=cz+Math.sin(t)*rz;
+    if(treeBlocked(x,z)) continue;
+    const toward=Math.atan2(yard.z-cz, yard.x-cx);
+    let dAng=Math.abs(Math.atan2(Math.sin(t-toward), Math.cos(t-toward)));
+    if(dAng<.7) continue;
+    tree(x,z,(i*5+k*3)%5, 0.85+((i*7+k*13)%5)*.08);
+  }
+}
+
+// yard pad
+box(12,.2,9,'#cfc4a8', yard.x, .1, yard.z);
+// crates
+['#c4472a','#d8d4cf','#e5c574','#c4a574','#8b5a3a','#9ad4ff'].forEach((c,i)=>{
+  const col=i%5, row=(i/5)|0;
+  const x=yard.x-4.4+col*2.2, z=yard.z-2.6+row*2.4;
+  box(1.1,.7,1.1,c,x,.45,z);
+});
+// big sign facing +X (toward the plot)
+box(.22,3.2,10,'#8b4513', yard.x+5.6, 4.8, yard.z);
+box(.24,4.6,.24,'#5a4030', yard.x+5.6, 2.3, yard.z-4.6);
+box(.24,4.6,.24,'#5a4030', yard.x+5.6, 2.3, yard.z+4.6);
+// camera-facing sign (same as the in-game label sprite)
+(function(){
+  const cv=document.createElement('canvas'); cv.width=1024; cv.height=192;
+  const g=cv.getContext('2d');
+  g.fillStyle='rgba(29,35,64,0.95)';
+  g.beginPath();
+  const r=40; g.moveTo(r,0); g.lineTo(1024-r,0); g.quadraticCurveTo(1024,0,1024,r);
+  g.lineTo(1024,192-r); g.quadraticCurveTo(1024,192,1024-r,192);
+  g.lineTo(r,192); g.quadraticCurveTo(0,192,0,192-r); g.lineTo(0,r); g.quadraticCurveTo(0,0,r,0); g.fill();
+  g.fillStyle='#ffd23f'; g.font='bold 110px system-ui,sans-serif';
+  g.textAlign='center'; g.textBaseline='middle';
+  g.fillText('📦  SUPPLY YARD', 512, 100);
+  const tex=new THREE.CanvasTexture(cv);
+  const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex, depthTest:false, transparent:true}));
+  spr.position.set(yard.x+4.2, 5.4, yard.z+1.6);
+  spr.scale.set(9.5, 2.1, 1);
+  spr.renderOrder=12;
+  scene.add(spr);
+})();
+// beacon
+cyl(.14,.2,12,'#ffd23f', yard.x, 6.2, yard.z, {emissive:'#ffd23f', emissiveIntensity:.7});
+cyl(.85,.85,11,'#ffe08a', yard.x, 6.4, yard.z, {transparent:true, opacity:.28, emissive:'#ffd23f', emissiveIntensity:.45, depthWrite:false});
+const arrow=new THREE.Mesh(new THREE.ConeGeometry(.9,1.8,8), mat('#ff4d5e',{emissive:'#ff4d5e', emissiveIntensity:.65}));
+arrow.rotation.x=Math.PI; arrow.position.set(yard.x, 13.4, yard.z); scene.add(arrow);
+
+// ghost marker on nearest foot cell
+const foot={x0:1,z0:1};
+const gx=ox+(foot.x0+.5)*DH_CELL, gz=oz+(foot.z0+.5)*DH_CELL;
+box(DH_CELL*.92,.16,DH_CELL*.92,'#ffe08a', gx, .2, gz, {transparent:true, opacity:.7, emissive:'#ffe08a', emissiveIntensity:.7});
+box(.1,1.1,.1,'#ffd23f', gx, .7, gz, {emissive:'#ffd23f'});
+
+// "Your Plot" camera-facing label
+(function(){
+  const cv=document.createElement('canvas'); cv.width=512; cv.height=128;
+  const g=cv.getContext('2d');
+  g.fillStyle='rgba(29,35,64,0.92)';
+  const r=24; g.beginPath();
+  g.moveTo(r,0); g.lineTo(512-r,0); g.quadraticCurveTo(512,0,512,r);
+  g.lineTo(512,128-r); g.quadraticCurveTo(512,128,512-r,128);
+  g.lineTo(r,128); g.quadraticCurveTo(0,128,0,128-r);
+  g.lineTo(0,r); g.quadraticCurveTo(0,0,r,0); g.fill();
+  g.fillStyle='#fff'; g.font='bold 64px system-ui,sans-serif';
+  g.textAlign='center'; g.textBaseline='middle';
+  g.fillText('🏡 Your Plot', 256, 64);
+  const tex=new THREE.CanvasTexture(cv);
+  const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex, depthTest:false, transparent:true}));
+  spr.position.set(ox+DH_N*DH_CELL/2, 3.2, oz+DH_N*DH_CELL/2);
+  spr.scale.set(5.2, 1.3, 1);
+  spr.renderOrder=11;
+  scene.add(spr);
+})();
+
+// player at spawn, facing +z
+(function(){
+  const g=new THREE.Group(); g.position.set(spawn.x,0,spawn.z);
+  const skin=mat('#f1c27d'), shirt=mat('#3d6fb5'), pants=mat('#1d2340'), hair=mat('#f4c430');
+  const add=(w,h,d,m,x,y,z)=>{const k=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); k.position.set(x,y,z); g.add(k);};
+  add(.45, .55, .3, pants, 0, .4, 0);
+  add(.5, .6, .35, shirt, 0, .95, 0);
+  add(.42, .42, .42, skin, 0, 1.45, 0);
+  add(.5, .18, .5, hair, 0, 1.72, 0);
+  add(.16,.5,.16, skin, -.28, .95, 0);
+  add(.16,.5,.16, skin, .28, .95, 0);
+  scene.add(g);
+})();
+
+// actual spawn camera
+const pitch=.38, yaw=Math.PI, dist=12;
+const tx=spawn.x, ty=spawn.y+2.2, tz=spawn.z, cp=Math.cos(pitch);
+camera.position.set(tx+Math.sin(yaw)*cp*dist, ty+Math.sin(pitch)*dist, tz+Math.cos(yaw)*cp*dist);
+camera.lookAt(tx, ty, tz);
+camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+renderer.render(scene, camera);
+</script>
+</body></html>

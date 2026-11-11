@@ -1,0 +1,500 @@
+<!doctype html>
+<html><head><meta charset="utf-8"/><title>loading</title>
+<style>
+html,body{margin:0;background:#b8e8ff;overflow:hidden;font-family:system-ui,sans-serif}
+#ui{position:absolute;inset:0;pointer-events:none}
+#hud{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:rgba(255,255,255,.95);border:3px solid #ffd23f;border-radius:999px;padding:6px 16px;font-weight:900;color:#1d2340;box-shadow:0 4px 0 rgba(0,0,0,.12);white-space:nowrap}
+#act{position:absolute;left:50%;bottom:196px;transform:translateX(-50%);background:#2ec27e;color:#fff;font-weight:900;border-radius:16px;padding:10px 16px;box-shadow:0 4px 0 #1f9460}
+#act small{color:#eafff3}
+#bar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:min(94vw,820px);background:rgba(255,255,255,.95);border:3px solid #ffd23f;border-radius:16px;padding:6px 8px 8px;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+.row{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:3px 0}
+.b{border:2px solid #ffe08a;background:#fff;border-radius:10px;padding:4px 8px;font-weight:900;font-size:12px;color:#1d2340}
+.on{border-color:#2ec27e;background:#eafaf0;box-shadow:0 0 0 2px #2ec27e}
+.dhi{background:#fff8e8;border:2px solid #ffe08a;border-radius:10px;padding:2px 8px;font-weight:900;font-size:13px;color:#1d2340}
+.dhc{width:22px;height:22px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px #cfc4a8;display:inline-block}
+.dhc.on{box-shadow:0 0 0 3px #1d2340}
+.hideui #ui{display:none}
+#cut{position:absolute;inset:0;pointer-events:none}
+#fade{position:absolute;inset:0;background:#000;opacity:0}
+#bubble{position:absolute;left:50%;top:14%;transform:translateX(-50%);background:#fffaf0;border:3px solid #1d2340;border-radius:22px;padding:12px 22px 16px;font-weight:900;color:#1d2340;box-shadow:0 6px 0 rgba(0,0,0,.15);max-width:460px;text-align:center}
+#bubble b{display:block;color:#ff6fb5;font-size:13px;letter-spacing:.04em;margin-bottom:4px;text-transform:uppercase}
+#bubble span{font-size:24px;line-height:1.25}
+#bubble:after{content:'';position:absolute;left:62%;bottom:-16px;border:16px solid transparent;border-top-color:#1d2340;border-bottom:0}
+#skip{position:absolute;right:18px;top:16px;background:#fff;border:3px solid #1d2340;border-radius:999px;padding:8px 18px;font:inherit;font-weight:900;color:#1d2340;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+#shop{position:absolute;inset:0;background:rgba(29,35,64,.4);display:none;align-items:center;justify-content:center}
+#shop.show{display:flex}
+.dhsbox{background:#fffaf0;border:3px solid #ffd23f;border-radius:20px;padding:10px 14px 12px;width:min(92vw,540px);max-height:520px;overflow:hidden;box-shadow:0 8px 0 rgba(0,0,0,.12);color:#1d2340;font-weight:900}
+.dhsbox h3{margin:0 0 4px;font-size:20px}
+.dhsbox h4{margin:8px 0 4px;font-size:15px}
+.dhsbank{margin:0 0 8px}
+.dhsgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.dhsitem{border:2px solid #ffe08a;background:#fff;border-radius:14px;padding:5px 7px 6px;text-align:left}
+.dhsitem .dhe{font-size:18px;display:block}
+.dhsitem small{display:block;font-size:11px;color:#6b7290;margin-top:2px}
+.dhsitem.max{opacity:.65}
+#shopx{display:block;margin:8px auto 0;min-width:120px;border:2px solid #ffe08a;background:#fff;border-radius:10px;padding:6px 16px;font:inherit;font-weight:900}
+</style>
+</head><body>
+<div id="ui">
+  <div id="hud">🏡 🪙 86 · 🧱12 🎨2 🪵4 · Hands empty</div>
+  <div id="act">🎨 Paint the walls <small>E</small></div>
+  <div id="bar">
+    <div class="row">
+      <span class="b">📍 Stake</span><span class="b">🕳️ Dig</span><span class="b">🌀 Mix</span><span class="b">🪣 Pour</span>
+      <span class="b">🧱 Brick</span><span class="b">🪵 Stud</span><span class="b">🪜 Rafter</span><span class="b">🏠 Shingle</span>
+      <span class="b">🚪 Frame</span><span class="b" id="btnGlass">🪟 Glass</span><span class="b on" id="btnPaint">🎨 Paint</span><span class="b">🛋️ Furnish</span>
+      <span class="b">🗑️</span><span class="b">🛒 Shop</span>
+    </div>
+    <div class="row" id="cols"></div>
+    <div class="row">
+      <span class="dhi">🧱<b>12</b></span><span class="dhi">🪨<b>2</b></span><span class="dhi">🪵<b>4</b></span>
+      <span class="dhi">🏠<b>8</b></span><span class="dhi on">🎨<b>2</b></span><span class="dhi">🛋️<b>1</b></span>
+    </div>
+  </div>
+</div>
+<div id="cut">
+  <div id="fade"></div>
+  <div id="bubble"><b>Mom</b><span id="say">This is your new house!</span></div>
+  <div id="skip">Skip</div>
+</div>
+<div id="shop">
+  <div class="dhsbox">
+    <h3>🛒 Dream House Shop</h3>
+    <p class="dhsbank">🪙 126 coins · earned from build milestones</p>
+    <h4>Furniture</h4>
+    <div class="dhsgrid">
+      <div class="dhsitem"><span class="dhe">🛋️</span><b>Sofa</b><small>10🪙</small></div>
+      <div class="dhsitem"><span class="dhe">🛏️</span><b>Bed</b><small>12🪙</small></div>
+      <div class="dhsitem"><span class="dhe">🪑</span><b>Table</b><small>8🪙</small></div>
+      <div class="dhsitem"><span class="dhe">💡</span><b>Lamp</b><small>6🪙</small></div>
+      <div class="dhsitem"><span class="dhe">🧶</span><b>Rug</b><small>5🪙</small></div>
+      <div class="dhsitem"><span class="dhe">🪴</span><b>Plant</b><small>4🪙</small></div>
+      <div class="dhsitem"><span class="dhe">📺</span><b>TV</b><small>14🪙</small></div>
+      <div class="dhsitem"><span class="dhe">📚</span><b>Bookshelf</b><small>10🪙</small></div>
+    </div>
+    <h4>Upgrades</h4>
+    <div class="dhsgrid">
+      <div class="dhsitem"><span class="dhe">💪</span><b>Bigger arms</b><small>40🪙 · 0/3<br>Carry more at once</small></div>
+      <div class="dhsitem"><span class="dhe">☀️</span><b>Faster drying</b><small>35🪙 · 0/2<br>Concrete sets sooner</small></div>
+      <div class="dhsitem"><span class="dhe">🧱</span><b>Faster brick laying</b><small>45🪙 · 0/2<br>Lay extra bricks</small></div>
+      <div class="dhsitem"><span class="dhe">🪣</span><b>Big wheelbarrow</b><small>30🪙 · 0/1<br>Carry two wet loads</small></div>
+      <div class="dhsitem"><span class="dhe">🏠</span><b>Second story</b><small>80🪙 · 0/1<br>Build a taller floor</small></div>
+      <div class="dhsitem"><span class="dhe">📐</span><b>Bigger lot</b><small>90🪙 · 0/1<br>Expand the footprint</small></div>
+    </div>
+    <button id="shopx">Close</button>
+  </div>
+</div>
+<script src="./three.min.js"></script>
+<script>
+(function(){
+const THREE=window.THREE, W=900, H=560;
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setSize(W,H); renderer.setPixelRatio(1); document.body.appendChild(renderer.domElement);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0xb8e8ff);
+const cam=new THREE.PerspectiveCamera(36,W/H,.1,200);
+scene.add(new THREE.AmbientLight(0xffffff,0.95));
+const sun=new THREE.DirectionalLight(0xffffff,0.85); sun.position.set(8,16,6); scene.add(sun);
+const fill=new THREE.DirectionalLight(0xfff4e6,0.28); fill.position.set(-6,4,-4); scene.add(fill);
+const ground=new THREE.Mesh(new THREE.CircleGeometry(60,48), new THREE.MeshLambertMaterial({color:0x8fd39a}));
+ground.rotation.x=-Math.PI/2; scene.add(ground);
+const walk=new THREE.Mesh(new THREE.BoxGeometry(6,0.12,13), new THREE.MeshLambertMaterial({color:0xcfc4a8}));
+walk.position.set(0,0.07,-11.0); scene.add(walk); // path toward yard, stops at the lot edge
+
+function tex(draw,s){
+  s=s||64; const c=document.createElement('canvas'); c.width=c.height=s; const ctx=c.getContext('2d'); draw(ctx,s);
+  const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; return t;
+}
+function mat(c,o){return new THREE.MeshLambertMaterial(Object.assign({color:c},o||{}));}
+function tmat(draw){ return new THREE.MeshLambertMaterial({map:tex(draw), color:0xffffff}); }
+const brickM=tmat(function(ctx,s){
+  ctx.fillStyle='#b9b3a8'; ctx.fillRect(0,0,s,s);
+  const rows=8,bw=s/4,bh=s/rows;
+  for(let r=0;r<rows;r++){ const off=(r%2)?bw/2:0;
+    for(let k=-1;k<5;k++){ ctx.fillStyle=['#b54a32','#c45b3a','#a43e2a','#c96a42'][(r*3+k+8)%4];
+      ctx.fillRect(k*bw+off+1,r*bh+1,bw-2,bh-2); } }
+});
+const concM=tmat(function(ctx,s){
+  ctx.fillStyle='#8d8f8c'; ctx.fillRect(0,0,s,s);
+  for(let i=0;i<180;i++){ ctx.fillStyle=i%3?'#9a9c98':'#7a7c78'; ctx.fillRect((i*17)%s,(i*29)%s,2,2); }
+});
+const wetM=mat(0x6b6e6a);
+const woodM=tmat(function(ctx,s){
+  ctx.fillStyle='#b07a43'; ctx.fillRect(0,0,s,s);
+  for(let y=0;y<s;y+=8){ ctx.fillStyle='#8a5a2b'; ctx.fillRect(0,y,s,1); ctx.fillStyle='#c99059'; ctx.fillRect((y*3)%s,y+3,s*.6,1); }
+});
+const shingleM=tmat(function(ctx,s){
+  ctx.fillStyle='#4a3a36'; ctx.fillRect(0,0,s,s);
+  const rows=8,bw=s/4,bh=s/rows;
+  for(let r=0;r<rows;r++){ const off=(r%2)?bw/2:0;
+    for(let k=-1;k<5;k++){ ctx.fillStyle=['#5c4038','#4a322c','#6a4a40','#3f2c28'][(r+k+8)%4];
+      ctx.fillRect(k*bw+off+1,r*bh+1,bw-2,bh-1); } }
+});
+const dirtM=mat(0x6a4a2c), rustM=mat(0x6d6f72), darkM=mat(0x5a4030), glassM=mat(0x8fd0ff,{transparent:true,opacity:.58,depthWrite:false,emissive:0xc8ecff,emissiveIntensity:.16}), shineM=mat(0xffffff,{transparent:true,opacity:.45,depthWrite:false,emissive:0xffffff,emissiveIntensity:.25});
+const skinM=mat(0xf1c27d), pinkM=mat(0xff6fb5), jeanM=mat(0x3d6fb5), hairM=mat(0x5a4030);
+const paintPink=mat(0xffb3c7), paintCream=mat(0xf6e3b4), waterM=mat(0x6ecbff,{transparent:true,opacity:.72});
+
+function box(sx,sy,sz,m,x,y,z,parent){
+  const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz), m);
+  o.position.set(x||0,y||0,z||0); (parent||scene).add(o); return o;
+}
+
+const BW=.5, BH=.24, BD=.28, COURSES=8;
+const X0=-3.5, Z0=-3.5, X1=3.5, Z1=3.5;
+
+function addSlab(root){
+  for(let ix=0;ix<7;ix++) for(let iz=0;iz<7;iz++){
+    box(1,.28,1, concM, X0+0.5+ix, .16, Z0+0.5+iz, root);
+  }
+}
+function wallLen(){ return X1-X0; }
+function addBricks(root, leaveOpenings){
+  const span=Math.floor(wallLen()/BW);
+  const mid=(span/2)|0;
+  function isOpen(face,c,k){
+    if(!leaveOpenings) return false;
+    if(face===0 && k>=mid-1 && k<=mid && c<6) return true;
+    if((face===1||face===3) && k>=mid-1 && k<=mid && c>=2 && c<=5) return true;
+    return false;
+  }
+  function pos(face,c,k){
+    const off=(c%2)?BW/2:0;
+    const along=k*BW+off+BW/2;
+    const y=.30+c*BH+BH/2;
+    if(face===0) return [X0+along, y, Z0+BD/2, 0];
+    if(face===2) return [X1-along, y, Z1-BD/2, 0];
+    if(face===1) return [X1-BD/2, y, Z0+along, Math.PI/2];
+    return [X0+BD/2, y, Z1-along, Math.PI/2];
+  }
+  for(let face=0;face<4;face++) for(let c=0;c<COURSES;c++) for(let k=0;k<span;k++){
+    if(isOpen(face,c,k)) continue;
+    if((face===1||face===3) && (k===0 || k===span-1)) continue;
+    const p=pos(face,c,k);
+    const b=box(BW-.02,BH-.02,BD, brickM, p[0],p[1],p[2], root);
+    b.rotation.y=p[3];
+  }
+}
+function addGableBricks(root){
+  const rise=Math.tan(0.48);
+  const span=Math.floor(wallLen()/BW);
+  for(const face of [1,3]){
+    for(let c=COURSES;c<COURSES+8;c++){
+      const y=.30+c*BH+BH/2;
+      for(let k=0;k<span;k++){
+        const off=(c%2)?BW/2:0;
+        const along=k*BW+off+BW/2;
+        const dist=Math.abs((Z0+Z1)/2 - (face===1 ? (Z0+along) : (Z1-along)));
+        const maxOut=(3.15-y)/rise;
+        if(dist>maxOut-0.05) continue;
+        const x = face===1 ? (X1-BD/2) : (X0+BD/2);
+        const z = face===1 ? (Z0+along) : (Z1-along);
+        const b=box(BW-.02,BH-.02,BD, brickM, x,y,z, root);
+        b.rotation.y=Math.PI/2;
+      }
+    }
+  }
+}
+function addRoof(root){
+  const ridgeY=3.15, half=4.15;
+  const rf=box(8.4,.1, half+.3, shingleM, 0, ridgeY, -2.05, root); rf.rotation.x=-0.48;
+  const rb=box(8.4,.1, half+.3, shingleM, 0, ridgeY,  2.05, root); rb.rotation.x= 0.48;
+  for(let i=-3;i<=3;i++){
+    const a=box(.1,.08, half, woodM, i*1.15, ridgeY-0.12, -2.0, root); a.rotation.x=-0.48;
+    const b=box(.1,.08, half, woodM, i*1.15, ridgeY-0.12,  2.0, root); b.rotation.x= 0.48;
+  }
+}
+const glassPanes=[];
+function addDoorWindow(root){
+  const mid=0, zf=Z0+BD/2+0.02, doorW=1.02, doorH=1.72;
+  box(.1,doorH,.16, woodM, mid-doorW/2, .30+doorH/2, zf, root);
+  box(.1,doorH,.16, woodM, mid+doorW/2, .30+doorH/2, zf, root);
+  box(doorW+.1,.1,.16, woodM, mid, .30+doorH, zf, root);
+  // door swung open so the furnished room is visible from the front path
+  const door=box(doorW-.16,doorH-.12,.07, darkM, mid+doorW/2+0.02, .30+(doorH-.12)/2, zf+0.42, root);
+  door.rotation.y=-1.15;
+  box(.06,.06,.04, mat(0xd4a574), mid+doorW/2+0.38, 1.05, zf+0.2, root);
+  [[X1+0.04, 1],[X0-0.04, -1]].forEach(function(pair){
+    const x=pair[0], dir=pair[1];
+    const w=1.55, h=1.28, y=.30+2*BH+h/2;
+    // exterior wood casing sits outside the brick so the opening reads as a clean frame
+    box(.2,h+.08,.32, woodM, x, y, -w/2, root);
+    box(.2,h+.08,.32, woodM, x, y,  w/2, root);
+    box(.2,.22,w+.32, woodM, x, y+h/2, 0, root);
+    box(.22,.22,w+.36, woodM, x, y-h/2, 0, root);
+    const pane=box(.03,h-.32,w-.4, glassM, x, y, 0, root);
+    const sh1=box(.004,h*.4,.1, shineM, x+dir*0.02, y+0.18, -0.18, root);
+    const sh2=box(.004,h*.12,.04, shineM, x+dir*0.02, y-0.16, 0.2, root);
+    glassPanes.push(pane, sh1, sh2);
+  });
+}
+function addPaint(root, col, face){
+  // interior-ish wash visible on the front (south, +z? Z0 is south front facing camera at +z)
+  // camera looks from +z, front wall is at Z0 (south). Paint as thin panels just inside/outside walls.
+  const m = col;
+  // front wall flanks of the door, slightly in front of bricks
+  box(2.2, 1.7, .04, m, -2.0, 1.15, Z0-0.04, root);
+  box(2.2, 1.7, .04, m,  2.0, 1.15, Z0-0.04, root);
+  box(6.8, 1.7, .04, m, 0, 1.15, Z1+0.04, root);
+}
+function addFurniture(root, peek){
+  box(.95,.32,.5, mat(0x3a86ff), -1.2, .5, -2.2, root);
+  box(.95,.35,.16, mat(0x3a86ff), -1.2, .78, -2.42, root);
+  box(.7,.08,.7, woodM, .7, .55, -1.6, root);
+  [[.42,-1.32],[.98,-1.32],[.42,-1.88],[.98,-1.88]].forEach(p=>box(.08,.42,.08, darkM, p[0], .3, p[1], root));
+  box(.22,.16,.22, darkM, 2.15, .4, -2.4, root);
+  const leaf=new THREE.Mesh(new THREE.SphereGeometry(.22,8,6), mat(0x2ec27e)); leaf.position.set(2.15,.7,-2.4); root.add(leaf);
+  box(1.6,.04,1.1, mat(0xc39bff), 0, .32, -2.0, root);
+  if(!peek){
+    box(1.1,.28,.7, mat(0xfffaf0), 0, .48, 1.5, root);
+    box(.4,.18,.68, mat(0xffe0ef), 0, .7, 1.78, root);
+    box(.22,.7,.16, darkM, -2.0, .55, .4, root);
+    box(.9,.55,.08, darkM, -2.0, 1.1, .4, root);
+    box(.78,.44,.03, mat(0x7ad3ff, {emissive:0x3a86ff, emissiveIntensity:.35}), -2.0, 1.1, .46, root);
+    box(.7,1.2,.28, woodM, 2.15, .9, -.8, root);
+  }
+}
+function addMixer(root,x,z){
+  const g=new THREE.Group(); g.position.set(x,0,z); root.add(g);
+  const drum=new THREE.Mesh(new THREE.CylinderGeometry(.45,.5,.9,14), rustM);
+  drum.rotation.z=Math.PI/2; drum.position.set(0,.85,0); g.add(drum);
+  [[-.35,.25],[-.35,-.25],[.35,.25],[.35,-.25]].forEach(function(p){ box(.08,.7,.08, darkM, p[0], .35, p[1], g); });
+  box(.7,.25,.45, rustM, 1.15, .35, 0, g);
+  box(.45,.22,.3, mat(0xcfc4a8), -1.0, .2, .4, g);
+  box(.45,.22,.3, mat(0xcfc4a8), -1.0, .2, -.1, g);
+  box(.45,.22,.3, mat(0xe5c574), -1.0, .2, -.55, g);
+}
+function addBrickPile(root,x,z,n){
+  let i=0;
+  for(let y=0;y<5 && i<n;y++) for(let r=0;r<3 && i<n;r++) for(let c=0;c<4 && i<n;c++,i++){
+    box(BW-.02,BH-.02,BD, brickM, x+c*BW*.7, .16+y*BH, z+r*BD*.8, root);
+  }
+}
+function addWoodPile(root,x,z){
+  for(let i=0;i<6;i++) box(1.1,.08,.22, woodM, x, .12+i*.09, z+(i%2)*0.05, root);
+}
+function addBags(root,x,z){
+  box(.45,.22,.3, mat(0xcfc4a8), x, .2, z, root);
+  box(.45,.22,.3, mat(0xcfc4a8), x+.35, .2, z+.15, root);
+  box(.45,.22,.3, mat(0xe5c574), x-.1, .2, z+.4, root);
+}
+
+
+function makeCarrier(){
+  const g=new THREE.Group();
+  const shirt=mat(0x3a86ff), pants=mat(0x2d2d2d), skin=mat(0xf1c27d);
+  box(.38,.85,.38, skin, -.2, .5, 0, g);
+  box(.38,.85,.38, skin,  .2, .5, 0, g);
+  box(.42,.22,.42, pants, -.2, .1, .02, g);
+  box(.42,.22,.42, pants,  .2, .1, .02, g);
+  box(.44,.85,.4, pants, -.2, .95, 0, g);
+  box(.44,.85,.4, pants,  .2, .95, 0, g);
+  box(.85,1.0,.48, shirt, 0, 1.55, 0, g);
+  box(.3,.3,.85, shirt, -.55, 1.45, .45, g);
+  box(.3,.3,.85, shirt,  .55, 1.45, .45, g);
+  box(.28,.28,.28, skin, -.55, 1.45, .9, g);
+  box(.28,.28,.28, skin,  .55, 1.45, .9, g);
+  box(.7,.7,.7, skin, 0, 2.28, 0, g);
+  box(.76,.28,.76, mat(0x3d2314), 0, 2.58, 0, g);
+  box(.08,.08,.04, darkM, -.16, 2.32, .37, g);
+  box(.08,.08,.04, darkM,  .16, 2.32, .37, g);
+  box(.18,.05,.03, mat(0xe07a8a), 0, 2.12, .37, g);
+  box(.05,.85,.62, glassM, 0, 1.5, 1.05, g);
+  box(.012,.5,.14, shineM, 0.03, 1.62, .95, g);
+  box(.012,.22,.07, shineM, 0.03, 1.28, 1.18, g);
+  return g;
+}
+function makeMom(){
+  const g=new THREE.Group();
+  box(.38,.9,.38, skinM, -.2, .55, 0, g);
+  box(.38,.9,.38, skinM,  .2, .55, 0, g);
+  box(.42,.28,.42, hairM, -.2, .12, .02, g);
+  box(.42,.28,.42, hairM,  .2, .12, .02, g);
+  const sk=new THREE.Mesh(new THREE.CylinderGeometry(.55,.78,.7,8), jeanM); sk.position.y=1.0; g.add(sk);
+  box(.82,1.0,.44, pinkM, 0, 1.55, 0, g);
+  box(.34,.9,.34, pinkM, -.62, 1.35, 0, g);
+  box(.34,.9,.34, pinkM,  .62, 1.35, 0, g);
+  box(.32,.32,.32, skinM, -.62, .85, 0, g);
+  box(.32,.32,.32, skinM,  .62, .85, 0, g);
+  box(.72,.72,.72, skinM, 0, 2.28, 0, g);
+  box(.8,.35,.8, hairM, 0, 2.55, 0, g);
+  box(.8,.5,.25, hairM, 0, 2.2, -.3, g);
+  box(.08,.08,.04, darkM, -.16, 2.32, .37, g);
+  box(.08,.08,.04, darkM,  .16, 2.32, .37, g);
+  box(.2,.06,.04, mat(0xe07a8a), 0, 2.12, .37, g);
+  return g;
+}
+function addTree(x,z,kind,s,root){
+  root=root||scene; s=s||1;
+  const g=new THREE.Group(); g.position.set(x,0,z); root.add(g);
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.16*s,.22*s,1.4*s,6), darkM);
+  trunk.position.y=.7*s; g.add(trunk);
+  const cols=['#2ec27e','#3fb86b','#24965a','#57c47a','#1f8a4c'];
+  const col=cols[kind%cols.length];
+  if(kind%3===1){
+    const cone=new THREE.Mesh(new THREE.ConeGeometry(1.05*s,2.2*s,7), mat(col));
+    cone.position.y=2.0*s; g.add(cone);
+    const cone2=new THREE.Mesh(new THREE.ConeGeometry(.8*s,1.4*s,7), mat(cols[(kind+2)%cols.length]));
+    cone2.position.y=2.7*s; g.add(cone2);
+  } else {
+    const leaf=new THREE.Mesh(new THREE.IcosahedronGeometry((kind%3===0?1.15:0.95)*s,0), mat(col));
+    leaf.position.y=1.8*s; g.add(leaf);
+    const leaf2=new THREE.Mesh(new THREE.IcosahedronGeometry(.65*s,0), mat(cols[(kind+1)%cols.length]));
+    leaf2.position.set(.35*s,1.5*s,.2*s); g.add(leaf2);
+  }
+  return g;
+}
+function plantTrees(root, gapTowardYard){
+  const rx=8.4, rz=8.4, n=16;
+  for(let k=0;k<n;k++){
+    const t=(k/n)*Math.PI*2;
+    // yard is -z; skip a gap around angle -PI/2? atan2(yardz,yardx)=atan2(-1,0)= -PI/2
+    // tree at (cos t * rx, sin t * rz). toward yard (0,-1), angle of tree from center is atan2(sin t, cos t)=t
+    // we want gap when t is near -PI/2 or 3PI/2 (negative z)
+    let d=Math.atan2(Math.sin(t-(-Math.PI/2)), Math.cos(t-(-Math.PI/2)));
+    if(Math.abs(d)<.55) continue;
+    const x=Math.cos(t)*rx, z=Math.sin(t)*rz;
+    addTree(x,z,(k*3)%5, 0.85+(k%5)*.08, root);
+  }
+  // a few extra outer trees
+  addTree(-11, 4, 1, 1.15, root);
+  addTree(11, 5, 2, 1.0, root);
+  addTree(10, -6, 0, .9, root);
+  addTree(-10, -5, 4, 1.05, root);
+}
+
+const worldRoot=new THREE.Group(); scene.add(worldRoot);
+const treeRoot=new THREE.Group(); scene.add(treeRoot);
+const houseRoot=new THREE.Group(); worldRoot.add(houseRoot);
+const lotRoot=new THREE.Group(); worldRoot.add(lotRoot);
+const mom=makeMom(); mom.position.set(1.7,0,-6.4); mom.rotation.y=Math.PI; scene.add(mom);
+const carrier=makeCarrier(); carrier.visible=false; scene.add(carrier);
+const water=new THREE.Mesh(new THREE.CylinderGeometry(16,16,.7,40), waterM);
+water.position.set(0,-1.2,0); water.visible=false; scene.add(water);
+// foam bumps
+const foams=[];
+for(let i=0;i<10;i++){
+  const f=new THREE.Mesh(new THREE.SphereGeometry(.35,8,6), mat(0xe8f8ff,{transparent:true,opacity:.8}));
+  f.visible=false; scene.add(f); foams.push(f);
+}
+
+// finished house
+addSlab(houseRoot);
+addBricks(houseRoot, true);
+addGableBricks(houseRoot);
+addRoof(houseRoot);
+addDoorWindow(houseRoot);
+addPaint(houseRoot, paintPink);
+addFurniture(houseRoot, false);
+
+// lot stuff
+addMixer(lotRoot, 6.2, -1.2);
+addBrickPile(lotRoot, 5.6, 2.2, 28);
+addWoodPile(lotRoot, 5.4, 3.4);
+addBags(lotRoot, 6.6, 1.1);
+const yardPost=box(.12,2.2,.12, woodM, 0, 1.1, -17.5, lotRoot);
+(function(){
+  const c=document.createElement('canvas'); c.width=256; c.height=64;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#8b4513'; ctx.fillRect(0,0,256,64);
+  ctx.fillStyle='#fffaf0'; ctx.font='700 28px system-ui,sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('Supply Yard', 128, 34);
+  const signM=new THREE.MeshLambertMaterial({map:new THREE.CanvasTexture(c)});
+  box(3.6,.85,.06, signM, 0, 2.45, -17.5, lotRoot);
+})();
+
+// simple awning already via walk path
+
+plantTrees(treeRoot, true);
+
+// plot edge boards
+[[-4.1,0,.3,8.6],[4.1,0,.3,8.6],[0,-4.1,8.6,.3],[0,4.1,8.6,.3]].forEach(p=>{
+  box(p[2],.5,p[3], mat(0xfffaf0), p[0], .25, p[1], worldRoot);
+});
+
+const paints=['#f6e3b4','#ffb3c7','#bfe3ff','#c8f0c0','#fffaf0','#ffe08a','#d4c0ff','#ffc9a3'];
+document.getElementById('cols').innerHTML=paints.map((c,i)=>'<span class="dhc'+(i===1?' on':'')+'" style="background:'+c+'"></span>').join('');
+
+function shot(kind){
+  document.body.className = (kind==='decorated') ? '' : 'hideui';
+  document.getElementById('act').style.display = kind==='decorated' ? 'none' : '';
+  document.getElementById('bar').style.display = (kind==='glassbefore'||kind==='glassafter') ? 'none' : '';
+  const cut=document.getElementById('cut');
+  const shop=document.getElementById('shop');
+  const bubble=document.getElementById('bubble');
+  const say=document.getElementById('say');
+  const fade=document.getElementById('fade');
+  shop.className = kind==='shop' ? 'show' : '';
+  fade.style.opacity = '0';
+  if(kind==='mom'){
+    cut.style.display=''; bubble.style.display=''; say.textContent='This is your new house!';
+    houseRoot.visible=true; lotRoot.visible=false; mom.visible=true; water.visible=false; carrier.visible=false;
+    houseRoot.position.set(0,0,0); houseRoot.rotation.set(0,0,0);
+    glassPanes.forEach(m=>m.visible=true); treeRoot.visible=true;
+    mom.position.set(1.8,0,-6.5); mom.rotation.y=Math.PI+0.35;
+    foams.forEach(f=>f.visible=false);
+    cam.position.set(3.4, 3.15, -14.2); cam.lookAt(0.2, 1.55, -2.2);
+  } else if(kind==='flood'){
+    cut.style.display=''; bubble.style.display='none';
+    houseRoot.visible=true; lotRoot.visible=false; mom.visible=true; water.visible=true;
+    water.position.y=1.05;
+    houseRoot.position.set(5.8, 1.2, 1.6); houseRoot.rotation.set(.08, .18, .22);
+    foams.forEach((f,i)=>{ f.visible=true; f.position.set(-5+i*1.35, 1.4, -6+(i%4)*1.2); });
+    mom.position.set(-2.4,0,-7.2); mom.rotation.y=Math.PI*0.7;
+    cam.position.set(1.5, 6.8, -16.5); cam.lookAt(2.2, 1.8, -0.4);
+  } else if(kind==='lot'){
+    cut.style.display='none';
+    houseRoot.visible=false; lotRoot.visible=true; mom.visible=false; water.visible=false;
+    foams.forEach(f=>f.visible=false);
+    cam.position.set(8.8, 7.4, 10.2); cam.lookAt(0.2, 0.5, -1.0);
+  } else if(kind==='shop'){
+    cut.style.display='none';
+    houseRoot.visible=true; lotRoot.visible=false; mom.visible=false; water.visible=false;
+    houseRoot.position.set(0,0,0); houseRoot.rotation.set(0,0,0);
+    foams.forEach(f=>f.visible=false);
+    cam.position.set(6.2, 3.6, -13.0); cam.lookAt(0, 1.3, -1.2);
+  } else if(kind==='glassbefore'){
+    cut.style.display='none'; shop.className='';
+    houseRoot.visible=true; lotRoot.visible=false; mom.visible=false; water.visible=false;
+    houseRoot.position.set(0,0,0); houseRoot.rotation.set(0,0,0);
+    foams.forEach(f=>f.visible=false);
+    glassPanes.forEach(m=>m.visible=false);
+    carrier.visible=true;
+    treeRoot.visible=false;
+    carrier.position.set(5.55, 0, -2.15);
+    carrier.rotation.y=Math.PI/2 - 0.25;
+    carrier.scale.set(0.92, 0.92, 0.92);
+    document.body.className='';
+    document.getElementById('hud').textContent='🏡 🪙 86 · 🪟2 · Carrying 2 Glass';
+    document.getElementById('act').style.display='none';
+    document.getElementById('bar').style.display='none';
+    const gBtn=document.getElementById('btnGlass'), pBtn=document.getElementById('btnPaint');
+    if(gBtn) gBtn.className='b on'; if(pBtn) pBtn.className='b';
+    cam.position.set(10.6, 2.05, 0.2); cam.lookAt(3.7, 1.3, -0.35);
+  } else if(kind==='glassafter'){
+    cut.style.display='none'; shop.className='';
+    houseRoot.visible=true; lotRoot.visible=false; mom.visible=false; carrier.visible=false; water.visible=false;
+    houseRoot.position.set(0,0,0); houseRoot.rotation.set(0,0,0);
+    foams.forEach(f=>f.visible=false);
+    glassPanes.forEach(m=>m.visible=true);
+    treeRoot.visible=false;
+    document.body.className='hideui';
+    cam.position.set(7.9, 1.85, 0.0); cam.lookAt(3.7, 1.2, 0);
+  } else { // decorated
+    cut.style.display='none'; document.getElementById('act').style.display='none';
+    carrier.visible=false;
+    glassPanes.forEach(m=>m.visible=true);
+
+    houseRoot.visible=true; lotRoot.visible=false; mom.visible=false; water.visible=false;
+    houseRoot.position.set(0,0,0); houseRoot.rotation.set(0,0,0);
+    foams.forEach(f=>f.visible=false);
+    cam.position.set(5.4, 2.85, -12.2); cam.lookAt(0.15, 1.15, -2.0);
+  }
+  renderer.render(scene,cam);
+}
+const start = (location.hash||'').replace('#','') || 'mom';
+shot(start);
+document.title='ready';
+document.body.setAttribute('data-ready','1');
+window.__rerender=shot;
+})();
+</script></body></html>
