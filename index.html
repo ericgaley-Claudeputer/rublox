@@ -499,7 +499,23 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .dhsitem .dhe{font-size:22px;display:block}
 .dhsitem small{display:block;font-size:11px;color:#6b7290;font-weight:800;line-height:1.25;margin-top:2px}
 .dhsitem.max{opacity:.65;cursor:default}
-#dhShopX{display:block;margin:14px auto 0;min-width:120px}
+.dhshead{position:relative;z-index:2;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px 10px;background:#fffaf0;border-bottom:2px solid #ffe08a;border-radius:17px 17px 0 0}
+.dhshead h3{margin:0;font-size:22px}
+.dhsbody{overflow:auto;padding:10px 16px 16px;flex:1 1 auto;min-height:0}
+.dhsbox{display:flex;flex-direction:column;padding:0;overflow:hidden}
+#dhShopX,#dhYardX{display:inline-block;margin:0;min-width:88px;flex:0 0 auto}
+
+/* Continue row (t243u / t244u) */
+.continue{margin:22px 0 8px}
+.continue[hidden]{display:none!important}
+.continue h2{margin:0 0 10px;font-size:clamp(22px,3vw,28px)}
+.conrow{display:flex;gap:14px;overflow-x:auto;padding:6px 4px 16px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.contile{flex:0 0 auto;width:min(220px,72vw);border:0;padding:0;margin:0;background:var(--card);border-radius:18px;overflow:hidden;cursor:pointer;scroll-snap-align:start;box-shadow:var(--shadow);font:inherit;text-align:left;color:inherit;transition:transform .2s cubic-bezier(.3,1.8,.5,1)}
+.contile:hover{transform:translateY(-6px)}
+.contile:focus,.contile:focus-visible,.contile.gpf{outline:4px solid #ffd23f;outline-offset:3px}
+.contile canvas{display:block;width:100%;aspect-ratio:16/10;pointer-events:none}
+.contile .conname{display:block;padding:8px 12px 12px;font-weight:900;font-size:16px;line-height:1.2}
+.contile .contime{display:block;margin-top:3px;font-size:12px;color:var(--muted);font-weight:800}
 
 .dblane{position:absolute;left:50%;bottom:110px;transform:translateX(-50%);width:min(280px,70vw);height:42vh;z-index:6;pointer-events:none;display:flex;justify-content:center;background:linear-gradient(180deg,rgba(29,35,64,.1),rgba(29,35,64,.55));border:3px solid rgba(255,111,181,.5);border-radius:16px;overflow:hidden}
 .dbhit{position:absolute;left:50%;bottom:10%;transform:translateX(-50%);font-size:22px;color:#ffd23f;text-shadow:0 2px 0 #000}
@@ -911,6 +927,11 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
       <button class="big" data-go="games">🎮 See the Games</button>
       <button class="big green" data-go="avatar" style="margin-left:8px">🧍 Make my Avatar</button>
     </div>
+  </section>
+
+  <section class="continue" id="continue" hidden>
+    <h2>▶️ Continue</h2>
+    <div class="conrow" id="conRow" data-continue-row role="list"></div>
   </section>
 
   <section id="games">
@@ -1471,7 +1492,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-7';
+const BUILD = '2026.11.11-8';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2465,6 +2486,104 @@ function buildGames(){
     grid.appendChild(card);
   });
 }
+
+/* ---------- continue (t243u) ---------- */
+const RECENT_KEY = 'rubloxRecentGames';
+const RECENT_MAX = 10;
+function loadRecentGames(){
+  const raw = load(RECENT_KEY, []);
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const e of raw){
+    if (!e || typeof e.id !== 'string' || !e.id) continue;
+    const t = +e.t;
+    if (!Number.isFinite(t)) continue;
+    out.push({id: e.id, t: t});
+  }
+  return out;
+}
+function recordRecentGame(id){
+  if (!id || typeof id !== 'string') return loadRecentGames();
+  const g = (typeof GAMES !== 'undefined' ? GAMES : []).find(x => x.id === id);
+  if (!g || g.playable === false) return loadRecentGames();
+  const now = Date.now();
+  const list = loadRecentGames().filter(e => e.id !== id);
+  list.unshift({id: id, t: now});
+  save(RECENT_KEY, list.slice(0, RECENT_MAX));
+  if (typeof renderContinue === 'function') try { renderContinue(); } catch (err) {}
+  return loadRecentGames();
+}
+function recentGamesToShow(){
+  const games = (typeof GAMES !== 'undefined' ? GAMES : []);
+  const known = new Set(games.filter(g => g && g.id && g.playable !== false).map(g => g.id));
+  const seen = new Set();
+  const out = [];
+  const list = loadRecentGames().slice().sort((a, b) => b.t - a.t);
+  for (const e of list){
+    if (!known.has(e.id) || seen.has(e.id)) continue;
+    seen.add(e.id);
+    out.push(e);
+  }
+  return out;
+}
+function formatRecentTime(t, now){
+  const n = now == null ? Date.now() : now;
+  const s = Math.max(0, (n - t) / 1000);
+  if (s < 60) return 'Just now';
+  if (s < 3600){ const m = Math.floor(s / 60); return m + (m === 1 ? ' min ago' : ' min ago'); }
+  if (s < 86400){ const h = Math.floor(s / 3600); return h + (h === 1 ? ' hr ago' : ' hr ago'); }
+  const d = Math.floor(s / 86400);
+  if (d < 7) return d + (d === 1 ? ' day ago' : ' days ago');
+  try { return new Date(t).toLocaleDateString(); } catch (err) { return ''; }
+}
+function renderContinue(){
+  const rows = document.querySelectorAll('[data-continue-row]');
+  const list = recentGamesToShow();
+  rows.forEach(row => {
+    const wrap = row.closest('.continue') || row;
+    if (!list.length){
+      wrap.hidden = true;
+      wrap.setAttribute('hidden', '');
+      row.innerHTML = '';
+      return;
+    }
+    wrap.hidden = false;
+    wrap.removeAttribute('hidden');
+    row.innerHTML = '';
+    list.forEach(e => {
+      const g = GAMES.find(x => x.id === e.id);
+      if (!g) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'contile';
+      btn.dataset.game = g.id;
+      btn.setAttribute('role', 'listitem');
+      btn.setAttribute('aria-label', 'Continue ' + g.name);
+      const name = (g.emoji ? g.emoji + ' ' : '') + g.name;
+      btn.innerHTML = '<canvas width="320" height="200"></canvas><span class="conname">' + name + '<small class="contime">' + formatRecentTime(e.t) + '</small></span>';
+      const cvs = btn.querySelector('canvas');
+      if (cvs && typeof g.draw === 'function'){
+        try { g.draw(cvs.getContext('2d')); } catch (err) {}
+      }
+      btn.onclick = ev => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (typeof Obby !== 'undefined' && Obby.play) Obby.play(g.id);
+        else if (typeof play === 'function') play(g.id);
+      };
+      btn.addEventListener('keydown', ev => {
+        if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight') return;
+        ev.preventDefault();
+        const tiles = [...row.querySelectorAll('.contile')];
+        const i = tiles.indexOf(btn);
+        const n = ev.key === 'ArrowRight' ? i + 1 : i - 1;
+        if (n >= 0 && n < tiles.length) tiles[n].focus();
+      });
+      row.appendChild(btn);
+    });
+  });
+}
+/* ---------- /continue ---------- */
 function animateLava(now){ if (!(typeof Obby !== 'undefined' && Obby.running)){ GAMES.forEach(g => { if (g.anim && g.ctx) g.draw(g.ctx); }); drawAnimThumbs(now || 0); } requestAnimationFrame(animateLava); }
 
 /* ---------- modals, toast, confetti ---------- */
@@ -2707,7 +2826,12 @@ function updateWelcome(){ $('#welcome').textContent = 'Welcome to Rublox, ' + (p
 
 /* ---------- nav ---------- */
 $$('[data-go]').forEach(b => b.addEventListener('click', () => {
-  document.getElementById(b.dataset.go).scrollIntoView({behavior:'smooth'});
+  let id = b.dataset.go;
+  if (id === 'games'){
+    const c = document.getElementById('continue');
+    if (c && !c.hidden) id = 'continue';
+  }
+  document.getElementById(id).scrollIntoView({behavior:'smooth'});
   $$('nav button').forEach(x => x.classList.toggle('active', x.dataset.go === b.dataset.go));
 }));
 const io = new IntersectionObserver(es => es.forEach(e => {
@@ -2741,7 +2865,7 @@ $('#setModal').onclick = e => { if (e.target.id === 'setModal') $('#setModal').c
 
 /* ---------- start ---------- */
 setTheme(load('rubloxDark', false));
-buildGames(); requestAnimationFrame(animateLava);
+buildGames(); renderContinue(); requestAnimationFrame(animateLava);
 buildAvatarEditor(); drawBig(); drawChip(); updateWelcome();
 updateCoins(); renderShop(); renderStuff();
 if (!player) askName();
@@ -11632,7 +11756,7 @@ const Obby = (() => {
     {lL: -.2, lR: .4, aL: -1.6, aR: .3, lean: .05}, {lL: .5, lR: -.3, aL: .2, aR: -1.5, lean: -.05},
     {lL: -.4, lR: -.4, aL: -2.0, aR: -2.0, lean: 0}, {lL: .3, lR: .3, aL: -1.2, aR: 1.0, lean: .1}];
     return Object.assign({lLo: 0, lRo: 0, aLo: 0, aRo: 0}, poses[db.pose % 4]); }
-  /* ===================== t251u: 🏡 DREAM HOUSE BUILDERS — menus hide the prompt, Escape closes shop, tidy yard, honest prompts ===================== */
+  /* ===================== t251u: 🏡 DREAM HOUSE BUILDERS — menus hide the prompt, Escape closes shop, tidy yard, honest prompts. t243u: sticky Shop/Yard Close at top of panel ===================== */
   const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 4;
   const DH_FOOT = {x0: 1, z0: 1, x1: 6, z1: 6}; // slab footprint inside the plot
   const DH_BRICK_W = .5, DH_BRICK_H = .24, DH_BRICK_D = .28, DH_COURSES = 8;
@@ -12772,7 +12896,7 @@ const Obby = (() => {
       const n = (dh.stock[m.id]|0) + (dh.carry && dh.carry.id === m.id ? dh.carry.n : 0);
       return '<button class="dhsitem" data-dhbuy="' + m.id + '"><span class="dhe">' + m.e + '</span><b>' + m.name + '</b><small>' + m.cost + '🪙' + (n ? ' · have ' + n : '') + '</small></button>';
     }).join('');
-    el.innerHTML = '<div class="dhsbox"><h3>📦 Supply Yard</h3><p class="dhsbank">🪙 ' + Math.floor(dh.bank) + ' building coins · walk up and press E to shop</p><div class="dhsgrid">' + items + '</div><button class="dhb" id="dhYardX">Close</button></div>';
+    el.innerHTML = '<div class="dhsbox"><div class="dhshead"><h3>📦 Supply Yard</h3><button class="dhb" id="dhYardX">Close</button></div><div class="dhsbody"><p class="dhsbank">🪙 ' + Math.floor(dh.bank) + ' building coins · walk up and press E to shop</p><div class="dhsgrid">' + items + '</div></div></div>';
   }
   function dhToggleShop(on){
     if (!dh) return;
@@ -12795,7 +12919,7 @@ const Obby = (() => {
       const maxed = have >= u.max;
       return '<button class="dhsitem' + (maxed ? ' max' : '') + '" data-dhup="' + u.id + '"' + (maxed ? ' disabled' : '') + '><span class="dhe">' + u.e + '</span><b>' + u.name + '</b><small>' + (maxed ? 'Max ' + have + '/' + u.max : u.cost + '🪙 · ' + have + '/' + u.max) + '<br>' + u.desc + '</small></button>';
     }).join('');
-    el.innerHTML = '<div class="dhsbox"><h3>🛒 Dream House Shop</h3><p class="dhsbank">🪙 ' + Math.floor(dh.bank) + ' coins · earned from build milestones</p><h4>Furniture</h4><div class="dhsgrid">' + furn + '</div><h4>Upgrades</h4><div class="dhsgrid">' + ups + '</div><button class="dhb" id="dhShopX">Close</button></div>';
+    el.innerHTML = '<div class="dhsbox"><div class="dhshead"><h3>🛒 Dream House Shop</h3><button class="dhb" id="dhShopX">Close</button></div><div class="dhsbody"><p class="dhsbank">🪙 ' + Math.floor(dh.bank) + ' coins · earned from build milestones</p><h4>Furniture</h4><div class="dhsgrid">' + furn + '</div><h4>Upgrades</h4><div class="dhsgrid">' + ups + '</div></div></div>';
   }
   function dhCineRecs(){
     const recs = [];
@@ -13771,6 +13895,7 @@ function start(m = 'obby', d = null){
     mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'stable', 'haunt', 'dance', 'dreamhouse'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
+    recordRecentGame(mode);
     $('#obby').classList.add('show'); document.body.style.overflow = 'hidden'; document.documentElement.classList.add('ingame'); setHomeInert(true);
     if (!renderer){
       renderer = new THREE.WebGLRenderer({antialias: !LOWQ, powerPreference: 'high-performance'});
