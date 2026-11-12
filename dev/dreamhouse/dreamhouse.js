@@ -143,14 +143,14 @@
       const b = dhFootWorld(plot == null ? ((dh && dh.mine) || 0) : plot);
       return {x: (b.x0 + b.x1) / 2, y: DH_SLAB_H, z: (b.z0 + b.z1) / 2};
     }
-    if (dhTestFixtureId() === 'v7painted' || dhTestFixtureId() === 'v7frame'){
+    if (dhTestFixtureId() === 'v7painted' || dhTestFixtureId() === 'v7frame' || dhTestFixtureId() === 'v7done'){
       const b = dhFootWorld(plot == null ? ((dh && dh.mine) || 0) : plot);
       // Stand south of the front wall, lined up with the planned front window, so testers
       // can immediately see framing spots or the painted exterior (no bare-brick hole).
       const mid = (dhBrickAlongCount(0) / 2) | 0;
       const along = ((mid + 2 + mid + 3) / 2) * DH_BRICK_W + DH_BRICK_W / 2;
-      const back = (dhTestFixtureId() === 'v7painted') ? 2.35 : 2.2;
-      return {x: b.x0 + along, y: .05, z: b.z0 - back, yaw: Math.PI, pitch: (dhTestFixtureId() === 'v7painted') ? -0.06 : 0.08};
+      const back = (dhTestFixtureId() === 'v7done') ? 3.4 : (dhTestFixtureId() === 'v7painted') ? 2.35 : 2.2;
+      return {x: b.x0 + along, y: .05, z: b.z0 - back, yaw: Math.PI, pitch: (dhTestFixtureId() === 'v7done' || dhTestFixtureId() === 'v7painted') ? -0.06 : 0.08};
     }
     return {x: ox + DH_CELL * 4, y: .05, z: oz - 2.8};
   }
@@ -290,7 +290,7 @@
   }
   function dhTestActive(){
     const id = dhTestFixtureId();
-    return id === 'v6furnish' || id === 'v7walls' || id === 'v7frame' || id === 'v7painted' || id === 'v6inside' || id === 'visit' || id === 'visithost';
+    return id === 'v6furnish' || id === 'v7walls' || id === 'v7frame' || id === 'v7painted' || id === 'v7done' || id === 'v6inside' || id === 'visit' || id === 'visithost';
   }
   function dhTestV6FootSlabs(){
     const recs = [];
@@ -389,6 +389,18 @@
       upgrades: {carry: 1}, tipsSeen: {}, legacyHouse: false
     };
   }
+  function dhTestV7DoneRaw(){
+    // A finished v7 house ready for the completion cut-scene (Mom says Good job!).
+    const raw = dhTestV7PaintedRaw();
+    const pieces = (raw.pieces || []).filter(a => !(a && a[0] === 'brick' && dhIsWindowOpeningCell(a[4]|0, a[2]|0, a[3]|0)));
+    if (!pieces.some(a => a[0] === 'winframe' && (a[4]|0) === 0)) pieces.push(['winframe', 0, 0, 0, 0, 0]);
+    if (!pieces.some(a => a[0] === 'pane' && (a[4]|0) === 0)) pieces.push(['pane', 0, 0, 0, 0, 0]);
+    raw.pieces = pieces;
+    raw.doneCutSeen = false;
+    raw.introSeen = true;
+    raw.goals = Object.assign({}, raw.goals || {}, {marked:1, slab:1, course:1, walls:1, rafters:1, roof:1, openings:1, glaze:1, paint:1, furnish:1});
+    return raw;
+  }
   function dhTestVisitRaw(){
     const raw = dhTestV6FurnishRaw();
     raw.pieces = (raw.pieces || []).concat([
@@ -406,6 +418,7 @@
     if (id === 'v7walls') return dhTestV7WallsRaw();
     if (id === 'v7frame') return dhTestV7FrameRaw();
     if (id === 'v7painted') return dhTestV7PaintedRaw();
+    if (id === 'v7done') return dhTestV7DoneRaw();
     return null;
   }
   function dhTestBlockPersist(){
@@ -427,7 +440,7 @@
     return migrated;
   }
   function dhMigrate(r){
-    const out = {ver: DH_VER, pieces: [], stock: dhEmptyStock(), goals: (r.goals && typeof r.goals === 'object') ? Object.assign({}, r.goals) : {}, coins: Math.max(0, +r.coins || 0), likes: Math.max(0, r.likes | 0), granted: !!r.granted, v1pieces: null, introSeen: !!r.introSeen, upgrades: dhEmptyUpgrades(), tipsSeen: {}, legacyHouse: false};
+    const out = {ver: DH_VER, pieces: [], stock: dhEmptyStock(), goals: (r.goals && typeof r.goals === 'object') ? Object.assign({}, r.goals) : {}, coins: Math.max(0, +r.coins || 0), likes: Math.max(0, r.likes | 0), granted: !!r.granted, v1pieces: null, introSeen: !!r.introSeen, upgrades: dhEmptyUpgrades(), tipsSeen: {}, legacyHouse: false, doneCutSeen: !!r.doneCutSeen};
     if (r.tipsSeen && typeof r.tipsSeen === 'object') Object.keys(r.tipsSeen).forEach(k => { if (r.tipsSeen[k]) out.tipsSeen[k] = true; });
     if (r.stock && typeof r.stock === 'object') Object.keys(out.stock).forEach(k => { out.stock[k] = Math.max(0, +r.stock[k] || 0); });
     if (r.upgrades && typeof r.upgrades === 'object') DH_UPGRADES.forEach(u => { out.upgrades[u.id] = Math.max(0, Math.min(u.max, +r.upgrades[u.id] || 0)); });
@@ -457,6 +470,10 @@
     out.legacyHouse = !!r.legacyHouse || (prev > 0 && prev < 6 && (out.pieces || []).length > 0);
     if (prev < 7) out.pieces = dhUpgradePiecesToV7(out.pieces, out);
     out.pieces = dhRepairMissingWindows(out.pieces, out.goals, out);
+    // Existing finished houses keep every piece and coin. Mark the cut-scene seen if the
+    // flag was never stored, so loading an old complete save does not suddenly play it.
+    // A brand-new completion (flag explicitly false or absent on an unfinished house) can play once.
+    if (r.doneCutSeen == null && out.goals && out.goals.furnish) out.doneCutSeen = true;
     out.ver = DH_VER;
     return out;
   }
@@ -548,7 +565,7 @@
     });
   }
   function dhFreshSave(){
-    return {ver: DH_VER, pieces: [], stock: dhEmptyStock(), goals: {}, coins: 0, likes: 0, granted: false, v1pieces: null, introSeen: false, upgrades: dhEmptyUpgrades(), tipsSeen: {}, legacyHouse: false};
+    return {ver: DH_VER, pieces: [], stock: dhEmptyStock(), goals: {}, coins: 0, likes: 0, granted: false, v1pieces: null, introSeen: false, upgrades: dhEmptyUpgrades(), tipsSeen: {}, legacyHouse: false, doneCutSeen: false};
   }
   function dhClosePauseMenus(){
     if (typeof dhCloseReset === 'function') try { dhCloseReset(); } catch (e){}
@@ -580,6 +597,8 @@
       dh.introSeen = false;
       dh.tipsSeen = {};
       dh.legacyHouse = false;
+      dh.doneCutSeen = false;
+      dh.celebrate = null;
       dh.grantedNow = false;
       dh._starterGranted = false;
       dh.yardMsg = '';
@@ -620,6 +639,7 @@
     p.upgrades = Object.assign(dhEmptyUpgrades(), dh.upgrades || {});
     p.tipsSeen = Object.assign({}, dh.tipsSeen || {});
     p.legacyHouse = !!dh.legacyHouse;
+    p.doneCutSeen = !!dh.doneCutSeen;
     if (extra) Object.assign(p, extra);
     if (!dh._skipSave && !dhTestBlockPersist()) save(DH_KEY, p);
   }
@@ -1814,7 +1834,7 @@
     dh.visiting = !!dhShouldVisit();
     if (dh.visiting) dh._skipSave = true;
     const p0 = (dh.visiting && !dhTestRawSave()) ? dhFreshSave() : dhProg();
-    dh.bank = p0.coins; dh.likes = p0.likes; dh.goals = Object.assign({}, p0.goals); dh.stock = Object.assign(dhEmptyStock(), p0.stock); dh.v1pieces = p0.v1pieces; dh.upgrades = Object.assign(dhEmptyUpgrades(), p0.upgrades || {}); dh.introSeen = !!p0.introSeen; dh.tipsSeen = Object.assign({}, p0.tipsSeen || {}); dh.legacyHouse = !!p0.legacyHouse; dh.brickInst = {}; dh.hand = null; dh.outlines = null; dh.pourHold = false;
+    dh.bank = p0.coins; dh.likes = p0.likes; dh.goals = Object.assign({}, p0.goals); dh.stock = Object.assign(dhEmptyStock(), p0.stock); dh.v1pieces = p0.v1pieces; dh.upgrades = Object.assign(dhEmptyUpgrades(), p0.upgrades || {}); dh.introSeen = !!p0.introSeen; dh.tipsSeen = Object.assign({}, p0.tipsSeen || {}); dh.legacyHouse = !!p0.legacyHouse; dh.doneCutSeen = !!p0.doneCutSeen; dh.celebrate = null; dh.brickInst = {}; dh.hand = null; dh.outlines = null; dh.pourHold = false;
     if (dh.visiting){
       dh.introSeen = true;
       dh._skipSave = true;
@@ -2834,7 +2854,7 @@
   }
   function dhAct(){
     if (!dh) return;
-    if (dh.intro) return dhSkipIntro();
+    if (dh.intro || dh.celebrate) return dhSkipCut();
     if (dh.inviteOpen){ dhToggleInvite(false); return true; }
     if (dhIsVisitor()){ return dhVisitLike(); }
     if (dh.yardOpen){ dhToggleYard(false); return; }
@@ -2879,6 +2899,7 @@
   function dhCheckGoals(){
     if (!dh) return;
     const mine = dh.pieces[dh.mine] || [];
+    const hadFurnish = !!dh.goals.furnish;
     DH_GOALS.forEach(g => {
       if (dh.goals[g.id]) return;
       if (g.need(mine)){
@@ -2887,8 +2908,10 @@
         if (typeof runCoins !== 'undefined') runCoins = (runCoins || 0) + g.pay;
         if (typeof SND !== 'undefined' && SND.coin) SND.coin();
         banner('✨ ' + g.name + '! +' + g.pay + ' 🪙');
+        if (typeof achSweep === 'function') try { achSweep({silent: true}); } catch (e){}
       }
     });
+    if (!hadFurnish && dh.goals.furnish && !dh.doneCutSeen && !dh.visiting) dh._wantCelebrate = true;
     dhSave();
   }
   function dhNet(a, data){
@@ -3225,7 +3248,262 @@
     }
   }
 
+  function dhCutPlaying(){ return !!(dh && (dh.intro || dh.celebrate)); }
+  function dhSkipCut(){
+    if (!dh) return false;
+    if (dh.intro) return dhSkipIntro();
+    if (dh.celebrate) return dhSkipCelebrate();
+    return false;
+  }
+  function dhHouseComplete(pieces, goals){
+    const p = pieces || ((dh && dh.pieces && dh.pieces[dh.mine]) || []);
+    const g = goals || ((dh && dh.goals) || {});
+    if (g && g.furnish) return true;
+    const need = (typeof DH_GOALS !== 'undefined' && DH_GOALS) ? DH_GOALS.find(x => x && x.id === 'furnish') : null;
+    return !!(need && typeof need.need === 'function' && need.need(p));
+  }
+  function dhShouldCelebrate(){
+    if (!dh || dh.visiting) return false;
+    if (typeof dhIsVisitor === 'function' && dhIsVisitor()) return false;
+    if (dh.doneCutSeen || dh.celebrate) return false;
+    if (typeof dhTestFixtureId === 'function' && dhTestFixtureId() === 'v7done') return true;
+    return dhHouseComplete();
+  }
+  function dhCelebrateCam(){
+    if (!dh || !dh.celebrate) return false;
+    if (typeof camera === 'undefined' || !camera) return false;
+    const foot = (dh.cut && dh.cut.foot) || (typeof dhFootWorld === 'function' ? dhFootWorld(dh.mine) : null);
+    if (!foot) return false;
+    const midX = (foot.x0 + foot.x1) / 2, midZ = (foot.z0 + foot.z1) / 2;
+    const dest = {x: midX, y: 2.55, z: foot.z0 - 9.2};
+    const look = {x: midX + 0.15, y: 1.45, z: midZ - 0.4};
+    const prev = dh._celPrev || dest;
+    const u0 = (dh.celebrate.stage === 'swing') ? Math.min(1, (dh.celebrate.t || 0) / Math.max(0.2, dh.celebrate.dur.swing || 1.6)) : 1;
+    const ease = u0 * u0 * (3 - 2 * u0);
+    const sx = prev.camX != null ? prev.camX : dest.x, sy = prev.camY != null ? prev.camY : dest.y, sz = prev.camZ != null ? prev.camZ : dest.z;
+    camera.position.set(sx + (dest.x - sx) * ease, sy + (dest.y - sy) * ease, sz + (dest.z - sz) * ease);
+    if (typeof camera.lookAt === 'function') camera.lookAt(look.x, look.y, look.z);
+    return true;
+  }
+  function dhStartCelebrate(){
+    if (!dh || dh.celebrate) return false;
+    if (dh.doneCutSeen) return false;
+    if (dh.intro) return false;
+    if (typeof dhToggleShop === 'function') dhToggleShop(false);
+    if (typeof dhToggleYard === 'function') dhToggleYard(false);
+    if (typeof dhToggleUp === 'function') dhToggleUp(false);
+    let locked = false;
+    try { locked = !!(typeof document !== 'undefined' && document.pointerLockElement); } catch (e){}
+    try { if (typeof document !== 'undefined' && document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e){}
+    const camX = (typeof camera !== 'undefined' && camera && camera.position) ? camera.position.x : 0;
+    const camY = (typeof camera !== 'undefined' && camera && camera.position) ? camera.position.y : 2.4;
+    const camZ = (typeof camera !== 'undefined' && camera && camera.position) ? camera.position.z : 0;
+    dh._celPrev = {
+      yaw: (typeof cam !== 'undefined' && cam) ? cam.yaw : Math.PI,
+      pitch: (typeof cam !== 'undefined' && cam) ? cam.pitch : .08,
+      dist: (typeof cam !== 'undefined' && cam) ? cam.dist : .2,
+      x: (typeof P !== 'undefined' && P) ? P.x : 0,
+      y: (typeof P !== 'undefined' && P) ? P.y : .05,
+      z: (typeof P !== 'undefined' && P) ? P.z : 0,
+      locked, camX, camY, camZ
+    };
+    if (typeof model !== 'undefined' && model && model.g) model.g.visible = false;
+    const foot = (typeof dhFootWorld === 'function') ? dhFootWorld(dh.mine) : {x0:-2.8,x1:2.8,z0:-2.8,z1:2.8};
+    const midX = (foot.x0 + foot.x1) / 2, midZ = (foot.z0 + foot.z1) / 2;
+    let mom = null;
+    try {
+      if (typeof THREE !== 'undefined'){
+        mom = dhMomMesh();
+        if (mom && mom.position) mom.position.set(midX + 4.4, 0, foot.z0 - 2.6);
+        if (mom && mom.rotation) mom.rotation.y = -Math.PI / 2 + 0.15;
+        if (mom && typeof scene !== 'undefined') scene.add(mom);
+      }
+    } catch (e){ mom = null; }
+    dh.cut = Object.assign({}, dh.cut || {}, {mom, foot, c: {x: midX, z: midZ}, start: {x: midX + 4.4, z: foot.z0 - 2.6}, end: {x: midX + 1.35, z: foot.z0 - 2.35}});
+    dh.celebrate = {t: 0, stage: 'swing', dur: {swing: 1.6, walk: 2.2, say: 2.6, award: 3.2}, awarded: false};
+    dh._celebrateAwarded = false;
+    dh._celebratePresented = false;
+    const wrap = $('#dhCut'); if (wrap){ wrap.style.display = ''; wrap.classList.add('show'); }
+    const skip = $('#dhSkip'); if (skip){ skip.style.display = 'block'; skip.classList.add('show'); skip.textContent = 'Skip ▶'; }
+    dhSetCutCap('Your house is finished!');
+    dhSay('');
+    dhSetFade(0);
+    ['#dhBar', '#dhAct', '#dhInv', '#dhCarry', '#dhHand', '#dhGoal', '#dhSteps', '#dhTip', '#dhLookHint', '#dhSpotHint', '#dhGuide', '#dhStack', '#dhBox', '#oTip', '#oBuild', '#oEmoBtn', '#oCross', '#oDot', '#oBanner', '#oPause'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
+    if (typeof dhTipOpen === 'function' && dhTipOpen()){
+      const tEl = $('#dhTipT');
+      if (dh && tEl && tEl.textContent) dh._tipQueue = tEl.textContent;
+      if (typeof dhDismissTip === 'function') dhDismissTip();
+    }
+    if (typeof document !== 'undefined' && document.getElementById){
+      const root = document.getElementById('obby');
+      if (root && root.classList){ root.classList.add('dh-intro'); root.classList.remove('paused', 'dh-paused'); }
+    }
+    if (typeof updateDhChrome === 'function') updateDhChrome();
+    dhCelebrateCam();
+    return true;
+  }
+  function dhCelebrateAward(){
+    if (!dh || dh._celebrateAwarded) return false;
+    dh._celebrateAwarded = true;
+    if (dh.celebrate) dh.celebrate.awarded = true;
+    // Unlock quietly here so a silent sweep cannot eat the toast. Presentation waits
+    // until dhPresentCelebrateReward() runs after the cut overlay is torn down —
+    // the same moment skip uses — so chrome restore cannot hide or expire it unseen.
+    try { if (typeof achUnlock === 'function') achUnlock('dh-done', {silent: true}); } catch (e){}
+    return true;
+  }
+  function dhHudGateActive(){
+    if (!dh) return false;
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    return !!(dh._hudGateUntil && now < dh._hudGateUntil);
+  }
+  function dhArmHudGate(ms){
+    if (!dh) return false;
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    dh._hudGateUntil = now + (ms || 800);
+    try {
+      const root = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('obby') : null;
+      if (root && root.classList) root.classList.add('dh-justcut');
+      const clear = () => {
+        try {
+          const r = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('obby') : null;
+          if (r && r.classList) r.classList.remove('dh-justcut');
+        } catch (e){}
+      };
+      const onUp = ev => {
+        try { if (ev && ev.stopImmediatePropagation && dhHudGateActive()) ev.stopImmediatePropagation(); } catch (e){}
+        if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('pointerup', onUp, true);
+        if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('click', onUp, true);
+      };
+      if (typeof window !== 'undefined' && window.addEventListener){
+        window.addEventListener('pointerup', onUp, true);
+        window.addEventListener('click', onUp, true);
+      }
+      if (typeof setTimeout === 'function') setTimeout(clear, ms || 800);
+    } catch (e){}
+    return true;
+  }
+  function dhPresentCelebrateReward(){
+    if (!dh || dh._celebratePresented) return false;
+    dh._celebratePresented = true;
+    const show = () => {
+      try {
+        const byId = (typeof window !== 'undefined' && window.achById) || (typeof achById === 'function' ? achById : null);
+        const toast = (typeof window !== 'undefined' && window.achShowToast) || (typeof achShowToast === 'function' ? achShowToast : null);
+        const unlock = (typeof window !== 'undefined' && window.achUnlock) || (typeof achUnlock === 'function' ? achUnlock : null);
+        const a = (typeof byId === 'function') ? byId('dh-done') : {id:'dh-done', name:'Dream Home Builder', emoji:'🏡', coins:50};
+        if (typeof toast === 'function' && a) toast(a, (a && a.coins) | 0, {hold: true, holdMs: 4500});
+        else if (typeof unlock === 'function') unlock('dh-done');
+        const el = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('achToast') : null;
+        if (el && el.parentElement && el.parentElement !== document.body) document.body.appendChild(el);
+        if (el && el.classList){ el.classList.add('show'); el.setAttribute('aria-hidden', 'false'); }
+      } catch (e){}
+    };
+    show();
+    try {
+      const burst = () => { try {
+        const fn = (typeof window !== 'undefined' && window.confetti) || (typeof confetti === 'function' ? confetti : null);
+        if (typeof fn === 'function') fn();
+      } catch (e2){} };
+      burst();
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(burst);
+      else if (typeof setTimeout === 'function') setTimeout(burst, 40);
+      if (typeof setTimeout === 'function') setTimeout(burst, 400);
+    } catch (e){}
+    // Re-assert after chrome restore / a same-gesture HUD click has had a chance to run.
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(show);
+    if (typeof setTimeout === 'function') setTimeout(show, 80);
+    return true;
+  }
+  function dhSkipCelebrate(){
+    if (!dh || !dh.celebrate) return false;
+    dhCelebrateAward();
+    dhFinishCelebrate();
+    return true;
+  }
+  function dhFinishCelebrate(){
+    if (!dh) return false;
+    dhCelebrateAward();
+    dhArmHudGate(800);
+    dh.doneCutSeen = true;
+    if (dh.cut && dh.cut.mom && typeof scene !== 'undefined'){
+      try { scene.remove(dh.cut.mom); } catch (e){}
+      dh.cut.mom = null;
+    }
+    dh.celebrate = null;
+    dh._wantCelebrate = false;
+    dhSave();
+    dhSetFade(0);
+    dhSay('');
+    if (typeof dhFlushTips === 'function'){
+      if (typeof setTimeout === 'function') setTimeout(() => { try { if (dh && !dh.celebrate && !dh.intro) dhFlushTips(); } catch (e){} }, 3600);
+    }
+    const wrap = $('#dhCut'); if (wrap){ wrap.style.display = 'none'; wrap.classList.remove('show'); }
+    const skip = $('#dhSkip'); if (skip){ skip.style.display = 'none'; skip.classList.remove('show'); }
+    const cap = $('#dhCutCap'); if (cap) cap.style.display = 'none';
+    if (typeof document !== 'undefined' && document.getElementById){
+      const root = document.getElementById('obby');
+      if (root && root.classList) root.classList.remove('dh-intro', 'paused', 'dh-paused');
+    }
+    if (typeof model !== 'undefined' && model && model.g) model.g.visible = true;
+    const prev = dh._celPrev;
+    if (prev && typeof P !== 'undefined' && P){ P.x = prev.x; P.y = prev.y; P.z = prev.z; P.vx = 0; P.vz = 0; }
+    if (prev && typeof cam !== 'undefined' && cam){ cam.yaw = prev.yaw; cam.pitch = prev.pitch; cam.dist = prev.dist; }
+    if (typeof dhForceFirstPerson === 'function') dhForceFirstPerson();
+    ['#dhGoal','#dhSteps'].forEach(id => { const el = $(id); if (el){ el.style.display = ''; el.classList.add('show'); } });
+    dhHud(); dhBar();
+    try {
+      if (prev && prev.locked && typeof document !== 'undefined'){
+        const el = (typeof renderer !== 'undefined' && renderer && renderer.domElement) ? renderer.domElement : (document.getElementById && document.querySelector && document.querySelector('#obby canvas'));
+        if (el && el.requestPointerLock) { const r = el.requestPointerLock(); if (r && r.catch) r.catch(() => {}); }
+      }
+    } catch (e){}
+    // Present toast + confetti only after dh-intro is removed so both skip and the
+    // natural end share one visible award. Mid-stage unlock stays silent.
+    dhPresentCelebrateReward();
+    banner('🏡 What a home! Open Achievements on the home screen to see your badges.');
+    return true;
+  }
+  function dhCelebrateTick(dt){
+    if (!dh || !dh.celebrate) return;
+    const c = dh.celebrate;
+    c.t = (c.t || 0) + (dt || 0);
+    const dur = c.dur[c.stage] || 2;
+    const u = Math.min(1, c.t / Math.max(0.2, dur));
+    if (c.stage === 'swing'){
+      dhSetCutCap('Your house is finished!');
+      dhSay('');
+    }
+    if (c.stage === 'walk' && dh.cut && dh.cut.mom && dh.cut.mom.position){
+      const s = dh.cut.start, e = dh.cut.end;
+      const ease = u * u * (3 - 2 * u);
+      dh.cut.mom.position.x = s.x + (e.x - s.x) * ease;
+      dh.cut.mom.position.z = s.z + (e.z - s.z) * ease;
+      dh.cut.mom.position.y = Math.abs(Math.sin(u * Math.PI * 4)) * 0.06;
+      if (dh.cut.mom.rotation) dh.cut.mom.rotation.y = -Math.PI / 2 + ease * (Math.PI / 2 + 0.25);
+      dhSetCutCap('Mom is here to see your house');
+    }
+    if (c.stage === 'say'){
+      dhSay('Good job!');
+      dhSetCutCap('Mom is so proud');
+      if (dh.cut && dh.cut.mom && dh.cut.mom.rotation) dh.cut.mom.rotation.y = Math.PI - 0.35;
+    }
+    if (c.stage === 'award'){
+      dhSay('Good job!');
+      dhSetCutCap('You earned a badge!');
+      if (u > 0.08) dhCelebrateAward();
+    }
+    if (c.t >= dur){
+      c.t = 0;
+      const order = ['swing', 'walk', 'say', 'award'];
+      const i = order.indexOf(c.stage);
+      if (i < 0 || i >= order.length - 1) dhFinishCelebrate();
+      else c.stage = order[i + 1];
+    }
+  }
+
   function dhToggleInvite(on){
+    if (on && typeof dhHudGateActive === 'function' && dhHudGateActive()) return false;
     if (!dh) return false;
     if (dhIsVisitor()){ if (typeof banner === 'function') banner('👀 You are already visiting'); return false; }
     dh.inviteOpen = on == null ? !dh.inviteOpen : !!on;
@@ -3312,7 +3590,7 @@
     const replay = $('#dhReplay'); if (replay) replay.style.display = dh.visiting ? 'none' : '';
     const resetBtn = $('#dhResetBtn'); if (resetBtn) resetBtn.style.display = dh.visiting ? 'none' : '';
     if (typeof document !== 'undefined' && document.getElementById){ const root = document.getElementById('obby'); if (root && root.classList) root.classList.add('dhouse'); }
-    if (!dh.intro) dhForceFirstPerson();
+    if (!dh.intro && !dh.celebrate) dhForceFirstPerson();
     if (dh.intro){
       ['#dhGoal','#dhSteps','#dhBar','#dhInv','#dhCarry','#dhHand'].forEach(id => { const el = $(id); if (el){ el.style.display = 'none'; } });
       if (typeof document !== 'undefined' && document.getElementById){
@@ -3331,6 +3609,14 @@
     if (typeof dhHud === 'function') dhHud();
     if (typeof dhShowTestNote === 'function') dhShowTestNote();
     if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
+    if (!dh.intro && typeof dhShouldCelebrate === 'function' && dhShouldCelebrate()) dhStartCelebrate();
+    if (dh.celebrate){
+      ['#dhBar', '#dhAct', '#dhInv', '#dhCarry', '#dhHand', '#dhGoal', '#dhSteps'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
+      if (typeof document !== 'undefined' && document.getElementById){
+        const root = document.getElementById('obby');
+        if (root && root.classList) root.classList.add('dh-intro');
+      }
+    }
   }
   function dhHideTestNote(){
     let el = null;
@@ -3370,6 +3656,7 @@
     if (!dh) return;
     if (!dh._skipSave) dhSave();
     if (dh.intro){ dh.intro = null; }
+    if (dh.celebrate){ dh.celebrate = null; }
     if (dh.cut){ ['house', 'mom', 'water'].forEach(k => { if (dh.cut[k] && typeof scene !== 'undefined') scene.remove(dh.cut[k]); }); dh.cut = null; }
     if (dh.ghost) scene.remove(dh.ghost);
     if (typeof dhDisposeGables === 'function') dhDisposeGables();
@@ -3886,7 +4173,7 @@
   function dhCamComfort(dt){
     // Dream House is always first person after the intro. Do not force a follow camera.
     if (typeof cam === 'undefined' || !cam) return;
-    if (dh && dh.intro) return;
+    if (dh && (dh.intro || dh.celebrate)) return;
     if (cam.dist > 4) cam.dist = .2;
     if (cam.pitch > 1.3) cam.pitch = 1.3;
     if (cam.pitch < -1.2) cam.pitch = -1.2;
@@ -3895,6 +4182,8 @@
   function dreamhouseUpdate(dt){
     if (!dh || over) return;
     if (dh.intro){ dhIntroTick(dt); return; }
+    if (dh._wantCelebrate && !dh.celebrate){ dh._wantCelebrate = false; dhStartCelebrate(); }
+    if (dh.celebrate){ dhCelebrateTick(dt); return; }
     if (choosing) return;
     dhLookWithKeys(dt);
     dhTickDoors(dt);
@@ -4070,7 +4359,8 @@
   function dhShowTip(text){
     if (!text) return;
     const pausedNow = (typeof paused !== 'undefined' && paused) || (typeof menuOpen !== 'undefined' && menuOpen);
-    if (pausedNow){ if (dh) dh._tipQueue = text; return; }
+    const cutting = !!(dh && (dh.intro || dh.celebrate));
+    if (pausedNow || cutting){ if (dh) dh._tipQueue = text; return; }
     const tip = $('#dhTip'), t = $('#dhTipT');
     if (tip){ tip.style.display = ''; tip.classList.add('show'); }
     if (t) t.textContent = text;
@@ -4083,11 +4373,12 @@
   function dhFlushTips(){
     if (!dh || !dh._tipQueue) return;
     if ((typeof paused !== 'undefined' && paused) || (typeof menuOpen !== 'undefined' && menuOpen)) return;
+    if (dh.intro || dh.celebrate) return;
     const text = dh._tipQueue; dh._tipQueue = null;
     dhShowTip(text);
   }
   function dhHintStage(){
-    if (!dh || dh.intro || dh.yardOpen || dh.shopOpen || dh.upOpen) return;
+    if (!dh || dh.intro || dh.celebrate || dh.yardOpen || dh.shopOpen || dh.upOpen) return;
     if ((typeof paused !== 'undefined' && paused) || (typeof menuOpen !== 'undefined' && menuOpen)) return;
     const id = dhStageId();
     dh.tipsSeen = dh.tipsSeen || {};
@@ -4734,7 +5025,7 @@
     return 'You can ' + (names[id] || 'use that') + ' later; ' + dhStageHint();
   }
   function updateDhChrome(){
-    const intro = !!(dh && dh.intro);
+    const intro = !!(dh && (dh.intro || dh.celebrate));
     const inDh = (typeof mode === 'undefined' || mode === 'dreamhouse') && !!dh;
     const playing = inDh && !intro;
     const pausedNow = !!(typeof paused !== 'undefined' && paused) || !!(typeof menuOpen !== 'undefined' && menuOpen);
@@ -4837,11 +5128,11 @@
   function dhBindUI(){
     if (window.__dhBound6) return;
     window.__dhBound6 = true;
-    const act = $('#dhAct'); if (act) act.onclick = () => dh && !dh.intro && dhAct();
+    const act = $('#dhAct'); if (act) act.onclick = () => dh && !dh.intro && !dh.celebrate && dhAct();
     const bar = $('#dhBar');
     if (bar) bar.addEventListener('click', ev => {
       const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhSpotBtn,#dhShopBtn,#dhYardBtn,#dhUpBtn,#dhInviteBtn,#dhLikeBtn');
-      if (!t || !dh || dh.intro) return;
+      if (!t || !dh || dh.intro || dh.celebrate || (typeof dhHudGateActive === 'function' && dhHudGateActive())) return;
       if (t.id === 'dhInviteBtn'){ dhToggleInvite(true); return; }
       if (t.id === 'dhLikeBtn'){ dhVisitLike(); return; }
       if (dhIsVisitor()) return;
@@ -4887,14 +5178,20 @@
       const up = ev.target.closest('[data-dhup]');
       if (up) dhBuyUpgrade(up.dataset.dhup);
     });
-    const cut = $('#dhCut'); if (cut) cut.addEventListener('click', ev => { if (dh && dh.intro) dhSkipIntro(); });
-    const skip = $('#dhSkip'); if (skip) skip.onclick = ev => { ev.stopPropagation(); if (dh && dh.intro) dhSkipIntro(); };
+    const cut = $('#dhCut');
+    if (cut && !cut._dhSkipBound){
+      cut._dhSkipBound = true;
+      const skipFrom = ev => { if (dh && (dh.intro || dh.celebrate)){ if (ev && ev.preventDefault) ev.preventDefault(); if (ev && ev.stopPropagation) ev.stopPropagation(); if (ev && ev.stopImmediatePropagation) ev.stopImmediatePropagation(); dhSkipCut(); } };
+      cut.addEventListener('click', skipFrom);
+      cut.addEventListener('pointerdown', skipFrom);
+    }
+    const skip = $('#dhSkip'); if (skip) skip.onclick = ev => { if (ev && ev.preventDefault) ev.preventDefault(); if (ev && ev.stopPropagation) ev.stopPropagation(); if (ev && ev.stopImmediatePropagation) ev.stopImmediatePropagation(); if (dh && (dh.intro || dh.celebrate)) dhSkipCut(); };
     const replay = $('#dhReplay'); if (replay) replay.onclick = () => dh && dhReplayIntro();
     const tipX = $('#dhTipX'); if (tipX) tipX.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); dhDismissTip(); };
     const tip = $('#dhTip'); if (tip) tip.onclick = ev => { if (ev.target && ev.target.id === 'dhTip'){ dhDismissTip(); } };
   }
   function dhPointer(down){
-    if (!dh || dh.intro) return false;
+    if (!dh || dh.intro || dh.celebrate) return false;
     if (dh.yardOpen || dh.shopOpen || dh.upOpen) return false;
     if (down){
       dh.pourHold = true;
@@ -4908,8 +5205,8 @@
 
   function dhPad(jp){
     if (!dh) return false;
-    if (dh.intro){
-      if (jp.a || jp[0] || jp.x || jp[2] || jp.b || jp[1] || jp.start){ if (typeof pad !== 'undefined' && pad) pad.jump = false; dhSkipIntro(); return true; }
+    if (dh.intro || dh.celebrate){
+      if (jp.a || jp[0] || jp.x || jp[2] || jp.b || jp[1] || jp.start){ if (typeof pad !== 'undefined' && pad) pad.jump = false; dhSkipCut(); return true; }
       return true;
     }
     if (dhTipOpen() && (jp.a || jp[0] || jp.x || jp[2] || jp.start)){ if (typeof pad !== 'undefined' && pad) pad.jump = false; dhDismissTip(); return true; }
@@ -5038,8 +5335,8 @@
     if (typeof dhNoteMoveKey === 'function') dhNoteMoveKey(e, true);
     if (!dh || e.repeat) return false;
     const k = e.code || '';
-    if (dh.intro){
-      if (k === 'Space' || k === 'Enter' || k === 'KeyE' || k === 'KeyX'){ dhSkipIntro(); return true; }
+    if (dh.intro || dh.celebrate){
+      if (k === 'Space' || k === 'Enter' || k === 'KeyE' || k === 'KeyX' || k === 'Escape'){ dhSkipCut(); return true; }
       return true;
     }
     if (dhTipOpen() && (k === 'KeyE' || k === 'Enter' || k === 'Space' || k === 'KeyA' || k === 'Escape')){ dhDismissTip(); return true; }
