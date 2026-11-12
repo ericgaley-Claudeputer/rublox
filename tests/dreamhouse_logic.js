@@ -244,7 +244,7 @@ chk('catalog includes paint plus shop furniture (tv, bookshelf)', W.A.DH_MATS.so
 W.A.dh.bank += 80;
 const bankF = W.A.dh.bank;
 const sofaOk = W.A.dhShopBuyFurn('sofa');
-chk('the shop sells furniture for coins into your stock', sofaOk && (W.A.dh.stock.sofa|0) >= 1 && W.A.dh.bank === bankF - 10, {bank:W.A.dh.bank, stock:W.A.dh.stock.sofa, sofaOk});
+chk('the shop sells furniture for coins into your stock', sofaOk && W.A.dhInvCount('sofa') >= 1 && W.A.dh.bank === bankF - 10, {bank:W.A.dh.bank, stock:W.A.dh.stock.sofa, carry:W.A.dh.carry, inv:W.A.dhInvCount('sofa'), sofaOk});
 const cap0 = W.A.dhCarryCap('brick');
 W.A.dh.bank += 200;
 const upCarry = W.A.dhBuyUpgrade('carry');
@@ -1667,6 +1667,90 @@ Ww.A.dreamhouseStop();
   const W0 = world();
   W0.mp.on = true; W0.mp.me = 'g2'; W0.mp.uid = undefined;
   chk('dhWho uses mp.me (not the missing mp.uid)', W0.A.dhWho() === 'g2', {who:W0.A.dhWho()});
+})();
+
+
+
+(function(){
+  function inside(W){
+    const foot = W.A.dhFootWorld(0);
+    W.P.x = (foot.x0 + foot.x1) / 2;
+    W.P.z = (foot.z0 + foot.z1) / 2;
+    W.P.y = W.A.DH_SLAB_H;
+    W.cam.yaw = Math.PI;
+    W.cam.pitch = 0.35;
+    if (W.A.dreamhouseUpdate) W.A.dreamhouseUpdate(0.01);
+  }
+
+  const F = world({}, {hash: '#dhtest=v6furnish'});
+  F.A.buildDreamHouse(); F.A.dreamhouseEnter();
+  chk('a finished house at Paint & furnish does not mark the host as a visitor',
+    F.A.dh.visiting === false && F.A.dhCanEdit() === true && F.A.dhStageId() === 'paint',
+    {visiting: F.A.dh.visiting, can: F.A.dhCanEdit(), stage: F.A.dhStageId()});
+  inside(F);
+  F.A.dh.bank += 20;
+  const bought = F.A.dhShopBuyFurn('sofa');
+  chk('buying furniture puts it in your hands so you can place it right away',
+    bought === true && !!(F.A.dh.carry && F.A.dh.carry.id === 'sofa') && F.A.dhInvCount('sofa') >= 1,
+    {bought, carry: F.A.dh.carry, inv: F.A.dhInvCount('sofa')});
+  F.A.dhUpdateGhost();
+  const gy = F.A.dh.ghost && F.A.dh.ghost.position.y;
+  chk('the furniture ghost sits on the slab (not under the floor) even while the stage is still paint',
+    !!(F.A.dh.ghost && F.A.dh.ghost.visible) && gy >= F.A.DH_SLAB_H,
+    {visible: F.A.dh.ghost && F.A.dh.ghost.visible, y: gy, slab: F.A.DH_SLAB_H, job: F.A.dh.job, stage: F.A.dhStageId()});
+  const banners0 = F.banners.slice();
+  F.banners.length = 0;
+  const placed = F.A.dhAct();
+  chk('E places furniture during the Paint & furnish step instead of asking for a paint can',
+    placed === true && (F.A.dh.pieces[0] || []).some(a => a[0] === 'sofa') && !F.banners.some(t => /paint can/i.test(t)),
+    {placed, banners: F.banners, prior: banners0.slice(-2), sofa: (F.A.dh.pieces[0] || []).filter(a => a[0] === 'sofa')});
+
+  // Occupied tile: another sofa on the same aimed cell should be refused with a message
+  F.A.dh.bank += 20;
+  F.A.dhShopBuyFurn('sofa');
+  F.banners.length = 0;
+  const again = F.A.dhAct();
+  chk('placing a second piece on the same floor tile is refused with a visible error (not a silent no-op)',
+    again === false && F.banners.some(t => /already has furniture|empty spot/i.test(t)) && (F.A.dh.pieces[0] || []).filter(a => a[0] === 'sofa').length === 1,
+    {again, banners: F.banners, n: (F.A.dh.pieces[0] || []).filter(a => a[0] === 'sofa').length});
+
+  const F2 = world({}, {hash: '#dhtest=v6furnish'});
+  F2.A.buildDreamHouse(); F2.A.dreamhouseEnter();
+  for (let face = 0; face < 4; face++){
+    if (!(F2.A.dh.pieces[0] || []).some(a => a[0] === 'paint' && (a[4]|0) === face)) F2.A.dhPut(0, ['paint', 0, 0, 0, face, 0], true);
+  }
+  if (F2.A.dhSyncJobToStage) F2.A.dhSyncJobToStage();
+  inside(F2);
+  F2.A.dh.bank += 30;
+  F2.A.dhShopBuyFurn('bed');
+  F2.A.dhPointer(true);
+  chk('clicking the canvas places furniture once the walls are painted',
+    (F2.A.dh.pieces[0] || []).some(a => a[0] === 'bed') && F2.A.dhStageId() === 'furn',
+    {stage: F2.A.dhStageId(), kinds: [...new Set((F2.A.dh.pieces[0] || []).map(a => a[0]))]});
+  F2.A.dhShopBuyFurn('lamp');
+  F2.P.x += 1.4;
+  if (F2.A.dreamhouseUpdate) F2.A.dreamhouseUpdate(0.01);
+  F2.A.dhPad({x: true});
+  chk('the gamepad Ⓧ button also places furniture',
+    (F2.A.dh.pieces[0] || []).some(a => a[0] === 'lamp'),
+    {furn: (F2.A.dh.pieces[0] || []).filter(a => ['sofa','bed','table','lamp','plant','rug','tv','shelf'].indexOf(a[0]) >= 0).map(a => a[0])});
+
+  // Stock-only: buy, dump back to inventory, E should still draw it and place it
+  const F3 = world({}, {hash: '#dhtest=v6furnish'});
+  F3.A.buildDreamHouse(); F3.A.dreamhouseEnter();
+  inside(F3);
+  F3.A.dh.bank += 20;
+  // The v6furnish fixture already has a sofa in stock — leave only the table so
+  // E-from-inventory has one obvious piece to place.
+  ['sofa','bed','table','lamp','plant','rug','tv','shelf'].forEach(id => { F3.A.dh.stock[id] = 0; });
+  F3.A.dhShopBuyFurn('table');
+  if (F3.A.dhDump) F3.A.dhDump();
+  chk('dumping a just-bought table puts it back in inventory',
+    !F3.A.dh.carry && (F3.A.dh.stock.table|0) >= 1, {carry: F3.A.dh.carry, stock: F3.A.dh.stock.table});
+  const fromInv = F3.A.dhAct();
+  chk('E places furniture from inventory without a separate pickup click',
+    fromInv === true && (F3.A.dh.pieces[0] || []).some(a => a[0] === 'table'),
+    {fromInv, carry: F3.A.dh.carry, table: (F3.A.dh.pieces[0] || []).filter(a => a[0] === 'table')});
 })();
 
 

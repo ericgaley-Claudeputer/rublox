@@ -88,6 +88,10 @@
   }
   function dhIsVisitor(){ return !!(dh && dh.visiting); }
   function dhCanEdit(){ return !!(dh && !dhIsVisitor()); }
+  function dhIsFurn(id){ const m = typeof dhMatOf === 'function' ? dhMatOf(id) : null; return !!(m && m.furn); }
+  function dhFurnIds(){ return (typeof DH_MATS !== 'undefined' ? DH_MATS : []).filter(m => m && m.furn).map(m => m.id); }
+  function dhHeldFurn(){ return (dh && dh.carry && dhIsFurn(dh.carry.id)) ? dh.carry.id : null; }
+  function dhStockFurn(){ if (!dh) return null; return dhFurnIds().find(id => (dh.stock[id]|0) > 0) || null; }
   function dhHostName(){
     if (dh && dh.hostName) return String(dh.hostName);
     try {
@@ -2030,7 +2034,11 @@
     if ((job === 'stud' || job === 'rafter' || job === 'frame') && !(dh.carry && dh.carry.id === 'wood') && !(dh.stock.wood|0)) return '📦 Grab free wood at the Supply Yard first';
     if (job === 'shingle' && !(dh.carry && dh.carry.id === 'shingle') && !(dh.stock.shingle|0)) return '📦 Grab free shingles at the Supply Yard first';
     if (job === 'glass' && !(dh.carry && dh.carry.id === 'glass') && !(dh.stock.glass|0)) return '📦 Grab free glass at the Supply Yard first';
-    if (job === 'paint' && !(dh.carry && dh.carry.id === 'paint') && !(dh.stock.paint|0)) return '📦 Grab free paint at the Supply Yard first';
+    if (job === 'paint' && !(dh.carry && dh.carry.id === 'paint') && !(dh.stock.paint|0) && !dhHeldFurn() && !dhStockFurn()) return '📦 Grab free paint at the Supply Yard first';
+    if (dhHeldFurn() || dhStockFurn() || job === 'furn'){
+      if (!dhHeldFurn() && !dhStockFurn()) return '🛋️ Buy furniture at the Furniture Store, then press E in the room to place it';
+      if (!dhNearOwnPlot() && dhPlotAt(P.x, P.z) !== dh.mine) return '🏡 Walk onto your plot to place furniture';
+    }
     if (job === 'dig'){
       const c = dhJobCounts('dig'), m = dhJobCounts('mark');
       if (c.have >= c.need) return '🪣 Foundation spots are dug — grab Cement + Sand at the Supply Yard';
@@ -2456,6 +2464,10 @@
         rec[4] = (spot && spot.face != null) ? spot.face : (dhWallFaceFromAim(aim) || 0); rec[1] = 0; rec[3] = 0;
       }
     }
+    if (dhIsFurn(id) && (dh.pieces[plot] || []).some(a => dhIsFurn(a[0]) && (a[1]|0) === (rec[1]|0) && (a[3]|0) === (rec[3]|0))){
+      banner('🛋️ That floor tile already has furniture — look at an empty spot');
+      return false;
+    }
     if ((dh.pieces[plot] || []).some(a => dhKeyOf(a) === dhKeyOf(rec))) return false;
     if (id === 'stud' || id === 'rafter'){ if (!dh.carry || dh.carry.id !== 'wood'){ banner('🪵 Carry planks from the yard or your pile'); return false; } dhUseCarry(1); }
     if (id === 'shingle'){ if (!dh.carry || dh.carry.id !== 'shingle'){ banner('🏠 Carry shingles to the roof'); return false; } dhUseCarry(1); }
@@ -2516,10 +2528,21 @@
       if (face === 0) return dhPlaceKind('doorframe');
       return dhPlaceKind('winframe');
     }
+    // Furniture can be placed during the combined "Paint & furnish" step.
+    // Used to fall through to paint and silently fail (or say "carry a paint can")
+    // with no floor ghost, so pressing E / click / Ⓧ did nothing useful.
+    if (!(dh.carry && dh.carry.id === 'paint')){
+      const fid = dhHeldFurn() || (((dh.job === 'furn' || dh.job === 'paint') || (typeof dhStageId === 'function' && (dhStageId() === 'furn' || dhStageId() === 'paint'))) ? dhStockFurn() : null);
+      if (fid){
+        if (!dhHeldFurn()) dhEnsureHeld(fid, 1);
+        if (dhHeldFurn()) return dhPlaceKind(dhHeldFurn());
+      }
+    }
     if (dh.job === 'paint') return dhPlaceKind('paint');
-    if (dh.job === 'furn' && dh.carry && dhMatOf(dh.carry.id) && dhMatOf(dh.carry.id).furn) return dhPlaceKind(dh.carry.id);
-    // generic: if carrying a furniture/paint/shingle etc, place it
-    if (dh.carry && dhMatOf(dh.carry.id) && dhMatOf(dh.carry.id).furn) return dhPlaceKind(dh.carry.id);
+    if (dh.job === 'furn'){
+      banner('🛋️ Buy furniture at the Furniture Store, then press E in the room to place it');
+      return false;
+    }
     if (dh.carry && dh.carry.id === 'shingle') return dhPlaceKind('shingle');
     if (dh.carry && dh.carry.id === 'wood') return dhPlaceKind(dh.job === 'rafter' ? 'rafter' : 'stud');
     if (dh.carry && dh.carry.id === 'paint') return dhPlaceKind('paint');
@@ -2663,7 +2686,8 @@
     const m = dhMatOf(id); if (!m || !m.furn) return false;
     if (!dhPay(m.cost)){ banner('🪙 Need ' + m.cost + ' coins for ' + m.name); return false; }
     dh.stock[id] = (dh.stock[id] || 0) + 1;
-    banner(m.e + ' Bought a ' + m.name + ' — pick it up and place it!');
+    if (typeof dhEnsureHeld === 'function') dhEnsureHeld(id, 1);
+    banner(m.e + ' Bought a ' + m.name + ' — go into your house and press E to place it');
     dhSave(); dhHud(); dhBar(); dhRenderShop();
     return true;
   }
@@ -3139,6 +3163,10 @@
       const later = dhCarryLaterPrompt('glass');
       if (later) return later;
       return '🪟 Install glass';
+    }
+    if (dh.carry && dhIsFurn(dh.carry.id) && onLot){
+      const m = dhMatOf(dh.carry.id) || {e:'🛋️', name:'furniture'};
+      return (m.e || '🛋️') + ' ' + key + ': Place ' + (m.name || 'furniture');
     }
     if (pile && !dh.carry) return '📦 Pick up materials';
     if (dh.carry && pile && dh.carry.id !== 'wetmix') return '📦 Dump on your plot';
@@ -3729,8 +3757,8 @@
     if (stage === 'shingle') return (!(dh.carry && dh.carry.id === 'shingle')) ? 'Grab shingles at the Supply Yard' : 'Aim and click to place each shingle';
     if (stage === 'frame') return 'Aim at a wall opening and place a door or window frame';
     if (stage === 'glass') return (!(dh.carry && dh.carry.id === 'glass')) ? 'Grab glass at the Supply Yard, then aim at an empty window' : 'Aim at an empty window and click to set a pane';
-    if (stage === 'paint') return 'Pick a color and paint the walls';
-    return 'Visit the Furniture Store and place furniture in your house';
+    if (stage === 'paint') return 'Paint the walls, or buy furniture and press E to place it in the room';
+    return 'Buy furniture at the Furniture Store, then press E in the room to place it';
   }
   const DH_TIPS = {
     stake: 'Look at a foundation spot so its outline glows, then press E or click to plant a stake. Standing next to a spot works too. Finish every corner.',
@@ -3742,8 +3770,8 @@
     shingle: 'Aim at the roof and click to set each shingle.',
     frame: 'Aim at the door or window opening and place the frame.',
     glass: 'Carry a glass pane and click an empty window to set it.',
-    paint: 'Choose a color and paint your walls.',
-    furn: 'Buy furniture at the Furniture Store, then place it in the room.'
+    paint: 'Choose a color and paint your walls. You can also buy furniture and press E to place it now.',
+    furn: 'Buy furniture at the Furniture Store, then look at the floor in your house and press E, click, or Ⓧ to place it.'
   };
   function dhTipOpen(){
     const tip = $('#dhTip');
@@ -4068,7 +4096,19 @@
     dhPulseBeacons();
     if (!dh.ghost) return;
     let pos = null, ok = false, can = true;
-    if (stage === 'brick'){
+    const furnId = dhHeldFurn() || (((dh.job === 'furn' || stage === 'furn') || ((dh.job === 'paint' || stage === 'paint') && dhStockFurn())) ? (dhHeldFurn() || dhStockFurn()) : null);
+    if (furnId){
+      const aim = (typeof dhAimCell === 'function') ? dhAimCell() : null;
+      const cell = (aim && aim.plot === dh.mine && (typeof dhInFoot !== 'function' || dhInFoot(aim.ix, aim.iz))) ? aim : ((typeof dhTargetSpot === 'function') ? dhTargetSpot('furn') : null);
+      if (cell && cell.plot === dh.mine){
+        const y = (typeof DH_SLAB_H === 'number' ? DH_SLAB_H : 0.3) + 0.08;
+        const w = dhCellWorld(cell.plot, cell.ix, cell.iz, y);
+        pos = {x: w.x, y: w.y, z: w.z, ry: ((dh.rot | 0) * Math.PI) / 2};
+        ok = true;
+        const taken = (dh.pieces[cell.plot] || []).some(a => dhIsFurn(a[0]) && (a[1]|0) === (cell.ix|0) && (a[3]|0) === (cell.iz|0));
+        can = !taken && !!(dhHeldFurn() || dhStockFurn());
+      }
+    } else if (stage === 'brick'){
       const slot = retarget ? dhTargetSpotCached('brick') : (dh._tgtCache && dh._tgtCache.val);
       const s = slot || (retarget ? null : dhTargetSpotCached('brick'));
       if (s){ pos = s; ok = true; can = !s.filled && !!(dh.carry && dh.carry.id === 'brick' && dh.carry.n > 0); }
@@ -4095,7 +4135,8 @@
       }
       const pole = dh.ghost.userData && dh.ghost.userData.pole;
       if (glow && glow.scale){
-        if (stage === 'brick'){ glow.scale.set(DH_BRICK_W / (DH_CELL * .92), DH_BRICK_H / .16, DH_BRICK_D / (DH_CELL * .92)); if (pole) pole.visible = false; }
+        if (stage === 'brick' && !furnId){ glow.scale.set(DH_BRICK_W / (DH_CELL * .92), DH_BRICK_H / .16, DH_BRICK_D / (DH_CELL * .92)); if (pole) pole.visible = false; }
+        else if (furnId){ glow.scale.set(1, 1.4, 1); if (pole) pole.visible = false; }
         else { glow.scale.set(1, 1, 1); if (pole) pole.visible = true; }
       }
     }
@@ -4378,6 +4419,7 @@
       paint: ['paint'],
       wetmix: ['pour']
     };
+    if (typeof dhIsFurn === 'function' && dhIsFurn(id)) return null; // place furniture any time, including during paint
     const ok = (ready[id] || [id]).includes(stage);
     if (ok) return null;
     const names = {glass:'install glass', brick:'lay bricks', wood:'build with wood', shingle:'nail shingles', paint:'paint', wetmix:'pour concrete'};
