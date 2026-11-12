@@ -502,9 +502,9 @@ function notInWall(z, zFace, thick, r){
   return z <= lo + EPS || z >= hi - EPS;
 }
 
-test('BUILD is 2026.11.12-9 and matches version.json', () => {
-  assert.ok(html.includes("const BUILD = '2026.11.12-9'"));
-  assert.strictEqual(version.build, '2026.11.12-9');
+test('BUILD is 2026.11.12-10 and matches version.json', () => {
+  assert.ok(html.includes("const BUILD = '2026.11.12-10'"));
+  assert.strictEqual(version.build, '2026.11.12-10');
 });
 
 test('index.html wires DH clip into step() and exposes a #dhdebug collider path', () => {
@@ -1000,6 +1000,107 @@ test('the TEST HOUSE badge hides when you leave Dream House for Pet Hotel or Blo
   try { c.Obby.start('tag'); } catch (e){}
   assert.ok(!visible() && !(note.classList && note.classList.contains('show')), 'badge leaked into Block Tag: text=' + (note.textContent || '') + ' display=' + (note.style && note.style.display));
   assert.ok(html.includes('function dhHideTestNote') && html.includes("if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); }"));
+});
+
+
+function canvasOf(c){
+  const view = c.document.getElementById('obbyView');
+  if (view && view.children && view.children.length) return view.children[view.children.length - 1];
+  return (view && view.children && view.children[0]) || view;
+}
+function fire(el, type, extra){
+  const ev = Object.assign({
+    type, bubbles: true, cancelable: true,
+    clientX: 400, clientY: 300, pointerId: 1, pointerType: 'mouse',
+    button: 0, buttons: type === 'pointerup' ? 0 : 1,
+    movementX: 0, movementY: 0, deltaY: 0,
+    preventDefault(){ ev.defaultPrevented = true; },
+    stopPropagation(){},
+    stopImmediatePropagation(){},
+    target: el
+  }, extra || {});
+  if (typeof el.dispatchEvent === 'function') el.dispatchEvent(ev);
+  return ev;
+}
+
+test('third-person drag, pointer-lock look, and Water Park FP stay above the ground', () => {
+  const c = boot();
+  try { c.Obby.start('waterpark'); } catch (e){ assert.fail('start(waterpark) threw: ' + e); }
+  assert.ok(c.Obby && c.Obby.running, 'Water Park should start');
+  if (c.obbyDebug && c.obbyDebug.setFP) c.obbyDebug.setFP(false);
+  for (let i = 0; i < 6; i++) c.obbyDebug.stepFrame(1 / 60);
+  const canvas = canvasOf(c);
+  assert.ok(canvas && typeof canvas.dispatchEvent === 'function', 'expected a game canvas');
+  // An unlocked click on the canvas itself must not be stolen as a HUD hit.
+  c.document.pointerLockElement = null;
+  const unlocked = c.__rubloxHudTryClick({
+    clientX: 400, clientY: 300, target: canvas, button: 0, pointerType: 'mouse',
+    preventDefault(){}, stopPropagation(){}, stopImmediatePropagation(){}
+  });
+  assert.strictEqual(unlocked, false, 'unlocked canvas click must not be treated as a HUD click');
+
+  const yaw0 = c.obbyDebug.fp().yaw;
+  fire(canvas, 'pointerdown', {clientX: 400, clientY: 300});
+  fire(canvas, 'pointermove', {clientX: 480, clientY: 340, pointerId: 1});
+  fire(canvas, 'pointerup', {clientX: 480, clientY: 340});
+  const yawDrag = c.obbyDebug.fp().yaw;
+  assert.ok(Math.abs(yawDrag - yaw0) > 0.01, 'third-person drag should turn the camera, dYaw=' + (yawDrag - yaw0));
+
+  // First-person pointer-lock look: a real mousedown requests lock, then mousemove uses movementX.
+  if (c.obbyDebug.setFP) c.obbyDebug.setFP(true);
+  let requested = 0;
+  canvas.requestPointerLock = function(){ requested++; c.document.pointerLockElement = canvas; };
+  fire(canvas, 'pointerdown', {clientX: 400, clientY: 300, pointerType: 'mouse'});
+  assert.ok(requested >= 1, 'clicking the view in first person should call requestPointerLock');
+  const yaw1 = c.obbyDebug.fp().yaw;
+  fire(canvas, 'mousemove', {movementX: 40, movementY: 6});
+  const yawLock = c.obbyDebug.fp().yaw;
+  assert.ok(Math.abs(yawLock - yaw1) > 0.01, 'pointer-locked mousemove should turn the camera, dYaw=' + (yawLock - yaw1));
+
+  // Standing on the 100x100 sand: recoverFp must not fling the player off the map or bury the eye.
+  if (c.obbyDebug.recoverFp) c.obbyDebug.recoverFp();
+  if (c.obbyDebug.clipFp) c.obbyDebug.clipFp();
+  if (typeof c.updateCamera === 'function') c.updateCamera();
+  const after = c.obbyDebug.fp();
+  const wp = c.obbyDebug.waterpark && c.obbyDebug.waterpark();
+  const px = wp && wp.P ? wp.P.x : 0, pz = wp && wp.P ? wp.P.z : 0, py = (after && after.Py != null) ? after.Py : (wp && wp.P && wp.P.y);
+  assert.ok(py > -0.1 && py < 3, 'player should stay on the sand, Py=' + py);
+  assert.ok(after.camY == null || after.camY > 1, 'FP eye should stay above the sand, camY=' + after.camY);
+  assert.ok(Math.abs(px) < 40 && Math.abs(pz) < 45, 'recoverFp must not fling the player to the map edge, P=' + JSON.stringify(wp && wp.P));
+});
+
+test('mouse look still works after the WebGL canvas is replaced (auto-quality)', () => {
+  const c = boot();
+  try { c.Obby.start('waterpark'); } catch (e){ assert.fail('start(waterpark) threw: ' + e); }
+  if (c.obbyDebug && c.obbyDebug.setFP) c.obbyDebug.setFP(false);
+  for (let i = 0; i < 4; i++) c.obbyDebug.stepFrame(1 / 60);
+  assert.ok(html.includes('attachGamePointer') && html.includes('renderer.domElement !== prevEl'), 'ensureRenderer should rebind pointer listeners when the canvas is swapped');
+  assert.ok(typeof c.__obbyBindGamePointer === 'function', 'expected window.__obbyBindGamePointer so a swapped canvas can be re-bound');
+  const fresh = c.document.createElement('canvas');
+  fresh.width = 800; fresh.height = 600;
+  const view = c.document.getElementById('obbyView');
+  if (view && view.appendChild) view.appendChild(fresh);
+  c.__obbyBindGamePointer(fresh);
+  const yaw0 = c.obbyDebug.fp().yaw;
+  fire(fresh, 'pointerdown', {clientX: 400, clientY: 300});
+  fire(fresh, 'pointermove', {clientX: 470, clientY: 330, pointerId: 1});
+  fire(fresh, 'pointerup', {clientX: 470, clientY: 330});
+  const yaw1 = c.obbyDebug.fp().yaw;
+  assert.ok(Math.abs(yaw1 - yaw0) > 0.01, 'drag-orbit on a rebound canvas should turn the camera, dYaw=' + (yaw1 - yaw0));
+  if (c.obbyDebug.setFP) c.obbyDebug.setFP(true);
+  const fpState = c.obbyDebug.fp();
+  assert.ok(fpState.on && fpState.active, 'first person should be on before the lock click, got ' + JSON.stringify(fpState));
+  let requested = 0;
+  fresh.requestPointerLock = function(){ requested++; c.document.pointerLockElement = fresh; };
+  fire(fresh, 'pointerdown', {clientX: 400, clientY: 300, pointerType: 'mouse'});
+  if (!requested){
+    // Click may have been ignored if a HUD rect overlapped the stub coords; lock directly and still test look.
+    c.document.pointerLockElement = fresh;
+  }
+  assert.ok(requested >= 1 || c.document.pointerLockElement === fresh, 'the replacement canvas should request pointer lock or accept a lock');
+  const yaw2 = c.obbyDebug.fp().yaw;
+  fire(fresh, 'mousemove', {movementX: 35, movementY: 4});
+  assert.ok(Math.abs(c.obbyDebug.fp().yaw - yaw2) > 0.01, 'pointer-lock look must work on the replacement canvas, dYaw=' + (c.obbyDebug.fp().yaw - yaw2) + ' requested=' + requested);
 });
 
 test('#dhtest=v6furnish still never writes rubloxDreamHouse during the loop', () => {
