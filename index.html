@@ -136,7 +136,12 @@ body.dhreset-open #dhResetModal, body.dhreset-open #dhResetModal .mbox, body.dhr
 .toast.toast-top{top:max(88px, calc(env(safe-area-inset-top) + 76px));bottom:auto;transform:translateX(-50%) translateY(-140%);z-index:50}
 .toast.toast-top.show{transform:translateX(-50%) translateY(0)}
 .toast.show{transform:translateX(-50%) translateY(0);visibility:visible;transition:transform .35s cubic-bezier(.3,1.8,.5,1),visibility 0s}
-.confetti{position:fixed;width:10px;height:10px;top:-12px;z-index:70;pointer-events:none;border-radius:2px}
+@keyframes rubloxConfetti{
+  0%{transform:translateY(0) rotate(0);opacity:1}
+  100%{transform:translateY(110vh) rotate(540deg);opacity:1}
+}
+.confetti{position:fixed;width:10px;height:10px;top:-12px;z-index:10050;pointer-events:none;border-radius:2px;animation:rubloxConfetti 1.8s linear forwards}
+#obby .confetti{position:absolute;z-index:10050}
 /* Achievements page + toast (t279u) */
 .achtoast{position:fixed;left:50%;top:max(24px, calc(env(safe-area-inset-top) + 16px));transform:translateX(-50%) translateY(-160%);z-index:80;display:flex;align-items:center;gap:14px;background:#fffaf0;color:#1d2340;border:3px solid #1d2340;border-radius:22px;padding:12px 18px 12px 12px;box-shadow:0 8px 0 rgba(0,0,0,.18);min-width:min(92vw,360px);max-width:92vw;pointer-events:none;visibility:hidden;transition:transform .4s cubic-bezier(.3,1.8,.5,1),visibility 0s .4s}
 .achtoast.show{transform:translateX(-50%) translateY(0);visibility:visible;transition:transform .4s cubic-bezier(.3,1.8,.5,1),visibility 0s}
@@ -568,16 +573,16 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
   #obby.dhmode #dhAct.dhnear,
   #obby.touchui.dhmode #dhAct.dhnear{bottom:calc(var(--dhbar-clear, 160px) + var(--dhtip-clear, 0px) + 8px)}
 }
-.dhcut{position:absolute;inset:0;z-index:35;pointer-events:auto}
+.dhcut{position:absolute;inset:0;z-index:220;pointer-events:auto}
 .dhfade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}
 .dhbubble{position:absolute;left:50%;top:16%;transform:translateX(-50%);background:#fffaf0;border:3px solid #1d2340;border-radius:22px;padding:12px 22px 16px;font-weight:900;color:#1d2340;box-shadow:0 6px 0 rgba(0,0,0,.15);max-width:min(90vw,460px);text-align:center;z-index:9}
 .dhbubble b{display:block;color:#ff6fb5;font-size:13px;letter-spacing:.04em;margin-bottom:4px;text-transform:uppercase}
 .dhbubble span{font-size:22px;line-height:1.25}
 .dhbubble:after{content:'';position:absolute;left:62%;bottom:-16px;border:16px solid transparent;border-top-color:#1d2340;border-bottom:0}
-.dhcut{z-index:35}
-.dhskip{position:absolute;left:50%;bottom:max(28px,calc(env(safe-area-inset-bottom) + 24px));right:auto;top:auto;transform:translateX(-50%);z-index:40;background:#ffd23f;border:3px solid #1d2340;border-radius:999px;padding:14px 28px;font:inherit;font-weight:900;font-size:22px;color:#1d2340;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.18);pointer-events:auto;display:none}
+.dhcut{z-index:220}
+.dhskip{position:absolute;left:50%;bottom:max(28px,calc(env(safe-area-inset-bottom) + 24px));right:auto;top:auto;transform:translateX(-50%);z-index:230;background:#ffd23f;border:3px solid #1d2340;border-radius:999px;padding:14px 28px;font:inherit;font-weight:900;font-size:22px;color:#1d2340;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.18);pointer-events:auto;display:none}
 .dhskip.show,.dhcut.show .dhskip{display:block}
-.dhcutcap{position:absolute;left:50%;bottom:max(88px,calc(env(safe-area-inset-bottom) + 84px));transform:translateX(-50%);z-index:40;background:rgba(29,35,64,.92);color:#fff;font-weight:800;font-size:16px;padding:8px 16px;border-radius:14px;pointer-events:none;text-align:center;max-width:min(90vw,420px)}
+.dhcutcap{position:absolute;left:50%;bottom:max(96px,calc(env(safe-area-inset-bottom) + 92px));transform:translateX(-50%);z-index:230;background:rgba(29,35,64,.92);color:#fff;font-weight:800;font-size:16px;padding:8px 16px;border-radius:14px;pointer-events:none;text-align:center;max-width:min(90vw,420px)}
 
 .dhguide{position:absolute;top:max(54px,calc(env(safe-area-inset-top) + 44px));left:50%;transform:translateX(-50%);z-index:9;background:rgba(29,35,64,.92);color:#fff;padding:10px 18px;border-radius:18px;font-weight:800;font-size:18px;display:none;align-items:center;gap:10px;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.25);white-space:nowrap}
 
@@ -610,8 +615,21 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 #obby.paused .dhtip, #obby.dh-paused .dhtip, #obby.paused #dhTip, #obby.dh-paused #dhTip{
   display:none !important; visibility:hidden !important; pointer-events:none !important;
 }
-#obby.dh-intro #dhBar, #obby.dh-intro #dhInv, #obby.dh-intro #dhCarry, #obby.dh-intro #dhHand, #obby.dh-intro #dhAct, #obby.dh-intro #dhBox, #obby.dh-intro #dhStack, #obby.dh-intro #oCross, #obby.dh-intro .ocross{
-  display:none !important;
+#obby.dh-intro #dhBar, #obby.dh-intro #dhInv, #obby.dh-intro #dhCarry, #obby.dh-intro #dhHand, #obby.dh-intro #dhAct, #obby.dh-intro #dhBox, #obby.dh-intro #dhStack, #obby.dh-intro #oCross, #obby.dh-intro .ocross,
+#obby.dh-intro #oBuild, #obby.dh-intro .obuild, #obby.dh-intro #oTip, #obby.dh-intro .otip, #obby.dh-intro #dhTip, #obby.dh-intro .dhtip,
+#obby.dh-intro #dhGoal, #obby.dh-intro #dhSteps, #obby.dh-intro #dhLookHint, #obby.dh-intro #dhSpotHint, #obby.dh-intro #dhGuide,
+#obby.dh-intro #oEmoBtn, #obby.dh-intro .dhbar, #obby.dh-intro .dhhand, #obby.dh-intro #oBanner, #obby.dh-intro .obanner, #obby.dh-intro #oPause{
+  display:none !important; visibility:hidden !important; pointer-events:none !important;
+}
+/* Cut-scene bubbles and Skip must never paint above a pause/settings/reset menu. */
+#obby.paused .dhcut, #obby.dh-paused .dhcut,
+#obby.paused #dhSkip, #obby.dh-paused #dhSkip,
+#obby.paused .dhbubble, #obby.dh-paused .dhbubble,
+#obby.paused .dhcutcap, #obby.dh-paused .dhcutcap,
+body:has(#oPausePanel.show) #dhCut, body:has(#oPausePanel.show) #dhSkip, body:has(#oPausePanel.show) .dhbubble,
+body:has(#setModal.show) #dhCut, body:has(#setModal.show) #dhSkip, body:has(#setModal.show) .dhbubble,
+body.dhreset-open #dhCut, body.dhreset-open #dhSkip, body.dhreset-open .dhbubble{
+  display:none !important; visibility:hidden !important; pointer-events:none !important;
 }
 .dhtip b{display:block;color:#3a86ff;font-size:13px;text-transform:uppercase;margin-bottom:4px}
 #dhTipX{display:block;margin:10px auto 0;border:0;background:#3a86ff;color:#fff;font:inherit;font-weight:900;border-radius:12px;padding:8px 18px;cursor:pointer;min-height:40px}
@@ -1695,7 +1713,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.12-14';
+const BUILD = '2026.11.12-15';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3037,14 +3055,21 @@ function toast(msg){
   t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800);
 }
 function confetti(){
-  for (let i = 0; i < 40; i++){
-    const c = document.createElement('div'); c.className = 'confetti';
-    c.style.left = Math.random()*100 + 'vw'; c.style.background = COLORS[i % 7];
-    document.body.appendChild(c);
-    const a = c.animate([{transform:'translateY(0) rotate(0)'},{transform:`translateY(${innerHeight+40}px) rotate(${Math.random()*720}deg)`}],
-      {duration: 1200 + Math.random()*1200, easing:'cubic-bezier(.3,.2,.6,1)'});
-    a.onfinish = () => c.remove();
-  }
+  try {
+    const host = (document.getElementById('obby') && document.getElementById('obby').classList.contains('show'))
+      ? document.getElementById('obby') : (document.body || document.documentElement);
+    if (!host) return;
+    for (let i = 0; i < 40; i++){
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = (Math.random() * 100) + 'vw';
+      c.style.background = (typeof COLORS !== 'undefined' && COLORS[i % 7]) || ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5'][i % 7];
+      c.style.animationDuration = (1.2 + Math.random() * 1.2) + 's';
+      c.style.animationDelay = (Math.random() * 0.12) + 's';
+      host.appendChild(c);
+      setTimeout(() => { if (c.parentNode) c.parentNode.removeChild(c); }, 2800);
+    }
+  } catch (e){}
 }
 
   /* ===================== Achievements (t279u) ===================== */
@@ -3451,7 +3476,8 @@ function confetti(){
     try {
       const el = document.getElementById('achievements');
       if (el && el.scrollIntoView) el.scrollIntoView({behavior: 'smooth'});
-      $$ && $$('nav button').forEach && $$('nav button').forEach(x => x.classList.toggle('active', x.dataset.go === 'achievements'));
+      if (typeof paintNav === 'function') paintNav('achievements', true);
+      else $$ && $$('nav button').forEach && $$('nav button').forEach(x => x.classList.toggle('active', x.dataset.go === 'achievements'));
     } catch (e){}
     return true;
   }
@@ -3516,18 +3542,51 @@ $('#chip').onclick = askName;
 function updateWelcome(){ $('#welcome').textContent = 'Welcome to Rublox, ' + (player ? player.name : 'friend') + '! 🎉'; }
 
 /* ---------- nav ---------- */
+let navLock = null, navLockT = 0;
+function navActiveId(){
+  const y = window.scrollY || document.documentElement.scrollTop || 0;
+  if (y < 80) return 'home';
+  const home = document.getElementById('home');
+  if (home){
+    const r = home.getBoundingClientRect();
+    if (r.top >= -24 && r.top < 140 && y < 180) return 'home';
+  }
+  const ids = ['home','games','avatar','shop','achievements','friends'];
+  const mid = (window.innerHeight || 0) * 0.45;
+  let best = 'home', bestDist = Infinity;
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > (window.innerHeight || 0)) return;
+    const contains = r.top <= mid && r.bottom >= mid;
+    const dist = contains ? 0 : Math.abs(((r.top + Math.min(r.bottom, window.innerHeight || 0)) / 2) - mid);
+    if (dist < bestDist){ bestDist = dist; best = id; }
+  });
+  return best;
+}
+function paintNav(id, lock){
+  if (lock){ navLock = id; navLockT = Date.now(); }
+  if (navLock && (Date.now() - navLockT) < 900 && !lock) id = navLock;
+  else if (navLock && (Date.now() - navLockT) >= 900) navLock = null;
+  $$('nav button').forEach(x => x.classList.toggle('active', x.dataset.go === id));
+  return id;
+}
+function syncNavHighlight(){ paintNav(navActiveId()); }
 $$('[data-go]').forEach(b => b.addEventListener('click', () => {
   let id = b.dataset.go;
   if (id === 'games'){
     const c = document.getElementById('continue');
     if (c && !c.hidden) id = 'continue';
   }
-  document.getElementById(id).scrollIntoView({behavior:'smooth'});
-  $$('nav button').forEach(x => x.classList.toggle('active', x.dataset.go === b.dataset.go));
+  const navId = b.dataset.go;
+  paintNav(navId, true);
+  const el = document.getElementById(id);
+  if (el && el.scrollIntoView) el.scrollIntoView({behavior:'smooth'});
 }));
-const io = new IntersectionObserver(es => es.forEach(e => {
-  if (e.isIntersecting) $$('nav button').forEach(x => x.classList.toggle('active', x.dataset.go === e.target.id));
-}), {rootMargin:'-45% 0px -50% 0px'});
+const io = new IntersectionObserver(() => { syncNavHighlight(); }, {rootMargin:'-45% 0px -50% 0px'});
+addEventListener('scroll', syncNavHighlight, {passive:true});
+addEventListener('resize', syncNavHighlight);
 ['home','games','achievements','avatar','shop','friends'].forEach(id => { const el = document.getElementById(id); if (el) io.observe(el); });
 try { if (typeof achInit === 'function') achInit(); } catch (e){}
 
@@ -16140,11 +16199,17 @@ const Obby = (() => {
     dhSetCutCap('Your house is finished!');
     dhSay('');
     dhSetFade(0);
-    ['#dhBar', '#dhAct', '#dhInv', '#dhCarry', '#dhHand', '#dhGoal', '#dhSteps'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
+    ['#dhBar', '#dhAct', '#dhInv', '#dhCarry', '#dhHand', '#dhGoal', '#dhSteps', '#dhTip', '#dhLookHint', '#dhSpotHint', '#dhGuide', '#dhStack', '#dhBox', '#oTip', '#oBuild', '#oEmoBtn', '#oCross', '#oDot', '#oBanner', '#oPause'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
+    if (typeof dhTipOpen === 'function' && dhTipOpen()){
+      const tEl = $('#dhTipT');
+      if (dh && tEl && tEl.textContent) dh._tipQueue = tEl.textContent;
+      if (typeof dhDismissTip === 'function') dhDismissTip();
+    }
     if (typeof document !== 'undefined' && document.getElementById){
       const root = document.getElementById('obby');
       if (root && root.classList){ root.classList.add('dh-intro'); root.classList.remove('paused', 'dh-paused'); }
     }
+    if (typeof updateDhChrome === 'function') updateDhChrome();
     dhCelebrateCam();
     return true;
   }
@@ -16152,7 +16217,13 @@ const Obby = (() => {
     if (!dh || !dh.celebrate || dh.celebrate.awarded) return false;
     dh.celebrate.awarded = true;
     try { if (typeof achUnlock === 'function') achUnlock('dh-done'); } catch (e){}
-    try { if (typeof confetti === 'function'){ confetti(); setTimeout(confetti, 400); } } catch (e){}
+    try {
+      const burst = () => { try { if (typeof confetti === 'function') confetti(); } catch (e2){} };
+      burst();
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(burst);
+      else setTimeout(burst, 40);
+      setTimeout(burst, 400);
+    } catch (e){}
     return true;
   }
   function dhSkipCelebrate(){
@@ -16174,6 +16245,7 @@ const Obby = (() => {
     dhSave();
     dhSetFade(0);
     dhSay('');
+    if (typeof dhFlushTips === 'function') dhFlushTips();
     const wrap = $('#dhCut'); if (wrap){ wrap.style.display = 'none'; wrap.classList.remove('show'); }
     const skip = $('#dhSkip'); if (skip){ skip.style.display = 'none'; skip.classList.remove('show'); }
     const cap = $('#dhCutCap'); if (cap) cap.style.display = 'none';
@@ -17091,7 +17163,8 @@ const Obby = (() => {
   function dhShowTip(text){
     if (!text) return;
     const pausedNow = (typeof paused !== 'undefined' && paused) || (typeof menuOpen !== 'undefined' && menuOpen);
-    if (pausedNow){ if (dh) dh._tipQueue = text; return; }
+    const cutting = !!(dh && (dh.intro || dh.celebrate));
+    if (pausedNow || cutting){ if (dh) dh._tipQueue = text; return; }
     const tip = $('#dhTip'), t = $('#dhTipT');
     if (tip){ tip.style.display = ''; tip.classList.add('show'); }
     if (t) t.textContent = text;
@@ -17104,11 +17177,12 @@ const Obby = (() => {
   function dhFlushTips(){
     if (!dh || !dh._tipQueue) return;
     if ((typeof paused !== 'undefined' && paused) || (typeof menuOpen !== 'undefined' && menuOpen)) return;
+    if (dh.intro || dh.celebrate) return;
     const text = dh._tipQueue; dh._tipQueue = null;
     dhShowTip(text);
   }
   function dhHintStage(){
-    if (!dh || dh.intro || dh.yardOpen || dh.shopOpen || dh.upOpen) return;
+    if (!dh || dh.intro || dh.celebrate || dh.yardOpen || dh.shopOpen || dh.upOpen) return;
     if ((typeof paused !== 'undefined' && paused) || (typeof menuOpen !== 'undefined' && menuOpen)) return;
     const id = dhStageId();
     dh.tipsSeen = dh.tipsSeen || {};
@@ -17755,7 +17829,7 @@ const Obby = (() => {
     return 'You can ' + (names[id] || 'use that') + ' later; ' + dhStageHint();
   }
   function updateDhChrome(){
-    const intro = !!(dh && dh.intro);
+    const intro = !!(dh && (dh.intro || dh.celebrate));
     const inDh = (typeof mode === 'undefined' || mode === 'dreamhouse') && !!dh;
     const playing = inDh && !intro;
     const pausedNow = !!(typeof paused !== 'undefined' && paused) || !!(typeof menuOpen !== 'undefined' && menuOpen);
@@ -17908,14 +17982,20 @@ const Obby = (() => {
       const up = ev.target.closest('[data-dhup]');
       if (up) dhBuyUpgrade(up.dataset.dhup);
     });
-    const cut = $('#dhCut'); if (cut) cut.addEventListener('click', ev => { if (dh && (dh.intro || dh.celebrate)) dhSkipCut(); });
+    const cut = $('#dhCut');
+    if (cut && !cut._dhSkipBound){
+      cut._dhSkipBound = true;
+      const skipFrom = ev => { if (dh && (dh.intro || dh.celebrate)){ if (ev && ev.preventDefault) ev.preventDefault(); dhSkipCut(); } };
+      cut.addEventListener('click', skipFrom);
+      cut.addEventListener('pointerdown', skipFrom);
+    }
     const skip = $('#dhSkip'); if (skip) skip.onclick = ev => { ev.stopPropagation(); if (dh && (dh.intro || dh.celebrate)) dhSkipCut(); };
     const replay = $('#dhReplay'); if (replay) replay.onclick = () => dh && dhReplayIntro();
     const tipX = $('#dhTipX'); if (tipX) tipX.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); dhDismissTip(); };
     const tip = $('#dhTip'); if (tip) tip.onclick = ev => { if (ev.target && ev.target.id === 'dhTip'){ dhDismissTip(); } };
   }
   function dhPointer(down){
-    if (!dh || dh.intro) return false;
+    if (!dh || dh.intro || dh.celebrate) return false;
     if (dh.yardOpen || dh.shopOpen || dh.upOpen) return false;
     if (down){
       dh.pourHold = true;
@@ -18181,6 +18261,7 @@ const Obby = (() => {
     if (!running) return;
     if (s.any && !pad.on){ pad.on = true; $('#obby').classList.add('padui'); setTouchUI(false); $('#oRot').classList.remove('show'); }
     const live = !paused && !won && !over && !choosing, jp = s.jp;
+    if ((jp[9] || jp[1]) && typeof dhCutPlaying === 'function' && dhCutPlaying()){ if (typeof dhSkipCut === 'function') dhSkipCut(); return; }
     if (jp[9]){ if (!won && !over && !choosing) setPause(!(paused || menuOpen)); return; }
     if (!live){ pad.x = pad.y = 0; pad.jump = false; return; }
     const dx = (s.b[15] ? 1 : 0) - (s.b[14] ? 1 : 0), dy = (s.b[12] ? 1 : 0) - (s.b[13] ? 1 : 0);
@@ -18749,6 +18830,14 @@ function dhLayoutHud(){
   /* ---------- controls ---------- */
   function bind(){
     bound = true;
+    addEventListener('pointerdown', e => {
+      if (!running) return;
+      if (typeof dhCutPlaying !== 'function' || !dhCutPlaying()) return;
+      if (paused || menuOpen) return;
+      const t = e.target || e.srcElement;
+      if (t && t.closest && t.closest('#oPausePanel, #setModal, #dhResetModal, dialog.modal, .modal.show')) return;
+      if (typeof dhSkipCut === 'function') dhSkipCut();
+    }, true);
     addEventListener('keydown', e => {
       if (!running) return;
       if (e.target && e.target.closest && e.target.closest('input, textarea, select')) return;   // typing a pet name etc.
@@ -18785,10 +18874,12 @@ function dhLayoutHud(){
         const sm = document.getElementById('setModal');
         if (sm && sm.classList.contains('show')){ sm.classList.remove('show'); if (e.preventDefault) e.preventDefault(); return; }
       }
+      if ((e.code === 'Escape' || e.code === 'KeyP') && typeof dhCutPlaying === 'function' && dhCutPlaying()){ if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); if (typeof dhSkipCut === 'function') dhSkipCut(); return; }
       if (e.code === 'Escape' && document.pointerLockElement){ document.exitPointerLock(); fp.unlockT = performance.now(); fp.eatEsc = true; return; }
       if (e.code === 'Tab' && mode === 'dreamhouse' && typeof dh !== 'undefined' && dh && !dh.intro){ e.preventDefault(); if (typeof dhShowSpots === 'function') dhShowSpots(); return; }
       if (e.code === 'Tab' && document.pointerLockElement){ document.exitPointerLock(); e.preventDefault(); return; }
       if (e.code === 'Escape' && fp.eatEsc){ const same = performance.now() - fp.unlockT < 80; fp.eatEsc = false; if (same) return; }
+      if ((e.code === 'Escape' || e.code === 'KeyP') && typeof dhCutPlaying === 'function' && dhCutPlaying()){ if (typeof dhSkipCut === 'function') dhSkipCut(); return; }
       if (e.code === 'Escape' || e.code === 'KeyP'){ if (!won && !over && !choosing) setPause(!(paused || menuOpen)); return; }
       if (mode === 'fashion' && fs && fs.ph === 'walk' && /^Digit[1-7]$/.test(e.code) && fsKey(e)) return;
       if (mode === 'dreamhouse' && dh && dhKey(e)) return;

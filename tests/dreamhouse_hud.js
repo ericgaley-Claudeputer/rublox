@@ -115,9 +115,9 @@ test('start, bar render, tip hide, and resize all relayout the HUD', () => {
 });
 
 test('version is bumped and existing saves are not involved', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.12-14'"));
+  assert.ok(src.includes("const BUILD = '2026.11.12-15'"));
   const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
-  assert.strictEqual(v.build, '2026.11.12-14');
+  assert.strictEqual(v.build, '2026.11.12-15');
   assert.ok(src.includes("const DH_KEY = 'rubloxDreamHouse'") || dhSrc.includes("DH_KEY = 'rubloxDreamHouse'"));
 });
 
@@ -255,7 +255,7 @@ test('pause buttons stay clickable and the DH toolbar is hidden while paused', (
   assert.ok(src.includes('padding-bottom:56px') || src.includes('padding-bottom: 56px'));
   assert.ok(src.includes('#obby.paused .dhbar') && src.includes('display:none !important'));
   assert.ok(src.includes("classList.toggle('paused'") && src.includes('dhSyncPauseHud'));
-  assert.ok(src.includes('z-index:70') && src.includes('id="oExit2"') && src.includes('id="dhResetBtn"'));
+  assert.ok(src.includes('z-index:120') && src.includes('id="oExit2"') && src.includes('id="dhResetBtn"'));
   assert.ok(src.includes("e.target.closest('#oPausePanel, #oExit, #oExit2"));
   assert.ok(src.includes('function setHomeInert') && src.includes('dhInertExempt'));
 });
@@ -305,7 +305,7 @@ test('top-left status bar drops empty segments, stays in its corner, and sits be
   assert.ok(src.includes('.dhstack{') && src.includes('max-width:min(42vw,280px)'));
   assert.ok(/#dhBox\{[^}]*z-index:40/.test(src) || src.includes('#dhBox{') && src.includes('z-index:40'));
   assert.ok(src.includes('#obby.paused #dhBox') && src.includes('#obby.dh-intro #dhBox'));
-  assert.ok(src.includes('.obtns{') && src.includes('z-index:70'));
+  assert.ok(src.includes('.obtns{') && src.includes('z-index:120'));
   assert.ok(src.includes('.toast.toast-top{') && src.includes('top:max(88px') && src.includes("classList.toggle('toast-top'"));
   assert.ok(src.includes('#obby.dh-intro #oCross') || src.includes('#obby.dh-intro .ocross'));
 });
@@ -325,6 +325,17 @@ test('Escape closes the settings dialog', () => {
     || src.includes('setModal') && src.includes("e.code === 'Escape'") && src.includes("sm.classList.remove('show')");
   assert.ok(closes, 'Escape closes #setModal');
   assert.ok(src.includes("e.code === 'Escape'") && src.includes("getElementById('setModal')"));
+});
+
+
+test('cut-scene hides the build bar and Skip sits above it', () => {
+  assert.ok(src.includes('#obby.dh-intro #dhBar') && src.includes('#obby.dh-intro .dhbar') && src.includes('#obby.dh-intro #oBuild'), 'dh-intro must hide the tool / build HUD');
+  assert.ok(/\.dhskip\{[^}]*z-index:230/.test(src) || src.includes('z-index:230') && src.includes('.dhskip'), 'Skip must have a z-index above the z-index:200 toolbar');
+  assert.ok(src.includes('const intro = !!(dh && (dh.intro || dh.celebrate))') || (dhSrc.includes('dh.intro || dh.celebrate') && dhSrc.includes('function updateDhChrome')), 'updateDhChrome must treat the completion cut-scene like the intro');
+  assert.ok(src.includes("dhCutPlaying()") && src.includes('dhSkipCut()') && src.includes("if (e.code === 'Escape' || e.code === 'KeyP'){ if (!won && !over && !choosing) setPause"), 'Esc must skip the cut-scene before opening pause');
+  assert.ok(src.includes('#obby.paused .dhcut') && src.includes('body:has(#oPausePanel.show) #dhCut'), 'cut-scene bubbles must hide while a menu is open');
+  assert.ok(src.includes('cutting') && (dhSrc.includes('pausedNow || cutting') || dhSrc.includes('if (pausedNow || cutting)')), 'Quick Tips are queued during the cut-scene');
+  assert.ok(src.includes('@keyframes rubloxConfetti') && src.includes('z-index:10050'), 'confetti must use a CSS fallback and a z-index above the game overlay');
 });
 
 test('the Dream House toolbar sits above the canvas and keeps pointer events', () => {

@@ -402,7 +402,8 @@
     try {
       const el = document.getElementById('achievements');
       if (el && el.scrollIntoView) el.scrollIntoView({behavior: 'smooth'});
-      $$ && $$('nav button').forEach && $$('nav button').forEach(x => x.classList.toggle('active', x.dataset.go === 'achievements'));
+      if (typeof paintNav === 'function') paintNav('achievements', true);
+      else $$ && $$('nav button').forEach && $$('nav button').forEach(x => x.classList.toggle('active', x.dataset.go === 'achievements'));
     } catch (e){}
     return true;
   }

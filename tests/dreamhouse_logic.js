@@ -2268,5 +2268,47 @@ Ww.A.dreamhouseStop();
   W2.A.dreamhouseStop();
 })();
 
+
+(function(){
+  const W = world({}, {coins:20, hash:'#dhtest=v7done'});
+  W.A.buildDreamHouse(); W.A.dreamhouseEnter();
+  if (W.A.dh && W.A.dh.intro) W.A.dhSkipIntro();
+  W.A.updateDhChrome(); W.A.dhBar(); W.A.updateDhChrome();
+  const bar = W.els['#dhBar'], skip = W.els['#dhSkip'], tip = W.els['#dhTip'];
+  chk('the completion cut-scene hides the build bar and keeps Skip visible',
+    !!(W.A.dh && W.A.dh.celebrate) && bar && (bar.style.display === 'none' || bar.style.visibility === 'hidden')
+      && skip && skip.style.display && skip.style.display !== 'none',
+    {celebrate: W.A.dh && W.A.dh.celebrate, bar: bar && bar.style, skip: skip && {display: skip.style.display, cls: skip.className || skip.classList}});
+  W.A.dhShowTip('A queued tip about paint');
+  chk('Quick Tips are queued and not shown while the cut-scene plays',
+    !W.A.dhTipOpen() && W.A.dh._tipQueue === 'A queued tip about paint',
+    {open: W.A.dhTipOpen(), queue: W.A.dh && W.A.dh._tipQueue, tip: tip && tip.style});
+  const pausedBefore = !!W.paused;
+  const handled = W.A.dhKey({code:'Escape', repeat:false, type:'keydown'});
+  chk('Escape skips the cut-scene and does not pause the game',
+    handled === true && !W.A.dh.celebrate && W.A.dh.doneCutSeen === true && !!pausedBefore === !!W.paused && !W.paused,
+    {handled, celebrate: W.A.dh.celebrate, seen: W.A.dh.doneCutSeen, paused: W.paused});
+  W.A.dreamhouseStop();
+})();
+
+(function(){
+  const W = world({}, {coins:20, hash:'#dhtest=v7done'});
+  W.A.buildDreamHouse(); W.A.dreamhouseEnter();
+  if (W.A.dh && W.A.dh.intro) W.A.dhSkipIntro();
+  const startHandled = W.A.dhPad({start:true, 9:true});
+  chk('controller Start skips the cut-scene instead of opening pause',
+    startHandled === true && !W.A.dh.celebrate && W.A.dh.doneCutSeen === true && !W.paused,
+    {startHandled, celebrate: W.A.dh.celebrate, paused: W.paused});
+  W.A.dreamhouseStop();
+  const W2 = world({}, {coins:20, hash:'#dhtest=v7done'});
+  W2.A.buildDreamHouse(); W2.A.dreamhouseEnter();
+  if (W2.A.dh && W2.A.dh.intro) W2.A.dhSkipIntro();
+  const bHandled = W2.A.dhPad({b:true, 1:true});
+  chk('controller B skips the cut-scene instead of opening pause',
+    bHandled === true && !W2.A.dh.celebrate && W2.A.dh.doneCutSeen === true && !W2.paused,
+    {bHandled, celebrate: W2.A.dh.celebrate, paused: W2.paused});
+  W2.A.dreamhouseStop();
+})();
+
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);

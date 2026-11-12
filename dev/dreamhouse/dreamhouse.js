@@ -3326,11 +3326,17 @@
     dhSetCutCap('Your house is finished!');
     dhSay('');
     dhSetFade(0);
-    ['#dhBar', '#dhAct', '#dhInv', '#dhCarry', '#dhHand', '#dhGoal', '#dhSteps'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
+    ['#dhBar', '#dhAct', '#dhInv', '#dhCarry', '#dhHand', '#dhGoal', '#dhSteps', '#dhTip', '#dhLookHint', '#dhSpotHint', '#dhGuide', '#dhStack', '#dhBox', '#oTip', '#oBuild', '#oEmoBtn', '#oCross', '#oDot', '#oBanner', '#oPause'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
+    if (typeof dhTipOpen === 'function' && dhTipOpen()){
+      const tEl = $('#dhTipT');
+      if (dh && tEl && tEl.textContent) dh._tipQueue = tEl.textContent;
+      if (typeof dhDismissTip === 'function') dhDismissTip();
+    }
     if (typeof document !== 'undefined' && document.getElementById){
       const root = document.getElementById('obby');
       if (root && root.classList){ root.classList.add('dh-intro'); root.classList.remove('paused', 'dh-paused'); }
     }
+    if (typeof updateDhChrome === 'function') updateDhChrome();
     dhCelebrateCam();
     return true;
   }
@@ -3338,7 +3344,13 @@
     if (!dh || !dh.celebrate || dh.celebrate.awarded) return false;
     dh.celebrate.awarded = true;
     try { if (typeof achUnlock === 'function') achUnlock('dh-done'); } catch (e){}
-    try { if (typeof confetti === 'function'){ confetti(); setTimeout(confetti, 400); } } catch (e){}
+    try {
+      const burst = () => { try { if (typeof confetti === 'function') confetti(); } catch (e2){} };
+      burst();
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(burst);
+      else setTimeout(burst, 40);
+      setTimeout(burst, 400);
+    } catch (e){}
     return true;
   }
   function dhSkipCelebrate(){
@@ -3360,6 +3372,7 @@
     dhSave();
     dhSetFade(0);
     dhSay('');
+    if (typeof dhFlushTips === 'function') dhFlushTips();
     const wrap = $('#dhCut'); if (wrap){ wrap.style.display = 'none'; wrap.classList.remove('show'); }
     const skip = $('#dhSkip'); if (skip){ skip.style.display = 'none'; skip.classList.remove('show'); }
     const cap = $('#dhCutCap'); if (cap) cap.style.display = 'none';
@@ -4277,7 +4290,8 @@
   function dhShowTip(text){
     if (!text) return;
     const pausedNow = (typeof paused !== 'undefined' && paused) || (typeof menuOpen !== 'undefined' && menuOpen);
-    if (pausedNow){ if (dh) dh._tipQueue = text; return; }
+    const cutting = !!(dh && (dh.intro || dh.celebrate));
+    if (pausedNow || cutting){ if (dh) dh._tipQueue = text; return; }
     const tip = $('#dhTip'), t = $('#dhTipT');
     if (tip){ tip.style.display = ''; tip.classList.add('show'); }
     if (t) t.textContent = text;
@@ -4290,11 +4304,12 @@
   function dhFlushTips(){
     if (!dh || !dh._tipQueue) return;
     if ((typeof paused !== 'undefined' && paused) || (typeof menuOpen !== 'undefined' && menuOpen)) return;
+    if (dh.intro || dh.celebrate) return;
     const text = dh._tipQueue; dh._tipQueue = null;
     dhShowTip(text);
   }
   function dhHintStage(){
-    if (!dh || dh.intro || dh.yardOpen || dh.shopOpen || dh.upOpen) return;
+    if (!dh || dh.intro || dh.celebrate || dh.yardOpen || dh.shopOpen || dh.upOpen) return;
     if ((typeof paused !== 'undefined' && paused) || (typeof menuOpen !== 'undefined' && menuOpen)) return;
     const id = dhStageId();
     dh.tipsSeen = dh.tipsSeen || {};
@@ -4941,7 +4956,7 @@
     return 'You can ' + (names[id] || 'use that') + ' later; ' + dhStageHint();
   }
   function updateDhChrome(){
-    const intro = !!(dh && dh.intro);
+    const intro = !!(dh && (dh.intro || dh.celebrate));
     const inDh = (typeof mode === 'undefined' || mode === 'dreamhouse') && !!dh;
     const playing = inDh && !intro;
     const pausedNow = !!(typeof paused !== 'undefined' && paused) || !!(typeof menuOpen !== 'undefined' && menuOpen);
@@ -5094,14 +5109,20 @@
       const up = ev.target.closest('[data-dhup]');
       if (up) dhBuyUpgrade(up.dataset.dhup);
     });
-    const cut = $('#dhCut'); if (cut) cut.addEventListener('click', ev => { if (dh && (dh.intro || dh.celebrate)) dhSkipCut(); });
+    const cut = $('#dhCut');
+    if (cut && !cut._dhSkipBound){
+      cut._dhSkipBound = true;
+      const skipFrom = ev => { if (dh && (dh.intro || dh.celebrate)){ if (ev && ev.preventDefault) ev.preventDefault(); dhSkipCut(); } };
+      cut.addEventListener('click', skipFrom);
+      cut.addEventListener('pointerdown', skipFrom);
+    }
     const skip = $('#dhSkip'); if (skip) skip.onclick = ev => { ev.stopPropagation(); if (dh && (dh.intro || dh.celebrate)) dhSkipCut(); };
     const replay = $('#dhReplay'); if (replay) replay.onclick = () => dh && dhReplayIntro();
     const tipX = $('#dhTipX'); if (tipX) tipX.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); dhDismissTip(); };
     const tip = $('#dhTip'); if (tip) tip.onclick = ev => { if (ev.target && ev.target.id === 'dhTip'){ dhDismissTip(); } };
   }
   function dhPointer(down){
-    if (!dh || dh.intro) return false;
+    if (!dh || dh.intro || dh.celebrate) return false;
     if (dh.yardOpen || dh.shopOpen || dh.upOpen) return false;
     if (down){
       dh.pourHold = true;

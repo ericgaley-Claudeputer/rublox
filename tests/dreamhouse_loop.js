@@ -502,9 +502,9 @@ function notInWall(z, zFace, thick, r){
   return z <= lo + EPS || z >= hi - EPS;
 }
 
-test('BUILD is 2026.11.12-14 and matches version.json', () => {
-  assert.ok(html.includes("const BUILD = '2026.11.12-14'"));
-  assert.strictEqual(version.build, '2026.11.12-14');
+test('BUILD is 2026.11.12-15 and matches version.json', () => {
+  assert.ok(html.includes("const BUILD = '2026.11.12-15'"));
+  assert.strictEqual(version.build, '2026.11.12-15');
 });
 
 test('index.html wires DH clip into step() and exposes a #dhdebug collider path', () => {
@@ -926,6 +926,13 @@ test('#dhtest=v7done auto-starts the finished house cut-scene and never writes t
   const text = String(((c.document && c.document.getElementById('dhTestNote')) || {}).textContent || '');
   assert.ok(/TEST HOUSE/i.test(text) && /v7done/.test(text), 'expected a TEST HOUSE badge naming v7done, got: ' + text);
   assert.ok(c.obbyDebug.dhCelebrate(), 'expected the completion cut-scene to be playing');
+  const obby = c.document.getElementById('obby');
+  assert.ok(obby && obby.classList && obby.classList.contains('dh-intro'), 'expected #obby.dh-intro so the tool HUD is hidden, class=' + (obby && obby.className));
+  const bar = c.document.getElementById('dhBar');
+  const skip = c.document.getElementById('dhSkip');
+  const barHidden = !bar || bar.style.display === 'none' || bar.style.visibility === 'hidden' || (bar.classList && !bar.classList.contains('show'));
+  assert.ok(barHidden, 'build bar should be hidden during the cut-scene, display=' + (bar && bar.style.display));
+  assert.ok(skip && (skip.style.display === 'block' || (skip.classList && skip.classList.contains('show'))), 'Skip should be visible during the cut-scene, display=' + (skip && skip.style.display));
   const bubble = c.document.getElementById('dhSay');
   // Advance into the "Good job!" line, then skip; either is fine as long as the scene was active and persist is blocked.
   for (let i = 0; i < 200; i++) c.obbyDebug.stepFrame(1 / 30);
