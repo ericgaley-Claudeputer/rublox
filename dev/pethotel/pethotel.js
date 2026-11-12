@@ -728,5 +728,7 @@
     };
     pet(200, '#c9894c', '#6d3a18'); pet(84, '#8aa0b8', '#f4c6d4');
     if (typeof guy === 'function'){ guy(ctx, 160, 175, 12, '#3a86ff'); guy(ctx, 60, 175, 11, '#d96b8a'); }
-    ctx.font = '22px sans-serif'; ctx.fillText(PH_HOTEL_ICON, 40, 50); ctx.fillText(PH_DESK_ICON, 150, 92);
+    const hotelIcon = (typeof PH_HOTEL_ICON === 'string') ? PH_HOTEL_ICON : '🏨';
+    const deskIcon = (typeof PH_DESK_ICON === 'string') ? PH_DESK_ICON : '🔔';
+    ctx.font = '22px sans-serif'; ctx.fillText(hotelIcon, 40, 50); ctx.fillText(deskIcon, 150, 92);
   }

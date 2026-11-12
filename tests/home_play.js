@@ -63,9 +63,9 @@ function makeEl(id){
   return el;
 }
 
-test('BUILD is 2026.11.11-34 and matches version.json', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.11-34'"));
-  assert.strictEqual(version.build, '2026.11.11-34');
+test('BUILD is 2026.11.12-1 and matches version.json', () => {
+  assert.ok(src.includes("const BUILD = '2026.11.12-1'"));
+  assert.strictEqual(version.build, '2026.11.12-1');
 });
 
 test('every inline script in index.html parses (a syntax error would make every Play button do nothing)', () => {
@@ -285,6 +285,70 @@ test('Pet Hotel is a playable New game on the home menu and start() can open it'
   assert.ok(i >= 0 && src.slice(i, i+1200).includes("'pethotel'"));
   assert.ok(src.includes('buildPetHotel()') && src.includes('petHotelEnter()') && src.includes('id="phAct"'));
 });
+
+
+test('drawPetHotel tile art does not throw when the hotel icons are not defined yet (home boot order)', () => {
+  const m = src.match(/function drawPetHotel\(ctx\)\{[\s\S]*?\nfunction /);
+  assert.ok(m && m[0].includes('function drawPetHotel'), 'outer drawPetHotel missing');
+  const fn = m[0].replace(/\nfunction $/, '\n');
+  const texts = [];
+  const ctx2d = {
+    fillStyle: '', font: '',
+    fillRect(){}, beginPath(){}, arc(){}, fill(){},
+    fillText(t){ texts.push(String(t)); },
+  };
+  const sandbox = { sky(){}, guy(){} };
+  vm.createContext(sandbox);
+  vm.runInContext(fn + '\ndrawPetHotel(ctx2d);', Object.assign(sandbox, {ctx2d, Math}));
+  assert.ok(texts.length >= 1, 'expected icon text on the tile');
+  assert.ok(texts.every(t => t && !/undefined/.test(t)), texts);
+});
+
+test('buildGames still adds every mode if one tile preview throws', () => {
+  const cards = [];
+  const grid = { innerHTML: '', children: [], appendChild(c){ this.children.push(c); cards.push(c); return c; } };
+  const GAMES = [
+    {id:'dreamhouse', name:'Dream House Builders', emoji:'🏡', tag:'t', draw(){}, playable: true},
+    {id:'pethotel', name:'Pet Hotel', emoji:'🏨', tag:'t', draw(){ throw new Error('preview boom'); }, playable: true, isNew: true},
+    {id:'dance', name:'Bossa Beat Dance Battle', emoji:'💃', tag:'t', draw(){}, playable: true},
+    {id:'obby', name:'Obby Rush', emoji:'🏃', tag:'t', draw(){}, playable: true},
+  ];
+  const Obby = { play(){} };
+  function comingSoon(){}
+  const $ = (sel) => sel === '#grid' ? grid : makeEl(sel);
+  const ctx = { GAMES, Obby, comingSoon, $, document: { createElement(tag){
+    const el = makeEl(tag);
+    el.querySelector = (s) => { if (s === 'canvas' || s === 'button'){ const b = makeEl(s); b.getContext = () => ({}); return b; } return makeEl('q'); };
+    return el;
+  } } };
+  const fn = src.match(/function buildGames\(\)\{[\s\S]*?\n\}/);
+  vm.createContext(ctx);
+  vm.runInContext(fn[0] + '\nbuildGames();', ctx);
+  assert.deepStrictEqual(cards.map(c => c.dataset.game), ['dreamhouse', 'pethotel', 'dance', 'obby']);
+});
+
+test('a fresh profile still asks for a name and draws the avatar after the games grid is built', () => {
+  const start = src.indexOf('/* ---------- start ---------- */');
+  assert.ok(start >= 0);
+  const boot = src.slice(start, src.indexOf('</script>', start));
+  assert.ok(boot.includes('try { buildGames(); }'));
+  assert.ok(boot.includes('drawBig()') && boot.includes('drawChip()') && boot.includes('if (!player) askName()'));
+  assert.ok(boot.indexOf('buildGames()') < boot.indexOf('if (!player) askName()'));
+  assert.ok(boot.indexOf('drawBig()') < boot.indexOf('if (!player) askName()'));
+});
+
+test('hosting a room times out with a friendly retry instead of hanging on starting room', () => {
+  const i = src.indexOf('function mpHost(');
+  assert.ok(i >= 0);
+  const fn = src.slice(i, i + 2800);
+  assert.ok(src.includes('const MP_HOST_MS = 12000'), 'host timeout missing');
+  assert.ok(/setTimeout\(\s*\(\)\s*=>\s*\{\s*failHost\(MP_HOST_FAIL\)/.test(fn) || /setTimeout\(\s*\(\)\s*=>\s*\{\s*failHost\(MP_HOST_FAIL\);\s*\},\s*MP_HOST_MS\)/.test(fn), fn.slice(0, 400));
+  assert.ok(src.includes("Couldn't start a room") && src.includes('try again'));
+  const r = src.indexOf('function mpRender(){');
+  assert.ok(r >= 0 && src.slice(r, r + 500).includes('dhRenderInvite()'));
+  assert.ok(src.includes('id="dhVisitRetry"') && src.includes('function dhRetryInvite'));
+});
+
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed) process.exit(1);

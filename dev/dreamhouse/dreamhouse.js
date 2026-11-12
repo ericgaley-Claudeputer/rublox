@@ -2955,21 +2955,48 @@
     if (typeof banner === 'function') banner('📣 Room code ' + code + ' copied — send it to a friend!');
     return true;
   }
+  function dhInviteEsc(t){
+    const s = String(t == null ? '' : t);
+    if (typeof mpEsc === 'function') return mpEsc(s);
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function dhRetryInvite(){
+    if (!dh || dhIsVisitor()) return false;
+    try {
+      if (typeof mpCleanup === 'function') mpCleanup();
+      else if (typeof mpLeave === 'function') mpLeave();
+    } catch (e){}
+    if (typeof mpHost === 'function'){ try { mpHost(); } catch (e){} }
+    dhRenderInvite();
+    return true;
+  }
   function dhRenderInvite(){
     let el = null;
     try { el = (typeof $ === 'function') ? $('#dhVisit') : (typeof document !== 'undefined' && document.getElementById && document.getElementById('dhVisit')); } catch (e){}
     if (!el) return false;
     if (!dh || !dh.inviteOpen){ el.style.display = 'none'; el.classList.remove && el.classList.remove('show'); el.innerHTML = ''; return false; }
     const code = dhInviteCode();
+    const rawStatus = (!code && typeof mp !== 'undefined' && mp && mp.status) ? String(mp.status) : '';
+    const err = (rawStatus && !/^⏳/.test(rawStatus)) ? rawStatus : '';
+    const label = code || '…starting room…';
+    if (el.dataset && el.dataset.dhInvCode === String(code || '') && el.dataset.dhInvErr === err && el.innerHTML){
+      el.style.display = '';
+      if (el.classList && el.classList.add) el.classList.add('show');
+      return true;
+    }
+    if (el.dataset){ el.dataset.dhInvCode = String(code || ''); el.dataset.dhInvErr = err; }
     el.style.display = '';
     if (el.classList && el.classList.add) el.classList.add('show');
     el.innerHTML = '<div class="dhvisitcard">'
       + '<button class="dhvisitx" id="dhVisitX" type="button" aria-label="Close">✕</button>'
       + '<h3>📣 Invite friends to visit</h3>'
       + '<p>Share this room code. When a friend joins and you are in Dream House, they walk around your house. They can look, but they cannot edit or break anything, and your save stays yours.</p>'
-      + '<div class="dhvisitcode" id="dhVisitCode">' + (code || '…starting room…') + '</div>'
+      + '<div class="dhvisitcode" id="dhVisitCode">' + dhInviteEsc(label) + '</div>'
+      + (err ? '<p class="dhvisithint" id="dhVisitErr">' + dhInviteEsc(err).replace(/\n/g, '<br>') + '</p>' : '')
       + '<div class="dhvisitbtns">'
-      + '<button class="big green" id="dhVisitCopy" type="button"' + (code ? '' : ' disabled') + '>📋 Copy code</button>'
+      + (code
+          ? '<button class="big green" id="dhVisitCopy" type="button">📋 Copy code</button>'
+          : '<button class="big green" id="dhVisitRetry" type="button">🔄 Try again</button>')
       + '<button class="big" id="dhVisitClose" type="button">Close</button>'
       + '</div>'
       + '<p class="dhvisithint">On a phone, tap Invite friends. On an Xbox controller, press Ⓨ to open this, Ⓑ to close.</p>'
@@ -4480,9 +4507,10 @@
     });
     const visit = $('#dhVisit');
     if (visit) visit.addEventListener('click', ev => {
-      const t = ev.target.closest('#dhVisitX,#dhVisitClose,#dhVisitCopy');
+      const t = ev.target.closest('#dhVisitX,#dhVisitClose,#dhVisitCopy,#dhVisitRetry');
       if (!t || !dh) return;
       if (t.id === 'dhVisitCopy') dhCopyInvite();
+      else if (t.id === 'dhVisitRetry') dhRetryInvite();
       else dhToggleInvite(false);
     });
     const yard = $('#dhYard');
