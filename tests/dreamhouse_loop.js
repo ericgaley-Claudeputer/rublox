@@ -502,9 +502,9 @@ function notInWall(z, zFace, thick, r){
   return z <= lo + EPS || z >= hi - EPS;
 }
 
-test('BUILD is 2026.11.12-4 and matches version.json', () => {
-  assert.ok(html.includes("const BUILD = '2026.11.12-4'"));
-  assert.strictEqual(version.build, '2026.11.12-4');
+test('BUILD is 2026.11.12-5 and matches version.json', () => {
+  assert.ok(html.includes("const BUILD = '2026.11.12-5'"));
+  assert.strictEqual(version.build, '2026.11.12-5');
 });
 
 test('index.html wires DH clip into step() and exposes a #dhdebug collider path', () => {
@@ -859,6 +859,22 @@ test('#dhdebug draws wireframe collider boxes', () => {
   assert.ok(dbg.obbyDebug.dhDebugGroup(), 'expected a debug Group of collider wireframes in the scene');
   const n = (dbg.obbyDebug.dhBoxes() || []).length;
   assert.ok(n >= 8, 'debug colliders should cover wall segments, got ' + n);
+});
+
+test('#dhtest hash auto-starts the in-memory test house without clicking a tile', () => {
+  const c = boot('#dhtest=v7walls');
+  assert.ok(c.Obby, 'Obby missing after boot');
+  assert.strictEqual(c.Obby.running, true, 'expected start(\'dreamhouse\') from the #dhtest hash alone');
+  assert.ok(c.obbyDebug, 'obbyDebug hook missing after auto-start');
+  if (c.obbyDebug.dhIntro()) c.obbyDebug.skipDhIntro();
+  assert.strictEqual(c.obbyDebug.dhTestId(), 'v7walls');
+  assert.strictEqual(c.obbyDebug.dhMode(), 'dreamhouse');
+  const note = (c.document && c.document.getElementById('dhTestNote')) || {};
+  const text = String(note.textContent || '');
+  assert.ok(/TEST HOUSE/i.test(text) && /v7walls/.test(text), 'expected a persistent test-house badge, got: ' + text);
+  const raw = c.localStorage.getItem('rubloxDreamHouse');
+  assert.ok(raw == null || raw === 'null' || raw === '', 'auto-start wrote rubloxDreamHouse: ' + raw);
+  assert.ok(/start\('dreamhouse'\)/.test(html) && /dhtest=/.test(html), 'index.html should auto-start Dream House when the #dhtest hash is set');
 });
 
 test('#dhtest=v6furnish still never writes rubloxDreamHouse during the loop', () => {

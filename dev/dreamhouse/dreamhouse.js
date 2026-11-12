@@ -92,6 +92,11 @@
   function dhFurnIds(){ return (typeof DH_MATS !== 'undefined' ? DH_MATS : []).filter(m => m && m.furn).map(m => m.id); }
   function dhHeldFurn(){ return (dh && dh.carry && dhIsFurn(dh.carry.id)) ? dh.carry.id : null; }
   function dhStockFurn(){ if (!dh) return null; return dhFurnIds().find(id => (dh.stock[id]|0) > 0) || null; }
+  function dhIsBuildSupply(id){
+    const m = typeof dhMatOf === 'function' ? dhMatOf(id) : null;
+    // Yard supplies (bricks, planks, mix, …) — not paint or furniture.
+    return !!(m && m.free && !m.furn && m.id !== 'paint');
+  }
   function dhHostName(){
     if (dh && dh.hostName) return String(dh.hostName);
     try {
@@ -2164,6 +2169,9 @@
       if (keepId && rec.id === keepId) return;
       if (keepId && dhMixerPair(rec.id, keepId)) return;
       if (rec.id === 'wetmix') return;
+      // A held furniture piece must never be swapped out for bricks or other yard supplies.
+      // Paint, another furniture piece, or an explicit dump (keepId === true) may still put it back.
+      if (keepId !== true && dhIsFurn(rec.id) && dhIsBuildSupply(keepId)) return;
       dh.stock[rec.id] = (dh.stock[rec.id] || 0) + rec.n;
       put.push(rec.n + ' ' + ((dhMatOf(rec.id) || {name: rec.id}).name));
       dh[slot] = null;
@@ -2329,6 +2337,7 @@
   }
   function dhPlaceBrick(){
     if (!dh) return false;
+    if (dhHeldFurn()) return dhPlaceKind(dhHeldFurn());
     if (!dhEnsureHeld('brick', 1)){
       banner('🧱 Grab more bricks at the Supply Yard');
       return false;
@@ -2511,6 +2520,24 @@
       const ok = dhRemoveAt(aim.plot, aim.ix, 0, aim.iz) || dhRemoveAt(aim.plot, 0, 0, aim.iz);
       if (ok){ dhNet('del', aim); dhHud(); } return ok;
     }
+    // Whatever is in your hands wins — even during the brick stage.
+    if (dhHeldFurn()) return dhPlaceKind(dhHeldFurn());
+    if (dh.job === 'furn'){
+      const fid = dhStockFurn();
+      if (fid && typeof dhEnsureHeld === 'function') dhEnsureHeld(fid, 1);
+      if (dhHeldFurn()) return dhPlaceKind(dhHeldFurn());
+      banner('🛋️ Buy furniture at the Furniture Store, then press E in the room to place it');
+      return false;
+    }
+    // Empty hands + furniture in inventory: place it during paint/furnish (E-from-inventory).
+    // During the brick stage, empty hands still lay a brick from inventory — held furniture already won above.
+    if (!dh.carry && typeof dhStockFurn === 'function' && dhStockFurn()){
+      const stage = (typeof dhStageId === 'function') ? dhStageId() : '';
+      if (dh.job === 'paint' || stage === 'paint' || stage === 'furn'){
+        dhEnsureHeld(dhStockFurn(), 1);
+        if (dhHeldFurn()) return dhPlaceKind(dhHeldFurn());
+      }
+    }
     if (dh.job === 'mark' || dh.job === 'dig') return dhMarkOrDig();
     if (dh.job === 'pour' || (dh.carry && dh.carry.id === 'wetmix')){
       if (dh.carry && dh.carry.id === 'wetmix') return dhPour();
@@ -2528,21 +2555,7 @@
       if (face === 0) return dhPlaceKind('doorframe');
       return dhPlaceKind('winframe');
     }
-    // Furniture can be placed during the combined "Paint & furnish" step.
-    // Used to fall through to paint and silently fail (or say "carry a paint can")
-    // with no floor ghost, so pressing E / click / Ⓧ did nothing useful.
-    if (!(dh.carry && dh.carry.id === 'paint')){
-      const fid = dhHeldFurn() || (((dh.job === 'furn' || dh.job === 'paint') || (typeof dhStageId === 'function' && (dhStageId() === 'furn' || dhStageId() === 'paint'))) ? dhStockFurn() : null);
-      if (fid){
-        if (!dhHeldFurn()) dhEnsureHeld(fid, 1);
-        if (dhHeldFurn()) return dhPlaceKind(dhHeldFurn());
-      }
-    }
     if (dh.job === 'paint') return dhPlaceKind('paint');
-    if (dh.job === 'furn'){
-      banner('🛋️ Buy furniture at the Furniture Store, then press E in the room to place it');
-      return false;
-    }
     if (dh.carry && dh.carry.id === 'shingle') return dhPlaceKind('shingle');
     if (dh.carry && dh.carry.id === 'wood') return dhPlaceKind(dh.job === 'rafter' ? 'rafter' : 'stud');
     if (dh.carry && dh.carry.id === 'paint') return dhPlaceKind('paint');
@@ -2556,7 +2569,18 @@
   function dhCycleColor(dir){ if (!dh) return; dh.color = (dh.color + dir + DH_PAINT.length) % DH_PAINT.length; dhHud(); dhBar(); }
   function dhSetTool(t){ if (!dh) return; const ch = dh.tool !== t; dh.tool = t; dhBar(); dhHud(); if (ch && typeof dhShowSpots === 'function') dhShowSpots(); }
   function dhSetStory(){ return false; }
-  function dhSetJob(j){ if (!dh) return; const ch = dh.job !== j; dh.job = j; dh.tool = 'place'; dhBar(); dhHud(); if (ch && typeof dhShowSpots === 'function') dhShowSpots(); }
+  function dhSetJob(j){
+    if (!dh) return;
+    const ch = dh.job !== j;
+    dh.job = j;
+    dh.tool = 'place';
+    if (j === 'furn' && !dhHeldFurn()){
+      const fid = dhStockFurn();
+      if (fid && typeof dhEnsureHeld === 'function') dhEnsureHeld(fid, 1);
+    }
+    dhBar(); dhHud();
+    if (ch && typeof dhShowSpots === 'function') dhShowSpots();
+  }
 
   function dhVisitLike(){
     if (!dh || !dhIsVisitor()) return false;
@@ -3075,19 +3099,12 @@
       if (!el && typeof $ === 'function') el = $('#dhTestNote');
     } catch (e){}
     if (!el) return false;
-    const msg = '🧪 Test house only — your real Dream House save is not used or written';
+    const id = dhTestFixtureId() || 'test';
+    const msg = '🧪 TEST HOUSE · ' + id + ' — in-memory only, your real Dream House save is not used or written';
     if (el.textContent !== undefined) el.textContent = msg;
     if (el.classList && el.classList.add) el.classList.add('show');
     if (el.style) el.style.display = '';
     dh._testNoteShown = true;
-    if (typeof setTimeout === 'function'){
-      if (dh._testNoteT) try { clearTimeout(dh._testNoteT); } catch (e){}
-      dh._testNoteT = setTimeout(() => {
-        if (el.classList && el.classList.remove) el.classList.remove('show');
-        if (el.style) el.style.display = 'none';
-        dh._testNoteT = 0;
-      }, 4000);
-    }
     return true;
   }
   function dreamhouseStop(){
@@ -3240,7 +3257,7 @@
   function dhShowLookHint(){
     const el = $('#dhLookHint');
     if (!el) return;
-    el.textContent = 'Click the view to look around · Esc or Tab to click buttons';
+    el.textContent = 'Click the view to look around · Esc or Tab to click Exit and tools';
     el.style.display = 'block';
     el.classList.add('show');
     if (dh) dh.lookHintT = 8;
@@ -3252,7 +3269,12 @@
   }
   function dhTickLookHint(dt){
     if (!dh || !dh.lookHintT) return;
-    if (typeof document !== 'undefined' && document.pointerLockElement){ dhHideLookHint(); return; }
+    if (typeof document !== 'undefined' && document.pointerLockElement){
+      // Keep the hint visible while locked so Exit / Furnish stay discoverable.
+      const el = $('#dhLookHint');
+      if (el){ el.textContent = 'Esc or Tab to click Exit and tools'; el.style.display = 'block'; el.classList.add('show'); }
+      return;
+    }
     dh.lookHintT -= (dt || 0);
     if (dh.lookHintT <= 0) dhHideLookHint();
   }
@@ -3732,6 +3754,10 @@
   function dhGoalText(){
     if (!dh) return '';
     if (dhIsVisitor()) return "You're visiting " + dhHostName() + "'s house — walk around and look! You cannot edit or break it.";
+    if (dhHeldFurn()){
+      const m = dhMatOf(dhHeldFurn()) || {name: 'furniture'};
+      return 'Look at the floor and press E to place your ' + m.name;
+    }
     const stage = dhStageId();
     if (stage === 'stake'){
       const c = dhJobCounts('mark');
@@ -4096,12 +4122,17 @@
     dhPulseBeacons();
     if (!dh.ghost) return;
     let pos = null, ok = false, can = true;
-    const furnId = dhHeldFurn() || (((dh.job === 'furn' || stage === 'furn') || ((dh.job === 'paint' || stage === 'paint') && dhStockFurn())) ? (dhHeldFurn() || dhStockFurn()) : null);
+    const furnId = dhHeldFurn() || ((dh.job === 'furn' || stage === 'furn') ? dhStockFurn() : null);
     if (furnId){
-      const aim = (typeof dhAimCell === 'function') ? dhAimCell() : null;
-      const cell = (aim && aim.plot === dh.mine && (typeof dhInFoot !== 'function' || dhInFoot(aim.ix, aim.iz))) ? aim : ((typeof dhTargetSpot === 'function') ? dhTargetSpot('furn') : null);
-      if (cell && cell.plot === dh.mine){
-        const y = (typeof DH_SLAB_H === 'number' ? DH_SLAB_H : 0.3) + 0.08;
+      const slabY = (typeof DH_SLAB_H === 'number' ? DH_SLAB_H : 0.3);
+      const hit = (typeof dhRayPlaneHit === 'function') ? dhRayPlaneHit(slabY, 12) : null;
+      let cell = (hit && typeof dhCellAt === 'function') ? dhCellAt(hit.x, hit.z) : null;
+      const inFoot = (c) => c && c.plot === dh.mine && (typeof dhInFoot !== 'function' || dhInFoot(c.ix, c.iz));
+      if (!inFoot(cell) && typeof dhAimCell === 'function') cell = dhAimCell();
+      if (!inFoot(cell) && typeof dhCellAt === 'function' && typeof P !== 'undefined' && P) cell = dhCellAt(P.x, P.z);
+      if (!inFoot(cell) && typeof dhTargetSpot === 'function') cell = dhTargetSpot('furn');
+      if (inFoot(cell) || (cell && cell.plot === dh.mine)){
+        const y = slabY + 0.08;
         const w = dhCellWorld(cell.plot, cell.ix, cell.iz, y);
         pos = {x: w.x, y: w.y, z: w.z, ry: ((dh.rot | 0) * Math.PI) / 2};
         ok = true;

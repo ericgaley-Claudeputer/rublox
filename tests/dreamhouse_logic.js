@@ -1754,5 +1754,89 @@ Ww.A.dreamhouseStop();
 })();
 
 
+
+(function(){
+  function inside(W){
+    const foot = W.A.dhFootWorld(0);
+    W.P.x = (foot.x0 + foot.x1) / 2;
+    W.P.z = (foot.z0 + foot.z1) / 2;
+    W.P.y = W.A.DH_SLAB_H;
+    W.cam.yaw = Math.PI;
+    W.cam.pitch = 0.35;
+    if (W.A.dreamhouseUpdate) W.A.dreamhouseUpdate(0.01);
+  }
+
+  // Exact browser-test sequence: #dhtest=v7walls, 96/188 bricks, 40 coins, buy a sofa, press E.
+  const V = world({}, {hash: '#dhtest=v7walls'});
+  V.A.buildDreamHouse(); V.A.dreamhouseEnter();
+  const list0 = V.A.dh.pieces[0] || [];
+  const bricks0 = list0.filter(a => a[0] === 'brick').length;
+  chk('#dhtest=v7walls opens the in-memory brick-stage test house (96/188, 40 coins) and is not a visitor',
+    V.A.dhTestActive() === true && V.A.dhTestFixtureId() === 'v7walls' && V.A.dhStageId() === 'brick'
+      && bricks0 === 96 && V.A.dh.bank === 40 && V.A.dh.visiting === false,
+    {id: V.A.dhTestFixtureId(), stage: V.A.dhStageId(), bricks: bricks0, need: V.A.dhBrickTotal(), bank: V.A.dh.bank, visiting: V.A.dh.visiting});
+  const note = (V.els['#dhTestNote'] || {}).textContent || '';
+  chk('the test-house badge names the v7walls fixture and says the real save is not written',
+    /TEST HOUSE/i.test(note) && /v7walls/.test(note) && /real Dream House save is not used or written/i.test(note) && !!(V.A.dh && V.A.dh._testNoteShown),
+    {note});
+  inside(V);
+  const bank0 = V.A.dh.bank;
+  const bought = V.A.dhShopBuyFurn('sofa');
+  chk('buying a sofa on the v7walls brick stage spends 10 coins and puts the sofa in your hands',
+    bought === true && V.A.dh.bank === bank0 - 10 && !!(V.A.dh.carry && V.A.dh.carry.id === 'sofa'),
+    {bought, bank: V.A.dh.bank, carry: V.A.dh.carry});
+  const goal = V.A.dhGoalText();
+  const prompt = V.A.dhActPrompt();
+  chk('the top banner and action prompt tell you to place the sofa, not to lay a brick from inventory',
+    /place your Sofa|Place Sofa/i.test(goal + ' ' + prompt) && !/lay a brick from your inventory/i.test(goal),
+    {goal, prompt});
+  V.A.dhUpdateGhost();
+  const gy = V.A.dh.ghost && V.A.dh.ghost.position.y;
+  chk('a floor ghost is visible on the slab while holding a sofa in the brick stage',
+    !!(V.A.dh.ghost && V.A.dh.ghost.visible) && gy >= V.A.DH_SLAB_H,
+    {visible: V.A.dh.ghost && V.A.dh.ghost.visible, y: gy, slab: V.A.DH_SLAB_H, job: V.A.dh.job, stage: V.A.dhStageId()});
+  V.banners.length = 0;
+  const placed = V.A.dhKey({code: 'KeyE', repeat: false});
+  const bricks1 = (V.A.dh.pieces[0] || []).filter(a => a[0] === 'brick').length;
+  const sofas = (V.A.dh.pieces[0] || []).filter(a => a[0] === 'sofa');
+  chk('E on the v7walls brick stage places the held sofa and does not lay a brick or swap the sofa for bricks',
+    placed === true && sofas.length === 1 && bricks1 === bricks0
+      && !(V.A.dh.carry && V.A.dh.carry.id === 'brick')
+      && !V.banners.some(t => /Put back 1 Sofa|grab the next supply/i.test(t)),
+    {placed, bricks0, bricks1, sofas, carry: V.A.dh.carry, banners: V.banners});
+
+  // After the sofa is placed, leftover sofa stock + Furnish tool should place, not bricks.
+  const V2 = world({}, {hash: '#dhtest=v7walls'});
+  V2.A.buildDreamHouse(); V2.A.dreamhouseEnter();
+  inside(V2);
+  V2.A.dh.bank += 20;
+  V2.A.dhShopBuyFurn('sofa');
+  if (V2.A.dhDump) V2.A.dhDump(); // sofa back in inventory, hands empty (or bricks later)
+  V2.A.dhPickup('brick', 8);
+  chk('picking up bricks while a sofa is only in inventory leaves the sofa in stock (hands are bricks)',
+    !!(V2.A.dh.carry && V2.A.dh.carry.id === 'brick') && (V2.A.dh.stock.sofa|0) >= 1,
+    {carry: V2.A.dh.carry, sofa: V2.A.dh.stock.sofa});
+  V2.A.dhSetJob('furn');
+  chk('clicking the Furnish tool puts the sofa back in your hands so it can be placed',
+    V2.A.dh.job === 'furn' && !!(V2.A.dh.carry && V2.A.dh.carry.id === 'sofa'),
+    {job: V2.A.dh.job, carry: V2.A.dh.carry, stockSofa: V2.A.dh.stock.sofa});
+  V2.A.dhUpdateGhost();
+  const placed2 = V2.A.dhPointer(true);
+  chk('after clicking Furnish, a click places the sofa instead of a brick',
+    (V2.A.dh.pieces[0] || []).some(a => a[0] === 'sofa') && (V2.A.dh.pieces[0] || []).filter(a => a[0] === 'brick').length === bricks0,
+    {kinds: (V2.A.dh.pieces[0] || []).filter(a => a[0] === 'sofa' || a[0] === 'brick').map(a => a[0]).slice(-4), job: V2.A.dh.job, carry: V2.A.dh.carry});
+
+  // Held furniture is never auto-returned when something asks for bricks.
+  const V3 = world({}, {hash: '#dhtest=v7walls'});
+  V3.A.buildDreamHouse(); V3.A.dreamhouseEnter();
+  V3.A.dh.bank += 20;
+  V3.A.dhShopBuyFurn('sofa');
+  const kept = V3.A.dhEnsureHeld('brick', 1);
+  chk('EnsureHeld(brick) will not swap a sofa out of your hands',
+    kept === false && !!(V3.A.dh.carry && V3.A.dh.carry.id === 'sofa') && !(V3.A.dh.carry && V3.A.dh.carry.id === 'brick'),
+    {kept, carry: V3.A.dh.carry});
+})();
+
+
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);
