@@ -246,14 +246,21 @@
     return n;
   }
 
-  function achShowToast(a, coinsPaid){
+  function achShowToast(a, coinsPaid, opts){
     if (!a) return;
+    opts = opts || {};
+    const now = Date.now();
+    if (ach._holdUntil && now < ach._holdUntil && !opts.hold){
+      ach._queuedToast = {a: a, coinsPaid: coinsPaid};
+      return;
+    }
     let el = null;
     try { el = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('achToast') : null; } catch (e){}
     if (!el){
       try { if (typeof toast === 'function') toast((a.emoji || '🏆') + ' ' + a.name + (coinsPaid ? (' +' + coinsPaid + ' 🪙') : '')); } catch (e){}
       return;
     }
+    try { if (el.parentElement && typeof document !== 'undefined' && document.body && el.parentElement !== document.body) document.body.appendChild(el); } catch (e){}
     const pay = (coinsPaid > 0) ? ('+' + coinsPaid + ' 🪙') : '';
     el.innerHTML = '<div class="achtoast-icon">' + (a.emoji || '🏆') + '</div>'
       + '<div class="achtoast-body"><small>Achievement unlocked!</small><b></b>' + (pay ? ('<span class="achtoast-pay">' + pay + '</span>') : '') + '</div>';
@@ -261,7 +268,16 @@
     el.classList.add('show');
     el.setAttribute('aria-hidden', 'false');
     clearTimeout(ach.toastT);
-    ach.toastT = setTimeout(() => { el.classList.remove('show'); el.setAttribute('aria-hidden', 'true'); }, 3400);
+    const dur = opts.hold ? Math.max(4500, opts.holdMs | 0) : 3400;
+    if (opts.hold) ach._holdUntil = Date.now() + dur;
+    ach.toastT = setTimeout(() => {
+      el.classList.remove('show');
+      el.setAttribute('aria-hidden', 'true');
+      ach._holdUntil = 0;
+      const q = ach._queuedToast;
+      ach._queuedToast = null;
+      if (q && q.a) achShowToast(q.a, q.coinsPaid);
+    }, dur);
     try { if (typeof confetti === 'function') confetti(); } catch (e){}
     try { if (typeof SND !== 'undefined' && SND && SND.coin) SND.coin(); } catch (e){}
   }

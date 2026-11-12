@@ -151,6 +151,11 @@ body.dhreset-open #dhResetModal, body.dhreset-open #dhResetModal .mbox, body.dhr
 .achtoast-body b{font-size:18px;line-height:1.15}
 .achtoast-pay{font-weight:900;color:#1f9460;font-size:15px}
 #obby.show ~ .achtoast, body.ingame .achtoast, html.ingame .achtoast{z-index:10060}
+#obby.dh-justcut #dhBar, #obby.dh-justcut .dhbar, #obby.dh-justcut #dhInviteBtn, #obby.dh-justcut #dhVisit, #obby.dh-justcut .dhshop{
+  pointer-events:none !important;
+}
+html.rublox-snap-top, html.rublox-snap-top body{scroll-behavior:auto !important;}
+
 #achievements{padding:8px 0 28px}
 .achhead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px;margin:0 0 14px}
 .achhead h2{margin:0;font-size:clamp(26px,4vw,36px)}
@@ -580,7 +585,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .dhbubble span{font-size:22px;line-height:1.25}
 .dhbubble:after{content:'';position:absolute;left:62%;bottom:-16px;border:16px solid transparent;border-top-color:#1d2340;border-bottom:0}
 .dhcut{z-index:220}
-.dhskip{position:absolute;left:50%;bottom:max(28px,calc(env(safe-area-inset-bottom) + 24px));right:auto;top:auto;transform:translateX(-50%);z-index:230;background:#ffd23f;border:3px solid #1d2340;border-radius:999px;padding:14px 28px;font:inherit;font-weight:900;font-size:22px;color:#1d2340;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.18);pointer-events:auto;display:none}
+.dhskip{position:absolute;left:50%;bottom:max(28px,calc(env(safe-area-inset-bottom) + 24px));right:auto;top:auto;transform:translateX(-50%);z-index:10040;background:#ffd23f;border:3px solid #1d2340;border-radius:999px;padding:14px 28px;font:inherit;font-weight:900;font-size:22px;color:#1d2340;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.18);pointer-events:auto;display:none}
 .dhskip.show,.dhcut.show .dhskip{display:block}
 .dhcutcap{position:absolute;left:50%;bottom:max(96px,calc(env(safe-area-inset-bottom) + 92px));transform:translateX(-50%);z-index:230;background:rgba(29,35,64,.92);color:#fff;font-weight:800;font-size:16px;padding:8px 16px;border-radius:14px;pointer-events:none;text-align:center;max-width:min(90vw,420px)}
 
@@ -1713,7 +1718,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.12-16';
+const BUILD = '2026.11.12-17';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3320,14 +3325,21 @@ function confetti(){
     return n;
   }
 
-  function achShowToast(a, coinsPaid){
+  function achShowToast(a, coinsPaid, opts){
     if (!a) return;
+    opts = opts || {};
+    const now = Date.now();
+    if (ach._holdUntil && now < ach._holdUntil && !opts.hold){
+      ach._queuedToast = {a: a, coinsPaid: coinsPaid};
+      return;
+    }
     let el = null;
     try { el = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('achToast') : null; } catch (e){}
     if (!el){
       try { if (typeof toast === 'function') toast((a.emoji || '🏆') + ' ' + a.name + (coinsPaid ? (' +' + coinsPaid + ' 🪙') : '')); } catch (e){}
       return;
     }
+    try { if (el.parentElement && typeof document !== 'undefined' && document.body && el.parentElement !== document.body) document.body.appendChild(el); } catch (e){}
     const pay = (coinsPaid > 0) ? ('+' + coinsPaid + ' 🪙') : '';
     el.innerHTML = '<div class="achtoast-icon">' + (a.emoji || '🏆') + '</div>'
       + '<div class="achtoast-body"><small>Achievement unlocked!</small><b></b>' + (pay ? ('<span class="achtoast-pay">' + pay + '</span>') : '') + '</div>';
@@ -3335,7 +3347,16 @@ function confetti(){
     el.classList.add('show');
     el.setAttribute('aria-hidden', 'false');
     clearTimeout(ach.toastT);
-    ach.toastT = setTimeout(() => { el.classList.remove('show'); el.setAttribute('aria-hidden', 'true'); }, 3400);
+    const dur = opts.hold ? Math.max(4500, opts.holdMs | 0) : 3400;
+    if (opts.hold) ach._holdUntil = Date.now() + dur;
+    ach.toastT = setTimeout(() => {
+      el.classList.remove('show');
+      el.setAttribute('aria-hidden', 'true');
+      ach._holdUntil = 0;
+      const q = ach._queuedToast;
+      ach._queuedToast = null;
+      if (q && q.a) achShowToast(q.a, q.coinsPaid);
+    }, dur);
     try { if (typeof confetti === 'function') confetti(); } catch (e){}
     try { if (typeof SND !== 'undefined' && SND && SND.coin) SND.coin(); } catch (e){}
   }
@@ -3520,6 +3541,7 @@ function confetti(){
 
 
 
+
 /* ---------- name ---------- */
 let fav = player ? player.fav : COLORS[4];
 function askName(){
@@ -3574,25 +3596,34 @@ function paintNav(id, lock){
   return id;
 }
 function syncNavHighlight(){ paintNav(navActiveId()); }
-function goPageTop(smooth){
+function goPageTop(){
+  const html = document.documentElement, body = document.body;
+  if (html && html.classList) html.classList.add('rublox-snap-top');
   const top = () => {
     try {
-      if (document.documentElement) document.documentElement.scrollTop = 0;
-      if (document.body) document.body.scrollTop = 0;
+      if (html){ html.style.scrollBehavior = 'auto'; html.scrollTop = 0; }
+      if (body){ body.style.scrollBehavior = 'auto'; body.scrollTop = 0; }
       const main = document.querySelector('main');
       if (main) main.scrollTop = 0;
-      if (typeof window.scrollTo === 'function') window.scrollTo(0, 0);
+      if (typeof window.scrollTo === 'function'){
+        try { window.scrollTo({top: 0, left: 0, behavior: 'auto'}); }
+        catch (e2){ window.scrollTo(0, 0); }
+      }
     } catch (e){}
   };
-  try {
-    if (smooth !== false && typeof window.scrollTo === 'function') window.scrollTo({top: 0, left: 0, behavior: 'smooth'});
-    else top();
-  } catch (e){ top(); }
-  if (smooth === false) top();
-  else if (typeof setTimeout === 'function') setTimeout(() => {
-    const y = window.scrollY || (document.documentElement && document.documentElement.scrollTop) || (document.body && document.body.scrollTop) || 0;
-    if (y > 2) top();
-  }, 480);
+  top();
+  if (window._rubloxSnapT){ try { clearInterval(window._rubloxSnapT); } catch (e){} }
+  let n = 0;
+  window._rubloxSnapT = setInterval(() => {
+    top();
+    n += 1;
+    if (n >= 20){
+      try { clearInterval(window._rubloxSnapT); } catch (e){}
+      window._rubloxSnapT = 0;
+      if (html){ html.style.scrollBehavior = ''; if (html.classList) html.classList.remove('rublox-snap-top'); }
+      if (body) body.style.scrollBehavior = '';
+    }
+  }, 50);
 }
 $$('[data-go]').forEach(b => b.addEventListener('click', () => {
   let id = b.dataset.go;
@@ -3602,7 +3633,7 @@ $$('[data-go]').forEach(b => b.addEventListener('click', () => {
   }
   const navId = b.dataset.go;
   paintNav(navId, true);
-  if (navId === 'home'){ goPageTop(true); return; }
+  if (navId === 'home'){ goPageTop(); return; }
   const el = document.getElementById(id);
   if (el && el.scrollIntoView) el.scrollIntoView({behavior:'smooth'});
 }));
@@ -3615,7 +3646,7 @@ if (logoHome) logoHome.addEventListener('click', ev => {
     else location.hash = 'home';
   } catch (e){ try { location.hash = 'home'; } catch (e2){} }
   paintNav('home', true);
-  goPageTop(true);
+  goPageTop();
 });
 const io = new IntersectionObserver(() => { syncNavHighlight(); }, {rootMargin:'-45% 0px -50% 0px'});
 addEventListener('scroll', syncNavHighlight, {passive:true});
@@ -16258,21 +16289,67 @@ const Obby = (() => {
     try { if (typeof achUnlock === 'function') achUnlock('dh-done', {silent: true}); } catch (e){}
     return true;
   }
+  function dhHudGateActive(){
+    if (!dh) return false;
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    return !!(dh._hudGateUntil && now < dh._hudGateUntil);
+  }
+  function dhArmHudGate(ms){
+    if (!dh) return false;
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    dh._hudGateUntil = now + (ms || 800);
+    try {
+      const root = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('obby') : null;
+      if (root && root.classList) root.classList.add('dh-justcut');
+      const clear = () => {
+        try {
+          const r = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('obby') : null;
+          if (r && r.classList) r.classList.remove('dh-justcut');
+        } catch (e){}
+      };
+      const onUp = ev => {
+        try { if (ev && ev.stopImmediatePropagation && dhHudGateActive()) ev.stopImmediatePropagation(); } catch (e){}
+        if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('pointerup', onUp, true);
+        if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('click', onUp, true);
+      };
+      if (typeof window !== 'undefined' && window.addEventListener){
+        window.addEventListener('pointerup', onUp, true);
+        window.addEventListener('click', onUp, true);
+      }
+      if (typeof setTimeout === 'function') setTimeout(clear, ms || 800);
+    } catch (e){}
+    return true;
+  }
   function dhPresentCelebrateReward(){
     if (!dh || dh._celebratePresented) return false;
     dh._celebratePresented = true;
+    const show = () => {
+      try {
+        const byId = (typeof window !== 'undefined' && window.achById) || (typeof achById === 'function' ? achById : null);
+        const toast = (typeof window !== 'undefined' && window.achShowToast) || (typeof achShowToast === 'function' ? achShowToast : null);
+        const unlock = (typeof window !== 'undefined' && window.achUnlock) || (typeof achUnlock === 'function' ? achUnlock : null);
+        const a = (typeof byId === 'function') ? byId('dh-done') : {id:'dh-done', name:'Dream Home Builder', emoji:'🏡', coins:50};
+        if (typeof toast === 'function' && a) toast(a, (a && a.coins) | 0, {hold: true, holdMs: 4500});
+        else if (typeof unlock === 'function') unlock('dh-done');
+        const el = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('achToast') : null;
+        if (el && el.parentElement && el.parentElement !== document.body) document.body.appendChild(el);
+        if (el && el.classList){ el.classList.add('show'); el.setAttribute('aria-hidden', 'false'); }
+      } catch (e){}
+    };
+    show();
     try {
-      const a = (typeof achById === 'function') ? achById('dh-done') : {id:'dh-done', name:'Dream Home Builder', emoji:'🏡', coins:50};
-      if (typeof achShowToast === 'function' && a) achShowToast(a, (a && a.coins) | 0);
-      else if (typeof achUnlock === 'function') achUnlock('dh-done');
-    } catch (e){}
-    try {
-      const burst = () => { try { if (typeof confetti === 'function') confetti(); } catch (e2){} };
+      const burst = () => { try {
+        const fn = (typeof window !== 'undefined' && window.confetti) || (typeof confetti === 'function' ? confetti : null);
+        if (typeof fn === 'function') fn();
+      } catch (e2){} };
       burst();
       if (typeof requestAnimationFrame === 'function') requestAnimationFrame(burst);
       else if (typeof setTimeout === 'function') setTimeout(burst, 40);
       if (typeof setTimeout === 'function') setTimeout(burst, 400);
     } catch (e){}
+    // Re-assert after chrome restore / a same-gesture HUD click has had a chance to run.
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(show);
+    if (typeof setTimeout === 'function') setTimeout(show, 80);
     return true;
   }
   function dhSkipCelebrate(){
@@ -16284,6 +16361,7 @@ const Obby = (() => {
   function dhFinishCelebrate(){
     if (!dh) return false;
     dhCelebrateAward();
+    dhArmHudGate(800);
     dh.doneCutSeen = true;
     if (dh.cut && dh.cut.mom && typeof scene !== 'undefined'){
       try { scene.remove(dh.cut.mom); } catch (e){}
@@ -16362,6 +16440,7 @@ const Obby = (() => {
   }
 
   function dhToggleInvite(on){
+    if (on && typeof dhHudGateActive === 'function' && dhHudGateActive()) return false;
     if (!dh) return false;
     if (dhIsVisitor()){ if (typeof banner === 'function') banner('👀 You are already visiting'); return false; }
     dh.inviteOpen = on == null ? !dh.inviteOpen : !!on;
@@ -17990,7 +18069,7 @@ const Obby = (() => {
     const bar = $('#dhBar');
     if (bar) bar.addEventListener('click', ev => {
       const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhSpotBtn,#dhShopBtn,#dhYardBtn,#dhUpBtn,#dhInviteBtn,#dhLikeBtn');
-      if (!t || !dh || dh.intro || dh.celebrate) return;
+      if (!t || !dh || dh.intro || dh.celebrate || (typeof dhHudGateActive === 'function' && dhHudGateActive())) return;
       if (t.id === 'dhInviteBtn'){ dhToggleInvite(true); return; }
       if (t.id === 'dhLikeBtn'){ dhVisitLike(); return; }
       if (dhIsVisitor()) return;
@@ -18039,11 +18118,11 @@ const Obby = (() => {
     const cut = $('#dhCut');
     if (cut && !cut._dhSkipBound){
       cut._dhSkipBound = true;
-      const skipFrom = ev => { if (dh && (dh.intro || dh.celebrate)){ if (ev && ev.preventDefault) ev.preventDefault(); dhSkipCut(); } };
+      const skipFrom = ev => { if (dh && (dh.intro || dh.celebrate)){ if (ev && ev.preventDefault) ev.preventDefault(); if (ev && ev.stopPropagation) ev.stopPropagation(); if (ev && ev.stopImmediatePropagation) ev.stopImmediatePropagation(); dhSkipCut(); } };
       cut.addEventListener('click', skipFrom);
       cut.addEventListener('pointerdown', skipFrom);
     }
-    const skip = $('#dhSkip'); if (skip) skip.onclick = ev => { ev.stopPropagation(); if (dh && (dh.intro || dh.celebrate)) dhSkipCut(); };
+    const skip = $('#dhSkip'); if (skip) skip.onclick = ev => { if (ev && ev.preventDefault) ev.preventDefault(); if (ev && ev.stopPropagation) ev.stopPropagation(); if (ev && ev.stopImmediatePropagation) ev.stopImmediatePropagation(); if (dh && (dh.intro || dh.celebrate)) dhSkipCut(); };
     const replay = $('#dhReplay'); if (replay) replay.onclick = () => dh && dhReplayIntro();
     const tipX = $('#dhTipX'); if (tipX) tipX.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); dhDismissTip(); };
     const tip = $('#dhTip'); if (tip) tip.onclick = ev => { if (ev.target && ev.target.id === 'dhTip'){ dhDismissTip(); } };
@@ -18889,6 +18968,9 @@ function dhLayoutHud(){
       if (paused || menuOpen) return;
       const t = e.target || e.srcElement;
       if (t && t.closest && t.closest('#oPausePanel, #setModal, #dhResetModal, dialog.modal, .modal.show')) return;
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
       if (typeof dhSkipCut === 'function') dhSkipCut();
     }, true);
     addEventListener('keydown', e => {
@@ -19155,6 +19237,7 @@ function dhLayoutHud(){
       return hit;
     }
     function hudTryClick(ev){
+      if (typeof dhHudGateActive === 'function' && dhHudGateActive()) return false;
       // Keep the join-code fix: a real pointerdown on an input/textarea/select/contenteditable
       // is never preventDefaulted. When pointer-locked, ev.target is the canvas, so this
       // guard does not apply — detect lock via document.pointerLockElement below.

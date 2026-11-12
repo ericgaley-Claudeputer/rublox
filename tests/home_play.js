@@ -63,9 +63,9 @@ function makeEl(id){
   return el;
 }
 
-test('BUILD is 2026.11.12-16 and matches version.json', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.12-16'"));
-  assert.strictEqual(version.build, '2026.11.12-16');
+test('BUILD is 2026.11.12-17 and matches version.json', () => {
+  assert.ok(src.includes("const BUILD = '2026.11.12-17'"));
+  assert.strictEqual(version.build, '2026.11.12-17');
 });
 
 
@@ -74,6 +74,7 @@ test('going back to Home from Achievements highlights Home, not Games', () => {
   assert.ok(src.includes('addEventListener(\'scroll\', syncNavHighlight') || src.includes('addEventListener("scroll", syncNavHighlight'), 'nav highlight should follow scroll, not only intersection');
   assert.ok(src.includes('paintNav(navId, true)') || src.includes('paintNav(b.dataset.go, true)'), 'clicking a nav button should lock that highlight while the page scrolls');
   assert.ok(src.includes('function goPageTop') && src.includes("if (navId === 'home')") && src.includes('goPageTop('), 'clicking Home should scroll the page to the very top, not only scroll #home into view');
+  assert.ok(src.includes('rublox-snap-top') && src.includes("behavior: 'auto'"), 'Home must cancel CSS smooth-scroll and jump to y=0 instantly');
 });
 
 test('home screen has an Achievements button and page with category tabs', () => {

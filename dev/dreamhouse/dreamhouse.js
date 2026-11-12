@@ -3352,21 +3352,67 @@
     try { if (typeof achUnlock === 'function') achUnlock('dh-done', {silent: true}); } catch (e){}
     return true;
   }
+  function dhHudGateActive(){
+    if (!dh) return false;
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    return !!(dh._hudGateUntil && now < dh._hudGateUntil);
+  }
+  function dhArmHudGate(ms){
+    if (!dh) return false;
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    dh._hudGateUntil = now + (ms || 800);
+    try {
+      const root = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('obby') : null;
+      if (root && root.classList) root.classList.add('dh-justcut');
+      const clear = () => {
+        try {
+          const r = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('obby') : null;
+          if (r && r.classList) r.classList.remove('dh-justcut');
+        } catch (e){}
+      };
+      const onUp = ev => {
+        try { if (ev && ev.stopImmediatePropagation && dhHudGateActive()) ev.stopImmediatePropagation(); } catch (e){}
+        if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('pointerup', onUp, true);
+        if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('click', onUp, true);
+      };
+      if (typeof window !== 'undefined' && window.addEventListener){
+        window.addEventListener('pointerup', onUp, true);
+        window.addEventListener('click', onUp, true);
+      }
+      if (typeof setTimeout === 'function') setTimeout(clear, ms || 800);
+    } catch (e){}
+    return true;
+  }
   function dhPresentCelebrateReward(){
     if (!dh || dh._celebratePresented) return false;
     dh._celebratePresented = true;
+    const show = () => {
+      try {
+        const byId = (typeof window !== 'undefined' && window.achById) || (typeof achById === 'function' ? achById : null);
+        const toast = (typeof window !== 'undefined' && window.achShowToast) || (typeof achShowToast === 'function' ? achShowToast : null);
+        const unlock = (typeof window !== 'undefined' && window.achUnlock) || (typeof achUnlock === 'function' ? achUnlock : null);
+        const a = (typeof byId === 'function') ? byId('dh-done') : {id:'dh-done', name:'Dream Home Builder', emoji:'🏡', coins:50};
+        if (typeof toast === 'function' && a) toast(a, (a && a.coins) | 0, {hold: true, holdMs: 4500});
+        else if (typeof unlock === 'function') unlock('dh-done');
+        const el = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('achToast') : null;
+        if (el && el.parentElement && el.parentElement !== document.body) document.body.appendChild(el);
+        if (el && el.classList){ el.classList.add('show'); el.setAttribute('aria-hidden', 'false'); }
+      } catch (e){}
+    };
+    show();
     try {
-      const a = (typeof achById === 'function') ? achById('dh-done') : {id:'dh-done', name:'Dream Home Builder', emoji:'🏡', coins:50};
-      if (typeof achShowToast === 'function' && a) achShowToast(a, (a && a.coins) | 0);
-      else if (typeof achUnlock === 'function') achUnlock('dh-done');
-    } catch (e){}
-    try {
-      const burst = () => { try { if (typeof confetti === 'function') confetti(); } catch (e2){} };
+      const burst = () => { try {
+        const fn = (typeof window !== 'undefined' && window.confetti) || (typeof confetti === 'function' ? confetti : null);
+        if (typeof fn === 'function') fn();
+      } catch (e2){} };
       burst();
       if (typeof requestAnimationFrame === 'function') requestAnimationFrame(burst);
       else if (typeof setTimeout === 'function') setTimeout(burst, 40);
       if (typeof setTimeout === 'function') setTimeout(burst, 400);
     } catch (e){}
+    // Re-assert after chrome restore / a same-gesture HUD click has had a chance to run.
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(show);
+    if (typeof setTimeout === 'function') setTimeout(show, 80);
     return true;
   }
   function dhSkipCelebrate(){
@@ -3378,6 +3424,7 @@
   function dhFinishCelebrate(){
     if (!dh) return false;
     dhCelebrateAward();
+    dhArmHudGate(800);
     dh.doneCutSeen = true;
     if (dh.cut && dh.cut.mom && typeof scene !== 'undefined'){
       try { scene.remove(dh.cut.mom); } catch (e){}
@@ -3456,6 +3503,7 @@
   }
 
   function dhToggleInvite(on){
+    if (on && typeof dhHudGateActive === 'function' && dhHudGateActive()) return false;
     if (!dh) return false;
     if (dhIsVisitor()){ if (typeof banner === 'function') banner('👀 You are already visiting'); return false; }
     dh.inviteOpen = on == null ? !dh.inviteOpen : !!on;
@@ -5084,7 +5132,7 @@
     const bar = $('#dhBar');
     if (bar) bar.addEventListener('click', ev => {
       const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhSpotBtn,#dhShopBtn,#dhYardBtn,#dhUpBtn,#dhInviteBtn,#dhLikeBtn');
-      if (!t || !dh || dh.intro || dh.celebrate) return;
+      if (!t || !dh || dh.intro || dh.celebrate || (typeof dhHudGateActive === 'function' && dhHudGateActive())) return;
       if (t.id === 'dhInviteBtn'){ dhToggleInvite(true); return; }
       if (t.id === 'dhLikeBtn'){ dhVisitLike(); return; }
       if (dhIsVisitor()) return;
@@ -5133,11 +5181,11 @@
     const cut = $('#dhCut');
     if (cut && !cut._dhSkipBound){
       cut._dhSkipBound = true;
-      const skipFrom = ev => { if (dh && (dh.intro || dh.celebrate)){ if (ev && ev.preventDefault) ev.preventDefault(); dhSkipCut(); } };
+      const skipFrom = ev => { if (dh && (dh.intro || dh.celebrate)){ if (ev && ev.preventDefault) ev.preventDefault(); if (ev && ev.stopPropagation) ev.stopPropagation(); if (ev && ev.stopImmediatePropagation) ev.stopImmediatePropagation(); dhSkipCut(); } };
       cut.addEventListener('click', skipFrom);
       cut.addEventListener('pointerdown', skipFrom);
     }
-    const skip = $('#dhSkip'); if (skip) skip.onclick = ev => { ev.stopPropagation(); if (dh && (dh.intro || dh.celebrate)) dhSkipCut(); };
+    const skip = $('#dhSkip'); if (skip) skip.onclick = ev => { if (ev && ev.preventDefault) ev.preventDefault(); if (ev && ev.stopPropagation) ev.stopPropagation(); if (ev && ev.stopImmediatePropagation) ev.stopImmediatePropagation(); if (dh && (dh.intro || dh.celebrate)) dhSkipCut(); };
     const replay = $('#dhReplay'); if (replay) replay.onclick = () => dh && dhReplayIntro();
     const tipX = $('#dhTipX'); if (tipX) tipX.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); dhDismissTip(); };
     const tip = $('#dhTip'); if (tip) tip.onclick = ev => { if (ev.target && ev.target.id === 'dhTip'){ dhDismissTip(); } };
