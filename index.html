@@ -1645,7 +1645,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.12-11';
+const BUILD = '2026.11.12-12';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -12450,6 +12450,15 @@ const Obby = (() => {
       const b = dhFootWorld(plot == null ? ((dh && dh.mine) || 0) : plot);
       return {x: (b.x0 + b.x1) / 2, y: DH_SLAB_H, z: (b.z0 + b.z1) / 2};
     }
+    if (dhTestFixtureId() === 'v7painted' || dhTestFixtureId() === 'v7frame'){
+      const b = dhFootWorld(plot == null ? ((dh && dh.mine) || 0) : plot);
+      // Stand south of the front wall, lined up with the planned front window, so testers
+      // can immediately see framing spots or the painted exterior (no bare-brick hole).
+      const mid = (dhBrickAlongCount(0) / 2) | 0;
+      const along = ((mid + 2 + mid + 3) / 2) * DH_BRICK_W + DH_BRICK_W / 2;
+      const back = (dhTestFixtureId() === 'v7painted') ? 2.35 : 2.2;
+      return {x: b.x0 + along, y: .05, z: b.z0 - back, yaw: Math.PI, pitch: (dhTestFixtureId() === 'v7painted') ? -0.06 : 0.08};
+    }
     return {x: ox + DH_CELL * 4, y: .05, z: oz - 2.8};
   }
   function dhLayoutYard(){
@@ -12588,7 +12597,7 @@ const Obby = (() => {
   }
   function dhTestActive(){
     const id = dhTestFixtureId();
-    return id === 'v6furnish' || id === 'v7walls' || id === 'v6inside' || id === 'visit' || id === 'visithost';
+    return id === 'v6furnish' || id === 'v7walls' || id === 'v7frame' || id === 'v7painted' || id === 'v6inside' || id === 'visit' || id === 'visithost';
   }
   function dhTestV6FootSlabs(){
     const recs = [];
@@ -12643,6 +12652,50 @@ const Obby = (() => {
       upgrades: {}, tipsSeen: {}, legacyHouse: false
     };
   }
+  function dhTestV7ShellPieces(){
+    const st = {legacyHouse: false, upgrades: {}};
+    const pieces = dhTestV6FootSlabs();
+    (dhAllBrickRecs(st) || []).forEach(r => pieces.push(r.slice()));
+    (dhAllStudSlots(null, st) || []).forEach((s, i) => pieces.push(['stud', 0, 0, i, 0, 0]));
+    (dhAllRafterSlots(null, st) || []).forEach((s, i) => pieces.push(['rafter', 0, 0, i, s.side, 0]));
+    (dhAllShingleSlots(null, st) || []).forEach(s => pieces.push(['shingle', s.col, s.row, 0, s.side, 0]));
+    return pieces;
+  }
+  function dhTestV7FrameRaw(){
+    // Walls and roof finished, zero frames: testers start at the windows-and-door step.
+    return {
+      ver: 7, introSeen: true, granted: true, coins: 40, likes: 0,
+      pieces: dhTestV7ShellPieces(),
+      stock: {wood: 12, glass: 4, brick: 8},
+      goals: {marked: 1, slab: 1, course: 1, walls: 1, rafters: 1, roof: 1},
+      upgrades: {carry: 1}, tipsSeen: {}, legacyHouse: false
+    };
+  }
+  function dhTestV7PaintedRaw(){
+    // Tessa's stuck painted house: pink exterior, door and side windows done, planned front
+    // window never framed (and leftover bricks sit in that opening). Load runs the v7
+    // missing-window repair so testers should see a real framed window, not a bare-brick hole.
+    const st = {legacyHouse: false, upgrades: {carry: 1}};
+    const pieces = dhTestV7ShellPieces();
+    pieces.push(
+      ['doorframe', 0, 0, 0, 0, 0], ['door', 0, 0, 0, 0, 0],
+      ['winframe', 0, 0, 0, 1, 0], ['winframe', 0, 0, 0, 3, 0],
+      ['pane', 0, 0, 0, 1, 0], ['pane', 0, 0, 0, 3, 0],
+      ['paint', 0, 0, 0, 0, 1], ['paint', 0, 0, 0, 1, 1],
+      ['paint', 0, 0, 0, 2, 1], ['paint', 0, 0, 0, 3, 1],
+      ['sofa', 3, 0, 3, 0, 0], ['table', 4, 0, 4, 0, 0], ['plant', 2, 0, 4, 0, 0]
+    );
+    const mid = (dhBrickAlongCount(0, st) / 2) | 0;
+    for (let c = 2; c <= 4; c++) for (let k = mid + 2; k <= mid + 3; k++){
+      pieces.push(['brick', 0, c, k, 0, 0]);
+    }
+    return {
+      ver: 7, introSeen: true, granted: true, coins: 55, likes: 0,
+      pieces, stock: {brick: 8, wood: 4, glass: 1, paint: 0},
+      goals: {marked: 1, slab: 1, course: 1, walls: 1, rafters: 1, roof: 1, openings: 1, glaze: 1, paint: 1, furnish: 1},
+      upgrades: {carry: 1}, tipsSeen: {}, legacyHouse: false
+    };
+  }
   function dhTestVisitRaw(){
     const raw = dhTestV6FurnishRaw();
     raw.pieces = (raw.pieces || []).concat([
@@ -12658,6 +12711,8 @@ const Obby = (() => {
     if (id === 'visit' || id === 'visithost') return dhTestVisitRaw();
     if (id === 'v6furnish' || id === 'v6inside') return dhTestV6FurnishRaw();
     if (id === 'v7walls') return dhTestV7WallsRaw();
+    if (id === 'v7frame') return dhTestV7FrameRaw();
+    if (id === 'v7painted') return dhTestV7PaintedRaw();
     return null;
   }
   function dhTestBlockPersist(){
@@ -14046,7 +14101,15 @@ const Obby = (() => {
     dhStockViz(dh.mine);
     const [ox, oz] = dhOrigin(dh.mine);
     const sp = dhSpawnPos(dh.mine);
-    Object.assign(P, {x: sp.x, y: sp.y, z: sp.z, vx: 0, vy: 0, vz: 0}); P.face = 0; cam.yaw = Math.PI; cam.pitch = .37; cam.dist = .2;
+    Object.assign(P, {x: sp.x, y: sp.y, z: sp.z, vx: 0, vy: 0, vz: 0}); P.face = 0;
+    cam.yaw = (sp && sp.yaw != null) ? sp.yaw : Math.PI;
+    cam.pitch = (sp && sp.pitch != null) ? sp.pitch : .37;
+    cam.dist = .2;
+    if (dhTestFixtureId() === 'v7frame' && !dh.carry && (dh.stock.wood|0) > 0){
+      const n = Math.min((typeof dhCarryCap === 'function' ? dhCarryCap('wood') : 8), dh.stock.wood|0);
+      dh.stock.wood -= n;
+      dh.carry = {id: 'wood', n};
+    }
     checkpoints[0] = {idx: 0, spawn: sp, flag: new THREE.Object3D()};
     dh.ghost = dhMakeGhost();
     scene.add(dh.ghost);

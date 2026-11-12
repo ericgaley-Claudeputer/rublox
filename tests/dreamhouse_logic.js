@@ -43,7 +43,7 @@ function world(store0, opts){
   ctx.window = ctx;
   ctx.window.location = ctx.location;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhWindowsFramed, dhRepairMissingWindows, dhShouldRepairMissingWindows, dhFaceHasRealOpening, dhRefreshPaint, dhAllFrameSlots, dhIsWindowOpeningCell, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrickSlots, dhBrickSupported, dhEnsureHeld, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, DH_WIN_SILL, DH_WIN_HEAD, DH_DOOR_H, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhHideTestNote, dhFurnBox, dhMeshFor, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec, dhShowSpots, dhSpotTick, dhSpotFade, dhSpotVisuals, DH_SPOT_SHOW, DH_SPOT_FADE, DH_SPOT_NEAR, DH_SPOT_AIM, dhUpdateGhost, dhPulseBeacons, dhBeaconWorlds, dhSpotDims, dhSetGfxLow, dhGfxLow, dhPaintOpenings, dhRectsMinusHoles, dhPaintPanelWorldBoxes, dhPaintCoversOpening, dhOpeningAabb, dhShingleCorners, dhRafterEnds, dhRoofPlaneYat, dhRoofTilt, dhRoofPitch, DH_ROOF_RISE, DH_ROOF_OVERHANG, DH_SHINGLE_COLS, DH_SHINGLE_ROWS, DH_RAFTER_NEED, dhAllShingleSlots, dhAllRafterSlots, dhShingleWorld, dhRafterWorld, dhHasAnyCarry, dhPaintWorld, dhPaintOut, dhPaintSize, dhPaintOpeningClearance, dhPaintCornerMeet, dhRoofComplete, dhGableFaces, dhGableInfo, dhSyncGables, dhDisposeGables, dhMakeGableMesh, dhWho, dhIsGuest, dhIsVisitor, dhCanEdit, dhShouldVisit, dhHostName, dhInviteCode, dhToggleInvite, dhRenderInvite, dhRetryInvite, dhCopyInvite, dhBlockVisitor, dhVisitLike, dhAssignPlot, dhTestVisitRaw};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhWindowsFramed, dhRepairMissingWindows, dhShouldRepairMissingWindows, dhFaceHasRealOpening, dhRefreshPaint, dhAllFrameSlots, dhIsWindowOpeningCell, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrickSlots, dhBrickSupported, dhEnsureHeld, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, DH_WIN_SILL, DH_WIN_HEAD, DH_DOOR_H, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhTestV7FrameRaw, dhTestV7PaintedRaw, dhTestV7ShellPieces, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhHideTestNote, dhFurnBox, dhMeshFor, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec, dhShowSpots, dhSpotTick, dhSpotFade, dhSpotVisuals, DH_SPOT_SHOW, DH_SPOT_FADE, DH_SPOT_NEAR, DH_SPOT_AIM, dhUpdateGhost, dhPulseBeacons, dhBeaconWorlds, dhSpotDims, dhSetGfxLow, dhGfxLow, dhPaintOpenings, dhRectsMinusHoles, dhPaintPanelWorldBoxes, dhPaintCoversOpening, dhOpeningAabb, dhShingleCorners, dhRafterEnds, dhRoofPlaneYat, dhRoofTilt, dhRoofPitch, DH_ROOF_RISE, DH_ROOF_OVERHANG, DH_SHINGLE_COLS, DH_SHINGLE_ROWS, DH_RAFTER_NEED, dhAllShingleSlots, dhAllRafterSlots, dhShingleWorld, dhRafterWorld, dhHasAnyCarry, dhPaintWorld, dhPaintOut, dhPaintSize, dhPaintOpeningClearance, dhPaintCornerMeet, dhRoofComplete, dhGableFaces, dhGableInfo, dhSyncGables, dhDisposeGables, dhMakeGableMesh, dhWho, dhIsGuest, dhIsVisitor, dhCanEdit, dhShouldVisit, dhHostName, dhInviteCode, dhToggleInvite, dhRenderInvite, dhRetryInvite, dhCopyInvite, dhBlockVisitor, dhVisitLike, dhAssignPlot, dhTestVisitRaw};`, ctx);
   return ctx;
 }
 
@@ -2049,6 +2049,111 @@ Ww.A.dreamhouseStop();
   chk('the Frame tool can hang the front window after the door is already on that wall',
     !!(front && Wf.A.dhWindowsFramed(Wf.A.dh.pieces[0]) && Wf.A.dhStageId() !== 'frame'),
     {placed, front, spot: spot && {kind:spot.kind, face:spot.face}, stage: Wf.A.dhStageId(), carry: Wf.A.dh.carry, why: Wf.A.dhWhyNot && Wf.A.dhWhyNot()});
+  Wf.A.dreamhouseStop();
+})();
+
+
+(function(){
+  const prior = {ver:6, introSeen:true, granted:true, coins:99, pieces:[['slab',2,0,2,0,0],['brick',0,0,0,0,0]], stock:{brick:7, cement:3}, goals:{slab:1}, upgrades:{}, _sentinel:'keep-me'};
+  const priorJson = JSON.stringify(prior);
+  const priorStore = {rubloxDreamHouse: priorJson, 'rubloxDreamHouse.bakFrames': '{"sentinel":"bak-stay"}'};
+
+  const rawPaint = (function(){
+    const Wtmp = world({}, {hash:'#dhtest=v7painted'});
+    const raw = Wtmp.A.dhTestV7PaintedRaw();
+    Wtmp.A.dreamhouseStop();
+    return raw;
+  })();
+  chk('#dhtest=v7painted raw save has a painted front wall and an unframed planned front window',
+    !!(rawPaint && rawPaint.ver === 7
+      && (rawPaint.pieces||[]).some(a => a[0]==='paint' && (a[4]|0)===0)
+      && (rawPaint.pieces||[]).some(a => a[0]==='door')
+      && (rawPaint.pieces||[]).some(a => a[0]==='winframe' && (a[4]|0)===1)
+      && !(rawPaint.pieces||[]).some(a => a[0]==='winframe' && (a[4]|0)===0)
+      && (rawPaint.pieces||[]).some(a => a[0]==='brick' && (a[4]|0)===0 && (a[2]|0)>=2 && (a[3]|0)>=7)),
+    {frames:(rawPaint.pieces||[]).filter(a=>a[0]==='winframe'), paints:(rawPaint.pieces||[]).filter(a=>a[0]==='paint')});
+
+  const Wp = world(Object.assign({}, priorStore), {coins:20, hash:'#dhtest=v7painted'});
+  Wp.A.buildDreamHouse(); Wp.A.dreamhouseEnter();
+  if (Wp.A.dh && Wp.A.dh.intro) Wp.A.dhSkipIntro();
+  const plist = Wp.A.dh.pieces[0] || [];
+  const pnote = Wp.els['#dhTestNote'] || {};
+  const holes0 = Wp.A.dhPaintOpenings(0, 0);
+  const holes1 = Wp.A.dhPaintOpenings(0, 1);
+  const holes2 = Wp.A.dhPaintOpenings(0, 2);
+  const holes3 = Wp.A.dhPaintOpenings(0, 3);
+  const leftover = plist.some(a => a[0]==='brick' && Wp.A.dhIsWindowOpeningCell(a[4]|0, a[2]|0, a[3]|0));
+  Wp.A.dhSave();
+  const afterP = JSON.parse(Wp.store.rubloxDreamHouse);
+  const afterBak = Wp.store['rubloxDreamHouse.bakFrames'];
+  chk('#dhtest=v7painted opens the in-memory painted house, shows the TEST HOUSE badge, and is not a visitor',
+    Wp.A.dhTestActive() === true && Wp.A.dhTestFixtureId() === 'v7painted' && Wp.A.dh.visiting !== true
+      && /TEST HOUSE/i.test(pnote.textContent||'') && /v7painted/.test(pnote.textContent||'') && /real Dream House save is not used or written/i.test(pnote.textContent||'') && !!Wp.A.dh._testNoteShown,
+    {id: Wp.A.dhTestFixtureId(), note: pnote.textContent, visiting: Wp.A.dh.visiting});
+  chk('#dhtest=v7painted runs the missing-window repair: front window is framed and glazed, leftover opening bricks are gone',
+    Wp.A.dhWindowsFramed(plist) && Wp.A.dhWindowsGlazed(plist)
+      && plist.some(a => a[0]==='winframe' && (a[4]|0)===0) && plist.some(a => a[0]==='pane' && (a[4]|0)===0)
+      && leftover === false && plist.filter(a => a[0]==='brick').length === Wp.A.dhBrickTotal()
+      && plist.some(a => a[0]==='sofa') && plist.filter(a => a[0]==='paint').length === 4,
+    {frames: plist.filter(a=>a[0]==='winframe'), panes: plist.filter(a=>a[0]==='pane'), leftover, bricks: plist.filter(a=>a[0]==='brick').length, need: Wp.A.dhBrickTotal(), stage: Wp.A.dhStageId()});
+  chk('#dhtest=v7painted has no bare-brick paint holes: openings match real frames, the back wall stays solid',
+    holes0.some(h => h.kind==='door') && holes0.some(h => h.kind==='window')
+      && holes1.some(h => h.kind==='window') && holes3.some(h => h.kind==='window')
+      && holes2.length === 0
+      && Wp.A.dhPaintCoversOpening(0, 0, 'door') === false
+      && Wp.A.dhPaintCoversOpening(0, 0, 'window') === false
+      && Wp.A.dhPaintCoversOpening(0, 1, 'window') === false
+      && Wp.A.dhPaintCoversOpening(0, 3, 'window') === false,
+    {holes0, holes1, holes2, holes3});
+  chk('#dhtest=v7painted never writes rubloxDreamHouse or the .bakFrames backup',
+    afterP && afterP.coins === 99 && afterP._sentinel === 'keep-me' && afterP.ver === 6
+      && afterBak === '{"sentinel":"bak-stay"}',
+    {afterP, afterBak});
+  Wp.A.dreamhouseStop();
+
+  const Wf = world(Object.assign({}, priorStore), {coins:20, hash:'#dhtest=v7frame'});
+  Wf.A.buildDreamHouse(); Wf.A.dreamhouseEnter();
+  if (Wf.A.dh && Wf.A.dh.intro) Wf.A.dhSkipIntro();
+  const flist = Wf.A.dh.pieces[0] || [];
+  const fnote = Wf.els['#dhTestNote'] || {};
+  const slots = Wf.A.dhAllFrameSlots(0) || [];
+  const check = Wf.A.dhChecklist();
+  const item6 = check.find(s => /Windows & door/.test(s)) || '';
+  chk('#dhtest=v7frame opens at the windows-and-door step with walls and roof done and zero frames',
+    Wf.A.dhTestActive() === true && Wf.A.dhTestFixtureId() === 'v7frame' && Wf.A.dhStageId() === 'frame'
+      && flist.filter(a => a[0]==='brick').length === Wf.A.dhBrickTotal()
+      && flist.filter(a => a[0]==='shingle').length === Wf.A.dhShingleTotal()
+      && flist.filter(a => a[0]==='stud').length === Wf.A.dhStudTotal()
+      && flist.filter(a => a[0]==='rafter').length === Wf.A.dhRafterTotal()
+      && !flist.some(a => a[0]==='doorframe' || a[0]==='door' || a[0]==='winframe' || a[0]==='pane')
+      && /0\/4/.test(item6),
+    {id: Wf.A.dhTestFixtureId(), stage: Wf.A.dhStageId(), item6, bricks: flist.filter(a=>a[0]==='brick').length, need: Wf.A.dhBrickTotal(), check});
+  chk('#dhtest=v7frame shows the TEST HOUSE badge and starts you with wood in hand so you can frame immediately',
+    /TEST HOUSE/i.test(fnote.textContent||'') && /v7frame/.test(fnote.textContent||'') && /real Dream House save is not used or written/i.test(fnote.textContent||'')
+      && !!Wf.A.dh._testNoteShown && Wf.A.dh.job === 'frame'
+      && Wf.A.dh.carry && Wf.A.dh.carry.id === 'wood' && Wf.A.dh.carry.n >= 1
+      && slots.some(s => s.kind==='doorframe') && (Wf.A.dhWindowFaces()||[]).every(f => slots.some(s => s.kind==='winframe' && (s.face|0)===f)),
+    {note: fnote.textContent, job: Wf.A.dh.job, carry: Wf.A.dh.carry, slots: slots.map(s=>({kind:s.kind,face:s.face}))});
+  Wf.A.dhPut(0, ['doorframe',0,0,0,0,0], true);
+  Wf.A.dhPut(0, ['door',0,0,0,0,0], true);
+  Wf.A.dhPut(0, ['winframe',0,0,0,1,0], true);
+  chk('#dhtest=v7frame stays on the framing step until the door and every window are framed',
+    Wf.A.dhStageId() === 'frame' && Wf.A.dhWindowsFramed(Wf.A.dh.pieces[0]) === false,
+    {stage: Wf.A.dhStageId(), frames: (Wf.A.dh.pieces[0]||[]).filter(a=>a[0]==='winframe')});
+  Wf.A.dhPut(0, ['winframe',0,0,0,0,0], true);
+  Wf.A.dhPut(0, ['winframe',0,0,0,3,0], true);
+  chk('#dhtest=v7frame completes Windows & door only after the door and all 3 windows are framed',
+    Wf.A.dhWindowsFramed(Wf.A.dh.pieces[0]) === true && Wf.A.dhStageId() !== 'frame'
+      && /Windows & door/.test((Wf.A.dhChecklist().find(s => /Windows & door/.test(s))||''))
+      && /✔/.test((Wf.A.dhChecklist().find(s => /Windows & door/.test(s))||'')),
+    {stage: Wf.A.dhStageId(), check: Wf.A.dhChecklist()});
+  Wf.A.dhSave();
+  const afterF = JSON.parse(Wf.store.rubloxDreamHouse);
+  const afterFBak = Wf.store['rubloxDreamHouse.bakFrames'];
+  chk('#dhtest=v7frame never writes rubloxDreamHouse or the .bakFrames backup',
+    afterF && afterF.coins === 99 && afterF._sentinel === 'keep-me' && afterF.ver === 6
+      && afterFBak === '{"sentinel":"bak-stay"}',
+    {afterF, afterFBak});
   Wf.A.dreamhouseStop();
 })();
 
