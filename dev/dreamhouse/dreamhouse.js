@@ -72,8 +72,40 @@
   let dh = null;
 
   function dhMatOf(id){ return DH_MATS.find(m => m.id === id); }
-  function dhWho(){ return (typeof mp !== 'undefined' && mp && mp.on && mp.uid) ? String(mp.uid) : 'local'; }
+  function dhWho(){
+    if (typeof mp !== 'undefined' && mp && mp.on){
+      const id = mp.me || mp.uid;
+      if (id) return String(id);
+    }
+    return 'local';
+  }
   function dhIsGuest(){ return !!(typeof mp !== 'undefined' && mp && mp.on && typeof mpGuest === 'function' && mpGuest()); }
+  function dhShouldVisit(){
+    const id = typeof dhTestFixtureId === 'function' ? dhTestFixtureId() : '';
+    if (id === 'visit') return true;
+    if (id === 'visithost') return false;
+    return dhIsGuest();
+  }
+  function dhIsVisitor(){ return !!(dh && dh.visiting); }
+  function dhCanEdit(){ return !!(dh && !dhIsVisitor()); }
+  function dhHostName(){
+    if (dh && dh.hostName) return String(dh.hostName);
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.on){
+        const list = (typeof mpRoster === 'function' && mp.host) ? mpRoster() : (mp.roster || []);
+        const host = (list || []).find && list.find(p => p && p.uid === 'H');
+        if (host && host.name) return String(host.name);
+      }
+      if (typeof player !== 'undefined' && player && player.name) return String(player.name);
+    } catch (e){}
+    return 'Friend';
+  }
+  function dhInviteCode(){ return (typeof mp !== 'undefined' && mp && mp.code) ? String(mp.code) : ''; }
+  function dhBlockVisitor(msg){
+    if (!dhIsVisitor()) return false;
+    if (msg !== false && typeof banner === 'function') banner(msg || "👀 You're visiting — you can look around, but you cannot edit this house");
+    return true;
+  }
   function dhOrigin(plot){
     const size = DH_N * DH_CELL;
     // Plot 0 (single-player, and the first MP lot) sits in the center of the map, as in Tessa's drawing.
@@ -190,7 +222,7 @@
   }
   function dhTestActive(){
     const id = dhTestFixtureId();
-    return id === 'v6furnish' || id === 'v7walls' || id === 'v6inside';
+    return id === 'v6furnish' || id === 'v7walls' || id === 'v6inside' || id === 'visit' || id === 'visithost';
   }
   function dhTestV6FootSlabs(){
     const recs = [];
@@ -245,8 +277,19 @@
       upgrades: {}, tipsSeen: {}, legacyHouse: false
     };
   }
+  function dhTestVisitRaw(){
+    const raw = dhTestV6FurnishRaw();
+    raw.pieces = (raw.pieces || []).concat([
+      ['paint', 0, 0, 0, 0, 1], ['paint', 0, 0, 0, 1, 1], ['paint', 0, 0, 0, 2, 1], ['paint', 0, 0, 0, 3, 1],
+      ['sofa', 3, 0, 3, 0, 0], ['table', 4, 0, 4, 0, 0], ['plant', 2, 0, 4, 0, 0], ['lamp', 5, 0, 3, 0, 0]
+    ]);
+    raw.goals = Object.assign({}, raw.goals || {}, {paint: 1, furnish: 1});
+    raw.stock = Object.assign({}, raw.stock || {}, {paint: 0, sofa: 0});
+    return raw;
+  }
   function dhTestRawSave(id){
     id = (id == null ? dhTestFixtureId() : id);
+    if (id === 'visit' || id === 'visithost') return dhTestVisitRaw();
     if (id === 'v6furnish' || id === 'v6inside') return dhTestV6FurnishRaw();
     if (id === 'v7walls') return dhTestV7WallsRaw();
     return null;
@@ -400,6 +443,7 @@
   }
   function dhResetProgress(){
     // Only wipes the Dream House key. Main wallet, other games, and history stay put.
+    if (dh && dhIsVisitor()){ if (typeof banner === 'function') banner("👀 Visitors cannot reset the owner's house"); return; }
     if (dh) dh._skipSave = true;
     if (typeof save === 'function' && !dhTestBlockPersist()) save(DH_KEY, dhFreshSave());
     if (dh){
@@ -438,6 +482,7 @@
   if (typeof window !== 'undefined') window.dhResetProgress = dhResetProgress;
   function dhSave(extra){
     if (!dh) return;
+    if (dhIsVisitor() || dh.visiting || dh._skipSave) return;
     const p = dhProg();
     p.ver = DH_VER;
     p.pieces = dhSerialize(dh.mine);
@@ -1122,8 +1167,9 @@
     });
   }
   function dhAssignPlot(){
+    if (dhShouldVisit()) return 0;
     if (typeof mp !== 'undefined' && mp && mp.on){
-      const ids = [dhWho()].concat((mp.roster && mp.roster()) || (mp.peers && Object.keys(mp.peers)) || []).filter(Boolean);
+      const ids = [dhWho()].concat((Array.isArray(mp.roster) ? mp.roster.map(p => p && p.uid) : (mp.roster && typeof mp.roster === 'function' && mp.roster())) || (mp.peers && Object.keys(mp.peers)) || []).filter(Boolean);
       const uniq = []; ids.forEach(id => { if (uniq.indexOf(id) < 0) uniq.push(id); });
       return Math.max(0, uniq.indexOf(dhWho())) % DH_PLOTS;
     }
@@ -1542,15 +1588,25 @@
   }
 
   function buildDreamHouse(){
-    dh = {mine: 0, job: 'mark', rot: 0, color: 0, tool: 'place', aim: null, pieces: {}, meshes: {}, ghost: null, bank: 0, likes: 0, goals: {}, earned: 0, near: -1, liked: {}, saveT: 0, remote: dhIsGuest(), carry: null, bag: null, stock: dhEmptyStock(), bins: [], mixers: {}, piles: {}, mats: dhMakeMats(), v1pieces: null, cureT: 0, upgrades: dhEmptyUpgrades(), introSeen: false, intro: null, trees: [], shopOpen: false, yardOpen: false, upOpen: false, foundYard: false, foundFurn: false, foundUp: false, cut: null, yardBeacon: null, furnBeacon: null, upBeacon: null};
+    dh = {mine: 0, job: 'mark', rot: 0, color: 0, tool: 'place', aim: null, pieces: {}, meshes: {}, ghost: null, bank: 0, likes: 0, goals: {}, earned: 0, near: -1, liked: {}, saveT: 0, remote: dhIsGuest(), visiting: false, inviteOpen: false, hostName: '', carry: null, bag: null, stock: dhEmptyStock(), bins: [], mixers: {}, piles: {}, mats: dhMakeMats(), v1pieces: null, cureT: 0, upgrades: dhEmptyUpgrades(), introSeen: false, intro: null, trees: [], shopOpen: false, yardOpen: false, upOpen: false, foundYard: false, foundFurn: false, foundUp: false, cut: null, yardBeacon: null, furnBeacon: null, upBeacon: null};
     scene.background = new THREE.Color('#b8e8ff');
     if (scene.fog){ scene.fog.color = new THREE.Color('#d7f3ff'); scene.fog.near = 50; scene.fog.far = 160; }
     const grass = plat(0, 0, 0, 110, 84, '#8fd39a', .35);
     if (grass) grass.floorOnly = true; // huge ground AABB must never resolve on X/Z
-    const p0 = dhProg();
+    dh.visiting = !!dhShouldVisit();
+    if (dh.visiting) dh._skipSave = true;
+    const p0 = (dh.visiting && !dhTestRawSave()) ? dhFreshSave() : dhProg();
     dh.bank = p0.coins; dh.likes = p0.likes; dh.goals = Object.assign({}, p0.goals); dh.stock = Object.assign(dhEmptyStock(), p0.stock); dh.v1pieces = p0.v1pieces; dh.upgrades = Object.assign(dhEmptyUpgrades(), p0.upgrades || {}); dh.introSeen = !!p0.introSeen; dh.tipsSeen = Object.assign({}, p0.tipsSeen || {}); dh.legacyHouse = !!p0.legacyHouse; dh.brickInst = {}; dh.hand = null; dh.outlines = null; dh.pourHold = false;
-    if (!p0.granted){ dh.bank += DH_GRANT; dh.grantedNow = true; }
+    if (dh.visiting){
+      dh.introSeen = true;
+      dh._skipSave = true;
+      dh.grantedNow = false;
+      if (!dhTestRawSave()){
+        dh.bank = 0; dh.likes = 0; dh.stock = dhEmptyStock(); dh.upgrades = dhEmptyUpgrades(); dh.legacyHouse = false; dh.goals = {};
+      }
+    } else if (!p0.granted){ dh.bank += DH_GRANT; dh.grantedNow = true; }
     dh.mine = dhAssignPlot();
+    dh.hostName = dhHostName();
     dhLayoutYard();
     dhBuildBounds();
     dhBuildYard();
@@ -1563,7 +1619,7 @@
       const pad = plat(cx, .08, cz, DH_N * DH_CELL + .4, DH_N * DH_CELL + .4, i === dh.mine ? '#b6e8a8' : '#9fd3a8', .16);
       if (pad) pad.floorOnly = true; // visual lot; the big grass is the real floor — do not shove on X/Z
       [[ox - .15, cz, .3, DH_N * DH_CELL + .6], [ox + DH_N * DH_CELL + .15, cz, .3, DH_N * DH_CELL + .6], [cx, oz - .15, DH_N * DH_CELL + .6, .3], [cx, oz + DH_N * DH_CELL + .15, DH_N * DH_CELL + .6, .3]].forEach(([x, z, w, d]) => { const b = plat(x, .16, z, w, d, '#d9d4cc', .14); if (b){ b.camSkip = true; b.floorOnly = true; } });
-      const sign = label((i === dh.mine ? '🏡 Your Plot' : '🏡 Plot ' + (i + 1)), 'rgba(29,35,64,.92)');
+      const sign = label((dh.visiting && i === dh.mine) ? ('👀 ' + dhHostName() + "'s House") : (i === dh.mine ? '🏡 Your Plot' : '🏡 Plot ' + (i + 1)), 'rgba(29,35,64,.92)');
       if (sign && sign.position) sign.position.set(cx, 3.15, oz + DH_N * DH_CELL + 1.05);
       if (sign && sign.scale) sign.scale.set(2.4, 0.62, 1);
       if (sign){ sign.renderOrder = 8; scene.add(sign); dh.plotSigns = dh.plotSigns || []; dh.plotSigns.push(sign); }
@@ -1571,7 +1627,8 @@
       dhBuildMixer(i);
     }
     // single-player: other lots stay empty (real players only — no leftover show homes or intro houses)
-    (p0.pieces || []).forEach(rec => dhPut(dh.mine, rec, true));
+    // Visitors in a live room wait for the host snapshot (dhFromHost) so they never load their own save onto the host lot.
+    if (!(dh.visiting && !dhTestRawSave())) (p0.pieces || []).forEach(rec => dhPut(dh.mine, rec, true));
     if (typeof dhSyncGables === 'function') dhSyncGables(dh.mine);
     if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
     dhStockViz(dh.mine);
@@ -1917,7 +1974,7 @@
     return dhCellAt(P.x || 0, P.z || 0);
   }
   function dhAim(){ return dh.aim || dhAimCell(); }
-  function dhCanBuild(aim){ return !!(aim && aim.plot === dh.mine); }
+  function dhCanBuild(aim){ return !!(dhCanEdit() && aim && aim.plot === dh.mine); }
   function dhNearOwnPlot(){
     if (!dh) return false;
     if (dhPlotAt(P.x, P.z) === dh.mine) return true;
@@ -2108,6 +2165,7 @@
   }
   function dhBuy(id, count){
     if (!dh) return false;
+    if (dhBlockVisitor()) return false;
     if (dh.intro) return false;
     const m = dhMatOf(id); if (!m || m.nosale || m.furn) return false;
     const n = count || m.stack;
@@ -2434,6 +2492,7 @@
 
   function dhPlace(){
     if (!dh) return false;
+    if (dhBlockVisitor()) return false;
     if (dh.intro) return false;
     if (dh.tool === 'delete'){
       const aim = dhAimCell(); if (!dhCanBuild(aim)) return false;
@@ -2476,9 +2535,20 @@
   function dhSetStory(){ return false; }
   function dhSetJob(j){ if (!dh) return; const ch = dh.job !== j; dh.job = j; dh.tool = 'place'; dhBar(); dhHud(); if (ch && typeof dhShowSpots === 'function') dhShowSpots(); }
 
+  function dhVisitLike(){
+    if (!dh || !dhIsVisitor()) return false;
+    if (dh.liked && dh.liked.host){ banner('💛 You already liked this house!'); return false; }
+    dh.liked = dh.liked || {};
+    dh.liked.host = 1;
+    dhNet('like', {plot: (dh.mine | 0), from: dhWho()});
+    banner('💛 Loved this house!');
+    return true;
+  }
   function dhAct(){
     if (!dh) return;
     if (dh.intro) return dhSkipIntro();
+    if (dh.inviteOpen){ dhToggleInvite(false); return true; }
+    if (dhIsVisitor()){ return dhVisitLike(); }
     if (dh.yardOpen){ dhToggleYard(false); return; }
     if (dh.shopOpen){ dhToggleShop(false); return; }
     if (dh.upOpen){ dhToggleUp(false); return; }
@@ -2539,9 +2609,37 @@
     if (typeof mpSendTo === 'function' && dhIsGuest() && mp.hconn) mpSendTo(mp.hconn, msg);
     else if (typeof mpBroadcast === 'function') mpBroadcast(msg);
   }
-  function dhWire(){ return dh && {mine: dh.mine, who: dhWho(), plots: Object.fromEntries(Object.keys(dh.pieces).map(k => [k, dhSerialize(+k)])), likes: dh.likes, bank: dh.bank, stock: dh.stock}; }
+  function dhWire(){
+    if (!dh) return null;
+    return {
+      mine: dh.mine, who: dhWho(), name: dhHostName(),
+      plots: Object.fromEntries(Object.keys(dh.pieces).map(k => [k, dhSerialize(+k)])),
+      upgrades: Object.assign({}, dh.upgrades || {}),
+      legacyHouse: !!dh.legacyHouse,
+      likes: dh.likes
+    };
+  }
   function dhFromHost(w){
-    if (!dh || !w || !w.plots) return;
+    if (!dh || !w) return;
+    if (dhIsVisitor()){
+      if (w.name) dh.hostName = String(w.name);
+      if (w.upgrades && typeof w.upgrades === 'object') dh.upgrades = Object.assign(dhEmptyUpgrades(), w.upgrades);
+      if (w.legacyHouse != null) dh.legacyHouse = !!w.legacyHouse;
+      const plot = (w.mine != null ? w.mine : dh.mine) | 0;
+      dh.mine = plot;
+      const recs = (w.plots && (w.plots[plot] || w.plots[String(plot)])) || [];
+      const hash = JSON.stringify(recs) + '|' + JSON.stringify(dh.upgrades || {}) + '|' + !!dh.legacyHouse;
+      if (dh._visitHash !== hash){
+        dh._visitHash = hash;
+        if (typeof dhApplyPlot === 'function') dhApplyPlot(plot, recs, true);
+        if (typeof dhSyncGables === 'function') dhSyncGables(plot);
+        if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
+      }
+      if (w.likes != null) dh.likes = w.likes | 0;
+      if (typeof dhHud === 'function') dhHud();
+      return;
+    }
+    if (!w.plots) return;
     Object.keys(w.plots).forEach(k => {
       const plot = +k; if (plot === dh.mine) return;
       const recs = w.plots[k] || [];
@@ -2561,6 +2659,7 @@
 
   function dhShopBuyFurn(id){
     if (!dh) return false;
+    if (dhBlockVisitor()) return false;
     const m = dhMatOf(id); if (!m || !m.furn) return false;
     if (!dhPay(m.cost)){ banner('🪙 Need ' + m.cost + ' coins for ' + m.name); return false; }
     dh.stock[id] = (dh.stock[id] || 0) + 1;
@@ -2570,6 +2669,7 @@
   }
   function dhBuyUpgrade(id){
     if (!dh) return false;
+    if (dhBlockVisitor()) return false;
     const u = DH_UPGRADES.find(x => x.id === id); if (!u) return false;
     const have = dhUp(id);
     if (have >= u.max){ banner('✨ ' + u.name + ' is already maxed'); return false; }
@@ -2836,22 +2936,92 @@
     }
   }
 
+  function dhToggleInvite(on){
+    if (!dh) return false;
+    if (dhIsVisitor()){ if (typeof banner === 'function') banner('👀 You are already visiting'); return false; }
+    dh.inviteOpen = on == null ? !dh.inviteOpen : !!on;
+    if (dh.inviteOpen && typeof mp !== 'undefined' && !(mp && mp.on) && typeof mpHost === 'function'){
+      try { mpHost(); } catch (e){}
+    }
+    dhRenderInvite();
+    return true;
+  }
+  function dhCopyInvite(){
+    const code = dhInviteCode();
+    if (!code) return false;
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code);
+    } catch (e){}
+    if (typeof banner === 'function') banner('📣 Room code ' + code + ' copied — send it to a friend!');
+    return true;
+  }
+  function dhInviteEsc(t){
+    const s = String(t == null ? '' : t);
+    if (typeof mpEsc === 'function') return mpEsc(s);
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function dhRetryInvite(){
+    if (!dh || dhIsVisitor()) return false;
+    try {
+      if (typeof mpCleanup === 'function') mpCleanup();
+      else if (typeof mpLeave === 'function') mpLeave();
+    } catch (e){}
+    if (typeof mpHost === 'function'){ try { mpHost(); } catch (e){} }
+    dhRenderInvite();
+    return true;
+  }
+  function dhRenderInvite(){
+    let el = null;
+    try { el = (typeof $ === 'function') ? $('#dhVisit') : (typeof document !== 'undefined' && document.getElementById && document.getElementById('dhVisit')); } catch (e){}
+    if (!el) return false;
+    if (!dh || !dh.inviteOpen){ el.style.display = 'none'; el.classList.remove && el.classList.remove('show'); el.innerHTML = ''; return false; }
+    const code = dhInviteCode();
+    const rawStatus = (!code && typeof mp !== 'undefined' && mp && mp.status) ? String(mp.status) : '';
+    const err = (rawStatus && !/^⏳/.test(rawStatus)) ? rawStatus : '';
+    const label = code || '…starting room…';
+    if (el.dataset && el.dataset.dhInvCode === String(code || '') && el.dataset.dhInvErr === err && el.innerHTML){
+      el.style.display = '';
+      if (el.classList && el.classList.add) el.classList.add('show');
+      return true;
+    }
+    if (el.dataset){ el.dataset.dhInvCode = String(code || ''); el.dataset.dhInvErr = err; }
+    el.style.display = '';
+    if (el.classList && el.classList.add) el.classList.add('show');
+    el.innerHTML = '<div class="dhvisitcard">'
+      + '<button class="dhvisitx" id="dhVisitX" type="button" aria-label="Close">✕</button>'
+      + '<h3>📣 Invite friends to visit</h3>'
+      + '<p>Share this room code. When a friend joins and you are in Dream House, they walk around your house. They can look, but they cannot edit or break anything, and your save stays yours.</p>'
+      + '<div class="dhvisitcode" id="dhVisitCode">' + dhInviteEsc(label) + '</div>'
+      + (err ? '<p class="dhvisithint" id="dhVisitErr">' + dhInviteEsc(err).replace(/\n/g, '<br>') + '</p>' : '')
+      + '<div class="dhvisitbtns">'
+      + (code
+          ? '<button class="big green" id="dhVisitCopy" type="button">📋 Copy code</button>'
+          : '<button class="big green" id="dhVisitRetry" type="button">🔄 Try again</button>')
+      + '<button class="big" id="dhVisitClose" type="button">Close</button>'
+      + '</div>'
+      + '<p class="dhvisithint">On a phone, tap Invite friends. On an Xbox controller, press Ⓨ to open this, Ⓑ to close.</p>'
+      + '</div>';
+    return true;
+  }
   function dreamhouseEnter(){
     if (!dh) return;
     choosing = false; over = false;
     if (typeof dhClosePauseMenus === 'function') dhClosePauseMenus();
     dhBindUI();
+    if (dh.visiting) dh.introSeen = true;
     if (!dh.introSeen){
       dhStartIntro(false);
     } else {
-      banner(mp && mp.on ? '🏡 Dream House Builders — grab free supplies and place every piece yourself!' : '🏡 First person: grab free supplies at the Supply Yard, then aim and place every brick yourself!');
+      banner(dh.visiting
+        ? ('👀 Visiting ' + dhHostName() + "'s house — walk in and look around! You cannot edit or break it.")
+        : (mp && mp.on ? '🏡 Dream House Builders — grab free supplies and place every piece yourself! Tap Invite friends so they can visit.' : '🏡 First person: grab free supplies at the Supply Yard, then aim and place every brick yourself! Invite friends to visit your house.'));
       tipTimer = 8;
-      if (typeof dhShowSpots === 'function') dhShowSpots();
+      if (typeof dhShowSpots === 'function' && !dh.visiting) dhShowSpots();
       dhHud(); dhBar();
       dreamhouseUpdate(0);
     }
-    const replay = $('#dhReplay'); if (replay) replay.style.display = '';
-    const resetBtn = $('#dhResetBtn'); if (resetBtn) resetBtn.style.display = '';
+    const replay = $('#dhReplay'); if (replay) replay.style.display = dh.visiting ? 'none' : '';
+    const resetBtn = $('#dhResetBtn'); if (resetBtn) resetBtn.style.display = dh.visiting ? 'none' : '';
     if (typeof document !== 'undefined' && document.getElementById){ const root = document.getElementById('obby'); if (root && root.classList) root.classList.add('dhouse'); }
     if (!dh.intro) dhForceFirstPerson();
     if (dh.intro){
@@ -2932,6 +3102,7 @@
     if (!dh) return '';
     if (dh.intro || dh.shopOpen || dh.yardOpen || dh.upOpen) return '';
     const key = (typeof pad !== 'undefined' && pad && pad.on) ? 'Ⓧ' : (typeof touchUI !== 'undefined' && touchUI ? 'tap' : 'E');
+    if (dhIsVisitor()) return '💛 ' + key + ': Like this house';
     const mxn = dhNearMixer(), pile = dhNearPile();
     const onLot = dhNearOwnPlot();
     const ghostJob = (onLot && (dh.job === 'mark' || dh.job === 'dig' || dh.job === 'pour')) ? dhTargetSpot(dh.job) : ((onLot && dh.job === 'brick') ? dhTargetSpot('brick') : null);
@@ -3532,6 +3703,7 @@
   }
   function dhGoalText(){
     if (!dh) return '';
+    if (dhIsVisitor()) return "You're visiting " + dhHostName() + "'s house — walk around and look! You cannot edit or break it.";
     const stage = dhStageId();
     if (stage === 'stake'){
       const c = dhJobCounts('mark');
@@ -3950,6 +4122,10 @@
   }
   function dhUpdateHandHud(){
     const el = $('#dhHand'); if (!el || !dh) return;
+    if (dhIsVisitor()){
+      el.style.display = 'none'; el.style.visibility = 'hidden'; el.classList.remove('show'); el.innerHTML = '';
+      return;
+    }
     const held = dhHeldInfo();
     const hide = !!(dh.intro) || dhMenusUp();
     el.style.display = hide ? 'none' : 'flex';
@@ -4222,6 +4398,7 @@
       if (root && root.classList){
         root.classList.toggle('dhouse', inDh);
         root.classList.toggle('dh-intro', intro);
+        root.classList.toggle('dh-visit', !!(dh && dh.visiting));
         root.classList.toggle('paused', pausedNow);
         root.classList.toggle('dh-paused', pausedNow || menus || modal);
       }
@@ -4232,7 +4409,7 @@
       const touch = typeof touchUI !== 'undefined' && touchUI;
       const carrying = typeof dhHasAnyCarry === 'function' && dhHasAnyCarry();
       hint.textContent = padOn ? '✚▼: show spots' : (touch ? '✨ Spots' : (carrying ? 'Tab: show spots' : 'Q: show spots'));
-      const showHint = playing && !pausedNow && !menus && !modal;
+      const showHint = playing && !pausedNow && !menus && !modal && !(dh && dh.visiting);
       hint.style.display = showHint ? 'block' : 'none';
       hint.classList.toggle('show', showHint);
     }
@@ -4269,6 +4446,13 @@
     if (tb){ tb.textContent = dh && dh.tool === 'delete' ? '🗑️' : (dh ? (({mark:'📍', dig:'🕳️', mix:'🌀', pour:'🪣', brick:'🧱', stud:'🪵', rafter:'🪜', shingle:'🏠', frame:'🚪', glass:'🪟', paint:'🎨', furn:'🛋️'}[dh.job]) || '') : ''); }
     const xh = $('#oCross');
     if (xh){ xh.style.display = hideCross ? 'none' : ''; }
+    if (dh && dh.visiting){
+      ['#dhGuide','#dhHand','#dhSpotHint','#dhReplay','#dhResetBtn'].forEach(id => {
+        const el = $(id); if (!el) return;
+        el.style.display = 'none';
+        if (el.classList && el.classList.remove) el.classList.remove('show');
+      });
+    }
     if (typeof window !== 'undefined') window.updateDhChrome = updateDhChrome;
     return !hideBar;
   }
@@ -4278,10 +4462,18 @@
     const bar = $('#dhBar'); if (!bar) return;
     // Always rebuild the toolbar, then let updateDhChrome show or hide it.
     bar.classList.add('show');
+    if (dh.visiting){
+      bar.innerHTML = '<div class="dhtools dhvisitbar"><span class="dhi on">👀 Visiting ' + (dhHostName() || 'a friend') + "'s house</span>"
+        + '<button class="dhb" id="dhLikeBtn" type="button">💛 Like</button></div>';
+      dhBindUI();
+      if (typeof dhLayoutHud === 'function') dhLayoutHud();
+      updateDhChrome();
+      return;
+    }
     const jobs = '<div class="dhtools">' + DH_JOBS.map(j => {
       const lab = {mark:'📍 Stake', dig:'🕳️ Dig', mix:'🌀 Mix', pour:'🪣 Pour', brick:'🧱 Brick', stud:'🪵 Stud', rafter:'🪜 Rafter', shingle:'🏠 Shingle', frame:'🚪 Frame', glass:'🪟 Glass', paint:'🎨 Paint', furn:'🛋️ Furnish'}[j];
       return '<button class="dhb' + (dh.job === j && dh.tool === 'place' ? ' on' : '') + '" data-dhjob="' + j + '">' + lab + '</button>';
-    }).join('') + '<button class="dhb' + (dh.tool === 'delete' ? ' on' : '') + '" data-dhtool="delete">🗑️</button><button class="dhb" id="dhDumpBtn">📦 Dump</button><button class="dhb" id="dhSpotBtn" title="Show remaining spots">✨ Spots</button><button class="dhb" id="dhYardBtn">📦 Supply Yard</button><button class="dhb" id="dhShopBtn">🛋️ Furniture</button><button class="dhb" id="dhUpBtn">🔧 Upgrades</button></div>';
+    }).join('') + '<button class="dhb' + (dh.tool === 'delete' ? ' on' : '') + '" data-dhtool="delete">🗑️</button><button class="dhb" id="dhDumpBtn">📦 Dump</button><button class="dhb" id="dhSpotBtn" title="Show remaining spots">✨ Spots</button><button class="dhb" id="dhYardBtn">📦 Supply Yard</button><button class="dhb" id="dhShopBtn">🛋️ Furniture</button><button class="dhb" id="dhUpBtn">🔧 Upgrades</button><button class="dhb" id="dhInviteBtn" type="button">📣 Invite friends</button></div>';
     const cols = dh.job === 'paint' ? ('<div class="dhcols">' + DH_PAINT.map((c, i) => '<button class="dhc' + (dh.color === i ? ' on' : '') + '" data-dhcol="' + i + '" style="background:' + c.col + '" title="' + c.name + '"></button>').join('') + '</div>') : '';
     const inv = '<div class="dinv">' + DH_MATS.filter(m => !m.nosale).map(m => {
       const n = dhInvCount(m.id);
@@ -4293,13 +4485,16 @@
     updateDhChrome();
   }
   function dhBindUI(){
-    if (window.__dhBound5) return;
-    window.__dhBound5 = true;
+    if (window.__dhBound6) return;
+    window.__dhBound6 = true;
     const act = $('#dhAct'); if (act) act.onclick = () => dh && !dh.intro && dhAct();
     const bar = $('#dhBar');
     if (bar) bar.addEventListener('click', ev => {
-      const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhSpotBtn,#dhShopBtn,#dhYardBtn,#dhUpBtn');
+      const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhSpotBtn,#dhShopBtn,#dhYardBtn,#dhUpBtn,#dhInviteBtn,#dhLikeBtn');
       if (!t || !dh || dh.intro) return;
+      if (t.id === 'dhInviteBtn'){ dhToggleInvite(true); return; }
+      if (t.id === 'dhLikeBtn'){ dhVisitLike(); return; }
+      if (dhIsVisitor()) return;
       if (t.id === 'dhDumpBtn') dhDump();
       else if (t.id === 'dhSpotBtn'){ if (typeof dhShowSpots === 'function') dhShowSpots(); }
       else if (t.id === 'dhYardBtn') dhToggleYard(true);
@@ -4309,6 +4504,14 @@
       else if (t.dataset.dhjob) dhSetJob(t.dataset.dhjob);
       else if (t.dataset.dhcol != null){ dh.color = t.dataset.dhcol | 0; dhBar(); }
       else if (t.dataset.dhid){ if ((dh.stock[t.dataset.dhid]|0) > 0) dhPickup(t.dataset.dhid, t.dataset.dhid === 'brick' ? 8 : 1); }
+    });
+    const visit = $('#dhVisit');
+    if (visit) visit.addEventListener('click', ev => {
+      const t = ev.target.closest('#dhVisitX,#dhVisitClose,#dhVisitCopy,#dhVisitRetry');
+      if (!t || !dh) return;
+      if (t.id === 'dhVisitCopy') dhCopyInvite();
+      else if (t.id === 'dhVisitRetry') dhRetryInvite();
+      else dhToggleInvite(false);
     });
     const yard = $('#dhYard');
     if (yard) yard.addEventListener('click', ev => {
@@ -4360,12 +4563,17 @@
       return true;
     }
     if (dhTipOpen() && (jp.a || jp[0] || jp.x || jp[2] || jp.start)){ if (typeof pad !== 'undefined' && pad) pad.jump = false; dhDismissTip(); return true; }
+    if (dh.inviteOpen && (jp.b || jp[1] || jp.start)){ dhToggleInvite(false); if (typeof pad !== 'undefined' && pad) pad.jump = false; return true; }
+    if (dhIsVisitor()){
+      if (jp.x || jp[2] || jp.y || jp[3]){ dhVisitLike(); if (typeof pad !== 'undefined' && pad) pad.jump = false; return true; }
+      return false;
+    }
+    if (jp.y || jp[3]){ dhToggleInvite(true); return true; }
     if (dh.yardOpen && (jp.b || jp[1])){ dhToggleYard(false); return true; }
     if (dh.shopOpen && (jp.b || jp[1])){ dhToggleShop(false); return true; }
     if (dh.upOpen && (jp.b || jp[1])){ dhToggleUp(false); return true; }
     if (jp.x || jp[2] || jp.a || jp[0] || jp.rt || jp[7]){ dhAct(); if (typeof pad !== 'undefined' && pad) pad.jump = false; return true; }
     if (jp.b || jp[1]){ dhRotate(); return true; }
-    if (jp.y || jp[3]){ if (dh.carry) dhDump(); else dhSetTool(dh.tool === 'delete' ? 'place' : 'delete'); return true; }
     if (jp.lb || jp[4]){ dhCycle(-1); return true; }
     if (jp.rb || jp[5]){ dhCycle(1); return true; }
     if (jp.dd || jp[13] || jp.down){ if (typeof dhShowSpots === 'function') dhShowSpots(); return true; }
@@ -4378,7 +4586,7 @@
   }
   function dhNodeOpenMenu(n){
     if (!n) return null;
-    const root = (n.closest) ? n.closest('dialog, .modal, .opanel, #dhResetModal, #oPausePanel, #setModal, #dhShop, #dhYard, #dhUp') : null;
+    const root = (n.closest) ? n.closest('dialog, .modal, .opanel, #dhResetModal, #oPausePanel, #setModal, #dhShop, #dhYard, #dhUp, #dhVisit') : null;
     if (!root) return null;
     if (root.id === 'dhResetModal' && typeof dhResetModalIsOpen === 'function' && !dhResetModalIsOpen()) return null;
     if (root.classList && root.classList.contains('opanel') && !root.classList.contains('show') && !root.open) return null;
@@ -4397,7 +4605,7 @@
       return !!dhNodeOpenMenu(t);
     }
     if (typeof t.closest === 'function'){
-      return !!t.closest('dialog, .modal, .menu, .opanel, .mbox, .dhbar, .dhhand, .obtns, .ohud, button, a, input, label, select, textarea, #dhResetModal, #dhBar, #dhTip, #dhSkip, #dhCut, #dhLookHint, #oPausePanel, #setModal');
+      return !!t.closest('dialog, .modal, .menu, .opanel, .mbox, .dhbar, .dhhand, .obtns, .ohud, button, a, input, label, select, textarea, #dhResetModal, #dhBar, #dhTip, #dhSkip, #dhCut, #dhLookHint, #dhVisit, #oPausePanel, #setModal');
     }
     let n = t;
     while (n){
@@ -4485,6 +4693,12 @@
       return true;
     }
     if (dhTipOpen() && (k === 'KeyE' || k === 'Enter' || k === 'Space' || k === 'KeyA' || k === 'Escape')){ dhDismissTip(); return true; }
+    if (dh.inviteOpen && (k === 'Escape' || k === 'KeyB' || k === 'KeyQ')){ dhToggleInvite(false); return true; }
+    if (k === 'KeyV'){ if (dhIsVisitor()) return true; dhToggleInvite(true); return true; }
+    if (dhIsVisitor()){
+      if (k === 'KeyE' || k === 'KeyL'){ dhVisitLike(); return true; }
+      return false;
+    }
     if (dh.yardOpen && (k === 'Escape' || k === 'KeyQ' || k === 'KeyB')){ dhToggleYard(false); return true; }
     if (dh.shopOpen && (k === 'Escape' || k === 'KeyB' || k === 'KeyQ')){ dhToggleShop(false); return true; }
     if (dh.upOpen && (k === 'Escape' || k === 'KeyB' || k === 'KeyQ')){ dhToggleUp(false); return true; }

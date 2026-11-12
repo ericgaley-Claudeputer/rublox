@@ -15,9 +15,9 @@ function test(name, fn){
   catch (e){ failed++; console.log('not ok  ' + name); console.log('  ' + (e.stack || e.message)); }
 }
 
-test('BUILD is 2026.11.11-32 and matches version.json', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.11-32'"));
-  assert.strictEqual(version.build, '2026.11.11-32');
+test('BUILD is 2026.11.12-2 and matches version.json', () => {
+  assert.ok(src.includes("const BUILD = '2026.11.12-2'"));
+  assert.strictEqual(version.build, '2026.11.12-2');
 });
 
 test('only one game RAF loop can run: armGameLoop cancels and bumps loopId', () => {
@@ -99,7 +99,7 @@ test('bind() listeners are added once and stay bound across start/stop cycles', 
   const stopSrc = src.slice(stopAt, src.indexOf('\n  function resize(', stopAt) > 0 ? src.indexOf('\n  function resize(', stopAt) : stopAt + 2000);
   // stop must not clear the bind guard (listeners would stack on the next start)
   assert.ok(!/bound\s*=\s*false/.test(src.slice(stopAt, stopAt + 800)), 'stop() must not reset bound');
-  assert.ok(dhSrc.includes('if (window.__dhBound5) return') && dhSrc.includes('window.__dhBound5 = true'));
+  assert.ok(dhSrc.includes('if (window.__dhBound6) return') && dhSrc.includes('window.__dhBound6 = true'));
 
   let bound = false, dhBound = false, binds = 0, dhBinds = 0;
   function bind(){ binds++; }

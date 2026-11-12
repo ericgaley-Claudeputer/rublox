@@ -606,6 +606,23 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .icord{position:relative;overflow:hidden;background:rgba(255,255,255,.92);border:3px solid #7fd6ff;border-radius:12px;padding:3px 9px 7px;font-size:20px;font-weight:900;color:#1d2340}
 .icord i{position:absolute;left:0;bottom:0;height:4px;background:#2ec27e}
 .icnear{background:#7fd6ff;box-shadow:0 4px 0 #3a9bc8}.icnear small{color:#7fd6ff}
+.phnear{background:#f4a261;box-shadow:0 4px 0 #c0763a}.phnear small{color:#c0763a}
+.phneeds{display:inline-flex;gap:5px;align-items:center;flex-wrap:wrap;vertical-align:middle}
+.phneed{display:inline-flex;align-items:center;gap:2px;background:rgba(29,35,64,.14);border-radius:999px;padding:2px 8px;font-weight:900;font-size:13px;color:#1d2340;line-height:1.3}
+.phneed.on{background:#2ec27e;color:#fff}
+.phneedhint{margin-left:6px;font-weight:800}
+#phBox .phneeds{margin:0 4px}
+.phtasks{position:absolute;left:10px;top:64px;z-index:5;display:none;pointer-events:none;background:rgba(29,35,64,.82);color:#fff;border-radius:12px;padding:8px 12px;font-weight:800;max-width:min(92vw,420px)}
+.dhvisit{position:absolute;inset:0;z-index:90;display:none;align-items:center;justify-content:center;background:rgba(12,16,32,.55);pointer-events:auto;padding:16px}
+.dhvisit.show{display:flex}
+.dhvisitcard{position:relative;background:#fff8ef;color:#1d2340;border-radius:18px;padding:22px 22px 18px;max-width:min(92vw,460px);width:100%;box-shadow:0 16px 40px rgba(0,0,0,.28);text-align:center}
+.dhvisitcard h3{margin:0 0 8px;font-size:22px}
+.dhvisitcard p{margin:0 0 12px;font-weight:700;line-height:1.35}
+.dhvisitcode{font-size:clamp(28px,8vw,44px);letter-spacing:.18em;font-weight:900;background:#1d2340;color:#ffe08a;border-radius:14px;padding:12px 8px;margin:8px 0 14px}
+.dhvisitbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.dhvisitx{position:absolute;right:10px;top:8px;border:0;background:transparent;font-size:22px;cursor:pointer}
+.dhvisithint{font-size:13px;opacity:.8}
+.mphint{margin:8px 0 0;font-weight:700;color:#1d2340;opacity:.9}
 .ictoast{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;pointer-events:none;min-width:min(90vw,420px);max-width:92vw;padding:22px 28px;border-radius:22px;background:rgba(29,35,64,.92);color:#fff;font-weight:900;font-size:clamp(28px,5vw,44px);line-height:1.25;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.25),0 0 30px rgba(255,111,181,.45);border:4px solid #ff6fb5}
 .ictoast.show{display:block;animation:icpop 2.5s ease forwards}
 @keyframes icpop{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.9)}}
@@ -1025,6 +1042,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
       </div>
       <div class="mpjs" id="mpJoinStat" hidden aria-live="polite"></div>
       <div class="mpst" id="mpStatus"></div>
+      <p class="mphint" id="mpVisitHint">🏡 To visit a friend's Dream House, join their room code. When they open Dream House, you can walk around their house — look, but you cannot edit it. Hosts can tap <b>Invite friends</b> in the house for the code.</p>
       <button class="updbar" id="updBar" hidden onclick="location.replace(location.pathname + '?v=' + Date.now() + location.hash)">🆕 A newer Rublox is ready! Tap here to refresh</button>
     </div>
     <div class="grid" id="grid"></div>
@@ -1194,6 +1212,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
       <span id="hmBox" style="display:none"><b id="hmN">👻 Escape</b></span>
       <span id="sbBox" style="display:none"><b id="sbN">🐴 Stable</b></span>
       <span id="icBox" style="display:none"><b id="icN">🍦 0</b></span>
+      <span id="phBox" style="display:none"><b id="phN">🏨 Pet Hotel</b></span>
       <span id="tdBox" style="display:none">🗼 <b id="tdH">0</b>m · 🫧 <b id="tdGoo">0</b></span>
       <span id="psBox" style="display:none"><b id="psN">📸 Photos</b></span>
       <span id="wpBox" style="display:none"><b id="wpN">🌊 Water Park</b></span>
@@ -1353,6 +1372,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   <div class="ictoast" id="icToast"></div>
   <button class="fsnear dhnear" id="dhAct"></button>
   <div class="dhbar" id="dhBar" style="display:none"></div>
+  <div class="dhvisit" id="dhVisit" style="display:none" role="dialog" aria-label="Invite friends to visit"></div>
   <div class="dhcut" id="dhCut" style="display:none">
     <div class="dhfade" id="dhFade"></div>
     <div class="dhbubble" id="dhBubble" style="display:none"><b>Mom</b><span id="dhSay"></span></div>
@@ -1379,6 +1399,8 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   <div class="opanel" id="sbPick"></div>
   <div class="icorders" id="icOrders" style="display:none"></div>
   <button class="fsnear icnear" id="icAct"></button>
+  <button class="fsnear phnear" id="phAct"></button>
+  <div class="phtasks" id="phTasks" style="display:none"></div>
   <div class="opanel" id="icPanel"><div class="mbox rcbox icbox">
     <h2 id="icPT">🍦 Station</h2>
     <div class="fsitems" id="icItems"></div>
@@ -1602,7 +1624,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-32';
+const BUILD = '2026.11.12-2';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2318,6 +2340,7 @@ $('#saveAv').onclick = () => {
 /* ---------- games ---------- */
 const GAMES = [
   {id:'dreamhouse', name:'Dream House Builders', emoji:'🏡', tag:'Re-build your house with bricks, paint, furniture and upgrades!', draw: drawDreamHouse, playable: true, isNew: true},
+  {id:'pethotel', name:'Pet Hotel', emoji:'🏨', tag:'Check in guest pets, feed, bathe, play, tuck them in, then check out for coins!', draw: drawPetHotel, playable: true, isNew: true},
   {id:'dance', name:'Bossa Beat Dance Battle', emoji:'💃', tag:'Hit the arrows to original bossa beats — dance-off with friends!', draw: drawDance, playable: true, isNew: true},
   {id:'haunt', name:'Giggle Manor Escape', emoji:'👻', tag:'Friendly ghosts, puzzle rooms, escape before the timer!', draw: drawHaunt, playable: true, isNew: true},
   {id:'stable', name:'Clover Meadow Stables', emoji:'🐴', tag:'Adopt a pony, brush & feed it, ride the meadow, and enter jumping shows!', draw: drawStable, playable: true, isNew: true},
@@ -2425,6 +2448,33 @@ function drawStable(ctx){
   ctx.fillStyle = '#f6e3b4'; ctx.fillRect(200, 120, 50, 30); ctx.fillStyle = '#ff9f1c'; ctx.fillRect(210, 100, 20, 25);
   [[180, 155], [220, 155], [200, 155], [240, 155]].forEach(([x, y]) => { ctx.fillStyle = '#c9a06a'; ctx.fillRect(x, y, 8, 20); });
   guy(ctx, 160, 176, 12, '#2ec27e'); ctx.font = '22px sans-serif'; ctx.fillText('🐴', 70, 80); ctx.fillText('🏆', 260, 100);
+}
+function drawPetHotel(ctx){
+  if (!ctx) return;
+  if (typeof sky === 'function') sky(ctx, '#9fd8ff', '#fff6e8');
+  else { ctx.fillStyle = '#9fd8ff'; ctx.fillRect(0, 0, 320, 200); }
+  ctx.fillStyle = '#f3c6d8'; ctx.fillRect(24, 48, 272, 112);
+  ctx.fillStyle = '#ffe8f2';
+  for (let y = 58; y < 150; y += 16) for (let x = 36; x < 290; x += 16){ ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill(); }
+  ctx.fillStyle = '#8ecae6'; ctx.fillRect(50, 62, 44, 36); ctx.fillRect(226, 62, 44, 36);
+  ctx.fillStyle = '#fff6e8'; ctx.fillRect(48, 60, 48, 6); ctx.fillRect(224, 60, 48, 6);
+  ctx.fillStyle = '#c97b5a'; ctx.fillRect(110, 100, 100, 42);
+  ctx.fillStyle = '#e8c9a0'; ctx.fillRect(108, 96, 104, 8);
+  ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(186, 92, 7, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#d96b8a'; ctx.fillRect(80, 152, 160, 16);
+  // cute pets with eyes
+  const pet = (x, col, ear) => {
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, 148, 16, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x, 132, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = ear; ctx.fillRect(x - 12, 116, 7, 10); ctx.fillRect(x + 5, 116, 7, 10);
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x - 4, 131, 3.2, 0, Math.PI * 2); ctx.arc(x + 4, 131, 3.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#2a1a10'; ctx.beginPath(); ctx.arc(x - 4, 131, 1.4, 0, Math.PI * 2); ctx.arc(x + 4, 131, 1.4, 0, Math.PI * 2); ctx.fill();
+  };
+  pet(200, '#c9894c', '#6d3a18'); pet(84, '#8aa0b8', '#f4c6d4');
+  if (typeof guy === 'function'){ guy(ctx, 160, 175, 12, '#3a86ff'); guy(ctx, 60, 175, 11, '#d96b8a'); }
+  const hotelIcon = (typeof PH_HOTEL_ICON === 'string') ? PH_HOTEL_ICON : '🏨';
+  const deskIcon = (typeof PH_DESK_ICON === 'string') ? PH_DESK_ICON : '🔔';
+  ctx.font = '22px sans-serif'; ctx.fillText(hotelIcon, 40, 50); ctx.fillText(deskIcon, 150, 92);
 }
 function drawIceCream(ctx){
   sky(ctx, '#ffc9de', '#fff0f6');
@@ -2591,7 +2641,8 @@ function buildGames(){
     card.className = 'card'; card.dataset.game = g.id; card.style.animationDelay = (i * .08) + 's';
     card.innerHTML = `<canvas width="320" height="200"></canvas>${g.isNew ? '<span class="badge play">✨ New!</span>' : g.playable ? '<span class="badge play">🎉 Play now!</span>' : '<span class="badge">🚧 Coming soon</span>'}
       <div class="cinfo"><div><h3>${g.emoji} ${g.name}</h3><small>${g.tag}</small></div><button class="big green">▶ Play</button></div>`;
-    g.ctx = card.querySelector('canvas').getContext('2d'); g.draw(g.ctx);
+    g.ctx = card.querySelector('canvas').getContext('2d');
+    try { g.draw(g.ctx); } catch (err) {}
     card.onclick = () => g.playable ? Obby.play(g.id) : comingSoon(g);
     grid.appendChild(card);
   });
@@ -3226,9 +3277,11 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
 
 /* ---------- start ---------- */
 setTheme(load('rubloxDark', false));
-buildGames(); renderContinue(); requestAnimationFrame(animateLava);
-buildAvatarEditor(); drawBig(); drawChip(); updateWelcome();
-updateCoins(); renderShop(); renderStuff();
+try { buildGames(); } catch (err) {}
+try { renderContinue(); } catch (err) {}
+requestAnimationFrame(animateLava);
+try { buildAvatarEditor(); drawBig(); drawChip(); updateWelcome(); } catch (err) {}
+try { updateCoins(); renderShop(); renderStuff(); } catch (err) {}
 if (!player) askName();
 </script>
 <script id="three-lib">/* three.js r150.1 (MIT) */
@@ -4038,8 +4091,8 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; sb = null; hm = null; db = null; dh = null;
-    if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null;
+    if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -4989,10 +5042,30 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
-      if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
-      else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
+      ejectXZ(axis, B, b);
     }
+  }
+  // Push out on the side the body came from (or the nearer face). Midpoint
+  // eject used to fling you through thin walls or out of the Block Tag arena
+  // when a long frame carried you past the box center.
+  function ejectXZ(axis, B, b){
+    const p = b.mesh.position;
+    const c = axis === 'x' ? p.x : p.z;
+    const h = axis === 'x' ? b.hw : b.hd;
+    const lo = c - h - R, hi = c + h + R;
+    const prev = axis === 'x' ? B.px : B.pz;
+    let side = 0;
+    if (prev != null && isFinite(prev)){
+      if (prev <= lo + 1e-4) side = -1;
+      else if (prev >= hi - 1e-4) side = 1;
+    }
+    if (!side){
+      const cur = axis === 'x' ? B.x : B.z;
+      side = (Math.abs(cur - lo) <= Math.abs(cur - hi)) ? -1 : 1;
+    }
+    if (axis === 'x'){ B.x = side < 0 ? lo : hi; if ((side < 0 && B.vx > 0) || (side > 0 && B.vx < 0)) B.vx = 0; }
+    else { B.z = side < 0 ? lo : hi; if ((side < 0 && B.vz > 0) || (side > 0 && B.vz < 0)) B.vz = 0; }
   }
   function input(){
     const lookArrows = (typeof mode !== 'undefined' && mode === 'dreamhouse' && typeof dh !== 'undefined' && dh && !dh.intro) || (typeof fpOn === 'function' && fpOn());
@@ -5056,9 +5129,9 @@ const Obby = (() => {
     ext.x *= Math.exp(-dt * 1.4); ext.z *= Math.exp(-dt * 1.4);
     const wx = winds.length ? windAt() : 0;
     if (mode === 'dreamhouse' && typeof dhRememberPlayer === 'function') dhRememberPlayer();
-    P.x += (P.vx + ext.x + wx) * dt; resolve('x');
+    P.px = P.x; P.x += (P.vx + ext.x + wx) * dt; resolve('x');
     if (mode === 'dreamhouse' && typeof dhAfterPhysicsStep === 'function') dhAfterPhysicsStep();
-    P.z += (P.vz + ext.z) * dt; resolve('z');
+    P.pz = P.z; P.z += (P.vz + ext.z) * dt; resolve('z');
     if (mode === 'dreamhouse' && typeof dhAfterPhysicsStep === 'function') dhAfterPhysicsStep();
     P.onGround = false; P.ground = null;
     P.py = P.y; P.y += P.vy * dt; resolve('y');
@@ -5067,13 +5140,14 @@ const Obby = (() => {
     if (tg) tg.bots.forEach((B, n) => { if (!B.human) botStep(B, n + 1, dt); });
     if (hs) hideBots(dt);
     checks();
+    if (mode === 'tag') tagKeepInArena(P, true);
   }
   function checks(){
     if (SIM) return;
     if (mode === 'lava') return lavaChecks();
     if (mode === 'splash') return splashChecks();
     if (mode === 'nds') return ndsChecks();
-    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -5364,6 +5438,25 @@ const Obby = (() => {
     const t = new THREE.CanvasTexture(c), s = new THREE.Sprite(new THREE.SpriteMaterial({map: t, depthTest: false, transparent: true}));
     s.scale.set(w / 64 * 1.05, 1.05, 1); s.renderOrder = 10; return s;
   }
+  // Block Tag playable area is inside the four arena walls (inner face at ±ARENA).
+  // If a collision glitch still pushes a body out, clamp it back or respawn.
+  function tagArenaLimit(){ return ARENA - R; }
+  function tagKeepInArena(B, isPlayer){
+    if (mode !== 'tag' || !B) return false;
+    const lim = tagArenaLimit(), far = ARENA + 4;
+    const outFar = Math.abs(B.x) > far || Math.abs(B.z) > far || B.y < -4 || B.y > 40;
+    if (outFar){
+      if (isPlayer){ if (typeof respawn === 'function') respawn(); else Object.assign(B, {x: 0, y: .05, z: -28, vx: 0, vy: 0, vz: 0}); return true; }
+      Object.assign(B, {x: 0, y: 3, z: 10, vx: 0, vy: 0, vz: 0});
+      return true;
+    }
+    let hit = false;
+    if (B.x > lim){ B.x = lim; if (B.vx > 0) B.vx = 0; hit = true; }
+    if (B.x < -lim){ B.x = -lim; if (B.vx < 0) B.vx = 0; hit = true; }
+    if (B.z > lim){ B.z = lim; if (B.vz > 0) B.vz = 0; hit = true; }
+    if (B.z < -lim){ B.z = -lim; if (B.vz < 0) B.vz = 0; hit = true; }
+    return hit;
+  }
   function stairs(x, z, dir, w, n, color){ // ramp made of low steps you can walk up
     for (let i = 0; i < n; i++){ const top = (n - i) * .5, off = .75 + i * 1.5;
       plat(x + dir[0] * off, top, z + dir[1] * off, dir[0] ? 1.5 : w, dir[0] ? w : 1.5, color, top); }
@@ -5375,6 +5468,7 @@ const Obby = (() => {
     const fm = new THREE.MeshLambertMaterial({map: floorTex}), fs = mat('#c9c2b3');
     const fl = plat(0, 0, 0, ARENA * 2 + 4, ARENA * 2 + 4, '#f4f1ea', 2, {material: [fs, fs, fm, fs, fs, fs]});
     fl.mesh.material = [fs, fs, fm, fs, fs, fs];
+    fl.floorOnly = true; // huge arena slab must never resolve as a wall and fling you out
     const W = ARENA + 1;
     [[0, W, ARENA * 2 + 4, 2], [0, -W, ARENA * 2 + 4, 2], [W, 0, 2, ARENA * 2 + 4], [-W, 0, 2, ARENA * 2 + 4]].forEach(([x, z, w, d], i) => plat(x, 4, z, w, d, C[i + 1], 4));
     // middle stage with ramps on two sides
@@ -5474,10 +5568,10 @@ const Obby = (() => {
     if (Math.hypot(mx, mz) > .1) B.face = Math.atan2(mx, mz);
     B.vy = Math.max(-40, B.vy - GRAV * dt); B.coyote = B.onGround ? .1 : B.coyote - dt;
     if (jump && B.coyote > 0 && B.vy <= .01){ B.vy = JUMP; B.coyote = 0; B.jumped = true; B.airT = 0; }
-    B.x += B.vx * dt; resolve('x', B); B.z += B.vz * dt; resolve('z', B);
-    B.onGround = false; B.ground = null; B.y += B.vy * dt; resolve('y', B);
+    B.px = B.x; B.x += B.vx * dt; resolve('x', B); B.pz = B.z; B.z += B.vz * dt; resolve('z', B);
+    B.onGround = false; B.ground = null; B.py = B.y; B.y += B.vy * dt; resolve('y', B);
     if (B.onGround){ B.airT = 0; B.jumped = false; } else B.airT += dt;
-    if (B.y < -20) Object.assign(B, {x: 0, y: 3, z: 10, vx: 0, vy: 0, vz: 0});
+    if (!tagKeepInArena(B, false) && B.y < -20) Object.assign(B, {x: 0, y: 3, z: 10, vx: 0, vy: 0, vz: 0});
   }
   function tagUpdate(dt){
     const T = tg;
@@ -5627,6 +5721,7 @@ const Obby = (() => {
       if (running && dh && mode === 'dreamhouse') msg.dh = dhWire();
       if (running && bk && !bk.remote && mode === 'bakery') msg.bk = bakeryWire();
       if (running && ic && !ic.remote && mode === 'icecream') msg.ic = iceCreamWire();
+      if (running && ph && !ph.remote && mode === 'pethotel') msg.ph = phWire();
       if (running && wp && mp.host && mode === 'waterpark') msg.wp = waterparkWire();
       if (running && bw && mode === 'build') msg.bt = bwWire();
       if (ops) msg.o = ops;
@@ -5809,6 +5904,7 @@ const Obby = (() => {
     if (d.dh) dhFromHost(d.dh);
     if (d.bk) bakeryFromHost(d.bk);
     if (d.ic) iceCreamFromHost(d.ic);
+    if (d.ph) phFromHost(d.ph);
     if (d.wp) waterparkFromHost(d.wp);
     if (d.bt) bwFromHost(d.bt);
     if (d.tg && tg && tg.remote && running && mode === 'tag' && tg.phase !== 'end') mpTagWire(d.tg);
@@ -5929,13 +6025,24 @@ const Obby = (() => {
     return new Peer(id, {config: MP_ICE, debug: 0});
   }
   function mpStartTick(){ clearInterval(mp.timer); mp.timer = setInterval(mpTick, MP_TICK); }
+  const MP_HOST_MS = 12000;   // never leave "Making your room / starting room" up forever
+  const MP_HOST_FAIL = "📡 Couldn't start a room. The matchmaker didn't answer. Check the internet and try again.";
   function mpHost(tries = 0){
     if (mp.on || mp.peer) return;
+    clearTimeout(mp.hostT);
     mp.js = null;
     const code = Array.from({length: 5}, () => MP_ALPHA[Math.floor(Math.random() * MP_ALPHA.length)]).join('');
     mpStatus('⏳ Making your room…');
     const peer = mp.peer = mpNewPeer(MP_PREFIX + code); if (!peer) return;
+    const failHost = (msg) => {
+      if (mp.peer !== peer || mp.on) return;
+      clearTimeout(mp.hostT);
+      mpCleanup();
+      mpStatus(msg);
+    };
+    mp.hostT = setTimeout(() => { failHost(MP_HOST_FAIL); }, MP_HOST_MS);
     peer.on('open', () => {
+      clearTimeout(mp.hostT);
       if (mp.peer !== peer) return;
       if (mp.on){ clearTimeout(mp.revT); Object.assign(mp, {link: 'ok', revN: 0, revT: 0}); mpRender(); return; }   // back after a reconnect
       Object.assign(mp, {on: true, host: true, code, me: 'H', nextG: 1, status: '', hmode: null, link: 'ok', revN: 0}); mp.players.clear(); mpStartTick(); mpRender();
@@ -5945,8 +6052,8 @@ const Obby = (() => {
     peer.on('error', err => {
       if (mp.peer !== peer) return;
       if (mp.on){ if (peer.disconnected) mpRevive(); return; }   // e.g. lost the matchmaker, or our old id not freed yet: keep retrying
-      if (err.type === 'unavailable-id' && !mp.on && tries < 4){ mp.peer = null; try { peer.destroy(); } catch(e){} mpHost(tries + 1); return; }
-      if (!mp.on){ mpCleanup(); mpStatus(netMsg(err)); }
+      if (err.type === 'unavailable-id' && !mp.on && tries < 4){ clearTimeout(mp.hostT); mp.peer = null; try { peer.destroy(); } catch(e){} mpHost(tries + 1); return; }
+      if (!mp.on){ failHost(netMsg(err)); }
     });
   }
   // The matchmaker forgets a room if the host's page goes quiet (background tab, sleeping screen, Wi-Fi blip).
@@ -6038,7 +6145,7 @@ const Obby = (() => {
     }, 25000);
   }
   function mpCleanup(){
-    clearInterval(mp.timer); clearTimeout(mp.joinT); clearTimeout(mp.revT); clearTimeout(mp.retryT); mp.timer = mp.revT = 0;
+    clearInterval(mp.timer); clearTimeout(mp.joinT); clearTimeout(mp.revT); clearTimeout(mp.retryT); clearTimeout(mp.hostT); mp.timer = mp.revT = mp.hostT = 0;
     for (const g of mp.guests.values()) try { g.conn.close(); } catch(e){}
     try { if (mp.hconn) mp.hconn.close(); } catch(e){}
     try { if (mp.peer) mp.peer.destroy(); } catch(e){}
@@ -6072,6 +6179,7 @@ const Obby = (() => {
   function mpOnStop(){ if (mp.on && mp.host){ clearTimeout(mp.homeT); mp.homeT = setTimeout(() => { if (!running && mp.on){ mp.hmode = null; mpSend({t: 'home'}); mpRender(); } }, 400); } }
   /* --- home screen panel --- */
   function mpRender(){
+    try { if (typeof dhRenderInvite === 'function') dhRenderInvite(); } catch (e){}
     const idle = $('#mpIdle'), room = $('#mpRoom'); if (!idle) return;
     idle.hidden = mp.on; room.hidden = !mp.on;
     mpJSRender();
@@ -6092,7 +6200,7 @@ const Obby = (() => {
       L.appendChild(d);
     });
     $('#mpMsg').textContent = mp.host
-      ? (list.length < 2 ? '📣 Tell your family the code! When they join, pick any game below and everyone jumps in with you.' : '👉 Pick any game below and everyone in the room jumps in with you!')
+      ? (list.length < 2 ? '📣 Tell your family the code! When they join, pick a game — or open Dream House and tap Invite friends so they can visit your house.' : '👉 Pick a game and everyone jumps in with you. In Dream House, tap Invite friends to share a visit.')
       : (mp.hmode ? '🎮 The host is playing ' + gameName(mp.hmode) + (mp.hmode === 'obby' && mp.hdiff ? ' (Level ' + mp.hdiff + ')' : '') + '. Tap that game to join in!' : '⏳ Waiting for the host to pick a game…');
   }
   function play(id){
@@ -12149,7 +12257,7 @@ const Obby = (() => {
     {lL: -.2, lR: .4, aL: -1.6, aR: .3, lean: .05}, {lL: .5, lR: -.3, aL: .2, aR: -1.5, lean: -.05},
     {lL: -.4, lR: -.4, aL: -2.0, aR: -2.0, lean: 0}, {lL: .3, lR: .3, aL: -1.2, aR: 1.0, lean: .1}];
     return Object.assign({lLo: 0, lRo: 0, aLo: 0, aRo: 0}, poses[db.pose % 4]); }
-              /* ===================== t251u + t252u + t253u: first-person Dream House, place every brick yourself, clear concrete steps, reset house in Settings. ===================== */
+  /* ===================== t251u + t252u + t253u: first-person Dream House, place every brick yourself, clear concrete steps, reset house in Settings. ===================== */
   const DH_KEY = 'rubloxDreamHouse', DH_CELL = 1.4, DH_N = 8, DH_PLOTS = 4, DH_SPACING = 18, DH_GRANT = 100, DH_VER = 7;
   const DH_FOOT = {x0: 2, z0: 2, x1: 5, z1: 5}; // small house footprint (4x4 cells)
   const DH_FOOT_LEGACY = {x0: 1, z0: 1, x1: 6, z1: 6}; // v5 and earlier houses keep their larger slab
@@ -12223,8 +12331,40 @@ const Obby = (() => {
   let dh = null;
 
   function dhMatOf(id){ return DH_MATS.find(m => m.id === id); }
-  function dhWho(){ return (typeof mp !== 'undefined' && mp && mp.on && mp.uid) ? String(mp.uid) : 'local'; }
+  function dhWho(){
+    if (typeof mp !== 'undefined' && mp && mp.on){
+      const id = mp.me || mp.uid;
+      if (id) return String(id);
+    }
+    return 'local';
+  }
   function dhIsGuest(){ return !!(typeof mp !== 'undefined' && mp && mp.on && typeof mpGuest === 'function' && mpGuest()); }
+  function dhShouldVisit(){
+    const id = typeof dhTestFixtureId === 'function' ? dhTestFixtureId() : '';
+    if (id === 'visit') return true;
+    if (id === 'visithost') return false;
+    return dhIsGuest();
+  }
+  function dhIsVisitor(){ return !!(dh && dh.visiting); }
+  function dhCanEdit(){ return !!(dh && !dhIsVisitor()); }
+  function dhHostName(){
+    if (dh && dh.hostName) return String(dh.hostName);
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.on){
+        const list = (typeof mpRoster === 'function' && mp.host) ? mpRoster() : (mp.roster || []);
+        const host = (list || []).find && list.find(p => p && p.uid === 'H');
+        if (host && host.name) return String(host.name);
+      }
+      if (typeof player !== 'undefined' && player && player.name) return String(player.name);
+    } catch (e){}
+    return 'Friend';
+  }
+  function dhInviteCode(){ return (typeof mp !== 'undefined' && mp && mp.code) ? String(mp.code) : ''; }
+  function dhBlockVisitor(msg){
+    if (!dhIsVisitor()) return false;
+    if (msg !== false && typeof banner === 'function') banner(msg || "👀 You're visiting — you can look around, but you cannot edit this house");
+    return true;
+  }
   function dhOrigin(plot){
     const size = DH_N * DH_CELL;
     // Plot 0 (single-player, and the first MP lot) sits in the center of the map, as in Tessa's drawing.
@@ -12341,7 +12481,7 @@ const Obby = (() => {
   }
   function dhTestActive(){
     const id = dhTestFixtureId();
-    return id === 'v6furnish' || id === 'v7walls' || id === 'v6inside';
+    return id === 'v6furnish' || id === 'v7walls' || id === 'v6inside' || id === 'visit' || id === 'visithost';
   }
   function dhTestV6FootSlabs(){
     const recs = [];
@@ -12396,8 +12536,19 @@ const Obby = (() => {
       upgrades: {}, tipsSeen: {}, legacyHouse: false
     };
   }
+  function dhTestVisitRaw(){
+    const raw = dhTestV6FurnishRaw();
+    raw.pieces = (raw.pieces || []).concat([
+      ['paint', 0, 0, 0, 0, 1], ['paint', 0, 0, 0, 1, 1], ['paint', 0, 0, 0, 2, 1], ['paint', 0, 0, 0, 3, 1],
+      ['sofa', 3, 0, 3, 0, 0], ['table', 4, 0, 4, 0, 0], ['plant', 2, 0, 4, 0, 0], ['lamp', 5, 0, 3, 0, 0]
+    ]);
+    raw.goals = Object.assign({}, raw.goals || {}, {paint: 1, furnish: 1});
+    raw.stock = Object.assign({}, raw.stock || {}, {paint: 0, sofa: 0});
+    return raw;
+  }
   function dhTestRawSave(id){
     id = (id == null ? dhTestFixtureId() : id);
+    if (id === 'visit' || id === 'visithost') return dhTestVisitRaw();
     if (id === 'v6furnish' || id === 'v6inside') return dhTestV6FurnishRaw();
     if (id === 'v7walls') return dhTestV7WallsRaw();
     return null;
@@ -12551,6 +12702,7 @@ const Obby = (() => {
   }
   function dhResetProgress(){
     // Only wipes the Dream House key. Main wallet, other games, and history stay put.
+    if (dh && dhIsVisitor()){ if (typeof banner === 'function') banner("👀 Visitors cannot reset the owner's house"); return; }
     if (dh) dh._skipSave = true;
     if (typeof save === 'function' && !dhTestBlockPersist()) save(DH_KEY, dhFreshSave());
     if (dh){
@@ -12589,6 +12741,7 @@ const Obby = (() => {
   if (typeof window !== 'undefined') window.dhResetProgress = dhResetProgress;
   function dhSave(extra){
     if (!dh) return;
+    if (dhIsVisitor() || dh.visiting || dh._skipSave) return;
     const p = dhProg();
     p.ver = DH_VER;
     p.pieces = dhSerialize(dh.mine);
@@ -13273,8 +13426,9 @@ const Obby = (() => {
     });
   }
   function dhAssignPlot(){
+    if (dhShouldVisit()) return 0;
     if (typeof mp !== 'undefined' && mp && mp.on){
-      const ids = [dhWho()].concat((mp.roster && mp.roster()) || (mp.peers && Object.keys(mp.peers)) || []).filter(Boolean);
+      const ids = [dhWho()].concat((Array.isArray(mp.roster) ? mp.roster.map(p => p && p.uid) : (mp.roster && typeof mp.roster === 'function' && mp.roster())) || (mp.peers && Object.keys(mp.peers)) || []).filter(Boolean);
       const uniq = []; ids.forEach(id => { if (uniq.indexOf(id) < 0) uniq.push(id); });
       return Math.max(0, uniq.indexOf(dhWho())) % DH_PLOTS;
     }
@@ -13693,15 +13847,25 @@ const Obby = (() => {
   }
 
   function buildDreamHouse(){
-    dh = {mine: 0, job: 'mark', rot: 0, color: 0, tool: 'place', aim: null, pieces: {}, meshes: {}, ghost: null, bank: 0, likes: 0, goals: {}, earned: 0, near: -1, liked: {}, saveT: 0, remote: dhIsGuest(), carry: null, bag: null, stock: dhEmptyStock(), bins: [], mixers: {}, piles: {}, mats: dhMakeMats(), v1pieces: null, cureT: 0, upgrades: dhEmptyUpgrades(), introSeen: false, intro: null, trees: [], shopOpen: false, yardOpen: false, upOpen: false, foundYard: false, foundFurn: false, foundUp: false, cut: null, yardBeacon: null, furnBeacon: null, upBeacon: null};
+    dh = {mine: 0, job: 'mark', rot: 0, color: 0, tool: 'place', aim: null, pieces: {}, meshes: {}, ghost: null, bank: 0, likes: 0, goals: {}, earned: 0, near: -1, liked: {}, saveT: 0, remote: dhIsGuest(), visiting: false, inviteOpen: false, hostName: '', carry: null, bag: null, stock: dhEmptyStock(), bins: [], mixers: {}, piles: {}, mats: dhMakeMats(), v1pieces: null, cureT: 0, upgrades: dhEmptyUpgrades(), introSeen: false, intro: null, trees: [], shopOpen: false, yardOpen: false, upOpen: false, foundYard: false, foundFurn: false, foundUp: false, cut: null, yardBeacon: null, furnBeacon: null, upBeacon: null};
     scene.background = new THREE.Color('#b8e8ff');
     if (scene.fog){ scene.fog.color = new THREE.Color('#d7f3ff'); scene.fog.near = 50; scene.fog.far = 160; }
     const grass = plat(0, 0, 0, 110, 84, '#8fd39a', .35);
     if (grass) grass.floorOnly = true; // huge ground AABB must never resolve on X/Z
-    const p0 = dhProg();
+    dh.visiting = !!dhShouldVisit();
+    if (dh.visiting) dh._skipSave = true;
+    const p0 = (dh.visiting && !dhTestRawSave()) ? dhFreshSave() : dhProg();
     dh.bank = p0.coins; dh.likes = p0.likes; dh.goals = Object.assign({}, p0.goals); dh.stock = Object.assign(dhEmptyStock(), p0.stock); dh.v1pieces = p0.v1pieces; dh.upgrades = Object.assign(dhEmptyUpgrades(), p0.upgrades || {}); dh.introSeen = !!p0.introSeen; dh.tipsSeen = Object.assign({}, p0.tipsSeen || {}); dh.legacyHouse = !!p0.legacyHouse; dh.brickInst = {}; dh.hand = null; dh.outlines = null; dh.pourHold = false;
-    if (!p0.granted){ dh.bank += DH_GRANT; dh.grantedNow = true; }
+    if (dh.visiting){
+      dh.introSeen = true;
+      dh._skipSave = true;
+      dh.grantedNow = false;
+      if (!dhTestRawSave()){
+        dh.bank = 0; dh.likes = 0; dh.stock = dhEmptyStock(); dh.upgrades = dhEmptyUpgrades(); dh.legacyHouse = false; dh.goals = {};
+      }
+    } else if (!p0.granted){ dh.bank += DH_GRANT; dh.grantedNow = true; }
     dh.mine = dhAssignPlot();
+    dh.hostName = dhHostName();
     dhLayoutYard();
     dhBuildBounds();
     dhBuildYard();
@@ -13714,7 +13878,7 @@ const Obby = (() => {
       const pad = plat(cx, .08, cz, DH_N * DH_CELL + .4, DH_N * DH_CELL + .4, i === dh.mine ? '#b6e8a8' : '#9fd3a8', .16);
       if (pad) pad.floorOnly = true; // visual lot; the big grass is the real floor — do not shove on X/Z
       [[ox - .15, cz, .3, DH_N * DH_CELL + .6], [ox + DH_N * DH_CELL + .15, cz, .3, DH_N * DH_CELL + .6], [cx, oz - .15, DH_N * DH_CELL + .6, .3], [cx, oz + DH_N * DH_CELL + .15, DH_N * DH_CELL + .6, .3]].forEach(([x, z, w, d]) => { const b = plat(x, .16, z, w, d, '#d9d4cc', .14); if (b){ b.camSkip = true; b.floorOnly = true; } });
-      const sign = label((i === dh.mine ? '🏡 Your Plot' : '🏡 Plot ' + (i + 1)), 'rgba(29,35,64,.92)');
+      const sign = label((dh.visiting && i === dh.mine) ? ('👀 ' + dhHostName() + "'s House") : (i === dh.mine ? '🏡 Your Plot' : '🏡 Plot ' + (i + 1)), 'rgba(29,35,64,.92)');
       if (sign && sign.position) sign.position.set(cx, 3.15, oz + DH_N * DH_CELL + 1.05);
       if (sign && sign.scale) sign.scale.set(2.4, 0.62, 1);
       if (sign){ sign.renderOrder = 8; scene.add(sign); dh.plotSigns = dh.plotSigns || []; dh.plotSigns.push(sign); }
@@ -13722,7 +13886,8 @@ const Obby = (() => {
       dhBuildMixer(i);
     }
     // single-player: other lots stay empty (real players only — no leftover show homes or intro houses)
-    (p0.pieces || []).forEach(rec => dhPut(dh.mine, rec, true));
+    // Visitors in a live room wait for the host snapshot (dhFromHost) so they never load their own save onto the host lot.
+    if (!(dh.visiting && !dhTestRawSave())) (p0.pieces || []).forEach(rec => dhPut(dh.mine, rec, true));
     if (typeof dhSyncGables === 'function') dhSyncGables(dh.mine);
     if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
     dhStockViz(dh.mine);
@@ -14068,7 +14233,7 @@ const Obby = (() => {
     return dhCellAt(P.x || 0, P.z || 0);
   }
   function dhAim(){ return dh.aim || dhAimCell(); }
-  function dhCanBuild(aim){ return !!(aim && aim.plot === dh.mine); }
+  function dhCanBuild(aim){ return !!(dhCanEdit() && aim && aim.plot === dh.mine); }
   function dhNearOwnPlot(){
     if (!dh) return false;
     if (dhPlotAt(P.x, P.z) === dh.mine) return true;
@@ -14259,6 +14424,7 @@ const Obby = (() => {
   }
   function dhBuy(id, count){
     if (!dh) return false;
+    if (dhBlockVisitor()) return false;
     if (dh.intro) return false;
     const m = dhMatOf(id); if (!m || m.nosale || m.furn) return false;
     const n = count || m.stack;
@@ -14585,6 +14751,7 @@ const Obby = (() => {
 
   function dhPlace(){
     if (!dh) return false;
+    if (dhBlockVisitor()) return false;
     if (dh.intro) return false;
     if (dh.tool === 'delete'){
       const aim = dhAimCell(); if (!dhCanBuild(aim)) return false;
@@ -14627,9 +14794,20 @@ const Obby = (() => {
   function dhSetStory(){ return false; }
   function dhSetJob(j){ if (!dh) return; const ch = dh.job !== j; dh.job = j; dh.tool = 'place'; dhBar(); dhHud(); if (ch && typeof dhShowSpots === 'function') dhShowSpots(); }
 
+  function dhVisitLike(){
+    if (!dh || !dhIsVisitor()) return false;
+    if (dh.liked && dh.liked.host){ banner('💛 You already liked this house!'); return false; }
+    dh.liked = dh.liked || {};
+    dh.liked.host = 1;
+    dhNet('like', {plot: (dh.mine | 0), from: dhWho()});
+    banner('💛 Loved this house!');
+    return true;
+  }
   function dhAct(){
     if (!dh) return;
     if (dh.intro) return dhSkipIntro();
+    if (dh.inviteOpen){ dhToggleInvite(false); return true; }
+    if (dhIsVisitor()){ return dhVisitLike(); }
     if (dh.yardOpen){ dhToggleYard(false); return; }
     if (dh.shopOpen){ dhToggleShop(false); return; }
     if (dh.upOpen){ dhToggleUp(false); return; }
@@ -14690,9 +14868,37 @@ const Obby = (() => {
     if (typeof mpSendTo === 'function' && dhIsGuest() && mp.hconn) mpSendTo(mp.hconn, msg);
     else if (typeof mpBroadcast === 'function') mpBroadcast(msg);
   }
-  function dhWire(){ return dh && {mine: dh.mine, who: dhWho(), plots: Object.fromEntries(Object.keys(dh.pieces).map(k => [k, dhSerialize(+k)])), likes: dh.likes, bank: dh.bank, stock: dh.stock}; }
+  function dhWire(){
+    if (!dh) return null;
+    return {
+      mine: dh.mine, who: dhWho(), name: dhHostName(),
+      plots: Object.fromEntries(Object.keys(dh.pieces).map(k => [k, dhSerialize(+k)])),
+      upgrades: Object.assign({}, dh.upgrades || {}),
+      legacyHouse: !!dh.legacyHouse,
+      likes: dh.likes
+    };
+  }
   function dhFromHost(w){
-    if (!dh || !w || !w.plots) return;
+    if (!dh || !w) return;
+    if (dhIsVisitor()){
+      if (w.name) dh.hostName = String(w.name);
+      if (w.upgrades && typeof w.upgrades === 'object') dh.upgrades = Object.assign(dhEmptyUpgrades(), w.upgrades);
+      if (w.legacyHouse != null) dh.legacyHouse = !!w.legacyHouse;
+      const plot = (w.mine != null ? w.mine : dh.mine) | 0;
+      dh.mine = plot;
+      const recs = (w.plots && (w.plots[plot] || w.plots[String(plot)])) || [];
+      const hash = JSON.stringify(recs) + '|' + JSON.stringify(dh.upgrades || {}) + '|' + !!dh.legacyHouse;
+      if (dh._visitHash !== hash){
+        dh._visitHash = hash;
+        if (typeof dhApplyPlot === 'function') dhApplyPlot(plot, recs, true);
+        if (typeof dhSyncGables === 'function') dhSyncGables(plot);
+        if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
+      }
+      if (w.likes != null) dh.likes = w.likes | 0;
+      if (typeof dhHud === 'function') dhHud();
+      return;
+    }
+    if (!w.plots) return;
     Object.keys(w.plots).forEach(k => {
       const plot = +k; if (plot === dh.mine) return;
       const recs = w.plots[k] || [];
@@ -14712,6 +14918,7 @@ const Obby = (() => {
 
   function dhShopBuyFurn(id){
     if (!dh) return false;
+    if (dhBlockVisitor()) return false;
     const m = dhMatOf(id); if (!m || !m.furn) return false;
     if (!dhPay(m.cost)){ banner('🪙 Need ' + m.cost + ' coins for ' + m.name); return false; }
     dh.stock[id] = (dh.stock[id] || 0) + 1;
@@ -14721,6 +14928,7 @@ const Obby = (() => {
   }
   function dhBuyUpgrade(id){
     if (!dh) return false;
+    if (dhBlockVisitor()) return false;
     const u = DH_UPGRADES.find(x => x.id === id); if (!u) return false;
     const have = dhUp(id);
     if (have >= u.max){ banner('✨ ' + u.name + ' is already maxed'); return false; }
@@ -14987,22 +15195,92 @@ const Obby = (() => {
     }
   }
 
+  function dhToggleInvite(on){
+    if (!dh) return false;
+    if (dhIsVisitor()){ if (typeof banner === 'function') banner('👀 You are already visiting'); return false; }
+    dh.inviteOpen = on == null ? !dh.inviteOpen : !!on;
+    if (dh.inviteOpen && typeof mp !== 'undefined' && !(mp && mp.on) && typeof mpHost === 'function'){
+      try { mpHost(); } catch (e){}
+    }
+    dhRenderInvite();
+    return true;
+  }
+  function dhCopyInvite(){
+    const code = dhInviteCode();
+    if (!code) return false;
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code);
+    } catch (e){}
+    if (typeof banner === 'function') banner('📣 Room code ' + code + ' copied — send it to a friend!');
+    return true;
+  }
+  function dhInviteEsc(t){
+    const s = String(t == null ? '' : t);
+    if (typeof mpEsc === 'function') return mpEsc(s);
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function dhRetryInvite(){
+    if (!dh || dhIsVisitor()) return false;
+    try {
+      if (typeof mpCleanup === 'function') mpCleanup();
+      else if (typeof mpLeave === 'function') mpLeave();
+    } catch (e){}
+    if (typeof mpHost === 'function'){ try { mpHost(); } catch (e){} }
+    dhRenderInvite();
+    return true;
+  }
+  function dhRenderInvite(){
+    let el = null;
+    try { el = (typeof $ === 'function') ? $('#dhVisit') : (typeof document !== 'undefined' && document.getElementById && document.getElementById('dhVisit')); } catch (e){}
+    if (!el) return false;
+    if (!dh || !dh.inviteOpen){ el.style.display = 'none'; el.classList.remove && el.classList.remove('show'); el.innerHTML = ''; return false; }
+    const code = dhInviteCode();
+    const rawStatus = (!code && typeof mp !== 'undefined' && mp && mp.status) ? String(mp.status) : '';
+    const err = (rawStatus && !/^⏳/.test(rawStatus)) ? rawStatus : '';
+    const label = code || '…starting room…';
+    if (el.dataset && el.dataset.dhInvCode === String(code || '') && el.dataset.dhInvErr === err && el.innerHTML){
+      el.style.display = '';
+      if (el.classList && el.classList.add) el.classList.add('show');
+      return true;
+    }
+    if (el.dataset){ el.dataset.dhInvCode = String(code || ''); el.dataset.dhInvErr = err; }
+    el.style.display = '';
+    if (el.classList && el.classList.add) el.classList.add('show');
+    el.innerHTML = '<div class="dhvisitcard">'
+      + '<button class="dhvisitx" id="dhVisitX" type="button" aria-label="Close">✕</button>'
+      + '<h3>📣 Invite friends to visit</h3>'
+      + '<p>Share this room code. When a friend joins and you are in Dream House, they walk around your house. They can look, but they cannot edit or break anything, and your save stays yours.</p>'
+      + '<div class="dhvisitcode" id="dhVisitCode">' + dhInviteEsc(label) + '</div>'
+      + (err ? '<p class="dhvisithint" id="dhVisitErr">' + dhInviteEsc(err).replace(/\n/g, '<br>') + '</p>' : '')
+      + '<div class="dhvisitbtns">'
+      + (code
+          ? '<button class="big green" id="dhVisitCopy" type="button">📋 Copy code</button>'
+          : '<button class="big green" id="dhVisitRetry" type="button">🔄 Try again</button>')
+      + '<button class="big" id="dhVisitClose" type="button">Close</button>'
+      + '</div>'
+      + '<p class="dhvisithint">On a phone, tap Invite friends. On an Xbox controller, press Ⓨ to open this, Ⓑ to close.</p>'
+      + '</div>';
+    return true;
+  }
   function dreamhouseEnter(){
     if (!dh) return;
     choosing = false; over = false;
     if (typeof dhClosePauseMenus === 'function') dhClosePauseMenus();
     dhBindUI();
+    if (dh.visiting) dh.introSeen = true;
     if (!dh.introSeen){
       dhStartIntro(false);
     } else {
-      banner(mp && mp.on ? '🏡 Dream House Builders — grab free supplies and place every piece yourself!' : '🏡 First person: grab free supplies at the Supply Yard, then aim and place every brick yourself!');
+      banner(dh.visiting
+        ? ('👀 Visiting ' + dhHostName() + "'s house — walk in and look around! You cannot edit or break it.")
+        : (mp && mp.on ? '🏡 Dream House Builders — grab free supplies and place every piece yourself! Tap Invite friends so they can visit.' : '🏡 First person: grab free supplies at the Supply Yard, then aim and place every brick yourself! Invite friends to visit your house.'));
       tipTimer = 8;
-      if (typeof dhShowSpots === 'function') dhShowSpots();
+      if (typeof dhShowSpots === 'function' && !dh.visiting) dhShowSpots();
       dhHud(); dhBar();
       dreamhouseUpdate(0);
     }
-    const replay = $('#dhReplay'); if (replay) replay.style.display = '';
-    const resetBtn = $('#dhResetBtn'); if (resetBtn) resetBtn.style.display = '';
+    const replay = $('#dhReplay'); if (replay) replay.style.display = dh.visiting ? 'none' : '';
+    const resetBtn = $('#dhResetBtn'); if (resetBtn) resetBtn.style.display = dh.visiting ? 'none' : '';
     if (typeof document !== 'undefined' && document.getElementById){ const root = document.getElementById('obby'); if (root && root.classList) root.classList.add('dhouse'); }
     if (!dh.intro) dhForceFirstPerson();
     if (dh.intro){
@@ -15083,6 +15361,7 @@ const Obby = (() => {
     if (!dh) return '';
     if (dh.intro || dh.shopOpen || dh.yardOpen || dh.upOpen) return '';
     const key = (typeof pad !== 'undefined' && pad && pad.on) ? 'Ⓧ' : (typeof touchUI !== 'undefined' && touchUI ? 'tap' : 'E');
+    if (dhIsVisitor()) return '💛 ' + key + ': Like this house';
     const mxn = dhNearMixer(), pile = dhNearPile();
     const onLot = dhNearOwnPlot();
     const ghostJob = (onLot && (dh.job === 'mark' || dh.job === 'dig' || dh.job === 'pour')) ? dhTargetSpot(dh.job) : ((onLot && dh.job === 'brick') ? dhTargetSpot('brick') : null);
@@ -15683,6 +15962,7 @@ const Obby = (() => {
   }
   function dhGoalText(){
     if (!dh) return '';
+    if (dhIsVisitor()) return "You're visiting " + dhHostName() + "'s house — walk around and look! You cannot edit or break it.";
     const stage = dhStageId();
     if (stage === 'stake'){
       const c = dhJobCounts('mark');
@@ -16101,6 +16381,10 @@ const Obby = (() => {
   }
   function dhUpdateHandHud(){
     const el = $('#dhHand'); if (!el || !dh) return;
+    if (dhIsVisitor()){
+      el.style.display = 'none'; el.style.visibility = 'hidden'; el.classList.remove('show'); el.innerHTML = '';
+      return;
+    }
     const held = dhHeldInfo();
     const hide = !!(dh.intro) || dhMenusUp();
     el.style.display = hide ? 'none' : 'flex';
@@ -16373,6 +16657,7 @@ const Obby = (() => {
       if (root && root.classList){
         root.classList.toggle('dhouse', inDh);
         root.classList.toggle('dh-intro', intro);
+        root.classList.toggle('dh-visit', !!(dh && dh.visiting));
         root.classList.toggle('paused', pausedNow);
         root.classList.toggle('dh-paused', pausedNow || menus || modal);
       }
@@ -16383,7 +16668,7 @@ const Obby = (() => {
       const touch = typeof touchUI !== 'undefined' && touchUI;
       const carrying = typeof dhHasAnyCarry === 'function' && dhHasAnyCarry();
       hint.textContent = padOn ? '✚▼: show spots' : (touch ? '✨ Spots' : (carrying ? 'Tab: show spots' : 'Q: show spots'));
-      const showHint = playing && !pausedNow && !menus && !modal;
+      const showHint = playing && !pausedNow && !menus && !modal && !(dh && dh.visiting);
       hint.style.display = showHint ? 'block' : 'none';
       hint.classList.toggle('show', showHint);
     }
@@ -16420,6 +16705,13 @@ const Obby = (() => {
     if (tb){ tb.textContent = dh && dh.tool === 'delete' ? '🗑️' : (dh ? (({mark:'📍', dig:'🕳️', mix:'🌀', pour:'🪣', brick:'🧱', stud:'🪵', rafter:'🪜', shingle:'🏠', frame:'🚪', glass:'🪟', paint:'🎨', furn:'🛋️'}[dh.job]) || '') : ''); }
     const xh = $('#oCross');
     if (xh){ xh.style.display = hideCross ? 'none' : ''; }
+    if (dh && dh.visiting){
+      ['#dhGuide','#dhHand','#dhSpotHint','#dhReplay','#dhResetBtn'].forEach(id => {
+        const el = $(id); if (!el) return;
+        el.style.display = 'none';
+        if (el.classList && el.classList.remove) el.classList.remove('show');
+      });
+    }
     if (typeof window !== 'undefined') window.updateDhChrome = updateDhChrome;
     return !hideBar;
   }
@@ -16429,10 +16721,18 @@ const Obby = (() => {
     const bar = $('#dhBar'); if (!bar) return;
     // Always rebuild the toolbar, then let updateDhChrome show or hide it.
     bar.classList.add('show');
+    if (dh.visiting){
+      bar.innerHTML = '<div class="dhtools dhvisitbar"><span class="dhi on">👀 Visiting ' + (dhHostName() || 'a friend') + "'s house</span>"
+        + '<button class="dhb" id="dhLikeBtn" type="button">💛 Like</button></div>';
+      dhBindUI();
+      if (typeof dhLayoutHud === 'function') dhLayoutHud();
+      updateDhChrome();
+      return;
+    }
     const jobs = '<div class="dhtools">' + DH_JOBS.map(j => {
       const lab = {mark:'📍 Stake', dig:'🕳️ Dig', mix:'🌀 Mix', pour:'🪣 Pour', brick:'🧱 Brick', stud:'🪵 Stud', rafter:'🪜 Rafter', shingle:'🏠 Shingle', frame:'🚪 Frame', glass:'🪟 Glass', paint:'🎨 Paint', furn:'🛋️ Furnish'}[j];
       return '<button class="dhb' + (dh.job === j && dh.tool === 'place' ? ' on' : '') + '" data-dhjob="' + j + '">' + lab + '</button>';
-    }).join('') + '<button class="dhb' + (dh.tool === 'delete' ? ' on' : '') + '" data-dhtool="delete">🗑️</button><button class="dhb" id="dhDumpBtn">📦 Dump</button><button class="dhb" id="dhSpotBtn" title="Show remaining spots">✨ Spots</button><button class="dhb" id="dhYardBtn">📦 Supply Yard</button><button class="dhb" id="dhShopBtn">🛋️ Furniture</button><button class="dhb" id="dhUpBtn">🔧 Upgrades</button></div>';
+    }).join('') + '<button class="dhb' + (dh.tool === 'delete' ? ' on' : '') + '" data-dhtool="delete">🗑️</button><button class="dhb" id="dhDumpBtn">📦 Dump</button><button class="dhb" id="dhSpotBtn" title="Show remaining spots">✨ Spots</button><button class="dhb" id="dhYardBtn">📦 Supply Yard</button><button class="dhb" id="dhShopBtn">🛋️ Furniture</button><button class="dhb" id="dhUpBtn">🔧 Upgrades</button><button class="dhb" id="dhInviteBtn" type="button">📣 Invite friends</button></div>';
     const cols = dh.job === 'paint' ? ('<div class="dhcols">' + DH_PAINT.map((c, i) => '<button class="dhc' + (dh.color === i ? ' on' : '') + '" data-dhcol="' + i + '" style="background:' + c.col + '" title="' + c.name + '"></button>').join('') + '</div>') : '';
     const inv = '<div class="dinv">' + DH_MATS.filter(m => !m.nosale).map(m => {
       const n = dhInvCount(m.id);
@@ -16444,13 +16744,16 @@ const Obby = (() => {
     updateDhChrome();
   }
   function dhBindUI(){
-    if (window.__dhBound5) return;
-    window.__dhBound5 = true;
+    if (window.__dhBound6) return;
+    window.__dhBound6 = true;
     const act = $('#dhAct'); if (act) act.onclick = () => dh && !dh.intro && dhAct();
     const bar = $('#dhBar');
     if (bar) bar.addEventListener('click', ev => {
-      const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhSpotBtn,#dhShopBtn,#dhYardBtn,#dhUpBtn');
+      const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhSpotBtn,#dhShopBtn,#dhYardBtn,#dhUpBtn,#dhInviteBtn,#dhLikeBtn');
       if (!t || !dh || dh.intro) return;
+      if (t.id === 'dhInviteBtn'){ dhToggleInvite(true); return; }
+      if (t.id === 'dhLikeBtn'){ dhVisitLike(); return; }
+      if (dhIsVisitor()) return;
       if (t.id === 'dhDumpBtn') dhDump();
       else if (t.id === 'dhSpotBtn'){ if (typeof dhShowSpots === 'function') dhShowSpots(); }
       else if (t.id === 'dhYardBtn') dhToggleYard(true);
@@ -16460,6 +16763,14 @@ const Obby = (() => {
       else if (t.dataset.dhjob) dhSetJob(t.dataset.dhjob);
       else if (t.dataset.dhcol != null){ dh.color = t.dataset.dhcol | 0; dhBar(); }
       else if (t.dataset.dhid){ if ((dh.stock[t.dataset.dhid]|0) > 0) dhPickup(t.dataset.dhid, t.dataset.dhid === 'brick' ? 8 : 1); }
+    });
+    const visit = $('#dhVisit');
+    if (visit) visit.addEventListener('click', ev => {
+      const t = ev.target.closest('#dhVisitX,#dhVisitClose,#dhVisitCopy,#dhVisitRetry');
+      if (!t || !dh) return;
+      if (t.id === 'dhVisitCopy') dhCopyInvite();
+      else if (t.id === 'dhVisitRetry') dhRetryInvite();
+      else dhToggleInvite(false);
     });
     const yard = $('#dhYard');
     if (yard) yard.addEventListener('click', ev => {
@@ -16511,12 +16822,17 @@ const Obby = (() => {
       return true;
     }
     if (dhTipOpen() && (jp.a || jp[0] || jp.x || jp[2] || jp.start)){ if (typeof pad !== 'undefined' && pad) pad.jump = false; dhDismissTip(); return true; }
+    if (dh.inviteOpen && (jp.b || jp[1] || jp.start)){ dhToggleInvite(false); if (typeof pad !== 'undefined' && pad) pad.jump = false; return true; }
+    if (dhIsVisitor()){
+      if (jp.x || jp[2] || jp.y || jp[3]){ dhVisitLike(); if (typeof pad !== 'undefined' && pad) pad.jump = false; return true; }
+      return false;
+    }
+    if (jp.y || jp[3]){ dhToggleInvite(true); return true; }
     if (dh.yardOpen && (jp.b || jp[1])){ dhToggleYard(false); return true; }
     if (dh.shopOpen && (jp.b || jp[1])){ dhToggleShop(false); return true; }
     if (dh.upOpen && (jp.b || jp[1])){ dhToggleUp(false); return true; }
     if (jp.x || jp[2] || jp.a || jp[0] || jp.rt || jp[7]){ dhAct(); if (typeof pad !== 'undefined' && pad) pad.jump = false; return true; }
     if (jp.b || jp[1]){ dhRotate(); return true; }
-    if (jp.y || jp[3]){ if (dh.carry) dhDump(); else dhSetTool(dh.tool === 'delete' ? 'place' : 'delete'); return true; }
     if (jp.lb || jp[4]){ dhCycle(-1); return true; }
     if (jp.rb || jp[5]){ dhCycle(1); return true; }
     if (jp.dd || jp[13] || jp.down){ if (typeof dhShowSpots === 'function') dhShowSpots(); return true; }
@@ -16529,7 +16845,7 @@ const Obby = (() => {
   }
   function dhNodeOpenMenu(n){
     if (!n) return null;
-    const root = (n.closest) ? n.closest('dialog, .modal, .opanel, #dhResetModal, #oPausePanel, #setModal, #dhShop, #dhYard, #dhUp') : null;
+    const root = (n.closest) ? n.closest('dialog, .modal, .opanel, #dhResetModal, #oPausePanel, #setModal, #dhShop, #dhYard, #dhUp, #dhVisit') : null;
     if (!root) return null;
     if (root.id === 'dhResetModal' && typeof dhResetModalIsOpen === 'function' && !dhResetModalIsOpen()) return null;
     if (root.classList && root.classList.contains('opanel') && !root.classList.contains('show') && !root.open) return null;
@@ -16548,7 +16864,7 @@ const Obby = (() => {
       return !!dhNodeOpenMenu(t);
     }
     if (typeof t.closest === 'function'){
-      return !!t.closest('dialog, .modal, .menu, .opanel, .mbox, .dhbar, .dhhand, .obtns, .ohud, button, a, input, label, select, textarea, #dhResetModal, #dhBar, #dhTip, #dhSkip, #dhCut, #dhLookHint, #oPausePanel, #setModal');
+      return !!t.closest('dialog, .modal, .menu, .opanel, .mbox, .dhbar, .dhhand, .obtns, .ohud, button, a, input, label, select, textarea, #dhResetModal, #dhBar, #dhTip, #dhSkip, #dhCut, #dhLookHint, #dhVisit, #oPausePanel, #setModal');
     }
     let n = t;
     while (n){
@@ -16636,6 +16952,12 @@ const Obby = (() => {
       return true;
     }
     if (dhTipOpen() && (k === 'KeyE' || k === 'Enter' || k === 'Space' || k === 'KeyA' || k === 'Escape')){ dhDismissTip(); return true; }
+    if (dh.inviteOpen && (k === 'Escape' || k === 'KeyB' || k === 'KeyQ')){ dhToggleInvite(false); return true; }
+    if (k === 'KeyV'){ if (dhIsVisitor()) return true; dhToggleInvite(true); return true; }
+    if (dhIsVisitor()){
+      if (k === 'KeyE' || k === 'KeyL'){ dhVisitLike(); return true; }
+      return false;
+    }
     if (dh.yardOpen && (k === 'Escape' || k === 'KeyQ' || k === 'KeyB')){ dhToggleYard(false); return true; }
     if (dh.shopOpen && (k === 'Escape' || k === 'KeyB' || k === 'KeyQ')){ dhToggleShop(false); return true; }
     if (dh.upOpen && (k === 'Escape' || k === 'KeyB' || k === 'KeyQ')){ dhToggleUp(false); return true; }
@@ -16729,7 +17051,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'dreamhouse' ? '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · ⓁⓇ job · ✚▼ show spots · ☰ menu' : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'dreamhouse' ? (typeof dh !== 'undefined' && dh && dh.visiting ? '🎮 Left stick move · Right stick look · Ⓐ jump · Ⓧ like the house · ☰ menu' : '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · Ⓨ invite friends · ⓁⓇ job · ✚▼ show spots · ☰ menu') : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'pethotel' ? '🎮 Left stick move · Ⓐ jump · Ⓧ check in / care / check out · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -16768,6 +17090,7 @@ const Obby = (() => {
     if (mode === 'haunt' && hm && hmPad(jp)) return;
     if (mode === 'stable' && sb && sbPad(jp)) return;
     if (mode === 'icecream' && ic && icPad(jp)) return;
+    if (mode === 'pethotel' && ph && phPad(jp)) return;
     if (mode === 'tower' && td && tdPad(jp)) return;
     if (mode === 'photostudio' && psx && psPad(jp)) return;
     if (mode === 'waterpark' && wp && wpPad(jp)) return;
@@ -16883,6 +17206,11 @@ function dhLayoutHud(){
         + "<br>🐴 Adopt a pony, brush · feed · groom, then ride to the 🏆 jumping show!";
       return;
     }
+    if (mode === 'pethotel'){
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · tap 🛎️ to check in, care, or check out' : '⌨️ WASD move · Space jump · E check in / care / check out · Esc menu')
+        + "<br>🏨 Check guests in, feed · bathe · play · tuck their pet in, then check out for 🪙 coins!";
+      return;
+    }
     if (mode === 'icecream'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · tap 🍦 Station to scoop' : '⌨️ WASD move · Space jump · E use a scoop station · Esc menu')
         + "<br>🍦 Pick a vessel, add scoops of silly flavours, top it, and serve the 🧾 orders!";
@@ -16979,7 +17307,7 @@ function dhLayoutHud(){
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ // pull the camera in front of walls so buildings don't block the view
       for (let s = 1.2; s <= cam.dist; s += .4){
         const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
         if (solids.some(b => b.active && !b.camSkip && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2, s - .5); break; }
@@ -17063,6 +17391,7 @@ function dhLayoutHud(){
       if (psx) photostudioUpdate(dt);
       if (td) towerUpdate(dt);
       if (ic) iceCreamUpdate(dt);
+      if (ph) petHotelUpdate(dt);
       if (sb) stableUpdate(dt);
       if (hm) hauntUpdate(dt);
       if (db) danceUpdate(dt);
@@ -17207,6 +17536,7 @@ function dhLayoutHud(){
       if (mode === 'haunt' && hm && hmKey(e)) return;
       if (mode === 'stable' && sb && sbKey(e)) return;
       if (mode === 'icecream' && ic && icKey(e)) return;
+      if (mode === 'pethotel' && ph && phKey(e)) return;
       if (mode === 'tower' && td && tdKey(e)) return;
       if (mode === 'photostudio' && psx && psKey(e)) return;
       if (mode === 'waterpark' && wp && wpKey(e)) return;
@@ -17408,7 +17738,7 @@ function dhLayoutHud(){
     }
   }
 function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'stable', 'haunt', 'dance', 'dreamhouse'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     recordRecentGame(mode);
@@ -17451,6 +17781,7 @@ function start(m = 'obby', d = null){
     else if (mode === 'haunt') banner('👻 Welcome to Giggle Manor — friendly ghosts ahead!');
     else if (mode === 'stable') banner('🐴 Welcome to Clover Meadow Stables!');
     else if (mode === 'icecream') banner(mp.on ? '🍦 Scoop Circus! Team up on the stations!' : '🍦 Scoop Circus! Customers want cones & cups!');
+    else if (mode === 'pethotel') banner(mp.on ? '🏨 Pet Hotel — care for guest pets together!' : '🏨 Pet Hotel! Check guests in, care for their pets, then check out for coins.');
     else if (mode === 'tower') banner('🗼 Welcome to the Tower of Doom! Climb past the bubbly goo!');
     else if (mode === 'photostudio') banner('📸 Welcome to Star Snaps! Press 📸 Take Photo (E / Ⓧ) to start the camera');
     else if (mode === 'waterpark') banner('🌊 Welcome to Splash Summit! Stand on a ride pad or press 🎢 Rides');
@@ -17464,7 +17795,7 @@ function start(m = 'obby', d = null){
         $('#rcBack').onclick = () => rc && rcPickOpen(1); $('#rcHome').onclick = $('#rcFinHome').onclick = stop; $('#rcAgain').onclick = () => rc && rcAgain();
         $('#rcItem').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (rc) rc.tapItem = true; }); }
       raceEnter(); }
-    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') && touchUI && tipTimer > 4) tipTimer = 4;
+    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') && touchUI && tipTimer > 4) tipTimer = 4;
     $('#obby').classList.toggle('smode', mode === 'splash'); ['#spLvBox', '#spRoundBox', '#spPeb', '#spShove'].forEach(id => $(id).style.display = mode === 'splash' ? '' : 'none'); if (mode !== 'splash') ['#spAliveBox', '#spPull'].forEach(id => $(id).style.display = 'none');
     ['#spPick', '#spEnd', '#spCode'].forEach(id => $(id).classList.remove('show')); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on');
     if (mode === 'splash'){ if (!window.__spBound){ window.__spBound = true;
@@ -17486,7 +17817,7 @@ function start(m = 'obby', d = null){
         $('#fsReady').onclick = () => fsReadyBtn(); $('#fsWardClose').onclick = () => fsWardClose(); $('#fsWardBtn').onclick = () => fsWardOpen(fs && fs.near || null); $('#fsKeep').onclick = () => fsKeep(); $('#fsKeepWard2').onclick = () => fsKeep(); }
       fashionEnter(); }
     $('#auBox').style.display = mode === 'autumn' ? '' : 'none'; if (mode === 'autumn') autumnEnter();
-    ['#psCamBtn','#psGalBtn','#psBar','#bkAct','#icAct','#sbAct','#hmAct','#dbLane','#wpAct','#wpRides','#piAct','#piBook','#fsNear','#fsWardBtn','#fsShowBtn','#hsBlind'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); });
+    ['#psCamBtn','#psGalBtn','#psBar','#bkAct','#icAct','#phAct','#sbAct','#hmAct','#dbLane','#wpAct','#wpRides','#piAct','#piBook','#fsNear','#fsWardBtn','#fsShowBtn','#hsBlind'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); });
     { const bs = $('#fsBuild'); if (bs){ bs.textContent = typeof BUILD !== 'undefined' ? BUILD : ''; bs.classList.add('show'); } }
     if (mode === 'dreamhouse'){ dreamhouseEnter(); if (typeof updateDhChrome === 'function') updateDhChrome(); }
     else {
@@ -17508,6 +17839,12 @@ function start(m = 'obby', d = null){
         $('#icServe').onclick = () => { if (ic) icDo({a: 'serve', st: ic.panel}); };
         $('#icTrash').onclick = () => ic && icDo({a: 'trash', st: ic.panel}); }
       iceCreamEnter(); }
+    if ($('#phBox')) $('#phBox').style.display = mode === 'pethotel' ? '' : 'none';
+    if ($('#phTasks')) $('#phTasks').style.display = mode === 'pethotel' ? '' : 'none';
+    ['#phAct'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); });
+    if (mode === 'pethotel'){ if (!window.__phBound){ window.__phBound = true;
+        const act = $('#phAct'); if (act) act.onclick = () => ph && ph.near && phDo(ph.near); }
+      petHotelEnter(); }
     $('#tdBox').style.display = mode === 'tower' ? '' : 'none';
     if (mode === 'tower') towerEnter();
     $('#psBox').style.display = mode === 'photostudio' ? '' : 'none'; ['#psBar', '#psCamBtn', '#psGal', '#psGalBtn'].forEach(id => $(id).classList.remove('show'));
@@ -17532,6 +17869,740 @@ function start(m = 'obby', d = null){
       $('#piBook').classList.add('show'); petIslandEnter(); }
     mpOnStart();
   }
+  /* ===================== Pet Hotel (original game): check in guest pets, care for them, check out for coins. ===================== */
+  const PH_KEY = 'rubloxPetHotel';
+  const PH_CARES = ['feed', 'bathe', 'play', 'bed'];
+  const PH_CARE_LABEL = {feed: 'Feed', bathe: 'Bathe', play: 'Play', bed: 'Bed'};
+  const PH_NEED_LABEL = {feed: 'Feed', bathe: 'Bath', play: 'Play', bed: 'Sleep'};
+  // BMP-safe icons only — no plate/bed/bell glyphs that show as a broken box in the HUD font.
+  const PH_CARE_ICON = {feed: '🍖', bathe: '💧', play: '🎾', bed: '💤'};
+  const PH_DESK_ICON = '🔔';
+  const PH_HOTEL_ICON = '🏨';
+  const PH_PAY_BASE = 8, PH_PAY_CARE = 3, PH_PAY_ALL = 6;
+  // Original critters and names only — made up for Rublox, not copied from any other work.
+  const PH_PETS = [
+    {id: 'mochi', name: 'Mochi', kind: 'Beanpup', e: '🐶', col: '#c9894c', acc: '#8a4f24', ear: '#6d3a18', eye: '#2a1a10', shape: 'pup'},
+    {id: 'puddle', name: 'Puddle', kind: 'Puffcat', e: '🐱', col: '#8aa0b8', acc: '#f4c6d4', ear: '#f4c6d4', eye: '#2a1a10', shape: 'cat'},
+    {id: 'bumble', name: 'Bumble', kind: 'Pipkin', e: '🐥', col: '#e6b84c', acc: '#5c3a14', ear: '#5c3a14', eye: '#3d2a12', shape: 'pip'},
+    {id: 'noodle', name: 'Noodle', kind: 'Looper', e: '🐾', col: '#d9a441', acc: '#3d2a12', ear: '#3d2a12', eye: '#2a1a10', shape: 'loop'},
+    {id: 'pippa', name: 'Pippa', kind: 'Cloudhen', e: '🐣', col: '#f3efe4', acc: '#f6c85c', ear: '#f6c85c', eye: '#5c3a14', shape: 'hen'},
+    {id: 'tater', name: 'Tater', kind: 'Rumblepup', e: '🐾', col: '#b45d32', acc: '#f0d5b0', ear: '#6b2e16', eye: '#2a1a10', shape: 'rumble'}
+  ];
+  const PH_GUESTS = [
+    {name: 'Ms. Maple', col: '#d96b8a'},
+    {name: 'Mr. Pebble', col: '#3a86ff'},
+    {name: 'Aunt Cinder', col: '#7b5ea7'},
+    {name: 'Coach Yarrow', col: '#2a9d8f'},
+    {name: 'Nana Pip', col: '#e76f51'},
+    {name: 'Uncle Moss', col: '#4d7c46'}
+  ];
+  const PH_STATIONS = [
+    {id: 'desk', name: 'Front desk', e: PH_DESK_ICON, x: 0, z: -6.2, r: 3.2},
+    {id: 'feed', name: 'Snack nook', e: PH_CARE_ICON.feed, x: -6.5, z: 2.2, r: 3.2},
+    {id: 'bathe', name: 'Wash room', e: PH_CARE_ICON.bathe, x: 6.5, z: 2.2, r: 3.2},
+    {id: 'play', name: 'Play nook', e: PH_CARE_ICON.play, x: -6.5, z: 8.2, r: 3.2},
+    {id: 'bed', name: 'Sleep rooms', e: PH_CARE_ICON.bed, x: 6.5, z: 8.2, r: 3.2}
+  ];
+  // Known-bad glyphs that rendered as a empty box in the header font.
+  const PH_BAD_GLYPHS = ['🍽️', '🛏️', '🛎️', '🫘', '🛁'];
+  let ph = null;
+
+  function phPetOf(id){ return PH_PETS.find(p => p.id === id) || PH_PETS[0]; }
+  function phFreshSave(){ return {ver: 1, served: 0, earned: 0, tipsSeen: {}}; }
+  function phLoadSave(){
+    try {
+      const r = (typeof load === 'function') ? load(PH_KEY, null) : null;
+      if (!r || typeof r !== 'object') return phFreshSave();
+      return {ver: 1, served: Math.max(0, r.served | 0), earned: Math.max(0, r.earned | 0), tipsSeen: (r.tipsSeen && typeof r.tipsSeen === 'object') ? r.tipsSeen : {}};
+    } catch (e){ return phFreshSave(); }
+  }
+  function phWriteSave(){
+    if (!ph || ph.remote) return false;
+    if (typeof save !== 'function') return false;
+    save(PH_KEY, {ver: 1, served: ph.served | 0, earned: ph.earned | 0, tipsSeen: ph.tipsSeen || {}});
+    return true;
+  }
+  function phPayout(stay){
+    if (!stay) return 0;
+    const n = PH_CARES.reduce((s, c) => s + (stay.done && stay.done[c] ? 1 : 0), 0);
+    return PH_PAY_BASE + n * PH_PAY_CARE + (n === PH_CARES.length ? PH_PAY_ALL : 0);
+  }
+  function phCaresLeft(stay){ return stay ? PH_CARES.filter(c => !(stay.done && stay.done[c])) : PH_CARES.slice(); }
+  function phReadyOut(stay){ return !!(stay && PH_CARES.every(c => stay.done && stay.done[c])); }
+  function phCareDoneCount(stay){ return stay ? PH_CARES.reduce((s, c) => s + (stay.done && stay.done[c] ? 1 : 0), 0) : 0; }
+  function phNewStay(seed){
+    const i = Math.abs(seed | 0);
+    const pet = PH_PETS[i % PH_PETS.length];
+    const guest = PH_GUESTS[i % PH_GUESTS.length];
+    const done = {}; PH_CARES.forEach(c => { done[c] = false; });
+    return {id: i + 1, petId: pet.id, petName: pet.name, kind: pet.kind, emoji: pet.e, guest: guest.name, guestCol: guest.col, done, phase: 'arrive'};
+  }
+  function phCheckIn(state){
+    if (!state || state.stay) return false;
+    const stay = state.next || phNewStay((state.served | 0) + 1);
+    stay.phase = 'stay';
+    state.stay = stay;
+    state.next = null;
+    state.wait = 0;
+    return stay;
+  }
+  function phDoCare(stay, care){
+    if (!stay || stay.phase !== 'stay') return false;
+    if (PH_CARES.indexOf(care) < 0) return false;
+    if (stay.done && stay.done[care]) return false;
+    stay.done = stay.done || {};
+    stay.done[care] = true;
+    return true;
+  }
+  function phCheckOut(state){
+    if (!state || !state.stay || !phReadyOut(state.stay)) return null;
+    const pay = phPayout(state.stay);
+    const rec = {pet: state.stay.petName, guest: state.stay.guest, pay};
+    state.served = (state.served | 0) + 1;
+    state.earned = (state.earned | 0) + pay;
+    state.stay = null;
+    state.wait = 2.2;
+    state.next = phNewStay(state.served + 1);
+    return rec;
+  }
+  function phActAt(state, station){
+    if (!state || !station) return {ok: false, why: ''};
+    if (station === 'desk'){
+      if (!state.stay){
+        const st = phCheckIn(state);
+        return st ? {ok: true, act: 'checkin', stay: st} : {ok: false, why: 'No guest is ready yet'};
+      }
+      if (phReadyOut(state.stay)){
+        const rec = phCheckOut(state);
+        return rec ? {ok: true, act: 'checkout', rec} : {ok: false, why: 'Could not check out'};
+      }
+      const left = phCaresLeft(state.stay);
+      return {ok: false, why: 'Finish ' + left.map(c => PH_CARE_LABEL[c].toLowerCase()).join(', ') + ' first'};
+    }
+    if (!state.stay) return {ok: false, why: 'Check a guest in at the front desk first'};
+    if (phDoCare(state.stay, station)) return {ok: true, act: 'care', care: station, stay: state.stay};
+    if (state.stay.done && state.stay.done[station]) return {ok: false, why: 'Already done'};
+    return {ok: false, why: 'That station is not ready'};
+  }
+  function phNeedsBarHtml(stay){
+    return '<span class="phneeds">' + PH_CARES.map(c => {
+      const on = !!(stay && stay.done && stay.done[c]);
+      return '<span class="phneed' + (on ? ' on' : '') + '" data-care="' + c + '">' + PH_CARE_ICON[c] + '&nbsp;' + PH_NEED_LABEL[c] + '</span>';
+    }).join('') + '</span>';
+  }
+  function phHudTextHasBadGlyph(s){
+    if (!s) return false;
+    return PH_BAD_GLYPHS.some(g => String(s).indexOf(g) >= 0);
+  }
+  function phLow(){ return typeof gfxIsLow === 'function' && gfxIsLow(); }
+  function phSeg(){ return phLow() ? 8 : 12; }
+  function phMat(col, opts){
+    const o = Object.assign({color: col}, opts || {});
+    if (phLow() && o.emissive) delete o.emissive;
+    const Ctor = (phLow() && THREE.MeshBasicMaterial) ? THREE.MeshBasicMaterial : THREE.MeshLambertMaterial;
+    return new Ctor(o);
+  }
+  function phShared(key, col, opts){
+    if (!ph) return phMat(col, opts);
+    ph._mats = ph._mats || {};
+    if (!ph._mats[key]) ph._mats[key] = phMat(col, opts);
+    return ph._mats[key];
+  }
+  function phG(name, make){
+    if (!ph) return make();
+    ph._geo = ph._geo || {};
+    if (!ph._geo[name]) ph._geo[name] = make();
+    return ph._geo[name];
+  }
+  function phUnitBox(){ return phG('unitbox', () => new THREE.BoxGeometry(1, 1, 1)); }
+  function phUnitBall(){ return phG('unitball', () => new THREE.SphereGeometry(1, phSeg(), Math.max(6, phSeg() - 2))); }
+  function phUnitCyl(){ return phG('unitcyl', () => new THREE.CylinderGeometry(1, 1, 1, phSeg())); }
+  function phMark(m, kind){
+    if (m){ m.userData = m.userData || {}; m.userData.ph = kind; }
+    if (ph){
+      ph.props.push(m);
+      ph.kinds = ph.kinds || {};
+      if (kind) ph.kinds[kind] = (ph.kinds[kind] || 0) + 1;
+    }
+    return m;
+  }
+  function phAdd(m){
+    if (typeof scene !== 'undefined') scene.add(m);
+    return m;
+  }
+  function phBox(x, y, z, w, h, d, col, key, kind){
+    const m = new THREE.Mesh(phUnitBox(), typeof col === 'string' ? phShared(key || col, col) : col);
+    m.position.set(x, y, z);
+    m.scale.set(w, h, d);
+    phAdd(m);
+    return phMark(m, kind || 'box');
+  }
+  function phBall(x, y, z, r, col, key, kind){
+    const m = new THREE.Mesh(phUnitBall(), typeof col === 'string' ? phShared(key || col, col) : col);
+    m.position.set(x, y, z);
+    m.scale.set(r, r, r);
+    phAdd(m);
+    return phMark(m, kind || 'ball');
+  }
+  function phCyl(x, y, z, r, h, col, key, kind){
+    const m = new THREE.Mesh(phUnitCyl(), typeof col === 'string' ? phShared(key || col, col) : col);
+    m.position.set(x, y, z);
+    m.scale.set(r, h, r);
+    phAdd(m);
+    return phMark(m, kind || 'cyl');
+  }
+  function phWallpaperMat(id, base, dot){
+    const key = 'wp-' + id;
+    if (ph && ph._mats[key]) return ph._mats[key];
+    let mat = phMat(base);
+    try {
+      if (typeof document !== 'undefined' && document.createElement && typeof THREE !== 'undefined' && THREE.CanvasTexture){
+        const c = document.createElement('canvas'); c.width = 32; c.height = 32;
+        const g = c.getContext && c.getContext('2d');
+        if (g){
+          g.fillStyle = base; g.fillRect(0, 0, 32, 32);
+          if (id === 'stripe'){
+            g.fillStyle = dot;
+            for (let x = 0; x < 32; x += 8) g.fillRect(x, 0, 4, 32);
+          } else {
+            g.fillStyle = dot;
+            for (let y = 4; y < 32; y += 8) for (let x = 4; x < 32; x += 8){
+              g.beginPath(); g.arc(x + ((y / 8) % 2) * 4, y, 1.7, 0, Math.PI * 2); g.fill();
+            }
+          }
+          const tex = new THREE.CanvasTexture(c);
+          if (THREE.RepeatWrapping){ tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; }
+          if (tex.repeat && tex.repeat.set) tex.repeat.set(6, 3);
+          tex.needsUpdate = true;
+          mat = phMat(base, {map: tex});
+          mat.map = tex;
+        }
+      }
+    } catch (e){}
+    if (ph){ ph._mats = ph._mats || {}; ph._mats[key] = mat; }
+    return mat;
+  }
+  function phPaperWall(x, y, z, w, h, d, id, base, dot, kind){
+    const m = new THREE.Mesh(phUnitBox(), phWallpaperMat(id, base, dot));
+    m.position.set(x, y, z);
+    m.scale.set(w, h, d);
+    phAdd(m);
+    return phMark(m, kind || 'wallpaper');
+  }
+  function phPlant(x, z, scale){
+    const s = scale || 1;
+    phCyl(x, 0.16 * s, z, 0.16 * s, 0.28 * s, '#c97b5a', 'pot', 'plant');
+    phBall(x, 0.48 * s, z, 0.28 * s, '#3fa66a', 'leaf', 'plant');
+    phBall(x + 0.16 * s, 0.62 * s, z + 0.04 * s, 0.18 * s, '#62c47a', 'leaf2', 'plant');
+    if (!phLow()) phBall(x - 0.12 * s, 0.58 * s, z - 0.06 * s, 0.14 * s, '#2e8a4f', 'leaf3', 'plant');
+  }
+  function phWindow(x, y, z, w, h){
+    phBox(x, y, z, w + 0.16, h + 0.16, 0.12, '#fff6e8', 'wframe', 'window');
+    phBox(x, y, z + 0.02, w, h, 0.08, '#8ecae6', 'glass', 'window');
+    phBox(x, y, z + 0.01, 0.06, h, 0.09, '#fff6e8', 'wframe', 'window');
+    phBox(x, y, z + 0.01, w, 0.06, 0.09, '#fff6e8', 'wframe', 'window');
+    phBox(x, y - h * 0.55, z + 0.08, w + 0.2, 0.08, 0.18, '#e8c9a0', 'sill', 'window');
+  }
+  function phHeartMesh(col){
+    const g = new THREE.Group();
+    const mat = phShared('heart-' + col, col);
+    // Dedicated tiny geometry so mood hearts can never inherit the unit 1 m ball/box scale.
+    const sph = phG('heartsph', () => new THREE.SphereGeometry(0.045, 6, 6));
+    const box = phG('heartbox', () => new THREE.BoxGeometry(0.07, 0.07, 0.04));
+    const a = new THREE.Mesh(sph, mat); a.position.set(-0.035, 0.02, 0); g.add(a);
+    const b = new THREE.Mesh(sph, mat); b.position.set(0.035, 0.02, 0); g.add(b);
+    const c = new THREE.Mesh(box, mat); c.position.set(0, -0.03, 0); c.rotation.z = Math.PI / 4; g.add(c);
+    g.userData.ph = 'heart';
+    return g;
+  }
+  function phMakePetMesh(pet){
+    const g = new THREE.Group();
+    const segs = phSeg();
+    const shape = pet.shape || 'pup';
+    const bodyR = shape === 'loop' ? 0.28 : (shape === 'rumble' ? 0.48 : 0.42);
+    const body = new THREE.Mesh(phUnitBall(), phShared('p-' + pet.id, pet.col));
+    body.position.y = shape === 'loop' ? 0.28 : bodyR;
+    if (shape === 'loop') body.scale.set(0.55, 0.28, 0.28);
+    else if (shape === 'hen') body.scale.set(bodyR * 1.05, bodyR * 0.9, bodyR * 1.05);
+    else if (shape === 'cat') body.scale.set(bodyR * 1.05, bodyR * 0.95, bodyR * 1.15);
+    else body.scale.set(bodyR, bodyR, bodyR);
+    g.add(body);
+    const head = new THREE.Mesh(phUnitBall(), phShared('p-' + pet.id, pet.col));
+    const hx = shape === 'loop' ? 0.48 : 0;
+    const hy = shape === 'loop' ? 0.52 : (bodyR + 0.38);
+    const hz = shape === 'loop' ? 0.12 : 0.32;
+    head.position.set(hx, hy, hz);
+    head.scale.set(0.36, 0.34, 0.34);
+    g.add(head);
+    const ears = new THREE.Group();
+    const earMat = phShared('e-' + pet.id, pet.ear);
+    const earH = shape === 'cat' ? 0.26 : (shape === 'hen' || shape === 'pip' ? 0.12 : 0.18);
+    const earW = shape === 'loop' ? 0.08 : 0.14;
+    [[-0.18, 0.22], [0.18, 0.22]].forEach(([ex, ey]) => {
+      const ear = new THREE.Mesh(phUnitBox(), earMat);
+      ear.position.set(head.position.x + ex, head.position.y + ey, head.position.z - 0.02);
+      ear.scale.set(earW, earH, 0.08);
+      if (shape === 'pup' || shape === 'rumble' || shape === 'loop') ear.rotation.z = ex < 0 ? 0.5 : -0.5;
+      if (shape === 'cat'){ ear.scale.set(0.12, 0.26, 0.08); ear.rotation.z = ex < 0 ? 0.2 : -0.2; }
+      ears.add(ear);
+    });
+    g.add(ears);
+    // Big eyes: whites, pupils, highlight
+    const eyes = new THREE.Group();
+    [[-0.11, 0.04, 0.28], [0.11, 0.04, 0.28]].forEach(([ex, ey, ez]) => {
+      const white = new THREE.Mesh(phUnitBall(), phShared('eye-w', '#fffdf6'));
+      white.position.set(head.position.x + ex, head.position.y + ey, head.position.z + ez);
+      white.scale.set(0.09, 0.11, 0.07);
+      eyes.add(white);
+      const pup = new THREE.Mesh(phUnitBall(), phShared('eye-p-' + pet.id, pet.eye || '#2a1a10'));
+      pup.position.set(white.position.x, white.position.y, white.position.z + 0.045);
+      pup.scale.set(0.045, 0.055, 0.03);
+      eyes.add(pup);
+      const hi = new THREE.Mesh(phUnitBall(), phShared('eye-h', '#ffffff'));
+      hi.position.set(white.position.x + 0.02, white.position.y + 0.03, white.position.z + 0.06);
+      hi.scale.set(0.018, 0.018, 0.012);
+      eyes.add(hi);
+    });
+    g.add(eyes);
+    const nose = new THREE.Mesh(phUnitBall(), phShared('a-' + pet.id, pet.acc));
+    nose.position.set(head.position.x, head.position.y - 0.04, head.position.z + 0.32);
+    nose.scale.set(0.07, 0.055, 0.07);
+    g.add(nose);
+    if (shape === 'hen' || shape === 'pip'){
+      const beak = new THREE.Mesh(phUnitBox(), phShared('beak', '#f4a261'));
+      beak.position.set(head.position.x, head.position.y - 0.04, head.position.z + 0.38);
+      beak.scale.set(0.08, 0.05, 0.12);
+      g.add(beak);
+    }
+    const tail = new THREE.Mesh(shape === 'cat' || shape === 'loop' ? phUnitCyl() : phUnitBall(), phShared('p-' + pet.id, pet.col));
+    if (shape === 'loop'){ tail.position.set(-0.5, 0.3, -0.05); tail.scale.set(0.08, 0.08, 0.55); tail.rotation.y = 0.4; }
+    else if (shape === 'cat'){ tail.position.set(0, 0.55, -0.42); tail.scale.set(0.07, 0.07, 0.42); tail.rotation.x = -0.6; }
+    else if (shape === 'hen'){ tail.position.set(0, 0.55, -0.38); tail.scale.set(0.16, 0.14, 0.08); }
+    else { tail.position.set(0.1, 0.35, -0.38); tail.scale.set(0.14, 0.14, 0.18); }
+    g.add(tail);
+    // Mood: hearts when happy, blue bubbles/tears when a need is unmet
+    const hearts = new THREE.Group();
+    hearts.position.set(0, hy + 0.55, hz);
+    [[-0.1, 0], [0.1, 0.08]].forEach(([hx2, hy2], i) => {
+      const h = phHeartMesh(i === 1 ? '#ff7aa2' : '#ff4d6d');
+      h.position.set(hx2, hy2, 0);
+      hearts.add(h);
+    });
+    hearts.visible = false;
+    g.add(hearts);
+    const tears = new THREE.Group();
+    const bubbleN = phLow() ? 2 : 3;
+    for (let i = 0; i < bubbleN; i++){
+      const drop = new THREE.Mesh(phUnitBall(), phShared('tear', '#7fd6ff', {transparent: !phLow(), opacity: phLow() ? 1 : 0.85}));
+      drop.position.set((i - 1) * 0.16, hy + 0.5 + i * 0.12, hz + 0.1);
+      drop.scale.set(0.07 + i * 0.02, 0.07 + i * 0.02, 0.07 + i * 0.02);
+      tears.add(drop);
+    }
+    tears.visible = false;
+    g.add(tears);
+    g.userData.petId = pet.id;
+    g.userData.eyes = eyes;
+    g.userData.ears = ears;
+    g.userData.tail = tail;
+    g.userData.hearts = hearts;
+    g.userData.tears = tears;
+    g.userData.headY = hy;
+    return g;
+  }
+  function phApplyMood(mesh, stay){
+    if (!mesh || !mesh.userData) return 'none';
+    const n = phCareDoneCount(stay);
+    const happy = !stay || n >= 2 || phReadyOut(stay);
+    const sad = !!(stay && n === 0);
+    if (mesh.userData.hearts) mesh.userData.hearts.visible = !!happy && (!stay || n > 0);
+    if (mesh.userData.tears) mesh.userData.tears.visible = !!sad;
+    mesh.userData.mood = sad ? 'sad' : (happy && stay && n > 0 ? 'happy' : 'neutral');
+    return mesh.userData.mood;
+  }
+  function phMakeGuestMesh(guestCol){
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(phUnitBox(), phShared('g-' + guestCol, guestCol));
+    body.position.y = 1.0; body.scale.set(0.5, 1.0, 0.32); g.add(body);
+    const head = new THREE.Mesh(phUnitBox(), phShared('skin', '#f0c9a8'));
+    head.position.y = 1.68; head.scale.set(0.38, 0.38, 0.38); g.add(head);
+    // simple cute face so the guest is readable next to the pet
+    const eyeM = phShared('eye-p-guest', '#2a1a10');
+    [-0.08, 0.08].forEach(ex => {
+      const e = new THREE.Mesh(phUnitBall(), eyeM);
+      e.position.set(ex, 1.72, 0.2); e.scale.set(0.045, 0.05, 0.03); g.add(e);
+    });
+    const hair = new THREE.Mesh(phUnitBox(), phShared('g-' + guestCol, guestCol));
+    hair.position.set(0, 1.9, 0); hair.scale.set(0.4, 0.1, 0.4); g.add(hair);
+    return g;
+  }
+  function phBuildDesk(){
+    if (typeof plat === 'function'){
+      const d = plat(0, 0.7, -7.0, 5.4, 1.8, '#c97b5a', 1.2); if (d) d.camSkip = true;
+    }
+    phBox(0, 0.68, -7.0, 5.4, 1.28, 1.7, '#c97b5a', 'deskbody', 'desk');
+    phBox(0, 1.34, -6.95, 5.6, 0.1, 2.0, '#e8c9a0', 'desktop', 'desk');
+    // gold bell with a visible dome and button
+    phCyl(0.9, 1.42, -6.5, 0.16, 0.06, '#b8860b', 'bellbase', 'bell');
+    phBall(0.9, 1.58, -6.5, 0.16, '#ffd23f', 'bell', 'bell');
+    phBall(0.9, 1.74, -6.5, 0.05, '#fff6c9', 'belltip', 'bell');
+    // guestbook and flower cup
+    phBox(-0.9, 1.42, -6.55, 0.5, 0.06, 0.36, '#fff6e8', 'book', 'desk');
+    phBox(-0.9, 1.46, -6.55, 0.42, 0.04, 0.28, '#3a86ff', 'book2', 'desk');
+    phCyl(-1.6, 1.48, -6.5, 0.08, 0.2, '#fff6e8', 'vase', 'desk');
+    phBall(-1.6, 1.64, -6.5, 0.12, '#d96b8a', 'flower', 'plant');
+    // warm desk lamp
+    phCyl(1.7, 1.5, -7.3, 0.06, 0.28, '#5c3a14', 'lampstem', 'desk');
+    phCyl(1.7, 1.72, -7.15, 0.16, 0.1, '#ffe08a', 'lampsade', 'desk');
+  }
+  function phBuildSnack(){
+    if (typeof plat === 'function'){ const m = plat(-6.5, 0.04, 2.2, 4.4, 3.6, '#ffe08a', .06); if (m) m.floorOnly = true; }
+    // Open treat shelf facing the room (thin back, visible jars)
+    phBox(-6.5, 1.1, 1.0, 2.6, 1.7, 0.1, '#c9894c', 'shelf', 'shelf');
+    phBox(-6.5, 0.28, 1.25, 2.6, 0.08, 0.5, '#e8c9a0', 'shelf', 'shelf');
+    phBox(-6.5, 0.9, 1.25, 2.5, 0.08, 0.5, '#fff6e8', 'shelf', 'shelf');
+    phBox(-6.5, 1.5, 1.25, 2.5, 0.08, 0.5, '#fff6e8', 'shelf', 'shelf');
+    phBox(-7.75, 1.1, 1.22, 0.08, 1.7, 0.48, '#c9894c', 'shelf', 'shelf');
+    phBox(-5.25, 1.1, 1.22, 0.08, 1.7, 0.48, '#c9894c', 'shelf', 'shelf');
+    [['#ff6fb5', -7.2, 0.52], ['#7fd6ff', -6.5, 0.52], ['#ffe08a', -5.8, 0.52], ['#9ff0c8', -7.2, 1.14], ['#ff9f6b', -6.5, 1.14], ['#c39bff', -5.8, 1.14]].forEach(([c, x, y]) => {
+      phCyl(x, y, 1.28, 0.14, 0.28, c, 'jar-' + c, 'treat');
+    });
+    // food bowls out in front of the shelf
+    [[-7.1, 2.35, '#f4a261'], [-6.5, 2.55, '#e76f51'], [-5.9, 2.35, '#2a9d8f']].forEach(([x, z, food]) => {
+      phCyl(x, 0.12, z, 0.28, 0.1, '#fff6e8', 'bowl', 'bowl');
+      phCyl(x, 0.16, z, 0.2, 0.06, food, 'food-' + food, 'bowl');
+    });
+  }
+  function phBuildBath(){
+    if (typeof plat === 'function'){ const m = plat(6.5, 0.04, 2.2, 4.6, 3.8, '#8ecae6', .06); if (m) m.floorOnly = true; }
+    // Hollow tub: floor + four walls, water and bubbles sitting in the open top
+    phBox(6.5, 0.1, 2.3, 2.2, 0.16, 1.25, '#f1f5f9', 'tub', 'tub');
+    phBox(6.5, 0.4, 1.74, 2.2, 0.55, 0.14, '#f1f5f9', 'tub', 'tub');
+    phBox(6.5, 0.4, 2.86, 2.2, 0.55, 0.14, '#f1f5f9', 'tub', 'tub');
+    phBox(5.48, 0.4, 2.3, 0.14, 0.55, 1.25, '#f1f5f9', 'tub', 'tub');
+    phBox(7.52, 0.4, 2.3, 0.14, 0.55, 1.25, '#f1f5f9', 'tub', 'tub');
+    phBox(6.5, 0.22, 2.3, 1.9, 0.12, 0.95, '#5ec8ff', 'water', 'tub');
+    const bubbles = phLow() ? 4 : 8;
+    for (let i = 0; i < bubbles; i++){
+      const bx = 6.5 + (i % 3 - 1) * 0.28;
+      const bz = 2.3 + ((i % 3) - 1) * 0.16;
+      phBall(bx, 0.42 + (i % 4) * 0.14, bz, 0.08 + (i % 3) * 0.03, '#ffffff', 'bubble', 'bubble');
+    }
+    // soap + towel
+    phBox(7.5, 0.22, 1.5, 0.3, 0.12, 0.3, '#ffb3c7', 'soap', 'bath');
+    phBox(5.5, 0.7, 1.4, 0.08, 0.7, 0.4, '#fff6e8', 'towel', 'bath');
+    phBox(5.5, 1.08, 1.4, 0.5, 0.08, 0.16, '#c9894c', 'rack', 'bath');
+    // little yellow bath buddy (original, not a branded duck)
+    phBall(7.05, 0.42, 2.55, 0.14, '#ffe08a', 'buddy', 'bath');
+    phBall(7.12, 0.5, 2.66, 0.08, '#ffe08a', 'buddy', 'bath');
+    phBox(7.18, 0.48, 2.74, 0.08, 0.04, 0.08, '#f4a261', 'beak', 'bath');
+  }
+  function phBuildPlay(){
+    if (typeof plat === 'function'){ const m = plat(-6.5, 0.04, 8.2, 5.0, 4.6, '#b8e986', .06); if (m) m.floorOnly = true; }
+    // toys: balls, blocks, a hoop, a yarn roll
+    phBall(-7.3, 0.2, 8.5, 0.2, '#ff4d5e', 'toy-red', 'toy');
+    phBall(-5.7, 0.16, 7.6, 0.16, '#3a86ff', 'toy-blue', 'toy');
+    phBall(-6.2, 0.14, 8.9, 0.14, '#ffe08a', 'toy-yel', 'toy');
+    phBox(-7.4, 0.16, 7.5, 0.28, 0.28, 0.28, '#9b5de5', 'block', 'toy');
+    phBox(-7.4, 0.4, 7.5, 0.22, 0.22, 0.22, '#00bbf9', 'block2', 'toy');
+    phBox(-7.15, 0.14, 7.7, 0.22, 0.22, 0.22, '#fee440', 'block3', 'toy');
+    phCyl(-5.8, 0.16, 8.5, 0.16, 0.14, '#ff6fb5', 'yarn', 'toy');
+    // play hoop
+    phCyl(-6.5, 0.7, 9.4, 0.55, 0.08, '#f4a261', 'hoop', 'toy');
+  }
+  function phBuildBeds(){
+    if (typeof plat === 'function'){ const m = plat(6.5, 0.04, 8.2, 4.8, 4.2, '#e8c4ff', .06); if (m) m.floorOnly = true; }
+    const bed = (x, z, blanket, pillow) => {
+      phBox(x, 0.16, z, 1.6, 0.16, 1.15, '#c9894c', 'bedframe', 'bed');
+      phBox(x, 0.28, z, 1.5, 0.2, 1.0, '#fff6e8', 'mattress', 'bed');
+      phBox(x, 0.42, z + 0.08, 1.35, 0.14, 0.7, blanket, 'blanket-' + blanket, 'bed');
+      phBox(x, 0.46, z - 0.36, 0.7, 0.2, 0.36, pillow, 'pillow-' + pillow, 'bed');
+    };
+    bed(5.7, 8.5, '#7fd6ff', '#fff0f6');
+    bed(7.3, 8.5, '#ffb3c7', '#fff6c9');
+    phBox(6.5, 0.35, 7.2, 0.5, 0.5, 0.4, '#c9894c', 'night', 'bed');
+    phCyl(6.5, 0.72, 7.2, 0.08, 0.16, '#ffe08a', 'nightlamp', 'bed');
+  }
+  function phBuildHotel(){
+    if (typeof plat === 'function'){
+      const floor = plat(0, 0, 3, 28, 26, '#f8efe3', .3); if (floor) floor.floorOnly = true;
+      // collision walls (taller, colorful rooms)
+      plat(0, 2.0, -10.5, 26, 0.5, '#f3c6d8', 4.0);
+      plat(-13.7, 2.0, 2.5, 0.5, 25, '#c9e8c0', 4.0);
+      plat(13.7, 2.0, 2.5, 0.5, 25, '#c9d4ff', 4.0);
+      plat(-8.6, 2.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
+      plat(8.6, 2.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
+    }
+    // wallpaper skins just inside the collision walls
+    phPaperWall(0, 2.05, -10.22, 25.2, 3.9, 0.08, 'dots', '#f3c6d8', '#ffe8f2', 'wallpaper');
+    phPaperWall(-13.42, 2.05, 2.5, 0.08, 3.9, 24.2, 'stripe', '#c9e8c0', '#e8f8dc', 'wallpaper');
+    phPaperWall(13.42, 2.05, 2.5, 0.08, 3.9, 24.2, 'dots', '#c9d4ff', '#e8eeff', 'wallpaper');
+    phPaperWall(-8.6, 2.05, 14.52, 10.0, 3.9, 0.08, 'stripe', '#f7d9a8', '#fff0cc', 'wallpaper');
+    phPaperWall(8.6, 2.05, 14.52, 10.0, 3.9, 0.08, 'stripe', '#f7d9a8', '#fff0cc', 'wallpaper');
+    // baseboard trim
+    phBox(0, 0.12, -10.15, 25.2, 0.24, 0.1, '#fff6e8', 'trim', 'trim');
+    phBox(-13.35, 0.12, 2.5, 0.1, 0.24, 24.2, '#fff6e8', 'trim', 'trim');
+    phBox(13.35, 0.12, 2.5, 0.1, 0.24, 24.2, '#fff6e8', 'trim', 'trim');
+    // windows on the back wall
+    phWindow(-6.5, 2.3, -10.1, 2.2, 1.6);
+    phWindow(0, 2.3, -10.1, 2.2, 1.6);
+    phWindow(6.5, 2.3, -10.1, 2.2, 1.6);
+    // lobby rug with a border
+    phBox(0, 0.06, 0.2, 6.4, 0.06, 5.2, '#8a2f4a', 'rugedge', 'rug');
+    phBox(0, 0.08, 0.2, 5.6, 0.06, 4.4, '#d96b8a', 'rug', 'rug');
+    phBox(0, 0.09, 0.2, 1.2, 0.05, 1.2, '#ffe08a', 'rugin', 'rug');
+    // corner plants
+    phPlant(-4.2, -8.4, 1.1);
+    phPlant(4.2, -8.4, 1.0);
+    phPlant(-11.6, 2.2, 1.2);
+    if (!phLow()){ phPlant(11.6, 2.2, 1.1); phPlant(-11.4, 10.5, 1.0); phPlant(11.4, 10.5, 1.0); }
+    phBuildDesk();
+    phBuildSnack();
+    phBuildBath();
+    phBuildPlay();
+    phBuildBeds();
+    PH_STATIONS.forEach(s => {
+      if (typeof label === 'function'){
+        const L = label(s.e + ' ' + s.name, 'rgba(29,35,64,.92)');
+        if (L && L.position){ L.position.set(s.x, 2.6, s.z); if (L.scale) L.scale.set(2.0, 0.55, 1); if (typeof scene !== 'undefined') scene.add(L); if (ph) ph.props.push(L); }
+      }
+    });
+  }
+  function buildPetHotel(){
+    const sv = phLoadSave();
+    ph = {
+      stay: null, next: null, wait: 0.6, served: sv.served, earned: sv.earned, tipsSeen: sv.tipsSeen || {},
+      near: null, at: null, remote: !!(typeof mpGuest === 'function' && mpGuest()),
+      props: [], kinds: {}, pets: [], guestM: null, petM: null, dirty: true, toast: '', toastT: 0, _mats: {}, _geo: {}, seed: sv.served + 1, t: 0
+    };
+    ph.next = phNewStay(ph.seed);
+    if (typeof scene !== 'undefined'){
+      scene.background = new THREE.Color('#b8e4ff');
+      if (scene.fog){ scene.fog.color = new THREE.Color('#d8efff'); scene.fog.near = phLow() ? 28 : 40; scene.fog.far = phLow() ? 80 : 120; }
+    }
+    phBuildHotel();
+    Object.assign(P, {x: 0, y: 0.05, z: 3.2, vx: 0, vy: 0, vz: 0});
+    P.face = 0;
+    if (typeof cam !== 'undefined'){ cam.yaw = 0; cam.pitch = 0.2; cam.dist = 11; }
+    if (typeof checkpoints !== 'undefined') checkpoints[0] = {idx: 0, spawn: {x: 0, y: 0.05, z: 3.2}, flag: (typeof THREE !== 'undefined' ? new THREE.Object3D() : {})};
+    phSyncActors();
+    phHud();
+  }
+  function phClearActors(){
+    if (!ph) return;
+    ['guestM', 'petM'].forEach(k => {
+      if (ph[k] && typeof scene !== 'undefined'){ try { scene.remove(ph[k]); } catch (e){} ph[k] = null; }
+    });
+  }
+  function phSyncActors(){
+    if (!ph || typeof THREE === 'undefined') return;
+    const showGuest = !ph.stay && ph.next;
+    const showPet = !!(ph.stay || (ph.next && !ph.stay));
+    if (showGuest && ph.next){
+      if (!ph.guestM){ ph.guestM = phMakeGuestMesh(ph.next.guestCol); scene.add(ph.guestM); }
+      ph.guestM.position.set(-1.4, 0, -5.4);
+      ph.guestM.visible = true;
+    } else if (ph.guestM) ph.guestM.visible = false;
+    const petId = ph.stay ? ph.stay.petId : (ph.next && ph.next.petId);
+    if (showPet && petId){
+      const pet = phPetOf(petId);
+      if (!ph.petM || ph.petM.userData.petId !== pet.id){
+        if (ph.petM) try { scene.remove(ph.petM); } catch (e){}
+        ph.petM = phMakePetMesh(pet);
+        ph.petM.userData.petId = pet.id;
+        scene.add(ph.petM);
+      }
+      const st = phNearStation() || ph.at;
+      let x = 1.3, z = -5.2;
+      if (ph.stay){
+        if (st === 'feed'){ x = -6.5; z = 2.4; }
+        else if (st === 'bathe'){ x = 6.5; z = 2.35; }
+        else if (st === 'play'){ x = -6.5; z = 8.2; }
+        else if (st === 'bed'){ x = 5.7; z = 8.5; }
+        else { x = 0.9; z = -5.0; }
+      }
+      ph.petM.position.set(x, 0, z);
+      ph.petM.visible = true;
+      phApplyMood(ph.petM, ph.stay);
+    } else if (ph.petM) ph.petM.visible = false;
+  }
+  function phNearStation(){
+    if (!ph || typeof P === 'undefined' || !P) return null;
+    let best = null, bd = 1e9;
+    PH_STATIONS.forEach(s => {
+      const d = Math.hypot((P.x || 0) - s.x, (P.z || 0) - s.z);
+      if (d < s.r && d < bd){ bd = d; best = s.id; }
+    });
+    return best;
+  }
+  function phPrompt(station){
+    if (!ph) return '';
+    if (!station) return '';
+    if (station === 'desk'){
+      if (!ph.stay && ph.next) return PH_DESK_ICON + ' Check in ' + ph.next.guest + ' and ' + ph.next.petName;
+      if (ph.stay && phReadyOut(ph.stay)) return PH_DESK_ICON + ' Check out ' + ph.stay.petName + ' for coins';
+      if (ph.stay) return PH_DESK_ICON + ' ' + ph.stay.petName + ' still needs ' + phCaresLeft(ph.stay).map(c => PH_NEED_LABEL[c].toLowerCase()).join(', ');
+      return PH_DESK_ICON + ' Front desk';
+    }
+    const lab = PH_CARE_ICON[station] + ' ' + PH_CARE_LABEL[station];
+    if (!ph.stay) return lab + ' (check in a guest first)';
+    if (ph.stay.done && ph.stay.done[station]) return lab + ' — done!';
+    return lab + ' ' + ph.stay.petName;
+  }
+  function phDo(station){
+    if (!ph) return false;
+    if (ph.remote && station !== 'desk' && station !== 'feed' && station !== 'bathe' && station !== 'play' && station !== 'bed') return false;
+    const res = phActAt(ph, station);
+    if (!res.ok){ if (res.why && typeof banner === 'function') banner(PH_HOTEL_ICON + ' ' + res.why); phHud(); return false; }
+    if (res.act === 'checkin'){
+      if (typeof banner === 'function') banner(res.stay.emoji + ' ' + res.stay.guest + ' checked in ' + res.stay.petName + ' the ' + res.stay.kind + '!');
+    } else if (res.act === 'care'){
+      if (typeof banner === 'function') banner(PH_CARE_ICON[res.care] + ' ' + PH_CARE_LABEL[res.care] + ' — ' + res.stay.petName + (phReadyOut(res.stay) ? ' is ready to check out!' : ' is happy!'));
+    } else if (res.act === 'checkout'){
+      if (typeof setCoins === 'function') setCoins((typeof coins === 'number' ? coins : 0) + res.rec.pay);
+      if (typeof runCoins !== 'undefined') runCoins = (runCoins || 0) + res.rec.pay;
+      if (typeof SND !== 'undefined' && SND.coin) try { SND.coin(); } catch (e){}
+      if (typeof banner === 'function') banner('🪙 ' + res.rec.guest + ' picked up ' + res.rec.pet + '! +' + res.rec.pay + ' coins');
+      phWriteSave();
+    }
+    if (res.act === 'care') ph.at = station;
+    if (res.act === 'checkin') ph.at = 'desk';
+    if (res.act === 'checkout') ph.at = 'desk';
+    ph.dirty = true;
+    if (typeof phNet === 'function') phNet();
+    phSyncActors();
+    phHud();
+    return true;
+  }
+  function phHud(){
+    if (!ph) return;
+    const box = (typeof $ === 'function') ? $('#phBox') : (typeof document !== 'undefined' && document.getElementById && document.getElementById('phBox'));
+    if (box){
+      const stay = ph.stay;
+      const name = stay ? (stay.emoji + ' ' + stay.petName) : (PH_HOTEL_ICON + ' Waiting' + (ph.next ? ' for ' + ph.next.guest : ''));
+      const bar = stay ? phNeedsBarHtml(stay) : '';
+      box.innerHTML = '<b>' + name + '</b>' + (bar ? ' ' + bar : '') + ' · 🪙 ' + (ph.earned | 0) + ' · ✅ ' + (ph.served | 0);
+    }
+    const tasks = (typeof $ === 'function') ? $('#phTasks') : null;
+    if (tasks){
+      if (!ph.stay){ tasks.innerHTML = ph.next ? (PH_DESK_ICON + ' ' + ph.next.guest + ' is at the desk with ' + ph.next.petName + ' the ' + ph.next.kind) : (PH_DESK_ICON + ' The lobby is quiet…'); tasks.style.display = ''; }
+      else {
+        tasks.innerHTML = phNeedsBarHtml(ph.stay) + ' <span class="phneedhint">' + (phReadyOut(ph.stay) ? 'Ready to check out!' : 'Needs ' + phCaresLeft(ph.stay).map(c => PH_NEED_LABEL[c].toLowerCase()).join(', ')) + '</span>';
+        tasks.style.display = '';
+      }
+    }
+    const btn = (typeof $ === 'function') ? $('#phAct') : null;
+    const st = ph.near;
+    if (btn){
+      if (st){ btn.classList.add('show'); btn.innerHTML = phPrompt(st) + ' <small>E / Ⓧ</small>'; }
+      else btn.classList.remove('show');
+    }
+  }
+  function petHotelEnter(){
+    if (!ph) return;
+    if (typeof cam !== 'undefined'){ cam.yaw = 0; cam.pitch = 0.2; cam.dist = 11; }
+    if (typeof banner === 'function') banner(ph.remote ? PH_HOTEL_ICON + ' Pet Hotel — help care for the guest pets together!' : PH_HOTEL_ICON + ' Pet Hotel! Check guests in, care for their pets, then check out for coins.');
+    if (typeof tipTimer !== 'undefined') tipTimer = 7;
+    phHud();
+  }
+  function petHotelStop(){
+    if (ph){
+      phWriteSave();
+      phClearActors();
+      (ph.props || []).forEach(m => { if (m && typeof scene !== 'undefined') try { scene.remove(m); } catch (e){} });
+    }
+    ph = null;
+    ['#phAct', '#phTasks', '#phBox'].forEach(id => {
+      const e = (typeof $ === 'function') ? $(id) : null;
+      if (e){ e.classList.remove('show'); if (id !== '#phBox') e.style.display = 'none'; }
+    });
+  }
+  function petHotelUpdate(dt){
+    if (!ph) return;
+    ph.t = (ph.t || 0) + (dt || 0);
+    if (!ph.remote){
+      if (!ph.stay){
+        ph.wait = (ph.wait || 0) - (dt || 0);
+        if (ph.wait < 0 && !ph.next) ph.next = phNewStay((ph.served | 0) + 1);
+      }
+    }
+    const st = phNearStation();
+    if (st !== ph.near){ ph.near = st; phHud(); }
+    if (ph.dirty){ phSyncActors(); ph.dirty = false; }
+    else if (ph.petM && ph.stay){
+      const want = phNearStation();
+      // keep the pet at the station you walk to, cheaply
+      phSyncActors();
+    }
+    if (ph.petM && ph.petM.visible){
+      const bob = Math.sin((ph.t || 0) * 3) * 0.03;
+      ph.petM.position.y = bob;
+      const hearts = ph.petM.userData && ph.petM.userData.hearts;
+      if (hearts && hearts.visible){
+        hearts.rotation.y = (ph.t || 0) * 1.4;
+        const baseY = (ph.petM.userData && ph.petM.userData.headY) ? ph.petM.userData.headY + 0.55 : 1.3;
+        hearts.position.y = baseY + Math.sin((ph.t || 0) * 4) * 0.04;
+      }
+      const tears = ph.petM.userData && ph.petM.userData.tears;
+      if (tears && tears.visible) tears.position.y = Math.sin((ph.t || 0) * 3.2) * 0.04;
+    }
+  }
+  function phKey(e){
+    if (!ph || !e || e.repeat || (typeof paused !== 'undefined' && paused)) return false;
+    if (e.code === 'KeyE' && ph.near){ phDo(ph.near); return true; }
+    return false;
+  }
+  function phPad(jp){
+    if (!ph) return false;
+    if (jp && jp.x && ph.near){ phDo(ph.near); return true; }
+    return false;
+  }
+  function phWire(){
+    if (!ph || ph.remote) return null;
+    return {
+      stay: ph.stay, next: ph.next, wait: +((ph.wait || 0).toFixed(2)),
+      served: ph.served | 0, earned: ph.earned | 0
+    };
+  }
+  function phFromHost(d){
+    if (!ph || !d) return;
+    ph.remote = true;
+    ph.stay = d.stay || null;
+    ph.next = d.next || null;
+    ph.wait = +d.wait || 0;
+    ph.served = d.served | 0;
+    ph.earned = d.earned | 0;
+    ph.dirty = true;
+    phHud();
+  }
+  function phNet(){ /* host state goes out on the regular mp tick */ }
+  function phMeshBudget(){ return ph ? (ph.props || []).length : 0; }
+  function drawPetHotel(ctx){
+    if (!ctx) return;
+    if (typeof sky === 'function') sky(ctx, '#9fd8ff', '#fff6e8');
+    else { ctx.fillStyle = '#9fd8ff'; ctx.fillRect(0, 0, 320, 200); }
+    ctx.fillStyle = '#f3c6d8'; ctx.fillRect(24, 48, 272, 112);
+    ctx.fillStyle = '#ffe8f2';
+    for (let y = 58; y < 150; y += 16) for (let x = 36; x < 290; x += 16){ ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill(); }
+    ctx.fillStyle = '#8ecae6'; ctx.fillRect(50, 62, 44, 36); ctx.fillRect(226, 62, 44, 36);
+    ctx.fillStyle = '#fff6e8'; ctx.fillRect(48, 60, 48, 6); ctx.fillRect(224, 60, 48, 6);
+    ctx.fillStyle = '#c97b5a'; ctx.fillRect(110, 100, 100, 42);
+    ctx.fillStyle = '#e8c9a0'; ctx.fillRect(108, 96, 104, 8);
+    ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(186, 92, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#d96b8a'; ctx.fillRect(80, 152, 160, 16);
+    // cute pets with eyes
+    const pet = (x, col, ear) => {
+      ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, 148, 16, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x, 132, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = ear; ctx.fillRect(x - 12, 116, 7, 10); ctx.fillRect(x + 5, 116, 7, 10);
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x - 4, 131, 3.2, 0, Math.PI * 2); ctx.arc(x + 4, 131, 3.2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#2a1a10'; ctx.beginPath(); ctx.arc(x - 4, 131, 1.4, 0, Math.PI * 2); ctx.arc(x + 4, 131, 1.4, 0, Math.PI * 2); ctx.fill();
+    };
+    pet(200, '#c9894c', '#6d3a18'); pet(84, '#8aa0b8', '#f4c6d4');
+    if (typeof guy === 'function'){ guy(ctx, 160, 175, 12, '#3a86ff'); guy(ctx, 60, 175, 11, '#d96b8a'); }
+    const hotelIcon = (typeof PH_HOTEL_ICON === 'string') ? PH_HOTEL_ICON : '🏨';
+    const deskIcon = (typeof PH_DESK_ICON === 'string') ? PH_DESK_ICON : '🔔';
+    ctx.font = '22px sans-serif'; ctx.fillText(hotelIcon, 40, 50); ctx.fillText(deskIcon, 150, 92);
+  }
   function stop(){
     if (typeof dhCloseReset === 'function') dhCloseReset();
     running = false; loopId++; if (raf){ try { cancelAnimationFrame(raf); } catch (e){} raf = 0; } if (document.pointerLockElement) document.exitPointerLock(); fp.shown = null; menuOpen = false; paused = false;
@@ -17540,7 +18611,7 @@ function start(m = 'obby', d = null){
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame'); setHomeInert(false);
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (sb) stableStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
@@ -17549,6 +18620,34 @@ function start(m = 'obby', d = null){
   window.obbyDebug = {
     dreamhouse: () => dh && {mine: dh.mine, sel: dh.sel, tool: dh.tool, story: dh.story, color: dh.color, rot: dh.rot, bank: dh.bank, likes: dh.likes, earned: dh.earned, pieces: (dh.pieces[dh.mine] || []).length, goals: Object.assign({}, dh.goals), prog: dhProg()},
     dhPlace: () => dhPlace(), dhAct: () => dhAct(), dhRotate: () => dhRotate(), dhCycle, dhSetTool, dhSetStory, dhCycleColor, dhAim, dhWire, dhTo(x, z){ Object.assign(P, {x, y: .05, z, vx: 0, vy: 0, vz: 0}); },
+    shot(opts){
+      opts = opts || {};
+      if (opts.x != null && opts.z != null) Object.assign(P, {x: +opts.x, y: (opts.y != null ? +opts.y : .05), z: +opts.z, vx: 0, vy: 0, vz: 0});
+      if (opts.yaw != null && typeof cam !== 'undefined') cam.yaw = +opts.yaw;
+      if (opts.pitch != null && typeof cam !== 'undefined') cam.pitch = +opts.pitch;
+      if (opts.dist != null && typeof cam !== 'undefined') cam.dist = +opts.dist;
+      if (opts.mpCode){ if (typeof mp !== 'undefined' && mp){ mp.code = String(opts.mpCode); mp.on = true; mp.host = true; } }
+      if (opts.invite && typeof dhToggleInvite === 'function'){ dhToggleInvite(true); if (typeof dhRenderInvite === 'function') dhRenderInvite(); }
+      if (opts.phDo && typeof phDo === 'function') phDo(opts.phDo);
+      if (opts.phNear && ph) ph.near = opts.phNear;
+      if (typeof phSyncActors === 'function' && ph) phSyncActors();
+      if (typeof phHud === 'function' && ph) phHud();
+      if (typeof dhHud === 'function' && dh) dhHud();
+      if (typeof dhBar === 'function' && dh) dhBar();
+      if (typeof updateCamera === 'function') updateCamera();
+      if (typeof renderer !== 'undefined' && renderer && renderer.render && typeof scene !== 'undefined' && camera) renderer.render(scene, camera);
+      const foot = (typeof dhFootWorld === 'function' && dh) ? dhFootWorld(dh.mine) : null;
+      return {
+        mode, visiting: !!(dh && dh.visiting), invite: !!(dh && dh.inviteOpen),
+        pieces: dh && (dh.pieces[dh.mine] || []).length,
+        ph: ph && {stay: ph.stay && (ph.stay.emoji + ' ' + ph.stay.petName), next: ph.next && (ph.next.guest + ' / ' + ph.next.petName), earned: ph.earned, near: ph.near, done: ph.stay && ph.stay.done},
+        P: P && {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2)},
+        cam: typeof cam !== 'undefined' && cam && {yaw: cam.yaw, pitch: cam.pitch, dist: cam.dist},
+        foot, low: typeof gfxIsLow === 'function' && gfxIsLow(), build: typeof BUILD !== 'undefined' ? BUILD : null,
+        bar: ((document.getElementById('dhBar') || {}).innerText || '').slice(0, 180),
+        visit: ((document.getElementById('dhVisit') || {}).innerText || '').slice(0, 240)
+      };
+    },
     dance: () => db && {ph: db.ph, t: db.t, score: db.score, combo: db.combo, hits: db.hits, misses: db.misses, chart: db.chart.length, earned: db.earned, prog: dbProg()},
     dbHit: d => dbHit(d), dbTo(t){ if (db) db.t = t; },
     haunt: () => hm && {ph: hm.ph, t: hm.t, keys: hm.keys, patternDone: !!hm.patternDone, colour: hm.colour, needCol: hm.needCol, levers: hm.levers.slice(), doorOpen: hm.doorOpen, near: hm.near, earned: hm.earned, prog: hmProg()},
