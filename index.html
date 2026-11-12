@@ -1645,7 +1645,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.12-7';
+const BUILD = '2026.11.12-8';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3182,6 +3182,25 @@ function dhClearDialogInert(el){
   try { el.removeAttribute('aria-hidden'); } catch (e){}
   try { el.inert = false; } catch (e){}
   if (el.getAttribute && el.getAttribute('aria-hidden') === 'true') el.setAttribute('aria-hidden', 'false');
+}
+function hudIsEditableTarget(t){
+  if (!t) return false;
+  const tag = (t.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
+  if (t.isContentEditable) return true;
+  if (t.closest && t.closest('input, textarea, select, [contenteditable="true"], [contenteditable=""]')) return true;
+  return false;
+}
+function hudShouldCapturePointer(ev, canvas){
+  if (!ev) return false;
+  const tgt = ev.target || ev.srcElement;
+  if (hudIsEditableTarget(tgt)) return false;
+  if (typeof document !== 'undefined' && hudIsEditableTarget(document.activeElement)) return false;
+  const locked = !!(typeof document !== 'undefined' && document.pointerLockElement);
+  if (!locked){
+    if (tgt && canvas && tgt !== canvas && !(canvas.contains && canvas.contains(tgt))) return false;
+  }
+  return true;
 }
 function dhIsUiEvent(e, kind){
   const t = (e && (e.target || e.srcElement)) || (typeof document !== 'undefined' ? document.activeElement : null);
@@ -18042,12 +18061,18 @@ function dhLayoutHud(){
       return hit;
     }
     function hudTryClick(ev){
+      // Only steal a click when pointer lock hid the real target (or the canvas ate it).
+      // Never preventDefault a real pointerdown on an input — that blocks focus and typing
+      // in the home-page join-code box after a game has been played (bind() left this hook on).
+      const canvas = (typeof el !== 'undefined' && el) || (typeof renderer !== 'undefined' && renderer && renderer.domElement) || null;
+      if (typeof hudShouldCapturePointer === 'function' && !hudShouldCapturePointer(ev, canvas)) return false;
       const pts = [];
       if (ev && ev.clientX != null && ev.clientY != null) pts.push([ev.clientX, ev.clientY]);
       if (document.pointerLockElement && fp.uiX != null && fp.uiY != null) pts.push([fp.uiX, fp.uiY]);
       let target = null;
       for (let i = 0; i < pts.length && !target; i++) target = hudHitAt(pts[i][0], pts[i][1]);
       if (!target) return false;
+      if (typeof hudIsEditableTarget === 'function' && hudIsEditableTarget(target)) return false;
       if (ev){
         if (ev.preventDefault) ev.preventDefault();
         if (ev.stopPropagation) ev.stopPropagation();
