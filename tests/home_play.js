@@ -63,9 +63,9 @@ function makeEl(id){
   return el;
 }
 
-test('BUILD is 2026.11.12-6 and matches version.json', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.12-6'"));
-  assert.strictEqual(version.build, '2026.11.12-6');
+test('BUILD is 2026.11.12-7 and matches version.json', () => {
+  assert.ok(src.includes("const BUILD = '2026.11.12-7'"));
+  assert.strictEqual(version.build, '2026.11.12-7');
 });
 
 test('every inline script in index.html parses (a syntax error would make every Play button do nothing)', () => {
@@ -325,6 +325,14 @@ test('buildGames still adds every mode if one tile preview throws', () => {
   vm.createContext(ctx);
   vm.runInContext(fn[0] + '\nbuildGames();', ctx);
   assert.deepStrictEqual(cards.map(c => c.dataset.game), ['dreamhouse', 'pethotel', 'dance', 'obby']);
+});
+
+test('the Hi there name popup keeps Let\'s go! visible on short laptop and phone-landscape screens', () => {
+  assert.ok(src.includes('id="nameModal"') && src.includes('id="nameOk"') && src.includes("Let's go!"));
+  assert.ok(/#nameModal \.mbox\{[^}]*max-height:/.test(src), 'name modal box must have a viewport max-height');
+  assert.ok(/#nameModal #nameOk\{[^}]*position:sticky/.test(src), 'Let\'s go! must stick to the bottom of the popup');
+  assert.ok(src.includes('@media (max-height:850px)') && src.includes('#nameModal #nameOk'), 'laptop-height (1280x800) shrink rules');
+  assert.ok(src.includes('@media (max-height:500px)') && /#nameModal .mbox\{[^}]*padding:8px 14px/.test(src), 'phone-landscape shrink rules');
 });
 
 test('a fresh profile still asks for a name and draws the avatar after the games grid is built', () => {

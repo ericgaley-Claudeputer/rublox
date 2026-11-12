@@ -111,6 +111,27 @@ body.dhreset-open #dhResetModal, body.dhreset-open #dhResetModal .mbox, body.dhr
 .mbox input{width:100%;font:inherit;font-size:20px;font-weight:800;padding:12px 14px;border-radius:14px;border:3px solid var(--line);background:var(--bg2);color:var(--text);text-align:center;margin:10px 0 14px;outline:none}
 .mbox input:focus{border-color:var(--blue)}
 .mbox .swatches{justify-content:center}
+/* Keep the Hi there! "Let's go!" button visible on short screens (laptop 1280x800, phone landscape). */
+#nameModal{padding:max(8px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));overflow:auto;align-items:safe center;justify-items:safe center;box-sizing:border-box}
+#nameModal .mbox{max-width:min(420px,calc(100vw - 24px));max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);overflow:auto;box-sizing:border-box;display:flex;flex-direction:column}
+#nameModal #nameOk{position:sticky;bottom:0;z-index:2;margin-top:8px;flex:none;background:var(--green)}
+@media (max-height:850px){
+  #nameModal .mbox{padding:16px 18px 12px}
+  #nameModal .emoji{font-size:36px}
+  #nameModal h2{font-size:24px;margin-bottom:4px}
+  #nameModal .mbox input{margin:6px 0 8px;padding:10px 12px;font-size:18px}
+  #nameModal .swatches{margin-bottom:8px;gap:6px}
+  #nameModal .sw{width:32px;height:32px}
+  #nameModal #nameOk{padding:12px 22px}
+}
+@media (max-height:500px){
+  #nameModal .mbox{padding:8px 14px;max-height:calc(100vh - 8px);max-height:calc(100dvh - 8px)}
+  #nameModal .emoji{font-size:22px;margin:0}
+  #nameModal h2{font-size:20px;margin:0 0 2px}
+  #nameModal .mbox input{margin:4px 0 6px;padding:8px 10px;font-size:16px}
+  #nameModal .sw{width:26px;height:26px}
+  #nameModal #nameOk{padding:8px 16px;font-size:16px}
+}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(calc(100% + 140px));visibility:hidden;transition:transform .35s cubic-bezier(.3,1.8,.5,1),visibility 0s .35s;background:var(--green);color:#fff;font-weight:900;padding:12px 22px;border-radius:16px;box-shadow:0 6px 0 #1f9460;z-index:60}
 .toast.toast-top{top:max(88px, calc(env(safe-area-inset-top) + 76px));bottom:auto;transform:translateX(-50%) translateY(-140%);z-index:50}
 .toast.toast-top.show{transform:translateX(-50%) translateY(0)}
@@ -1624,7 +1645,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.12-6';
+const BUILD = '2026.11.12-7';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
