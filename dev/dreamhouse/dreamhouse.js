@@ -940,21 +940,34 @@
     const ids = (kind === 'door') ? ['doorframe', 'door'] : ['winframe', 'pane'];
     return (pieces || []).some(a => a && ids.indexOf(a[0]) >= 0 && (a[4]|0) === f);
   }
-  function dhPaintOpenings(plot, face, pieces){
-    const mid = dhWallLength() / 2;
-    const paintY = DH_SLAB_H + dhWallH() / 2;
+  function dhPaintHoleLocalX(face, along, st){
+    const mid = dhWallLength(st) / 2;
+    const f = face % 4;
+    // Faces 1 and 3 use rotation.y = π/2. THREE.js Y-rotation maps local +X to world −Z
+    // (z' = −x sin θ), so those faces flip relative to faces 0 and 2 (ry = 0).
+    // Using (face 0 or 1) ? along-mid : mid-along mirrored the side holes onto bare brick
+    // while the real frames sat under uncut paint on the other half of the wall.
+    return (f === 0 || f === 3) ? (along - mid) : (mid - along);
+  }
+  function dhPaintLocalToWorld(pos, ry, lx, ly){
+    const ca = Math.cos(ry), sa = Math.sin(ry);
+    // THREE.js Ry: x' = x c + z s, z' = −x s + z c. Paint panels sit at local z = 0.
+    return {x: pos.x + lx * ca, y: pos.y + ly, z: pos.z - lx * sa};
+  }
+  function dhPaintOpenings(plot, face, pieces, st){
+    const paintY = DH_SLAB_H + dhWallH(st) / 2;
     const holes = [];
     const have = pieces || ((typeof dh !== 'undefined' && dh && plot != null && dh.pieces) ? (dh.pieces[plot] || []) : []);
     const add = (kind) => {
       if (kind === 'door' && (face % 4) !== 0) return;
       if (kind === 'window' && (dhWindowFaces() || []).indexOf(face % 4) < 0) return;
       if (!dhFaceHasRealOpening(have, face, kind)) return;
-      const along = dhOpeningAlongMeters(face % 4, kind);
+      const along = dhOpeningAlongMeters(face % 4, kind, st);
       // Hole matches the wood frame outer size so paint runs up to the trim, not a brick-wide gap.
       const w = DH_BRICK_W * 2;
       const y0 = (kind === 'door') ? DH_SLAB_H : (DH_SLAB_H + DH_WIN_SILL);
       const y1 = (kind === 'door') ? (DH_SLAB_H + DH_DOOR_H) : (DH_SLAB_H + DH_WIN_HEAD);
-      const lx = (face === 0 || face === 1) ? (along - mid) : (mid - along);
+      const lx = dhPaintHoleLocalX(face % 4, along, st);
       holes.push({kind, x: lx, y: (y0 + y1) / 2 - paintY, w, h: y1 - y0});
     };
     add('door'); add('window');
@@ -988,9 +1001,54 @@
     const holes = dhPaintOpenings(plot, face);
     return dhRectsMinusHoles(size.len, size.h, holes).map(r => {
       const lx = r.x + r.w / 2, ly = r.y + r.h / 2;
-      const ca = Math.cos(ry), sa = Math.sin(ry);
-      return {x: pos.x + lx * ca, y: pos.y + ly, z: pos.z + lx * sa, w: r.w, h: r.h, d: 0.03, face};
+      const w = dhPaintLocalToWorld(pos, ry, lx, ly);
+      return {x: w.x, y: w.y, z: w.z, w: r.w, h: r.h, d: 0.03, face};
     });
+  }
+  function dhPaintHoleWorldBoxes(plot, face, pieces, st){
+    const pos = dhPaintWorld(plot, face);
+    const ry = (face === 1 || face === 3) ? Math.PI / 2 : 0;
+    const alongX = (face === 0 || face === 2);
+    return (dhPaintOpenings(plot, face, pieces, st) || []).map(h => {
+      const w = dhPaintLocalToWorld(pos, ry, h.x, h.y);
+      return {
+        x: w.x, y: w.y, z: w.z,
+        hw: alongX ? h.w / 2 : 0.12,
+        hh: h.h / 2,
+        hd: alongX ? 0.12 : h.w / 2,
+        kind: h.kind, face, w: h.w, h: h.h
+      };
+    });
+  }
+  function dhPaintCutsMatchFrames(plot, pieces, st){
+    const have = pieces || ((typeof dh !== 'undefined' && dh && plot != null && dh.pieces) ? (dh.pieces[plot] || []) : []) || [];
+    const tol = 0.08;
+    const report = {ok: true, faces: []};
+    for (let face = 0; face < 4; face++){
+      const holes = dhPaintHoleWorldBoxes(plot, face, have, st);
+      const frames = [];
+      if (dhFaceHasRealOpening(have, face, 'door')) frames.push(Object.assign(dhOpeningAabb(plot, face, 'door'), {kind: 'door'}));
+      if (dhFaceHasRealOpening(have, face, 'window')) frames.push(Object.assign(dhOpeningAabb(plot, face, 'window'), {kind: 'window'}));
+      const alongOf = (p) => (face === 0 || face === 2) ? p.x : p.z;
+      const match = (a, b) => a.kind === b.kind && Math.abs(alongOf(a) - alongOf(b)) <= tol && Math.abs(a.y - b.y) <= tol;
+      const issues = [];
+      if (holes.length !== frames.length) issues.push('count:' + holes.length + '!=' + frames.length);
+      holes.forEach(h => { if (!frames.some(f => match(h, f))) issues.push('hole-without-frame:' + h.kind); });
+      frames.forEach(f => { if (!holes.some(h => match(h, f))) issues.push('frame-without-hole:' + f.kind); });
+      const bricks = (typeof dhBrickBoxes === 'function') ? dhBrickBoxes(plot, st).filter(b => (b.face | 0) === face) : [];
+      holes.forEach(h => {
+        const half = (face === 0 || face === 2) ? h.hw : h.hd;
+        const hit = bricks.find(b => {
+          const da = Math.abs(alongOf(b) - alongOf(h));
+          return da < half - 0.05 && Math.abs(b.y - h.y) < h.hh - 0.05;
+        });
+        if (hit) issues.push('hole-over-brick:' + h.kind);
+      });
+      const ok = issues.length === 0;
+      if (!ok) report.ok = false;
+      report.faces.push({face, ok, issues, holes: holes.map(h => ({kind: h.kind, x: h.x, y: h.y, z: h.z})), frames: frames.map(f => ({kind: f.kind, x: f.x, y: f.y, z: f.z}))});
+    }
+    return report;
   }
   function dhOpeningAabb(plot, face, kind){
     const w = dhOpeningWorld(plot, face, kind);
@@ -1022,12 +1080,11 @@
     const holes = dhPaintOpenings(plot, face) || [];
     const hole = holes.find(h => h.kind === kind);
     if (!hole) return {ok: false, reason: 'no-hole'};
-    const mid = dhWallLength() / 2;
     const paintY = DH_SLAB_H + dhWallH() / 2;
     const along = dhOpeningAlongMeters(face, kind);
     const y0 = (kind === 'door') ? DH_SLAB_H : (DH_SLAB_H + DH_WIN_SILL);
     const y1 = (kind === 'door') ? (DH_SLAB_H + DH_DOOR_H) : (DH_SLAB_H + DH_WIN_HEAD);
-    const lx = (face === 0 || face === 1) ? (along - mid) : (mid - along);
+    const lx = dhPaintHoleLocalX(face, along);
     const dw = Math.abs(hole.w - DH_BRICK_W * 2);
     const dhg = Math.abs(hole.h - (y1 - y0));
     const dx = Math.abs(hole.x - lx);
@@ -1042,7 +1099,8 @@
     const half = size.len / 2;
     const end = (face, pos, sign) => {
       const ry = (face === 1 || face === 3) ? Math.PI / 2 : 0;
-      return {x: pos.x + Math.cos(ry) * sign * half, y: pos.y, z: pos.z + Math.sin(ry) * sign * half};
+      const w = dhPaintLocalToWorld(pos, ry, sign * half, 0);
+      return {x: w.x, y: w.y, z: w.z};
     };
     let gap = 99, pair = null;
     [-1, 1].forEach(sa => [-1, 1].forEach(sb => {
