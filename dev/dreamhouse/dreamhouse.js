@@ -46,7 +46,7 @@
     {id: 'walls',   name: 'Raise the brick walls', need: p => dhCount(p, 'brick') >= Math.max(40, Math.floor(dhBrickTotal() * .6)), pay: 35},
     {id: 'rafters', name: 'Set the rafters',     need: p => dhCount(p, 'rafter') >= dhRafterTotal(), pay: 20},
     {id: 'roof',    name: 'Shingle the roof',    need: p => dhCount(p, 'shingle') >= dhShingleTotal(), pay: 25},
-    {id: 'openings',name: 'Hang a door and window', need: p => dhCount(p, 'door') >= 1 && dhCount(p, 'winframe') >= 1, pay: 20},
+    {id: 'openings',name: 'Hang a door and all the windows', need: p => dhCount(p, 'door') >= 1 && dhWindowsFramed(p), pay: 20},
     {id: 'glaze',   name: 'Glaze the windows',   need: p => dhWindowsGlazed(p), pay: 15},
     {id: 'paint',   name: 'Paint the walls',     need: p => dhCount(p, 'paint') >= 4, pay: 20},
     {id: 'furnish', name: 'Furnish a room',      need: p => ['sofa','bed','table','lamp','plant','rug','tv','shelf'].reduce((n, id) => n + dhCount(p, id), 0) >= 3, pay: 30},
@@ -221,11 +221,48 @@
   }
   function dhCount(pieces, id){ return (pieces || []).filter(a => a && a[0] === id).length; }
   function dhSameOpening(a, b){ return !!a && !!b && (a[1]|0) === (b[1]|0) && (a[2]|0) === (b[2]|0) && (a[3]|0) === (b[3]|0) && (a[4]|0) === (b[4]|0); }
+  function dhWindowsFramed(pieces){
+    const have = pieces || [];
+    return (dhWindowFaces() || [0, 1, 3]).every(f => have.some(a => a && a[0] === 'winframe' && (a[4]|0) === f));
+  }
   function dhWindowsGlazed(pieces){
+    if (!dhWindowsFramed(pieces)) return false;
     const frames = (pieces || []).filter(a => a && a[0] === 'winframe');
     if (!frames.length) return false;
     const panes = (pieces || []).filter(a => a && a[0] === 'pane');
     return frames.every(f => panes.some(pn => dhSameOpening(pn, f)));
+  }
+  function dhIsWindowOpeningCell(face, course, along, st){
+    const span = dhBrickAlongCount(face, st);
+    const mid = (span / 2) | 0;
+    if (face === 0 && along >= mid + 2 && along <= mid + 3 && course >= 2 && course <= 4) return true;
+    if ((face === 1 || face === 3) && along >= mid - 1 && along <= mid && course >= 2 && course <= 4) return true;
+    return false;
+  }
+  function dhShouldRepairMissingWindows(pieces, goals){
+    if (dhWindowsFramed(pieces)) return false;
+    goals = goals || {};
+    if (goals.openings || goals.glaze || goals.paint || goals.furnish) return true;
+    const later = dhCount(pieces, 'pane') + dhCount(pieces, 'paint')
+      + ['sofa','bed','table','lamp','plant','rug','tv','shelf'].reduce((n, id) => n + dhCount(pieces, id), 0);
+    return later > 0;
+  }
+  function dhRepairMissingWindows(pieces, goals, st){
+    const list = (pieces || []).filter(a => Array.isArray(a) && typeof a[0] === 'string').map(a => a.slice());
+    if (!dhShouldRepairMissingWindows(list, goals)) return list;
+    const haveFrames = dhCount(list, 'winframe');
+    const havePanes = dhCount(list, 'pane');
+    const addPanes = !!(goals && (goals.glaze || goals.paint || goals.furnish)) || (havePanes > 0 && havePanes >= haveFrames);
+    (dhWindowFaces() || [0, 1, 3]).forEach(f => {
+      if (!list.some(a => a[0] === 'winframe' && (a[4]|0) === f)) list.push(['winframe', 0, 0, 0, f, 0]);
+      if (addPanes && !list.some(a => a[0] === 'pane' && (a[4]|0) === f)) list.push(['pane', 0, 0, 0, f, 0]);
+    });
+    return list.filter(a => {
+      if (!a || a[0] !== 'brick') return true;
+      const face = a[4]|0, course = a[2]|0, along = a[3]|0;
+      if (dhIsWindowOpeningCell(face, course, along, st) && list.some(b => b[0] === 'winframe' && (b[4]|0) === face)) return false;
+      return true;
+    });
   }
   function dhKeyOf(a){ return (a[0] || '') + ':' + (a[1]|0) + ',' + (a[2]|0) + ',' + (a[3]|0) + ',' + (a[4]|0); }
   function dhEmptyStock(){ const o = {}; DH_MATS.forEach(m => { o[m.id] = 0; }); return o; }
@@ -323,7 +360,16 @@
     const raw = dhTestRawSave();
     if (raw) return dhMigrate(raw);
     const o = load(DH_KEY, null), r = o && typeof o === 'object' ? o : {};
-    return dhMigrate(r);
+    const migrated = dhMigrate(r);
+    try {
+      if (!dhTestBlockPersist() && r && Array.isArray(r.pieces)
+          && JSON.stringify(r.pieces) !== JSON.stringify(migrated.pieces)
+          && typeof save === 'function' && typeof load === 'function'
+          && !load(DH_KEY + '.bakFrames', null)){
+        save(DH_KEY + '.bakFrames', r);
+      }
+    } catch (e){}
+    return migrated;
   }
   function dhMigrate(r){
     const out = {ver: DH_VER, pieces: [], stock: dhEmptyStock(), goals: (r.goals && typeof r.goals === 'object') ? Object.assign({}, r.goals) : {}, coins: Math.max(0, +r.coins || 0), likes: Math.max(0, r.likes | 0), granted: !!r.granted, v1pieces: null, introSeen: !!r.introSeen, upgrades: dhEmptyUpgrades(), tipsSeen: {}, legacyHouse: false};
@@ -355,6 +401,7 @@
     const prev = +r.ver || 0;
     out.legacyHouse = !!r.legacyHouse || (prev > 0 && prev < 6 && (out.pieces || []).length > 0);
     if (prev < 7) out.pieces = dhUpgradePiecesToV7(out.pieces, out);
+    out.pieces = dhRepairMissingWindows(out.pieces, out.goals, out);
     out.ver = DH_VER;
     return out;
   }
@@ -833,13 +880,20 @@
     if (face === 1) return {x: b.x1 + out, y, z: (b.z0 + b.z1) / 2};
     return {x: b.x0 - out, y, z: (b.z0 + b.z1) / 2};
   }
-  function dhPaintOpenings(plot, face){
+  function dhFaceHasRealOpening(pieces, face, kind){
+    const f = face % 4;
+    const ids = (kind === 'door') ? ['doorframe', 'door'] : ['winframe', 'pane'];
+    return (pieces || []).some(a => a && ids.indexOf(a[0]) >= 0 && (a[4]|0) === f);
+  }
+  function dhPaintOpenings(plot, face, pieces){
     const mid = dhWallLength() / 2;
     const paintY = DH_SLAB_H + dhWallH() / 2;
     const holes = [];
+    const have = pieces || ((typeof dh !== 'undefined' && dh && plot != null && dh.pieces) ? (dh.pieces[plot] || []) : []);
     const add = (kind) => {
       if (kind === 'door' && (face % 4) !== 0) return;
       if (kind === 'window' && (dhWindowFaces() || []).indexOf(face % 4) < 0) return;
+      if (!dhFaceHasRealOpening(have, face, kind)) return;
       const along = dhOpeningAlongMeters(face % 4, kind);
       // Hole matches the wood frame outer size so paint runs up to the trim, not a brick-wide gap.
       const w = DH_BRICK_W * 2;
@@ -873,7 +927,7 @@
   }
   function dhPaintPanelWorldBoxes(plot, rec){
     const face = rec[4] | 0;
-    const pos = dhPaintWorld(plot, rec);
+    const pos = dhPaintWorld(plot, face);
     const ry = (face === 1 || face === 3) ? Math.PI / 2 : 0;
     const size = dhPaintSize();
     const holes = dhPaintOpenings(plot, face);
@@ -1753,6 +1807,7 @@
     dh.pieces[plot].push(rec); dh.meshes[plot].push(mesh);
     if (rec[0] === 'brick') dhSyncBricks(plot);
     if (typeof dhRefreshFraming === 'function') dhRefreshFraming(plot);
+    if (['doorframe','door','winframe','pane'].indexOf(rec[0]) >= 0 && typeof dhRefreshPaint === 'function') dhRefreshPaint(plot);
     if (!quiet && plot === dh.mine){
       dhCheckGoals(); dhSave();
       const stage1 = (typeof dhStageId === 'function') ? dhStageId() : stage0;
@@ -1773,6 +1828,23 @@
     if (id === 'stud') return dhCount(list, 'brick') >= dhBrickTotal();
     if (id === 'rafter' || id === 'beam') return dhCount(list, 'shingle') >= dhShingleTotal();
     return false;
+  }
+  function dhRefreshPaint(plot){
+    if (!dh || typeof dhMeshFor !== 'function') return;
+    const list = dh.pieces[plot] || [];
+    const meshes = dh.meshes[plot] || [];
+    list.forEach((rec, i) => {
+      if (!rec || rec[0] !== 'paint') return;
+      const old = meshes[i];
+      const neu = dhMeshFor(rec, plot);
+      meshes[i] = neu;
+      if (old && typeof dhBindSolids === 'function') dhBindSolids(old, false);
+      if (typeof scene !== 'undefined'){
+        if (old) scene.remove(old);
+        if (neu) scene.add(neu);
+      }
+      if (neu && typeof dhBindSolids === 'function') dhBindSolids(neu, true);
+    });
   }
   function dhRefreshFraming(plot){
     if (!dh) return;
@@ -1797,6 +1869,7 @@
     list.splice(idx, 1); (dh.meshes[plot] || []).splice(idx, 1);
     if (id === 'brick') dhSyncBricks(plot);
     if (typeof dhSyncGables === 'function') dhSyncGables(plot);
+    if (['doorframe','door','winframe','pane'].indexOf(id) >= 0 && typeof dhRefreshPaint === 'function') dhRefreshPaint(plot);
     if (!quiet && plot === dh.mine) dhSave();
     return true;
   }
@@ -2594,9 +2667,12 @@
     if (dh.job === 'shingle') return dhPlaceKind('shingle');
     if (dh.job === 'glass' || (dh.carry && dh.carry.id === 'glass' && dh.job !== 'frame')) return dhInstallGlass();
     if (dh.job === 'frame'){
-      if ((dh.pieces[dh.mine] || []).some(a => a[0] === 'doorframe') && !((dh.pieces[dh.mine] || []).some(a => a[0] === 'door'))) return dhPlaceKind('door');
+      const have = dh.pieces[dh.mine] || [];
+      if (have.some(a => a[0] === 'doorframe') && !have.some(a => a[0] === 'door')) return dhPlaceKind('door');
+      const spot = (typeof dhTargetSpot === 'function') ? dhTargetSpot('frame') : null;
+      if (spot && spot.kind) return dhPlaceKind(spot.kind);
       const aim = dhAimCell(); const face = aim && dhWallFaceFromAim(aim);
-      if (face === 0) return dhPlaceKind('doorframe');
+      if (face === 0 && !have.some(a => a[0] === 'doorframe')) return dhPlaceKind('doorframe');
       return dhPlaceKind('winframe');
     }
     if (dh.job === 'paint') return dhPlaceKind('paint');
@@ -3758,7 +3834,7 @@
     if (dhCount(dh.pieces[dh.mine], 'stud') < dhStudTotal()) return 'stud';
     if (dhCount(dh.pieces[dh.mine], 'rafter') < dhRafterTotal()) return 'rafter';
     if (dhCount(dh.pieces[dh.mine], 'shingle') < dhShingleTotal()) return 'shingle';
-    if (dhCount(dh.pieces[dh.mine], 'door') < 1 || dhCount(dh.pieces[dh.mine], 'winframe') < 1) return 'frame';
+    if (dhCount(dh.pieces[dh.mine], 'door') < 1 || !dhWindowsFramed(dh.pieces[dh.mine])) return 'frame';
     if (!dhWindowsGlazed(dh.pieces[dh.mine])) return 'glass';
     if (dhCount(dh.pieces[dh.mine], 'paint') < 4) return 'paint';
     return 'furn';
@@ -3779,7 +3855,7 @@
       item(3, 'Pour foundation', cPour.have, cPour.need),
       item(4, 'Lay bricks', bricks, needB),
       item(5, 'Build the roof', dhCount((dh && dh.pieces[dh.mine]) || [], 'shingle'), dhShingleTotal()),
-      item(6, 'Windows & door', (dhCount((dh && dh.pieces[dh.mine]) || [], 'door') >= 1 && dhCount((dh && dh.pieces[dh.mine]) || [], 'winframe') >= 1) ? 1 : 0, 1),
+      item(6, 'Windows & door', (dhCount((dh && dh.pieces[dh.mine]) || [], 'door') >= 1 ? 1 : 0) + (dhWindowFaces() || []).filter(f => ((dh && dh.pieces[dh.mine]) || []).some(a => a[0] === 'winframe' && (a[4]|0) === f)).length, 1 + (dhWindowFaces() || []).length),
       item(7, 'Paint & furnish', (dhCount((dh && dh.pieces[dh.mine]) || [], 'paint') >= 4 && ['sofa','bed','table','lamp','plant','rug','tv','shelf'].reduce((n, id) => n + dhCount((dh && dh.pieces[dh.mine]) || [], id), 0) >= 3) ? 1 : 0, 1)
     ];
   }
