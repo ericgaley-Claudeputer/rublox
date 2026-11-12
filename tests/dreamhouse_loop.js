@@ -502,9 +502,9 @@ function notInWall(z, zFace, thick, r){
   return z <= lo + EPS || z >= hi - EPS;
 }
 
-test('BUILD is 2026.11.12-10 and matches version.json', () => {
-  assert.ok(html.includes("const BUILD = '2026.11.12-10'"));
-  assert.strictEqual(version.build, '2026.11.12-10');
+test('BUILD is 2026.11.12-13 and matches version.json', () => {
+  assert.ok(html.includes("const BUILD = '2026.11.12-13'"));
+  assert.strictEqual(version.build, '2026.11.12-13');
 });
 
 test('index.html wires DH clip into step() and exposes a #dhdebug collider path', () => {
@@ -875,6 +875,44 @@ test('#dhtest hash auto-starts the in-memory test house without clicking a tile'
   const raw = c.localStorage.getItem('rubloxDreamHouse');
   assert.ok(raw == null || raw === 'null' || raw === '', 'auto-start wrote rubloxDreamHouse: ' + raw);
   assert.ok(/start\('dreamhouse'\)/.test(html) && /dhtest=/.test(html), 'index.html should auto-start Dream House when the #dhtest hash is set');
+});
+
+test('#dhtest=v7frame auto-starts at the windows-and-door step and never writes the real save', () => {
+  const c = boot('#dhtest=v7frame');
+  assert.ok(c.Obby && c.Obby.running, "expected start('dreamhouse') from #dhtest=v7frame");
+  assert.ok(c.obbyDebug, 'obbyDebug hook missing');
+  if (c.obbyDebug.dhIntro()) c.obbyDebug.skipDhIntro();
+  assert.strictEqual(c.obbyDebug.dhTestId(), 'v7frame');
+  assert.strictEqual(c.obbyDebug.dhMode(), 'dreamhouse');
+  const text = String(((c.document && c.document.getElementById('dhTestNote')) || {}).textContent || '');
+  assert.ok(/TEST HOUSE/i.test(text) && /v7frame/.test(text), 'expected a TEST HOUSE badge naming v7frame, got: ' + text);
+  const recs = (((c.obbyDebug.dreamhouse() || {}).prog || {}).pieces) || [];
+  assert.ok(recs.some(a => a[0] === 'brick') && recs.some(a => a[0] === 'shingle') && recs.some(a => a[0] === 'stud') && recs.some(a => a[0] === 'rafter'), 'expected finished walls and roof, kinds=' + [...new Set(recs.map(a => a[0]))].join(','));
+  assert.ok(!recs.some(a => a[0] === 'door' || a[0] === 'doorframe' || a[0] === 'winframe' || a[0] === 'pane'), 'expected zero frames at the start of the framing step, kinds=' + [...new Set(recs.map(a => a[0]))].join(','));
+  const raw = c.localStorage.getItem('rubloxDreamHouse');
+  assert.ok(raw == null || raw === 'null' || raw === '', 'v7frame wrote rubloxDreamHouse: ' + raw);
+  const bak = c.localStorage.getItem('rubloxDreamHouse.bakFrames');
+  assert.ok(bak == null || bak === 'null' || bak === '', 'v7frame wrote bakFrames: ' + bak);
+});
+
+test('#dhtest=v7painted auto-starts a painted house with the front window repaired and never writes the real save', () => {
+  const c = boot('#dhtest=v7painted');
+  assert.ok(c.Obby && c.Obby.running, "expected start('dreamhouse') from #dhtest=v7painted");
+  assert.ok(c.obbyDebug, 'obbyDebug hook missing');
+  if (c.obbyDebug.dhIntro()) c.obbyDebug.skipDhIntro();
+  assert.strictEqual(c.obbyDebug.dhTestId(), 'v7painted');
+  assert.strictEqual(c.obbyDebug.dhMode(), 'dreamhouse');
+  const text = String(((c.document && c.document.getElementById('dhTestNote')) || {}).textContent || '');
+  assert.ok(/TEST HOUSE/i.test(text) && /v7painted/.test(text), 'expected a TEST HOUSE badge naming v7painted, got: ' + text);
+  const recs = (((c.obbyDebug.dreamhouse() || {}).prog || {}).pieces) || [];
+  assert.ok(recs.filter(a => a[0] === 'paint').length === 4, 'expected all four faces painted, paints=' + recs.filter(a => a[0]==='paint').length);
+  assert.ok(recs.some(a => a[0] === 'door'), 'expected a door');
+  const winFaces = recs.filter(a => a[0] === 'winframe').map(a => a[4]|0).sort((a,b)=>a-b);
+  assert.ok(winFaces.join(',') === '0,1,3', 'expected the missing front window to be filled by migrate, faces=' + winFaces.join(','));
+  const raw = c.localStorage.getItem('rubloxDreamHouse');
+  assert.ok(raw == null || raw === 'null' || raw === '', 'v7painted wrote rubloxDreamHouse: ' + raw);
+  const bak = c.localStorage.getItem('rubloxDreamHouse.bakFrames');
+  assert.ok(bak == null || bak === 'null' || bak === '', 'v7painted wrote bakFrames: ' + bak);
 });
 
 test('HUD buttons receive a pointer-locked click at their screen rect without pressing Esc', () => {
