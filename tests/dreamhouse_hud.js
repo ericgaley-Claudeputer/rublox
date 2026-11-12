@@ -115,9 +115,9 @@ test('start, bar render, tip hide, and resize all relayout the HUD', () => {
 });
 
 test('version is bumped and existing saves are not involved', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.11-33'"));
+  assert.ok(src.includes("const BUILD = '2026.11.11-34'"));
   const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
-  assert.strictEqual(v.build, '2026.11.11-33');
+  assert.strictEqual(v.build, '2026.11.11-34');
   assert.ok(src.includes("const DH_KEY = 'rubloxDreamHouse'") || dhSrc.includes("DH_KEY = 'rubloxDreamHouse'"));
 });
 

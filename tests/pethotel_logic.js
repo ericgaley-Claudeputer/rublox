@@ -7,7 +7,7 @@ const SRC = fs.readFileSync(path.join(__dirname, '../dev/pethotel/pethotel.js'),
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(__dirname, '../version.json'), 'utf8'));
 
-chk('BUILD is 2026.11.11-33 and matches version.json', html.includes("const BUILD = '2026.11.11-33'") && version.build === '2026.11.11-33', version);
+chk('BUILD is 2026.11.11-34 and matches version.json', html.includes("const BUILD = '2026.11.11-34'") && version.build === '2026.11.11-34', version);
 
 function V(){ const o = {x:0,y:0,z:0, set(x,y,z){ this.x=x; this.y=y; this.z=z; return this; } }; return o; }
 function O(){ const o = {position: V(), rotation: V(), scale: V(), visible: true, children: [], material: {color:{set(){}}, opacity:1, transparent:false}, userData: {}, add(c){ this.children.push(c); return c; }, remove(){}, copy(){ return this; } }; return o; }
@@ -40,7 +40,7 @@ function world(store0){
   };
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get ph(){ return ph; }, PH_KEY, PH_CARES, PH_PETS, PH_GUESTS, PH_STATIONS, phPetOf, phFreshSave, phLoadSave, phWriteSave, phPayout, phCaresLeft, phReadyOut, phNewStay, phCheckIn, phDoCare, phCheckOut, phActAt, phDo, phNearStation, phPrompt, phHud, buildPetHotel, petHotelEnter, petHotelStop, petHotelUpdate, phKey, phPad, phWire, phFromHost, drawPetHotel};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get ph(){ return ph; }, PH_KEY, PH_CARES, PH_PETS, PH_GUESTS, PH_STATIONS, PH_CARE_ICON, PH_NEED_LABEL, PH_CARE_LABEL, PH_DESK_ICON, PH_HOTEL_ICON, PH_BAD_GLYPHS, phPetOf, phFreshSave, phLoadSave, phWriteSave, phPayout, phCaresLeft, phReadyOut, phNewStay, phCheckIn, phDoCare, phCheckOut, phActAt, phDo, phNearStation, phPrompt, phHud, phNeedsBarHtml, phHudTextHasBadGlyph, phApplyMood, phMakePetMesh, phCareDoneCount, phMeshBudget, buildPetHotel, petHotelEnter, petHotelStop, petHotelUpdate, phKey, phPad, phWire, phFromHost, drawPetHotel};`, ctx);
   return ctx;
 }
 
@@ -109,6 +109,59 @@ chk('playing Pet Hotel leaves the Dream House save intact', S.store.rubloxDreamH
 
 W.A.petHotelStop();
 chk('stop clears the Pet Hotel session', W.A.ph == null);
+
+
+/* ---------- polish: cute pets, cozy hotel, needs bar, safe glyphs ---------- */
+(function(){
+  const bad = W.A.PH_BAD_GLYPHS || ['🍽️','🛏️','🛎️','🫘','🛁'];
+  const icons = W.A.PH_CARE_ICON;
+  chk('needs-bar icons are the safe food, bath, play, sleep glyphs', !!(icons && icons.feed === '🍖' && icons.bathe === '💧' && icons.play === '🎾' && icons.bed === '💤'), icons);
+  const waitingHud = (W.els['#phBox'] || W.els['phBox'] || {}).innerHTML || '';
+  // rebuild a stay bar from a fresh world so we can inspect HTML
+  const bar0 = W.A.phNeedsBarHtml({done:{feed:false,bathe:false,play:false,bed:false}, petName:'Puddle'});
+  const bar1 = W.A.phNeedsBarHtml({done:{feed:true,bathe:false,play:false,bed:false}, petName:'Puddle'});
+  chk('needs bar lists Feed, Bath, Play, and Sleep for each pet', /Feed/.test(bar0) && /Bath/.test(bar0) && /Play/.test(bar0) && /Sleep/.test(bar0) && /data-care="feed"/.test(bar0) && /data-care="bed"/.test(bar0), bar0);
+  chk('needs bar marks a finished care as done (and leaves the others open)', /phneed on/.test(bar1) && (bar1.match(/class="phneed on"/g)||[]).length === 1 && (bar1.match(/class="phneed"/g)||[]).length === 3, bar1);
+  chk('needs bar and hotel icons never use the broken-box glyphs', !W.A.phHudTextHasBadGlyph(bar0) && !W.A.phHudTextHasBadGlyph(bar1) && !W.A.phHudTextHasBadGlyph(W.A.phPrompt('desk')) && !bad.some(g => (W.A.PH_DESK_ICON||'').indexOf(g)>=0 || Object.values(icons||{}).join('').indexOf(g)>=0), {bar0, prompt:W.A.phPrompt('desk')});
+  const petE = (W.A.PH_PETS||[]).map(p => p.e).join('');
+  chk('pet header glyphs are simple characters (no broken bean / plate / bed / bell)', !bad.some(g => petE.indexOf(g)>=0 || ((W.A.PH_PETS||[]).some(p => /🍽️|🛏️|🛎️|🫘/.test(p.e)))), {glyphs:(W.A.PH_PETS||[]).map(p=>p.e)});
+
+  const Pw = world();
+  Pw.A.buildPetHotel();
+  const kinds = (Pw.A.ph && Pw.A.ph.kinds) || {};
+  chk('cozy hotel has wallpaper, windows, plants, a rug, and a front-desk bell', (kinds.wallpaper|0) >= 2 && (kinds.window|0) >= 2 && (kinds.plant|0) >= 2 && (kinds.rug|0) >= 1 && (kinds.bell|0) >= 1, kinds);
+  chk('snack nook has food bowls and a treat shelf', (kinds.bowl|0) >= 2 && (kinds.shelf|0) >= 1 && (kinds.treat|0) >= 3, kinds);
+  chk('wash room has a tub with bubbles', (kinds.tub|0) >= 1 && (kinds.bubble|0) >= 3, kinds);
+  chk('play nook has several toys', (kinds.toy|0) >= 5, kinds);
+  chk('sleep rooms have pet beds with blankets', (kinds.bed|0) >= 4, kinds);
+
+  const pet = Pw.A.ph && Pw.A.ph.petM;
+  chk('pets have big eyes, ears, and a tail', !!(pet && pet.userData && pet.userData.eyes && pet.userData.ears && pet.userData.tail), pet && pet.userData && Object.keys(pet.userData));
+  chk('pets have a visible happy/sad mood (hearts and bubbles)', !!(pet && pet.userData && pet.userData.hearts && pet.userData.tears), pet && pet.userData);
+
+  Pw.A.phDo('desk');
+  Pw.A.phHud();
+  const mood0 = Pw.A.phApplyMood(Pw.A.ph.petM, Pw.A.ph.stay);
+  chk('a freshly checked-in pet looks sad until you care for it', mood0 === 'sad' && !!(Pw.A.ph.petM.userData.tears && Pw.A.ph.petM.userData.tears.visible) && !Pw.A.ph.petM.userData.hearts.visible, {mood0, tears:Pw.A.ph.petM.userData.tears && Pw.A.ph.petM.userData.tears.visible, hearts:Pw.A.ph.petM.userData.hearts && Pw.A.ph.petM.userData.hearts.visible});
+  Pw.A.phDo('feed'); Pw.A.phDo('bathe');
+  const mood1 = Pw.A.phApplyMood(Pw.A.ph.petM, Pw.A.ph.stay);
+  chk('after care the pet looks happy and shows hearts', mood1 === 'happy' && !!(Pw.A.ph.petM.userData.hearts && Pw.A.ph.petM.userData.hearts.visible) && !Pw.A.ph.petM.userData.tears.visible, {mood1});
+  chk('after care the pet stays at the last station you used', Pw.A.ph.at === 'bathe', Pw.A.ph.at);
+  Pw.A.phHud();
+  const hud = (Pw.els['#phBox'] || {}).innerHTML || '';
+  chk('the header needs bar uses safe glyphs after a feed (no broken box)', /🍖/.test(hud) && /Puddle|Mochi|Bumble|Noodle|Pippa|Tater/.test(hud) && !Pw.A.phHudTextHasBadGlyph(hud) && !/▯|�/.test(hud), hud);
+
+  const L = world(); L._low = true; L.A.buildPetHotel();
+  const lk = (L.A.ph && L.A.ph.kinds) || {};
+  const mats = L.A.ph && L.A.ph._mats && Object.keys(L.A.ph._mats).length;
+  const geos = L.A.ph && L.A.ph._geo && Object.keys(L.A.ph._geo).length;
+  const budget = L.A.phMeshBudget();
+  chk('Low graphics reuses shared basic materials and unit geometry (old Mac)', mats >= 8 && geos >= 2 && geos <= 12 && budget > 20 && budget <= 180, {mats, geos, budget, kinds:lk});
+  chk('Low path still has the readable stations (bowls, tub, toys, beds) with fewer extras', (lk.bowl|0) >= 2 && (lk.tub|0) >= 1 && (lk.toy|0) >= 5 && (lk.bed|0) >= 4 && (lk.bubble|0) >= 3 && (lk.bubble|0) <= 6 && (lk.plant|0) <= (kinds.plant|0), {low:lk, high:kinds});
+  L.A.petHotelStop();
+  Pw.A.petHotelStop();
+})();
+
 
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);
