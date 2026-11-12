@@ -502,9 +502,9 @@ function notInWall(z, zFace, thick, r){
   return z <= lo + EPS || z >= hi - EPS;
 }
 
-test('BUILD is 2026.11.12-2 and matches version.json', () => {
-  assert.ok(html.includes("const BUILD = '2026.11.12-2'"));
-  assert.strictEqual(version.build, '2026.11.12-2');
+test('BUILD is 2026.11.12-6 and matches version.json', () => {
+  assert.ok(html.includes("const BUILD = '2026.11.12-6'"));
+  assert.strictEqual(version.build, '2026.11.12-6');
 });
 
 test('index.html wires DH clip into step() and exposes a #dhdebug collider path', () => {
@@ -859,6 +859,67 @@ test('#dhdebug draws wireframe collider boxes', () => {
   assert.ok(dbg.obbyDebug.dhDebugGroup(), 'expected a debug Group of collider wireframes in the scene');
   const n = (dbg.obbyDebug.dhBoxes() || []).length;
   assert.ok(n >= 8, 'debug colliders should cover wall segments, got ' + n);
+});
+
+test('#dhtest hash auto-starts the in-memory test house without clicking a tile', () => {
+  const c = boot('#dhtest=v7walls');
+  assert.ok(c.Obby, 'Obby missing after boot');
+  assert.strictEqual(c.Obby.running, true, 'expected start(\'dreamhouse\') from the #dhtest hash alone');
+  assert.ok(c.obbyDebug, 'obbyDebug hook missing after auto-start');
+  if (c.obbyDebug.dhIntro()) c.obbyDebug.skipDhIntro();
+  assert.strictEqual(c.obbyDebug.dhTestId(), 'v7walls');
+  assert.strictEqual(c.obbyDebug.dhMode(), 'dreamhouse');
+  const note = (c.document && c.document.getElementById('dhTestNote')) || {};
+  const text = String(note.textContent || '');
+  assert.ok(/TEST HOUSE/i.test(text) && /v7walls/.test(text), 'expected a persistent test-house badge, got: ' + text);
+  const raw = c.localStorage.getItem('rubloxDreamHouse');
+  assert.ok(raw == null || raw === 'null' || raw === '', 'auto-start wrote rubloxDreamHouse: ' + raw);
+  assert.ok(/start\('dreamhouse'\)/.test(html) && /dhtest=/.test(html), 'index.html should auto-start Dream House when the #dhtest hash is set');
+});
+
+test('HUD buttons receive a pointer-locked click at their screen rect without pressing Esc', () => {
+  const c = boot('#dhtest=v7walls');
+  assert.ok(c.Obby && c.Obby.running, 'expected the test house to auto-start');
+  assert.ok(typeof c.__rubloxHudTryClick === 'function' && typeof c.__rubloxHudHitAt === 'function', 'HUD hit-test helpers missing');
+  const exit = c.document.getElementById('oExit');
+  assert.ok(exit, 'Exit button missing');
+  exit.getBoundingClientRect = () => ({left: 900, top: 12, right: 1010, bottom: 52, width: 110, height: 40, x: 900, y: 12});
+  let clicks = 0;
+  exit.onclick = () => { clicks++; };
+  const canvas = (c.document.getElementById('obbyView') && c.document.getElementById('obbyView').children[0]) || c.document.getElementById('obbyView') || {id: 'canvas'};
+  c.document.pointerLockElement = canvas;
+  let exited = false;
+  c.document.exitPointerLock = function(){ this.pointerLockElement = null; exited = true; };
+  const ev = {
+    clientX: 950, clientY: 30, target: canvas, button: 0, pointerType: 'mouse',
+    preventDefault(){ ev.prevented = true; },
+    stopPropagation(){ ev.stopped = true; },
+    stopImmediatePropagation(){ ev.stopped = true; }
+  };
+  const hit = c.__rubloxHudHitAt(950, 30);
+  assert.ok(hit && (hit === exit || hit.id === 'oExit'), 'hit-test at Exit rect should return the Exit button, got ' + (hit && (hit.id || hit.tagName)));
+  const handled = c.__rubloxHudTryClick(ev);
+  assert.strictEqual(handled, true, 'locked click over Exit should hit the button (hit=' + (hit && hit.id) + ')');
+  assert.strictEqual(clicks, 1, 'Exit must be activated without pressing Esc');
+  assert.ok(exited || c.document.pointerLockElement == null, 'pointer lock should be released by the HUD click');
+});
+
+test('the TEST HOUSE badge hides when you leave Dream House for Pet Hotel or Block Tag', () => {
+  const c = boot('#dhtest=v7walls');
+  assert.ok(c.Obby && c.Obby.running, 'expected auto-start');
+  const note = c.document.getElementById('dhTestNote');
+  assert.ok(note, 'badge element missing');
+  const shown = (note.classList && note.classList.contains('show')) || (note.style && note.style.display !== 'none' && (note.textContent || '').indexOf('TEST HOUSE') >= 0);
+  assert.ok(shown && /TEST HOUSE/.test(note.textContent || ''), 'badge should be visible in the test house, got: ' + (note.textContent || '') + ' display=' + (note.style && note.style.display));
+  try { c.Obby.stop(); } catch (e){}
+  const visible = () => !!(note.classList && note.classList.contains('show')) && note.style && note.style.display !== 'none' && /TEST HOUSE/.test(note.textContent || '');
+  assert.ok(!visible() && !(note.classList && note.classList.contains('show')), 'badge still visible after stop: text=' + (note.textContent || '') + ' display=' + (note.style && note.style.display));
+  try { c.Obby.start('pethotel'); } catch (e){}
+  assert.ok(!visible() && !(note.classList && note.classList.contains('show')), 'badge leaked into Pet Hotel: text=' + (note.textContent || '') + ' display=' + (note.style && note.style.display));
+  try { c.Obby.stop(); } catch (e){}
+  try { c.Obby.start('tag'); } catch (e){}
+  assert.ok(!visible() && !(note.classList && note.classList.contains('show')), 'badge leaked into Block Tag: text=' + (note.textContent || '') + ' display=' + (note.style && note.style.display));
+  assert.ok(html.includes('function dhHideTestNote') && html.includes("if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); }"));
 });
 
 test('#dhtest=v6furnish still never writes rubloxDreamHouse during the loop', () => {

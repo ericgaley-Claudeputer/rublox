@@ -454,27 +454,33 @@
   function phBuildHotel(){
     if (typeof plat === 'function'){
       const floor = plat(0, 0, 3, 28, 26, '#f8efe3', .3); if (floor) floor.floorOnly = true;
-      // collision walls (taller, colorful rooms)
-      plat(0, 2.0, -10.5, 26, 0.5, '#f3c6d8', 4.0);
-      plat(-13.7, 2.0, 2.5, 0.5, 25, '#c9e8c0', 4.0);
-      plat(13.7, 2.0, 2.5, 0.5, 25, '#c9d4ff', 4.0);
-      plat(-8.6, 2.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
-      plat(8.6, 2.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
+      // Collision walls match the visual wallpaper height (top ~4 m). Older
+      // boxes only reached y=2, so the third-person camera flew over them
+      // and the wallpaper blocked the view of the player.
+      // Walls meet at the corners (no gap) and the visible skins sit on the
+      // inner face, slightly inside the collider, so the eye cannot reach the
+      // wallpaper or see sky/dark strips between the paper and the box.
+      const hideCol = b => { if (b && b.mesh){ b.mesh.visible = false; if (b.mesh.material) b.mesh.material.visible = false; } };
+      hideCol(plat(0, 4.0, -10.5, 27.4, 0.5, '#f3c6d8', 4.0));
+      hideCol(plat(-13.7, 4.0, 2.15, 0.5, 25.8, '#c9e8c0', 4.0));
+      hideCol(plat(13.7, 4.0, 2.15, 0.5, 25.8, '#c9d4ff', 4.0));
+      hideCol(plat(-8.675, 4.0, 14.8, 10.55, 0.5, '#f7d9a8', 4.0));
+      hideCol(plat(8.675, 4.0, 14.8, 10.55, 0.5, '#f7d9a8', 4.0));
     }
-    // wallpaper skins just inside the collision walls
-    phPaperWall(0, 2.05, -10.22, 25.2, 3.9, 0.08, 'dots', '#f3c6d8', '#ffe8f2', 'wallpaper');
-    phPaperWall(-13.42, 2.05, 2.5, 0.08, 3.9, 24.2, 'stripe', '#c9e8c0', '#e8f8dc', 'wallpaper');
-    phPaperWall(13.42, 2.05, 2.5, 0.08, 3.9, 24.2, 'dots', '#c9d4ff', '#e8eeff', 'wallpaper');
-    phPaperWall(-8.6, 2.05, 14.52, 10.0, 3.9, 0.08, 'stripe', '#f7d9a8', '#fff0cc', 'wallpaper');
-    phPaperWall(8.6, 2.05, 14.52, 10.0, 3.9, 0.08, 'stripe', '#f7d9a8', '#fff0cc', 'wallpaper');
-    // baseboard trim
-    phBox(0, 0.12, -10.15, 25.2, 0.24, 0.1, '#fff6e8', 'trim', 'trim');
-    phBox(-13.35, 0.12, 2.5, 0.1, 0.24, 24.2, '#fff6e8', 'trim', 'trim');
-    phBox(13.35, 0.12, 2.5, 0.1, 0.24, 24.2, '#fff6e8', 'trim', 'trim');
-    // windows on the back wall
-    phWindow(-6.5, 2.3, -10.1, 2.2, 1.6);
-    phWindow(0, 2.3, -10.1, 2.2, 1.6);
-    phWindow(6.5, 2.3, -10.1, 2.2, 1.6);
+    // wallpaper skins just inside the collision walls (flush with the inner face)
+    phPaperWall(0, 2.0, -10.29, 26.9, 4.0, 0.08, 'dots', '#f3c6d8', '#ffe8f2', 'wallpaper');
+    phPaperWall(-13.49, 2.0, 2.15, 0.08, 4.0, 24.8, 'stripe', '#c9e8c0', '#e8f8dc', 'wallpaper');
+    phPaperWall(13.49, 2.0, 2.15, 0.08, 4.0, 24.8, 'dots', '#c9d4ff', '#e8eeff', 'wallpaper');
+    phPaperWall(-8.675, 2.0, 14.59, 10.35, 4.0, 0.08, 'stripe', '#f7d9a8', '#fff0cc', 'wallpaper');
+    phPaperWall(8.675, 2.0, 14.59, 10.35, 4.0, 0.08, 'stripe', '#f7d9a8', '#fff0cc', 'wallpaper');
+    // baseboard trim (recessed, does not stick out past the inner face)
+    phBox(0, 0.12, -10.27, 26.9, 0.24, 0.06, '#fff6e8', 'trim', 'trim');
+    phBox(-13.47, 0.12, 2.15, 0.06, 0.24, 24.8, '#fff6e8', 'trim', 'trim');
+    phBox(13.47, 0.12, 2.15, 0.06, 0.24, 24.8, '#fff6e8', 'trim', 'trim');
+    // windows on the front wall, recessed into the collider
+    phWindow(-6.5, 2.3, -10.27, 2.2, 1.6);
+    phWindow(0, 2.3, -10.27, 2.2, 1.6);
+    phWindow(6.5, 2.3, -10.27, 2.2, 1.6);
     // lobby rug with a border
     phBox(0, 0.06, 0.2, 6.4, 0.06, 5.2, '#8a2f4a', 'rugedge', 'rug');
     phBox(0, 0.08, 0.2, 5.6, 0.06, 4.4, '#d96b8a', 'rug', 'rug');

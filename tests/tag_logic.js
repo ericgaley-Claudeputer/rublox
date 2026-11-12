@@ -10,7 +10,7 @@ function chk(n, c, i){
   else { fail++; console.log('FAIL ' + n, i === undefined ? '' : JSON.stringify(i)); }
 }
 
-chk('BUILD is 2026.11.12-2 and matches version.json', src.includes("const BUILD = '2026.11.12-2'") && version.build === '2026.11.12-2', version);
+chk('BUILD is 2026.11.12-6 and matches version.json', src.includes("const BUILD = '2026.11.12-6'") && version.build === '2026.11.12-6', version);
 
 chk('the Block Tag arena floor is marked floor-only so the huge slab cannot shove you sideways',
   /fl\.floorOnly\s*=\s*true/.test(src) && /function buildTag\(/.test(src), 'missing floorOnly on tag floor');
@@ -146,6 +146,205 @@ function arena(ctx){
   chk('running into a Block Tag crate does not teleport you through it',
     Math.abs(B.x - (-12 + 2 + R)) < 1e-6 && B.x > -12, {x: B.x, expected: -12 + 2 + R});
 }
+
+
+chk('Block Tag first-person uses a general clipFpCamera (not the Dream House-only clip) and a closer near plane',
+  /function clipFpCamera\(/.test(src) && /function camBodyR\(/.test(src) &&
+  /else clipFpCamera\(\)/.test(src) && /camera\.near = Math\.min\(camera\.near,\s*(0\.05|near)\)/.test(src) &&
+  /mode === 'dreamhouse' && typeof dhClipFpCamera/.test(src));
+
+{
+  const W = physics();
+  arena(W);
+  W.fpOn = () => false;
+  const start = ARENA - 1;
+  W.P.x = start; W.P.px = start; W.P.vx = 8;
+  W.P.x = start + 2;
+  W.resolve('x', W.P);
+  chk('third-person Block Tag still stands off walls by the usual body radius',
+    Math.abs(W.P.x - (ARENA - R)) < 1e-6, {x: W.P.x, expected: ARENA - R});
+}
+
+{
+  const W = physics();
+  arena(W);
+  W.fpOn = () => true;
+  const start = ARENA - 1;
+  W.P.x = start; W.P.px = start; W.P.vx = 8;
+  W.P.x = start + 2;
+  W.resolve('x', W.P);
+  const expected = ARENA - (R + 0.4);
+  chk('first-person Block Tag keeps the player a little farther from walls so the eye is not in the surface',
+    Math.abs(W.P.x - expected) < 1e-6, {x: W.P.x, expected, R});
+}
+
+function fpCam(){
+  const a = src.indexOf('function camSolidAt(');
+  const b = src.indexOf('function updateCamera(){', a);
+  assert.ok(a >= 0 && b > a, 'could not extract clipFpCamera');
+  const pos = {x: 0, y: 0, z: 0, set(x, y, z){ this.x = x; this.y = y; this.z = z; return this; }};
+  const ctx = {
+    Math,
+    mode: 'tag',
+    fpOn: () => true,
+    eyeHeight: () => 2.45,
+    P: body(ARENA - R, 0.05, 0),
+    cam: {yaw: -Math.PI / 2, pitch: 0, dist: 11},
+    solids: [],
+    camera: {
+      near: 0.1,
+      position: pos,
+      lookAt(){},
+      updateProjectionMatrix(){ ctx.camera._upd = true; },
+    },
+  };
+  vm.createContext(ctx);
+  vm.runInContext(src.slice(a, b), ctx);
+  return ctx;
+}
+
+{
+  const W = fpCam();
+  arena(W);
+  // Face the +X arena wall and place the default FP eye (P + forward*0.22) almost in the surface.
+  W.P.x = ARENA - R;
+  W.P.y = 0.05;
+  W.P.z = 0;
+  W.cam.yaw = -Math.PI / 2;
+  const fx = -Math.sin(W.cam.yaw);
+  W.camera.position.set(W.P.x + fx * 0.22, W.P.y + 2.45, W.P.z);
+  const unclipped = W.camera.position.x;
+  const ok = W.clipFpCamera();
+  const wallFace = ARENA; // inner face at x=34
+  chk('pressing a Block Tag wall in first-person pulls the eye back and drops the near plane to 0.05',
+    ok === true && W.camera.near <= 0.05 && W.camera._upd === true &&
+    W.camera.position.x < wallFace - 0.4 && W.camera.position.x < unclipped - 0.2,
+    {camX: W.camera.position.x, unclipped, near: W.camera.near, wallFace, ok});
+  chk('the first-person eye is not left inside the Block Tag wall AABB',
+    Math.abs(W.camera.position.x - 35) >= 1 && W.camera.position.y > 0,
+    {cam: {x: W.camera.position.x, y: W.camera.position.y, z: W.camera.position.z}});
+}
+
+
+
+{
+  const W = physics();
+  arena(W);
+  W.fpOn = () => true;
+  // Crate like buildTag's 2 m boxes: mesh y=1, hh=1 (top=2, bottom=0).
+  const crate = box(-12, 1, -10, 2, 1, 2);
+  W.solids.push(crate);
+  const start = -12 + 2 + R + 0.02;
+  W.P.x = start; W.P.z = -10; W.P.y = 0.05; W.P.py = 0.05; W.P.px = start; W.P.pz = -10; W.P.vy = 0;
+  W.P.x = start - 0.3; // overlap the crate from the east
+  W.resolve('x', W.P);
+  W.resolve('z', W.P);
+  W.resolve('y', W.P);
+  chk('walking into a Block Tag crate from the side does not teleport you under it',
+    W.P.y >= -0.05 && W.P.x >= -12 + 2 && W.P.x > -12, {x: W.P.x, y: W.P.y, under: -12, top: 2});
+}
+
+function fpWorld(){
+  const W = physics();
+  const C = fpCam();
+  // share bodies/solids/cam/camera
+  C.solids = W.solids;
+  C.P = W.P;
+  C.mode = 'tag';
+  C.fpOn = () => true;
+  C.R = 0.45;
+  C.bodyH = W.bodyH;
+  C.overlaps = W.overlaps;
+  C.ejectXZ = W.ejectXZ;
+  C.camBodyR = W.camBodyR;
+  C.resolve = W.resolve;
+  W.clipFpCamera = C.clipFpCamera;
+  W.recoverFpPlayer = C.recoverFpPlayer;
+  W.camSolidAt = C.camSolidAt;
+  W.camera = C.camera;
+  W.cam = C.cam;
+  W.eyeHeight = C.eyeHeight;
+  W.fpOn = () => true;
+  return W;
+}
+
+function insideSolid(W, x, y, z, pad){
+  pad = pad == null ? 0.02 : pad;
+  return (W.solids || []).some(b => {
+    if (!b || !b.active || b.floorOnly || !b.mesh) return false;
+    const p = b.mesh.position;
+    return Math.abs(x - p.x) < b.hw + pad && Math.abs(y - p.y) < b.hh + pad && Math.abs(z - p.z) < b.hd + pad;
+  });
+}
+
+{
+  const W = fpWorld();
+  arena(W);
+  W.solids.push(box(-12, 1, -10, 2, 1, 2));
+  // Face -X at the crate and run into it for many frames (~8 s at 60 fps).
+  const face = -12 + 2; // east face of crate at x=-10
+  W.P.x = face + R + 0.5; W.P.y = 0.05; W.P.z = -10;
+  W.P.vx = -16; W.P.vy = 0; W.P.vz = 0;
+  W.cam.yaw = Math.PI / 2; // look -X (fx = -1)
+  let trapped = false, under = false, camInside = 0, minY = 99, maxInside = 0;
+  const dt = 1 / 60;
+  for (let i = 0; i < 500; i++){
+    W.P.px = W.P.x; W.P.x += W.P.vx * dt; W.resolve('x', W.P);
+    W.P.pz = W.P.z; W.P.z += W.P.vz * dt; W.resolve('z', W.P);
+    W.P.py = W.P.y; W.P.vy = Math.max(-40, W.P.vy - 45 * dt); W.P.y += W.P.vy * dt; W.resolve('y', W.P);
+    if (W.recoverFpPlayer) W.recoverFpPlayer();
+    W.clipFpCamera();
+    if (W.P.y < -0.2) under = true;
+    if (W.P.y < minY) minY = W.P.y;
+    const cam = W.camera.position;
+    if (insideSolid(W, cam.x, cam.y, cam.z, 0.02)){ camInside++; if (camInside > maxInside) maxInside = camInside; trapped = true; }
+    else camInside = 0;
+  }
+  chk('running first-person into a Block Tag crate for 8s never puts the player under it or the eye inside it',
+    !under && !trapped && minY >= -0.05 && W.P.y >= -0.05 && W.camera.near <= 0.05 && maxInside === 0,
+    {y: W.P.y, minY, x: W.P.x, cam: {x: W.camera.position.x, y: W.camera.position.y, z: W.camera.position.z}, maxInside, near: W.camera.near});
+}
+
+{
+  const W = fpWorld();
+  arena(W);
+  // Sprint into the +X brown arena wall for many frames, looking at it.
+  W.P.x = ARENA - 2; W.P.y = 0.05; W.P.z = 0;
+  W.P.vx = 16; W.P.vy = 0; W.P.vz = 0;
+  W.cam.yaw = -Math.PI / 2; // look +X
+  let under = false, trapped = false, minY = 99, maxInside = 0, camInside = 0;
+  const dt = 1 / 60;
+  for (let i = 0; i < 500; i++){
+    W.P.px = W.P.x; W.P.x += W.P.vx * dt; W.resolve('x', W.P);
+    W.P.pz = W.P.z; W.P.z += W.P.vz * dt; W.resolve('z', W.P);
+    W.P.py = W.P.y; W.P.vy = Math.max(-40, W.P.vy - 45 * dt); W.P.y += W.P.vy * dt; W.resolve('y', W.P);
+    if (W.recoverFpPlayer) W.recoverFpPlayer();
+    W.clipFpCamera();
+    if (W.P.y < -0.2) under = true;
+    if (W.P.y < minY) minY = W.P.y;
+    const cam = W.camera.position;
+    if (insideSolid(W, cam.x, cam.y, cam.z, 0.02)){ camInside++; if (camInside > maxInside) maxInside = camInside; trapped = true; }
+    else camInside = 0;
+  }
+  const wallFace = ARENA;
+  chk('running first-person into a Block Tag arena wall for 8s never buries the eye in the wall',
+    !under && !trapped && minY >= -0.05 && W.P.x <= wallFace - R + 1e-6 && W.camera.position.x < wallFace - 0.3 && W.camera.near <= 0.05,
+    {x: W.P.x, y: W.P.y, minY, camX: W.camera.position.x, camY: W.camera.position.y, maxInside, near: W.camera.near});
+}
+
+{
+  const W = physics();
+  W.mode = 'pethotel';
+  W.fpOn = () => true;
+  W.P.x = 12; W.P.px = 12; W.P.vx = 8; W.P.y = 0.05;
+  W.solids = [box(13.7, 2, 2.5, 0.25, 2, 12.5)];
+  W.P.x = 13.6;
+  W.resolve('x', W.P);
+  const expected = 13.7 - 0.25 - (R + 0.4);
+  chk('Pet Hotel first-person also stands the player off walls so the eye stays outside the near plane',
+    Math.abs(W.P.x - expected) < 1e-6, {x: W.P.x, expected, mode: W.mode});
+}
+
 
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);

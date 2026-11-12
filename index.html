@@ -180,13 +180,13 @@ body.dark .sitem canvas{background:linear-gradient(#34427e,#26306a)}
 .obby.show{display:block}
 #obbyView{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
 #obbyView canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;z-index:0;pointer-events:auto}
-#obby.dhmode .dhbar,#obby.dhmode #dhBar,#obby.dhmode #dhAct,#obby.dhmode #dhTip{z-index:80;pointer-events:auto}
+#obby.dhmode .dhbar,#obby.dhmode #dhBar,#obby.dhmode #dhAct,#obby.dhmode #dhTip{z-index:200;pointer-events:auto}
 .ofps{position:absolute;top:auto;right:auto;left:max(10px,env(safe-area-inset-left));bottom:max(12px,calc(env(safe-area-inset-bottom) + 12px));z-index:41;background:rgba(29,35,64,.88);color:#fff;font-weight:900;font-size:13px;padding:4px 8px;border-radius:8px;pointer-events:none;display:none}
 #obby.dhouse .ofps{bottom:calc(var(--dhbar-clear, 160px) + 12px);left:max(10px,env(safe-area-inset-left))}
 .ofps.on{display:block}
 #setGfx{font:inherit;font-weight:900;border:2px solid var(--line,#d9dcec);border-radius:10px;padding:6px 10px;background:#fff}
 .gfxset .padsens{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0}
-.ohud{position:absolute;top:10px;left:10px;right:10px;z-index:auto;display:flex;justify-content:space-between;gap:10px;pointer-events:none;flex-wrap:wrap}
+.ohud{position:absolute;top:10px;left:10px;right:10px;z-index:200;display:flex;justify-content:space-between;gap:10px;pointer-events:none;flex-wrap:wrap}
 .ostats{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;max-width:min(46vw,380px);position:relative;z-index:40}
 .dhstack{position:absolute;top:max(10px,calc(env(safe-area-inset-top) + 8px));left:max(10px,env(safe-area-inset-left));z-index:40;display:none;flex-direction:column;align-items:stretch;gap:10px;max-width:min(42vw,280px);pointer-events:none}
 .dhstack.show{display:flex}
@@ -195,8 +195,8 @@ body.dark .sitem canvas{background:linear-gradient(#34427e,#26306a)}
 #obby.paused #dhBox, #obby.dh-intro #dhBox, #obby.dh-intro #oCross, #obby.dh-intro .ocross{
   display:none !important;
 }
-.ostats>span,.obtns button{pointer-events:auto;background:rgba(255,255,255,.92);color:#1d2340;font-weight:900;font-size:17px;padding:8px 14px;border-radius:14px;box-shadow:0 4px 0 rgba(0,0,0,.18);display:flex;align-items:center;gap:6px}
-.obtns{display:flex;gap:8px;position:relative;z-index:70}
+.ostats>span,.obtns button{pointer-events:auto;position:relative;z-index:121;background:rgba(255,255,255,.92);color:#1d2340;font-weight:900;font-size:17px;padding:8px 14px;border-radius:14px;box-shadow:0 4px 0 rgba(0,0,0,.18);display:flex;align-items:center;gap:6px}
+.obtns{display:flex;gap:8px;position:relative;z-index:120;pointer-events:none}
 .obtns button{border:0;font-family:inherit;cursor:pointer;transition:transform .15s}
 .obtns button:hover{transform:translateY(-2px)}
 .otip{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);background:rgba(29,35,64,.85);color:#fff;font-weight:800;font-size:17px;padding:12px 20px;border-radius:16px;text-align:center;transition:opacity .6s;max-width:92vw}
@@ -535,7 +535,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .dhstep{font-size:14px;line-height:1.35;padding:3px 6px;border-radius:8px}
 .dhstep.done{color:#2ec27e}
 .dhstep.on{background:#fff3c4;box-shadow:0 0 0 2px #ffd23f}
-.dhtestnote{display:none;position:absolute;top:max(10px,calc(env(safe-area-inset-top) + 8px));left:50%;transform:translateX(-50%);z-index:80;background:rgba(29,35,64,.92);color:#fffaf0;border:2px solid #ffd23f;border-radius:14px;padding:8px 16px;font-weight:800;font-size:14px;line-height:1.35;text-align:center;max-width:min(92vw,440px);pointer-events:none;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.dhtestnote{display:none;position:absolute;top:max(72px,calc(env(safe-area-inset-top) + 64px));left:50%;transform:translateX(-50%);z-index:80;background:rgba(29,35,64,.92);color:#fffaf0;border:2px solid #ffd23f;border-radius:14px;padding:8px 16px;font-weight:800;font-size:14px;line-height:1.35;text-align:center;max-width:min(92vw,520px);pointer-events:none;box-shadow:0 6px 16px rgba(0,0,0,.25)}
 .dhtestnote.show{display:block}
 .dhtip{display:none;position:absolute;left:50%;bottom:max(110px,calc(env(safe-area-inset-bottom) + 96px));transform:translateX(-50%);z-index:40;background:#fffaf0;border:3px solid #3a86ff;border-radius:18px;padding:14px 16px 12px;max-width:min(92vw,480px);box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:auto;color:#1d2340;font-weight:800;font-size:16px;line-height:1.35}
 .dhtip.show{display:block}
@@ -1624,7 +1624,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.12-2';
+const BUILD = '2026.11.12-6';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3329,6 +3329,7 @@ const Obby = (() => {
     if (on) cam.pitch = .08; else { cam.pitch = .42; cam.dist = Math.max(cam.dist, 6); if (document.pointerLockElement) document.exitPointerLock(); }
     const b = document.getElementById('oFP'); if (b){ b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }
     if (!quiet && running) banner(on ? '👁️ First person' : '🎥 Third person');
+    if (running && typeof updateCamera === 'function') updateCamera();
   }
   const keys = {};
   const joy = {x:0, y:0, jump:false};
@@ -5036,8 +5037,12 @@ const Obby = (() => {
       }
       const p = b.mesh.position;
       if (axis === 'y'){
-        if (B.vy <= 0 && (B.y > p.y || (B.py != null && B.py >= p.y + b.hh - Math.max(0, b.dy || 0) - .05))){ B.y = p.y + b.hh;   /* feet above the top before this move: land, even at low fps */ B.vy = 0; B.onGround = true; B.ground = b; }
-        else { B.y = p.y - b.hh - bodyH(); if (B.vy > 0) B.vy = 0; }
+        const top = p.y + b.hh, bot = p.y - b.hh;
+        const wasAbove = (B.py != null && isFinite(B.py) && B.py >= top - Math.max(0, b.dy || 0) - .08);
+        const wasBelow = (B.py != null && isFinite(B.py) && B.py + bodyH() <= bot + .08);
+        if (B.vy <= 0 && (wasAbove || B.y >= top - 0.2)){ B.y = top; B.vy = 0; B.onGround = true; B.ground = b; }
+        else if (B.vy > 0 && wasBelow){ B.y = bot - bodyH(); B.vy = 0; }
+        // Side overlap (walking into a crate or arena wall): do not teleport under the box.
         continue;
       }
       const up = p.y + b.hh - B.y;
@@ -5049,11 +5054,16 @@ const Obby = (() => {
   // Push out on the side the body came from (or the nearer face). Midpoint
   // eject used to fling you through thin walls or out of the Block Tag arena
   // when a long frame carried you past the box center.
+  function camBodyR(B){
+    if (B === P && typeof fpOn === 'function' && fpOn() && (mode === 'tag' || mode === 'pethotel')) return R + 0.4;
+    return R;
+  }
   function ejectXZ(axis, B, b){
     const p = b.mesh.position;
     const c = axis === 'x' ? p.x : p.z;
     const h = axis === 'x' ? b.hw : b.hd;
-    const lo = c - h - R, hi = c + h + R;
+    const rad = camBodyR(B);
+    const lo = c - h - rad, hi = c + h + rad;
     const prev = axis === 'x' ? B.px : B.pz;
     let side = 0;
     if (prev != null && isFinite(prev)){
@@ -12347,6 +12357,28 @@ const Obby = (() => {
   }
   function dhIsVisitor(){ return !!(dh && dh.visiting); }
   function dhCanEdit(){ return !!(dh && !dhIsVisitor()); }
+  function dhIsFurn(id){ const m = typeof dhMatOf === 'function' ? dhMatOf(id) : null; return !!(m && m.furn); }
+  function dhFurnIds(){ return (typeof DH_MATS !== 'undefined' ? DH_MATS : []).filter(m => m && m.furn).map(m => m.id); }
+  function dhHeldFurn(){ return (dh && dh.carry && dhIsFurn(dh.carry.id)) ? dh.carry.id : null; }
+  function dhStockFurn(){ if (!dh) return null; return dhFurnIds().find(id => (dh.stock[id]|0) > 0) || null; }
+  function dhFurnBox(id){
+    const boxes = {
+      sofa: {w: 1.52, h: 0.92, d: 0.80},
+      bed: {w: 1.70, h: 0.62, d: 1.25},
+      table: {w: 1.10, h: 0.78, d: 1.10},
+      lamp: {w: 0.32, h: 1.16, d: 0.32},
+      plant: {w: 0.50, h: 0.72, d: 0.50},
+      rug: {w: 1.70, h: 0.04, d: 1.15},
+      tv: {w: 1.12, h: 1.42, d: 0.36},
+      shelf: {w: 0.90, h: 1.80, d: 0.36}
+    };
+    return boxes[id] || {w: (typeof DH_CELL === 'number' ? DH_CELL : 1.4) * 0.92, h: 0.4, d: (typeof DH_CELL === 'number' ? DH_CELL : 1.4) * 0.92};
+  }
+  function dhIsBuildSupply(id){
+    const m = typeof dhMatOf === 'function' ? dhMatOf(id) : null;
+    // Yard supplies (bricks, planks, mix, …) — not paint or furniture.
+    return !!(m && m.free && !m.furn && m.id !== 'paint');
+  }
   function dhHostName(){
     if (dh && dh.hostName) return String(dh.hostName);
     try {
@@ -12968,7 +13000,17 @@ const Obby = (() => {
       const panels = (typeof dhRectsMinusHoles === 'function') ? dhRectsMinusHoles(size.len, size.h, holes) : [{x: -size.len / 2, y: -size.h / 2, w: size.len, h: size.h}];
       panels.forEach(r => add(box(r.w, r.h, 0.03, mat), r.x + r.w / 2, r.y + r.h / 2, 0));
     }
-    else if (id === 'sofa'){ solid(1.80, .42, .85, 0, .21, 0, dhMat('#3a86ff')); add(box(1.80, .45, .16, dhMat('#3a86ff')), 0, 0.64, -.32); }
+    else if (id === 'sofa'){
+      // Built on the slab (group y = DH_SLAB_H). Local y=0 is the slab top.
+      const frame = dhMat('#2f5db8'), cush = dhMat('#5aa7ff'), wood = M.dark || dhMat('#4a3728');
+      [[-0.64, -0.30], [0.64, -0.30], [-0.64, 0.30], [0.64, 0.30]].forEach(([lx, lz]) => add(box(.08, .10, .08, wood), lx, 0.05, lz));
+      solid(1.28, .16, .72, 0, 0.18, 0, frame);
+      add(box(1.20, .14, .62, cush), 0, 0.33, 0.04);
+      add(box(1.40, .62, .16, frame), 0, 0.61, -0.32);
+      add(box(1.28, .48, .12, cush), 0, 0.62, -0.24);
+      add(box(.14, .38, .76, frame), -0.69, 0.41, 0);
+      add(box(.14, .38, .76, frame), 0.69, 0.41, 0);
+    }
     else if (id === 'bed'){ solid(2.00, .40, 1.40, 0, .20, 0, dhMat('#fffaf0')); add(box(.55, .22, 1.36, dhMat('#ffe0ef')), 0, 0.42, .40); }
     else if (id === 'table'){ add(box(1.10, .06, 1.10, M.wood), 0, 0.74, 0); [[-.48, -.48], [.48, -.48], [-.48, .48], [.48, .48]].forEach(([x, z]) => add(box(.08, .74, .08, M.dark), x, 0.37, z)); solidsLocal.push({mesh: g, hw: .55, hh: .4, hd: .55, ox: 0, oy: 0.4, oz: 0}); }
     else if (id === 'lamp'){ add(box(.14, .90, .14, M.dark), 0, 0.45, 0); add(new THREE.Mesh(new THREE.SphereGeometry(.16, 10, 8), dhMat('#ffe08a', {emissive: '#ffe08a', emissiveIntensity: .4})), 0, 1.00, 0); }
@@ -13437,11 +13479,30 @@ const Obby = (() => {
 
   function dhMakeGhost(){
     const g = new THREE.Group(); g.visible = false;
-    const glow = new THREE.Mesh(new THREE.BoxGeometry(DH_CELL * .92, .16, DH_CELL * .92), dhMat('#ffe08a', {transparent: true, opacity: .55, emissive: '#ffe08a', emissiveIntensity: .7, depthWrite: false}));
-    glow.position.y = .2; g.add(glow);
+    const glow = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), dhMat('#ffe08a', {transparent: true, opacity: .45, emissive: '#ffe08a', emissiveIntensity: .55, depthWrite: false}));
+    glow.position.y = .08; g.add(glow);
     const pole = new THREE.Mesh(new THREE.BoxGeometry(.1, 1.1, .1), dhMat('#ffd23f', {emissive: '#ffd23f', emissiveIntensity: .45}));
     pole.position.y = .7; g.add(pole);
-    g.userData.glow = glow; g.userData.pole = pole;
+    let outline = null;
+    try {
+      if (THREE.EdgesGeometry && THREE.LineSegments){
+        const mat = new THREE.LineBasicMaterial({color: 0x2ec27e, transparent: true, opacity: 0.95, depthWrite: false});
+        outline = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)), mat);
+        outline.position.y = 0.4;
+        g.add(outline);
+      }
+    } catch (e){ outline = null; }
+    if (!outline){
+      outline = new THREE.Group();
+      const rail = dhMat('#2ec27e', {transparent: true, opacity: .85, emissive: '#2ec27e', emissiveIntensity: .3, depthWrite: false});
+      [[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5], [0.5, 0.5]].forEach(([lx, lz]) => {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(.03, 1, .03), rail);
+        m.position.set(lx, 0.5, lz);
+        outline.add(m);
+      });
+      g.add(outline);
+    }
+    g.userData.glow = glow; g.userData.pole = pole; g.userData.outline = outline;
     return g;
   }
   function dhBuildBounds(){
@@ -14289,7 +14350,11 @@ const Obby = (() => {
     if ((job === 'stud' || job === 'rafter' || job === 'frame') && !(dh.carry && dh.carry.id === 'wood') && !(dh.stock.wood|0)) return '📦 Grab free wood at the Supply Yard first';
     if (job === 'shingle' && !(dh.carry && dh.carry.id === 'shingle') && !(dh.stock.shingle|0)) return '📦 Grab free shingles at the Supply Yard first';
     if (job === 'glass' && !(dh.carry && dh.carry.id === 'glass') && !(dh.stock.glass|0)) return '📦 Grab free glass at the Supply Yard first';
-    if (job === 'paint' && !(dh.carry && dh.carry.id === 'paint') && !(dh.stock.paint|0)) return '📦 Grab free paint at the Supply Yard first';
+    if (job === 'paint' && !(dh.carry && dh.carry.id === 'paint') && !(dh.stock.paint|0) && !dhHeldFurn() && !dhStockFurn()) return '📦 Grab free paint at the Supply Yard first';
+    if (dhHeldFurn() || dhStockFurn() || job === 'furn'){
+      if (!dhHeldFurn() && !dhStockFurn()) return '🛋️ Buy furniture at the Furniture Store, then press E in the room to place it';
+      if (!dhNearOwnPlot() && dhPlotAt(P.x, P.z) !== dh.mine) return '🏡 Walk onto your plot to place furniture';
+    }
     if (job === 'dig'){
       const c = dhJobCounts('dig'), m = dhJobCounts('mark');
       if (c.have >= c.need) return '🪣 Foundation spots are dug — grab Cement + Sand at the Supply Yard';
@@ -14415,6 +14480,9 @@ const Obby = (() => {
       if (keepId && rec.id === keepId) return;
       if (keepId && dhMixerPair(rec.id, keepId)) return;
       if (rec.id === 'wetmix') return;
+      // A held furniture piece must never be swapped out for bricks or other yard supplies.
+      // Paint, another furniture piece, or an explicit dump (keepId === true) may still put it back.
+      if (keepId !== true && dhIsFurn(rec.id) && dhIsBuildSupply(keepId)) return;
       dh.stock[rec.id] = (dh.stock[rec.id] || 0) + rec.n;
       put.push(rec.n + ' ' + ((dhMatOf(rec.id) || {name: rec.id}).name));
       dh[slot] = null;
@@ -14494,7 +14562,9 @@ const Obby = (() => {
       : null;
     if (!slot) return false;
     dh[slot].n -= n; if (dh[slot].n <= 0) dh[slot] = null;
-    dhHud(); return true;
+    dhHud();
+    if (typeof dhBar === 'function') dhBar();
+    return true;
   }
   function dhStockViz(plot){
     if (!dh) return;
@@ -14580,6 +14650,7 @@ const Obby = (() => {
   }
   function dhPlaceBrick(){
     if (!dh) return false;
+    if (dhHeldFurn()) return dhPlaceKind(dhHeldFurn());
     if (!dhEnsureHeld('brick', 1)){
       banner('🧱 Grab more bricks at the Supply Yard');
       return false;
@@ -14715,6 +14786,10 @@ const Obby = (() => {
         rec[4] = (spot && spot.face != null) ? spot.face : (dhWallFaceFromAim(aim) || 0); rec[1] = 0; rec[3] = 0;
       }
     }
+    if (dhIsFurn(id) && (dh.pieces[plot] || []).some(a => dhIsFurn(a[0]) && (a[1]|0) === (rec[1]|0) && (a[3]|0) === (rec[3]|0))){
+      banner('🛋️ That floor tile already has furniture — look at an empty spot');
+      return false;
+    }
     if ((dh.pieces[plot] || []).some(a => dhKeyOf(a) === dhKeyOf(rec))) return false;
     if (id === 'stud' || id === 'rafter'){ if (!dh.carry || dh.carry.id !== 'wood'){ banner('🪵 Carry planks from the yard or your pile'); return false; } dhUseCarry(1); }
     if (id === 'shingle'){ if (!dh.carry || dh.carry.id !== 'shingle'){ banner('🏠 Carry shingles to the roof'); return false; } dhUseCarry(1); }
@@ -14758,6 +14833,24 @@ const Obby = (() => {
       const ok = dhRemoveAt(aim.plot, aim.ix, 0, aim.iz) || dhRemoveAt(aim.plot, 0, 0, aim.iz);
       if (ok){ dhNet('del', aim); dhHud(); } return ok;
     }
+    // Whatever is in your hands wins — even during the brick stage.
+    if (dhHeldFurn()) return dhPlaceKind(dhHeldFurn());
+    if (dh.job === 'furn'){
+      const fid = dhStockFurn();
+      if (fid && typeof dhEnsureHeld === 'function') dhEnsureHeld(fid, 1);
+      if (dhHeldFurn()) return dhPlaceKind(dhHeldFurn());
+      banner('🛋️ Buy furniture at the Furniture Store, then press E in the room to place it');
+      return false;
+    }
+    // Empty hands + furniture in inventory: place it during paint/furnish (E-from-inventory).
+    // During the brick stage, empty hands still lay a brick from inventory — held furniture already won above.
+    if (!dh.carry && typeof dhStockFurn === 'function' && dhStockFurn()){
+      const stage = (typeof dhStageId === 'function') ? dhStageId() : '';
+      if (dh.job === 'paint' || stage === 'paint' || stage === 'furn'){
+        dhEnsureHeld(dhStockFurn(), 1);
+        if (dhHeldFurn()) return dhPlaceKind(dhHeldFurn());
+      }
+    }
     if (dh.job === 'mark' || dh.job === 'dig') return dhMarkOrDig();
     if (dh.job === 'pour' || (dh.carry && dh.carry.id === 'wetmix')){
       if (dh.carry && dh.carry.id === 'wetmix') return dhPour();
@@ -14776,9 +14869,6 @@ const Obby = (() => {
       return dhPlaceKind('winframe');
     }
     if (dh.job === 'paint') return dhPlaceKind('paint');
-    if (dh.job === 'furn' && dh.carry && dhMatOf(dh.carry.id) && dhMatOf(dh.carry.id).furn) return dhPlaceKind(dh.carry.id);
-    // generic: if carrying a furniture/paint/shingle etc, place it
-    if (dh.carry && dhMatOf(dh.carry.id) && dhMatOf(dh.carry.id).furn) return dhPlaceKind(dh.carry.id);
     if (dh.carry && dh.carry.id === 'shingle') return dhPlaceKind('shingle');
     if (dh.carry && dh.carry.id === 'wood') return dhPlaceKind(dh.job === 'rafter' ? 'rafter' : 'stud');
     if (dh.carry && dh.carry.id === 'paint') return dhPlaceKind('paint');
@@ -14792,7 +14882,18 @@ const Obby = (() => {
   function dhCycleColor(dir){ if (!dh) return; dh.color = (dh.color + dir + DH_PAINT.length) % DH_PAINT.length; dhHud(); dhBar(); }
   function dhSetTool(t){ if (!dh) return; const ch = dh.tool !== t; dh.tool = t; dhBar(); dhHud(); if (ch && typeof dhShowSpots === 'function') dhShowSpots(); }
   function dhSetStory(){ return false; }
-  function dhSetJob(j){ if (!dh) return; const ch = dh.job !== j; dh.job = j; dh.tool = 'place'; dhBar(); dhHud(); if (ch && typeof dhShowSpots === 'function') dhShowSpots(); }
+  function dhSetJob(j){
+    if (!dh) return;
+    const ch = dh.job !== j;
+    dh.job = j;
+    dh.tool = 'place';
+    if (j === 'furn' && !dhHeldFurn()){
+      const fid = dhStockFurn();
+      if (fid && typeof dhEnsureHeld === 'function') dhEnsureHeld(fid, 1);
+    }
+    dhBar(); dhHud();
+    if (ch && typeof dhShowSpots === 'function') dhShowSpots();
+  }
 
   function dhVisitLike(){
     if (!dh || !dhIsVisitor()) return false;
@@ -14922,7 +15023,8 @@ const Obby = (() => {
     const m = dhMatOf(id); if (!m || !m.furn) return false;
     if (!dhPay(m.cost)){ banner('🪙 Need ' + m.cost + ' coins for ' + m.name); return false; }
     dh.stock[id] = (dh.stock[id] || 0) + 1;
-    banner(m.e + ' Bought a ' + m.name + ' — pick it up and place it!');
+    if (typeof dhEnsureHeld === 'function') dhEnsureHeld(id, 1);
+    banner(m.e + ' Bought a ' + m.name + ' — go into your house and press E to place it');
     dhSave(); dhHud(); dhBar(); dhRenderShop();
     return true;
   }
@@ -15302,30 +15404,38 @@ const Obby = (() => {
     if (typeof dhShowTestNote === 'function') dhShowTestNote();
     if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
   }
-  function dhShowTestNote(){
-    if (!dh || !dhTestActive()) return false;
+  function dhHideTestNote(){
     let el = null;
     try {
       if (typeof document !== 'undefined' && document.getElementById) el = document.getElementById('dhTestNote');
       if (!el && typeof $ === 'function') el = $('#dhTestNote');
     } catch (e){}
     if (!el) return false;
-    const msg = '🧪 Test house only — your real Dream House save is not used or written';
+    if (el.classList && el.classList.remove) el.classList.remove('show');
+    if (el.style) el.style.display = 'none';
+    if (el.textContent !== undefined) el.textContent = '';
+    if (dh) dh._testNoteShown = false;
+    return true;
+  }
+  function dhShowTestNote(){
+    if (!dh || !dhTestActive()) return dhHideTestNote() && false;
+    if (typeof mode !== 'undefined' && mode && mode !== 'dreamhouse') return dhHideTestNote() && false;
+    let el = null;
+    try {
+      if (typeof document !== 'undefined' && document.getElementById) el = document.getElementById('dhTestNote');
+      if (!el && typeof $ === 'function') el = $('#dhTestNote');
+    } catch (e){}
+    if (!el) return false;
+    const id = dhTestFixtureId() || 'test';
+    const msg = '🧪 TEST HOUSE · ' + id + ' — in-memory only, your real Dream House save is not used or written';
     if (el.textContent !== undefined) el.textContent = msg;
     if (el.classList && el.classList.add) el.classList.add('show');
     if (el.style) el.style.display = '';
     dh._testNoteShown = true;
-    if (typeof setTimeout === 'function'){
-      if (dh._testNoteT) try { clearTimeout(dh._testNoteT); } catch (e){}
-      dh._testNoteT = setTimeout(() => {
-        if (el.classList && el.classList.remove) el.classList.remove('show');
-        if (el.style) el.style.display = 'none';
-        dh._testNoteT = 0;
-      }, 4000);
-    }
     return true;
   }
   function dreamhouseStop(){
+    if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}
     if (typeof dhClosePauseMenus === 'function') try { dhClosePauseMenus(); } catch (e){}
     if (typeof dhCloseReset === 'function') try { dhCloseReset(); } catch (e){}
     if (typeof dhHideLookHint === 'function') try { dhHideLookHint(); } catch (e){}
@@ -15350,7 +15460,8 @@ const Obby = (() => {
     Object.keys(dh.mixers || {}).forEach(k => dh.mixers[k] && dh.mixers[k].mesh && scene.remove(dh.mixers[k].mesh));
     (dh.trees || []).forEach(t => t.mesh && scene.remove(t.mesh));
     if (typeof model !== 'undefined' && model && model.g) model.g.visible = true;
-    ['#dhBar', '#dhAct', '#dhCut', '#dhShop', '#dhYard', '#dhUp', '#dhGuide', '#dhGoal', '#dhSteps', '#dhTip'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
+    if (typeof dhHideTestNote === 'function') dhHideTestNote();
+    ['#dhBar', '#dhAct', '#dhCut', '#dhShop', '#dhYard', '#dhUp', '#dhGuide', '#dhGoal', '#dhSteps', '#dhTip', '#dhTestNote'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
     const replay = $('#dhReplay'); if (replay) replay.style.display = 'none';
     const resetBtn = $('#dhResetBtn'); if (resetBtn) resetBtn.style.display = 'none';
     if (typeof document !== 'undefined' && document.getElementById){ const root = document.getElementById('obby'); if (root && root.classList) root.classList.remove('dhouse'); }
@@ -15398,6 +15509,10 @@ const Obby = (() => {
       const later = dhCarryLaterPrompt('glass');
       if (later) return later;
       return '🪟 Install glass';
+    }
+    if (dh.carry && dhIsFurn(dh.carry.id) && onLot){
+      const m = dhMatOf(dh.carry.id) || {e:'🛋️', name:'furniture'};
+      return (m.e || '🛋️') + ' ' + key + ': Place ' + (m.name || 'furniture');
     }
     if (pile && !dh.carry) return '📦 Pick up materials';
     if (dh.carry && pile && dh.carry.id !== 'wetmix') return '📦 Dump on your plot';
@@ -15471,7 +15586,7 @@ const Obby = (() => {
   function dhShowLookHint(){
     const el = $('#dhLookHint');
     if (!el) return;
-    el.textContent = 'Click the view to look around · Esc or Tab to click buttons';
+    el.textContent = 'Click the view to look around · Esc or Tab to click Exit and tools';
     el.style.display = 'block';
     el.classList.add('show');
     if (dh) dh.lookHintT = 8;
@@ -15483,7 +15598,12 @@ const Obby = (() => {
   }
   function dhTickLookHint(dt){
     if (!dh || !dh.lookHintT) return;
-    if (typeof document !== 'undefined' && document.pointerLockElement){ dhHideLookHint(); return; }
+    if (typeof document !== 'undefined' && document.pointerLockElement){
+      // Keep the hint visible while locked so Exit / Furnish stay discoverable.
+      const el = $('#dhLookHint');
+      if (el){ el.textContent = 'Esc or Tab to click Exit and tools'; el.style.display = 'block'; el.classList.add('show'); }
+      return;
+    }
     dh.lookHintT -= (dt || 0);
     if (dh.lookHintT <= 0) dhHideLookHint();
   }
@@ -15963,6 +16083,10 @@ const Obby = (() => {
   function dhGoalText(){
     if (!dh) return '';
     if (dhIsVisitor()) return "You're visiting " + dhHostName() + "'s house — walk around and look! You cannot edit or break it.";
+    if (dhHeldFurn()){
+      const m = dhMatOf(dhHeldFurn()) || {name: 'furniture'};
+      return 'Look at the floor and press E to place your ' + m.name;
+    }
     const stage = dhStageId();
     if (stage === 'stake'){
       const c = dhJobCounts('mark');
@@ -15988,8 +16112,8 @@ const Obby = (() => {
     if (stage === 'shingle') return (!(dh.carry && dh.carry.id === 'shingle')) ? 'Grab shingles at the Supply Yard' : 'Aim and click to place each shingle';
     if (stage === 'frame') return 'Aim at a wall opening and place a door or window frame';
     if (stage === 'glass') return (!(dh.carry && dh.carry.id === 'glass')) ? 'Grab glass at the Supply Yard, then aim at an empty window' : 'Aim at an empty window and click to set a pane';
-    if (stage === 'paint') return 'Pick a color and paint the walls';
-    return 'Visit the Furniture Store and place furniture in your house';
+    if (stage === 'paint') return 'Paint the walls, or buy furniture and press E to place it in the room';
+    return 'Buy furniture at the Furniture Store, then press E in the room to place it';
   }
   const DH_TIPS = {
     stake: 'Look at a foundation spot so its outline glows, then press E or click to plant a stake. Standing next to a spot works too. Finish every corner.',
@@ -16001,8 +16125,8 @@ const Obby = (() => {
     shingle: 'Aim at the roof and click to set each shingle.',
     frame: 'Aim at the door or window opening and place the frame.',
     glass: 'Carry a glass pane and click an empty window to set it.',
-    paint: 'Choose a color and paint your walls.',
-    furn: 'Buy furniture at the Furniture Store, then place it in the room.'
+    paint: 'Choose a color and paint your walls. You can also buy furniture and press E to place it now.',
+    furn: 'Buy furniture at the Furniture Store, then look at the floor in your house and press E, click, or Ⓧ to place it.'
   };
   function dhTipOpen(){
     const tip = $('#dhTip');
@@ -16327,7 +16451,23 @@ const Obby = (() => {
     dhPulseBeacons();
     if (!dh.ghost) return;
     let pos = null, ok = false, can = true;
-    if (stage === 'brick'){
+    const furnId = dhHeldFurn() || ((dh.job === 'furn' || stage === 'furn') ? dhStockFurn() : null);
+    if (furnId){
+      const slabY = (typeof DH_SLAB_H === 'number' ? DH_SLAB_H : 0.3);
+      const hit = (typeof dhRayPlaneHit === 'function') ? dhRayPlaneHit(slabY, 12) : null;
+      let cell = (hit && typeof dhCellAt === 'function') ? dhCellAt(hit.x, hit.z) : null;
+      const inFoot = (c) => c && c.plot === dh.mine && (typeof dhInFoot !== 'function' || dhInFoot(c.ix, c.iz));
+      if (!inFoot(cell) && typeof dhAimCell === 'function') cell = dhAimCell();
+      if (!inFoot(cell) && typeof dhCellAt === 'function' && typeof P !== 'undefined' && P) cell = dhCellAt(P.x, P.z);
+      if (!inFoot(cell) && typeof dhTargetSpot === 'function') cell = dhTargetSpot('furn');
+      if (inFoot(cell) || (cell && cell.plot === dh.mine)){
+        const w = dhCellWorld(cell.plot, cell.ix, cell.iz, slabY);
+        pos = {x: w.x, y: w.y, z: w.z, ry: ((dh.rot | 0) * Math.PI) / 2};
+        ok = true;
+        const taken = (dh.pieces[cell.plot] || []).some(a => dhIsFurn(a[0]) && (a[1]|0) === (cell.ix|0) && (a[3]|0) === (cell.iz|0));
+        can = !taken && !!(dhHeldFurn() || dhStockFurn());
+      }
+    } else if (stage === 'brick'){
       const slot = retarget ? dhTargetSpotCached('brick') : (dh._tgtCache && dh._tgtCache.val);
       const s = slot || (retarget ? null : dhTargetSpotCached('brick'));
       if (s){ pos = s; ok = true; can = !s.filled && !!(dh.carry && dh.carry.id === 'brick' && dh.carry.n > 0); }
@@ -16353,9 +16493,31 @@ const Obby = (() => {
         if (glow.material.color && glow.material.color.set) glow.material.color.set(col);
       }
       const pole = dh.ghost.userData && dh.ghost.userData.pole;
+      const outline = dh.ghost.userData && dh.ghost.userData.outline;
       if (glow && glow.scale){
-        if (stage === 'brick'){ glow.scale.set(DH_BRICK_W / (DH_CELL * .92), DH_BRICK_H / .16, DH_BRICK_D / (DH_CELL * .92)); if (pole) pole.visible = false; }
-        else { glow.scale.set(1, 1, 1); if (pole) pole.visible = true; }
+        if (furnId){
+          const box = (typeof dhFurnBox === 'function') ? dhFurnBox(furnId) : {w: DH_CELL * .92, h: 0.8, d: DH_CELL * .92};
+          glow.scale.set(box.w, 0.06, box.d);
+          glow.position.y = 0.03;
+          if (pole) pole.visible = false;
+          if (outline){
+            outline.visible = true;
+            if (outline.scale && outline.scale.set) outline.scale.set(box.w, box.h, box.d);
+            if (outline.position) outline.position.y = box.h / 2;
+            const om = outline.material || (outline.children && outline.children[0] && outline.children[0].material);
+            if (om && om.color && om.color.set) om.color.set(col);
+          }
+        } else if (stage === 'brick'){
+          glow.scale.set(DH_BRICK_W, DH_BRICK_H, DH_BRICK_D);
+          glow.position.y = DH_BRICK_H / 2;
+          if (pole) pole.visible = false;
+          if (outline) outline.visible = false;
+        } else {
+          glow.scale.set(DH_CELL * .92, 0.16, DH_CELL * .92);
+          glow.position.y = 0.08;
+          if (pole) pole.visible = true;
+          if (outline) outline.visible = false;
+        }
       }
     }
   }
@@ -16637,6 +16799,7 @@ const Obby = (() => {
       paint: ['paint'],
       wetmix: ['pour']
     };
+    if (typeof dhIsFurn === 'function' && dhIsFurn(id)) return null; // place furniture any time, including during paint
     const ok = (ready[id] || [id]).includes(stage);
     if (ok) return null;
     const names = {glass:'install glass', brick:'lay bricks', wood:'build with wood', shingle:'nail shingles', paint:'paint', wetmix:'pour concrete'};
@@ -16973,6 +17136,7 @@ const Obby = (() => {
     if (/^Digit[1-9]$/.test(k) || /^Numpad[1-9]$/.test(k)){ const i = (k.slice(-1)|0) - 1; if (DH_JOBS[i]) dhSetJob(DH_JOBS[i]); return true; }
     return false;
   }
+
   /* ---------- per-frame ---------- */
   const SIT_POSE = {lL: -1.45, lR: -1.45, aL: -1.05, aR: -1.05, lean: 0};
   function animate(dt){
@@ -17292,6 +17456,126 @@ function dhLayoutHud(){
     $('#oRot').classList.toggle('show', show);
     clearTimeout(rotT); if (show) rotT = setTimeout(() => { rotDismissed = true; $('#oRot').classList.remove('show'); }, 5000);
   }
+  function camSolidAt(x, y, z, pad){
+    pad = pad == null ? .25 : pad;
+    if (typeof solids === 'undefined' || !solids) return null;
+    for (let i = 0; i < solids.length; i++){
+      const b = solids[i];
+      if (!b || !b.active || b.camSkip || b.floorOnly || !b.mesh) continue;
+      if (b.mesh.visible === false) continue;
+      const mat = b.mesh.material;
+      if (mat && !Array.isArray(mat) && mat.transparent) continue;
+      const p = b.mesh.position;
+      if (Math.abs(x - p.x) < b.hw + pad && Math.abs(y - p.y) < b.hh + pad && Math.abs(z - p.z) < b.hd + pad) return b;
+    }
+    return null;
+  }
+  // Walk the look-segment, not just the orbit point, so a camera that would
+  // sit above a short wall is still pulled in before the wall hides the player.
+  function clipOrbitCam(tx, ty, tz, want, minDist){
+    minDist = minDist == null ? 1.2 : minDist;
+    const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+    const sx = Math.sin(cam.yaw), cz = Math.cos(cam.yaw);
+    const hits = (x, y, z) => !!camSolidAt(x, y, z, .25);
+    const segmentHits = (x1, y1, z1) => {
+      const n = 10;
+      for (let i = 1; i <= n; i++){
+        const t = i / n;
+        if (hits(tx + (x1 - tx) * t, ty + (y1 - ty) * t, tz + (z1 - tz) * t)) return true;
+      }
+      return false;
+    };
+    let dist = want;
+    const step = .25;
+    for (let s = minDist; s <= want + 1e-6; s += step){
+      const x = tx + sx * cp * s, y = ty + sp * s, z = tz + cz * cp * s;
+      if (hits(x, y, z) || segmentHits(x, y, z)){ dist = Math.max(minDist, s - step); break; }
+    }
+    const blockedAt = (s) => {
+      const x = tx + sx * cp * s, y = ty + sp * s, z = tz + cz * cp * s;
+      return hits(x, y, z) || segmentHits(x, y, z);
+    };
+    // Pressed against a wall, minDist itself can still sit inside the collider.
+    // Shrink so the first third-person frame (e.g. after V) is already clipped.
+    if (blockedAt(dist)){
+      let lo = 0.2, hi = dist, best = 0.2;
+      for (let i = 0; i < 12; i++){
+        const mid = (lo + hi) / 2;
+        if (blockedAt(mid)) hi = mid;
+        else { best = mid; lo = mid; }
+      }
+      dist = best;
+    }
+    return dist;
+  }
+  // First-person no-clip (same idea as Dream House): pull the eye back from a
+  // wall and keep the near plane small so the screen never fills with wall.
+  function recoverFpPlayer(){
+    if (!P || typeof solids === 'undefined' || !solids) return false;
+    let moved = false;
+    if (P.y < -0.15){ P.y = 0.05; P.vy = 0; moved = true; }
+    for (let n = 0; n < 8; n++){
+      let hit = false;
+      for (let k = 0; k < solids.length; k++){
+        const b = solids[k];
+        if (!b || !b.active || b.floorOnly || !b.mesh) continue;
+        if (typeof overlaps === 'function' && !overlaps(b, .001, P)) continue;
+        const p = b.mesh.position;
+        const top = p.y + b.hh, bot = p.y - b.hh;
+        if (P.y + (typeof bodyH === 'function' ? bodyH() : 2.8) <= top && P.y < bot + 0.05){
+          if (typeof ejectXZ === 'function'){ ejectXZ('x', P, b); ejectXZ('z', P, b); }
+          P.y = 0.05; P.vy = 0; hit = true; moved = true; continue;
+        }
+        if (typeof ejectXZ === 'function'){ ejectXZ('x', P, b); ejectXZ('z', P, b); hit = true; moved = true; }
+      }
+      if (!hit) break;
+    }
+    return moved;
+  }
+  function clipFpCamera(){
+    if (!camera || typeof cam === 'undefined' || !cam || !P) return false;
+    if (typeof fpOn === 'function' && !fpOn()) return false;
+    if (typeof recoverFpPlayer === 'function') recoverFpPlayer();
+    const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw);
+    const ey = Math.max(P.y + 0.4, P.y + (typeof eyeHeight === 'function' ? eyeHeight() : 2.45));
+    const near = 0.05, clear = 0.55;
+    const blocked = (x, y, z) => !!camSolidAt(x, y, z, clear);
+    let off = 0.15, guard = 0;
+    while (guard++ < 80 && blocked(P.x + fx * off, ey, P.z + fz * off)) off -= 0.04;
+    while (guard++ < 100 && blocked(P.x + fx * (off + clear), ey, P.z + fz * (off + clear))) off -= 0.04;
+    off = Math.max(-0.9, off);
+    let x = P.x + fx * off, y = ey, z = P.z + fz * off;
+    const minY = P.y + 0.35;
+    for (let k = 0; k < 12; k++){
+      let moved = false;
+      if (typeof solids === 'undefined' || !solids) break;
+      for (let si = 0; si < solids.length; si++){
+        const b = solids[si];
+        if (!b || !b.active || b.camSkip || b.floorOnly || !b.mesh) continue;
+        const p = b.mesh.position;
+        const dx = x - p.x, dy = y - p.y, dz = z - p.z;
+        const px = b.hw + clear, py = b.hh + clear, pz = b.hd + clear;
+        if (Math.abs(dx) >= px || Math.abs(dy) >= py || Math.abs(dz) >= pz) continue;
+        const ox = px - Math.abs(dx), oy = py - Math.abs(dy), oz = pz - Math.abs(dz);
+        if (ox <= oz && (ox <= oy || y - oy < minY)) x += (dx >= 0 ? 1 : -1) * ox;
+        else if (oz <= oy || y - oy < minY) z += (dz >= 0 ? 1 : -1) * oz;
+        else y += (dy >= 0 ? 1 : -1) * oy;
+        if (y < minY) y = minY;
+        moved = true;
+      }
+      if (!moved) break;
+    }
+    if (y < minY) y = minY;
+    if (camSolidAt(x, y, z, 0.02)){ x = P.x; y = Math.max(minY, ey); z = P.z; }
+    camera.position.set(x, y, z);
+    if (typeof camera.near === 'number'){
+      camera.near = Math.min(camera.near, near);
+      if (typeof camera.updateProjectionMatrix === 'function') camera.updateProjectionMatrix();
+    }
+    const cp = Math.cos(cam.pitch);
+    camera.lookAt(P.x + fx * (off + cp * 10), y - Math.sin(cam.pitch) * 10, P.z + fz * (off + cp * 10));
+    return true;
+  }
   function updateCamera(){
     if (dh && typeof dhIntroCam === 'function' && dhIntroCam()) return;
     if (rc && raceCam()) return;
@@ -17301,17 +17585,15 @@ function dhLayoutHud(){
       const cp = Math.cos(cam.pitch), fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), ey = P.y + eyeHeight();
       camera.position.set(P.x + fx * .22, ey, P.z + fz * .22);
       camera.lookAt(P.x + fx * (.22 + cp * 10), ey - Math.sin(cam.pitch) * 10, P.z + fz * (.22 + cp * 10));
-      if (typeof dhClipFpCamera === 'function') dhClipFpCamera();
+      if (mode === 'dreamhouse' && typeof dhClipFpCamera === 'function') dhClipFpCamera();
+      else clipFpCamera();
       if (shake > 0 && !paused){ camera.position.x += (Math.random() - .5) * shake * .5; camera.position.y += (Math.random() - .5) * shake * .5; }
       return;
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
     if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ // pull the camera in front of walls so buildings don't block the view
-      for (let s = 1.2; s <= cam.dist; s += .4){
-        const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
-        if (solids.some(b => b.active && !b.camSkip && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2, s - .5); break; }
-      }
+      dist = clipOrbitCam(tx, ty, tz, cam.dist, mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2);
     }
     camera.position.set(tx + Math.sin(cam.yaw) * cp * dist, ty + Math.sin(cam.pitch) * dist, tz + Math.cos(cam.yaw) * cp * dist);
     camera.lookAt(tx, ty, tz);
@@ -17565,8 +17847,9 @@ function dhLayoutHud(){
     const el = renderer.domElement; let drag = null;
     // first person on a computer: click the game to lock the mouse for mouse-look (Esc lets go)
     el.addEventListener('mousemove', e => { if (document.pointerLockElement !== el || !running || paused) return; const inv = window.rubloxInvert || {}, k = window.rubloxMouseSens || 1;
-      cam.yaw -= e.movementX * .0013 * k * (inv.x ? -1 : 1); cam.pitch = Math.max(-1.3, Math.min(1.4, cam.pitch + e.movementY * .0012 * k * (inv.y ? -1 : 1))); });
-    el.addEventListener('pointerdown', e => { const hit = (typeof document !== 'undefined' && document.elementFromPoint) ? document.elementFromPoint(e.clientX, e.clientY) : (e.target); if (hit && hit !== el && hit.closest && hit.closest('#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhSteps, .obtns, #setModal, #oPausePanel, button, a, input, label')) return; if (typeof dhIsUiEvent === 'function' && dhIsUiEvent(e)) return; if (e.pointerType === 'mouse' && fpOn() && !paused && !choosing && !fp.noLock && document.pointerLockElement !== el){ fp.req = true; try { const r = el.requestPointerLock(); if (r && r.catch) r.catch(() => { fp.noLock = true; }); } catch(_){ fp.noLock = true; } return; }
+      cam.yaw -= e.movementX * .0013 * k * (inv.x ? -1 : 1); cam.pitch = Math.max(-1.3, Math.min(1.4, cam.pitch + e.movementY * .0012 * k * (inv.y ? -1 : 1)));
+      if (typeof hudCursorMove === 'function') hudCursorMove(e.movementX, e.movementY); });
+    el.addEventListener('pointerdown', e => { if (typeof hudTryClick === 'function' && hudTryClick(e)) return; const hit = (typeof document !== 'undefined' && document.elementFromPoint) ? document.elementFromPoint(e.clientX, e.clientY) : (e.target); if (hit && hit !== el && hit.closest && hit.closest('#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhSteps, .obtns, #setModal, #oPausePanel, button, a, input, label')) return; if (typeof dhIsUiEvent === 'function' && dhIsUiEvent(e)) return; if (e.pointerType === 'mouse' && fpOn() && !paused && !choosing && !fp.noLock && document.pointerLockElement !== el){ fp.req = true; try { const r = el.requestPointerLock(); if (r && r.catch) r.catch(() => { fp.noLock = true; }); } catch(_){ fp.noLock = true; } return; }
       if (mode === 'dreamhouse' && dh && !paused && !choosing && typeof dhPointer === 'function' && (document.pointerLockElement === el || e.pointerType !== 'mouse')){ if (e.button === 0 || e.pointerType !== 'mouse') dhPointer(true); } });
     el.addEventListener('pointerup', e => { if (mode === 'dreamhouse' && typeof dhPointer === 'function') dhPointer(false); });
     document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement !== el){ fp.unlockT = performance.now(); fp.eatEsc = true; clearHeldKeys(); } else { clearHeldKeys(); } });
@@ -17671,7 +17954,104 @@ function dhLayoutHud(){
     $('#pMouseSens').oninput = e => { const r = $('#mouseSens'); r.value = e.target.value; r.dispatchEvent(new Event('input')); menuVals(); };
     $('#pMapBtn').onclick = () => { const m = $('#pMap'); m.classList.toggle('show'); $('#pMapBtn').textContent = m.classList.contains('show') ? '🎮 Hide button map' : '🎮 Button map'; };
     setInterval(() => { if ($('#oPausePanel').classList.contains('show')) menuPad(); }, 1000);
-    ['#oExit','#oExit2','#oExit3','#oHome','#oHome2'].forEach(id => $(id).onclick = stop);
+    const HUD_HIT_SEL = '#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhVisit, #dhSteps, #dhResetModal, .obtns, #oExit, #oExit2, #oExit3, #oFP, #oPause, #oMute, #setBtn, #setModal, #oPausePanel, button, a, input, label, select';
+    function releasePointerForHud(){
+      try { if (typeof document !== 'undefined' && document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e){}
+    }
+    function hudCursorReset(){
+      const r = (el && el.getBoundingClientRect) ? el.getBoundingClientRect() : {left: 0, top: 0, width: (typeof innerWidth === 'number' ? innerWidth : 800), height: (typeof innerHeight === 'number' ? innerHeight : 600)};
+      fp.uiX = r.left + r.width / 2;
+      fp.uiY = r.top + r.height / 2;
+    }
+    function hudCursorMove(dx, dy){
+      if (fp.uiX == null || fp.uiY == null) hudCursorReset();
+      const w = (typeof innerWidth === 'number' ? innerWidth : 800);
+      const h = (typeof innerHeight === 'number' ? innerHeight : 600);
+      fp.uiX = Math.max(0, Math.min(w, fp.uiX + (dx || 0)));
+      fp.uiY = Math.max(0, Math.min(h, fp.uiY + (dy || 0)));
+    }
+    function hudControls(){
+      const list = [];
+      const seen = new Set();
+      const add = n => { if (n && !seen.has(n)){ seen.add(n); list.push(n); } };
+      ['oExit','oExit2','oExit3','oFP','oPause','oMute','setBtn','dhAct','dhLikeBtn','dhInviteBtn','dhDumpBtn','dhSpotBtn'].forEach(id => {
+        try { add(document.getElementById(id)); } catch (e){}
+      });
+      const roots = [];
+      ['obby','dhBar','dhShop','dhYard','dhUp','oPausePanel','setModal'].forEach(id => {
+        try { const r = document.getElementById(id); if (r) roots.push(r); } catch (e){}
+      });
+      try { const b = document.querySelector && document.querySelector('.obtns'); if (b) roots.push(b); } catch (e){}
+      roots.forEach(root => {
+        if (!root || !root.querySelectorAll) return;
+        const found = root.querySelectorAll('button, [data-dhjob], [data-dhtool], [data-dhid], a, input, label, select, #dhAct');
+        for (let i = 0; i < found.length; i++) add(found[i]);
+      });
+      const out = [];
+      for (let i = 0; i < list.length; i++){
+        const n = list[i];
+        if (!n || n.disabled) continue;
+        if (n.style && (n.style.display === 'none' || n.style.visibility === 'hidden')) continue;
+        if (n.classList && n.classList.contains && n.classList.contains('dh-paused-hide')) continue;
+        const tag = (n.tagName || '').toLowerCase();
+        if (tag === 'body' || tag === 'html') continue;
+        const r = n.getBoundingClientRect && n.getBoundingClientRect();
+        if (!r || r.width < 2 || r.height < 2) continue;
+        out.push(n);
+      }
+      return out;
+    }
+    function hudHitAt(x, y){
+      if (typeof x !== 'number' || typeof y !== 'number' || !isFinite(x) || !isFinite(y)) return null;
+      try {
+        if (document.elementFromPoint && !document.pointerLockElement){
+          const top = document.elementFromPoint(x, y);
+          if (top && top.closest){
+            const got = top.closest(HUD_HIT_SEL);
+            if (got && got !== el && !(el && el.contains && el.contains(got)) && got.id !== 'obbyView') return got.closest ? (got.closest('button, [data-dhjob], [data-dhtool], [data-dhid], a, input, label, select, #dhAct') || got) : got;
+          }
+        }
+      } catch (e){}
+      const nodes = hudControls();
+      let hit = null;
+      for (let i = 0; i < nodes.length; i++){
+        const r = nodes[i].getBoundingClientRect();
+        if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) hit = nodes[i];
+      }
+      return hit;
+    }
+    function hudTryClick(ev){
+      const pts = [];
+      if (ev && ev.clientX != null && ev.clientY != null) pts.push([ev.clientX, ev.clientY]);
+      if (document.pointerLockElement && fp.uiX != null && fp.uiY != null) pts.push([fp.uiX, fp.uiY]);
+      let target = null;
+      for (let i = 0; i < pts.length && !target; i++) target = hudHitAt(pts[i][0], pts[i][1]);
+      if (!target) return false;
+      if (ev){
+        if (ev.preventDefault) ev.preventDefault();
+        if (ev.stopPropagation) ev.stopPropagation();
+        if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+      }
+      releasePointerForHud();
+      try { if (typeof target.click === 'function') target.click(); } catch (e){}
+      return true;
+    }
+    if (typeof window !== 'undefined'){ window.__rubloxHudHitAt = hudHitAt; window.__rubloxHudTryClick = hudTryClick; }
+    if (!window.__rubloxHudUnlock){
+      window.__rubloxHudUnlock = true;
+      document.addEventListener('pointerdown', ev => {
+        if (hudTryClick(ev)) return;
+        const t = ev && ev.target;
+        if (!t || !t.closest) return;
+        if (!t.closest(HUD_HIT_SEL)) return;
+        releasePointerForHud();
+      }, true);
+      document.addEventListener('pointerlockchange', () => {
+        if (document.pointerLockElement) hudCursorReset();
+      });
+    }
+    ['#oExit','#oExit2','#oExit3','#oHome','#oHome2'].forEach(id => $(id).onclick = () => { releasePointerForHud(); stop(); });
+
     $('#oAgain').onclick = $('#oRetry').onclick = () => { stop(); start(mode, diff); };
     $('#oNext').onclick = () => { if (mpGuest() || level >= OBBY_N) return; const n = level + 1; stop(); start('obby', n); };
     $('#oLevels').onclick = () => { stop(); openLevels(); };
@@ -18325,27 +18705,33 @@ function start(m = 'obby', d = null){
   function phBuildHotel(){
     if (typeof plat === 'function'){
       const floor = plat(0, 0, 3, 28, 26, '#f8efe3', .3); if (floor) floor.floorOnly = true;
-      // collision walls (taller, colorful rooms)
-      plat(0, 2.0, -10.5, 26, 0.5, '#f3c6d8', 4.0);
-      plat(-13.7, 2.0, 2.5, 0.5, 25, '#c9e8c0', 4.0);
-      plat(13.7, 2.0, 2.5, 0.5, 25, '#c9d4ff', 4.0);
-      plat(-8.6, 2.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
-      plat(8.6, 2.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
+      // Collision walls match the visual wallpaper height (top ~4 m). Older
+      // boxes only reached y=2, so the third-person camera flew over them
+      // and the wallpaper blocked the view of the player.
+      // Walls meet at the corners (no gap) and the visible skins sit on the
+      // inner face, slightly inside the collider, so the eye cannot reach the
+      // wallpaper or see sky/dark strips between the paper and the box.
+      const hideCol = b => { if (b && b.mesh){ b.mesh.visible = false; if (b.mesh.material) b.mesh.material.visible = false; } };
+      hideCol(plat(0, 4.0, -10.5, 27.4, 0.5, '#f3c6d8', 4.0));
+      hideCol(plat(-13.7, 4.0, 2.15, 0.5, 25.8, '#c9e8c0', 4.0));
+      hideCol(plat(13.7, 4.0, 2.15, 0.5, 25.8, '#c9d4ff', 4.0));
+      hideCol(plat(-8.675, 4.0, 14.8, 10.55, 0.5, '#f7d9a8', 4.0));
+      hideCol(plat(8.675, 4.0, 14.8, 10.55, 0.5, '#f7d9a8', 4.0));
     }
-    // wallpaper skins just inside the collision walls
-    phPaperWall(0, 2.05, -10.22, 25.2, 3.9, 0.08, 'dots', '#f3c6d8', '#ffe8f2', 'wallpaper');
-    phPaperWall(-13.42, 2.05, 2.5, 0.08, 3.9, 24.2, 'stripe', '#c9e8c0', '#e8f8dc', 'wallpaper');
-    phPaperWall(13.42, 2.05, 2.5, 0.08, 3.9, 24.2, 'dots', '#c9d4ff', '#e8eeff', 'wallpaper');
-    phPaperWall(-8.6, 2.05, 14.52, 10.0, 3.9, 0.08, 'stripe', '#f7d9a8', '#fff0cc', 'wallpaper');
-    phPaperWall(8.6, 2.05, 14.52, 10.0, 3.9, 0.08, 'stripe', '#f7d9a8', '#fff0cc', 'wallpaper');
-    // baseboard trim
-    phBox(0, 0.12, -10.15, 25.2, 0.24, 0.1, '#fff6e8', 'trim', 'trim');
-    phBox(-13.35, 0.12, 2.5, 0.1, 0.24, 24.2, '#fff6e8', 'trim', 'trim');
-    phBox(13.35, 0.12, 2.5, 0.1, 0.24, 24.2, '#fff6e8', 'trim', 'trim');
-    // windows on the back wall
-    phWindow(-6.5, 2.3, -10.1, 2.2, 1.6);
-    phWindow(0, 2.3, -10.1, 2.2, 1.6);
-    phWindow(6.5, 2.3, -10.1, 2.2, 1.6);
+    // wallpaper skins just inside the collision walls (flush with the inner face)
+    phPaperWall(0, 2.0, -10.29, 26.9, 4.0, 0.08, 'dots', '#f3c6d8', '#ffe8f2', 'wallpaper');
+    phPaperWall(-13.49, 2.0, 2.15, 0.08, 4.0, 24.8, 'stripe', '#c9e8c0', '#e8f8dc', 'wallpaper');
+    phPaperWall(13.49, 2.0, 2.15, 0.08, 4.0, 24.8, 'dots', '#c9d4ff', '#e8eeff', 'wallpaper');
+    phPaperWall(-8.675, 2.0, 14.59, 10.35, 4.0, 0.08, 'stripe', '#f7d9a8', '#fff0cc', 'wallpaper');
+    phPaperWall(8.675, 2.0, 14.59, 10.35, 4.0, 0.08, 'stripe', '#f7d9a8', '#fff0cc', 'wallpaper');
+    // baseboard trim (recessed, does not stick out past the inner face)
+    phBox(0, 0.12, -10.27, 26.9, 0.24, 0.06, '#fff6e8', 'trim', 'trim');
+    phBox(-13.47, 0.12, 2.15, 0.06, 0.24, 24.8, '#fff6e8', 'trim', 'trim');
+    phBox(13.47, 0.12, 2.15, 0.06, 0.24, 24.8, '#fff6e8', 'trim', 'trim');
+    // windows on the front wall, recessed into the collider
+    phWindow(-6.5, 2.3, -10.27, 2.2, 1.6);
+    phWindow(0, 2.3, -10.27, 2.2, 1.6);
+    phWindow(6.5, 2.3, -10.27, 2.2, 1.6);
     // lobby rug with a border
     phBox(0, 0.06, 0.2, 6.4, 0.06, 5.2, '#8a2f4a', 'rugedge', 'rug');
     phBox(0, 0.08, 0.2, 5.6, 0.06, 4.4, '#d96b8a', 'rug', 'rug');
@@ -18603,7 +18989,9 @@ function start(m = 'obby', d = null){
     const deskIcon = (typeof PH_DESK_ICON === 'string') ? PH_DESK_ICON : '🔔';
     ctx.font = '22px sans-serif'; ctx.fillText(hotelIcon, 40, 50); ctx.fillText(deskIcon, 150, 92);
   }
+
   function stop(){
+    if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}
     if (typeof dhCloseReset === 'function') dhCloseReset();
     running = false; loopId++; if (raf){ try { cancelAnimationFrame(raf); } catch (e){} raf = 0; } if (document.pointerLockElement) document.exitPointerLock(); fp.shown = null; menuOpen = false; paused = false;
     if (typeof dhClosePauseMenus === 'function') dhClosePauseMenus();
@@ -18867,6 +19255,12 @@ function start(m = 'obby', d = null){
     anim: () => ({emote: emote && emote.id, pose: lastPose, pack: avatar.anim, face: avatar.face, airT: P.airT, jumped: P.jumped, climbing: P.climbing, touchUI, lowq: LOWQ, joy: {...joy},
       pivot: model && [model.pivot.position.y, model.pivot.rotation.x, model.pivot.rotation.y], armR: model && [model.arms[1].rotation.x, model.arms[1].rotation.z]}),
   };
+  try {
+    if (typeof location !== 'undefined' && /(?:^|#|&)dhtest=([A-Za-z0-9_-]+)/.test(String(location.hash || ''))) {
+      // Open the in-memory test house immediately so testers don't have to hunt for the tile.
+      start('dreamhouse');
+    }
+  } catch (e){}
   return {start, stop, play, levels: openLevels, pad: padInput, get running(){ return running; }, get loopId(){ return loopId; }, get raf(){ return raf; }, armGameLoop, applyQuality: applyObbyQuality};
 })();
 </script>

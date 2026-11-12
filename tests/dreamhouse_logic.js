@@ -20,7 +20,9 @@ function world(store0, opts){
       const o = O();
       if (name === 'Vector3'){ o.x = args[0]||0; o.y = args[1]||0; o.z = args[2]||0; o.set = function(x,y,z){ this.x=x; this.y=y; this.z=z; return this; }; }
       if (name === 'Color'){ o.set = function(){ return this; }; o.r=1; }
-      if (name === 'MeshLambertMaterial' || name === 'MeshBasicMaterial'){ o.color = {set(){}}; o.transparent = !!(args[0]&&args[0].transparent); }
+      if (name === 'MeshLambertMaterial' || name === 'MeshBasicMaterial' || name === 'LineBasicMaterial'){ o.color = {set(){}}; o.transparent = !!(args[0]&&args[0].transparent); }
+      if (name === 'BoxGeometry' || name === 'EdgesGeometry'){ o.parameters = {width: args[0]||1, height: args[1]||1, depth: args[2]||1}; }
+      if (name === 'Mesh' || name === 'LineSegments'){ o.geometry = args[0]; if (args[1]) o.material = args[1]; }
       return o;
     }}),
     scene: {add(){}, remove(){}, background: null, fog: null},
@@ -41,7 +43,7 @@ function world(store0, opts){
   ctx.window = ctx;
   ctx.window.location = ctx.location;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrickSlots, dhBrickSupported, dhEnsureHeld, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec, dhShowSpots, dhSpotTick, dhSpotFade, dhSpotVisuals, DH_SPOT_SHOW, DH_SPOT_FADE, DH_SPOT_NEAR, DH_SPOT_AIM, dhUpdateGhost, dhPulseBeacons, dhBeaconWorlds, dhSpotDims, dhSetGfxLow, dhGfxLow, dhPaintOpenings, dhRectsMinusHoles, dhPaintPanelWorldBoxes, dhPaintCoversOpening, dhOpeningAabb, dhShingleCorners, dhRafterEnds, dhRoofPlaneYat, dhRoofTilt, dhRoofPitch, DH_ROOF_RISE, DH_ROOF_OVERHANG, DH_SHINGLE_COLS, DH_SHINGLE_ROWS, DH_RAFTER_NEED, dhAllShingleSlots, dhAllRafterSlots, dhShingleWorld, dhRafterWorld, dhHasAnyCarry, dhPaintWorld, dhPaintOut, dhPaintSize, dhPaintOpeningClearance, dhPaintCornerMeet, dhRoofComplete, dhGableFaces, dhGableInfo, dhSyncGables, dhDisposeGables, dhMakeGableMesh, dhWho, dhIsGuest, dhIsVisitor, dhCanEdit, dhShouldVisit, dhHostName, dhInviteCode, dhToggleInvite, dhRenderInvite, dhRetryInvite, dhCopyInvite, dhBlockVisitor, dhVisitLike, dhAssignPlot, dhTestVisitRaw};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrickSlots, dhBrickSupported, dhEnsureHeld, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhHideTestNote, dhFurnBox, dhMeshFor, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec, dhShowSpots, dhSpotTick, dhSpotFade, dhSpotVisuals, DH_SPOT_SHOW, DH_SPOT_FADE, DH_SPOT_NEAR, DH_SPOT_AIM, dhUpdateGhost, dhPulseBeacons, dhBeaconWorlds, dhSpotDims, dhSetGfxLow, dhGfxLow, dhPaintOpenings, dhRectsMinusHoles, dhPaintPanelWorldBoxes, dhPaintCoversOpening, dhOpeningAabb, dhShingleCorners, dhRafterEnds, dhRoofPlaneYat, dhRoofTilt, dhRoofPitch, DH_ROOF_RISE, DH_ROOF_OVERHANG, DH_SHINGLE_COLS, DH_SHINGLE_ROWS, DH_RAFTER_NEED, dhAllShingleSlots, dhAllRafterSlots, dhShingleWorld, dhRafterWorld, dhHasAnyCarry, dhPaintWorld, dhPaintOut, dhPaintSize, dhPaintOpeningClearance, dhPaintCornerMeet, dhRoofComplete, dhGableFaces, dhGableInfo, dhSyncGables, dhDisposeGables, dhMakeGableMesh, dhWho, dhIsGuest, dhIsVisitor, dhCanEdit, dhShouldVisit, dhHostName, dhInviteCode, dhToggleInvite, dhRenderInvite, dhRetryInvite, dhCopyInvite, dhBlockVisitor, dhVisitLike, dhAssignPlot, dhTestVisitRaw};`, ctx);
   return ctx;
 }
 
@@ -244,7 +246,7 @@ chk('catalog includes paint plus shop furniture (tv, bookshelf)', W.A.DH_MATS.so
 W.A.dh.bank += 80;
 const bankF = W.A.dh.bank;
 const sofaOk = W.A.dhShopBuyFurn('sofa');
-chk('the shop sells furniture for coins into your stock', sofaOk && (W.A.dh.stock.sofa|0) >= 1 && W.A.dh.bank === bankF - 10, {bank:W.A.dh.bank, stock:W.A.dh.stock.sofa, sofaOk});
+chk('the shop sells furniture for coins into your stock', sofaOk && W.A.dhInvCount('sofa') >= 1 && W.A.dh.bank === bankF - 10, {bank:W.A.dh.bank, stock:W.A.dh.stock.sofa, carry:W.A.dh.carry, inv:W.A.dhInvCount('sofa'), sofaOk});
 const cap0 = W.A.dhCarryCap('brick');
 W.A.dh.bank += 200;
 const upCarry = W.A.dhBuyUpgrade('carry');
@@ -1667,6 +1669,239 @@ Ww.A.dreamhouseStop();
   const W0 = world();
   W0.mp.on = true; W0.mp.me = 'g2'; W0.mp.uid = undefined;
   chk('dhWho uses mp.me (not the missing mp.uid)', W0.A.dhWho() === 'g2', {who:W0.A.dhWho()});
+})();
+
+
+
+(function(){
+  function inside(W){
+    const foot = W.A.dhFootWorld(0);
+    W.P.x = (foot.x0 + foot.x1) / 2;
+    W.P.z = (foot.z0 + foot.z1) / 2;
+    W.P.y = W.A.DH_SLAB_H;
+    W.cam.yaw = Math.PI;
+    W.cam.pitch = 0.35;
+    if (W.A.dreamhouseUpdate) W.A.dreamhouseUpdate(0.01);
+  }
+
+  const F = world({}, {hash: '#dhtest=v6furnish'});
+  F.A.buildDreamHouse(); F.A.dreamhouseEnter();
+  chk('a finished house at Paint & furnish does not mark the host as a visitor',
+    F.A.dh.visiting === false && F.A.dhCanEdit() === true && F.A.dhStageId() === 'paint',
+    {visiting: F.A.dh.visiting, can: F.A.dhCanEdit(), stage: F.A.dhStageId()});
+  inside(F);
+  F.A.dh.bank += 20;
+  const bought = F.A.dhShopBuyFurn('sofa');
+  chk('buying furniture puts it in your hands so you can place it right away',
+    bought === true && !!(F.A.dh.carry && F.A.dh.carry.id === 'sofa') && F.A.dhInvCount('sofa') >= 1,
+    {bought, carry: F.A.dh.carry, inv: F.A.dhInvCount('sofa')});
+  F.A.dhUpdateGhost();
+  const gy = F.A.dh.ghost && F.A.dh.ghost.position.y;
+  chk('the furniture ghost sits on the slab (not under the floor) even while the stage is still paint',
+    !!(F.A.dh.ghost && F.A.dh.ghost.visible) && gy >= F.A.DH_SLAB_H,
+    {visible: F.A.dh.ghost && F.A.dh.ghost.visible, y: gy, slab: F.A.DH_SLAB_H, job: F.A.dh.job, stage: F.A.dhStageId()});
+  const banners0 = F.banners.slice();
+  F.banners.length = 0;
+  const placed = F.A.dhAct();
+  chk('E places furniture during the Paint & furnish step instead of asking for a paint can',
+    placed === true && (F.A.dh.pieces[0] || []).some(a => a[0] === 'sofa') && !F.banners.some(t => /paint can/i.test(t)),
+    {placed, banners: F.banners, prior: banners0.slice(-2), sofa: (F.A.dh.pieces[0] || []).filter(a => a[0] === 'sofa')});
+
+  // Occupied tile: another sofa on the same aimed cell should be refused with a message
+  F.A.dh.bank += 20;
+  F.A.dhShopBuyFurn('sofa');
+  F.banners.length = 0;
+  const again = F.A.dhAct();
+  chk('placing a second piece on the same floor tile is refused with a visible error (not a silent no-op)',
+    again === false && F.banners.some(t => /already has furniture|empty spot/i.test(t)) && (F.A.dh.pieces[0] || []).filter(a => a[0] === 'sofa').length === 1,
+    {again, banners: F.banners, n: (F.A.dh.pieces[0] || []).filter(a => a[0] === 'sofa').length});
+
+  const F2 = world({}, {hash: '#dhtest=v6furnish'});
+  F2.A.buildDreamHouse(); F2.A.dreamhouseEnter();
+  for (let face = 0; face < 4; face++){
+    if (!(F2.A.dh.pieces[0] || []).some(a => a[0] === 'paint' && (a[4]|0) === face)) F2.A.dhPut(0, ['paint', 0, 0, 0, face, 0], true);
+  }
+  if (F2.A.dhSyncJobToStage) F2.A.dhSyncJobToStage();
+  inside(F2);
+  F2.A.dh.bank += 30;
+  F2.A.dhShopBuyFurn('bed');
+  F2.A.dhPointer(true);
+  chk('clicking the canvas places furniture once the walls are painted',
+    (F2.A.dh.pieces[0] || []).some(a => a[0] === 'bed') && F2.A.dhStageId() === 'furn',
+    {stage: F2.A.dhStageId(), kinds: [...new Set((F2.A.dh.pieces[0] || []).map(a => a[0]))]});
+  F2.A.dhShopBuyFurn('lamp');
+  F2.P.x += 1.4;
+  if (F2.A.dreamhouseUpdate) F2.A.dreamhouseUpdate(0.01);
+  F2.A.dhPad({x: true});
+  chk('the gamepad Ⓧ button also places furniture',
+    (F2.A.dh.pieces[0] || []).some(a => a[0] === 'lamp'),
+    {furn: (F2.A.dh.pieces[0] || []).filter(a => ['sofa','bed','table','lamp','plant','rug','tv','shelf'].indexOf(a[0]) >= 0).map(a => a[0])});
+
+  // Stock-only: buy, dump back to inventory, E should still draw it and place it
+  const F3 = world({}, {hash: '#dhtest=v6furnish'});
+  F3.A.buildDreamHouse(); F3.A.dreamhouseEnter();
+  inside(F3);
+  F3.A.dh.bank += 20;
+  // The v6furnish fixture already has a sofa in stock — leave only the table so
+  // E-from-inventory has one obvious piece to place.
+  ['sofa','bed','table','lamp','plant','rug','tv','shelf'].forEach(id => { F3.A.dh.stock[id] = 0; });
+  F3.A.dhShopBuyFurn('table');
+  if (F3.A.dhDump) F3.A.dhDump();
+  chk('dumping a just-bought table puts it back in inventory',
+    !F3.A.dh.carry && (F3.A.dh.stock.table|0) >= 1, {carry: F3.A.dh.carry, stock: F3.A.dh.stock.table});
+  const fromInv = F3.A.dhAct();
+  chk('E places furniture from inventory without a separate pickup click',
+    fromInv === true && (F3.A.dh.pieces[0] || []).some(a => a[0] === 'table'),
+    {fromInv, carry: F3.A.dh.carry, table: (F3.A.dh.pieces[0] || []).filter(a => a[0] === 'table')});
+})();
+
+
+
+(function(){
+  function inside(W){
+    const foot = W.A.dhFootWorld(0);
+    W.P.x = (foot.x0 + foot.x1) / 2;
+    W.P.z = (foot.z0 + foot.z1) / 2;
+    W.P.y = W.A.DH_SLAB_H;
+    W.cam.yaw = Math.PI;
+    W.cam.pitch = 0.35;
+    if (W.A.dreamhouseUpdate) W.A.dreamhouseUpdate(0.01);
+  }
+
+  // Exact browser-test sequence: #dhtest=v7walls, 96/188 bricks, 40 coins, buy a sofa, press E.
+  const V = world({}, {hash: '#dhtest=v7walls'});
+  V.A.buildDreamHouse(); V.A.dreamhouseEnter();
+  const list0 = V.A.dh.pieces[0] || [];
+  const bricks0 = list0.filter(a => a[0] === 'brick').length;
+  chk('#dhtest=v7walls opens the in-memory brick-stage test house (96/188, 40 coins) and is not a visitor',
+    V.A.dhTestActive() === true && V.A.dhTestFixtureId() === 'v7walls' && V.A.dhStageId() === 'brick'
+      && bricks0 === 96 && V.A.dh.bank === 40 && V.A.dh.visiting === false,
+    {id: V.A.dhTestFixtureId(), stage: V.A.dhStageId(), bricks: bricks0, need: V.A.dhBrickTotal(), bank: V.A.dh.bank, visiting: V.A.dh.visiting});
+  const note = (V.els['#dhTestNote'] || {}).textContent || '';
+  chk('the test-house badge names the v7walls fixture and says the real save is not written',
+    /TEST HOUSE/i.test(note) && /v7walls/.test(note) && /real Dream House save is not used or written/i.test(note) && !!(V.A.dh && V.A.dh._testNoteShown),
+    {note});
+  inside(V);
+  const bank0 = V.A.dh.bank;
+  const bought = V.A.dhShopBuyFurn('sofa');
+  chk('buying a sofa on the v7walls brick stage spends 10 coins and puts the sofa in your hands',
+    bought === true && V.A.dh.bank === bank0 - 10 && !!(V.A.dh.carry && V.A.dh.carry.id === 'sofa'),
+    {bought, bank: V.A.dh.bank, carry: V.A.dh.carry});
+  const goal = V.A.dhGoalText();
+  const prompt = V.A.dhActPrompt();
+  chk('the top banner and action prompt tell you to place the sofa, not to lay a brick from inventory',
+    /place your Sofa|Place Sofa/i.test(goal + ' ' + prompt) && !/lay a brick from your inventory/i.test(goal),
+    {goal, prompt});
+  V.A.dhUpdateGhost();
+  const gy = V.A.dh.ghost && V.A.dh.ghost.position.y;
+  chk('a floor ghost is visible on the slab while holding a sofa in the brick stage',
+    !!(V.A.dh.ghost && V.A.dh.ghost.visible) && gy >= V.A.DH_SLAB_H,
+    {visible: V.A.dh.ghost && V.A.dh.ghost.visible, y: gy, slab: V.A.DH_SLAB_H, job: V.A.dh.job, stage: V.A.dhStageId()});
+  V.banners.length = 0;
+  const placed = V.A.dhKey({code: 'KeyE', repeat: false});
+  const bricks1 = (V.A.dh.pieces[0] || []).filter(a => a[0] === 'brick').length;
+  const sofas = (V.A.dh.pieces[0] || []).filter(a => a[0] === 'sofa');
+  chk('E on the v7walls brick stage places the held sofa and does not lay a brick or swap the sofa for bricks',
+    placed === true && sofas.length === 1 && bricks1 === bricks0
+      && !(V.A.dh.carry && V.A.dh.carry.id === 'brick')
+      && !V.banners.some(t => /Put back 1 Sofa|grab the next supply/i.test(t)),
+    {placed, bricks0, bricks1, sofas, carry: V.A.dh.carry, banners: V.banners});
+
+  // After the sofa is placed, leftover sofa stock + Furnish tool should place, not bricks.
+  const V2 = world({}, {hash: '#dhtest=v7walls'});
+  V2.A.buildDreamHouse(); V2.A.dreamhouseEnter();
+  inside(V2);
+  V2.A.dh.bank += 20;
+  V2.A.dhShopBuyFurn('sofa');
+  if (V2.A.dhDump) V2.A.dhDump(); // sofa back in inventory, hands empty (or bricks later)
+  V2.A.dhPickup('brick', 8);
+  chk('picking up bricks while a sofa is only in inventory leaves the sofa in stock (hands are bricks)',
+    !!(V2.A.dh.carry && V2.A.dh.carry.id === 'brick') && (V2.A.dh.stock.sofa|0) >= 1,
+    {carry: V2.A.dh.carry, sofa: V2.A.dh.stock.sofa});
+  V2.A.dhSetJob('furn');
+  chk('clicking the Furnish tool puts the sofa back in your hands so it can be placed',
+    V2.A.dh.job === 'furn' && !!(V2.A.dh.carry && V2.A.dh.carry.id === 'sofa'),
+    {job: V2.A.dh.job, carry: V2.A.dh.carry, stockSofa: V2.A.dh.stock.sofa});
+  V2.A.dhUpdateGhost();
+  const placed2 = V2.A.dhPointer(true);
+  chk('after clicking Furnish, a click places the sofa instead of a brick',
+    (V2.A.dh.pieces[0] || []).some(a => a[0] === 'sofa') && (V2.A.dh.pieces[0] || []).filter(a => a[0] === 'brick').length === bricks0,
+    {kinds: (V2.A.dh.pieces[0] || []).filter(a => a[0] === 'sofa' || a[0] === 'brick').map(a => a[0]).slice(-4), job: V2.A.dh.job, carry: V2.A.dh.carry});
+
+  // Held furniture is never auto-returned when something asks for bricks.
+  const V3 = world({}, {hash: '#dhtest=v7walls'});
+  V3.A.buildDreamHouse(); V3.A.dreamhouseEnter();
+  V3.A.dh.bank += 20;
+  V3.A.dhShopBuyFurn('sofa');
+  const kept = V3.A.dhEnsureHeld('brick', 1);
+  chk('EnsureHeld(brick) will not swap a sofa out of your hands',
+    kept === false && !!(V3.A.dh.carry && V3.A.dh.carry.id === 'sofa') && !(V3.A.dh.carry && V3.A.dh.carry.id === 'brick'),
+    {kept, carry: V3.A.dh.carry});
+})();
+
+
+
+(function(){
+  function inside(W){
+    const foot = W.A.dhFootWorld(0);
+    W.P.x = (foot.x0 + foot.x1) / 2;
+    W.P.z = (foot.z0 + foot.z1) / 2;
+    W.P.y = W.A.DH_SLAB_H;
+    W.cam.yaw = Math.PI;
+    W.cam.pitch = 0.35;
+    if (W.A.dreamhouseUpdate) W.A.dreamhouseUpdate(0.01);
+  }
+  function extents(root){
+    let minY = 1e9, maxY = -1e9, minX = 1e9, maxX = -1e9, minZ = 1e9, maxZ = -1e9, parts = 0;
+    const walk = (o, px, py, pz) => {
+      const x = px + ((o.position && o.position.x) || 0);
+      const y = py + ((o.position && o.position.y) || 0);
+      const z = pz + ((o.position && o.position.z) || 0);
+      const g = o.geometry, prm = g && g.parameters;
+      const sx = (prm && prm.width) || 0, sy = (prm && prm.height) || 0, sz = (prm && prm.depth) || 0;
+      if (sx || sy || sz){
+        parts++;
+        minY = Math.min(minY, y - sy / 2); maxY = Math.max(maxY, y + sy / 2);
+        minX = Math.min(minX, x - sx / 2); maxX = Math.max(maxX, x + sx / 2);
+        minZ = Math.min(minZ, z - sz / 2); maxZ = Math.max(maxZ, z + sz / 2);
+      }
+      (o.children || []).forEach(c => walk(c, x, y, z));
+    };
+    walk(root, 0, 0, 0);
+    return {minY, maxY, minX, maxX, minZ, maxZ, h: maxY - minY, w: maxX - minX, d: maxZ - minZ, parts};
+  }
+
+  const V = world({}, {hash: '#dhtest=v7walls'});
+  V.A.buildDreamHouse(); V.A.dreamhouseEnter();
+  inside(V);
+  V.A.dh.bank += 20;
+  V.A.dhShopBuyFurn('sofa');
+  V.A.dhUpdateGhost();
+  const box = V.A.dhFurnBox('sofa');
+  const glow = V.A.dh.ghost && V.A.dh.ghost.userData && V.A.dh.ghost.userData.glow;
+  const outline = V.A.dh.ghost && V.A.dh.ghost.userData && V.A.dh.ghost.userData.outline;
+  const gs = glow && glow.scale;
+  chk('the furniture ghost shows the sofa footprint (or an outline), not just a flat green tile',
+    !!(V.A.dh.ghost && V.A.dh.ghost.visible) && box.h >= 0.7 && box.w >= 1.2 && box.d >= 0.6
+      && gs && Math.abs(gs.x - box.w) < 0.05 && Math.abs(gs.z - box.d) < 0.05 && gs.y <= 0.1
+      && !!(outline && (outline.visible !== false)),
+    {box, scale: gs && {x: gs.x, y: gs.y, z: gs.z}, outline: !!(outline), gy: V.A.dh.ghost && V.A.dh.ghost.position.y, slab: V.A.DH_SLAB_H});
+
+  const inv0 = V.A.dhInvCount('sofa');
+  const placed = V.A.dhKey({code: 'KeyE', repeat: false});
+  const sofaMesh = ((V.A.dh.meshes[0] || []).filter((m, i) => (V.A.dh.pieces[0] || [])[i] && (V.A.dh.pieces[0] || [])[i][0] === 'sofa')[0]);
+  const ext = sofaMesh ? extents(sofaMesh) : {h: 0, parts: 0, minY: 0, maxY: 0};
+  const gy = sofaMesh && sofaMesh.position ? sofaMesh.position.y : 0;
+  const worldMinY = ext.minY; // extents already include the group origin
+  const localMinY = worldMinY - gy;
+  chk('placing a sofa decrements inventory (no leftover 🛋️1) and leaves hands empty',
+    placed === true && inv0 === 1 && V.A.dhInvCount('sofa') === 0 && !(V.A.dh.carry && V.A.dh.carry.id === 'sofa') && (V.A.dh.stock.sofa|0) === 0,
+    {placed, inv0, inv: V.A.dhInvCount('sofa'), carry: V.A.dh.carry, stock: V.A.dh.stock.sofa});
+  chk('the placed sofa sits on the slab and is a tall sofa (not a flat blue slab)',
+    !!sofaMesh && ext.parts >= 6 && ext.h >= 0.7 && ext.h <= 1.3 && ext.w >= 1.2 && ext.d >= 0.55
+      && worldMinY >= V.A.DH_SLAB_H - 0.02 && worldMinY <= V.A.DH_SLAB_H + 0.12
+      && localMinY >= -0.02 && localMinY <= 0.12,
+    {ext, worldMinY, localMinY, slab: V.A.DH_SLAB_H, gy});
 })();
 
 
