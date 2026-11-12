@@ -2310,5 +2310,70 @@ Ww.A.dreamhouseStop();
   W2.A.dreamhouseStop();
 })();
 
+
+(function(){
+  function hookReward(W){
+    let confettiN = 0, toastN = 0;
+    const toastEl = {
+      textContent: '', innerHTML: '', style: {},
+      classList: {_s: new Set(), add(c){ this._s.add(c); }, remove(c){ this._s.delete(c); }, contains(c){ return this._s.has(c); }, toggle(){}},
+      setAttribute(){}, getAttribute(){ return null; },
+      querySelector(){ return {textContent: '', style: {}}; }
+    };
+    W.els['#achToast'] = toastEl;
+    W.document = W.document || {};
+    W.document.getElementById = id => id === 'achToast' ? toastEl : null;
+    W.achById = id => id === 'dh-done' ? {id:'dh-done', name:'Dream Home Builder', emoji:'🏡', coins:50, desc:'Finish the house.'} : null;
+    W.achShowToast = (a) => { toastN++; toastEl.classList.add('show'); if (a && a.name) toastEl.textContent = a.name; };
+    W.achUnlock = function(id, opts){
+      W._unlocked = W._unlocked || {};
+      if (W._unlocked[id]) return false;
+      W._unlocked[id] = {at: 1, paid: true};
+      if (!(opts && opts.silent)) W.achShowToast(W.achById(id), 50);
+      return true;
+    };
+    W.confetti = () => { confettiN++; };
+    return { get confettiN(){ return confettiN; }, get toastN(){ return toastN; }, toastEl };
+  }
+  const W = world({}, {coins:20, hash:'#dhtest=v7done'});
+  const hook = hookReward(W);
+  W.A.buildDreamHouse(); W.A.dreamhouseEnter();
+  if (W.A.dh && W.A.dh.intro) W.A.dhSkipIntro();
+  chk('the natural-end timeline starts the completion cut-scene',
+    !!(W.A.dh && W.A.dh.celebrate) && W.A.dh.doneCutSeen !== true,
+    {celebrate: W.A.dh && W.A.dh.celebrate, seen: W.A.dh && W.A.dh.doneCutSeen});
+  for (let i = 0; i < 260 && W.A.dh && W.A.dh.celebrate; i++) W.A.dreamhouseUpdate(0.05);
+  chk('driving the cut-scene timeline to its natural end finishes the scene and marks it seen',
+    !!(W.A.dh) && !W.A.dh.celebrate && W.A.dh.doneCutSeen === true && W.A.dh._celebrateAwarded === true,
+    {celebrate: W.A.dh && W.A.dh.celebrate, seen: W.A.dh && W.A.dh.doneCutSeen, awarded: W.A.dh && W.A.dh._celebrateAwarded, presented: W.A.dh && W.A.dh._celebratePresented});
+  chk('natural end triggers the Dream Home Builder toast and confetti',
+    hook.toastN >= 1 && hook.confettiN >= 1 && hook.toastEl.classList.contains('show') && /Dream Home Builder/.test(hook.toastEl.textContent || ''),
+    {toastN: hook.toastN, confettiN: hook.confettiN, show: hook.toastEl.classList.contains('show'), text: hook.toastEl.textContent});
+  const t1 = hook.toastN, c1 = hook.confettiN;
+  W.A.dhFinishCelebrate();
+  W.A.dhSkipCelebrate();
+  W.A.dhPresentCelebrateReward && W.A.dhPresentCelebrateReward();
+  chk('the natural-end path awards the toast and confetti only once',
+    hook.toastN === t1 && hook.confettiN === c1 && !!(W._unlocked && W._unlocked['dh-done']),
+    {toastN: hook.toastN, confettiN: hook.confettiN, t1, c1, unlocked: W._unlocked});
+  W.A.dreamhouseStop();
+
+  const Ws = world({}, {coins:20, hash:'#dhtest=v7done'});
+  const hs = hookReward(Ws);
+  Ws.A.buildDreamHouse(); Ws.A.dreamhouseEnter();
+  if (Ws.A.dh && Ws.A.dh.intro) Ws.A.dhSkipIntro();
+  Ws.A.dhSkipCelebrate();
+  chk('skipping the cut-scene triggers the same toast and confetti routine once',
+    hs.toastN >= 1 && hs.confettiN >= 1 && hs.toastEl.classList.contains('show') && /Dream Home Builder/.test(hs.toastEl.textContent || '') && !!(Ws._unlocked && Ws._unlocked['dh-done']),
+    {toastN: hs.toastN, confettiN: hs.confettiN, text: hs.toastEl.textContent, unlocked: Ws._unlocked});
+  const t2 = hs.toastN, c2 = hs.confettiN;
+  Ws.A.dhSkipCelebrate();
+  Ws.A.dhFinishCelebrate();
+  chk('skipping a second time does not re-award the toast or confetti',
+    hs.toastN === t2 && hs.confettiN === c2,
+    {toastN: hs.toastN, confettiN: hs.confettiN, t2, c2});
+  Ws.A.dreamhouseStop();
+})();
+
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);

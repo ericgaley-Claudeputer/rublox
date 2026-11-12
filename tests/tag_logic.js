@@ -10,7 +10,7 @@ function chk(n, c, i){
   else { fail++; console.log('FAIL ' + n, i === undefined ? '' : JSON.stringify(i)); }
 }
 
-chk('BUILD is 2026.11.12-15 and matches version.json', src.includes("const BUILD = '2026.11.12-15'") && version.build === '2026.11.12-15', version);
+chk('BUILD is 2026.11.12-16 and matches version.json', src.includes("const BUILD = '2026.11.12-16'") && version.build === '2026.11.12-16', version);
 
 chk('the Block Tag arena floor is marked floor-only so the huge slab cannot shove you sideways',
   /fl\.floorOnly\s*=\s*true/.test(src) && /function buildTag\(/.test(src), 'missing floorOnly on tag floor');

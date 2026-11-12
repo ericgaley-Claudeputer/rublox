@@ -143,14 +143,14 @@ body.dhreset-open #dhResetModal, body.dhreset-open #dhResetModal .mbox, body.dhr
 .confetti{position:fixed;width:10px;height:10px;top:-12px;z-index:10050;pointer-events:none;border-radius:2px;animation:rubloxConfetti 1.8s linear forwards}
 #obby .confetti{position:absolute;z-index:10050}
 /* Achievements page + toast (t279u) */
-.achtoast{position:fixed;left:50%;top:max(24px, calc(env(safe-area-inset-top) + 16px));transform:translateX(-50%) translateY(-160%);z-index:80;display:flex;align-items:center;gap:14px;background:#fffaf0;color:#1d2340;border:3px solid #1d2340;border-radius:22px;padding:12px 18px 12px 12px;box-shadow:0 8px 0 rgba(0,0,0,.18);min-width:min(92vw,360px);max-width:92vw;pointer-events:none;visibility:hidden;transition:transform .4s cubic-bezier(.3,1.8,.5,1),visibility 0s .4s}
+.achtoast{position:fixed;left:50%;top:max(24px, calc(env(safe-area-inset-top) + 16px));transform:translateX(-50%) translateY(-160%);z-index:10060;display:flex;align-items:center;gap:14px;background:#fffaf0;color:#1d2340;border:3px solid #1d2340;border-radius:22px;padding:12px 18px 12px 12px;box-shadow:0 8px 0 rgba(0,0,0,.18);min-width:min(92vw,360px);max-width:92vw;pointer-events:none;visibility:hidden;transition:transform .4s cubic-bezier(.3,1.8,.5,1),visibility 0s .4s}
 .achtoast.show{transform:translateX(-50%) translateY(0);visibility:visible;transition:transform .4s cubic-bezier(.3,1.8,.5,1),visibility 0s}
 .achtoast-icon{width:56px;height:56px;border-radius:16px;background:linear-gradient(180deg,#ffd23f,#ff9f1c);display:grid;place-items:center;font-size:30px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.12), 0 3px 0 rgba(0,0,0,.12);flex:none}
 .achtoast-body{display:flex;flex-direction:column;gap:2px;min-width:0}
 .achtoast-body small{font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#ff6fb5;font-size:11px}
 .achtoast-body b{font-size:18px;line-height:1.15}
 .achtoast-pay{font-weight:900;color:#1f9460;font-size:15px}
-#obby.show ~ .achtoast, body.ingame .achtoast{z-index:90}
+#obby.show ~ .achtoast, body.ingame .achtoast, html.ingame .achtoast{z-index:10060}
 #achievements{padding:8px 0 28px}
 .achhead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px;margin:0 0 14px}
 .achhead h2{margin:0;font-size:clamp(26px,4vw,36px)}
@@ -1713,7 +1713,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.12-15';
+const BUILD = '2026.11.12-16';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3099,7 +3099,7 @@ function confetti(){
     {id:'dh-frames', cat:'dreamhouse', emoji:'🚪', name:'Open House', desc:'Hang the door and every window frame.', coins:12, prove:s => !!(s.dh && s.dh.goals && s.dh.goals.openings)},
     {id:'dh-glass', cat:'dreamhouse', emoji:'🪟', name:'Sunshine In', desc:'Install glass in every window.', coins:10, prove:s => !!(s.dh && s.dh.goals && s.dh.goals.glaze)},
     {id:'dh-paint', cat:'dreamhouse', emoji:'🎨', name:'Fresh Coat', desc:'Paint every outside wall.', coins:10, prove:s => !!(s.dh && s.dh.goals && s.dh.goals.paint)},
-    {id:'dh-done', cat:'dreamhouse', emoji:'🏡', name:'Dream Home Builder', desc:'Finish Paint & furnish and complete your Dream House.', coins:50, prove:s => !!(s.dh && s.dh.goals && s.dh.goals.furnish)},
+    {id:'dh-done', cat:'dreamhouse', emoji:'🏡', name:'Dream Home Builder', desc:'Finish Paint & furnish and complete your Dream House.', coins:50, prove:s => !!(s.dh && s.dh.goals && s.dh.goals.furnish && s.dh.doneCutSeen !== false)},
     {id:'dh-like', cat:'dreamhouse', emoji:'💛', name:'Housewarming', desc:'Get a like on your Dream House.', coins:15, prove:s => !!(s.dh && (s.dh.likes | 0) >= 1)},
     // Pet Hotel + Adopt + Stables + Island
     {id:'ph-first', cat:'pets', emoji:'🏨', name:'Welcome, Guest', desc:'Check out your first Pet Hotel guest.', coins:10, prove:s => !!(s.hotel && (s.hotel.served | 0) >= 1)},
@@ -3519,6 +3519,7 @@ function confetti(){
   /* ===================== end Achievements ===================== */
 
 
+
 /* ---------- name ---------- */
 let fav = player ? player.fav : COLORS[4];
 function askName(){
@@ -3573,6 +3574,26 @@ function paintNav(id, lock){
   return id;
 }
 function syncNavHighlight(){ paintNav(navActiveId()); }
+function goPageTop(smooth){
+  const top = () => {
+    try {
+      if (document.documentElement) document.documentElement.scrollTop = 0;
+      if (document.body) document.body.scrollTop = 0;
+      const main = document.querySelector('main');
+      if (main) main.scrollTop = 0;
+      if (typeof window.scrollTo === 'function') window.scrollTo(0, 0);
+    } catch (e){}
+  };
+  try {
+    if (smooth !== false && typeof window.scrollTo === 'function') window.scrollTo({top: 0, left: 0, behavior: 'smooth'});
+    else top();
+  } catch (e){ top(); }
+  if (smooth === false) top();
+  else if (typeof setTimeout === 'function') setTimeout(() => {
+    const y = window.scrollY || (document.documentElement && document.documentElement.scrollTop) || (document.body && document.body.scrollTop) || 0;
+    if (y > 2) top();
+  }, 480);
+}
 $$('[data-go]').forEach(b => b.addEventListener('click', () => {
   let id = b.dataset.go;
   if (id === 'games'){
@@ -3581,9 +3602,21 @@ $$('[data-go]').forEach(b => b.addEventListener('click', () => {
   }
   const navId = b.dataset.go;
   paintNav(navId, true);
+  if (navId === 'home'){ goPageTop(true); return; }
   const el = document.getElementById(id);
   if (el && el.scrollIntoView) el.scrollIntoView({behavior:'smooth'});
 }));
+const logoHome = document.querySelector('a.logo');
+if (logoHome) logoHome.addEventListener('click', ev => {
+  ev.preventDefault();
+  try {
+    const path = (location.pathname || '') + (location.search || '') + '#home';
+    if (history && history.replaceState) history.replaceState(null, '', path);
+    else location.hash = 'home';
+  } catch (e){ try { location.hash = 'home'; } catch (e2){} }
+  paintNav('home', true);
+  goPageTop(true);
+});
 const io = new IntersectionObserver(() => { syncNavHighlight(); }, {rootMargin:'-45% 0px -50% 0px'});
 addEventListener('scroll', syncNavHighlight, {passive:true});
 addEventListener('resize', syncNavHighlight);
@@ -3733,7 +3766,7 @@ document.addEventListener('keydown', e => {
 function dhInertExempt(el){
   if (!el) return true;
   const id = el.id || '';
-  if (id === 'obby' || id === 'dhResetModal') return true;
+  if (id === 'obby' || id === 'dhResetModal' || id === 'achToast') return true;
   const tag = (el.tagName || '').toLowerCase();
   if (tag === 'dialog') return true;
   const cls = el.classList;
@@ -16194,6 +16227,8 @@ const Obby = (() => {
     } catch (e){ mom = null; }
     dh.cut = Object.assign({}, dh.cut || {}, {mom, foot, c: {x: midX, z: midZ}, start: {x: midX + 4.4, z: foot.z0 - 2.6}, end: {x: midX + 1.35, z: foot.z0 - 2.35}});
     dh.celebrate = {t: 0, stage: 'swing', dur: {swing: 1.6, walk: 2.2, say: 2.6, award: 3.2}, awarded: false};
+    dh._celebrateAwarded = false;
+    dh._celebratePresented = false;
     const wrap = $('#dhCut'); if (wrap){ wrap.style.display = ''; wrap.classList.add('show'); }
     const skip = $('#dhSkip'); if (skip){ skip.style.display = 'block'; skip.classList.add('show'); skip.textContent = 'Skip ▶'; }
     dhSetCutCap('Your house is finished!');
@@ -16214,15 +16249,29 @@ const Obby = (() => {
     return true;
   }
   function dhCelebrateAward(){
-    if (!dh || !dh.celebrate || dh.celebrate.awarded) return false;
-    dh.celebrate.awarded = true;
-    try { if (typeof achUnlock === 'function') achUnlock('dh-done'); } catch (e){}
+    if (!dh || dh._celebrateAwarded) return false;
+    dh._celebrateAwarded = true;
+    if (dh.celebrate) dh.celebrate.awarded = true;
+    // Unlock quietly here so a silent sweep cannot eat the toast. Presentation waits
+    // until dhPresentCelebrateReward() runs after the cut overlay is torn down —
+    // the same moment skip uses — so chrome restore cannot hide or expire it unseen.
+    try { if (typeof achUnlock === 'function') achUnlock('dh-done', {silent: true}); } catch (e){}
+    return true;
+  }
+  function dhPresentCelebrateReward(){
+    if (!dh || dh._celebratePresented) return false;
+    dh._celebratePresented = true;
+    try {
+      const a = (typeof achById === 'function') ? achById('dh-done') : {id:'dh-done', name:'Dream Home Builder', emoji:'🏡', coins:50};
+      if (typeof achShowToast === 'function' && a) achShowToast(a, (a && a.coins) | 0);
+      else if (typeof achUnlock === 'function') achUnlock('dh-done');
+    } catch (e){}
     try {
       const burst = () => { try { if (typeof confetti === 'function') confetti(); } catch (e2){} };
       burst();
       if (typeof requestAnimationFrame === 'function') requestAnimationFrame(burst);
-      else setTimeout(burst, 40);
-      setTimeout(burst, 400);
+      else if (typeof setTimeout === 'function') setTimeout(burst, 40);
+      if (typeof setTimeout === 'function') setTimeout(burst, 400);
     } catch (e){}
     return true;
   }
@@ -16245,7 +16294,9 @@ const Obby = (() => {
     dhSave();
     dhSetFade(0);
     dhSay('');
-    if (typeof dhFlushTips === 'function') dhFlushTips();
+    if (typeof dhFlushTips === 'function'){
+      if (typeof setTimeout === 'function') setTimeout(() => { try { if (dh && !dh.celebrate && !dh.intro) dhFlushTips(); } catch (e){} }, 3600);
+    }
     const wrap = $('#dhCut'); if (wrap){ wrap.style.display = 'none'; wrap.classList.remove('show'); }
     const skip = $('#dhSkip'); if (skip){ skip.style.display = 'none'; skip.classList.remove('show'); }
     const cap = $('#dhCutCap'); if (cap) cap.style.display = 'none';
@@ -16266,6 +16317,9 @@ const Obby = (() => {
         if (el && el.requestPointerLock) { const r = el.requestPointerLock(); if (r && r.catch) r.catch(() => {}); }
       }
     } catch (e){}
+    // Present toast + confetti only after dh-intro is removed so both skip and the
+    // natural end share one visible award. Mid-stage unlock stays silent.
+    dhPresentCelebrateReward();
     banner('🏡 What a home! Open Achievements on the home screen to see your badges.');
     return true;
   }
@@ -18165,7 +18219,6 @@ const Obby = (() => {
     if (/^Digit[1-9]$/.test(k) || /^Numpad[1-9]$/.test(k)){ const i = (k.slice(-1)|0) - 1; if (DH_JOBS[i]) dhSetJob(DH_JOBS[i]); return true; }
     return false;
   }
-
 
 
 

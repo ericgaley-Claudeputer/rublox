@@ -25,7 +25,7 @@
     {id:'dh-frames', cat:'dreamhouse', emoji:'🚪', name:'Open House', desc:'Hang the door and every window frame.', coins:12, prove:s => !!(s.dh && s.dh.goals && s.dh.goals.openings)},
     {id:'dh-glass', cat:'dreamhouse', emoji:'🪟', name:'Sunshine In', desc:'Install glass in every window.', coins:10, prove:s => !!(s.dh && s.dh.goals && s.dh.goals.glaze)},
     {id:'dh-paint', cat:'dreamhouse', emoji:'🎨', name:'Fresh Coat', desc:'Paint every outside wall.', coins:10, prove:s => !!(s.dh && s.dh.goals && s.dh.goals.paint)},
-    {id:'dh-done', cat:'dreamhouse', emoji:'🏡', name:'Dream Home Builder', desc:'Finish Paint & furnish and complete your Dream House.', coins:50, prove:s => !!(s.dh && s.dh.goals && s.dh.goals.furnish)},
+    {id:'dh-done', cat:'dreamhouse', emoji:'🏡', name:'Dream Home Builder', desc:'Finish Paint & furnish and complete your Dream House.', coins:50, prove:s => !!(s.dh && s.dh.goals && s.dh.goals.furnish && s.dh.doneCutSeen !== false)},
     {id:'dh-like', cat:'dreamhouse', emoji:'💛', name:'Housewarming', desc:'Get a like on your Dream House.', coins:15, prove:s => !!(s.dh && (s.dh.likes | 0) >= 1)},
     // Pet Hotel + Adopt + Stables + Island
     {id:'ph-first', cat:'pets', emoji:'🏨', name:'Welcome, Guest', desc:'Check out your first Pet Hotel guest.', coins:10, prove:s => !!(s.hotel && (s.hotel.served | 0) >= 1)},

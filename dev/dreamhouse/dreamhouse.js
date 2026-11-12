@@ -3321,6 +3321,8 @@
     } catch (e){ mom = null; }
     dh.cut = Object.assign({}, dh.cut || {}, {mom, foot, c: {x: midX, z: midZ}, start: {x: midX + 4.4, z: foot.z0 - 2.6}, end: {x: midX + 1.35, z: foot.z0 - 2.35}});
     dh.celebrate = {t: 0, stage: 'swing', dur: {swing: 1.6, walk: 2.2, say: 2.6, award: 3.2}, awarded: false};
+    dh._celebrateAwarded = false;
+    dh._celebratePresented = false;
     const wrap = $('#dhCut'); if (wrap){ wrap.style.display = ''; wrap.classList.add('show'); }
     const skip = $('#dhSkip'); if (skip){ skip.style.display = 'block'; skip.classList.add('show'); skip.textContent = 'Skip ▶'; }
     dhSetCutCap('Your house is finished!');
@@ -3341,15 +3343,29 @@
     return true;
   }
   function dhCelebrateAward(){
-    if (!dh || !dh.celebrate || dh.celebrate.awarded) return false;
-    dh.celebrate.awarded = true;
-    try { if (typeof achUnlock === 'function') achUnlock('dh-done'); } catch (e){}
+    if (!dh || dh._celebrateAwarded) return false;
+    dh._celebrateAwarded = true;
+    if (dh.celebrate) dh.celebrate.awarded = true;
+    // Unlock quietly here so a silent sweep cannot eat the toast. Presentation waits
+    // until dhPresentCelebrateReward() runs after the cut overlay is torn down —
+    // the same moment skip uses — so chrome restore cannot hide or expire it unseen.
+    try { if (typeof achUnlock === 'function') achUnlock('dh-done', {silent: true}); } catch (e){}
+    return true;
+  }
+  function dhPresentCelebrateReward(){
+    if (!dh || dh._celebratePresented) return false;
+    dh._celebratePresented = true;
+    try {
+      const a = (typeof achById === 'function') ? achById('dh-done') : {id:'dh-done', name:'Dream Home Builder', emoji:'🏡', coins:50};
+      if (typeof achShowToast === 'function' && a) achShowToast(a, (a && a.coins) | 0);
+      else if (typeof achUnlock === 'function') achUnlock('dh-done');
+    } catch (e){}
     try {
       const burst = () => { try { if (typeof confetti === 'function') confetti(); } catch (e2){} };
       burst();
       if (typeof requestAnimationFrame === 'function') requestAnimationFrame(burst);
-      else setTimeout(burst, 40);
-      setTimeout(burst, 400);
+      else if (typeof setTimeout === 'function') setTimeout(burst, 40);
+      if (typeof setTimeout === 'function') setTimeout(burst, 400);
     } catch (e){}
     return true;
   }
@@ -3372,7 +3388,9 @@
     dhSave();
     dhSetFade(0);
     dhSay('');
-    if (typeof dhFlushTips === 'function') dhFlushTips();
+    if (typeof dhFlushTips === 'function'){
+      if (typeof setTimeout === 'function') setTimeout(() => { try { if (dh && !dh.celebrate && !dh.intro) dhFlushTips(); } catch (e){} }, 3600);
+    }
     const wrap = $('#dhCut'); if (wrap){ wrap.style.display = 'none'; wrap.classList.remove('show'); }
     const skip = $('#dhSkip'); if (skip){ skip.style.display = 'none'; skip.classList.remove('show'); }
     const cap = $('#dhCutCap'); if (cap) cap.style.display = 'none';
@@ -3393,6 +3411,9 @@
         if (el && el.requestPointerLock) { const r = el.requestPointerLock(); if (r && r.catch) r.catch(() => {}); }
       }
     } catch (e){}
+    // Present toast + confetti only after dh-intro is removed so both skip and the
+    // natural end share one visible award. Mid-stage unlock stays silent.
+    dhPresentCelebrateReward();
     banner('🏡 What a home! Open Achievements on the home screen to see your badges.');
     return true;
   }

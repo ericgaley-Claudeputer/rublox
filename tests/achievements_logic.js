@@ -202,5 +202,37 @@ function fresh(opts) {
     {ach: W.store.rubloxAchievements, coins: W.store.rubloxCoins});
 })();
 
+
+(function(){
+  const W = fresh();
+  const a = W.achById('dh-done');
+  const finished = {
+    dh: {
+      goals: {furnish:1},
+      doneCutSeen: true
+    }
+  };
+  const pending = {
+    dh: {
+      goals: {furnish:1},
+      doneCutSeen: false
+    }
+  };
+  const legacy = {
+    dh: {
+      goals: {furnish:1}
+    }
+  };
+  chk('a finished house that already played the cut-scene still proves Dream Home Builder',
+    !!(a && a.prove(finished) === true),
+    {prove: a && a.prove(finished)});
+  chk('a just-finished house waiting for the cut-scene does not prove Dream Home Builder yet',
+    !!(a && a.prove(pending) === false),
+    {prove: a && a.prove(pending)});
+  chk('a legacy finished house without doneCutSeen still proves Dream Home Builder',
+    !!(a && a.prove(legacy) === true),
+    {prove: a && a.prove(legacy)});
+})();
+
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);
