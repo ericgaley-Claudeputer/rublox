@@ -454,12 +454,14 @@
   function phBuildHotel(){
     if (typeof plat === 'function'){
       const floor = plat(0, 0, 3, 28, 26, '#f8efe3', .3); if (floor) floor.floorOnly = true;
-      // collision walls (taller, colorful rooms)
-      plat(0, 2.0, -10.5, 26, 0.5, '#f3c6d8', 4.0);
-      plat(-13.7, 2.0, 2.5, 0.5, 25, '#c9e8c0', 4.0);
-      plat(13.7, 2.0, 2.5, 0.5, 25, '#c9d4ff', 4.0);
-      plat(-8.6, 2.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
-      plat(8.6, 2.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
+      // Collision walls match the visual wallpaper height (top ~4 m). Older
+      // boxes only reached y=2, so the third-person camera flew over them
+      // and the wallpaper blocked the view of the player.
+      plat(0, 4.0, -10.5, 26, 0.5, '#f3c6d8', 4.0);
+      plat(-13.7, 4.0, 2.5, 0.5, 25, '#c9e8c0', 4.0);
+      plat(13.7, 4.0, 2.5, 0.5, 25, '#c9d4ff', 4.0);
+      plat(-8.6, 4.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
+      plat(8.6, 4.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
     }
     // wallpaper skins just inside the collision walls
     phPaperWall(0, 2.05, -10.22, 25.2, 3.9, 0.08, 'dots', '#f3c6d8', '#ffe8f2', 'wallpaper');

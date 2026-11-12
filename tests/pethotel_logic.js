@@ -7,7 +7,7 @@ const SRC = fs.readFileSync(path.join(__dirname, '../dev/pethotel/pethotel.js'),
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(__dirname, '../version.json'), 'utf8'));
 
-chk('BUILD is 2026.11.12-2 and matches version.json', html.includes("const BUILD = '2026.11.12-2'") && version.build === '2026.11.12-2', version);
+chk('BUILD is 2026.11.12-3 and matches version.json', html.includes("const BUILD = '2026.11.12-3'") && version.build === '2026.11.12-3', version);
 
 function V(){ const o = {x:0,y:0,z:0, set(x,y,z){ this.x=x; this.y=y; this.z=z; return this; } }; return o; }
 function O(){ const o = {position: V(), rotation: V(), scale: V(), visible: true, children: [], material: {color:{set(){}}, opacity:1, transparent:false}, userData: {}, add(c){ this.children.push(c); return c; }, remove(){}, copy(){ return this; } }; return o; }
@@ -160,6 +160,49 @@ chk('stop clears the Pet Hotel session', W.A.ph == null);
   chk('Low path still has the readable stations (bowls, tub, toys, beds) with fewer extras', (lk.bowl|0) >= 2 && (lk.tub|0) >= 1 && (lk.toy|0) >= 5 && (lk.bed|0) >= 4 && (lk.bubble|0) >= 3 && (lk.bubble|0) <= 6 && (lk.plant|0) <= (kinds.plant|0), {low:lk, high:kinds});
   L.A.petHotelStop();
   Pw.A.petHotelStop();
+})();
+
+
+
+(function(){
+  const start = SRC.indexOf('Collision walls match the visual wallpaper height');
+  const end = SRC.indexOf('wallpaper skins just inside the collision walls', start);
+  const block = start >= 0 && end > start ? SRC.slice(start, end) : '';
+  const plats = [...block.matchAll(/plat\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*'#[^']+'\s*,\s*(-?[\d.]+)\s*\)/g)]
+    .map(m => ({x:+m[1], top:+m[2], z:+m[3], w:+m[4], d:+m[5], h:+m[6]}));
+  chk('Pet Hotel collision walls reach the 4 m wallpaper top so the camera cannot fly over a short box',
+    plats.length === 5 && plats.every(p => p.top === 4 && p.h === 4), plats);
+
+  chk('index clips the Pet Hotel orbit camera along the look-segment, not just the orbit point',
+    /function clipOrbitCam\(/.test(html) && /function camSolidAt\(/.test(html) &&
+    /dist = clipOrbitCam\(/.test(html) && html.includes("mode === 'pethotel'"));
+
+  const a = html.indexOf('function camSolidAt(');
+  const b = html.indexOf('function updateCamera(){', a);
+  assert.ok(a >= 0 && b > a, 'could not extract clipOrbitCam');
+  const ctx = {Math, cam: {yaw: Math.PI / 2, pitch: 0.2, dist: 11}, solids: []};
+  vm.createContext(ctx);
+  vm.runInContext(html.slice(a, b), ctx);
+
+  // Real +X wallpaper wall: plat(13.7, 4, 2.5, 0.5, 25, …, 4) → mesh y = 2, hh = 2 (top = 4).
+  const wall = {mesh:{position:{x:13.7, y:2, z:2.5}, visible:true, material:{transparent:false}}, hw:0.25, hh:2, hd:12.5, active:true};
+  ctx.solids = [wall];
+  const tx = 12.5, ty = 2.25, tz = 2.5, want = 11;
+  const dist = ctx.clipOrbitCam(tx, ty, tz, want, 1.2);
+  const cp = Math.cos(0.2);
+  const camX = tx + Math.sin(ctx.cam.yaw) * cp * dist;
+  const rawX = tx + Math.sin(ctx.cam.yaw) * cp * want;
+  const camY = ty + Math.sin(0.2) * dist;
+  chk('Pet Hotel third-person camera is pulled in before a wall can hide the player (including a shot just over the wall top)',
+    dist < want - 1 && camX < 13.7 && rawX > 13.7 && camY < 4.5,
+    {dist, want, camX, rawX, camY, wallTop: 4});
+
+  const open = {Math, cam: {yaw: 0, pitch: 0.2, dist: 11}, solids: [wall]};
+  vm.createContext(open);
+  vm.runInContext(html.slice(a, b), open);
+  const openDist = open.clipOrbitCam(0, 2.25, 0, 11, 1.2);
+  chk('an open Pet Hotel orbit (looking down the room, not through a wall) keeps the full camera distance',
+    Math.abs(openDist - 11) < 1e-9, {openDist});
 })();
 
 

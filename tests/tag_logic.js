@@ -10,7 +10,7 @@ function chk(n, c, i){
   else { fail++; console.log('FAIL ' + n, i === undefined ? '' : JSON.stringify(i)); }
 }
 
-chk('BUILD is 2026.11.12-2 and matches version.json', src.includes("const BUILD = '2026.11.12-2'") && version.build === '2026.11.12-2', version);
+chk('BUILD is 2026.11.12-3 and matches version.json', src.includes("const BUILD = '2026.11.12-3'") && version.build === '2026.11.12-3', version);
 
 chk('the Block Tag arena floor is marked floor-only so the huge slab cannot shove you sideways',
   /fl\.floorOnly\s*=\s*true/.test(src) && /function buildTag\(/.test(src), 'missing floorOnly on tag floor');
@@ -146,6 +146,85 @@ function arena(ctx){
   chk('running into a Block Tag crate does not teleport you through it',
     Math.abs(B.x - (-12 + 2 + R)) < 1e-6 && B.x > -12, {x: B.x, expected: -12 + 2 + R});
 }
+
+
+chk('Block Tag first-person uses a general clipFpCamera (not the Dream House-only clip) and a closer near plane',
+  /function clipFpCamera\(/.test(src) && /function camBodyR\(/.test(src) &&
+  /else clipFpCamera\(\)/.test(src) && /camera\.near = Math\.min\(camera\.near,\s*0\.05\)/.test(src) &&
+  /mode === 'dreamhouse' && typeof dhClipFpCamera/.test(src));
+
+{
+  const W = physics();
+  arena(W);
+  W.fpOn = () => false;
+  const start = ARENA - 1;
+  W.P.x = start; W.P.px = start; W.P.vx = 8;
+  W.P.x = start + 2;
+  W.resolve('x', W.P);
+  chk('third-person Block Tag still stands off walls by the usual body radius',
+    Math.abs(W.P.x - (ARENA - R)) < 1e-6, {x: W.P.x, expected: ARENA - R});
+}
+
+{
+  const W = physics();
+  arena(W);
+  W.fpOn = () => true;
+  const start = ARENA - 1;
+  W.P.x = start; W.P.px = start; W.P.vx = 8;
+  W.P.x = start + 2;
+  W.resolve('x', W.P);
+  const expected = ARENA - (R + 0.28);
+  chk('first-person Block Tag keeps the player a little farther from walls so the eye is not in the surface',
+    Math.abs(W.P.x - expected) < 1e-6, {x: W.P.x, expected, R});
+}
+
+function fpCam(){
+  const a = src.indexOf('function camSolidAt(');
+  const b = src.indexOf('function updateCamera(){', a);
+  assert.ok(a >= 0 && b > a, 'could not extract clipFpCamera');
+  const pos = {x: 0, y: 0, z: 0, set(x, y, z){ this.x = x; this.y = y; this.z = z; return this; }};
+  const ctx = {
+    Math,
+    mode: 'tag',
+    fpOn: () => true,
+    eyeHeight: () => 2.45,
+    P: body(ARENA - R, 0.05, 0),
+    cam: {yaw: -Math.PI / 2, pitch: 0, dist: 11},
+    solids: [],
+    camera: {
+      near: 0.1,
+      position: pos,
+      lookAt(){},
+      updateProjectionMatrix(){ ctx.camera._upd = true; },
+    },
+  };
+  vm.createContext(ctx);
+  vm.runInContext(src.slice(a, b), ctx);
+  return ctx;
+}
+
+{
+  const W = fpCam();
+  arena(W);
+  // Face the +X arena wall and place the default FP eye (P + forward*0.22) almost in the surface.
+  W.P.x = ARENA - R;
+  W.P.y = 0.05;
+  W.P.z = 0;
+  W.cam.yaw = -Math.PI / 2;
+  const fx = -Math.sin(W.cam.yaw);
+  W.camera.position.set(W.P.x + fx * 0.22, W.P.y + 2.45, W.P.z);
+  const unclipped = W.camera.position.x;
+  const ok = W.clipFpCamera();
+  const wallFace = ARENA; // inner face at x=34
+  chk('pressing a Block Tag wall in first-person pulls the eye back and drops the near plane to 0.05',
+    ok === true && W.camera.near <= 0.05 && W.camera._upd === true &&
+    W.camera.position.x < wallFace - 0.4 && W.camera.position.x < unclipped - 0.2,
+    {camX: W.camera.position.x, unclipped, near: W.camera.near, wallFace, ok});
+  chk('the first-person eye is not left inside the Block Tag wall AABB',
+    Math.abs(W.camera.position.x - 35) >= 1 && W.camera.position.y > 0,
+    {cam: {x: W.camera.position.x, y: W.camera.position.y, z: W.camera.position.z}});
+}
+
 
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);

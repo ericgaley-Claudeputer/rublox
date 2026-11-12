@@ -1624,7 +1624,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.12-2';
+const BUILD = '2026.11.12-3';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -5049,11 +5049,16 @@ const Obby = (() => {
   // Push out on the side the body came from (or the nearer face). Midpoint
   // eject used to fling you through thin walls or out of the Block Tag arena
   // when a long frame carried you past the box center.
+  function camBodyR(B){
+    if (B === P && mode === 'tag' && typeof fpOn === 'function' && fpOn()) return R + 0.28;
+    return R;
+  }
   function ejectXZ(axis, B, b){
     const p = b.mesh.position;
     const c = axis === 'x' ? p.x : p.z;
     const h = axis === 'x' ? b.hw : b.hd;
-    const lo = c - h - R, hi = c + h + R;
+    const rad = camBodyR(B);
+    const lo = c - h - rad, hi = c + h + rad;
     const prev = axis === 'x' ? B.px : B.pz;
     let side = 0;
     if (prev != null && isFinite(prev)){
@@ -17292,6 +17297,84 @@ function dhLayoutHud(){
     $('#oRot').classList.toggle('show', show);
     clearTimeout(rotT); if (show) rotT = setTimeout(() => { rotDismissed = true; $('#oRot').classList.remove('show'); }, 5000);
   }
+  function camSolidAt(x, y, z, pad){
+    pad = pad == null ? .25 : pad;
+    if (typeof solids === 'undefined' || !solids) return null;
+    for (let i = 0; i < solids.length; i++){
+      const b = solids[i];
+      if (!b || !b.active || b.camSkip || b.floorOnly || !b.mesh) continue;
+      if (b.mesh.visible === false) continue;
+      const mat = b.mesh.material;
+      if (mat && !Array.isArray(mat) && mat.transparent) continue;
+      const p = b.mesh.position;
+      if (Math.abs(x - p.x) < b.hw + pad && Math.abs(y - p.y) < b.hh + pad && Math.abs(z - p.z) < b.hd + pad) return b;
+    }
+    return null;
+  }
+  // Walk the look-segment, not just the orbit point, so a camera that would
+  // sit above a short wall is still pulled in before the wall hides the player.
+  function clipOrbitCam(tx, ty, tz, want, minDist){
+    minDist = minDist == null ? 1.2 : minDist;
+    const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+    const sx = Math.sin(cam.yaw), cz = Math.cos(cam.yaw);
+    const hits = (x, y, z) => !!camSolidAt(x, y, z, .25);
+    const segmentHits = (x1, y1, z1) => {
+      const n = 10;
+      for (let i = 1; i <= n; i++){
+        const t = i / n;
+        if (hits(tx + (x1 - tx) * t, ty + (y1 - ty) * t, tz + (z1 - tz) * t)) return true;
+      }
+      return false;
+    };
+    let dist = want;
+    const step = .25;
+    for (let s = minDist; s <= want + 1e-6; s += step){
+      const x = tx + sx * cp * s, y = ty + sp * s, z = tz + cz * cp * s;
+      if (hits(x, y, z) || segmentHits(x, y, z)){ dist = Math.max(minDist, s - step); break; }
+    }
+    return dist;
+  }
+  // First-person no-clip (same idea as Dream House): pull the eye back from a
+  // wall and keep the near plane small so the screen never fills with wall.
+  function clipFpCamera(){
+    if (!camera || typeof cam === 'undefined' || !cam || !P) return false;
+    if (typeof fpOn === 'function' && !fpOn()) return false;
+    const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw);
+    const ey = P.y + (typeof eyeHeight === 'function' ? eyeHeight() : 2.45);
+    const clear = 0.5;
+    const blocked = (x, y, z) => !!camSolidAt(x, y, z, clear);
+    let off = 0.22, guard = 0;
+    while (guard++ < 50 && blocked(P.x + fx * off, ey, P.z + fz * off)) off -= 0.04;
+    while (guard++ < 70 && blocked(P.x + fx * (off + clear), ey, P.z + fz * (off + clear))) off -= 0.04;
+    off = Math.max(-0.7, off);
+    let x = P.x + fx * off, y = ey, z = P.z + fz * off;
+    for (let k = 0; k < 8; k++){
+      let moved = false;
+      if (typeof solids === 'undefined' || !solids) break;
+      for (let i = 0; i < solids.length; i++){
+        const b = solids[i];
+        if (!b || !b.active || b.camSkip || b.floorOnly || !b.mesh) continue;
+        const p = b.mesh.position;
+        const dx = x - p.x, dy = y - p.y, dz = z - p.z;
+        const px = b.hw + clear, py = b.hh + clear, pz = b.hd + clear;
+        if (Math.abs(dx) >= px || Math.abs(dy) >= py || Math.abs(dz) >= pz) continue;
+        const ox = px - Math.abs(dx), oy = py - Math.abs(dy), oz = pz - Math.abs(dz);
+        if (ox <= oz && ox <= oy) x += (dx >= 0 ? 1 : -1) * ox;
+        else if (oz <= oy) z += (dz >= 0 ? 1 : -1) * oz;
+        else y += (dy >= 0 ? 1 : -1) * oy;
+        moved = true;
+      }
+      if (!moved) break;
+    }
+    camera.position.set(x, y, z);
+    if (typeof camera.near === 'number'){
+      camera.near = Math.min(camera.near, 0.05);
+      if (typeof camera.updateProjectionMatrix === 'function') camera.updateProjectionMatrix();
+    }
+    const cp = Math.cos(cam.pitch);
+    camera.lookAt(P.x + fx * (off + cp * 10), y - Math.sin(cam.pitch) * 10, P.z + fz * (off + cp * 10));
+    return true;
+  }
   function updateCamera(){
     if (dh && typeof dhIntroCam === 'function' && dhIntroCam()) return;
     if (rc && raceCam()) return;
@@ -17301,17 +17384,15 @@ function dhLayoutHud(){
       const cp = Math.cos(cam.pitch), fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), ey = P.y + eyeHeight();
       camera.position.set(P.x + fx * .22, ey, P.z + fz * .22);
       camera.lookAt(P.x + fx * (.22 + cp * 10), ey - Math.sin(cam.pitch) * 10, P.z + fz * (.22 + cp * 10));
-      if (typeof dhClipFpCamera === 'function') dhClipFpCamera();
+      if (mode === 'dreamhouse' && typeof dhClipFpCamera === 'function') dhClipFpCamera();
+      else clipFpCamera();
       if (shake > 0 && !paused){ camera.position.x += (Math.random() - .5) * shake * .5; camera.position.y += (Math.random() - .5) * shake * .5; }
       return;
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
     if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ // pull the camera in front of walls so buildings don't block the view
-      for (let s = 1.2; s <= cam.dist; s += .4){
-        const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
-        if (solids.some(b => b.active && !b.camSkip && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2, s - .5); break; }
-      }
+      dist = clipOrbitCam(tx, ty, tz, cam.dist, mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2);
     }
     camera.position.set(tx + Math.sin(cam.yaw) * cp * dist, ty + Math.sin(cam.pitch) * dist, tz + Math.cos(cam.yaw) * cp * dist);
     camera.lookAt(tx, ty, tz);
@@ -18325,12 +18406,14 @@ function start(m = 'obby', d = null){
   function phBuildHotel(){
     if (typeof plat === 'function'){
       const floor = plat(0, 0, 3, 28, 26, '#f8efe3', .3); if (floor) floor.floorOnly = true;
-      // collision walls (taller, colorful rooms)
-      plat(0, 2.0, -10.5, 26, 0.5, '#f3c6d8', 4.0);
-      plat(-13.7, 2.0, 2.5, 0.5, 25, '#c9e8c0', 4.0);
-      plat(13.7, 2.0, 2.5, 0.5, 25, '#c9d4ff', 4.0);
-      plat(-8.6, 2.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
-      plat(8.6, 2.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
+      // Collision walls match the visual wallpaper height (top ~4 m). Older
+      // boxes only reached y=2, so the third-person camera flew over them
+      // and the wallpaper blocked the view of the player.
+      plat(0, 4.0, -10.5, 26, 0.5, '#f3c6d8', 4.0);
+      plat(-13.7, 4.0, 2.5, 0.5, 25, '#c9e8c0', 4.0);
+      plat(13.7, 4.0, 2.5, 0.5, 25, '#c9d4ff', 4.0);
+      plat(-8.6, 4.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
+      plat(8.6, 4.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
     }
     // wallpaper skins just inside the collision walls
     phPaperWall(0, 2.05, -10.22, 25.2, 3.9, 0.08, 'dots', '#f3c6d8', '#ffe8f2', 'wallpaper');
