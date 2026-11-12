@@ -502,9 +502,9 @@ function notInWall(z, zFace, thick, r){
   return z <= lo + EPS || z >= hi - EPS;
 }
 
-test('BUILD is 2026.11.12-6 and matches version.json', () => {
-  assert.ok(html.includes("const BUILD = '2026.11.12-6'"));
-  assert.strictEqual(version.build, '2026.11.12-6');
+test('BUILD is 2026.11.12-9 and matches version.json', () => {
+  assert.ok(html.includes("const BUILD = '2026.11.12-9'"));
+  assert.strictEqual(version.build, '2026.11.12-9');
 });
 
 test('index.html wires DH clip into step() and exposes a #dhdebug collider path', () => {
@@ -902,6 +902,86 @@ test('HUD buttons receive a pointer-locked click at their screen rect without pr
   assert.strictEqual(handled, true, 'locked click over Exit should hit the button (hit=' + (hit && hit.id) + ')');
   assert.strictEqual(clicks, 1, 'Exit must be activated without pressing Esc');
   assert.ok(exited || c.document.pointerLockElement == null, 'pointer lock should be released by the HUD click');
+});
+
+
+test('Exit and Upgrades receive a pointer-locked click in Dream House and Block Tag', () => {
+  function canvasOf(c){
+    return (c.document.getElementById('obbyView') && c.document.getElementById('obbyView').children[0]) || c.document.getElementById('obbyView') || {id: 'canvas'};
+  }
+  function placeBtn(c, btn, rect){
+    assert.ok(btn, 'expected button ' + (btn && btn.id));
+    btn.tagName = 'BUTTON';
+    btn.nodeName = 'BUTTON';
+    btn.disabled = false;
+    btn.hidden = false;
+    btn.style.display = '';
+    btn.style.visibility = '';
+    if (btn.classList && btn.classList.remove) btn.classList.remove('dh-paused-hide');
+    const host = c.document.getElementById('dhBar') || c.document.getElementById('obby') || c.document.body;
+    if (btn.parentElement !== host && host && host.appendChild) host.appendChild(btn);
+    btn.getBoundingClientRect = () => ({
+      left: rect.l, top: rect.t, right: rect.r, bottom: rect.b,
+      width: rect.r - rect.l, height: rect.b - rect.t, x: rect.l, y: rect.t
+    });
+  }
+  function clickLocked(c, btn, rect, useVirtual){
+    placeBtn(c, btn, rect);
+    let clicks = 0;
+    btn.onclick = () => { clicks++; };
+    const canvas = canvasOf(c);
+    c.document.pointerLockElement = canvas;
+    let exited = false;
+    c.document.exitPointerLock = function(){ this.pointerLockElement = null; exited = true; };
+    const midX = (rect.l + rect.r) / 2, midY = (rect.t + rect.b) / 2;
+    // When locked, ev.target is the canvas (not the button). Event coords may be
+    // the viewport centre; the virtual cursor is what actually sits on the control.
+    if (useVirtual && typeof c.__rubloxHudCursor === 'function') c.__rubloxHudCursor(midX, midY);
+    // Event coords while locked may be nowhere near the button (often the
+    // canvas centre). Use a point outside stub 800x600 rects so we actually
+    // exercise the virtual-cursor hit, the same path a real locked click uses.
+    const ev = {
+      clientX: useVirtual ? 1400 : midX,
+      clientY: useVirtual ? 40 : midY,
+      target: canvas, button: 0, pointerType: 'mouse',
+      preventDefault(){ ev.prevented = true; },
+      stopPropagation(){ ev.stopped = true; },
+      stopImmediatePropagation(){ ev.stopped = true; }
+    };
+    const handled = c.__rubloxHudTryClick(ev);
+    return {handled, clicks, exited, ev, canvas};
+  }
+  function assertButtons(c, mode){
+    assert.ok(c.Obby && c.Obby.running, mode + ' should be running');
+    assert.ok(typeof c.__rubloxHudTryClick === 'function', 'HUD click helper missing in ' + mode);
+    const exit = c.document.getElementById('oExit');
+    const up = c.document.getElementById('dhUpBtn');
+    assert.ok(exit, 'Exit missing in ' + mode);
+    assert.ok(up, 'Upgrades missing in ' + mode);
+    const exitRect = {l: 900, t: 12, r: 1010, b: 52};
+    const upRect = {l: 520, t: 620, r: 650, b: 670};
+    // event position on the button (same path as the -6 test)
+    let r = clickLocked(c, exit, exitRect, false);
+    assert.strictEqual(r.handled, true, mode + ' locked Exit (event pos) should be handled');
+    assert.strictEqual(r.clicks, 1, mode + ' locked Exit (event pos) must activate on the first click');
+    assert.ok(r.exited || c.document.pointerLockElement == null, mode + ' Exit should unlock the pointer');
+    // virtual cursor over the button, event at the canvas centre
+    r = clickLocked(c, up, upRect, true);
+    assert.strictEqual(r.handled, true, mode + ' locked Upgrades (virtual cursor) should be handled, target was canvas');
+    assert.strictEqual(r.clicks, 1, mode + ' locked Upgrades must activate on the first click');
+    assert.ok(r.exited || c.document.pointerLockElement == null, mode + ' Upgrades should unlock the pointer');
+    r = clickLocked(c, exit, exitRect, true);
+    assert.strictEqual(r.handled, true, mode + ' locked Exit (virtual cursor) should be handled');
+    assert.strictEqual(r.clicks, 1, mode + ' locked Exit (virtual cursor) must activate on the first click');
+  }
+
+  const dh = boot('#dhtest=v7walls');
+  assertButtons(dh, 'dreamhouse');
+
+  const tag = boot();
+  try { tag.Obby.start('tag'); } catch (e){ assert.fail('start(tag) threw: ' + e); }
+  assert.ok(tag.Obby && tag.Obby.running, 'Block Tag should start');
+  assertButtons(tag, 'tag');
 });
 
 test('the TEST HOUSE badge hides when you leave Dream House for Pet Hotel or Block Tag', () => {

@@ -63,9 +63,9 @@ function makeEl(id){
   return el;
 }
 
-test('BUILD is 2026.11.12-6 and matches version.json', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.12-6'"));
-  assert.strictEqual(version.build, '2026.11.12-6');
+test('BUILD is 2026.11.12-9 and matches version.json', () => {
+  assert.ok(src.includes("const BUILD = '2026.11.12-9'"));
+  assert.strictEqual(version.build, '2026.11.12-9');
 });
 
 test('every inline script in index.html parses (a syntax error would make every Play button do nothing)', () => {
@@ -327,6 +327,14 @@ test('buildGames still adds every mode if one tile preview throws', () => {
   assert.deepStrictEqual(cards.map(c => c.dataset.game), ['dreamhouse', 'pethotel', 'dance', 'obby']);
 });
 
+test('the Hi there name popup keeps Let\'s go! visible on short laptop and phone-landscape screens', () => {
+  assert.ok(src.includes('id="nameModal"') && src.includes('id="nameOk"') && src.includes("Let's go!"));
+  assert.ok(/#nameModal \.mbox\{[^}]*max-height:/.test(src), 'name modal box must have a viewport max-height');
+  assert.ok(/#nameModal #nameOk\{[^}]*position:sticky/.test(src), 'Let\'s go! must stick to the bottom of the popup');
+  assert.ok(src.includes('@media (max-height:850px)') && src.includes('#nameModal #nameOk'), 'laptop-height (1280x800) shrink rules');
+  assert.ok(src.includes('@media (max-height:500px)') && /#nameModal .mbox\{[^}]*padding:8px 14px/.test(src), 'phone-landscape shrink rules');
+});
+
 test('a fresh profile still asks for a name and draws the avatar after the games grid is built', () => {
   const start = src.indexOf('/* ---------- start ---------- */');
   assert.ok(start >= 0);
@@ -335,6 +343,99 @@ test('a fresh profile still asks for a name and draws the avatar after the games
   assert.ok(boot.includes('drawBig()') && boot.includes('drawChip()') && boot.includes('if (!player) askName()'));
   assert.ok(boot.indexOf('buildGames()') < boot.indexOf('if (!player) askName()'));
   assert.ok(boot.indexOf('drawBig()') < boot.indexOf('if (!player) askName()'));
+});
+
+
+test('the home join-code box (and other code inputs) accept click, typing, and paste after the HUD pointer hook is armed', () => {
+  const start = src.indexOf('function hudIsEditableTarget');
+  const end = src.indexOf('function dhIsUiEvent', start);
+  assert.ok(start >= 0 && end > start, 'hud pointer helpers should be in the page');
+  const sandbox = { document: { pointerLockElement: null, activeElement: null }, window: {}, console };
+  sandbox.window = sandbox;
+  vm.createContext(sandbox);
+  vm.runInContext(src.slice(start, end), sandbox);
+  assert.ok(typeof sandbox.hudShouldCapturePointer === 'function');
+
+  const ids = [];
+  const re = /<input\b([^>]*)>/gi;
+  let m;
+  while ((m = re.exec(src))) {
+    const attrs = m[1];
+    const id = (attrs.match(/\bid=["']([^"']+)["']/) || [])[1];
+    if (!id) continue;
+    if (/id="mpCode"|placeholder="CODE"|aria-label="Room code"/i.test(m[0]) || id === 'mpCode') ids.push(id);
+  }
+  assert.ok(ids.includes('mpCode'), 'home Friends/Join panel must have #mpCode');
+  assert.ok(!/\bid="mpCode"[^>]*(disabled|readonly)/i.test(src), '#mpCode must not be disabled or readonly');
+  assert.ok(!/<input[^>]*id="mpCode"[^>]*pattern=/.test(src), '#mpCode must not use a pattern that rejects letters');
+
+  function makeInput(id){
+    const el = {
+      id, tagName: 'INPUT', value: '', focused: false, isContentEditable: false,
+      closest(sel){
+        const want = String(sel);
+        if (/input/.test(want) || want.split(',').some(s => s.trim() === 'input' || s.trim() === '#' + id)) return el;
+        return null;
+      },
+      contains(){ return false; },
+      focus(){ el.focused = true; sandbox.document.activeElement = el; },
+      blur(){ el.focused = false; if (sandbox.document.activeElement === el) sandbox.document.activeElement = null; },
+      click(){ el.clicked = true; }
+    };
+    return el;
+  }
+
+  const canvas = { id: 'gl', tagName: 'CANVAS', contains(){ return false; }, closest(){ return null; } };
+
+  // The live bug: after bind() the capture-phase HUD hook called preventDefault on
+  // pointerdown for any input (HUD_HIT_SEL includes "input"), which kept the field
+  // from focusing so typing and paste did nothing.
+  function armHook(canvasEl){
+    return function onPointerDown(ev){
+      const steal = sandbox.hudShouldCapturePointer(ev, canvasEl);
+      if (steal) ev.preventDefault();
+      ev.stole = steal;
+    };
+  }
+
+  function typeAndPaste(el, hook){
+    const ev = {
+      target: el, srcElement: el, clientX: 40, clientY: 40, type: 'pointerdown',
+      prevented: false, stole: false,
+      preventDefault(){ ev.prevented = true; }
+    };
+    sandbox.document.pointerLockElement = null;
+    sandbox.document.activeElement = null;
+    hook(ev);
+    assert.strictEqual(ev.stole, false, el.id + ' pointerdown must not be captured on the home page');
+    assert.strictEqual(ev.prevented, false, el.id + ' pointerdown must not be preventDefaulted (that blocks focus)');
+    if (!ev.prevented) el.focus();
+    assert.ok(el.focused, el.id + ' should be focused after click');
+    // simulate typing a 5-letter room code (Mac / physical keyboard)
+    el.value = '';
+    for (const ch of 'HQMZK'){
+      const key = { key: ch, code: 'Key' + ch, target: el, defaultPrevented: false, preventDefault(){ key.defaultPrevented = true; } };
+      assert.ok(!key.defaultPrevented);
+      el.value += ch;
+    }
+    assert.strictEqual(el.value, 'HQMZK', el.id + ' must accept typed letters');
+    // simulate paste (Mac Cmd+V / mobile paste)
+    el.value = '';
+    el.value += 'AB3DE';
+    assert.strictEqual(el.value, 'AB3DE', el.id + ' must accept paste');
+  }
+
+  const hook = armHook(canvas);
+  const unique = [...new Set(ids)];
+  assert.ok(unique.length >= 1);
+  unique.forEach(id => typeAndPaste(makeInput(id), hook));
+
+  // HUD clicks while pointer-locked (target is the canvas) must still be capturable
+  sandbox.document.pointerLockElement = canvas;
+  sandbox.document.activeElement = null;
+  const lockedEv = { target: canvas, clientX: 10, clientY: 10, preventDefault(){} };
+  assert.strictEqual(sandbox.hudShouldCapturePointer(lockedEv, canvas), true, 'pointer-locked canvas clicks still go to the HUD hook');
+  sandbox.document.pointerLockElement = null;
 });
 
 test('hosting a room times out with a friendly retry instead of hanging on starting room', () => {
