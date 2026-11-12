@@ -1624,7 +1624,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.12-1';
+const BUILD = '2026.11.12-2';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -5043,9 +5043,29 @@ const Obby = (() => {
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
       if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
-      if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
-      else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
+      ejectXZ(axis, B, b);
     }
+  }
+  // Push out on the side the body came from (or the nearer face). Midpoint
+  // eject used to fling you through thin walls or out of the Block Tag arena
+  // when a long frame carried you past the box center.
+  function ejectXZ(axis, B, b){
+    const p = b.mesh.position;
+    const c = axis === 'x' ? p.x : p.z;
+    const h = axis === 'x' ? b.hw : b.hd;
+    const lo = c - h - R, hi = c + h + R;
+    const prev = axis === 'x' ? B.px : B.pz;
+    let side = 0;
+    if (prev != null && isFinite(prev)){
+      if (prev <= lo + 1e-4) side = -1;
+      else if (prev >= hi - 1e-4) side = 1;
+    }
+    if (!side){
+      const cur = axis === 'x' ? B.x : B.z;
+      side = (Math.abs(cur - lo) <= Math.abs(cur - hi)) ? -1 : 1;
+    }
+    if (axis === 'x'){ B.x = side < 0 ? lo : hi; if ((side < 0 && B.vx > 0) || (side > 0 && B.vx < 0)) B.vx = 0; }
+    else { B.z = side < 0 ? lo : hi; if ((side < 0 && B.vz > 0) || (side > 0 && B.vz < 0)) B.vz = 0; }
   }
   function input(){
     const lookArrows = (typeof mode !== 'undefined' && mode === 'dreamhouse' && typeof dh !== 'undefined' && dh && !dh.intro) || (typeof fpOn === 'function' && fpOn());
@@ -5109,9 +5129,9 @@ const Obby = (() => {
     ext.x *= Math.exp(-dt * 1.4); ext.z *= Math.exp(-dt * 1.4);
     const wx = winds.length ? windAt() : 0;
     if (mode === 'dreamhouse' && typeof dhRememberPlayer === 'function') dhRememberPlayer();
-    P.x += (P.vx + ext.x + wx) * dt; resolve('x');
+    P.px = P.x; P.x += (P.vx + ext.x + wx) * dt; resolve('x');
     if (mode === 'dreamhouse' && typeof dhAfterPhysicsStep === 'function') dhAfterPhysicsStep();
-    P.z += (P.vz + ext.z) * dt; resolve('z');
+    P.pz = P.z; P.z += (P.vz + ext.z) * dt; resolve('z');
     if (mode === 'dreamhouse' && typeof dhAfterPhysicsStep === 'function') dhAfterPhysicsStep();
     P.onGround = false; P.ground = null;
     P.py = P.y; P.y += P.vy * dt; resolve('y');
@@ -5120,6 +5140,7 @@ const Obby = (() => {
     if (tg) tg.bots.forEach((B, n) => { if (!B.human) botStep(B, n + 1, dt); });
     if (hs) hideBots(dt);
     checks();
+    if (mode === 'tag') tagKeepInArena(P, true);
   }
   function checks(){
     if (SIM) return;
@@ -5417,6 +5438,25 @@ const Obby = (() => {
     const t = new THREE.CanvasTexture(c), s = new THREE.Sprite(new THREE.SpriteMaterial({map: t, depthTest: false, transparent: true}));
     s.scale.set(w / 64 * 1.05, 1.05, 1); s.renderOrder = 10; return s;
   }
+  // Block Tag playable area is inside the four arena walls (inner face at ±ARENA).
+  // If a collision glitch still pushes a body out, clamp it back or respawn.
+  function tagArenaLimit(){ return ARENA - R; }
+  function tagKeepInArena(B, isPlayer){
+    if (mode !== 'tag' || !B) return false;
+    const lim = tagArenaLimit(), far = ARENA + 4;
+    const outFar = Math.abs(B.x) > far || Math.abs(B.z) > far || B.y < -4 || B.y > 40;
+    if (outFar){
+      if (isPlayer){ if (typeof respawn === 'function') respawn(); else Object.assign(B, {x: 0, y: .05, z: -28, vx: 0, vy: 0, vz: 0}); return true; }
+      Object.assign(B, {x: 0, y: 3, z: 10, vx: 0, vy: 0, vz: 0});
+      return true;
+    }
+    let hit = false;
+    if (B.x > lim){ B.x = lim; if (B.vx > 0) B.vx = 0; hit = true; }
+    if (B.x < -lim){ B.x = -lim; if (B.vx < 0) B.vx = 0; hit = true; }
+    if (B.z > lim){ B.z = lim; if (B.vz > 0) B.vz = 0; hit = true; }
+    if (B.z < -lim){ B.z = -lim; if (B.vz < 0) B.vz = 0; hit = true; }
+    return hit;
+  }
   function stairs(x, z, dir, w, n, color){ // ramp made of low steps you can walk up
     for (let i = 0; i < n; i++){ const top = (n - i) * .5, off = .75 + i * 1.5;
       plat(x + dir[0] * off, top, z + dir[1] * off, dir[0] ? 1.5 : w, dir[0] ? w : 1.5, color, top); }
@@ -5428,6 +5468,7 @@ const Obby = (() => {
     const fm = new THREE.MeshLambertMaterial({map: floorTex}), fs = mat('#c9c2b3');
     const fl = plat(0, 0, 0, ARENA * 2 + 4, ARENA * 2 + 4, '#f4f1ea', 2, {material: [fs, fs, fm, fs, fs, fs]});
     fl.mesh.material = [fs, fs, fm, fs, fs, fs];
+    fl.floorOnly = true; // huge arena slab must never resolve as a wall and fling you out
     const W = ARENA + 1;
     [[0, W, ARENA * 2 + 4, 2], [0, -W, ARENA * 2 + 4, 2], [W, 0, 2, ARENA * 2 + 4], [-W, 0, 2, ARENA * 2 + 4]].forEach(([x, z, w, d], i) => plat(x, 4, z, w, d, C[i + 1], 4));
     // middle stage with ramps on two sides
@@ -5527,10 +5568,10 @@ const Obby = (() => {
     if (Math.hypot(mx, mz) > .1) B.face = Math.atan2(mx, mz);
     B.vy = Math.max(-40, B.vy - GRAV * dt); B.coyote = B.onGround ? .1 : B.coyote - dt;
     if (jump && B.coyote > 0 && B.vy <= .01){ B.vy = JUMP; B.coyote = 0; B.jumped = true; B.airT = 0; }
-    B.x += B.vx * dt; resolve('x', B); B.z += B.vz * dt; resolve('z', B);
-    B.onGround = false; B.ground = null; B.y += B.vy * dt; resolve('y', B);
+    B.px = B.x; B.x += B.vx * dt; resolve('x', B); B.pz = B.z; B.z += B.vz * dt; resolve('z', B);
+    B.onGround = false; B.ground = null; B.py = B.y; B.y += B.vy * dt; resolve('y', B);
     if (B.onGround){ B.airT = 0; B.jumped = false; } else B.airT += dt;
-    if (B.y < -20) Object.assign(B, {x: 0, y: 3, z: 10, vx: 0, vy: 0, vz: 0});
+    if (!tagKeepInArena(B, false) && B.y < -20) Object.assign(B, {x: 0, y: 3, z: 10, vx: 0, vy: 0, vz: 0});
   }
   function tagUpdate(dt){
     const T = tg;

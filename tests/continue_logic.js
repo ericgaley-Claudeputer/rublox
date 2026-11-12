@@ -262,9 +262,9 @@ test('live page has a single Continue section between Home and Games', () => {
 
 test('history key is new and version is bumped', () => {
   assert.ok(src.includes("const RECENT_KEY = 'rubloxRecentGames'"));
-  assert.ok(src.includes("const BUILD = '2026.11.12-1'"));
+  assert.ok(src.includes("const BUILD = '2026.11.12-2'"));
   const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
-  assert.strictEqual(v.build, '2026.11.12-1');
+  assert.strictEqual(v.build, '2026.11.12-2');
 });
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

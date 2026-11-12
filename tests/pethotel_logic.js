@@ -7,7 +7,7 @@ const SRC = fs.readFileSync(path.join(__dirname, '../dev/pethotel/pethotel.js'),
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(__dirname, '../version.json'), 'utf8'));
 
-chk('BUILD is 2026.11.12-1 and matches version.json', html.includes("const BUILD = '2026.11.12-1'") && version.build === '2026.11.12-1', version);
+chk('BUILD is 2026.11.12-2 and matches version.json', html.includes("const BUILD = '2026.11.12-2'") && version.build === '2026.11.12-2', version);
 
 function V(){ const o = {x:0,y:0,z:0, set(x,y,z){ this.x=x; this.y=y; this.z=z; return this; } }; return o; }
 function O(){ const o = {position: V(), rotation: V(), scale: V(), visible: true, children: [], material: {color:{set(){}}, opacity:1, transparent:false}, userData: {}, add(c){ this.children.push(c); return c; }, remove(){}, copy(){ return this; } }; return o; }
