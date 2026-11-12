@@ -43,7 +43,7 @@ function world(store0, opts){
   ctx.window = ctx;
   ctx.window.location = ctx.location;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhWindowsFramed, dhRepairMissingWindows, dhShouldRepairMissingWindows, dhFaceHasRealOpening, dhRefreshPaint, dhAllFrameSlots, dhIsWindowOpeningCell, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrickSlots, dhBrickSupported, dhEnsureHeld, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, DH_WIN_SILL, DH_WIN_HEAD, DH_DOOR_H, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhTestV7FrameRaw, dhTestV7PaintedRaw, dhTestV7ShellPieces, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhHideTestNote, dhFurnBox, dhMeshFor, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec, dhShowSpots, dhSpotTick, dhSpotFade, dhSpotVisuals, DH_SPOT_SHOW, DH_SPOT_FADE, DH_SPOT_NEAR, DH_SPOT_AIM, dhUpdateGhost, dhPulseBeacons, dhBeaconWorlds, dhSpotDims, dhSetGfxLow, dhGfxLow, dhPaintOpenings, dhPaintHoleLocalX, dhPaintLocalToWorld, dhPaintHoleWorldBoxes, dhPaintCutsMatchFrames, dhRectsMinusHoles, dhPaintPanelWorldBoxes, dhPaintCoversOpening, dhOpeningAabb, dhShingleCorners, dhRafterEnds, dhRoofPlaneYat, dhRoofTilt, dhRoofPitch, DH_ROOF_RISE, DH_ROOF_OVERHANG, DH_SHINGLE_COLS, DH_SHINGLE_ROWS, DH_RAFTER_NEED, dhAllShingleSlots, dhAllRafterSlots, dhShingleWorld, dhRafterWorld, dhHasAnyCarry, dhPaintWorld, dhPaintOut, dhPaintSize, dhPaintOpeningClearance, dhPaintCornerMeet, dhRoofComplete, dhGableFaces, dhGableInfo, dhSyncGables, dhDisposeGables, dhMakeGableMesh, dhWho, dhIsGuest, dhIsVisitor, dhCanEdit, dhShouldVisit, dhHostName, dhInviteCode, dhToggleInvite, dhRenderInvite, dhRetryInvite, dhCopyInvite, dhBlockVisitor, dhVisitLike, dhAssignPlot, dhTestVisitRaw};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhWindowsFramed, dhRepairMissingWindows, dhShouldRepairMissingWindows, dhFaceHasRealOpening, dhRefreshPaint, dhAllFrameSlots, dhIsWindowOpeningCell, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrickSlots, dhBrickSupported, dhEnsureHeld, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, DH_WIN_SILL, DH_WIN_HEAD, DH_DOOR_H, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhTestV7FrameRaw, dhTestV7PaintedRaw, dhTestV7DoneRaw, dhTestV7ShellPieces, dhStartCelebrate, dhSkipCelebrate, dhFinishCelebrate, dhShouldCelebrate, dhHouseComplete, dhCutPlaying, dhSkipCut, dhCelebrateTick, dhCelebrateCam, dhCelebrateAward, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhHideTestNote, dhFurnBox, dhMeshFor, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec, dhShowSpots, dhSpotTick, dhSpotFade, dhSpotVisuals, DH_SPOT_SHOW, DH_SPOT_FADE, DH_SPOT_NEAR, DH_SPOT_AIM, dhUpdateGhost, dhPulseBeacons, dhBeaconWorlds, dhSpotDims, dhSetGfxLow, dhGfxLow, dhPaintOpenings, dhPaintHoleLocalX, dhPaintLocalToWorld, dhPaintHoleWorldBoxes, dhPaintCutsMatchFrames, dhRectsMinusHoles, dhPaintPanelWorldBoxes, dhPaintCoversOpening, dhOpeningAabb, dhShingleCorners, dhRafterEnds, dhRoofPlaneYat, dhRoofTilt, dhRoofPitch, DH_ROOF_RISE, DH_ROOF_OVERHANG, DH_SHINGLE_COLS, DH_SHINGLE_ROWS, DH_RAFTER_NEED, dhAllShingleSlots, dhAllRafterSlots, dhShingleWorld, dhRafterWorld, dhHasAnyCarry, dhPaintWorld, dhPaintOut, dhPaintSize, dhPaintOpeningClearance, dhPaintCornerMeet, dhRoofComplete, dhGableFaces, dhGableInfo, dhSyncGables, dhDisposeGables, dhMakeGableMesh, dhWho, dhIsGuest, dhIsVisitor, dhCanEdit, dhShouldVisit, dhHostName, dhInviteCode, dhToggleInvite, dhRenderInvite, dhRetryInvite, dhCopyInvite, dhBlockVisitor, dhVisitLike, dhAssignPlot, dhTestVisitRaw};`, ctx);
   return ctx;
 }
 
@@ -2175,6 +2175,98 @@ Ww.A.dreamhouseStop();
   Wf.A.dreamhouseStop();
 })();
 
+
+
+(function(){
+  const raw = (function(){
+    const Wtmp = world({}, {hash:'#dhtest=v7done'});
+    const r = Wtmp.A.dhTestV7DoneRaw();
+    Wtmp.A.dreamhouseStop();
+    return r;
+  })();
+  chk('#dhtest=v7done raw save is a finished house that has not yet played the completion cut-scene',
+    !!(raw && raw.ver === 7 && raw.doneCutSeen === false && raw.goals && raw.goals.furnish
+      && (raw.pieces||[]).some(a => a[0]==='paint')
+      && (raw.pieces||[]).some(a => a[0]==='sofa')
+      && (raw.pieces||[]).some(a => a[0]==='door')),
+    {doneCutSeen: raw && raw.doneCutSeen, goals: raw && raw.goals, kinds: raw && [...new Set((raw.pieces||[]).map(a=>a[0]))]});
+
+  const prior = {ver:6, introSeen:true, granted:true, coins:99, pieces:[['slab',2,0,2,0,0]], stock:{brick:7}, goals:{slab:1}, upgrades:{}, _sentinel:'keep-me'};
+  const Wp = world({rubloxDreamHouse: JSON.stringify(prior), rubloxAchievements: '{"ver":1,"unlocked":{"welcome":{"at":1,"paid":true}},"backfilled":true}', rubloxCoins: '500'}, {coins:20, hash:'#dhtest=v7done'});
+  Wp.A.buildDreamHouse(); Wp.A.dreamhouseEnter();
+  if (Wp.A.dh && Wp.A.dh.intro) Wp.A.dhSkipIntro();
+  chk('#dhtest=v7done starts the Mom "Good job!" cut-scene in memory',
+    !!(Wp.A.dh && Wp.A.dh.celebrate) && Wp.A.dhCutPlaying() === true && Wp.A.dh.doneCutSeen !== true,
+    {celebrate: Wp.A.dh && Wp.A.dh.celebrate, stage: Wp.A.dh && Wp.A.dh.celebrate && Wp.A.dh.celebrate.stage, seen: Wp.A.dh && Wp.A.dh.doneCutSeen, playing: Wp.A.dhCutPlaying && Wp.A.dhCutPlaying()});
+  Wp.A.dhSkipCelebrate();
+  chk('#dhtest=v7done skip marks the cut-scene seen and does not play it again',
+    Wp.A.dh.doneCutSeen === true && !Wp.A.dh.celebrate && Wp.A.dhShouldCelebrate() === false && Wp.A.dhStartCelebrate() === false,
+    {seen: Wp.A.dh.doneCutSeen, celebrate: Wp.A.dh.celebrate, should: Wp.A.dhShouldCelebrate()});
+  Wp.A.dhSave();
+  const afterP = JSON.parse(Wp.store.rubloxDreamHouse);
+  const afterAch = Wp.store.rubloxAchievements;
+  chk('#dhtest=v7done never writes rubloxDreamHouse, rubloxAchievements, or the player wallet',
+    afterP && afterP.coins === 99 && afterP._sentinel === 'keep-me' && afterP.ver === 6
+      && afterAch === '{"ver":1,"unlocked":{"welcome":{"at":1,"paid":true}},"backfilled":true}'
+      && String(Wp.store.rubloxCoins) === '500',
+    {afterP, afterAch, coins: Wp.store.rubloxCoins});
+  Wp.A.dreamhouseStop();
+})();
+
+(function(){
+  const pieces = [];
+  for (let ix = 2; ix <= 5; ix++) for (let iz = 2; iz <= 5; iz++) pieces.push(['slab', ix, 0, iz, 0, 0]);
+  pieces.push(['sofa',3,0,3,0,0],['table',4,0,4,0,0],['plant',2,0,4,0,0],['paint',0,0,0,0,1]);
+  const finished = {
+    ver: 7, introSeen: true, granted: true, coins: 40, likes: 2,
+    pieces, stock: {brick: 4},
+    goals: {marked:1, slab:1, course:1, walls:1, rafters:1, roof:1, openings:1, glaze:1, paint:1, furnish:1},
+    upgrades: {}, tipsSeen: {hello: true}, legacyHouse: false
+  };
+  const W = world({rubloxDreamHouse: JSON.stringify(finished)}, {coins:20});
+  W.A.buildDreamHouse(); W.A.dreamhouseEnter();
+  if (W.A.dh && W.A.dh.intro) W.A.dhSkipIntro();
+  const list = W.A.dh.pieces[0] || [];
+  chk('an existing finished Dream House save keeps its pieces, likes, and tips, and does not auto-play the new cut-scene',
+    list.some(a => a[0]==='sofa') && list.some(a => a[0]==='slab') && (W.A.dh.likes|0) === 2
+      && !!(W.A.dh.tipsSeen && W.A.dh.tipsSeen.hello)
+      && W.A.dh.doneCutSeen === true && !W.A.dh.celebrate,
+    {likes: W.A.dh.likes, seen: W.A.dh.doneCutSeen, celebrate: W.A.dh.celebrate, kinds: [...new Set(list.map(a=>a[0]))], tips: W.A.dh.tipsSeen});
+  W.A.dreamhouseStop();
+})();
+
+
+(function(){
+  const pieces = [];
+  for (let ix = 2; ix <= 5; ix++) for (let iz = 2; iz <= 5; iz++) pieces.push(['slab', ix, 0, iz, 0, 0]);
+  pieces.push(['sofa',3,0,3,0,0],['table',4,0,4,0,0],['plant',2,0,4,0,0],['paint',0,0,0,0,1]);
+  const finished = {
+    ver: 7, introSeen: true, granted: true, coins: 40, likes: 2, doneCutSeen: false,
+    pieces, stock: {brick: 4},
+    goals: {marked:1, slab:1, course:1, walls:1, rafters:1, roof:1, openings:1, glaze:1, paint:1, furnish:1},
+    upgrades: {}, tipsSeen: {hello: true}, legacyHouse: false
+  };
+  const W = world({rubloxDreamHouse: JSON.stringify(finished)}, {coins:20});
+  W.A.buildDreamHouse(); W.A.dreamhouseEnter();
+  if (W.A.dh && W.A.dh.intro) W.A.dhSkipIntro();
+  chk('a finished house with doneCutSeen=false plays the completion cut-scene',
+    !!(W.A.dh && W.A.dh.celebrate) && W.A.dh.doneCutSeen === false && W.A.dhCutPlaying() === true,
+    {celebrate: W.A.dh && W.A.dh.celebrate, seen: W.A.dh && W.A.dh.doneCutSeen});
+  W.A.dhSkipCelebrate();
+  const saved = JSON.parse(W.store.rubloxDreamHouse);
+  chk('skipping the cut-scene stores doneCutSeen and keeps every existing piece',
+    saved.doneCutSeen === true && (saved.pieces||[]).some(a => a[0]==='sofa') && (saved.pieces||[]).some(a => a[0]==='slab')
+      && saved.likes === 2 && !W.A.dh.celebrate && W.A.dhShouldCelebrate() === false && W.A.dhStartCelebrate() === false,
+    {saved: {doneCutSeen: saved.doneCutSeen, likes: saved.likes, kinds: [...new Set((saved.pieces||[]).map(a=>a[0]))]}, celebrate: W.A.dh.celebrate});
+  W.A.dreamhouseStop();
+  const W2 = world({rubloxDreamHouse: W.store.rubloxDreamHouse}, {coins:20});
+  W2.A.buildDreamHouse(); W2.A.dreamhouseEnter();
+  if (W2.A.dh && W2.A.dh.intro) W2.A.dhSkipIntro();
+  chk('the completion cut-scene does not replay once doneCutSeen is stored',
+    !W2.A.dh.celebrate && W2.A.dh.doneCutSeen === true && W2.A.dhShouldCelebrate() === false,
+    {celebrate: W2.A.dh.celebrate, seen: W2.A.dh.doneCutSeen});
+  W2.A.dreamhouseStop();
+})();
 
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);

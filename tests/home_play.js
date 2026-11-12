@@ -63,10 +63,18 @@ function makeEl(id){
   return el;
 }
 
-test('BUILD is 2026.11.12-13 and matches version.json', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.12-13'"));
-  assert.strictEqual(version.build, '2026.11.12-13');
+test('BUILD is 2026.11.12-14 and matches version.json', () => {
+  assert.ok(src.includes("const BUILD = '2026.11.12-14'"));
+  assert.strictEqual(version.build, '2026.11.12-14');
 });
+
+test('home screen has an Achievements button and page with category tabs', () => {
+  assert.ok(/id="achievements"/.test(src), 'missing #achievements section');
+  assert.ok(/data-go="achievements"/.test(src), 'missing Achievements nav/hero button');
+  assert.ok(/id="achGrid"/.test(src) && /id="achTabs"/.test(src) && /id="achProg"/.test(src), 'missing achievements grid, tabs, or progress');
+  assert.ok(/id="achToast"/.test(src), 'missing achievement toast');
+});
+
 
 test('every inline script in index.html parses (a syntax error would make every Play button do nothing)', () => {
   const scripts = extractInlineScripts(src);

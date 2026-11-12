@@ -502,9 +502,9 @@ function notInWall(z, zFace, thick, r){
   return z <= lo + EPS || z >= hi - EPS;
 }
 
-test('BUILD is 2026.11.12-13 and matches version.json', () => {
-  assert.ok(html.includes("const BUILD = '2026.11.12-13'"));
-  assert.strictEqual(version.build, '2026.11.12-13');
+test('BUILD is 2026.11.12-14 and matches version.json', () => {
+  assert.ok(html.includes("const BUILD = '2026.11.12-14'"));
+  assert.strictEqual(version.build, '2026.11.12-14');
 });
 
 test('index.html wires DH clip into step() and exposes a #dhdebug collider path', () => {
@@ -913,6 +913,29 @@ test('#dhtest=v7painted auto-starts a painted house with the front window repair
   assert.ok(raw == null || raw === 'null' || raw === '', 'v7painted wrote rubloxDreamHouse: ' + raw);
   const bak = c.localStorage.getItem('rubloxDreamHouse.bakFrames');
   assert.ok(bak == null || bak === 'null' || bak === '', 'v7painted wrote bakFrames: ' + bak);
+});
+
+test('#dhtest=v7done auto-starts the finished house cut-scene and never writes the real save', () => {
+  const c = boot('#dhtest=v7done');
+  assert.ok(c.Obby && c.Obby.running, "expected start('dreamhouse') from #dhtest=v7done");
+  assert.ok(c.obbyDebug, 'obbyDebug hook missing');
+  if (c.obbyDebug.dhIntro()) c.obbyDebug.skipDhIntro();
+  for (let i = 0; i < 8; i++) c.obbyDebug.stepFrame(1 / 60);
+  assert.strictEqual(c.obbyDebug.dhTestId(), 'v7done');
+  assert.strictEqual(c.obbyDebug.dhMode(), 'dreamhouse');
+  const text = String(((c.document && c.document.getElementById('dhTestNote')) || {}).textContent || '');
+  assert.ok(/TEST HOUSE/i.test(text) && /v7done/.test(text), 'expected a TEST HOUSE badge naming v7done, got: ' + text);
+  assert.ok(c.obbyDebug.dhCelebrate(), 'expected the completion cut-scene to be playing');
+  const bubble = c.document.getElementById('dhSay');
+  // Advance into the "Good job!" line, then skip; either is fine as long as the scene was active and persist is blocked.
+  for (let i = 0; i < 200; i++) c.obbyDebug.stepFrame(1 / 30);
+  if (c.obbyDebug.dhCelebrate() && c.obbyDebug.skipDhCut) c.obbyDebug.skipDhCut();
+  const raw = c.localStorage.getItem('rubloxDreamHouse');
+  assert.ok(raw == null || raw === 'null' || raw === '', 'v7done wrote rubloxDreamHouse: ' + raw);
+  const ach = c.localStorage.getItem('rubloxAchievements');
+  assert.ok(ach == null || ach === 'null' || ach === '', 'v7done wrote rubloxAchievements: ' + ach);
+  const coins = c.localStorage.getItem('rubloxCoins');
+  assert.ok(coins == null || coins === 'null' || coins === '', 'v7done wrote rubloxCoins: ' + coins);
 });
 
 test('HUD buttons receive a pointer-locked click at their screen rect without pressing Esc', () => {
