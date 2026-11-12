@@ -7,7 +7,7 @@ const SRC = fs.readFileSync(path.join(__dirname, '../dev/pethotel/pethotel.js'),
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(__dirname, '../version.json'), 'utf8'));
 
-chk('BUILD is 2026.11.12-5 and matches version.json', html.includes("const BUILD = '2026.11.12-5'") && version.build === '2026.11.12-5', version);
+chk('BUILD is 2026.11.12-6 and matches version.json', html.includes("const BUILD = '2026.11.12-6'") && version.build === '2026.11.12-6', version);
 
 function V(){ const o = {x:0,y:0,z:0, set(x,y,z){ this.x=x; this.y=y; this.z=z; return this; } }; return o; }
 function O(){ const o = {position: V(), rotation: V(), scale: V(), visible: true, children: [], material: {color:{set(){}}, opacity:1, transparent:false}, userData: {}, add(c){ this.children.push(c); return c; }, remove(){}, copy(){ return this; } }; return o; }
@@ -205,6 +205,113 @@ chk('stop clears the Pet Hotel session', W.A.ph == null);
     Math.abs(openDist - 11) < 1e-9, {openDist});
 })();
 
+
+
+(function(){
+  // Visual skins must not poke past the collision inner faces, and walls must meet at corners.
+  const src = SRC;
+  const start = src.indexOf('Collision walls match the visual wallpaper height');
+  const end = src.indexOf('lobby rug with a border', start);
+  const block = start >= 0 && end > start ? src.slice(start, end) : '';
+  const plats = [...block.matchAll(/plat\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*'#[^']+'\s*,\s*(-?[\d.]+)\s*\)/g)]
+    .map(m => ({x:+m[1], top:+m[2], z:+m[3], w:+m[4], d:+m[5], h:+m[6]}));
+  const papers = [...block.matchAll(/phPaperWall\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)/g)]
+    .map(m => ({x:+m[1], y:+m[2], z:+m[3], w:+m[4], h:+m[5], d:+m[6]}));
+  const front = plats.filter(p => p.d < p.w && p.z < 0).sort((a,b)=>a.z-b.z)[0];
+  const left = plats.filter(p => p.w < p.d && p.x < 0).sort((a,b)=>a.x-b.x)[0];
+  const right = plats.filter(p => p.w < p.d && p.x > 0).sort((a,b)=>b.x-a.x)[0];
+  const frontInner = front ? front.z + front.d/2 : null;
+  const leftInner = left ? left.x + left.w/2 : null;
+  const rightInner = right ? right.x - right.w/2 : null;
+  const paperFront = papers.filter(p => p.d < p.w && p.z < 0)[0];
+  const paperLeft = papers.filter(p => p.w < p.d && p.x < 0)[0];
+  const paperRight = papers.filter(p => p.w < p.d && p.x > 0)[0];
+  const paperFrontInner = paperFront ? paperFront.z + paperFront.d/2 : null;
+  const paperLeftInner = paperLeft ? paperLeft.x + paperLeft.w/2 : null;
+  const paperRightInner = paperRight ? paperRight.x - paperRight.w/2 : null;
+  const frontOk = paperFrontInner != null && paperFrontInner <= frontInner + 0.02;
+  const leftOk = paperLeftInner != null && paperLeftInner <= leftInner + 0.02;
+  const rightOk = paperRightInner != null && paperRightInner >= rightInner - 0.02;
+  const frontLo = front.x - front.w/2, frontHi = front.x + front.w/2;
+  const leftHi = left.x + left.w/2, rightLo = right.x - right.w/2;
+  const cornersSealed = frontLo <= leftHi + 0.01 && frontHi >= rightLo - 0.01
+    && (left.z - left.d/2) <= (front.z + front.d/2) + 0.01;
+  chk('Pet Hotel wallpaper sits on or inside the collision inner faces and walls meet at the corners',
+    plats.length >= 5 && papers.length >= 5 && frontOk && leftOk && rightOk && cornersSealed
+      && paperFront.h >= 3.9 && paperLeft.h >= 3.9,
+    {frontInner, paperFrontInner, leftInner, paperLeftInner, rightInner, paperRightInner, cornersSealed, paperH: paperFront && paperFront.h, nPlats: plats.length, nPapers: papers.length});
+
+  const R = 0.45;
+  const wall = {mesh:{position:{x:13.7, y:2, z:2.15}}, hw:0.25, hh:2, hd:12.9, active:true};
+  const frontW = {mesh:{position:{x:0, y:2, z:-10.5}}, hw:13.7, hh:2, hd:0.25, active:true};
+  const visRight = 13.45, visFront = -10.25;
+  const ctx = {
+    Math,
+    cam: {yaw: -Math.PI / 2, pitch: 0, dist: 6},
+    solids: [wall, frontW],
+    mode: 'pethotel',
+    P: {x: 12.5, y: 0.05, z: -9.0, px: 12.5, py: 0.05, pz: -9.0, vx: 16, vy: 0, vz: -16},
+    camera: {position: {x:0,y:0,z:0,set(x,y,z){ this.x=x; this.y=y; this.z=z; }}, near: 0.1, lookAt(){}, updateProjectionMatrix(){}},
+    fpOn: () => true,
+    R,
+    bodyH: () => 2.8,
+    eyeHeight: () => 2.45,
+    overlaps(b, pad, B){
+      B = B || ctx.P; pad = pad || 0;
+      if (!b || !b.mesh) return false;
+      const p = b.mesh.position, rad = 0.45;
+      return Math.abs(B.x - p.x) < b.hw + rad + pad && Math.abs(B.z - p.z) < b.hd + rad + pad;
+    }
+  };
+  const bodySlice = html.slice(html.indexOf('function camBodyR('), html.indexOf('function input(){'));
+  const clipSlice = html.slice(html.indexOf('function camSolidAt('), html.indexOf('function updateCamera(){'));
+  vm.createContext(ctx);
+  vm.runInContext(bodySlice + '\n' + clipSlice + '\nthis.clipFpCamera = clipFpCamera; this.recoverFpPlayer = recoverFpPlayer; this.ejectXZ = ejectXZ; this.camSolidAt = camSolidAt; this.camBodyR = camBodyR; this.clipOrbitCam = clipOrbitCam;', ctx);
+  function bump(axis){
+    ctx.solids.forEach(b => {
+      const p = b.mesh.position;
+      const rad = ctx.camBodyR(ctx.P);
+      const px = (b.hw + rad) - Math.abs(ctx.P.x - p.x);
+      const pz = (b.hd + rad) - Math.abs(ctx.P.z - p.z);
+      if (px <= 0 || pz <= 0) return;
+      if (axis === 'x' && px <= pz + 1e-6) ctx.ejectXZ('x', ctx.P, b);
+      if (axis === 'z' && pz <= px + 1e-6) ctx.ejectXZ('z', ctx.P, b);
+    });
+  }
+  const near = 0.05, need = near * 2;
+  let minRight = 99, minFront = 99, inside = false;
+  const dt = 1/60;
+  for (let i = 0; i < 240; i++){
+    ctx.P.px = ctx.P.x; ctx.P.x += ctx.P.vx * dt; bump('x');
+    ctx.P.pz = ctx.P.z; ctx.P.z += ctx.P.vz * dt; bump('z');
+    if (ctx.recoverFpPlayer) ctx.recoverFpPlayer();
+    ctx.clipFpCamera();
+    const cam = ctx.camera.position;
+    const dR = visRight - cam.x;
+    const dF = cam.z - visFront;
+    if (dR < minRight) minRight = dR;
+    if (dF < minFront) minFront = dF;
+    if (dR < need - 1e-6 || dF < need - 1e-6) inside = true;
+    if (ctx.camSolidAt(cam.x, cam.y, cam.z, 0.02)) inside = true;
+  }
+  chk('Pet Hotel first-person keeps the eye at least near*2 from visual walls, including in a corner',
+    !inside && minRight >= need && minFront >= need && ctx.camera.near <= 0.05,
+    {minRight, minFront, need, cam: {x: ctx.camera.position.x, y: ctx.camera.position.y, z: ctx.camera.position.z}, P: {x: ctx.P.x, z: ctx.P.z}, near: ctx.camera.near});
+
+  const tx = 13.7 - 0.25 - 0.85, ty = 2.25, tz = 2.15;
+  ctx.cam.yaw = Math.PI / 2;
+  ctx.cam.pitch = 0.42;
+  const dist = ctx.clipOrbitCam(tx, ty, tz, 6, 1.2);
+  const cp = Math.cos(0.42), sx = Math.sin(ctx.cam.yaw);
+  const camX = tx + sx * cp * dist;
+  const wallInner = 13.7 - 0.25;
+  const raw12 = tx + sx * cp * 1.2;
+  chk('the first third-person frame after V is already clipped and is not left inside a Pet Hotel wall',
+    dist < 1.2 - 1e-6 && camX < wallInner - 0.05 && raw12 >= wallInner - 0.4,
+    {dist, camX, wallInner, raw12, tx});
+  chk('setFP applies updateCamera on the same tick so the first frame after V is clipped',
+    /function setFP\(on, quiet\)\{/.test(html) && /if \(running && typeof updateCamera === 'function'\) updateCamera\(\);/.test(html));
+})();
 
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);

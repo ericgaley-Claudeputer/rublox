@@ -180,13 +180,13 @@ body.dark .sitem canvas{background:linear-gradient(#34427e,#26306a)}
 .obby.show{display:block}
 #obbyView{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
 #obbyView canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;z-index:0;pointer-events:auto}
-#obby.dhmode .dhbar,#obby.dhmode #dhBar,#obby.dhmode #dhAct,#obby.dhmode #dhTip{z-index:80;pointer-events:auto}
+#obby.dhmode .dhbar,#obby.dhmode #dhBar,#obby.dhmode #dhAct,#obby.dhmode #dhTip{z-index:200;pointer-events:auto}
 .ofps{position:absolute;top:auto;right:auto;left:max(10px,env(safe-area-inset-left));bottom:max(12px,calc(env(safe-area-inset-bottom) + 12px));z-index:41;background:rgba(29,35,64,.88);color:#fff;font-weight:900;font-size:13px;padding:4px 8px;border-radius:8px;pointer-events:none;display:none}
 #obby.dhouse .ofps{bottom:calc(var(--dhbar-clear, 160px) + 12px);left:max(10px,env(safe-area-inset-left))}
 .ofps.on{display:block}
 #setGfx{font:inherit;font-weight:900;border:2px solid var(--line,#d9dcec);border-radius:10px;padding:6px 10px;background:#fff}
 .gfxset .padsens{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0}
-.ohud{position:absolute;top:10px;left:10px;right:10px;z-index:auto;display:flex;justify-content:space-between;gap:10px;pointer-events:none;flex-wrap:wrap}
+.ohud{position:absolute;top:10px;left:10px;right:10px;z-index:200;display:flex;justify-content:space-between;gap:10px;pointer-events:none;flex-wrap:wrap}
 .ostats{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;max-width:min(46vw,380px);position:relative;z-index:40}
 .dhstack{position:absolute;top:max(10px,calc(env(safe-area-inset-top) + 8px));left:max(10px,env(safe-area-inset-left));z-index:40;display:none;flex-direction:column;align-items:stretch;gap:10px;max-width:min(42vw,280px);pointer-events:none}
 .dhstack.show{display:flex}
@@ -1624,7 +1624,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.12-5';
+const BUILD = '2026.11.12-6';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3329,6 +3329,7 @@ const Obby = (() => {
     if (on) cam.pitch = .08; else { cam.pitch = .42; cam.dist = Math.max(cam.dist, 6); if (document.pointerLockElement) document.exitPointerLock(); }
     const b = document.getElementById('oFP'); if (b){ b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }
     if (!quiet && running) banner(on ? '👁️ First person' : '🎥 Third person');
+    if (running && typeof updateCamera === 'function') updateCamera();
   }
   const keys = {};
   const joy = {x:0, y:0, jump:false};
@@ -12360,6 +12361,19 @@ const Obby = (() => {
   function dhFurnIds(){ return (typeof DH_MATS !== 'undefined' ? DH_MATS : []).filter(m => m && m.furn).map(m => m.id); }
   function dhHeldFurn(){ return (dh && dh.carry && dhIsFurn(dh.carry.id)) ? dh.carry.id : null; }
   function dhStockFurn(){ if (!dh) return null; return dhFurnIds().find(id => (dh.stock[id]|0) > 0) || null; }
+  function dhFurnBox(id){
+    const boxes = {
+      sofa: {w: 1.52, h: 0.92, d: 0.80},
+      bed: {w: 1.70, h: 0.62, d: 1.25},
+      table: {w: 1.10, h: 0.78, d: 1.10},
+      lamp: {w: 0.32, h: 1.16, d: 0.32},
+      plant: {w: 0.50, h: 0.72, d: 0.50},
+      rug: {w: 1.70, h: 0.04, d: 1.15},
+      tv: {w: 1.12, h: 1.42, d: 0.36},
+      shelf: {w: 0.90, h: 1.80, d: 0.36}
+    };
+    return boxes[id] || {w: (typeof DH_CELL === 'number' ? DH_CELL : 1.4) * 0.92, h: 0.4, d: (typeof DH_CELL === 'number' ? DH_CELL : 1.4) * 0.92};
+  }
   function dhIsBuildSupply(id){
     const m = typeof dhMatOf === 'function' ? dhMatOf(id) : null;
     // Yard supplies (bricks, planks, mix, …) — not paint or furniture.
@@ -12986,7 +13000,17 @@ const Obby = (() => {
       const panels = (typeof dhRectsMinusHoles === 'function') ? dhRectsMinusHoles(size.len, size.h, holes) : [{x: -size.len / 2, y: -size.h / 2, w: size.len, h: size.h}];
       panels.forEach(r => add(box(r.w, r.h, 0.03, mat), r.x + r.w / 2, r.y + r.h / 2, 0));
     }
-    else if (id === 'sofa'){ solid(1.80, .42, .85, 0, .21, 0, dhMat('#3a86ff')); add(box(1.80, .45, .16, dhMat('#3a86ff')), 0, 0.64, -.32); }
+    else if (id === 'sofa'){
+      // Built on the slab (group y = DH_SLAB_H). Local y=0 is the slab top.
+      const frame = dhMat('#2f5db8'), cush = dhMat('#5aa7ff'), wood = M.dark || dhMat('#4a3728');
+      [[-0.64, -0.30], [0.64, -0.30], [-0.64, 0.30], [0.64, 0.30]].forEach(([lx, lz]) => add(box(.08, .10, .08, wood), lx, 0.05, lz));
+      solid(1.28, .16, .72, 0, 0.18, 0, frame);
+      add(box(1.20, .14, .62, cush), 0, 0.33, 0.04);
+      add(box(1.40, .62, .16, frame), 0, 0.61, -0.32);
+      add(box(1.28, .48, .12, cush), 0, 0.62, -0.24);
+      add(box(.14, .38, .76, frame), -0.69, 0.41, 0);
+      add(box(.14, .38, .76, frame), 0.69, 0.41, 0);
+    }
     else if (id === 'bed'){ solid(2.00, .40, 1.40, 0, .20, 0, dhMat('#fffaf0')); add(box(.55, .22, 1.36, dhMat('#ffe0ef')), 0, 0.42, .40); }
     else if (id === 'table'){ add(box(1.10, .06, 1.10, M.wood), 0, 0.74, 0); [[-.48, -.48], [.48, -.48], [-.48, .48], [.48, .48]].forEach(([x, z]) => add(box(.08, .74, .08, M.dark), x, 0.37, z)); solidsLocal.push({mesh: g, hw: .55, hh: .4, hd: .55, ox: 0, oy: 0.4, oz: 0}); }
     else if (id === 'lamp'){ add(box(.14, .90, .14, M.dark), 0, 0.45, 0); add(new THREE.Mesh(new THREE.SphereGeometry(.16, 10, 8), dhMat('#ffe08a', {emissive: '#ffe08a', emissiveIntensity: .4})), 0, 1.00, 0); }
@@ -13455,11 +13479,30 @@ const Obby = (() => {
 
   function dhMakeGhost(){
     const g = new THREE.Group(); g.visible = false;
-    const glow = new THREE.Mesh(new THREE.BoxGeometry(DH_CELL * .92, .16, DH_CELL * .92), dhMat('#ffe08a', {transparent: true, opacity: .55, emissive: '#ffe08a', emissiveIntensity: .7, depthWrite: false}));
-    glow.position.y = .2; g.add(glow);
+    const glow = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), dhMat('#ffe08a', {transparent: true, opacity: .45, emissive: '#ffe08a', emissiveIntensity: .55, depthWrite: false}));
+    glow.position.y = .08; g.add(glow);
     const pole = new THREE.Mesh(new THREE.BoxGeometry(.1, 1.1, .1), dhMat('#ffd23f', {emissive: '#ffd23f', emissiveIntensity: .45}));
     pole.position.y = .7; g.add(pole);
-    g.userData.glow = glow; g.userData.pole = pole;
+    let outline = null;
+    try {
+      if (THREE.EdgesGeometry && THREE.LineSegments){
+        const mat = new THREE.LineBasicMaterial({color: 0x2ec27e, transparent: true, opacity: 0.95, depthWrite: false});
+        outline = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)), mat);
+        outline.position.y = 0.4;
+        g.add(outline);
+      }
+    } catch (e){ outline = null; }
+    if (!outline){
+      outline = new THREE.Group();
+      const rail = dhMat('#2ec27e', {transparent: true, opacity: .85, emissive: '#2ec27e', emissiveIntensity: .3, depthWrite: false});
+      [[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5], [0.5, 0.5]].forEach(([lx, lz]) => {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(.03, 1, .03), rail);
+        m.position.set(lx, 0.5, lz);
+        outline.add(m);
+      });
+      g.add(outline);
+    }
+    g.userData.glow = glow; g.userData.pole = pole; g.userData.outline = outline;
     return g;
   }
   function dhBuildBounds(){
@@ -14519,7 +14562,9 @@ const Obby = (() => {
       : null;
     if (!slot) return false;
     dh[slot].n -= n; if (dh[slot].n <= 0) dh[slot] = null;
-    dhHud(); return true;
+    dhHud();
+    if (typeof dhBar === 'function') dhBar();
+    return true;
   }
   function dhStockViz(plot){
     if (!dh) return;
@@ -15359,8 +15404,22 @@ const Obby = (() => {
     if (typeof dhShowTestNote === 'function') dhShowTestNote();
     if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
   }
+  function dhHideTestNote(){
+    let el = null;
+    try {
+      if (typeof document !== 'undefined' && document.getElementById) el = document.getElementById('dhTestNote');
+      if (!el && typeof $ === 'function') el = $('#dhTestNote');
+    } catch (e){}
+    if (!el) return false;
+    if (el.classList && el.classList.remove) el.classList.remove('show');
+    if (el.style) el.style.display = 'none';
+    if (el.textContent !== undefined) el.textContent = '';
+    if (dh) dh._testNoteShown = false;
+    return true;
+  }
   function dhShowTestNote(){
-    if (!dh || !dhTestActive()) return false;
+    if (!dh || !dhTestActive()) return dhHideTestNote() && false;
+    if (typeof mode !== 'undefined' && mode && mode !== 'dreamhouse') return dhHideTestNote() && false;
     let el = null;
     try {
       if (typeof document !== 'undefined' && document.getElementById) el = document.getElementById('dhTestNote');
@@ -15376,6 +15435,7 @@ const Obby = (() => {
     return true;
   }
   function dreamhouseStop(){
+    if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}
     if (typeof dhClosePauseMenus === 'function') try { dhClosePauseMenus(); } catch (e){}
     if (typeof dhCloseReset === 'function') try { dhCloseReset(); } catch (e){}
     if (typeof dhHideLookHint === 'function') try { dhHideLookHint(); } catch (e){}
@@ -15400,7 +15460,8 @@ const Obby = (() => {
     Object.keys(dh.mixers || {}).forEach(k => dh.mixers[k] && dh.mixers[k].mesh && scene.remove(dh.mixers[k].mesh));
     (dh.trees || []).forEach(t => t.mesh && scene.remove(t.mesh));
     if (typeof model !== 'undefined' && model && model.g) model.g.visible = true;
-    ['#dhBar', '#dhAct', '#dhCut', '#dhShop', '#dhYard', '#dhUp', '#dhGuide', '#dhGoal', '#dhSteps', '#dhTip'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
+    if (typeof dhHideTestNote === 'function') dhHideTestNote();
+    ['#dhBar', '#dhAct', '#dhCut', '#dhShop', '#dhYard', '#dhUp', '#dhGuide', '#dhGoal', '#dhSteps', '#dhTip', '#dhTestNote'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
     const replay = $('#dhReplay'); if (replay) replay.style.display = 'none';
     const resetBtn = $('#dhResetBtn'); if (resetBtn) resetBtn.style.display = 'none';
     if (typeof document !== 'undefined' && document.getElementById){ const root = document.getElementById('obby'); if (root && root.classList) root.classList.remove('dhouse'); }
@@ -16400,8 +16461,7 @@ const Obby = (() => {
       if (!inFoot(cell) && typeof dhCellAt === 'function' && typeof P !== 'undefined' && P) cell = dhCellAt(P.x, P.z);
       if (!inFoot(cell) && typeof dhTargetSpot === 'function') cell = dhTargetSpot('furn');
       if (inFoot(cell) || (cell && cell.plot === dh.mine)){
-        const y = slabY + 0.08;
-        const w = dhCellWorld(cell.plot, cell.ix, cell.iz, y);
+        const w = dhCellWorld(cell.plot, cell.ix, cell.iz, slabY);
         pos = {x: w.x, y: w.y, z: w.z, ry: ((dh.rot | 0) * Math.PI) / 2};
         ok = true;
         const taken = (dh.pieces[cell.plot] || []).some(a => dhIsFurn(a[0]) && (a[1]|0) === (cell.ix|0) && (a[3]|0) === (cell.iz|0));
@@ -16433,10 +16493,31 @@ const Obby = (() => {
         if (glow.material.color && glow.material.color.set) glow.material.color.set(col);
       }
       const pole = dh.ghost.userData && dh.ghost.userData.pole;
+      const outline = dh.ghost.userData && dh.ghost.userData.outline;
       if (glow && glow.scale){
-        if (stage === 'brick' && !furnId){ glow.scale.set(DH_BRICK_W / (DH_CELL * .92), DH_BRICK_H / .16, DH_BRICK_D / (DH_CELL * .92)); if (pole) pole.visible = false; }
-        else if (furnId){ glow.scale.set(1, 1.4, 1); if (pole) pole.visible = false; }
-        else { glow.scale.set(1, 1, 1); if (pole) pole.visible = true; }
+        if (furnId){
+          const box = (typeof dhFurnBox === 'function') ? dhFurnBox(furnId) : {w: DH_CELL * .92, h: 0.8, d: DH_CELL * .92};
+          glow.scale.set(box.w, 0.06, box.d);
+          glow.position.y = 0.03;
+          if (pole) pole.visible = false;
+          if (outline){
+            outline.visible = true;
+            if (outline.scale && outline.scale.set) outline.scale.set(box.w, box.h, box.d);
+            if (outline.position) outline.position.y = box.h / 2;
+            const om = outline.material || (outline.children && outline.children[0] && outline.children[0].material);
+            if (om && om.color && om.color.set) om.color.set(col);
+          }
+        } else if (stage === 'brick'){
+          glow.scale.set(DH_BRICK_W, DH_BRICK_H, DH_BRICK_D);
+          glow.position.y = DH_BRICK_H / 2;
+          if (pole) pole.visible = false;
+          if (outline) outline.visible = false;
+        } else {
+          glow.scale.set(DH_CELL * .92, 0.16, DH_CELL * .92);
+          glow.position.y = 0.08;
+          if (pole) pole.visible = true;
+          if (outline) outline.visible = false;
+        }
       }
     }
   }
@@ -17410,6 +17491,21 @@ function dhLayoutHud(){
       const x = tx + sx * cp * s, y = ty + sp * s, z = tz + cz * cp * s;
       if (hits(x, y, z) || segmentHits(x, y, z)){ dist = Math.max(minDist, s - step); break; }
     }
+    const blockedAt = (s) => {
+      const x = tx + sx * cp * s, y = ty + sp * s, z = tz + cz * cp * s;
+      return hits(x, y, z) || segmentHits(x, y, z);
+    };
+    // Pressed against a wall, minDist itself can still sit inside the collider.
+    // Shrink so the first third-person frame (e.g. after V) is already clipped.
+    if (blockedAt(dist)){
+      let lo = 0.2, hi = dist, best = 0.2;
+      for (let i = 0; i < 12; i++){
+        const mid = (lo + hi) / 2;
+        if (blockedAt(mid)) hi = mid;
+        else { best = mid; lo = mid; }
+      }
+      dist = best;
+    }
     return dist;
   }
   // First-person no-clip (same idea as Dream House): pull the eye back from a
@@ -17751,8 +17847,9 @@ function dhLayoutHud(){
     const el = renderer.domElement; let drag = null;
     // first person on a computer: click the game to lock the mouse for mouse-look (Esc lets go)
     el.addEventListener('mousemove', e => { if (document.pointerLockElement !== el || !running || paused) return; const inv = window.rubloxInvert || {}, k = window.rubloxMouseSens || 1;
-      cam.yaw -= e.movementX * .0013 * k * (inv.x ? -1 : 1); cam.pitch = Math.max(-1.3, Math.min(1.4, cam.pitch + e.movementY * .0012 * k * (inv.y ? -1 : 1))); });
-    el.addEventListener('pointerdown', e => { const hit = (typeof document !== 'undefined' && document.elementFromPoint) ? document.elementFromPoint(e.clientX, e.clientY) : (e.target); if (hit && hit !== el && hit.closest && hit.closest('#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhSteps, .obtns, #setModal, #oPausePanel, button, a, input, label')) return; if (typeof dhIsUiEvent === 'function' && dhIsUiEvent(e)) return; if (e.pointerType === 'mouse' && fpOn() && !paused && !choosing && !fp.noLock && document.pointerLockElement !== el){ fp.req = true; try { const r = el.requestPointerLock(); if (r && r.catch) r.catch(() => { fp.noLock = true; }); } catch(_){ fp.noLock = true; } return; }
+      cam.yaw -= e.movementX * .0013 * k * (inv.x ? -1 : 1); cam.pitch = Math.max(-1.3, Math.min(1.4, cam.pitch + e.movementY * .0012 * k * (inv.y ? -1 : 1)));
+      if (typeof hudCursorMove === 'function') hudCursorMove(e.movementX, e.movementY); });
+    el.addEventListener('pointerdown', e => { if (typeof hudTryClick === 'function' && hudTryClick(e)) return; const hit = (typeof document !== 'undefined' && document.elementFromPoint) ? document.elementFromPoint(e.clientX, e.clientY) : (e.target); if (hit && hit !== el && hit.closest && hit.closest('#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhSteps, .obtns, #setModal, #oPausePanel, button, a, input, label')) return; if (typeof dhIsUiEvent === 'function' && dhIsUiEvent(e)) return; if (e.pointerType === 'mouse' && fpOn() && !paused && !choosing && !fp.noLock && document.pointerLockElement !== el){ fp.req = true; try { const r = el.requestPointerLock(); if (r && r.catch) r.catch(() => { fp.noLock = true; }); } catch(_){ fp.noLock = true; } return; }
       if (mode === 'dreamhouse' && dh && !paused && !choosing && typeof dhPointer === 'function' && (document.pointerLockElement === el || e.pointerType !== 'mouse')){ if (e.button === 0 || e.pointerType !== 'mouse') dhPointer(true); } });
     el.addEventListener('pointerup', e => { if (mode === 'dreamhouse' && typeof dhPointer === 'function') dhPointer(false); });
     document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement !== el){ fp.unlockT = performance.now(); fp.eatEsc = true; clearHeldKeys(); } else { clearHeldKeys(); } });
@@ -17857,17 +17954,101 @@ function dhLayoutHud(){
     $('#pMouseSens').oninput = e => { const r = $('#mouseSens'); r.value = e.target.value; r.dispatchEvent(new Event('input')); menuVals(); };
     $('#pMapBtn').onclick = () => { const m = $('#pMap'); m.classList.toggle('show'); $('#pMapBtn').textContent = m.classList.contains('show') ? '🎮 Hide button map' : '🎮 Button map'; };
     setInterval(() => { if ($('#oPausePanel').classList.contains('show')) menuPad(); }, 1000);
+    const HUD_HIT_SEL = '#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhVisit, #dhSteps, #dhResetModal, .obtns, #oExit, #oExit2, #oExit3, #oFP, #oPause, #oMute, #setBtn, #setModal, #oPausePanel, button, a, input, label, select';
     function releasePointerForHud(){
       try { if (typeof document !== 'undefined' && document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e){}
     }
+    function hudCursorReset(){
+      const r = (el && el.getBoundingClientRect) ? el.getBoundingClientRect() : {left: 0, top: 0, width: (typeof innerWidth === 'number' ? innerWidth : 800), height: (typeof innerHeight === 'number' ? innerHeight : 600)};
+      fp.uiX = r.left + r.width / 2;
+      fp.uiY = r.top + r.height / 2;
+    }
+    function hudCursorMove(dx, dy){
+      if (fp.uiX == null || fp.uiY == null) hudCursorReset();
+      const w = (typeof innerWidth === 'number' ? innerWidth : 800);
+      const h = (typeof innerHeight === 'number' ? innerHeight : 600);
+      fp.uiX = Math.max(0, Math.min(w, fp.uiX + (dx || 0)));
+      fp.uiY = Math.max(0, Math.min(h, fp.uiY + (dy || 0)));
+    }
+    function hudControls(){
+      const list = [];
+      const seen = new Set();
+      const add = n => { if (n && !seen.has(n)){ seen.add(n); list.push(n); } };
+      ['oExit','oExit2','oExit3','oFP','oPause','oMute','setBtn','dhAct','dhLikeBtn','dhInviteBtn','dhDumpBtn','dhSpotBtn'].forEach(id => {
+        try { add(document.getElementById(id)); } catch (e){}
+      });
+      const roots = [];
+      ['obby','dhBar','dhShop','dhYard','dhUp','oPausePanel','setModal'].forEach(id => {
+        try { const r = document.getElementById(id); if (r) roots.push(r); } catch (e){}
+      });
+      try { const b = document.querySelector && document.querySelector('.obtns'); if (b) roots.push(b); } catch (e){}
+      roots.forEach(root => {
+        if (!root || !root.querySelectorAll) return;
+        const found = root.querySelectorAll('button, [data-dhjob], [data-dhtool], [data-dhid], a, input, label, select, #dhAct');
+        for (let i = 0; i < found.length; i++) add(found[i]);
+      });
+      const out = [];
+      for (let i = 0; i < list.length; i++){
+        const n = list[i];
+        if (!n || n.disabled) continue;
+        if (n.style && (n.style.display === 'none' || n.style.visibility === 'hidden')) continue;
+        if (n.classList && n.classList.contains && n.classList.contains('dh-paused-hide')) continue;
+        const tag = (n.tagName || '').toLowerCase();
+        if (tag === 'body' || tag === 'html') continue;
+        const r = n.getBoundingClientRect && n.getBoundingClientRect();
+        if (!r || r.width < 2 || r.height < 2) continue;
+        out.push(n);
+      }
+      return out;
+    }
+    function hudHitAt(x, y){
+      if (typeof x !== 'number' || typeof y !== 'number' || !isFinite(x) || !isFinite(y)) return null;
+      try {
+        if (document.elementFromPoint && !document.pointerLockElement){
+          const top = document.elementFromPoint(x, y);
+          if (top && top.closest){
+            const got = top.closest(HUD_HIT_SEL);
+            if (got && got !== el && !(el && el.contains && el.contains(got)) && got.id !== 'obbyView') return got.closest ? (got.closest('button, [data-dhjob], [data-dhtool], [data-dhid], a, input, label, select, #dhAct') || got) : got;
+          }
+        }
+      } catch (e){}
+      const nodes = hudControls();
+      let hit = null;
+      for (let i = 0; i < nodes.length; i++){
+        const r = nodes[i].getBoundingClientRect();
+        if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) hit = nodes[i];
+      }
+      return hit;
+    }
+    function hudTryClick(ev){
+      const pts = [];
+      if (ev && ev.clientX != null && ev.clientY != null) pts.push([ev.clientX, ev.clientY]);
+      if (document.pointerLockElement && fp.uiX != null && fp.uiY != null) pts.push([fp.uiX, fp.uiY]);
+      let target = null;
+      for (let i = 0; i < pts.length && !target; i++) target = hudHitAt(pts[i][0], pts[i][1]);
+      if (!target) return false;
+      if (ev){
+        if (ev.preventDefault) ev.preventDefault();
+        if (ev.stopPropagation) ev.stopPropagation();
+        if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+      }
+      releasePointerForHud();
+      try { if (typeof target.click === 'function') target.click(); } catch (e){}
+      return true;
+    }
+    if (typeof window !== 'undefined'){ window.__rubloxHudHitAt = hudHitAt; window.__rubloxHudTryClick = hudTryClick; }
     if (!window.__rubloxHudUnlock){
       window.__rubloxHudUnlock = true;
       document.addEventListener('pointerdown', ev => {
+        if (hudTryClick(ev)) return;
         const t = ev && ev.target;
         if (!t || !t.closest) return;
-        if (!t.closest('#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhVisit, #dhSteps, #dhResetModal, .obtns, #oExit, #oExit2, #oExit3, #oFP, #oPause, #setBtn, #setModal, #oPausePanel, button, a, input, label, select')) return;
+        if (!t.closest(HUD_HIT_SEL)) return;
         releasePointerForHud();
       }, true);
+      document.addEventListener('pointerlockchange', () => {
+        if (document.pointerLockElement) hudCursorReset();
+      });
     }
     ['#oExit','#oExit2','#oExit3','#oHome','#oHome2'].forEach(id => $(id).onclick = () => { releasePointerForHud(); stop(); });
 
@@ -18527,26 +18708,30 @@ function start(m = 'obby', d = null){
       // Collision walls match the visual wallpaper height (top ~4 m). Older
       // boxes only reached y=2, so the third-person camera flew over them
       // and the wallpaper blocked the view of the player.
-      plat(0, 4.0, -10.5, 26, 0.5, '#f3c6d8', 4.0);
-      plat(-13.7, 4.0, 2.5, 0.5, 25, '#c9e8c0', 4.0);
-      plat(13.7, 4.0, 2.5, 0.5, 25, '#c9d4ff', 4.0);
-      plat(-8.6, 4.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
-      plat(8.6, 4.0, 14.8, 10.4, 0.5, '#f7d9a8', 4.0);
+      // Walls meet at the corners (no gap) and the visible skins sit on the
+      // inner face, slightly inside the collider, so the eye cannot reach the
+      // wallpaper or see sky/dark strips between the paper and the box.
+      const hideCol = b => { if (b && b.mesh){ b.mesh.visible = false; if (b.mesh.material) b.mesh.material.visible = false; } };
+      hideCol(plat(0, 4.0, -10.5, 27.4, 0.5, '#f3c6d8', 4.0));
+      hideCol(plat(-13.7, 4.0, 2.15, 0.5, 25.8, '#c9e8c0', 4.0));
+      hideCol(plat(13.7, 4.0, 2.15, 0.5, 25.8, '#c9d4ff', 4.0));
+      hideCol(plat(-8.675, 4.0, 14.8, 10.55, 0.5, '#f7d9a8', 4.0));
+      hideCol(plat(8.675, 4.0, 14.8, 10.55, 0.5, '#f7d9a8', 4.0));
     }
-    // wallpaper skins just inside the collision walls
-    phPaperWall(0, 2.05, -10.22, 25.2, 3.9, 0.08, 'dots', '#f3c6d8', '#ffe8f2', 'wallpaper');
-    phPaperWall(-13.42, 2.05, 2.5, 0.08, 3.9, 24.2, 'stripe', '#c9e8c0', '#e8f8dc', 'wallpaper');
-    phPaperWall(13.42, 2.05, 2.5, 0.08, 3.9, 24.2, 'dots', '#c9d4ff', '#e8eeff', 'wallpaper');
-    phPaperWall(-8.6, 2.05, 14.52, 10.0, 3.9, 0.08, 'stripe', '#f7d9a8', '#fff0cc', 'wallpaper');
-    phPaperWall(8.6, 2.05, 14.52, 10.0, 3.9, 0.08, 'stripe', '#f7d9a8', '#fff0cc', 'wallpaper');
-    // baseboard trim
-    phBox(0, 0.12, -10.15, 25.2, 0.24, 0.1, '#fff6e8', 'trim', 'trim');
-    phBox(-13.35, 0.12, 2.5, 0.1, 0.24, 24.2, '#fff6e8', 'trim', 'trim');
-    phBox(13.35, 0.12, 2.5, 0.1, 0.24, 24.2, '#fff6e8', 'trim', 'trim');
-    // windows on the back wall
-    phWindow(-6.5, 2.3, -10.1, 2.2, 1.6);
-    phWindow(0, 2.3, -10.1, 2.2, 1.6);
-    phWindow(6.5, 2.3, -10.1, 2.2, 1.6);
+    // wallpaper skins just inside the collision walls (flush with the inner face)
+    phPaperWall(0, 2.0, -10.29, 26.9, 4.0, 0.08, 'dots', '#f3c6d8', '#ffe8f2', 'wallpaper');
+    phPaperWall(-13.49, 2.0, 2.15, 0.08, 4.0, 24.8, 'stripe', '#c9e8c0', '#e8f8dc', 'wallpaper');
+    phPaperWall(13.49, 2.0, 2.15, 0.08, 4.0, 24.8, 'dots', '#c9d4ff', '#e8eeff', 'wallpaper');
+    phPaperWall(-8.675, 2.0, 14.59, 10.35, 4.0, 0.08, 'stripe', '#f7d9a8', '#fff0cc', 'wallpaper');
+    phPaperWall(8.675, 2.0, 14.59, 10.35, 4.0, 0.08, 'stripe', '#f7d9a8', '#fff0cc', 'wallpaper');
+    // baseboard trim (recessed, does not stick out past the inner face)
+    phBox(0, 0.12, -10.27, 26.9, 0.24, 0.06, '#fff6e8', 'trim', 'trim');
+    phBox(-13.47, 0.12, 2.15, 0.06, 0.24, 24.8, '#fff6e8', 'trim', 'trim');
+    phBox(13.47, 0.12, 2.15, 0.06, 0.24, 24.8, '#fff6e8', 'trim', 'trim');
+    // windows on the front wall, recessed into the collider
+    phWindow(-6.5, 2.3, -10.27, 2.2, 1.6);
+    phWindow(0, 2.3, -10.27, 2.2, 1.6);
+    phWindow(6.5, 2.3, -10.27, 2.2, 1.6);
     // lobby rug with a border
     phBox(0, 0.06, 0.2, 6.4, 0.06, 5.2, '#8a2f4a', 'rugedge', 'rug');
     phBox(0, 0.08, 0.2, 5.6, 0.06, 4.4, '#d96b8a', 'rug', 'rug');
@@ -18804,7 +18989,9 @@ function start(m = 'obby', d = null){
     const deskIcon = (typeof PH_DESK_ICON === 'string') ? PH_DESK_ICON : '🔔';
     ctx.font = '22px sans-serif'; ctx.fillText(hotelIcon, 40, 50); ctx.fillText(deskIcon, 150, 92);
   }
+
   function stop(){
+    if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}
     if (typeof dhCloseReset === 'function') dhCloseReset();
     running = false; loopId++; if (raf){ try { cancelAnimationFrame(raf); } catch (e){} raf = 0; } if (document.pointerLockElement) document.exitPointerLock(); fp.shown = null; menuOpen = false; paused = false;
     if (typeof dhClosePauseMenus === 'function') dhClosePauseMenus();

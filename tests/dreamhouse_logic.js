@@ -20,7 +20,9 @@ function world(store0, opts){
       const o = O();
       if (name === 'Vector3'){ o.x = args[0]||0; o.y = args[1]||0; o.z = args[2]||0; o.set = function(x,y,z){ this.x=x; this.y=y; this.z=z; return this; }; }
       if (name === 'Color'){ o.set = function(){ return this; }; o.r=1; }
-      if (name === 'MeshLambertMaterial' || name === 'MeshBasicMaterial'){ o.color = {set(){}}; o.transparent = !!(args[0]&&args[0].transparent); }
+      if (name === 'MeshLambertMaterial' || name === 'MeshBasicMaterial' || name === 'LineBasicMaterial'){ o.color = {set(){}}; o.transparent = !!(args[0]&&args[0].transparent); }
+      if (name === 'BoxGeometry' || name === 'EdgesGeometry'){ o.parameters = {width: args[0]||1, height: args[1]||1, depth: args[2]||1}; }
+      if (name === 'Mesh' || name === 'LineSegments'){ o.geometry = args[0]; if (args[1]) o.material = args[1]; }
       return o;
     }}),
     scene: {add(){}, remove(){}, background: null, fog: null},
@@ -41,7 +43,7 @@ function world(store0, opts){
   ctx.window = ctx;
   ctx.window.location = ctx.location;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrickSlots, dhBrickSupported, dhEnsureHeld, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec, dhShowSpots, dhSpotTick, dhSpotFade, dhSpotVisuals, DH_SPOT_SHOW, DH_SPOT_FADE, DH_SPOT_NEAR, DH_SPOT_AIM, dhUpdateGhost, dhPulseBeacons, dhBeaconWorlds, dhSpotDims, dhSetGfxLow, dhGfxLow, dhPaintOpenings, dhRectsMinusHoles, dhPaintPanelWorldBoxes, dhPaintCoversOpening, dhOpeningAabb, dhShingleCorners, dhRafterEnds, dhRoofPlaneYat, dhRoofTilt, dhRoofPitch, DH_ROOF_RISE, DH_ROOF_OVERHANG, DH_SHINGLE_COLS, DH_SHINGLE_ROWS, DH_RAFTER_NEED, dhAllShingleSlots, dhAllRafterSlots, dhShingleWorld, dhRafterWorld, dhHasAnyCarry, dhPaintWorld, dhPaintOut, dhPaintSize, dhPaintOpeningClearance, dhPaintCornerMeet, dhRoofComplete, dhGableFaces, dhGableInfo, dhSyncGables, dhDisposeGables, dhMakeGableMesh, dhWho, dhIsGuest, dhIsVisitor, dhCanEdit, dhShouldVisit, dhHostName, dhInviteCode, dhToggleInvite, dhRenderInvite, dhRetryInvite, dhCopyInvite, dhBlockVisitor, dhVisitLike, dhAssignPlot, dhTestVisitRaw};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrickSlots, dhBrickSupported, dhEnsureHeld, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhHideTestNote, dhFurnBox, dhMeshFor, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec, dhShowSpots, dhSpotTick, dhSpotFade, dhSpotVisuals, DH_SPOT_SHOW, DH_SPOT_FADE, DH_SPOT_NEAR, DH_SPOT_AIM, dhUpdateGhost, dhPulseBeacons, dhBeaconWorlds, dhSpotDims, dhSetGfxLow, dhGfxLow, dhPaintOpenings, dhRectsMinusHoles, dhPaintPanelWorldBoxes, dhPaintCoversOpening, dhOpeningAabb, dhShingleCorners, dhRafterEnds, dhRoofPlaneYat, dhRoofTilt, dhRoofPitch, DH_ROOF_RISE, DH_ROOF_OVERHANG, DH_SHINGLE_COLS, DH_SHINGLE_ROWS, DH_RAFTER_NEED, dhAllShingleSlots, dhAllRafterSlots, dhShingleWorld, dhRafterWorld, dhHasAnyCarry, dhPaintWorld, dhPaintOut, dhPaintSize, dhPaintOpeningClearance, dhPaintCornerMeet, dhRoofComplete, dhGableFaces, dhGableInfo, dhSyncGables, dhDisposeGables, dhMakeGableMesh, dhWho, dhIsGuest, dhIsVisitor, dhCanEdit, dhShouldVisit, dhHostName, dhInviteCode, dhToggleInvite, dhRenderInvite, dhRetryInvite, dhCopyInvite, dhBlockVisitor, dhVisitLike, dhAssignPlot, dhTestVisitRaw};`, ctx);
   return ctx;
 }
 
@@ -1835,6 +1837,71 @@ Ww.A.dreamhouseStop();
   chk('EnsureHeld(brick) will not swap a sofa out of your hands',
     kept === false && !!(V3.A.dh.carry && V3.A.dh.carry.id === 'sofa') && !(V3.A.dh.carry && V3.A.dh.carry.id === 'brick'),
     {kept, carry: V3.A.dh.carry});
+})();
+
+
+
+(function(){
+  function inside(W){
+    const foot = W.A.dhFootWorld(0);
+    W.P.x = (foot.x0 + foot.x1) / 2;
+    W.P.z = (foot.z0 + foot.z1) / 2;
+    W.P.y = W.A.DH_SLAB_H;
+    W.cam.yaw = Math.PI;
+    W.cam.pitch = 0.35;
+    if (W.A.dreamhouseUpdate) W.A.dreamhouseUpdate(0.01);
+  }
+  function extents(root){
+    let minY = 1e9, maxY = -1e9, minX = 1e9, maxX = -1e9, minZ = 1e9, maxZ = -1e9, parts = 0;
+    const walk = (o, px, py, pz) => {
+      const x = px + ((o.position && o.position.x) || 0);
+      const y = py + ((o.position && o.position.y) || 0);
+      const z = pz + ((o.position && o.position.z) || 0);
+      const g = o.geometry, prm = g && g.parameters;
+      const sx = (prm && prm.width) || 0, sy = (prm && prm.height) || 0, sz = (prm && prm.depth) || 0;
+      if (sx || sy || sz){
+        parts++;
+        minY = Math.min(minY, y - sy / 2); maxY = Math.max(maxY, y + sy / 2);
+        minX = Math.min(minX, x - sx / 2); maxX = Math.max(maxX, x + sx / 2);
+        minZ = Math.min(minZ, z - sz / 2); maxZ = Math.max(maxZ, z + sz / 2);
+      }
+      (o.children || []).forEach(c => walk(c, x, y, z));
+    };
+    walk(root, 0, 0, 0);
+    return {minY, maxY, minX, maxX, minZ, maxZ, h: maxY - minY, w: maxX - minX, d: maxZ - minZ, parts};
+  }
+
+  const V = world({}, {hash: '#dhtest=v7walls'});
+  V.A.buildDreamHouse(); V.A.dreamhouseEnter();
+  inside(V);
+  V.A.dh.bank += 20;
+  V.A.dhShopBuyFurn('sofa');
+  V.A.dhUpdateGhost();
+  const box = V.A.dhFurnBox('sofa');
+  const glow = V.A.dh.ghost && V.A.dh.ghost.userData && V.A.dh.ghost.userData.glow;
+  const outline = V.A.dh.ghost && V.A.dh.ghost.userData && V.A.dh.ghost.userData.outline;
+  const gs = glow && glow.scale;
+  chk('the furniture ghost shows the sofa footprint (or an outline), not just a flat green tile',
+    !!(V.A.dh.ghost && V.A.dh.ghost.visible) && box.h >= 0.7 && box.w >= 1.2 && box.d >= 0.6
+      && gs && Math.abs(gs.x - box.w) < 0.05 && Math.abs(gs.z - box.d) < 0.05 && gs.y <= 0.1
+      && !!(outline && (outline.visible !== false)),
+    {box, scale: gs && {x: gs.x, y: gs.y, z: gs.z}, outline: !!(outline), gy: V.A.dh.ghost && V.A.dh.ghost.position.y, slab: V.A.DH_SLAB_H});
+
+  const inv0 = V.A.dhInvCount('sofa');
+  const placed = V.A.dhKey({code: 'KeyE', repeat: false});
+  const sofaMesh = ((V.A.dh.meshes[0] || []).filter((m, i) => (V.A.dh.pieces[0] || [])[i] && (V.A.dh.pieces[0] || [])[i][0] === 'sofa')[0]);
+  const ext = sofaMesh ? extents(sofaMesh) : {h: 0, parts: 0, minY: 0, maxY: 0};
+  const gy = sofaMesh && sofaMesh.position ? sofaMesh.position.y : 0;
+  const worldMinY = ext.minY; // extents already include the group origin
+  const localMinY = worldMinY - gy;
+  chk('placing a sofa decrements inventory (no leftover 🛋️1) and leaves hands empty',
+    placed === true && inv0 === 1 && V.A.dhInvCount('sofa') === 0 && !(V.A.dh.carry && V.A.dh.carry.id === 'sofa') && (V.A.dh.stock.sofa|0) === 0,
+    {placed, inv0, inv: V.A.dhInvCount('sofa'), carry: V.A.dh.carry, stock: V.A.dh.stock.sofa});
+  chk('the placed sofa sits on the slab and is a tall sofa (not a flat blue slab)',
+    !!sofaMesh && ext.parts >= 6 && ext.h >= 0.7 && ext.h <= 1.3 && ext.w >= 1.2 && ext.d >= 0.55
+      && worldMinY >= V.A.DH_SLAB_H - 0.02 && worldMinY <= V.A.DH_SLAB_H + 0.12
+      && localMinY >= -0.02 && localMinY <= 0.12,
+    {ext, worldMinY, localMinY, slab: V.A.DH_SLAB_H, gy});
 })();
 
 

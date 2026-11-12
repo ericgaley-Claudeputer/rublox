@@ -92,6 +92,19 @@
   function dhFurnIds(){ return (typeof DH_MATS !== 'undefined' ? DH_MATS : []).filter(m => m && m.furn).map(m => m.id); }
   function dhHeldFurn(){ return (dh && dh.carry && dhIsFurn(dh.carry.id)) ? dh.carry.id : null; }
   function dhStockFurn(){ if (!dh) return null; return dhFurnIds().find(id => (dh.stock[id]|0) > 0) || null; }
+  function dhFurnBox(id){
+    const boxes = {
+      sofa: {w: 1.52, h: 0.92, d: 0.80},
+      bed: {w: 1.70, h: 0.62, d: 1.25},
+      table: {w: 1.10, h: 0.78, d: 1.10},
+      lamp: {w: 0.32, h: 1.16, d: 0.32},
+      plant: {w: 0.50, h: 0.72, d: 0.50},
+      rug: {w: 1.70, h: 0.04, d: 1.15},
+      tv: {w: 1.12, h: 1.42, d: 0.36},
+      shelf: {w: 0.90, h: 1.80, d: 0.36}
+    };
+    return boxes[id] || {w: (typeof DH_CELL === 'number' ? DH_CELL : 1.4) * 0.92, h: 0.4, d: (typeof DH_CELL === 'number' ? DH_CELL : 1.4) * 0.92};
+  }
   function dhIsBuildSupply(id){
     const m = typeof dhMatOf === 'function' ? dhMatOf(id) : null;
     // Yard supplies (bricks, planks, mix, …) — not paint or furniture.
@@ -718,7 +731,17 @@
       const panels = (typeof dhRectsMinusHoles === 'function') ? dhRectsMinusHoles(size.len, size.h, holes) : [{x: -size.len / 2, y: -size.h / 2, w: size.len, h: size.h}];
       panels.forEach(r => add(box(r.w, r.h, 0.03, mat), r.x + r.w / 2, r.y + r.h / 2, 0));
     }
-    else if (id === 'sofa'){ solid(1.80, .42, .85, 0, .21, 0, dhMat('#3a86ff')); add(box(1.80, .45, .16, dhMat('#3a86ff')), 0, 0.64, -.32); }
+    else if (id === 'sofa'){
+      // Built on the slab (group y = DH_SLAB_H). Local y=0 is the slab top.
+      const frame = dhMat('#2f5db8'), cush = dhMat('#5aa7ff'), wood = M.dark || dhMat('#4a3728');
+      [[-0.64, -0.30], [0.64, -0.30], [-0.64, 0.30], [0.64, 0.30]].forEach(([lx, lz]) => add(box(.08, .10, .08, wood), lx, 0.05, lz));
+      solid(1.28, .16, .72, 0, 0.18, 0, frame);
+      add(box(1.20, .14, .62, cush), 0, 0.33, 0.04);
+      add(box(1.40, .62, .16, frame), 0, 0.61, -0.32);
+      add(box(1.28, .48, .12, cush), 0, 0.62, -0.24);
+      add(box(.14, .38, .76, frame), -0.69, 0.41, 0);
+      add(box(.14, .38, .76, frame), 0.69, 0.41, 0);
+    }
     else if (id === 'bed'){ solid(2.00, .40, 1.40, 0, .20, 0, dhMat('#fffaf0')); add(box(.55, .22, 1.36, dhMat('#ffe0ef')), 0, 0.42, .40); }
     else if (id === 'table'){ add(box(1.10, .06, 1.10, M.wood), 0, 0.74, 0); [[-.48, -.48], [.48, -.48], [-.48, .48], [.48, .48]].forEach(([x, z]) => add(box(.08, .74, .08, M.dark), x, 0.37, z)); solidsLocal.push({mesh: g, hw: .55, hh: .4, hd: .55, ox: 0, oy: 0.4, oz: 0}); }
     else if (id === 'lamp'){ add(box(.14, .90, .14, M.dark), 0, 0.45, 0); add(new THREE.Mesh(new THREE.SphereGeometry(.16, 10, 8), dhMat('#ffe08a', {emissive: '#ffe08a', emissiveIntensity: .4})), 0, 1.00, 0); }
@@ -1187,11 +1210,30 @@
 
   function dhMakeGhost(){
     const g = new THREE.Group(); g.visible = false;
-    const glow = new THREE.Mesh(new THREE.BoxGeometry(DH_CELL * .92, .16, DH_CELL * .92), dhMat('#ffe08a', {transparent: true, opacity: .55, emissive: '#ffe08a', emissiveIntensity: .7, depthWrite: false}));
-    glow.position.y = .2; g.add(glow);
+    const glow = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), dhMat('#ffe08a', {transparent: true, opacity: .45, emissive: '#ffe08a', emissiveIntensity: .55, depthWrite: false}));
+    glow.position.y = .08; g.add(glow);
     const pole = new THREE.Mesh(new THREE.BoxGeometry(.1, 1.1, .1), dhMat('#ffd23f', {emissive: '#ffd23f', emissiveIntensity: .45}));
     pole.position.y = .7; g.add(pole);
-    g.userData.glow = glow; g.userData.pole = pole;
+    let outline = null;
+    try {
+      if (THREE.EdgesGeometry && THREE.LineSegments){
+        const mat = new THREE.LineBasicMaterial({color: 0x2ec27e, transparent: true, opacity: 0.95, depthWrite: false});
+        outline = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)), mat);
+        outline.position.y = 0.4;
+        g.add(outline);
+      }
+    } catch (e){ outline = null; }
+    if (!outline){
+      outline = new THREE.Group();
+      const rail = dhMat('#2ec27e', {transparent: true, opacity: .85, emissive: '#2ec27e', emissiveIntensity: .3, depthWrite: false});
+      [[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5], [0.5, 0.5]].forEach(([lx, lz]) => {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(.03, 1, .03), rail);
+        m.position.set(lx, 0.5, lz);
+        outline.add(m);
+      });
+      g.add(outline);
+    }
+    g.userData.glow = glow; g.userData.pole = pole; g.userData.outline = outline;
     return g;
   }
   function dhBuildBounds(){
@@ -2251,7 +2293,9 @@
       : null;
     if (!slot) return false;
     dh[slot].n -= n; if (dh[slot].n <= 0) dh[slot] = null;
-    dhHud(); return true;
+    dhHud();
+    if (typeof dhBar === 'function') dhBar();
+    return true;
   }
   function dhStockViz(plot){
     if (!dh) return;
@@ -3091,8 +3135,22 @@
     if (typeof dhShowTestNote === 'function') dhShowTestNote();
     if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
   }
+  function dhHideTestNote(){
+    let el = null;
+    try {
+      if (typeof document !== 'undefined' && document.getElementById) el = document.getElementById('dhTestNote');
+      if (!el && typeof $ === 'function') el = $('#dhTestNote');
+    } catch (e){}
+    if (!el) return false;
+    if (el.classList && el.classList.remove) el.classList.remove('show');
+    if (el.style) el.style.display = 'none';
+    if (el.textContent !== undefined) el.textContent = '';
+    if (dh) dh._testNoteShown = false;
+    return true;
+  }
   function dhShowTestNote(){
-    if (!dh || !dhTestActive()) return false;
+    if (!dh || !dhTestActive()) return dhHideTestNote() && false;
+    if (typeof mode !== 'undefined' && mode && mode !== 'dreamhouse') return dhHideTestNote() && false;
     let el = null;
     try {
       if (typeof document !== 'undefined' && document.getElementById) el = document.getElementById('dhTestNote');
@@ -3108,6 +3166,7 @@
     return true;
   }
   function dreamhouseStop(){
+    if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}
     if (typeof dhClosePauseMenus === 'function') try { dhClosePauseMenus(); } catch (e){}
     if (typeof dhCloseReset === 'function') try { dhCloseReset(); } catch (e){}
     if (typeof dhHideLookHint === 'function') try { dhHideLookHint(); } catch (e){}
@@ -3132,7 +3191,8 @@
     Object.keys(dh.mixers || {}).forEach(k => dh.mixers[k] && dh.mixers[k].mesh && scene.remove(dh.mixers[k].mesh));
     (dh.trees || []).forEach(t => t.mesh && scene.remove(t.mesh));
     if (typeof model !== 'undefined' && model && model.g) model.g.visible = true;
-    ['#dhBar', '#dhAct', '#dhCut', '#dhShop', '#dhYard', '#dhUp', '#dhGuide', '#dhGoal', '#dhSteps', '#dhTip'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
+    if (typeof dhHideTestNote === 'function') dhHideTestNote();
+    ['#dhBar', '#dhAct', '#dhCut', '#dhShop', '#dhYard', '#dhUp', '#dhGuide', '#dhGoal', '#dhSteps', '#dhTip', '#dhTestNote'].forEach(id => { const el = $(id); if (el){ el.classList.remove('show'); el.style.display = 'none'; } });
     const replay = $('#dhReplay'); if (replay) replay.style.display = 'none';
     const resetBtn = $('#dhResetBtn'); if (resetBtn) resetBtn.style.display = 'none';
     if (typeof document !== 'undefined' && document.getElementById){ const root = document.getElementById('obby'); if (root && root.classList) root.classList.remove('dhouse'); }
@@ -4132,8 +4192,7 @@
       if (!inFoot(cell) && typeof dhCellAt === 'function' && typeof P !== 'undefined' && P) cell = dhCellAt(P.x, P.z);
       if (!inFoot(cell) && typeof dhTargetSpot === 'function') cell = dhTargetSpot('furn');
       if (inFoot(cell) || (cell && cell.plot === dh.mine)){
-        const y = slabY + 0.08;
-        const w = dhCellWorld(cell.plot, cell.ix, cell.iz, y);
+        const w = dhCellWorld(cell.plot, cell.ix, cell.iz, slabY);
         pos = {x: w.x, y: w.y, z: w.z, ry: ((dh.rot | 0) * Math.PI) / 2};
         ok = true;
         const taken = (dh.pieces[cell.plot] || []).some(a => dhIsFurn(a[0]) && (a[1]|0) === (cell.ix|0) && (a[3]|0) === (cell.iz|0));
@@ -4165,10 +4224,31 @@
         if (glow.material.color && glow.material.color.set) glow.material.color.set(col);
       }
       const pole = dh.ghost.userData && dh.ghost.userData.pole;
+      const outline = dh.ghost.userData && dh.ghost.userData.outline;
       if (glow && glow.scale){
-        if (stage === 'brick' && !furnId){ glow.scale.set(DH_BRICK_W / (DH_CELL * .92), DH_BRICK_H / .16, DH_BRICK_D / (DH_CELL * .92)); if (pole) pole.visible = false; }
-        else if (furnId){ glow.scale.set(1, 1.4, 1); if (pole) pole.visible = false; }
-        else { glow.scale.set(1, 1, 1); if (pole) pole.visible = true; }
+        if (furnId){
+          const box = (typeof dhFurnBox === 'function') ? dhFurnBox(furnId) : {w: DH_CELL * .92, h: 0.8, d: DH_CELL * .92};
+          glow.scale.set(box.w, 0.06, box.d);
+          glow.position.y = 0.03;
+          if (pole) pole.visible = false;
+          if (outline){
+            outline.visible = true;
+            if (outline.scale && outline.scale.set) outline.scale.set(box.w, box.h, box.d);
+            if (outline.position) outline.position.y = box.h / 2;
+            const om = outline.material || (outline.children && outline.children[0] && outline.children[0].material);
+            if (om && om.color && om.color.set) om.color.set(col);
+          }
+        } else if (stage === 'brick'){
+          glow.scale.set(DH_BRICK_W, DH_BRICK_H, DH_BRICK_D);
+          glow.position.y = DH_BRICK_H / 2;
+          if (pole) pole.visible = false;
+          if (outline) outline.visible = false;
+        } else {
+          glow.scale.set(DH_CELL * .92, 0.16, DH_CELL * .92);
+          glow.position.y = 0.08;
+          if (pole) pole.visible = true;
+          if (outline) outline.visible = false;
+        }
       }
     }
   }
