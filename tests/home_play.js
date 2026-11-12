@@ -63,9 +63,9 @@ function makeEl(id){
   return el;
 }
 
-test('BUILD is 2026.11.11-32 and matches version.json', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.11-32'"));
-  assert.strictEqual(version.build, '2026.11.11-32');
+test('BUILD is 2026.11.11-33 and matches version.json', () => {
+  assert.ok(src.includes("const BUILD = '2026.11.11-33'"));
+  assert.strictEqual(version.build, '2026.11.11-33');
 });
 
 test('every inline script in index.html parses (a syntax error would make every Play button do nothing)', () => {
@@ -276,6 +276,14 @@ test('buildGames wires home Play buttons to Obby.play for Dream House and Dance'
   cards[0].onclick();
   cards[1].onclick();
   assert.deepStrictEqual(played, ['dreamhouse', 'dance']);
+});
+
+test('Pet Hotel is a playable New game on the home menu and start() can open it', () => {
+  assert.ok(/id:'pethotel'/.test(src) && /name:'Pet Hotel'/.test(src) && /draw: drawPetHotel/.test(src));
+  assert.ok(src.includes("playable: true") && src.includes("function drawPetHotel"));
+  const i = src.indexOf("function start(m = 'obby'");
+  assert.ok(i >= 0 && src.slice(i, i+1200).includes("'pethotel'"));
+  assert.ok(src.includes('buildPetHotel()') && src.includes('petHotelEnter()') && src.includes('id="phAct"'));
 });
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

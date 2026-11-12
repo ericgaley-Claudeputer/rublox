@@ -41,7 +41,7 @@ function world(store0, opts){
   ctx.window = ctx;
   ctx.window.location = ctx.location;
   vm.createContext(ctx);
-  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrickSlots, dhBrickSupported, dhEnsureHeld, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec, dhShowSpots, dhSpotTick, dhSpotFade, dhSpotVisuals, DH_SPOT_SHOW, DH_SPOT_FADE, DH_SPOT_NEAR, DH_SPOT_AIM, dhUpdateGhost, dhPulseBeacons, dhBeaconWorlds, dhSpotDims, dhSetGfxLow, dhGfxLow, dhPaintOpenings, dhRectsMinusHoles, dhPaintPanelWorldBoxes, dhPaintCoversOpening, dhOpeningAabb, dhShingleCorners, dhRafterEnds, dhRoofPlaneYat, dhRoofTilt, dhRoofPitch, DH_ROOF_RISE, DH_ROOF_OVERHANG, DH_SHINGLE_COLS, DH_SHINGLE_ROWS, DH_RAFTER_NEED, dhAllShingleSlots, dhAllRafterSlots, dhShingleWorld, dhRafterWorld, dhHasAnyCarry, dhPaintWorld, dhPaintOut, dhPaintSize, dhPaintOpeningClearance, dhPaintCornerMeet, dhRoofComplete, dhGableFaces, dhGableInfo, dhSyncGables, dhDisposeGables, dhMakeGableMesh};`, ctx);
+  vm.runInContext(SRC + `\n;globalThis.A = {get dh(){ return dh; }, buildDreamHouse, dreamhouseEnter, dreamhouseUpdate, dreamhouseStop, dhPlace, dhAct, dhRotate, dhCycle, dhSetTool, dhSetStory, dhSetJob, dhCycleColor, dhAim, dhAimCell, dhWire, dhFromHost, dhGuestMsg, dhProg, dhSerialize, dhPay, dhCheckGoals, dhPut, dhRemoveAt, dhCanBuild, dhPlotAt, dhKey, dhPad, dhBuy, dhDump, dhPickup, dhGive, dhMix, dhFillBarrow, dhPour, dhSmooth, dhPlaceBrick, dhMarkOrDig, DH_PARTS, DH_MATS, DH_KEY, DH_GRANT, DH_PLOTS, DH_N, DH_GOALS, DH_YARD, DH_VER, DH_JOBS, DH_UPGRADES, DH_PAINT, dhSave, dhStartIntro, dhSkipIntro, dhReplayIntro, dhIntroCam, dhShopBuyFurn, dhBuyUpgrade, dhToggleShop, dhToggleUp, dhCarryCap, dhDryNeed, dhDryDone, dhFoot, dhCourses, dhPlantTrees, dhInstallGlass, dhWindowsGlazed, dhOpenFrames, dhPlaceKind, dhNextBuildCell, dhNearOwnPlot, dhNearYard, dhNearFurn, dhNearUp, dhToggleYard, dhWhyNot, dhClampPlayer, dhSpawnPos, dhOrigin, dhLayoutYard, dhTreeBlocked, DH_BOUND, DH_FURN, DH_UP, DH_VER, DH_BIN_R, DH_BIN_R_IN_YARD, DH_FOOT, DH_FOOT_LEGACY, dhCamComfort, dhActPrompt, dhJobCounts, dhSupplyMats, dhNearBin, dhNearestBin, dhGuideTarget, dhWantedSupply, dhNeedYardSupplies, dhFadeYardSign, dhAimBrickSlot, dhAllBrickSlots, dhNextBrickSlots, dhBrickSupported, dhEnsureHeld, dhNextBrick, dhBrickTotal, dhBrickAlongCount, dhPlaceBrick, dhGoalText, dhChecklist, dhStageId, dhResetProgress, dhFreshSave, dhLooksLegacy, dhPointer, dhAimFootCell, dhInvCount, dhCarryOf, dhHeldInfo, dhAddHeld, dhCellWorld, dhFootCells, dhHud, dhBar, dhAimCone, dhLookWithKeys, dhClearHeldKeys, dhForceFirstPerson, dhWalkCap, dhAutoReturn, dhSupplyOrder, dhNearBin, dhLookFromCam, dhGroundHit, dhRefreshBins, dhIsUiEvent, dhGrantStarterStock, dhClipFpCamera, dhShowLookHint, dhHideLookHint, dhNoteLookKey, dhMenusUp, dhSyncPauseHud, updateDhChrome, dhStatusBits, dhToggleYard, dhToggleShop, dhToggleUp, dhNearestSpotHint, dhSyncJobToStage, dhJobForStage, dhNoteMoveKey, dhActPrompt, dhCarryLaterPrompt, dhHeldInfo, dhAimCone, dhTargetSpot, dhTargetFromPoints, dhRayPlaneHit, dhClosePauseMenus, dhFlushTips, dhShowTip, dhDismissTip, dhTipOpen, dhEyeHeight, dhPlayerHeight, dhWallTop, dhRoofApex, dhWallH, dhShingleTotal, dhStudTotal, dhRafterTotal, dhBrickBoxes, dhAllBrickRecs, dhUpgradePiecesToV7, dhMigrate, dhIsOpening, DH_EYE, DH_PLAYER_H, DH_WALL_TOP, DH_ROOF_APEX, DH_SLAB_H, DH_BRICK_W, DH_BRICK_H, DH_BRICK_D, dhTestActive, dhTestFixtureId, dhTestRawSave, dhTestBlockPersist, dhTestV6FurnishRaw, dhTestV7WallsRaw, dhMovePlayer, dhCollisionBoxes, dhClipPlayerToWalls, dhFootWorld, dhShowTestNote, dhOpeningWorld, dhWindowFaces, dhNoteMoveKey, dhAfterPhysicsStep, dhRememberPlayer, dhRefreshWallSolids, dhRefreshDebugColliders, dhDebugActive, dhCamClearance, dhBrickRunBox, dhWorldRec, dhShowSpots, dhSpotTick, dhSpotFade, dhSpotVisuals, DH_SPOT_SHOW, DH_SPOT_FADE, DH_SPOT_NEAR, DH_SPOT_AIM, dhUpdateGhost, dhPulseBeacons, dhBeaconWorlds, dhSpotDims, dhSetGfxLow, dhGfxLow, dhPaintOpenings, dhRectsMinusHoles, dhPaintPanelWorldBoxes, dhPaintCoversOpening, dhOpeningAabb, dhShingleCorners, dhRafterEnds, dhRoofPlaneYat, dhRoofTilt, dhRoofPitch, DH_ROOF_RISE, DH_ROOF_OVERHANG, DH_SHINGLE_COLS, DH_SHINGLE_ROWS, DH_RAFTER_NEED, dhAllShingleSlots, dhAllRafterSlots, dhShingleWorld, dhRafterWorld, dhHasAnyCarry, dhPaintWorld, dhPaintOut, dhPaintSize, dhPaintOpeningClearance, dhPaintCornerMeet, dhRoofComplete, dhGableFaces, dhGableInfo, dhSyncGables, dhDisposeGables, dhMakeGableMesh, dhWho, dhIsGuest, dhIsVisitor, dhCanEdit, dhShouldVisit, dhHostName, dhInviteCode, dhToggleInvite, dhRenderInvite, dhCopyInvite, dhBlockVisitor, dhVisitLike, dhAssignPlot, dhTestVisitRaw};`, ctx);
   return ctx;
 }
 
@@ -1602,6 +1602,59 @@ Ww.A.dreamhouseStop();
   chk('finished walls and roof get gable ends automatically (no hole under the roof, saves unchanged)', !!(gAfter.ready && gSync && gMesh && gKids && gKids.length >= 2 && Math.abs(gAfter.apex - 4.8) < 0.02 && Math.abs(gAfter.wallTop - 3.0) < 0.02), {info:gAfter, sync:gSync, kids: gKids && gKids.length, recs:(Wp.A.dh.pieces[0]||[]).some(a => a[0]==='gable')});
 
   Wp.A.dreamhouseStop();
+})();
+
+
+
+/* ---------- friends visit your Dream House ---------- */
+(function(){
+  const raw = world().A.dhTestVisitRaw();
+  const key = world().A.DH_KEY;
+  const ownerPieces = raw.pieces || [];
+  chk('visit fixture includes paint and furniture from the host house', ownerPieces.some(a => a[0]==='paint') && ownerPieces.some(a => a[0]==='sofa') && ownerPieces.some(a => a[0]==='table'), {kinds: ownerPieces.map(a => a[0]).filter((k,i,arr)=>arr.indexOf(k)===i)});
+
+  const V = world({}, {hash: '#dhtest=visit'});
+  V.A.buildDreamHouse(); V.A.dreamhouseEnter();
+  chk('visit fixture boots as a visitor (no intro, cannot edit)', !!(V.A.dhIsVisitor() && V.A.dh.visiting && V.A.dh.introSeen && !V.A.dh.intro && !V.A.dhCanEdit()), {visiting:V.A.dh && V.A.dh.visiting, intro:V.A.dh && V.A.dh.intro});
+  chk('visitor sees the host house pieces, paint, and furniture', (V.A.dh.pieces[0]||[]).some(a => a[0]==='paint') && (V.A.dh.pieces[0]||[]).some(a => a[0]==='sofa') && (V.A.dh.pieces[0]||[]).some(a => a[0]==='brick'), {n:(V.A.dh.pieces[0]||[]).length, kinds:[...new Set((V.A.dh.pieces[0]||[]).map(a=>a[0]))]});
+  const n0 = (V.A.dh.pieces[0]||[]).length;
+  const before = V.store[key];
+  const placed = V.A.dhPlace();
+  const bought = V.A.dhBuy('brick');
+  const furn = V.A.dhShopBuyFurn('sofa');
+  const up = V.A.dhBuyUpgrade && V.A.DH_UPGRADES && V.A.dhBuyUpgrade(V.A.DH_UPGRADES[0].id);
+  V.A.dhSave();
+  V.A.dhResetProgress();
+  chk('visitor cannot place, buy, upgrade, or reset the house', placed === false && bought === false && furn === false && (up === false || up == null) && (V.A.dh.pieces[0]||[]).length === n0, {placed, bought, furn, up, n0, n1:(V.A.dh.pieces[0]||[]).length});
+  chk('visitor never writes rubloxDreamHouse (fixture or live)', V.store[key] === before, {before, after:V.store[key]});
+  V.A.dreamhouseStop();
+
+  const hostSave = JSON.stringify({ver:7, introSeen:true, granted:true, coins:77, likes:2, pieces: ownerPieces, stock:{brick:9}, goals:{roof:1}, upgrades:{carry:1}, tipsSeen:{}, legacyHouse:false});
+  const G = world({[key]: hostSave});
+  G.mp.on = true; G.mp.me = 'g1'; G.mp.host = false; G.mpGuest = () => true;
+  G.A.buildDreamHouse();
+  chk('a real MP guest starts as a visitor and does not load their local house', !!(G.A.dhIsVisitor() && G.A.dhWho() === 'g1' && (G.A.dh.pieces[0]||[]).length === 0), {who:G.A.dhWho(), visiting:G.A.dh && G.A.dh.visiting, n:(G.A.dh.pieces[0]||[]).length});
+  const snap = G.store[key];
+  G.A.dhFromHost({mine:0, who:'H', name:'Tessa', plots:{0: ownerPieces}, upgrades:{carry:1}, legacyHouse:false, likes:4});
+  chk('host snapshot renders the host house (pieces, paint, furniture) for the visitor', (G.A.dh.pieces[0]||[]).some(a => a[0]==='paint') && (G.A.dh.pieces[0]||[]).some(a => a[0]==='sofa') && (G.A.dh.pieces[0]||[]).length === ownerPieces.length && G.A.dh.hostName === 'Tessa' && (G.A.dh.upgrades && G.A.dh.upgrades.carry === 1), {n:(G.A.dh.pieces[0]||[]).length, name:G.A.dh.hostName, up:G.A.dh.upgrades});
+  G.A.dhSave(); G.A.dhPlace(); G.A.dhResetProgress();
+  chk('visitor fromHost path never writes the owner save', G.store[key] === snap, {snap:!!snap, after:G.store[key]});
+  // host like path
+  const likeOk = G.A.dhVisitLike();
+  chk('visitor can like the house (E / Ⓧ) without editing it', likeOk === true && !!(G.A.dh.liked && G.A.dh.liked.host), {likeOk, liked:G.A.dh.liked});
+  G.A.dreamhouseStop();
+
+  const H = world({}, {hash:'#dhtest=visithost'});
+  H.A.buildDreamHouse(); H.A.dreamhouseEnter();
+  chk('host fixture is not a visitor and can invite friends', !H.A.dhIsVisitor() && H.A.dhCanEdit() && H.A.dhToggleInvite(true) === true && H.A.dh.inviteOpen === true, {visiting:H.A.dh && H.A.dh.visiting, open:H.A.dh && H.A.dh.inviteOpen});
+  chk('invite panel can close with the helper (Esc / Ⓑ)', H.A.dhToggleInvite(false) === true && H.A.dh.inviteOpen === false);
+  const wire = H.A.dhWire();
+  chk('host wire includes pieces, paint, furniture, upgrades, and a name', !!(wire && wire.plots && wire.plots[0] && wire.plots[0].some(a => a[0]==='paint') && wire.plots[0].some(a => a[0]==='sofa') && wire.upgrades && wire.name), wire && {name:wire.name, n:wire.plots && wire.plots[0] && wire.plots[0].length, keys:Object.keys(wire)});
+  H.A.dreamhouseStop();
+
+  const W0 = world();
+  W0.mp.on = true; W0.mp.me = 'g2'; W0.mp.uid = undefined;
+  chk('dhWho uses mp.me (not the missing mp.uid)', W0.A.dhWho() === 'g2', {who:W0.A.dhWho()});
 })();
 
 

@@ -606,6 +606,18 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .icord{position:relative;overflow:hidden;background:rgba(255,255,255,.92);border:3px solid #7fd6ff;border-radius:12px;padding:3px 9px 7px;font-size:20px;font-weight:900;color:#1d2340}
 .icord i{position:absolute;left:0;bottom:0;height:4px;background:#2ec27e}
 .icnear{background:#7fd6ff;box-shadow:0 4px 0 #3a9bc8}.icnear small{color:#7fd6ff}
+.phnear{background:#f4a261;box-shadow:0 4px 0 #c0763a}.phnear small{color:#c0763a}
+.phtasks{position:absolute;left:10px;top:64px;z-index:5;display:none;pointer-events:none;background:rgba(29,35,64,.82);color:#fff;border-radius:12px;padding:8px 12px;font-weight:800;max-width:min(92vw,420px)}
+.dhvisit{position:absolute;inset:0;z-index:90;display:none;align-items:center;justify-content:center;background:rgba(12,16,32,.55);pointer-events:auto;padding:16px}
+.dhvisit.show{display:flex}
+.dhvisitcard{position:relative;background:#fff8ef;color:#1d2340;border-radius:18px;padding:22px 22px 18px;max-width:min(92vw,460px);width:100%;box-shadow:0 16px 40px rgba(0,0,0,.28);text-align:center}
+.dhvisitcard h3{margin:0 0 8px;font-size:22px}
+.dhvisitcard p{margin:0 0 12px;font-weight:700;line-height:1.35}
+.dhvisitcode{font-size:clamp(28px,8vw,44px);letter-spacing:.18em;font-weight:900;background:#1d2340;color:#ffe08a;border-radius:14px;padding:12px 8px;margin:8px 0 14px}
+.dhvisitbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.dhvisitx{position:absolute;right:10px;top:8px;border:0;background:transparent;font-size:22px;cursor:pointer}
+.dhvisithint{font-size:13px;opacity:.8}
+.mphint{margin:8px 0 0;font-weight:700;color:#1d2340;opacity:.9}
 .ictoast{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;pointer-events:none;min-width:min(90vw,420px);max-width:92vw;padding:22px 28px;border-radius:22px;background:rgba(29,35,64,.92);color:#fff;font-weight:900;font-size:clamp(28px,5vw,44px);line-height:1.25;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.25),0 0 30px rgba(255,111,181,.45);border:4px solid #ff6fb5}
 .ictoast.show{display:block;animation:icpop 2.5s ease forwards}
 @keyframes icpop{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.9)}}
@@ -1025,6 +1037,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
       </div>
       <div class="mpjs" id="mpJoinStat" hidden aria-live="polite"></div>
       <div class="mpst" id="mpStatus"></div>
+      <p class="mphint" id="mpVisitHint">🏡 To visit a friend's Dream House, join their room code. When they open Dream House, you can walk around their house — look, but you cannot edit it. Hosts can tap <b>Invite friends</b> in the house for the code.</p>
       <button class="updbar" id="updBar" hidden onclick="location.replace(location.pathname + '?v=' + Date.now() + location.hash)">🆕 A newer Rublox is ready! Tap here to refresh</button>
     </div>
     <div class="grid" id="grid"></div>
@@ -1194,6 +1207,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
       <span id="hmBox" style="display:none"><b id="hmN">👻 Escape</b></span>
       <span id="sbBox" style="display:none"><b id="sbN">🐴 Stable</b></span>
       <span id="icBox" style="display:none"><b id="icN">🍦 0</b></span>
+      <span id="phBox" style="display:none"><b id="phN">🏨 Pet Hotel</b></span>
       <span id="tdBox" style="display:none">🗼 <b id="tdH">0</b>m · 🫧 <b id="tdGoo">0</b></span>
       <span id="psBox" style="display:none"><b id="psN">📸 Photos</b></span>
       <span id="wpBox" style="display:none"><b id="wpN">🌊 Water Park</b></span>
@@ -1353,6 +1367,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   <div class="ictoast" id="icToast"></div>
   <button class="fsnear dhnear" id="dhAct"></button>
   <div class="dhbar" id="dhBar" style="display:none"></div>
+  <div class="dhvisit" id="dhVisit" style="display:none" role="dialog" aria-label="Invite friends to visit"></div>
   <div class="dhcut" id="dhCut" style="display:none">
     <div class="dhfade" id="dhFade"></div>
     <div class="dhbubble" id="dhBubble" style="display:none"><b>Mom</b><span id="dhSay"></span></div>
@@ -1379,6 +1394,8 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   <div class="opanel" id="sbPick"></div>
   <div class="icorders" id="icOrders" style="display:none"></div>
   <button class="fsnear icnear" id="icAct"></button>
+  <button class="fsnear phnear" id="phAct"></button>
+  <div class="phtasks" id="phTasks" style="display:none"></div>
   <div class="opanel" id="icPanel"><div class="mbox rcbox icbox">
     <h2 id="icPT">🍦 Station</h2>
     <div class="fsitems" id="icItems"></div>
@@ -1602,7 +1619,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.11-32';
+const BUILD = '2026.11.11-33';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2318,6 +2335,7 @@ $('#saveAv').onclick = () => {
 /* ---------- games ---------- */
 const GAMES = [
   {id:'dreamhouse', name:'Dream House Builders', emoji:'🏡', tag:'Re-build your house with bricks, paint, furniture and upgrades!', draw: drawDreamHouse, playable: true, isNew: true},
+  {id:'pethotel', name:'Pet Hotel', emoji:'🏨', tag:'Check in guest pets, feed, bathe, play, tuck them in, then check out for coins!', draw: drawPetHotel, playable: true, isNew: true},
   {id:'dance', name:'Bossa Beat Dance Battle', emoji:'💃', tag:'Hit the arrows to original bossa beats — dance-off with friends!', draw: drawDance, playable: true, isNew: true},
   {id:'haunt', name:'Giggle Manor Escape', emoji:'👻', tag:'Friendly ghosts, puzzle rooms, escape before the timer!', draw: drawHaunt, playable: true, isNew: true},
   {id:'stable', name:'Clover Meadow Stables', emoji:'🐴', tag:'Adopt a pony, brush & feed it, ride the meadow, and enter jumping shows!', draw: drawStable, playable: true, isNew: true},
@@ -2425,6 +2443,18 @@ function drawStable(ctx){
   ctx.fillStyle = '#f6e3b4'; ctx.fillRect(200, 120, 50, 30); ctx.fillStyle = '#ff9f1c'; ctx.fillRect(210, 100, 20, 25);
   [[180, 155], [220, 155], [200, 155], [240, 155]].forEach(([x, y]) => { ctx.fillStyle = '#c9a06a'; ctx.fillRect(x, y, 8, 20); });
   guy(ctx, 160, 176, 12, '#2ec27e'); ctx.font = '22px sans-serif'; ctx.fillText('🐴', 70, 80); ctx.fillText('🏆', 260, 100);
+}
+function drawPetHotel(ctx){
+  if (!ctx) return;
+  if (typeof sky === 'function') sky(ctx, '#9fd8ff', '#fff6e8');
+  else { ctx.fillStyle = '#9fd8ff'; ctx.fillRect(0, 0, 320, 200); }
+  ctx.fillStyle = '#e9d5b3'; ctx.fillRect(30, 70, 260, 90);
+  ctx.fillStyle = '#c97b5a'; ctx.fillRect(110, 100, 100, 50);
+  ctx.fillStyle = '#d96b8a'; ctx.fillRect(80, 150, 160, 18);
+  ctx.fillStyle = '#c9894c'; ctx.beginPath(); ctx.arc(200, 148, 16, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#8aa0b8'; ctx.beginPath(); ctx.arc(84, 148, 14, 0, Math.PI * 2); ctx.fill();
+  if (typeof guy === 'function'){ guy(ctx, 160, 175, 12, '#3a86ff'); guy(ctx, 60, 175, 11, '#d96b8a'); }
+  ctx.font = '22px sans-serif'; ctx.fillText('🏨', 40, 60); ctx.fillText('🛎️', 150, 96);
 }
 function drawIceCream(ctx){
   sky(ctx, '#ffc9de', '#fff0f6');
@@ -4038,8 +4068,8 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; sb = null; hm = null; db = null; dh = null;
-    if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null;
+    if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -4989,7 +5019,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
       if (axis === 'x'){ B.x = B.x < p.x ? p.x - b.hw - R : p.x + b.hw + R; }
       else { B.z = B.z < p.z ? p.z - b.hd - R : p.z + b.hd + R; }
     }
@@ -5073,7 +5103,7 @@ const Obby = (() => {
     if (mode === 'lava') return lavaChecks();
     if (mode === 'splash') return splashChecks();
     if (mode === 'nds') return ndsChecks();
-    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -5627,6 +5657,7 @@ const Obby = (() => {
       if (running && dh && mode === 'dreamhouse') msg.dh = dhWire();
       if (running && bk && !bk.remote && mode === 'bakery') msg.bk = bakeryWire();
       if (running && ic && !ic.remote && mode === 'icecream') msg.ic = iceCreamWire();
+      if (running && ph && !ph.remote && mode === 'pethotel') msg.ph = phWire();
       if (running && wp && mp.host && mode === 'waterpark') msg.wp = waterparkWire();
       if (running && bw && mode === 'build') msg.bt = bwWire();
       if (ops) msg.o = ops;
@@ -5809,6 +5840,7 @@ const Obby = (() => {
     if (d.dh) dhFromHost(d.dh);
     if (d.bk) bakeryFromHost(d.bk);
     if (d.ic) iceCreamFromHost(d.ic);
+    if (d.ph) phFromHost(d.ph);
     if (d.wp) waterparkFromHost(d.wp);
     if (d.bt) bwFromHost(d.bt);
     if (d.tg && tg && tg.remote && running && mode === 'tag' && tg.phase !== 'end') mpTagWire(d.tg);
@@ -6092,7 +6124,7 @@ const Obby = (() => {
       L.appendChild(d);
     });
     $('#mpMsg').textContent = mp.host
-      ? (list.length < 2 ? '📣 Tell your family the code! When they join, pick any game below and everyone jumps in with you.' : '👉 Pick any game below and everyone in the room jumps in with you!')
+      ? (list.length < 2 ? '📣 Tell your family the code! When they join, pick a game — or open Dream House and tap Invite friends so they can visit your house.' : '👉 Pick a game and everyone jumps in with you. In Dream House, tap Invite friends to share a visit.')
       : (mp.hmode ? '🎮 The host is playing ' + gameName(mp.hmode) + (mp.hmode === 'obby' && mp.hdiff ? ' (Level ' + mp.hdiff + ')' : '') + '. Tap that game to join in!' : '⏳ Waiting for the host to pick a game…');
   }
   function play(id){
@@ -12223,8 +12255,40 @@ const Obby = (() => {
   let dh = null;
 
   function dhMatOf(id){ return DH_MATS.find(m => m.id === id); }
-  function dhWho(){ return (typeof mp !== 'undefined' && mp && mp.on && mp.uid) ? String(mp.uid) : 'local'; }
+  function dhWho(){
+    if (typeof mp !== 'undefined' && mp && mp.on){
+      const id = mp.me || mp.uid;
+      if (id) return String(id);
+    }
+    return 'local';
+  }
   function dhIsGuest(){ return !!(typeof mp !== 'undefined' && mp && mp.on && typeof mpGuest === 'function' && mpGuest()); }
+  function dhShouldVisit(){
+    const id = typeof dhTestFixtureId === 'function' ? dhTestFixtureId() : '';
+    if (id === 'visit') return true;
+    if (id === 'visithost') return false;
+    return dhIsGuest();
+  }
+  function dhIsVisitor(){ return !!(dh && dh.visiting); }
+  function dhCanEdit(){ return !!(dh && !dhIsVisitor()); }
+  function dhHostName(){
+    if (dh && dh.hostName) return String(dh.hostName);
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.on){
+        const list = (typeof mpRoster === 'function' && mp.host) ? mpRoster() : (mp.roster || []);
+        const host = (list || []).find && list.find(p => p && p.uid === 'H');
+        if (host && host.name) return String(host.name);
+      }
+      if (typeof player !== 'undefined' && player && player.name) return String(player.name);
+    } catch (e){}
+    return 'Friend';
+  }
+  function dhInviteCode(){ return (typeof mp !== 'undefined' && mp && mp.code) ? String(mp.code) : ''; }
+  function dhBlockVisitor(msg){
+    if (!dhIsVisitor()) return false;
+    if (msg !== false && typeof banner === 'function') banner(msg || "👀 You're visiting — you can look around, but you cannot edit this house");
+    return true;
+  }
   function dhOrigin(plot){
     const size = DH_N * DH_CELL;
     // Plot 0 (single-player, and the first MP lot) sits in the center of the map, as in Tessa's drawing.
@@ -12341,7 +12405,7 @@ const Obby = (() => {
   }
   function dhTestActive(){
     const id = dhTestFixtureId();
-    return id === 'v6furnish' || id === 'v7walls' || id === 'v6inside';
+    return id === 'v6furnish' || id === 'v7walls' || id === 'v6inside' || id === 'visit' || id === 'visithost';
   }
   function dhTestV6FootSlabs(){
     const recs = [];
@@ -12396,8 +12460,19 @@ const Obby = (() => {
       upgrades: {}, tipsSeen: {}, legacyHouse: false
     };
   }
+  function dhTestVisitRaw(){
+    const raw = dhTestV6FurnishRaw();
+    raw.pieces = (raw.pieces || []).concat([
+      ['paint', 0, 0, 0, 0, 1], ['paint', 0, 0, 0, 1, 1], ['paint', 0, 0, 0, 2, 1], ['paint', 0, 0, 0, 3, 1],
+      ['sofa', 3, 0, 3, 0, 0], ['table', 4, 0, 4, 0, 0], ['plant', 2, 0, 4, 0, 0], ['lamp', 5, 0, 3, 0, 0]
+    ]);
+    raw.goals = Object.assign({}, raw.goals || {}, {paint: 1, furnish: 1});
+    raw.stock = Object.assign({}, raw.stock || {}, {paint: 0, sofa: 0});
+    return raw;
+  }
   function dhTestRawSave(id){
     id = (id == null ? dhTestFixtureId() : id);
+    if (id === 'visit' || id === 'visithost') return dhTestVisitRaw();
     if (id === 'v6furnish' || id === 'v6inside') return dhTestV6FurnishRaw();
     if (id === 'v7walls') return dhTestV7WallsRaw();
     return null;
@@ -12551,6 +12626,7 @@ const Obby = (() => {
   }
   function dhResetProgress(){
     // Only wipes the Dream House key. Main wallet, other games, and history stay put.
+    if (dh && dhIsVisitor()){ if (typeof banner === 'function') banner("👀 Visitors cannot reset the owner's house"); return; }
     if (dh) dh._skipSave = true;
     if (typeof save === 'function' && !dhTestBlockPersist()) save(DH_KEY, dhFreshSave());
     if (dh){
@@ -12589,6 +12665,7 @@ const Obby = (() => {
   if (typeof window !== 'undefined') window.dhResetProgress = dhResetProgress;
   function dhSave(extra){
     if (!dh) return;
+    if (dhIsVisitor() || dh.visiting || dh._skipSave) return;
     const p = dhProg();
     p.ver = DH_VER;
     p.pieces = dhSerialize(dh.mine);
@@ -13273,8 +13350,9 @@ const Obby = (() => {
     });
   }
   function dhAssignPlot(){
+    if (dhShouldVisit()) return 0;
     if (typeof mp !== 'undefined' && mp && mp.on){
-      const ids = [dhWho()].concat((mp.roster && mp.roster()) || (mp.peers && Object.keys(mp.peers)) || []).filter(Boolean);
+      const ids = [dhWho()].concat((Array.isArray(mp.roster) ? mp.roster.map(p => p && p.uid) : (mp.roster && typeof mp.roster === 'function' && mp.roster())) || (mp.peers && Object.keys(mp.peers)) || []).filter(Boolean);
       const uniq = []; ids.forEach(id => { if (uniq.indexOf(id) < 0) uniq.push(id); });
       return Math.max(0, uniq.indexOf(dhWho())) % DH_PLOTS;
     }
@@ -13693,15 +13771,25 @@ const Obby = (() => {
   }
 
   function buildDreamHouse(){
-    dh = {mine: 0, job: 'mark', rot: 0, color: 0, tool: 'place', aim: null, pieces: {}, meshes: {}, ghost: null, bank: 0, likes: 0, goals: {}, earned: 0, near: -1, liked: {}, saveT: 0, remote: dhIsGuest(), carry: null, bag: null, stock: dhEmptyStock(), bins: [], mixers: {}, piles: {}, mats: dhMakeMats(), v1pieces: null, cureT: 0, upgrades: dhEmptyUpgrades(), introSeen: false, intro: null, trees: [], shopOpen: false, yardOpen: false, upOpen: false, foundYard: false, foundFurn: false, foundUp: false, cut: null, yardBeacon: null, furnBeacon: null, upBeacon: null};
+    dh = {mine: 0, job: 'mark', rot: 0, color: 0, tool: 'place', aim: null, pieces: {}, meshes: {}, ghost: null, bank: 0, likes: 0, goals: {}, earned: 0, near: -1, liked: {}, saveT: 0, remote: dhIsGuest(), visiting: false, inviteOpen: false, hostName: '', carry: null, bag: null, stock: dhEmptyStock(), bins: [], mixers: {}, piles: {}, mats: dhMakeMats(), v1pieces: null, cureT: 0, upgrades: dhEmptyUpgrades(), introSeen: false, intro: null, trees: [], shopOpen: false, yardOpen: false, upOpen: false, foundYard: false, foundFurn: false, foundUp: false, cut: null, yardBeacon: null, furnBeacon: null, upBeacon: null};
     scene.background = new THREE.Color('#b8e8ff');
     if (scene.fog){ scene.fog.color = new THREE.Color('#d7f3ff'); scene.fog.near = 50; scene.fog.far = 160; }
     const grass = plat(0, 0, 0, 110, 84, '#8fd39a', .35);
     if (grass) grass.floorOnly = true; // huge ground AABB must never resolve on X/Z
-    const p0 = dhProg();
+    dh.visiting = !!dhShouldVisit();
+    if (dh.visiting) dh._skipSave = true;
+    const p0 = (dh.visiting && !dhTestRawSave()) ? dhFreshSave() : dhProg();
     dh.bank = p0.coins; dh.likes = p0.likes; dh.goals = Object.assign({}, p0.goals); dh.stock = Object.assign(dhEmptyStock(), p0.stock); dh.v1pieces = p0.v1pieces; dh.upgrades = Object.assign(dhEmptyUpgrades(), p0.upgrades || {}); dh.introSeen = !!p0.introSeen; dh.tipsSeen = Object.assign({}, p0.tipsSeen || {}); dh.legacyHouse = !!p0.legacyHouse; dh.brickInst = {}; dh.hand = null; dh.outlines = null; dh.pourHold = false;
-    if (!p0.granted){ dh.bank += DH_GRANT; dh.grantedNow = true; }
+    if (dh.visiting){
+      dh.introSeen = true;
+      dh._skipSave = true;
+      dh.grantedNow = false;
+      if (!dhTestRawSave()){
+        dh.bank = 0; dh.likes = 0; dh.stock = dhEmptyStock(); dh.upgrades = dhEmptyUpgrades(); dh.legacyHouse = false; dh.goals = {};
+      }
+    } else if (!p0.granted){ dh.bank += DH_GRANT; dh.grantedNow = true; }
     dh.mine = dhAssignPlot();
+    dh.hostName = dhHostName();
     dhLayoutYard();
     dhBuildBounds();
     dhBuildYard();
@@ -13714,7 +13802,7 @@ const Obby = (() => {
       const pad = plat(cx, .08, cz, DH_N * DH_CELL + .4, DH_N * DH_CELL + .4, i === dh.mine ? '#b6e8a8' : '#9fd3a8', .16);
       if (pad) pad.floorOnly = true; // visual lot; the big grass is the real floor — do not shove on X/Z
       [[ox - .15, cz, .3, DH_N * DH_CELL + .6], [ox + DH_N * DH_CELL + .15, cz, .3, DH_N * DH_CELL + .6], [cx, oz - .15, DH_N * DH_CELL + .6, .3], [cx, oz + DH_N * DH_CELL + .15, DH_N * DH_CELL + .6, .3]].forEach(([x, z, w, d]) => { const b = plat(x, .16, z, w, d, '#d9d4cc', .14); if (b){ b.camSkip = true; b.floorOnly = true; } });
-      const sign = label((i === dh.mine ? '🏡 Your Plot' : '🏡 Plot ' + (i + 1)), 'rgba(29,35,64,.92)');
+      const sign = label((dh.visiting && i === dh.mine) ? ('👀 ' + dhHostName() + "'s House") : (i === dh.mine ? '🏡 Your Plot' : '🏡 Plot ' + (i + 1)), 'rgba(29,35,64,.92)');
       if (sign && sign.position) sign.position.set(cx, 3.15, oz + DH_N * DH_CELL + 1.05);
       if (sign && sign.scale) sign.scale.set(2.4, 0.62, 1);
       if (sign){ sign.renderOrder = 8; scene.add(sign); dh.plotSigns = dh.plotSigns || []; dh.plotSigns.push(sign); }
@@ -13722,7 +13810,8 @@ const Obby = (() => {
       dhBuildMixer(i);
     }
     // single-player: other lots stay empty (real players only — no leftover show homes or intro houses)
-    (p0.pieces || []).forEach(rec => dhPut(dh.mine, rec, true));
+    // Visitors in a live room wait for the host snapshot (dhFromHost) so they never load their own save onto the host lot.
+    if (!(dh.visiting && !dhTestRawSave())) (p0.pieces || []).forEach(rec => dhPut(dh.mine, rec, true));
     if (typeof dhSyncGables === 'function') dhSyncGables(dh.mine);
     if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
     dhStockViz(dh.mine);
@@ -14068,7 +14157,7 @@ const Obby = (() => {
     return dhCellAt(P.x || 0, P.z || 0);
   }
   function dhAim(){ return dh.aim || dhAimCell(); }
-  function dhCanBuild(aim){ return !!(aim && aim.plot === dh.mine); }
+  function dhCanBuild(aim){ return !!(dhCanEdit() && aim && aim.plot === dh.mine); }
   function dhNearOwnPlot(){
     if (!dh) return false;
     if (dhPlotAt(P.x, P.z) === dh.mine) return true;
@@ -14259,6 +14348,7 @@ const Obby = (() => {
   }
   function dhBuy(id, count){
     if (!dh) return false;
+    if (dhBlockVisitor()) return false;
     if (dh.intro) return false;
     const m = dhMatOf(id); if (!m || m.nosale || m.furn) return false;
     const n = count || m.stack;
@@ -14585,6 +14675,7 @@ const Obby = (() => {
 
   function dhPlace(){
     if (!dh) return false;
+    if (dhBlockVisitor()) return false;
     if (dh.intro) return false;
     if (dh.tool === 'delete'){
       const aim = dhAimCell(); if (!dhCanBuild(aim)) return false;
@@ -14627,9 +14718,20 @@ const Obby = (() => {
   function dhSetStory(){ return false; }
   function dhSetJob(j){ if (!dh) return; const ch = dh.job !== j; dh.job = j; dh.tool = 'place'; dhBar(); dhHud(); if (ch && typeof dhShowSpots === 'function') dhShowSpots(); }
 
+  function dhVisitLike(){
+    if (!dh || !dhIsVisitor()) return false;
+    if (dh.liked && dh.liked.host){ banner('💛 You already liked this house!'); return false; }
+    dh.liked = dh.liked || {};
+    dh.liked.host = 1;
+    dhNet('like', {plot: (dh.mine | 0), from: dhWho()});
+    banner('💛 Loved this house!');
+    return true;
+  }
   function dhAct(){
     if (!dh) return;
     if (dh.intro) return dhSkipIntro();
+    if (dh.inviteOpen){ dhToggleInvite(false); return true; }
+    if (dhIsVisitor()){ return dhVisitLike(); }
     if (dh.yardOpen){ dhToggleYard(false); return; }
     if (dh.shopOpen){ dhToggleShop(false); return; }
     if (dh.upOpen){ dhToggleUp(false); return; }
@@ -14690,9 +14792,37 @@ const Obby = (() => {
     if (typeof mpSendTo === 'function' && dhIsGuest() && mp.hconn) mpSendTo(mp.hconn, msg);
     else if (typeof mpBroadcast === 'function') mpBroadcast(msg);
   }
-  function dhWire(){ return dh && {mine: dh.mine, who: dhWho(), plots: Object.fromEntries(Object.keys(dh.pieces).map(k => [k, dhSerialize(+k)])), likes: dh.likes, bank: dh.bank, stock: dh.stock}; }
+  function dhWire(){
+    if (!dh) return null;
+    return {
+      mine: dh.mine, who: dhWho(), name: dhHostName(),
+      plots: Object.fromEntries(Object.keys(dh.pieces).map(k => [k, dhSerialize(+k)])),
+      upgrades: Object.assign({}, dh.upgrades || {}),
+      legacyHouse: !!dh.legacyHouse,
+      likes: dh.likes
+    };
+  }
   function dhFromHost(w){
-    if (!dh || !w || !w.plots) return;
+    if (!dh || !w) return;
+    if (dhIsVisitor()){
+      if (w.name) dh.hostName = String(w.name);
+      if (w.upgrades && typeof w.upgrades === 'object') dh.upgrades = Object.assign(dhEmptyUpgrades(), w.upgrades);
+      if (w.legacyHouse != null) dh.legacyHouse = !!w.legacyHouse;
+      const plot = (w.mine != null ? w.mine : dh.mine) | 0;
+      dh.mine = plot;
+      const recs = (w.plots && (w.plots[plot] || w.plots[String(plot)])) || [];
+      const hash = JSON.stringify(recs) + '|' + JSON.stringify(dh.upgrades || {}) + '|' + !!dh.legacyHouse;
+      if (dh._visitHash !== hash){
+        dh._visitHash = hash;
+        if (typeof dhApplyPlot === 'function') dhApplyPlot(plot, recs, true);
+        if (typeof dhSyncGables === 'function') dhSyncGables(plot);
+        if (typeof dhRefreshWallSolids === 'function') dhRefreshWallSolids();
+      }
+      if (w.likes != null) dh.likes = w.likes | 0;
+      if (typeof dhHud === 'function') dhHud();
+      return;
+    }
+    if (!w.plots) return;
     Object.keys(w.plots).forEach(k => {
       const plot = +k; if (plot === dh.mine) return;
       const recs = w.plots[k] || [];
@@ -14712,6 +14842,7 @@ const Obby = (() => {
 
   function dhShopBuyFurn(id){
     if (!dh) return false;
+    if (dhBlockVisitor()) return false;
     const m = dhMatOf(id); if (!m || !m.furn) return false;
     if (!dhPay(m.cost)){ banner('🪙 Need ' + m.cost + ' coins for ' + m.name); return false; }
     dh.stock[id] = (dh.stock[id] || 0) + 1;
@@ -14721,6 +14852,7 @@ const Obby = (() => {
   }
   function dhBuyUpgrade(id){
     if (!dh) return false;
+    if (dhBlockVisitor()) return false;
     const u = DH_UPGRADES.find(x => x.id === id); if (!u) return false;
     const have = dhUp(id);
     if (have >= u.max){ banner('✨ ' + u.name + ' is already maxed'); return false; }
@@ -14987,22 +15119,65 @@ const Obby = (() => {
     }
   }
 
+  function dhToggleInvite(on){
+    if (!dh) return false;
+    if (dhIsVisitor()){ if (typeof banner === 'function') banner('👀 You are already visiting'); return false; }
+    dh.inviteOpen = on == null ? !dh.inviteOpen : !!on;
+    if (dh.inviteOpen && typeof mp !== 'undefined' && !(mp && mp.on) && typeof mpHost === 'function'){
+      try { mpHost(); } catch (e){}
+    }
+    dhRenderInvite();
+    return true;
+  }
+  function dhCopyInvite(){
+    const code = dhInviteCode();
+    if (!code) return false;
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code);
+    } catch (e){}
+    if (typeof banner === 'function') banner('📣 Room code ' + code + ' copied — send it to a friend!');
+    return true;
+  }
+  function dhRenderInvite(){
+    let el = null;
+    try { el = (typeof $ === 'function') ? $('#dhVisit') : (typeof document !== 'undefined' && document.getElementById && document.getElementById('dhVisit')); } catch (e){}
+    if (!el) return false;
+    if (!dh || !dh.inviteOpen){ el.style.display = 'none'; el.classList.remove && el.classList.remove('show'); el.innerHTML = ''; return false; }
+    const code = dhInviteCode();
+    el.style.display = '';
+    if (el.classList && el.classList.add) el.classList.add('show');
+    el.innerHTML = '<div class="dhvisitcard">'
+      + '<button class="dhvisitx" id="dhVisitX" type="button" aria-label="Close">✕</button>'
+      + '<h3>📣 Invite friends to visit</h3>'
+      + '<p>Share this room code. When a friend joins and you are in Dream House, they walk around your house. They can look, but they cannot edit or break anything, and your save stays yours.</p>'
+      + '<div class="dhvisitcode" id="dhVisitCode">' + (code || '…starting room…') + '</div>'
+      + '<div class="dhvisitbtns">'
+      + '<button class="big green" id="dhVisitCopy" type="button"' + (code ? '' : ' disabled') + '>📋 Copy code</button>'
+      + '<button class="big" id="dhVisitClose" type="button">Close</button>'
+      + '</div>'
+      + '<p class="dhvisithint">On a phone, tap Invite friends. On an Xbox controller, press Ⓨ to open this, Ⓑ to close.</p>'
+      + '</div>';
+    return true;
+  }
   function dreamhouseEnter(){
     if (!dh) return;
     choosing = false; over = false;
     if (typeof dhClosePauseMenus === 'function') dhClosePauseMenus();
     dhBindUI();
+    if (dh.visiting) dh.introSeen = true;
     if (!dh.introSeen){
       dhStartIntro(false);
     } else {
-      banner(mp && mp.on ? '🏡 Dream House Builders — grab free supplies and place every piece yourself!' : '🏡 First person: grab free supplies at the Supply Yard, then aim and place every brick yourself!');
+      banner(dh.visiting
+        ? ('👀 Visiting ' + dhHostName() + "'s house — walk in and look around! You cannot edit or break it.")
+        : (mp && mp.on ? '🏡 Dream House Builders — grab free supplies and place every piece yourself! Tap Invite friends so they can visit.' : '🏡 First person: grab free supplies at the Supply Yard, then aim and place every brick yourself! Invite friends to visit your house.'));
       tipTimer = 8;
-      if (typeof dhShowSpots === 'function') dhShowSpots();
+      if (typeof dhShowSpots === 'function' && !dh.visiting) dhShowSpots();
       dhHud(); dhBar();
       dreamhouseUpdate(0);
     }
-    const replay = $('#dhReplay'); if (replay) replay.style.display = '';
-    const resetBtn = $('#dhResetBtn'); if (resetBtn) resetBtn.style.display = '';
+    const replay = $('#dhReplay'); if (replay) replay.style.display = dh.visiting ? 'none' : '';
+    const resetBtn = $('#dhResetBtn'); if (resetBtn) resetBtn.style.display = dh.visiting ? 'none' : '';
     if (typeof document !== 'undefined' && document.getElementById){ const root = document.getElementById('obby'); if (root && root.classList) root.classList.add('dhouse'); }
     if (!dh.intro) dhForceFirstPerson();
     if (dh.intro){
@@ -15083,6 +15258,7 @@ const Obby = (() => {
     if (!dh) return '';
     if (dh.intro || dh.shopOpen || dh.yardOpen || dh.upOpen) return '';
     const key = (typeof pad !== 'undefined' && pad && pad.on) ? 'Ⓧ' : (typeof touchUI !== 'undefined' && touchUI ? 'tap' : 'E');
+    if (dhIsVisitor()) return '💛 ' + key + ': Like this house';
     const mxn = dhNearMixer(), pile = dhNearPile();
     const onLot = dhNearOwnPlot();
     const ghostJob = (onLot && (dh.job === 'mark' || dh.job === 'dig' || dh.job === 'pour')) ? dhTargetSpot(dh.job) : ((onLot && dh.job === 'brick') ? dhTargetSpot('brick') : null);
@@ -15683,6 +15859,7 @@ const Obby = (() => {
   }
   function dhGoalText(){
     if (!dh) return '';
+    if (dhIsVisitor()) return "You're visiting " + dhHostName() + "'s house — walk around and look! You cannot edit or break it.";
     const stage = dhStageId();
     if (stage === 'stake'){
       const c = dhJobCounts('mark');
@@ -16101,6 +16278,10 @@ const Obby = (() => {
   }
   function dhUpdateHandHud(){
     const el = $('#dhHand'); if (!el || !dh) return;
+    if (dhIsVisitor()){
+      el.style.display = 'none'; el.style.visibility = 'hidden'; el.classList.remove('show'); el.innerHTML = '';
+      return;
+    }
     const held = dhHeldInfo();
     const hide = !!(dh.intro) || dhMenusUp();
     el.style.display = hide ? 'none' : 'flex';
@@ -16373,6 +16554,7 @@ const Obby = (() => {
       if (root && root.classList){
         root.classList.toggle('dhouse', inDh);
         root.classList.toggle('dh-intro', intro);
+        root.classList.toggle('dh-visit', !!(dh && dh.visiting));
         root.classList.toggle('paused', pausedNow);
         root.classList.toggle('dh-paused', pausedNow || menus || modal);
       }
@@ -16383,7 +16565,7 @@ const Obby = (() => {
       const touch = typeof touchUI !== 'undefined' && touchUI;
       const carrying = typeof dhHasAnyCarry === 'function' && dhHasAnyCarry();
       hint.textContent = padOn ? '✚▼: show spots' : (touch ? '✨ Spots' : (carrying ? 'Tab: show spots' : 'Q: show spots'));
-      const showHint = playing && !pausedNow && !menus && !modal;
+      const showHint = playing && !pausedNow && !menus && !modal && !(dh && dh.visiting);
       hint.style.display = showHint ? 'block' : 'none';
       hint.classList.toggle('show', showHint);
     }
@@ -16420,6 +16602,13 @@ const Obby = (() => {
     if (tb){ tb.textContent = dh && dh.tool === 'delete' ? '🗑️' : (dh ? (({mark:'📍', dig:'🕳️', mix:'🌀', pour:'🪣', brick:'🧱', stud:'🪵', rafter:'🪜', shingle:'🏠', frame:'🚪', glass:'🪟', paint:'🎨', furn:'🛋️'}[dh.job]) || '') : ''); }
     const xh = $('#oCross');
     if (xh){ xh.style.display = hideCross ? 'none' : ''; }
+    if (dh && dh.visiting){
+      ['#dhGuide','#dhHand','#dhSpotHint','#dhReplay','#dhResetBtn'].forEach(id => {
+        const el = $(id); if (!el) return;
+        el.style.display = 'none';
+        if (el.classList && el.classList.remove) el.classList.remove('show');
+      });
+    }
     if (typeof window !== 'undefined') window.updateDhChrome = updateDhChrome;
     return !hideBar;
   }
@@ -16429,10 +16618,18 @@ const Obby = (() => {
     const bar = $('#dhBar'); if (!bar) return;
     // Always rebuild the toolbar, then let updateDhChrome show or hide it.
     bar.classList.add('show');
+    if (dh.visiting){
+      bar.innerHTML = '<div class="dhtools dhvisitbar"><span class="dhi on">👀 Visiting ' + (dhHostName() || 'a friend') + "'s house</span>"
+        + '<button class="dhb" id="dhLikeBtn" type="button">💛 Like</button></div>';
+      dhBindUI();
+      if (typeof dhLayoutHud === 'function') dhLayoutHud();
+      updateDhChrome();
+      return;
+    }
     const jobs = '<div class="dhtools">' + DH_JOBS.map(j => {
       const lab = {mark:'📍 Stake', dig:'🕳️ Dig', mix:'🌀 Mix', pour:'🪣 Pour', brick:'🧱 Brick', stud:'🪵 Stud', rafter:'🪜 Rafter', shingle:'🏠 Shingle', frame:'🚪 Frame', glass:'🪟 Glass', paint:'🎨 Paint', furn:'🛋️ Furnish'}[j];
       return '<button class="dhb' + (dh.job === j && dh.tool === 'place' ? ' on' : '') + '" data-dhjob="' + j + '">' + lab + '</button>';
-    }).join('') + '<button class="dhb' + (dh.tool === 'delete' ? ' on' : '') + '" data-dhtool="delete">🗑️</button><button class="dhb" id="dhDumpBtn">📦 Dump</button><button class="dhb" id="dhSpotBtn" title="Show remaining spots">✨ Spots</button><button class="dhb" id="dhYardBtn">📦 Supply Yard</button><button class="dhb" id="dhShopBtn">🛋️ Furniture</button><button class="dhb" id="dhUpBtn">🔧 Upgrades</button></div>';
+    }).join('') + '<button class="dhb' + (dh.tool === 'delete' ? ' on' : '') + '" data-dhtool="delete">🗑️</button><button class="dhb" id="dhDumpBtn">📦 Dump</button><button class="dhb" id="dhSpotBtn" title="Show remaining spots">✨ Spots</button><button class="dhb" id="dhYardBtn">📦 Supply Yard</button><button class="dhb" id="dhShopBtn">🛋️ Furniture</button><button class="dhb" id="dhUpBtn">🔧 Upgrades</button><button class="dhb" id="dhInviteBtn" type="button">📣 Invite friends</button></div>';
     const cols = dh.job === 'paint' ? ('<div class="dhcols">' + DH_PAINT.map((c, i) => '<button class="dhc' + (dh.color === i ? ' on' : '') + '" data-dhcol="' + i + '" style="background:' + c.col + '" title="' + c.name + '"></button>').join('') + '</div>') : '';
     const inv = '<div class="dinv">' + DH_MATS.filter(m => !m.nosale).map(m => {
       const n = dhInvCount(m.id);
@@ -16444,13 +16641,16 @@ const Obby = (() => {
     updateDhChrome();
   }
   function dhBindUI(){
-    if (window.__dhBound5) return;
-    window.__dhBound5 = true;
+    if (window.__dhBound6) return;
+    window.__dhBound6 = true;
     const act = $('#dhAct'); if (act) act.onclick = () => dh && !dh.intro && dhAct();
     const bar = $('#dhBar');
     if (bar) bar.addEventListener('click', ev => {
-      const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhSpotBtn,#dhShopBtn,#dhYardBtn,#dhUpBtn');
+      const t = ev.target.closest('[data-dhjob],[data-dhtool],[data-dhid],[data-dhcol],#dhDumpBtn,#dhSpotBtn,#dhShopBtn,#dhYardBtn,#dhUpBtn,#dhInviteBtn,#dhLikeBtn');
       if (!t || !dh || dh.intro) return;
+      if (t.id === 'dhInviteBtn'){ dhToggleInvite(true); return; }
+      if (t.id === 'dhLikeBtn'){ dhVisitLike(); return; }
+      if (dhIsVisitor()) return;
       if (t.id === 'dhDumpBtn') dhDump();
       else if (t.id === 'dhSpotBtn'){ if (typeof dhShowSpots === 'function') dhShowSpots(); }
       else if (t.id === 'dhYardBtn') dhToggleYard(true);
@@ -16460,6 +16660,13 @@ const Obby = (() => {
       else if (t.dataset.dhjob) dhSetJob(t.dataset.dhjob);
       else if (t.dataset.dhcol != null){ dh.color = t.dataset.dhcol | 0; dhBar(); }
       else if (t.dataset.dhid){ if ((dh.stock[t.dataset.dhid]|0) > 0) dhPickup(t.dataset.dhid, t.dataset.dhid === 'brick' ? 8 : 1); }
+    });
+    const visit = $('#dhVisit');
+    if (visit) visit.addEventListener('click', ev => {
+      const t = ev.target.closest('#dhVisitX,#dhVisitClose,#dhVisitCopy');
+      if (!t || !dh) return;
+      if (t.id === 'dhVisitCopy') dhCopyInvite();
+      else dhToggleInvite(false);
     });
     const yard = $('#dhYard');
     if (yard) yard.addEventListener('click', ev => {
@@ -16511,12 +16718,17 @@ const Obby = (() => {
       return true;
     }
     if (dhTipOpen() && (jp.a || jp[0] || jp.x || jp[2] || jp.start)){ if (typeof pad !== 'undefined' && pad) pad.jump = false; dhDismissTip(); return true; }
+    if (dh.inviteOpen && (jp.b || jp[1] || jp.start)){ dhToggleInvite(false); if (typeof pad !== 'undefined' && pad) pad.jump = false; return true; }
+    if (dhIsVisitor()){
+      if (jp.x || jp[2] || jp.y || jp[3]){ dhVisitLike(); if (typeof pad !== 'undefined' && pad) pad.jump = false; return true; }
+      return false;
+    }
+    if (jp.y || jp[3]){ dhToggleInvite(true); return true; }
     if (dh.yardOpen && (jp.b || jp[1])){ dhToggleYard(false); return true; }
     if (dh.shopOpen && (jp.b || jp[1])){ dhToggleShop(false); return true; }
     if (dh.upOpen && (jp.b || jp[1])){ dhToggleUp(false); return true; }
     if (jp.x || jp[2] || jp.a || jp[0] || jp.rt || jp[7]){ dhAct(); if (typeof pad !== 'undefined' && pad) pad.jump = false; return true; }
     if (jp.b || jp[1]){ dhRotate(); return true; }
-    if (jp.y || jp[3]){ if (dh.carry) dhDump(); else dhSetTool(dh.tool === 'delete' ? 'place' : 'delete'); return true; }
     if (jp.lb || jp[4]){ dhCycle(-1); return true; }
     if (jp.rb || jp[5]){ dhCycle(1); return true; }
     if (jp.dd || jp[13] || jp.down){ if (typeof dhShowSpots === 'function') dhShowSpots(); return true; }
@@ -16529,7 +16741,7 @@ const Obby = (() => {
   }
   function dhNodeOpenMenu(n){
     if (!n) return null;
-    const root = (n.closest) ? n.closest('dialog, .modal, .opanel, #dhResetModal, #oPausePanel, #setModal, #dhShop, #dhYard, #dhUp') : null;
+    const root = (n.closest) ? n.closest('dialog, .modal, .opanel, #dhResetModal, #oPausePanel, #setModal, #dhShop, #dhYard, #dhUp, #dhVisit') : null;
     if (!root) return null;
     if (root.id === 'dhResetModal' && typeof dhResetModalIsOpen === 'function' && !dhResetModalIsOpen()) return null;
     if (root.classList && root.classList.contains('opanel') && !root.classList.contains('show') && !root.open) return null;
@@ -16548,7 +16760,7 @@ const Obby = (() => {
       return !!dhNodeOpenMenu(t);
     }
     if (typeof t.closest === 'function'){
-      return !!t.closest('dialog, .modal, .menu, .opanel, .mbox, .dhbar, .dhhand, .obtns, .ohud, button, a, input, label, select, textarea, #dhResetModal, #dhBar, #dhTip, #dhSkip, #dhCut, #dhLookHint, #oPausePanel, #setModal');
+      return !!t.closest('dialog, .modal, .menu, .opanel, .mbox, .dhbar, .dhhand, .obtns, .ohud, button, a, input, label, select, textarea, #dhResetModal, #dhBar, #dhTip, #dhSkip, #dhCut, #dhLookHint, #dhVisit, #oPausePanel, #setModal');
     }
     let n = t;
     while (n){
@@ -16636,6 +16848,12 @@ const Obby = (() => {
       return true;
     }
     if (dhTipOpen() && (k === 'KeyE' || k === 'Enter' || k === 'Space' || k === 'KeyA' || k === 'Escape')){ dhDismissTip(); return true; }
+    if (dh.inviteOpen && (k === 'Escape' || k === 'KeyB' || k === 'KeyQ')){ dhToggleInvite(false); return true; }
+    if (k === 'KeyV'){ if (dhIsVisitor()) return true; dhToggleInvite(true); return true; }
+    if (dhIsVisitor()){
+      if (k === 'KeyE' || k === 'KeyL'){ dhVisitLike(); return true; }
+      return false;
+    }
     if (dh.yardOpen && (k === 'Escape' || k === 'KeyQ' || k === 'KeyB')){ dhToggleYard(false); return true; }
     if (dh.shopOpen && (k === 'Escape' || k === 'KeyB' || k === 'KeyQ')){ dhToggleShop(false); return true; }
     if (dh.upOpen && (k === 'Escape' || k === 'KeyB' || k === 'KeyQ')){ dhToggleUp(false); return true; }
@@ -16729,7 +16947,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'dreamhouse' ? '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · ⓁⓇ job · ✚▼ show spots · ☰ menu' : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'dreamhouse' ? (typeof dh !== 'undefined' && dh && dh.visiting ? '🎮 Left stick move · Right stick look · Ⓐ jump · Ⓧ like the house · ☰ menu' : '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · Ⓨ invite friends · ⓁⓇ job · ✚▼ show spots · ☰ menu') : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'pethotel' ? '🎮 Left stick move · Ⓐ jump · Ⓧ check in / care / check out · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -16768,6 +16986,7 @@ const Obby = (() => {
     if (mode === 'haunt' && hm && hmPad(jp)) return;
     if (mode === 'stable' && sb && sbPad(jp)) return;
     if (mode === 'icecream' && ic && icPad(jp)) return;
+    if (mode === 'pethotel' && ph && phPad(jp)) return;
     if (mode === 'tower' && td && tdPad(jp)) return;
     if (mode === 'photostudio' && psx && psPad(jp)) return;
     if (mode === 'waterpark' && wp && wpPad(jp)) return;
@@ -16883,6 +17102,11 @@ function dhLayoutHud(){
         + "<br>🐴 Adopt a pony, brush · feed · groom, then ride to the 🏆 jumping show!";
       return;
     }
+    if (mode === 'pethotel'){
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · tap 🛎️ to check in, care, or check out' : '⌨️ WASD move · Space jump · E check in / care / check out · Esc menu')
+        + "<br>🏨 Check guests in, feed · bathe · play · tuck their pet in, then check out for 🪙 coins!";
+      return;
+    }
     if (mode === 'icecream'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · tap 🍦 Station to scoop' : '⌨️ WASD move · Space jump · E use a scoop station · Esc menu')
         + "<br>🍦 Pick a vessel, add scoops of silly flavours, top it, and serve the 🧾 orders!";
@@ -16979,7 +17203,7 @@ function dhLayoutHud(){
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ // pull the camera in front of walls so buildings don't block the view
       for (let s = 1.2; s <= cam.dist; s += .4){
         const x = tx + Math.sin(cam.yaw) * cp * s, y = ty + Math.sin(cam.pitch) * s, z = tz + Math.cos(cam.yaw) * cp * s;
         if (solids.some(b => b.active && !b.camSkip && b.mesh.visible && Math.abs(x - b.mesh.position.x) < b.hw + .2 && Math.abs(y - b.mesh.position.y) < b.hh + .2 && Math.abs(z - b.mesh.position.z) < b.hd + .2 && !(b.mesh.material && b.mesh.material.transparent))){ dist = Math.max(mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2, s - .5); break; }
@@ -17063,6 +17287,7 @@ function dhLayoutHud(){
       if (psx) photostudioUpdate(dt);
       if (td) towerUpdate(dt);
       if (ic) iceCreamUpdate(dt);
+      if (ph) petHotelUpdate(dt);
       if (sb) stableUpdate(dt);
       if (hm) hauntUpdate(dt);
       if (db) danceUpdate(dt);
@@ -17207,6 +17432,7 @@ function dhLayoutHud(){
       if (mode === 'haunt' && hm && hmKey(e)) return;
       if (mode === 'stable' && sb && sbKey(e)) return;
       if (mode === 'icecream' && ic && icKey(e)) return;
+      if (mode === 'pethotel' && ph && phKey(e)) return;
       if (mode === 'tower' && td && tdKey(e)) return;
       if (mode === 'photostudio' && psx && psKey(e)) return;
       if (mode === 'waterpark' && wp && wpKey(e)) return;
@@ -17408,7 +17634,7 @@ function dhLayoutHud(){
     }
   }
 function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'stable', 'haunt', 'dance', 'dreamhouse'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     recordRecentGame(mode);
@@ -17451,6 +17677,7 @@ function start(m = 'obby', d = null){
     else if (mode === 'haunt') banner('👻 Welcome to Giggle Manor — friendly ghosts ahead!');
     else if (mode === 'stable') banner('🐴 Welcome to Clover Meadow Stables!');
     else if (mode === 'icecream') banner(mp.on ? '🍦 Scoop Circus! Team up on the stations!' : '🍦 Scoop Circus! Customers want cones & cups!');
+    else if (mode === 'pethotel') banner(mp.on ? '🏨 Pet Hotel — care for guest pets together!' : '🏨 Pet Hotel! Check guests in, care for their pets, then check out for coins.');
     else if (mode === 'tower') banner('🗼 Welcome to the Tower of Doom! Climb past the bubbly goo!');
     else if (mode === 'photostudio') banner('📸 Welcome to Star Snaps! Press 📸 Take Photo (E / Ⓧ) to start the camera');
     else if (mode === 'waterpark') banner('🌊 Welcome to Splash Summit! Stand on a ride pad or press 🎢 Rides');
@@ -17464,7 +17691,7 @@ function start(m = 'obby', d = null){
         $('#rcBack').onclick = () => rc && rcPickOpen(1); $('#rcHome').onclick = $('#rcFinHome').onclick = stop; $('#rcAgain').onclick = () => rc && rcAgain();
         $('#rcItem').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (rc) rc.tapItem = true; }); }
       raceEnter(); }
-    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') && touchUI && tipTimer > 4) tipTimer = 4;
+    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') && touchUI && tipTimer > 4) tipTimer = 4;
     $('#obby').classList.toggle('smode', mode === 'splash'); ['#spLvBox', '#spRoundBox', '#spPeb', '#spShove'].forEach(id => $(id).style.display = mode === 'splash' ? '' : 'none'); if (mode !== 'splash') ['#spAliveBox', '#spPull'].forEach(id => $(id).style.display = 'none');
     ['#spPick', '#spEnd', '#spCode'].forEach(id => $(id).classList.remove('show')); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on');
     if (mode === 'splash'){ if (!window.__spBound){ window.__spBound = true;
@@ -17486,7 +17713,7 @@ function start(m = 'obby', d = null){
         $('#fsReady').onclick = () => fsReadyBtn(); $('#fsWardClose').onclick = () => fsWardClose(); $('#fsWardBtn').onclick = () => fsWardOpen(fs && fs.near || null); $('#fsKeep').onclick = () => fsKeep(); $('#fsKeepWard2').onclick = () => fsKeep(); }
       fashionEnter(); }
     $('#auBox').style.display = mode === 'autumn' ? '' : 'none'; if (mode === 'autumn') autumnEnter();
-    ['#psCamBtn','#psGalBtn','#psBar','#bkAct','#icAct','#sbAct','#hmAct','#dbLane','#wpAct','#wpRides','#piAct','#piBook','#fsNear','#fsWardBtn','#fsShowBtn','#hsBlind'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); });
+    ['#psCamBtn','#psGalBtn','#psBar','#bkAct','#icAct','#phAct','#sbAct','#hmAct','#dbLane','#wpAct','#wpRides','#piAct','#piBook','#fsNear','#fsWardBtn','#fsShowBtn','#hsBlind'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); });
     { const bs = $('#fsBuild'); if (bs){ bs.textContent = typeof BUILD !== 'undefined' ? BUILD : ''; bs.classList.add('show'); } }
     if (mode === 'dreamhouse'){ dreamhouseEnter(); if (typeof updateDhChrome === 'function') updateDhChrome(); }
     else {
@@ -17508,6 +17735,12 @@ function start(m = 'obby', d = null){
         $('#icServe').onclick = () => { if (ic) icDo({a: 'serve', st: ic.panel}); };
         $('#icTrash').onclick = () => ic && icDo({a: 'trash', st: ic.panel}); }
       iceCreamEnter(); }
+    if ($('#phBox')) $('#phBox').style.display = mode === 'pethotel' ? '' : 'none';
+    if ($('#phTasks')) $('#phTasks').style.display = mode === 'pethotel' ? '' : 'none';
+    ['#phAct'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); });
+    if (mode === 'pethotel'){ if (!window.__phBound){ window.__phBound = true;
+        const act = $('#phAct'); if (act) act.onclick = () => ph && ph.near && phDo(ph.near); }
+      petHotelEnter(); }
     $('#tdBox').style.display = mode === 'tower' ? '' : 'none';
     if (mode === 'tower') towerEnter();
     $('#psBox').style.display = mode === 'photostudio' ? '' : 'none'; ['#psBar', '#psCamBtn', '#psGal', '#psGalBtn'].forEach(id => $(id).classList.remove('show'));
@@ -17532,6 +17765,382 @@ function start(m = 'obby', d = null){
       $('#piBook').classList.add('show'); petIslandEnter(); }
     mpOnStart();
   }
+  /* ===================== Pet Hotel (original game): check in guest pets, care for them, check out for coins. ===================== */
+  const PH_KEY = 'rubloxPetHotel';
+  const PH_CARES = ['feed', 'bathe', 'play', 'bed'];
+  const PH_CARE_LABEL = {feed: 'Feed', bathe: 'Bathe', play: 'Play', bed: 'Bed'};
+  const PH_CARE_EMOJI = {feed: '🍽️', bathe: '🛁', play: '🎾', bed: '🛏️'};
+  const PH_PAY_BASE = 8, PH_PAY_CARE = 3, PH_PAY_ALL = 6;
+  // Original critters and names only — made up for Rublox, not copied from any other work.
+  const PH_PETS = [
+    {id: 'mochi', name: 'Mochi', kind: 'Beanpup', e: '🫘', col: '#c9894c', acc: '#8a4f24', ear: '#6d3a18'},
+    {id: 'puddle', name: 'Puddle', kind: 'Puffcat', e: '🐈', col: '#8aa0b8', acc: '#e8eef6', ear: '#f4c6d4'},
+    {id: 'bumble', name: 'Bumble', kind: 'Pipkin', e: '🍯', col: '#e6b84c', acc: '#5c3a14', ear: '#5c3a14'},
+    {id: 'noodle', name: 'Noodle', kind: 'Looper', e: '🐕', col: '#d9a441', acc: '#3d2a12', ear: '#3d2a12'},
+    {id: 'pippa', name: 'Pippa', kind: 'Cloudhen', e: '🐣', col: '#f3efe4', acc: '#f6c85c', ear: '#f3efe4'},
+    {id: 'tater', name: 'Tater', kind: 'Rumblepup', e: '🥔', col: '#b45d32', acc: '#f0d5b0', ear: '#6b2e16'}
+  ];
+  const PH_GUESTS = [
+    {name: 'Ms. Maple', col: '#d96b8a'},
+    {name: 'Mr. Pebble', col: '#3a86ff'},
+    {name: 'Aunt Cinder', col: '#7b5ea7'},
+    {name: 'Coach Yarrow', col: '#2a9d8f'},
+    {name: 'Nana Pip', col: '#e76f51'},
+    {name: 'Uncle Moss', col: '#4d7c46'}
+  ];
+  const PH_STATIONS = [
+    {id: 'desk', name: 'Front desk', e: '🛎️', x: 0, z: -6.2, r: 2.2},
+    {id: 'feed', name: 'Snack nook', e: '🍽️', x: -6.5, z: 2.2, r: 1.8},
+    {id: 'bathe', name: 'Wash room', e: '🛁', x: 6.5, z: 2.2, r: 1.8},
+    {id: 'play', name: 'Play nook', e: '🎾', x: -6.5, z: 8.2, r: 2.0},
+    {id: 'bed', name: 'Sleep rooms', e: '🛏️', x: 6.5, z: 8.2, r: 2.0}
+  ];
+  let ph = null;
+
+  function phPetOf(id){ return PH_PETS.find(p => p.id === id) || PH_PETS[0]; }
+  function phFreshSave(){ return {ver: 1, served: 0, earned: 0, tipsSeen: {}}; }
+  function phLoadSave(){
+    try {
+      const r = (typeof load === 'function') ? load(PH_KEY, null) : null;
+      if (!r || typeof r !== 'object') return phFreshSave();
+      return {ver: 1, served: Math.max(0, r.served | 0), earned: Math.max(0, r.earned | 0), tipsSeen: (r.tipsSeen && typeof r.tipsSeen === 'object') ? r.tipsSeen : {}};
+    } catch (e){ return phFreshSave(); }
+  }
+  function phWriteSave(){
+    if (!ph || ph.remote) return false;
+    if (typeof save !== 'function') return false;
+    save(PH_KEY, {ver: 1, served: ph.served | 0, earned: ph.earned | 0, tipsSeen: ph.tipsSeen || {}});
+    return true;
+  }
+  function phPayout(stay){
+    if (!stay) return 0;
+    const n = PH_CARES.reduce((s, c) => s + (stay.done && stay.done[c] ? 1 : 0), 0);
+    return PH_PAY_BASE + n * PH_PAY_CARE + (n === PH_CARES.length ? PH_PAY_ALL : 0);
+  }
+  function phCaresLeft(stay){ return stay ? PH_CARES.filter(c => !(stay.done && stay.done[c])) : PH_CARES.slice(); }
+  function phReadyOut(stay){ return !!(stay && PH_CARES.every(c => stay.done && stay.done[c])); }
+  function phNewStay(seed){
+    const i = Math.abs(seed | 0);
+    const pet = PH_PETS[i % PH_PETS.length];
+    const guest = PH_GUESTS[i % PH_GUESTS.length];
+    const done = {}; PH_CARES.forEach(c => { done[c] = false; });
+    return {id: i + 1, petId: pet.id, petName: pet.name, kind: pet.kind, emoji: pet.e, guest: guest.name, guestCol: guest.col, done, phase: 'arrive'};
+  }
+  function phCheckIn(state){
+    if (!state || state.stay) return false;
+    const stay = state.next || phNewStay((state.served | 0) + 1);
+    stay.phase = 'stay';
+    state.stay = stay;
+    state.next = null;
+    state.wait = 0;
+    return stay;
+  }
+  function phDoCare(stay, care){
+    if (!stay || stay.phase !== 'stay') return false;
+    if (PH_CARES.indexOf(care) < 0) return false;
+    if (stay.done && stay.done[care]) return false;
+    stay.done = stay.done || {};
+    stay.done[care] = true;
+    return true;
+  }
+  function phCheckOut(state){
+    if (!state || !state.stay || !phReadyOut(state.stay)) return null;
+    const pay = phPayout(state.stay);
+    const rec = {pet: state.stay.petName, guest: state.stay.guest, pay};
+    state.served = (state.served | 0) + 1;
+    state.earned = (state.earned | 0) + pay;
+    state.stay = null;
+    state.wait = 2.2;
+    state.next = phNewStay(state.served + 1);
+    return rec;
+  }
+  function phActAt(state, station){
+    if (!state || !station) return {ok: false, why: ''};
+    if (station === 'desk'){
+      if (!state.stay){
+        const st = phCheckIn(state);
+        return st ? {ok: true, act: 'checkin', stay: st} : {ok: false, why: 'No guest is ready yet'};
+      }
+      if (phReadyOut(state.stay)){
+        const rec = phCheckOut(state);
+        return rec ? {ok: true, act: 'checkout', rec} : {ok: false, why: 'Could not check out'};
+      }
+      const left = phCaresLeft(state.stay);
+      return {ok: false, why: 'Finish ' + left.map(c => PH_CARE_LABEL[c].toLowerCase()).join(', ') + ' first'};
+    }
+    if (!state.stay) return {ok: false, why: 'Check a guest in at the front desk first'};
+    if (phDoCare(state.stay, station)) return {ok: true, act: 'care', care: station, stay: state.stay};
+    if (state.stay.done && state.stay.done[station]) return {ok: false, why: 'Already done'};
+    return {ok: false, why: 'That station is not ready'};
+  }
+  function phLow(){ return typeof gfxIsLow === 'function' && gfxIsLow(); }
+  function phMat(col, opts){
+    const o = Object.assign({color: col}, opts || {});
+    if (phLow() && o.emissive) delete o.emissive;
+    const Ctor = (phLow() && THREE.MeshBasicMaterial) ? THREE.MeshBasicMaterial : THREE.MeshLambertMaterial;
+    return new Ctor(o);
+  }
+  function phShared(key, col, opts){
+    if (!ph) return phMat(col, opts);
+    ph._mats = ph._mats || {};
+    if (!ph._mats[key]) ph._mats[key] = phMat(col, opts);
+    return ph._mats[key];
+  }
+  function phBox(x, y, z, w, h, d, col, key){
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), typeof col === 'string' ? phShared(key || col, col) : col);
+    m.position.set(x, y, z);
+    if (typeof scene !== 'undefined') scene.add(m);
+    if (ph) ph.props.push(m);
+    return m;
+  }
+  function phMakePetMesh(pet){
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(pet.kind === 'Looper' ? 0.32 : 0.42, phLow() ? 8 : 12, phLow() ? 6 : 10), phShared('p-' + pet.id, pet.col));
+    body.position.y = pet.kind === 'Looper' ? 0.32 : 0.42;
+    if (pet.kind === 'Looper') body.scale.set(1.6, 0.7, 0.7);
+    g.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, phLow() ? 8 : 12, phLow() ? 6 : 10), phShared('p-' + pet.id, pet.col));
+    head.position.set(pet.kind === 'Looper' ? 0.42 : 0, pet.kind === 'Looper' ? 0.48 : 0.78, pet.kind === 'Looper' ? 0.1 : 0.28);
+    g.add(head);
+    [[-0.14, 0.16], [0.14, 0.16]].forEach(([ex, ey], i) => {
+      const ear = new THREE.Mesh(new THREE.BoxGeometry(0.12, pet.kind === 'Puffcat' ? 0.22 : 0.16, 0.08), phShared('e-' + pet.id, pet.ear));
+      ear.position.set(head.position.x + ex, head.position.y + ey, head.position.z);
+      g.add(ear);
+    });
+    const acc = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), phShared('a-' + pet.id, pet.acc));
+    acc.position.set(head.position.x, head.position.y, head.position.z + 0.22);
+    g.add(acc);
+    return g;
+  }
+  function phMakeGuestMesh(guestCol){
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.0, 0.32), phShared('g-' + guestCol, guestCol));
+    body.position.y = 1.0; g.add(body);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.38, 0.38), phShared('skin', '#f0c9a8'));
+    head.position.y = 1.68; g.add(head);
+    return g;
+  }
+  function buildPetHotel(){
+    const sv = phLoadSave();
+    ph = {
+      stay: null, next: null, wait: 0.6, served: sv.served, earned: sv.earned, tipsSeen: sv.tipsSeen || {},
+      near: null, remote: !!(typeof mpGuest === 'function' && mpGuest()),
+      props: [], pets: [], guestM: null, petM: null, dirty: true, toast: '', toastT: 0, _mats: {}, seed: sv.served + 1
+    };
+    ph.next = phNewStay(ph.seed);
+    if (typeof scene !== 'undefined'){
+      scene.background = new THREE.Color('#c9e8ff');
+      if (scene.fog){ scene.fog.color = new THREE.Color('#d8efff'); scene.fog.near = phLow() ? 28 : 40; scene.fog.far = phLow() ? 80 : 120; }
+    }
+    if (typeof plat === 'function'){
+      const floor = plat(0, 0, 3, 28, 24, '#f4efe4', .3); if (floor) floor.floorOnly = true;
+      plat(0, 1.6, -10.4, 20, 0.6, '#e9d5b3', 3.2); // back wall
+      plat(-13.6, 1.6, 3, 0.6, 24, '#e9d5b3', 3.2);
+      plat(13.6, 1.6, 3, 0.6, 24, '#e9d5b3', 3.2);
+      plat(0, 1.2, -7.2, 6.4, 2.4, '#c97b5a', 2.2); // desk
+      plat(-6.5, 0.5, 2.2, 3.2, 2.4, '#f2d9a0', 0.7); // snack
+      plat(6.5, 0.45, 2.2, 3.4, 2.6, '#8ecae6', 0.6); // tub
+      plat(-6.5, 0.2, 8.2, 4.4, 4.0, '#bde0a8', 0.25); // play
+      plat(6.5, 0.45, 8.2, 3.6, 3.2, '#d4b483', 0.7); // beds
+    }
+    PH_STATIONS.forEach(s => {
+      if (typeof label === 'function'){
+        const L = label(s.e + ' ' + s.name, 'rgba(29,35,64,.92)');
+        if (L && L.position){ L.position.set(s.x, 2.5, s.z); if (L.scale) L.scale.set(2.0, 0.55, 1); if (typeof scene !== 'undefined') scene.add(L); if (ph) ph.props.push(L); }
+      }
+    });
+    // rug
+    phBox(0, 0.07, 0.4, 6, 0.08, 5, '#d96b8a', 'rug');
+    // desk bell
+    phBox(0, 2.45, -6.4, 0.4, 0.18, 0.4, '#ffd23f', 'bell');
+    Object.assign(P, {x: 0, y: 0.05, z: -1.2, vx: 0, vy: 0, vz: 0});
+    P.face = 0;
+    if (typeof cam !== 'undefined'){ cam.yaw = Math.PI; cam.pitch = 0.32; cam.dist = 9; }
+    if (typeof checkpoints !== 'undefined') checkpoints[0] = {idx: 0, spawn: {x: 0, y: 0.05, z: -1.2}, flag: (typeof THREE !== 'undefined' ? new THREE.Object3D() : {})};
+    phSyncActors();
+    phHud();
+  }
+  function phClearActors(){
+    if (!ph) return;
+    ['guestM', 'petM'].forEach(k => {
+      if (ph[k] && typeof scene !== 'undefined'){ try { scene.remove(ph[k]); } catch (e){} ph[k] = null; }
+    });
+  }
+  function phSyncActors(){
+    if (!ph || typeof THREE === 'undefined') return;
+    const showGuest = !ph.stay && ph.next;
+    const showPet = !!(ph.stay || (ph.next && !ph.stay));
+    if (showGuest && ph.next){
+      if (!ph.guestM){ ph.guestM = phMakeGuestMesh(ph.next.guestCol); scene.add(ph.guestM); }
+      ph.guestM.position.set(-1.4, 0, -5.4);
+      ph.guestM.visible = true;
+    } else if (ph.guestM) ph.guestM.visible = false;
+    const petId = ph.stay ? ph.stay.petId : (ph.next && ph.next.petId);
+    if (showPet && petId){
+      const pet = phPetOf(petId);
+      if (!ph.petM || ph.petM.userData.petId !== pet.id){
+        if (ph.petM) try { scene.remove(ph.petM); } catch (e){}
+        ph.petM = phMakePetMesh(pet);
+        ph.petM.userData.petId = pet.id;
+        scene.add(ph.petM);
+      }
+      const st = phNearStation();
+      let x = 1.3, z = -5.2;
+      if (ph.stay){
+        if (st === 'feed'){ x = -6.5; z = 2.2; }
+        else if (st === 'bathe'){ x = 6.5; z = 2.2; }
+        else if (st === 'play'){ x = -6.5; z = 8.2; }
+        else if (st === 'bed'){ x = 6.5; z = 8.2; }
+        else { x = 0.8; z = -4.6; }
+      }
+      ph.petM.position.set(x, 0, z);
+      ph.petM.visible = true;
+    } else if (ph.petM) ph.petM.visible = false;
+  }
+  function phNearStation(){
+    if (!ph || typeof P === 'undefined' || !P) return null;
+    let best = null, bd = 1e9;
+    PH_STATIONS.forEach(s => {
+      const d = Math.hypot((P.x || 0) - s.x, (P.z || 0) - s.z);
+      if (d < s.r && d < bd){ bd = d; best = s.id; }
+    });
+    return best;
+  }
+  function phPrompt(station){
+    if (!ph) return '';
+    if (!station) return '';
+    if (station === 'desk'){
+      if (!ph.stay && ph.next) return '🛎️ Check in ' + ph.next.guest + ' and ' + ph.next.petName;
+      if (ph.stay && phReadyOut(ph.stay)) return '🛎️ Check out ' + ph.stay.petName + ' for coins';
+      if (ph.stay) return '🛎️ ' + ph.stay.petName + ' still needs ' + phCaresLeft(ph.stay).map(c => PH_CARE_LABEL[c].toLowerCase()).join(', ');
+      return '🛎️ Front desk';
+    }
+    const lab = PH_CARE_EMOJI[station] + ' ' + PH_CARE_LABEL[station];
+    if (!ph.stay) return lab + ' (check in a guest first)';
+    if (ph.stay.done && ph.stay.done[station]) return lab + ' — done!';
+    return lab + ' ' + ph.stay.petName;
+  }
+  function phDo(station){
+    if (!ph) return false;
+    if (ph.remote && station !== 'desk' && station !== 'feed' && station !== 'bathe' && station !== 'play' && station !== 'bed') return false;
+    const res = phActAt(ph, station);
+    if (!res.ok){ if (res.why && typeof banner === 'function') banner('🏨 ' + res.why); phHud(); return false; }
+    if (res.act === 'checkin'){
+      if (typeof banner === 'function') banner(res.stay.emoji + ' ' + res.stay.guest + ' checked in ' + res.stay.petName + ' the ' + res.stay.kind + '!');
+    } else if (res.act === 'care'){
+      if (typeof banner === 'function') banner(PH_CARE_EMOJI[res.care] + ' ' + PH_CARE_LABEL[res.care] + ' — ' + res.stay.petName + (phReadyOut(res.stay) ? ' is ready to check out!' : ' is happy!'));
+    } else if (res.act === 'checkout'){
+      if (typeof setCoins === 'function') setCoins((typeof coins === 'number' ? coins : 0) + res.rec.pay);
+      if (typeof runCoins !== 'undefined') runCoins = (runCoins || 0) + res.rec.pay;
+      if (typeof SND !== 'undefined' && SND.coin) try { SND.coin(); } catch (e){}
+      if (typeof banner === 'function') banner('🪙 ' + res.rec.guest + ' picked up ' + res.rec.pet + '! +' + res.rec.pay + ' coins');
+      phWriteSave();
+    }
+    ph.dirty = true;
+    if (typeof phNet === 'function') phNet();
+    phSyncActors();
+    phHud();
+    return true;
+  }
+  function phHud(){
+    if (!ph) return;
+    const box = (typeof $ === 'function') ? $('#phBox') : (typeof document !== 'undefined' && document.getElementById && document.getElementById('phBox'));
+    if (box){
+      const stay = ph.stay;
+      const bits = stay
+        ? (stay.emoji + ' ' + stay.petName + ' · ' + PH_CARES.map(c => (stay.done && stay.done[c] ? PH_CARE_EMOJI[c] : '○')).join(''))
+        : ('🏨 Waiting' + (ph.next ? ' for ' + ph.next.guest : ''));
+      box.innerHTML = '<b>' + bits + '</b> · 🪙 ' + (ph.earned | 0) + ' · ✅ ' + (ph.served | 0);
+    }
+    const tasks = (typeof $ === 'function') ? $('#phTasks') : null;
+    if (tasks){
+      if (!ph.stay){ tasks.innerHTML = ph.next ? ('🛎️ ' + ph.next.guest + ' is at the desk with ' + ph.next.petName + ' the ' + ph.next.kind) : '🛎️ The lobby is quiet…'; tasks.style.display = ''; }
+      else {
+        tasks.innerHTML = PH_CARES.map(c => (ph.stay.done[c] ? '✅' : '☐') + ' ' + PH_CARE_EMOJI[c] + ' ' + PH_CARE_LABEL[c]).join(' &nbsp; ');
+        tasks.style.display = '';
+      }
+    }
+    const btn = (typeof $ === 'function') ? $('#phAct') : null;
+    const st = ph.near;
+    if (btn){
+      if (st){ btn.classList.add('show'); btn.innerHTML = phPrompt(st) + ' <small>E / Ⓧ</small>'; }
+      else btn.classList.remove('show');
+    }
+  }
+  function petHotelEnter(){
+    if (!ph) return;
+    if (typeof cam !== 'undefined'){ cam.yaw = Math.PI; cam.pitch = 0.32; cam.dist = 9; }
+    if (typeof banner === 'function') banner(ph.remote ? '🏨 Pet Hotel — help care for the guest pets together!' : '🏨 Pet Hotel! Check guests in, care for their pets, then check out for coins.');
+    if (typeof tipTimer !== 'undefined') tipTimer = 7;
+    phHud();
+  }
+  function petHotelStop(){
+    if (ph){
+      phWriteSave();
+      phClearActors();
+      (ph.props || []).forEach(m => { if (m && typeof scene !== 'undefined') try { scene.remove(m); } catch (e){} });
+    }
+    ph = null;
+    ['#phAct', '#phTasks', '#phBox'].forEach(id => {
+      const e = (typeof $ === 'function') ? $(id) : null;
+      if (e){ e.classList.remove('show'); if (id !== '#phBox') e.style.display = 'none'; }
+    });
+  }
+  function petHotelUpdate(dt){
+    if (!ph) return;
+    if (!ph.remote){
+      if (!ph.stay){
+        ph.wait = (ph.wait || 0) - (dt || 0);
+        if (ph.wait < 0 && !ph.next) ph.next = phNewStay((ph.served | 0) + 1);
+      }
+    }
+    const st = phNearStation();
+    if (st !== ph.near){ ph.near = st; phHud(); }
+    if (ph.dirty){ phSyncActors(); ph.dirty = false; }
+    else if (ph.petM && ph.stay) phSyncActors();
+  }
+  function phKey(e){
+    if (!ph || !e || e.repeat || (typeof paused !== 'undefined' && paused)) return false;
+    if (e.code === 'KeyE' && ph.near){ phDo(ph.near); return true; }
+    return false;
+  }
+  function phPad(jp){
+    if (!ph) return false;
+    if (jp && jp.x && ph.near){ phDo(ph.near); return true; }
+    return false;
+  }
+  function phWire(){
+    if (!ph || ph.remote) return null;
+    return {
+      stay: ph.stay, next: ph.next, wait: +((ph.wait || 0).toFixed(2)),
+      served: ph.served | 0, earned: ph.earned | 0
+    };
+  }
+  function phFromHost(d){
+    if (!ph || !d) return;
+    ph.remote = true;
+    ph.stay = d.stay || null;
+    ph.next = d.next || null;
+    ph.wait = +d.wait || 0;
+    ph.served = d.served | 0;
+    ph.earned = d.earned | 0;
+    ph.dirty = true;
+    phHud();
+  }
+  function phNet(){ /* host state goes out on the regular mp tick */ }
+  function drawPetHotel(ctx){
+    if (!ctx) return;
+    if (typeof sky === 'function') sky(ctx, '#9fd8ff', '#fff6e8');
+    else { ctx.fillStyle = '#9fd8ff'; ctx.fillRect(0, 0, 320, 200); }
+    ctx.fillStyle = '#e9d5b3'; ctx.fillRect(30, 70, 260, 90);
+    ctx.fillStyle = '#c97b5a'; ctx.fillRect(110, 100, 100, 50);
+    ctx.fillStyle = '#d96b8a'; ctx.fillRect(80, 150, 160, 18);
+    ctx.fillStyle = '#c9894c'; ctx.beginPath(); ctx.arc(200, 148, 16, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#8aa0b8'; ctx.beginPath(); ctx.arc(84, 148, 14, 0, Math.PI * 2); ctx.fill();
+    if (typeof guy === 'function'){ guy(ctx, 160, 175, 12, '#3a86ff'); guy(ctx, 60, 175, 11, '#d96b8a'); }
+    ctx.font = '22px sans-serif'; ctx.fillText('🏨', 40, 60); ctx.fillText('🛎️', 150, 96);
+  }
+
   function stop(){
     if (typeof dhCloseReset === 'function') dhCloseReset();
     running = false; loopId++; if (raf){ try { cancelAnimationFrame(raf); } catch (e){} raf = 0; } if (document.pointerLockElement) document.exitPointerLock(); fp.shown = null; menuOpen = false; paused = false;
@@ -17540,7 +18149,7 @@ function start(m = 'obby', d = null){
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame'); setHomeInert(false);
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (sb) stableStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
   }
@@ -17549,6 +18158,34 @@ function start(m = 'obby', d = null){
   window.obbyDebug = {
     dreamhouse: () => dh && {mine: dh.mine, sel: dh.sel, tool: dh.tool, story: dh.story, color: dh.color, rot: dh.rot, bank: dh.bank, likes: dh.likes, earned: dh.earned, pieces: (dh.pieces[dh.mine] || []).length, goals: Object.assign({}, dh.goals), prog: dhProg()},
     dhPlace: () => dhPlace(), dhAct: () => dhAct(), dhRotate: () => dhRotate(), dhCycle, dhSetTool, dhSetStory, dhCycleColor, dhAim, dhWire, dhTo(x, z){ Object.assign(P, {x, y: .05, z, vx: 0, vy: 0, vz: 0}); },
+    shot(opts){
+      opts = opts || {};
+      if (opts.x != null && opts.z != null) Object.assign(P, {x: +opts.x, y: (opts.y != null ? +opts.y : .05), z: +opts.z, vx: 0, vy: 0, vz: 0});
+      if (opts.yaw != null && typeof cam !== 'undefined') cam.yaw = +opts.yaw;
+      if (opts.pitch != null && typeof cam !== 'undefined') cam.pitch = +opts.pitch;
+      if (opts.dist != null && typeof cam !== 'undefined') cam.dist = +opts.dist;
+      if (opts.mpCode){ if (typeof mp !== 'undefined' && mp){ mp.code = String(opts.mpCode); mp.on = true; mp.host = true; } }
+      if (opts.invite && typeof dhToggleInvite === 'function'){ dhToggleInvite(true); if (typeof dhRenderInvite === 'function') dhRenderInvite(); }
+      if (opts.phDo && typeof phDo === 'function') phDo(opts.phDo);
+      if (opts.phNear && ph) ph.near = opts.phNear;
+      if (typeof phSyncActors === 'function' && ph) phSyncActors();
+      if (typeof phHud === 'function' && ph) phHud();
+      if (typeof dhHud === 'function' && dh) dhHud();
+      if (typeof dhBar === 'function' && dh) dhBar();
+      if (typeof updateCamera === 'function') updateCamera();
+      if (typeof renderer !== 'undefined' && renderer && renderer.render && typeof scene !== 'undefined' && camera) renderer.render(scene, camera);
+      const foot = (typeof dhFootWorld === 'function' && dh) ? dhFootWorld(dh.mine) : null;
+      return {
+        mode, visiting: !!(dh && dh.visiting), invite: !!(dh && dh.inviteOpen),
+        pieces: dh && (dh.pieces[dh.mine] || []).length,
+        ph: ph && {stay: ph.stay && (ph.stay.emoji + ' ' + ph.stay.petName), next: ph.next && (ph.next.guest + ' / ' + ph.next.petName), earned: ph.earned, near: ph.near, done: ph.stay && ph.stay.done},
+        P: P && {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2)},
+        cam: typeof cam !== 'undefined' && cam && {yaw: cam.yaw, pitch: cam.pitch, dist: cam.dist},
+        foot, low: typeof gfxIsLow === 'function' && gfxIsLow(), build: typeof BUILD !== 'undefined' ? BUILD : null,
+        bar: ((document.getElementById('dhBar') || {}).innerText || '').slice(0, 180),
+        visit: ((document.getElementById('dhVisit') || {}).innerText || '').slice(0, 240)
+      };
+    },
     dance: () => db && {ph: db.ph, t: db.t, score: db.score, combo: db.combo, hits: db.hits, misses: db.misses, chart: db.chart.length, earned: db.earned, prog: dbProg()},
     dbHit: d => dbHit(d), dbTo(t){ if (db) db.t = t; },
     haunt: () => hm && {ph: hm.ph, t: hm.t, keys: hm.keys, patternDone: !!hm.patternDone, colour: hm.colour, needCol: hm.needCol, levers: hm.levers.slice(), doorOpen: hm.doorOpen, near: hm.near, earned: hm.earned, prog: hmProg()},
