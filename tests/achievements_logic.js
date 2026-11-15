@@ -234,5 +234,32 @@ function fresh(opts) {
     {prove: a && a.prove(legacy)});
 })();
 
+
+(function(){
+  const W = fresh();
+  const ids = W.ACHIEVEMENTS.map(a => a.id);
+  ['fr-first','fr-3','fr-code','fr-join','fr-session'].forEach(id => {
+    chk('friends achievement "' + id + '" is registered', ids.includes(id));
+  });
+  const by = Object.fromEntries(W.ACHIEVEMENTS.map(a => [a.id, a]));
+  chk('New Pal proves from a friends list with one pal',
+    by['fr-first'].prove({friends:{friends:{RUBYFX:{name:'Ruby'}}}}) === true
+      && by['fr-first'].prove({friends:{friends:{}}}) === false);
+  chk('Little Circle proves from three pals and not from two',
+    by['fr-3'].prove({friends:{friends:{A:{},B:{},C:{}}}}) === true
+      && by['fr-3'].prove({friends:{friends:{A:{},B:{}}}}) === false);
+  chk('Pass It On proves from a copied friend code or a note',
+    by['fr-code'].prove({friends:{copied:true}}) === true
+      && by['fr-code'].prove({notes:{'fr:code':1}}) === true
+      && by['fr-code'].prove({friends:{copied:false}, notes:{}}) === false);
+  chk('Come Play and We Played! prove from their notes only',
+    by['fr-join'].prove({notes:{'fr:join':1}}) === true
+      && by['fr-join'].prove({notes:{}}) === false
+      && by['fr-session'].prove({notes:{'fr:session':1}}) === true
+      && by['fr-session'].prove({notes:{}}) === false);
+  chk('achSnapshot includes a friends field from storage when frGetState is missing',
+    !!(W.achSnapshot().friends === null || W.achSnapshot().friends === undefined || typeof W.achSnapshot().friends === 'object'));
+})();
+
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);

@@ -90,10 +90,50 @@ body.dark .preview{background:linear-gradient(#3b4a8a,#2a3570)}
 .hat:hover{transform:translateY(-3px)}
 .hat.sel{border-color:var(--blue);background:var(--blue);color:#fff}
 /* friends */
-.friends{background:var(--card);border-radius:26px;padding:30px;box-shadow:var(--shadow);text-align:center}
-.friends .faces{font-size:44px;letter-spacing:6px;animation:bob 2.6s ease-in-out infinite}
-.friends p{font-size:19px;font-weight:700;margin:8px 0 0}
+.friends{background:var(--card);border-radius:26px;padding:22px 24px 26px;box-shadow:var(--shadow);text-align:left}
+.friends .faces{font-size:44px;letter-spacing:6px;animation:bob 2.6s ease-in-out infinite;text-align:center}
+.friends p{font-size:17px;font-weight:700;margin:8px 0 0}
 .friends small{color:var(--muted);font-size:15px}
+#friends{min-height:calc(100vh - 120px);scroll-margin-top:90px}
+.frhead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:8px}
+.frhead h2{margin:0}
+.frcount{font-weight:900;color:var(--muted);font-size:15px}
+.frcodebox{display:flex;flex-wrap:wrap;align-items:center;gap:12px;background:linear-gradient(180deg,#fff8e6,#ffe9b3);border:3px solid #ffd23f;border-radius:20px;padding:14px 16px;margin:12px 0 16px}
+.frcodebox .frlab{font-weight:800;font-size:14px;color:#1d2340;display:block}
+.frcodebox .frhint{display:block;font-weight:700;font-size:13px;color:#5b6180;margin-top:2px}
+#frMyCode{font-weight:900;font-size:clamp(28px,6vw,40px);letter-spacing:.18em;color:#1d2340;line-height:1}
+.fradd{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 14px}
+#frAddIn{min-width:min(100%,220px);flex:1;font:inherit;font-weight:900;font-size:22px;letter-spacing:.14em;text-transform:uppercase;padding:10px 14px;border-radius:14px;border:3px solid var(--line,#d9dbe7);background:var(--bg2,#fff);color:inherit}
+.frlist{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.frcard{display:flex;align-items:center;gap:12px;background:var(--bg2,#fff);border-radius:18px;padding:10px 12px;box-shadow:0 3px 0 rgba(0,0,0,.08)}
+.frav{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;color:#fff;font-weight:900;font-size:22px;flex:none;box-shadow:inset 0 -4px 0 rgba(0,0,0,.12)}
+.frbody{flex:1;min-width:0}
+.frbody b{display:block;font-size:18px}
+.frbody small{display:block;font-weight:700;color:var(--muted);font-size:13px}
+.frdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#9aa0ab;margin-right:2px;vertical-align:middle}
+.frdot.on{background:#2ec27e}
+.frdot.play{background:#3a86ff}
+.frdot.off{background:#9aa0ab}
+.fracts{display:flex;flex-wrap:wrap;gap:6px;flex:none}
+.fracts .frjoin{padding:8px 14px;font-size:15px;min-height:40px}
+.frrm{border:0;background:transparent;color:#c23d4b;font:inherit;font-weight:800;font-size:14px;cursor:pointer;padding:8px 10px;border-radius:10px;min-height:40px}
+.frrm:hover,.frrm:focus{background:#ffe4e8}
+#frEmpty{text-align:center;padding:12px 8px 4px}
+#frPending{background:#eef8ff;border:2px solid #3a86ff;border-radius:18px;padding:12px 14px;margin:10px 0}
+#frPending p{margin:0 0 10px;font-size:16px}
+.frmsg{min-height:1.2em;font-weight:800;font-size:14px;margin:6px 0 0}
+.frmsg.ok{color:#1f9460}
+.frmsg.err{color:#c23d4b}
+#frCopyHold{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+#frConfirm{z-index:80}
+#frConfirm .mbox{max-width:420px;text-align:center}
+@media (max-width:700px){
+  .friends{padding:16px 14px 20px}
+  .frcodebox{flex-direction:column;align-items:flex-start}
+  .frcard{flex-wrap:wrap}
+  .fracts{width:100%;justify-content:flex-end}
+  #friends{min-height:calc(100vh - 100px);scroll-margin-top:66px}
+}
 footer{text-align:center;color:var(--muted);margin-top:40px;font-weight:700}
 /* modal */
 .modal{position:fixed;inset:0;background:rgba(10,14,35,.55);display:none;place-items:center;z-index:50;padding:16px}
@@ -1100,6 +1140,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
       <button class="big" data-go="games">🎮 See the Games</button>
       <button class="big green" data-go="avatar" style="margin-left:8px">🧍 Make my Avatar</button>
       <button class="big" data-go="achievements" style="margin-left:8px">🏆 Achievements</button>
+      <button class="big" data-go="friends" style="margin-left:8px">👫 Friends</button>
     </div>
   </section>
 
@@ -1185,6 +1226,36 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
     <div class="items" id="items"></div>
 </section>
 
+  <section id="friends">
+    <div class="frhead">
+      <h2>👫 Friends</h2>
+      <div class="frcount" id="frCount"></div>
+    </div>
+    <div class="friends">
+      <div class="frcodebox">
+        <div>
+          <span class="frlab">Your friend code</span>
+          <b id="frMyCode">------</b>
+          <span class="frhint">It is <b id="frLen">6</b> letters long — not the same as a 5-letter game room code. Share it only with family you know. No chat and no stranger list.</span>
+        </div>
+        <button class="big" id="frCopy" type="button">📋 Copy my code</button>
+        <input id="frCopyHold" readonly aria-hidden="true" tabindex="-1">
+      </div>
+      <div class="fradd">
+        <input id="frAddIn" maxlength="6" autocorrect="off" inputmode="text" enterkeyhint="go" placeholder="THEIR CODE" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Friend code">
+        <button class="big green" id="frAddBtn" type="button">➕ Add friend</button>
+      </div>
+      <div class="frmsg" id="frMsg" role="status" aria-live="polite"></div>
+      <div id="frPending" hidden></div>
+      <div id="frEmpty">
+        <div class="faces">😄🧱😎🧱🤩</div>
+        <p>Add family and friends you already know.</p>
+        <small>Type their 6-letter friend code, or add someone after you play together in a room. 💛</small>
+      </div>
+      <div class="frlist" id="frList"></div>
+    </div>
+  </section>
+
   <section id="achievements">
     <div class="achhead">
       <h2>🏆 Achievements</h2>
@@ -1193,15 +1264,6 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
     <p class="achsub" id="achSub">Play to unlock badges! Locked ones still show what to try.</p>
     <div class="achtabs" id="achTabs"></div>
     <div class="achgrid" id="achGrid"></div>
-  </section>
-
-  <section id="friends">
-    <h2>👫 Friends</h2>
-    <div class="friends">
-      <div class="faces">😄🧱😎🧱🤩</div>
-      <p>Play together with your family!</p>
-      <small>Go to 🎮 Games and tap <b>🏠 Host a game</b>. Everyone else taps <b>🚪 Join</b> and types the code. 💛</small>
-    </div>
   </section>
   <footer>Made with 💙 for friends &amp; family · Rublox</footer>
 </main>
@@ -1227,6 +1289,15 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
     <h2 id="soonTitle">Coming soon!</h2>
     <div style="color:var(--muted);font-weight:700;margin-bottom:16px" id="soonText">This game is still being built. Check back soon!</div>
     <button class="big" id="soonOk">OK! 👍</button>
+  </div>
+</div>
+<div class="modal" id="frConfirm" role="dialog" aria-labelledby="frConfirmTitle" aria-modal="true">
+  <div class="mbox">
+    <span class="emoji">👋</span>
+    <h2 id="frConfirmTitle">Remove friend?</h2>
+    <div style="color:var(--muted);font-weight:700;margin-bottom:16px" id="frConfirmText">Remove this friend from your list?</div>
+    <button class="big" id="frConfirmYes" type="button">Yes, remove</button>
+    <button class="big gray" id="frConfirmNo" type="button" style="margin-left:8px">Keep friend</button>
   </div>
 </div>
 <div class="modal" id="lvlModal">
@@ -1718,7 +1789,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.12-17';
+const BUILD = '2026.11.15-1';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3161,6 +3232,11 @@ function confetti(){
     // Friends
     {id:'mp-host', cat:'friends', emoji:'📣', name:'Come On Over', desc:'Host a room so friends can join you.', coins:10, prove:s => !!(s.notes && s.notes['mp:host'])},
     {id:'mp-friend', cat:'friends', emoji:'👫', name:'Better Together', desc:'Play a game with a friend in the same room.', coins:20, prove:s => !!(s.notes && s.notes['mp:friend'])},
+    {id:'fr-first', cat:'friends', emoji:'🤝', name:'New Pal', desc:'Add your first friend with a code or after a game together.', coins:10, prove:s => achFriendCount(s) >= 1},
+    {id:'fr-3', cat:'friends', emoji:'🟡', name:'Little Circle', desc:'Have 3 friends on your list.', coins:15, prove:s => achFriendCount(s) >= 3},
+    {id:'fr-code', cat:'friends', emoji:'📋', name:'Pass It On', desc:'Copy your 6-letter friend code to share with family.', coins:5, prove:s => !!(s.friends && s.friends.copied) || !!(s.notes && s.notes['fr:code'])},
+    {id:'fr-join', cat:'friends', emoji:'🚪', name:'Come Play', desc:'Join a friend who is already in a game.', coins:15, prove:s => !!(s.notes && s.notes['fr:join'])},
+    {id:'fr-session', cat:'friends', emoji:'🎮', name:'We Played!', desc:'Add a friend after you played together in a room.', coins:15, prove:s => !!(s.notes && s.notes['fr:session'])},
     // Collection
     {id:'welcome', cat:'collection', emoji:'👋', name:'Hello, Friend', desc:'Pick a player name and join Rublox.', coins:5, prove:s => !!(s.player && s.player.name)},
     {id:'first-game', cat:'collection', emoji:'🎮', name:'Let\'s Play', desc:'Start any Rublox game.', coins:5, prove:s => !!(s.notes && s.notes.play) || !!(s.recent && s.recent.length >= 1)},
@@ -3299,10 +3375,16 @@ function confetti(){
       dance: L('rubloxDance', null),
       water: L('rubloxWaterPark', null),
       recent: L('rubloxRecentGames', []),
-      notes: Object.assign({}, ach.notes)
+      notes: Object.assign({}, ach.notes),
+      friends: (typeof frGetState === 'function') ? frGetState() : L('rubloxFriends', null)
     };
     if (extra && typeof extra === 'object') Object.keys(extra).forEach(k => { snap[k] = extra[k]; });
     return snap;
+  }
+  function achFriendCount(s){
+    const bag = s && s.friends && s.friends.friends;
+    if (!bag || typeof bag !== 'object') return 0;
+    return Object.keys(bag).length;
   }
   function achProven(a, snap){
     if (!a || typeof a.prove !== 'function') return false;
@@ -3542,6 +3624,7 @@ function confetti(){
 
 
 
+
 /* ---------- name ---------- */
 let fav = player ? player.fav : COLORS[4];
 function askName(){
@@ -3574,7 +3657,7 @@ function navActiveId(){
     const r = home.getBoundingClientRect();
     if (r.top >= -24 && r.top < 140 && y < 180) return 'home';
   }
-  const ids = ['home','games','avatar','shop','achievements','friends'];
+  const ids = ['home','games','avatar','shop','friends','achievements'];
   const mid = (window.innerHeight || 0) * 0.45;
   let best = 'home', bestDist = Infinity;
   ids.forEach(id => {
@@ -3651,7 +3734,7 @@ if (logoHome) logoHome.addEventListener('click', ev => {
 const io = new IntersectionObserver(() => { syncNavHighlight(); }, {rootMargin:'-45% 0px -50% 0px'});
 addEventListener('scroll', syncNavHighlight, {passive:true});
 addEventListener('resize', syncNavHighlight);
-['home','games','achievements','avatar','shop','friends'].forEach(id => { const el = document.getElementById(id); if (el) io.observe(el); });
+['home','games','avatar','shop','friends','achievements'].forEach(id => { const el = document.getElementById(id); if (el) io.observe(el); });
 try { if (typeof achInit === 'function') achInit(); } catch (e){}
 
 /* ---------- theme ---------- */
@@ -3797,7 +3880,7 @@ document.addEventListener('keydown', e => {
 function dhInertExempt(el){
   if (!el) return true;
   const id = el.id || '';
-  if (id === 'obby' || id === 'dhResetModal' || id === 'achToast') return true;
+  if (id === 'obby' || id === 'dhResetModal' || id === 'achToast' || id === 'frConfirm') return true;
   const tag = (el.tagName || '').toLowerCase();
   if (tag === 'dialog') return true;
   const cls = el.classList;
@@ -3940,6 +4023,551 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
   });
 })();
 
+  /* ===================== Friends (t282u) ===================== */
+  const FR_KEY = 'rubloxFriends', FR_VER = 1, FR_LEN = 6, FR_MAX = 20;
+  const FR_PREFIX = 'rublox-fr-v1-';
+  const FR_ALPHA = (typeof MP_ALPHA === 'string' && MP_ALPHA.length >= 20) ? MP_ALPHA : 'ABCDEFGHJKMNPQRSTUVWXYZ';
+  const FR_LOOK = {O: 'QD', '0': 'QD', I: 'JT', '1': 'JT', L: 'JT', '2': 'Z', '3': 'E', '4': 'A', '5': 'S', '6': 'G', '7': 'T', '8': 'B', '9': 'G'};
+  const fr = {ver: FR_VER, code: '', friends: {}, pending: [], copied: false, _inited: false, _poll: 0, _peer: null};
+
+  function frTestHash(){
+    try {
+      const h = String((typeof location !== 'undefined' && location.hash) || (typeof window !== 'undefined' && window.location && window.location.hash) || '');
+      return /(?:^|#|&)frtest=/i.test(h) || /(?:^|#|&)dhtest=/i.test(h);
+    } catch (e){ return false; }
+  }
+  function frBlockPersist(){ return frTestHash(); }
+
+  function frNormCode(raw){
+    const s = String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (s.length !== FR_LEN) return '';
+    let out = '';
+    for (const ch of s){
+      if (FR_ALPHA.includes(ch)) out += ch;
+      else if (FR_LOOK[ch] && FR_LOOK[ch].length === 1) out += FR_LOOK[ch];
+      else return '';
+    }
+    return out.length === FR_LEN ? out : '';
+  }
+  function frLocalKey(name){
+    const slug = frCleanName(name).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12) || 'PAL';
+    return '~' + slug;
+  }
+  function frMakeCode(){
+    let c = '';
+    for (let i = 0; i < FR_LEN; i++) c += FR_ALPHA[Math.floor(Math.random() * FR_ALPHA.length)];
+    return c;
+  }
+  function frCleanName(n){
+    if (typeof cleanName === 'function') return cleanName(n);
+    return String(n || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 16) || 'Friend';
+  }
+  function frEsc(s){
+    if (typeof mpEsc === 'function') return mpEsc(s);
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function frDemoState(){
+    return {
+      ver: FR_VER,
+      code: 'FUNDAY',
+      copied: false,
+      pending: [{name: 'Sam', color: '#ff6fb5', at: Date.now(), from: 'session'}],
+      friends: {
+        RUBYFX: {code:'RUBYFX', name:'Ruby', color:'#ff6fb5', fav:6, added:1, from:'code', online:true, lastRoom:'SUNNY', lastMode:'dreamhouse', lastAt: Date.now()},
+        MAXQWE: {code:'MAXQWE', name:'Max', color:'#3a86ff', fav:4, added:1, from:'session', online:false, lastRoom:'', lastMode:'', lastAt: 0}
+      }
+    };
+  }
+  function frFresh(){ return {ver: FR_VER, code: frMakeCode(), friends: {}, pending: [], copied: false}; }
+  function frFixtureId(){
+    try {
+      const h = String((typeof location !== 'undefined' && location.hash) || '');
+      const m = h.match(/(?:^|#|&)frtest=([a-z0-9-]+)/i);
+      return m ? m[1].toLowerCase() : '';
+    } catch (e){ return ''; }
+  }
+  function frLoad(){
+    if (frFixtureId() === 'demo'){ Object.assign(fr, frDemoState()); return fr; }
+    if (frFixtureId() === 'empty'){ Object.assign(fr, {ver: FR_VER, code: 'FUNDAY', friends: {}, pending: [], copied: false}); return fr; }
+    let rec = null;
+    try { rec = (typeof load === 'function') ? load(FR_KEY, null) : null; } catch (e){ rec = null; }
+    if (!rec || typeof rec !== 'object') rec = frFresh();
+    fr.ver = FR_VER;
+    fr.code = frNormCode(rec.code) || frMakeCode();
+    fr.copied = !!rec.copied;
+    fr.friends = {};
+    const src = rec.friends && typeof rec.friends === 'object' ? rec.friends : {};
+    Object.keys(src).forEach(k => {
+      const f = src[k] || {};
+      const c = frNormCode(k) || frNormCode(f.code) || (String(k).charAt(0) === '~' ? String(k).slice(0, 16) : '');
+      if (!c) return;
+      fr.friends[c] = {
+        code: c,
+        local: c.charAt(0) === '~',
+        name: frCleanName(f.name),
+        color: (typeof f.color === 'string' && /^#[0-9a-f]{3,8}$/i.test(f.color)) ? f.color : '#3a86ff',
+        fav: f.fav | 0,
+        added: f.added || Date.now(),
+        from: f.from === 'session' ? 'session' : 'code',
+        online: false,
+        lastRoom: frNormRoom(f.lastRoom),
+        lastMode: typeof f.lastMode === 'string' ? f.lastMode.slice(0, 24) : '',
+        lastAt: f.lastAt | 0
+      };
+    });
+    fr.pending = Array.isArray(rec.pending) ? rec.pending.slice(0, 8).map(p => ({
+      name: frCleanName(p && p.name),
+      color: (p && typeof p.color === 'string' && /^#[0-9a-f]{3,8}$/i.test(p.color)) ? p.color : '#3a86ff',
+      at: (p && p.at) || Date.now(),
+      from: 'session'
+    })) : [];
+    return fr;
+  }
+  function frNormRoom(raw){
+    const s = String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    return s.length === 5 ? s : '';
+  }
+  function frGetState(){
+    return {
+      ver: FR_VER,
+      code: fr.code,
+      copied: !!fr.copied,
+      pending: (fr.pending || []).map(p => ({name: p.name, color: p.color, at: p.at, from: 'session'})),
+      friends: Object.assign({}, fr.friends)
+    };
+  }
+  function frSave(){
+    if (frBlockPersist()) return false;
+    try { if (typeof save === 'function') save(FR_KEY, frGetState()); } catch (e){}
+    return true;
+  }
+  function frMyCode(){ if (!fr.code) frLoad(); return fr.code; }
+  function frList(){
+    return Object.keys(fr.friends).map(k => fr.friends[k]).sort((a, b) => {
+      if (!!b.online !== !!a.online) return a.online ? -1 : 1;
+      return String(a.name).localeCompare(String(b.name));
+    });
+  }
+  function frCount(){ return Object.keys(fr.friends || {}).length; }
+  function frCountOf(snap){
+    const rec = snap && snap.friends;
+    if (!rec) return (typeof frCount === 'function' && fr._inited) ? frCount() : 0;
+    if (typeof rec === 'number') return rec;
+    if (rec.friends && typeof rec.friends === 'object') return Object.keys(rec.friends).length;
+    if (typeof rec === 'object' && !rec.code && !rec.ver) return Object.keys(rec).length;
+    return 0;
+  }
+
+  function frAdd(code, meta, opts){
+    opts = opts || {};
+    meta = meta || {};
+    const c = frNormCode(code) || ((opts.local || (meta.from === 'session' && !frNormCode(code))) ? frLocalKey(meta.name || code) : '');
+    if (!c) return {ok: false, reason: 'code'};
+    if (frNormCode(c) && c === frMyCode()) return {ok: false, reason: 'self'};
+    if (fr.friends[c]) return {ok: false, reason: 'already', friend: fr.friends[c]};
+    if (frCount() >= FR_MAX) return {ok: false, reason: 'full'};
+    const friend = {
+      code: c,
+      local: c.charAt(0) === '~',
+      name: frCleanName(meta.name || ('Friend ' + c)),
+      color: (typeof meta.color === 'string' && /^#[0-9a-f]{3,8}$/i.test(meta.color)) ? meta.color : '#3a86ff',
+      fav: meta.fav | 0,
+      added: Date.now(),
+      from: meta.from === 'session' ? 'session' : 'code',
+      online: !!meta.online,
+      lastRoom: frNormRoom(meta.lastRoom || meta.room),
+      lastMode: typeof meta.lastMode === 'string' ? meta.lastMode.slice(0, 24) : '',
+      lastAt: Date.now()
+    };
+    fr.friends[c] = friend;
+    fr.pending = (fr.pending || []).filter(p => frCleanName(p.name) !== friend.name);
+    frSave();
+    try {
+      if (typeof achUnlock === 'function'){
+        if (frCount() >= 1) achUnlock('fr-first');
+        if (frCount() >= 3) achUnlock('fr-3');
+      }
+      if (friend.from === 'session' && typeof achNote === 'function') achNote('fr:session');
+    } catch (e){}
+    if (opts.render !== false && typeof frRender === 'function') frRender();
+    return {ok: true, friend};
+  }
+  function frRemove(code){
+    const c = frNormCode(code) || (fr.friends[code] ? code : '');
+    if (!c || !fr.friends[c]) return false;
+    delete fr.friends[c];
+    frSave();
+    if (typeof frRender === 'function') frRender();
+    return true;
+  }
+  function frMarkCopied(){
+    fr.copied = true;
+    frSave();
+    try { if (typeof achUnlock === 'function') achUnlock('fr-code'); } catch (e){}
+    return true;
+  }
+
+  function frSessionPeers(){
+    const out = [];
+    const seen = new Set();
+    const myName = frCleanName((typeof player !== 'undefined' && player && player.name) || '');
+    const take = (name, color) => {
+      const n = frCleanName(name);
+      if (!n || n === myName || n === 'Player') return;
+      const key = n.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({name: n, color: (typeof color === 'string' && /^#[0-9a-f]{3,8}$/i.test(color)) ? color : '#3a86ff', at: Date.now(), from: 'session'});
+    };
+    try {
+      if (typeof mp !== 'undefined' && mp){
+        if (mp.players && typeof mp.players.forEach === 'function'){
+          mp.players.forEach(p => take(p && p.name, p && p.av && p.av.shirt));
+        }
+        const list = (typeof mpRoster === 'function' && mp.host) ? mpRoster() : (mp.roster || []);
+        (list || []).forEach(p => {
+          const self = mp.host ? p.uid === 'H' : p.uid === mp.me;
+          if (!self) take(p && p.name, p && p.av && p.av.shirt);
+        });
+      }
+    } catch (e){}
+    return out.filter(p => !frList().some(f => f.name.toLowerCase() === p.name.toLowerCase()));
+  }
+  function frNoteLeavingRoom(){
+    const peers = frSessionPeers();
+    if (!peers.length) return fr.pending;
+    const have = new Set((fr.pending || []).map(p => (p.name || '').toLowerCase()));
+    frList().forEach(f => have.add((f.name || '').toLowerCase()));
+    peers.forEach(p => { if (!have.has(p.name.toLowerCase())) fr.pending.push(p); });
+    fr.pending = fr.pending.slice(-8);
+    frSave();
+    if (typeof frRender === 'function') frRender();
+    return fr.pending;
+  }
+
+  function frMsg(text, ok){
+    const el = (typeof $ === 'function') ? $('#frMsg') : null;
+    if (!el) return;
+    el.textContent = text || '';
+    el.className = 'frmsg' + (ok ? ' ok' : (text ? ' err' : ''));
+  }
+
+  function frStatus(f){
+    if (f && f.local) return {id: 'off', label: 'Ask them for their friend code', join: false};
+    if (f && f.online && f.lastRoom) return {id: 'play', label: 'In a game', join: true};
+    if (f && f.online) return {id: 'on', label: 'Online', join: false};
+    return {id: 'off', label: 'Offline', join: false};
+  }
+
+  function frRender(){
+    if (typeof document === 'undefined' || !document.getElementById) return false;
+    const codeEl = document.getElementById('frMyCode');
+    if (codeEl) codeEl.textContent = frMyCode() || '------';
+    const lenEl = document.getElementById('frLen');
+    if (lenEl) lenEl.textContent = String(FR_LEN);
+    const listEl = document.getElementById('frList');
+    const emptyEl = document.getElementById('frEmpty');
+    const people = frList();
+    if (emptyEl) emptyEl.hidden = people.length > 0;
+    if (listEl){
+      listEl.innerHTML = '';
+      people.forEach(f => {
+        const st = frStatus(f);
+        const card = document.createElement('div');
+        card.className = 'frcard';
+        card.dataset.fr = f.code;
+        const av = document.createElement('span');
+        av.className = 'frav';
+        av.style.background = f.color || '#3a86ff';
+        av.textContent = (f.name || '?').slice(0, 1).toUpperCase();
+        const body = document.createElement('div');
+        body.className = 'frbody';
+        const nm = document.createElement('b');
+        nm.textContent = f.name;
+        const meta = document.createElement('small');
+        meta.innerHTML = '<i class="frdot ' + st.id + '"></i> ' + frEsc(st.label) + (f.local ? '' : (' · ' + frEsc(f.code)));
+        body.appendChild(nm); body.appendChild(meta);
+        const acts = document.createElement('div');
+        acts.className = 'fracts';
+        if (st.join && f.lastRoom){
+          const j = document.createElement('button');
+          j.className = 'big green frjoin';
+          j.type = 'button';
+          j.textContent = 'Join';
+          j.dataset.frjoin = f.code;
+          acts.appendChild(j);
+        }
+        const rm = document.createElement('button');
+        rm.className = 'frrm';
+        rm.type = 'button';
+        rm.textContent = 'Remove';
+        rm.dataset.frrm = f.code;
+        acts.appendChild(rm);
+        card.appendChild(av); card.appendChild(body); card.appendChild(acts);
+        listEl.appendChild(card);
+      });
+    }
+    const pend = document.getElementById('frPending');
+    if (pend){
+      const named = new Set(frList().map(f => (f.name || '').toLowerCase()));
+      const wait = (fr.pending || []).filter(p => p && p.name && !named.has(p.name.toLowerCase()));
+      if (!wait.length){ pend.hidden = true; pend.innerHTML = ''; }
+      else {
+        pend.hidden = false;
+        pend.innerHTML = '<p>You just played with ' + (wait.length === 1 ? frEsc(wait[0].name) : 'these players') + '. Add them as friends?</p>'
+          + wait.map((p, i) => '<button type="button" class="big green" data-frpend="' + i + '">Add ' + frEsc(p.name) + '</button>').join(' ');
+      }
+    }
+    const nEl = document.getElementById('frCount');
+    if (nEl) nEl.textContent = people.length ? (people.length + ' friend' + (people.length === 1 ? '' : 's')) : '';
+    return true;
+  }
+
+  function frCopyCode(){
+    const code = frMyCode();
+    let ok = false;
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText){
+        const p = navigator.clipboard.writeText(code);
+        if (p && p.then) p.then(() => {}).catch(() => {});
+        ok = true;
+      }
+    } catch (e){}
+    try {
+      const inp = document.getElementById('frCopyHold');
+      if (inp){ inp.value = code; inp.removeAttribute('readonly'); inp.select(); document.execCommand('copy'); inp.setAttribute('readonly', ''); ok = true; }
+    } catch (e){}
+    frMarkCopied();
+    frMsg(ok ? 'Copied! Your friend code is 6 letters: ' + code : 'Your friend code is 6 letters: ' + code, true);
+    return true;
+  }
+
+  function frTryAddFromBox(){
+    const inp = (typeof $ === 'function') ? $('#frAddIn') : null;
+    const raw = inp ? inp.value : '';
+    const c = frNormCode(raw);
+    if (!c){ frMsg('Friend codes are 6 letters. Check the code and try again.'); return false; }
+    const rec = frAdd(c, {name: 'Friend ' + c, from: 'code'});
+    if (rec.ok){
+      if (inp) inp.value = '';
+      frMsg('Added ' + rec.friend.name + '! They can add you back with your code ' + frMyCode() + '.', true);
+      return true;
+    }
+    if (rec.reason === 'self') frMsg('That is your own code.');
+    else if (rec.reason === 'already') frMsg('You already added ' + ((rec.friend && rec.friend.name) || 'this friend') + '.');
+    else if (rec.reason === 'full') frMsg('Your list is full (20 friends). Remove one to add another.');
+    else frMsg('Friend codes are 6 letters. Check the code and try again.');
+    return false;
+  }
+
+  function frAskRemove(code){
+    const c = frNormCode(code) || (fr.friends[code] ? code : '');
+    const f = c && fr.friends[c];
+    if (!f) return false;
+    const modal = document.getElementById('frConfirm');
+    const text = document.getElementById('frConfirmText');
+    const yes = document.getElementById('frConfirmYes');
+    const no = document.getElementById('frConfirmNo');
+    if (!modal || !text || !yes){
+      if (typeof confirm === 'function' && confirm('Remove ' + f.name + ' from your friends?')) frRemove(c);
+      return true;
+    }
+    text.textContent = 'Remove ' + f.name + ' from your friends? You can add them again later with their 6-letter code.';
+    modal.classList.add('show');
+    modal.dataset.fr = c;
+    const close = () => { modal.classList.remove('show'); modal.dataset.fr = ''; };
+    yes.onclick = () => { const id = modal.dataset.fr; close(); if (id) frRemove(id); frMsg('Removed from your friends.', true); };
+    if (no) no.onclick = close;
+    modal.onclick = ev => { if (ev.target === modal) close(); };
+    return true;
+  }
+
+  function frJoinFriend(code){
+    const c = frNormCode(code);
+    const f = c && fr.friends[c];
+    if (!f || !f.lastRoom){ frMsg('They are not in a game room right now.'); return false; }
+    try { if (typeof achNote === 'function') achNote('fr:join'); } catch (e){}
+    try {
+      if (typeof mpJoin === 'function'){ mpJoin(f.lastRoom); return true; }
+      if (typeof window !== 'undefined' && window.Obby && typeof window.Obby.mpJoin === 'function'){ window.Obby.mpJoin(f.lastRoom); return true; }
+    } catch (e){}
+    frMsg('Could not join right now. Try the room code ' + f.lastRoom + ' under Play together.');
+    return false;
+  }
+
+  function frOpen(){
+    try {
+      if (typeof paintNav === 'function') paintNav('friends', true);
+      const el = document.getElementById('friends');
+      if (el && el.scrollIntoView) el.scrollIntoView({behavior: 'smooth', block: 'start'});
+    } catch (e){}
+    frRender();
+    try { frPingFriends(); } catch (e){}
+    return true;
+  }
+
+  function frOnListClick(ev){
+    const t = ev.target && ev.target.closest && ev.target.closest('[data-frjoin],[data-frrm],[data-frpend],#frCopy,#frAddBtn');
+    if (!t) return;
+    if (t.id === 'frCopy'){ ev.preventDefault(); frCopyCode(); return; }
+    if (t.id === 'frAddBtn'){ ev.preventDefault(); frTryAddFromBox(); return; }
+    if (t.dataset.frjoin){ ev.preventDefault(); frJoinFriend(t.dataset.frjoin); return; }
+    if (t.dataset.frrm){ ev.preventDefault(); frAskRemove(t.dataset.frrm); return; }
+    if (t.dataset.frpend != null){
+      ev.preventDefault();
+      const p = fr.pending[t.dataset.frpend | 0];
+      if (!p) return;
+      const rec = frAdd(p.code || '', {name: p.name, color: p.color, from: 'session'}, {local: !frNormCode(p.code)});
+      if (rec.ok) frMsg('Added ' + rec.friend.name + '! Ask them for their 6-letter friend code if you want to join them later.', true);
+      else if (rec.reason === 'already') frMsg('You already added them.');
+    }
+  }
+
+  function frBind(){
+    if (typeof document === 'undefined') return;
+    const root = document.getElementById('friends');
+    if (root && !root._frBound){
+      root._frBound = true;
+      root.addEventListener('click', frOnListClick);
+    }
+    const inp = document.getElementById('frAddIn');
+    if (inp && !inp._frBound){
+      inp._frBound = true;
+      inp.addEventListener('keydown', ev => { if (ev.key === 'Enter'){ ev.preventDefault(); frTryAddFromBox(); } });
+    }
+    const copy = document.getElementById('frCopy');
+    if (copy && !copy._frBound){ copy._frBound = true; copy.addEventListener('click', ev => { ev.preventDefault(); frCopyCode(); }); }
+    const add = document.getElementById('frAddBtn');
+    if (add && !add._frBound){ add._frBound = true; add.addEventListener('click', ev => { ev.preventDefault(); frTryAddFromBox(); }); }
+  }
+
+  /* Best-effort presence over the same free PeerJS transport as family rooms.
+     Only works while both people have Rublox open. No chat, no stranger search. */
+  function frPresencePayload(){
+    const room = (typeof mp !== 'undefined' && mp && mp.on && mp.code) ? String(mp.code) : '';
+    let gameMode = '';
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.hmode) gameMode = String(mp.hmode);
+      else if (typeof window !== 'undefined' && window.obbyDebug && typeof window.obbyDebug.dhMode === 'function'){}
+    } catch (e){}
+    const name = frCleanName((typeof player !== 'undefined' && player && player.name) || 'Player');
+    const fav = (typeof player !== 'undefined' && player && player.fav) | 0;
+    const color = (typeof COLORS !== 'undefined' && COLORS[fav]) || '#3a86ff';
+    return {t: 'frpres', v: 1, code: frMyCode(), name, color, room, mode: room ? (gameMode || 'play') : 'home'};
+  }
+  function frApplyPresence(msg){
+    if (!msg || msg.t !== 'frpres') return false;
+    const c = frNormCode(msg.code);
+    if (!c || !fr.friends[c]) return false;
+    const f = fr.friends[c];
+    f.online = true;
+    f.lastAt = Date.now();
+    if (msg.name) f.name = frCleanName(msg.name);
+    if (msg.color && /^#[0-9a-f]{3,8}$/i.test(msg.color)) f.color = msg.color;
+    f.lastRoom = frNormRoom(msg.room);
+    f.lastMode = typeof msg.mode === 'string' ? msg.mode.slice(0, 24) : '';
+    frRender();
+    return true;
+  }
+  function frStartPresence(){
+    if (frBlockPersist()) return false;
+    if (typeof location !== 'undefined' && location.protocol === 'file:') return false;
+    const PeerFn = (typeof Peer === 'function') ? Peer : (typeof window !== 'undefined' && window.Peer);
+    if (typeof PeerFn !== 'function') return false;
+    if (fr._peer) return true;
+    try {
+      const peer = fr._peer = new PeerFn(FR_PREFIX + frMyCode(), {debug: 0, config: (typeof MP_ICE !== 'undefined' && MP_ICE) || undefined});
+      peer.on('connection', conn => {
+        try {
+          conn.on('data', msg => {
+            if (msg && msg.t === 'frhello'){
+              try { conn.send(frPresencePayload()); } catch (e){}
+              if (msg.code && fr.friends[frNormCode(msg.code)]) frApplyPresence(Object.assign({t:'frpres'}, msg));
+            }
+          });
+          conn.on('open', () => { try { conn.send(frPresencePayload()); } catch (e){} });
+        } catch (e){}
+      });
+      peer.on('error', () => { /* ID taken in another tab, or the free broker is down — just skip presence. */ });
+      return true;
+    } catch (e){ fr._peer = null; return false; }
+  }
+  function frPingFriends(){
+    if (frBlockPersist()) return 0;
+    const PeerFn = (typeof Peer === 'function') ? Peer : (typeof window !== 'undefined' && window.Peer);
+    if (typeof PeerFn !== 'function' || !fr._peer) return 0;
+    const list = frList().filter(f => f && !f.local && frNormCode(f.code)).slice(0, 8);
+    list.forEach(f => {
+      try {
+        const conn = fr._peer.connect(FR_PREFIX + f.code, {reliable: true, serialization: 'json'});
+        if (!conn) return;
+        const t = setTimeout(() => { try { conn.close(); } catch (e){} }, 2500);
+        conn.on('open', () => { try { conn.send(Object.assign({t: 'frhello'}, frPresencePayload())); } catch (e){} });
+        conn.on('data', msg => { try { clearTimeout(t); frApplyPresence(msg); conn.close(); } catch (e){} });
+        conn.on('error', () => { try { clearTimeout(t); } catch (e){} });
+      } catch (e){}
+    });
+    return list.length;
+  }
+  function frStartPoll(){
+    if (fr._poll) return;
+    if (typeof setInterval !== 'function') return;
+    fr._poll = setInterval(() => {
+      try {
+        if (typeof document !== 'undefined' && document.hidden) return;
+        frPingFriends();
+      } catch (e){}
+    }, 20000);
+  }
+
+  function frInit(){
+    if (fr._inited){ frRender(); return fr; }
+    fr._inited = true;
+    frLoad();
+    if (!frBlockPersist()) frSave();
+    frBind();
+    frRender();
+    if (typeof setTimeout === 'function') setTimeout(() => { try { frStartPresence(); frStartPoll(); frPingFriends(); } catch (e){} }, 0);
+    return fr;
+  }
+
+  if (typeof window !== 'undefined'){
+    window.FR_KEY = FR_KEY;
+    window.FR_VER = FR_VER;
+    window.FR_LEN = FR_LEN;
+    window.FR_MAX = FR_MAX;
+    window.FR_PREFIX = FR_PREFIX;
+    window.frTestHash = frTestHash;
+    window.frBlockPersist = frBlockPersist;
+    window.frNormCode = frNormCode;
+    window.frMakeCode = frMakeCode;
+    window.frLoad = frLoad;
+    window.frSave = frSave;
+    window.frGetState = frGetState;
+    window.frMyCode = frMyCode;
+    window.frList = frList;
+    window.frCount = frCount;
+    window.frCountOf = frCountOf;
+    window.frAdd = frAdd;
+    window.frRemove = frRemove;
+    window.frMarkCopied = frMarkCopied;
+    window.frNoteLeavingRoom = frNoteLeavingRoom;
+    window.frSessionPeers = frSessionPeers;
+    window.frRender = frRender;
+    window.frOpen = frOpen;
+    window.frCopyCode = frCopyCode;
+    window.frJoinFriend = frJoinFriend;
+    window.frAskRemove = frAskRemove;
+    window.frInit = frInit;
+    window.frStartPresence = frStartPresence;
+    window.frPingFriends = frPingFriends;
+  }
+  /* ===================== end Friends ===================== */
+
+
+
+
 /* ---------- start ---------- */
 setTheme(load('rubloxDark', false));
 try { buildGames(); } catch (err) {}
@@ -3947,6 +4575,7 @@ try { renderContinue(); } catch (err) {}
 requestAnimationFrame(animateLava);
 try { buildAvatarEditor(); drawBig(); drawChip(); updateWelcome(); } catch (err) {}
 try { updateCoins(); renderShop(); renderStuff(); } catch (err) {}
+try { if (typeof frInit === 'function') frInit(); } catch (err) {}
 if (!player) askName();
 </script>
 <script id="three-lib">/* three.js r150.1 (MIT) */
@@ -6841,6 +7470,7 @@ const Obby = (() => {
     else { if (running) stop(); showMsg('😢', why === 'kick' ? 'Removed from the room' : 'The host left', t + ' You can keep playing on your own, or join a new room!'); }
   }
   function mpLeave(){
+    try { if (typeof frNoteLeavingRoom === 'function') frNoteLeavingRoom(); } catch (e){}
     mp.js = null;
     if (mp.on) mpSend({t: 'bye'}); mp.leaving = true;   // our own goodbye: don't show "the host left"
     const wasTag = running && tg && tg.remote;
@@ -6874,6 +7504,12 @@ const Obby = (() => {
       const d = document.createElement('span'); d.className = 'mpp';
       const dot = document.createElement('i'); dot.style.background = p.av && /^#[0-9a-f]{3,8}$/i.test(p.av.shirt) ? p.av.shirt : '#3a86ff'; d.appendChild(dot);
       d.appendChild(document.createTextNode((p.uid === 'H' ? '👑 ' : '') + p.name + ((mp.host ? p.uid === 'H' : p.uid === mp.me) ? ' (you)' : '')));
+      const self = mp.host ? p.uid === 'H' : p.uid === mp.me;
+      if (!self){
+        const add = document.createElement('button'); add.textContent = '➕'; add.title = 'Add ' + p.name + ' as a friend'; add.className = 'fraddmp';
+        add.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); try { if (typeof frAdd === 'function'){ const rec = frAdd('', {name: p.name, color: p.av && p.av.shirt, from: 'session'}, {local:true}); if (typeof toast === 'function') toast(rec && rec.ok ? ('Added ' + p.name + ' as a friend!') : (rec && rec.reason === 'already' ? 'You already added ' + p.name : 'Could not add ' + p.name)); } } catch (e){} };
+        d.appendChild(add);
+      }
       if (mp.host && p.uid !== 'H'){ const x = document.createElement('button'); x.textContent = '✖'; x.title = 'Remove ' + p.name; x.onclick = () => mpKick(p.uid); d.appendChild(x); }
       L.appendChild(d);
     });

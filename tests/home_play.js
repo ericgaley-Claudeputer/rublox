@@ -63,9 +63,9 @@ function makeEl(id){
   return el;
 }
 
-test('BUILD is 2026.11.12-17 and matches version.json', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.12-17'"));
-  assert.strictEqual(version.build, '2026.11.12-17');
+test('BUILD is 2026.11.15-1 and matches version.json', () => {
+  assert.ok(src.includes("const BUILD = '2026.11.15-1'"));
+  assert.strictEqual(version.build, '2026.11.15-1');
 });
 
 
@@ -465,6 +465,21 @@ test('hosting a room times out with a friendly retry instead of hanging on start
   const r = src.indexOf('function mpRender(){');
   assert.ok(r >= 0 && src.slice(r, r + 500).includes('dhRenderInvite()'));
   assert.ok(src.includes('id="dhVisitRetry"') && src.includes('function dhRetryInvite'));
+});
+
+
+
+test('Friends is its own page before Achievements, with a 6-letter code and no double-highlight trap', () => {
+  const frSec = src.indexOf('<section id="friends">');
+  const achSec = src.indexOf('<section id="achievements">');
+  assert.ok(frSec >= 0 && achSec > frSec, 'Friends must come before Achievements in the DOM');
+  assert.ok(src.includes("const ids = ['home','games','avatar','shop','friends','achievements']"));
+  assert.ok(src.includes("['home','games','avatar','shop','friends','achievements'].forEach"));
+  assert.ok(/#friends\{[^}]*min-height:calc\(100vh/.test(src), 'Friends needs a min-height so scrollIntoView can pin it at the top');
+  assert.ok(src.includes('id="frMyCode"') && src.includes('id="frLen"') && /6 letters/.test(src));
+  assert.ok(src.includes('id="frAddIn"') && src.includes('id="frAddBtn"') && src.includes('id="frList"') && src.includes('id="frConfirm"'));
+  assert.ok((src.match(/data-go="friends"/g) || []).length >= 2, 'nav and hero Friends buttons');
+  assert.ok(src.includes("if (navId === 'home')") && src.includes('goPageTop('));
 });
 
 
