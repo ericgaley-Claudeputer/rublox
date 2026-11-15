@@ -257,5 +257,13 @@ function fresh(opts) {
          < HTML.indexOf('/* ---------- start ---------- */'));
 })();
 
+
+(function(){
+  chk('Add friend and Copy do not fire twice (stopPropagation, not also handled on #friends)',
+    SRC.includes("ev.stopPropagation(); frTryAddFromBox()")
+      && SRC.includes("ev.stopPropagation(); frCopyCode()")
+      && !SRC.includes("closest('[data-frjoin],[data-frrm],[data-frpend],#frCopy,#frAddBtn')"));
+})();
+
 console.log('RESULT', pass, '/', pass + fail);
 process.exit(fail ? 1 : 0);

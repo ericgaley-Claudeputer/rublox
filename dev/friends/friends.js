@@ -383,10 +383,8 @@
   }
 
   function frOnListClick(ev){
-    const t = ev.target && ev.target.closest && ev.target.closest('[data-frjoin],[data-frrm],[data-frpend],#frCopy,#frAddBtn');
+    const t = ev.target && ev.target.closest && ev.target.closest('[data-frjoin],[data-frrm],[data-frpend]');
     if (!t) return;
-    if (t.id === 'frCopy'){ ev.preventDefault(); frCopyCode(); return; }
-    if (t.id === 'frAddBtn'){ ev.preventDefault(); frTryAddFromBox(); return; }
     if (t.dataset.frjoin){ ev.preventDefault(); frJoinFriend(t.dataset.frjoin); return; }
     if (t.dataset.frrm){ ev.preventDefault(); frAskRemove(t.dataset.frrm); return; }
     if (t.dataset.frpend != null){
@@ -412,9 +410,9 @@
       inp.addEventListener('keydown', ev => { if (ev.key === 'Enter'){ ev.preventDefault(); frTryAddFromBox(); } });
     }
     const copy = document.getElementById('frCopy');
-    if (copy && !copy._frBound){ copy._frBound = true; copy.addEventListener('click', ev => { ev.preventDefault(); frCopyCode(); }); }
+    if (copy && !copy._frBound){ copy._frBound = true; copy.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); frCopyCode(); }); }
     const add = document.getElementById('frAddBtn');
-    if (add && !add._frBound){ add._frBound = true; add.addEventListener('click', ev => { ev.preventDefault(); frTryAddFromBox(); }); }
+    if (add && !add._frBound){ add._frBound = true; add.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); frTryAddFromBox(); }); }
   }
 
   /* Best-effort presence over the same free PeerJS transport as family rooms.
