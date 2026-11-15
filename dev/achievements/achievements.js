@@ -82,6 +82,11 @@
     // Friends
     {id:'mp-host', cat:'friends', emoji:'📣', name:'Come On Over', desc:'Host a room so friends can join you.', coins:10, prove:s => !!(s.notes && s.notes['mp:host'])},
     {id:'mp-friend', cat:'friends', emoji:'👫', name:'Better Together', desc:'Play a game with a friend in the same room.', coins:20, prove:s => !!(s.notes && s.notes['mp:friend'])},
+    {id:'fr-first', cat:'friends', emoji:'🤝', name:'New Pal', desc:'Add your first friend with a code or after a game together.', coins:10, prove:s => achFriendCount(s) >= 1},
+    {id:'fr-3', cat:'friends', emoji:'🟡', name:'Little Circle', desc:'Have 3 friends on your list.', coins:15, prove:s => achFriendCount(s) >= 3},
+    {id:'fr-code', cat:'friends', emoji:'📋', name:'Pass It On', desc:'Copy your 6-letter friend code to share with family.', coins:5, prove:s => !!(s.friends && s.friends.copied) || !!(s.notes && s.notes['fr:code'])},
+    {id:'fr-join', cat:'friends', emoji:'🚪', name:'Come Play', desc:'Join a friend who is already in a game.', coins:15, prove:s => !!(s.notes && s.notes['fr:join'])},
+    {id:'fr-session', cat:'friends', emoji:'🎮', name:'We Played!', desc:'Add a friend after you played together in a room.', coins:15, prove:s => !!(s.notes && s.notes['fr:session'])},
     // Collection
     {id:'welcome', cat:'collection', emoji:'👋', name:'Hello, Friend', desc:'Pick a player name and join Rublox.', coins:5, prove:s => !!(s.player && s.player.name)},
     {id:'first-game', cat:'collection', emoji:'🎮', name:'Let\'s Play', desc:'Start any Rublox game.', coins:5, prove:s => !!(s.notes && s.notes.play) || !!(s.recent && s.recent.length >= 1)},
@@ -220,10 +225,16 @@
       dance: L('rubloxDance', null),
       water: L('rubloxWaterPark', null),
       recent: L('rubloxRecentGames', []),
-      notes: Object.assign({}, ach.notes)
+      notes: Object.assign({}, ach.notes),
+      friends: (typeof frGetState === 'function') ? frGetState() : L('rubloxFriends', null)
     };
     if (extra && typeof extra === 'object') Object.keys(extra).forEach(k => { snap[k] = extra[k]; });
     return snap;
+  }
+  function achFriendCount(s){
+    const bag = s && s.friends && s.friends.friends;
+    if (!bag || typeof bag !== 'object') return 0;
+    return Object.keys(bag).length;
   }
   function achProven(a, snap){
     if (!a || typeof a.prove !== 'function') return false;
