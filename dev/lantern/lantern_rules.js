@@ -136,6 +136,14 @@
   const LH_Y = {grass: 0, path: 0.03, floor: 0.07, runner: 0.10, ring: 0.13, pad: 0.16, wagon: 0.22};
   const LH_CAM_NEAR = 0.2;
   const LH_CAM_FAR = 280;
+  /* Walls must be taller than a jump (JUMP^2 / 2GRAV ≈ 2.84) and taller than the old 3.2 shell,
+     which was also built with plat() top=h/2, so the visible top was only 1.6. */
+  const LH_WAGON_H = 5.6;
+  const LH_MIDWAY_WALL_H = 5.6;
+  const LH_DOOR_OPEN_H = 3.2;
+  const LH_KNOCK_COOLDOWN = 7;
+  const LH_KNOCK_TIMEOUT = 10;
+  const LH_KNOCK_SOLO_OPEN = 0.5;
   const LH_STATIC_PERIOD = 1.2; // seconds; 2 steps → ~1.67 flashes/sec, under 3
   const LH_STATIC_MAX_HZ = 3;
 
@@ -312,21 +320,24 @@
     R = R || {};
     const w = +(R.w != null ? R.w : 8);
     const d = +(R.d != null ? R.d : 6.2);
-    const h = +(R.h != null ? R.h : 3.2);
+    const h = +(R.h != null ? R.h : LH_WAGON_H);
     const side = R.side == null ? 1 : +R.side;
     const x = +R.x || 0;
     const z = +R.z || 0;
     const openW = 2.24;
-    const openH = 2.4;
+    const openH = Math.min(LH_DOOR_OPEN_H, Math.max(2.2, h - 0.8));
     const ix = x - side * (w / 2);
     const stubD = (d - openW) / 2;
     const stubOff = openW / 2 + stubD / 2;
+    const transomH = Math.max(0, h - openH);
     return {
       w, d, h, side, x, z, ix,
       openW, openH,
-      transomH: h - openH,
-      transomY: openH + (h - openH) / 2,
+      transomH: transomH,
+      transomY: openH + transomH / 2,
+      transomTop: h,
       transomD: openW + 0.08,
+      wallTop: h,
       stubD, stubOff,
       stubZ0: z - stubOff,
       stubZ1: z + stubOff,
@@ -346,7 +357,9 @@
     const doorZ1 = layout.hingeZ + layout.doorD;
     const coversZ = doorZ0 <= z0 + 0.001 && doorZ1 >= z1 - 0.001;
     const doorCoversY = layout.doorH >= layout.openH - 0.001;
-    const transomCoversY = layout.transomY - layout.transomH / 2 <= layout.openH + 0.02 && layout.transomY + layout.transomH / 2 >= layout.h - 0.001;
+    const transomTop = layout.transomTop != null ? layout.transomTop : (layout.transomY + layout.transomH / 2);
+    const transomBot = transomTop - layout.transomH;
+    const transomCoversY = layout.transomH <= 0.001 ? (layout.doorH >= layout.h - 0.001) : (transomBot <= layout.openH + 0.02 && transomTop >= layout.h - 0.001);
     return !!(coversZ && doorCoversY && transomCoversY);
   }
 
@@ -354,7 +367,7 @@
     if (!R) return [];
     const w = +(R.w != null ? R.w : 8);
     const d = +(R.d != null ? R.d : 6.2);
-    const h = +(R.h != null ? R.h : 3.2);
+    const h = +(R.h != null ? R.h : LH_WAGON_H);
     const y0 = R.floorY != null ? +R.floorY : 0.22;
     const y1 = h;
     const midY = (y0 + y1) / 2;
@@ -391,7 +404,7 @@
       }
       if (!(t > 0.12) || t > bestT) return;
       const hx = ox + dx * t, hy = oy + dy * t, hz = oz + dz * t;
-      const y0 = p.y0 != null ? p.y0 : 0.2, y1 = p.y1 != null ? p.y1 : 3.2;
+      const y0 = p.y0 != null ? p.y0 : 0.2, y1 = p.y1 != null ? p.y1 : LH_WAGON_H;
       if (hy < y0 || hy > y1) return;
       if (p.axis === 'x'){
         const c = p.z != null ? p.z : 0, half = p.hz != null ? p.hz : ((p.w || 3) / 2);
@@ -501,9 +514,91 @@
     }).filter(Boolean);
   }
 
+
+  const LH_KNOCK_SOLO_OPEN_LINES = [
+    'The door creaks open… by itself.',
+    'A whisper: “Come in… if you dare.”',
+    'The handle turns. Nobody is there.'
+  ];
+  const LH_KNOCK_SOLO_STAY_LINES = [
+    'Something shuffles, then goes quiet.',
+    'A small voice: “We\'re not home.”',
+    'The door stays shut. You hear a faint giggle.',
+    'No one answers. Maybe that\'s for the best.'
+  ];
+
+  function lhDoorPromptKind(st){
+    st = st || {};
+    if (st.isOwner) return {id: 'door', label: st.doorClosed ? '🚪 Open door' : '🚪 Close door'};
+    if (!st.doorClosed) return {id: 'enter', label: '🚪 Enter wagon' + (st.wagonNo ? (' ' + st.wagonNo) : '')};
+    return {id: 'knock', label: '🚪 Knock'};
+  }
+
+  function lhKnockCooldownLeft(lastAt, now, cd){
+    const cool = cd == null ? LH_KNOCK_COOLDOWN : +cd;
+    const wait = cool - ((+now || 0) - (+lastAt || 0));
+    return Math.max(0, wait);
+  }
+
+  function lhKnockAllowed(st){
+    st = st || {};
+    if (st.isOwner) return {ok: false, reason: 'own'};
+    if (!st.doorClosed) return {ok: false, reason: 'open'};
+    const wait = lhKnockCooldownLeft(st.lastAt, st.now, st.cooldown);
+    if (wait > 0) return {ok: false, reason: 'cooldown', wait: wait};
+    return {ok: true};
+  }
+
+  function lhPickLine(list, rand){
+    const arr = list || [];
+    if (!arr.length) return '';
+    const r = typeof rand === 'function' ? rand() : (typeof rand === 'number' ? rand : Math.random());
+    const i = Math.max(0, Math.min(arr.length - 1, Math.floor((r % 1 + 1) % 1 * arr.length)));
+    return arr[i];
+  }
+
+  /* Solo unowned/NPC rooms: random spooky open or stay. MP with no owner, or an owner who is away/offline: stay closed. In-room owners get a popup. */
+  function lhKnockResolve(st, rand){
+    st = st || {};
+    const r = typeof rand === 'function' ? rand() : (typeof rand === 'number' ? rand : Math.random());
+    if (st.solo && !st.hasOwner){
+      const openChance = st.openChance != null ? st.openChance : LH_KNOCK_SOLO_OPEN;
+      if (r < openChance){
+        return {mode: 'open', reason: 'solo-open', message: lhPickLine(LH_KNOCK_SOLO_OPEN_LINES, r / Math.max(openChance, 1e-6))};
+      }
+      return {mode: 'closed', reason: 'solo-stay', message: lhPickLine(LH_KNOCK_SOLO_STAY_LINES, (r - openChance) / Math.max(1 - openChance, 1e-6))};
+    }
+    if (!st.hasOwner || !st.ownerOnline){
+      return {mode: 'closed', reason: 'offline', message: 'Nobody\'s home. The door stays closed.', timeout: 0};
+    }
+    if (!st.ownerInRoom){
+      return {mode: 'closed', reason: 'away', message: 'They must be out. The door stays closed.', timeout: 0};
+    }
+    return {mode: 'popup', reason: 'offer', message: 'Someone is knocking!', timeout: LH_KNOCK_TIMEOUT};
+  }
+
+  function lhKnockReplyMessage(reason){
+    const m = {
+      open: 'They opened the door.',
+      closed: 'They kept the door closed.',
+      timeout: 'No one answered. The door stays closed.',
+      away: 'They must be out. The door stays closed.',
+      offline: 'Nobody\'s home. The door stays closed.'
+    };
+    return m[reason] || m.timeout;
+  }
+
+  function lhJumpClearHeight(jump, grav){
+    jump = jump == null ? 16 : +jump;
+    grav = grav == null ? 45 : +grav;
+    if (!(grav > 0)) return 0;
+    return (jump * jump) / (2 * grav);
+  }
+
   const api = {
     LH_KEY, LH_VER, LH_HOST, LH_HOST_TITLE, LH_GAME, LH_STAMPS, LH_EYES,
     LH_WALL_PRESETS, LH_WALL_MAX_CHARS, LH_WALL_MAX_PER_PLAYER, LH_WALL_MAX_DIST, LH_PII_REASONS,
+    LH_WAGON_H, LH_MIDWAY_WALL_H, LH_DOOR_OPEN_H, LH_KNOCK_COOLDOWN, LH_KNOCK_TIMEOUT, LH_KNOCK_SOLO_OPEN,
     LH_COMPANY_R, LH_NEAR_R, LH_SUMMON_R, LH_TAG_R, LH_KEY_CD, LH_LAMP_R, LH_WAGON_ZS,
     LH_WAGONS_PER_SIDE, LH_WAGON_COUNT, LH_WAGON_SPACING, LH_WAGON_Z0, LH_WAGON_X,
     LH_MIDWAY_WALL_X, LH_MIDWAY_Z0, LH_MIDWAY_Z1, LH_DOOR_HALF,
@@ -517,7 +612,9 @@
     lhMidwayWallSegments, lhMidwayBlocksSide, lhNearLamp,
     lhWagonZs, lhWagonCount, lhDoorTarget, lhDoorShouldAutoOpen, lhGroundGapOk, lhMapLayout,
     lhRoomContains, lhDoorAjar, lhRoomInteriorVisible, lhDoorwayLayout, lhDoorSealsOpening,
-    lhWagonWallPlanes, lhRayWall, lhNormalizeWallText, lhAddWallWord, lhEraseWallWord, lhSanitizeWallWords
+    lhWagonWallPlanes, lhRayWall, lhNormalizeWallText, lhAddWallWord, lhEraseWallWord, lhSanitizeWallWords,
+    lhDoorPromptKind, lhKnockCooldownLeft, lhKnockAllowed, lhKnockResolve, lhKnockReplyMessage, lhJumpClearHeight, lhPickLine,
+    LH_KNOCK_SOLO_OPEN_LINES, LH_KNOCK_SOLO_STAY_LINES
   };
   root.LHRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

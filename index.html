@@ -1066,6 +1066,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 
 
 
+
 /* ---------- lantern hotel css ---------- */
 /* t286u Lantern Big Top HUD */
 #lhBox{display:none}
@@ -1122,10 +1123,10 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 #lhSkip,#lhCalmSkip{margin-top:16px;border:3px solid #fff;border-radius:14px;background:#6b3cff;color:#fff;font:inherit;font-weight:900;padding:8px 16px;cursor:pointer;z-index:1}
 .lh-breathe{width:110px;height:110px;border:6px solid #fff;border-radius:50%;margin:8px auto 16px;background:radial-gradient(circle at 40% 40%,#7cffd0,#6b3cff);animation:lhbreathe 2.2s ease-in-out infinite}
 @keyframes lhbreathe{0%,100%{transform:scale(.82)}50%{transform:scale(1.08)}}
-#lhSet,#lhDraw,#lhWrite{display:none;position:absolute;inset:0;z-index:25;background:rgba(20,8,36,.55);align-items:center;justify-content:center;pointer-events:auto}
-#lhSet.show,#lhDraw.show,#lhWrite.show{display:flex}
-#lhSet .mbox,#lhDraw .mbox,#lhWrite .mbox{background:#fff7fb;border:4px solid #1d2340;border-radius:20px;padding:16px;max-width:420px;width:calc(100% - 28px);color:#1d2340;box-shadow:0 8px 0 rgba(80,20,90,.25)}
-#lhSet h2,#lhDraw h2,#lhWrite h2{margin:0 0 8px;font-size:22px}
+#lhSet,#lhDraw,#lhWrite,#lhKnock{display:none;position:absolute;inset:0;z-index:25;background:rgba(20,8,36,.55);align-items:center;justify-content:center;pointer-events:auto}
+#lhSet.show,#lhDraw.show,#lhWrite.show,#lhKnock.show{display:flex}
+#lhSet .mbox,#lhDraw .mbox,#lhWrite .mbox,#lhKnock .mbox{background:#fff7fb;border:4px solid #1d2340;border-radius:20px;padding:16px;max-width:420px;width:calc(100% - 28px);color:#1d2340;box-shadow:0 8px 0 rgba(80,20,90,.25)}
+#lhSet h2,#lhDraw h2,#lhWrite h2,#lhKnock h2{margin:0 0 8px;font-size:22px}
 #lhWritePresets{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
 #lhWritePresets button,#lhWriteStyle button{border:3px solid #1d2340;border-radius:14px;background:#fff;font:inherit;font-weight:900;padding:10px 12px;cursor:pointer;min-height:44px;color:#1d2340}
 #lhWritePresets button.on,#lhWriteStyle button.on{background:#8a1020;color:#fff;border-color:#4a0810}
@@ -1180,7 +1181,7 @@ body.lh-muffled #obby{filter:saturate(.85)}
 /* #lhRoot is z-index 20 and covers the screen; the Close/Open door prompt must sit above it or Mac clicks never reach the button. */
 #lhAct.fsnear,#obby.lhmode #lhAct.show{z-index:22;pointer-events:auto}
 
-#obby.lhmode #lhCut,#obby.lhmode #lhCalm,#obby.lhmode #lhSet,#obby.lhmode #lhDraw,#obby.lhmode #lhWrite,#obby.lhmode #lhMap{pointer-events:auto;z-index:90}
+#obby.lhmode #lhCut,#obby.lhmode #lhCalm,#obby.lhmode #lhSet,#obby.lhmode #lhDraw,#obby.lhmode #lhWrite,#obby.lhmode #lhKnock,#obby.lhmode #lhMap{pointer-events:auto;z-index:90}
 #obby.lhmode #lhKeyTag{z-index:21}
 
 /* Start-fail safety net (kept here so lantern css refresh does not drop it). */
@@ -1205,6 +1206,13 @@ body.lh-muffled #obby{filter:saturate(.85)}
 #lhMeter.lh-lamp .lh-meterbox{border-color:#ffd27a;box-shadow:0 4px 0 rgba(80,20,90,.45),0 0 16px rgba(255,210,122,.55)}
 .lh-bar.lh-lamp i{animation:lhlampglow 1.4s ease-in-out infinite alternate}
 @keyframes lhlampglow{from{filter:brightness(1);box-shadow:none}to{filter:brightness(1.35) saturate(1.2);box-shadow:0 0 8px #ffd27a}}
+
+#lhKnockMsg{font-weight:800;font-size:16px;margin:4px 0 8px;line-height:1.35}
+#lhKnockLeft{font-weight:900;font-size:13px;opacity:.7;margin-bottom:10px}
+#lhKnock .lh-knock-row{display:flex;gap:10px;flex-wrap:wrap}
+#lhKnockOpen,#lhKnockKeep{flex:1;min-height:48px;min-width:120px;border:3px solid #1d2340;border-radius:14px;font:inherit;font-weight:900;padding:12px 14px;cursor:pointer}
+#lhKnockOpen{background:#2ec27e;color:#08351c}
+#lhKnockKeep{background:#efe8f8;color:#1d2340}
 
 /* ---------- /lantern hotel css ---------- */
 </style>
@@ -1839,6 +1847,17 @@ body.lh-muffled #obby{filter:saturate(.85)}
         <button type="button" class="big green" id="lhSetClose">Done ✅</button>
       </div>
     </div>
+    <div id="lhKnock">
+      <div class="mbox">
+        <h2>🚪 Someone is knocking!</h2>
+        <p id="lhKnockMsg">A guest is at your wagon door.</p>
+        <div id="lhKnockLeft">10s</div>
+        <div class="lh-knock-row">
+          <button type="button" class="big green" id="lhKnockOpen">Open</button>
+          <button type="button" class="big gray" id="lhKnockKeep">Keep closed</button>
+        </div>
+      </div>
+    </div>
     <div id="lhWrite">
       <div class="mbox">
         <h2>✍️ Write on the wall</h2>
@@ -2117,7 +2136,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-8';
+const BUILD = '2026.11.16-9';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2981,6 +3000,7 @@ function drawLantern(ctx){
 
 
 
+
 function drawHaunt(ctx){
   sky(ctx, '#2a2450', '#5b4d7a');
   ctx.fillStyle = '#4a3f6b'; ctx.fillRect(0, 140, 320, 60);
@@ -3703,6 +3723,7 @@ function confetti(){
       const loc = (typeof location !== 'undefined' && location) || (typeof window !== 'undefined' && window.location) || null;
       const hash = loc && loc.hash ? String(loc.hash) : '';
       if (/(?:^|#|&)chattest=/i.test(hash)) return true;
+      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
@@ -6030,6 +6051,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
 
 
 
+
 /* ---------- lantern rules ---------- */
 /* Pure Lantern Big Top rules — safe to require() in tests and to load in the page. */
 (function (root) {
@@ -6169,6 +6191,14 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
   const LH_Y = {grass: 0, path: 0.03, floor: 0.07, runner: 0.10, ring: 0.13, pad: 0.16, wagon: 0.22};
   const LH_CAM_NEAR = 0.2;
   const LH_CAM_FAR = 280;
+  /* Walls must be taller than a jump (JUMP^2 / 2GRAV ≈ 2.84) and taller than the old 3.2 shell,
+     which was also built with plat() top=h/2, so the visible top was only 1.6. */
+  const LH_WAGON_H = 5.6;
+  const LH_MIDWAY_WALL_H = 5.6;
+  const LH_DOOR_OPEN_H = 3.2;
+  const LH_KNOCK_COOLDOWN = 7;
+  const LH_KNOCK_TIMEOUT = 10;
+  const LH_KNOCK_SOLO_OPEN = 0.5;
   const LH_STATIC_PERIOD = 1.2; // seconds; 2 steps → ~1.67 flashes/sec, under 3
   const LH_STATIC_MAX_HZ = 3;
 
@@ -6345,21 +6375,24 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     R = R || {};
     const w = +(R.w != null ? R.w : 8);
     const d = +(R.d != null ? R.d : 6.2);
-    const h = +(R.h != null ? R.h : 3.2);
+    const h = +(R.h != null ? R.h : LH_WAGON_H);
     const side = R.side == null ? 1 : +R.side;
     const x = +R.x || 0;
     const z = +R.z || 0;
     const openW = 2.24;
-    const openH = 2.4;
+    const openH = Math.min(LH_DOOR_OPEN_H, Math.max(2.2, h - 0.8));
     const ix = x - side * (w / 2);
     const stubD = (d - openW) / 2;
     const stubOff = openW / 2 + stubD / 2;
+    const transomH = Math.max(0, h - openH);
     return {
       w, d, h, side, x, z, ix,
       openW, openH,
-      transomH: h - openH,
-      transomY: openH + (h - openH) / 2,
+      transomH: transomH,
+      transomY: openH + transomH / 2,
+      transomTop: h,
       transomD: openW + 0.08,
+      wallTop: h,
       stubD, stubOff,
       stubZ0: z - stubOff,
       stubZ1: z + stubOff,
@@ -6379,7 +6412,9 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     const doorZ1 = layout.hingeZ + layout.doorD;
     const coversZ = doorZ0 <= z0 + 0.001 && doorZ1 >= z1 - 0.001;
     const doorCoversY = layout.doorH >= layout.openH - 0.001;
-    const transomCoversY = layout.transomY - layout.transomH / 2 <= layout.openH + 0.02 && layout.transomY + layout.transomH / 2 >= layout.h - 0.001;
+    const transomTop = layout.transomTop != null ? layout.transomTop : (layout.transomY + layout.transomH / 2);
+    const transomBot = transomTop - layout.transomH;
+    const transomCoversY = layout.transomH <= 0.001 ? (layout.doorH >= layout.h - 0.001) : (transomBot <= layout.openH + 0.02 && transomTop >= layout.h - 0.001);
     return !!(coversZ && doorCoversY && transomCoversY);
   }
 
@@ -6387,7 +6422,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     if (!R) return [];
     const w = +(R.w != null ? R.w : 8);
     const d = +(R.d != null ? R.d : 6.2);
-    const h = +(R.h != null ? R.h : 3.2);
+    const h = +(R.h != null ? R.h : LH_WAGON_H);
     const y0 = R.floorY != null ? +R.floorY : 0.22;
     const y1 = h;
     const midY = (y0 + y1) / 2;
@@ -6424,7 +6459,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
       }
       if (!(t > 0.12) || t > bestT) return;
       const hx = ox + dx * t, hy = oy + dy * t, hz = oz + dz * t;
-      const y0 = p.y0 != null ? p.y0 : 0.2, y1 = p.y1 != null ? p.y1 : 3.2;
+      const y0 = p.y0 != null ? p.y0 : 0.2, y1 = p.y1 != null ? p.y1 : LH_WAGON_H;
       if (hy < y0 || hy > y1) return;
       if (p.axis === 'x'){
         const c = p.z != null ? p.z : 0, half = p.hz != null ? p.hz : ((p.w || 3) / 2);
@@ -6534,9 +6569,91 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     }).filter(Boolean);
   }
 
+
+  const LH_KNOCK_SOLO_OPEN_LINES = [
+    'The door creaks open… by itself.',
+    'A whisper: “Come in… if you dare.”',
+    'The handle turns. Nobody is there.'
+  ];
+  const LH_KNOCK_SOLO_STAY_LINES = [
+    'Something shuffles, then goes quiet.',
+    'A small voice: “We\'re not home.”',
+    'The door stays shut. You hear a faint giggle.',
+    'No one answers. Maybe that\'s for the best.'
+  ];
+
+  function lhDoorPromptKind(st){
+    st = st || {};
+    if (st.isOwner) return {id: 'door', label: st.doorClosed ? '🚪 Open door' : '🚪 Close door'};
+    if (!st.doorClosed) return {id: 'enter', label: '🚪 Enter wagon' + (st.wagonNo ? (' ' + st.wagonNo) : '')};
+    return {id: 'knock', label: '🚪 Knock'};
+  }
+
+  function lhKnockCooldownLeft(lastAt, now, cd){
+    const cool = cd == null ? LH_KNOCK_COOLDOWN : +cd;
+    const wait = cool - ((+now || 0) - (+lastAt || 0));
+    return Math.max(0, wait);
+  }
+
+  function lhKnockAllowed(st){
+    st = st || {};
+    if (st.isOwner) return {ok: false, reason: 'own'};
+    if (!st.doorClosed) return {ok: false, reason: 'open'};
+    const wait = lhKnockCooldownLeft(st.lastAt, st.now, st.cooldown);
+    if (wait > 0) return {ok: false, reason: 'cooldown', wait: wait};
+    return {ok: true};
+  }
+
+  function lhPickLine(list, rand){
+    const arr = list || [];
+    if (!arr.length) return '';
+    const r = typeof rand === 'function' ? rand() : (typeof rand === 'number' ? rand : Math.random());
+    const i = Math.max(0, Math.min(arr.length - 1, Math.floor((r % 1 + 1) % 1 * arr.length)));
+    return arr[i];
+  }
+
+  /* Solo unowned/NPC rooms: random spooky open or stay. MP with no owner, or an owner who is away/offline: stay closed. In-room owners get a popup. */
+  function lhKnockResolve(st, rand){
+    st = st || {};
+    const r = typeof rand === 'function' ? rand() : (typeof rand === 'number' ? rand : Math.random());
+    if (st.solo && !st.hasOwner){
+      const openChance = st.openChance != null ? st.openChance : LH_KNOCK_SOLO_OPEN;
+      if (r < openChance){
+        return {mode: 'open', reason: 'solo-open', message: lhPickLine(LH_KNOCK_SOLO_OPEN_LINES, r / Math.max(openChance, 1e-6))};
+      }
+      return {mode: 'closed', reason: 'solo-stay', message: lhPickLine(LH_KNOCK_SOLO_STAY_LINES, (r - openChance) / Math.max(1 - openChance, 1e-6))};
+    }
+    if (!st.hasOwner || !st.ownerOnline){
+      return {mode: 'closed', reason: 'offline', message: 'Nobody\'s home. The door stays closed.', timeout: 0};
+    }
+    if (!st.ownerInRoom){
+      return {mode: 'closed', reason: 'away', message: 'They must be out. The door stays closed.', timeout: 0};
+    }
+    return {mode: 'popup', reason: 'offer', message: 'Someone is knocking!', timeout: LH_KNOCK_TIMEOUT};
+  }
+
+  function lhKnockReplyMessage(reason){
+    const m = {
+      open: 'They opened the door.',
+      closed: 'They kept the door closed.',
+      timeout: 'No one answered. The door stays closed.',
+      away: 'They must be out. The door stays closed.',
+      offline: 'Nobody\'s home. The door stays closed.'
+    };
+    return m[reason] || m.timeout;
+  }
+
+  function lhJumpClearHeight(jump, grav){
+    jump = jump == null ? 16 : +jump;
+    grav = grav == null ? 45 : +grav;
+    if (!(grav > 0)) return 0;
+    return (jump * jump) / (2 * grav);
+  }
+
   const api = {
     LH_KEY, LH_VER, LH_HOST, LH_HOST_TITLE, LH_GAME, LH_STAMPS, LH_EYES,
     LH_WALL_PRESETS, LH_WALL_MAX_CHARS, LH_WALL_MAX_PER_PLAYER, LH_WALL_MAX_DIST, LH_PII_REASONS,
+    LH_WAGON_H, LH_MIDWAY_WALL_H, LH_DOOR_OPEN_H, LH_KNOCK_COOLDOWN, LH_KNOCK_TIMEOUT, LH_KNOCK_SOLO_OPEN,
     LH_COMPANY_R, LH_NEAR_R, LH_SUMMON_R, LH_TAG_R, LH_KEY_CD, LH_LAMP_R, LH_WAGON_ZS,
     LH_WAGONS_PER_SIDE, LH_WAGON_COUNT, LH_WAGON_SPACING, LH_WAGON_Z0, LH_WAGON_X,
     LH_MIDWAY_WALL_X, LH_MIDWAY_Z0, LH_MIDWAY_Z1, LH_DOOR_HALF,
@@ -6550,7 +6667,9 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     lhMidwayWallSegments, lhMidwayBlocksSide, lhNearLamp,
     lhWagonZs, lhWagonCount, lhDoorTarget, lhDoorShouldAutoOpen, lhGroundGapOk, lhMapLayout,
     lhRoomContains, lhDoorAjar, lhRoomInteriorVisible, lhDoorwayLayout, lhDoorSealsOpening,
-    lhWagonWallPlanes, lhRayWall, lhNormalizeWallText, lhAddWallWord, lhEraseWallWord, lhSanitizeWallWords
+    lhWagonWallPlanes, lhRayWall, lhNormalizeWallText, lhAddWallWord, lhEraseWallWord, lhSanitizeWallWords,
+    lhDoorPromptKind, lhKnockCooldownLeft, lhKnockAllowed, lhKnockResolve, lhKnockReplyMessage, lhJumpClearHeight, lhPickLine,
+    LH_KNOCK_SOLO_OPEN_LINES, LH_KNOCK_SOLO_STAY_LINES
   };
   root.LHRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -7379,7 +7498,7 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null;
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
     if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
@@ -15722,12 +15841,14 @@ const Obby = (() => {
       const w = lhMesh(new THREE.CylinderGeometry(0.38, 0.38, 0.22, 10), lhMat('#1d2340'), R.x + R.side * (R.w / 2 - 0.2), 0.38, wz);
       if (w) w.rotation.z = Math.PI / 2;
     });
-    // peaked canvas roof
-    const roof = lhMesh(new THREE.ConeGeometry(R.w * 0.58, 1.1, 8), lhMat(wall || '#ffb3de'), R.x, 3.7, R.z);
+    // peaked canvas roof, sitting on the taller wall plate
+    const wallH = (R && R.h) || (LH_RULES.LH_WAGON_H) || 5.6;
+    const roof = lhMesh(new THREE.ConeGeometry(R.w * 0.58, 1.3, 8), lhMat(wall || '#ffb3de'), R.x, wallH + 0.65, R.z);
     if (roof){ lhPaintStripe(roof, wall || '#e31c23', '#fff8f0', 6, 1); if (roof.material){ roof.material.side = THREE.DoubleSide; roof.material.needsUpdate = true; } }
-    // awning over the door (midway side)
+    // awning over the (human-height) door, not the wall top
     const ix = R.x - R.side * (R.w / 2);
-    const aw = lhMesh(new THREE.BoxGeometry(1.6, 0.08, 1.8), lhMat('#fff8f0'), ix - R.side * 0.7, 2.55, R.z);
+    const awningY = Math.max(2.7, ((LH_RULES.LH_DOOR_OPEN_H || 3.2) - 0.35));
+    const aw = lhMesh(new THREE.BoxGeometry(1.6, 0.08, 1.8), lhMat('#fff8f0'), ix - R.side * 0.7, awningY, R.z);
     if (aw){ aw.rotation.z = R.side * 0.25; lhPaintStripe(aw, '#e31c23', '#fff8f0', 5, 1); }
   }
 
@@ -15976,7 +16097,7 @@ const Obby = (() => {
       lights: {}, doors: {},
       rooms: [], npcs: [], host: null, vesper: null, exitDoor: null,
       keyholder: null, keyCd: 0, pester: 0, taggedLock: 0,
-      doodleOpen: false, setOpen: false, writeOpen: false, writeStyle: 'paint', writeSel: 0, lastHud: '', words: (prog.wallWords || []).slice(), wordMeshes: [],
+      doodleOpen: false, setOpen: false, writeOpen: false, writeStyle: 'paint', writeSel: 0, lastHud: '', words: (prog.wallWords || []).slice(), wordMeshes: [], knockAt: {}, knockOffer: null, knockWait: null,
       trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null,
       syncT: 0, visitAwarded: false, _nearT: 0, _isoT: 0, _darkT: 0,
       breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0,
@@ -16068,14 +16189,15 @@ const Obby = (() => {
     midSegs.forEach(s => {
       const z = (s.z0 + s.z1) / 2, d = Math.max(0.2, s.z1 - s.z0);
       [-midX, midX].forEach(x => {
-        const w = lhBox(x, 2.2, z, 0.35, d, '#fff8f0', 4.4);
+        const mh = LH_RULES.LH_MIDWAY_WALL_H || 5.6;
+        const w = lhBox(x, mh, z, 0.35, d, '#fff8f0', mh);
         if (w && w.mesh) lhPaintStripe(w.mesh, '#e31c23', '#fff8f0', 2, Math.max(1, d / 3));
       });
     });
     // Open-air midway: no roof/ceiling, so the dusk sky shows. String lights
     // along the eaves keep the hall lit, so darkness logic still treats it as safe.
     const runner = lhFloorBox(0, midZc, 2.2, midD - 1, '#e31c23', 'runner');
-    lhLabel('Midway', 'rgba(80,20,40,.9)', 0, 3.0, midZ0 + 8);
+    lhLabel('Midway', 'rgba(80,20,40,.9)', 0, 3.6, midZ0 + 8);
 
     // rooms — up to 20 numbered wagons, each with a real hinged door
     // Solid shell + frosted windows; interiors live in R.interior and hide when the door is closed and the viewer is outside.
@@ -16092,21 +16214,22 @@ const Obby = (() => {
       return box;
     };
     specs.forEach(R => {
-      const w = 8, d = 6.2, h = 3.2;
+      const w = 8, d = 6.2, h = LH_RULES.LH_WAGON_H || 5.6;
       const floorY = lhY('wagon');
       const wall = wallCols[R.id % wallCols.length];
       const floor = floorCols[R.id % floorCols.length];
       const roomFl = lhFloorBox(R.x, R.z, w, d, floor, 'wagon', floorY);
       const recDraft = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, h, floorY};
-      const lay = LH_RULES.lhDoorwayLayout ? LH_RULES.lhDoorwayLayout(recDraft) : {ix: R.x - R.side * (w / 2), stubZ0: R.z - 2.22, stubZ1: R.z + 2.22, stubD: 1.98, transomY: 2.8, transomH: 0.8, transomD: 2.32};
-      lhSolid(lhBox(R.x + R.side * (w / 2 + 0.12), h / 2, R.z, 0.32, d + 0.3, wall, h));
-      lhSolid(lhBox(R.x, h / 2, R.z - d / 2, w, 0.32, wall, h));
-      lhSolid(lhBox(R.x, h / 2, R.z + d / 2, w, 0.32, wall, h));
+      const lay = LH_RULES.lhDoorwayLayout ? LH_RULES.lhDoorwayLayout(recDraft) : {ix: R.x - R.side * (w / 2), stubZ0: R.z - 2.22, stubZ1: R.z + 2.22, stubD: 1.98, transomY: 4.4, transomH: 2.4, transomD: 2.32, transomTop: h, wallTop: h, openH: 3.2};
+      // plat() takes the TOP of the box, not the center — use top=h so walls run from the floor to h.
+      lhSolid(lhBox(R.x + R.side * (w / 2 + 0.12), h, R.z, 0.32, d + 0.3, wall, h));
+      lhSolid(lhBox(R.x, h, R.z - d / 2, w, 0.32, wall, h));
+      lhSolid(lhBox(R.x, h, R.z + d / 2, w, 0.32, wall, h));
       const ix = lay.ix;
-      lhSolid(lhBox(ix, h / 2, lay.stubZ0, 0.32, lay.stubD, wall, h));
-      lhSolid(lhBox(ix, h / 2, lay.stubZ1, 0.32, lay.stubD, wall, h));
-      // transom seals the gap above the door so you cannot peek inside when it is shut
-      lhSolid(lhBox(ix, lay.transomY, R.z, 0.32, lay.transomD, wall, lay.transomH));
+      lhSolid(lhBox(ix, h, lay.stubZ0, 0.32, lay.stubD, wall, h));
+      lhSolid(lhBox(ix, h, lay.stubZ1, 0.32, lay.stubD, wall, h));
+      // transom is a solid from the door head to the wall top (stops jumps over a closed door)
+      lhSolid(lhBox(ix, lay.transomTop || h, R.z, 0.32, lay.transomD, wall, lay.transomH));
       const ceil = lhMesh(new THREE.BoxGeometry(w + 0.2, 0.16, d + 0.2), lhMat('#fff7fb'), R.x, h, R.z);
       if (ceil) lhPaintStripe(ceil, '#fff7fb', wall, 8, 1);
       // frosted, opaque windows — decorative light, not a view into the room
@@ -16141,7 +16264,7 @@ const Obby = (() => {
       lh.lights[R.id] = true;
       lh.doors[R.id] = true;
       // Wagon number sits outside by the awning so it does not show through a closed door
-      lhLabel('Wagon ' + (R.id + 1), 'rgba(80,20,60,.88)', ix - R.side * 0.95, 2.75, R.z);
+      lhLabel('Wagon ' + (R.id + 1), 'rgba(80,20,60,.88)', ix - R.side * 0.95, 3.15, R.z);
       const pathLen = Math.abs(ix) - midX;
       const pathMid = R.side * (midX + pathLen / 2);
       lhFloorBox(pathMid, R.z, pathLen + 0.2, 2.6, '#e8c98a', 'path');
@@ -16190,7 +16313,7 @@ const Obby = (() => {
     }
     const midLights = [];
     for (let z = midZ0; z <= midZ1; z += lhLow() ? 5 : 3.2){
-      midLights.push([-midX + 0.3, 4.15, z], [midX - 0.3, 4.15, z]);
+      midLights.push([-midX + 0.3, (LH_RULES.LH_MIDWAY_WALL_H || 5.6) - 0.45, z], [midX - 0.3, (LH_RULES.LH_MIDWAY_WALL_H || 5.6) - 0.45, z]);
     }
     for (let a = 0; a < 12; a++){
       const ang = (a / 12) * Math.PI - Math.PI / 2;
@@ -16270,7 +16393,7 @@ const Obby = (() => {
       }
     } catch (e){}
     lh.myRoom = mine;
-    if (lh.rooms[mine]) lh.rooms[mine].owner = 'me';
+    try { lhAssignOwners(); } catch (e){ if (lh.rooms[mine]) lh.rooms[mine].owner = 'me'; }
     if (lh.rooms[mine]){
       const R = lh.rooms[mine];
       const mouthX = R.side * (midX + 1.2);
@@ -16392,7 +16515,7 @@ const Obby = (() => {
     g.add(knob);
     scene.add(g);
     if (lh) lh.trash.push(g);
-    const platBox = plat(ix, lay.openH / 2, R.z, 0.28, lay.openW, '#6b3cff', lay.openH);
+    const platBox = plat(ix, lay.openH, R.z, 0.28, lay.openW, '#6b3cff', lay.openH);
     if (platBox && platBox.mesh){ platBox.mesh.visible = false; if (lh) lh.trash.push(platBox.mesh); }
     R.door.g = g;
     R.door.mesh = mesh;
@@ -16884,6 +17007,8 @@ const Obby = (() => {
       const wrp = lhEl('lhWrite'); if (wrp) wrp.addEventListener('click', ev => { if (ev.target === wrp) lhCloseWrite(); });
       const wrgo = lhEl('lhWriteGo'); if (wrgo) wrgo.onclick = () => lhSubmitCustomWord();
       const wrer = lhEl('lhWriteErase'); if (wrer) wrer.onclick = () => { lhEraseMyWord(); lhCloseWrite(); };
+      const kno = lhEl('lhKnockOpen'); if (kno) kno.onclick = () => lhKnockReply(true, 'open');
+      const knk = lhEl('lhKnockKeep'); if (knk) knk.onclick = () => lhKnockReply(false, 'closed');
       const wrin = lhEl('lhWriteIn');
       if (wrin) wrin.addEventListener('keydown', ev => { if (ev.key === 'Enter'){ ev.preventDefault(); lhSubmitCustomWord(); } if (ev.key === 'Escape'){ ev.preventDefault(); lhCloseWrite(); } });
       document.querySelectorAll('[data-lhstyle]').forEach(b => {
@@ -16933,7 +17058,7 @@ const Obby = (() => {
 
   function lanternStop(){
     try {
-      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhWrite','lhVision','lhScare','lhMyWagon','lhMap','lhMapBtn','lhWriteBtn'].forEach(id => {
+      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhWrite','lhKnock','lhVision','lhScare','lhMyWagon','lhMap','lhMapBtn','lhWriteBtn'].forEach(id => {
         const n = lhEl(id); if (!n) return;
         if (id === 'lhMeter' || id === 'lhBox' || id === 'lhRoot') n.style.display = 'none';
         else { n.classList.remove('show'); n.style.display = 'none'; }
@@ -17119,8 +17244,10 @@ const Obby = (() => {
       const doorX = R.x - R.side * (R.w / 2);
       if (LH_RULES.lhNear(P.x, P.z, doorX, R.z, 2.2)){
         if (R.owner === 'me') return {id:'door', label: R.door.closed ? '🚪 Open door' : '🚪 Close door', R};
-        if (R.door.closed && lh.keyholder === 'me') return {id:'unlock', label:'🔑 Unlock room', R};
-        if (!R.door.closed) return {id:'enter', label:'🚪 Enter wagon ' + (R.id + 1), R};
+        const kind = LH_RULES.lhDoorPromptKind ? LH_RULES.lhDoorPromptKind({isOwner:false, doorClosed:!!R.door.closed, wagonNo:R.id + 1}) : {id: R.door.closed ? 'knock' : 'enter', label: R.door.closed ? '🚪 Knock' : ('🚪 Enter wagon ' + (R.id + 1))};
+        // Key holder may unlock only after a knock goes unanswered.
+        if (R.door.closed && lh.keyholder === 'me' && R._unlockReady) return {id:'unlock', label:'🔑 Unlock room', R};
+        return {id: kind.id, label: kind.label, R};
       }
     }
     for (let i = 0; i < lh.rooms.length; i++){
@@ -17145,7 +17272,11 @@ const Obby = (() => {
     if (!p) return false;
     if (p.id === 'bell') lhRing(p.R);
     else if (p.id === 'gowagon') lhGoWagon();
-    else if (p.id === 'enter'){ if (p.R.door.closed) lhSetDoor(p.R, false); Object.assign(P, {x: p.R.x - p.R.side * 1.2, y: (p.R.floorY || 0.45) + 0.05, z: p.R.z, vx:0, vy:0, vz:0}); }
+    else if (p.id === 'enter'){
+      if (p.R.door.closed){ if (typeof toast === 'function') toast('🚪 Knock first — you can\'t just walk in.'); return false; }
+      Object.assign(P, {x: p.R.x - p.R.side * 1.2, y: (p.R.floorY || 0.45) + 0.05, z: p.R.z, vx:0, vy:0, vz:0});
+    }
+    else if (p.id === 'knock') lhKnock(p.R);
     else if (p.id === 'light') lhToggleLight(p.R);
     else if (p.id === 'door'){
       // Always honor the prompt: Close door closes, Open door opens.
@@ -17228,6 +17359,218 @@ const Obby = (() => {
     // used by keyholder find
     const people = lhOthers().concat([{uid:'me', x:P.x, z:P.z, glitched:lh.glitched, transforming:lh.transforming, kind:'me'}]);
     return people.find(o => Math.abs(o.x - R.x) < R.w / 2 && Math.abs(o.z - R.z) < R.d / 2) || null;
+  }
+
+
+  function lhIsMp(){
+    try { return !!(typeof mp !== 'undefined' && mp && mp.on); } catch (e){ return false; }
+  }
+  function lhAssignOwners(){
+    if (!lh || !lh.rooms) return;
+    lh.rooms.forEach(R => { R.owner = null; R.ownerUid = null; });
+    try {
+      if (lhIsMp() && typeof mpRoster === 'function'){
+        const me = mp.host ? 'H' : (mp.me || 'g0');
+        const roster = mpRoster() || [];
+        roster.forEach((p, i) => {
+          const R = lh.rooms[i % lh.rooms.length];
+          if (!R || !p) return;
+          const uid = p.uid || p.id;
+          R.ownerUid = uid;
+          if (uid === me) R.owner = 'me';
+        });
+      } else if (lh.rooms[lh.myRoom]){
+        lh.rooms[lh.myRoom].owner = 'me';
+        lh.rooms[lh.myRoom].ownerUid = 'me';
+      }
+    } catch (e){
+      if (lh.rooms[lh.myRoom]){ lh.rooms[lh.myRoom].owner = 'me'; lh.rooms[lh.myRoom].ownerUid = 'me'; }
+    }
+  }
+  function lhKnockSound(){
+    try {
+      if (typeof muted !== 'undefined' && muted) return;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!lh._ac) lh._ac = new AC();
+      const ac = lh._ac;
+      const muff = lhSet().muffledSound && (lh.glitched || lh.sanity < 40);
+      [0, 0.14, 0.3].forEach((t, i) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'sine';
+        o.frequency.value = i === 2 ? 140 : 180;
+        g.gain.value = muff ? 0.04 : 0.1;
+        o.connect(g); g.connect(ac.destination);
+        const t0 = ac.currentTime + t;
+        o.start(t0);
+        g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.09);
+        o.stop(t0 + 0.1);
+      });
+    } catch (e){}
+  }
+  function lhKnockFx(R){
+    if (!R || !R.door) return;
+    R.door._knockT = 0.4;
+    try {
+      if (typeof THREE !== 'undefined'){
+        const ix = R.x - R.side * (R.w / 2);
+        const spr = (typeof label === 'function') ? label('knock knock', 'rgba(80,20,40,.92)') : null;
+        if (spr){
+          spr.position.set(ix - R.side * 0.6, 2.2, R.z);
+          scene.add(spr);
+          if (lh) lh.trash.push(spr);
+          lh._knockSpr = lh._knockSpr || [];
+          lh._knockSpr.push({m: spr, t: 0.7});
+        }
+      }
+    } catch (e){}
+  }
+  function lhTickKnockFx(dt){
+    if (!lh) return;
+    (lh.rooms || []).forEach(R => {
+      const d = R.door;
+      if (!d || !d.g || !(d._knockT > 0)) return;
+      d._knockT -= dt;
+      const dest = d.target != null ? d.target : (d.closed ? 0 : -R.side * 1.9);
+      d.g.rotation.y = dest + Math.sin((d._knockT) * 42) * 0.045 * Math.max(0, d._knockT / 0.4);
+      if (d._knockT <= 0) d.g.rotation.y = d.ang != null ? d.ang : dest;
+    });
+    if (lh._knockSpr){
+      lh._knockSpr = lh._knockSpr.filter(s => {
+        s.t -= dt;
+        if (s.m && s.m.position) s.m.position.y += dt * 0.6;
+        if (s.t <= 0){
+          try { if (s.m && s.m.parent) s.m.parent.remove(s.m); } catch (e){}
+          return false;
+        }
+        return true;
+      });
+    }
+    if (lh.knockOffer){
+      lh.knockOffer.t = (lh.knockOffer.t || 0) + dt;
+      const cap = lh.knockOffer.timeout || (LH_RULES.LH_KNOCK_TIMEOUT || 10);
+      const leftEl = lhEl('lhKnockLeft');
+      if (leftEl) leftEl.textContent = Math.max(0, Math.ceil(cap - lh.knockOffer.t)) + 's';
+      if (lh.knockOffer.t >= cap) lhKnockReply(false, 'timeout');
+    }
+    if (lh.knockWait){
+      lh.knockWait.t = (lh.knockWait.t || 0) + dt;
+      const cap = lh.knockWait.timeout || (LH_RULES.LH_KNOCK_TIMEOUT || 10);
+      if (lh.knockWait.t >= cap){
+        const room = lh.knockWait.room;
+        lh.knockWait = null;
+        const R = lh.rooms[room];
+        if (R && lh.keyholder === 'me') R._unlockReady = true;
+        if (typeof toast === 'function') toast('🚪 ' + (LH_RULES.lhKnockReplyMessage ? LH_RULES.lhKnockReplyMessage('timeout') : 'No one answered. The door stays closed.'));
+      }
+    }
+  }
+  function lhCloseKnock(){
+    if (!lh) return;
+    lh.knockOffer = null;
+    const n = lhEl('lhKnock');
+    if (n){ n.classList.remove('show'); n.style.display = 'none'; }
+  }
+  function lhShowKnockPopup(offer){
+    if (!lh) return false;
+    offer = offer || lh.knockOffer;
+    if (!offer) return false;
+    lh.knockOffer = offer;
+    const n = lhEl('lhKnock');
+    const msg = lhEl('lhKnockMsg');
+    const who = offer.fromName ? String(offer.fromName) : 'Someone';
+    if (msg) msg.textContent = who + ' is at your wagon door.';
+    const leftEl = lhEl('lhKnockLeft');
+    if (leftEl) leftEl.textContent = Math.max(0, Math.ceil((offer.timeout || 10) - (offer.t || 0))) + 's';
+    if (n){ n.style.display = 'flex'; n.classList.add('show'); }
+    return true;
+  }
+  function lhKnockReply(open, reason){
+    if (!lh || !lh.knockOffer) return false;
+    const offer = lh.knockOffer;
+    const R = lh.rooms[offer.room];
+    lhCloseKnock();
+    reason = reason || (open ? 'open' : 'closed');
+    if (open && R) lhSetDoor(R, false, 'player');
+    try { lhNet({k:'knock-reply', room: offer.room, open: !!open, to: offer.from, reason: reason}); } catch (e){}
+    if (typeof toast === 'function'){
+      toast(open ? '🚪 You opened the door.' : '🚪 You kept the door closed.');
+    }
+    return true;
+  }
+  function lhReceiveKnock(d){
+    if (!lh || !d) return;
+    const R = lh.rooms[d.room];
+    if (!R) return;
+    lhKnockFx(R);
+    lhKnockSound();
+    if (R.owner !== 'me') return;
+    const inRoom = LH_RULES.lhRoomContains ? LH_RULES.lhRoomContains(R, P.x, P.z, 0.02) : false;
+    const resolved = LH_RULES.lhKnockResolve ? LH_RULES.lhKnockResolve({solo:false, hasOwner:true, ownerOnline:true, ownerInRoom: !!inRoom}) : {mode: inRoom ? 'popup' : 'closed', reason: inRoom ? 'offer' : 'away'};
+    if (resolved.mode === 'popup'){
+      lhShowKnockPopup({room: R.id, from: d.from, fromName: d.name || 'Someone', t: 0, timeout: resolved.timeout || (LH_RULES.LH_KNOCK_TIMEOUT || 10)});
+    } else {
+      try { lhNet({k:'knock-reply', room: R.id, open: false, to: d.from, reason: resolved.reason || 'away'}); } catch (e){}
+    }
+  }
+  function lhReceiveKnockReply(d){
+    if (!lh || !d) return;
+    const me = lhWordUid ? lhWordUid() : 'me';
+    if (d.to && d.to !== me && d.to !== 'me') return;
+    if (!lh.knockWait || lh.knockWait.room !== d.room) return;
+    lh.knockWait = null;
+    const R = lh.rooms[d.room];
+    if (d.open && R) lhSetDoor(R, false);
+    else if (R && lh.keyholder === 'me') R._unlockReady = true;
+    const msg = (LH_RULES.lhKnockReplyMessage ? LH_RULES.lhKnockReplyMessage(d.reason || (d.open ? 'open' : 'closed')) : (d.open ? 'They opened the door.' : 'They kept the door closed.'));
+    if (typeof toast === 'function') toast('🚪 ' + msg);
+  }
+  function lhKnock(R){
+    if (!lh || !R) return false;
+    const now = (typeof performance !== 'undefined' && performance.now) ? (performance.now() / 1000) : (lh.t || 0);
+    const last = (lh.knockAt && lh.knockAt[R.id]) || 0;
+    const allowed = LH_RULES.lhKnockAllowed ? LH_RULES.lhKnockAllowed({
+      isOwner: R.owner === 'me',
+      doorClosed: !!(R.door && R.door.closed),
+      lastAt: last,
+      now: now,
+      cooldown: LH_RULES.LH_KNOCK_COOLDOWN
+    }) : {ok: true};
+    if (!allowed.ok){
+      if (allowed.reason === 'cooldown' && typeof toast === 'function') toast('🚪 Wait a moment before knocking again. (' + Math.ceil(allowed.wait) + 's)');
+      else if (allowed.reason === 'open' && typeof toast === 'function') toast('🚪 The door is already open.');
+      return false;
+    }
+    lh.knockAt = lh.knockAt || {};
+    lh.knockAt[R.id] = now;
+    lhKnockFx(R);
+    lhKnockSound();
+    const mpOn = lhIsMp();
+    const st = {
+      solo: !mpOn,
+      hasOwner: mpOn ? !!(R.ownerUid && R.owner !== 'me') : false,
+      ownerOnline: mpOn ? !!(R.ownerUid && R.owner !== 'me') : false,
+      ownerInRoom: false
+    };
+    // In MP we don't know if they're in the room; the owner's client decides. We wait for a reply.
+    if (mpOn && st.hasOwner){
+      lh.knockWait = {room: R.id, t: 0, timeout: LH_RULES.LH_KNOCK_TIMEOUT || 10};
+      try {
+        const name = (typeof mp !== 'undefined' && mp && mp.name) ? mp.name : 'A guest';
+        lhNet({k:'knock', room: R.id, from: lhWordUid(), name: name});
+      } catch (e){}
+      if (typeof toast === 'function') toast('🚪 You knock on wagon ' + (R.id + 1) + '…');
+      return true;
+    }
+    const resolved = LH_RULES.lhKnockResolve ? LH_RULES.lhKnockResolve(st) : {mode:'closed', reason:'offline', message:"Nobody's home. The door stays closed."};
+    if (resolved.mode === 'open' && R){
+      lhSetDoor(R, false);
+      if (typeof toast === 'function') toast('🚪 ' + (resolved.message || 'The door creaks open…'));
+    } else {
+      if (lh.keyholder === 'me') R._unlockReady = true;
+      if (typeof toast === 'function') toast('🚪 ' + (resolved.message || (LH_RULES.lhKnockReplyMessage && LH_RULES.lhKnockReplyMessage(resolved.reason)) || 'The door stays closed.'));
+    }
+    return true;
   }
 
   function lhUnlock(R){
@@ -17508,6 +17851,11 @@ const Obby = (() => {
     if (lh.mapOpen){
       if (e.code === 'Escape' || e.key === 'Escape' || e.code === 'KeyM'){ lhToggleMap(false); return true; }
     }
+    if (lh.knockOffer){
+      if (e.code === 'Escape' || e.key === 'Escape'){ lhKnockReply(false, 'closed'); return true; }
+      if ((e.code === 'Enter' || e.key === 'Enter') && !e.repeat){ lhKnockReply(true, 'open'); return true; }
+      return true;
+    }
     if (lh.writeOpen){
       if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseWrite(); return true; }
       // Let the custom text field receive typing; G should not re-toggle.
@@ -17529,6 +17877,13 @@ const Obby = (() => {
   function lhPad(jp){
     if (!lh || !jp) return false;
     // X = use (button 2), B = back (1), A is jump, Y = map (3), LB = write (4)
+    if (lh.knockOffer){
+      if ((jp[0] || jp[2]) && !lh._padPick){ lh._padPick = true; lhKnockReply(true, 'open'); return true; }
+      if (jp[1] && !lh._padB){ lh._padB = true; lhKnockReply(false, 'closed'); return true; }
+      if (!jp[0] && !jp[2]) lh._padPick = false;
+      if (!jp[1]) lh._padB = false;
+      return true;
+    }
     if (lh.writeOpen){
       if (jp[1] && !lh._padB){ lh._padB = true; lhCloseWrite(); return true; }
       if (!jp[1]) lh._padB = false;
@@ -17548,7 +17903,7 @@ const Obby = (() => {
     }
     if (jp[2] && !lh._padX){ lh._padX = true; lhAct(); return true; }
     if (!jp[2]) lh._padX = false;
-    if (jp[1] && (lh.doodleOpen || lh.setOpen || lh.mapOpen || lh.writeOpen || lh.cut || lh.calm || lh.banish)){ lhCloseDraw(); lhCloseWrite(); lhToggleSet(false); lhToggleMap(false); lhSkipCut(); return true; }
+    if (jp[1] && (lh.doodleOpen || lh.setOpen || lh.mapOpen || lh.writeOpen || lh.knockOffer || lh.cut || lh.calm || lh.banish)){ lhCloseDraw(); lhCloseWrite(); if (lh.knockOffer) lhKnockReply(false, 'closed'); lhToggleSet(false); lhToggleMap(false); lhSkipCut(); return true; }
     if (jp[3] && !lh._padY){ lh._padY = true; lhToggleMap(); return true; }
     if (!jp[3]) lh._padY = false;
     if (jp[4] && !lh._padLB){ lh._padLB = true; lhOpenWrite(); return true; }
@@ -17873,6 +18228,8 @@ const Obby = (() => {
     if (d.k === 'bell' && lh.rooms[d.room]){ if (lh.transforming && lh.room === d.room) lhTryCancel('doorbell'); }
     if (d.k === 'light' && lh.rooms[d.room]){ lhTintRoom(lh.rooms[d.room], d.on); if (lh.transforming && lh.room === d.room) lhTryCancel('light'); }
     if (d.k === 'unlock' && lh.rooms[d.room]) lhSetDoor(lh.rooms[d.room], false);
+    if (d.k === 'knock') lhReceiveKnock(d);
+    if (d.k === 'knock-reply') lhReceiveKnockReply(d);
     if (d.k === 'doodle' && lh.rooms[d.room]){ lh.prog.doodles[d.room] = d.doodle; lhPaintWall(lh.rooms[d.room], d.doodle); }
     if (d.k === 'word'){
       if (d.op === 'add' && d.word) lhReceiveWord(d.word);
@@ -17943,7 +18300,7 @@ const Obby = (() => {
 
     if (lh.bed && (Math.abs(P.x - (area.R && area.R.bed.x || 0)) > 2 || Math.abs(P.z - (area.R && area.R.bed.z || 0)) > 2)) lh.bed = false;
 
-    try { lhTickDoors(dt); lhOwnerAutoDoor(); lhCullTick(); lhTickPrivacy(); lhTickWordFades(dt); } catch (e){}
+    try { lhTickDoors(dt); lhOwnerAutoDoor(); lhCullTick(); lhTickPrivacy(); lhTickWordFades(dt); lhTickKnockFx(dt); } catch (e){}
     if ((lh.t * 2 | 0) !== ((lh.t - dt) * 2 | 0)) { try { lhApplyView(); } catch (e){} }
     lhMoveNpcs(dt);
     lhDoTag(dt);
@@ -17981,6 +18338,16 @@ const Obby = (() => {
       };
       window.lhPerf = function(v){ try { return lhPerf(v); } catch (e){ return null; } };
       window.lhRefill = function(v){ try { if (lh){ lh.sanity = (v == null ? 100 : v); if (lh.sanity > 0) lh.glitched = false; } return lh && lh.sanity; } catch (e){ return null; } };
+      window.lhKnock = function(id){ try { const R = lh && lh.rooms[id == null ? 1 : id]; return R ? lhKnock(R) : false; } catch (e){ return false; } };
+      window.lhKnockReply = function(open, reason){ try { return lhKnockReply(!!open, reason); } catch (e){ return false; } };
+      window.lhShowKnockPopup = function(opts){
+        try {
+          opts = opts || {};
+          return lhShowKnockPopup({room: opts.room != null ? opts.room : (lh && lh.myRoom) || 0, from: opts.from || 'friend', fromName: opts.fromName || 'A guest', t: 0, timeout: opts.timeout || 10});
+        } catch (e){ return false; }
+      };
+      window.lhCloseKnock = function(){ try { lhCloseKnock(); } catch (e){} };
+      window.lhAssignOwners = function(){ try { lhAssignOwners(); } catch (e){} };
       window.lhOpenWrite = function(){ try { return lhOpenWrite(); } catch (e){ return false; } };
       window.lhCloseWrite = function(){ try { lhCloseWrite(); } catch (e){} };
       window.lhWriteWord = function(text, opts){ try { return lhPlaceWallWord(text, opts || {}); } catch (e){ return {ok:false, err:String(e)}; } };
@@ -24121,7 +24488,7 @@ function dhLayoutHud(){
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern'){ // pull the camera in front of walls so buildings don't block the view
       dist = clipOrbitCam(tx, ty, tz, cam.dist, mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2);
     }
     camera.position.set(tx + Math.sin(cam.yaw) * cp * dist, ty + Math.sin(cam.pitch) * dist, tz + Math.cos(cam.yaw) * cp * dist);
@@ -24532,7 +24899,7 @@ function dhLayoutHud(){
     $('#pMouseSens').oninput = e => { const r = $('#mouseSens'); r.value = e.target.value; r.dispatchEvent(new Event('input')); menuVals(); };
     $('#pMapBtn').onclick = () => { const m = $('#pMap'); m.classList.toggle('show'); $('#pMapBtn').textContent = m.classList.contains('show') ? '🎮 Hide button map' : '🎮 Button map'; };
     setInterval(() => { if ($('#oPausePanel').classList.contains('show')) menuPad(); }, 1000);
-    const HUD_HIT_SEL = '#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhVisit, #dhSteps, #dhResetModal, .obtns, #oExit, #oExit2, #oExit3, #oFP, #oPause, #oMute, #setBtn, #setModal, #oPausePanel, #chRoot, #chPanel, #chWheel, #chBtn, #lhRoot, #lhAct, #lhSet, #lhDraw, #lhWrite, #lhWriteBtn, #lhCut, #lhCalm, #lhMeter, #lhFanfare, #lhSetBtn, #lhMyWagon, #lhMapBtn, #lhMap, #lhWall, button, a, input, label, select';
+    const HUD_HIT_SEL = '#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhVisit, #dhSteps, #dhResetModal, .obtns, #oExit, #oExit2, #oExit3, #oFP, #oPause, #oMute, #setBtn, #setModal, #oPausePanel, #chRoot, #chPanel, #chWheel, #chBtn, #lhRoot, #lhAct, #lhSet, #lhDraw, #lhWrite, #lhWriteBtn, #lhKnock, #lhCut, #lhCalm, #lhMeter, #lhFanfare, #lhSetBtn, #lhMyWagon, #lhMapBtn, #lhMap, #lhWall, button, a, input, label, select';
     function releasePointerForHud(){
       try { if (typeof document !== 'undefined' && document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e){}
     }
@@ -24880,6 +25247,8 @@ function start(m = 'obby', d = null){
     $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }
     if (mode === 'dance') danceEnter();
     $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
+    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
+        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
         $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
