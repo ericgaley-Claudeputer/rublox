@@ -7,10 +7,10 @@ const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const RULES = require(path.join(ROOT, 'dev/lantern/lantern_rules.js'));
 const BUILD = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).build || JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
-test('BUILD stamp is 2026.11.16-2 in lantern files and version.json', () => {
+test('BUILD stamp is 2026.11.16-3 in lantern files and version.json', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
-  assert.equal(v.build, '2026.11.16-2');
-  assert.match(HTML, /const BUILD = '2026\.11\.16-2'/);
+  assert.equal(v.build, '2026.11.16-3');
+  assert.match(HTML, /const BUILD = '2026\.11\.16-3'/);
 });
 
 test('Lantern Big Top is a playable GAMES card with original branding', () => {
@@ -223,6 +223,47 @@ test('circus world, midway wagons, and scare FX are in the mode module', () => {
   assert.match(HTML, /Call Maestro Gleam/);
   assert.match(HTML, /Big Top settings/);
   assert.match(HTML, /Skip ▶/);
+  assert.doesNotMatch(js, /\bCaine\b/);
+  assert.doesNotMatch(js, /Digital Circus/);
+});
+
+test('midway walls leave walkable gaps at each wagon door', () => {
+  const segs = RULES.lhMidwayWallSegments();
+  assert.ok(segs.length >= 3);
+  // z=11/18/25 must NOT be blocked by a midway side wall
+  for (const z of RULES.LH_WAGON_ZS){
+    assert.equal(RULES.lhMidwayBlocksSide(z, segs), false, 'gap at z=' + z);
+  }
+  // midway wall remains between wagons
+  assert.equal(RULES.lhMidwayBlocksSide(14.5, segs), true);
+  assert.equal(RULES.lhMidwayBlocksSide(8.4, segs), true);
+});
+
+test('lit lanterns keep the fairground safe; dark grass drains sanity', () => {
+  const lamps = [{x:-22, z:-2}, {x:-30, z:-10}];
+  assert.equal(RULES.lhNearLamp(-22, -2, lamps, 5), true);
+  assert.equal(RULES.lhNearLamp(-10, 0, lamps, 5), false);
+  const st = {dark: true, isolated: false, nearGlitched: false, lit: false, company: false, _darkT: 3};
+  const d = RULES.lhSanityDelta(st, 1);
+  assert.ok(d < 0, 'dark outside drains');
+  const safe = {dark: false, isolated: false, nearGlitched: false, lit: true, company: true};
+  assert.ok(RULES.lhSanityDelta(safe, 1) >= 0);
+});
+
+test('walk cycle, wagon access, and outdoor fairground are wired in the mode', () => {
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  assert.match(js, /function lhCharPose/);
+  assert.match(js, /applyPose\(dt, animPose/);
+  assert.match(js, /function lhGoWagon/);
+  assert.match(js, /function lhBuildFairground/);
+  assert.match(js, /lhFlaps/);
+  assert.match(js, /Tickets/);
+  assert.match(js, /floorOnly/);
+  assert.match(js, /Your Wagon/);
+  assert.match(js, /Go to my wagon/);
+  assert.match(js, /lhMidwayWallSegments/);
+  assert.match(HTML, /id="lhMyWagon"/);
+  assert.match(HTML, /🎪 Go to my wagon/);
   assert.doesNotMatch(js, /\bCaine\b/);
   assert.doesNotMatch(js, /Digital Circus/);
 });

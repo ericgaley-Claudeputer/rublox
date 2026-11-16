@@ -7,8 +7,8 @@ ROOT = Path(__file__).resolve().parents[2]
 IDX = ROOT / 'index.html'
 DEV = ROOT / 'dev/lantern'
 ACH = ROOT / 'dev/achievements/achievements.js'
-BUILD = '2026.11.16-2'
-OLD_BUILD = '2026.11.16-2'
+BUILD = '2026.11.16-3'
+OLD_BUILD = '2026.11.16-3'
 
 def once(text, old, new, label):
     if new.strip() and new in text and old not in text:
@@ -43,7 +43,7 @@ def main():
 
     # --- rules (strip real badge names from the shipped page) ---
     rules = (DEV / 'lantern_rules.js').read_text()
-    rules_page = re.sub(r"\s*real:'[^']*',\s*realDesc:'[^']*',", '', rules)
+    rules_page = re.sub(r"\s*real:(?:'[^']*'|\"[^\"]*\"),\s*realDesc:(?:'[^']*'|\"[^\"]*\"),", '', rules)
     if 'Kaufmo' in rules_page or 'Caine' in rules_page or 'Eniac' in rules_page or 'Daisy Bell' in rules_page:
         raise SystemExit('real TADC/official names leaked into page rules')
     rules_block = '\n/* ---------- lantern rules ---------- */\n' + rules_page + '\n/* ---------- /lantern rules ---------- */\n'

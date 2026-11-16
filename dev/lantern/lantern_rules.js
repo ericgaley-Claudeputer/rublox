@@ -125,6 +125,42 @@
     return out;
   }
 
+  const LH_LAMP_R = 5;
+  const LH_WAGON_ZS = [11, 18, 25];
+  const LH_MIDWAY_WALL_X = 4.2;
+  const LH_MIDWAY_Z0 = 8;
+  const LH_MIDWAY_Z1 = 32;
+  const LH_DOOR_HALF = 1.35;
+
+  function lhMidwayWallSegments(z0, z1, gaps, half){
+    z0 = z0 == null ? LH_MIDWAY_Z0 : z0;
+    z1 = z1 == null ? LH_MIDWAY_Z1 : z1;
+    gaps = gaps || LH_WAGON_ZS;
+    half = half == null ? LH_DOOR_HALF : half;
+    const segs = [];
+    let cursor = z0;
+    gaps.forEach(gz => {
+      const a = gz - half, b = gz + half;
+      if (a > cursor + 0.05) segs.push({z0: cursor, z1: a});
+      cursor = Math.max(cursor, b);
+    });
+    if (cursor < z1 - 0.05) segs.push({z0: cursor, z1: z1});
+    return segs;
+  }
+  function lhMidwayBlocksSide(z, segs){
+    segs = segs || lhMidwayWallSegments();
+    z = +z || 0;
+    return segs.some(s => z >= s.z0 && z <= s.z1);
+  }
+  function lhNearLamp(px, pz, lamps, r){
+    r = r == null ? LH_LAMP_R : r;
+    lamps = lamps || [];
+    for (let i = 0; i < lamps.length; i++){
+      if (lhNear(px, pz, lamps[i].x, lamps[i].z, r)) return true;
+    }
+    return false;
+  }
+
   function lhNear(ax, az, bx, bz, r){
     const dx = (+ax || 0) - (+bx || 0), dz = (+az || 0) - (+bz || 0);
     return dx * dx + dz * dz <= (r || 0) * (r || 0);
@@ -166,10 +202,12 @@
 
   const api = {
     LH_KEY, LH_VER, LH_HOST, LH_HOST_TITLE, LH_GAME, LH_STAMPS, LH_EYES,
-    LH_COMPANY_R, LH_NEAR_R, LH_SUMMON_R, LH_TAG_R, LH_KEY_CD, RATES, LH_BADGES,
+    LH_COMPANY_R, LH_NEAR_R, LH_SUMMON_R, LH_TAG_R, LH_KEY_CD, LH_LAMP_R, LH_WAGON_ZS,
+    LH_MIDWAY_WALL_X, LH_MIDWAY_Z0, LH_MIDWAY_Z1, LH_DOOR_HALF, RATES, LH_BADGES,
     lhTestHash, lhTestActive, lhClampSanity, lhEyeFill, lhSanityDelta,
     lhCancelSucceeds, lhHostNameIn, lhDefaultSettings, lhNormalizeSettings,
-    lhLoadState, lhStampOk, lhAddDoodle, lhNear, lhDist, lhSummonOk, lhCensored
+    lhLoadState, lhStampOk, lhAddDoodle, lhNear, lhDist, lhSummonOk, lhCensored,
+    lhMidwayWallSegments, lhMidwayBlocksSide, lhNearLamp
   };
   root.LHRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
