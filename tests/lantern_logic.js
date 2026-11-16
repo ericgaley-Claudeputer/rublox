@@ -7,10 +7,10 @@ const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const RULES = require(path.join(ROOT, 'dev/lantern/lantern_rules.js'));
 const BUILD = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).build || JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
-test('BUILD stamp is 2026.11.16-12 in lantern files and version.json', () => {
+test('BUILD stamp is 2026.11.16-13 in lantern files and version.json', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
-  assert.equal(v.build, '2026.11.16-12');
-  assert.match(HTML, /const BUILD = '2026\.11\.16-12'/);
+  assert.equal(v.build, '2026.11.16-13');
+  assert.match(HTML, /const BUILD = '2026\.11\.16-13'/);
 });
 
 test('Lantern Big Top is a playable GAMES card with original branding', () => {
@@ -853,4 +853,15 @@ test('wagon decor layout saves and is only visible in MP when the door is open',
   assert.match(js, /lhReceiveDecor/);
   assert.match(js, /if \(R\.owner === 'me'\) return/);
   assert.doesNotMatch(js, /Digital Circus|Caine|Pomni|Kaufmo/);
+});
+
+test('Lantern uses the global dusk and night cycle with a settings toggle', () => {
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  const wx = require(path.join(ROOT, 'dev/weather/weather_rules.js'));
+  assert.equal(wx.wxEnabled('lantern', {mode:'auto'}), true);
+  const night = wx.wxSky('lantern', 'night', 'clear');
+  const day = wx.wxSky('lantern', 'day', 'clear');
+  assert.notEqual(night, day);
+  assert.match(HTML, /id="wxSetAuto"/);
+  assert.match(HTML, /wxTick\(frameDt, mode/);
 });

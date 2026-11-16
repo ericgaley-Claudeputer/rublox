@@ -1070,6 +1070,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 
 
 
+
 /* ---------- lantern hotel css ---------- */
 /* t286u Lantern Big Top HUD */
 #lhBox{display:none}
@@ -1574,6 +1575,12 @@ body.lh-muffled #obby{filter:saturate(.85)}
         </select>
       </label>
       <label class="invrow"><input type="checkbox" id="setShowFps"><span>Show FPS<small>On-screen frames-per-second counter</small></span></label>
+    </div>
+    <div class="wxset" id="wxSet">
+      <div style="color:var(--muted);font-weight:700;margin-top:12px">🌤️ Weather and time</div>
+      <label class="invrow"><input type="radio" name="wxSetMode" id="wxSetAuto" value="auto" checked><span>Auto<small>Day turns to night, and weather can change.</small></span></label>
+      <label class="invrow"><input type="radio" name="wxSetMode" id="wxSetDay" value="day"><span>Always day<small>Keep bright daylight in games that use this.</small></span></label>
+      <label class="invrow"><input type="radio" name="wxSetMode" id="wxSetOff" value="off"><span>Off<small>Leave each game's own sky and lighting alone.</small></span></label>
     </div>
     <div class="chset" id="chSet">
       <div class="chset-title">💬 Chat</div>
@@ -2216,7 +2223,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-12';
+const BUILD = '2026.11.16-13';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2936,6 +2943,345 @@ $('#saveAv').onclick = () => {
 };
 
 /* ---------- games ---------- */
+
+/* Rublox global weather + day/night — original, mode-safe, save-compatible. */
+(function (root) {
+  const WX_KEY = 'rubloxWeather';
+  const WX_VER = 1;
+  const WX_DAY_LEN = 180;
+  const WX_WEATHER_LEN = 48;
+  const WX_MODES = {
+    auto: 'auto',
+    day: 'day',
+    off: 'off'
+  };
+  const WX_SKIP = ['splash', 'waterpark', 'race', 'photostudio', 'dance', 'bakery', 'icecream', 'tower', 'fashion'];
+  const WX_SNOW = ['obby', 'build', 'hide', 'stable', 'tag'];
+  const WX_FOG = ['haunt', 'lantern', 'hide', 'petisland', 'obby', 'build'];
+  const WX_RAIN = ['obby', 'build', 'lantern', 'hide', 'autumn', 'stable', 'petisland', 'pets', 'tag', 'dreamhouse', 'pethotel', 'haunt'];
+
+  function wxDefault(){ return {ver: WX_VER, mode: 'auto'}; }
+
+  function wxNormalize(raw){
+    const d = wxDefault();
+    const o = (raw && typeof raw === 'object') ? raw : {};
+    const mode = (o.mode === 'day' || o.mode === 'off' || o.mode === 'auto') ? o.mode : 'auto';
+    return {ver: WX_VER, mode: mode};
+  }
+
+  function wxLoadState(raw){
+    if (typeof raw === 'string'){
+      try { raw = JSON.parse(raw); } catch (e){ raw = null; }
+    }
+    return wxNormalize(raw);
+  }
+
+  function wxEnabled(modeId, setting){
+    const st = wxNormalize(setting);
+    if (st.mode === 'off') return false;
+    if (!modeId) return false;
+    return WX_SKIP.indexOf(modeId) < 0;
+  }
+
+  function wxClock(t, dayLen){
+    const len = dayLen > 0 ? dayLen : WX_DAY_LEN;
+    const u = ((t % len) + len) % len / len;
+    let phase = 'day', sun = 1;
+    if (u < 0.12){ phase = 'dawn'; sun = 0.45 + u / 0.12 * 0.55; }
+    else if (u < 0.52){ phase = 'day'; sun = 1; }
+    else if (u < 0.68){ phase = 'dusk'; sun = 1 - (u - 0.52) / 0.16 * 0.7; }
+    else { phase = 'night'; sun = 0.22 + Math.max(0, 0.08 - Math.abs(u - 0.86) * 0.2); }
+    return {u: u, phase: phase, sun: Math.max(0.16, Math.min(1, sun))};
+  }
+
+  function wxForceDay(clock){
+    return {u: 0.3, phase: 'day', sun: 1};
+  }
+
+  function wxWeatherAllowed(kind, modeId){
+    if (kind === 'clear') return true;
+    if (kind === 'rain') return WX_RAIN.indexOf(modeId) >= 0;
+    if (kind === 'snow') return WX_SNOW.indexOf(modeId) >= 0;
+    if (kind === 'fog') return WX_FOG.indexOf(modeId) >= 0;
+    return false;
+  }
+
+  function wxPickWeather(modeId, rand){
+    const r = (typeof rand === 'function' ? rand() : Math.random());
+    const pool = ['clear', 'clear', 'clear'];
+    if (wxWeatherAllowed('rain', modeId)) pool.push('rain', 'rain');
+    if (wxWeatherAllowed('fog', modeId)) pool.push('fog');
+    if (wxWeatherAllowed('snow', modeId)) pool.push('snow');
+    const i = Math.max(0, Math.min(pool.length - 1, (r * pool.length) | 0));
+    return pool[i];
+  }
+
+  function wxSky(modeId, phase, weather){
+    const lantern = modeId === 'lantern';
+    const pal = lantern ? {
+      dawn: '#c9a0d8',
+      day: '#7ec8ff',
+      dusk: '#5a2a6a',
+      night: '#1b1633'
+    } : {
+      dawn: '#ffc8a0',
+      day: '#8fd3ff',
+      dusk: '#e07a4a',
+      night: '#1a2248'
+    };
+    let hex = pal[phase] || pal.day;
+    if (weather === 'rain') hex = phase === 'night' ? (lantern ? '#161022' : '#2a3348') : (lantern ? '#4a3a68' : '#6a8aaa');
+    if (weather === 'snow') hex = phase === 'night' ? '#2a3a58' : '#d8e8f8';
+    if (weather === 'fog') hex = phase === 'night' ? '#2a2a38' : '#c8d0d8';
+    return hex;
+  }
+
+  function wxFog(modeId, phase, weather){
+    const sky = wxSky(modeId, phase, weather);
+    let near = 70, far = 200;
+    if (phase === 'dusk'){ near = 50; far = 160; }
+    if (phase === 'night'){ near = 28; far = 120; }
+    if (weather === 'rain'){ near = Math.min(near, 40); far = Math.min(far, 140); }
+    if (weather === 'snow'){ near = Math.min(near, 45); far = Math.min(far, 150); }
+    if (weather === 'fog'){ near = 8; far = 48; }
+    if (modeId === 'lantern'){
+      near = weather === 'fog' ? 10 : (phase === 'night' ? 22 : 50);
+      far = weather === 'fog' ? 55 : (phase === 'night' ? 140 : 200);
+    }
+    return {color: sky, near: near, far: far};
+  }
+
+  function wxLightScale(phase, weather){
+    const clock = {dawn: 0.72, day: 1, dusk: 0.55, night: 0.32};
+    let s = clock[phase] != null ? clock[phase] : 1;
+    if (weather === 'rain' || weather === 'fog') s *= 0.85;
+    if (weather === 'snow') s *= 0.92;
+    return s;
+  }
+
+  function wxParticleCount(quality, weather, mobile){
+    if (!weather || weather === 'clear' || weather === 'fog') return 0;
+    const low = quality === 'low' || mobile;
+    if (weather === 'rain') return low ? 40 : 120;
+    if (weather === 'snow') return low ? 28 : 80;
+    return 0;
+  }
+
+  const api = {
+    WX_KEY, WX_VER, WX_DAY_LEN, WX_WEATHER_LEN, WX_MODES, WX_SKIP, WX_SNOW, WX_FOG, WX_RAIN,
+    wxDefault, wxNormalize, wxLoadState, wxEnabled, wxClock, wxForceDay,
+    wxWeatherAllowed, wxPickWeather, wxSky, wxFog, wxLightScale, wxParticleCount
+  };
+  root.WXRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+/* ---------- rublox weather ---------- */
+const WX_RULES = (typeof WXRules !== 'undefined' && WXRules) ? WXRules : (typeof window !== 'undefined' && window.WXRules) || {};
+const WX_KEY = WX_RULES.WX_KEY || 'rubloxWeather';
+let wx = null;
+
+function wxLoad(){
+  let raw = null;
+  try { raw = (typeof load === 'function') ? load(WX_KEY, null) : (typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem(WX_KEY) || 'null') : null); } catch (e){}
+  return WX_RULES.wxLoadState ? WX_RULES.wxLoadState(raw) : {ver:1, mode:'auto'};
+}
+function wxSave(p){
+  p = p || (wx && wx.set) || wxLoad();
+  try {
+    const body = WX_RULES.wxNormalize ? WX_RULES.wxNormalize(p) : p;
+    if (typeof save === 'function') save(WX_KEY, body);
+    else if (typeof localStorage !== 'undefined') localStorage.setItem(WX_KEY, JSON.stringify(body));
+  } catch (e){}
+}
+function wxSetting(){ return (wx && wx.set) || wxLoad(); }
+function wxSetMode(mode){
+  const next = WX_RULES.wxNormalize ? WX_RULES.wxNormalize({mode: mode}) : {mode: mode || 'auto'};
+  if (wx) wx.set = next;
+  wxSave(next);
+  wxSyncUi();
+  return next.mode;
+}
+function wxSyncUi(){
+  try {
+    const st = wxSetting();
+    ['auto','day','off'].forEach(m => {
+      const n = document.getElementById('wxSet' + m.charAt(0).toUpperCase() + m.slice(1));
+      if (n) n.checked = st.mode === m;
+    });
+  } catch (e){}
+}
+function wxHex(c){
+  try { return new THREE.Color(c); } catch (e){ return null; }
+}
+function wxEnsure(){
+  if (wx) return wx;
+  wx = {set: wxLoad(), t: 0, weatherT: 0, weather: 'clear', modeId: null, drops: null, base: null, _last: ''};
+  return wx;
+}
+function wxEnter(modeId){
+  wxEnsure();
+  wx.modeId = modeId || (typeof mode !== 'undefined' ? mode : null);
+  wx.base = null;
+  wx._last = '';
+  if (wx.drops && wx.drops.parent){ try { wx.drops.parent.remove(wx.drops); } catch (e){} }
+  wx.drops = null;
+  if (!(WX_RULES.wxEnabled && WX_RULES.wxEnabled(wx.modeId, wx.set))){
+    wxClearDrops();
+    return wx;
+  }
+  if (wx.set.mode === 'auto'){
+    wx.weather = WX_RULES.wxPickWeather ? WX_RULES.wxPickWeather(wx.modeId, Math.random) : 'clear';
+  } else wx.weather = 'clear';
+  wx.weatherT = 0;
+  return wx;
+}
+function wxStop(){
+  wxClearDrops();
+}
+function wxClearDrops(){
+  if (wx && wx.drops){
+    try { if (wx.drops.parent) wx.drops.parent.remove(wx.drops); } catch (e){}
+    try { if (wx.drops.geometry) wx.drops.geometry.dispose(); } catch (e){}
+    wx.drops = null;
+  }
+}
+function wxLow(){
+  try { return (typeof gfxIsLow === 'function' && gfxIsLow()) || (typeof LOWQ !== 'undefined' && LOWQ); } catch (e){ return false; }
+}
+function wxMakeDrops(kind, count){
+  wxClearDrops();
+  if (!count || typeof THREE === 'undefined' || !wxScene()) return;
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++){
+    pos[i*3] = (Math.random() - 0.5) * 28;
+    pos[i*3+1] = Math.random() * 16;
+    pos[i*3+2] = (Math.random() - 0.5) * 28;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({
+    color: kind === 'snow' ? 0xffffff : 0xb8d0ff,
+    size: kind === 'snow' ? 0.12 : 0.05,
+    transparent: true,
+    opacity: kind === 'snow' ? 0.9 : 0.65,
+    depthWrite: false
+  });
+  const pts = new THREE.Points(geo, mat);
+  pts.name = 'wxDrops';
+  pts.frustumCulled = false;
+  const sc = wxScene();
+  if (!sc) return;
+  sc.add(pts);
+  wx.drops = pts;
+  wx.dropsKind = kind;
+}
+function wxTickDrops(dt){
+  if (!wx || !wx.drops) return;
+  const attr = wx.drops.geometry && wx.drops.geometry.getAttribute('position');
+  if (!attr) return;
+  const arr = attr.array;
+  const snow = wx.dropsKind === 'snow';
+  const spd = snow ? 2.2 : 14;
+  const drift = snow ? 0.8 : 0.2;
+  for (let i = 0; i < arr.length; i += 3){
+    arr[i] += (snow ? Math.sin((wx.t + i) * 0.7) : 0) * drift * dt;
+    arr[i+1] -= spd * dt;
+    if (arr[i+1] < -2){ arr[i+1] += 16; arr[i] = (Math.random() - 0.5) * 28; arr[i+2] = (Math.random() - 0.5) * 28; }
+  }
+  attr.needsUpdate = true;
+  try {
+    const cam = wxCam(); if (cam) wx.drops.position.copy(cam.position);
+  } catch (e){}
+}
+function wxBind(env){
+  env = env || {};
+  if (env.scene) wxEnsure().scene = env.scene;
+  if (env.camera) wxEnsure().camera = env.camera;
+  return wxEnsure();
+}
+function wxScene(){ return (wx && wx.scene) || (typeof scene !== 'undefined' ? scene : null); }
+function wxCam(){ return (wx && wx.camera) || (typeof camera !== 'undefined' ? camera : null); }
+function wxTick(dt, modeId, env){
+  wxEnsure();
+  if (env) wxBind(env);
+  if (modeId) wx.modeId = modeId;
+  const set = wx.set || wxLoad();
+  wx.set = set;
+  if (!(WX_RULES.wxEnabled && WX_RULES.wxEnabled(wx.modeId, set))){
+    if (wx.drops) wxClearDrops();
+    return;
+  }
+  dt = Math.min(0.08, +dt || 0.016);
+  wx.t += dt;
+  wx.weatherT += dt;
+  const clock = (set.mode === 'day')
+    ? (WX_RULES.wxForceDay ? WX_RULES.wxForceDay() : {phase:'day', sun:1})
+    : (WX_RULES.wxClock ? WX_RULES.wxClock(wx.t, WX_RULES.WX_DAY_LEN) : {phase:'day', sun:1});
+  if (set.mode === 'auto' && wx.weatherT > (WX_RULES.WX_WEATHER_LEN || 48)){
+    wx.weatherT = 0;
+    wx.weather = WX_RULES.wxPickWeather ? WX_RULES.wxPickWeather(wx.modeId, Math.random) : 'clear';
+  }
+  if (set.mode === 'day') wx.weather = 'clear';
+  const sky = WX_RULES.wxSky ? WX_RULES.wxSky(wx.modeId, clock.phase, wx.weather) : '#8fd3ff';
+  const fog = WX_RULES.wxFog ? WX_RULES.wxFog(wx.modeId, clock.phase, wx.weather) : {color: sky, near:70, far:200};
+  const dim = WX_RULES.wxLightScale ? WX_RULES.wxLightScale(clock.phase, wx.weather) : 1;
+  const sig = set.mode + '|' + clock.phase + '|' + wx.weather + '|' + wx.modeId;
+  try {
+    const scn = wxScene();
+    if (scn){
+      if (scn.background && scn.background.isColor) scn.background.lerp(wxHex(sky), 0.08);
+      else scn.background = wxHex(sky);
+      if (scn.fog){
+        if (scn.fog.color) scn.fog.color.lerp(wxHex(fog.color), 0.08);
+        scn.fog.near = (scn.fog.near || fog.near) * 0.92 + fog.near * 0.08;
+        scn.fog.far = (scn.fog.far || fog.far) * 0.92 + fog.far * 0.08;
+      } else {
+        scn.fog = new THREE.Fog(fog.color, fog.near, fog.far);
+      }
+      if (sig !== wx._last){
+        scn.traverse(o => {
+          if (!o || !o.isLight) return;
+          if (o._wxBase == null) o._wxBase = o.intensity;
+          o.intensity = o._wxBase * dim;
+        });
+        wx._last = sig;
+      }
+    }
+  } catch (e){}
+  const want = WX_RULES.wxParticleCount ? WX_RULES.wxParticleCount(wxLow() ? 'low' : 'high', wx.weather, wxLow()) : 0;
+  if (want && (!wx.drops || wx.dropsKind !== wx.weather)) wxMakeDrops(wx.weather, want);
+  if (!want && wx.drops) wxClearDrops();
+  if (wx.drops) wxTickDrops(dt);
+  wx.phase = clock.phase;
+  wx.sun = clock.sun;
+}
+
+try {
+  if (typeof window !== 'undefined'){
+    window.wxEnter = wxEnter;
+    window.wxBind = wxBind;
+    window.wxTick = wxTick;
+    window.wxStop = wxStop;
+    window.wxSetMode = wxSetMode;
+    window.wxSetting = wxSetting;
+    window.wxSyncUi = wxSyncUi;
+    window.wxState = function(){ return wx ? {mode: wx.set && wx.set.mode, phase: wx.phase, weather: wx.weather, t: wx.t, modeId: wx.modeId, drops: !!(wx.drops)} : null; };
+    window.wxForce = function(phase, weather){
+      wxEnsure();
+      if (weather) wx.weather = weather;
+      if (phase === 'day') wx.t = (WX_RULES.WX_DAY_LEN || 180) * 0.3;
+      if (phase === 'dusk') wx.t = (WX_RULES.WX_DAY_LEN || 180) * 0.6;
+      if (phase === 'night') wx.t = (WX_RULES.WX_DAY_LEN || 180) * 0.8;
+      if (phase === 'dawn') wx.t = (WX_RULES.WX_DAY_LEN || 180) * 0.05;
+      wx._last = '';
+      wxTick(0.016, wx.modeId);
+      return window.wxState();
+    };
+  }
+} catch (e){}
+/* ---------- end rublox weather ---------- */
+
 const GAMES = [
   {id:'lantern', name:'Lantern Big Top', emoji:'🏮', tag:'Stay close and stay bright under a colorful circus tent!', draw: drawLantern, playable: true, isNew: true},
   {id:'dreamhouse', name:'Dream House Builders', emoji:'🏡', tag:'Re-build your house with bricks, paint, furniture and upgrades!', draw: drawDreamHouse, playable: true, isNew: true},
@@ -3077,6 +3423,7 @@ function drawLantern(ctx){
   ctx.fillText('🏮', 150, 70);
   ctx.fillText('🎩', 152, 100);
 }
+
 
 
 
@@ -3819,6 +4166,7 @@ function confetti(){
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
+      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
     } catch (e){}
     return false;
   }
@@ -4379,7 +4727,10 @@ if (setShowFps) setShowFps.addEventListener('change', () => {
   save('rubloxShowFps', window.gfx.showFps);
   syncGfxUi();
 });
-$('#setBtn').onclick = () => { syncInvert(); syncGfxUi(); if (typeof chSyncSettings === 'function') chSyncSettings(); $('#setModal').classList.add('show'); };
+$('#setBtn').onclick = () => { syncInvert(); syncGfxUi(); if (typeof chSyncSettings === 'function') chSyncSettings(); if (typeof wxSyncUi === 'function') wxSyncUi(); $('#setModal').classList.add('show'); };
+['wxSetAuto','wxSetDay','wxSetOff'].forEach(id => { const n = document.getElementById(id); if (n) n.addEventListener('change', () => { if (n.checked && typeof wxSetMode === 'function') wxSetMode(n.value); }); });
+if (typeof wxSyncUi === 'function') try { wxSyncUi(); } catch (e){}
+
 $('#setOk').onclick = () => $('#setModal').classList.remove('show');
 $('#setModal').onclick = e => { if (e.target.id === 'setModal') $('#setModal').classList.remove('show'); };
 document.addEventListener('keydown', e => {
@@ -6146,6 +6497,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
 
 
 
+
 /* ---------- lantern rules ---------- */
 /* Pure Lantern Big Top rules — safe to require() in tests and to load in the page. */
 (function (root) {
@@ -7807,7 +8159,7 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
     if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
@@ -25810,7 +26162,7 @@ function dhLayoutHud(){
     }
     const frameDt = Math.min(0.45, raw);
     if (document.pointerLockElement && (!fpOn() || paused || menuOpen || choosing || won || over)) document.exitPointerLock();
-    animate(paused ? 0 : frameDt); updateCamera(); renderer.render(scene, camera); hud(); if (typeof chTick === 'function') try { chTick(); } catch (e){}
+    animate(paused ? 0 : frameDt); updateCamera(); if (typeof wxTick === 'function') try { wxTick(frameDt, mode, {scene: scene, camera: camera}); } catch (e){} renderer.render(scene, camera); hud(); if (typeof chTick === 'function') try { chTick(); } catch (e){}
     tickGfxFps(frameDt);
   }
   function tickGfxFps(dt){
@@ -26413,6 +26765,7 @@ function start(m = 'obby', d = null){
     buildEmoteMenu(); $('#oEmos').classList.remove('show');
     $('#oTip').classList.toggle('hide', choosing); tipTimer = mode === 'obby' && INTRO[level] ? 11 : 8; $('#oSkip').classList.remove('show');
     $('#lvlModal').classList.remove('show');
+    try { if (typeof wxEnter === 'function') wxEnter(mode); } catch (e){}
     resize(); armGameLoop(); checkRotate(); try { if (typeof chSync === 'function') chSync(); } catch (e){}
     if (mode === 'obby') banner('🏃 Level ' + level + ' · ' + worldOf(level).emoji + ' ' + worldOf(level).name);
     else if (mode === 'nds') banner('🏝️ Disaster Island!');
@@ -26475,6 +26828,8 @@ function start(m = 'obby', d = null){
     $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }
     if (mode === 'dance') danceEnter();
     $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
+    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
+        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
         $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
@@ -27271,6 +27626,7 @@ function start(m = 'obby', d = null){
   }
 
   function stop(){
+    try { if (typeof wxStop === 'function') wxStop(); } catch (e){}
     if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}
     if (typeof dhCloseReset === 'function') dhCloseReset();
     running = false; loopId++; if (raf){ try { cancelAnimationFrame(raf); } catch (e){} raf = 0; } if (document.pointerLockElement) document.exitPointerLock(); fp.shown = null; menuOpen = false; paused = false;
