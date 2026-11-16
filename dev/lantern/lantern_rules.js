@@ -125,12 +125,66 @@
     return out;
   }
 
+  // Staggered ground heights so stacked floors never share a plane (z-fighting fix).
+  // Keep gaps at least 0.02 so a tight camera near/far cannot flicker.
+  const LH_Y = {grass: 0, path: 0.03, floor: 0.07, runner: 0.10, ring: 0.13, pad: 0.16, wagon: 0.22};
+  const LH_CAM_NEAR = 0.2;
+  const LH_CAM_FAR = 280;
+  const LH_STATIC_PERIOD = 1.2; // seconds; 2 steps → ~1.67 flashes/sec, under 3
+  const LH_STATIC_MAX_HZ = 3;
+
   const LH_LAMP_R = 5;
-  const LH_WAGON_ZS = [11, 18, 25];
-  const LH_MIDWAY_WALL_X = 4.2;
-  const LH_MIDWAY_Z0 = 8;
-  const LH_MIDWAY_Z1 = 32;
+  const LH_WAGONS_PER_SIDE = 10;
+  const LH_WAGON_COUNT = 20;
+  const LH_WAGON_SPACING = 8;
+  const LH_WAGON_Z0 = 22;
+  const LH_WAGON_X = 16;
+  const LH_WAGON_ZS = (function(){
+    const zs = [];
+    for (let i = 0; i < LH_WAGONS_PER_SIDE; i++) zs.push(LH_WAGON_Z0 + i * LH_WAGON_SPACING);
+    return zs;
+  })();
+  const LH_MIDWAY_WALL_X = 5.2;
+  const LH_MIDWAY_Z0 = 14;
+  const LH_MIDWAY_Z1 = 102;
   const LH_DOOR_HALF = 1.35;
+  const LH_TENT_W = 56;
+  const LH_TENT_X = 28;
+  const LH_TENT_Z0 = -22;
+  const LH_TENT_Z1 = 14;
+  const LH_RING_R = 9;
+  const LH_RING_Z = -4;
+  const LH_FLAP_Z = -4;
+  const LH_CELLAR_Z = 200;
+  const LH_GRASS_W = 220;
+  const LH_GRASS_D = 220;
+  const LH_WOODS_X = -92;
+
+  function lhWagonZs(){ return LH_WAGON_ZS.slice(); }
+  function lhWagonCount(){ return LH_WAGON_COUNT; }
+  function lhDoorTarget(side, closed){
+    return closed ? 0 : -(+side || 1) * 1.9;
+  }
+  function lhGroundGapOk(a, b){
+    return Math.abs((+a || 0) - (+b || 0)) >= 0.02;
+  }
+  function lhMapLayout(){
+    return {
+      bounds: {x0: -110, x1: 55, z0: -105, z1: 125},
+      tent: {x: 0, z: -4, w: LH_TENT_W, d: LH_TENT_Z1 - LH_TENT_Z0},
+      midway: {x: 0, z: (LH_MIDWAY_Z0 + LH_MIDWAY_Z1) / 2, w: LH_MIDWAY_WALL_X * 2, d: LH_MIDWAY_Z1 - LH_MIDWAY_Z0},
+      wagonX: LH_WAGON_X,
+      wagonZs: lhWagonZs(),
+      zones: [
+        {id: 'food', name: 'Food Court', x: -62, z: 8, w: 36, d: 24, color: '#ffd0e8'},
+        {id: 'games', name: 'Games Alley', x: -62, z: 40, w: 40, d: 32, color: '#d0f0ff'},
+        {id: 'rides', name: 'Rides', x: -72, z: -32, w: 44, d: 36, color: '#ffe29a'},
+        {id: 'funhouse', name: 'Funhouse', x: -50, z: 22, w: 16, d: 14, color: '#e0c4ff'},
+        {id: 'pond', name: 'Lantern Pond', x: -42, z: -18, w: 18, d: 16, color: '#8ecaff'},
+        {id: 'woods', name: 'Backlot', x: -100, z: -10, w: 28, d: 90, color: '#1a2a18'}
+      ]
+    };
+  }
 
   function lhMidwayWallSegments(z0, z1, gaps, half){
     z0 = z0 == null ? LH_MIDWAY_Z0 : z0;
@@ -203,11 +257,17 @@
   const api = {
     LH_KEY, LH_VER, LH_HOST, LH_HOST_TITLE, LH_GAME, LH_STAMPS, LH_EYES,
     LH_COMPANY_R, LH_NEAR_R, LH_SUMMON_R, LH_TAG_R, LH_KEY_CD, LH_LAMP_R, LH_WAGON_ZS,
-    LH_MIDWAY_WALL_X, LH_MIDWAY_Z0, LH_MIDWAY_Z1, LH_DOOR_HALF, RATES, LH_BADGES,
+    LH_WAGONS_PER_SIDE, LH_WAGON_COUNT, LH_WAGON_SPACING, LH_WAGON_Z0, LH_WAGON_X,
+    LH_MIDWAY_WALL_X, LH_MIDWAY_Z0, LH_MIDWAY_Z1, LH_DOOR_HALF,
+    LH_Y, LH_CAM_NEAR, LH_CAM_FAR, LH_STATIC_PERIOD, LH_STATIC_MAX_HZ,
+    LH_TENT_W, LH_TENT_X, LH_TENT_Z0, LH_TENT_Z1, LH_RING_R, LH_RING_Z, LH_FLAP_Z,
+    LH_CELLAR_Z, LH_GRASS_W, LH_GRASS_D, LH_WOODS_X,
+    RATES, LH_BADGES,
     lhTestHash, lhTestActive, lhClampSanity, lhEyeFill, lhSanityDelta,
     lhCancelSucceeds, lhHostNameIn, lhDefaultSettings, lhNormalizeSettings,
     lhLoadState, lhStampOk, lhAddDoodle, lhNear, lhDist, lhSummonOk, lhCensored,
-    lhMidwayWallSegments, lhMidwayBlocksSide, lhNearLamp
+    lhMidwayWallSegments, lhMidwayBlocksSide, lhNearLamp,
+    lhWagonZs, lhWagonCount, lhDoorTarget, lhGroundGapOk, lhMapLayout
   };
   root.LHRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

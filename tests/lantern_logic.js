@@ -7,10 +7,10 @@ const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const RULES = require(path.join(ROOT, 'dev/lantern/lantern_rules.js'));
 const BUILD = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).build || JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
-test('BUILD stamp is 2026.11.16-3 in lantern files and version.json', () => {
+test('BUILD stamp is 2026.11.16-4 in lantern files and version.json', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
-  assert.equal(v.build, '2026.11.16-3');
-  assert.match(HTML, /const BUILD = '2026\.11\.16-3'/);
+  assert.equal(v.build, '2026.11.16-4');
+  assert.match(HTML, /const BUILD = '2026\.11\.16-4'/);
 });
 
 test('Lantern Big Top is a playable GAMES card with original branding', () => {
@@ -229,14 +229,15 @@ test('circus world, midway wagons, and scare FX are in the mode module', () => {
 
 test('midway walls leave walkable gaps at each wagon door', () => {
   const segs = RULES.lhMidwayWallSegments();
-  assert.ok(segs.length >= 3);
-  // z=11/18/25 must NOT be blocked by a midway side wall
+  assert.equal(RULES.lhWagonCount(), 20);
+  assert.equal(RULES.LH_WAGON_ZS.length, 10);
+  assert.ok(segs.length >= 11);
   for (const z of RULES.LH_WAGON_ZS){
     assert.equal(RULES.lhMidwayBlocksSide(z, segs), false, 'gap at z=' + z);
   }
-  // midway wall remains between wagons
+  // midway wall remains between wagons and at the start of the hall
   assert.equal(RULES.lhMidwayBlocksSide(14.5, segs), true);
-  assert.equal(RULES.lhMidwayBlocksSide(8.4, segs), true);
+  assert.equal(RULES.lhMidwayBlocksSide(26, segs), true);
 });
 
 test('lit lanterns keep the fairground safe; dark grass drains sanity', () => {
@@ -266,4 +267,67 @@ test('walk cycle, wagon access, and outdoor fairground are wired in the mode', (
   assert.match(HTML, /🎪 Go to my wagon/);
   assert.doesNotMatch(js, /\bCaine\b/);
   assert.doesNotMatch(js, /Digital Circus/);
+});
+
+test('staggered ground Y offsets prevent coplanar floors', () => {
+  const Y = RULES.LH_Y;
+  const order = ['grass', 'path', 'floor', 'runner', 'ring', 'pad', 'wagon'];
+  for (let i = 1; i < order.length; i++){
+    assert.ok(Y[order[i]] - Y[order[i - 1]] >= 0.02, order[i - 1] + ' vs ' + order[i]);
+    assert.equal(RULES.lhGroundGapOk(Y[order[i - 1]], Y[order[i]]), true);
+  }
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  assert.match(js, /polygonOffset/);
+  assert.match(js, /lhApplyView/);
+  assert.match(js, /camera\.near/);
+  assert.match(js, /logarithmicDepthBuffer is not needed/);
+  assert.equal(RULES.LH_CAM_NEAR, 0.2);
+  assert.ok(RULES.LH_CAM_FAR >= 200 && RULES.LH_CAM_FAR <= 400);
+});
+
+test('sanity flicker stays under 3 flashes/sec and is off at full sanity', () => {
+  assert.ok(RULES.LH_STATIC_PERIOD >= 1);
+  const hz = 2 / RULES.LH_STATIC_PERIOD; // steps(2) keyframes per period
+  assert.ok(hz < RULES.LH_STATIC_MAX_HZ);
+  const css = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.css'), 'utf8');
+  assert.match(css, /lhstatic 1\.2s steps\(2\)/);
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  assert.match(js, /staticOn/);
+  assert.match(js, /lh\.sanity < 90/);
+});
+
+test('wagon doors are hinged, block when closed, and auto-open for the owner', () => {
+  assert.equal(RULES.lhDoorTarget(-1, true), 0);
+  assert.ok(RULES.lhDoorTarget(-1, false) > 0);
+  assert.ok(RULES.lhDoorTarget(1, false) < 0);
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  assert.match(js, /function lhMakeHingeDoor/);
+  assert.match(js, /function lhTickDoors/);
+  assert.match(js, /function lhOwnerAutoDoor/);
+  assert.match(js, /lhSetDoor\(rec, true\)/);
+  assert.match(js, /rotation\.y/);
+});
+
+test('map overlay marks You are here and Your Wagon and the fairground is much bigger', () => {
+  const layout = RULES.lhMapLayout();
+  assert.ok(layout.zones.some(z => z.id === 'food'));
+  assert.ok(layout.zones.some(z => z.id === 'games'));
+  assert.ok(layout.zones.some(z => z.id === 'rides'));
+  assert.ok(layout.zones.some(z => z.id === 'funhouse'));
+  assert.ok(layout.zones.some(z => z.id === 'pond'));
+  assert.ok(layout.zones.some(z => z.id === 'woods'));
+  const area = (layout.bounds.x1 - layout.bounds.x0) * (layout.bounds.z1 - layout.bounds.z0);
+  assert.ok(area > 88 * 90 * 2, 'walkable map bounds should be several times the old 88x90 grass');
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  assert.match(js, /function lhToggleMap/);
+  assert.match(js, /function lhDrawMap/);
+  assert.match(js, /function lhBuildFunhouse/);
+  assert.match(js, /function lhBuildPond/);
+  assert.match(js, /function lhSwing/);
+  assert.match(js, /You are here/);
+  assert.match(js, /Your Wagon/);
+  assert.match(js, /KeyM/);
+  assert.match(HTML, /id="lhMap"/);
+  assert.match(HTML, /id="lhMapBtn"/);
+  assert.match(HTML, /id="lhMapCan"/);
 });
