@@ -11,15 +11,18 @@
 .lh-bar i{display:block;height:100%;background:linear-gradient(90deg,#7cffd0,#ffd25a,#ff8ad8);border-radius:8px}
 .lh-why{font-size:11px;font-weight:800;margin-top:4px;max-width:160px;line-height:1.25;color:#ffe8fb}
 #lhKeyTag{display:none;position:absolute;left:50%;top:58px;transform:translateX(-50%);z-index:8;background:#6b3cff;color:#fff;border:3px solid #fff;border-radius:14px;padding:4px 10px;font-weight:900;font-size:14px;pointer-events:none}
-#lhSetBtn,#lhFanfare,#lhMyWagon,#lhMapBtn{display:none;position:absolute;z-index:8;border:3px solid #fff;border-radius:16px;padding:7px 12px;font:inherit;font-weight:900;cursor:pointer;color:#fff}
+#lhSetBtn,#lhFanfare,#lhMyWagon,#lhMapBtn,#lhWriteBtn{display:none;position:absolute;z-index:8;border:3px solid #fff;border-radius:16px;padding:7px 12px;font:inherit;font-weight:900;cursor:pointer;color:#fff}
 #lhSetBtn{right:max(10px,env(safe-area-inset-right));bottom:18px;background:#6b3cff;box-shadow:0 4px 0 #3a1ca0}
 .touchui #lhSetBtn{bottom:158px}
 #lhMyWagon{right:max(10px,env(safe-area-inset-right));bottom:68px;background:#d61c8c;box-shadow:0 4px 0 #8a0a58}
 .touchui #lhMyWagon{bottom:208px}
 #lhMapBtn{right:max(10px,env(safe-area-inset-right));bottom:118px;background:#1d6b5a;box-shadow:0 4px 0 #0a3d34}
 .touchui #lhMapBtn{bottom:258px}
+#lhWriteBtn{right:max(10px,env(safe-area-inset-right));bottom:168px;background:#8a1020;box-shadow:0 4px 0 #4a0810}
+.touchui #lhWriteBtn{bottom:308px}
+#lhWriteBtn.lh-ready{box-shadow:0 4px 0 #4a0810,0 0 0 3px #ffd25a}
 #lhFanfare{left:50%;bottom:200px;transform:translateX(-50%);background:#d61c8c;box-shadow:0 4px 0 #8a0a58}
-#lhFanfare.show,#lhSetBtn,#lhMyWagon,#lhMapBtn{display:block}
+#lhFanfare.show,#lhSetBtn,#lhMyWagon,#lhMapBtn,#lhWriteBtn{display:block}
 .lhnear{background:#d61c8c;box-shadow:0 4px 0 #8a0a58}
 .lhnear small{color:#d61c8c}
 #lhCut,#lhCalm{display:none;position:absolute;inset:0;z-index:30;background:rgba(10,4,20,.72);align-items:center;justify-content:center;flex-direction:column;text-align:center;color:#fff;pointer-events:auto}
@@ -50,10 +53,19 @@
 #lhSkip,#lhCalmSkip{margin-top:16px;border:3px solid #fff;border-radius:14px;background:#6b3cff;color:#fff;font:inherit;font-weight:900;padding:8px 16px;cursor:pointer;z-index:1}
 .lh-breathe{width:110px;height:110px;border:6px solid #fff;border-radius:50%;margin:8px auto 16px;background:radial-gradient(circle at 40% 40%,#7cffd0,#6b3cff);animation:lhbreathe 2.2s ease-in-out infinite}
 @keyframes lhbreathe{0%,100%{transform:scale(.82)}50%{transform:scale(1.08)}}
-#lhSet,#lhDraw{display:none;position:absolute;inset:0;z-index:25;background:rgba(20,8,36,.55);align-items:center;justify-content:center;pointer-events:auto}
-#lhSet.show,#lhDraw.show{display:flex}
-#lhSet .mbox,#lhDraw .mbox{background:#fff7fb;border:4px solid #1d2340;border-radius:20px;padding:16px;max-width:420px;width:calc(100% - 28px);color:#1d2340;box-shadow:0 8px 0 rgba(80,20,90,.25)}
-#lhSet h2,#lhDraw h2{margin:0 0 8px;font-size:22px}
+#lhSet,#lhDraw,#lhWrite,#lhKnock{display:none;position:absolute;inset:0;z-index:25;background:rgba(20,8,36,.55);align-items:center;justify-content:center;pointer-events:auto}
+#lhSet.show,#lhDraw.show,#lhWrite.show,#lhKnock.show{display:flex}
+#lhSet .mbox,#lhDraw .mbox,#lhWrite .mbox,#lhKnock .mbox{background:#fff7fb;border:4px solid #1d2340;border-radius:20px;padding:16px;max-width:420px;width:calc(100% - 28px);color:#1d2340;box-shadow:0 8px 0 rgba(80,20,90,.25)}
+#lhSet h2,#lhDraw h2,#lhWrite h2,#lhKnock h2{margin:0 0 8px;font-size:22px}
+#lhWritePresets{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+#lhWritePresets button,#lhWriteStyle button{border:3px solid #1d2340;border-radius:14px;background:#fff;font:inherit;font-weight:900;padding:10px 12px;cursor:pointer;min-height:44px;color:#1d2340}
+#lhWritePresets button.on,#lhWriteStyle button.on{background:#8a1020;color:#fff;border-color:#4a0810}
+#lhWriteStyle{display:flex;gap:8px;margin:6px 0 10px}
+#lhWriteCustom label{display:block;font-weight:800;font-size:13px;margin:4px 0}
+#lhWriteCustom .lh-write-row{display:flex;gap:8px;align-items:stretch}
+#lhWriteIn{flex:1;min-width:0;border:3px solid #1d2340;border-radius:12px;padding:10px 12px;font:inherit;font-size:16px;font-weight:800;text-transform:uppercase}
+#lhWriteGo{border:3px solid #1d2340;border-radius:12px;background:#8a1020;color:#fff;font:inherit;font-weight:900;padding:10px 14px;cursor:pointer;min-height:44px}
+#lhWriteErase,#lhWriteClose{margin-top:8px;width:100%}
 #lhSet label{display:block;font-weight:800;margin:8px 0;font-size:15px}
 #lhSet small{display:block;font-weight:700;opacity:.7;font-size:12px}
 #lhWall{position:relative;width:100%;height:180px;background:#fffef6;border:3px solid #eadfbf;border-radius:12px;margin:8px 0;overflow:hidden;touch-action:none;cursor:crosshair}
@@ -95,11 +107,11 @@ body.lh-muffled #obby{filter:saturate(.85)}
 }
 #obby.lhmode #lhRoot{display:block;position:absolute;inset:0;pointer-events:none;z-index:20}
 #obby.lhmode #lhMeter{display:block;pointer-events:none;z-index:21}
-#obby.lhmode #lhSetBtn,#obby.lhmode #lhFanfare.show,#obby.lhmode #lhMyWagon,#obby.lhmode #lhMapBtn,#obby.lhmode #lhAct.show{pointer-events:auto}
+#obby.lhmode #lhSetBtn,#obby.lhmode #lhFanfare.show,#obby.lhmode #lhMyWagon,#obby.lhmode #lhMapBtn,#obby.lhmode #lhWriteBtn,#obby.lhmode #lhAct.show{pointer-events:auto}
 /* #lhRoot is z-index 20 and covers the screen; the Close/Open door prompt must sit above it or Mac clicks never reach the button. */
 #lhAct.fsnear,#obby.lhmode #lhAct.show{z-index:22;pointer-events:auto}
 
-#obby.lhmode #lhCut,#obby.lhmode #lhCalm,#obby.lhmode #lhSet,#obby.lhmode #lhDraw,#obby.lhmode #lhMap{pointer-events:auto;z-index:90}
+#obby.lhmode #lhCut,#obby.lhmode #lhCalm,#obby.lhmode #lhSet,#obby.lhmode #lhDraw,#obby.lhmode #lhWrite,#obby.lhmode #lhKnock,#obby.lhmode #lhMap{pointer-events:auto;z-index:90}
 #obby.lhmode #lhKeyTag{z-index:21}
 
 /* Start-fail safety net (kept here so lantern css refresh does not drop it). */
@@ -124,3 +136,10 @@ body.lh-muffled #obby{filter:saturate(.85)}
 #lhMeter.lh-lamp .lh-meterbox{border-color:#ffd27a;box-shadow:0 4px 0 rgba(80,20,90,.45),0 0 16px rgba(255,210,122,.55)}
 .lh-bar.lh-lamp i{animation:lhlampglow 1.4s ease-in-out infinite alternate}
 @keyframes lhlampglow{from{filter:brightness(1);box-shadow:none}to{filter:brightness(1.35) saturate(1.2);box-shadow:0 0 8px #ffd27a}}
+
+#lhKnockMsg{font-weight:800;font-size:16px;margin:4px 0 8px;line-height:1.35}
+#lhKnockLeft{font-weight:900;font-size:13px;opacity:.7;margin-bottom:10px}
+#lhKnock .lh-knock-row{display:flex;gap:10px;flex-wrap:wrap}
+#lhKnockOpen,#lhKnockKeep{flex:1;min-height:48px;min-width:120px;border:3px solid #1d2340;border-radius:14px;font:inherit;font-weight:900;padding:12px 14px;cursor:pointer}
+#lhKnockOpen{background:#2ec27e;color:#08351c}
+#lhKnockKeep{background:#efe8f8;color:#1d2340}

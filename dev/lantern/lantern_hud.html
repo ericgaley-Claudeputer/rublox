@@ -4,6 +4,7 @@
     <button type="button" id="lhSetBtn" aria-label="Big Top settings">⚙️ Big Top settings</button>
     <button type="button" id="lhMyWagon" aria-label="Go to my wagon">🎪 Go to my wagon</button>
     <button type="button" id="lhMapBtn" aria-label="Open map">🗺️ Map</button>
+    <button type="button" id="lhWriteBtn" aria-label="Write a word on the wall">✍️ Write</button>
     <button type="button" id="lhFanfare" aria-label="Call Maestro Gleam">🎩 Call Maestro Gleam</button>
     <div id="lhScare" aria-hidden="true">
       <div id="lhVignette"></div>
@@ -45,6 +46,37 @@
         <label><input type="radio" name="lhCan" id="lhCanNever" value="never"> Never</label>
         <label><input type="checkbox" id="lhSkipKey"> Skip Key Holder<small>Don't pick me as the Key Holder this stay.</small></label>
         <button type="button" class="big green" id="lhSetClose">Done ✅</button>
+      </div>
+    </div>
+    <div id="lhKnock">
+      <div class="mbox">
+        <h2>🚪 Someone is knocking!</h2>
+        <p id="lhKnockMsg">A guest is at your wagon door.</p>
+        <div id="lhKnockLeft">10s</div>
+        <div class="lh-knock-row">
+          <button type="button" class="big green" id="lhKnockOpen">Open</button>
+          <button type="button" class="big gray" id="lhKnockKeep">Keep closed</button>
+        </div>
+      </div>
+    </div>
+    <div id="lhWrite">
+      <div class="mbox">
+        <h2>✍️ Write on the wall</h2>
+        <div id="lhWriteHint" style="font-size:13px;font-weight:700">Pick a spooky word, or type a short one (12 letters).</div>
+        <div id="lhWritePresets"></div>
+        <div id="lhWriteStyle">
+          <button type="button" data-lhstyle="paint" class="on">🩸 Paint</button>
+          <button type="button" data-lhstyle="chalk">✏️ Chalk</button>
+        </div>
+        <div id="lhWriteCustom">
+          <label for="lhWriteIn">Or type your own</label>
+          <div class="lh-write-row">
+            <input id="lhWriteIn" maxlength="12" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="HELP" />
+            <button type="button" id="lhWriteGo">Write it</button>
+          </div>
+        </div>
+        <button type="button" class="big gray" id="lhWriteErase">🧽 Erase my last word</button>
+        <button type="button" class="big gray" id="lhWriteClose">Cancel</button>
       </div>
     </div>
     <div id="lhDraw">

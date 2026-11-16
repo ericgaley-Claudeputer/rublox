@@ -110,7 +110,8 @@
       visits: Math.max(0, o.visits | 0),
       settings: lhNormalizeSettings(o.settings),
       doodles: o.doodles && typeof o.doodles === 'object' ? o.doodles : {},
-      coins: Math.max(0, +o.coins || 0)
+      coins: Math.max(0, +o.coins || 0),
+      wallWords: lhSanitizeWallWords(o.wallWords)
     };
   }
 
@@ -135,6 +136,14 @@
   const LH_Y = {grass: 0, path: 0.03, floor: 0.07, runner: 0.10, ring: 0.13, pad: 0.16, wagon: 0.22};
   const LH_CAM_NEAR = 0.2;
   const LH_CAM_FAR = 280;
+  /* Walls must be taller than a jump (JUMP^2 / 2GRAV ≈ 2.84) and taller than the old 3.2 shell,
+     which was also built with plat() top=h/2, so the visible top was only 1.6. */
+  const LH_WAGON_H = 5.6;
+  const LH_MIDWAY_WALL_H = 5.6;
+  const LH_DOOR_OPEN_H = 3.2;
+  const LH_KNOCK_COOLDOWN = 7;
+  const LH_KNOCK_TIMEOUT = 10;
+  const LH_KNOCK_SOLO_OPEN = 0.5;
   const LH_STATIC_PERIOD = 1.2; // seconds; 2 steps → ~1.67 flashes/sec, under 3
   const LH_STATIC_MAX_HZ = 3;
 
@@ -278,8 +287,318 @@
     {id:'lh-peek', real:'Peekaboo.', realDesc:'Get abstracted by Eniac. (Secret)', name:'Gotcha!', desc:'Get fizzled by the late-night visitor.', emoji:'👀', coins:20, note:'lh:peek', secret:true}
   ];
 
+
+  const LH_WALL_PRESETS = ['HELP', 'EXIT', 'GET OUT', 'RUN', 'BEHIND YOU', "DON'T LOOK", 'NO EXIT', 'GO BACK', 'HIDE', 'LOOK UP'];
+  const LH_WALL_MAX_CHARS = 12;
+  const LH_WALL_MAX_PER_PLAYER = 20;
+  const LH_WALL_MAX_DIST = 3.4;
+  const LH_PII_REASONS = ['email', 'url', 'phone', 'digits', 'address', 'handle', 'social', 'age', 'contact'];
+
+  function lhRoomContains(R, x, z, pad){
+    if (!R) return false;
+    const w = +(R.w != null ? R.w : 8);
+    const d = +(R.d != null ? R.d : 6.2);
+    const m = pad == null ? 0.05 : +pad;
+    return Math.abs((+x || 0) - (+R.x || 0)) <= w / 2 - m && Math.abs((+z || 0) - (+R.z || 0)) <= d / 2 - m;
+  }
+
+  function lhDoorAjar(door){
+    if (!door) return false;
+    if (!door.closed) return true;
+    return Math.abs(+door.ang || 0) > 0.4;
+  }
+
+  /* Interior is visible when the local viewer is inside the wagon, or the door is open. */
+  function lhRoomInteriorVisible(R, viewer){
+    if (!R) return false;
+    if (viewer && lhRoomContains(R, viewer.x, viewer.z, 0.02)) return true;
+    return lhDoorAjar(R.door);
+  }
+
+  /* Solid doorway: a 2.24-wide, 2.4-tall opening, a transom above, and a slightly oversized door leaf that seals the gap when shut. */
+  function lhDoorwayLayout(R){
+    R = R || {};
+    const w = +(R.w != null ? R.w : 8);
+    const d = +(R.d != null ? R.d : 6.2);
+    const h = +(R.h != null ? R.h : LH_WAGON_H);
+    const side = R.side == null ? 1 : +R.side;
+    const x = +R.x || 0;
+    const z = +R.z || 0;
+    const openW = 2.24;
+    const openH = Math.min(LH_DOOR_OPEN_H, Math.max(2.2, h - 0.8));
+    const ix = x - side * (w / 2);
+    const stubD = (d - openW) / 2;
+    const stubOff = openW / 2 + stubD / 2;
+    const transomH = Math.max(0, h - openH);
+    return {
+      w, d, h, side, x, z, ix,
+      openW, openH,
+      transomH: transomH,
+      transomY: openH + transomH / 2,
+      transomTop: h,
+      transomD: openW + 0.08,
+      wallTop: h,
+      stubD, stubOff,
+      stubZ0: z - stubOff,
+      stubZ1: z + stubOff,
+      hingeZ: z - openW / 2,
+      doorThick: 0.16,
+      doorH: openH + 0.04,
+      doorD: openW + 0.06,
+      doorY: (openH + 0.04) / 2
+    };
+  }
+
+  function lhDoorSealsOpening(layout){
+    layout = layout || lhDoorwayLayout({});
+    const z0 = layout.z - layout.openW / 2;
+    const z1 = layout.z + layout.openW / 2;
+    const doorZ0 = layout.hingeZ;
+    const doorZ1 = layout.hingeZ + layout.doorD;
+    const coversZ = doorZ0 <= z0 + 0.001 && doorZ1 >= z1 - 0.001;
+    const doorCoversY = layout.doorH >= layout.openH - 0.001;
+    const transomTop = layout.transomTop != null ? layout.transomTop : (layout.transomY + layout.transomH / 2);
+    const transomBot = transomTop - layout.transomH;
+    const transomCoversY = layout.transomH <= 0.001 ? (layout.doorH >= layout.h - 0.001) : (transomBot <= layout.openH + 0.02 && transomTop >= layout.h - 0.001);
+    return !!(coversZ && doorCoversY && transomCoversY);
+  }
+
+  function lhWagonWallPlanes(R){
+    if (!R) return [];
+    const w = +(R.w != null ? R.w : 8);
+    const d = +(R.d != null ? R.d : 6.2);
+    const h = +(R.h != null ? R.h : LH_WAGON_H);
+    const y0 = R.floorY != null ? +R.floorY : 0.22;
+    const y1 = h;
+    const midY = (y0 + y1) / 2;
+    const hw = w / 2, hd = d / 2;
+    const side = R.side == null ? 1 : +R.side;
+    return [
+      {id:'back', axis:'x', pos: R.x + side * hw, x: R.x + side * hw, z: R.z, y: midY, hx: 0, hz: hd, y0, y1, nx: -side, ny: 0, nz: 0, room: R.id, w: d, h: y1 - y0},
+      {id:'door', axis:'x', pos: R.x - side * hw, x: R.x - side * hw, z: R.z, y: midY, hx: 0, hz: hd, y0, y1, nx: side, ny: 0, nz: 0, room: R.id, w: d, h: y1 - y0},
+      {id:'south', axis:'z', pos: R.z - hd, x: R.x, z: R.z - hd, y: midY, hx: hw, hz: 0, y0, y1, nx: 0, ny: 0, nz: 1, room: R.id, w: w, h: y1 - y0},
+      {id:'north', axis:'z', pos: R.z + hd, x: R.x, z: R.z + hd, y: midY, hx: hw, hz: 0, y0, y1, nx: 0, ny: 0, nz: -1, room: R.id, w: w, h: y1 - y0}
+    ];
+  }
+
+  function lhRayWall(ox, oy, oz, dx, dy, dz, planes, maxDist){
+    maxDist = maxDist == null ? LH_WALL_MAX_DIST : +maxDist;
+    ox = +ox || 0; oy = +oy || 0; oz = +oz || 0;
+    dx = +dx || 0; dy = +dy || 0; dz = +dz || 0;
+    let best = null, bestT = maxDist;
+    (planes || []).forEach(p => {
+      if (!p) return;
+      let t;
+      if (p.axis === 'x'){
+        if (Math.abs(dx) < 1e-6) return;
+        t = (p.pos - ox) / dx;
+      } else if (p.axis === 'z'){
+        if (Math.abs(dz) < 1e-6) return;
+        t = (p.pos - oz) / dz;
+      } else {
+        const nx = +p.nx || 0, ny = +p.ny || 0, nz = +p.nz || 0;
+        const den = nx * dx + ny * dy + nz * dz;
+        if (Math.abs(den) < 1e-6) return;
+        t = ((+p.x || 0) - ox) * nx + ((+p.y || 0) - oy) * ny + ((+p.z || 0) - oz) * nz;
+        t = t / den;
+      }
+      if (!(t > 0.12) || t > bestT) return;
+      const hx = ox + dx * t, hy = oy + dy * t, hz = oz + dz * t;
+      const y0 = p.y0 != null ? p.y0 : 0.2, y1 = p.y1 != null ? p.y1 : LH_WAGON_H;
+      if (hy < y0 || hy > y1) return;
+      if (p.axis === 'x'){
+        const c = p.z != null ? p.z : 0, half = p.hz != null ? p.hz : ((p.w || 3) / 2);
+        if (Math.abs(hz - c) > half + 0.001) return;
+      } else {
+        const c = p.x != null ? p.x : 0, half = p.hx != null ? p.hx : ((p.w || 4) / 2);
+        if (Math.abs(hx - c) > half + 0.001) return;
+      }
+      const nx = +p.nx || 0, nz = +p.nz || 0;
+      const den = nx * dx + nz * dz;
+      const interior = den < 0;
+      bestT = t;
+      best = {
+        t, x: hx, y: hy, z: hz,
+        nx: interior ? nx : -nx, ny: 0, nz: interior ? nz : -nz,
+        room: p.room, wall: p.id, interior, plane: p
+      };
+    });
+    return best;
+  }
+
+  function lhNormalizeWallText(raw, opts){
+    opts = opts || {};
+    let src = String(raw == null ? '' : raw).replace(/\s+/g, ' ').trim();
+    if (!src) return {ok: false, reason: 'empty', text: '', preset: false};
+    const max = opts.max != null ? opts.max : LH_WALL_MAX_CHARS;
+    if (src.length > max) src = src.slice(0, max);
+    const upper = src.toUpperCase();
+    const isPreset = LH_WALL_PRESETS.indexOf(upper) >= 0;
+    if (isPreset) return {ok: true, text: upper, preset: true, blocked: false, reasons: []};
+    const mode = opts.chatMode || 'on';
+    if (mode === 'off' || mode === 'quick'){
+      return {ok: false, reason: 'presets-only', text: '', preset: false};
+    }
+    const filter = opts.chatFilter || (typeof chatFilter === 'function' ? chatFilter : null);
+    if (filter){
+      const r = filter(src, {max: max});
+      const reasons = r && r.reasons ? r.reasons : [];
+      const pii = reasons.some(x => LH_PII_REASONS.indexOf(x) >= 0);
+      if (pii) return {ok: false, reason: 'pii', text: '', display: '####', blocked: true, reasons: reasons};
+      const text = String((r && r.text) || '');
+      if (!text || /^#+$/.test(text)) return {ok: false, reason: 'filtered', text: '', display: '####', blocked: true, reasons: reasons};
+      return {ok: true, text: text, preset: false, blocked: !!r.blocked, reasons: reasons};
+    }
+    return {ok: true, text: src, preset: false, blocked: false, reasons: []};
+  }
+
+  function lhAddWallWord(list, word, opts){
+    opts = opts || {};
+    const cap = opts.cap != null ? opts.cap : LH_WALL_MAX_PER_PLAYER;
+    const uid = String((word && word.uid) || opts.uid || 'me');
+    const out = Array.isArray(list) ? list.slice() : [];
+    const rec = {
+      id: (word && word.id) || ('w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)),
+      uid: uid,
+      text: String((word && word.text) || '').slice(0, LH_WALL_MAX_CHARS),
+      style: (word && word.style) === 'chalk' ? 'chalk' : 'paint',
+      x: +(word && word.x) || 0,
+      y: +(word && word.y) || 0,
+      z: +(word && word.z) || 0,
+      nx: +(word && word.nx) || 0,
+      ny: +(word && word.ny) || 0,
+      nz: +(word && word.nz) || 0,
+      room: word && word.room != null ? word.room : -1,
+      interior: !!(word && word.interior),
+      t: (word && word.t) || Date.now()
+    };
+    if (!rec.text) return {list: out, added: null, faded: []};
+    const faded = [];
+    let mine = out.filter(w => w && w.uid === uid);
+    while (mine.length >= cap){
+      const oldest = mine.shift();
+      const i = out.findIndex(w => w && oldest && w.id === oldest.id);
+      if (i >= 0) faded.push(out.splice(i, 1)[0]);
+      mine = out.filter(w => w && w.uid === uid);
+    }
+    out.push(rec);
+    return {list: out, added: rec, faded: faded};
+  }
+
+  function lhEraseWallWord(list, id, uid){
+    const out = Array.isArray(list) ? list.slice() : [];
+    const i = out.findIndex(w => w && w.id === id);
+    if (i < 0) return {list: out, erased: null, reason: 'missing'};
+    if (uid && out[i].uid !== uid) return {list: out, erased: null, reason: 'not-owner'};
+    const erased = out.splice(i, 1)[0];
+    return {list: out, erased: erased};
+  }
+
+  function lhSanitizeWallWords(raw){
+    if (!Array.isArray(raw)) return [];
+    return raw.map(w => {
+      if (!w || !w.text) return null;
+      const text = String(w.text).replace(/\s+/g, ' ').trim().slice(0, LH_WALL_MAX_CHARS);
+      if (!text) return null;
+      return {
+        id: String(w.id || ('w' + Math.random().toString(36).slice(2, 8))),
+        uid: String(w.uid || 'me'),
+        text: text,
+        style: w.style === 'chalk' ? 'chalk' : 'paint',
+        x: +w.x || 0, y: +w.y || 0, z: +w.z || 0,
+        nx: +w.nx || 0, ny: +w.ny || 0, nz: +w.nz || 0,
+        room: w.room == null ? -1 : w.room,
+        interior: !!w.interior,
+        t: +w.t || 0
+      };
+    }).filter(Boolean);
+  }
+
+
+  const LH_KNOCK_SOLO_OPEN_LINES = [
+    'The door creaks open… by itself.',
+    'A whisper: “Come in… if you dare.”',
+    'The handle turns. Nobody is there.'
+  ];
+  const LH_KNOCK_SOLO_STAY_LINES = [
+    'Something shuffles, then goes quiet.',
+    'A small voice: “We\'re not home.”',
+    'The door stays shut. You hear a faint giggle.',
+    'No one answers. Maybe that\'s for the best.'
+  ];
+
+  function lhDoorPromptKind(st){
+    st = st || {};
+    if (st.isOwner) return {id: 'door', label: st.doorClosed ? '🚪 Open door' : '🚪 Close door'};
+    if (!st.doorClosed) return {id: 'enter', label: '🚪 Enter wagon' + (st.wagonNo ? (' ' + st.wagonNo) : '')};
+    return {id: 'knock', label: '🚪 Knock'};
+  }
+
+  function lhKnockCooldownLeft(lastAt, now, cd){
+    const cool = cd == null ? LH_KNOCK_COOLDOWN : +cd;
+    const wait = cool - ((+now || 0) - (+lastAt || 0));
+    return Math.max(0, wait);
+  }
+
+  function lhKnockAllowed(st){
+    st = st || {};
+    if (st.isOwner) return {ok: false, reason: 'own'};
+    if (!st.doorClosed) return {ok: false, reason: 'open'};
+    const wait = lhKnockCooldownLeft(st.lastAt, st.now, st.cooldown);
+    if (wait > 0) return {ok: false, reason: 'cooldown', wait: wait};
+    return {ok: true};
+  }
+
+  function lhPickLine(list, rand){
+    const arr = list || [];
+    if (!arr.length) return '';
+    const r = typeof rand === 'function' ? rand() : (typeof rand === 'number' ? rand : Math.random());
+    const i = Math.max(0, Math.min(arr.length - 1, Math.floor((r % 1 + 1) % 1 * arr.length)));
+    return arr[i];
+  }
+
+  /* Solo unowned/NPC rooms: random spooky open or stay. MP with no owner, or an owner who is away/offline: stay closed. In-room owners get a popup. */
+  function lhKnockResolve(st, rand){
+    st = st || {};
+    const r = typeof rand === 'function' ? rand() : (typeof rand === 'number' ? rand : Math.random());
+    if (st.solo && !st.hasOwner){
+      const openChance = st.openChance != null ? st.openChance : LH_KNOCK_SOLO_OPEN;
+      if (r < openChance){
+        return {mode: 'open', reason: 'solo-open', message: lhPickLine(LH_KNOCK_SOLO_OPEN_LINES, r / Math.max(openChance, 1e-6))};
+      }
+      return {mode: 'closed', reason: 'solo-stay', message: lhPickLine(LH_KNOCK_SOLO_STAY_LINES, (r - openChance) / Math.max(1 - openChance, 1e-6))};
+    }
+    if (!st.hasOwner || !st.ownerOnline){
+      return {mode: 'closed', reason: 'offline', message: 'Nobody\'s home. The door stays closed.', timeout: 0};
+    }
+    if (!st.ownerInRoom){
+      return {mode: 'closed', reason: 'away', message: 'They must be out. The door stays closed.', timeout: 0};
+    }
+    return {mode: 'popup', reason: 'offer', message: 'Someone is knocking!', timeout: LH_KNOCK_TIMEOUT};
+  }
+
+  function lhKnockReplyMessage(reason){
+    const m = {
+      open: 'They opened the door.',
+      closed: 'They kept the door closed.',
+      timeout: 'No one answered. The door stays closed.',
+      away: 'They must be out. The door stays closed.',
+      offline: 'Nobody\'s home. The door stays closed.'
+    };
+    return m[reason] || m.timeout;
+  }
+
+  function lhJumpClearHeight(jump, grav){
+    jump = jump == null ? 16 : +jump;
+    grav = grav == null ? 45 : +grav;
+    if (!(grav > 0)) return 0;
+    return (jump * jump) / (2 * grav);
+  }
+
   const api = {
     LH_KEY, LH_VER, LH_HOST, LH_HOST_TITLE, LH_GAME, LH_STAMPS, LH_EYES,
+    LH_WALL_PRESETS, LH_WALL_MAX_CHARS, LH_WALL_MAX_PER_PLAYER, LH_WALL_MAX_DIST, LH_PII_REASONS,
+    LH_WAGON_H, LH_MIDWAY_WALL_H, LH_DOOR_OPEN_H, LH_KNOCK_COOLDOWN, LH_KNOCK_TIMEOUT, LH_KNOCK_SOLO_OPEN,
     LH_COMPANY_R, LH_NEAR_R, LH_SUMMON_R, LH_TAG_R, LH_KEY_CD, LH_LAMP_R, LH_WAGON_ZS,
     LH_WAGONS_PER_SIDE, LH_WAGON_COUNT, LH_WAGON_SPACING, LH_WAGON_Z0, LH_WAGON_X,
     LH_MIDWAY_WALL_X, LH_MIDWAY_Z0, LH_MIDWAY_Z1, LH_DOOR_HALF,
@@ -291,7 +610,11 @@
     lhCancelSucceeds, lhHostNameIn, lhDefaultSettings, lhNormalizeSettings,
     lhLoadState, lhStampOk, lhAddDoodle, lhNear, lhDist, lhSummonOk, lhSummonBlocked, lhSummonDeniedMsg, lhCensored,
     lhMidwayWallSegments, lhMidwayBlocksSide, lhNearLamp,
-    lhWagonZs, lhWagonCount, lhDoorTarget, lhDoorShouldAutoOpen, lhGroundGapOk, lhMapLayout
+    lhWagonZs, lhWagonCount, lhDoorTarget, lhDoorShouldAutoOpen, lhGroundGapOk, lhMapLayout,
+    lhRoomContains, lhDoorAjar, lhRoomInteriorVisible, lhDoorwayLayout, lhDoorSealsOpening,
+    lhWagonWallPlanes, lhRayWall, lhNormalizeWallText, lhAddWallWord, lhEraseWallWord, lhSanitizeWallWords,
+    lhDoorPromptKind, lhKnockCooldownLeft, lhKnockAllowed, lhKnockResolve, lhKnockReplyMessage, lhJumpClearHeight, lhPickLine,
+    LH_KNOCK_SOLO_OPEN_LINES, LH_KNOCK_SOLO_STAY_LINES
   };
   root.LHRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

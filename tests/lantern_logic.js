@@ -7,10 +7,10 @@ const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const RULES = require(path.join(ROOT, 'dev/lantern/lantern_rules.js'));
 const BUILD = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).build || JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
-test('BUILD stamp is 2026.11.16-7 in lantern files and version.json', () => {
+test('BUILD stamp is 2026.11.16-9 in lantern files and version.json', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
-  assert.equal(v.build, '2026.11.16-7');
-  assert.match(HTML, /const BUILD = '2026\.11\.16-7'/);
+  assert.equal(v.build, '2026.11.16-9');
+  assert.match(HTML, /const BUILD = '2026\.11\.16-9'/);
 });
 
 test('Lantern Big Top is a playable GAMES card with original branding', () => {
@@ -419,4 +419,226 @@ test('map overlay marks You are here and Your Wagon and the fairground is much b
   assert.match(HTML, /id="lhMap"/);
   assert.match(HTML, /id="lhMapBtn"/);
   assert.match(HTML, /id="lhMapCan"/);
+});
+
+test('room interiors stay hidden from outside unless the door is open', () => {
+  const R = {id: 0, x: 16, z: 22, side: 1, w: 8, d: 6.2, door: {closed: true, ang: 0}};
+  const outside = {x: 8, z: 22};
+  const inside = {x: 16, z: 22};
+  assert.equal(RULES.lhRoomContains(R, inside.x, inside.z), true);
+  assert.equal(RULES.lhRoomContains(R, outside.x, outside.z), false);
+  assert.equal(RULES.lhRoomInteriorVisible(R, outside), false);
+  assert.equal(RULES.lhRoomInteriorVisible(R, inside), true);
+  const open = {...R, door: {closed: false, ang: -1.9}};
+  assert.equal(RULES.lhRoomInteriorVisible(open, outside), true);
+  const ajar = {...R, door: {closed: true, ang: 1.2}};
+  assert.equal(RULES.lhRoomInteriorVisible(ajar, outside), true);
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  assert.match(js, /function lhTickPrivacy/);
+  assert.match(js, /R\.interior/);
+  assert.match(js, /frosted|lhFrost|frost/i);
+  assert.match(js, /DoubleSide/);
+  assert.match(js, /transom/);
+});
+
+test('a closed wagon door and transom seal the doorway', () => {
+  const layout = RULES.lhDoorwayLayout({x: 16, z: 22, side: 1, w: 8, d: 6.2});
+  assert.equal(layout.h, RULES.LH_WAGON_H);
+  assert.equal(RULES.lhDoorSealsOpening(layout), true);
+  assert.ok(layout.doorD >= layout.openW);
+  assert.ok(layout.doorH >= layout.openH);
+  assert.ok(layout.transomH > 0.2);
+  assert.ok(layout.openH >= 3.0, 'doorway is taller than the player so the camera does not clip the transom');
+  const west = RULES.lhDoorwayLayout({x: -16, z: 22, side: -1, w: 8, d: 6.2});
+  assert.equal(west.ix, -16 - (-1) * 4);
+  assert.equal(RULES.lhDoorSealsOpening(west), true);
+});
+
+test('wall writing presets, custom cap, chat filter, and chat mode', () => {
+  const presets = RULES.LH_WALL_PRESETS;
+  ['HELP', 'EXIT', 'GET OUT', 'RUN', 'BEHIND YOU', "DON'T LOOK", 'NO EXIT'].forEach(w => {
+    assert.ok(presets.indexOf(w) >= 0, w);
+  });
+  assert.ok(presets.length >= 8);
+  assert.equal(RULES.LH_WALL_MAX_CHARS, 12);
+
+  const help = RULES.lhNormalizeWallText('help');
+  assert.equal(help.ok, true);
+  assert.equal(help.preset, true);
+  assert.equal(help.text, 'HELP');
+
+  const off = RULES.lhNormalizeWallText('HELLO THERE', {chatMode: 'off'});
+  assert.equal(off.ok, false);
+  assert.equal(off.reason, 'presets-only');
+  const quick = RULES.lhNormalizeWallText('HELLO THERE', {chatMode: 'quick'});
+  assert.equal(quick.ok, false);
+  assert.equal(quick.reason, 'presets-only');
+  // presets still work when chat is off
+  assert.equal(RULES.lhNormalizeWallText('EXIT', {chatMode: 'off'}).ok, true);
+
+  const long = RULES.lhNormalizeWallText('HELLOWORLD!!!!', {chatMode: 'on'});
+  assert.ok(long.text.length <= 12);
+
+  const filter = (text, opts) => {
+    const max = (opts && opts.max) || 12;
+    let src = String(text || '').slice(0, max);
+    if (/@|555-/.test(src)) return {ok: true, text: '####', blocked: true, reasons: ['email']};
+    if (/dang/i.test(src)) return {ok: true, text: '####', blocked: true, reasons: ['word']};
+    return {ok: true, text: src, blocked: false, reasons: []};
+  };
+  const pii = RULES.lhNormalizeWallText('hi@x.com', {chatMode: 'on', chatFilter: filter});
+  assert.equal(pii.ok, false);
+  assert.equal(pii.reason, 'pii');
+  assert.equal(pii.display, '####');
+  const swear = RULES.lhNormalizeWallText('dang', {chatMode: 'on', chatFilter: filter});
+  assert.equal(swear.ok, false);
+  assert.equal(swear.reason, 'filtered');
+  const ok = RULES.lhNormalizeWallText('BOO', {chatMode: 'on', chatFilter: filter});
+  assert.equal(ok.ok, true);
+  assert.equal(ok.text, 'BOO');
+
+  const chatfilter = require(path.join(ROOT, 'dev/chat/chatfilter.js'));
+  const real = RULES.lhNormalizeWallText('test@mail.com', {chatMode: 'on', chatFilter: chatfilter.chatFilter});
+  assert.equal(real.ok, false);
+  assert.equal(real.reason, 'pii');
+});
+
+test('wall words cap at 20 per player, oldest fades, and only the writer can erase', () => {
+  let list = [];
+  for (let i = 0; i < 21; i++){
+    const r = RULES.lhAddWallWord(list, {id: 'a' + i, uid: 'me', text: 'HELP', x: i, y: 1.5, z: 0});
+    list = r.list;
+    if (i < 20) assert.equal(r.faded.length, 0);
+    else {
+      assert.equal(r.faded.length, 1);
+      assert.equal(r.faded[0].id, 'a0');
+    }
+  }
+  assert.equal(list.length, 20);
+  assert.equal(list[0].id, 'a1');
+  const other = RULES.lhAddWallWord(list, {id: 'b0', uid: 'friend', text: 'RUN'});
+  assert.equal(other.list.length, 21);
+  const no = RULES.lhEraseWallWord(other.list, 'b0', 'me');
+  assert.equal(no.erased, null);
+  assert.equal(no.reason, 'not-owner');
+  const yes = RULES.lhEraseWallWord(other.list, 'a1', 'me');
+  assert.equal(yes.erased.id, 'a1');
+  assert.equal(yes.list.length, 20);
+  // old saves without wallWords still load
+  const st = RULES.lhLoadState({visits: 2, doodles: {}});
+  assert.deepEqual(st.wallWords, []);
+});
+
+test('wall writing aims at the look-point on a wagon wall', () => {
+  const R = {id: 3, x: 16, z: 22, side: 1, w: 8, d: 6.2, h: 3.2, floorY: 0.22};
+  const planes = RULES.lhWagonWallPlanes(R);
+  assert.equal(planes.length, 4);
+  // standing inside, looking +X at the back wall
+  const hit = RULES.lhRayWall(16, 1.4, 22, 1, 0, 0, planes, 4);
+  assert.ok(hit);
+  assert.equal(hit.wall, 'back');
+  assert.equal(hit.interior, true);
+  assert.ok(Math.abs(hit.x - (16 + 4)) < 0.02);
+  // standing outside the doorway, looking +X at the door wall
+  const out = RULES.lhRayWall(10, 1.4, 22, 1, 0, 0, planes, 4);
+  assert.ok(out);
+  assert.equal(out.wall, 'door');
+  assert.equal(out.interior, false);
+});
+
+test('wall writing has an on-screen button, Key G, controller bumper, and mobile tap', () => {
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  const css = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.css'), 'utf8');
+  const hud = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern_hud.html'), 'utf8');
+  assert.match(js, /KeyG/);
+  assert.match(js, /jp\[4\]/);
+  assert.match(js, /function lhOpenWrite/);
+  assert.match(js, /function lhPlaceWallWord/);
+  assert.match(js, /lhNet\(\{k:'word'/);
+  assert.match(hud, /id="lhWrite"/);
+  assert.match(hud, /id="lhWriteBtn"/);
+  assert.match(css, /#lhWriteBtn/);
+  assert.match(css, /#lhWrite/);
+});
+
+
+test('wagon and midway walls are taller than a jump and use plat top=height', () => {
+  assert.ok(RULES.LH_WAGON_H >= 5);
+  assert.ok(RULES.LH_MIDWAY_WALL_H >= 5);
+  assert.ok(RULES.LH_WAGON_H > RULES.lhJumpClearHeight(16, 45));
+  assert.ok(RULES.LH_DOOR_OPEN_H > 2.45, 'taller than eye height');
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  // plat() takes the TOP of the box: walls must be lhBox(..., h, ..., h) not h/2
+  assert.match(js, /lhBox\(R\.x, h, R\.z - d \/ 2/);
+  assert.match(js, /lhBox\(ix, h, lay\.stubZ0/);
+  assert.match(js, /transomTop \|\| h/);
+  assert.match(js, /LH_MIDWAY_WALL_H/);
+  assert.match(js, /plat\(ix, lay\.openH, R\.z/);
+  assert.doesNotMatch(js, /const w = 8, d = 6\.2, h = 3\.2/);
+  assert.match(HTML, /mode === 'lantern'/);
+  assert.match(HTML, /clipOrbitCam/);
+  // lantern is in the orbit-clip mode list so the camera does not sink into the tall walls
+  const cam = HTML.slice(HTML.indexOf('function updateCamera()'), HTML.indexOf('function updateCamera()') + 1600);
+  assert.match(cam, /mode === 'lantern'/);
+});
+
+test('you have to knock to get into someone else\'s closed room', () => {
+  const knock = RULES.lhDoorPromptKind({isOwner: false, doorClosed: true, wagonNo: 3});
+  assert.equal(knock.id, 'knock');
+  assert.match(knock.label, /Knock/);
+  const own = RULES.lhDoorPromptKind({isOwner: true, doorClosed: true});
+  assert.equal(own.id, 'door');
+  assert.match(own.label, /Open door/);
+  const enter = RULES.lhDoorPromptKind({isOwner: false, doorClosed: false, wagonNo: 3});
+  assert.equal(enter.id, 'enter');
+  const no = RULES.lhKnockAllowed({isOwner: true, doorClosed: true, lastAt: 0, now: 20});
+  assert.equal(no.ok, false);
+  assert.equal(no.reason, 'own');
+  const wait = RULES.lhKnockAllowed({isOwner: false, doorClosed: true, lastAt: 10, now: 12, cooldown: 7});
+  assert.equal(wait.ok, false);
+  assert.equal(wait.reason, 'cooldown');
+  assert.ok(wait.wait > 0);
+  const ok = RULES.lhKnockAllowed({isOwner: false, doorClosed: true, lastAt: 0, now: 20, cooldown: 7});
+  assert.equal(ok.ok, true);
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  assert.match(js, /function lhKnock/);
+  assert.match(js, /p\.id === 'knock'/);
+  // Enter must not open a closed door
+  assert.match(js, /p\.R\.door\.closed[\s\S]{0,80}Knock first/);
+  assert.doesNotMatch(js, /p\.id === 'enter'\)\{ if \(p\.R\.door\.closed\) lhSetDoor/);
+});
+
+test('a knock may be answered, ignored, or stay closed if nobody is home', () => {
+  assert.equal(RULES.LH_KNOCK_TIMEOUT, 10);
+  assert.ok(RULES.LH_KNOCK_COOLDOWN >= 4);
+  const popup = RULES.lhKnockResolve({solo: false, hasOwner: true, ownerOnline: true, ownerInRoom: true});
+  assert.equal(popup.mode, 'popup');
+  assert.equal(popup.timeout, 10);
+  const away = RULES.lhKnockResolve({solo: false, hasOwner: true, ownerOnline: true, ownerInRoom: false});
+  assert.equal(away.mode, 'closed');
+  assert.equal(away.reason, 'away');
+  const off = RULES.lhKnockResolve({solo: false, hasOwner: true, ownerOnline: false, ownerInRoom: false});
+  assert.equal(off.reason, 'offline');
+  const empty = RULES.lhKnockResolve({solo: false, hasOwner: false, ownerOnline: false, ownerInRoom: false});
+  assert.equal(empty.mode, 'closed');
+  // solo unowned / NPC rooms: random spooky outcome
+  const open = RULES.lhKnockResolve({solo: true, hasOwner: false}, () => 0.1);
+  assert.equal(open.mode, 'open');
+  assert.equal(open.reason, 'solo-open');
+  assert.ok(open.message);
+  const stay = RULES.lhKnockResolve({solo: true, hasOwner: false}, () => 0.9);
+  assert.equal(stay.mode, 'closed');
+  assert.equal(stay.reason, 'solo-stay');
+  assert.equal(RULES.lhKnockReplyMessage('closed'), 'They kept the door closed.');
+  assert.equal(RULES.lhKnockReplyMessage('timeout'), 'No one answered. The door stays closed.');
+  const hud = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern_hud.html'), 'utf8');
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  const css = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.css'), 'utf8');
+  assert.match(hud, /id="lhKnock"/);
+  assert.match(hud, /id="lhKnockOpen"/);
+  assert.match(hud, /id="lhKnockKeep"/);
+  assert.match(css, /#lhKnock/);
+  assert.match(js, /lhKnockReply\(true/);
+  assert.match(js, /lhShowKnockPopup/);
+  assert.match(js, /k:'knock'/);
 });
