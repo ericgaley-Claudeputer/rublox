@@ -175,8 +175,8 @@ body.dark .preview{background:linear-gradient(#3b4a8a,#2a3570)}
 .chset label{display:flex;align-items:flex-start;gap:8px;font-weight:800;margin:6px 0;cursor:pointer}
 .chset small{display:block;font-weight:700;color:var(--muted);font-size:13px}
 @media (max-width:700px){
-  #chPanel{width:min(100vw - 16px, 380px);bottom:calc(max(12px,env(safe-area-inset-bottom)) + 70px)}
-  #chBtn{width:52px;height:52px}
+  #chBtn{width:52px;height:52px;bottom:calc(76px + env(safe-area-inset-bottom));left:max(10px,env(safe-area-inset-left))}
+  #chPanel{width:min(100vw - 16px, 380px);bottom:calc(136px + env(safe-area-inset-bottom));max-height:min(420px, calc(100vh - 210px))}
 }
 
 footer{text-align:center;color:var(--muted);margin-top:40px;font-weight:700}
@@ -1198,7 +1198,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
     <h2>🎮 Games</h2>
     <div class="mp" id="mp">
       <div class="mprow" id="mpIdle">
-        <div class="mpt"><b>👨‍👩‍👧 Play together</b><small>Play with your family on your own phones and computers! Private rooms with a secret code. No chat, no strangers.</small></div>
+        <div class="mpt"><b>👨‍👩‍👧 Play together</b><small>Play with your family on your own phones and computers! Private rooms with a secret code. Chat stays in the room — only the people you invited can see it.</small></div>
         <button class="big" id="mpHost">🏠 Host a game</button>
         <div class="mpj"><input id="mpCode" maxlength="9" autocorrect="off" inputmode="text" enterkeyhint="go" placeholder="CODE" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Room code"><button class="big green" id="mpJoin">🚪 Join</button></div>
       </div>
@@ -1281,7 +1281,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
         <div>
           <span class="frlab">Your friend code</span>
           <b id="frMyCode">------</b>
-          <span class="frhint">It is <b id="frLen">6</b> letters long — not the same as a 5-letter game room code. Share it only with family you know. No chat and no stranger list.</span>
+          <span class="frhint">It is <b id="frLen">6</b> letters long — not the same as a 5-letter game room code. Share it only with family you know. No stranger list — chat is only in a game room you open together.</span>
         </div>
         <button class="big" id="frCopy" type="button">📋 Copy my code</button>
         <input id="frCopyHold" readonly aria-hidden="true" tabindex="-1">
@@ -1377,9 +1377,9 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
     </div>
     <div class="chset" id="chSet">
       <div class="chset-title">💬 Chat</div>
-      <label><input type="radio" name="chSetMode" id="chSetOn" value="on" checked><span>Chat On<small>Friends in the room can send messages and quick chat</small></span></label>
-      <label><input type="radio" name="chSetMode" id="chSetQuick" value="quick"><span>Quick chat only<small>Only the phrase buttons and emoji — no typing</small></span></label>
-      <label><input type="radio" name="chSetMode" id="chSetOff" value="off"><span>Chat Off<small>Hide chat in rooms. You can turn it back on any time</small></span></label>
+      <label class="invrow"><input type="radio" name="chSetMode" id="chSetOn" value="on" checked><span>Chat On<small>Friends in the room can send messages and quick chat</small></span></label>
+      <label class="invrow"><input type="radio" name="chSetMode" id="chSetQuick" value="quick"><span>Quick chat only<small>Only the phrase buttons and emoji — no typing</small></span></label>
+      <label class="invrow"><input type="radio" name="chSetMode" id="chSetOff" value="off"><span>Chat Off<small>Hide chat in rooms. You can turn it back on any time</small></span></label>
     </div>
     <div class="padsec" id="padSec">
       <h3>🎮 Controller</h3>
@@ -4583,7 +4583,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
   }
 
   /* Best-effort presence over the same free PeerJS transport as family rooms.
-     Only works while both people have Rublox open. No chat, no stranger search. */
+     Only works while both people have Rublox open. No stranger search. */
   function frPresencePayload(){
     const room = (typeof mp !== 'undefined' && mp && mp.on && mp.code) ? String(mp.code) : '';
     let gameMode = '';
