@@ -16,9 +16,9 @@ function scriptById(id){
   return m[1];
 }
 
-test('BUILD is 2026.11.16-18 and matches version.json', () => {
-  assert.ok(html.includes("const BUILD = '2026.11.16-18'"));
-  assert.strictEqual(version.build, '2026.11.16-18');
+test('BUILD is 2026.11.16-19 and matches version.json', () => {
+  assert.ok(html.includes("const BUILD = '2026.11.16-19'"));
+  assert.strictEqual(version.build, '2026.11.16-19');
 });
 
 test('start-fail overlay HTML and CSS are present', () => {
