@@ -472,11 +472,27 @@
   function chTypingTarget(t){
     if (!t) return false;
     try {
-      if (t.closest && t.closest('#chIn, #chPanel, #chWheel, #chRoot')) return true;
+      if (t.id === 'chIn') return true;
+      if (t.closest && t.closest('#chIn')) return true;
       const tag = (t.tagName || '').toLowerCase();
       if (tag === 'input' || tag === 'textarea' || tag === 'select' || t.isContentEditable) return true;
     } catch (e){}
     return false;
+  }
+  /* True only for the chat text box itself — not the whole panel (buttons, log, root). */
+  function chIsInputTarget(t){
+    if (!t) return false;
+    try {
+      if (t.id === 'chIn') return true;
+      if (t.closest && t.closest('#chIn')) return true;
+    } catch (e){}
+    return false;
+  }
+  function chEat(e){
+    if (!e) return;
+    if (e.preventDefault) e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
   }
   function chOnKey(e){
     if (!e) return false;
@@ -487,42 +503,46 @@
       if (sm && sm.classList && sm.classList.contains('show')) return false;
     } catch (err){}
     const target = e.target || e.srcElement;
-    const inOur = !!(target && target.closest && target.closest('#chIn, #chPanel, #chWheel, #chRoot'));
+    const inBox = chIsInputTarget(target);
     if (ch.open || ch.wheel){
       if (code === 'Escape' || key === 'Escape' || key === 'Esc'){
-        if (e.preventDefault) e.preventDefault();
-        if (e.stopPropagation) e.stopPropagation();
-        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        chEat(e);
         chClose();
         return true;
       }
-      if (ch.wheel){
+      if (ch.wheel && !inBox){
         if (code === 'Enter' || code === 'Space' || key === 'Enter'){
-          if (e.preventDefault) e.preventDefault();
+          chEat(e);
           chWheelPick();
           return true;
         }
-        if (code === 'ArrowDown' || code === 'ArrowRight'){ if (e.preventDefault) e.preventDefault(); chWheelMove(1); return true; }
-        if (code === 'ArrowUp' || code === 'ArrowLeft'){ if (e.preventDefault) e.preventDefault(); chWheelMove(-1); return true; }
+        if (code === 'ArrowDown' || code === 'ArrowRight'){ chEat(e); chWheelMove(1); return true; }
+        if (code === 'ArrowUp' || code === 'ArrowLeft'){ chEat(e); chWheelMove(-1); return true; }
+        chEat(e);
         return true;
       }
       if ((code === 'Enter' || key === 'Enter') && !e.repeat){
-        if (e.preventDefault) e.preventDefault();
-        if (e.stopPropagation) e.stopPropagation();
+        chEat(e);
         if (chCanFreeText()) chSubmit();
         return true;
       }
-      /* Eat game keys while the chat box is open so WASD / T / space don't move or emote. */
-      if (e.preventDefault) e.preventDefault();
-      if (inOur || chTypingTarget(target)) return true;
+      /* While the caret is in #chIn, the browser must see the keydown so the
+         letter is inserted. preventDefault (or stopPropagation in a capture
+         listener, which this handler is) was swallowing every key — the box
+         stayed empty even for a single "a". Game keys are skipped by bind()
+         because the target is an input; we return false so this capture
+         listener does not cancel the event before it reaches #chIn. */
+      if (inBox) return false;
+      /* Panel is open but focus is not in the box: eat WASD / T / Space so
+         they don't move, emote, or reopen chat. */
+      chEat(e);
       return true;
     }
     if (!chAllowed()) return false;
-    if (chTypingTarget(target) && !inOur) return false;
+    /* Another field (name box, join code, etc.): leave it alone. */
+    if (chTypingTarget(target) && !inBox) return false;
     if ((code === 'Enter' || code === 'KeyT' || key === 'Enter' || key === 't' || key === 'T') && !e.repeat){
-      if (e.preventDefault) e.preventDefault();
-      if (e.stopPropagation) e.stopPropagation();
-      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      chEat(e);
       chOpen();
       return true;
     }
@@ -639,7 +659,12 @@
       }, true);
       const root = chEl('chRoot');
       if (root){
-        root.addEventListener('pointerdown', e => { e.stopPropagation(); chExitLock(); }, true);
+        /* Capture: release pointer lock, but do not stopPropagation here —
+           that kept #chIn from ever seeing the click, so it never focused
+           and even Playwright fill() read back empty. Stop on bubble instead
+           so the game / HUD does not steal the event after the input has it. */
+        root.addEventListener('pointerdown', e => { chExitLock(); }, true);
+        root.addEventListener('pointerdown', e => { if (e.stopPropagation) e.stopPropagation(); }, false);
         root.addEventListener('click', e => {
           const t = e.target && e.target.closest && (e.target.closest('[data-chq], [data-che], [data-chw], [data-chm], #chBtn, #chClose, #chSend'));
           if (!t) return;

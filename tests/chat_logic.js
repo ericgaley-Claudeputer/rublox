@@ -27,7 +27,7 @@ function fresh(opts){
   function el(id){
     if (els[id]) return els[id];
     const node = {
-      id, hidden: false, textContent: '', innerHTML: '', className: '', value: '', checked: false, disabled: false,
+      id, tagName: (id === 'chIn' ? 'INPUT' : 'DIV'), hidden: false, textContent: '', innerHTML: '', className: '', value: '', checked: false, disabled: false,
       classList: {
         _s: new Set(),
         add(c){ this._s.add(c); node.className = [...this._s].join(' '); },
@@ -39,6 +39,11 @@ function fresh(opts){
       appendChild(c){ this.children.push(c); return c; },
       addEventListener(){}, removeEventListener(){},
       setAttribute(k, v){ this[k] = v; }, getAttribute(k){ return this[k]; },
+      closest(sel){
+        const ids = String(sel||'').split(',').map(s => s.trim().replace(/^#/, ''));
+        if (ids.includes(this.id)) return this;
+        return null;
+      },
       focus(){ this.focused = true; }, blur(){ this.focused = false; },
       querySelector(){ return null; }, querySelectorAll(){ return []; }
     };
@@ -212,7 +217,41 @@ function fresh(opts){
   chk('sending GG! notes ch:gg', W._notes.indexOf('ch:gg') >= 0, W._notes);
 })();
 
+/* ---- typing in #chIn must not be preventDefaulted (demo or room) ---- */
+function keyEvent(opts){
+  const ev = {
+    code: opts.code, key: opts.key, repeat: !!opts.repeat,
+    target: opts.target,
+    prevented: false, stopped: false,
+    preventDefault(){ ev.prevented = true; },
+    stopPropagation(){ ev.stopped = true; },
+    stopImmediatePropagation(){ ev.stopped = true; }
+  };
+  return ev;
+}
+['#chattest=demo', 'room'].forEach(kind => {
+  const W = kind === 'room'
+    ? fresh({mp: {on: true, host: true, me: 'H', guests: new Map(), roster: [], ents: new Map()}})
+    : fresh({hash: '#chattest=demo', mp: {on: false, host: false, me: '', guests: new Map(), roster: [], ents: new Map()}});
+  W.ch.open = true;
+  W.ch.wheel = false;
+  const inp = W._els.chIn;
+  const letter = keyEvent({code: 'KeyA', key: 'a', target: inp});
+  const ret = W.chOnKey(letter);
+  chk(kind + ': letter in #chIn is not preventDefaulted or stopped (capture must let it reach the box)', ret === false && !letter.prevented && !letter.stopped, {ret, prevented: letter.prevented, stopped: letter.stopped});
+  const tkey = keyEvent({code: 'KeyT', key: 't', target: inp});
+  W.chOnKey(tkey);
+  chk(kind + ': T in #chIn types t, it does not get eaten as "open chat"', !tkey.prevented && !tkey.stopped);
+  const wOff = keyEvent({code: 'KeyW', key: 'w', target: {id: 'body', tagName: 'BODY', closest(){ return null; }}});
+  const eaten = W.chOnKey(wOff);
+  chk(kind + ': W is eaten when the panel is open but focus is not in the box', eaten === true && wOff.prevented, {eaten, prevented: wOff.prevented});
+  const ent = keyEvent({code: 'Enter', key: 'Enter', target: inp});
+  W.chOnKey(ent);
+  chk(kind + ': Enter in #chIn is intercepted to send', ent.prevented === true);
+});
+
 /* ---- HTML wiring (index.html is the shipped page) ---- */
+
 chk('index includes chatwords module', HTML.includes('Chat word lists (t285u)') && HTML.includes('CHAT_WORDS'));
 chk('index includes chat filter', HTML.includes('Chat filter (t285u)') && HTML.includes('function chatFilter'));
 chk('index includes chat module', HTML.includes('Chat (t285u)') && HTML.includes('function chInit') && HTML.includes('function chOnKey') && HTML.includes('function chPad'));
@@ -228,7 +267,7 @@ chk('HUD hit list includes chat chrome', /HUD_HIT_SEL[\s\S]{0,400}#chPanel/.test
 chk('dhInertExempt includes chat root', HTML.includes("id === 'chRoot'") || HTML.includes("id === 'chPanel'"));
 chk('chat achievements are in the registry', HTML.includes("id:'ch-hello'") && HTML.includes("id:'ch-gg'") && HTML.includes('First Hello') && HTML.includes('Said GG'));
 chk('achBlockPersist treats chattest as a test hash', /achBlockPersist[\s\S]{0,500}chattest/.test(HTML));
-chk('BUILD is 2026.11.15-4', HTML.includes("const BUILD = '2026.11.15-4'"));
+chk('BUILD is 2026.11.15-5', HTML.includes("const BUILD = '2026.11.15-5'"));
 chk('Obby exports mp so room chat can see the room from the home script',
   HTML.includes('get mp(){ return mp; }') && HTML.includes('window.Obby = Obby') && HTML.includes('chMp()'));
 
