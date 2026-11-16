@@ -1073,6 +1073,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 
 
 
+
 /* ---------- lantern hotel css ---------- */
 /* t286u Lantern Big Top HUD */
 #lhBox{display:none}
@@ -2229,7 +2230,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-15';
+const BUILD = '2026.11.16-16';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3517,6 +3518,7 @@ function drawLantern(ctx){
 
 
 
+
 function drawHaunt(ctx){
   sky(ctx, '#2a2450', '#5b4d7a');
   ctx.fillStyle = '#4a3f6b'; ctx.fillRect(0, 140, 320, 60);
@@ -4244,6 +4246,7 @@ function confetti(){
       const loc = (typeof location !== 'undefined' && location) || (typeof window !== 'undefined' && window.location) || null;
       const hash = loc && loc.hash ? String(loc.hash) : '';
       if (/(?:^|#|&)chattest=/i.test(hash)) return true;
+      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
@@ -6591,6 +6594,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
 
 
 
+
 /* ---------- lantern rules ---------- */
 /* Pure Lantern Big Top rules — safe to require() in tests and to load in the page. */
 (function (root) {
@@ -8284,7 +8288,7 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
     if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
@@ -9349,7 +9353,8 @@ const Obby = (() => {
     if (mode === 'lava') return lavaChecks();
     if (mode === 'splash') return splashChecks();
     if (mode === 'nds') return ndsChecks();
-    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'tower'){ if (P.y < -25) respawn(); collectCoins(); if (typeof towerChecks === 'function') towerChecks(); return; }
+    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -15530,73 +15535,377 @@ const Obby = (() => {
     return true;   // camera mode swallows other keys so you don't walk off the mark
   }
   function photostudioStop(){ psx = null; ['#psBar', '#psCamBtn', '#psGal'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); const f = $('#psFlash'); if (f) f.style.opacity = 0; }
-  /* ===================== t227u: 🗼 TOWER OF DOOM — climb stacked sections while friendly bubbly goo rises ===================== */
-  const TD_KEY = 'rubloxTower', TD_SECTIONS = 12, TD_H = 7.2, TD_GOO_BASE = .42, TD_GRACE = 6;
+
+  /* ---------- tower rules ---------- */
+/* Pure Tower of Doom rules — safe to require() in tests and to load in the page. */
+(function (root) {
+  'use strict';
+
+  // Real engine physics (must stay in sync with JUMP, GRAV, SPEED, RUN_MUL in the game loop).
+  const TD_PHYS = {jump: 16, grav: 45, speed: 10, runMul: 1.6, r: 0.45, stepUp: 0.62};
+  const TD_SECTIONS = 12;
+  const TD_H = 7.2;
+  const TD_MARGIN = 0.75;
+  const TD_GOO_BASE = 0.16;       // was 0.42
+  const TD_GOO_ACCEL = 250;       // was maxY/90
+  const TD_GOO_ACCEL_CAP = 0.06;  // was 1.4
+  const TD_GRACE = 12;            // was 6
+  const TD_CP_GRACE = 8;          // new: rest after each gold pad and after a goo bounce
+  const TD_GOO_START = -8;
+  const TD_MIN_PAD = 2.8;
   const TD_KINDS = ['steps', 'beam', 'zig', 'pads', 'bridge', 'spin'];
-  let td = null;
-  function tdProg(){ const o = load(TD_KEY, null), r = o && typeof o === 'object' ? o : {}; return {best: Math.max(0, r.best | 0), wins: Math.max(0, r.wins | 0), coins: Math.max(0, +r.coins || 0)}; }
-  function tdSeed(n){ let x = (n * 1103515245 + 12345) & 0x7fffffff; return () => { x = (x * 1103515245 + 12345) & 0x7fffffff; return (x >>> 0) / 0x7fffffff; }; }
-  function tdGooTop(){ return td ? td.goo : -99; }   // td.goo is the visible TOP surface of the goo
-  function buildTower(){
-    td = {ph: 'play', t: 0, goo: -8, topY: TD_SECTIONS * TD_H + 6, paid: false, earned: 0, kind: [], near: -1, seed: ((Date.now() / 1000) | 0) % 99991, grace: TD_GRACE};
-    scene.background = new THREE.Color('#b8e0ff');
-    if (scene.fog){ scene.fog.color = new THREE.Color('#d7f0ff'); scene.fog.near = 40; scene.fog.far = 180; }
-    // start island + rim so you can't walk off into the void
-    plat(0, 0, 0, 14, 14, '#8fd39a', .4);
-    [[0, 7.2, 14.4, .6], [0, -7.2, 14.4, .6], [7.2, 0, .6, 14.4], [-7.2, 0, .6, 14.4]].forEach(([x, z, w, d]) => plat(x, 1.1, z, w, d, '#ffe08a', 1.1));
-    plat(0, .4, -6, 4, 3, '#ffe08a', .3);
-    const rnd = tdSeed(td.seed);
+  const TD_CP_SECTIONS = [1, 3, 5, 7, 9, 11];
+  const TD_CLIMB_RATE = 0.30;     // cautious 10-year-old vertical pace, m/s
+  const TD_KEY = 'rubloxTower';
+
+  function tdMaxJumpHeight(phys){
+    phys = phys || TD_PHYS;
+    return (phys.jump * phys.jump) / (2 * phys.grav);
+  }
+
+  function tdAirTime(dy, phys){
+    phys = phys || TD_PHYS;
+    const disc = phys.jump * phys.jump - 2 * phys.grav * dy;
+    if (disc < 0) return null;
+    return (phys.jump + Math.sqrt(disc)) / phys.grav;
+  }
+
+  function tdMaxReach(dy, sprint, phys){
+    phys = phys || TD_PHYS;
+    const t = tdAirTime(dy, phys);
+    if (t == null) return 0;
+    return (sprint ? phys.speed * phys.runMul : phys.speed) * t;
+  }
+
+  function tdAabbGap(a, b){
+    const gx = Math.max(0, Math.abs(a.x - b.x) - (a.w || 0) / 2 - (b.w || 0) / 2);
+    const gz = Math.max(0, Math.abs(a.z - b.z) - (a.d || 0) / 2 - (b.d || 0) / 2);
+    return Math.hypot(gx, gz);
+  }
+
+  function tdIsStandable(p){
+    return p && p.role !== 'rail' && p.role !== 'decor';
+  }
+
+  function tdJumpCheck(from, to, opts){
+    opts = opts || {};
+    const phys = opts.phys || TD_PHYS;
+    const margin = opts.margin != null ? opts.margin : TD_MARGIN;
+    const dy = to.y - from.y;
+    const gap = tdAabbGap(from, to);
+    const maxH = tdMaxJumpHeight(phys);
+    if (dy <= (phys.stepUp || 0.62) && gap <= 0.08){
+      return {ok: true, why: 'step', dy, gap, usedH: 0, usedR: 0};
+    }
+    const air = tdAirTime(dy, phys);
+    if (air == null){
+      return {ok: false, why: 'height-impossible', dy, gap, maxH, limitH: maxH};
+    }
+    const walkReach = phys.speed * air;
+    const sprintReach = phys.speed * phys.runMul * air;
+    const limitH = maxH * margin;
+    const limitR = walkReach * margin;
+    if (dy > limitH){
+      return {ok: false, why: 'height-tight', dy, gap, maxH, limitH, usedH: dy / maxH, usedR: walkReach ? gap / walkReach : 0};
+    }
+    if (gap > sprintReach){
+      return {ok: false, why: 'reach-impossible', dy, gap, walkReach, sprintReach, limitR, usedH: maxH ? dy / maxH : 0, usedR: walkReach ? gap / walkReach : 1};
+    }
+    if (gap > limitR){
+      return {ok: false, why: 'reach-tight', dy, gap, walkReach, sprintReach, limitR, usedH: maxH ? dy / maxH : 0, usedR: walkReach ? gap / walkReach : 0};
+    }
+    return {ok: true, why: 'jump', dy, gap, maxH, walkReach, usedH: maxH ? Math.max(0, dy) / maxH : 0, usedR: walkReach ? gap / walkReach : 0};
+  }
+
+  function tdWalkReachable(plats, opts){
+    opts = opts || {};
+    const list = (plats || []).filter(tdIsStandable);
+    const start = opts.start;
+    if (!list.length) return {ok: false, reached: [], missing: [], jumps: [], why: 'no-platforms'};
+    let si = 0;
+    if (start){
+      si = list.findIndex(p => p === start || (p.role === start.role && p.x === start.x && p.y === start.y && p.z === start.z));
+      if (si < 0) si = 0;
+    } else {
+      const spawn = list.find(p => p.role === 'spawn') || list.find(p => p.role === 'island') || list[0];
+      si = list.indexOf(spawn);
+    }
+    const seen = new Array(list.length).fill(false);
+    const q = [si];
+    seen[si] = true;
+    const jumps = [];
+    while (q.length){
+      const i = q.shift();
+      for (let j = 0; j < list.length; j++){
+        if (seen[j]) continue;
+        const chk = tdJumpCheck(list[i], list[j], opts);
+        if (chk.ok){
+          seen[j] = true;
+          q.push(j);
+          jumps.push({from: list[i], to: list[j], chk});
+        }
+      }
+    }
+    const reached = list.filter((_, i) => seen[i]);
+    const missing = list.filter((_, i) => !seen[i]);
+    return {ok: missing.length === 0, reached, missing, jumps, start: list[si]};
+  }
+
+  function tdSeed(n){
+    let x = (n * 1103515245 + 12345) & 0x7fffffff;
+    return () => { x = (x * 1103515245 + 12345) & 0x7fffffff; return (x >>> 0) / 0x7fffffff; };
+  }
+
+  function tdPickKinds(seed){
+    const rnd = tdSeed(seed == null ? 1 : seed);
+    const kinds = [];
+    for (let i = 0; i < TD_SECTIONS; i++) kinds.push(TD_KINDS[(rnd() * TD_KINDS.length) | 0]);
+    return kinds;
+  }
+
+  function tdPush(plats, p){
+    plats.push(p);
+    return p;
+  }
+
+  function tdSectionPlats(y0, kind, sectionIndex){
+    const plats = [];
+    const add = (x, y, z, w, d, role) => tdPush(plats, {x, y, z, w, d, h: 0.5, role: role || 'pad', kind, section: sectionIndex});
+    if (kind === 'steps'){
+      for (let k = 0; k < 6; k++) add(((k % 2) ? 1 : -1) * 2.0, y0 + 0.5 + k * 1.05, -k * 1.15, 3.0, 2.8);
+    } else if (kind === 'beam'){
+      add(0, y0 + 0.8, -2, 2.8, 8.5, 'beam');
+      add(-3.0, y0 + 2.2, -6.0, 3.0, 3.0);
+      add(3.0, y0 + 3.5, -8.0, 3.0, 3.0);
+      add(0, y0 + 5.1, -7.2, 3.2, 3.2);
+    } else if (kind === 'zig'){
+      for (let k = 0; k < 5; k++) add(((k % 2) ? 1 : -1) * 2.2, y0 + 0.55 + k * 1.15, -1 - k * 1.2, 3.0, 2.8);
+    } else if (kind === 'pads'){
+      for (let k = 0; k < 6; k++){
+        const ang = k * 0.85;
+        add(Math.sin(ang) * 2.6, y0 + 0.5 + k * 1.0, -k * 1.15, 2.8, 2.8);
+      }
+    } else if (kind === 'bridge'){
+      add(-3.6, y0 + 0.8, -2.0, 3.0, 3.0);
+      add(0, y0 + 2.0, -4.0, 8.0, 2.8, 'bridge');
+      add(3.6, y0 + 3.3, -6.0, 3.0, 3.0);
+      add(0, y0 + 5.0, -7.0, 3.2, 3.2);
+    } else {
+      // 'spin': a gentle spiral of wide pads (no spinning kill bars).
+      for (let k = 0; k < 5; k++){
+        add(Math.cos(k * 1.15) * 2.4, y0 + 0.6 + k * 1.1, -2 - k * 1.15, 3.2, 3.2, 'spiral');
+      }
+    }
+    const gold = TD_CP_SECTIONS.indexOf(sectionIndex + 1) >= 0;
+    add(0, y0 + TD_H - 0.2, -7.5, 3.6, 3.6, gold ? 'checkpoint' : 'landing');
+    // Decorative side rails — not part of the climb (too narrow to stand on).
+    tdPush(plats, {x: -6.2, y: y0 + 2.4, z: -4, w: 0.4, d: 6, h: 3.2, role: 'rail', kind, section: sectionIndex});
+    tdPush(plats, {x: 6.2, y: y0 + 2.4, z: -4, w: 0.4, d: 6, h: 3.2, role: 'rail', kind, section: sectionIndex});
+    return plats;
+  }
+
+  function tdLayoutFromKinds(kinds){
+    const list = kinds && kinds.length ? kinds.slice(0, TD_SECTIONS) : tdPickKinds(1);
+    while (list.length < TD_SECTIONS) list.push('steps');
+    const plats = [];
+    tdPush(plats, {x: 0, y: 0, z: 0, w: 14, d: 14, h: 0.4, role: 'island', section: -1});
+    tdPush(plats, {x: 0, y: 0.4, z: -6, w: 4.5, d: 3.5, h: 0.3, role: 'island', section: -1});
+    tdPush(plats, {x: 0, y: 0.9, z: -3.2, w: 4.5, d: 4.0, h: 0.35, role: 'stair', section: -1});
+    tdPush(plats, {x: 0, y: 0.5, z: -5.5, w: 3.0, d: 3.0, h: 0.2, role: 'spawn', section: -1});
+    const checkpoints = [{x: 0, y: 0.5, z: -5.5, w: 3.0, d: 3.0, idx: 0, section: -1}];
     for (let i = 0; i < TD_SECTIONS; i++){
-      const y0 = 1.2 + i * TD_H, kind = TD_KINDS[(rnd() * TD_KINDS.length) | 0];
-      td.kind[i] = kind;
-      const col = ['#c39bff', '#7fd6ff', '#ffb3c7', '#ffe08a', '#9ff0c8', '#ff9f6b'][i % 6];
-      if (kind === 'steps'){ for (let k = 0; k < 5; k++) plat(((k % 2) ? 1 : -1) * (2.2 + k * .15), y0 + k * 1.15, -k * 1.4, 2.6, 2.2, col, .55); }
-      else if (kind === 'beam'){ plat(0, y0 + 1.2, -2, 1.3, 8, col, .45); plat(-3.2, y0 + 3.2, -6, 2.2, 2.2, col, .5); plat(3.2, y0 + 5.2, -8, 2.2, 2.2, col, .5); }
-      else if (kind === 'zig'){ for (let k = 0; k < 4; k++) plat((k - 1.5) * 2.4, y0 + .8 + k * 1.4, -1 - k * 1.6, 2.4, 2.0, col, .5); }
-      else if (kind === 'pads'){ for (let k = 0; k < 6; k++) plat(Math.sin(k * 1.3) * 3.5, y0 + .6 + k * 1.05, -k * 1.3, 1.8, 1.8, col, .45); }
-      else if (kind === 'bridge'){ plat(-4, y0 + 1, -2, 2.2, 2.2, col, .5); plat(0, y0 + 2.4, -4, 6.5, 1.1, col, .4); plat(4, y0 + 4, -6, 2.2, 2.2, col, .5); }
-      else { plat(0, y0 + 1.5, -3, 3.2, 3.2, col, .55); plat(0, y0 + 4.2, -6, 2.6, 2.6, col, .55); }
-      plat(-5.5, y0 + 2, -4, .4, 6, '#ffffff', 3.2); plat(5.5, y0 + 2, -4, .4, 6, '#ffffff', 3.2);
-      if ([3, 6, 9].includes(i + 1)){ plat(0, y0 + TD_H - .2, -8, 3.2, 3.2, '#ffd23f', .35); coin(0, y0 + TD_H + 1.6, -8); }
-      else coin((rnd() - .5) * 4, y0 + 2.5, -3 - rnd() * 3);
+      const y0 = 1.2 + i * TD_H;
+      const sect = tdSectionPlats(y0, list[i], i);
+      for (const p of sect){
+        plats.push(p);
+        if (p.role === 'checkpoint'){
+          checkpoints.push({x: p.x, y: p.y, z: p.z, w: p.w, d: p.d, idx: checkpoints.length, section: i});
+        }
+      }
     }
     const top = 1.2 + TD_SECTIONS * TD_H;
-    plat(0, top, -8, 5, 5, '#fff0a8', .5); finish = {mesh: plat(0, top + .6, -8, 2.2, 2.2, '#2ec27e', .3).mesh, y: top + 1};
+    const finish = {x: 0, y: top + 0.6, z: -8, w: 3.2, d: 3.2, h: 0.3, role: 'finish'};
+    tdPush(plats, {x: 0, y: top, z: -8, w: 5.5, d: 5.5, h: 0.5, role: 'summit', section: TD_SECTIONS});
+    tdPush(plats, finish);
+    return {plats, checkpoints, finish, kinds: list.slice(), top, topY: TD_SECTIONS * TD_H + 6};
+  }
+
+  function tdLayout(seed){
+    return tdLayoutFromKinds(tdPickKinds(seed == null ? 1 : seed));
+  }
+
+  function tdGooSpeed(maxY){
+    return TD_GOO_BASE + Math.min(TD_GOO_ACCEL_CAP, Math.max(0, maxY) / TD_GOO_ACCEL);
+  }
+
+  function tdGooVsClimber(opts){
+    opts = opts || {};
+    const climb = opts.climbRate != null ? opts.climbRate : TD_CLIMB_RATE;
+    const summit = opts.summit != null ? opts.summit : (1.2 + TD_SECTIONS * TD_H);
+    const startGoo = opts.gooStart != null ? opts.gooStart : TD_GOO_START;
+    const cpYs = (opts.checkpointYs || []).slice().sort((a, b) => a - b);
+    const dt = opts.dt || 0.05;
+    const clear = opts.clear != null ? opts.clear : 4;
+    let t = 0, y = 0, goo = startGoo, grace = TD_GRACE, maxY = 0;
+    let minClear = 99, worstT = 0;
+    const hits = [];
+    while (y < summit && t < 800){
+      y = Math.min(summit, climb * t);
+      maxY = Math.max(maxY, y);
+      if (grace > 0) grace -= dt;
+      else goo += tdGooSpeed(maxY) * dt;
+      // A gold pad pauses the goo for the climber who just arrived.
+      while (cpYs.length && y >= cpYs[0]){
+        grace = Math.max(grace, TD_CP_GRACE);
+        cpYs.shift();
+      }
+      t += dt;
+      const dist = y - goo;
+      if (dist < minClear){ minClear = dist; worstT = t; }
+      if (dist < clear) hits.push({t, y, goo, dist});
+    }
+    return {ok: hits.length === 0 && y >= summit, t, y, goo, minClear, worstT, hits};
+  }
+
+  function tdLoadProg(raw){
+    const r = raw && typeof raw === 'object' ? raw : {};
+    return {best: Math.max(0, r.best | 0), wins: Math.max(0, r.wins | 0), coins: Math.max(0, +r.coins || 0)};
+  }
+
+  const api = {
+    TD_PHYS, TD_SECTIONS, TD_H, TD_MARGIN, TD_GOO_BASE, TD_GOO_ACCEL, TD_GOO_ACCEL_CAP,
+    TD_GRACE, TD_CP_GRACE, TD_GOO_START, TD_MIN_PAD, TD_KINDS, TD_CP_SECTIONS, TD_CLIMB_RATE, TD_KEY,
+    tdMaxJumpHeight, tdAirTime, tdMaxReach, tdAabbGap, tdIsStandable, tdJumpCheck, tdWalkReachable,
+    tdSeed, tdPickKinds, tdSectionPlats, tdLayoutFromKinds, tdLayout, tdGooSpeed, tdGooVsClimber, tdLoadProg
+  };
+  root.TDRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+  /* ---------- /tower rules ---------- */
+  /* ===================== t227u: 🗼 TOWER OF DOOM — climb stacked sections while friendly bubbly goo rises ===================== */
+  const TD_RULES = (typeof TDRules !== 'undefined' && TDRules) ? TDRules : ((typeof globalThis !== 'undefined' && globalThis.TDRules) || {});
+  const TD_KEY = TD_RULES.TD_KEY || 'rubloxTower';
+  const TD_SECTIONS = TD_RULES.TD_SECTIONS || 12;
+  const TD_H = TD_RULES.TD_H || 7.2;
+  const TD_GOO_BASE = (TD_RULES.TD_GOO_BASE != null) ? TD_RULES.TD_GOO_BASE : .16;
+  const TD_GRACE = (TD_RULES.TD_GRACE != null) ? TD_RULES.TD_GRACE : 12;
+  const TD_CP_GRACE = (TD_RULES.TD_CP_GRACE != null) ? TD_RULES.TD_CP_GRACE : 8;
+  const TD_GOO_START = (TD_RULES.TD_GOO_START != null) ? TD_RULES.TD_GOO_START : -8;
+  const TD_KINDS = TD_RULES.TD_KINDS || ['steps', 'beam', 'zig', 'pads', 'bridge', 'spin'];
+  let td = null;
+  function tdProg(){
+    const o = load(TD_KEY, null);
+    return TD_RULES.tdLoadProg ? TD_RULES.tdLoadProg(o) : {best: Math.max(0, (o && o.best) | 0), wins: Math.max(0, (o && o.wins) | 0), coins: Math.max(0, +(o && o.coins) || 0)};
+  }
+  function tdSeed(n){ return TD_RULES.tdSeed ? TD_RULES.tdSeed(n) : (function(){ let x = (n * 1103515245 + 12345) & 0x7fffffff; return () => { x = (x * 1103515245 + 12345) & 0x7fffffff; return (x >>> 0) / 0x7fffffff; }; })(); }
+  function tdGooTop(){ return td ? td.goo : -99; }   // td.goo is the visible TOP surface of the goo
+  function tdGooSpeed(){
+    if (TD_RULES.tdGooSpeed) return TD_RULES.tdGooSpeed(Math.max(0, maxY));
+    return TD_GOO_BASE + Math.min(0.06, Math.max(0, maxY) / 250);
+  }
+  function tdNoteBest(){
+    if (!td) return;
+    const reached = Math.max(0, Math.floor(maxY)), p = tdProg();
+    if (reached > p.best){ p.best = reached; save(TD_KEY, p); }
+  }
+  function tdPlace(p, color){
+    return plat(p.x, p.y, p.z, p.w, p.d, color, p.h || .5);
+  }
+  function buildTower(){
+    const seed = ((Date.now() / 1000) | 0) % 99991;
+    const layout = TD_RULES.tdLayout ? TD_RULES.tdLayout(seed) : null;
+    td = {ph: 'play', t: 0, goo: TD_GOO_START, topY: (layout && layout.topY) || (TD_SECTIONS * TD_H + 6), paid: false, earned: 0, kind: (layout && layout.kinds) ? layout.kinds.slice() : [], near: -1, seed, grace: TD_GRACE, layout};
+    scene.background = new THREE.Color('#b8e0ff');
+    if (scene.fog){ scene.fog.color = new THREE.Color('#d7f0ff'); scene.fog.near = 40; scene.fog.far = 180; }
+    // Rims so you can't walk off the start island into the void.
+    [[0, 7.2, 14.4, .6], [0, -7.2, 14.4, .6], [7.2, 0, .6, 14.4], [-7.2, 0, .6, 14.4]].forEach(([x, z, w, d]) => plat(x, 1.1, z, w, d, '#ffe08a', 1.1));
+    const colors = ['#c39bff', '#7fd6ff', '#ffb3c7', '#ffe08a', '#9ff0c8', '#ff9f6b'];
+    if (layout){
+      const rnd = tdSeed(seed);
+      let cpAt = 0;
+      for (const p of layout.plats){
+        const col = p.role === 'checkpoint' || p.role === 'spawn' ? '#ffd23f'
+          : p.role === 'island' || p.role === 'stair' ? '#8fd39a'
+          : p.role === 'finish' ? '#2ec27e'
+          : p.role === 'summit' ? '#fff0a8'
+          : p.role === 'rail' ? '#ffffff'
+          : colors[(p.section >= 0 ? p.section : 0) % 6];
+        const b = tdPlace(p, col);
+        if (p.role === 'checkpoint' || p.role === 'spawn'){
+          const cp = checkpoint(b, cpAt++);
+          if (p.role === 'spawn' && cp && typeof lightCp === 'function') lightCp(cp);
+          if (p.role === 'checkpoint') coin(p.x, p.y + 1.8, p.z);
+        }
+        if (p.role === 'finish'){
+          finish = {mesh: b.mesh, b, y: p.y + 0.4};
+        }
+        if (p.role === 'pad' || p.role === 'beam' || p.role === 'bridge' || p.role === 'spiral'){
+          // a few coins along the climb, not on every pad
+          if (rnd() < 0.35) coin(p.x, p.y + 1.6, p.z);
+        }
+      }
+    }
     // goo cylinder: mesh center so its TOP face sits at td.goo (height 2.4 → centre = goo - 1.2)
     const goo = new THREE.Mesh(new THREE.CylinderGeometry(20, 20, 2.4, 28), new THREE.MeshLambertMaterial({color: '#b388ff', transparent: true, opacity: .9}));
     goo.position.set(0, td.goo - 1.2, -4); scene.add(goo); td.gooMesh = goo;
     Object.assign(P, {x: 0, y: .05, z: -5.5, vx: 0, vy: 0, vz: 0}); P.face = 0; cam.yaw = Math.PI; cam.pitch = .35; cam.dist = 10;
     topY = td.topY; maxY = 0;
-    plat(0, .5, -5.5, 2, 2, '#ffe08a', .2); checkpoints[0] = {idx: 0, spawn: {x: 0, y: .05, z: -5.5}, flag: new THREE.Object3D()};
   }
-  function towerEnter(){ if (!td) return; td.ph = 'play'; td.t = 0; td.goo = -8; td.grace = TD_GRACE; td.paid = false; td.earned = 0; choosing = false; over = false;
+  function towerEnter(){ if (!td) return; td.ph = 'play'; td.t = 0; td.goo = TD_GOO_START; td.grace = TD_GRACE; td.paid = false; td.earned = 0; choosing = false; over = false;
     if (td.gooMesh) td.gooMesh.position.y = td.goo - 1.2;
     const lose = $('#oLose'); if (lose){ const em = lose.querySelector('.emoji'), h2 = lose.querySelector('h2'); if (em) em.textContent = '🫧'; if (h2) h2.textContent = 'The bubbly goo caught you!'; }
-    banner('🗼 Tower of Doom! Climb past the bubbly goo — gold pads are checkpoints!'); tipTimer = 6; towerHud(); }
+    banner('🗼 Tower of Doom! Climb at your own pace — gold pads are checkpoints, and the goo sends you back to one instead of ending the climb.'); tipTimer = 8; towerHud(); }
   function towerStop(){
     if (td && td.gooMesh) scene.remove(td.gooMesh); td = null;
     const lose = $('#oLose'); if (lose){ const em = lose.querySelector('.emoji'), h2 = lose.querySelector('h2'); if (em) em.textContent = '🔥'; if (h2) h2.textContent = 'The lava got you!'; }
   }
+  function towerChecks(){
+    if (!td || td.ph !== 'play' || over) return;
+    for (const cp of checkpoints){
+      if (cp && cp.idx > cpIndex && P.onGround && cp.b && P.ground === cp.b){
+        cpIndex = cp.idx;
+        if (typeof lightCp === 'function') lightCp(cp);
+        if (typeof SND !== 'undefined' && SND.cp) SND.cp();
+        td.grace = Math.max(td.grace || 0, TD_CP_GRACE);
+        banner('🚩 Gold pad! The bubbly goo takes a rest. Checkpoint ' + cpIndex + '/' + Math.max(1, checkpoints.length - 1) + '!');
+      }
+    }
+  }
+  function towerGooHit(){
+    if (!td || td.ph !== 'play' || over) return;
+    tdNoteBest();
+    if (typeof SND !== 'undefined' && SND.die) SND.die();
+    const sp = (checkpoints[cpIndex] && checkpoints[cpIndex].spawn) || {x: 0, y: .05, z: -5.5};
+    if (td.goo > sp.y - 1.2) td.goo = sp.y - 1.5;
+    td.grace = Math.max(td.grace || 0, TD_CP_GRACE);
+    if (td.gooMesh) td.gooMesh.position.y = td.goo - 1.2;
+    if (typeof respawn === 'function') respawn();
+    banner('🫧 The bubbly goo sent you back to a gold pad! It is taking a rest — keep climbing.');
+    towerHud();
+  }
   function towerUpdate(dt){
     if (!td || td.ph !== 'play' || over || choosing) return;
     td.t += dt; maxY = Math.max(maxY, P.y);
+    tdNoteBest();
     if (td.grace > 0) td.grace -= dt;
     else {
-      const speed = TD_GOO_BASE + Math.min(1.4, Math.max(0, maxY) / 90);
-      td.goo += speed * dt;
+      td.goo += tdGooSpeed() * dt;
     }
     if (td.gooMesh) td.gooMesh.position.y = td.goo - 1.2;
-    // die only when your feet are actually at/below the visible goo top (not while standing above it)
-    if (td.grace <= 0 && P.y < td.goo + .15){ towerLose(); return; }
+    // Touching goo bounces you to the last gold pad — it does not end the run.
+    if (td.grace <= 0 && P.y < td.goo + .15){ towerGooHit(); return; }
     if (finish && P.y >= finish.y - .2 && Math.hypot(P.x, P.z + 8) < 3.2) towerWin();
     towerHud();
   }
   function towerAnimate(dt){ if (!td || !td.gooMesh) return; td.gooMesh.rotation.y += .004; }
   function towerLose(){
+    // Kept for compatibility; goo hits no longer call this.
     if (over || choosing) return; over = true; choosing = true; td.ph = 'lose';
-    const reached = Math.max(0, Math.floor(maxY)), p = tdProg(); if (reached > p.best){ p.best = reached; save(TD_KEY, p); }
+    tdNoteBest();
+    const p = tdProg();
     const lose = $('#oLose'); if (lose){ const em = lose.querySelector('.emoji'), h2 = lose.querySelector('h2'); if (em) em.textContent = '🫧'; if (h2) h2.textContent = 'The bubbly goo caught you!'; lose.classList.add('show'); }
-    $('#oLoseStats').innerHTML = '🗼 You climbed <b>' + reached + 'm</b>!<br>🏅 Best: <b>' + p.best + 'm</b><br>🫧 The bubbly goo caught you — try again!<br><small>Esc or 🏠 Home</small>';
+    $('#oLoseStats').innerHTML = '🗼 You climbed <b>' + Math.max(0, Math.floor(maxY)) + 'm</b>!<br>🏅 Best: <b>' + p.best + 'm</b><br>🫧 The bubbly goo caught you — try again!<br><small>Esc or 🏠 Home</small>';
   }
   function towerWin(){
     if (over || td.paid) return; over = true; choosing = true; td.ph = 'win'; td.paid = true;
@@ -15611,8 +15920,8 @@ const Obby = (() => {
     const g = $('#tdGoo'), h = $('#tdH');
     if (h) h.textContent = Math.max(0, Math.floor(maxY));
     if (g){
-      if (td.grace > 0) g.textContent = 'wakes ' + Math.ceil(td.grace) + 's';
-      else { const dist = P.y - td.goo; g.textContent = dist >= 0 ? Math.floor(dist) + 'm below' : 'GOT YOU'; }
+      if (td.grace > 0) g.textContent = 'rests ' + Math.ceil(td.grace) + 's';
+      else { const dist = P.y - td.goo; g.textContent = dist >= 0 ? Math.floor(dist) + 'm below' : 'back to pad'; }
     }
   }
   function tdPad(jp){ return false; }
@@ -25977,7 +26286,7 @@ function dhLayoutHud(){
     }
     if (mode === 'tower'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · Ⓐ jump' : '⌨️ WASD move · Space jump · Esc menu')
-        + "<br>🗼 Climb the stacked tower — gold pads are checkpoints · don't let the bubbly goo catch you!";
+        + "<br>🗼 Climb the stacked tower — gold pads are checkpoints. The bubbly goo is slow and sends you back to the last gold pad; it does not end your climb!";
       return;
     }
     if (mode === 'photostudio'){
@@ -27049,7 +27358,7 @@ function start(m = 'obby', d = null){
     else if (mode === 'stable') banner('🐴 Welcome to Clover Meadow Stables!');
     else if (mode === 'icecream') banner(mp.on ? '🍦 Scoop Circus! Team up on the stations!' : '🍦 Scoop Circus! Customers want cones & cups!');
     else if (mode === 'pethotel') banner(mp.on ? '🏨 Pet Hotel — care for guest pets together!' : '🏨 Pet Hotel! Check guests in, care for their pets, then check out for coins.');
-    else if (mode === 'tower') banner('🗼 Welcome to the Tower of Doom! Climb past the bubbly goo!');
+    else if (mode === 'tower') banner('🗼 Welcome to the Tower of Doom! Gold pads save your climb, and the goo sends you back to one.');
     else if (mode === 'photostudio') banner('📸 Welcome to Star Snaps! Press 📸 Take Photo (E / Ⓧ) to start the camera');
     else if (mode === 'waterpark') banner('🌊 Welcome to Splash Summit! Stand on a ride pad or press 🎢 Rides');
     else if (mode === 'bakery') banner(mp.on ? '🧁 Welcome to the Sweet Team Bakery! Bake together!' : '🧁 Welcome to the Sweet Team Bakery! Customers are coming!');
@@ -27095,6 +27404,8 @@ function start(m = 'obby', d = null){
     $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }
     if (mode === 'dance') danceEnter();
     $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
+    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
+        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
         $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
@@ -27962,7 +28273,8 @@ function start(m = 'obby', d = null){
     sbAdopt: id => sbAdopt(id), sbCare: k => sbCare(k), sbMount: o => sbMount(o), sbShow: () => sbStartShow(), sbAct: () => sbAct(), sbTo(x, z){ Object.assign(P, {x, y: .05, z, vx: 0, vy: 0, vz: 0}); },
     icecream: () => ic && {st: ic.st, orders: ic.orders, lv: ic.lv, served: ic.served, earned: ic.earned, panel: ic.panel, near: ic.near, remote: ic.remote, prog: icProg()},
     icDo: a => icDo(a), icPanel: i => icPanel(i), icTo(x, z){ Object.assign(P, {x, y: .05, z, vx: 0, vy: 0, vz: 0}); },
-    tower: () => td && {ph: td.ph, t: td.t, goo: td.goo, maxY, earned: td.earned, paid: td.paid, kind: td.kind.slice(), prog: tdProg()},
+    tower: () => td && {ph: td.ph, t: td.t, goo: td.goo, grace: td.grace, maxY, earned: td.earned, paid: td.paid, kind: td.kind.slice(), seed: td.seed, prog: tdProg(), cp: (typeof cpIndex !== 'undefined' ? cpIndex : 0)},
+    tdGoo(y){ if (td && y != null){ td.goo = +y; if (td.gooMesh) td.gooMesh.position.y = td.goo - 1.2; } return td && td.goo; },
     photo: () => psx && {s: Object.assign({}, psx.s), cam: psx.cam, count: psx.count, gal: psx.gal, near: psx.near, photos: psGallery().length, cp: psCamPos(psx.s, 0, .45, 0)},
     psCam: o => psCamOn(o), psSnap: () => psSnap(), psCap: () => psCapture(), psCycle: (k, d) => psCycle(k, d), psGal: o => psGalOpen(o), psView: i => { const g = psGallery().slice().reverse(); if (psx && g[i]){ psx.view = g[i].id; psGalRender(); return true; } return false; },
     waterpark: () => wp && {ride: wp.ride && {i: wp.ride.i, d: +wp.ride.d.toFixed(1)}, race: {ph: wp.race.ph, n: wp.race.n, t: +wp.race.t.toFixed(1), me: wp.race.me && {d: +wp.race.me.d.toFixed(1), off: +wp.race.me.off.toFixed(2), fin: wp.race.me.fin}, res: wp.race.res, npcs: wp.race.npcs.length}, prog: wpProg(), menu: wp.menu, L: +wp.river.L.toFixed(1), earned: wp.earned, P: {x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2)}},
