@@ -109,6 +109,8 @@
     {id:'lh-peek', cat:'lantern', emoji:'👀', name:'Gotcha!', desc:'Get fizzled by the late-night visitor.', coins:20, prove:s => !!(s.notes && s.notes['lh:peek'])},
     {id:'lh-ride', cat:'lantern', emoji:'🎡', name:'First Spin', desc:'Hop on a fairground ride.', coins:10, prove:s => !!(s.notes && s.notes['lh:ride'])},
     {id:'lh-rides', cat:'lantern', emoji:'🎠', name:'Ride the Midway', desc:'Take a turn on the Ferris wheel, the carousel, and the swing ride.', coins:15, prove:s => !!(s.notes && s.notes['lh:rides'])},
+    {id:'lh-tickets', cat:'lantern', emoji:'🎟️', name:'Ticket Winner', desc:'Win prize tickets at a carnival game.', coins:10, prove:s => !!(s.notes && s.notes['lh:tickets'])},
+    {id:'lh-prize', cat:'lantern', emoji:'🧸', name:'Booth Bargain', desc:'Trade tickets for a prize at the booth.', coins:10, prove:s => !!(s.notes && s.notes['lh:prize'])},
                 // Collection
     {id:'welcome', cat:'collection', emoji:'👋', name:'Hello, Friend', desc:'Pick a player name and join Rublox.', coins:5, prove:s => !!(s.player && s.player.name)},
     {id:'first-game', cat:'collection', emoji:'🎮', name:'Let\'s Play', desc:'Start any Rublox game.', coins:5, prove:s => !!(s.notes && s.notes.play) || !!(s.recent && s.recent.length >= 1)},

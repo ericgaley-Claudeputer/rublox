@@ -7,8 +7,8 @@ ROOT = Path(__file__).resolve().parents[2]
 IDX = ROOT / 'index.html'
 DEV = ROOT / 'dev/lantern'
 ACH = ROOT / 'dev/achievements/achievements.js'
-BUILD = '2026.11.16-10'
-OLD_BUILD = '2026.11.16-9'
+BUILD = '2026.11.16-11'
+OLD_BUILD = '2026.11.16-10'
 
 def once(text, old, new, label):
     if new.strip() and new in text and old not in text:
@@ -230,7 +230,12 @@ def main():
             html = html.replace('#lhWrite, #lhWriteBtn, #lhCut', '#lhWrite, #lhWriteBtn, #lhKnock, #lhCut', 1)
         log.append('ok HUD_HIT_SEL knock')
     else:
-        log.append('skip HUD_HIT_SEL')
+        sel = html[html.find('const HUD_HIT_SEL'):html.find('const HUD_HIT_SEL')+1200]
+        if '#lhGame' not in sel:
+            html = html.replace('#lhKnock, #lhCut', '#lhKnock, #lhGame, #lhBooth, #lhCut', 1)
+            log.append('ok HUD_HIT_SEL games')
+        else:
+            log.append('skip HUD_HIT_SEL')
 
     # --- dhIsUiEvent closest lists ---
     for old in [

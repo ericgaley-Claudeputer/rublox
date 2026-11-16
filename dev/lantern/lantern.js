@@ -23,7 +23,7 @@
   function lhSaveProg(p){
     p = p || (lh && lh.prog) || lhProg();
     try {
-      const body = {ver: LH_RULES.LH_VER || 1, visits: p.visits|0, settings: (LH_RULES.lhNormalizeSettings ? LH_RULES.lhNormalizeSettings(p.settings) : p.settings), doodles: p.doodles || {}, coins: +p.coins || 0, wallWords: (lh && lh.words) ? lh.words : (p.wallWords || []), rides: (p.rides && typeof p.rides === 'object') ? p.rides : {}, tickets: Math.max(0, (p.tickets|0)), decor: Array.isArray(p.decor) ? p.decor : [], wagonStyle: (p.wagonStyle && typeof p.wagonStyle === 'object') ? p.wagonStyle : {}};
+      const body = {ver: LH_RULES.LH_VER || 1, visits: p.visits|0, settings: (LH_RULES.lhNormalizeSettings ? LH_RULES.lhNormalizeSettings(p.settings) : p.settings), doodles: p.doodles || {}, coins: +p.coins || 0, wallWords: (lh && lh.words) ? lh.words : (p.wallWords || []), rides: (p.rides && typeof p.rides === 'object') ? p.rides : {}, tickets: Math.max(0, (p.tickets|0)), prizes: (p.prizes && typeof p.prizes === 'object') ? p.prizes : {}, wear: (p.wear && typeof p.wear === 'object') ? p.wear : {}, decor: Array.isArray(p.decor) ? p.decor : [], wagonStyle: (p.wagonStyle && typeof p.wagonStyle === 'object') ? p.wagonStyle : {}};
       if (typeof save === 'function') save(LH_KEY, body);
       else if (typeof localStorage !== 'undefined') localStorage.setItem(LH_KEY, JSON.stringify(body));
     } catch (e){}
@@ -349,6 +349,21 @@
     lhBox(x, 1.7, z, 2.05, 0.16, '#e31c23', 0.16);
     if (title) lhLabel(title, 'rgba(80,20,40,.92)', x, 2.15, z);
   }
+  function lhPrizeBooth(x, z){
+    lhBox(x, 1.1, z, 3.2, 1.6, '#fff3d0', 1.1);
+    lhBox(x, 1.7, z, 3.4, 1.8, '#fff8f0', 0.14);
+    lhBox(x, 2.35, z, 3.5, 0.2, '#e31c23', 0.18);
+    const cols = ['#ff6b9a', '#3a86ff', '#ffd25a', '#2ec27e', '#ff8ad8', '#6b3cff'];
+    for (let i = 0; i < 6; i++){
+      const bx = x - 1.2 + (i % 3) * 1.2;
+      const by = 0.85 + Math.floor(i / 3) * 0.55;
+      const bz = z - 0.15;
+      lhBox(bx, by, bz, 0.4, 0.35, cols[i], 0.35);
+    }
+    try { lhFloorBox(x + 0.2, z + 1.5, 1.8, 1.8, '#f0c860', 'pad'); } catch (e){}
+    try { lhLabel('Prize Booth  ·  trade tickets', 'rgba(80,20,40,.92)', x, 2.9, z); } catch (e){}
+    if (lh) lh.booth = {x: x, z: z, r: 2.8};
+  }
   function lhPins(x, z){
     const cols = ['#e31c23', '#3a86ff', '#ffd25a'];
     for (let i = 0; i < 3; i++){
@@ -640,8 +655,8 @@
     lhBox(-20, 1.15, 118, 190, 0.4, '#4a2a10', 2.2);
     lhBox(-114, 1.15, 9, 0.4, 218, '#4a2a10', 2.2);
     lhBox(54, 1.15, 9, 0.4, 218, '#4a2a10', 2.2);
-    // ticket booth just outside the west flaps
-    lhStand(-32, -4, '#fff3d0', 'Tickets');
+    // prize booth just outside the west flaps
+    try { lhPrizeBooth(-32, -4); } catch (e){ lhStand(-32, -4, '#fff3d0', 'Prize Booth'); if (lh) lh.booth = {x:-32, z:-4, r:2.8}; }
     // Food Court
     lhStand(-54, 4, '#fff3d0', 'Popcorn');
     lhStand(-64, 4, '#ffd0e8', 'Cotton Candy');
@@ -655,11 +670,19 @@
     // Games Alley
     lhStand(-54, 36, '#ffd0e8', 'Ring Toss');
     lhStand(-66, 36, '#d0f0ff', 'Balloon Darts');
-    lhStand(-54, 46, '#ffe29a', 'Bottle Knock');
+    lhStand(-54, 46, '#ffe29a', 'Whack-a-Glow');
+    lhStand(-70, 46, '#ffd0e8', 'Duck Pond');
     if (!lhLow()){
-      lhStand(-70, 46, '#ffd0e8', 'Duck Pond');
       lhPins(-60, 42);
       lhBalloons(-48, 2.2, 40, 3);
+    }
+    if (lh){
+      lh.games = [
+        {id:'rings', name:'Ring Toss', emoji:'⭕', x:-54, z:36, r:2.4},
+        {id:'darts', name:'Balloon Darts', emoji:'🎈', x:-66, z:36, r:2.4},
+        {id:'whack', name:'Whack-a-Glow', emoji:'✨', x:-54, z:46, r:2.4},
+        {id:'ducks', name:'Duck Pond', emoji:'🦆', x:-70, z:46, r:2.4}
+      ];
     }
     lhLabel('Games Alley', 'rgba(20,40,70,.92)', -62, 3.2, 50);
     // Rides
@@ -712,7 +735,7 @@
       rooms: [], npcs: [], host: null, vesper: null, exitDoor: null,
       keyholder: null, keyCd: 0, pester: 0, taggedLock: 0,
       doodleOpen: false, setOpen: false, writeOpen: false, writeStyle: 'paint', writeSel: 0, lastHud: '', words: (prog.wallWords || []).slice(), wordMeshes: [], knockAt: {}, knockOffer: null, knockWait: null,
-      trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null, riding: null,
+      trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null, riding: null, arcade: null, boothOpen: false, games: [], booth: null, gameCd: {},
       syncT: 0, visitAwarded: false, _nearT: 0, _isoT: 0, _darkT: 0,
       breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0,
       lastDing: 0, savedFp: null
@@ -1617,6 +1640,11 @@
       const mapc = lhEl('lhMapClose'); if (mapc) mapc.onclick = () => lhToggleMap(false);
       const mapo = lhEl('lhMap'); if (mapo) mapo.addEventListener('click', ev => { if (ev.target === mapo) lhToggleMap(false); });
       const wrb = lhEl('lhWriteBtn'); if (wrb) wrb.onclick = () => lhOpenWrite();
+      const gcl = lhEl('lhGameClose'); if (gcl) gcl.onclick = () => lhCloseArcade();
+      const gp = lhEl('lhGame'); if (gp) gp.addEventListener('click', ev => { if (ev.target === gp) lhCloseArcade(); });
+      const bcl = lhEl('lhBoothClose'); if (bcl) bcl.onclick = () => lhCloseBooth();
+      const bp = lhEl('lhBooth'); if (bp) bp.addEventListener('click', ev => { if (ev.target === bp) lhCloseBooth(); });
+
       const wrc = lhEl('lhWriteClose'); if (wrc) wrc.onclick = () => lhCloseWrite();
       const wrp = lhEl('lhWrite'); if (wrp) wrp.addEventListener('click', ev => { if (ev.target === wrp) lhCloseWrite(); });
       const wrgo = lhEl('lhWriteGo'); if (wrgo) wrgo.onclick = () => lhSubmitCustomWord();
@@ -1672,7 +1700,7 @@
 
   function lanternStop(){
     try {
-      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhWrite','lhKnock','lhVision','lhScare','lhMyWagon','lhMap','lhMapBtn','lhWriteBtn'].forEach(id => {
+      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhWrite','lhKnock','lhGame','lhBooth','lhVision','lhScare','lhMyWagon','lhMap','lhMapBtn','lhWriteBtn'].forEach(id => {
         const n = lhEl(id); if (!n) return;
         if (id === 'lhMeter' || id === 'lhBox' || id === 'lhRoot') n.style.display = 'none';
         else { n.classList.remove('show'); n.style.display = 'none'; }
@@ -1686,6 +1714,7 @@
         if (camera.updateProjectionMatrix) camera.updateProjectionMatrix();
       }
     } catch (e){}
+    try { lhCloseArcade(); lhCloseBooth(); } catch (e){}
     if (lh && lh.riding){ try { lhDismountRide(true); } catch (e){} }
     if (lh && lh.prog) lhSaveProg(lh.prog);
     lh = null;
@@ -2002,6 +2031,249 @@
     lhSnapRemoteRiders();
   }
 
+
+  function lhTickets(){
+    try { return Math.max(0, ((lh && lh.prog && lh.prog.tickets) | 0)); } catch (e){ return 0; }
+  }
+  function lhGiveTickets(n, why){
+    n = Math.max(0, n | 0);
+    if (!lh) return 0;
+    lh.prog = lh.prog || lhProg();
+    if (n > 0){
+      lh.prog.tickets = Math.max(0, (lh.prog.tickets | 0) + n);
+      lhSaveProg(lh.prog);
+      lhAward('lh:tickets');
+      if (typeof toast === 'function') toast('🎟️ +' + n + ' prize ticket' + (n === 1 ? '' : 's') + (why ? ' — ' + why : '') + '!');
+    } else if (typeof toast === 'function') toast('🎟️ No tickets this time — try again!');
+    return n;
+  }
+  function lhNearGame(){
+    if (!lh || !lh.games || typeof P === 'undefined' || !P) return null;
+    let best = null, bestD = 99;
+    lh.games.forEach(g => {
+      const d = LH_RULES.lhDist ? LH_RULES.lhDist(P.x, P.z, g.x, g.z) : 99;
+      if (d <= (g.r || 2.4) && d < bestD){ bestD = d; best = g; }
+    });
+    return best;
+  }
+  function lhNearBooth(){
+    if (!lh || !lh.booth || typeof P === 'undefined' || !P) return false;
+    return !!(LH_RULES.lhNear && LH_RULES.lhNear(P.x, P.z, lh.booth.x, lh.booth.z, lh.booth.r || 2.8));
+  }
+  function lhCloseArcade(){
+    if (!lh) return;
+    lh.arcade = null;
+    const n = lhEl('lhGame');
+    if (n){ n.classList.remove('show'); n.style.display = 'none'; }
+  }
+  function lhCloseBooth(){
+    if (!lh) return;
+    lh.boothOpen = false;
+    const n = lhEl('lhBooth');
+    if (n){ n.classList.remove('show'); n.style.display = 'none'; }
+  }
+  function lhOpenBooth(){
+    if (!lh) return false;
+    if (lh.arcade) lhCloseArcade();
+    lh.boothOpen = true;
+    lh.boothSel = 0;
+    const n = lhEl('lhBooth');
+    if (n){ n.style.display = 'flex'; n.classList.add('show'); }
+    lhFillBooth();
+    return true;
+  }
+  function lhFillBooth(){
+    if (!lh) return;
+    const prizes = (LH_RULES.LH_PRIZES || []);
+    const owned = (lh.prog && lh.prog.prizes) || {};
+    const wear = (lh.prog && lh.prog.wear) || {};
+    const bal = lhEl('lhBoothBal');
+    if (bal) bal.textContent = lhTickets() + ' ticket' + (lhTickets() === 1 ? '' : 's') + ' in your pocket';
+    const list = lhEl('lhBoothList');
+    if (!list) return;
+    list.innerHTML = '';
+    prizes.forEach((p, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      const have = !!owned[p.id];
+      const on = (lh.boothSel || 0) === i;
+      const wearing = !!(p.slot && wear[p.slot] === p.id);
+      b.className = 'lh-prize' + (have ? ' owned' : '') + (on ? ' on' : '') + (wearing ? ' wear' : '');
+      b.innerHTML = '<div class="nm">' + (p.emoji || '') + ' ' + p.name + '</div><div class="ds">' + (p.desc || '') + '</div><div class="cs">' + (have ? (wearing ? 'Wearing — tap to take off' : (p.kind === 'cosmetic' ? 'Owned — tap to wear' : 'Owned')) : ('🎟️ ' + p.cost + ' tickets')) + '</div>';
+      b.onclick = () => { lh.boothSel = i; if (have && p.kind === 'cosmetic') lhWearPrize(p.id); else if (!have) lhBuyAtBooth(p.id); else lhFillBooth(); };
+      list.appendChild(b);
+    });
+  }
+  function lhBuyAtBooth(id){
+    if (!lh) return false;
+    lh.prog = lh.prog || lhProg();
+    const res = LH_RULES.lhBuyPrize ? LH_RULES.lhBuyPrize({tickets: lh.prog.tickets, prizes: lh.prog.prizes}, id) : {ok:false, reason:'unknown'};
+    if (!res.ok){
+      if (typeof toast === 'function') toast(res.reason === 'cost' ? '🎟️ Need more tickets for that one.' : res.reason === 'owned' ? 'You already have that prize!' : 'That prize is not at the booth.');
+      lhFillBooth();
+      return false;
+    }
+    lh.prog.tickets = res.tickets;
+    lh.prog.prizes = res.prizes;
+    lhSaveProg(lh.prog);
+    lhAward('lh:prize');
+    if (typeof toast === 'function') toast((res.prize && res.prize.emoji ? res.prize.emoji + ' ' : '') + 'You got the ' + (res.prize && res.prize.name || 'prize') + '!');
+    if (res.prize && res.prize.kind === 'cosmetic') lhWearPrize(res.prize.id, true);
+    else lhFillBooth();
+    return true;
+  }
+  function lhWearPrize(id, forceOn){
+    if (!lh) return false;
+    lh.prog = lh.prog || lhProg();
+    if (!(lh.prog.prizes && lh.prog.prizes[id]) && !forceOn) return false;
+    const res = LH_RULES.lhEquipCosmetic ? LH_RULES.lhEquipCosmetic(lh.prog.wear, id) : {ok:false};
+    if (!res.ok) return false;
+    if (forceOn && res.equipped !== id){
+      const again = LH_RULES.lhEquipCosmetic(res.wear, id);
+      lh.prog.wear = again.wear;
+    } else lh.prog.wear = res.wear;
+    lhSaveProg(lh.prog);
+    if (typeof toast === 'function'){
+      const prize = LH_RULES.lhPrizeById && LH_RULES.lhPrizeById(id);
+      toast(lh.prog.wear && prize && lh.prog.wear[prize.slot || 'hat'] === id ? ('You put on the ' + prize.name + '!') : 'Taken off.');
+    }
+    lhFillBooth();
+    return true;
+  }
+  function lhOpenGame(id){
+    if (!lh) return false;
+    if (lh.boothOpen) lhCloseBooth();
+    const spec = (LH_RULES.LH_CARNIVAL_GAMES || []).find(g => g.id === id) || (lh.games || []).find(g => g.id === id);
+    if (!spec) return false;
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    const cd = (lh.gameCd && lh.gameCd[id]) || 0;
+    if (now < cd){
+      if (typeof toast === 'function') toast('⏳ This booth is resetting — try again in a moment.');
+      return false;
+    }
+    const arcade = {id: spec.id, name: spec.name || id, emoji: spec.emoji || '🎟️', t: 0, over: false, sel: 0, score: 0, left: spec.throws || 0};
+    if (spec.id === 'rings'){ arcade.left = 3; arcade.pegs = [false, false, false]; arcade.sel = 1; }
+    if (spec.id === 'darts'){ arcade.left = 5; arcade.pops = [false,false,false,false,false,false,false,false,false,false,false,false]; }
+    if (spec.id === 'ducks'){ arcade.picked = -1; arcade.sel = 2; arcade.left = 1; }
+    if (spec.id === 'whack'){ arcade.leftTime = 12; arcade.lit = -1; arcade.litT = 0; arcade.hits = 0; }
+    lh.arcade = arcade;
+    const n = lhEl('lhGame');
+    if (n){ n.style.display = 'flex'; n.classList.add('show'); }
+    const title = lhEl('lhGameTitle');
+    if (title) title.textContent = (arcade.emoji ? arcade.emoji + ' ' : '') + arcade.name;
+    const hint = lhEl('lhGameHint');
+    if (hint){
+      hint.textContent = arcade.id === 'rings' ? 'Move with arrows or the stick, then tap / A / X to toss a ring. 3 throws.'
+        : arcade.id === 'darts' ? 'Tap a balloon or highlight one and press A / X. 5 darts.'
+        : arcade.id === 'ducks' ? 'Pick a duck! Tap one, or move and press A / X.'
+        : 'Whack the glowing pad — tap it, or move and press A / X. 12 seconds!';
+    }
+    lhPaintGame();
+    return true;
+  }
+  function lhPaintGame(){
+    const a = lh && lh.arcade;
+    const body = lhEl('lhGameBody');
+    const score = lhEl('lhGameScore');
+    if (!a || !body) return;
+    if (a.over){
+      body.innerHTML = '<div style="text-align:center;font-weight:900;font-size:22px;padding:24px 8px">' + (a.endMsg || 'All done!') + '</div>';
+      if (score) score.textContent = a.won != null ? ('🎟️ +' + a.won + ' tickets') : '';
+      return;
+    }
+    const btn = (cls, i, label, extra) => '<button type="button" class="' + cls + (a.sel === i ? ' on' : '') + (extra || '') + '" data-i="' + i + '">' + label + '</button>';
+    if (a.id === 'rings'){
+      body.innerHTML = '<div class="lh-pegs">' + [0,1,2].map(i => btn('lh-peg', i, a.pegs[i] ? '⭕' : '🍾', a.pegs[i] ? ' hit' : '')).join('') + '</div>';
+      if (score) score.textContent = (3 - a.left) + '/3 throws  ·  ' + a.score + ' on the bottles';
+    } else if (a.id === 'darts'){
+      const darts = '🎯'.repeat(a.left) + '·'.repeat(Math.max(0, 5 - a.left));
+      body.innerHTML = '<div class="lh-darts">' + darts + '</div><div class="lh-balloons">' + a.pops.map((p,i) => btn('lh-balloon', i, p ? '💥' : '🎈', p ? ' popped' : '')).join('') + '</div>';
+      if (score) score.textContent = a.score + ' popped  ·  ' + a.left + ' dart' + (a.left===1?'':'s') + ' left';
+    } else if (a.id === 'ducks'){
+      const faces = ['🦆','🐥','🦆','🐤','🦆'];
+      body.innerHTML = '<div class="lh-ducks">' + faces.map((f,i) => btn('lh-duck', i, f)).join('') + '</div>';
+      if (score) score.textContent = 'Pick a duck and see how many tickets it hid!';
+    } else if (a.id === 'whack'){
+      body.innerHTML = '<div class="lh-holes">' + [0,1,2,3,4,5].map(i => btn('lh-hole', i, a.lit === i ? '✨' : '•', a.lit === i ? ' lit' : '')).join('') + '</div>';
+      if (score) score.textContent = a.hits + ' hits  ·  ' + Math.ceil(Math.max(0, a.leftTime)) + 's left';
+    }
+    body.querySelectorAll('button[data-i]').forEach(b => {
+      b.onclick = () => { a.sel = +b.getAttribute('data-i'); lhGameFire(a.sel); };
+    });
+  }
+  function lhGameFire(i){
+    const a = lh && lh.arcade;
+    if (!a || a.over) return;
+    if (i == null) i = a.sel || 0;
+    a.sel = i;
+    if (a.id === 'rings'){
+      if (a.left <= 0) return;
+      a.left--;
+      if (!a.pegs[i]){ a.pegs[i] = true; a.score++; }
+      if (a.left <= 0 || a.score >= 3) lhFinishGame();
+      else lhPaintGame();
+    } else if (a.id === 'darts'){
+      if (a.left <= 0) return;
+      if (a.pops[i]){ lhPaintGame(); return; }
+      a.pops[i] = true; a.score++; a.left--;
+      if (a.left <= 0 || a.score >= 12) lhFinishGame();
+      else lhPaintGame();
+    } else if (a.id === 'ducks'){
+      if (a.picked >= 0) return;
+      a.picked = i;
+      lhFinishGame();
+    } else if (a.id === 'whack'){
+      if (a.lit === i){ a.hits++; a.score = a.hits; a.lit = -1; a.litT = 0.12; lhPaintGame(); }
+    }
+  }
+  function lhFinishGame(){
+    const a = lh && lh.arcade;
+    if (!a || a.over) return;
+    a.over = true;
+    const score = a.id === 'whack' ? a.hits : a.score;
+    const won = LH_RULES.lhGameTickets ? LH_RULES.lhGameTickets(a.id, score) : score;
+    a.won = lhGiveTickets(won, a.name);
+    a.endMsg = a.won > 0 ? ('Nice! You won ' + a.won + ' ticket' + (a.won===1?'':'s') + '!') : 'So close — have another go!';
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    lh.gameCd = lh.gameCd || {};
+    lh.gameCd[a.id] = now + 3500;
+    lhPaintGame();
+  }
+  function lhGameMove(dx, dy){
+    const a = lh && lh.arcade;
+    if (!a || a.over) return;
+    const cols = a.id === 'darts' ? 4 : a.id === 'whack' ? 3 : a.id === 'ducks' ? 5 : 3;
+    const count = a.id === 'darts' ? 12 : a.id === 'whack' ? 6 : a.id === 'ducks' ? 5 : 3;
+    let i = a.sel || 0;
+    const x = i % cols, y = (i / cols) | 0;
+    const nx = Math.max(0, Math.min(cols - 1, x + (dx || 0)));
+    const rows = Math.ceil(count / cols);
+    const ny = Math.max(0, Math.min(rows - 1, y + (dy || 0)));
+    const next = Math.max(0, Math.min(count - 1, ny * cols + nx));
+    a.sel = next;
+    lhPaintGame();
+  }
+  function lhTickArcade(dt){
+    const a = lh && lh.arcade;
+    if (!a || a.over) return;
+    a.t += dt;
+    if (a.id === 'whack'){
+      a.leftTime -= dt;
+      a.litT -= dt;
+      if (a.leftTime <= 0){ a.score = a.hits; lhFinishGame(); return; }
+      if (a.litT <= 0){
+        if (a.lit >= 0 && Math.random() < 0.55) a.lit = -1;
+        else {
+          let n = (Math.random() * 6) | 0;
+          if (n === a.lit) n = (n + 1 + ((Math.random()*5)|0)) % 6;
+          a.lit = n;
+        }
+        a.litT = 0.45 + Math.random() * 0.45;
+        lhPaintGame();
+      }
+    }
+  }
+
   function lhPrompt(){
     if (!lh || lh.cut || lh.calm || lh.banish) return null;
     if (lh.riding){
@@ -2016,6 +2288,9 @@
       if (seat >= 0) return {id:'ride', label: (ride.kind === 'ferris' ? '🎡' : ride.kind === 'carousel' ? '🎠' : '🎪') + ' Ride the ' + (ride.name || 'ride'), ride: ride, seat: seat};
       return {id:'ridefull', label:'🎟️ Ride is full'};
     }
+    if (lhNearBooth()) return {id:'booth', label:'🎟️ Prize Booth'};
+    const game = lhNearGame();
+    if (game) return {id:'game', label: (game.emoji || '🎟️') + ' Play ' + game.name, game: game};
     if (lh.wagonPad && LH_RULES.lhNear(P.x, P.z, lh.wagonPad.x, lh.wagonPad.z, 2.0))
       return {id:'gowagon', label:'🎪 Go to my wagon'};
     // In-room actions first so the light switch and bed are not hidden by the door prompt —
@@ -2070,6 +2345,8 @@
     if (p.id === 'hopoff') lhDismountRide();
     else if (p.id === 'ride') lhBoardRide(p.ride, p.seat);
     else if (p.id === 'ridefull'){ if (typeof toast === 'function') toast('🎟️ Every seat is taken — wait for a spin!'); }
+    else if (p.id === 'game') lhOpenGame(p.game && p.game.id);
+    else if (p.id === 'booth') lhOpenBooth();
     else if (p.id === 'bell') lhRing(p.R);
     else if (p.id === 'gowagon') lhGoWagon();
     else if (p.id === 'enter'){
@@ -2656,6 +2933,27 @@
       if ((e.code === 'Enter' || e.key === 'Enter') && !e.repeat){ lhKnockReply(true, 'open'); return true; }
       return true;
     }
+    if (lh.arcade){
+      if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseArcade(); return true; }
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA'){ lhGameMove(-1, 0); return true; }
+      if (e.code === 'ArrowRight' || e.code === 'KeyD'){ lhGameMove(1, 0); return true; }
+      if (e.code === 'ArrowUp' || e.code === 'KeyW'){ lhGameMove(0, -1); return true; }
+      if (e.code === 'ArrowDown' || e.code === 'KeyS'){ lhGameMove(0, 1); return true; }
+      if ((e.code === 'Space' || e.code === 'Enter' || e.code === 'KeyE' || e.code === 'KeyX') && !e.repeat){ lhGameFire(lh.arcade.sel); return true; }
+      return true;
+    }
+    if (lh.boothOpen){
+      if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseBooth(); return true; }
+      const n = (LH_RULES.LH_PRIZES || []).length || 1;
+      if (e.code === 'ArrowLeft' || e.code === 'ArrowUp' || e.code === 'KeyA' || e.code === 'KeyW'){ lh.boothSel = ((lh.boothSel || 0) - 1 + n) % n; lhFillBooth(); return true; }
+      if (e.code === 'ArrowRight' || e.code === 'ArrowDown' || e.code === 'KeyD' || e.code === 'KeyS'){ lh.boothSel = ((lh.boothSel || 0) + 1) % n; lhFillBooth(); return true; }
+      if ((e.code === 'Enter' || e.code === 'Space' || e.code === 'KeyE' || e.code === 'KeyX') && !e.repeat){
+        const prize = (LH_RULES.LH_PRIZES || [])[lh.boothSel || 0];
+        if (prize){ if (lh.prog && lh.prog.prizes && lh.prog.prizes[prize.id] && prize.kind === 'cosmetic') lhWearPrize(prize.id); else lhBuyAtBooth(prize.id); }
+        return true;
+      }
+      return true;
+    }
     if (lh.writeOpen){
       if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseWrite(); return true; }
       // Let the custom text field receive typing; G should not re-toggle.
@@ -2684,6 +2982,32 @@
       if (!jp[1]) lh._padB = false;
       return true;
     }
+    if (lh.arcade){
+      if (jp[1] && !lh._padB){ lh._padB = true; lhCloseArcade(); return true; }
+      if (!jp[1]) lh._padB = false;
+      if ((jp[14] || jp[12]) && !lh._padD){ lh._padD = true; lhGameMove(jp[14] ? -1 : 0, jp[12] ? -1 : 0); return true; }
+      if ((jp[15] || jp[13]) && !lh._padD){ lh._padD = true; lhGameMove(jp[15] ? 1 : 0, jp[13] ? 1 : 0); return true; }
+      if (!jp[14] && !jp[15] && !jp[12] && !jp[13]) lh._padD = false;
+      if ((jp[0] || jp[2]) && !lh._padPick){ lh._padPick = true; lhGameFire(lh.arcade.sel); return true; }
+      if (!jp[0] && !jp[2]) lh._padPick = false;
+      return true;
+    }
+    if (lh.boothOpen){
+      if (jp[1] && !lh._padB){ lh._padB = true; lhCloseBooth(); return true; }
+      if (!jp[1]) lh._padB = false;
+      const n = (LH_RULES.LH_PRIZES || []).length || 1;
+      if ((jp[14] || jp[12]) && !lh._padD){ lh._padD = true; lh.boothSel = ((lh.boothSel || 0) - 1 + n) % n; lhFillBooth(); return true; }
+      if ((jp[15] || jp[13]) && !lh._padD){ lh._padD = true; lh.boothSel = ((lh.boothSel || 0) + 1) % n; lhFillBooth(); return true; }
+      if (!jp[14] && !jp[15] && !jp[12] && !jp[13]) lh._padD = false;
+      if ((jp[0] || jp[2]) && !lh._padPick){
+        lh._padPick = true;
+        const prize = (LH_RULES.LH_PRIZES || [])[lh.boothSel || 0];
+        if (prize){ if (lh.prog && lh.prog.prizes && lh.prog.prizes[prize.id] && prize.kind === 'cosmetic') lhWearPrize(prize.id); else lhBuyAtBooth(prize.id); }
+        return true;
+      }
+      if (!jp[0] && !jp[2]) lh._padPick = false;
+      return true;
+    }
     if (lh.writeOpen){
       if (jp[1] && !lh._padB){ lh._padB = true; lhCloseWrite(); return true; }
       if (!jp[1]) lh._padB = false;
@@ -2704,7 +3028,7 @@
     if (jp[2] && !lh._padX){ lh._padX = true; lhAct(); return true; }
     if (!jp[2]) lh._padX = false;
     if (jp[1] && lh.riding && !lh._padB){ lh._padB = true; lhDismountRide(); return true; }
-    if (jp[1] && (lh.doodleOpen || lh.setOpen || lh.mapOpen || lh.writeOpen || lh.knockOffer || lh.cut || lh.calm || lh.banish)){ lhCloseDraw(); lhCloseWrite(); if (lh.knockOffer) lhKnockReply(false, 'closed'); lhToggleSet(false); lhToggleMap(false); lhSkipCut(); return true; }
+    if (jp[1] && (lh.doodleOpen || lh.setOpen || lh.mapOpen || lh.writeOpen || lh.knockOffer || lh.arcade || lh.boothOpen || lh.cut || lh.calm || lh.banish)){ lhCloseDraw(); lhCloseWrite(); lhCloseArcade(); lhCloseBooth(); if (lh.knockOffer) lhKnockReply(false, 'closed'); lhToggleSet(false); lhToggleMap(false); lhSkipCut(); return true; }
     if (jp[3] && !lh._padY){ lh._padY = true; lhToggleMap(); return true; }
     if (!jp[3]) lh._padY = false;
     if (jp[4] && !lh._padLB){ lh._padLB = true; lhOpenWrite(); return true; }
@@ -2948,7 +3272,8 @@
       const lampWarm = !!(lh.nearLamp && !lh.glitched && !lh.nearGlitched);
       html += '</div><div class="lh-bar' + (lampWarm ? ' lh-lamp' : '') + '"><i style="width:' + Math.max(0, Math.min(100, lh.sanity)) + '%"></i></div>';
       const why = lh.glitched ? 'Fizzled — tag friends (gently!)' : lh.nearGlitched ? 'Too close to a fizzled friend…' : lampWarm ? 'The lantern warms you…' : lh.area === 'woods' || (lh.area === 'outside' && lh.dark) ? 'The fairground is dark… stay near a lantern!' : lh.dark && lh.isolated ? 'Alone in the dark…' : lh.dark ? 'It\'s pretty dark…' : lh.isolated ? 'Nobody nearby…' : 'Stay close, stay bright!';
-      html += '<div class="lh-why">' + why + '</div></div>';
+      html += '<div class="lh-why">' + why + '</div>';
+      html += '<div id="lhTickets">🎟️ ' + lhTickets() + ' ticket' + (lhTickets()===1?'':'s') + '</div></div>';
       try { meter.classList.toggle('lh-lamp', lampWarm); } catch (e){}
       if (html !== lh.lastHud){ meter.innerHTML = html; lh.lastHud = html; }
     }
@@ -3047,6 +3372,8 @@
     dt = Math.min(0.05, +dt || 0.016);
     lh.t += dt;
     if (lh.riding){ try { lhApplyLocalRide(); } catch (e){} }
+    if (lh.arcade){ try { P.vx = 0; P.vz = 0; } catch (e){} try { lhTickArcade(dt); } catch (e){} }
+    if (lh.boothOpen){ try { P.vx = 0; P.vz = 0; } catch (e){} }
     if (lh.taggedLock > 0) lh.taggedLock -= dt;
     if (lh.keyCd > 0) lh.keyCd -= dt;
 
@@ -3160,7 +3487,29 @@
           return {id:R.id, inside: !!(viewer && LH_RULES.lhRoomContains(R, viewer.x, viewer.z, 0.02)), doorClosed: !!(R.door && R.door.closed), visible: !!(R.interior && R.interior.visible), hasInterior: !!R.interior, childCount: R.interior ? R.interior.children.length : 0};
         } catch (e){ return {err:String(e)}; }
       };
+      window.lhOpenGame = function(id){ try { return lhOpenGame(id || 'rings'); } catch (e){ return false; } };
+      window.lhCloseGame = function(){ try { lhCloseArcade(); } catch (e){} };
+      window.lhOpenBooth = function(){ try { return lhOpenBooth(); } catch (e){ return false; } };
+      window.lhCloseBooth = function(){ try { lhCloseBooth(); } catch (e){} };
+      window.lhTickets = function(v){ try { if (!lh) return 0; lh.prog = lh.prog || lhProg(); if (v != null){ lh.prog.tickets = Math.max(0, v|0); lhSaveProg(lh.prog); } return lhTickets(); } catch (e){ return 0; } };
+      window.lhBuyPrize = function(id){ try { return lhBuyAtBooth(id); } catch (e){ return false; } };
+      window.lhGoGames = function(id){
+        try {
+          const g = (lh && lh.games || []).find(x => x.id === (id || 'rings')) || (lh && lh.games && lh.games[0]);
+          if (!g || typeof P === 'undefined' || !P) return false;
+          P.x = g.x + 1.6; P.y = 0.12; P.z = g.z + 1.6; P.vx = 0; P.vy = 0; P.vz = 0;
+          return true;
+        } catch (e){ return false; }
+      };
+      window.lhGoBooth = function(){
+        try {
+          if (!lh || !lh.booth || typeof P === 'undefined' || !P) return false;
+          P.x = lh.booth.x + 1.4; P.y = 0.12; P.z = lh.booth.z + 1.6; P.vx = 0; P.vy = 0; P.vz = 0;
+          return true;
+        } catch (e){ return false; }
+      };
       window.lhBoardRide = function(kind, seat){
+
         try {
           const ride = (kind && lhRideByKind(kind)) || lhNearRide() || (lh && lh.rides && lh.rides[0]);
           return ride ? lhBoardRide(ride, seat) : false;

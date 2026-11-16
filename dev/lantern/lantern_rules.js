@@ -114,6 +114,8 @@
       wallWords: lhSanitizeWallWords(o.wallWords),
       rides: (o.rides && typeof o.rides === 'object') ? o.rides : {},
       tickets: Math.max(0, o.tickets | 0),
+      prizes: (o.prizes && typeof o.prizes === 'object') ? o.prizes : {},
+      wear: (o.wear && typeof o.wear === 'object') ? o.wear : {},
       decor: Array.isArray(o.decor) ? o.decor : [],
       wagonStyle: (o.wagonStyle && typeof o.wagonStyle === 'object') ? o.wagonStyle : {}
     };
@@ -290,7 +292,9 @@
     {id:'lh-vesper', real:'Hello neighbor, welcome home!', realDesc:'Encounter Eniac on your current server. (Secret)', name:'Mystery Guest', desc:'Meet the late-night visitor under the big top.', emoji:'🌙', coins:20, note:'lh:vesper', secret:true},
     {id:'lh-peek', real:'Peekaboo.', realDesc:'Get abstracted by Eniac. (Secret)', name:'Gotcha!', desc:'Get fizzled by the late-night visitor.', emoji:'👀', coins:20, note:'lh:peek', secret:true},
     {id:'lh-ride', name:'First Spin', desc:'Hop on a fairground ride.', emoji:'🎡', coins:10, note:'lh:ride'},
-    {id:'lh-rides', name:'Ride the Midway', desc:'Take a turn on the Ferris wheel, the carousel, and the swing ride.', emoji:'🎠', coins:15, note:'lh:rides'}
+    {id:'lh-rides', name:'Ride the Midway', desc:'Take a turn on the Ferris wheel, the carousel, and the swing ride.', emoji:'🎠', coins:15, note:'lh:rides'},
+    {id:'lh-tickets', name:'Ticket Winner', desc:'Win prize tickets at a carnival game.', emoji:'🎟️', coins:10, note:'lh:tickets'},
+    {id:'lh-prize', name:'Booth Bargain', desc:'Trade tickets for a prize at the booth.', emoji:'🧸', coins:10, note:'lh:prize'}
   ];
 
 
@@ -644,11 +648,76 @@
     return {rides: rides, first: first, all: all};
   }
 
+
+  const LH_CARNIVAL_GAMES = [
+    {id:'rings', name:'Ring Toss', emoji:'⭕', throws:3, per:2, bonus:4},
+    {id:'darts', name:'Balloon Darts', emoji:'🎈', throws:5, per:2, bonus:4},
+    {id:'ducks', name:'Duck Pond', emoji:'🦆'},
+    {id:'whack', name:'Whack-a-Glow', emoji:'✨', seconds:12, per:1, bonus:5, bonusAt:10}
+  ];
+
+  const LH_PRIZES = [
+    {id:'hat-party', name:'Sparkle Party Hat', kind:'cosmetic', slot:'hat', cost:8, emoji:'🎩', desc:'A tall striped party hat.'},
+    {id:'hat-star', name:'Star Shades', kind:'cosmetic', slot:'hat', cost:10, emoji:'😎', desc:'Starry shades for the midway.'},
+    {id:'plush-glow', name:'Glowbug Plush', kind:'plush', cost:12, emoji:'🐛', desc:'A soft glowbug for your wagon.'},
+    {id:'plush-tent', name:'Little Tent Plush', kind:'plush', cost:12, emoji:'🎪', desc:'A squishy little big top.'},
+    {id:'plush-horse', name:'Carousel Horse Plush', kind:'plush', cost:15, emoji:'🎠', desc:'A painted wooden horse pal.'},
+    {id:'decor-lamp', name:'Wagon Lantern', kind:'decor', cost:8, emoji:'🏮', desc:'A warm lantern for your shelf.'},
+    {id:'decor-bunting', name:'Fair Bunting', kind:'decor', cost:6, emoji:'🎏', desc:'Colorful flags for your wall.'},
+    {id:'decor-rug', name:'Star Rug', kind:'decor', cost:10, emoji:'⭐', desc:'A starry rug for the floor.'},
+    {id:'decor-jar', name:'Candy Jar', kind:'decor', cost:7, emoji:'🍬', desc:'A jar of midway sweets.'},
+    {id:'decor-lights', name:'String Lights', kind:'decor', cost:10, emoji:'✨', desc:'Twinkly lights along the wall.'},
+    {id:'decor-plant', name:'Fern Friend', kind:'decor', cost:6, emoji:'🌿', desc:'A leafy wagon plant.'},
+    {id:'decor-poster', name:'Big Top Poster', kind:'decor', cost:5, emoji:'🖼️', desc:'A painted fairground poster.'}
+  ];
+
+  function lhPrizeById(id){
+    return LH_PRIZES.find(p => p.id === id) || null;
+  }
+
+  function lhGameTickets(gameId, score, rand){
+    const g = LH_CARNIVAL_GAMES.find(x => x.id === gameId);
+    score = Math.max(0, score | 0);
+    if (!g) return 0;
+    if (g.id === 'ducks'){
+      const r = (typeof rand === 'function' ? rand() : Math.random());
+      if (r < 0.08) return 8;
+      if (r < 0.35) return 3;
+      if (r < 0.7) return 2;
+      return 1;
+    }
+    let n = score * (g.per || 1);
+    if (g.bonus && (g.bonusAt != null ? score >= g.bonusAt : (g.throws && score >= g.throws))) n += g.bonus;
+    return n;
+  }
+
+  function lhBuyPrize(state, prizeId){
+    state = state || {};
+    const prize = lhPrizeById(prizeId);
+    if (!prize) return {ok:false, reason:'unknown', tickets: Math.max(0, state.tickets|0), prizes: Object.assign({}, state.prizes || {})};
+    const tickets = Math.max(0, state.tickets|0);
+    const prizes = Object.assign({}, state.prizes || {});
+    if (prizes[prizeId]) return {ok:false, reason:'owned', tickets: tickets, prizes: prizes, prize: prize};
+    if (tickets < prize.cost) return {ok:false, reason:'cost', tickets: tickets, prizes: prizes, prize: prize};
+    prizes[prizeId] = true;
+    return {ok:true, tickets: tickets - prize.cost, prizes: prizes, prize: prize};
+  }
+
+  function lhEquipCosmetic(wear, prizeId){
+    const prize = lhPrizeById(prizeId);
+    const next = Object.assign({}, wear && typeof wear === 'object' ? wear : {});
+    if (!prize || prize.kind !== 'cosmetic') return {ok:false, wear: next, reason:'not-cosmetic'};
+    const slot = prize.slot || 'hat';
+    if (next[slot] === prizeId) delete next[slot];
+    else next[slot] = prizeId;
+    return {ok:true, wear: next, equipped: next[slot] || null, slot: slot};
+  }
+
   const api = {
     LH_KEY, LH_VER, LH_HOST, LH_HOST_TITLE, LH_GAME, LH_STAMPS, LH_EYES,
     LH_WALL_PRESETS, LH_WALL_MAX_CHARS, LH_WALL_MAX_PER_PLAYER, LH_WALL_MAX_DIST, LH_PII_REASONS,
     LH_WAGON_H, LH_MIDWAY_WALL_H, LH_DOOR_OPEN_H, LH_KNOCK_COOLDOWN, LH_KNOCK_TIMEOUT, LH_KNOCK_SOLO_OPEN,
-    LH_RIDE_SPEC,
+    LH_RIDE_SPEC, LH_CARNIVAL_GAMES, LH_PRIZES,
     LH_COMPANY_R, LH_NEAR_R, LH_SUMMON_R, LH_TAG_R, LH_KEY_CD, LH_LAMP_R, LH_WAGON_ZS,
     LH_WAGONS_PER_SIDE, LH_WAGON_COUNT, LH_WAGON_SPACING, LH_WAGON_Z0, LH_WAGON_X,
     LH_MIDWAY_WALL_X, LH_MIDWAY_Z0, LH_MIDWAY_Z1, LH_DOOR_HALF,
@@ -665,6 +734,7 @@
     lhWagonWallPlanes, lhRayWall, lhNormalizeWallText, lhAddWallWord, lhEraseWallWord, lhSanitizeWallWords,
     lhDoorPromptKind, lhKnockCooldownLeft, lhKnockAllowed, lhKnockResolve, lhKnockReplyMessage, lhJumpClearHeight, lhPickLine,
     lhRidePickSeat, lhRideBoardOk, lhRideExitPoint, lhRideProgress,
+    lhPrizeById, lhGameTickets, lhBuyPrize, lhEquipCosmetic,
     LH_KNOCK_SOLO_OPEN_LINES, LH_KNOCK_SOLO_STAY_LINES
   };
   root.LHRules = api;

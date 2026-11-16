@@ -7,10 +7,10 @@ const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const RULES = require(path.join(ROOT, 'dev/lantern/lantern_rules.js'));
 const BUILD = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).build || JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
-test('BUILD stamp is 2026.11.16-10 in lantern files and version.json', () => {
+test('BUILD stamp is 2026.11.16-11 in lantern files and version.json', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
-  assert.equal(v.build, '2026.11.16-10');
-  assert.match(HTML, /const BUILD = '2026\.11\.16-10'/);
+  assert.equal(v.build, '2026.11.16-11');
+  assert.match(HTML, /const BUILD = '2026\.11\.16-11'/);
 });
 
 test('Lantern Big Top is a playable GAMES card with original branding', () => {
@@ -656,11 +656,16 @@ test('optional save fields stay compatible and default empty', () => {
   assert.equal(old.coins, 8);
   assert.deepEqual(old.rides, {});
   assert.equal(old.tickets, 0);
-  const kept = RULES.lhLoadState({rides:{ferris:true}, tickets:12, decor:[{id:'lamp'}], wagonStyle:{wall:'stripe'}});
+  const kept = RULES.lhLoadState({rides:{ferris:true}, tickets:12, prizes:{'decor-lamp':true}, wear:{hat:'hat-party'}, decor:[{id:'lamp'}], wagonStyle:{wall:'stripe'}});
   assert.equal(kept.rides.ferris, true);
   assert.equal(kept.tickets, 12);
+  assert.equal(kept.prizes['decor-lamp'], true);
+  assert.equal(kept.wear.hat, 'hat-party');
   assert.equal(kept.decor[0].id, 'lamp');
   assert.equal(kept.wagonStyle.wall, 'stripe');
+  const fresh2 = RULES.lhLoadState(null);
+  assert.deepEqual(fresh2.prizes, {});
+  assert.deepEqual(fresh2.wear, {});
 });
 
 test('ride seat picking, boarding rules, exits, and midway progress', () => {
@@ -723,4 +728,68 @@ test('fairground rides are boardable with camera-follow and MP co-ride hooks', (
   assert.match(js, /Carousel/);
   assert.match(js, /Swing Ride/);
   assert.doesNotMatch(js, /Digital Circus|Caine|Pomni|Kaufmo/);
+});
+
+test('carnival games award tickets and the prize booth trades them', () => {
+  assert.equal(RULES.LH_CARNIVAL_GAMES.length, 4);
+  assert.deepEqual(RULES.LH_CARNIVAL_GAMES.map(g => g.id), ['rings','darts','ducks','whack']);
+  assert.equal(RULES.lhGameTickets('rings', 0), 0);
+  assert.equal(RULES.lhGameTickets('rings', 2), 4);
+  assert.equal(RULES.lhGameTickets('rings', 3), 10); // 3*2 + bonus 4
+  assert.equal(RULES.lhGameTickets('darts', 5), 14);
+  assert.equal(RULES.lhGameTickets('whack', 10), 15);
+  assert.equal(RULES.lhGameTickets('ducks', 0, () => 0.01), 8);
+  assert.equal(RULES.lhGameTickets('ducks', 0, () => 0.5), 2);
+  assert.equal(RULES.lhGameTickets('ducks', 0, () => 0.9), 1);
+  assert.ok(RULES.LH_PRIZES.length >= 8);
+  RULES.LH_PRIZES.forEach(p => {
+    assert.ok(p.id && p.name && p.kind && p.cost > 0);
+    assert.ok(['cosmetic','plush','decor'].includes(p.kind));
+    assert.doesNotMatch(p.name + p.desc, /Caine|Kaufmo|Pomni|Eniac|Digital Circus|TADC/i);
+  });
+  const deny = RULES.lhBuyPrize({tickets: 3, prizes:{}}, 'decor-poster');
+  assert.equal(deny.ok, false);
+  assert.equal(deny.reason, 'cost');
+  assert.equal(deny.tickets, 3);
+  const buy = RULES.lhBuyPrize({tickets: 20, prizes:{}}, 'plush-glow');
+  assert.equal(buy.ok, true);
+  assert.equal(buy.tickets, 8);
+  assert.equal(buy.prizes['plush-glow'], true);
+  const again = RULES.lhBuyPrize({tickets: 40, prizes: buy.prizes}, 'plush-glow');
+  assert.equal(again.ok, false);
+  assert.equal(again.reason, 'owned');
+  const wear = RULES.lhEquipCosmetic({}, 'hat-party');
+  assert.equal(wear.ok, true);
+  assert.equal(wear.equipped, 'hat-party');
+  const off = RULES.lhEquipCosmetic(wear.wear, 'hat-party');
+  assert.equal(off.equipped, null);
+  const extra = RULES.LH_BADGES.filter(b => !b.real);
+  assert.ok(extra.some(b => b.id === 'lh-tickets'));
+  assert.ok(extra.some(b => b.id === 'lh-prize'));
+});
+
+test('carnival games and prize booth are wired for mobile, keyboard, and Xbox', () => {
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  const hud = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern_hud.html'), 'utf8');
+  const css = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.css'), 'utf8');
+  assert.match(hud, /id="lhGame"/);
+  assert.match(hud, /id="lhBooth"/);
+  assert.match(css, /#lhGame/);
+  assert.match(css, /#lhBooth/);
+  assert.match(js, /function lhOpenGame/);
+  assert.match(js, /function lhOpenBooth/);
+  assert.match(js, /function lhGiveTickets/);
+  assert.match(js, /function lhBuyAtBooth/);
+  assert.match(js, /p\.id === 'game'/);
+  assert.match(js, /p\.id === 'booth'/);
+  assert.match(js, /lh\.arcade/);
+  assert.match(js, /jp\[1\] && !lh\._padB\)\{ lh\._padB = true; lhCloseArcade/);
+  assert.match(js, /window\.lhOpenGame/);
+  assert.match(js, /window\.lhOpenBooth/);
+  assert.match(js, /window\.lhTickets/);
+  assert.match(js, /rubloxLantern|LH_KEY/);
+  assert.match(js, /tickets:/);
+  assert.doesNotMatch(js, /Digital Circus|Caine|Pomni|Kaufmo/);
+  assert.match(HTML, /#lhGame/);
+  assert.match(HTML, /#lhBooth/);
 });
