@@ -275,38 +275,43 @@ function fresh(opts) {
   W.frInit();
   const inp = W.document.getElementById('frAddIn');
   const msg = W.document.getElementById('frMsg');
+  const mine = W.frMyCode();
+
   inp.value = 'ABCDE';
   const bad = W.frTryAddFromBox();
-  chk('a rejected short code keeps the typed text and the error, and selects it so the next typing replaces it',
+  chk('a rejected short code clears the box, keeps focus, and quotes the typed code in the error',
     bad === false
-      && inp.value === 'ABCDE'
+      && inp.value === ''
+      && /ABCDE/.test(msg.textContent)
       && /6 letters/.test(msg.textContent)
+      && !/\bok\b/.test(msg.className)
       && inp.focused === true
-      && inp.selectionStart === 0
-      && inp.selectionEnd === 5,
-    {value: inp.value, msg: msg.textContent, start: inp.selectionStart, end: inp.selectionEnd, focused: inp.focused});
-  // Simulate the next typing replacing the selection, the way a real input does.
-  inp.value = 'RUBYFX';
-  inp.selectionStart = inp.selectionEnd = 6;
-  const mine = W.frMyCode();
-  inp.value = mine;
+      && inp._frReject === true,
+    {value: inp.value, msg: msg.textContent, focused: inp.focused, cls: msg.className});
+
+  // The real-world typo path: after a button reject, a later click into the (now empty)
+  // box and typing a new code must not append onto the old one (ABCDE + FUNDAY → ABCDEF).
+  inp.value = 'FUNDAY';
   const self = W.frTryAddFromBox();
-  chk('rejecting your own code also keeps the text, leaves the error, and re-selects the box',
+  chk('typing a new code after a reject (as after clicking back into the box) submits only that code',
     self === false
-      && inp.value === mine
+      && inp.value === ''
+      && /FUNDAY/.test(msg.textContent)
       && /own code/.test(msg.textContent)
-      && inp.selectionStart === 0
-      && inp.selectionEnd === mine.length,
-    {value: inp.value, msg: msg.textContent, start: inp.selectionStart, end: inp.selectionEnd});
+      && W.frCount() === 0,
+    {value: inp.value, msg: msg.textContent, n: W.frCount()});
+
   inp.value = 'ILOILO';
   const inv = W.frTryAddFromBox();
-  chk('an invalid 6-letter code is rejected the same way (selected, error still visible)',
+  chk('an invalid 6-letter code is cleared too, with the typed code still shown in the error',
     inv === false
-      && inp.value === 'ILOILO'
+      && inp.value === ''
+      && /ILOILO/.test(msg.textContent)
       && /6 letters/.test(msg.textContent)
-      && inp.selectionStart === 0
-      && inp.selectionEnd === 6,
+      && inp.focused === true,
     {value: inp.value, msg: msg.textContent});
+
+  chk('FUNDAY in the empty fixture is the player\'s own 6-letter code', mine === 'FUNDAY', mine);
 })();
 
 console.log('RESULT', pass, '/', pass + fail);
