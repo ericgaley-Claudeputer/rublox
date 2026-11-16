@@ -452,7 +452,7 @@
 
   function lanternEnter(){
     const el = lhEl('lhBox'); if (el) el.style.display = '';
-    ['lhMeter','lhRoot'].forEach(id => { const n = lhEl(id); if (n) n.style.display = ''; });
+    ['lhMeter','lhRoot'].forEach(id => { const n = lhEl(id); if (n) n.style.display = 'block'; });
     if (!window.__lhBound){
       window.__lhBound = true;
       const act = lhEl('lhAct'); if (act) act.onclick = () => lhAct();
@@ -474,6 +474,9 @@
         const n = lhEl(id); if (n) n.addEventListener('change', lhReadSettings);
       });
     }
+    try {
+      if (typeof cam !== "undefined" && cam){ cam.pitch = 0.16; cam.dist = 7; if (cam.yaw == null) cam.yaw = Math.PI; }
+    } catch (e){}
     lhHookChat();
     lhWriteSettings();
     // visits

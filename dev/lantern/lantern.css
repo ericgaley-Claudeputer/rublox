@@ -56,3 +56,9 @@ body.lh-muffled #obby{filter:saturate(.85)}
   #lhCutCap,#lhCalmCap{font-size:18px}
   #lhCutEyes i{width:36px;height:24px}
 }
+
+#obby.lhmode #lhRoot{display:block;position:absolute;inset:0;pointer-events:none;z-index:20}
+#obby.lhmode #lhMeter{display:block;pointer-events:none;z-index:21}
+#obby.lhmode #lhSetBtn,#obby.lhmode #lhFanfare.show,#obby.lhmode #lhAct.show{pointer-events:auto}
+#obby.lhmode #lhCut,#obby.lhmode #lhCalm,#obby.lhmode #lhSet,#obby.lhmode #lhDraw{pointer-events:auto;z-index:90}
+#obby.lhmode #lhKeyTag{z-index:21}

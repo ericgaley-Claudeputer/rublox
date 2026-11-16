@@ -1120,6 +1120,12 @@ body.lh-muffled #obby{filter:saturate(.85)}
   #lhCutEyes i{width:36px;height:24px}
 }
 
+
+#obby.lhmode #lhRoot{display:block;position:absolute;inset:0;pointer-events:none;z-index:20}
+#obby.lhmode #lhMeter{display:block;pointer-events:none;z-index:21}
+#obby.lhmode #lhSetBtn,#obby.lhmode #lhFanfare.show,#obby.lhmode #lhAct.show{pointer-events:auto}
+#obby.lhmode #lhCut,#obby.lhmode #lhCalm,#obby.lhmode #lhSet,#obby.lhmode #lhDraw{pointer-events:auto;z-index:90}
+#obby.lhmode #lhKeyTag{z-index:21}
 /* ---------- /lantern hotel css ---------- */
 </style>
 <style id="mobileHud">
@@ -15246,7 +15252,7 @@ const Obby = (() => {
 
   function lanternEnter(){
     const el = lhEl('lhBox'); if (el) el.style.display = '';
-    ['lhMeter','lhRoot'].forEach(id => { const n = lhEl(id); if (n) n.style.display = ''; });
+    ['lhMeter','lhRoot'].forEach(id => { const n = lhEl(id); if (n) n.style.display = 'block'; });
     if (!window.__lhBound){
       window.__lhBound = true;
       const act = lhEl('lhAct'); if (act) act.onclick = () => lhAct();
@@ -15268,6 +15274,9 @@ const Obby = (() => {
         const n = lhEl(id); if (n) n.addEventListener('change', lhReadSettings);
       });
     }
+    try {
+      if (typeof cam !== "undefined" && cam){ cam.pitch = 0.16; cam.dist = 7; if (cam.yaw == null) cam.yaw = Math.PI; }
+    } catch (e){}
     lhHookChat();
     lhWriteSettings();
     // visits
@@ -21902,6 +21911,11 @@ function dhLayoutHud(){
     if (mode === 'dance'){
       $('#oTip').innerHTML = (on ? '🕹️ D-pad / face buttons hit ←↓↑→' : '⌨️ Arrow keys or WASD hit the notes · Esc pause')
         + "<br>💃 Original bossa beats — time your presses for Perfect scores!";
+      return;
+    }
+    if (mode === 'lantern'){
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb move · ⬆️ jump · swipe to look · 👁️ first person<br>👆 The yellow button rings the doorbell, flips lights, or uses a thing. 🎩 Call Miss Fanfare when a friend is fizzled!'
+        : '⌨️ WASD move · Space jump · Shift run · Drag / lock-click to look · V first person · E use (doorbell, lights, door, bed, doodles)<br>Stay close and stay bright! Type Fanfare in chat near a fizzled friend to send them to the cellar (or use the button in single-player).');
       return;
     }
     if (mode === 'haunt'){
