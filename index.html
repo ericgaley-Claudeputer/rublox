@@ -1367,13 +1367,57 @@ body.lh-muffled #obby{filter:saturate(.85)}
     </svg></span>
     <span class="b" style="background:var(--purple)">X</span>
   </a>
-  <nav>
+  
+<style id="qtpCss">
+#quests{padding:8px 16px 28px}
+.qhead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.qsub,.qwait,.qdone,.qbonuswait,.qbonusdone{color:var(--ink-soft,#445);font-size:15px}
+.qcard{background:#fff;border:3px solid #1d2340;border-radius:16px;padding:12px 14px;margin:10px 0;box-shadow:3px 3px 0 #1d2340}
+.qcard.ready{border-color:#2ec27e;box-shadow:3px 3px 0 #2ec27e}
+.qcard.claimed{opacity:.82;background:#f3fff6}
+.qtop{display:flex;gap:10px;align-items:flex-start}
+.qem{font-size:28px;line-height:1}
+.qtop b{display:block;font-size:18px}
+.qtop small{display:block;opacity:.8}
+.qbar{height:10px;background:#eee;border-radius:99px;overflow:hidden;margin:8px 0 6px;border:2px solid #1d2340}
+.qbar u{display:block;height:100%;background:#3a86ff;width:0}
+.qcard.ready .qbar u{background:#2ec27e}
+.qcard.claimed .qbar u{background:#8b5cf6}
+.qrow{display:flex;justify-content:flex-end}
+.qoverlay,.troverlay{position:fixed;inset:0;background:rgba(29,35,64,.45);z-index:240;display:none;align-items:center;justify-content:center;padding:16px}
+.qoverlay.show,.troverlay.show{display:flex}
+.qbox,.trbox{position:relative;max-width:560px;width:100%;max-height:90vh;overflow:auto;background:#fff6e8;border:4px solid #1d2340;border-radius:20px;padding:16px 16px 18px;box-shadow:6px 6px 0 #1d2340}
+.qclose,#trClose{position:absolute;top:8px;right:10px;border:0;background:transparent;font-size:22px;cursor:pointer}
+#oQuestBtn,#oTradeBtn{font-size:22px;margin-left:4px}
+.trcols{display:flex;gap:12px;flex-wrap:wrap}
+.trcols>div{flex:1;min-width:200px}
+.trit{display:flex;align-items:center;gap:8px;width:100%;margin:4px 0;padding:8px 10px;border:2px solid #1d2340;border-radius:12px;background:#fff;cursor:pointer;text-align:left}
+.trit.on{background:#e8fff0;border-color:#2ec27e}
+.tre{font-size:22px}
+.trn{flex:1;font-weight:700}
+.trrare{font-size:11px;border-radius:99px;padding:2px 6px;background:#eee}
+.trrare.r0{background:#d9d9d9} .trrare.r1{background:#b8f0c8} .trrare.r2{background:#a8d0ff} .trrare.r3{background:#e0c4ff} .trrare.r4{background:#ffe08a}
+.trempty{opacity:.7;padding:8px}
+.trbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+#trStatus{margin-top:8px;font-weight:700}
+.trask{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:250;display:none;max-width:360px;width:calc(100% - 24px)}
+.trask.show{display:block}
+.trask .mbox{background:#fff;border:4px solid #1d2340;border-radius:18px;padding:16px;box-shadow:6px 6px 0 #1d2340;text-align:center}
+.pybox{position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center}
+.pybox #pyHint{display:inline-block;background:rgba(29,35,64,.82);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:14px}
+#pyAct{position:absolute;right:16px;bottom:96px;z-index:8;display:none;padding:12px 16px;font-size:18px;border:3px solid #1d2340;border-radius:16px;background:#ffd23f;font-weight:800;box-shadow:3px 3px 0 #1d2340}
+#pyAct.show{display:block}
+#pyFlash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:20;transition:opacity .05s linear}
+@media (max-width:700px){ .trcols{flex-direction:column} .qbox,.trbox{padding:12px} #pyAct{bottom:120px} }
+</style>
+<nav>
     <button data-go="home" class="active"><i>🏠</i><span>Home</span></button>
     <button data-go="games"><i>🎮</i><span>Games</span></button>
     <button data-go="avatar"><i>🧍</i><span>Avatar</span></button>
     <button data-go="shop"><i>🛍️</i><span>Shop</span></button>
     <button data-go="friends"><i>👫</i><span>Friends</span></button>
     <button data-go="achievements"><i>🏆</i><span>Achievements</span></button>
+    <button data-go="quests"><i>📜</i><span>Quests</span></button>
   </nav>
   <div class="spacer"></div>
   <button class="coinchip" id="coinBtn" title="Rublox Coins (pretend money!) - click for your daily bonus"><span class="coin"></span><span id="coinNum">500</span><span id="bonusDot">🎁</span></button>
@@ -1390,6 +1434,7 @@ body.lh-muffled #obby{filter:saturate(.85)}
       <button class="big" data-go="games">🎮 See the Games</button>
       <button class="big green" data-go="avatar" style="margin-left:8px">🧍 Make my Avatar</button>
       <button class="big" data-go="achievements" style="margin-left:8px">🏆 Achievements</button>
+      <button class="big" data-go="quests" style="margin-left:8px">📜 Daily Quests</button>
       <button class="big" data-go="friends" style="margin-left:8px">👫 Friends</button>
     </div>
   </section>
@@ -1506,6 +1551,17 @@ body.lh-muffled #obby{filter:saturate(.85)}
     </div>
   </section>
 
+
+  <section id="quests">
+    <div class="qhead">
+      <h2>📜 Daily Quests</h2>
+      <div class="qstreak" id="qStreak">🔥 0 day streak</div>
+    </div>
+    <p class="qsub">Three new quests every day. Finish them for coins! They reset at midnight on your device.</p>
+    <div id="qList"></div>
+    <div id="qBonusRow"></div>
+  </section>
+
   <section id="achievements">
     <div class="achhead">
       <h2>🏆 Achievements</h2>
@@ -1517,6 +1573,36 @@ body.lh-muffled #obby{filter:saturate(.85)}
   </section>
   <footer>Made with 💙 for friends &amp; family · Rublox</footer>
 </main>
+  <div class="qoverlay" id="qPanel"><div class="mbox qbox">
+    <button type="button" class="qclose" id="qClose" aria-label="Close quests">✕</button>
+    <h2>📜 Daily Quests</h2>
+    <div class="qstreak" id="qStreakG">🔥 0 day streak</div>
+    <p class="qsub">Three new quests every day. They reset at midnight on your device.</p>
+    <div id="qListG"></div>
+    <div id="qBonusRowG"></div>
+  </div></div>
+  <div class="troverlay" id="trPanel"><div class="mbox trbox">
+    <button type="button" id="trClose" aria-label="Close trade">✕</button>
+    <h2 id="trTitle">Trade</h2>
+    <div class="trcols">
+      <div><h3>Your bag</h3><div id="trBag"></div></div>
+      <div>
+        <h3>Your offer</h3><div id="trMine"></div>
+        <h3>Their offer</h3><div id="trTheirs"></div>
+      </div>
+    </div>
+    <div id="trStatus"></div>
+    <div class="trbtns">
+      <button type="button" class="big" id="trReady">Ready</button>
+      <button type="button" class="big gray" id="trConfirm">Confirm</button>
+      <button type="button" class="big red" id="trCancel">Cancel</button>
+    </div>
+  </div></div>
+  <div class="trask" id="trAsk"><div class="mbox">
+    <div id="trAskMsg">A friend wants to trade!</div>
+    <button type="button" class="big green" id="trAskYes">Accept</button>
+    <button type="button" class="big gray" id="trAskNo">No thanks</button>
+  </div></div>
 
 <div id="achToast" class="achtoast" role="status" aria-live="polite" aria-hidden="true"></div>
 
@@ -1727,6 +1813,8 @@ body.lh-muffled #obby{filter:saturate(.85)}
   </div>
   <div class="ostam full" id="oStam" style="display:none" title="Run energy"><i>🏃</i><b><u id="oStamF"></u></b></div>
   <button class="oemo" id="oEmoBtn" title="Emotes (keys 1-8)" aria-label="Emotes">😀</button>
+  <button class="oemo" id="oQuestBtn" title="Daily Quests" aria-label="Daily Quests">📜</button>
+  <button class="oemo" id="oTradeBtn" title="Trade with a friend" aria-label="Trade" style="display:none">🤝</button>
   <div class="oemos" id="oEmos"></div>
   <div class="obuild" id="oBuild">
     <div class="opal" id="oPal"></div>
@@ -2160,6 +2248,9 @@ body.lh-muffled #obby{filter:saturate(.85)}
     <button class="big green" id="oRetry">🔁 Try again</button>
     <button class="big blue" id="oHome2" style="margin-left:6px">🏠 Home</button>
   </div></div>
+
+  <div id="pyBox" class="pybox" style="display:none"><div id="pyHint">Party Pad</div></div>
+  <button type="button" class="oact" id="pyAct">Sit</button>
   <div class="opanel" id="oPausePanel"><div class="mbox">
     <span class="emoji">⏸️</span><h2 id="oPauseH">Paused</h2>
     <div class="stats" id="oPauseSub">Take a break! 😊</div>
@@ -2200,6 +2291,8 @@ body.lh-muffled #obby{filter:saturate(.85)}
     <button class="big" id="dhReplay" style="display:none;margin-bottom:8px">🎬 Replay intro</button>
     <button class="big red" id="dhResetBtn" style="display:none;margin-bottom:8px">🏡 Reset Dream House</button>
     <button class="big green" id="oResume">▶ Keep playing</button>
+    <button class="big" id="qPauseBtn" style="margin-top:8px">📜 Daily Quests</button>
+    <button class="big" id="trPauseBtn" style="margin-top:8px">🤝 Trade with a friend</button>
     <button class="big gray" id="oExit2" style="margin-left:6px">🏠 Home</button>
   </div></div>
   <div class="opanel" id="oSlots"><div class="mbox">
@@ -2231,7 +2324,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-18';
+const BUILD = '2026.11.16-19';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3369,6 +3462,7 @@ try {
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
 const GAMES = [
+  {id:'party', name:'Party Pad', emoji:'🎉', tag:'A cozy hangout for friends: dance, sit, snap a photo, kick the ball!', draw: drawParty, playable: true, isNew: true},
   {id:'lantern', name:'Lantern Big Top', emoji:'🏮', tag:'Stay close and stay bright under a colorful circus tent!', draw: drawLantern, playable: true, isNew: true},
   {id:'dreamhouse', name:'Dream House Builders', emoji:'🏡', tag:'Re-build your house with bricks, paint, furniture and upgrades!', draw: drawDreamHouse, playable: true, isNew: true},
   {id:'pethotel', name:'Pet Hotel', emoji:'🏨', tag:'Check in guest pets, feed, bathe, play, tuck them in, then check out for coins!', draw: drawPetHotel, playable: true, isNew: true},
@@ -3465,6 +3559,24 @@ function drawDance(ctx){
   ctx.font = '26px sans-serif'; ['←','↓','↑','→'].forEach((a, i) => { ctx.fillStyle = '#fff'; ctx.fillText(a, 70 + i * 50, 80); });
   guy(ctx, 160, 160, 12, '#ff6fb5'); ctx.font = '22px sans-serif'; ctx.fillText('💃', 40, 60); ctx.fillText('🎵', 260, 60);
 }
+function drawParty(ctx){
+    if (!ctx) return;
+    if (typeof sky === 'function') sky(ctx, '#f6c58a', '#ffe9c4');
+    else { ctx.fillStyle = '#f6c58a'; ctx.fillRect(0, 0, 320, 200); }
+    ctx.fillStyle = '#d7b48a'; ctx.fillRect(0, 150, 320, 50);
+    ctx.fillStyle = '#6d4c3d'; ctx.fillRect(20, 40, 280, 16);
+    ctx.fillStyle = '#c9a06a'; ctx.fillRect(24, 56, 272, 100);
+    // dance floor
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++){
+      ctx.fillStyle = ((r + c) % 2) ? '#ff6fb5' : '#3a86ff';
+      ctx.fillRect(112 + c * 24, 88 + r * 16, 24, 16);
+    }
+    ctx.fillStyle = '#8b5a3c'; ctx.fillRect(36, 120, 50, 22); ctx.fillRect(234, 120, 50, 22);
+    if (typeof guy === 'function'){ guy(ctx, 160, 148, 12, '#ff6fb5'); guy(ctx, 128, 148, 12, '#3a86ff'); }
+    ctx.font = '22px sans-serif'; ctx.fillText('🎉', 40, 70); ctx.fillText('📸', 260, 70); ctx.fillText('⚽', 250, 160);
+  }
+
+
 function drawLantern(ctx){
   if (!ctx) return;
   if (typeof sky === 'function') sky(ctx, '#7ec8ff', '#ffd9f0');
@@ -4074,7 +4186,8 @@ function confetti(){
     {id: 'creative', name: 'Creative', emoji: '🎨'},
     {id: 'friends', name: 'Friends', emoji: '👫'},
     {id: 'lantern', name: 'Lantern Big Top', emoji: '🏮'},
-    {id: 'collection', name: 'Collection', emoji: '🪙'}
+    {id: 'collection', name: 'Collection', emoji: '🪙'},
+    {id: 'quests', name: 'Daily Quests', emoji: '📜'},
   ];
   // Known Adopt-a-Pet rarities so backfill works even before PET_KINDS is in scope.
   const ACH_PET_R = {mouse:0,cat:0,dog:0,bunny:0,hamster:0,duck:1,frog:1,turtle:1,hedgehog:1,fox:2,penguin:2,owl:2,koala:2,pie:2,redpanda:3,snowleo:3,phoenix:3,unicorn:4,dragon:4};
@@ -4178,6 +4291,12 @@ function confetti(){
     {id:'lh-tickets', cat:'lantern', emoji:'🎟️', name:'Ticket Winner', desc:'Win prize tickets at a carnival game.', coins:10, prove:s => !!(s.notes && s.notes['lh:tickets'])},
     {id:'lh-prize', cat:'lantern', emoji:'🧸', name:'Booth Bargain', desc:'Trade tickets for a prize at the booth.', coins:10, prove:s => !!(s.notes && s.notes['lh:prize'])},
     {id:'lh-decor', cat:'lantern', emoji:'🛋️', name:'Home Sweet Wagon', desc:'Decorate your wagon with a new item or a fresh coat of paint.', coins:10, prove:s => !!(s.notes && s.notes['lh:decor'])},
+    {id:'quest-first', cat:'quests', emoji:'📜', name:'Quest Starter', desc:'Claim your first daily quest.', coins:10, prove:s => !!(s.notes && s.notes['quest-first']) || !!(s.quests && (s.quests.totalClaimed|0) >= 1)},
+    {id:'quest-bonus', cat:'quests', emoji:'🎁', name:'Triple Treat', desc:'Finish all 3 daily quests in one day.', coins:15, prove:s => !!(s.notes && s.notes['quest-bonus']) || !!(s.quests && s.quests.bonusClaimed)},
+    {id:'quest-streak7', cat:'quests', emoji:'🔥', name:'Week of Quests', desc:'Finish all 3 daily quests 7 days in a row.', coins:30, prove:s => !!(s.notes && s.notes['quest-streak7']) || !!(s.quests && (s.quests.streak|0) >= 7)},
+    {id:'quest-ten', cat:'quests', emoji:'⭐', name:'Quest Fan', desc:'Claim 10 daily quests.', coins:20, prove:s => !!(s.quests && (s.quests.totalClaimed|0) >= 10)},
+    {id:'trade-first', cat:'friends', emoji:'🤝', name:'Fair Trade', desc:'Finish a trade with a friend in the same room.', coins:15, prove:s => !!(s.notes && s.notes['trade-done'])},
+    {id:'party-first', cat:'friends', emoji:'🎉', name:'Party Starter', desc:'Visit the Party Pad.', coins:8, prove:s => !!(s.notes && (s.notes['play:party'] || s.notes['party-first']))},
                 // Collection
     {id:'welcome', cat:'collection', emoji:'👋', name:'Hello, Friend', desc:'Pick a player name and join Rublox.', coins:5, prove:s => !!(s.player && s.player.name)},
     {id:'first-game', cat:'collection', emoji:'🎮', name:'Let\'s Play', desc:'Start any Rublox game.', coins:5, prove:s => !!(s.notes && s.notes.play) || !!(s.recent && s.recent.length >= 1)},
@@ -4303,6 +4422,7 @@ function confetti(){
       hotel: L('rubloxPetHotel', null),
       race: L('rubloxRace', null),
       splash: L('rubloxSplash2', null),
+      quests: L('rubloxQuests', null),
       bakery: L('rubloxBakery', null),
       photo: L('rubloxPhotoStudio', null),
       photos: L('rubloxPhotos', []),
@@ -7493,6 +7613,482 @@ if (!player) askName();
 </script>
 <script id="obby-game">
 /* ===================== OBBY RUSH (3D obstacle course) ===================== */
+
+/* Pure Daily Quests rules — safe to require() in tests and to load in the page. */
+(function (root) {
+  'use strict';
+
+  const Q_KEY = 'rubloxQuests';
+  const Q_VER = 1;
+  const Q_COUNT = 3;
+  const Q_BONUS = 25;
+
+  const Q_POOL = [
+    {id: 'tower-win', ev: 'tower-win', title: 'Top of the Tower', desc: 'Win a Tower of Doom climb.', emoji: '🗼', goal: 1, reward: 30},
+    {id: 'lh-rides', ev: 'lh-ride', title: 'Fairground Fun', desc: 'Ride 2 rides at Lantern Big Top.', emoji: '🎠', goal: 2, reward: 20},
+    {id: 'pet-feed', ev: 'pet-feed', title: 'Snack Time', desc: 'Feed one of your pets.', emoji: '🍖', goal: 1, reward: 15},
+    {id: 'pet-adopt', ev: 'pet-adopt', title: 'New Pal', desc: 'Adopt a new pet.', emoji: '🐾', goal: 1, reward: 25},
+    {id: 'splash-play', ev: 'play:splash', title: 'Stay Dry', desc: "Play a Don't Splash! round.", emoji: '🌊', goal: 1, reward: 20},
+    {id: 'dh-furn', ev: 'dh-furn', title: 'Interior Designer', desc: 'Place 5 furniture pieces in Dream House.', emoji: '🛋️', goal: 5, reward: 25},
+    {id: 'tag-play', ev: 'play:tag', title: 'Tag In', desc: 'Play a game of Block Tag.', emoji: '🏷️', goal: 1, reward: 15},
+    {id: 'wp-play', ev: 'play:waterpark', title: 'Wheeee!', desc: 'Play a round at Splash Summit.', emoji: '🛝', goal: 1, reward: 15},
+    {id: 'obby-win', ev: 'obby-win', title: 'Obby Finish', desc: 'Finish an Obby Rush level.', emoji: '🏁', goal: 1, reward: 20},
+    {id: 'dance-play', ev: 'play:dance', title: 'Hit the Beat', desc: 'Play Bossa Beat Dance Battle.', emoji: '💃', goal: 1, reward: 15}
+  ];
+
+  function qToday(now){
+    const d = now != null ? new Date(now) : new Date();
+    const y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate();
+    return y + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+  }
+
+  function qDayAdd(day, delta){
+    const p = String(day || '').split('-').map(Number);
+    if (p.length !== 3 || !p[0]) return day;
+    const d = new Date(p[0], p[1] - 1, p[2]);
+    d.setDate(d.getDate() + (delta | 0));
+    return qToday(d);
+  }
+
+  function qSeed(str){
+    let x = 0;
+    const s = String(str || '');
+    for (let i = 0; i < s.length; i++) x = ((x * 1103515245) + s.charCodeAt(i) + 12345) >>> 0;
+    return () => { x = (x * 1664525 + 1013904223) >>> 0; return x / 4294967296; };
+  }
+
+  function qPickForDay(day){
+    const rnd = qSeed('quests:' + day);
+    const pool = Q_POOL.slice();
+    const out = [];
+    while (out.length < Q_COUNT && pool.length){
+      const i = Math.floor(rnd() * pool.length);
+      out.push(pool.splice(i, 1)[0]);
+    }
+    return out.map(src => ({
+      id: src.id, ev: src.ev, title: src.title, desc: src.desc, emoji: src.emoji,
+      goal: src.goal, reward: src.reward, progress: 0, claimed: false
+    }));
+  }
+
+  function qFresh(day){
+    return {
+      ver: Q_VER, day: day, quests: qPickForDay(day), bonusClaimed: false,
+      streak: 0, lastAllDay: '', totalClaimed: 0
+    };
+  }
+
+  function qLoad(raw, now){
+    const today = qToday(now);
+    const o = raw && typeof raw === 'object' ? raw : null;
+    if (!o) return qFresh(today);
+    const day = typeof o.day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(o.day) ? o.day : today;
+    let streak = Math.max(0, o.streak | 0);
+    const lastAllDay = typeof o.lastAllDay === 'string' ? o.lastAllDay : '';
+    const totalClaimed = Math.max(0, o.totalClaimed | 0);
+    if (day === today){
+      const quests = (Array.isArray(o.quests) ? o.quests : []).map(q => {
+        const src = Q_POOL.find(p => p.id === q.id);
+        if (!src) return null;
+        return {
+          id: src.id, ev: src.ev, title: src.title, desc: src.desc, emoji: src.emoji,
+          goal: src.goal, reward: src.reward,
+          progress: Math.max(0, Math.min(src.goal, q.progress | 0)),
+          claimed: !!q.claimed
+        };
+      }).filter(Boolean);
+      if (quests.length !== Q_COUNT) {
+        const fresh = qFresh(today);
+        fresh.streak = streak; fresh.lastAllDay = lastAllDay; fresh.totalClaimed = totalClaimed;
+        return fresh;
+      }
+      return {ver: Q_VER, day: today, quests, bonusClaimed: !!o.bonusClaimed, streak, lastAllDay, totalClaimed};
+    }
+    // New local day: keep streak only if yesterday was fully cleared.
+    if (lastAllDay !== qDayAdd(today, -1)) streak = 0;
+    const next = qFresh(today);
+    next.streak = streak;
+    next.lastAllDay = lastAllDay;
+    next.totalClaimed = totalClaimed;
+    return next;
+  }
+
+  function qNote(state, ev, n, now){
+    state = qLoad(state, now);
+    const evs = Array.isArray(ev) ? ev : [ev];
+    const add = Math.max(1, n | 0);
+    let changed = false;
+    for (const q of state.quests){
+      if (q.claimed) continue;
+      if (evs.indexOf(q.ev) < 0 && evs.indexOf(q.id) < 0) continue;
+      const next = Math.min(q.goal, (q.progress | 0) + add);
+      if (next !== q.progress){ q.progress = next; changed = true; }
+    }
+    return {state, changed};
+  }
+
+  function qClaim(state, id, now){
+    state = qLoad(state, now);
+    const q = state.quests.find(x => x.id === id);
+    if (!q) return {ok: false, why: 'missing', state, coins: 0};
+    if (q.claimed) return {ok: false, why: 'claimed', state, coins: 0};
+    if ((q.progress | 0) < q.goal) return {ok: false, why: 'progress', state, coins: 0};
+    q.claimed = true;
+    q.progress = q.goal;
+    state.totalClaimed = (state.totalClaimed | 0) + 1;
+    const all = state.quests.every(x => x.claimed);
+    if (all){
+      const today = state.day;
+      if (state.lastAllDay !== today){
+        const yest = qDayAdd(today, -1);
+        state.streak = (state.lastAllDay === yest) ? (state.streak | 0) + 1 : 1;
+        state.lastAllDay = today;
+      }
+    }
+    return {ok: true, why: 'ok', state, coins: q.reward, all, first: state.totalClaimed === 1, streak: state.streak};
+  }
+
+  function qClaimBonus(state, now){
+    state = qLoad(state, now);
+    if (state.bonusClaimed) return {ok: false, why: 'claimed', state, coins: 0};
+    if (!state.quests.every(x => x.claimed)) return {ok: false, why: 'incomplete', state, coins: 0};
+    state.bonusClaimed = true;
+    return {ok: true, why: 'ok', state, coins: Q_BONUS, streak: state.streak};
+  }
+
+  function qView(state, now){
+    state = qLoad(state, now);
+    const done = state.quests.filter(q => q.claimed).length;
+    return {
+      day: state.day, quests: state.quests.map(q => Object.assign({}, q)),
+      bonusClaimed: !!state.bonusClaimed, bonus: Q_BONUS, streak: state.streak | 0,
+      totalClaimed: state.totalClaimed | 0, done, all: done === Q_COUNT,
+      canBonus: done === Q_COUNT && !state.bonusClaimed
+    };
+  }
+
+  const api = {
+    Q_KEY, Q_VER, Q_COUNT, Q_BONUS, Q_POOL,
+    qToday, qDayAdd, qSeed, qPickForDay, qFresh, qLoad, qNote, qClaim, qClaimBonus, qView
+  };
+  root.QRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+/* Pure trade rules — inventory checks and an atomic swap, no networking. */
+(function (root) {
+  'use strict';
+
+  const TR_KEY = 'rubloxTrades';
+  const TR_VER = 1;
+  const TR_PET_MAX = 6;
+  const RARITY_NAMES = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
+
+  function trRarityName(r){
+    const i = Math.max(0, Math.min(4, r | 0));
+    return RARITY_NAMES[i];
+  }
+
+  function trPetKey(p){
+    if (!p) return '';
+    if (p.key) return String(p.key);
+    return String(p.b || 0) + ':' + String(p.k || '') + ':' + String(p.n || '') + ':' + String(p.xp || 0);
+  }
+
+  function trClonePet(p){
+    if (!p || !p.k) return null;
+    return {
+      k: String(p.k), c: Math.max(0, Math.min(2, p.c | 0)), n: String(p.n || 'Buddy').slice(0, 16),
+      xp: Math.max(0, +p.xp || 0),
+      f: p.f == null ? 80 : +p.f, u: p.u == null ? 80 : +p.u, e: p.e == null ? 80 : +p.e,
+      b: +p.b || Date.now(), acc: (p.acc && typeof p.acc === 'object') ? Object.assign({}, p.acc) : {},
+      tr: p.tr, g: (p.g === 'b' || p.g === 'g') ? p.g : 'g',
+      key: trPetKey(p)
+    };
+  }
+
+  function trInvClean(inv){
+    const o = {};
+    if (inv && typeof inv === 'object') for (const k in inv) if (inv[k]) o[String(k)] = 1;
+    return o;
+  }
+
+  function trNormalizeInv(raw){
+    const o = raw && typeof raw === 'object' ? raw : {};
+    const pets = (Array.isArray(o.pets) ? o.pets : []).map(trClonePet).filter(Boolean);
+    return {pets, inv: trInvClean(o.inv), a: Math.max(0, o.a | 0), owned: trInvClean(o.owned)};
+  }
+
+  // Default/free avatar pieces and "none" slots cannot be traded.
+  const TR_BLOCKED_ITEMS = {none: 1, smile: 1, default: 1, classic: 1};
+
+  function trTradableAcc(id, catalog){
+    if (!id || TR_BLOCKED_ITEMS[id]) return false;
+    if (catalog && catalog[id]) {
+      const it = catalog[id];
+      if (it.price === 0 || it.free) return false;
+    }
+    return true;
+  }
+
+  function trOfferItem(it){
+    if (!it || typeof it !== 'object') return null;
+    if (it.kind === 'pet'){
+      const pet = trClonePet(it.pet || it);
+      if (!pet) return null;
+      return {kind: 'pet', key: pet.key, k: pet.k, n: pet.n, c: pet.c, xp: pet.xp, r: it.r | 0, emoji: it.emoji || '', pet};
+    }
+    if (it.kind === 'acc' || it.kind === 'item'){
+      const id = String(it.id || '');
+      if (!id || !trTradableAcc(id, it.catalog)) return null;
+      return {kind: 'acc', id, n: String(it.n || id).slice(0, 24), e: String(it.e || '🎁').slice(0, 4), r: it.r | 0};
+    }
+    return null;
+  }
+
+  function trHasItem(inv, item){
+    inv = trNormalizeInv(inv);
+    if (item.kind === 'pet'){
+      return inv.pets.some(p => trPetKey(p) === item.key);
+    }
+    if (item.kind === 'acc'){
+      return !!(inv.inv[item.id] || (inv.owned && inv.owned[item.id]));
+    }
+    return false;
+  }
+
+  function trCleanOffer(inv, offer, catalog){
+    inv = trNormalizeInv(inv);
+    const seen = {}, out = [];
+    (Array.isArray(offer) ? offer : []).forEach(raw => {
+      const it = trOfferItem(raw);
+      if (!it) return;
+      const sig = it.kind === 'pet' ? 'pet:' + it.key : 'acc:' + it.id;
+      if (seen[sig]) return;
+      if (!trHasItem(inv, it)) return;
+      if (it.kind === 'acc' && !trTradableAcc(it.id, catalog)) return;
+      seen[sig] = 1;
+      out.push(it);
+    });
+    return out;
+  }
+
+  function trCanReceive(inv, incoming){
+    inv = trNormalizeInv(inv);
+    const petsIn = (incoming || []).filter(i => i.kind === 'pet').length;
+    return inv.pets.length + petsIn <= TR_PET_MAX;
+  }
+
+  function trApplyGive(inv, offer){
+    inv = trNormalizeInv(inv);
+    const keys = new Set((offer || []).filter(i => i.kind === 'pet').map(i => i.key));
+    const accs = new Set((offer || []).filter(i => i.kind === 'acc').map(i => i.id));
+    const pets = inv.pets.filter(p => !keys.has(trPetKey(p))).map(p => {
+      const acc = Object.assign({}, p.acc || {});
+      let changed = false;
+      for (const sl in acc) if (accs.has(acc[sl])) { delete acc[sl]; changed = true; }
+      return changed ? Object.assign({}, p, {acc}) : p;
+    });
+    const bag = trInvClean(inv.inv);
+    accs.forEach(id => { delete bag[id]; });
+    let a = inv.a | 0;
+    if (a >= pets.length) a = Math.max(0, pets.length - 1);
+    return {pets, inv: bag, a, owned: trInvClean(inv.owned)};
+  }
+
+  function trApplyRecv(inv, offer){
+    inv = trNormalizeInv(inv);
+    const pets = inv.pets.slice();
+    const bag = trInvClean(inv.inv);
+    (offer || []).forEach(it => {
+      if (it.kind === 'pet' && it.pet){
+        const p = trClonePet(it.pet);
+        p.b = Date.now() + pets.length;
+        p.key = trPetKey(p);
+        pets.push(p);
+      }
+      if (it.kind === 'acc' && it.id) bag[it.id] = 1;
+    });
+    return {pets, inv: bag, a: inv.a | 0, owned: trInvClean(inv.owned)};
+  }
+
+  function trSwap(invA, offerA, invB, offerB, catalog){
+    const aGive = trCleanOffer(invA, offerA, catalog);
+    const bGive = trCleanOffer(invB, offerB, catalog);
+    if (!aGive.length && !bGive.length) return {ok: false, why: 'empty'};
+    // Re-check live ownership
+    for (const it of aGive) if (!trHasItem(invA, it)) return {ok: false, why: 'missing-a'};
+    for (const it of bGive) if (!trHasItem(invB, it)) return {ok: false, why: 'missing-b'};
+    const aMid = trApplyGive(invA, aGive);
+    const bMid = trApplyGive(invB, bGive);
+    if (!trCanReceive(aMid, bGive)) return {ok: false, why: 'full-a'};
+    if (!trCanReceive(bMid, aGive)) return {ok: false, why: 'full-b'};
+    const aNext = trApplyRecv(aMid, bGive);
+    const bNext = trApplyRecv(bMid, aGive);
+    if (aNext.pets.length > TR_PET_MAX) return {ok: false, why: 'full-a'};
+    if (bNext.pets.length > TR_PET_MAX) return {ok: false, why: 'full-b'};
+    return {ok: true, why: 'ok', a: aNext, b: bNext, aGive, bGive};
+  }
+
+  // Session state machine. Any offer change clears Ready and Confirm.
+  function trNewSession(id, aUid, bUid){
+    return {
+      id: String(id || ''), ph: 'open', a: String(aUid), b: String(bUid),
+      offerA: [], offerB: [], readyA: false, readyB: false, confA: false, confB: false
+    };
+  }
+
+  function trSetOffer(sess, uid, offer, inv, catalog){
+    if (!sess || sess.ph === 'done' || sess.ph === 'cancel') return {ok: false, why: sess ? sess.ph : 'none', sess};
+    const clean = trCleanOffer(inv, offer, catalog);
+    if (uid === sess.a) sess.offerA = clean;
+    else if (uid === sess.b) sess.offerB = clean;
+    else return {ok: false, why: 'who', sess};
+    sess.readyA = sess.readyB = sess.confA = sess.confB = false;
+    sess.ph = 'open';
+    return {ok: true, why: 'ok', sess};
+  }
+
+  function trSetReady(sess, uid, on){
+    if (!sess || sess.ph === 'done' || sess.ph === 'cancel') return {ok: false, why: 'closed', sess};
+    const want = !!on;
+    if (uid === sess.a) sess.readyA = want;
+    else if (uid === sess.b) sess.readyB = want;
+    else return {ok: false, why: 'who', sess};
+    sess.confA = sess.confB = false;
+    sess.ph = (sess.readyA && sess.readyB) ? 'ready' : 'open';
+    return {ok: true, why: 'ok', sess};
+  }
+
+  function trSetConfirm(sess, uid){
+    if (!sess || sess.ph === 'done' || sess.ph === 'cancel') return {ok: false, why: 'closed', sess};
+    if (!(sess.readyA && sess.readyB)) return {ok: false, why: 'not-ready', sess};
+    if (uid === sess.a) sess.confA = true;
+    else if (uid === sess.b) sess.confB = true;
+    else return {ok: false, why: 'who', sess};
+    sess.ph = (sess.confA && sess.confB) ? 'confirm' : 'ready';
+    return {ok: true, why: 'ok', sess, both: !!(sess.confA && sess.confB)};
+  }
+
+  function trCancel(sess, uid){
+    if (!sess) return {ok: true, why: 'ok', sess: {ph: 'cancel'}};
+    sess.ph = 'cancel';
+    sess.readyA = sess.readyB = sess.confA = sess.confB = false;
+    return {ok: true, why: 'ok', sess, by: uid || null};
+  }
+
+  function trCommit(sess, invA, invB, catalog){
+    if (!sess || sess.ph !== 'confirm' || !(sess.confA && sess.confB)) return {ok: false, why: 'not-confirm', sess};
+    const sw = trSwap(invA, sess.offerA, invB, sess.offerB, catalog);
+    if (!sw.ok){ sess.readyA = sess.readyB = sess.confA = sess.confB = false; sess.ph = 'open'; return {ok: false, why: sw.why, sess}; }
+    sess.ph = 'done';
+    return {ok: true, why: 'ok', sess, a: sw.a, b: sw.b, aGive: sw.aGive, bGive: sw.bGive};
+  }
+
+  function trHistEntry(now, otherName, gave, got){
+    return {
+      t: now != null ? +now : Date.now(),
+      with: String(otherName || 'Friend').slice(0, 16),
+      gave: (gave || []).map(i => i.kind === 'pet' ? (i.n || 'Pet') : (i.n || i.id)),
+      got: (got || []).map(i => i.kind === 'pet' ? (i.n || 'Pet') : (i.n || i.id))
+    };
+  }
+
+  function trLoadHist(raw){
+    const o = raw && typeof raw === 'object' ? raw : {};
+    const list = Array.isArray(o.list) ? o.list : [];
+    return {ver: TR_VER, list: list.slice(0, 20).map(e => ({
+      t: +e.t || 0, with: String(e.with || 'Friend').slice(0, 16),
+      gave: Array.isArray(e.gave) ? e.gave.slice(0, 8).map(String) : [],
+      got: Array.isArray(e.got) ? e.got.slice(0, 8).map(String) : []
+    }))};
+  }
+
+  const api = {
+    TR_KEY, TR_VER, TR_PET_MAX, RARITY_NAMES, TR_BLOCKED_ITEMS,
+    trRarityName, trPetKey, trClonePet, trNormalizeInv, trTradableAcc, trOfferItem,
+    trHasItem, trCleanOffer, trCanReceive, trApplyGive, trApplyRecv, trSwap,
+    trNewSession, trSetOffer, trSetReady, trSetConfirm, trCancel, trCommit,
+    trHistEntry, trLoadHist
+  };
+  root.TRRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+/* Pure Party Pad layout + interact helpers. No rendering, no networking. */
+(function (root) {
+  'use strict';
+
+  const PY = {
+    id: 'party',
+    name: 'Party Pad',
+    emoji: '🎉',
+    floor: {x: 0, z: 0, w: 36, d: 28, top: 0, h: 1.2, color: '#d7b48a'},
+    wallsH: 7.2,
+    spawn: {x: 0, y: 0.5, z: 8, face: Math.PI},
+    dance: {x: 0, z: -1, w: 8, d: 8, r: 4.2},
+    sofas: [
+      {id: 'sofa-e', x: 12.5, z: 2, w: 3.6, d: 1.4, face: -Math.PI / 2, seat: [11.4, 2]},
+      {id: 'sofa-w', x: -12.5, z: 2, w: 3.6, d: 1.4, face: Math.PI / 2, seat: [-11.4, 2]},
+      {id: 'sofa-s', x: -6, z: 10.5, w: 3.6, d: 1.4, face: Math.PI, seat: [-6, 9.4]}
+    ],
+    photo: {x: 0, z: -11.2, r: 2.4},
+    ball: {x: 8, z: 8, r: 0.55, bounce: 0.62, friction: 0.82, max: 16, wall: 16.5},
+    sitRange: 1.85,
+    actRange: 2.2,
+    kickRange: 1.65
+  };
+
+  function pyOnDance(x, z){
+    return Math.abs(x - PY.dance.x) <= PY.dance.w / 2 && Math.abs(z - PY.dance.z) <= PY.dance.d / 2;
+  }
+
+  function pyNearPhoto(x, z){
+    return Math.hypot(x - PY.photo.x, z - PY.photo.z) <= PY.photo.r;
+  }
+
+  function pyNearSofa(x, z){
+    let best = null, bestD = PY.sitRange;
+    for (const s of PY.sofas){
+      const d = Math.hypot(x - s.seat[0], z - s.seat[1]);
+      if (d <= bestD){ bestD = d; best = s; }
+    }
+    return best;
+  }
+
+  function pyKick(ball, px, pz, pvx, pvz){
+    const b = {x: +ball.x, z: +ball.z, vx: +ball.vx || 0, vz: +ball.vz || 0};
+    const dx = b.x - px, dz = b.z - pz;
+    const d = Math.hypot(dx, dz);
+    if (d > PY.kickRange || d < 1e-5) return {hit: false, ball: b};
+    const nx = dx / d, nz = dz / d;
+    const incoming = Math.hypot(pvx || 0, pvz || 0);
+    const speed = Math.max(7, Math.min(PY.ball.max, incoming * 2.1 + 6));
+    b.vx = nx * speed; b.vz = nz * speed;
+    b.x += nx * 0.2; b.z += nz * 0.2;
+    return {hit: true, ball: b};
+  }
+
+  function pyBallStep(ball, dt){
+    const b = {x: +ball.x, z: +ball.z, vx: +ball.vx || 0, vz: +ball.vz || 0};
+    const wall = PY.ball.wall, bounce = PY.ball.bounce, fr = Math.pow(PY.ball.friction, Math.max(0, dt) * 4);
+    b.x += b.vx * dt; b.z += b.vz * dt;
+    b.vx *= fr; b.vz *= fr;
+    if (Math.hypot(b.vx, b.vz) < 0.15){ b.vx = 0; b.vz = 0; }
+    if (b.x > wall){ b.x = wall; b.vx = -Math.abs(b.vx) * bounce; }
+    if (b.x < -wall){ b.x = -wall; b.vx = Math.abs(b.vx) * bounce; }
+    if (b.z > wall * 0.8){ b.z = wall * 0.8; b.vz = -Math.abs(b.vz) * bounce; }
+    if (b.z < -wall * 0.75){ b.z = -wall * 0.75; b.vz = Math.abs(b.vz) * bounce; }
+    return b;
+  }
+
+  function pyNoNpcs(){ return []; }
+
+  const api = {PY, pyOnDance, pyNearPhoto, pyNearSofa, pyKick, pyBallStep, pyNoNpcs};
+  root.PYRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
 const Obby = (() => {
   const COIN_VALUE = 5, FINISH_BONUS = 50, R = 0.45, H = 2.8, GRAV = 45, JUMP = 16, SPEED = 10, PAD = 27;
   function bodyH(){ return (typeof mode !== 'undefined' && mode === 'dreamhouse' && typeof dhPlayerHeight === 'function') ? dhPlayerHeight() : H; }
@@ -8280,14 +8876,14 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
-    if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; py = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
+    if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
     else if (mode === 'build') [[-40,22,30,2.5],[45,28,-20,3],[0,35,-60,3.5],[-30,18,-40,2]].forEach(a => cloud(...a));
     else if (mode === 'pets') [[-50,30,-40,3],[40,34,-10,3.5],[-20,38,40,3],[30,30,80,3.5],[-60,32,90,3]].forEach(a => cloud(...a));
-    else if (mode !== 'tag' && mode !== 'obby' && mode !== 'lantern' && mode !== 'dreamhouse') [[-30,10,40,2],[35,18,80,2.5],[-40,25,130,3],[30,8,20,1.5],[25,30,170,2.5],[-25,5,95,1.8],[0,40,230,4]].forEach(a => cloud(...a));
+    else if (mode !== 'tag' && mode !== 'obby' && mode !== 'lantern' && mode !== 'dreamhouse' && mode !== 'party') [[-30,10,40,2],[35,18,80,2.5],[-40,25,130,3],[30,8,20,1.5],[25,30,170,2.5],[-25,5,95,1.8],[0,40,230,4]].forEach(a => cloud(...a));
     // player + shadow
     model = buildPlayer(avatar); scene.add(model.g);
     blob = new THREE.Mesh(new THREE.CircleGeometry(.6, 20), new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: .25, depthWrite: false}));
@@ -9235,7 +9831,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
       ejectXZ(axis, B, b);
     }
   }
@@ -9382,7 +9978,8 @@ const Obby = (() => {
     const f = $('#oFlash'); f.classList.add('on'); requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove('on')));
   }
   function win(){
-    won = true; SND.win(); $('#oWarn').classList.remove('on'); $('#oTip').classList.add('hide'); $('#oSkip').classList.remove('show');
+    won = true; SND.win();
+    try { if (mode === 'obby' && typeof qNoteHook === 'function') qNoteHook('obby-win', 1); } catch (e){} $('#oWarn').classList.remove('on'); $('#oTip').classList.add('hide'); $('#oSkip').classList.remove('show');
     $('#oNext').style.display = $('#oLevels').style.display = 'none';
     if (mode === 'lava'){
       const D = DIFFS[diff]; cam.yaw = Math.PI + 2.2; cam.pitch = .4; cam.dist = 14; setCoins(coins + D.bonus);
@@ -10046,6 +10643,8 @@ const Obby = (() => {
     else if (d.t === 'bye') mpDrop(g, 'left');
     else if (d.t === 'chat'){ try { if (typeof chFromGuest === 'function') chFromGuest(g, d); } catch (e){} }
     else if (d.t === 'lh'){ try { if (typeof lhFromGuest === 'function') lhFromGuest(g, d); } catch (e){} }
+    else if (d.t === 'tr'){ try { if (typeof trFromGuest === 'function') trFromGuest(g, d); } catch (e){} }
+    else if (d.t === 'py'){ try { if (typeof partyFromGuest === 'function') partyFromGuest(g, d); } catch (e){} }
   }
   function mpTagReq(g, d){
     const T = tg;
@@ -10058,7 +10657,7 @@ const Obby = (() => {
     const now = performance.now(), B = bodies[j], pts = [[now, B.x, B.y, B.z], ...((T.hist && T.hist[j]) || [])];
     if (pts.some(q => now - q[0] <= 750 && Math.hypot(q[1] - px, q[3] - pz) < R * 2 + .8 && Math.abs(q[2] - py) < 2.4)) passIt(i, j);
   }
-  function mpDrop(g, why){
+  function mpDrop(g, why){ try { if (typeof trOnDrop === 'function') trOnDrop(g && g.uid); } catch (e){}
     if (!g.ready || !mp.guests.has(g.uid)) { try { g.conn.close(); } catch(e){} return; }
     mp.guests.delete(g.uid); mp.players.delete(g.uid); mpRemoveEnt(g.uid); g.ready = false;
     try { g.conn.close(); } catch(e){}
@@ -10098,6 +10697,8 @@ const Obby = (() => {
       case 'bye': mpHostGone('left'); break;
       case 'chat': try { if (typeof chFromHost === 'function') chFromHost(d); } catch (e){} break;
       case 'lh': try { if (typeof lhFromHost === 'function') lhFromHost(d); } catch (e){} break;
+      case 'tr': try { if (typeof trFromHost === 'function') trFromHost(d); } catch (e){} break;
+      case 'py': try { if (typeof partyFromHost === 'function') partyFromHost(d); } catch (e){} break;
     }
   }
   function mpSnap(d){
@@ -11297,7 +11898,7 @@ const Obby = (() => {
     if (pt.s.tut === 0 && pt.tsub === 1){ tutDone(0, '❤️ Aww, ' + p.d.n + ' loves you!'); }
     else banner('❤️ ' + p.d.n + ' loves that!');
   }
-  function fillBowl(){ if (!pt.pet) return; pt.food.visible = true; pt.pet.act = 'toBowl'; pt.pet.t = 0; banner('🍖 Dinner time, ' + pt.pet.d.n + '!'); SND.coin(); }
+  function fillBowl(){ if (!pt.pet) return; pt.food.visible = true; pt.pet.act = 'toBowl'; pt.pet.t = 0; banner('🍖 Dinner time, ' + pt.pet.d.n + '!'); SND.coin(); } try { if (typeof qNoteHook === 'function') qNoteHook('pet-feed', 1); } catch (e){}
   function napTime(){ if (!pt.pet) return; pt.pet.act = 'toBed'; pt.pet.t = 0; banner('💤 Nap time, ' + pt.pet.d.n + '!'); }
   function leashOnFn(){ if (!pt.pet) return; pt.leashOn = true; pt.walk = {i: 0, dist: 0}; pt.flags.forEach((f, i) => f.visible = i === 0); banner('🦮 Walk time! Follow the 🚩 flags'); SND.jump();
     if (pt.s.tut === 1) pt.tsub = 1; }
@@ -11352,6 +11953,7 @@ const Obby = (() => {
     s.dex.seen[p.k] = s.dex.own[p.k] = 1; s.roll.t.push(pt.adoptI); setPens(); dexCheck();
     spawnPet({x: pen.x, z: 79.5}); hearts(pen.x, 79.5, 6); if (PET_KINDS[p.k].r >= 3){ setTimeout(confetti, 1200); pt.pet.pop = 1; }
     earn(20); SND.win(); confetti(); setTimeout(confetti, 600);
+    try { if (typeof qNoteHook === 'function') qNoteHook('pet-adopt', 1); } catch (e){}
     big((PET_KINDS[p.k].r === 4 ? '🌟 ' : '🎉 ') + p.n + ' the ' + PET_KINDS[p.k].name + ' is your pet!\nDrive home together 🚗', 3.5); pt.bigT = 3.5;
     petsSave();
   }
@@ -16043,6 +16645,7 @@ const Obby = (() => {
     if (over || td.paid) return; over = true; choosing = true; td.ph = 'win'; td.paid = true;
     const bonus = 40 + Math.floor(maxY / 4), p = tdProg(); p.wins++; p.best = Math.max(p.best, Math.floor(maxY)); p.coins += bonus; save(TD_KEY, p);
     setCoins(coins + bonus); td.earned = bonus; runCoins = (runCoins || 0) + bonus; confetti(); SND.win();
+    try { if (typeof qNoteHook === 'function') qNoteHook('tower-win', 1); } catch (e){}
     banner('🏆 Summit! You beat the Tower of Doom! +' + bonus + ' 🪙');
     $('#oWin').classList.add('show');
     $('#oWinStats').innerHTML = '🗼 Tower of Doom cleared!<br>⏱️ ' + fmt(td.t, true) + ' · 📏 ' + Math.floor(maxY) + 'm<br>🎁 +' + bonus + ' Rublox Coins';
@@ -18611,6 +19214,7 @@ const Obby = (() => {
     ride.taken = ride.taken || [];
     ride.taken[ok.seat] = 'me';
     lh.riding = {kind: ride.kind, seat: ok.seat, name: ride.name || ride.kind};
+    try { if (typeof qNoteHook === 'function') qNoteHook('lh-ride', 1); } catch (e){}
     try { lhApplyLocalRide(); } catch (e){}
     try {
       lh.prog = lh.prog || lhProg();
@@ -22761,6 +23365,7 @@ const Obby = (() => {
     dhBindSolids(mesh, true);
     dh.pieces[plot] = dh.pieces[plot] || []; dh.meshes[plot] = dh.meshes[plot] || [];
     dh.pieces[plot].push(rec); dh.meshes[plot].push(mesh);
+    try { if (!quiet && dh && plot === dh.mine && typeof qNoteHook === 'function') qNoteHook('dh-furn', 1); } catch (e){}
     if (rec[0] === 'brick') dhSyncBricks(plot);
     if (typeof dhRefreshFraming === 'function') dhRefreshFraming(plot);
     if (['doorframe','door','winframe','pane'].indexOf(rec[0]) >= 0 && typeof dhRefreshPaint === 'function') dhRefreshPaint(plot);
@@ -26665,7 +27270,7 @@ function dhLayoutHud(){
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party'){ // pull the camera in front of walls so buildings don't block the view
       dist = clipOrbitCam(tx, ty, tz, cam.dist, mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2);
     }
     camera.position.set(tx + Math.sin(cam.yaw) * cp * dist, ty + Math.sin(cam.pitch) * dist, tz + Math.cos(cam.yaw) * cp * dist);
@@ -26872,7 +27477,7 @@ function dhLayoutHud(){
       if (ic) iceCreamUpdate(dt);
       if (ph) petHotelUpdate(dt);
       if (sb) stableUpdate(dt);
-      if (lh) lanternUpdate(dt);
+      if (py) partyUpdate(dt); if (lh) lanternUpdate(dt);
       if (hm) hauntUpdate(dt);
       if (db) danceUpdate(dt);
       if (dh) dreamhouseUpdate(dt);
@@ -27455,7 +28060,7 @@ function dhLayoutHud(){
   }
 
 function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     recordRecentGame(mode);
@@ -27551,6 +28156,10 @@ function start(m = 'obby', d = null){
     if (mode === 'dance') danceEnter();
     $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
+    { const _pyb = $('#pyBox'); if (_pyb) _pyb.style.display = mode === 'party' ? '' : 'none'; const _pya = $('#pyAct'); if (_pya && mode !== 'party') _pya.classList.remove('show'); }
+    $('#obby').classList.toggle('pymode', mode === 'party');
+    if (mode === 'party') partyEnter();
+    try { if (typeof qBind === 'function') qBind(); if (typeof trBind === 'function') trBind(); if (typeof trTickHud === 'function') trTickHud(); } catch (e){}
     $('#hmBox').style.display = mode === 'haunt' ? '' : 'none'; ['#hmAct'].forEach(id => $(id).classList.remove('show'));
     if (mode === 'haunt'){ if (!window.__hmBound){ window.__hmBound = true; $('#hmAct').onclick = () => hmAct(); }
       hauntEnter(); }
@@ -28335,6 +28944,877 @@ function start(m = 'obby', d = null){
     ctx.font = '22px sans-serif'; ctx.fillText(hotelIcon, 40, 50); ctx.fillText(deskIcon, 150, 92);
   }
 
+
+  /* ---------- Daily Quests (t295u) — coins for 3 local-day tasks, new save key only ---------- */
+  let qState = null, qNeedPaint = true;
+  const Q_API = (typeof QRules !== 'undefined' && QRules) ? QRules : (typeof window !== 'undefined' ? window.QRules : null);
+
+  function qNow(){ return (typeof window !== 'undefined' && window.__qNow != null) ? window.__qNow : Date.now(); }
+
+  function qPersist(s){
+    qState = s;
+    try { save(Q_API.Q_KEY, {ver: s.ver, day: s.day, quests: s.quests, bonusClaimed: !!s.bonusClaimed, streak: s.streak | 0, lastAllDay: s.lastAllDay || '', totalClaimed: s.totalClaimed | 0}); } catch (e){}
+    qNeedPaint = true;
+    try { if (typeof achSweep === 'function') achSweep({silent: true, pay: true, source: 'quests'}); } catch (e){}
+    return s;
+  }
+
+  function qEnsure(){
+    if (!Q_API) return null;
+    const raw = (typeof load === 'function') ? load(Q_API.Q_KEY, null) : null;
+    const s = Q_API.qLoad(qState || raw, qNow());
+    if (!qState || s.day !== (qState && qState.day) || JSON.stringify(s.quests) !== JSON.stringify(qState.quests)) qPersist(s);
+    else qState = s;
+    return qState;
+  }
+
+  function qNoteHook(ev, n){
+    if (!Q_API || !ev) return;
+    try {
+      const s = qEnsure();
+      if (!s) return;
+      const r = Q_API.qNote(s, ev, n, qNow());
+      if (r.changed) qPersist(r.state);
+    } catch (e){}
+  }
+
+  function qNoteEv(ev, data){
+    if (!ev) return;
+    const evs = [String(ev)];
+    if (ev === 'play' && data && data.mode) evs.push('play:' + data.mode);
+    if (ev === 'lh:ride') evs.push('lh-ride');
+    qNoteHook(evs, 1);
+  }
+
+  function qAward(amt, label){
+    if (!(amt > 0)) return;
+    try {
+      const cur = (typeof coins === 'number') ? coins : ((typeof load === 'function' ? load('rubloxCoins', 0) : 0) | 0);
+      setCoins(cur + amt);
+    } catch (e){}
+    try { if (typeof toast === 'function') toast((label || 'Quest complete!') + ' +' + amt + ' 🪙'); } catch (e){}
+    try { if (typeof SND !== 'undefined' && SND.coin) SND.coin(); } catch (e){}
+  }
+
+  function qOnClaim(id){
+    const s = qEnsure(); if (!s || !Q_API) return;
+    const r = Q_API.qClaim(s, id, qNow());
+    if (!r.ok) return;
+    qPersist(r.state);
+    qAward(r.coins, 'Quest claimed!');
+    try { if (r.first && typeof achNote === 'function') achNote('quest-first'); } catch (e){}
+    if (r.all){
+      try { if (typeof achNote === 'function') achNote('quest-bonus'); } catch (e){}
+      if ((r.streak | 0) >= 7){ try { if (typeof achNote === 'function') achNote('quest-streak7'); } catch (e){} }
+    }
+    qPaint();
+  }
+
+  function qOnBonus(){
+    const s = qEnsure(); if (!s || !Q_API) return;
+    const r = Q_API.qClaimBonus(s, qNow());
+    if (!r.ok) return;
+    qPersist(r.state);
+    qAward(r.coins, 'All 3 done — bonus!');
+    try { if (typeof achNote === 'function') achNote('quest-bonus'); } catch (e){}
+    if ((r.streak | 0) >= 7){ try { if (typeof achNote === 'function') achNote('quest-streak7'); } catch (e){} }
+    try { if (typeof confetti === 'function') confetti(); } catch (e){}
+    qPaint();
+  }
+
+  function qCardHtml(q, compact){
+    const pct = Math.max(0, Math.min(100, Math.round((q.progress / Math.max(1, q.goal)) * 100)));
+    const ready = !q.claimed && q.progress >= q.goal;
+    const st = q.claimed ? 'claimed' : (ready ? 'ready' : 'open');
+    const btn = q.claimed ? '<span class="qdone">✅ Claimed</span>' : (ready ? '<button class="big green qclaim" data-qid="' + q.id + '">Claim +' + q.reward + ' 🪙</button>' : '<span class="qwait">' + q.progress + ' / ' + q.goal + '</span>');
+    return '<div class="qcard ' + st + '"><div class="qtop"><span class="qem">' + q.emoji + '</span><div><b>' + q.title + '</b><small>' + q.desc + '</small></div></div><div class="qbar"><u style="width:' + pct + '%"></u></div><div class="qrow">' + btn + '</div></div>';
+  }
+
+  function qPaint(){
+    if (!Q_API) return;
+    const v = Q_API.qView(qEnsure(), qNow());
+    const list = v.quests.map(q => qCardHtml(q)).join('');
+    const bonus = v.canBonus
+      ? '<button class="big green" id="qBonusBtn">🎁 All 3 done — claim +' + v.bonus + ' bonus 🪙</button>'
+      : (v.all && v.bonusClaimed ? '<div class="qbonusdone">🎁 Daily bonus claimed — see you tomorrow!</div>' : '<div class="qbonuswait">Finish all 3 for a +' + v.bonus + ' 🪙 bonus</div>');
+    const streak = '🔥 ' + (v.streak | 0) + ' day streak';
+    const fill = (root, listId, bonusId, streakId) => {
+      const L = root && (typeof root === 'string' ? document.querySelector(root) : root);
+      if (!L) return;
+      const listEl = L.querySelector(listId) || (L.id === listId.slice(1) ? L : null);
+    };
+    const set = (id, html) => { const n = document.getElementById(id); if (n) n.innerHTML = html; };
+    const setT = (id, txt) => { const n = document.getElementById(id); if (n) n.textContent = txt; };
+    set('qList', list);
+    set('qListG', list);
+    set('qBonusRow', bonus);
+    set('qBonusRowG', bonus);
+    setT('qStreak', streak);
+    setT('qStreakG', streak);
+    document.querySelectorAll('.qclaim').forEach(b => { b.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); qOnClaim(b.getAttribute('data-qid')); }; });
+    const bb = document.getElementById('qBonusBtn');
+    if (bb) bb.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); qOnBonus(); };
+    qNeedPaint = false;
+  }
+
+  function qOpen(on){
+    qEnsure(); qPaint();
+    const p = document.getElementById('qPanel');
+    if (p) p.classList.toggle('show', on !== false);
+    if (on !== false){ try { if (typeof SND !== 'undefined' && SND.cp) SND.cp(); } catch (e){} }
+  }
+
+  function qClose(){ const p = document.getElementById('qPanel'); if (p) p.classList.remove('show'); }
+
+  function qBind(){
+    if (window.__qBound) return;
+    window.__qBound = true;
+    const openers = ['qOpenBtn', 'oQuestBtn', 'qPauseBtn'];
+    openers.forEach(id => { const n = document.getElementById(id); if (n) n.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); qOpen(true); }); });
+    const x = document.getElementById('qClose');
+    if (x) x.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); qClose(); });
+    const pan = document.getElementById('qPanel');
+    if (pan) pan.addEventListener('click', ev => { if (ev.target === pan) qClose(); });
+    qEnsure(); qPaint();
+  }
+
+  /* ---------- Friend trades (t295u) — same-room, host-authoritative, no free-text ---------- */
+  let trs = null; // local view of the open session
+  let trHist = null;
+  let trUiOffer = [];
+  let trDemo = false;
+  const TR_API = (typeof TRRules !== 'undefined' && TRRules) ? TRRules : (typeof window !== 'undefined' ? window.TRRules : null);
+
+  function trUid(){ return (typeof mp !== 'undefined' && mp && mp.on && mp.me) ? String(mp.me) : 'me'; }
+  function trNameOf(uid){
+    try {
+      if (typeof mp === 'undefined' || !mp) return 'Friend';
+      if (uid === mp.me) return (typeof playerName === 'function' ? playerName() : (load('rubloxPlayer', {}) || {}).name) || 'You';
+      if (mp.host && mp.guests){ for (const g of mp.guests.values()) if (g.uid === uid) return g.name || 'Friend'; }
+      if (mp.roster){ const r = mp.roster.find(x => x.uid === uid || x.id === uid); if (r) return r.name || 'Friend'; }
+    } catch (e){}
+    return 'Friend';
+  }
+
+  function trAccCatalog(){
+    const map = {};
+    try { if (typeof ACC !== 'undefined') ACC.forEach(a => { map[a.id] = {n: a.n, e: a.e, r: a.r | 0, price: a.p | 0}; }); } catch (e){}
+    return map;
+  }
+
+  function trPetEmoji(k){
+    try { if (typeof PET_KINDS !== 'undefined' && PET_KINDS[k] && PET_KINDS[k].emoji) return PET_KINDS[k].emoji; } catch (e){}
+    return '🐾';
+  }
+
+  function trPetRare(k){
+    try { if (typeof PET_KINDS !== 'undefined' && PET_KINDS[k] && PET_KINDS[k].r != null) return PET_KINDS[k].r | 0; } catch (e){}
+    return 0;
+  }
+
+  function trMyInv(){
+    let pets = [], inv = {};
+    try {
+      if (typeof pt !== 'undefined' && pt && pt.s){ pets = (pt.s.pets || []).slice(); inv = Object.assign({}, pt.s.inv || {}); }
+      else if (typeof load === 'function'){
+        const s = load('rubloxPets', null);
+        if (s){ pets = (s.pets || []).slice(); inv = Object.assign({}, s.inv || {}); }
+      }
+    } catch (e){}
+    return {pets, inv, a: 0};
+  }
+
+  function trApplyInv(next){
+    if (!next) return;
+    try {
+      if (typeof pt !== 'undefined' && pt && pt.s){
+        pt.s.pets = next.pets.slice();
+        pt.s.inv = Object.assign({}, next.inv || {});
+        if (pt.s.a >= pt.s.pets.length) pt.s.a = Math.max(0, pt.s.pets.length - 1);
+        if (typeof petsSave === 'function') petsSave();
+        try { if (!pt.s.pets.length) pt.pet = null; else if (typeof spawnPet === 'function') spawnPet(); } catch (e){}
+        return;
+      }
+    } catch (e){}
+    try {
+      const s = (typeof load === 'function' ? load('rubloxPets', {pets: [], inv: {}}) : {pets: [], inv: {}});
+      s.pets = next.pets.slice(); s.inv = Object.assign({}, next.inv || {});
+      if (typeof save === 'function') save('rubloxPets', s);
+    } catch (e){}
+  }
+
+  function trBagList(){
+    const inv = trMyInv();
+    const cat = trAccCatalog();
+    const out = [];
+    inv.pets.forEach(p => {
+      out.push({kind: 'pet', key: TR_API.trPetKey(p), k: p.k, n: p.n, e: trPetEmoji(p.k), r: trPetRare(p.k), pet: p});
+    });
+    Object.keys(inv.inv || {}).forEach(id => {
+      if (!inv.inv[id]) return;
+      const a = cat[id] || {n: id, e: '🎁', r: 0, price: 1};
+      if (!TR_API.trTradableAcc(id, cat)) return;
+      out.push({kind: 'acc', id, n: a.n, e: a.e || '🎁', r: a.r | 0});
+    });
+    return out;
+  }
+
+  function trOfferedHas(offer, it){
+    return (offer || []).some(x => x.kind === it.kind && (it.kind === 'pet' ? x.key === it.key : x.id === it.id));
+  }
+
+  function trLoadHist(){
+    try { trHist = TR_API.trLoadHist(typeof load === 'function' ? load(TR_API.TR_KEY, null) : null); }
+    catch (e){ trHist = {ver: 1, list: []}; }
+    return trHist;
+  }
+
+  function trSaveHist(entry){
+    const h = trLoadHist();
+    h.list.unshift(entry);
+    h.list = h.list.slice(0, 20);
+    trHist = h;
+    try { save(TR_API.TR_KEY, h); } catch (e){}
+  }
+
+  function trInRoom(){ return !!(typeof mp !== 'undefined' && mp && mp.on); }
+
+  function trOthers(){
+    const out = [];
+    if (!trInRoom()) return out;
+    try {
+      if (mp.host && mp.guests){
+        for (const g of mp.guests.values()) if (g.ready && g.uid) out.push({uid: g.uid, name: g.name || 'Friend', x: g.x, z: g.z});
+      } else if (mp.roster){
+        (mp.roster || []).forEach(r => {
+          const uid = r.uid || r.id;
+          if (uid && uid !== mp.me) out.push({uid, name: r.name || 'Friend', x: r.x, z: r.z});
+        });
+      }
+    } catch (e){}
+    return out;
+  }
+
+  function trNearPeer(){
+    if (typeof P === 'undefined' || !P) return null;
+    let best = null, bestD = 5;
+    trOthers().forEach(o => {
+      if (o.x == null || o.z == null) { if (!best) best = o; return; }
+      const d = Math.hypot((o.x) - P.x, (o.z) - P.z);
+      if (d < bestD){ bestD = d; best = o; }
+    });
+    if (best && (best.x == null || bestD < 5)) return best;
+    return trOthers().length === 1 ? trOthers()[0] : best;
+  }
+
+  function trSend(msg){
+    if (trDemo) return;
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.host) trHostOn(trUid(), msg);
+      else if (typeof mpSend === 'function') mpSend(Object.assign({t: 'tr'}, msg));
+    } catch (e){}
+  }
+
+  function trHostSendTo(uid, msg){
+    if (!mp || !mp.host) return;
+    try {
+      if (uid === mp.me){ trFromHost(Object.assign({t: 'tr'}, msg)); return; }
+      for (const g of mp.guests.values()) if (g.uid === uid && g.conn) mpSendTo(g.conn, Object.assign({t: 'tr'}, msg));
+    } catch (e){}
+  }
+
+  function trHostBroadcastSess(){
+    if (!trs || !mp || !mp.host) return;
+    const msg = {t: 'tr', a: 'state', id: trs.id, aUid: trs.a, bUid: trs.b, offerA: trs.offerA, offerB: trs.offerB, readyA: !!trs.readyA, readyB: !!trs.readyB, confA: !!trs.confA, confB: !!trs.confB, ph: trs.ph};
+    trHostSendTo(trs.a, msg);
+    trHostSendTo(trs.b, msg);
+  }
+
+  function trBegin(withUid){
+    if (!TR_API || !withUid) return;
+    if (!trInRoom()){ try { banner('🤝 Trades work when you and a friend are in the same room.'); } catch (e){} return; }
+    if (withUid === trUid()) return;
+    if (trs && trs.ph !== 'done' && trs.ph !== 'cancel'){ try { banner('🤝 Finish or cancel your open trade first.'); } catch (e){} return; }
+    trSend({a: 'req', to: withUid});
+    try { banner('🤝 Trade request sent!'); } catch (e){}
+  }
+
+  function trHostOnReq(fromUid, toUid){
+    if (!mp || !mp.host || !TR_API) return;
+    const ids = [mp.me].concat([...mp.guests.values()].filter(g => g.ready).map(g => g.uid));
+    if (ids.indexOf(fromUid) < 0 || ids.indexOf(toUid) < 0) return;
+    if (trs && trs.ph !== 'done' && trs.ph !== 'cancel'){
+      trHostSendTo(fromUid, {a: 'busy'});
+      return;
+    }
+    const id = 'tr' + Date.now().toString(36);
+    trs = TR_API.trNewSession(id, fromUid, toUid);
+    trHostSendTo(fromUid, {a: 'ask', id, from: fromUid, to: toUid, name: trNameOf(fromUid)});
+    trHostSendTo(toUid, {a: 'ask', id, from: fromUid, to: toUid, name: trNameOf(fromUid)});
+  }
+
+  function trHostOn(fromUid, d){
+    if (!mp || !mp.host || !d) return;
+    if (d.a === 'req'){ trHostOnReq(fromUid, String(d.to || '')); return; }
+    if (d.a === 'accept'){
+      if (!trs || trs.id !== d.id) return;
+      trs.ph = 'open';
+      trHostSendTo(trs.a, {a: 'open', id: trs.id, aUid: trs.a, bUid: trs.b});
+      trHostSendTo(trs.b, {a: 'open', id: trs.id, aUid: trs.a, bUid: trs.b});
+      return;
+    }
+    if (d.a === 'decline' || d.a === 'cancel'){
+      if (trs && (!d.id || trs.id === d.id)){
+        TR_API.trCancel(trs, fromUid);
+        trHostSendTo(trs.a, {a: 'cancel', id: trs.id});
+        trHostSendTo(trs.b, {a: 'cancel', id: trs.id});
+        trs = null;
+      }
+      return;
+    }
+    if (!trs || trs.id !== d.id) return;
+    if (trs.a !== fromUid && trs.b !== fromUid) return;
+    if (d.a === 'offer'){
+      // Host trusts the offered ids but re-checks ownership at commit using last known bags.
+      TR_API.trSetOffer(trs, fromUid, d.items || [], d.inv || {pets: [], inv: {}}, trAccCatalog());
+      // Keep raw offers if inv wasn't sent — still store items; commit will re-validate live bags.
+      if (fromUid === trs.a) trs.offerA = TR_API.trCleanOffer(d.inv || trs._invA || {pets:[]}, d.items || [], trAccCatalog()) || (d.items || []);
+      if (fromUid === trs.b) trs.offerB = d.items || [];
+      if (d.inv){ if (fromUid === trs.a) trs._invA = d.inv; else trs._invB = d.inv; }
+      trs.readyA = trs.readyB = trs.confA = trs.confB = false;
+      trs.ph = 'open';
+      trHostBroadcastSess();
+      return;
+    }
+    if (d.a === 'ready'){
+      if (d.inv){ if (fromUid === trs.a) trs._invA = d.inv; else if (fromUid === trs.b) trs._invB = d.inv; }
+      TR_API.trSetReady(trs, fromUid, !!d.on);
+      trHostBroadcastSess();
+      return;
+    }
+    if (d.a === 'confirm'){
+      if (d.inv){ if (fromUid === trs.a) trs._invA = d.inv; else if (fromUid === trs.b) trs._invB = d.inv; }
+      TR_API.trSetConfirm(trs, fromUid);
+      if (trs.ph === 'confirm'){
+        const invA = trs._invA, invB = trs._invB;
+        if (!invA || !invB){ trs.ph = 'open'; trs.confA = trs.confB = trs.readyA = trs.readyB = false; trHostBroadcastSess(); return; }
+        const done = TR_API.trCommit(trs, invA, invB, trAccCatalog());
+        if (!done.ok){
+          trHostSendTo(trs.a, {a: 'fail', id: trs.id, why: done.why});
+          trHostSendTo(trs.b, {a: 'fail', id: trs.id, why: done.why});
+          trHostBroadcastSess();
+          return;
+        }
+        trHostSendTo(trs.a, {a: 'done', id: trs.id, inv: done.a, gave: done.aGive, got: done.bGive, with: trNameOf(trs.b)});
+        trHostSendTo(trs.b, {a: 'done', id: trs.id, inv: done.b, gave: done.bGive, got: done.aGive, with: trNameOf(trs.a)});
+        trs = null;
+        return;
+      }
+      trHostBroadcastSess();
+    }
+  }
+
+  function trCancelLocal(reason){
+    const had = trs;
+    if (had && had.id && !trDemo) trSend({a: 'cancel', id: had.id});
+    trs = null; trUiOffer = [];
+    trHideAsk();
+    trPaint();
+    const p = document.getElementById('trPanel'); if (p) p.classList.remove('show');
+    if (reason) try { banner(reason); } catch (e){}
+  }
+
+  function trOnDrop(uid){
+    if (!trs) return;
+    if (trs.a === uid || trs.b === uid || uid === 'host'){
+      if (mp && mp.host && trs){
+        const a = trs.a, b = trs.b, id = trs.id;
+        TR_API.trCancel(trs, uid);
+        try { trHostSendTo(a, {a: 'cancel', id}); trHostSendTo(b, {a: 'cancel', id}); } catch (e){}
+        trs = null;
+      }
+      trCancelLocal('🤝 Trade cancelled — a player left the room.');
+    }
+  }
+
+  function trFromGuest(g, d){
+    if (!d || d.t !== 'tr') return;
+    const uid = g && g.uid;
+    if (!uid) return;
+    trHostOn(uid, d);
+  }
+
+  function trShowAsk(d){
+    const box = document.getElementById('trAsk');
+    if (!box) return;
+    const nm = (d && d.name) ? String(d.name).slice(0, 16) : 'A friend';
+    const msg = document.getElementById('trAskMsg');
+    if (msg) msg.textContent = '🤝 ' + nm + ' wants to trade!';
+    box.dataset.id = d.id || '';
+    box.classList.add('show');
+  }
+
+  function trHideAsk(){ const box = document.getElementById('trAsk'); if (box) box.classList.remove('show'); }
+
+  function trFromHost(d){
+    if (!d || d.t !== 'tr' && d.a && !d.t) d.t = 'tr';
+    if (!d || (d.t && d.t !== 'tr')) return;
+    if (d.a === 'busy'){ try { banner('🤝 They are already in a trade.'); } catch (e){} return; }
+    if (d.a === 'ask'){
+      trs = TR_API.trNewSession(d.id, d.from || d.aUid, d.to || d.bUid);
+      // The requester opened the ask; the other player sees Accept.
+      if (trUid() === (d.to || d.bUid) || (d.to && d.to === trUid())) trShowAsk(d);
+      else try { banner('🤝 Waiting for ' + (d.name || 'your friend') + ' to accept…'); } catch (e){}
+      return;
+    }
+    if (d.a === 'open' || d.a === 'state'){
+      trHideAsk();
+      trs = trs || TR_API.trNewSession(d.id, d.aUid, d.bUid);
+      trs.id = d.id; trs.a = d.aUid || trs.a; trs.b = d.bUid || trs.b;
+      if (d.offerA) trs.offerA = d.offerA;
+      if (d.offerB) trs.offerB = d.offerB;
+      if (d.readyA != null) trs.readyA = !!d.readyA;
+      if (d.readyB != null) trs.readyB = !!d.readyB;
+      if (d.confA != null) trs.confA = !!d.confA;
+      if (d.confB != null) trs.confB = !!d.confB;
+      if (d.ph) trs.ph = d.ph;
+      const p = document.getElementById('trPanel'); if (p) p.classList.add('show');
+      if (d.a === 'open'){ try { trPushOffer(); } catch (e){} }
+      trPaint();
+      return;
+    }
+    if (d.a === 'cancel' || d.a === 'fail'){
+      trs = null; trUiOffer = [];
+      trHideAsk();
+      const p = document.getElementById('trPanel'); if (p) p.classList.remove('show');
+      try { banner(d.a === 'fail' ? '🤝 Trade could not finish. Check your items and try again.' : '🤝 Trade cancelled.'); } catch (e){}
+      return;
+    }
+    if (d.a === 'done'){
+      trApplyInv(d.inv);
+      try { trSaveHist(TR_API.trHistEntry(Date.now(), d.with || 'Friend', d.gave || [], d.got || [])); } catch (e){}
+      try { if (typeof achNote === 'function') achNote('trade-done'); } catch (e){}
+      trs = {id: d.id, ph: 'done', a: 'me', b: 'them', offerA: d.gave || [], offerB: d.got || [], readyA: true, readyB: true, confA: true, confB: true, done: d};
+      const p = document.getElementById('trPanel'); if (p) p.classList.add('show');
+      trPaint(true);
+      try { if (typeof SND !== 'undefined' && SND.win) SND.win(); } catch (e){}
+      try { banner('🤝 Trade complete!'); } catch (e){}
+      setTimeout(() => { const p2 = document.getElementById('trPanel'); if (p2 && trs && trs.ph === 'done') p2.classList.remove('show'); trs = null; trUiOffer = []; }, 2800);
+    }
+  }
+
+  function trRarityBadge(r){
+    const n = TR_API.trRarityName(r);
+    return '<small class="trrare r' + (r | 0) + '">' + n + '</small>';
+  }
+
+  function trItemHtml(it, opts){
+    opts = opts || {};
+    const on = opts.on ? ' on' : '';
+    const e = it.e || (it.kind === 'pet' ? trPetEmoji(it.k) : '🎁');
+    const name = it.n || it.id || 'Item';
+    const key = it.kind === 'pet' ? ('pet:' + it.key) : ('acc:' + it.id);
+    return '<button type="button" class="trit' + on + '" data-tr="' + key + '" ' + (opts.disabled ? 'disabled' : '') + '><span class="tre">' + e + '</span><span class="trn">' + name + '</span>' + trRarityBadge(it.r) + '</button>';
+  }
+
+  function trMine(){ return trs && trUid() === trs.a; }
+  function trMyOffer(){ return trs ? (trMine() ? trs.offerA : trs.offerB) : trUiOffer; }
+  function trTheirOffer(){ return trs ? (trMine() ? trs.offerB : trs.offerA) : []; }
+  function trImReady(){ return trs ? (trMine() ? trs.readyA : trs.readyB) : false; }
+  function trTheyReady(){ return trs ? (trMine() ? trs.readyB : trs.readyA) : false; }
+  function trImConf(){ return trs ? (trMine() ? trs.confA : trs.confB) : false; }
+  function trTheyConf(){ return trs ? (trMine() ? trs.confB : trs.confA) : false; }
+
+  function trPushOffer(){
+    if (!trs || trs.ph === 'done' || trs.ph === 'cancel') return;
+    trSend({a: 'offer', id: trs.id, items: trUiOffer, inv: trMyInv()});
+  }
+
+  function trPaint(confirmed){
+    const pan = document.getElementById('trPanel');
+    if (!pan) return;
+    const done = !!(confirmed || (trs && trs.ph === 'done'));
+    const other = trs ? trNameOf(trMine() ? trs.b : trs.a) : 'Friend';
+    const title = document.getElementById('trTitle');
+    if (title) title.textContent = done ? '🤝 Trade complete!' : ('Trade with ' + other);
+    const bagEl = document.getElementById('trBag');
+    const mineEl = document.getElementById('trMine');
+    const theirsEl = document.getElementById('trTheirs');
+    const status = document.getElementById('trStatus');
+    const readyBtn = document.getElementById('trReady');
+    const confBtn = document.getElementById('trConfirm');
+    const mineOffer = trUiOffer.length ? trUiOffer : trMyOffer();
+    if (!trUiOffer.length && mineOffer && mineOffer.length) trUiOffer = mineOffer.slice();
+    if (bagEl){
+      const bag = trBagList();
+      bagEl.innerHTML = bag.length ? bag.map(it => trItemHtml(it, {on: trOfferedHas(trUiOffer, it), disabled: done})).join('') : '<div class="trempty">No tradable pets or items yet.</div>';
+      bagEl.querySelectorAll('.trit').forEach(b => {
+        b.onclick = ev => {
+          ev.preventDefault(); ev.stopPropagation();
+          if (done) return;
+          const sig = b.getAttribute('data-tr');
+          const it = bag.find(x => (x.kind === 'pet' ? ('pet:' + x.key) : ('acc:' + x.id)) === sig);
+          if (!it) return;
+          if (trOfferedHas(trUiOffer, it)) trUiOffer = trUiOffer.filter(x => !(x.kind === it.kind && (it.kind === 'pet' ? x.key === it.key : x.id === it.id)));
+          else trUiOffer = trUiOffer.concat([it]);
+          trPushOffer();
+          trPaint();
+        };
+      });
+    }
+    if (mineEl) mineEl.innerHTML = (trUiOffer.length ? trUiOffer : mineOffer).map(it => trItemHtml(it, {disabled: true})).join('') || '<div class="trempty">Tap your items to offer them.</div>';
+    if (theirsEl) theirsEl.innerHTML = trTheirOffer().map(it => trItemHtml(it, {disabled: true})).join('') || '<div class="trempty">Waiting for their offer…</div>';
+    const bothReady = !!(trImReady() && trTheyReady());
+    if (status){
+      if (done) status.textContent = '✅ Items swapped — nothing was duplicated or lost.';
+      else if (bothReady && trImConf() && !trTheyConf()) status.textContent = 'Waiting for ' + other + ' to confirm…';
+      else if (bothReady && trTheyConf() && !trImConf()) status.textContent = other + ' confirmed — your turn!';
+      else if (bothReady) status.textContent = 'Both ready — press Confirm to swap.';
+      else if (trImReady()) status.textContent = 'Ready! Waiting for ' + other + '…';
+      else if (trTheyReady()) status.textContent = other + ' is ready. Press Ready when your offer looks good.';
+      else status.textContent = 'Add items, then both press Ready, then both press Confirm.';
+    }
+    if (readyBtn){
+      readyBtn.disabled = done;
+      readyBtn.textContent = trImReady() ? '✅ Ready' : 'Ready';
+      readyBtn.className = 'big ' + (trImReady() ? 'green' : '');
+    }
+    if (confBtn){
+      confBtn.disabled = done || !bothReady;
+      confBtn.textContent = trImConf() ? '✅ Confirm' : 'Confirm';
+      confBtn.className = 'big ' + (bothReady && !confBtn.disabled ? 'green' : 'gray');
+    }
+    pan.classList.toggle('trdone', done);
+  }
+
+  function trOpenDemo(done){
+    trDemo = true;
+    const aPet = {k: 'dog', n: 'Pip', c: 0, xp: 12, f: 80, u: 80, e: 80, b: 11, acc: {}, g: 'g'};
+    const bPet = {k: 'cat', n: 'Mochi', c: 1, xp: 20, f: 80, u: 80, e: 80, b: 22, acc: {}, g: 'g'};
+    trs = TR_API.trNewSession('demo', 'me', 'friend');
+    trs.offerA = [{kind: 'pet', key: TR_API.trPetKey(aPet), k: 'dog', n: 'Pip', e: '🐶', r: 0, pet: aPet}, {kind: 'acc', id: 'bow', n: 'Bow', e: '🎀', r: 0}];
+    trs.offerB = [{kind: 'pet', key: TR_API.trPetKey(bPet), k: 'cat', n: 'Mochi', e: '🐱', r: 0, pet: bPet}, {kind: 'acc', id: 'hat', n: 'Party Hat', e: '🥳', r: 1}];
+    trUiOffer = trs.offerA.slice();
+    if (done){ trs.ph = 'done'; trs.readyA = trs.readyB = trs.confA = trs.confB = true; }
+    else { trs.ph = 'open'; }
+    const p = document.getElementById('trPanel'); if (p) p.classList.add('show');
+    trPaint(!!done);
+  }
+
+  function trBind(){
+    if (window.__trBound) return;
+    window.__trBound = true;
+    const ready = document.getElementById('trReady');
+    const conf = document.getElementById('trConfirm');
+    const can = document.getElementById('trCancel');
+    const close = document.getElementById('trClose');
+    if (ready) ready.onclick = ev => { ev.preventDefault(); if (!trs || trs.ph === 'done') return; trSend({a: 'ready', id: trs.id, on: !trImReady(), inv: trMyInv()}); };
+    if (conf) conf.onclick = ev => { ev.preventDefault(); if (!trs || !(trImReady() && trTheyReady())) return; trSend({a: 'confirm', id: trs.id, inv: trMyInv()}); };
+    if (can) can.onclick = ev => { ev.preventDefault(); if (trDemo){ trDemo = false; trCancelLocal(); return; } trCancelLocal('🤝 Trade cancelled.'); };
+    if (close) close.onclick = ev => { ev.preventDefault(); if (trs && trs.ph !== 'done' && !trDemo) trCancelLocal('🤝 Trade cancelled.'); else { trDemo = false; const p = document.getElementById('trPanel'); if (p) p.classList.remove('show'); trs = null; } };
+    const yes = document.getElementById('trAskYes');
+    const no = document.getElementById('trAskNo');
+    if (yes) yes.onclick = ev => { ev.preventDefault(); const box = document.getElementById('trAsk'); trHideAsk(); if (box && box.dataset.id) trSend({a: 'accept', id: box.dataset.id}); };
+    if (no) no.onclick = ev => { ev.preventDefault(); const box = document.getElementById('trAsk'); trHideAsk(); if (box && box.dataset.id) trSend({a: 'decline', id: box.dataset.id}); };
+    const tbtn = document.getElementById('oTradeBtn');
+    if (tbtn) tbtn.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); const n = trNearPeer(); if (n) trBegin(n.uid); else if (trOthers()[0]) trBegin(trOthers()[0].uid); else try { banner('🤝 Join a room with a friend, then stand near them and press Trade.'); } catch (e){} };
+    const pbtn = document.getElementById('trPauseBtn');
+    if (pbtn) pbtn.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); const n = trNearPeer() || trOthers()[0]; if (n) trBegin(n.uid); else try { banner('🤝 Join a room with a friend first, then trade.'); } catch (e){} };
+  }
+
+  function trTickHud(){
+    const b = document.getElementById('oTradeBtn');
+    if (b) b.style.display = (trInRoom() && (typeof running !== 'undefined' ? running : true)) ? '' : 'none';
+  }
+
+  /* ---------- Party Pad (t295u) — cozy hangout, real players only, existing chat ---------- */
+  let py = null;
+  const PY_API = (typeof PYRules !== 'undefined' && PYRules) ? PYRules : (typeof window !== 'undefined' ? window.PYRules : null);
+
+  function pyAdd(mesh){ if (py) py.trash.push(mesh); scene.add(mesh); return mesh; }
+
+  function pyBox(x, y, z, w, h, d, color, opts){
+    const m = addBox(x, y, z, w, h, d, color, opts || {});
+    if (py) py.trash.push(m);
+    return m;
+  }
+
+  function buildParty(){
+    const R = PY_API ? PY_API.PY : {floor:{w:36,d:28}, spawn:{x:0,y:.5,z:8,face:Math.PI}, dance:{x:0,z:-1,w:8,d:8}, sofas:[], photo:{x:0,z:-11.2}, ball:{x:8,z:8,r:.55}};
+    py = {
+      trash: [], ball: {x: R.ball.x, z: R.ball.z, vx: 0, vz: 0}, ballM: null,
+      sit: null, dance: false, photoFlash: 0, hint: '', act: '', tiles: [],
+      lastBall: 0, lastSend: 0
+    };
+    scene.background = new THREE.Color('#f0b56a');
+    scene.fog = null;
+    scene.traverse(o => {
+      if (o.isHemisphereLight){ o.intensity = 0.52; o.color.set('#fff1d0'); o.groundColor.set('#b8763a'); }
+      if (o.isDirectionalLight){ o.intensity = 0.32; o.color.set('#ffe0b0'); o.position.set(8, 18, 6); }
+    });
+    const lamp = new THREE.PointLight('#ffd9a0', 0.45, 42, 2); lamp.position.set(0, 6.2, 0); scene.add(lamp); py.trash.push(lamp);
+
+    // floor + rugs
+    plat(0, 0, 0, R.floor.w, R.floor.d, '#c99655', 1.2);
+    plat(0, 0.06, 4, 10, 8, '#c45c4a', 0.08); // entry rug
+    // dance floor pads (walkable, slightly raised so tiles read clearly)
+    const tw = R.dance.w / 4, td = R.dance.d / 4;
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++){
+      const col = ((r + c) % 2) ? '#ff6fb5' : '#3a86ff';
+      const x = R.dance.x - R.dance.w / 2 + tw * (c + 0.5);
+      const z = R.dance.z - R.dance.d / 2 + td * (r + 0.5);
+      plat(x, 0.08, z, tw - 0.06, td - 0.06, col, 0.08);
+    }
+
+    const wallH = 7.2, hw = R.floor.w / 2, hd = R.floor.d / 2;
+    // walls
+    plat(0, wallH, -hd, R.floor.w, 0.6, '#e0b77a', wallH, {noEdge: true});
+    plat(0, wallH, hd, R.floor.w, 0.6, '#e0b77a', wallH, {noEdge: true});
+    plat(-hw, wallH, 0, 0.6, R.floor.d, '#e0b77a', wallH, {noEdge: true});
+    plat(hw, wallH, 0, 0.6, R.floor.d, '#e0b77a', wallH, {noEdge: true});
+    // ceiling trim
+    plat(0, wallH + 0.15, 0, R.floor.w, R.floor.d, '#d4a56a', 0.2, {noEdge: true});
+
+    // windows (glow panels)
+    [[-8, -hd + 0.4], [8, -hd + 0.4], [-hw + 0.4, -6], [hw - 0.4, -6]].forEach(([x, z], i) => {
+      const w = Math.abs(z) > hw - 2 ? 4.2 : 0.2, d = Math.abs(z) > hw - 2 ? 0.2 : 4.2;
+      const m = addBox(x, 4.2, z, w === 0.2 ? 0.2 : 4.2, 2.6, d === 0.2 ? 0.2 : 4.2, '#8fd3ff', {glow: '#fff3c4'});
+      py.trash.push(m);
+    });
+
+    // sofas
+    const sofaCol = '#6b4a9c', cush = '#c9a6ff';
+    (R.sofas || []).forEach(s => {
+      plat(s.x, 0.55, s.z, s.w, s.d, sofaCol, 0.55);
+      pyBox(s.x, 0.85, s.z, s.w - 0.3, 0.3, s.d - 0.3, cush);
+      // backrest
+      const bx = s.x + Math.cos(s.face) * 0.7, bz = s.z + Math.sin(s.face) * 0.7;
+      pyBox(s.id === 'sofa-s' ? s.x : (s.x + (s.id === 'sofa-e' ? 0.7 : -0.7)), 1.15, s.id === 'sofa-s' ? s.z + 0.55 : s.z, s.id === 'sofa-s' ? s.w : 0.35, 1.1, s.id === 'sofa-s' ? 0.35 : s.d, sofaCol);
+    });
+
+    // photo backdrop + frame + spot
+    pyBox(0, 3.4, -hd + 0.55, 9, 5.2, 0.16, '#5b34c0');
+    pyBox(0, 3.4, -hd + 0.7, 8.2, 4.5, 0.08, '#ffd6ec');
+    [[-3.2, 4.8], [3.2, 4.8], [-2, 2.4], [2.2, 2.6]].forEach(([x, y]) => {
+      const star = new THREE.Mesh(new THREE.OctahedronGeometry(0.28), new THREE.MeshBasicMaterial({color: '#ffd23f'}));
+      star.position.set(x, y, -hd + 0.85); pyAdd(star);
+    });
+    try {
+      const ph = (typeof label === 'function') ? label('📸 Photo spot', 'rgba(91,52,192,.95)', '#fff', 320) : null;
+      if (ph){ ph.position.set(0, 6.2, -hd + 0.9); pyAdd(ph); }
+    } catch (e){}
+    plat(0, 0.1, -11.0, 4.2, 3.2, '#fff6c9', 0.1);
+
+    // snack table (decor)
+    plat(10, 1.0, -8, 2.4, 1.4, '#8d5524', 1.0);
+    pyBox(10, 1.15, -8, 1.8, 0.15, 1.0, '#fff6e8');
+    pyBox(9.5, 1.35, -8, 0.35, 0.35, 0.35, '#ff6fb5');
+    pyBox(10.4, 1.4, -8, 0.3, 0.45, 0.3, '#ffd23f');
+
+    // planters
+    [[-14, -8], [14, -8], [-14, 10], [14, 10]].forEach(([x, z]) => {
+      plat(x, 0.5, z, 1.1, 1.1, '#8d5524', 0.5);
+      const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.55, 10, 8), new THREE.MeshLambertMaterial({color: '#2ec27e'}));
+      leaf.position.set(x, 1.15, z); pyAdd(leaf);
+    });
+
+    // string lights
+    for (let i = 0; i < 10; i++){
+      const x = -15 + i * 3.3;
+      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 6), new THREE.MeshBasicMaterial({color: i % 2 ? '#ffe08a' : '#ffb3c7'}));
+      bulb.position.set(x, 6.6, 0); pyAdd(bulb);
+    }
+
+    // kickable ball
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(R.ball.r, 16, 12), new THREE.MeshLambertMaterial({color: '#f4f4f4'}));
+    ball.position.set(R.ball.x, R.ball.r + 0.02, R.ball.z);
+    // simple pentagon-ish patches
+    const patch = new THREE.Mesh(new THREE.SphereGeometry(R.ball.r * 1.01, 8, 6), new THREE.MeshBasicMaterial({color: '#1d2340', wireframe: true}));
+    ball.add(patch);
+    pyAdd(ball); py.ballM = ball;
+
+    try {
+      const t1 = label('🎉 Party Pad', 'rgba(29,35,64,.9)', '#fff', 360);
+      if (t1){ t1.position.set(0, 8.2, 0); pyAdd(t1); }
+      const t2 = label('💃 Dance floor', 'rgba(255,111,181,.92)', '#fff', 280);
+      if (t2){ t2.position.set(0, 2.4, -1); t2.scale.multiplyScalar(0.7); pyAdd(t2); }
+    } catch (e){}
+
+    checkpoints[0] = {idx: 0, spawn: {x: R.spawn.x, y: R.spawn.y, z: R.spawn.z}, flag: new THREE.Object3D()};
+    P.x = R.spawn.x; P.y = R.spawn.y; P.z = R.spawn.z; P.face = R.spawn.face; P.vx = P.vy = P.vz = 0;
+  }
+
+  function partyHud(){
+    if (!py) return;
+    const box = document.getElementById('pyBox');
+    const act = document.getElementById('pyAct');
+    const hint = document.getElementById('pyHint');
+    if (box) box.style.display = mode === 'party' ? '' : 'none';
+    if (hint) hint.textContent = py.hint || 'Dance, sit on a sofa, snap a photo, or kick the ball with friends!';
+    if (act){
+      if (py.act){ act.textContent = py.act; act.classList.add('show'); }
+      else act.classList.remove('show');
+    }
+  }
+
+  function partyEnter(){
+    if (!py) return;
+    P.face = (PY_API ? PY_API.PY.spawn.face : Math.PI);
+    cam.pitch = 0.36; cam.dist = 12;
+    try { if (window.rubloxMusic && typeof rubloxMusic.kick === 'function') rubloxMusic.kick(); } catch (e){}
+    try { if (typeof achNote === 'function') achNote('party-first'); } catch (e){}
+    partyHud();
+    const act = document.getElementById('pyAct');
+    if (act && !window.__pyActBound){ window.__pyActBound = true; act.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); partyAct(); }; }
+    banner('🎉 Welcome to the Party Pad! Dance, sit, snap a photo, kick the ball.');
+  }
+
+  function partyStop(){
+    if (!py) return;
+    try { py.trash.forEach(m => { if (m && m.parent) m.parent.remove(m); }); } catch (e){}
+    const box = document.getElementById('pyBox'); if (box) box.style.display = 'none';
+    const act = document.getElementById('pyAct'); if (act) act.classList.remove('show');
+    $('#obby') && $('#obby').classList.remove('pymode');
+    py = null;
+  }
+
+  function partySitToggle(){
+    if (!py || !PY_API) return false;
+    if (py.sit){
+      py.sit = null;
+      if (emote && emote.id === 'sit') emote = null;
+      banner('🙂 All up!');
+      return true;
+    }
+    const s = PY_API.pyNearSofa(P.x, P.z);
+    if (!s) return false;
+    py.sit = s.id;
+    P.x = s.seat[0]; P.z = s.seat[1]; P.vx = P.vz = P.vy = 0; P.face = s.face + Math.PI;
+    emote = {id: 'sit', t: 0};
+    banner('🪑 Comfy!');
+    return true;
+  }
+
+  function partyPhoto(){
+    if (!py || !PY_API || !PY_API.pyNearPhoto(P.x, P.z)) return false;
+    py.photoFlash = 0.55;
+    emote = {id: 'cheer', t: 0};
+    P.vx = P.vz = 0;
+    banner('📸 Say cheese!');
+    try { if (typeof SND !== 'undefined' && SND.cp) SND.cp(); } catch (e){}
+    return true;
+  }
+
+  function partyKick(){
+    if (!py || !PY_API) return false;
+    const r = PY_API.pyKick(py.ball, P.x, P.z, P.vx, P.vz);
+    if (!r.hit) return false;
+    py.ball = r.ball;
+    py.lastSend = 0;
+    partySendBall(true);
+    try { if (typeof SND !== 'undefined' && SND.jump) SND.jump(); } catch (e){}
+    return true;
+  }
+
+  function partyAct(){
+    if (!py || paused || over || choosing) return false;
+    if (partySitToggle()) return true;
+    if (partyPhoto()) return true;
+    if (partyKick()) return true;
+    // trade prompt if a friend is close
+    try { if (typeof trNearPeer === 'function'){ const n = trNearPeer(); if (n && typeof trBegin === 'function'){ trBegin(n.uid); return true; } } } catch (e){}
+    return false;
+  }
+
+  function partyKey(e){
+    if (!py || e.repeat) return false;
+    if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ partyAct(); return true; }
+    return false;
+  }
+
+  function partyPad(jp){
+    if (!py) return false;
+    // Xbox X (button 2) and Y (3) as interact
+    if (jp && (jp[2] || jp[3])){ partyAct(); return true; }
+    return false;
+  }
+
+  function partySendBall(force){
+    if (!py || typeof mp === 'undefined' || !mp || !mp.on) return;
+    const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    if (!force && now - (py.lastSend || 0) < 80) return;
+    py.lastSend = now;
+    const msg = {t: 'py', a: 'ball', x: py.ball.x, z: py.ball.z, vx: py.ball.vx, vz: py.ball.vz};
+    try {
+      if (mp.host) mpBroadcast(msg);
+      else if (force && typeof mpSend === 'function') mpSend({t: 'py', a: 'kick', x: py.ball.x, z: py.ball.z, vx: py.ball.vx, vz: py.ball.vz});
+    } catch (e){}
+  }
+
+  function partyFromGuest(g, d){
+    if (!d || d.t !== 'py' || !py || !mp || !mp.host) return;
+    if (d.a === 'kick'){
+      py.ball = {x: +d.x, z: +d.z, vx: +d.vx || 0, vz: +d.vz || 0};
+      partySendBall(true);
+    }
+  }
+
+  function partyFromHost(d){
+    if (!d || d.t !== 'py' || !py) return;
+    if (d.a === 'ball' && !(mp && mp.host)){
+      py.ball = {x: +d.x, z: +d.z, vx: +d.vx || 0, vz: +d.vz || 0};
+    }
+  }
+
+  function partyUpdate(dt){
+    if (!py) return;
+    // fall respawn
+    if (P.y < -4 && checkpoints[0] && checkpoints[0].spawn){
+      const s = checkpoints[0].spawn;
+      P.x = s.x; P.y = s.y; P.z = s.z; P.vx = P.vy = P.vz = 0;
+    }
+    const onDance = PY_API ? PY_API.pyOnDance(P.x, P.z) : false;
+    const sofa = PY_API ? PY_API.pyNearSofa(P.x, P.z) : null;
+    const photo = PY_API ? PY_API.pyNearPhoto(P.x, P.z) : false;
+    const nearBall = Math.hypot(py.ball.x - P.x, py.ball.z - P.z) < 1.8;
+    if (py.sit && (Math.hypot(P.vx, P.vz) > 0.4 || (P.vy || 0) > 1)){ py.sit = null; if (emote && emote.id === 'sit') emote = null; }
+    if (onDance && !py.sit){
+      if (!emote || emote.id !== 'dance') emote = {id: 'dance', t: 0};
+      py.dance = true;
+    } else if (py.dance && emote && emote.id === 'dance'){ emote = null; py.dance = false; }
+    if (py.sit && (!emote || emote.id !== 'sit')) emote = {id: 'sit', t: 0};
+
+    py.hint = onDance ? '💃 Dance floor! Your dance starts automatically.' :
+      (sofa && !py.sit) ? '🪑 Sofa — press E, the Act button, or Ⓧ to sit.' :
+      (py.sit) ? '🪑 Sitting. Press E / Ⓧ or move to stand up.' :
+      (photo) ? '📸 Photo spot — press E, Act, or Ⓧ to say cheese!' :
+      (nearBall) ? '⚽ Run into the ball or press E / Ⓧ to kick it!' :
+      '🎉 Hang out! Dance, sit, snap a photo, or kick the ball.';
+    py.act = (sofa && !py.sit) ? '🪑 Sit' : (py.sit) ? '🙂 Stand' : (photo) ? '📸 Photo' : (nearBall) ? '⚽ Kick' : '';
+
+    if (PY_API){
+      py.ball = PY_API.pyBallStep(py.ball, dt);
+      if (nearBall && Math.hypot(P.vx, P.vz) > 2.2) partyKick();
+    }
+    if (py.ballM){
+      py.ballM.position.set(py.ball.x, 0.57, py.ball.z);
+      py.ballM.rotation.x += (py.ball.vz) * dt * 0.4;
+      py.ballM.rotation.z -= (py.ball.vx) * dt * 0.4;
+    }
+    if (py.photoFlash > 0){
+      py.photoFlash -= dt;
+      let fl = document.getElementById('pyFlash');
+      if (!fl){ fl = document.createElement('div'); fl.id = 'pyFlash'; document.getElementById('obby') && document.getElementById('obby').appendChild(fl); }
+      fl.style.opacity = String(Math.max(0, Math.min(1, py.photoFlash * 2)));
+    } else {
+      const fl = document.getElementById('pyFlash'); if (fl) fl.style.opacity = '0';
+    }
+    if (mp && mp.on && mp.host && Math.hypot(py.ball.vx, py.ball.vz) > 0.2) partySendBall(false);
+    partyHud();
+  }
+
+  try { setTimeout(() => { try { qBind(); trBind(); qEnsure(); qPaint(); } catch (e){} }, 0); } catch (e){}
+
   function stop(){
     if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}
     if (typeof dhCloseReset === 'function') dhCloseReset();
@@ -28346,14 +29826,29 @@ function start(m = 'obby', d = null){
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame'); setHomeInert(false);
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (lh) lanternStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (py) partyStop(); if (lh) lanternStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
+    try { if (typeof trOnDrop === 'function') trOnDrop('host'); } catch (e){} try { qClose(); const _tr = document.getElementById('trPanel'); if (_tr) _tr.classList.remove('show'); } catch (e){}
     try { if (typeof chSync === 'function') chSync(); } catch (e){}
   }
 
   // debug / test hook
   window.obbyDebug = {
+    qState: () => (typeof qEnsure === 'function' ? qEnsure() : null),
+    qOpen: (on) => { if (typeof qOpen === 'function') qOpen(on !== false); },
+    qDemo(claimed){
+      if (typeof qEnsure !== 'function') return null;
+      const s = qEnsure();
+      (s.quests || []).forEach((q, i) => { q.progress = q.goal; q.claimed = !!claimed && i === 0; });
+      if (claimed && s.quests[1]) s.quests[1].progress = s.quests[1].goal;
+      qPersist(s); qOpen(true); qPaint(); return s;
+    },
+    trDemo: (done) => { if (typeof trOpenDemo === 'function') trOpenDemo(!!done); },
+    partySit: () => { if (typeof partySitToggle === 'function') return partySitToggle(); },
+    partyPhoto: () => { if (typeof partyPhoto === 'function') return partyPhoto(); },
+    partyKick: () => { if (typeof partyKick === 'function') return partyKick(); },
+    party: () => py && {sit: py.sit, dance: py.dance, ball: Object.assign({}, py.ball), hint: py.hint},
     dreamhouse: () => dh && {mine: dh.mine, sel: dh.sel, tool: dh.tool, story: dh.story, color: dh.color, rot: dh.rot, bank: dh.bank, likes: dh.likes, earned: dh.earned, pieces: (dh.pieces[dh.mine] || []).length, goals: Object.assign({}, dh.goals), prog: dhProg()},
     dhPlace: () => dhPlace(), dhAct: () => dhAct(), dhRotate: () => dhRotate(), dhCycle, dhSetTool, dhSetStory, dhCycleColor, dhAim, dhWire, dhTo(x, z){ Object.assign(P, {x, y: .05, z, vx: 0, vy: 0, vz: 0}); },
     shot(opts){
