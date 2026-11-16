@@ -134,6 +134,51 @@ body.dark .preview{background:linear-gradient(#3b4a8a,#2a3570)}
   .fracts{width:100%;justify-content:flex-end}
   #friends{min-height:calc(100vh - 100px);scroll-margin-top:66px}
 }
+
+/* chat (t285u) */
+#chRoot{position:fixed;left:0;bottom:0;z-index:46;pointer-events:none;font-family:inherit}
+#chRoot[hidden],#chRoot:not(.show){display:none}
+#chBtn{pointer-events:auto;position:fixed;left:max(12px,env(safe-area-inset-left));bottom:max(12px,env(safe-area-inset-bottom));width:56px;height:56px;border:0;border-radius:18px;background:#fff;color:#1d2340;font-size:26px;box-shadow:0 5px 0 rgba(0,0,0,.12);cursor:pointer;z-index:47}
+#chBtn:hover,#chBtn:focus{background:#fff6c8}
+#chPanel{pointer-events:auto;position:fixed;left:max(12px,env(safe-area-inset-left));bottom:calc(max(12px,env(safe-area-inset-bottom)) + 66px);width:min(360px,calc(100vw - 24px));max-height:min(420px,calc(100vh - 120px));background:#fff;color:#1d2340;border-radius:20px;box-shadow:0 10px 0 rgba(0,0,0,.12),0 0 0 3px #ffe38a;display:none;flex-direction:column;overflow:hidden;z-index:47}
+#chPanel.show{display:flex}
+#chHead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px 8px;font-weight:900;background:linear-gradient(180deg,#fff8e6,#ffe9b3);border-bottom:3px solid #ffd23f}
+#chHead b{font-size:18px}
+#chClose{border:0;background:transparent;font-size:18px;cursor:pointer;border-radius:10px;padding:4px 8px;font-weight:900}
+#chLog{flex:1;overflow:auto;padding:8px 12px;min-height:90px;max-height:160px;font-weight:700;font-size:14px;background:#fffdf6}
+.chrow{margin:0 0 6px;line-height:1.35;word-break:break-word}
+.chrow b{color:#3a86ff;margin-right:4px}
+.chrow.me b{color:#1f9460}
+#chQuick,#chEmoji{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px 0}
+#chEmoji{padding-top:4px;padding-bottom:4px}
+#chQuick button,.chq,.che{border:0;background:#eef4ff;color:#1d2340;font:inherit;font-weight:800;font-size:13px;padding:6px 10px;border-radius:12px;cursor:pointer;min-height:32px}
+#chQuick button:hover,.chq:hover,.che:hover,.chq.on{background:#3a86ff;color:#fff}
+.che{font-size:18px;padding:4px 8px;background:#fff4e0}
+#chPeople{padding:6px 10px;max-height:90px;overflow:auto;border-top:1px dashed #eee}
+.chperson{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:800;font-size:13px;padding:2px 0}
+.chmute{border:0;background:#ffe4e8;color:#c23d4b;font:inherit;font-weight:800;font-size:12px;padding:4px 8px;border-radius:10px;cursor:pointer;min-height:28px}
+#chForm{display:flex;gap:6px;padding:8px 10px 6px}
+#chForm[hidden]{display:none}
+#chIn{flex:1;min-width:0;border:3px solid #ffd23f;border-radius:12px;padding:8px 10px;font:inherit;font-weight:800;font-size:15px}
+#chSend{border:0;background:var(--green,#2ec27e);color:#fff;font:inherit;font-weight:900;padding:8px 12px;border-radius:12px;cursor:pointer}
+#chHint{padding:0 12px 8px;font-size:12px;font-weight:700;color:#5b6180}
+#chHint.warn{color:#c23d4b}
+#chWheel{pointer-events:auto;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(340px,calc(100vw - 24px));background:#fff;color:#1d2340;border-radius:22px;box-shadow:0 12px 0 rgba(0,0,0,.12),0 0 0 3px #9ad0ff;padding:14px;display:none;flex-wrap:wrap;gap:8px;justify-content:center;z-index:48}
+#chWheel.show{display:flex}
+.chwheel-title{width:100%;text-align:center;font-weight:900;font-size:18px;margin-bottom:4px}
+.chwheel-hint{width:100%;text-align:center;font-weight:700;font-size:12px;color:#5b6180;margin-top:4px}
+#chBubbles{position:fixed;inset:0;pointer-events:none;z-index:46}
+.chbubble{position:absolute;transform:translate(-50%,-100%);background:#fff;color:#1d2340;border-radius:16px 16px 16px 4px;padding:6px 10px;font-weight:800;font-size:14px;box-shadow:0 4px 0 rgba(0,0,0,.12);max-width:200px;text-align:center;word-break:break-word}
+.chbubble b{display:block;font-size:11px;color:#3a86ff}
+.chset{margin-top:14px;text-align:left}
+.chset-title{color:var(--muted);font-weight:700;margin-bottom:6px}
+.chset label{display:flex;align-items:flex-start;gap:8px;font-weight:800;margin:6px 0;cursor:pointer}
+.chset small{display:block;font-weight:700;color:var(--muted);font-size:13px}
+@media (max-width:700px){
+  #chPanel{width:min(100vw - 16px, 380px);bottom:calc(max(12px,env(safe-area-inset-bottom)) + 70px)}
+  #chBtn{width:52px;height:52px}
+}
+
 footer{text-align:center;color:var(--muted);margin-top:40px;font-weight:700}
 /* modal */
 .modal{position:fixed;inset:0;background:rgba(10,14,35,.55);display:none;place-items:center;z-index:50;padding:16px}
@@ -1330,6 +1375,12 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
       </label>
       <label class="invrow"><input type="checkbox" id="setShowFps"><span>Show FPS<small>On-screen frames-per-second counter</small></span></label>
     </div>
+    <div class="chset" id="chSet">
+      <div class="chset-title">💬 Chat</div>
+      <label><input type="radio" name="chSetMode" id="chSetOn" value="on" checked><span>Chat On<small>Friends in the room can send messages and quick chat</small></span></label>
+      <label><input type="radio" name="chSetMode" id="chSetQuick" value="quick"><span>Quick chat only<small>Only the phrase buttons and emoji — no typing</small></span></label>
+      <label><input type="radio" name="chSetMode" id="chSetOff" value="off"><span>Chat Off<small>Hide chat in rooms. You can turn it back on any time</small></span></label>
+    </div>
     <div class="padsec" id="padSec">
       <h3>🎮 Controller</h3>
       <div class="padst" id="padStatus">No controller yet.</div>
@@ -1344,7 +1395,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
         <span><i>LB RB</i>Quick emotes (Build: pick block · Pets: LB 🍖 feed, RB 🎾 throw)</span>
         <span><i>LT RT</i>Zoom out / in (Build: delete / place)</span>
         <span><i>☰</i>Menu: pause (Home: settings)</span>
-        <span><i style="font-size:8px;letter-spacing:-.2px">VIEW</i>View: help · skip level (Home: shop)</span>
+        <span><i style="font-size:8px;letter-spacing:-.2px">VIEW</i>View: quick chat in a room · help · skip level (Home: shop)</span>
         <span><i>✚</i>D-pad: move around menus</span>
         <span><i>L3</i>Click left stick: run (hold, or click to keep running)</span>
         <span><i>R3</i>Click right stick: camera behind me · click twice: 👁️ first person</span>
@@ -1365,6 +1416,25 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
   </div>
 </dialog>
 <div class="toast" id="toast">Saved! ✅</div>
+
+<div id="chRoot" hidden>
+  <button type="button" id="chBtn" aria-label="Open chat" hidden>💬</button>
+  <div id="chPanel" hidden>
+    <div id="chHead"><b>💬 Chat</b><button type="button" id="chClose" aria-label="Close chat">✖</button></div>
+    <div id="chLog" role="log" aria-live="polite"></div>
+    <div id="chQuick"></div>
+    <div id="chEmoji"></div>
+    <div id="chPeople" hidden></div>
+    <form id="chForm" action="javascript:void(0)">
+      <input id="chIn" type="text" maxlength="80" autocomplete="off" spellcheck="true" aria-label="Chat message" placeholder="Say something kind…">
+      <button type="submit" id="chSend">Send</button>
+    </form>
+    <div id="chHint">Enter or T to chat · Esc closes. Be kind!</div>
+  </div>
+  <div id="chWheel" hidden></div>
+  <div id="chBubbles" aria-hidden="true"></div>
+</div>
+
 
 <!-- ===== Obby Rush game view ===== -->
 <div class="obby" id="obby">
@@ -1789,7 +1859,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.15-3';
+const BUILD = '2026.11.15-4';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3237,6 +3307,8 @@ function confetti(){
     {id:'fr-code', cat:'friends', emoji:'📋', name:'Pass It On', desc:'Copy your 6-letter friend code to share with family.', coins:5, prove:s => !!(s.friends && s.friends.copied) || !!(s.notes && s.notes['fr:code'])},
     {id:'fr-join', cat:'friends', emoji:'🚪', name:'Come Play', desc:'Join a friend who is already in a game.', coins:15, prove:s => !!(s.notes && s.notes['fr:join'])},
     {id:'fr-session', cat:'friends', emoji:'🎮', name:'We Played!', desc:'Add a friend after you played together in a room.', coins:15, prove:s => !!(s.notes && s.notes['fr:session'])},
+    {id:'ch-hello', cat:'friends', emoji:'💬', name:'First Hello', desc:'Say Hi! in a multiplayer room.', coins:5, prove:s => !!(s.notes && s.notes['ch:hello'])},
+    {id:'ch-gg', cat:'friends', emoji:'🏆', name:'Said GG', desc:'Send a Good Game (GG!) in a multiplayer room.', coins:5, prove:s => !!(s.notes && s.notes['ch:gg'])},
     // Collection
     {id:'welcome', cat:'collection', emoji:'👋', name:'Hello, Friend', desc:'Pick a player name and join Rublox.', coins:5, prove:s => !!(s.player && s.player.name)},
     {id:'first-game', cat:'collection', emoji:'🎮', name:'Let\'s Play', desc:'Start any Rublox game.', coins:5, prove:s => !!(s.notes && s.notes.play) || !!(s.recent && s.recent.length >= 1)},
@@ -3304,6 +3376,9 @@ function confetti(){
       if (achTestHash()) return true;
       if (typeof dhTestBlockPersist === 'function' && dhTestBlockPersist()) return true;
       if (typeof dhTestActive === 'function' && dhTestActive()) return true;
+      const loc = (typeof location !== 'undefined' && location) || (typeof window !== 'undefined' && window.location) || null;
+      const hash = loc && loc.hash ? String(loc.hash) : '';
+      if (/(?:^|#|&)chattest=/i.test(hash)) return true;
     } catch (e){}
     return false;
   }
@@ -3864,7 +3939,7 @@ if (setShowFps) setShowFps.addEventListener('change', () => {
   save('rubloxShowFps', window.gfx.showFps);
   syncGfxUi();
 });
-$('#setBtn').onclick = () => { syncInvert(); syncGfxUi(); $('#setModal').classList.add('show'); };
+$('#setBtn').onclick = () => { syncInvert(); syncGfxUi(); if (typeof chSyncSettings === 'function') chSyncSettings(); $('#setModal').classList.add('show'); };
 $('#setOk').onclick = () => $('#setModal').classList.remove('show');
 $('#setModal').onclick = e => { if (e.target.id === 'setModal') $('#setModal').classList.remove('show'); };
 document.addEventListener('keydown', e => {
@@ -3880,7 +3955,7 @@ document.addEventListener('keydown', e => {
 function dhInertExempt(el){
   if (!el) return true;
   const id = el.id || '';
-  if (id === 'obby' || id === 'dhResetModal' || id === 'achToast' || id === 'frConfirm') return true;
+  if (id === 'obby' || id === 'dhResetModal' || id === 'achToast' || id === 'frConfirm' || id === 'chRoot' || id === 'chPanel' || id === 'chWheel') return true;
   const tag = (el.tagName || '').toLowerCase();
   if (tag === 'dialog') return true;
   const cls = el.classList;
@@ -3916,7 +3991,7 @@ function dhIsUiEvent(e, kind){
   const isKey = kind === 'key' || !!(e && e.type && /^key/i.test(e.type || ''));
   if (isKey){
     if (t.closest && t.closest('input, textarea, select, [contenteditable="true"]')) return true;
-    const root = t.closest && t.closest('dialog, .modal, .opanel, #dhResetModal, #oPausePanel, #setModal, #dhShop, #dhYard, #dhUp');
+    const root = t.closest && t.closest('dialog, .modal, .opanel, #dhResetModal, #oPausePanel, #setModal, #dhShop, #dhYard, #dhUp, #chPanel, #chWheel, #chRoot');
     if (!root) return false;
     if (root.id === 'dhResetModal' && typeof dhResetModalIsOpen === 'function' && !dhResetModalIsOpen()) return false;
     if (root.classList && root.classList.contains('opanel') && !root.classList.contains('show') && !root.open) return false;
@@ -4639,6 +4714,920 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
 
 
 
+
+  /* ===================== Chat word lists (t285u) ===================== */
+  /* Kept in its own module so the filter logic and the lists can be tested apart.
+     These words are used only for matching. Renders must never show them. */
+  (function (root) {
+    const CHAT_WORDS = {
+      /* Severe or clearly not-for-kids: match as whole words or spaced/leet evasions, never as a bit of a longer safe word. */
+      severe: [
+        'fuck', 'fuck', 'fuk', 'fck', 'fcker', 'fucking', 'fucked', 'motherfucker',
+        'shit', 'shite', 'bullshit',
+        'bitch', 'bitchy',
+        'cunt',
+        'ass',
+        'pussy',
+        'slut', 'whore', 'hooker',
+        'dick', 'dildo', 'cock', 'penis', 'vagina', 'boob', 'boobs', 'tit', 'tits', 'nude', 'nudes', 'porn', 'porno', 'sex', 'sexy', 'sexual', 'horny', 'orgasm', 'blowjob',
+        'nigger', 'nigga', 'nigg', 'nigr',
+        'fag', 'faggot', 'fgt',
+        'retard', 'retarded',
+        'rape', 'rapist', 'raping',
+        'nazi', 'hitler', 'kkk',
+        'kill', 'killing', 'murder', 'murderer', 'suicide', 'stab', 'stabbing',
+        'gun', 'guns', 'shoot', 'shooting', 'bomb', 'bombs'
+      ],
+      mean: [
+        'stupid', 'dumb', 'loser', 'idiot', 'ugly'
+      ],
+      phrases: [
+        'hate you', 'hate u', 'i hate you', 'i hate u',
+        'shut up', 'shut it', 'shut your',
+        'kill you', 'kill u', 'kys',
+        'how old', 'how old are you', 'whats your age', "what's your age", 'what is your age',
+        'add me on', 'follow me on', 'my address', 'my number', 'call me at', 'text me at', 'dm me'
+      ],
+      /* Whole-word only extras that would be noisy as stems. */
+      mild: [
+        'damn', 'crap', 'hell', 'poop', 'butt', 'fart', 'piss', 'bastard', 'jerk'
+      ]
+    };
+    /* Safe words testers should confirm are not filtered (Scunthorpe). Not used as a matcher; documented for tests. */
+    CHAT_WORDS.safe = [
+      'class', 'classic', 'classes', 'classroom', 'classification',
+      'assassin', 'assassins',
+      'grass', 'grasses', 'grasshopper',
+      'sussex', 'scunthorpe',
+      'pass', 'password', 'compass', 'passage', 'passenger',
+      'assume', 'assumption', 'assistant', 'assessment', 'assets', 'associate',
+      'bass', 'cassette', 'cocktail',
+      'therapist', 'therapy',
+      'scrap', 'scraps',
+      'attribute', 'attributes', 'button', 'butter', 'grape',
+      'document', 'hello', 'skill', 'skills',
+      'passion', 'necessary', 'analyses', 'manhattan', 'japanese',
+      'i died', 'good game', 'hello class'
+    ];
+    root.CHAT_WORDS = CHAT_WORDS;
+    if (typeof module !== 'undefined' && module.exports) module.exports = CHAT_WORDS;
+  })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this));
+  /* ===================== end Chat word lists ===================== */
+
+  /* ===================== Chat filter (t285u) ===================== */
+  /* Filter on the sender and again on every receiver. Kid-safe: profanity, slurs,
+     insults, sexual/violent words, and personal info become ####. Word-boundary
+     matching avoids the Scunthorpe problem (class, assassin, grass, Sussex…). */
+  (function (root) {
+    const LEET = { '4': 'a', '@': 'a', '3': 'e', '1': 'i', '!': 'i', '|': 'i', '0': 'o', '5': 's', '$': 's', '7': 't', '+': 't', '8': 'b', '9': 'g', '2': 'z' };
+    const MAX = 80;
+    const STREET = 'street|st|road|rd|avenue|ave|boulevard|blvd|lane|ln|drive|dr|court|ct|way|place|pl|circle|cir|terrace|ter|parkway|pkwy';
+    const SOCIAL = 'discord|snap|snapchat|instagram|insta|tiktok|tik tok|facebook|fb|twitter|x\\.com|youtube|yt|kik|telegram|whatsapp|twitch';
+
+    function words(){
+      return root.CHAT_WORDS || (typeof CHAT_WORDS !== 'undefined' ? CHAT_WORDS : {severe:[], mean:[], phrases:[], mild:[]});
+    }
+    function hashes(n){ n = Math.max(4, Math.min(16, n | 0)); return '####'.slice(0, 4); } /* always #### so renders never hint at the word */
+    function leetChar(ch){ const c = ch.toLowerCase(); return LEET[c] || c; }
+
+    /* Lowercased copy with an index map back to the original. Leet and punctuation stand-ins are handled in the pattern so "f@ck" is caught without turning @ into "a". */
+    function normMap(src){
+      const out = [], map = [];
+      for (let i = 0; i < src.length; i++){
+        out.push(src.charAt(i).toLowerCase());
+        map.push(i);
+      }
+      return {s: out.join(''), map};
+    }
+    function letterClass(ch){
+      const subs = {a:'a4@', e:'e3', i:'i1!|', o:'o0', s:'s5$', t:'t7+', b:'b8', g:'g9', z:'z2'};
+      const set = subs[ch] || ch;
+      const esc = set.split('').map(c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('');
+      return '(?:[' + esc + ']+|[@*$&+=!%^._\\-]{1,3})';
+    }
+
+    function pushSpan(spans, a, b, reason){
+      if (a < 0 || b <= a) return;
+      spans.push({a, b, reason});
+    }
+
+    /* Merge overlapping spans. */
+    function merge(spans){
+      if (!spans.length) return [];
+      spans.sort((x, y) => x.a - y.a || y.b - x.b);
+      const out = [spans[0]];
+      for (let i = 1; i < spans.length; i++){
+        const p = out[out.length - 1], c = spans[i];
+        if (c.a <= p.b){ p.b = Math.max(p.b, c.b); if (c.reason && p.reason.indexOf(c.reason) < 0) p.reason += ',' + c.reason; }
+        else out.push(c);
+      }
+      return out;
+    }
+
+    function applySpans(src, spans){
+      let out = '', i = 0;
+      const m = merge(spans);
+      for (const sp of m){
+        if (sp.a > i) out += src.slice(i, sp.a);
+        out += hashes(sp.b - sp.a);
+        i = sp.b;
+      }
+      if (i < src.length) out += src.slice(i);
+      return out;
+    }
+
+    function findRegex(src, re, reason, spans){
+      re.lastIndex = 0;
+      const flags = re.flags.indexOf('g') >= 0 ? re.flags : re.flags + 'g';
+      const r = new RegExp(re.source, flags);
+      let m;
+      while ((m = r.exec(src))){
+        pushSpan(spans, m.index, m.index + m[0].length, reason);
+        if (!m[0].length) r.lastIndex++;
+      }
+    }
+
+    function piiSpans(src){
+      const spans = [];
+      const s = src;
+      findRegex(s, /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi, 'email', spans);
+      findRegex(s, /(?:https?:\/\/|www\.)[^\s<>]+/gi, 'url', spans);
+      findRegex(s, /\b[a-z0-9-]+\.(?:com|net|org|io|co|gg|tv|me|uk|us|info|biz|xyz|online|site|app)(?:\/[^\s]*)?/gi, 'url', spans);
+      findRegex(s, /(?:\+?\d{1,3}[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}\b/g, 'phone', spans);
+      findRegex(s, /\b\d{6,}\b/g, 'digits', spans);
+      findRegex(s, new RegExp('\\b\\d{1,6}\\s+[a-z0-9.#\\s]{1,40}\\s+(?:' + STREET + ')\\b', 'gi'), 'address', spans);
+      findRegex(s, /(?:^|[\s])@[a-z0-9_.]{2,}/gi, 'handle', spans);
+      findRegex(s, new RegExp('\\b(?:' + SOCIAL + ')\\b(?:\\s*[:./@]|\\s+(?:me|at|is|user|handle|name))', 'gi'), 'social', spans);
+      findRegex(s, /\b(?:how\s+old(?:\s+are\s+you)?|what(?:'s|s| is)\s+your\s+age)\b/gi, 'age', spans);
+      findRegex(s, /\b(?:i(?:'?m| am)\s+\d{1,3})\b/gi, 'age', spans);
+      findRegex(s, /\b(?:add me on|follow me on|my address|my number|call me at|text me at)\b/gi, 'contact', spans);
+      return spans;
+    }
+
+    function unique(list){
+      const seen = new Set(), out = [];
+      (list || []).forEach(w => {
+        const s = String(w || '').toLowerCase().replace(/[^a-z]+/g, '');
+        if (s.length >= 2 && !seen.has(s)){ seen.add(s); out.push(s); }
+      });
+      return out;
+    }
+
+    /* A bad word spelled with optional separators, leet, punctuation stand-ins, and repeated letters, not touching a longer letter run. */
+    function evasionRe(word){
+      const parts = word.split('').map(letterClass);
+      return new RegExp('(^|[^a-z])(' + parts.join('[^a-z]*') + ')(?![a-z])', 'gi');
+    }
+
+
+    function wordSpans(src){
+      const W = words();
+      const spans = [];
+      const nm = normMap(src);
+      const ns = nm.s;
+      const bag = unique([].concat(W.severe || [], W.mean || [], W.mild || []));
+      bag.forEach(w => {
+        const re = evasionRe(w);
+        let m;
+        while ((m = re.exec(ns))){
+          const inner = m[2] ? m.index + m[1].length : m.index;
+          const end = m.index + m[0].length - (m[0].match(/[^a-z]$/i) && !m[2] ? 1 : 0);
+          /* m[2] is the word body; map back through normMap */
+          const aOff = m[2] ? inner : m.index;
+          const bOff = m[2] ? inner + m[2].length : m.index + m[0].length;
+          const a = nm.map[aOff];
+          const last = Math.min(bOff, nm.map.length) - 1;
+          const b = (nm.map[last] != null ? nm.map[last] : src.length - 1) + 1;
+          if (a != null && b > a) pushSpan(spans, a, b, 'word');
+          if (!m[0].length) re.lastIndex++;
+        }
+      });
+      (W.phrases || []).forEach(p => {
+        const letters = String(p).toLowerCase().replace(/[^a-z]+/g, ' ').trim().split(/\s+/);
+        if (!letters.length) return;
+        const body = letters.map(w => w.split('').map(letterClass).join('[^a-z]*')).join('[^a-z]+');
+        const re = new RegExp('(^|[^a-z])(' + body + ')(?![a-z])', 'gi');
+        let m;
+        while ((m = re.exec(ns))){
+          const aOff = m[2] ? m.index + m[1].length : m.index;
+          const bOff = m[2] ? aOff + m[2].length : m.index + m[0].length;
+          const a = nm.map[aOff];
+          const last = Math.min(bOff, nm.map.length) - 1;
+          const b = (nm.map[last] != null ? nm.map[last] : src.length - 1) + 1;
+          if (a != null && b > a) pushSpan(spans, a, b, 'phrase');
+          if (!m[0].length) re.lastIndex++;
+        }
+      });
+      return spans;
+    }
+
+    function chatFilter(text, opts){
+      opts = opts || {};
+      const max = opts.max || MAX;
+      let src = String(text == null ? '' : text).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '');
+      src = src.replace(/\s+/g, ' ').trim();
+      if (src.length > max) src = src.slice(0, max);
+      if (!src) return {ok: true, text: '', blocked: false, reasons: []};
+      const spans = piiSpans(src).concat(wordSpans(src));
+      const merged = merge(spans);
+      const out = merged.length ? applySpans(src, merged) : src;
+      const reasons = [];
+      merged.forEach(sp => String(sp.reason || '').split(',').forEach(r => { if (r && reasons.indexOf(r) < 0) reasons.push(r); }));
+      return {ok: true, text: out, blocked: merged.length > 0, reasons, length: out.length};
+    }
+
+    function chatIsQuickSafe(text, list){
+      const t = String(text || '').trim();
+      return (list || []).some(p => p === t);
+    }
+
+    root.chatFilter = chatFilter;
+    root.chatIsQuickSafe = chatIsQuickSafe;
+    root.CHAT_FILTER_MAX = MAX;
+    if (typeof module !== 'undefined' && module.exports) module.exports = {chatFilter, chatIsQuickSafe, CHAT_FILTER_MAX: MAX};
+  })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this));
+  /* ===================== end Chat filter ===================== */
+
+  /* ===================== Chat (t285u) ===================== */
+  /* In-room text chat over the existing PeerJS transport. Real players only.
+     Free-text is filtered on the sender and again on every receiver. */
+  const CH_KEY = 'rubloxChat', CH_VER = 1, CH_MAX = 80, CH_RATE_N = 3, CH_RATE_MS = 5000, CH_BUBBLE_MS = 4000;
+  const CH_QUICK = ['Hi!', 'GG!', "Let's go!", 'Follow me!', 'Nice outfit!', 'Over here!', 'Thanks!', 'Oops!'];
+  const CH_EMOJI = ['😀', '😁', '😂', '😊', '😍', '🤩', '😎', '🤗', '👍', '👏', '🎉', '❤️', '⭐', '🌈', '☀️', '🎮'];
+
+  const ch = {
+    mode: 'on', muted: [], sent: [], log: [], bubbles: [],
+    open: false, wheel: false, wheelI: 0, _inited: false, _hintT: 0, now: null
+  };
+
+  function chNow(){ return ch.now != null ? ch.now : Date.now(); }
+  function chTestHash(){
+    try {
+      const loc = (typeof location !== 'undefined' && location) || (typeof window !== 'undefined' && window.location) || null;
+      const hash = loc && loc.hash ? String(loc.hash) : '';
+      return /(?:^|#|&)chattest=([A-Za-z0-9_-]+)/i.test(hash);
+    } catch (e){ return false; }
+  }
+  function chTestDemo(){
+    try {
+      const loc = (typeof location !== 'undefined' && location) || (typeof window !== 'undefined' && window.location) || null;
+      const hash = loc && loc.hash ? String(loc.hash) : '';
+      return /(?:^|#|&)chattest=demo\b/i.test(hash);
+    } catch (e){ return false; }
+  }
+  function chDefault(){ return {ver: CH_VER, mode: 'on', muted: []}; }
+  function chReadRaw(){
+    try {
+      if (typeof load === 'function') return load(CH_KEY, null);
+      if (typeof localStorage !== 'undefined'){
+        const r = localStorage.getItem(CH_KEY);
+        return r ? JSON.parse(r) : null;
+      }
+    } catch (e){}
+    return null;
+  }
+  function chWriteRaw(v){
+    try {
+      if (typeof save === 'function'){ save(CH_KEY, v); return true; }
+      if (typeof localStorage !== 'undefined'){ localStorage.setItem(CH_KEY, JSON.stringify(v)); return true; }
+    } catch (e){}
+    return false;
+  }
+  function chNormalize(raw){
+    const d = chDefault();
+    const o = (raw && typeof raw === 'object') ? raw : {};
+    d.mode = (o.mode === 'quick' || o.mode === 'off' || o.mode === 'on') ? o.mode : 'on';
+    const muted = Array.isArray(o.muted) ? o.muted : [];
+    d.muted = muted.map(n => String(n || '').trim()).filter(Boolean).slice(0, 40);
+    d.ver = CH_VER;
+    return d;
+  }
+  function chLoad(){
+    const n = chNormalize(chReadRaw());
+    ch.mode = n.mode;
+    ch.muted = n.muted.slice();
+    return n;
+  }
+  function chSave(){
+    return chWriteRaw({ver: CH_VER, mode: ch.mode, muted: ch.muted.slice()});
+  }
+  function chMode(){ return (ch.mode === 'quick' || ch.mode === 'off') ? ch.mode : 'on'; }
+  function chSetMode(m){
+    ch.mode = (m === 'quick' || m === 'off' || m === 'on') ? m : 'on';
+    chSave();
+    chSync();
+    return ch.mode;
+  }
+  function chMuteKey(name){ return String(name || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 16).toLowerCase(); }
+  function chIsMuted(name){ const k = chMuteKey(name); return !!k && ch.muted.some(n => chMuteKey(n) === k); }
+  function chMute(name){
+    const k = chMuteKey(name);
+    if (!k || chIsMuted(k)) return false;
+    ch.muted.push(String(name || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 16));
+    chSave();
+    chRenderLog();
+    chRenderPeople();
+    chPruneBubbles();
+    return true;
+  }
+  function chUnmute(name){
+    const k = chMuteKey(name);
+    const before = ch.muted.length;
+    ch.muted = ch.muted.filter(n => chMuteKey(n) !== k);
+    if (ch.muted.length === before) return false;
+    chSave();
+    chRenderLog();
+    chRenderPeople();
+    return true;
+  }
+  function chToggleMute(name){ return chIsMuted(name) ? chUnmute(name) : chMute(name); }
+
+  function chInRoom(){
+    try { return !!(typeof mp !== 'undefined' && mp && mp.on); } catch (e){ return false; }
+  }
+  function chAllowed(){
+    if (chTestDemo()) return chMode() !== 'off';
+    if (!chInRoom()) return false;
+    return chMode() !== 'off';
+  }
+  /* Demo hash can show the panel even when Chat is Off, so testers can still see the UI? No: Off means off.
+     Testers using #chattest=demo should see chat (default On). If they toggle Off, hide it. */
+  function chDemoForced(){
+    return chTestDemo() && chMode() !== 'off';
+  }
+  function chCanFreeText(){ return chAllowed() && chMode() === 'on'; }
+  function chCanQuick(){ return chAllowed(); }
+
+  function chRateOk(){
+    const now = chNow();
+    ch.sent = (ch.sent || []).filter(t => now - t < CH_RATE_MS);
+    return ch.sent.length < CH_RATE_N;
+  }
+  function chRateCommit(){
+    const now = chNow();
+    ch.sent = (ch.sent || []).filter(t => now - t < CH_RATE_MS);
+    if (ch.sent.length >= CH_RATE_N) return false;
+    ch.sent.push(now);
+    return true;
+  }
+  function chRateReset(){ ch.sent = []; }
+
+  function chRunFilter(text){
+    const fn = (typeof chatFilter === 'function') ? chatFilter : (typeof root !== 'undefined' && root.chatFilter);
+    if (typeof chatFilter === 'function') return chatFilter(text, {max: CH_MAX});
+    return {ok: true, text: String(text || '').replace(/\s+/g, ' ').trim().slice(0, CH_MAX), blocked: false, reasons: []};
+  }
+  function chIsQuickText(text){
+    const t = String(text || '').trim();
+    if (CH_QUICK.indexOf(t) >= 0) return true;
+    if (t.length <= 4 && CH_EMOJI.indexOf(t) >= 0) return true;
+    return false;
+  }
+  /* Prepare an outgoing line: length, mode, filter, rate limit. */
+  function chPrepare(text, opts){
+    opts = opts || {};
+    const raw = String(text == null ? '' : text);
+    const quick = !!(opts.quick || chIsQuickText(raw.trim()));
+    if (chMode() === 'off' && !opts.force) return {ok: false, reason: 'off', text: ''};
+    if (!quick && chMode() === 'quick' && !opts.force) return {ok: false, reason: 'quick-only', text: ''};
+    const f = chRunFilter(raw);
+    const out = f && f.text ? String(f.text) : '';
+    if (!out) return {ok: false, reason: 'empty', text: '', blocked: !!(f && f.blocked)};
+    if (!opts.skipRate && !chRateCommit()) return {ok: false, reason: 'rate', text: out, blocked: !!(f && f.blocked)};
+    return {ok: true, text: out, blocked: !!(f && f.blocked), reasons: (f && f.reasons) || [], quick};
+  }
+  function chAcceptIncoming(d){
+    if (!d || typeof d !== 'object') return null;
+    const name = (typeof cleanName === 'function') ? cleanName(d.name) : String(d.name || 'Player').slice(0, 16);
+    if (chIsMuted(name)) return null;
+    const f = chRunFilter(d.text);
+    const text = f && f.text ? String(f.text) : '';
+    if (!text) return null;
+    const uid = (typeof d.uid === 'string' && /^(H|g\d{1,4}|me|local)$/.test(d.uid)) ? d.uid : '';
+    return {name, text, uid, quick: !!d.q, blocked: !!f.blocked};
+  }
+
+  function chEl(id){ try { return (typeof $ === 'function' ? $(id.charAt(0) === '#' ? id : '#' + id) : (typeof document !== 'undefined' && document.getElementById(id.replace(/^#/, '')))); } catch (e){ return null; } }
+  function chEsc(s){
+    return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
+
+  function chMyName(){
+    try {
+      if (typeof myLook === 'function') return myLook().name || 'You';
+      if (typeof player !== 'undefined' && player && player.name) return (typeof cleanName === 'function') ? cleanName(player.name) : String(player.name).slice(0, 16);
+    } catch (e){}
+    return 'You';
+  }
+  function chMyUid(){
+    try { if (typeof mp !== 'undefined' && mp && mp.on) return mp.me || (mp.host ? 'H' : ''); } catch (e){}
+    return 'local';
+  }
+  function chPeople(){
+    const out = [];
+    const seen = new Set();
+    const add = (uid, name, me) => {
+      const n = (typeof cleanName === 'function') ? cleanName(name) : String(name || 'Player').slice(0, 16);
+      const id = String(uid || n);
+      if (seen.has(id)) return;
+      if (id && id.charAt(0) === 'b') return;
+      seen.add(id);
+      out.push({uid: id, name: n, me: !!me});
+    };
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.on){
+        if (mp.host){
+          add('H', chMyName(), true);
+          if (mp.guests && mp.guests.forEach) mp.guests.forEach(g => { if (g && g.ready) add(g.uid, g.name, false); });
+          else if (mp.guests && mp.guests.values) for (const g of mp.guests.values()) if (g && g.ready) add(g.uid, g.name, false);
+        } else if (Array.isArray(mp.roster)){
+          mp.roster.forEach(p => { if (p) add(p.uid, p.name, p.uid === mp.me); });
+        }
+      }
+    } catch (e){}
+    if (chTestDemo() && !out.length){
+      add('local', chMyName(), true);
+      add('demo1', 'Tess', false);
+      add('demo2', 'Max', false);
+      add('demo3', 'Ruby', false);
+    }
+    return out;
+  }
+
+  function chPushLog(entry){
+    if (!entry || !entry.text) return;
+    ch.log.push({name: entry.name, text: entry.text, at: chNow(), me: !!entry.me, uid: entry.uid || '', quick: !!entry.quick});
+    if (ch.log.length > 80) ch.log = ch.log.slice(-80);
+    chRenderLog();
+  }
+  function chAddBubble(uid, name, text){
+    if (!text) return;
+    const now = chNow();
+    ch.bubbles = (ch.bubbles || []).filter(b => now - b.at < CH_BUBBLE_MS && !chIsMuted(b.name));
+    ch.bubbles.push({uid: uid || '', name: name || '', text, at: now});
+  }
+  function chPruneBubbles(){
+    const now = chNow();
+    ch.bubbles = (ch.bubbles || []).filter(b => now - b.at < CH_BUBBLE_MS && !chIsMuted(b.name));
+  }
+
+  function chNoteAch(text){
+    try {
+      if (typeof achNote !== 'function') return;
+      const t = String(text || '').trim();
+      if (/^hi[!!. ]*$/i.test(t) || t === 'Hi!') achNote('ch:hello');
+      if (/^gg[!!. ]*$/i.test(t) || t === 'GG!') achNote('ch:gg');
+    } catch (e){}
+  }
+
+  function chShow(entry){
+    if (!entry || !entry.text) return;
+    if (chIsMuted(entry.name) && !entry.me) return;
+    chPushLog(entry);
+    chAddBubble(entry.uid, entry.name, entry.text);
+    chDrawBubbles();
+  }
+
+  function chSend(text, opts){
+    opts = opts || {};
+    const prep = chPrepare(text, opts);
+    if (!prep.ok){
+      if (prep.reason === 'rate') chHint('Whoa, slow down a little!');
+      else if (prep.reason === 'quick-only') chHint('Quick chat only is on.');
+      else if (prep.reason === 'off') chHint('Chat is off.');
+      return prep;
+    }
+    const mine = {name: chMyName(), text: prep.text, me: true, uid: chMyUid(), quick: !!prep.quick};
+    chShow(mine);
+    chNoteAch(prep.text);
+    chNetSend(prep.text, !!prep.quick);
+    return prep;
+  }
+  function chNetSend(text, quick){
+    try {
+      if (typeof mp === 'undefined' || !mp || !mp.on) return;
+      const msg = {t: 'chat', v: 1, uid: chMyUid(), name: chMyName(), text: String(text), q: quick ? 1 : 0};
+      if (typeof mpSend === 'function') mpSend(msg);
+    } catch (e){}
+  }
+  function chFromGuest(g, d){
+    if (!g || !d || d.t !== 'chat') return;
+    const incoming = {t: 'chat', uid: g.uid || d.uid, name: g.name || d.name, text: d.text, q: d.q};
+    const acc = chAcceptIncoming(incoming);
+    if (!acc) return;
+    const now = chNow();
+    g._chSent = (g._chSent || []).filter(t => now - t < CH_RATE_MS);
+    if (g._chSent.length >= CH_RATE_N) return;
+    g._chSent.push(now);
+    const out = {t: 'chat', v: 1, uid: acc.uid || g.uid, name: acc.name, text: acc.text, q: acc.quick ? 1 : 0};
+    chShow({name: acc.name, text: acc.text, me: false, uid: out.uid, quick: acc.quick});
+    try { if (typeof mpBroadcast === 'function') mpBroadcast(out, g.conn); } catch (e){}
+  }
+  function chFromHost(d){
+    if (!d || d.t !== 'chat') return;
+    if (d.uid && d.uid === chMyUid()) return;
+    const acc = chAcceptIncoming(d);
+    if (!acc) return;
+    chShow({name: acc.name, text: acc.text, me: false, uid: acc.uid, quick: acc.quick});
+  }
+
+  function chHint(msg){
+    const el = chEl('chHint');
+    if (el){ el.textContent = msg; el.classList && el.classList.add && el.classList.add('warn'); }
+    ch._hintT = chNow();
+    setTimeout(() => {
+      const e = chEl('chHint');
+      if (e && chNow() - ch._hintT >= 1400){ e.textContent = 'Enter or T to chat · Esc closes. Be kind!'; e.classList && e.classList.remove && e.classList.remove('warn'); }
+    }, 1800);
+  }
+  function chRenderLog(){
+    const log = chEl('chLog');
+    if (!log) return;
+    const rows = (ch.log || []).filter(e => e && e.text && (e.me || !chIsMuted(e.name)));
+    log.innerHTML = rows.map(e => {
+      const who = e.me ? 'You' : chEsc(e.name);
+      return '<div class="chrow' + (e.me ? ' me' : '') + '"><b>' + who + '</b> ' + chEsc(e.text) + '</div>';
+    }).join('');
+    try { log.scrollTop = log.scrollHeight; } catch (e){}
+  }
+  function chRenderQuick(){
+    const q = chEl('chQuick'), em = chEl('chEmoji'), w = chEl('chWheel');
+    if (q){
+      q.innerHTML = CH_QUICK.map((p, i) => '<button type="button" class="chq" data-chq="' + i + '">' + chEsc(p) + '</button>').join('');
+    }
+    if (em){
+      em.innerHTML = CH_EMOJI.map((p, i) => '<button type="button" class="che" data-che="' + i + '" aria-label="emoji">' + p + '</button>').join('');
+    }
+    if (w){
+      const items = CH_QUICK.concat(CH_EMOJI.slice(0, 4));
+      w.innerHTML = '<div class="chwheel-title">Quick chat</div>' + items.map((p, i) => '<button type="button" class="chq' + (i === ch.wheelI ? ' on' : '') + '" data-chw="' + i + '">' + chEsc(p) + '</button>').join('') + '<div class="chwheel-hint">Ⓐ pick · Ⓑ close · View or ✚ move</div>';
+    }
+  }
+  function chRenderPeople(){
+    const box = chEl('chPeople');
+    if (!box) return;
+    const people = chPeople().filter(p => !p.me);
+    if (!people.length){ box.innerHTML = ''; box.hidden = true; return; }
+    box.hidden = false;
+    box.innerHTML = people.map(p => {
+      const muted = chIsMuted(p.name);
+      return '<div class="chperson"><span>' + chEsc(p.name) + '</span><button type="button" class="chmute" data-chm="' + chEsc(p.name) + '">' + (muted ? 'Unmute' : 'Mute') + '</button></div>';
+    }).join('');
+  }
+  function chRenderForm(){
+    const form = chEl('chForm'), input = chEl('chIn');
+    const free = chCanFreeText();
+    if (form) form.hidden = !free;
+    if (input){
+      input.disabled = !free;
+      input.maxLength = CH_MAX;
+    }
+    const root = chEl('chRoot');
+    if (root) root.classList.toggle('ch-quickonly', chMode() === 'quick');
+  }
+  function chSync(){
+    const root = chEl('chRoot'), btn = chEl('chBtn');
+    const allow = chAllowed();
+    if (root){
+      root.hidden = !allow;
+      root.classList.toggle('show', allow);
+      root.classList.toggle('open', !!(allow && ch.open));
+      root.classList.toggle('wheel', !!(allow && ch.wheel));
+    }
+    if (btn){
+      btn.hidden = !allow;
+      btn.setAttribute && btn.setAttribute('aria-hidden', allow ? 'false' : 'true');
+    }
+    const panel = chEl('chPanel');
+    if (panel){
+      panel.classList.toggle('show', !!(allow && ch.open));
+      panel.hidden = !(allow && ch.open);
+    }
+    const wheel = chEl('chWheel');
+    if (wheel){
+      wheel.classList.toggle('show', !!(allow && ch.wheel));
+      wheel.hidden = !(allow && ch.wheel);
+    }
+    chRenderForm();
+    chRenderPeople();
+    chRenderLog();
+    chSyncSettings();
+    if (!allow){ ch.open = false; ch.wheel = false; }
+  }
+  function chSyncSettings(){
+    try {
+      const mode = chMode();
+      ['chSetOn', 'chSetQuick', 'chSetOff'].forEach(id => {
+        const el = chEl(id);
+        if (el) el.checked = (id === 'chSetOn' && mode === 'on') || (id === 'chSetQuick' && mode === 'quick') || (id === 'chSetOff' && mode === 'off');
+      });
+    } catch (e){}
+  }
+  function chExitLock(){
+    try { if (typeof document !== 'undefined' && document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e){}
+    try { if (typeof dhExitPointerLock === 'function') dhExitPointerLock(); } catch (e){}
+  }
+  function chOpen(){
+    if (!chAllowed()) return false;
+    ch.wheel = false;
+    ch.open = true;
+    chExitLock();
+    chSync();
+    const input = chEl('chIn');
+    if (input && chCanFreeText()){
+      try { input.focus(); } catch (e){}
+    }
+    return true;
+  }
+  function chClose(){
+    const was = ch.open || ch.wheel;
+    ch.open = false;
+    ch.wheel = false;
+    const input = chEl('chIn');
+    try { if (input && input.blur) input.blur(); } catch (e){}
+    chSync();
+    return was;
+  }
+  function chToggle(){ return ch.open ? (chClose(), false) : chOpen(); }
+  function chOpenWheel(){
+    if (!chAllowed()) return false;
+    ch.open = false;
+    ch.wheel = true;
+    ch.wheelI = 0;
+    chExitLock();
+    chRenderQuick();
+    chSync();
+    return true;
+  }
+  function chWheelItems(){ return CH_QUICK.concat(CH_EMOJI.slice(0, 4)); }
+  function chWheelMove(dir){
+    const items = chWheelItems();
+    if (!items.length) return;
+    const n = items.length;
+    ch.wheelI = (ch.wheelI + (dir || 1) + n * 8) % n;
+    chRenderQuick();
+  }
+  function chWheelPick(){
+    const items = chWheelItems();
+    const t = items[ch.wheelI] || items[0];
+    if (!t) return;
+    chSend(t, {quick: true});
+    chClose();
+  }
+  function chSubmit(){
+    const input = chEl('chIn');
+    const raw = input ? String(input.value || '') : '';
+    const prep = chSend(raw, {});
+    if (input && prep && (prep.ok || prep.reason === 'empty')) input.value = '';
+    return prep;
+  }
+
+  function chTypingTarget(t){
+    if (!t) return false;
+    try {
+      if (t.closest && t.closest('#chIn, #chPanel, #chWheel, #chRoot')) return true;
+      const tag = (t.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || t.isContentEditable) return true;
+    } catch (e){}
+    return false;
+  }
+  function chOnKey(e){
+    if (!e) return false;
+    const code = e.code || e.key || '';
+    const key = e.key || '';
+    try {
+      const sm = (typeof document !== 'undefined') && document.getElementById && document.getElementById('setModal');
+      if (sm && sm.classList && sm.classList.contains('show')) return false;
+    } catch (err){}
+    const target = e.target || e.srcElement;
+    const inOur = !!(target && target.closest && target.closest('#chIn, #chPanel, #chWheel, #chRoot'));
+    if (ch.open || ch.wheel){
+      if (code === 'Escape' || key === 'Escape' || key === 'Esc'){
+        if (e.preventDefault) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        chClose();
+        return true;
+      }
+      if (ch.wheel){
+        if (code === 'Enter' || code === 'Space' || key === 'Enter'){
+          if (e.preventDefault) e.preventDefault();
+          chWheelPick();
+          return true;
+        }
+        if (code === 'ArrowDown' || code === 'ArrowRight'){ if (e.preventDefault) e.preventDefault(); chWheelMove(1); return true; }
+        if (code === 'ArrowUp' || code === 'ArrowLeft'){ if (e.preventDefault) e.preventDefault(); chWheelMove(-1); return true; }
+        return true;
+      }
+      if ((code === 'Enter' || key === 'Enter') && !e.repeat){
+        if (e.preventDefault) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
+        if (chCanFreeText()) chSubmit();
+        return true;
+      }
+      /* Eat game keys while the chat box is open so WASD / T / space don't move or emote. */
+      if (e.preventDefault) e.preventDefault();
+      if (inOur || chTypingTarget(target)) return true;
+      return true;
+    }
+    if (!chAllowed()) return false;
+    if (chTypingTarget(target) && !inOur) return false;
+    if ((code === 'Enter' || code === 'KeyT' || key === 'Enter' || key === 't' || key === 'T') && !e.repeat){
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      chOpen();
+      return true;
+    }
+    return false;
+  }
+  function chPad(s, jp){
+    jp = jp || (s && s.jp) || [];
+    if (!chAllowed() && !ch.open && !ch.wheel) return false;
+    if (ch.wheel || ch.open){
+      const dx = (s && s.b && ((s.b[15] ? 1 : 0) - (s.b[14] ? 1 : 0))) || 0;
+      const dy = (s && s.b && ((s.b[13] ? 1 : 0) - (s.b[12] ? 1 : 0))) || 0;
+      if (jp[1]){ chClose(); return true; }
+      if (jp[0]){ if (ch.wheel) chWheelPick(); else if (chCanFreeText()) chOpen(); return true; }
+      if (jp[12] || jp[14] || dy < 0 || dx < 0){ if (ch.wheel) chWheelMove(-1); return true; }
+      if (jp[13] || jp[15] || dy > 0 || dx > 0){ if (ch.wheel) chWheelMove(1); return true; }
+      if (jp[8]){ chClose(); return true; }
+      return true;
+    }
+    if (jp[8]){
+      try {
+        const skip = (typeof $ === 'function') ? $('#oSkip') : (typeof document !== 'undefined' && document.getElementById('oSkip'));
+        if (skip && skip.classList && skip.classList.contains('show')) return false;
+      } catch (e){}
+      chOpenWheel();
+      return true;
+    }
+    return false;
+  }
+
+  function chProject(x, y, z){
+    try {
+      if (typeof THREE === 'undefined' || typeof camera === 'undefined' || !camera) return null;
+      const v = new THREE.Vector3(+x, +y, +z);
+      v.project(camera);
+      if (v.z < -1 || v.z > 1) return null;
+      const w = (typeof innerWidth === 'number' ? innerWidth : 800);
+      const h = (typeof innerHeight === 'number' ? innerHeight : 600);
+      return {x: (v.x * 0.5 + 0.5) * w, y: (-v.y * 0.5 + 0.5) * h, z: v.z, vis: v.z < 1 && v.z > -1};
+    } catch (e){ return null; }
+  }
+  function chPosFor(uid, name){
+    try {
+      if (uid && (uid === chMyUid() || uid === 'local' || uid === 'me')){
+        if (typeof P !== 'undefined' && P) return {x: P.x, y: (P.y || 0) + 2.15, z: P.z};
+      }
+      if (typeof mp !== 'undefined' && mp && mp.ents){
+        const E = mp.ents.get && mp.ents.get(uid);
+        if (E) return {x: E.x, y: (E.y || 0) + 2.15, z: E.z};
+        if (mp.ents.forEach){
+          let found = null;
+          mp.ents.forEach((ent, id) => {
+            if (found) return;
+            const look = (typeof mpLook === 'function') ? mpLook(id) : null;
+            if (look && chMuteKey(look.short || look.name) === chMuteKey(name)) found = ent;
+          });
+          if (found) return {x: found.x, y: (found.y || 0) + 2.15, z: found.z};
+        }
+      }
+    } catch (e){}
+    return null;
+  }
+  function chDrawBubbles(){
+    const box = chEl('chBubbles');
+    if (!box) return;
+    chPruneBubbles();
+    const now = chNow();
+    if (!ch.bubbles.length){ box.innerHTML = ''; return; }
+    const runningGame = (typeof running !== 'undefined' && running);
+    box.innerHTML = ch.bubbles.map((b, i) => {
+      const left = Math.max(0, CH_BUBBLE_MS - (now - b.at));
+      let style = '';
+      if (runningGame){
+        const pos = chPosFor(b.uid, b.name);
+        const pr = pos ? chProject(pos.x, pos.y, pos.z) : null;
+        if (!pr || pr.z > 1) style = 'display:none';
+        else style = 'left:' + Math.round(pr.x) + 'px;top:' + Math.round(pr.y) + 'px';
+      } else {
+        style = 'left:' + (18 + (i % 3) * 16) + '%;bottom:' + (28 + i * 8) + '%;top:auto;transform:none';
+      }
+      return '<div class="chbubble" style="' + style + '"><b>' + chEsc(b.name || '') + '</b> ' + chEsc(b.text) + '</div>';
+    }).join('');
+  }
+  function chTick(){
+    if (!chAllowed() && !(ch.bubbles && ch.bubbles.length)) return;
+    chDrawBubbles();
+  }
+
+  function chSeedDemo(){
+    if (!chTestDemo()) return false;
+    if (ch.log && ch.log.length) return true;
+    const t = chNow();
+    ch.log = [
+      {name: 'Tess', text: 'Hi!', at: t - 8000, me: false, uid: 'demo1', quick: true},
+      {name: 'Max', text: "Let's go!", at: t - 6000, me: false, uid: 'demo2', quick: true},
+      {name: 'Ruby', text: '####', at: t - 3500, me: false, uid: 'demo3', quick: false},
+      {name: 'You', text: 'Nice outfit!', at: t - 1500, me: true, uid: 'local', quick: true}
+    ];
+    ch.bubbles = [{uid: 'demo1', name: 'Tess', text: 'Hi!', at: t}];
+    ch.open = true;
+    return true;
+  }
+
+  function chBind(){
+    if (ch._bound) return;
+    ch._bound = true;
+    try {
+      document.addEventListener('keydown', e => {
+        if (chOnKey(e)) return;
+      }, true);
+      const root = chEl('chRoot');
+      if (root){
+        root.addEventListener('pointerdown', e => { e.stopPropagation(); chExitLock(); }, true);
+        root.addEventListener('click', e => {
+          const t = e.target && e.target.closest && (e.target.closest('[data-chq], [data-che], [data-chw], [data-chm], #chBtn, #chClose, #chSend'));
+          if (!t) return;
+          if (t.id === 'chBtn'){ e.preventDefault(); if (ch.open) chClose(); else chOpen(); return; }
+          if (t.id === 'chClose'){ e.preventDefault(); chClose(); return; }
+          if (t.id === 'chSend'){ e.preventDefault(); chSubmit(); return; }
+          if (t.hasAttribute('data-chq')){ e.preventDefault(); const p = CH_QUICK[+t.getAttribute('data-chq')]; if (p) chSend(p, {quick: true}); return; }
+          if (t.hasAttribute('data-che')){ e.preventDefault(); const p = CH_EMOJI[+t.getAttribute('data-che')]; if (p) chSend(p, {quick: true}); return; }
+          if (t.hasAttribute('data-chw')){ e.preventDefault(); ch.wheelI = +t.getAttribute('data-chw') || 0; chWheelPick(); return; }
+          if (t.hasAttribute('data-chm')){ e.preventDefault(); chToggleMute(t.getAttribute('data-chm')); return; }
+        });
+      }
+      const form = chEl('chForm');
+      if (form) form.addEventListener('submit', e => { e.preventDefault(); chSubmit(); });
+      ['chSetOn', 'chSetQuick', 'chSetOff'].forEach(id => {
+        const el = chEl(id);
+        if (!el) return;
+        el.addEventListener('change', () => {
+          const m = id === 'chSetQuick' ? 'quick' : id === 'chSetOff' ? 'off' : 'on';
+          chSetMode(m);
+        });
+      });
+    } catch (e){}
+  }
+
+  function chInit(){
+    if (ch._inited){ chSync(); return ch; }
+    ch._inited = true;
+    chLoad();
+    if (chTestDemo()) chSeedDemo();
+    chRenderQuick();
+    chBind();
+    chSync();
+    try {
+      if (chTestDemo()){
+        const tick = () => { chTick(); requestAnimationFrame(tick); };
+        requestAnimationFrame(tick);
+      }
+    } catch (e){}
+    return ch;
+  }
+
+  try {
+    if (typeof window !== 'undefined'){
+      window.chInit = chInit;
+      window.chSync = chSync;
+      window.chOnKey = chOnKey;
+      window.chPad = chPad;
+      window.chTick = chTick;
+      window.chSend = chSend;
+      window.chPrepare = chPrepare;
+      window.chAcceptIncoming = chAcceptIncoming;
+      window.chFromGuest = chFromGuest;
+      window.chFromHost = chFromHost;
+      window.chSetMode = chSetMode;
+      window.chMode = chMode;
+      window.chMute = chMute;
+      window.chUnmute = chUnmute;
+      window.chIsMuted = chIsMuted;
+      window.chToggleMute = chToggleMute;
+      window.chLoad = chLoad;
+      window.chAllowed = chAllowed;
+      window.chOpen = chOpen;
+      window.chClose = chClose;
+      window.chOpenWheel = chOpenWheel;
+      window.chRateOk = chRateOk;
+      window.chRateCommit = chRateCommit;
+      window.chRateReset = chRateReset;
+      window.chTestHash = chTestHash;
+      window.chTestDemo = chTestDemo;
+      window.chSyncSettings = chSyncSettings;
+      window.CH_QUICK = CH_QUICK;
+      window.CH_EMOJI = CH_EMOJI;
+      window.CH_KEY = CH_KEY;
+      window.CH_MAX = CH_MAX;
+      window.ch = ch;
+    }
+  } catch (e){}
+  /* ===================== end Chat ===================== */
+
 /* ---------- start ---------- */
 setTheme(load('rubloxDark', false));
 try { buildGames(); } catch (err) {}
@@ -4647,6 +5636,7 @@ requestAnimationFrame(animateLava);
 try { buildAvatarEditor(); drawBig(); drawChip(); updateWelcome(); } catch (err) {}
 try { updateCoins(); renderShop(); renderStuff(); } catch (err) {}
 try { if (typeof frInit === 'function') frInit(); } catch (err) {}
+try { if (typeof chInit === 'function') chInit(); } catch (err) {}
 if (!player) askName();
 </script>
 <script id="three-lib">/* three.js r150.1 (MIT) */
@@ -7218,6 +8208,7 @@ const Obby = (() => {
     else if (d.t === 'btfin'){ if (running && bw && bw.test && mode === 'build') bwResAdd(g.name, Math.max(0, Math.min(3600, +d.tm || 0))); }
     else if (d.t === 'getblocks'){ if (running && bw && mode === 'build') mpSendTo(g.conn, {t: 'blocks', c: bwSerialize()}); }
     else if (d.t === 'bye') mpDrop(g, 'left');
+    else if (d.t === 'chat'){ try { if (typeof chFromGuest === 'function') chFromGuest(g, d); } catch (e){} }
   }
   function mpTagReq(g, d){
     const T = tg;
@@ -7268,6 +8259,7 @@ const Obby = (() => {
       case 'full': mpCleanup(); mpStatus('😅 That room is full (6 players max).'); break;
       case 'old': { const b = $('#updBar'); if (b) b.hidden = false; (running ? banner : toast)('🆕 There is a newer Rublox! Refresh this page when you get a chance.'); break; }
       case 'bye': mpHostGone('left'); break;
+      case 'chat': try { if (typeof chFromHost === 'function') chFromHost(d); } catch (e){} break;
     }
   }
   function mpSnap(d){
@@ -7542,6 +8534,7 @@ const Obby = (() => {
   }
   function mpLeave(){
     try { if (typeof frNoteLeavingRoom === 'function') frNoteLeavingRoom(); } catch (e){}
+    try { if (typeof chClose === 'function' && typeof chTestDemo === 'function' && !chTestDemo()){ ch.log = []; ch.bubbles = []; chClose(); } } catch (e){}
     mp.js = null;
     if (mp.on) mpSend({t: 'bye'}); mp.leaving = true;   // our own goodbye: don't show "the host left"
     const wasTag = running && tg && tg.remote;
@@ -7559,6 +8552,7 @@ const Obby = (() => {
   /* --- home screen panel --- */
   function mpRender(){
     try { if (typeof dhRenderInvite === 'function') dhRenderInvite(); } catch (e){}
+    try { if (typeof chSync === 'function') chSync(); } catch (e){}
     const idle = $('#mpIdle'), room = $('#mpRoom'); if (!idle) return;
     idle.hidden = mp.on; room.hidden = !mp.on;
     mpJSRender();
@@ -19116,6 +20110,7 @@ const Obby = (() => {
     cam.pitch = Math.max(fpOn() ? -1.3 : -.05, Math.min(fpOn() ? 1.4 : 1.3, cam.pitch + pad.ly * 1.9 * k * dt * (inv.y ? -1 : 1)));
     const behind = () => { cam.yaw = P.face + Math.PI; cam.pitch = fpOn() ? .08 : .42; };
     if (jp[11]){ const now = performance.now(); if (now - fp.r3 < 400){ fp.r3 = -1e9; setFP(!fp.on); } else { fp.r3 = now; behind(); } }   // R3 twice = first person
+    if (typeof chPad === 'function' && chPad(s, jp)) return;
     if (jp[8]){
       if ($('#oSkip').classList.contains('show')) $('#oSkip').click();
       else { const t = $('#oTip'); padTip(); if (t.classList.contains('hide')){ t.classList.remove('hide'); tipTimer = 8; } else { t.classList.add('hide'); tipTimer = 0; } }
@@ -19579,7 +20574,7 @@ function dhLayoutHud(){
     }
     const frameDt = Math.min(0.45, raw);
     if (document.pointerLockElement && (!fpOn() || paused || menuOpen || choosing || won || over)) document.exitPointerLock();
-    animate(paused ? 0 : frameDt); updateCamera(); renderer.render(scene, camera); hud();
+    animate(paused ? 0 : frameDt); updateCamera(); renderer.render(scene, camera); hud(); if (typeof chTick === 'function') try { chTick(); } catch (e){}
     tickGfxFps(frameDt);
   }
   function tickGfxFps(dt){
@@ -19681,6 +20676,7 @@ function dhLayoutHud(){
       if (typeof dhSkipCut === 'function') dhSkipCut();
     }, true);
     addEventListener('keydown', e => {
+      if (typeof chOnKey === 'function' && chOnKey(e)) return;
       if (!running) return;
       if (e.target && e.target.closest && e.target.closest('input, textarea, select')) return;   // typing a pet name etc.
       // WASD must be recorded even if a later handler (dhKey) returns early.
@@ -19877,7 +20873,7 @@ function dhLayoutHud(){
     $('#pMouseSens').oninput = e => { const r = $('#mouseSens'); r.value = e.target.value; r.dispatchEvent(new Event('input')); menuVals(); };
     $('#pMapBtn').onclick = () => { const m = $('#pMap'); m.classList.toggle('show'); $('#pMapBtn').textContent = m.classList.contains('show') ? '🎮 Hide button map' : '🎮 Button map'; };
     setInterval(() => { if ($('#oPausePanel').classList.contains('show')) menuPad(); }, 1000);
-    const HUD_HIT_SEL = '#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhVisit, #dhSteps, #dhResetModal, .obtns, #oExit, #oExit2, #oExit3, #oFP, #oPause, #oMute, #setBtn, #setModal, #oPausePanel, button, a, input, label, select';
+    const HUD_HIT_SEL = '#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhVisit, #dhSteps, #dhResetModal, .obtns, #oExit, #oExit2, #oExit3, #oFP, #oPause, #oMute, #setBtn, #setModal, #oPausePanel, #chRoot, #chPanel, #chWheel, #chBtn, button, a, input, label, select';
     function releasePointerForHud(){
       try { if (typeof document !== 'undefined' && document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e){}
     }
@@ -19901,7 +20897,7 @@ function dhLayoutHud(){
         try { add(document.getElementById(id)); } catch (e){}
       });
       const roots = [];
-      ['obby','dhBar','dhShop','dhYard','dhUp','oPausePanel','setModal'].forEach(id => {
+      ['obby','dhBar','dhShop','dhYard','dhUp','oPausePanel','setModal','chRoot','chPanel','chWheel'].forEach(id => {
         try { const r = document.getElementById(id); if (r) roots.push(r); } catch (e){}
       });
       try { const b = document.querySelector && document.querySelector('.obtns'); if (b) roots.push(b); } catch (e){}
@@ -20099,7 +21095,7 @@ function start(m = 'obby', d = null){
     buildEmoteMenu(); $('#oEmos').classList.remove('show');
     $('#oTip').classList.toggle('hide', choosing); tipTimer = mode === 'obby' && INTRO[level] ? 11 : 8; $('#oSkip').classList.remove('show');
     $('#lvlModal').classList.remove('show');
-    resize(); armGameLoop(); checkRotate();
+    resize(); armGameLoop(); checkRotate(); try { if (typeof chSync === 'function') chSync(); } catch (e){}
     if (mode === 'obby') banner('🏃 Level ' + level + ' · ' + worldOf(level).emoji + ' ' + worldOf(level).name);
     else if (mode === 'nds') banner('🏝️ Disaster Island!');
     else if (mode === 'build') banner('🧱 Build World! Make something awesome');
@@ -20955,6 +21951,7 @@ function start(m = 'obby', d = null){
     if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
+    try { if (typeof chSync === 'function') chSync(); } catch (e){}
   }
 
   // debug / test hook
@@ -21313,8 +22310,12 @@ function start(m = 'obby', d = null){
   function context(){
     const ms = [...document.querySelectorAll('.modal.show')].filter(shown);
     if (ms.length) return {kind: 'modal', root: ms[ms.length - 1]};
+    const chp0 = document.getElementById('chPanel'); if (chp0 && chp0.classList.contains('show')) return {kind: 'panel', root: chp0};
+    const chw0 = document.getElementById('chWheel'); if (chw0 && chw0.classList.contains('show')) return {kind: 'panel', root: chw0};
     const g = G();
     if (g && g.running){
+      const chp = document.getElementById('chPanel'); if (chp && chp.classList.contains('show')) return {kind: 'panel', root: chp};
+      const chw = document.getElementById('chWheel'); if (chw && chw.classList.contains('show')) return {kind: 'panel', root: chw};
       const ps = [...document.querySelectorAll('#obby .opanel.show')].filter(shown);
       if (ps.length) return {kind: 'panel', root: ps[ps.length - 1]};
       const em = document.getElementById('oEmos'); if (em && em.classList.contains('show')) return {kind: 'emotes', root: em};
