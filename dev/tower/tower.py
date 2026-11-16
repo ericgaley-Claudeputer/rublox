@@ -81,17 +81,40 @@ def main():
     html, m = once(html, old_tip, new_tip, 'tip')
     log.append(m)
 
+    old_debug = "    tower: () => td && {ph: td.ph, t: td.t, goo: td.goo, maxY, earned: td.earned, paid: td.paid, kind: td.kind.slice(), prog: tdProg()},"
+    new_debug = (
+        "    tower: () => td && {ph: td.ph, t: td.t, goo: td.goo, grace: td.grace, maxY, earned: td.earned, paid: td.paid, kind: td.kind.slice(), seed: td.seed, prog: tdProg(), cp: (typeof cpIndex !== 'undefined' ? cpIndex : 0)},\n"
+        "    tdGoo(y){ if (td && y != null){ td.goo = +y; if (td.gooMesh) td.gooMesh.position.y = td.goo - 1.2; } return td && td.goo; },"
+    )
+    # already-patched form (from the previous tip)
+    if old_debug not in html and 'tdGoo(y)' in html:
+        log.append('skip debug')
+    else:
+        html, m = once(html, old_debug, new_debug, 'debug')
+        log.append(m)
+
     html, m = once(
         html,
-        "    tower: () => td && {ph: td.ph, t: td.t, goo: td.goo, maxY, earned: td.earned, paid: td.paid, kind: td.kind.slice(), prog: tdProg()},",
-        "    tower: () => td && {ph: td.ph, t: td.t, goo: td.goo, grace: td.grace, maxY, earned: td.earned, paid: td.paid, kind: td.kind.slice(), seed: td.seed, prog: tdProg(), cp: (typeof cpIndex !== 'undefined' ? cpIndex : 0)},
-    tdGoo(y){ if (td && y != null){ td.goo = +y; if (td.gooMesh) td.gooMesh.position.y = td.goo - 1.2; } return td && td.goo; },",
-        'debug',
+        "  const P = {x:0, y:0, z:0, vx:0, vy:0, vz:0, ground:null, onGround:false, coyote:0, face:0, walk:0};",
+        "  const P = {x:0, y:0, z:0, vx:0, vy:0, vz:0, ground:null, onGround:false, coyote:0, face:0, walk:0, jumpBuf:0, jumpHeld:false};",
+        'p-jumpbuf',
+    )
+    log.append(m)
+
+    html, m = once(
+        html,
+        "    P.coyote = P.onGround ? .1 : P.coyote - dt;\n    if (inp.jump && P.coyote > 0 && P.vy <= .01){ P.vy = JUMP; P.coyote = 0; P.jumped = true; P.airT = 0; SND.jump(); }",
+        "    if (typeof tdJumpAssist === 'function' && typeof mode !== 'undefined' && mode === 'tower' && td){ tdJumpAssist(dt, inp); }\n"
+        "    else {\n"
+        "      P.coyote = P.onGround ? .1 : P.coyote - dt;\n"
+        "      if (inp.jump && P.coyote > 0 && P.vy <= .01){ P.vy = JUMP; P.coyote = 0; P.jumped = true; P.airT = 0; SND.jump(); }\n"
+        "    }",
+        'jump-assist',
     )
     log.append(m)
 
     IDX.write_text(html)
-    log.append(f'wrote index.html {IDX.stat().st_size} bytes')
+    log.append('wrote index.html ' + str(IDX.stat().st_size) + ' bytes')
     print('\n'.join(log))
 
 if __name__ == '__main__':

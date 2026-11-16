@@ -1074,6 +1074,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 
 
 
+
 /* ---------- lantern hotel css ---------- */
 /* t286u Lantern Big Top HUD */
 #lhBox{display:none}
@@ -2230,7 +2231,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-16';
+const BUILD = '2026.11.16-17';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3519,6 +3520,7 @@ function drawLantern(ctx){
 
 
 
+
 function drawHaunt(ctx){
   sky(ctx, '#2a2450', '#5b4d7a');
   ctx.fillStyle = '#4a3f6b'; ctx.fillRect(0, 140, 320, 60);
@@ -4246,17 +4248,6 @@ function confetti(){
       const loc = (typeof location !== 'undefined' && location) || (typeof window !== 'undefined' && window.location) || null;
       const hash = loc && loc.hash ? String(loc.hash) : '';
       if (/(?:^|#|&)chattest=/i.test(hash)) return true;
-      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
-      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
-      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
-      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
-      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
-      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
-      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
-      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
-      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
-      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
-      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
     } catch (e){}
     return false;
@@ -6595,6 +6586,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
 
 
 
+
 /* ---------- lantern rules ---------- */
 /* Pure Lantern Big Top rules — safe to require() in tests and to load in the page. */
 (function (root) {
@@ -7512,7 +7504,7 @@ const Obby = (() => {
   let solids, kills, spinners, movers, vanishers, checkpoints, coinList, jumpPads, trusses, finish, trophy, blob, model;
   let mats = {};
   let firstStep = null, mode = 'obby', diff = null, lava = null, escapePad = null, topY = 0, maxY = 0, over = false, choosing = false;
-  const P = {x:0, y:0, z:0, vx:0, vy:0, vz:0, ground:null, onGround:false, coyote:0, face:0, walk:0};
+  const P = {x:0, y:0, z:0, vx:0, vy:0, vz:0, ground:null, onGround:false, coyote:0, face:0, walk:0, jumpBuf:0, jumpHeld:false};
   const cam = {yaw:Math.PI, pitch:0.42, dist:13};
   // first person (remembered per device); while driving in Adopt a Pet the camera goes back to third person on its own
   const fp = {on: !!load('rubloxFP', false), r3: -1e9, wt: 0, unlockT: 0, shown: null, req: false, noLock: false, throwTurn: load('rubloxThrowTurn', true) !== false, turn: null};
@@ -8288,7 +8280,7 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
     if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
@@ -9328,8 +9320,11 @@ const Obby = (() => {
       if (t.active && inp.mag > .1 && Math.abs(P.x - p.x) < t.hw + R + .3 && Math.abs(P.z - p.z) < t.hd + R + .3 && P.y < p.y + t.hh && P.y + H > p.y - t.hh){ P.vy = 7; climbing = true; P.vx *= .25; P.vz *= .25; }
     }
     if (!climbing) P.vy = Math.max(-40, P.vy - GRAV * dt);
-    P.coyote = P.onGround ? .1 : P.coyote - dt;
-    if (inp.jump && P.coyote > 0 && P.vy <= .01){ P.vy = JUMP; P.coyote = 0; P.jumped = true; P.airT = 0; SND.jump(); }
+    if (typeof tdJumpAssist === 'function' && typeof mode !== 'undefined' && mode === 'tower' && td){ tdJumpAssist(dt, inp); }
+    else {
+      P.coyote = P.onGround ? .1 : P.coyote - dt;
+      if (inp.jump && P.coyote > 0 && P.vy <= .01){ P.vy = JUMP; P.coyote = 0; P.jumped = true; P.airT = 0; SND.jump(); }
+    }
     P.climbing = climbing;
     if (emote && (inp.mag > .1 || inp.jump)) emote = null;
     ext.x *= Math.exp(-dt * 1.4); ext.z *= Math.exp(-dt * 1.4);
@@ -15536,26 +15531,43 @@ const Obby = (() => {
   }
   function photostudioStop(){ psx = null; ['#psBar', '#psCamBtn', '#psGal'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); const f = $('#psFlash'); if (f) f.style.opacity = 0; }
 
+
   /* ---------- tower rules ---------- */
 /* Pure Tower of Doom rules — safe to require() in tests and to load in the page. */
 (function (root) {
   'use strict';
 
-  // Real engine physics (must stay in sync with JUMP, GRAV, SPEED, RUN_MUL in the game loop).
-  const TD_PHYS = {jump: 16, grav: 45, speed: 10, runMul: 1.6, r: 0.45, stepUp: 0.62};
+  // Live engine constants (JUMP, GRAV, SPEED, RUN_MUL, H). The *usable* jump is
+  // measured through the real step() loop (3 substeps per frame), not v^2/2g.
+  const TD_PHYS = {jump: 16, grav: 45, speed: 10, runMul: 1.6, r: 0.45, stepUp: 0.62, bodyH: 2.8};
+  // Measured by driving step() at 60 / 30 / 20 fps, holding walk (no sprint) and
+  // jumping from a flat floor. Apex is slightly *above* v^2/2g because of the
+  // discrete integrator; walk reach is 7.0 m at every fps once a single jump is
+  // isolated. Limits below are 50% of the conservative 60 fps figures.
+  const TD_MEAS_HEIGHT_60 = 2.8875;
+  const TD_MEAS_HEIGHT_30 = 2.9333;
+  const TD_MEAS_HEIGHT_20 = 2.975;
+  const TD_MEAS_HEIGHT = TD_MEAS_HEIGHT_60;
+  const TD_MEAS_REACH_WALK = 7.0;
+  const TD_MARGIN = 0.50;
+  const TD_LIMIT_H = TD_MEAS_HEIGHT * TD_MARGIN; // 1.44375
+  const TD_LIMIT_R = TD_MEAS_REACH_WALK * TD_MARGIN; // 3.5
+  const TD_MIN_JUMP_GAP = 0.5; // required whenever a hop is taller than a walk-up (no overhangs)
+  const TD_COYOTE = 0.2;
+  const TD_JUMP_BUF = 0.15;
+
   const TD_SECTIONS = 12;
   const TD_H = 7.2;
-  const TD_MARGIN = 0.75;
-  const TD_GOO_BASE = 0.16;       // was 0.42
-  const TD_GOO_ACCEL = 250;       // was maxY/90
-  const TD_GOO_ACCEL_CAP = 0.06;  // was 1.4
-  const TD_GRACE = 12;            // was 6
-  const TD_CP_GRACE = 8;          // new: rest after each gold pad and after a goo bounce
+  const TD_GOO_BASE = 0.16;
+  const TD_GOO_ACCEL = 250;
+  const TD_GOO_ACCEL_CAP = 0.06;
+  const TD_GRACE = 12;
+  const TD_CP_GRACE = 8;
   const TD_GOO_START = -8;
-  const TD_MIN_PAD = 2.8;
+  const TD_MIN_PAD = 4.0;
   const TD_KINDS = ['steps', 'beam', 'zig', 'pads', 'bridge', 'spin'];
   const TD_CP_SECTIONS = [1, 3, 5, 7, 9, 11];
-  const TD_CLIMB_RATE = 0.30;     // cautious 10-year-old vertical pace, m/s
+  const TD_CLIMB_RATE = 0.30;
   const TD_KEY = 'rubloxTower';
 
   function tdMaxJumpHeight(phys){
@@ -15583,6 +15595,10 @@ const Obby = (() => {
     return Math.hypot(gx, gz);
   }
 
+  function tdOverlapsXZ(a, b){
+    return tdAabbGap(a, b) <= 1e-6;
+  }
+
   function tdIsStandable(p){
     return p && p.role !== 'rail' && p.role !== 'decor';
   }
@@ -15590,41 +15606,40 @@ const Obby = (() => {
   function tdJumpCheck(from, to, opts){
     opts = opts || {};
     const phys = opts.phys || TD_PHYS;
-    const margin = opts.margin != null ? opts.margin : TD_MARGIN;
+    const limitH = opts.limitH != null ? opts.limitH : TD_LIMIT_H;
+    const limitR = opts.limitR != null ? opts.limitR : TD_LIMIT_R;
+    const minGap = opts.minJumpGap != null ? opts.minJumpGap : TD_MIN_JUMP_GAP;
+    const walkUp = phys.stepUp != null ? phys.stepUp : 0.62;
     const dy = to.y - from.y;
     const gap = tdAabbGap(from, to);
-    const maxH = tdMaxJumpHeight(phys);
-    if (dy <= (phys.stepUp || 0.62) && gap <= 0.08){
+    if (dy <= walkUp && gap <= 0.2){
       return {ok: true, why: 'step', dy, gap, usedH: 0, usedR: 0};
     }
-    const air = tdAirTime(dy, phys);
-    if (air == null){
-      return {ok: false, why: 'height-impossible', dy, gap, maxH, limitH: maxH};
+    // A 2.8 m body cannot jump "through" an overlapping higher pad — the lip
+    // ejects you sideways. Any hop taller than a walk-up needs a real gap.
+    if (dy > walkUp && gap < minGap){
+      return {ok: false, why: 'overhang', dy, gap, limitH, limitR, minGap};
     }
-    const walkReach = phys.speed * air;
-    const sprintReach = phys.speed * phys.runMul * air;
-    const limitH = maxH * margin;
-    const limitR = walkReach * margin;
     if (dy > limitH){
-      return {ok: false, why: 'height-tight', dy, gap, maxH, limitH, usedH: dy / maxH, usedR: walkReach ? gap / walkReach : 0};
-    }
-    if (gap > sprintReach){
-      return {ok: false, why: 'reach-impossible', dy, gap, walkReach, sprintReach, limitR, usedH: maxH ? dy / maxH : 0, usedR: walkReach ? gap / walkReach : 1};
+      return {ok: false, why: 'height', dy, gap, limitH, usedH: dy / TD_MEAS_HEIGHT, usedR: 0};
     }
     if (gap > limitR){
-      return {ok: false, why: 'reach-tight', dy, gap, walkReach, sprintReach, limitR, usedH: maxH ? dy / maxH : 0, usedR: walkReach ? gap / walkReach : 0};
+      return {ok: false, why: 'reach', dy, gap, limitR, usedH: Math.max(0, dy) / TD_MEAS_HEIGHT, usedR: gap / TD_MEAS_REACH_WALK};
     }
-    return {ok: true, why: 'jump', dy, gap, maxH, walkReach, usedH: maxH ? Math.max(0, dy) / maxH : 0, usedR: walkReach ? gap / walkReach : 0};
+    return {
+      ok: true, why: 'jump', dy, gap, limitH, limitR,
+      usedH: Math.max(0, dy) / TD_MEAS_HEIGHT,
+      usedR: gap / TD_MEAS_REACH_WALK
+    };
   }
 
   function tdWalkReachable(plats, opts){
     opts = opts || {};
     const list = (plats || []).filter(tdIsStandable);
-    const start = opts.start;
     if (!list.length) return {ok: false, reached: [], missing: [], jumps: [], why: 'no-platforms'};
     let si = 0;
-    if (start){
-      si = list.findIndex(p => p === start || (p.role === start.role && p.x === start.x && p.y === start.y && p.z === start.z));
+    if (opts.start){
+      si = list.findIndex(p => p === opts.start || (p.role === opts.start.role && p.x === opts.start.x && p.y === opts.start.y && p.z === opts.start.z));
       if (si < 0) si = 0;
     } else {
       const spawn = list.find(p => p.role === 'spawn') || list.find(p => p.role === 'island') || list[0];
@@ -15668,39 +15683,48 @@ const Obby = (() => {
     return p;
   }
 
+  // Generous kid-friendly sections: walk-up ledges (rise 0.55, touching) or
+  // short hops (rise ≤ 1.2, gap 0.8–1.6), pads at least 4 m across, no overhangs.
   function tdSectionPlats(y0, kind, sectionIndex){
     const plats = [];
-    const add = (x, y, z, w, d, role) => tdPush(plats, {x, y, z, w, d, h: 0.5, role: role || 'pad', kind, section: sectionIndex});
-    if (kind === 'steps'){
-      for (let k = 0; k < 6; k++) add(((k % 2) ? 1 : -1) * 2.0, y0 + 0.5 + k * 1.05, -k * 1.15, 3.0, 2.8);
-    } else if (kind === 'beam'){
-      add(0, y0 + 0.8, -2, 2.8, 8.5, 'beam');
-      add(-3.0, y0 + 2.2, -6.0, 3.0, 3.0);
-      add(3.0, y0 + 3.5, -8.0, 3.0, 3.0);
-      add(0, y0 + 5.1, -7.2, 3.2, 3.2);
-    } else if (kind === 'zig'){
-      for (let k = 0; k < 5; k++) add(((k % 2) ? 1 : -1) * 2.2, y0 + 0.55 + k * 1.15, -1 - k * 1.2, 3.0, 2.8);
-    } else if (kind === 'pads'){
-      for (let k = 0; k < 6; k++){
-        const ang = k * 0.85;
-        add(Math.sin(ang) * 2.6, y0 + 0.5 + k * 1.0, -k * 1.15, 2.8, 2.8);
+    const add = (x, y, z, w, d, role) => {
+      plats.push({x, y, z, w, d, h: 0.4, role: role || 'pad', kind, section: sectionIndex});
+      return plats[plats.length - 1];
+    };
+    const landY = y0 + TD_H - 0.2;
+    const rise = 0.55;
+    // Continue a compact vertical stair from the previous landing (or the spawn).
+    const startY = sectionIndex === 0 ? 1.05 : (y0 - 0.2 + rise);
+    const n = Math.max(1, Math.round((landY - startY) / rise));
+    const step = (landY - startY) / n; // ~0.55, never above a walk-up
+    const z0 = -5;
+    for (let k = 0; k < n; k++){
+      const y = startY + k * step;
+      let x = 0, z = z0, w = 4.4, d = 4.4, role = 'pad';
+      if (kind === 'steps'){
+        x = ((k % 2) ? 1 : -1) * 1.5;
+      } else if (kind === 'zig'){
+        x = ((k % 2) ? 1 : -1) * 1.8;
+        z = z0 + ((k % 4) < 2 ? 1.1 : -1.1);
+      } else if (kind === 'pads'){
+        const corner = k % 4, cx = (corner === 0 || corner === 1) ? 1.8 : -1.8, cz = (corner === 1 || corner === 2) ? -1.8 : 1.8;
+        x = cx; z = z0 + cz;
+      } else if (kind === 'beam'){
+        if (k % 2 === 0){ x = 0; w = 7.5; d = 4.4; role = 'beam'; }
+        else { x = ((k % 4) < 2 ? 1 : -1) * 1.4; }
+      } else if (kind === 'bridge'){
+        if (k % 3 === 1){ x = 0; w = 8.0; d = 4.4; role = 'bridge'; }
+        else { x = ((k % 2) ? 1 : -1) * 1.6; }
+      } else {
+        const ang = k * 1.05;
+        x = Math.cos(ang) * 1.7; z = z0 + Math.sin(ang) * 1.7; w = 4.5; d = 4.5; role = 'spiral';
       }
-    } else if (kind === 'bridge'){
-      add(-3.6, y0 + 0.8, -2.0, 3.0, 3.0);
-      add(0, y0 + 2.0, -4.0, 8.0, 2.8, 'bridge');
-      add(3.6, y0 + 3.3, -6.0, 3.0, 3.0);
-      add(0, y0 + 5.0, -7.0, 3.2, 3.2);
-    } else {
-      // 'spin': a gentle spiral of wide pads (no spinning kill bars).
-      for (let k = 0; k < 5; k++){
-        add(Math.cos(k * 1.15) * 2.4, y0 + 0.6 + k * 1.1, -2 - k * 1.15, 3.2, 3.2, 'spiral');
-      }
+      add(x, y, z, w, d, role);
     }
     const gold = TD_CP_SECTIONS.indexOf(sectionIndex + 1) >= 0;
-    add(0, y0 + TD_H - 0.2, -7.5, 3.6, 3.6, gold ? 'checkpoint' : 'landing');
-    // Decorative side rails — not part of the climb (too narrow to stand on).
-    tdPush(plats, {x: -6.2, y: y0 + 2.4, z: -4, w: 0.4, d: 6, h: 3.2, role: 'rail', kind, section: sectionIndex});
-    tdPush(plats, {x: 6.2, y: y0 + 2.4, z: -4, w: 0.4, d: 6, h: 3.2, role: 'rail', kind, section: sectionIndex});
+    add(0, landY, z0, 5.2, 5.2, gold ? 'checkpoint' : 'landing');
+    tdPush(plats, {x: -9.2, y: y0 + 2.4, z: z0, w: 0.4, d: 8, h: 3.2, role: 'rail', kind, section: sectionIndex});
+    tdPush(plats, {x: 9.2, y: y0 + 2.4, z: z0, w: 0.4, d: 8, h: 3.2, role: 'rail', kind, section: sectionIndex});
     return plats;
   }
 
@@ -15708,11 +15732,9 @@ const Obby = (() => {
     const list = kinds && kinds.length ? kinds.slice(0, TD_SECTIONS) : tdPickKinds(1);
     while (list.length < TD_SECTIONS) list.push('steps');
     const plats = [];
-    tdPush(plats, {x: 0, y: 0, z: 0, w: 14, d: 14, h: 0.4, role: 'island', section: -1});
-    tdPush(plats, {x: 0, y: 0.4, z: -6, w: 4.5, d: 3.5, h: 0.3, role: 'island', section: -1});
-    tdPush(plats, {x: 0, y: 0.9, z: -3.2, w: 4.5, d: 4.0, h: 0.35, role: 'stair', section: -1});
-    tdPush(plats, {x: 0, y: 0.5, z: -5.5, w: 3.0, d: 3.0, h: 0.2, role: 'spawn', section: -1});
-    const checkpoints = [{x: 0, y: 0.5, z: -5.5, w: 3.0, d: 3.0, idx: 0, section: -1}];
+    tdPush(plats, {x: 0, y: 0, z: -5, w: 18, d: 18, h: 0.4, role: 'island', section: -1});
+    tdPush(plats, {x: 0, y: 0.5, z: -5, w: 5.2, d: 5.2, h: 0.35, role: 'spawn', section: -1});
+    const checkpoints = [{x: 0, y: 0.5, z: -5, w: 5.2, d: 5.2, idx: 0, section: -1}];
     for (let i = 0; i < TD_SECTIONS; i++){
       const y0 = 1.2 + i * TD_H;
       const sect = tdSectionPlats(y0, list[i], i);
@@ -15724,10 +15746,13 @@ const Obby = (() => {
       }
     }
     const top = 1.2 + TD_SECTIONS * TD_H;
-    const finish = {x: 0, y: top + 0.6, z: -8, w: 3.2, d: 3.2, h: 0.3, role: 'finish'};
-    tdPush(plats, {x: 0, y: top, z: -8, w: 5.5, d: 5.5, h: 0.5, role: 'summit', section: TD_SECTIONS});
+    const lastLand = plats.filter(p => p.role === 'landing' || p.role === 'checkpoint').slice(-1)[0];
+    const summitY = (lastLand ? lastLand.y : top) + 0.55;
+    const finZ = lastLand ? lastLand.z : -5;
+    const finish = {x: 0, y: summitY + 0.45, z: finZ, w: 4.4, d: 4.4, h: 0.3, role: 'finish'};
+    tdPush(plats, {x: 0, y: summitY, z: finZ, w: 6.0, d: 6.0, h: 0.45, role: 'summit', section: TD_SECTIONS});
     tdPush(plats, finish);
-    return {plats, checkpoints, finish, kinds: list.slice(), top, topY: TD_SECTIONS * TD_H + 6};
+    return {plats, checkpoints, finish, kinds: list.slice(), top: summitY, topY: summitY + 6};
   }
 
   function tdLayout(seed){
@@ -15754,7 +15779,6 @@ const Obby = (() => {
       maxY = Math.max(maxY, y);
       if (grace > 0) grace -= dt;
       else goo += tdGooSpeed(maxY) * dt;
-      // A gold pad pauses the goo for the climber who just arrived.
       while (cpYs.length && y >= cpYs[0]){
         grace = Math.max(grace, TD_CP_GRACE);
         cpYs.shift();
@@ -15772,11 +15796,17 @@ const Obby = (() => {
     return {best: Math.max(0, r.best | 0), wins: Math.max(0, r.wins | 0), coins: Math.max(0, +r.coins || 0)};
   }
 
+  function tdPathPlats(layout){
+    return (layout.plats || []).filter(tdIsStandable);
+  }
+
   const api = {
-    TD_PHYS, TD_SECTIONS, TD_H, TD_MARGIN, TD_GOO_BASE, TD_GOO_ACCEL, TD_GOO_ACCEL_CAP,
+    TD_PHYS, TD_SECTIONS, TD_H, TD_MARGIN, TD_MEAS_HEIGHT, TD_MEAS_HEIGHT_60, TD_MEAS_HEIGHT_30, TD_MEAS_HEIGHT_20,
+    TD_MEAS_REACH_WALK, TD_LIMIT_H, TD_LIMIT_R, TD_MIN_JUMP_GAP, TD_COYOTE, TD_JUMP_BUF,
+    TD_GOO_BASE, TD_GOO_ACCEL, TD_GOO_ACCEL_CAP,
     TD_GRACE, TD_CP_GRACE, TD_GOO_START, TD_MIN_PAD, TD_KINDS, TD_CP_SECTIONS, TD_CLIMB_RATE, TD_KEY,
-    tdMaxJumpHeight, tdAirTime, tdMaxReach, tdAabbGap, tdIsStandable, tdJumpCheck, tdWalkReachable,
-    tdSeed, tdPickKinds, tdSectionPlats, tdLayoutFromKinds, tdLayout, tdGooSpeed, tdGooVsClimber, tdLoadProg
+    tdMaxJumpHeight, tdAirTime, tdMaxReach, tdAabbGap, tdOverlapsXZ, tdIsStandable, tdJumpCheck, tdWalkReachable,
+    tdSeed, tdPickKinds, tdSectionPlats, tdLayoutFromKinds, tdLayout, tdGooSpeed, tdGooVsClimber, tdLoadProg, tdPathPlats
   };
   root.TDRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -15813,13 +15843,13 @@ const Obby = (() => {
     return plat(p.x, p.y, p.z, p.w, p.d, color, p.h || .5);
   }
   function buildTower(){
-    const seed = ((Date.now() / 1000) | 0) % 99991;
+    const seed = (typeof globalThis !== 'undefined' && globalThis.__tdSeed != null) ? (globalThis.__tdSeed | 0) : (((Date.now() / 1000) | 0) % 99991);
     const layout = TD_RULES.tdLayout ? TD_RULES.tdLayout(seed) : null;
     td = {ph: 'play', t: 0, goo: TD_GOO_START, topY: (layout && layout.topY) || (TD_SECTIONS * TD_H + 6), paid: false, earned: 0, kind: (layout && layout.kinds) ? layout.kinds.slice() : [], near: -1, seed, grace: TD_GRACE, layout};
     scene.background = new THREE.Color('#b8e0ff');
     if (scene.fog){ scene.fog.color = new THREE.Color('#d7f0ff'); scene.fog.near = 40; scene.fog.far = 180; }
-    // Rims so you can't walk off the start island into the void.
-    [[0, 7.2, 14.4, .6], [0, -7.2, 14.4, .6], [7.2, 0, .6, 14.4], [-7.2, 0, .6, 14.4]].forEach(([x, z, w, d]) => plat(x, 1.1, z, w, d, '#ffe08a', 1.1));
+    // Rims so you can't walk off the start island into the void (island is 18x18 at z=-5).
+    [[0, 4.2, 18.4, .6], [0, -14.2, 18.4, .6], [9.2, -5, .6, 18.4], [-9.2, -5, .6, 18.4]].forEach(([x, z, w, d]) => plat(x, 1.1, z, w, d, '#ffe08a', 1.1));
     const colors = ['#c39bff', '#7fd6ff', '#ffb3c7', '#ffe08a', '#9ff0c8', '#ff9f6b'];
     if (layout){
       const rnd = tdSeed(seed);
@@ -15849,7 +15879,7 @@ const Obby = (() => {
     // goo cylinder: mesh center so its TOP face sits at td.goo (height 2.4 → centre = goo - 1.2)
     const goo = new THREE.Mesh(new THREE.CylinderGeometry(20, 20, 2.4, 28), new THREE.MeshLambertMaterial({color: '#b388ff', transparent: true, opacity: .9}));
     goo.position.set(0, td.goo - 1.2, -4); scene.add(goo); td.gooMesh = goo;
-    Object.assign(P, {x: 0, y: .05, z: -5.5, vx: 0, vy: 0, vz: 0}); P.face = 0; cam.yaw = Math.PI; cam.pitch = .35; cam.dist = 10;
+    Object.assign(P, {x: 0, y: .55, z: -5, vx: 0, vy: 0, vz: 0, jumpBuf: 0, jumpHeld: false}); P.face = 0; cam.yaw = 0; cam.pitch = .35; cam.dist = 12;
     topY = td.topY; maxY = 0;
   }
   function towerEnter(){ if (!td) return; td.ph = 'play'; td.t = 0; td.goo = TD_GOO_START; td.grace = TD_GRACE; td.paid = false; td.earned = 0; choosing = false; over = false;
@@ -15922,6 +15952,19 @@ const Obby = (() => {
     if (g){
       if (td.grace > 0) g.textContent = 'rests ' + Math.ceil(td.grace) + 's';
       else { const dist = P.y - td.goo; g.textContent = dist >= 0 ? Math.floor(dist) + 'm below' : 'back to pad'; }
+    }
+  }
+  function tdJumpAssist(dt, inp){
+    if (!P || !inp) return;
+    const coyoteT = (TD_RULES && TD_RULES.TD_COYOTE != null) ? TD_RULES.TD_COYOTE : 0.2;
+    const bufT = (TD_RULES && TD_RULES.TD_JUMP_BUF != null) ? TD_RULES.TD_JUMP_BUF : 0.15;
+    if (inp.jump && !P.jumpHeld) P.jumpBuf = bufT;
+    P.jumpHeld = !!inp.jump;
+    if (P.jumpBuf > 0) P.jumpBuf -= dt;
+    P.coyote = P.onGround ? coyoteT : P.coyote - dt;
+    if (P.jumpBuf > 0 && P.coyote > 0 && P.vy <= .01){
+      P.vy = JUMP; P.coyote = 0; P.jumpBuf = 0; P.jumped = true; P.airT = 0;
+      if (typeof SND !== 'undefined' && SND.jump) SND.jump();
     }
   }
   function tdPad(jp){ return false; }
@@ -27405,24 +27448,6 @@ function start(m = 'obby', d = null){
     if (mode === 'dance') danceEnter();
     $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
-        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
-    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
-        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
-    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
-        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
-    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
-        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
-    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
-        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
-    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
-        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
-    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
-        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
-    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
-        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
-    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
-        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
-    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
     $('#hmBox').style.display = mode === 'haunt' ? '' : 'none'; ['#hmAct'].forEach(id => $(id).classList.remove('show'));
     if (mode === 'haunt'){ if (!window.__hmBound){ window.__hmBound = true; $('#hmAct').onclick = () => hmAct(); }
       hauntEnter(); }
@@ -28396,10 +28421,166 @@ function start(m = 'obby', d = null){
       solids: solids.length, meshes: (() => { let k = 0; scene.traverse(o => { if (o.isMesh) k++; }); return k; })()},
     verify(n){ const was = running; if (was) return {err: 'stop the game first'}; mode = 'obby'; level = n; diff = n; build(); return verifyLevel(); },
     simHop(i){ SIM = true; const tr = []; try { resetMech(); poseMovers(G.path[i - 1], G.path[i]); const r = simPair(G.path[i - 1], G.path[i], tr); return {r, tr, conv: G.path[i - 1].conv || null, A: [G.path[i-1].hw, G.path[i-1].hd]}; } finally { SIM = false; } },
+    physTick(frameDt){
+      let remain = Math.min(0.45, +frameDt || 0.016);
+      while (remain > 0.0005){
+        const dt = Math.min(0.05, remain); remain -= dt;
+        for (let i = 0; i < 3; i++) step(dt / 3);
+      }
+    },
+    measureJump(opts){
+      opts = opts || {};
+      const fps = opts.fps || 60, frameDt = 1 / fps, walk = !!opts.walk, hold = opts.hold !== false;
+      const prevSim = SIM; SIM = true;
+      const floor = plat(2000, 0, 0, 120, 120, '#888', 1);
+      const tick = this.physTick.bind(this);
+      try {
+        for (const k in keys) keys[k] = false;
+        joy.x = joy.y = 0; joy.jump = false; if (ext){ ext.x = 0; ext.z = 0; }
+        cam.yaw = 0; cam.pitch = 0;
+        Object.assign(P, {x: 2000, y: 0.05, z: 40, vx: 0, vy: 0, vz: 0, onGround: false, ground: null, coyote: 0, lastPad: null});
+        for (let i = 0; i < Math.ceil(fps * 0.4); i++) tick(frameDt);
+        const y0 = P.y, settled = !!P.onGround;
+        if (walk){
+          keys.KeyW = true;
+          for (let i = 0; i < Math.ceil(fps * 1.2); i++) tick(frameDt);
+        }
+        const spd = Math.hypot(P.vx, P.vz), xRun = P.x, zRun = P.z;
+        keys.Space = true; keys.KeyW = !!walk;
+        let maxY = P.y, air = false, jumpX = P.x, jumpZ = P.z, landed = false;
+        for (let i = 0; i < Math.ceil(fps * 3); i++){
+          tick(frameDt);
+          if (P.y > maxY) maxY = P.y;
+          if (!air && !P.onGround){ air = true; jumpX = P.x; jumpZ = P.z; if (!hold) keys.Space = false; }
+          else if (air && P.onGround){ landed = true; break; }
+        }
+        return {fps, walk, hold, settled, y0, maxY, height: +(maxY - y0).toFixed(4), speed: +spd.toFixed(3),
+                reach: landed ? +Math.hypot(P.x - jumpX, P.z - jumpZ).toFixed(4) : null, landed, air};
+      } finally {
+        const idx = solids.indexOf(floor); if (idx >= 0) solids.splice(idx, 1);
+        try { if (floor.mesh && scene) scene.remove(floor.mesh); } catch (e){}
+        SIM = prevSim; keys.Space = false; keys.KeyW = false;
+      }
+    },
+    tryHop(gap, rise, opts){
+      opts = opts || {};
+      const fps = opts.fps || 30, frameDt = 1 / fps, padW = opts.padW || 4, padD = opts.padD || 4, hold = opts.hold !== false;
+      const prevSim = SIM; SIM = true;
+      // A at z=0 top 0, B further in -Z by pad depths plus gap, raised by rise
+      const A = plat(3000, 0, 0, padW, padD, '#888', 1);
+      const zB = -(padD / 2 + (gap || 0) + padD / 2);
+      const B = plat(3000, rise, zB, padW, padD, '#8f8', 1);
+      const tick = this.physTick.bind(this);
+      try {
+        for (const k in keys) keys[k] = false;
+        joy.x = joy.y = 0; joy.jump = false; if (ext){ ext.x = 0; ext.z = 0; }
+        cam.yaw = 0;
+        Object.assign(P, {x: 3000, y: 0.05, z: padD / 2 - 0.4, vx: 0, vy: 0, vz: 0, onGround: false, ground: null, coyote: 0, lastPad: null});
+        for (let i = 0; i < Math.ceil(fps * 0.3); i++) tick(frameDt);
+        keys.KeyW = true;
+        for (let i = 0; i < Math.ceil(fps * 0.45); i++) tick(frameDt);
+        keys.Space = true;
+        let maxY = P.y, air = false, landedB = false, fell = false;
+        for (let i = 0; i < Math.ceil(fps * 3.5); i++){
+          tick(frameDt);
+          if (P.y > maxY) maxY = P.y;
+          if (!air && !P.onGround){ air = true; if (!hold) keys.Space = false; }
+          if (P.onGround && P.ground === B){ landedB = true; break; }
+          if (P.y < -4){ fell = true; break; }
+        }
+        return {ok: landedB, fps, gap, rise, fell, air, maxY: +maxY.toFixed(3),
+                P: {x:+P.x.toFixed(2), y:+P.y.toFixed(2), z:+P.z.toFixed(2), onGround:!!P.onGround, onB: !!(P.ground===B), onA: !!(P.ground===A)}};
+      } finally {
+        [A, B].forEach(b => { const i = solids.indexOf(b); if (i >= 0) solids.splice(i, 1); try { if (b.mesh && scene) scene.remove(b.mesh); } catch (e){} });
+        SIM = prevSim; keys.Space = false; keys.KeyW = false;
+      }
+    },
+
     control(gap, rise, pad){   // negative control: the checker must reject hops that are too far / too high
       const A = plat(500, 0, 0, 4, 4, '#888'), B = plat(500, rise, 2 + gap + 2, 4, 4, '#888'); if (pad) jumpPads.push(A);
       SIM = true; try { resetMech(); return {geo: geoCheck(A, B), sim: simPair(A, B)}; }
       finally { SIM = false; [A, B].forEach(b => { solids.splice(solids.indexOf(b), 1); scene.remove(b.mesh); }); if (pad) jumpPads.splice(jumpPads.indexOf(A), 1); } },
+    edgeHop(gap, rise, opts){
+      opts = opts || {};
+      const fps = opts.fps || 30, frameDt = 1 / fps, padW = opts.padW || 4.5, padD = opts.padD || 4.5, hold = !!opts.hold;
+      const prevSim = SIM; SIM = true;
+      const A = plat(4000, 0, 0, padW, padD, '#888', 1);
+      const zB = -(padD / 2 + (gap || 0) + padD / 2);
+      const B = plat(4000, rise, zB, padW, padD, '#8f8', 1);
+      const tick = this.physTick.bind(this);
+      const topOfBox = b => b.mesh.position.y + b.hh;
+      const exitT = (px, pz, box, ux, uz) => { const p = box.mesh.position; let t = 1e9;
+        if (ux > 1e-6) t = Math.min(t, (p.x + box.hw - px) / ux); else if (ux < -1e-6) t = Math.min(t, (p.x - box.hw - px) / ux);
+        if (uz > 1e-6) t = Math.min(t, (p.z + box.hd - pz) / uz); else if (uz < -1e-6) t = Math.min(t, (p.z - box.hd - pz) / uz); return t; };
+      try {
+        for (const k in keys) keys[k] = false;
+        joy.x = joy.y = 0; joy.jump = false; if (ext){ ext.x = 0; ext.z = 0; }
+        const a = A.mesh.position, bp = B.mesh.position;
+        let dx = bp.x - a.x, dz = bp.z - a.z; const L = Math.hypot(dx, dz) || 1; dx /= L; dz /= L;
+        const back = Math.max(0, Math.min(exitT(a.x, a.z, A, dx, dz) - .3, 2.5));
+        Object.assign(P, {x: a.x - dx * back, z: a.z - dz * back, y: topOfBox(A) + .02, vx: 0, vy: 0, vz: 0, onGround: false, ground: null, coyote: 0, jumpBuf: 0, jumpHeld: false, lastPad: null});
+        cam.yaw = Math.atan2(-dx, -dz);
+        const floor = Math.min(topOfBox(A), topOfBox(B)) - 6;
+        let maxY = P.y, jumped = false;
+        const limit = Math.ceil(fps * 4);
+        for (let i = 0; i < limit; i++){
+          const ix = Math.max(bp.x - B.hw * .6, Math.min(bp.x + B.hw * .6, P.x));
+          const iz = Math.max(bp.z - B.hd * .6, Math.min(bp.z + B.hd * .6, P.z));
+          const ax = ix - P.x, az = iz - P.z, al = Math.hypot(ax, az);
+          keys.KeyW = al > .05;
+          if (al > .05) cam.yaw = Math.atan2(-ax, -az);
+          // Edge-trigger jump (tap, don't hold) so a 30 fps landing cannot re-jump in the same frame.
+          let want = false;
+          if (P.onGround && P.ground && P.ground !== B && al > .05 && exitT(P.x, P.z, P.ground, ax / al, az / al) < .35) want = true;
+          keys.Space = want && (!jumped || hold);
+          if (want) jumped = true;
+          tick(frameDt);
+          if (P.y > maxY) maxY = P.y;
+          if ((P.onGround && P.ground === B) || P.lastPad === B) return {ok: true, fps, gap, rise, t: +(i * frameDt).toFixed(2), maxY: +maxY.toFixed(3), y: +P.y.toFixed(3)};
+          if (P.y < floor) return {ok: false, why: 'fell', fps, gap, rise, t: +(i * frameDt).toFixed(2), maxY: +maxY.toFixed(3), y: +P.y.toFixed(3)};
+        }
+        return {ok: false, why: 'timeout', fps, gap, rise, maxY: +maxY.toFixed(3), y: +P.y.toFixed(3)};
+      } finally {
+        [A, B].forEach(b => { const idx = solids.indexOf(b); if (idx >= 0) solids.splice(idx, 1); try { if (b.mesh && scene) scene.remove(b.mesh); } catch (e){} });
+        SIM = prevSim; keys.Space = false; keys.KeyW = false;
+      }
+    },
+    tdWalkClimb(fps){
+      fps = fps || 30;
+      const frameDt = 1 / fps, tick = this.physTick.bind(this);
+      const rules = (typeof TDRules !== 'undefined' && TDRules) ? TDRules : {};
+      const layout = (td && td.layout) ? td.layout : (rules.tdLayout ? rules.tdLayout(1) : null);
+      if (!layout) return {ok: false, why: 'no-layout'};
+      const path = rules.tdPathPlats ? rules.tdPathPlats(layout) : (layout.plats || []).filter(p => p.role !== 'rail' && p.role !== 'decor');
+      const start = path.find(p => p.role === 'spawn') || path[0];
+      for (const k in keys) keys[k] = false;
+      joy.x = joy.y = 0; joy.jump = false; if (ext){ ext.x = 0; ext.z = 0; }
+      Object.assign(P, {x: start.x, y: start.y + 0.05, z: start.z, vx: 0, vy: 0, vz: 0, onGround: false, ground: null, coyote: 0, jumpBuf: 0, jumpHeld: false});
+      cam.yaw = 0;
+      let goal = 1, maxY = P.y, frames = 0, limit = Math.ceil(fps * 180);
+      for (let i = 0; i < Math.ceil(fps * 0.25); i++) tick(frameDt);
+      while (frames < limit){
+        const target = path[Math.min(goal, path.length - 1)];
+        const dx = target.x - P.x, dz = target.z - P.z, dist = Math.hypot(dx, dz);
+        if (dist > 0.05) cam.yaw = Math.atan2(-dx, -dz);
+        keys.KeyW = dist > 0.12;
+        // Press jump only when we are on a lower pad and the next one is above a walk-up, at the edge.
+        const needJump = (target.y - (P.ground ? P.ground.mesh.position.y + P.ground.hh : P.y)) > 0.62;
+        const nearEdge = dist > 0.4 && dist < 3.2;
+        keys.Space = !!(needJump && nearEdge && P.onGround);
+        tick(frameDt);
+        if (P.y > maxY) maxY = P.y;
+        frames++;
+        if (P.onGround && P.y >= target.y - 0.15 && dist < Math.max(target.w, target.d) * 0.55 + 0.4){
+          goal++;
+          if (goal >= path.length) break;
+        }
+        if (P.y < -8) return {ok: false, why: 'fell', frames, goal, maxY: +maxY.toFixed(2), P: {x:+P.x.toFixed(2), y:+P.y.toFixed(2), z:+P.z.toFixed(2)}};
+      }
+      const finish = path.find(p => p.role === 'finish') || path[path.length - 1];
+      const ok = P.y >= finish.y - 0.4 && goal >= path.length - 2;
+      return {ok, frames, goal, path: path.length, maxY: +maxY.toFixed(2), y: +P.y.toFixed(2), finishY: finish.y};
+    },
     pathTop: i => { const b = G.path[(i + G.path.length) % G.path.length]; return [b.mesh.position.x, topOf(b) + .05, b.mesh.position.z]; },
     mech: () => ({blink: blinkers.map(k => k.b.active), lasers: lasers.map(l => l.k.active), falling: fallers.map(f => [f.st, +f.b.mesh.position.y.toFixed(2)]), conv: convs.map(c => c.conv), winds: winds.map(w => [w.z0, w.z1, w.fx]), ground: P.ground ? {conv: P.ground.conv || null, ice: !!P.ground.ice} : null, wind: windAt()}),
     convAt: i => { const c = convs[i].b; return [c.mesh.position.x, topOf(c) + .05, c.mesh.position.z]; },

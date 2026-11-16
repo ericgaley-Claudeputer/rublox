@@ -19,10 +19,26 @@ test('engine physics used by the tower audit match the live game loop', () => {
   assert.equal(R.TD_PHYS.r, 0.45);
   const maxH = R.tdMaxJumpHeight();
   assert.ok(Math.abs(maxH - 16 * 16 / (2 * 45)) < 1e-9);
-  assert.equal(R.TD_MARGIN, 0.75);
+  assert.equal(R.TD_MARGIN, 0.50);
+  assert.match(HTML, /if \(typeof tdJumpAssist === 'function' && typeof mode !== 'undefined' && mode === 'tower' && td\)\{ tdJumpAssist\(dt, inp\); \}/);
+  assert.match(HTML, /jumpBuf:0, jumpHeld:false/);
+  assert.match(TOWER_JS, /function tdJumpAssist\(/);
+  assert.match(TOWER_JS, /TD_COYOTE/);
+  assert.match(TOWER_JS, /TD_JUMP_BUF/);
 });
 
-test('every generated tower jump and step is inside 75% of max jump height and walk reach', () => {
+test('every generated tower jump and step is inside 50% of the measured real jump height and walk reach, with no overhangs', () => {
+  assert.equal(R.TD_MARGIN, 0.50);
+  assert.equal(R.TD_MEAS_HEIGHT, 2.8875);
+  assert.equal(R.TD_MEAS_REACH_WALK, 7.0);
+  assert.equal(R.TD_LIMIT_H, R.TD_MEAS_HEIGHT * 0.5);
+  assert.equal(R.TD_LIMIT_R, 3.5);
+  assert.equal(R.TD_MIN_JUMP_GAP, 0.5);
+  assert.equal(R.TD_MIN_PAD, 4);
+  // Overhangs (a tall hop with no gap) are rejected — the 2.8 m body bonks the lip.
+  const over = R.tdJumpCheck({x:0,y:0,z:0,w:4,d:4}, {x:0,y:1.2,z:0,w:4,d:4});
+  assert.equal(over.ok, false);
+  assert.equal(over.why, 'overhang');
   let worstH = 0, worstR = 0, n = 0;
   const check = (layout, label) => {
     const walk = R.tdWalkReachable(layout.plats);
@@ -50,8 +66,8 @@ test('every generated tower jump and step is inside 75% of max jump height and w
   }
   for (let seed = 0; seed < 200; seed++) check(R.tdLayout(seed), 'seed ' + seed);
   assert.ok(n > 100);
-  assert.ok(worstH <= 0.75 && worstH > 0);
-  assert.ok(worstR <= 0.75);
+  assert.ok(worstH <= 0.50 + 1e-9);
+  assert.ok(worstR <= 0.50 + 1e-9);
 });
 
 test('legacy section gaps were at or past max jump height, which is why the tower felt impossible', () => {
@@ -129,4 +145,13 @@ test('Tower of Doom still launches from the card and keeps Xbox and mobile jump 
   assert.match(HTML, /WASD move · Space jump/);
   assert.match(HTML, /gold pads are checkpoints/);
   assert.match(TOWER_JS, /function tdPad\(jp\)\{ return false; \}/);
+});
+
+test('jump assist is tower-only coyote plus jump buffer, and does not change JUMP or GRAV', () => {
+  assert.equal(R.TD_COYOTE, 0.2);
+  assert.equal(R.TD_JUMP_BUF, 0.15);
+  assert.match(TOWER_JS, /P\.coyote = P\.onGround \? coyoteT : P\.coyote - dt;/);
+  assert.match(TOWER_JS, /P\.jumpBuf = bufT/);
+  assert.doesNotMatch(TOWER_JS, /JUMP\s*=\s*\d/);
+  assert.doesNotMatch(HTML, /mode === 'tower'[^\n]{0,120}JUMP\s*=\s*\d/);
 });

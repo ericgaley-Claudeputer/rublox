@@ -28,13 +28,13 @@
     return plat(p.x, p.y, p.z, p.w, p.d, color, p.h || .5);
   }
   function buildTower(){
-    const seed = ((Date.now() / 1000) | 0) % 99991;
+    const seed = (typeof globalThis !== 'undefined' && globalThis.__tdSeed != null) ? (globalThis.__tdSeed | 0) : (((Date.now() / 1000) | 0) % 99991);
     const layout = TD_RULES.tdLayout ? TD_RULES.tdLayout(seed) : null;
     td = {ph: 'play', t: 0, goo: TD_GOO_START, topY: (layout && layout.topY) || (TD_SECTIONS * TD_H + 6), paid: false, earned: 0, kind: (layout && layout.kinds) ? layout.kinds.slice() : [], near: -1, seed, grace: TD_GRACE, layout};
     scene.background = new THREE.Color('#b8e0ff');
     if (scene.fog){ scene.fog.color = new THREE.Color('#d7f0ff'); scene.fog.near = 40; scene.fog.far = 180; }
-    // Rims so you can't walk off the start island into the void.
-    [[0, 7.2, 14.4, .6], [0, -7.2, 14.4, .6], [7.2, 0, .6, 14.4], [-7.2, 0, .6, 14.4]].forEach(([x, z, w, d]) => plat(x, 1.1, z, w, d, '#ffe08a', 1.1));
+    // Rims so you can't walk off the start island into the void (island is 18x18 at z=-5).
+    [[0, 4.2, 18.4, .6], [0, -14.2, 18.4, .6], [9.2, -5, .6, 18.4], [-9.2, -5, .6, 18.4]].forEach(([x, z, w, d]) => plat(x, 1.1, z, w, d, '#ffe08a', 1.1));
     const colors = ['#c39bff', '#7fd6ff', '#ffb3c7', '#ffe08a', '#9ff0c8', '#ff9f6b'];
     if (layout){
       const rnd = tdSeed(seed);
@@ -64,7 +64,7 @@
     // goo cylinder: mesh center so its TOP face sits at td.goo (height 2.4 → centre = goo - 1.2)
     const goo = new THREE.Mesh(new THREE.CylinderGeometry(20, 20, 2.4, 28), new THREE.MeshLambertMaterial({color: '#b388ff', transparent: true, opacity: .9}));
     goo.position.set(0, td.goo - 1.2, -4); scene.add(goo); td.gooMesh = goo;
-    Object.assign(P, {x: 0, y: .05, z: -5.5, vx: 0, vy: 0, vz: 0}); P.face = 0; cam.yaw = Math.PI; cam.pitch = .35; cam.dist = 10;
+    Object.assign(P, {x: 0, y: .55, z: -5, vx: 0, vy: 0, vz: 0, jumpBuf: 0, jumpHeld: false}); P.face = 0; cam.yaw = 0; cam.pitch = .35; cam.dist = 12;
     topY = td.topY; maxY = 0;
   }
   function towerEnter(){ if (!td) return; td.ph = 'play'; td.t = 0; td.goo = TD_GOO_START; td.grace = TD_GRACE; td.paid = false; td.earned = 0; choosing = false; over = false;
@@ -137,6 +137,19 @@
     if (g){
       if (td.grace > 0) g.textContent = 'rests ' + Math.ceil(td.grace) + 's';
       else { const dist = P.y - td.goo; g.textContent = dist >= 0 ? Math.floor(dist) + 'm below' : 'back to pad'; }
+    }
+  }
+  function tdJumpAssist(dt, inp){
+    if (!P || !inp) return;
+    const coyoteT = (TD_RULES && TD_RULES.TD_COYOTE != null) ? TD_RULES.TD_COYOTE : 0.2;
+    const bufT = (TD_RULES && TD_RULES.TD_JUMP_BUF != null) ? TD_RULES.TD_JUMP_BUF : 0.15;
+    if (inp.jump && !P.jumpHeld) P.jumpBuf = bufT;
+    P.jumpHeld = !!inp.jump;
+    if (P.jumpBuf > 0) P.jumpBuf -= dt;
+    P.coyote = P.onGround ? coyoteT : P.coyote - dt;
+    if (P.jumpBuf > 0 && P.coyote > 0 && P.vy <= .01){
+      P.vy = JUMP; P.coyote = 0; P.jumpBuf = 0; P.jumped = true; P.airT = 0;
+      if (typeof SND !== 'undefined' && SND.jump) SND.jump();
     }
   }
   function tdPad(jp){ return false; }
