@@ -22,6 +22,7 @@
     dark: 1.25,
     near: 4,
     restore: 2,
+    lampRestore: 0.9,
     stareBonus: 1
   };
 
@@ -51,17 +52,21 @@
       st._nearT = (st._nearT || 0) + dt;
       if (st._nearT >= RATES.nearDelay) drain = Math.max(drain, RATES.near + (st.staring ? RATES.stareBonus : 0));
     } else st._nearT = 0;
-    if (st.isolated){
+    const nearLamp = !!st.nearLamp;
+    // A lantern (or any lantern light) cancels isolation and darkness drain.
+    if (st.isolated && !nearLamp){
       st._isoT = (st._isoT || 0) + dt;
       if (st._isoT >= RATES.isolateDelay) drain = Math.max(drain, RATES.isolate);
     } else st._isoT = 0;
-    if (st.dark){
+    if (st.dark && !nearLamp){
       st._darkT = (st._darkT || 0) + dt;
       if (st._darkT >= RATES.darkDelay) drain = Math.max(drain, RATES.dark);
     } else st._darkT = 0;
     if (drain > 0) return -drain * dt;
-    if (st.company && st.lit) return RATES.restore * dt;
-    if (st.lit && !st.isolated) return RATES.restore * 0.45 * dt;
+    if (st.company && (st.lit || nearLamp)) return RATES.restore * dt;
+    // Alone but near a lantern: same slower "lit, not alone" rate (0.9/s).
+    if (nearLamp) return (RATES.lampRestore != null ? RATES.lampRestore : RATES.restore * 0.45) * dt;
+    if (st.lit && !st.isolated) return (RATES.lampRestore != null ? RATES.lampRestore : RATES.restore * 0.45) * dt;
     return 0;
   }
 

@@ -7,10 +7,10 @@ const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const RULES = require(path.join(ROOT, 'dev/lantern/lantern_rules.js'));
 const BUILD = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).build || JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
-test('BUILD stamp is 2026.11.16-6 in lantern files and version.json', () => {
+test('BUILD stamp is 2026.11.16-7 in lantern files and version.json', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
-  assert.equal(v.build, '2026.11.16-6');
-  assert.match(HTML, /const BUILD = '2026\.11\.16-6'/);
+  assert.equal(v.build, '2026.11.16-7');
+  assert.match(HTML, /const BUILD = '2026\.11\.16-7'/);
 });
 
 test('Lantern Big Top is a playable GAMES card with original branding', () => {
@@ -283,6 +283,32 @@ test('lit lanterns keep the fairground safe; dark grass drains sanity', () => {
   assert.ok(d < 0, 'dark outside drains');
   const safe = {dark: false, isolated: false, nearGlitched: false, lit: true, company: true};
   assert.ok(RULES.lhSanityDelta(safe, 1) >= 0);
+});
+
+test('a lantern restores sanity even when you are alone', () => {
+  assert.equal(RULES.LH_LAMP_R, 5);
+  assert.equal(RULES.RATES.lampRestore, 0.9);
+  const aloneNear = {isolated:true, dark:false, nearGlitched:false, company:false, lit:true, nearLamp:true, _isoT:10};
+  assert.equal(RULES.lhSanityDelta({...aloneNear}, 1), 0.9);
+  // isolation and darkness do not drain while standing by a lantern
+  const darkAlone = {isolated:true, dark:true, nearGlitched:false, company:false, lit:false, nearLamp:true, _isoT:10, _darkT:10};
+  assert.equal(RULES.lhSanityDelta({...darkAlone}, 1), 0.9);
+  // company + light (or lantern) still uses the higher restore rate
+  const friends = {isolated:false, dark:false, nearGlitched:false, company:true, lit:true, nearLamp:true};
+  assert.equal(RULES.lhSanityDelta({...friends}, 1), 2);
+  // alone in the light but not near a lantern still isolates
+  const aloneLit = {isolated:true, dark:false, nearGlitched:false, company:false, lit:true, nearLamp:false, _isoT:3};
+  assert.equal(RULES.lhSanityDelta({...aloneLit}, 1), -1);
+  // a fizzled friend nearby still drains, even under a lantern
+  const spooky = {isolated:true, dark:false, nearGlitched:true, company:false, lit:true, nearLamp:true, _nearT:1};
+  assert.equal(RULES.lhSanityDelta({...spooky}, 1), -4);
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  const css = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.css'), 'utf8');
+  assert.match(js, /lh\.nearLamp/);
+  assert.match(js, /The lantern warms you/);
+  assert.match(js, /lh-lamp/);
+  assert.match(css, /lhlampglow/);
+  assert.match(css, /#lhMeter\.lh-lamp/);
 });
 
 test('walk cycle, wagon access, and outdoor fairground are wired in the mode', () => {

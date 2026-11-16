@@ -1188,6 +1188,10 @@ body.lh-muffled #obby{filter:saturate(.85)}
 #lhMapLegend i{font-style:normal}
 #lhMapClose{margin-top:6px;border:3px solid #fff;border-radius:14px;background:#6b3cff;color:#fff;font:inherit;font-weight:900;padding:7px 14px;cursor:pointer}
 
+/* Warm shimmer on the sanity meter while a lantern is restoring you. */
+#lhMeter.lh-lamp .lh-meterbox{border-color:#ffd27a;box-shadow:0 4px 0 rgba(80,20,90,.45),0 0 16px rgba(255,210,122,.55)}
+.lh-bar.lh-lamp i{animation:lhlampglow 1.4s ease-in-out infinite alternate}
+@keyframes lhlampglow{from{filter:brightness(1);box-shadow:none}to{filter:brightness(1.35) saturate(1.2);box-shadow:0 0 8px #ffd27a}}
 /* ---------- /lantern hotel css ---------- */
 </style>
 <style id="mobileHud">
@@ -2078,7 +2082,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-6';
+const BUILD = '2026.11.16-7';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -5987,6 +5991,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
 
 
 
+
 /* ---------- lantern rules ---------- */
 /* Pure Lantern Big Top rules — safe to require() in tests and to load in the page. */
 (function (root) {
@@ -6012,6 +6017,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     dark: 1.25,
     near: 4,
     restore: 2,
+    lampRestore: 0.9,
     stareBonus: 1
   };
 
@@ -6041,17 +6047,21 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
       st._nearT = (st._nearT || 0) + dt;
       if (st._nearT >= RATES.nearDelay) drain = Math.max(drain, RATES.near + (st.staring ? RATES.stareBonus : 0));
     } else st._nearT = 0;
-    if (st.isolated){
+    const nearLamp = !!st.nearLamp;
+    // A lantern (or any lantern light) cancels isolation and darkness drain.
+    if (st.isolated && !nearLamp){
       st._isoT = (st._isoT || 0) + dt;
       if (st._isoT >= RATES.isolateDelay) drain = Math.max(drain, RATES.isolate);
     } else st._isoT = 0;
-    if (st.dark){
+    if (st.dark && !nearLamp){
       st._darkT = (st._darkT || 0) + dt;
       if (st._darkT >= RATES.darkDelay) drain = Math.max(drain, RATES.dark);
     } else st._darkT = 0;
     if (drain > 0) return -drain * dt;
-    if (st.company && st.lit) return RATES.restore * dt;
-    if (st.lit && !st.isolated) return RATES.restore * 0.45 * dt;
+    if (st.company && (st.lit || nearLamp)) return RATES.restore * dt;
+    // Alone but near a lantern: same slower "lit, not alone" rate (0.9/s).
+    if (nearLamp) return (RATES.lampRestore != null ? RATES.lampRestore : RATES.restore * 0.45) * dt;
+    if (st.lit && !st.isolated) return (RATES.lampRestore != null ? RATES.lampRestore : RATES.restore * 0.45) * dt;
     return 0;
   }
 
@@ -15363,7 +15373,14 @@ const Obby = (() => {
   }
   function lhStringLights(pts){
     const cols = ['#ffd25a', '#ff6b6b', '#7cffd0', '#8ecaff', '#ff8ad8'];
-    (pts || []).forEach((p, i) => lhBulb(p[0], p[1], p[2], cols[i % cols.length]));
+    const r = (LH_RULES.LH_LAMP_R || 5);
+    (pts || []).forEach((p, i) => {
+      lhBulb(p[0], p[1], p[2], cols[i % cols.length]);
+      if (lh){
+        lh.lamps = lh.lamps || [];
+        lh.lamps.push({x: p[0], z: p[2], r: r});
+      }
+    });
   }
   function lhBalloons(x, y, z, n){
     const cols = ['#ff6b9a', '#6b3cff', '#7cffd0', '#ffd25a', '#ff6b6b'];
@@ -17093,9 +17110,11 @@ const Obby = (() => {
         html += i < fill ? '👁️' : '○';
         html += '</span>';
       }
-      html += '</div><div class="lh-bar"><i style="width:' + Math.max(0, Math.min(100, lh.sanity)) + '%"></i></div>';
-      const why = lh.glitched ? 'Fizzled — tag friends (gently!)' : lh.nearGlitched ? 'Too close to a fizzled friend…' : lh.area === 'woods' || (lh.area === 'outside' && lh.dark) ? 'The fairground is dark… stay near a lantern!' : lh.dark && lh.isolated ? 'Alone in the dark…' : lh.dark ? 'It\'s pretty dark…' : lh.isolated ? 'Nobody nearby…' : 'Stay close, stay bright!';
+      const lampWarm = !!(lh.nearLamp && !lh.glitched && !lh.nearGlitched);
+      html += '</div><div class="lh-bar' + (lampWarm ? ' lh-lamp' : '') + '"><i style="width:' + Math.max(0, Math.min(100, lh.sanity)) + '%"></i></div>';
+      const why = lh.glitched ? 'Fizzled — tag friends (gently!)' : lh.nearGlitched ? 'Too close to a fizzled friend…' : lampWarm ? 'The lantern warms you…' : lh.area === 'woods' || (lh.area === 'outside' && lh.dark) ? 'The fairground is dark… stay near a lantern!' : lh.dark && lh.isolated ? 'Alone in the dark…' : lh.dark ? 'It\'s pretty dark…' : lh.isolated ? 'Nobody nearby…' : 'Stay close, stay bright!';
       html += '<div class="lh-why">' + why + '</div></div>';
+      try { meter.classList.toggle('lh-lamp', lampWarm); } catch (e){}
       if (html !== lh.lastHud){ meter.innerHTML = html; lh.lastHud = html; }
     }
     const box = lhEl('lhN');
@@ -17201,7 +17220,9 @@ const Obby = (() => {
     lh.area = area.area; lh.room = area.room; lh.lit = !!area.lit; lh.dark = !!area.dark;
     const near = lhCompanyNear();
     lh.company = !!near.company;
-    lh.isolated = !lh.company && !lh.glitched;
+    // Any lantern light source: path lamps, string lights, or a lit wagon.
+    lh.nearLamp = !!lhNearALamp(P.x, P.z) || !!(area.area === 'room' && area.lit);
+    lh.isolated = !lh.company && !lh.glitched && !lh.nearLamp;
     lh.nearGlitched = !!near.nearG;
     lh.staring = !!near.staring;
 
@@ -24984,7 +25005,7 @@ function start(m = 'obby', d = null){
     },
     dance: () => db && {ph: db.ph, t: db.t, score: db.score, combo: db.combo, hits: db.hits, misses: db.misses, chart: db.chart.length, earned: db.earned, prog: dbProg()},
     dbHit: d => dbHit(d), dbTo(t){ if (db) db.t = t; },
-    lantern: () => lh && {sanity: lh.sanity, glitched: !!lh.glitched, transforming: !!lh.transforming, area: lh.area, room: lh.room, myRoom: lh.myRoom, bed: !!lh.bed, lit: !!(lh.rooms[lh.room] && lh.rooms[lh.room].lit), isolated: !!lh.isolated, dark: !!lh.dark, near: !!lh.nearGlitched, company: !!lh.company, keyholder: lh.keyholder, lastDing: lh.lastDing, test: lh.test, visits: lh.prog && lh.prog.visits, settings: lh.prog && lh.prog.settings, npcs: (lh.npcs||[]).map(n => ({id:n.id, x:+n.x.toFixed(2), z:+n.z.toFixed(2), glitched:!!n.glitched})), P:{x:+P.x.toFixed(2), y:+P.y.toFixed(2), z:+P.z.toFixed(2)}},
+    lantern: () => lh && {sanity: lh.sanity, glitched: !!lh.glitched, transforming: !!lh.transforming, area: lh.area, room: lh.room, myRoom: lh.myRoom, bed: !!lh.bed, lit: !!(lh.rooms[lh.room] && lh.rooms[lh.room].lit), isolated: !!lh.isolated, dark: !!lh.dark, near: !!lh.nearGlitched, company: !!lh.company, nearLamp: !!lh.nearLamp, keyholder: lh.keyholder, lastDing: lh.lastDing, test: lh.test, visits: lh.prog && lh.prog.visits, settings: lh.prog && lh.prog.settings, npcs: (lh.npcs||[]).map(n => ({id:n.id, x:+n.x.toFixed(2), z:+n.z.toFixed(2), glitched:!!n.glitched})), P:{x:+P.x.toFixed(2), y:+P.y.toFixed(2), z:+P.z.toFixed(2)}},
     lhSet(o){ if (!lh || !o) return null; Object.assign(lh, o); try { if (typeof lhScareTick === 'function') lhScareTick(0.16); } catch (e){} try { if (typeof lhHud === 'function') lhHud(); } catch (e){} try { if (typeof lhVisionTick === 'function') lhVisionTick(); } catch (e){} return this.lantern(); },
     keysSet(o){ Object.assign(keys, o || {}); return {W:!!keys.KeyW, A:!!keys.KeyA, S:!!keys.KeyS, D:!!keys.KeyD}; },
     camSet(o){ if (typeof cam !== 'undefined' && cam && o){ if (o.yaw!=null) cam.yaw=+o.yaw; if (o.pitch!=null) cam.pitch=+o.pitch; if (o.dist!=null) cam.dist=+o.dist; } if (typeof updateCamera === 'function') updateCamera(); if (typeof renderer !== 'undefined' && renderer && renderer.render && scene && camera) renderer.render(scene, camera); return cam && {yaw:cam.yaw, pitch:cam.pitch, dist:cam.dist}; },

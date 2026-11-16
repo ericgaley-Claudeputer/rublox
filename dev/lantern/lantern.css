@@ -119,3 +119,8 @@ body.lh-muffled #obby{filter:saturate(.85)}
 #lhMapLegend{display:flex;gap:14px;flex-wrap:wrap;font-weight:800;font-size:13px;margin:8px 0 4px}
 #lhMapLegend i{font-style:normal}
 #lhMapClose{margin-top:6px;border:3px solid #fff;border-radius:14px;background:#6b3cff;color:#fff;font:inherit;font-weight:900;padding:7px 14px;cursor:pointer}
+
+/* Warm shimmer on the sanity meter while a lantern is restoring you. */
+#lhMeter.lh-lamp .lh-meterbox{border-color:#ffd27a;box-shadow:0 4px 0 rgba(80,20,90,.45),0 0 16px rgba(255,210,122,.55)}
+.lh-bar.lh-lamp i{animation:lhlampglow 1.4s ease-in-out infinite alternate}
+@keyframes lhlampglow{from{filter:brightness(1);box-shadow:none}to{filter:brightness(1.35) saturate(1.2);box-shadow:0 0 8px #ffd27a}}

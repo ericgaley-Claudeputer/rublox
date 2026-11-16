@@ -325,7 +325,14 @@
   }
   function lhStringLights(pts){
     const cols = ['#ffd25a', '#ff6b6b', '#7cffd0', '#8ecaff', '#ff8ad8'];
-    (pts || []).forEach((p, i) => lhBulb(p[0], p[1], p[2], cols[i % cols.length]));
+    const r = (LH_RULES.LH_LAMP_R || 5);
+    (pts || []).forEach((p, i) => {
+      lhBulb(p[0], p[1], p[2], cols[i % cols.length]);
+      if (lh){
+        lh.lamps = lh.lamps || [];
+        lh.lamps.push({x: p[0], z: p[2], r: r});
+      }
+    });
   }
   function lhBalloons(x, y, z, n){
     const cols = ['#ff6b9a', '#6b3cff', '#7cffd0', '#ffd25a', '#ff6b6b'];
@@ -2055,9 +2062,11 @@
         html += i < fill ? '👁️' : '○';
         html += '</span>';
       }
-      html += '</div><div class="lh-bar"><i style="width:' + Math.max(0, Math.min(100, lh.sanity)) + '%"></i></div>';
-      const why = lh.glitched ? 'Fizzled — tag friends (gently!)' : lh.nearGlitched ? 'Too close to a fizzled friend…' : lh.area === 'woods' || (lh.area === 'outside' && lh.dark) ? 'The fairground is dark… stay near a lantern!' : lh.dark && lh.isolated ? 'Alone in the dark…' : lh.dark ? 'It\'s pretty dark…' : lh.isolated ? 'Nobody nearby…' : 'Stay close, stay bright!';
+      const lampWarm = !!(lh.nearLamp && !lh.glitched && !lh.nearGlitched);
+      html += '</div><div class="lh-bar' + (lampWarm ? ' lh-lamp' : '') + '"><i style="width:' + Math.max(0, Math.min(100, lh.sanity)) + '%"></i></div>';
+      const why = lh.glitched ? 'Fizzled — tag friends (gently!)' : lh.nearGlitched ? 'Too close to a fizzled friend…' : lampWarm ? 'The lantern warms you…' : lh.area === 'woods' || (lh.area === 'outside' && lh.dark) ? 'The fairground is dark… stay near a lantern!' : lh.dark && lh.isolated ? 'Alone in the dark…' : lh.dark ? 'It\'s pretty dark…' : lh.isolated ? 'Nobody nearby…' : 'Stay close, stay bright!';
       html += '<div class="lh-why">' + why + '</div></div>';
+      try { meter.classList.toggle('lh-lamp', lampWarm); } catch (e){}
       if (html !== lh.lastHud){ meter.innerHTML = html; lh.lastHud = html; }
     }
     const box = lhEl('lhN');
@@ -2163,7 +2172,9 @@
     lh.area = area.area; lh.room = area.room; lh.lit = !!area.lit; lh.dark = !!area.dark;
     const near = lhCompanyNear();
     lh.company = !!near.company;
-    lh.isolated = !lh.company && !lh.glitched;
+    // Any lantern light source: path lamps, string lights, or a lit wagon.
+    lh.nearLamp = !!lhNearALamp(P.x, P.z) || !!(area.area === 'room' && area.lit);
+    lh.isolated = !lh.company && !lh.glitched && !lh.nearLamp;
     lh.nearGlitched = !!near.nearG;
     lh.staring = !!near.staring;
 
