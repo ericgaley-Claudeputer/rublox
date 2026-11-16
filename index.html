@@ -1071,6 +1071,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 
 
 
+
 /* ---------- lantern hotel css ---------- */
 /* t286u Lantern Big Top HUD */
 #lhBox{display:none}
@@ -1581,6 +1582,10 @@ body.lh-muffled #obby{filter:saturate(.85)}
       <label class="invrow"><input type="radio" name="wxSetMode" id="wxSetAuto" value="auto" checked><span>Auto<small>Day turns to night, and weather can change.</small></span></label>
       <label class="invrow"><input type="radio" name="wxSetMode" id="wxSetDay" value="day"><span>Always day<small>Keep bright daylight in games that use this.</small></span></label>
       <label class="invrow"><input type="radio" name="wxSetMode" id="wxSetOff" value="off"><span>Off<small>Leave each game's own sky and lighting alone.</small></span></label>
+    </div>
+    <div class="pfset" id="pfSet">
+      <div style="color:var(--muted);font-weight:700;margin-top:12px">🐾 Pet follower</div>
+      <label class="invrow"><input type="checkbox" id="pfSetHide"><span>Hide my pet<small>Your equipped pet from Adopt a Pet follows you into other games. Check this to hide it.</small></span></label>
     </div>
     <div class="chset" id="chSet">
       <div class="chset-title">💬 Chat</div>
@@ -2223,7 +2228,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-13';
+const BUILD = '2026.11.16-14';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3282,6 +3287,84 @@ try {
 } catch (e){}
 /* ---------- end rublox weather ---------- */
 
+/* Equipped Adopt-a-Pet follower across Rublox modes. Optional hide toggle. */
+(function (root) {
+  const PF_KEY = 'rubloxPetFollow';
+  const PF_PETS_KEY = 'rubloxPets';
+  const PF_VER = 1;
+  const PF_SKIP = ['race', 'splash', 'waterpark', 'pets', 'petisland'];
+  const PF_DIST = 1.55;
+  const PF_CATCH = 12;
+
+  function pfDefault(){ return {ver: PF_VER, hide: false}; }
+
+  function pfNormalize(raw){
+    const o = (raw && typeof raw === 'object') ? raw : {};
+    return {ver: PF_VER, hide: !!o.hide};
+  }
+
+  function pfLoadToggle(raw){
+    if (typeof raw === 'string'){
+      try { raw = JSON.parse(raw); } catch (e){ raw = null; }
+    }
+    return pfNormalize(raw);
+  }
+
+  function pfActiveFromSave(raw){
+    if (typeof raw === 'string'){
+      try { raw = JSON.parse(raw); } catch (e){ raw = null; }
+    }
+    if (!raw || typeof raw !== 'object' || !Array.isArray(raw.pets) || !raw.pets.length) return null;
+    const a = Math.max(0, Math.min(raw.pets.length - 1, raw.a | 0));
+    const p = raw.pets[a];
+    if (!p || !p.k) return null;
+    return {
+      k: String(p.k),
+      c: Math.max(0, Math.min(2, p.c | 0)),
+      n: String(p.n || 'Buddy').slice(0, 16),
+      xp: Math.max(0, +p.xp || 0),
+      acc: (p.acc && typeof p.acc === 'object') ? p.acc : {},
+      a: a
+    };
+  }
+
+  function pfStage(xp){
+    const x = Math.max(0, +xp || 0);
+    if (x >= 400) return 3;
+    if (x >= 120) return 2;
+    if (x >= 30) return 1;
+    return 0;
+  }
+
+  function pfShouldFollow(modeId, setting, hasPet){
+    if (!hasPet) return false;
+    if (pfNormalize(setting).hide) return false;
+    if (!modeId || PF_SKIP.indexOf(modeId) >= 0) return false;
+    return true;
+  }
+
+  function pfFollowStep(px, pz, face, x, z, dt){
+    const behind = PF_DIST;
+    const tx = px - Math.sin(face || 0) * behind;
+    const tz = pz - Math.cos(face || 0) * behind;
+    const dx = tx - x, dz = tz - z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    if (dist > PF_CATCH) return {x: tx, z: tz, face: face || 0, moving: false, tele: true};
+    if (dist < 0.35) return {x: x, z: z, face: face || 0, moving: false, tele: false};
+    const sp = Math.min(10, 3.5 + dist * 2.2);
+    const nx = x + dx / dist * sp * dt;
+    const nz = z + dz / dist * sp * dt;
+    return {x: nx, z: nz, face: Math.atan2(dx, dz), moving: true, tele: false, sp: sp};
+  }
+
+  const api = {
+    PF_KEY, PF_PETS_KEY, PF_VER, PF_SKIP, PF_DIST, PF_CATCH,
+    pfDefault, pfNormalize, pfLoadToggle, pfActiveFromSave, pfStage, pfShouldFollow, pfFollowStep
+  };
+  root.PFRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
 const GAMES = [
   {id:'lantern', name:'Lantern Big Top', emoji:'🏮', tag:'Stay close and stay bright under a colorful circus tent!', draw: drawLantern, playable: true, isNew: true},
   {id:'dreamhouse', name:'Dream House Builders', emoji:'🏡', tag:'Re-build your house with bricks, paint, furniture and upgrades!', draw: drawDreamHouse, playable: true, isNew: true},
@@ -3423,6 +3506,7 @@ function drawLantern(ctx){
   ctx.fillText('🏮', 150, 70);
   ctx.fillText('🎩', 152, 100);
 }
+
 
 
 
@@ -4167,6 +4251,7 @@ function confetti(){
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
+      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
     } catch (e){}
     return false;
   }
@@ -4727,9 +4812,12 @@ if (setShowFps) setShowFps.addEventListener('change', () => {
   save('rubloxShowFps', window.gfx.showFps);
   syncGfxUi();
 });
-$('#setBtn').onclick = () => { syncInvert(); syncGfxUi(); if (typeof chSyncSettings === 'function') chSyncSettings(); if (typeof wxSyncUi === 'function') wxSyncUi(); $('#setModal').classList.add('show'); };
+$('#setBtn').onclick = () => { syncInvert(); syncGfxUi(); if (typeof chSyncSettings === 'function') chSyncSettings(); if (typeof wxSyncUi === 'function') wxSyncUi(); if (typeof pfSyncUi === 'function') pfSyncUi(); $('#setModal').classList.add('show'); };
 ['wxSetAuto','wxSetDay','wxSetOff'].forEach(id => { const n = document.getElementById(id); if (n) n.addEventListener('change', () => { if (n.checked && typeof wxSetMode === 'function') wxSetMode(n.value); }); });
 if (typeof wxSyncUi === 'function') try { wxSyncUi(); } catch (e){}
+if (typeof pfSyncUi === 'function') try { pfSyncUi(); } catch (e){}
+const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEventListener('change', () => { if (typeof pfSetHide === 'function') pfSetHide(!!pfHide.checked); });
+
 
 $('#setOk').onclick = () => $('#setModal').classList.remove('show');
 $('#setModal').onclick = e => { if (e.target.id === 'setModal') $('#setModal').classList.remove('show'); };
@@ -6498,6 +6586,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
 
 
 
+
 /* ---------- lantern rules ---------- */
 /* Pure Lantern Big Top rules — safe to require() in tests and to load in the page. */
 (function (root) {
@@ -8159,7 +8248,7 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
     if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
@@ -9766,7 +9855,7 @@ const Obby = (() => {
     if (pt){ const q = pt.pet, C = pt.car, qs = q ? Math.hypot(q.vx, q.vz) : 0;
       return [r(P.x), r(P.y), r(P.z), r(pt.drive ? C.yaw : P.face), pt.drive ? 4 : s, pt.drive ? 0 : r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0,
         [r(C.x), r(C.z), r(C.yaw), pt.drive ? 1 : 0, r(C.v)], q ? [q.d.k, q.d.c, q.stage, r(q.x), r(q.y), r(q.z), r(q.face), trickAct(q) || {eat: 2, sleep: 3, happy: 4, car: 5}[q.act] || (qs > .6 ? 1 : 0), q.d.n, r(qs), pt.leashOn ? 1 : 0, accStr(q.d.acc)] : 0]; }
-    return [r(P.x), r(P.y), r(P.z), r(P.face), s, r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0];
+    return [r(P.x), r(P.y), r(P.z), r(P.face), s, r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0, 0, (typeof pfWire === 'function' ? pfWire() : 0)];
   }
   function mpRoster(){ return [{uid: 'H', ...myLook(), pl: 1}, ...[...mp.guests.values()].filter(g => g.ready).map(g => ({uid: g.uid, name: g.name, av: g.av, pl: g.plot || 0}))]; }
   function mpSetRoster(r){
@@ -9828,7 +9917,7 @@ const Obby = (() => {
     if (E.fresh){ E.x = E.tx; E.y = E.ty; E.z = E.tz; E.face = E.tf; E.fresh = false; }
   }
   function mpPetsEnt(E, dt, on){
-    on = on && mode === 'pets' && E.m === 'pets';
+    on = on && ((mode === 'pets' && E.m === 'pets') || (typeof pfShowRemote === 'function' && pfShowRemote(mode, E)));
     if (E.carM) E.carM.g.visible = on && !!E.car;
     if (E.petM) E.petM.m.g.visible = on && !!E.pet;
     if (E.leashL) E.leashL.visible = false;   // shown again below while they're walking their pet
@@ -26113,6 +26202,130 @@ function dhLayoutHud(){
       $('#oWarn').classList.toggle('on', !sleeping && !over && !won && dist < 5);
     }
   }
+  /* ---------- pet follow ---------- */
+  const PF_RULES = (typeof PFRules !== 'undefined' && PFRules) ? PFRules : (typeof window !== 'undefined' && window.PFRules) || {};
+  const PF_KEY = PF_RULES.PF_KEY || 'rubloxPetFollow';
+  let pf = null;
+
+  function pfLoad(){
+    let raw = null;
+    try { raw = (typeof load === 'function') ? load(PF_KEY, null) : null; } catch (e){}
+    return PF_RULES.pfLoadToggle ? PF_RULES.pfLoadToggle(raw) : {ver:1, hide:false};
+  }
+  function pfSave(p){
+    p = PF_RULES.pfNormalize ? PF_RULES.pfNormalize(p || (pf && pf.set) || pfLoad()) : (p || {hide:false});
+    try { if (typeof save === 'function') save(PF_KEY, p); } catch (e){}
+    return p;
+  }
+  function pfSetting(){ return (pf && pf.set) || pfLoad(); }
+  function pfSetHide(on){
+    const next = pfSave({hide: !!on});
+    if (pf) pf.set = next;
+    pfSyncUi();
+    if (next.hide) pfStop(true);
+    else if (typeof mode !== 'undefined') pfEnter(mode);
+    return next.hide;
+  }
+  function pfSyncUi(){
+    try {
+      const n = document.getElementById('pfSetHide');
+      if (n) n.checked = !!(pfSetting().hide);
+    } catch (e){}
+  }
+  function pfReadActive(){
+    try {
+      const key = PF_RULES.PF_PETS_KEY || 'rubloxPets';
+      const raw = (typeof load === 'function') ? load(key, null) : null;
+      return PF_RULES.pfActiveFromSave ? PF_RULES.pfActiveFromSave(raw) : null;
+    } catch (e){ return null; }
+  }
+  function pfWant(modeId){
+    const d = pfReadActive();
+    return !!(PF_RULES.pfShouldFollow && PF_RULES.pfShouldFollow(modeId, pfSetting(), !!d));
+  }
+  function pfEnter(modeId){
+    pf = pf || {set: pfLoad(), pet: null, modeId: null};
+    pf.set = pfLoad();
+    pf.modeId = modeId || (typeof mode !== 'undefined' ? mode : null);
+    if (!pfWant(pf.modeId)){ pfStop(true); return null; }
+    const d = pfReadActive();
+    if (!d){ pfStop(true); return null; }
+    if (pf.pet && pf.pet.k === d.k && pf.pet.c === d.c) return pf.pet;
+    pfStop(true);
+    try {
+      const st = (typeof stageOf === 'function') ? stageOf(+d.xp || 0) : (PF_RULES.pfStage ? PF_RULES.pfStage(d.xp) : 1);
+      if (typeof buildPet !== 'function' || typeof scene === 'undefined') return null;
+      const m = buildPet(d.k, d.c, st);
+      try { if (typeof dress === 'function') dress(m, (typeof accClean === 'function') ? accClean(d.acc) : d.acc); } catch (e){}
+      const nm = (typeof petNameClean === 'function' ? petNameClean(d.n) : d.n) || 'Buddy';
+      try {
+        const tag = (typeof label === 'function') ? label('🐾 ' + nm, 'rgba(255,111,181,.92)', '#fff', 220) : null;
+        if (tag){ tag.scale.multiplyScalar(0.5); tag.position.y = (m.top || 1.2) + 0.45; m.g.add(tag); }
+      } catch (e){}
+      const px = (typeof P !== 'undefined' && P) ? P.x : 0, pz = (typeof P !== 'undefined' && P) ? P.z : 0;
+      const face = (typeof P !== 'undefined' && P) ? P.face : 0;
+      const x = px - Math.sin(face) * 1.55, z = pz - Math.cos(face) * 1.55;
+      m.g.position.set(x, (P && P.y) || 0, z);
+      scene.add(m.g);
+      pf.pet = {m: m, k: d.k, c: d.c, n: nm, acc: d.acc, xp: d.xp, x: x, y: (P && P.y) || 0, z: z, face: face, sp: 0};
+    } catch (e){ pf.pet = null; }
+    return pf.pet;
+  }
+  function pfStop(keep){
+    if (pf && pf.pet && pf.pet.m && pf.pet.m.g){
+      try { if (typeof scene !== 'undefined' && scene) scene.remove(pf.pet.m.g); } catch (e){}
+    }
+    if (pf) pf.pet = null;
+    if (!keep) pf = null;
+  }
+  function pfWire(){
+    if (!pf || !pf.pet) return 0;
+    const q = pf.pet, r = v => Math.round(v * 100) / 100;
+    const st = (typeof stageOf === 'function') ? stageOf(+q.xp || 0) : (PF_RULES.pfStage ? PF_RULES.pfStage(q.xp) : 1);
+    const acc = (typeof accStr === 'function') ? accStr(q.acc) : '';
+    return [q.k, q.c, st, r(q.x), r(q.y), r(q.z), r(q.face), q.sp > 0.6 ? 1 : 0, q.n, r(q.sp), 0, acc];
+  }
+  function pfShowRemote(modeId, E){
+    if (!E || !E.pet) return false;
+    if (!modeId || (PF_RULES.PF_SKIP || []).indexOf(modeId) >= 0) return false;
+    if (modeId === 'pets' || modeId === 'petisland') return false;
+    return E.m === modeId;
+  }
+  function pfTick(dt, modeId){
+    if (modeId && pf) pf.modeId = modeId;
+    if (!pfWant(modeId || (pf && pf.modeId))){ if (pf && pf.pet) pfStop(true); return; }
+    if (!pf || !pf.pet){ pfEnter(modeId); if (!pf || !pf.pet) return; }
+    if (typeof P === 'undefined' || !P || !pf.pet.m) return;
+    dt = Math.min(0.08, +dt || 0.016);
+    const step = PF_RULES.pfFollowStep ? PF_RULES.pfFollowStep(P.x, P.z, P.face, pf.pet.x, pf.pet.z, dt) : null;
+    if (step){
+      pf.pet.x = step.x; pf.pet.z = step.z; pf.pet.face = step.face;
+      pf.pet.sp = step.moving ? (step.sp || 6) : 0;
+    }
+    let y = P.y || 0;
+    if (y > 3.2) y = pf.pet.y || 0; // stay on the ground while the player rides high
+    else pf.pet.y = y;
+    try {
+      pf.pet.m.g.position.set(pf.pet.x, pf.pet.y, pf.pet.z);
+      pf.pet.m.g.rotation.y = pf.pet.face;
+      if (typeof animPet === 'function') animPet(pf.pet.m, pf.pet.sp > 0.6 ? 1 : 0, pf.pet.sp, dt, (typeof worldT !== 'undefined' ? worldT : 0));
+    } catch (e){}
+  }
+
+  try {
+    if (typeof window !== 'undefined'){
+      window.pfEnter = pfEnter;
+      window.pfTick = pfTick;
+      window.pfStop = pfStop;
+      window.pfSetHide = pfSetHide;
+      window.pfSyncUi = pfSyncUi;
+      window.pfWire = pfWire;
+      window.pfShowRemote = pfShowRemote;
+      window.pfState = function(){ return pf ? {hide: !!(pf.set && pf.set.hide), pet: pf.pet && {k: pf.pet.k, n: pf.pet.n, x: pf.pet.x, z: pf.pet.z}, modeId: pf.modeId} : null; };
+    }
+  } catch (e){}
+  /* ---------- end pet follow ---------- */
+
   function armGameLoop(){
     if (raf){ try { cancelAnimationFrame(raf); } catch (e){} raf = 0; }
     loopId++;
@@ -26162,7 +26375,7 @@ function dhLayoutHud(){
     }
     const frameDt = Math.min(0.45, raw);
     if (document.pointerLockElement && (!fpOn() || paused || menuOpen || choosing || won || over)) document.exitPointerLock();
-    animate(paused ? 0 : frameDt); updateCamera(); if (typeof wxTick === 'function') try { wxTick(frameDt, mode, {scene: scene, camera: camera}); } catch (e){} renderer.render(scene, camera); hud(); if (typeof chTick === 'function') try { chTick(); } catch (e){}
+    animate(paused ? 0 : frameDt); updateCamera(); if (typeof wxTick === 'function') try { wxTick(frameDt, mode, {scene: scene, camera: camera}); } catch (e){} if (typeof pfTick === 'function') try { pfTick(frameDt, mode); } catch (e){} renderer.render(scene, camera); hud(); if (typeof chTick === 'function') try { chTick(); } catch (e){}
     tickGfxFps(frameDt);
   }
   function tickGfxFps(dt){
@@ -26766,6 +26979,7 @@ function start(m = 'obby', d = null){
     $('#oTip').classList.toggle('hide', choosing); tipTimer = mode === 'obby' && INTRO[level] ? 11 : 8; $('#oSkip').classList.remove('show');
     $('#lvlModal').classList.remove('show');
     try { if (typeof wxEnter === 'function') wxEnter(mode); } catch (e){}
+    try { if (typeof pfEnter === 'function') pfEnter(mode); } catch (e){}
     resize(); armGameLoop(); checkRotate(); try { if (typeof chSync === 'function') chSync(); } catch (e){}
     if (mode === 'obby') banner('🏃 Level ' + level + ' · ' + worldOf(level).emoji + ' ' + worldOf(level).name);
     else if (mode === 'nds') banner('🏝️ Disaster Island!');
@@ -26828,6 +27042,8 @@ function start(m = 'obby', d = null){
     $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }
     if (mode === 'dance') danceEnter();
     $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
+    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
+        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
         $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
@@ -27626,9 +27842,10 @@ function start(m = 'obby', d = null){
   }
 
   function stop(){
-    try { if (typeof wxStop === 'function') wxStop(); } catch (e){}
     if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}
     if (typeof dhCloseReset === 'function') dhCloseReset();
+    try { if (typeof wxStop === 'function') wxStop(); } catch (e){}
+    try { if (typeof pfStop === 'function') pfStop(); } catch (e){}
     running = false; loopId++; if (raf){ try { cancelAnimationFrame(raf); } catch (e){} raf = 0; } if (document.pointerLockElement) document.exitPointerLock(); fp.shown = null; menuOpen = false; paused = false;
     if (typeof dhClosePauseMenus === 'function') dhClosePauseMenus();
     $('#obby').classList.remove('fpv', 'paused', 'dh-paused', 'dh-intro'); $('#oPausePanel').classList.remove('show'); if (model){ model.g.visible = true; if (model.head) model.head.visible = true; }

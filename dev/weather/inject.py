@@ -108,8 +108,8 @@ def main():
         log.append(m)
 
     # stop hook
-    old_stop = "  function stop(){\n    if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}"
-    new_stop = "  function stop(){\n    try { if (typeof wxStop === 'function') wxStop(); } catch (e){}\n    if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}"
+    old_stop = "    if (typeof dhCloseReset === 'function') dhCloseReset();"
+    new_stop = "    if (typeof dhCloseReset === 'function') dhCloseReset();\n    try { if (typeof wxStop === 'function') wxStop(); } catch (e){}"
     if 'if (typeof wxStop === \'function\') wxStop()' in html:
         log.append('skip wx-stop')
     else:
