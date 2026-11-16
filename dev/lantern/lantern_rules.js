@@ -294,7 +294,8 @@
     {id:'lh-ride', name:'First Spin', desc:'Hop on a fairground ride.', emoji:'🎡', coins:10, note:'lh:ride'},
     {id:'lh-rides', name:'Ride the Midway', desc:'Take a turn on the Ferris wheel, the carousel, and the swing ride.', emoji:'🎠', coins:15, note:'lh:rides'},
     {id:'lh-tickets', name:'Ticket Winner', desc:'Win prize tickets at a carnival game.', emoji:'🎟️', coins:10, note:'lh:tickets'},
-    {id:'lh-prize', name:'Booth Bargain', desc:'Trade tickets for a prize at the booth.', emoji:'🧸', coins:10, note:'lh:prize'}
+    {id:'lh-prize', name:'Booth Bargain', desc:'Trade tickets for a prize at the booth.', emoji:'🧸', coins:10, note:'lh:prize'},
+    {id:'lh-decor', name:'Home Sweet Wagon', desc:'Decorate your wagon with a new item or a fresh coat of paint.', emoji:'🛋️', coins:10, note:'lh:decor'}
   ];
 
 
@@ -713,11 +714,103 @@
     return {ok:true, wear: next, equipped: next[slot] || null, slot: slot};
   }
 
+
+  const LH_STARTER_DECOR = [
+    {id:'start-stool', name:'Little Stool', emoji:'🪑', kind:'decor'},
+    {id:'start-cushion', name:'Soft Cushion', emoji:'🟪', kind:'decor'},
+    {id:'start-crate', name:'Toy Crate', emoji:'📦', kind:'decor'},
+    {id:'start-mat', name:'Welcome Mat', emoji:'🟫', kind:'decor'},
+    {id:'start-picture', name:'Sunny Frame', emoji:'🖼️', kind:'decor'},
+    {id:'start-lamp', name:'Bedside Lamp', emoji:'💡', kind:'decor'}
+  ];
+  const LH_WALL_STYLES = [
+    {id:'plain', name:'Warm Cream'},
+    {id:'stripe', name:'Candy Stripe'},
+    {id:'stars', name:'Night Stars'},
+    {id:'dots', name:'Confetti Dots'}
+  ];
+  const LH_FLOOR_STYLES = [
+    {id:'wood', name:'Wagon Wood'},
+    {id:'check', name:'Picnic Check'},
+    {id:'star', name:'Starry Floor'},
+    {id:'plain', name:'Soft Boards'}
+  ];
+  const LH_DECOR_MAX = 24;
+
+  function lhDecorCatalog(prizes){
+    const have = prizes && typeof prizes === 'object' ? prizes : {};
+    const out = LH_STARTER_DECOR.map(p => Object.assign({starter:true}, p));
+    (LH_PRIZES || []).forEach(p => {
+      if ((p.kind === 'decor' || p.kind === 'plush') && have[p.id]) out.push(Object.assign({}, p));
+    });
+    return out;
+  }
+
+  function lhDecorClamp(dx, dz, w, d, inset){
+    const pad = inset == null ? 1.1 : inset;
+    const hw = Math.max(0.4, (w || 8) / 2 - pad);
+    const hd = Math.max(0.4, (d || 6.2) / 2 - pad);
+    const x = Math.max(-hw, Math.min(hw, +dx || 0));
+    const z = Math.max(-hd, Math.min(hd, +dz || 0));
+    return {x: x, z: z};
+  }
+
+  function lhNormalizeStyle(style){
+    style = style && typeof style === 'object' ? style : {};
+    const wall = (LH_WALL_STYLES.some(s => s.id === style.wall) ? style.wall : 'plain');
+    const floor = (LH_FLOOR_STYLES.some(s => s.id === style.floor) ? style.floor : 'wood');
+    return {wall: wall, floor: floor};
+  }
+
+  function lhNormalizeDecor(list){
+    if (!Array.isArray(list)) return [];
+    const out = [];
+    list.forEach((it, i) => {
+      if (!it || !it.item) return;
+      const pos = lhDecorClamp(it.x, it.z, 8, 6.2, 1.1);
+      const rot = ((it.rot | 0) % 4 + 4) % 4;
+      out.push({id: String(it.id || ('d' + i)), item: String(it.item), x: pos.x, z: pos.z, rot: rot});
+    });
+    return out.slice(0, LH_DECOR_MAX);
+  }
+
+  function lhDecorPlace(list, itemId, x, z, rot){
+    const items = lhNormalizeDecor(list);
+    if (items.length >= LH_DECOR_MAX) return {ok:false, reason:'full', items: items};
+    if (!itemId) return {ok:false, reason:'item', items: items};
+    const pos = lhDecorClamp(x, z, 8, 6.2, 1.1);
+    const rec = {id: 'd' + Date.now().toString(36) + Math.floor(Math.random()*1000).toString(36), item: itemId, x: pos.x, z: pos.z, rot: ((rot|0)%4+4)%4};
+    items.push(rec);
+    return {ok:true, items: items, placed: rec};
+  }
+
+  function lhDecorRotate(list, id){
+    const items = lhNormalizeDecor(list);
+    const it = items.find(x => x.id === id);
+    if (!it) return {ok:false, reason:'missing', items: items};
+    it.rot = (it.rot + 1) % 4;
+    return {ok:true, items: items, placed: it};
+  }
+
+  function lhDecorRemove(list, id){
+    const items = lhNormalizeDecor(list).filter(x => x.id !== id);
+    return {ok:true, items: items};
+  }
+
+  function lhDecorMove(list, id, x, z){
+    const items = lhNormalizeDecor(list);
+    const it = items.find(n => n.id === id);
+    if (!it) return {ok:false, reason:'missing', items: items};
+    const pos = lhDecorClamp(x, z, 8, 6.2, 1.1);
+    it.x = pos.x; it.z = pos.z;
+    return {ok:true, items: items, placed: it};
+  }
+
   const api = {
     LH_KEY, LH_VER, LH_HOST, LH_HOST_TITLE, LH_GAME, LH_STAMPS, LH_EYES,
     LH_WALL_PRESETS, LH_WALL_MAX_CHARS, LH_WALL_MAX_PER_PLAYER, LH_WALL_MAX_DIST, LH_PII_REASONS,
     LH_WAGON_H, LH_MIDWAY_WALL_H, LH_DOOR_OPEN_H, LH_KNOCK_COOLDOWN, LH_KNOCK_TIMEOUT, LH_KNOCK_SOLO_OPEN,
-    LH_RIDE_SPEC, LH_CARNIVAL_GAMES, LH_PRIZES,
+    LH_RIDE_SPEC, LH_CARNIVAL_GAMES, LH_PRIZES, LH_STARTER_DECOR, LH_WALL_STYLES, LH_FLOOR_STYLES, LH_DECOR_MAX,
     LH_COMPANY_R, LH_NEAR_R, LH_SUMMON_R, LH_TAG_R, LH_KEY_CD, LH_LAMP_R, LH_WAGON_ZS,
     LH_WAGONS_PER_SIDE, LH_WAGON_COUNT, LH_WAGON_SPACING, LH_WAGON_Z0, LH_WAGON_X,
     LH_MIDWAY_WALL_X, LH_MIDWAY_Z0, LH_MIDWAY_Z1, LH_DOOR_HALF,
@@ -735,6 +828,7 @@
     lhDoorPromptKind, lhKnockCooldownLeft, lhKnockAllowed, lhKnockResolve, lhKnockReplyMessage, lhJumpClearHeight, lhPickLine,
     lhRidePickSeat, lhRideBoardOk, lhRideExitPoint, lhRideProgress,
     lhPrizeById, lhGameTickets, lhBuyPrize, lhEquipCosmetic,
+    lhDecorCatalog, lhDecorClamp, lhNormalizeStyle, lhNormalizeDecor, lhDecorPlace, lhDecorRotate, lhDecorRemove, lhDecorMove,
     LH_KNOCK_SOLO_OPEN_LINES, LH_KNOCK_SOLO_STAY_LINES
   };
   root.LHRules = api;

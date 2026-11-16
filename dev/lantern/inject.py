@@ -7,8 +7,8 @@ ROOT = Path(__file__).resolve().parents[2]
 IDX = ROOT / 'index.html'
 DEV = ROOT / 'dev/lantern'
 ACH = ROOT / 'dev/achievements/achievements.js'
-BUILD = '2026.11.16-11'
-OLD_BUILD = '2026.11.16-10'
+BUILD = '2026.11.16-12'
+OLD_BUILD = '2026.11.16-11'
 
 def once(text, old, new, label):
     if new.strip() and new in text and old not in text:
@@ -232,8 +232,11 @@ def main():
     else:
         sel = html[html.find('const HUD_HIT_SEL'):html.find('const HUD_HIT_SEL')+1200]
         if '#lhGame' not in sel:
-            html = html.replace('#lhKnock, #lhCut', '#lhKnock, #lhGame, #lhBooth, #lhCut', 1)
+            html = html.replace('#lhKnock, #lhCut', '#lhKnock, #lhGame, #lhBooth, #lhDecor, #lhDecorBtn, #lhCut', 1)
             log.append('ok HUD_HIT_SEL games')
+        elif '#lhDecor' not in sel:
+            html = html.replace('#lhGame, #lhBooth, #lhCut', '#lhGame, #lhBooth, #lhDecor, #lhDecorBtn, #lhCut', 1)
+            log.append('ok HUD_HIT_SEL decor')
         else:
             log.append('skip HUD_HIT_SEL')
 

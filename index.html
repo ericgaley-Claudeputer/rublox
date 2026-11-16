@@ -1069,6 +1069,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 
 
 
+
 /* ---------- lantern hotel css ---------- */
 /* t286u Lantern Big Top HUD */
 #lhBox{display:none}
@@ -1083,7 +1084,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 .lh-bar i{display:block;height:100%;background:linear-gradient(90deg,#7cffd0,#ffd25a,#ff8ad8);border-radius:8px}
 .lh-why{font-size:11px;font-weight:800;margin-top:4px;max-width:160px;line-height:1.25;color:#ffe8fb}
 #lhKeyTag{display:none;position:absolute;left:50%;top:58px;transform:translateX(-50%);z-index:8;background:#6b3cff;color:#fff;border:3px solid #fff;border-radius:14px;padding:4px 10px;font-weight:900;font-size:14px;pointer-events:none}
-#lhSetBtn,#lhFanfare,#lhMyWagon,#lhMapBtn,#lhWriteBtn{display:none;position:absolute;z-index:8;border:3px solid #fff;border-radius:16px;padding:7px 12px;font:inherit;font-weight:900;cursor:pointer;color:#fff}
+#lhSetBtn,#lhFanfare,#lhMyWagon,#lhMapBtn,#lhWriteBtn,#lhDecorBtn{display:none;position:absolute;z-index:8;border:3px solid #fff;border-radius:16px;padding:7px 12px;font:inherit;font-weight:900;cursor:pointer;color:#fff}
 #lhSetBtn{right:max(10px,env(safe-area-inset-right));bottom:18px;background:#6b3cff;box-shadow:0 4px 0 #3a1ca0}
 .touchui #lhSetBtn{bottom:158px}
 #lhMyWagon{right:max(10px,env(safe-area-inset-right));bottom:68px;background:#d61c8c;box-shadow:0 4px 0 #8a0a58}
@@ -1094,7 +1095,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 .touchui #lhWriteBtn{bottom:308px}
 #lhWriteBtn.lh-ready{box-shadow:0 4px 0 #4a0810,0 0 0 3px #ffd25a}
 #lhFanfare{left:50%;bottom:200px;transform:translateX(-50%);background:#d61c8c;box-shadow:0 4px 0 #8a0a58}
-#lhFanfare.show,#lhSetBtn,#lhMyWagon,#lhMapBtn,#lhWriteBtn{display:block}
+#lhFanfare.show,#lhSetBtn,#lhMyWagon,#lhMapBtn,#lhWriteBtn,#lhDecorBtn.show{display:block}
 .lhnear{background:#d61c8c;box-shadow:0 4px 0 #8a0a58}
 .lhnear small{color:#d61c8c}
 #lhCut,#lhCalm{display:none;position:absolute;inset:0;z-index:30;background:rgba(10,4,20,.72);align-items:center;justify-content:center;flex-direction:column;text-align:center;color:#fff;pointer-events:auto}
@@ -1125,10 +1126,10 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 #lhSkip,#lhCalmSkip{margin-top:16px;border:3px solid #fff;border-radius:14px;background:#6b3cff;color:#fff;font:inherit;font-weight:900;padding:8px 16px;cursor:pointer;z-index:1}
 .lh-breathe{width:110px;height:110px;border:6px solid #fff;border-radius:50%;margin:8px auto 16px;background:radial-gradient(circle at 40% 40%,#7cffd0,#6b3cff);animation:lhbreathe 2.2s ease-in-out infinite}
 @keyframes lhbreathe{0%,100%{transform:scale(.82)}50%{transform:scale(1.08)}}
-#lhSet,#lhDraw,#lhWrite,#lhKnock,#lhGame,#lhBooth{display:none;position:absolute;inset:0;z-index:25;background:rgba(20,8,36,.55);align-items:center;justify-content:center;pointer-events:auto}
-#lhSet.show,#lhDraw.show,#lhWrite.show,#lhKnock.show,#lhGame.show,#lhBooth.show{display:flex}
-#lhSet .mbox,#lhDraw .mbox,#lhWrite .mbox,#lhKnock .mbox,#lhGame .mbox,#lhBooth .mbox{background:#fff7fb;border:4px solid #1d2340;border-radius:20px;padding:16px;max-width:420px;width:calc(100% - 28px);color:#1d2340;box-shadow:0 8px 0 rgba(80,20,90,.25)}
-#lhSet h2,#lhDraw h2,#lhWrite h2,#lhKnock h2,#lhGame h2,#lhBooth h2{margin:0 0 8px;font-size:22px}
+#lhSet,#lhDraw,#lhWrite,#lhKnock,#lhGame,#lhBooth,#lhDecor{display:none;position:absolute;inset:0;z-index:25;background:rgba(20,8,36,.55);align-items:center;justify-content:center;pointer-events:auto}
+#lhSet.show,#lhDraw.show,#lhWrite.show,#lhKnock.show,#lhGame.show,#lhBooth.show,#lhDecor.show{display:flex}
+#lhSet .mbox,#lhDraw .mbox,#lhWrite .mbox,#lhKnock .mbox,#lhGame .mbox,#lhBooth .mbox,#lhDecor .mbox{background:#fff7fb;border:4px solid #1d2340;border-radius:20px;padding:16px;max-width:420px;width:calc(100% - 28px);color:#1d2340;box-shadow:0 8px 0 rgba(80,20,90,.25)}
+#lhSet h2,#lhDraw h2,#lhWrite h2,#lhKnock h2,#lhGame h2,#lhBooth h2,#lhDecor h2{margin:0 0 8px;font-size:22px}
 #lhWritePresets{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
 #lhWritePresets button,#lhWriteStyle button{border:3px solid #1d2340;border-radius:14px;background:#fff;font:inherit;font-weight:900;padding:10px 12px;cursor:pointer;min-height:44px;color:#1d2340}
 #lhWritePresets button.on,#lhWriteStyle button.on{background:#8a1020;color:#fff;border-color:#4a0810}
@@ -1179,11 +1180,11 @@ body.lh-muffled #obby{filter:saturate(.85)}
 }
 #obby.lhmode #lhRoot{display:block;position:absolute;inset:0;pointer-events:none;z-index:20}
 #obby.lhmode #lhMeter{display:block;pointer-events:none;z-index:21}
-#obby.lhmode #lhSetBtn,#obby.lhmode #lhFanfare.show,#obby.lhmode #lhMyWagon,#obby.lhmode #lhMapBtn,#obby.lhmode #lhWriteBtn,#obby.lhmode #lhAct.show{pointer-events:auto}
+#obby.lhmode #lhSetBtn,#obby.lhmode #lhFanfare.show,#obby.lhmode #lhMyWagon,#obby.lhmode #lhMapBtn,#obby.lhmode #lhWriteBtn,#obby.lhmode #lhDecorBtn.show,#obby.lhmode #lhAct.show{pointer-events:auto}
 /* #lhRoot is z-index 20 and covers the screen; the Close/Open door prompt must sit above it or Mac clicks never reach the button. */
 #lhAct.fsnear,#obby.lhmode #lhAct.show{z-index:22;pointer-events:auto}
 
-#obby.lhmode #lhCut,#obby.lhmode #lhCalm,#obby.lhmode #lhSet,#obby.lhmode #lhDraw,#obby.lhmode #lhWrite,#obby.lhmode #lhKnock,#obby.lhmode #lhGame,#obby.lhmode #lhBooth,#obby.lhmode #lhMap{pointer-events:auto;z-index:90}
+#obby.lhmode #lhCut,#obby.lhmode #lhCalm,#obby.lhmode #lhSet,#obby.lhmode #lhDraw,#obby.lhmode #lhWrite,#obby.lhmode #lhKnock,#obby.lhmode #lhGame,#obby.lhmode #lhBooth,#obby.lhmode #lhDecor,#obby.lhmode #lhMap{pointer-events:auto;z-index:90}
 #obby.lhmode #lhKeyTag{z-index:21}
 
 /* Start-fail safety net (kept here so lantern css refresh does not drop it). */
@@ -1243,6 +1244,19 @@ body.lh-muffled #obby{filter:saturate(.85)}
   #lhBoothList{grid-template-columns:1fr}
   .lh-peg,.lh-balloon,.lh-duck,.lh-hole{min-width:64px;min-height:56px}
 }
+
+#lhDecorBtn{right:max(10px,env(safe-area-inset-right));bottom:218px;background:#2a6b8a;box-shadow:0 4px 0 #143d52}
+.touchui #lhDecorBtn{bottom:358px}
+#lhDecor .mbox{max-width:520px;max-height:min(86vh,640px);overflow:auto}
+.lh-decor-sec{font-weight:900;margin:10px 0 6px;font-size:14px}
+.lh-swatches{display:flex;flex-wrap:wrap;gap:8px}
+.lh-swatches button,.lh-drow button{border:3px solid #1d2340;border-radius:12px;background:#fff;font:inherit;font-weight:800;padding:8px 10px;cursor:pointer;color:#1d2340;min-height:44px}
+.lh-swatches button.on{background:#6b3cff;color:#fff;border-color:#3a1ca0}
+#lhDecorPlace{width:100%;margin:10px 0 4px;min-height:48px}
+#lhDecorList{display:flex;flex-direction:column;gap:6px;max-height:160px;overflow:auto}
+.lh-drow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;border:2px solid #eadfbf;border-radius:12px;padding:6px 8px;background:#fff}
+.lh-drow .nm{flex:1;font-weight:800;font-size:13px}
+.lh-drow button{min-height:40px;padding:6px 8px}
 
 /* ---------- /lantern hotel css ---------- */
 </style>
@@ -1834,6 +1848,7 @@ body.lh-muffled #obby{filter:saturate(.85)}
     <button type="button" id="lhMyWagon" aria-label="Go to my wagon">🎪 Go to my wagon</button>
     <button type="button" id="lhMapBtn" aria-label="Open map">🗺️ Map</button>
     <button type="button" id="lhWriteBtn" aria-label="Write a word on the wall">✍️ Write</button>
+    <button type="button" id="lhDecorBtn" aria-label="Decorate your wagon">🛋️ Decorate</button>
     <button type="button" id="lhFanfare" aria-label="Call Maestro Gleam">🎩 Call Maestro Gleam</button>
     <div id="lhScare" aria-hidden="true">
       <div id="lhVignette"></div>
@@ -1925,6 +1940,22 @@ body.lh-muffled #obby{filter:saturate(.85)}
         <div id="lhBoothBal" class="lh-game-hint">0 tickets</div>
         <div id="lhBoothList"></div>
         <button type="button" class="big gray" id="lhBoothClose">Done ✅</button>
+      </div>
+    </div>
+        <div id="lhDecor">
+      <div class="mbox">
+        <h2>🛋️ Decorate your wagon</h2>
+        <div class="lh-game-hint">Only you can edit. Friends see your room when the door is open.</div>
+        <div class="lh-decor-sec">Wallpaper</div>
+        <div id="lhWallStyles" class="lh-swatches"></div>
+        <div class="lh-decor-sec">Floor</div>
+        <div id="lhFloorStyles" class="lh-swatches"></div>
+        <div class="lh-decor-sec">Place an item</div>
+        <div id="lhDecorInv" class="lh-swatches"></div>
+        <button type="button" class="big green" id="lhDecorPlace">Place in front of me</button>
+        <div class="lh-decor-sec">In this wagon</div>
+        <div id="lhDecorList"></div>
+        <button type="button" class="big gray" id="lhDecorClose">Done ✅</button>
       </div>
     </div>
     <div id="lhDraw">
@@ -2185,7 +2216,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-11';
+const BUILD = '2026.11.16-12';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3052,6 +3083,7 @@ function drawLantern(ctx){
 
 
 
+
 function drawHaunt(ctx){
   sky(ctx, '#2a2450', '#5b4d7a');
   ctx.fillStyle = '#4a3f6b'; ctx.fillRect(0, 140, 320, 60);
@@ -3708,6 +3740,7 @@ function confetti(){
     {id:'lh-rides', cat:'lantern', emoji:'🎠', name:'Ride the Midway', desc:'Take a turn on the Ferris wheel, the carousel, and the swing ride.', coins:15, prove:s => !!(s.notes && s.notes['lh:rides'])},
     {id:'lh-tickets', cat:'lantern', emoji:'🎟️', name:'Ticket Winner', desc:'Win prize tickets at a carnival game.', coins:10, prove:s => !!(s.notes && s.notes['lh:tickets'])},
     {id:'lh-prize', cat:'lantern', emoji:'🧸', name:'Booth Bargain', desc:'Trade tickets for a prize at the booth.', coins:10, prove:s => !!(s.notes && s.notes['lh:prize'])},
+    {id:'lh-decor', cat:'lantern', emoji:'🛋️', name:'Home Sweet Wagon', desc:'Decorate your wagon with a new item or a fresh coat of paint.', coins:10, prove:s => !!(s.notes && s.notes['lh:decor'])},
                 // Collection
     {id:'welcome', cat:'collection', emoji:'👋', name:'Hello, Friend', desc:'Pick a player name and join Rublox.', coins:5, prove:s => !!(s.player && s.player.name)},
     {id:'first-game', cat:'collection', emoji:'🎮', name:'Let\'s Play', desc:'Start any Rublox game.', coins:5, prove:s => !!(s.notes && s.notes.play) || !!(s.recent && s.recent.length >= 1)},
@@ -3778,6 +3811,7 @@ function confetti(){
       const loc = (typeof location !== 'undefined' && location) || (typeof window !== 'undefined' && window.location) || null;
       const hash = loc && loc.hash ? String(loc.hash) : '';
       if (/(?:^|#|&)chattest=/i.test(hash)) return true;
+      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
@@ -6111,6 +6145,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
 
 
 
+
 /* ---------- lantern rules ---------- */
 /* Pure Lantern Big Top rules — safe to require() in tests and to load in the page. */
 (function (root) {
@@ -6408,7 +6443,8 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     {id:'lh-ride', name:'First Spin', desc:'Hop on a fairground ride.', emoji:'🎡', coins:10, note:'lh:ride'},
     {id:'lh-rides', name:'Ride the Midway', desc:'Take a turn on the Ferris wheel, the carousel, and the swing ride.', emoji:'🎠', coins:15, note:'lh:rides'},
     {id:'lh-tickets', name:'Ticket Winner', desc:'Win prize tickets at a carnival game.', emoji:'🎟️', coins:10, note:'lh:tickets'},
-    {id:'lh-prize', name:'Booth Bargain', desc:'Trade tickets for a prize at the booth.', emoji:'🧸', coins:10, note:'lh:prize'}
+    {id:'lh-prize', name:'Booth Bargain', desc:'Trade tickets for a prize at the booth.', emoji:'🧸', coins:10, note:'lh:prize'},
+    {id:'lh-decor', name:'Home Sweet Wagon', desc:'Decorate your wagon with a new item or a fresh coat of paint.', emoji:'🛋️', coins:10, note:'lh:decor'}
   ];
 
 
@@ -6827,11 +6863,103 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     return {ok:true, wear: next, equipped: next[slot] || null, slot: slot};
   }
 
+
+  const LH_STARTER_DECOR = [
+    {id:'start-stool', name:'Little Stool', emoji:'🪑', kind:'decor'},
+    {id:'start-cushion', name:'Soft Cushion', emoji:'🟪', kind:'decor'},
+    {id:'start-crate', name:'Toy Crate', emoji:'📦', kind:'decor'},
+    {id:'start-mat', name:'Welcome Mat', emoji:'🟫', kind:'decor'},
+    {id:'start-picture', name:'Sunny Frame', emoji:'🖼️', kind:'decor'},
+    {id:'start-lamp', name:'Bedside Lamp', emoji:'💡', kind:'decor'}
+  ];
+  const LH_WALL_STYLES = [
+    {id:'plain', name:'Warm Cream'},
+    {id:'stripe', name:'Candy Stripe'},
+    {id:'stars', name:'Night Stars'},
+    {id:'dots', name:'Confetti Dots'}
+  ];
+  const LH_FLOOR_STYLES = [
+    {id:'wood', name:'Wagon Wood'},
+    {id:'check', name:'Picnic Check'},
+    {id:'star', name:'Starry Floor'},
+    {id:'plain', name:'Soft Boards'}
+  ];
+  const LH_DECOR_MAX = 24;
+
+  function lhDecorCatalog(prizes){
+    const have = prizes && typeof prizes === 'object' ? prizes : {};
+    const out = LH_STARTER_DECOR.map(p => Object.assign({starter:true}, p));
+    (LH_PRIZES || []).forEach(p => {
+      if ((p.kind === 'decor' || p.kind === 'plush') && have[p.id]) out.push(Object.assign({}, p));
+    });
+    return out;
+  }
+
+  function lhDecorClamp(dx, dz, w, d, inset){
+    const pad = inset == null ? 1.1 : inset;
+    const hw = Math.max(0.4, (w || 8) / 2 - pad);
+    const hd = Math.max(0.4, (d || 6.2) / 2 - pad);
+    const x = Math.max(-hw, Math.min(hw, +dx || 0));
+    const z = Math.max(-hd, Math.min(hd, +dz || 0));
+    return {x: x, z: z};
+  }
+
+  function lhNormalizeStyle(style){
+    style = style && typeof style === 'object' ? style : {};
+    const wall = (LH_WALL_STYLES.some(s => s.id === style.wall) ? style.wall : 'plain');
+    const floor = (LH_FLOOR_STYLES.some(s => s.id === style.floor) ? style.floor : 'wood');
+    return {wall: wall, floor: floor};
+  }
+
+  function lhNormalizeDecor(list){
+    if (!Array.isArray(list)) return [];
+    const out = [];
+    list.forEach((it, i) => {
+      if (!it || !it.item) return;
+      const pos = lhDecorClamp(it.x, it.z, 8, 6.2, 1.1);
+      const rot = ((it.rot | 0) % 4 + 4) % 4;
+      out.push({id: String(it.id || ('d' + i)), item: String(it.item), x: pos.x, z: pos.z, rot: rot});
+    });
+    return out.slice(0, LH_DECOR_MAX);
+  }
+
+  function lhDecorPlace(list, itemId, x, z, rot){
+    const items = lhNormalizeDecor(list);
+    if (items.length >= LH_DECOR_MAX) return {ok:false, reason:'full', items: items};
+    if (!itemId) return {ok:false, reason:'item', items: items};
+    const pos = lhDecorClamp(x, z, 8, 6.2, 1.1);
+    const rec = {id: 'd' + Date.now().toString(36) + Math.floor(Math.random()*1000).toString(36), item: itemId, x: pos.x, z: pos.z, rot: ((rot|0)%4+4)%4};
+    items.push(rec);
+    return {ok:true, items: items, placed: rec};
+  }
+
+  function lhDecorRotate(list, id){
+    const items = lhNormalizeDecor(list);
+    const it = items.find(x => x.id === id);
+    if (!it) return {ok:false, reason:'missing', items: items};
+    it.rot = (it.rot + 1) % 4;
+    return {ok:true, items: items, placed: it};
+  }
+
+  function lhDecorRemove(list, id){
+    const items = lhNormalizeDecor(list).filter(x => x.id !== id);
+    return {ok:true, items: items};
+  }
+
+  function lhDecorMove(list, id, x, z){
+    const items = lhNormalizeDecor(list);
+    const it = items.find(n => n.id === id);
+    if (!it) return {ok:false, reason:'missing', items: items};
+    const pos = lhDecorClamp(x, z, 8, 6.2, 1.1);
+    it.x = pos.x; it.z = pos.z;
+    return {ok:true, items: items, placed: it};
+  }
+
   const api = {
     LH_KEY, LH_VER, LH_HOST, LH_HOST_TITLE, LH_GAME, LH_STAMPS, LH_EYES,
     LH_WALL_PRESETS, LH_WALL_MAX_CHARS, LH_WALL_MAX_PER_PLAYER, LH_WALL_MAX_DIST, LH_PII_REASONS,
     LH_WAGON_H, LH_MIDWAY_WALL_H, LH_DOOR_OPEN_H, LH_KNOCK_COOLDOWN, LH_KNOCK_TIMEOUT, LH_KNOCK_SOLO_OPEN,
-    LH_RIDE_SPEC, LH_CARNIVAL_GAMES, LH_PRIZES,
+    LH_RIDE_SPEC, LH_CARNIVAL_GAMES, LH_PRIZES, LH_STARTER_DECOR, LH_WALL_STYLES, LH_FLOOR_STYLES, LH_DECOR_MAX,
     LH_COMPANY_R, LH_NEAR_R, LH_SUMMON_R, LH_TAG_R, LH_KEY_CD, LH_LAMP_R, LH_WAGON_ZS,
     LH_WAGONS_PER_SIDE, LH_WAGON_COUNT, LH_WAGON_SPACING, LH_WAGON_Z0, LH_WAGON_X,
     LH_MIDWAY_WALL_X, LH_MIDWAY_Z0, LH_MIDWAY_Z1, LH_DOOR_HALF,
@@ -6849,6 +6977,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     lhDoorPromptKind, lhKnockCooldownLeft, lhKnockAllowed, lhKnockResolve, lhKnockReplyMessage, lhJumpClearHeight, lhPickLine,
     lhRidePickSeat, lhRideBoardOk, lhRideExitPoint, lhRideProgress,
     lhPrizeById, lhGameTickets, lhBuyPrize, lhEquipCosmetic,
+    lhDecorCatalog, lhDecorClamp, lhNormalizeStyle, lhNormalizeDecor, lhDecorPlace, lhDecorRotate, lhDecorRemove, lhDecorMove,
     LH_KNOCK_SOLO_OPEN_LINES, LH_KNOCK_SOLO_STAY_LINES
   };
   root.LHRules = api;
@@ -7678,7 +7807,7 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
     if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
@@ -16346,7 +16475,7 @@ const Obby = (() => {
       rooms: [], npcs: [], host: null, vesper: null, exitDoor: null,
       keyholder: null, keyCd: 0, pester: 0, taggedLock: 0,
       doodleOpen: false, setOpen: false, writeOpen: false, writeStyle: 'paint', writeSel: 0, lastHud: '', words: (prog.wallWords || []).slice(), wordMeshes: [], knockAt: {}, knockOffer: null, knockWait: null,
-      trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null, riding: null, arcade: null, boothOpen: false, games: [], booth: null, gameCd: {},
+      trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null, riding: null, arcade: null, boothOpen: false, games: [], booth: null, gameCd: {}, decorOpen: false, decorSel: 0, decorPick: null,
       syncT: 0, visitAwarded: false, _nearT: 0, _isoT: 0, _darkT: 0,
       breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0,
       lastDing: 0, savedFp: null
@@ -16469,15 +16598,21 @@ const Obby = (() => {
       const roomFl = lhFloorBox(R.x, R.z, w, d, floor, 'wagon', floorY);
       const recDraft = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, h, floorY};
       const lay = LH_RULES.lhDoorwayLayout ? LH_RULES.lhDoorwayLayout(recDraft) : {ix: R.x - R.side * (w / 2), stubZ0: R.z - 2.22, stubZ1: R.z + 2.22, stubD: 1.98, transomY: 4.4, transomH: 2.4, transomD: 2.32, transomTop: h, wallTop: h, openH: 3.2};
+      const wallMeshes = [];
+      const takeWall = function(box){
+        const b = lhSolid(box);
+        if (b && b.mesh) wallMeshes.push(b.mesh);
+        return b;
+      };
       // plat() takes the TOP of the box, not the center — use top=h so walls run from the floor to h.
-      lhSolid(lhBox(R.x + R.side * (w / 2 + 0.12), h, R.z, 0.32, d + 0.3, wall, h));
-      lhSolid(lhBox(R.x, h, R.z - d / 2, w, 0.32, wall, h));
-      lhSolid(lhBox(R.x, h, R.z + d / 2, w, 0.32, wall, h));
+      takeWall(lhBox(R.x + R.side * (w / 2 + 0.12), h, R.z, 0.32, d + 0.3, wall, h));
+      takeWall(lhBox(R.x, h, R.z - d / 2, w, 0.32, wall, h));
+      takeWall(lhBox(R.x, h, R.z + d / 2, w, 0.32, wall, h));
       const ix = lay.ix;
-      lhSolid(lhBox(ix, h, lay.stubZ0, 0.32, lay.stubD, wall, h));
-      lhSolid(lhBox(ix, h, lay.stubZ1, 0.32, lay.stubD, wall, h));
+      takeWall(lhBox(ix, h, lay.stubZ0, 0.32, lay.stubD, wall, h));
+      takeWall(lhBox(ix, h, lay.stubZ1, 0.32, lay.stubD, wall, h));
       // transom is a solid from the door head to the wall top (stops jumps over a closed door)
-      lhSolid(lhBox(ix, lay.transomTop || h, R.z, 0.32, lay.transomD, wall, lay.transomH));
+      takeWall(lhBox(ix, lay.transomTop || h, R.z, 0.32, lay.transomD, wall, lay.transomH));
       const ceil = lhMesh(new THREE.BoxGeometry(w + 0.2, 0.16, d + 0.2), lhMat('#fff7fb'), R.x, h, R.z);
       if (ceil) lhPaintStripe(ceil, '#fff7fb', wall, 8, 1);
       // frosted, opaque windows — decorative light, not a view into the room
@@ -16507,7 +16642,8 @@ const Obby = (() => {
       const crayon = furnish ? lhMesh(new THREE.BoxGeometry(2.8, 1.8, 0.08), lhMat('#fffef6'), cx, 1.5, cz) : null;
       if (crayon) interior.add(crayon);
       const door = {g: null, mesh: null, plat: null, closed: true, ang: 0, target: 0, id: R.id};
-      const rec = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, h, floorY, bed: {x: bx, z: bz}, switch: {x: sx, z: sz}, bell: {x: dx, z: dz}, wall: {x: cx, z: cz}, crayon, door, owner: null, lit: true, sw, bellM: bell, interior};
+      const decorG = new THREE.Group(); decorG.name = 'lhDecor' + R.id; interior.add(decorG);
+      const rec = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, h, floorY, bed: {x: bx, z: bz}, switch: {x: sx, z: sz}, bell: {x: dx, z: dz}, wall: {x: cx, z: cz}, crayon, door, owner: null, lit: true, sw, bellM: bell, interior, decorG, wallMeshes, floorMesh: roomFl && roomFl.mesh, baseWall: wall, baseFloor: floor, netDecor: [], netStyle: null};
       lh.rooms.push(rec);
       lh.lights[R.id] = true;
       lh.doors[R.id] = true;
@@ -16653,6 +16789,7 @@ const Obby = (() => {
       lhDecal(padG);
       lh.wagonMark = {x: mouthX, z: R.z, mesh: mark};
     }
+    try { if (lh && lh.rooms) lh.rooms.forEach(R => { lhApplyWagonStyle(R); lhRebuildDecor(R); }); } catch (e){}
     // teleport pad in the big top, near the midway mouth
     try {
       const pad = lhMesh(new THREE.CylinderGeometry(1.15, 1.15, 0.14, 14), lhMat('#6b3cff', {emit:'#8d6cff'}), 0, lhY('pad'), tentZ1 - 2);
@@ -17251,6 +17388,11 @@ const Obby = (() => {
       const mapc = lhEl('lhMapClose'); if (mapc) mapc.onclick = () => lhToggleMap(false);
       const mapo = lhEl('lhMap'); if (mapo) mapo.addEventListener('click', ev => { if (ev.target === mapo) lhToggleMap(false); });
       const wrb = lhEl('lhWriteBtn'); if (wrb) wrb.onclick = () => lhOpenWrite();
+      const deb = lhEl('lhDecorBtn'); if (deb) deb.onclick = () => lhOpenDecor();
+      const dcl = lhEl('lhDecorClose'); if (dcl) dcl.onclick = () => lhCloseDecor();
+      const dpl = lhEl('lhDecorPlace'); if (dpl) dpl.onclick = () => lhPlaceSelectedDecor();
+      const dp = lhEl('lhDecor'); if (dp) dp.addEventListener('click', ev => { if (ev.target === dp) lhCloseDecor(); });
+
       const gcl = lhEl('lhGameClose'); if (gcl) gcl.onclick = () => lhCloseArcade();
       const gp = lhEl('lhGame'); if (gp) gp.addEventListener('click', ev => { if (ev.target === gp) lhCloseArcade(); });
       const bcl = lhEl('lhBoothClose'); if (bcl) bcl.onclick = () => lhCloseBooth();
@@ -17311,7 +17453,7 @@ const Obby = (() => {
 
   function lanternStop(){
     try {
-      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhWrite','lhKnock','lhGame','lhBooth','lhVision','lhScare','lhMyWagon','lhMap','lhMapBtn','lhWriteBtn'].forEach(id => {
+      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhWrite','lhKnock','lhGame','lhBooth','lhDecor','lhVision','lhScare','lhMyWagon','lhMap','lhMapBtn','lhWriteBtn','lhDecorBtn'].forEach(id => {
         const n = lhEl(id); if (!n) return;
         if (id === 'lhMeter' || id === 'lhBox' || id === 'lhRoot') n.style.display = 'none';
         else { n.classList.remove('show'); n.style.display = 'none'; }
@@ -17325,7 +17467,7 @@ const Obby = (() => {
         if (camera.updateProjectionMatrix) camera.updateProjectionMatrix();
       }
     } catch (e){}
-    try { lhCloseArcade(); lhCloseBooth(); } catch (e){}
+    try { lhCloseArcade(); lhCloseBooth(); lhCloseDecor(); } catch (e){}
     if (lh && lh.riding){ try { lhDismountRide(true); } catch (e){} }
     if (lh && lh.prog) lhSaveProg(lh.prog);
     lh = null;
@@ -17885,6 +18027,242 @@ const Obby = (() => {
     }
   }
 
+
+  function lhStyleOf(R){
+    if (!R) return (LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle({}) : {wall:'plain', floor:'wood'});
+    const mine = R.owner === 'me' && lh && lh.prog;
+    const raw = mine ? lh.prog.wagonStyle : (R.netStyle || {});
+    return LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(raw) : (raw || {wall:'plain', floor:'wood'});
+  }
+  function lhItemsOf(R){
+    if (!R) return [];
+    const raw = (R.owner === 'me' && lh && lh.prog) ? lh.prog.decor : (R.netDecor || []);
+    return LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(raw) : (raw || []);
+  }
+  function lhDecorTex(kind, style, base){
+    lh._tex = lh._tex || {};
+    const key = 'sty-' + kind + '-' + style + '-' + (base || '');
+    if (lh._tex[key]) return lh._tex[key];
+    try {
+      const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+      const g = c.getContext('2d');
+      g.fillStyle = base || (kind === 'floor' ? '#e8c98a' : '#fff1f8');
+      g.fillRect(0, 0, 64, 64);
+      if (style === 'stripe'){
+        for (let i = 0; i < 8; i++){ g.fillStyle = i % 2 ? '#e31c23' : '#fff8f0'; g.fillRect(i * 8, 0, 8, 64); }
+      } else if (style === 'stars' || style === 'star'){
+        g.fillStyle = kind === 'floor' ? '#2a1848' : '#2a2060';
+        g.fillRect(0, 0, 64, 64);
+        g.fillStyle = '#ffd25a';
+        [[8,10],[24,28],[40,12],[52,36],[16,48],[36,52],[56,18]].forEach(p => { g.beginPath(); g.arc(p[0], p[1], 2.4, 0, Math.PI*2); g.fill(); });
+      } else if (style === 'dots'){
+        const cols = ['#ff6b9a', '#3a86ff', '#ffd25a', '#2ec27e', '#6b3cff'];
+        for (let i = 0; i < 16; i++){ g.fillStyle = cols[i % cols.length]; g.beginPath(); g.arc(8 + (i%4)*16, 8 + ((i/4)|0)*16, 4, 0, Math.PI*2); g.fill(); }
+      } else if (style === 'check'){
+        for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++){ g.fillStyle = (x+y)%2 ? '#e31c23' : '#fff8f0'; g.fillRect(x*16, y*16, 16, 16); }
+      } else if (style === 'wood'){
+        g.fillStyle = '#c9844a'; g.fillRect(0,0,64,64);
+        g.strokeStyle = 'rgba(80,40,16,.45)'; g.lineWidth = 2;
+        for (let y = 8; y < 64; y += 16){ g.beginPath(); g.moveTo(0,y); g.lineTo(64,y); g.stroke(); }
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(kind === 'floor' ? 4 : 2, kind === 'floor' ? 3 : 2);
+      tex.needsUpdate = true;
+      lh._tex[key] = tex;
+      return tex;
+    } catch (e){ return null; }
+  }
+  function lhTintMesh(mesh, color, tex){
+    if (!mesh || !mesh.material) return;
+    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    mats.forEach(m => {
+      if (!m) return;
+      if (tex){ m.map = tex; if (m.color) m.color.set('#ffffff'); }
+      else { m.map = null; if (m.color && color) m.color.set(color); }
+      m.needsUpdate = true;
+    });
+  }
+  function lhApplyWagonStyle(R, style){
+    if (!R) return;
+    const st = style || lhStyleOf(R);
+    const wallTex = (st.wall && st.wall !== 'plain') ? lhDecorTex('wall', st.wall, R.baseWall) : null;
+    const floorTex = (st.floor && st.floor !== 'plain') ? lhDecorTex('floor', st.floor, R.baseFloor) : null;
+    (R.wallMeshes || []).forEach(m => lhTintMesh(m, st.wall === 'plain' ? R.baseWall : '#ffffff', wallTex));
+    if (R.floorMesh) lhTintMesh(R.floorMesh, st.floor === 'plain' ? R.baseFloor : '#ffffff', floorTex);
+  }
+  function lhDecorSpec(id){
+    const cat = LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog((lh && lh.prog && lh.prog.prizes) || {}) : (LH_RULES.LH_STARTER_DECOR || []);
+    return cat.find(p => p.id === id) || (LH_RULES.lhPrizeById && LH_RULES.lhPrizeById(id)) || {id: id, name: 'Decor', emoji:'🛋️'};
+  }
+  function lhMakeDecorMesh(spec, rot){
+    const col = ({
+      'start-stool':'#8a4a20', 'start-cushion':'#ff6b9a', 'start-crate':'#c9844a', 'start-mat':'#6b3cff',
+      'start-picture':'#fff8f0', 'start-lamp':'#ffd25a', 'plush-glow':'#7cffd0', 'plush-tent':'#e31c23',
+      'plush-horse':'#ff8ad8', 'decor-lamp':'#ffb347', 'decor-bunting':'#3a86ff', 'decor-rug':'#6b3cff',
+      'decor-jar':'#ff6b9a', 'decor-lights':'#ffe27a', 'decor-plant':'#2ec27e', 'decor-poster':'#fff6d8'
+    })[spec && spec.id] || '#ffd25a';
+    const g = new THREE.Group();
+    const box = (w,h,d,c,y) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), lhMat(c)); m.position.y = y == null ? h/2 : y; g.add(m); return m; };
+    const id = spec && spec.id;
+    if (id === 'start-stool'){ box(0.55, 0.18, 0.55, col, 0.45); box(0.1, 0.45, 0.1, '#5a3010', 0.22); }
+    else if (id === 'start-cushion'){ box(0.7, 0.2, 0.7, col, 0.12); }
+    else if (id === 'start-crate'){ box(0.6, 0.5, 0.6, col, 0.25); }
+    else if (id === 'start-mat' || id === 'decor-rug'){ box(1.2, 0.05, 0.8, col, 0.03); }
+    else if (id === 'start-picture' || id === 'decor-poster'){ box(0.7, 0.55, 0.06, col, 1.15); }
+    else if (id === 'start-lamp' || id === 'decor-lamp'){ box(0.16, 0.5, 0.16, '#fff8f0', 0.4); box(0.28, 0.22, 0.28, col, 0.72); }
+    else if (id === 'plush-glow' || id === 'plush-tent' || id === 'plush-horse'){ box(0.45, 0.42, 0.32, col, 0.24); }
+    else if (id === 'decor-jar'){ box(0.28, 0.36, 0.28, col, 0.22); }
+    else if (id === 'decor-plant'){ box(0.22, 0.2, 0.22, '#8a4a20', 0.1); box(0.4, 0.45, 0.4, col, 0.42); }
+    else if (id === 'decor-bunting' || id === 'decor-lights'){ box(1.4, 0.12, 0.08, col, 1.35); }
+    else { box(0.45, 0.45, 0.45, col, 0.22); }
+    g.rotation.y = (rot || 0) * Math.PI / 2;
+    return g;
+  }
+  function lhRebuildDecor(R){
+    if (!R || !R.decorG) return;
+    while (R.decorG.children.length){ const ch = R.decorG.children[0]; R.decorG.remove(ch); try { if (ch.geometry) ch.geometry.dispose(); } catch (e){} }
+    const items = lhItemsOf(R);
+    items.forEach(it => {
+      const spec = lhDecorSpec(it.item);
+      const mesh = lhMakeDecorMesh(spec, it.rot);
+      mesh.position.set(R.x + it.x, R.floorY || lhY('wagon'), R.z + it.z);
+      mesh.userData = {lhDecorId: it.id, item: it.item};
+      R.decorG.add(mesh);
+    });
+    // decor stays inside the interior group so a closed door hides it
+    if (R.interior && R.decorG.parent !== R.interior) R.interior.add(R.decorG);
+  }
+  function lhSyncMyDecor(){
+    if (!lh) return;
+    const R = lh.rooms && lh.rooms[lh.myRoom];
+    if (!R || R.owner !== 'me') return;
+    try { lhNet({k:'decor', room: R.id, items: lh.prog.decor || [], style: lh.prog.wagonStyle || {}}); } catch (e){}
+  }
+  function lhSaveDecor(){
+    if (!lh) return;
+    lh.prog = lh.prog || lhProg();
+    lh.prog.decor = LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(lh.prog.decor) : (lh.prog.decor || []);
+    lh.prog.wagonStyle = LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(lh.prog.wagonStyle) : (lh.prog.wagonStyle || {});
+    lhSaveProg(lh.prog);
+    const R = lh.rooms && lh.rooms[lh.myRoom];
+    if (R){ lhApplyWagonStyle(R); lhRebuildDecor(R); }
+    lhSyncMyDecor();
+  }
+  function lhCloseDecor(){
+    if (!lh) return;
+    lh.decorOpen = false;
+    const n = lhEl('lhDecor');
+    if (n){ n.classList.remove('show'); n.style.display = 'none'; }
+  }
+  function lhOpenDecor(){
+    if (!lh) return false;
+    const R = lh.rooms && lh.rooms[lh.myRoom];
+    if (!R || R.owner !== 'me'){ if (typeof toast === 'function') toast('🛋️ Decorate your own wagon.'); return false; }
+    if (lh.arcade) lhCloseArcade();
+    if (lh.boothOpen) lhCloseBooth();
+    lh.decorOpen = true;
+    const n = lhEl('lhDecor');
+    if (n){ n.style.display = 'flex'; n.classList.add('show'); }
+    lhFillDecor();
+    return true;
+  }
+  function lhFillDecor(){
+    if (!lh) return;
+    lh.prog = lh.prog || lhProg();
+    const style = LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(lh.prog.wagonStyle) : (lh.prog.wagonStyle || {});
+    const cat = LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog(lh.prog.prizes || {}) : (LH_RULES.LH_STARTER_DECOR || []);
+    if (lh.decorSel == null || lh.decorSel >= cat.length) lh.decorSel = 0;
+    const paint = (el, list, cur, kind) => {
+      if (!el) return;
+      el.innerHTML = '';
+      list.forEach(s => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = (cur === s.id) ? 'on' : '';
+        b.textContent = s.name;
+        b.onclick = () => {
+          lh.prog.wagonStyle = Object.assign({}, style, kind === 'wall' ? {wall:s.id} : {floor:s.id});
+          lhAward('lh:decor');
+          lhSaveDecor();
+          lhFillDecor();
+        };
+        el.appendChild(b);
+      });
+    };
+    paint(lhEl('lhWallStyles'), LH_RULES.LH_WALL_STYLES || [], style.wall, 'wall');
+    paint(lhEl('lhFloorStyles'), LH_RULES.LH_FLOOR_STYLES || [], style.floor, 'floor');
+    const inv = lhEl('lhDecorInv');
+    if (inv){
+      inv.innerHTML = '';
+      cat.forEach((s, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = (lh.decorSel === i) ? 'on' : '';
+        b.textContent = (s.emoji || '') + ' ' + s.name;
+        b.onclick = () => { lh.decorSel = i; lhFillDecor(); };
+        inv.appendChild(b);
+      });
+    }
+    const list = lhEl('lhDecorList');
+    if (list){
+      list.innerHTML = '';
+      const items = LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(lh.prog.decor) : (lh.prog.decor || []);
+      if (!items.length){ list.textContent = 'Nothing placed yet — pick an item and place it in front of you.'; list.style.fontWeight = '700'; }
+      items.forEach(it => {
+        const spec = lhDecorSpec(it.item);
+        const row = document.createElement('div');
+        row.className = 'lh-drow';
+        row.innerHTML = '<div class="nm">' + (spec.emoji || '🛋️') + ' ' + (spec.name || it.item) + '</div>';
+        const mk = (label, fn) => { const b = document.createElement('button'); b.type='button'; b.textContent=label; b.onclick=fn; row.appendChild(b); };
+        mk('🔄', () => { const r = LH_RULES.lhDecorRotate(lh.prog.decor, it.id); if (r.ok){ lh.prog.decor = r.items; lhAward('lh:decor'); lhSaveDecor(); lhFillDecor(); } });
+        mk('Move here', () => { const pos = lhDecorFront(); const r = LH_RULES.lhDecorMove(lh.prog.decor, it.id, pos.x, pos.z); if (r.ok){ lh.prog.decor = r.items; lhSaveDecor(); lhFillDecor(); } });
+        mk('Remove', () => { const r = LH_RULES.lhDecorRemove(lh.prog.decor, it.id); lh.prog.decor = r.items; lhSaveDecor(); lhFillDecor(); });
+        list.appendChild(row);
+      });
+    }
+  }
+  function lhDecorFront(){
+    const R = lh && lh.rooms && lh.rooms[lh.myRoom];
+    let yaw = 0;
+    try { if (typeof cam !== 'undefined' && cam && cam.yaw != null) yaw = cam.yaw; } catch (e){}
+    const px = (typeof P !== 'undefined' && P) ? P.x : (R && R.x || 0);
+    const pz = (typeof P !== 'undefined' && P) ? P.z : (R && R.z || 0);
+    const fx = px - Math.sin(yaw) * 1.3;
+    const fz = pz - Math.cos(yaw) * 1.3;
+    const dx = fx - (R && R.x || 0);
+    const dz = fz - (R && R.z || 0);
+    return LH_RULES.lhDecorClamp ? LH_RULES.lhDecorClamp(dx, dz, (R && R.w) || 8, (R && R.d) || 6.2, 1.1) : {x:dx, z:dz};
+  }
+  function lhPlaceSelectedDecor(){
+    if (!lh) return false;
+    lh.prog = lh.prog || lhProg();
+    const cat = LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog(lh.prog.prizes || {}) : (LH_RULES.LH_STARTER_DECOR || []);
+    const spec = cat[lh.decorSel || 0];
+    if (!spec) return false;
+    const pos = lhDecorFront();
+    const r = LH_RULES.lhDecorPlace ? LH_RULES.lhDecorPlace(lh.prog.decor, spec.id, pos.x, pos.z, 0) : {ok:false};
+    if (!r.ok){
+      if (typeof toast === 'function') toast(r.reason === 'full' ? '🛋️ Your wagon is full — remove something first.' : 'Could not place that.');
+      return false;
+    }
+    lh.prog.decor = r.items;
+    lhAward('lh:decor');
+    lhSaveDecor();
+    lhFillDecor();
+    if (typeof toast === 'function') toast((spec.emoji || '🛋️') + ' Placed the ' + spec.name + '.');
+    return true;
+  }
+  function lhReceiveDecor(d){
+    if (!lh || !d || d.room == null || !lh.rooms[d.room]) return;
+    const R = lh.rooms[d.room];
+    if (R.owner === 'me') return;
+    R.netDecor = LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(d.items) : (d.items || []);
+    R.netStyle = LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(d.style) : (d.style || {});
+    lhApplyWagonStyle(R);
+    lhRebuildDecor(R);
+  }
+
   function lhPrompt(){
     if (!lh || lh.cut || lh.calm || lh.banish) return null;
     if (lh.riding){
@@ -17916,6 +18294,7 @@ const Obby = (() => {
         return {id:'light', label: R.lit ? '💡 Turn lights off' : '💡 Turn lights on', R};
       if (LH_RULES.lhNear(P.x, P.z, R.bed.x, R.bed.z, 1.6)) return {id:'bed', label: lh.bed ? '🛏️ Get up' : '🛏️ Sit on bed', R};
       if (R.owner === 'me' && LH_RULES.lhNear(P.x, P.z, R.wall.x, R.wall.z, 1.7) && !atDoor) return {id:'draw', label:'🖍️ Draw on the wall', R};
+      if (R.owner === 'me' && !atDoor) return {id:'decorate', label:'🛋️ Decorate wagon', R};
       if (R.owner === 'me' && atDoor) return {id:'door', label: R.door.closed ? '🚪 Open door' : '🚪 Close door', R};
     }
     const ownWord = lhWordAtLook();
@@ -17958,6 +18337,7 @@ const Obby = (() => {
     else if (p.id === 'ridefull'){ if (typeof toast === 'function') toast('🎟️ Every seat is taken — wait for a spin!'); }
     else if (p.id === 'game') lhOpenGame(p.game && p.game.id);
     else if (p.id === 'booth') lhOpenBooth();
+    else if (p.id === 'decorate') lhOpenDecor();
     else if (p.id === 'bell') lhRing(p.R);
     else if (p.id === 'gowagon') lhGoWagon();
     else if (p.id === 'enter'){
@@ -18565,6 +18945,15 @@ const Obby = (() => {
       }
       return true;
     }
+    if (lh.decorOpen){
+      if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseDecor(); return true; }
+      const cat = (LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog((lh.prog && lh.prog.prizes) || {}) : []) || [];
+      const n = cat.length || 1;
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA' || e.code === 'ArrowUp' || e.code === 'KeyW'){ lh.decorSel = ((lh.decorSel || 0) - 1 + n) % n; lhFillDecor(); return true; }
+      if (e.code === 'ArrowRight' || e.code === 'KeyD' || e.code === 'ArrowDown' || e.code === 'KeyS'){ lh.decorSel = ((lh.decorSel || 0) + 1) % n; lhFillDecor(); return true; }
+      if ((e.code === 'Enter' || e.code === 'Space' || e.code === 'KeyE') && !e.repeat){ lhPlaceSelectedDecor(); return true; }
+      return true;
+    }
     if (lh.writeOpen){
       if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseWrite(); return true; }
       // Let the custom text field receive typing; G should not re-toggle.
@@ -18579,6 +18968,7 @@ const Obby = (() => {
     }
     if (e.code === 'KeyE' && !e.repeat){ lhAct(); return true; }
     if (e.code === 'KeyG' && !e.repeat){ lhOpenWrite(); return true; }
+    if (e.code === 'KeyT' && !e.repeat){ lhOpenDecor(); return true; }
     if (e.code === 'KeyM' && !e.repeat){ lhToggleMap(); return true; }
     if (e.code === 'KeyV') return false;
     return false;
@@ -18619,6 +19009,18 @@ const Obby = (() => {
       if (!jp[0] && !jp[2]) lh._padPick = false;
       return true;
     }
+    if (lh.decorOpen){
+      if (jp[1] && !lh._padB){ lh._padB = true; lhCloseDecor(); return true; }
+      if (!jp[1]) lh._padB = false;
+      const cat = (LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog((lh.prog && lh.prog.prizes) || {}) : []) || [];
+      const n = cat.length || 1;
+      if ((jp[14] || jp[12]) && !lh._padD){ lh._padD = true; lh.decorSel = ((lh.decorSel || 0) - 1 + n) % n; lhFillDecor(); return true; }
+      if ((jp[15] || jp[13]) && !lh._padD){ lh._padD = true; lh.decorSel = ((lh.decorSel || 0) + 1) % n; lhFillDecor(); return true; }
+      if (!jp[14] && !jp[15] && !jp[12] && !jp[13]) lh._padD = false;
+      if ((jp[0] || jp[2]) && !lh._padPick){ lh._padPick = true; lhPlaceSelectedDecor(); return true; }
+      if (!jp[0] && !jp[2]) lh._padPick = false;
+      return true;
+    }
     if (lh.writeOpen){
       if (jp[1] && !lh._padB){ lh._padB = true; lhCloseWrite(); return true; }
       if (!jp[1]) lh._padB = false;
@@ -18639,11 +19041,13 @@ const Obby = (() => {
     if (jp[2] && !lh._padX){ lh._padX = true; lhAct(); return true; }
     if (!jp[2]) lh._padX = false;
     if (jp[1] && lh.riding && !lh._padB){ lh._padB = true; lhDismountRide(); return true; }
-    if (jp[1] && (lh.doodleOpen || lh.setOpen || lh.mapOpen || lh.writeOpen || lh.knockOffer || lh.arcade || lh.boothOpen || lh.cut || lh.calm || lh.banish)){ lhCloseDraw(); lhCloseWrite(); lhCloseArcade(); lhCloseBooth(); if (lh.knockOffer) lhKnockReply(false, 'closed'); lhToggleSet(false); lhToggleMap(false); lhSkipCut(); return true; }
+    if (jp[1] && (lh.doodleOpen || lh.setOpen || lh.mapOpen || lh.writeOpen || lh.knockOffer || lh.arcade || lh.boothOpen || lh.decorOpen || lh.cut || lh.calm || lh.banish)){ lhCloseDraw(); lhCloseWrite(); lhCloseArcade(); lhCloseBooth(); lhCloseDecor(); if (lh.knockOffer) lhKnockReply(false, 'closed'); lhToggleSet(false); lhToggleMap(false); lhSkipCut(); return true; }
     if (jp[3] && !lh._padY){ lh._padY = true; lhToggleMap(); return true; }
     if (!jp[3]) lh._padY = false;
     if (jp[4] && !lh._padLB){ lh._padLB = true; lhOpenWrite(); return true; }
     if (!jp[4]) lh._padLB = false;
+    if (jp[5] && !lh._padRB){ lh._padRB = true; lhOpenDecor(); return true; }
+    if (!jp[5]) lh._padRB = false;
     if (jp[8] && !lh._padView){ lh._padView = true; /* view often chat */ }
     if (!jp[8]) lh._padView = false;
     return false;
@@ -18910,6 +19314,13 @@ const Obby = (() => {
     const mine = lhEl('lhMyWagon'); if (mine){ mine.style.display = ''; mine.classList.add('show'); }
     const mapb = lhEl('lhMapBtn'); if (mapb){ mapb.style.display = ''; mapb.classList.add('show'); }
     const wrb = lhEl('lhWriteBtn'); if (wrb){ wrb.style.display = ''; wrb.classList.add('show'); wrb.classList.toggle('lh-ready', !!lhLookWallHit()); }
+    const deb = lhEl('lhDecorBtn');
+    if (deb){
+      const mine = !!(lh.rooms && lh.rooms[lh.myRoom] && lh.rooms[lh.myRoom].owner === 'me' && lh.area === 'room' && lh.room === lh.myRoom);
+      deb.classList.toggle('show', mine);
+      deb.style.display = mine ? '' : 'none';
+    }
+
     if (lh.mapOpen) lhDrawMap();
   }
 
@@ -18927,7 +19338,8 @@ const Obby = (() => {
         lights: lh.lights,
         doors: lh.doors,
         keyholder: lh.keyholder,
-        riding: lh.riding ? {kind: lh.riding.kind, seat: lh.riding.seat, on: true} : null
+        riding: lh.riding ? {kind: lh.riding.kind, seat: lh.riding.seat, on: true} : null,
+        decor: (lh.rooms && lh.rooms[lh.myRoom] && lh.rooms[lh.myRoom].owner === 'me') ? {room: lh.myRoom, items: (lh.prog && lh.prog.decor) || [], style: (lh.prog && lh.prog.wagonStyle) || {}} : null
       }, extra || {});
       if (typeof mpBroadcast === 'function' && mp.host) mpBroadcast(msg);
       else if (typeof mpSend === 'function') mpSend(msg);
@@ -18976,6 +19388,8 @@ const Obby = (() => {
     if (d.k === 'ride') lhApplyRemoteRide(uid, d);
     else if (d.riding) lhApplyRemoteRide(uid, d.riding);
     else if (d.riding === null && uid) lhApplyRemoteRide(uid, {on: false});
+    if (d.k === 'decor') lhReceiveDecor(d);
+    else if (d.decor && d.decor.room != null) lhReceiveDecor(d.decor);
   }
 
   function lanternUpdate(dt){
@@ -18985,6 +19399,7 @@ const Obby = (() => {
     if (lh.riding){ try { lhApplyLocalRide(); } catch (e){} }
     if (lh.arcade){ try { P.vx = 0; P.vz = 0; } catch (e){} try { lhTickArcade(dt); } catch (e){} }
     if (lh.boothOpen){ try { P.vx = 0; P.vz = 0; } catch (e){} }
+    if (lh.decorOpen){ try { P.vx = 0; P.vz = 0; } catch (e){} }
     if (lh.taggedLock > 0) lh.taggedLock -= dt;
     if (lh.keyCd > 0) lh.keyCd -= dt;
 
@@ -19098,7 +19513,36 @@ const Obby = (() => {
           return {id:R.id, inside: !!(viewer && LH_RULES.lhRoomContains(R, viewer.x, viewer.z, 0.02)), doorClosed: !!(R.door && R.door.closed), visible: !!(R.interior && R.interior.visible), hasInterior: !!R.interior, childCount: R.interior ? R.interior.children.length : 0};
         } catch (e){ return {err:String(e)}; }
       };
+      window.lhOpenDecor = function(){ try { return lhOpenDecor(); } catch (e){ return false; } };
+      window.lhCloseDecor = function(){ try { lhCloseDecor(); } catch (e){} };
+      window.lhPlaceDecor = function(id){
+        try {
+          if (!lh) return false;
+          const cat = LH_RULES.lhDecorCatalog(lh.prog && lh.prog.prizes || {});
+          const i = Math.max(0, cat.findIndex(x => x.id === id));
+          lh.decorSel = i >= 0 ? i : 0;
+          if (id && i < 0){ /* still try */ }
+          return lhPlaceSelectedDecor();
+        } catch (e){ return false; }
+      };
+      window.lhSetStyle = function(wall, floor){
+        try {
+          if (!lh) return null;
+          lh.prog = lh.prog || lhProg();
+          lh.prog.wagonStyle = LH_RULES.lhNormalizeStyle({wall: wall || (lh.prog.wagonStyle && lh.prog.wagonStyle.wall), floor: floor || (lh.prog.wagonStyle && lh.prog.wagonStyle.floor)});
+          lhAward('lh:decor');
+          lhSaveDecor();
+          return lh.prog.wagonStyle;
+        } catch (e){ return {err:String(e)}; }
+      };
+      window.lhDecorState = function(){
+        try {
+          const R = lh && lh.rooms && lh.rooms[lh.myRoom];
+          return {open: !!(lh && lh.decorOpen), style: lh && lh.prog && lh.prog.wagonStyle, items: lh && lh.prog && lh.prog.decor, childCount: R && R.decorG ? R.decorG.children.length : 0, parent: R && R.decorG && R.decorG.parent && R.decorG.parent.name};
+        } catch (e){ return {err:String(e)}; }
+      };
       window.lhOpenGame = function(id){ try { return lhOpenGame(id || 'rings'); } catch (e){ return false; } };
+
       window.lhCloseGame = function(){ try { lhCloseArcade(); } catch (e){} };
       window.lhOpenBooth = function(){ try { return lhOpenBooth(); } catch (e){ return false; } };
       window.lhCloseBooth = function(){ try { lhCloseBooth(); } catch (e){} };
@@ -25683,7 +26127,7 @@ function dhLayoutHud(){
     $('#pMouseSens').oninput = e => { const r = $('#mouseSens'); r.value = e.target.value; r.dispatchEvent(new Event('input')); menuVals(); };
     $('#pMapBtn').onclick = () => { const m = $('#pMap'); m.classList.toggle('show'); $('#pMapBtn').textContent = m.classList.contains('show') ? '🎮 Hide button map' : '🎮 Button map'; };
     setInterval(() => { if ($('#oPausePanel').classList.contains('show')) menuPad(); }, 1000);
-    const HUD_HIT_SEL = '#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhVisit, #dhSteps, #dhResetModal, .obtns, #oExit, #oExit2, #oExit3, #oFP, #oPause, #oMute, #setBtn, #setModal, #oPausePanel, #chRoot, #chPanel, #chWheel, #chBtn, #lhRoot, #lhAct, #lhSet, #lhDraw, #lhWrite, #lhWriteBtn, #lhKnock, #lhGame, #lhBooth, #lhCut, #lhCalm, #lhMeter, #lhFanfare, #lhSetBtn, #lhMyWagon, #lhMapBtn, #lhMap, #lhWall, button, a, input, label, select';
+    const HUD_HIT_SEL = '#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhVisit, #dhSteps, #dhResetModal, .obtns, #oExit, #oExit2, #oExit3, #oFP, #oPause, #oMute, #setBtn, #setModal, #oPausePanel, #chRoot, #chPanel, #chWheel, #chBtn, #lhRoot, #lhAct, #lhSet, #lhDraw, #lhWrite, #lhWriteBtn, #lhKnock, #lhGame, #lhBooth, #lhDecor, #lhDecorBtn, #lhCut, #lhCalm, #lhMeter, #lhFanfare, #lhSetBtn, #lhMyWagon, #lhMapBtn, #lhMap, #lhWall, button, a, input, label, select';
     function releasePointerForHud(){
       try { if (typeof document !== 'undefined' && document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e){}
     }
@@ -26031,6 +26475,8 @@ function start(m = 'obby', d = null){
     $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }
     if (mode === 'dance') danceEnter();
     $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
+    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
+        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
         $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }

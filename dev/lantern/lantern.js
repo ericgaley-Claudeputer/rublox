@@ -735,7 +735,7 @@
       rooms: [], npcs: [], host: null, vesper: null, exitDoor: null,
       keyholder: null, keyCd: 0, pester: 0, taggedLock: 0,
       doodleOpen: false, setOpen: false, writeOpen: false, writeStyle: 'paint', writeSel: 0, lastHud: '', words: (prog.wallWords || []).slice(), wordMeshes: [], knockAt: {}, knockOffer: null, knockWait: null,
-      trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null, riding: null, arcade: null, boothOpen: false, games: [], booth: null, gameCd: {},
+      trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null, riding: null, arcade: null, boothOpen: false, games: [], booth: null, gameCd: {}, decorOpen: false, decorSel: 0, decorPick: null,
       syncT: 0, visitAwarded: false, _nearT: 0, _isoT: 0, _darkT: 0,
       breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0,
       lastDing: 0, savedFp: null
@@ -858,15 +858,21 @@
       const roomFl = lhFloorBox(R.x, R.z, w, d, floor, 'wagon', floorY);
       const recDraft = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, h, floorY};
       const lay = LH_RULES.lhDoorwayLayout ? LH_RULES.lhDoorwayLayout(recDraft) : {ix: R.x - R.side * (w / 2), stubZ0: R.z - 2.22, stubZ1: R.z + 2.22, stubD: 1.98, transomY: 4.4, transomH: 2.4, transomD: 2.32, transomTop: h, wallTop: h, openH: 3.2};
+      const wallMeshes = [];
+      const takeWall = function(box){
+        const b = lhSolid(box);
+        if (b && b.mesh) wallMeshes.push(b.mesh);
+        return b;
+      };
       // plat() takes the TOP of the box, not the center — use top=h so walls run from the floor to h.
-      lhSolid(lhBox(R.x + R.side * (w / 2 + 0.12), h, R.z, 0.32, d + 0.3, wall, h));
-      lhSolid(lhBox(R.x, h, R.z - d / 2, w, 0.32, wall, h));
-      lhSolid(lhBox(R.x, h, R.z + d / 2, w, 0.32, wall, h));
+      takeWall(lhBox(R.x + R.side * (w / 2 + 0.12), h, R.z, 0.32, d + 0.3, wall, h));
+      takeWall(lhBox(R.x, h, R.z - d / 2, w, 0.32, wall, h));
+      takeWall(lhBox(R.x, h, R.z + d / 2, w, 0.32, wall, h));
       const ix = lay.ix;
-      lhSolid(lhBox(ix, h, lay.stubZ0, 0.32, lay.stubD, wall, h));
-      lhSolid(lhBox(ix, h, lay.stubZ1, 0.32, lay.stubD, wall, h));
+      takeWall(lhBox(ix, h, lay.stubZ0, 0.32, lay.stubD, wall, h));
+      takeWall(lhBox(ix, h, lay.stubZ1, 0.32, lay.stubD, wall, h));
       // transom is a solid from the door head to the wall top (stops jumps over a closed door)
-      lhSolid(lhBox(ix, lay.transomTop || h, R.z, 0.32, lay.transomD, wall, lay.transomH));
+      takeWall(lhBox(ix, lay.transomTop || h, R.z, 0.32, lay.transomD, wall, lay.transomH));
       const ceil = lhMesh(new THREE.BoxGeometry(w + 0.2, 0.16, d + 0.2), lhMat('#fff7fb'), R.x, h, R.z);
       if (ceil) lhPaintStripe(ceil, '#fff7fb', wall, 8, 1);
       // frosted, opaque windows — decorative light, not a view into the room
@@ -896,7 +902,8 @@
       const crayon = furnish ? lhMesh(new THREE.BoxGeometry(2.8, 1.8, 0.08), lhMat('#fffef6'), cx, 1.5, cz) : null;
       if (crayon) interior.add(crayon);
       const door = {g: null, mesh: null, plat: null, closed: true, ang: 0, target: 0, id: R.id};
-      const rec = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, h, floorY, bed: {x: bx, z: bz}, switch: {x: sx, z: sz}, bell: {x: dx, z: dz}, wall: {x: cx, z: cz}, crayon, door, owner: null, lit: true, sw, bellM: bell, interior};
+      const decorG = new THREE.Group(); decorG.name = 'lhDecor' + R.id; interior.add(decorG);
+      const rec = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, h, floorY, bed: {x: bx, z: bz}, switch: {x: sx, z: sz}, bell: {x: dx, z: dz}, wall: {x: cx, z: cz}, crayon, door, owner: null, lit: true, sw, bellM: bell, interior, decorG, wallMeshes, floorMesh: roomFl && roomFl.mesh, baseWall: wall, baseFloor: floor, netDecor: [], netStyle: null};
       lh.rooms.push(rec);
       lh.lights[R.id] = true;
       lh.doors[R.id] = true;
@@ -1042,6 +1049,7 @@
       lhDecal(padG);
       lh.wagonMark = {x: mouthX, z: R.z, mesh: mark};
     }
+    try { if (lh && lh.rooms) lh.rooms.forEach(R => { lhApplyWagonStyle(R); lhRebuildDecor(R); }); } catch (e){}
     // teleport pad in the big top, near the midway mouth
     try {
       const pad = lhMesh(new THREE.CylinderGeometry(1.15, 1.15, 0.14, 14), lhMat('#6b3cff', {emit:'#8d6cff'}), 0, lhY('pad'), tentZ1 - 2);
@@ -1640,6 +1648,11 @@
       const mapc = lhEl('lhMapClose'); if (mapc) mapc.onclick = () => lhToggleMap(false);
       const mapo = lhEl('lhMap'); if (mapo) mapo.addEventListener('click', ev => { if (ev.target === mapo) lhToggleMap(false); });
       const wrb = lhEl('lhWriteBtn'); if (wrb) wrb.onclick = () => lhOpenWrite();
+      const deb = lhEl('lhDecorBtn'); if (deb) deb.onclick = () => lhOpenDecor();
+      const dcl = lhEl('lhDecorClose'); if (dcl) dcl.onclick = () => lhCloseDecor();
+      const dpl = lhEl('lhDecorPlace'); if (dpl) dpl.onclick = () => lhPlaceSelectedDecor();
+      const dp = lhEl('lhDecor'); if (dp) dp.addEventListener('click', ev => { if (ev.target === dp) lhCloseDecor(); });
+
       const gcl = lhEl('lhGameClose'); if (gcl) gcl.onclick = () => lhCloseArcade();
       const gp = lhEl('lhGame'); if (gp) gp.addEventListener('click', ev => { if (ev.target === gp) lhCloseArcade(); });
       const bcl = lhEl('lhBoothClose'); if (bcl) bcl.onclick = () => lhCloseBooth();
@@ -1700,7 +1713,7 @@
 
   function lanternStop(){
     try {
-      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhWrite','lhKnock','lhGame','lhBooth','lhVision','lhScare','lhMyWagon','lhMap','lhMapBtn','lhWriteBtn'].forEach(id => {
+      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhWrite','lhKnock','lhGame','lhBooth','lhDecor','lhVision','lhScare','lhMyWagon','lhMap','lhMapBtn','lhWriteBtn','lhDecorBtn'].forEach(id => {
         const n = lhEl(id); if (!n) return;
         if (id === 'lhMeter' || id === 'lhBox' || id === 'lhRoot') n.style.display = 'none';
         else { n.classList.remove('show'); n.style.display = 'none'; }
@@ -1714,7 +1727,7 @@
         if (camera.updateProjectionMatrix) camera.updateProjectionMatrix();
       }
     } catch (e){}
-    try { lhCloseArcade(); lhCloseBooth(); } catch (e){}
+    try { lhCloseArcade(); lhCloseBooth(); lhCloseDecor(); } catch (e){}
     if (lh && lh.riding){ try { lhDismountRide(true); } catch (e){} }
     if (lh && lh.prog) lhSaveProg(lh.prog);
     lh = null;
@@ -2274,6 +2287,242 @@
     }
   }
 
+
+  function lhStyleOf(R){
+    if (!R) return (LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle({}) : {wall:'plain', floor:'wood'});
+    const mine = R.owner === 'me' && lh && lh.prog;
+    const raw = mine ? lh.prog.wagonStyle : (R.netStyle || {});
+    return LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(raw) : (raw || {wall:'plain', floor:'wood'});
+  }
+  function lhItemsOf(R){
+    if (!R) return [];
+    const raw = (R.owner === 'me' && lh && lh.prog) ? lh.prog.decor : (R.netDecor || []);
+    return LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(raw) : (raw || []);
+  }
+  function lhDecorTex(kind, style, base){
+    lh._tex = lh._tex || {};
+    const key = 'sty-' + kind + '-' + style + '-' + (base || '');
+    if (lh._tex[key]) return lh._tex[key];
+    try {
+      const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+      const g = c.getContext('2d');
+      g.fillStyle = base || (kind === 'floor' ? '#e8c98a' : '#fff1f8');
+      g.fillRect(0, 0, 64, 64);
+      if (style === 'stripe'){
+        for (let i = 0; i < 8; i++){ g.fillStyle = i % 2 ? '#e31c23' : '#fff8f0'; g.fillRect(i * 8, 0, 8, 64); }
+      } else if (style === 'stars' || style === 'star'){
+        g.fillStyle = kind === 'floor' ? '#2a1848' : '#2a2060';
+        g.fillRect(0, 0, 64, 64);
+        g.fillStyle = '#ffd25a';
+        [[8,10],[24,28],[40,12],[52,36],[16,48],[36,52],[56,18]].forEach(p => { g.beginPath(); g.arc(p[0], p[1], 2.4, 0, Math.PI*2); g.fill(); });
+      } else if (style === 'dots'){
+        const cols = ['#ff6b9a', '#3a86ff', '#ffd25a', '#2ec27e', '#6b3cff'];
+        for (let i = 0; i < 16; i++){ g.fillStyle = cols[i % cols.length]; g.beginPath(); g.arc(8 + (i%4)*16, 8 + ((i/4)|0)*16, 4, 0, Math.PI*2); g.fill(); }
+      } else if (style === 'check'){
+        for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++){ g.fillStyle = (x+y)%2 ? '#e31c23' : '#fff8f0'; g.fillRect(x*16, y*16, 16, 16); }
+      } else if (style === 'wood'){
+        g.fillStyle = '#c9844a'; g.fillRect(0,0,64,64);
+        g.strokeStyle = 'rgba(80,40,16,.45)'; g.lineWidth = 2;
+        for (let y = 8; y < 64; y += 16){ g.beginPath(); g.moveTo(0,y); g.lineTo(64,y); g.stroke(); }
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(kind === 'floor' ? 4 : 2, kind === 'floor' ? 3 : 2);
+      tex.needsUpdate = true;
+      lh._tex[key] = tex;
+      return tex;
+    } catch (e){ return null; }
+  }
+  function lhTintMesh(mesh, color, tex){
+    if (!mesh || !mesh.material) return;
+    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    mats.forEach(m => {
+      if (!m) return;
+      if (tex){ m.map = tex; if (m.color) m.color.set('#ffffff'); }
+      else { m.map = null; if (m.color && color) m.color.set(color); }
+      m.needsUpdate = true;
+    });
+  }
+  function lhApplyWagonStyle(R, style){
+    if (!R) return;
+    const st = style || lhStyleOf(R);
+    const wallTex = (st.wall && st.wall !== 'plain') ? lhDecorTex('wall', st.wall, R.baseWall) : null;
+    const floorTex = (st.floor && st.floor !== 'plain') ? lhDecorTex('floor', st.floor, R.baseFloor) : null;
+    (R.wallMeshes || []).forEach(m => lhTintMesh(m, st.wall === 'plain' ? R.baseWall : '#ffffff', wallTex));
+    if (R.floorMesh) lhTintMesh(R.floorMesh, st.floor === 'plain' ? R.baseFloor : '#ffffff', floorTex);
+  }
+  function lhDecorSpec(id){
+    const cat = LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog((lh && lh.prog && lh.prog.prizes) || {}) : (LH_RULES.LH_STARTER_DECOR || []);
+    return cat.find(p => p.id === id) || (LH_RULES.lhPrizeById && LH_RULES.lhPrizeById(id)) || {id: id, name: 'Decor', emoji:'🛋️'};
+  }
+  function lhMakeDecorMesh(spec, rot){
+    const col = ({
+      'start-stool':'#8a4a20', 'start-cushion':'#ff6b9a', 'start-crate':'#c9844a', 'start-mat':'#6b3cff',
+      'start-picture':'#fff8f0', 'start-lamp':'#ffd25a', 'plush-glow':'#7cffd0', 'plush-tent':'#e31c23',
+      'plush-horse':'#ff8ad8', 'decor-lamp':'#ffb347', 'decor-bunting':'#3a86ff', 'decor-rug':'#6b3cff',
+      'decor-jar':'#ff6b9a', 'decor-lights':'#ffe27a', 'decor-plant':'#2ec27e', 'decor-poster':'#fff6d8'
+    })[spec && spec.id] || '#ffd25a';
+    const g = new THREE.Group();
+    const box = (w,h,d,c,y) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), lhMat(c)); m.position.y = y == null ? h/2 : y; g.add(m); return m; };
+    const id = spec && spec.id;
+    if (id === 'start-stool'){ box(0.55, 0.18, 0.55, col, 0.45); box(0.1, 0.45, 0.1, '#5a3010', 0.22); }
+    else if (id === 'start-cushion'){ box(0.7, 0.2, 0.7, col, 0.12); }
+    else if (id === 'start-crate'){ box(0.6, 0.5, 0.6, col, 0.25); }
+    else if (id === 'start-mat' || id === 'decor-rug'){ box(1.2, 0.05, 0.8, col, 0.03); }
+    else if (id === 'start-picture' || id === 'decor-poster'){ box(0.7, 0.55, 0.06, col, 1.15); }
+    else if (id === 'start-lamp' || id === 'decor-lamp'){ box(0.16, 0.5, 0.16, '#fff8f0', 0.4); box(0.28, 0.22, 0.28, col, 0.72); }
+    else if (id === 'plush-glow' || id === 'plush-tent' || id === 'plush-horse'){ box(0.45, 0.42, 0.32, col, 0.24); }
+    else if (id === 'decor-jar'){ box(0.28, 0.36, 0.28, col, 0.22); }
+    else if (id === 'decor-plant'){ box(0.22, 0.2, 0.22, '#8a4a20', 0.1); box(0.4, 0.45, 0.4, col, 0.42); }
+    else if (id === 'decor-bunting' || id === 'decor-lights'){ box(1.4, 0.12, 0.08, col, 1.35); }
+    else { box(0.45, 0.45, 0.45, col, 0.22); }
+    g.rotation.y = (rot || 0) * Math.PI / 2;
+    return g;
+  }
+  function lhRebuildDecor(R){
+    if (!R || !R.decorG) return;
+    while (R.decorG.children.length){ const ch = R.decorG.children[0]; R.decorG.remove(ch); try { if (ch.geometry) ch.geometry.dispose(); } catch (e){} }
+    const items = lhItemsOf(R);
+    items.forEach(it => {
+      const spec = lhDecorSpec(it.item);
+      const mesh = lhMakeDecorMesh(spec, it.rot);
+      mesh.position.set(R.x + it.x, R.floorY || lhY('wagon'), R.z + it.z);
+      mesh.userData = {lhDecorId: it.id, item: it.item};
+      R.decorG.add(mesh);
+    });
+    // decor stays inside the interior group so a closed door hides it
+    if (R.interior && R.decorG.parent !== R.interior) R.interior.add(R.decorG);
+  }
+  function lhSyncMyDecor(){
+    if (!lh) return;
+    const R = lh.rooms && lh.rooms[lh.myRoom];
+    if (!R || R.owner !== 'me') return;
+    try { lhNet({k:'decor', room: R.id, items: lh.prog.decor || [], style: lh.prog.wagonStyle || {}}); } catch (e){}
+  }
+  function lhSaveDecor(){
+    if (!lh) return;
+    lh.prog = lh.prog || lhProg();
+    lh.prog.decor = LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(lh.prog.decor) : (lh.prog.decor || []);
+    lh.prog.wagonStyle = LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(lh.prog.wagonStyle) : (lh.prog.wagonStyle || {});
+    lhSaveProg(lh.prog);
+    const R = lh.rooms && lh.rooms[lh.myRoom];
+    if (R){ lhApplyWagonStyle(R); lhRebuildDecor(R); }
+    lhSyncMyDecor();
+  }
+  function lhCloseDecor(){
+    if (!lh) return;
+    lh.decorOpen = false;
+    const n = lhEl('lhDecor');
+    if (n){ n.classList.remove('show'); n.style.display = 'none'; }
+  }
+  function lhOpenDecor(){
+    if (!lh) return false;
+    const R = lh.rooms && lh.rooms[lh.myRoom];
+    if (!R || R.owner !== 'me'){ if (typeof toast === 'function') toast('🛋️ Decorate your own wagon.'); return false; }
+    if (lh.arcade) lhCloseArcade();
+    if (lh.boothOpen) lhCloseBooth();
+    lh.decorOpen = true;
+    const n = lhEl('lhDecor');
+    if (n){ n.style.display = 'flex'; n.classList.add('show'); }
+    lhFillDecor();
+    return true;
+  }
+  function lhFillDecor(){
+    if (!lh) return;
+    lh.prog = lh.prog || lhProg();
+    const style = LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(lh.prog.wagonStyle) : (lh.prog.wagonStyle || {});
+    const cat = LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog(lh.prog.prizes || {}) : (LH_RULES.LH_STARTER_DECOR || []);
+    if (lh.decorSel == null || lh.decorSel >= cat.length) lh.decorSel = 0;
+    const paint = (el, list, cur, kind) => {
+      if (!el) return;
+      el.innerHTML = '';
+      list.forEach(s => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = (cur === s.id) ? 'on' : '';
+        b.textContent = s.name;
+        b.onclick = () => {
+          lh.prog.wagonStyle = Object.assign({}, style, kind === 'wall' ? {wall:s.id} : {floor:s.id});
+          lhAward('lh:decor');
+          lhSaveDecor();
+          lhFillDecor();
+        };
+        el.appendChild(b);
+      });
+    };
+    paint(lhEl('lhWallStyles'), LH_RULES.LH_WALL_STYLES || [], style.wall, 'wall');
+    paint(lhEl('lhFloorStyles'), LH_RULES.LH_FLOOR_STYLES || [], style.floor, 'floor');
+    const inv = lhEl('lhDecorInv');
+    if (inv){
+      inv.innerHTML = '';
+      cat.forEach((s, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = (lh.decorSel === i) ? 'on' : '';
+        b.textContent = (s.emoji || '') + ' ' + s.name;
+        b.onclick = () => { lh.decorSel = i; lhFillDecor(); };
+        inv.appendChild(b);
+      });
+    }
+    const list = lhEl('lhDecorList');
+    if (list){
+      list.innerHTML = '';
+      const items = LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(lh.prog.decor) : (lh.prog.decor || []);
+      if (!items.length){ list.textContent = 'Nothing placed yet — pick an item and place it in front of you.'; list.style.fontWeight = '700'; }
+      items.forEach(it => {
+        const spec = lhDecorSpec(it.item);
+        const row = document.createElement('div');
+        row.className = 'lh-drow';
+        row.innerHTML = '<div class="nm">' + (spec.emoji || '🛋️') + ' ' + (spec.name || it.item) + '</div>';
+        const mk = (label, fn) => { const b = document.createElement('button'); b.type='button'; b.textContent=label; b.onclick=fn; row.appendChild(b); };
+        mk('🔄', () => { const r = LH_RULES.lhDecorRotate(lh.prog.decor, it.id); if (r.ok){ lh.prog.decor = r.items; lhAward('lh:decor'); lhSaveDecor(); lhFillDecor(); } });
+        mk('Move here', () => { const pos = lhDecorFront(); const r = LH_RULES.lhDecorMove(lh.prog.decor, it.id, pos.x, pos.z); if (r.ok){ lh.prog.decor = r.items; lhSaveDecor(); lhFillDecor(); } });
+        mk('Remove', () => { const r = LH_RULES.lhDecorRemove(lh.prog.decor, it.id); lh.prog.decor = r.items; lhSaveDecor(); lhFillDecor(); });
+        list.appendChild(row);
+      });
+    }
+  }
+  function lhDecorFront(){
+    const R = lh && lh.rooms && lh.rooms[lh.myRoom];
+    let yaw = 0;
+    try { if (typeof cam !== 'undefined' && cam && cam.yaw != null) yaw = cam.yaw; } catch (e){}
+    const px = (typeof P !== 'undefined' && P) ? P.x : (R && R.x || 0);
+    const pz = (typeof P !== 'undefined' && P) ? P.z : (R && R.z || 0);
+    const fx = px - Math.sin(yaw) * 1.3;
+    const fz = pz - Math.cos(yaw) * 1.3;
+    const dx = fx - (R && R.x || 0);
+    const dz = fz - (R && R.z || 0);
+    return LH_RULES.lhDecorClamp ? LH_RULES.lhDecorClamp(dx, dz, (R && R.w) || 8, (R && R.d) || 6.2, 1.1) : {x:dx, z:dz};
+  }
+  function lhPlaceSelectedDecor(){
+    if (!lh) return false;
+    lh.prog = lh.prog || lhProg();
+    const cat = LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog(lh.prog.prizes || {}) : (LH_RULES.LH_STARTER_DECOR || []);
+    const spec = cat[lh.decorSel || 0];
+    if (!spec) return false;
+    const pos = lhDecorFront();
+    const r = LH_RULES.lhDecorPlace ? LH_RULES.lhDecorPlace(lh.prog.decor, spec.id, pos.x, pos.z, 0) : {ok:false};
+    if (!r.ok){
+      if (typeof toast === 'function') toast(r.reason === 'full' ? '🛋️ Your wagon is full — remove something first.' : 'Could not place that.');
+      return false;
+    }
+    lh.prog.decor = r.items;
+    lhAward('lh:decor');
+    lhSaveDecor();
+    lhFillDecor();
+    if (typeof toast === 'function') toast((spec.emoji || '🛋️') + ' Placed the ' + spec.name + '.');
+    return true;
+  }
+  function lhReceiveDecor(d){
+    if (!lh || !d || d.room == null || !lh.rooms[d.room]) return;
+    const R = lh.rooms[d.room];
+    if (R.owner === 'me') return;
+    R.netDecor = LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(d.items) : (d.items || []);
+    R.netStyle = LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(d.style) : (d.style || {});
+    lhApplyWagonStyle(R);
+    lhRebuildDecor(R);
+  }
+
   function lhPrompt(){
     if (!lh || lh.cut || lh.calm || lh.banish) return null;
     if (lh.riding){
@@ -2305,6 +2554,7 @@
         return {id:'light', label: R.lit ? '💡 Turn lights off' : '💡 Turn lights on', R};
       if (LH_RULES.lhNear(P.x, P.z, R.bed.x, R.bed.z, 1.6)) return {id:'bed', label: lh.bed ? '🛏️ Get up' : '🛏️ Sit on bed', R};
       if (R.owner === 'me' && LH_RULES.lhNear(P.x, P.z, R.wall.x, R.wall.z, 1.7) && !atDoor) return {id:'draw', label:'🖍️ Draw on the wall', R};
+      if (R.owner === 'me' && !atDoor) return {id:'decorate', label:'🛋️ Decorate wagon', R};
       if (R.owner === 'me' && atDoor) return {id:'door', label: R.door.closed ? '🚪 Open door' : '🚪 Close door', R};
     }
     const ownWord = lhWordAtLook();
@@ -2347,6 +2597,7 @@
     else if (p.id === 'ridefull'){ if (typeof toast === 'function') toast('🎟️ Every seat is taken — wait for a spin!'); }
     else if (p.id === 'game') lhOpenGame(p.game && p.game.id);
     else if (p.id === 'booth') lhOpenBooth();
+    else if (p.id === 'decorate') lhOpenDecor();
     else if (p.id === 'bell') lhRing(p.R);
     else if (p.id === 'gowagon') lhGoWagon();
     else if (p.id === 'enter'){
@@ -2954,6 +3205,15 @@
       }
       return true;
     }
+    if (lh.decorOpen){
+      if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseDecor(); return true; }
+      const cat = (LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog((lh.prog && lh.prog.prizes) || {}) : []) || [];
+      const n = cat.length || 1;
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA' || e.code === 'ArrowUp' || e.code === 'KeyW'){ lh.decorSel = ((lh.decorSel || 0) - 1 + n) % n; lhFillDecor(); return true; }
+      if (e.code === 'ArrowRight' || e.code === 'KeyD' || e.code === 'ArrowDown' || e.code === 'KeyS'){ lh.decorSel = ((lh.decorSel || 0) + 1) % n; lhFillDecor(); return true; }
+      if ((e.code === 'Enter' || e.code === 'Space' || e.code === 'KeyE') && !e.repeat){ lhPlaceSelectedDecor(); return true; }
+      return true;
+    }
     if (lh.writeOpen){
       if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseWrite(); return true; }
       // Let the custom text field receive typing; G should not re-toggle.
@@ -2968,6 +3228,7 @@
     }
     if (e.code === 'KeyE' && !e.repeat){ lhAct(); return true; }
     if (e.code === 'KeyG' && !e.repeat){ lhOpenWrite(); return true; }
+    if (e.code === 'KeyT' && !e.repeat){ lhOpenDecor(); return true; }
     if (e.code === 'KeyM' && !e.repeat){ lhToggleMap(); return true; }
     if (e.code === 'KeyV') return false;
     return false;
@@ -3008,6 +3269,18 @@
       if (!jp[0] && !jp[2]) lh._padPick = false;
       return true;
     }
+    if (lh.decorOpen){
+      if (jp[1] && !lh._padB){ lh._padB = true; lhCloseDecor(); return true; }
+      if (!jp[1]) lh._padB = false;
+      const cat = (LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog((lh.prog && lh.prog.prizes) || {}) : []) || [];
+      const n = cat.length || 1;
+      if ((jp[14] || jp[12]) && !lh._padD){ lh._padD = true; lh.decorSel = ((lh.decorSel || 0) - 1 + n) % n; lhFillDecor(); return true; }
+      if ((jp[15] || jp[13]) && !lh._padD){ lh._padD = true; lh.decorSel = ((lh.decorSel || 0) + 1) % n; lhFillDecor(); return true; }
+      if (!jp[14] && !jp[15] && !jp[12] && !jp[13]) lh._padD = false;
+      if ((jp[0] || jp[2]) && !lh._padPick){ lh._padPick = true; lhPlaceSelectedDecor(); return true; }
+      if (!jp[0] && !jp[2]) lh._padPick = false;
+      return true;
+    }
     if (lh.writeOpen){
       if (jp[1] && !lh._padB){ lh._padB = true; lhCloseWrite(); return true; }
       if (!jp[1]) lh._padB = false;
@@ -3028,11 +3301,13 @@
     if (jp[2] && !lh._padX){ lh._padX = true; lhAct(); return true; }
     if (!jp[2]) lh._padX = false;
     if (jp[1] && lh.riding && !lh._padB){ lh._padB = true; lhDismountRide(); return true; }
-    if (jp[1] && (lh.doodleOpen || lh.setOpen || lh.mapOpen || lh.writeOpen || lh.knockOffer || lh.arcade || lh.boothOpen || lh.cut || lh.calm || lh.banish)){ lhCloseDraw(); lhCloseWrite(); lhCloseArcade(); lhCloseBooth(); if (lh.knockOffer) lhKnockReply(false, 'closed'); lhToggleSet(false); lhToggleMap(false); lhSkipCut(); return true; }
+    if (jp[1] && (lh.doodleOpen || lh.setOpen || lh.mapOpen || lh.writeOpen || lh.knockOffer || lh.arcade || lh.boothOpen || lh.decorOpen || lh.cut || lh.calm || lh.banish)){ lhCloseDraw(); lhCloseWrite(); lhCloseArcade(); lhCloseBooth(); lhCloseDecor(); if (lh.knockOffer) lhKnockReply(false, 'closed'); lhToggleSet(false); lhToggleMap(false); lhSkipCut(); return true; }
     if (jp[3] && !lh._padY){ lh._padY = true; lhToggleMap(); return true; }
     if (!jp[3]) lh._padY = false;
     if (jp[4] && !lh._padLB){ lh._padLB = true; lhOpenWrite(); return true; }
     if (!jp[4]) lh._padLB = false;
+    if (jp[5] && !lh._padRB){ lh._padRB = true; lhOpenDecor(); return true; }
+    if (!jp[5]) lh._padRB = false;
     if (jp[8] && !lh._padView){ lh._padView = true; /* view often chat */ }
     if (!jp[8]) lh._padView = false;
     return false;
@@ -3299,6 +3574,13 @@
     const mine = lhEl('lhMyWagon'); if (mine){ mine.style.display = ''; mine.classList.add('show'); }
     const mapb = lhEl('lhMapBtn'); if (mapb){ mapb.style.display = ''; mapb.classList.add('show'); }
     const wrb = lhEl('lhWriteBtn'); if (wrb){ wrb.style.display = ''; wrb.classList.add('show'); wrb.classList.toggle('lh-ready', !!lhLookWallHit()); }
+    const deb = lhEl('lhDecorBtn');
+    if (deb){
+      const mine = !!(lh.rooms && lh.rooms[lh.myRoom] && lh.rooms[lh.myRoom].owner === 'me' && lh.area === 'room' && lh.room === lh.myRoom);
+      deb.classList.toggle('show', mine);
+      deb.style.display = mine ? '' : 'none';
+    }
+
     if (lh.mapOpen) lhDrawMap();
   }
 
@@ -3316,7 +3598,8 @@
         lights: lh.lights,
         doors: lh.doors,
         keyholder: lh.keyholder,
-        riding: lh.riding ? {kind: lh.riding.kind, seat: lh.riding.seat, on: true} : null
+        riding: lh.riding ? {kind: lh.riding.kind, seat: lh.riding.seat, on: true} : null,
+        decor: (lh.rooms && lh.rooms[lh.myRoom] && lh.rooms[lh.myRoom].owner === 'me') ? {room: lh.myRoom, items: (lh.prog && lh.prog.decor) || [], style: (lh.prog && lh.prog.wagonStyle) || {}} : null
       }, extra || {});
       if (typeof mpBroadcast === 'function' && mp.host) mpBroadcast(msg);
       else if (typeof mpSend === 'function') mpSend(msg);
@@ -3365,6 +3648,8 @@
     if (d.k === 'ride') lhApplyRemoteRide(uid, d);
     else if (d.riding) lhApplyRemoteRide(uid, d.riding);
     else if (d.riding === null && uid) lhApplyRemoteRide(uid, {on: false});
+    if (d.k === 'decor') lhReceiveDecor(d);
+    else if (d.decor && d.decor.room != null) lhReceiveDecor(d.decor);
   }
 
   function lanternUpdate(dt){
@@ -3374,6 +3659,7 @@
     if (lh.riding){ try { lhApplyLocalRide(); } catch (e){} }
     if (lh.arcade){ try { P.vx = 0; P.vz = 0; } catch (e){} try { lhTickArcade(dt); } catch (e){} }
     if (lh.boothOpen){ try { P.vx = 0; P.vz = 0; } catch (e){} }
+    if (lh.decorOpen){ try { P.vx = 0; P.vz = 0; } catch (e){} }
     if (lh.taggedLock > 0) lh.taggedLock -= dt;
     if (lh.keyCd > 0) lh.keyCd -= dt;
 
@@ -3487,7 +3773,36 @@
           return {id:R.id, inside: !!(viewer && LH_RULES.lhRoomContains(R, viewer.x, viewer.z, 0.02)), doorClosed: !!(R.door && R.door.closed), visible: !!(R.interior && R.interior.visible), hasInterior: !!R.interior, childCount: R.interior ? R.interior.children.length : 0};
         } catch (e){ return {err:String(e)}; }
       };
+      window.lhOpenDecor = function(){ try { return lhOpenDecor(); } catch (e){ return false; } };
+      window.lhCloseDecor = function(){ try { lhCloseDecor(); } catch (e){} };
+      window.lhPlaceDecor = function(id){
+        try {
+          if (!lh) return false;
+          const cat = LH_RULES.lhDecorCatalog(lh.prog && lh.prog.prizes || {});
+          const i = Math.max(0, cat.findIndex(x => x.id === id));
+          lh.decorSel = i >= 0 ? i : 0;
+          if (id && i < 0){ /* still try */ }
+          return lhPlaceSelectedDecor();
+        } catch (e){ return false; }
+      };
+      window.lhSetStyle = function(wall, floor){
+        try {
+          if (!lh) return null;
+          lh.prog = lh.prog || lhProg();
+          lh.prog.wagonStyle = LH_RULES.lhNormalizeStyle({wall: wall || (lh.prog.wagonStyle && lh.prog.wagonStyle.wall), floor: floor || (lh.prog.wagonStyle && lh.prog.wagonStyle.floor)});
+          lhAward('lh:decor');
+          lhSaveDecor();
+          return lh.prog.wagonStyle;
+        } catch (e){ return {err:String(e)}; }
+      };
+      window.lhDecorState = function(){
+        try {
+          const R = lh && lh.rooms && lh.rooms[lh.myRoom];
+          return {open: !!(lh && lh.decorOpen), style: lh && lh.prog && lh.prog.wagonStyle, items: lh && lh.prog && lh.prog.decor, childCount: R && R.decorG ? R.decorG.children.length : 0, parent: R && R.decorG && R.decorG.parent && R.decorG.parent.name};
+        } catch (e){ return {err:String(e)}; }
+      };
       window.lhOpenGame = function(id){ try { return lhOpenGame(id || 'rings'); } catch (e){ return false; } };
+
       window.lhCloseGame = function(){ try { lhCloseArcade(); } catch (e){} };
       window.lhOpenBooth = function(){ try { return lhOpenBooth(); } catch (e){ return false; } };
       window.lhCloseBooth = function(){ try { lhCloseBooth(); } catch (e){} };

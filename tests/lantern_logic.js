@@ -7,10 +7,10 @@ const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const RULES = require(path.join(ROOT, 'dev/lantern/lantern_rules.js'));
 const BUILD = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).build || JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
-test('BUILD stamp is 2026.11.16-11 in lantern files and version.json', () => {
+test('BUILD stamp is 2026.11.16-12 in lantern files and version.json', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
-  assert.equal(v.build, '2026.11.16-11');
-  assert.match(HTML, /const BUILD = '2026\.11\.16-11'/);
+  assert.equal(v.build, '2026.11.16-12');
+  assert.match(HTML, /const BUILD = '2026\.11\.16-12'/);
 });
 
 test('Lantern Big Top is a playable GAMES card with original branding', () => {
@@ -792,4 +792,65 @@ test('carnival games and prize booth are wired for mobile, keyboard, and Xbox', 
   assert.doesNotMatch(js, /Digital Circus|Caine|Pomni|Kaufmo/);
   assert.match(HTML, /#lhGame/);
   assert.match(HTML, /#lhBooth/);
+});
+
+test('wagon decor inventory, clamp, place/rotate/remove, and styles', () => {
+  const starter = RULES.lhDecorCatalog({});
+  assert.ok(starter.length >= 6);
+  starter.forEach(s => assert.ok(s.starter || String(s.id).startsWith('start-')));
+  const withPrize = RULES.lhDecorCatalog({'plush-glow':true, 'hat-party':true, 'decor-lamp':true});
+  assert.ok(withPrize.some(p => p.id === 'plush-glow'));
+  assert.ok(withPrize.some(p => p.id === 'decor-lamp'));
+  assert.ok(!withPrize.some(p => p.id === 'hat-party'));
+  const mid = RULES.lhDecorClamp(0, 0, 8, 6.2, 1.1);
+  assert.equal(mid.x, 0);
+  const out = RULES.lhDecorClamp(40, -40, 8, 6.2, 1.1);
+  assert.ok(Math.abs(out.x) <= 8/2 - 1.1 + 0.001);
+  assert.ok(Math.abs(out.z) <= 6.2/2 - 1.1 + 0.001);
+  let items = [];
+  const placed = RULES.lhDecorPlace(items, 'start-stool', 0.5, -0.4, 0);
+  assert.equal(placed.ok, true);
+  assert.equal(placed.items.length, 1);
+  assert.equal(placed.placed.item, 'start-stool');
+  const rot = RULES.lhDecorRotate(placed.items, placed.placed.id);
+  assert.equal(rot.placed.rot, 1);
+  const moved = RULES.lhDecorMove(rot.items, placed.placed.id, 1, 1);
+  assert.equal(moved.placed.x, 1);
+  const gone = RULES.lhDecorRemove(moved.items, placed.placed.id);
+  assert.equal(gone.items.length, 0);
+  const st = RULES.lhNormalizeStyle({wall:'stars', floor:'nope'});
+  assert.equal(st.wall, 'stars');
+  assert.equal(st.floor, 'wood');
+  items = [];
+  for (let i = 0; i < RULES.LH_DECOR_MAX; i++){
+    const r = RULES.lhDecorPlace(items, 'start-mat', 0, 0, 0);
+    assert.equal(r.ok, true);
+    items = r.items;
+  }
+  const overflow = RULES.lhDecorPlace(items, 'start-mat', 0, 0, 0);
+  assert.equal(overflow.ok, false);
+  assert.equal(overflow.reason, 'full');
+  const extra = RULES.LH_BADGES.filter(b => !b.real);
+  assert.ok(extra.some(b => b.id === 'lh-decor'));
+});
+
+test('wagon decor layout saves and is only visible in MP when the door is open', () => {
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  const hud = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern_hud.html'), 'utf8');
+  assert.match(hud, /id="lhDecor"/);
+  assert.match(hud, /id="lhDecorBtn"/);
+  assert.match(js, /function lhOpenDecor/);
+  assert.match(js, /function lhRebuildDecor/);
+  assert.match(js, /function lhApplyWagonStyle/);
+  assert.match(js, /function lhPlaceSelectedDecor/);
+  assert.match(js, /k:'decor'/);
+  assert.match(js, /window\.lhPlaceDecor/);
+  assert.match(js, /window\.lhSetStyle/);
+  assert.match(js, /KeyT/);
+  assert.match(js, /jp\[5\] && !lh\._padRB/);
+  assert.match(js, /interior\.add\(decorG\)/);
+  assert.match(js, /R\.decorG\.parent !== R\.interior/);
+  assert.match(js, /lhReceiveDecor/);
+  assert.match(js, /if \(R\.owner === 'me'\) return/);
+  assert.doesNotMatch(js, /Digital Circus|Caine|Pomni|Kaufmo/);
 });
