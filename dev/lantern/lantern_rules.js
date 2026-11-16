@@ -165,6 +165,14 @@
   function lhDoorTarget(side, closed){
     return closed ? 0 : -(+side || 1) * 1.9;
   }
+  // Auto-open only when the owner approaches from OUTSIDE after leaving.
+  // A door the player just closed must stay shut while they remain near it.
+  function lhDoorShouldAutoOpen(st){
+    st = st || {};
+    if (st.holdClosed) return false;
+    if (st.inside) return false;
+    return !!(st.near && st.closed && !st.auto);
+  }
   function lhGroundGapOk(a, b){
     return Math.abs((+a || 0) - (+b || 0)) >= 0.02;
   }
@@ -267,7 +275,7 @@
     lhCancelSucceeds, lhHostNameIn, lhDefaultSettings, lhNormalizeSettings,
     lhLoadState, lhStampOk, lhAddDoodle, lhNear, lhDist, lhSummonOk, lhCensored,
     lhMidwayWallSegments, lhMidwayBlocksSide, lhNearLamp,
-    lhWagonZs, lhWagonCount, lhDoorTarget, lhGroundGapOk, lhMapLayout
+    lhWagonZs, lhWagonCount, lhDoorTarget, lhDoorShouldAutoOpen, lhGroundGapOk, lhMapLayout
   };
   root.LHRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

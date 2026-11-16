@@ -7,10 +7,10 @@ const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const RULES = require(path.join(ROOT, 'dev/lantern/lantern_rules.js'));
 const BUILD = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).build || JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
-test('BUILD stamp is 2026.11.16-4 in lantern files and version.json', () => {
+test('BUILD stamp is 2026.11.16-5 in lantern files and version.json', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
-  assert.equal(v.build, '2026.11.16-4');
-  assert.match(HTML, /const BUILD = '2026\.11\.16-4'/);
+  assert.equal(v.build, '2026.11.16-5');
+  assert.match(HTML, /const BUILD = '2026\.11\.16-5'/);
 });
 
 test('Lantern Big Top is a playable GAMES card with original branding', () => {
@@ -306,6 +306,35 @@ test('wagon doors are hinged, block when closed, and auto-open for the owner', (
   assert.match(js, /function lhOwnerAutoDoor/);
   assert.match(js, /lhSetDoor\(rec, true\)/);
   assert.match(js, /rotation\.y/);
+});
+
+test('closing a door holds it shut until the owner leaves the doorway', () => {
+  assert.equal(RULES.lhDoorShouldAutoOpen({near:true, inside:true, closed:true, auto:false, holdClosed:false}), false);
+  assert.equal(RULES.lhDoorShouldAutoOpen({near:true, inside:false, closed:true, auto:false, holdClosed:true}), false);
+  assert.equal(RULES.lhDoorShouldAutoOpen({near:true, inside:false, closed:true, auto:false, holdClosed:false}), true);
+  assert.equal(RULES.lhDoorShouldAutoOpen({near:false, inside:false, closed:true, auto:false, holdClosed:false}), false);
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  assert.match(js, /_holdClosed/);
+  assert.match(js, /why === 'player'/);
+  assert.match(js, /🚪 Close door/);
+  assert.match(js, /_lhActAt/);
+  assert.match(js, /now - _lhActAt < 250/);
+  assert.match(js, /act\.onclick/);
+  assert.doesNotMatch(js, /act\.onpointerdown/);
+  assert.match(HTML, /toggle twice/);
+  assert.match(HTML, /ev\.target\.closest\(HUD_HIT_SEL\)\) return false/);
+  const css = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.css'), 'utf8');
+  assert.match(css, /#lhAct\.fsnear/);
+  assert.match(css, /z-index:22/);
+});
+
+test('the midway hallway has no roof or ceiling and stays lit', () => {
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  assert.doesNotMatch(js, /const mC = lhBox\(0, 4\.5, midZc/);
+  assert.match(js, /Open-air midway/);
+  assert.match(js, /String lights/);
+  // hall area is treated as lit so dusk does not drain sanity on the midway
+  assert.match(js, /area:'hall',[\s\S]*lit:true/);
 });
 
 test('map overlay marks You are here and Your Wagon and the fairground is much bigger', () => {

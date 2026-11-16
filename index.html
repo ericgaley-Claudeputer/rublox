@@ -1064,6 +1064,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 
 
 
+
 /* ---------- lantern hotel css ---------- */
 /* t286u Lantern Big Top HUD */
 #lhBox{display:none}
@@ -1163,6 +1164,9 @@ body.lh-muffled #obby{filter:saturate(.85)}
 #obby.lhmode #lhRoot{display:block;position:absolute;inset:0;pointer-events:none;z-index:20}
 #obby.lhmode #lhMeter{display:block;pointer-events:none;z-index:21}
 #obby.lhmode #lhSetBtn,#obby.lhmode #lhFanfare.show,#obby.lhmode #lhMyWagon,#obby.lhmode #lhMapBtn,#obby.lhmode #lhAct.show{pointer-events:auto}
+/* #lhRoot is z-index 20 and covers the screen; the Close/Open door prompt must sit above it or Mac clicks never reach the button. */
+#lhAct.fsnear,#obby.lhmode #lhAct.show{z-index:22;pointer-events:auto}
+
 #obby.lhmode #lhCut,#obby.lhmode #lhCalm,#obby.lhmode #lhSet,#obby.lhmode #lhDraw,#obby.lhmode #lhMap{pointer-events:auto;z-index:90}
 #obby.lhmode #lhKeyTag{z-index:21}
 
@@ -2074,7 +2078,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-4';
+const BUILD = '2026.11.16-5';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -5981,6 +5985,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
 
 
 
+
 /* ---------- lantern rules ---------- */
 /* Pure Lantern Big Top rules — safe to require() in tests and to load in the page. */
 (function (root) {
@@ -6149,6 +6154,14 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
   function lhDoorTarget(side, closed){
     return closed ? 0 : -(+side || 1) * 1.9;
   }
+  // Auto-open only when the owner approaches from OUTSIDE after leaving.
+  // A door the player just closed must stay shut while they remain near it.
+  function lhDoorShouldAutoOpen(st){
+    st = st || {};
+    if (st.holdClosed) return false;
+    if (st.inside) return false;
+    return !!(st.near && st.closed && !st.auto);
+  }
   function lhGroundGapOk(a, b){
     return Math.abs((+a || 0) - (+b || 0)) >= 0.02;
   }
@@ -6251,7 +6264,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     lhCancelSucceeds, lhHostNameIn, lhDefaultSettings, lhNormalizeSettings,
     lhLoadState, lhStampOk, lhAddDoodle, lhNear, lhDist, lhSummonOk, lhCensored,
     lhMidwayWallSegments, lhMidwayBlocksSide, lhNearLamp,
-    lhWagonZs, lhWagonCount, lhDoorTarget, lhGroundGapOk, lhMapLayout
+    lhWagonZs, lhWagonCount, lhDoorTarget, lhDoorShouldAutoOpen, lhGroundGapOk, lhMapLayout
   };
   root.LHRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -15766,8 +15779,8 @@ const Obby = (() => {
         if (w && w.mesh) lhPaintStripe(w.mesh, '#e31c23', '#fff8f0', 2, Math.max(1, d / 3));
       });
     });
-    const mC = lhBox(0, 4.5, midZc, midX * 2 + 0.4, midD, '#fff0fb', 0.2);
-    if (mC && mC.mesh) lhPaintStripe(mC.mesh, '#e31c23', '#fff8f0', 16, 1);
+    // Open-air midway: no roof/ceiling, so the dusk sky shows. String lights
+    // along the eaves keep the hall lit, so darkness logic still treats it as safe.
     const runner = lhFloorBox(0, midZc, 2.2, midD - 1, '#e31c23', 'runner');
     lhLabel('Midway', 'rgba(80,20,40,.9)', 0, 3.0, midZ0 + 8);
 
@@ -16063,7 +16076,7 @@ const Obby = (() => {
     if (g) g.rotation.y = 0;
     return R.door;
   }
-  function lhSetDoor(R, closed){
+  function lhSetDoor(R, closed, why){
     if (!R || !R.door) return;
     R.door.closed = !!closed;
     if (lh) lh.doors[R.id] = !!closed;
@@ -16075,6 +16088,9 @@ const Obby = (() => {
       R.door.plat.active = !!closed;
       if (R.door.plat.mesh) R.door.plat.mesh.visible = false;
     }
+    // A player-closed door must not be auto-opened again until they leave the doorway.
+    if (why === 'player' && closed) R.door._holdClosed = true;
+    if (!closed) R.door._holdClosed = false;
   }
   function lhTickDoors(dt){
     if (!lh || !lh.rooms) return;
@@ -16098,11 +16114,14 @@ const Obby = (() => {
     if (!R || R.owner !== 'me' || !R.door) return;
     const doorX = R.x - R.side * (R.w / 2);
     const near = LH_RULES.lhNear ? LH_RULES.lhNear(P.x, P.z, doorX, R.z, 2.2) : false;
-    if (near && R.door.closed && !R.door._auto){
+    const inside = Math.abs(P.x - R.x) < R.w / 2 - 0.1 && Math.abs(P.z - R.z) < R.d / 2 - 0.1;
+    if (!near){ R.door._auto = false; R.door._holdClosed = false; return; }
+    const st = {near: true, inside: !!inside, closed: !!R.door.closed, auto: !!R.door._auto, holdClosed: !!R.door._holdClosed};
+    const should = LH_RULES.lhDoorShouldAutoOpen ? LH_RULES.lhDoorShouldAutoOpen(st) : (!st.holdClosed && !st.inside && st.closed && !st.auto);
+    if (should){
       R.door._auto = true;
       lhSetDoor(R, false);
     }
-    if (!near) R.door._auto = false;
   }
 
   function lhToggleMap(on){
@@ -16174,7 +16193,11 @@ const Obby = (() => {
     ['lhMeter','lhRoot'].forEach(id => { const n = lhEl(id); if (n) n.style.display = 'block'; });
     if (!window.__lhBound){
       window.__lhBound = true;
-      const act = lhEl('lhAct'); if (act) act.onclick = () => lhAct();
+      const act = lhEl('lhAct');
+      if (act){
+        const fire = ev => { if (ev){ try { ev.preventDefault(); ev.stopPropagation(); } catch (e){} } lhAct(); };
+        act.onclick = ev => fire(ev);
+      }
       const fan = lhEl('lhFanfare'); if (fan) fan.onclick = () => { lhCallHost(true); };
       const setb = lhEl('lhSetBtn'); if (setb) setb.onclick = () => lhToggleSet();
       const mine = lhEl('lhMyWagon'); if (mine) mine.onclick = () => lhGoWagon();
@@ -16367,21 +16390,26 @@ const Obby = (() => {
     const near = lhCompanyNear();
     if (lh.wagonPad && LH_RULES.lhNear(P.x, P.z, lh.wagonPad.x, lh.wagonPad.z, 2.0))
       return {id:'gowagon', label:'🎪 Go to my wagon'};
-    // In-room actions first so the light switch and bed are not hidden by the door prompt.
+    // In-room actions first so the light switch and bed are not hidden by the door prompt —
+    // except at the doorway itself, where Open/Close door wins so the clickable prompt is accurate.
     if (a.R){
       const R = a.R;
-      if (LH_RULES.lhNear(P.x, P.z, R.switch.x, R.switch.z, 1.5)) return {id:'light', label: R.lit ? '💡 Turn lights off' : '💡 Turn lights on', R};
+      const doorX = R.x - R.side * (R.w / 2);
+      const dDoor = LH_RULES.lhDist ? LH_RULES.lhDist(P.x, P.z, doorX, R.z) : 99;
+      const dSw = LH_RULES.lhDist ? LH_RULES.lhDist(P.x, P.z, R.switch.x, R.switch.z) : 99;
+      const atDoor = dDoor <= 1.8;
+      if (LH_RULES.lhNear(P.x, P.z, R.switch.x, R.switch.z, 1.5) && !(atDoor && dDoor <= dSw + 0.15))
+        return {id:'light', label: R.lit ? '💡 Turn lights off' : '💡 Turn lights on', R};
       if (LH_RULES.lhNear(P.x, P.z, R.bed.x, R.bed.z, 1.6)) return {id:'bed', label: lh.bed ? '🛏️ Get up' : '🛏️ Sit on bed', R};
-      if (R.owner === 'me' && LH_RULES.lhNear(P.x, P.z, R.wall.x, R.wall.z, 1.7)) return {id:'draw', label:'🖍️ Draw on the wall', R};
-      if (R.owner === 'me' && !R.door.closed && LH_RULES.lhNear(P.x, P.z, R.x - R.side * (R.w / 2), R.z, 1.6)) return {id:'door', label:'🚪 Close door', R};
-      if (R.owner === 'me' && R.door.closed && LH_RULES.lhNear(P.x, P.z, R.x - R.side * (R.w / 2), R.z, 1.8)) return {id:'door', label:'🚪 Open door', R};
+      if (R.owner === 'me' && LH_RULES.lhNear(P.x, P.z, R.wall.x, R.wall.z, 1.7) && !atDoor) return {id:'draw', label:'🖍️ Draw on the wall', R};
+      if (R.owner === 'me' && atDoor) return {id:'door', label: R.door.closed ? '🚪 Open door' : '🚪 Close door', R};
     }
-    // door first (so "Enter your wagon" is not hidden by the doorbell)
+    // door first (so Open/Close is not hidden by the doorbell). Close works inside and outside.
     for (let i = 0; i < lh.rooms.length; i++){
       const R = lh.rooms[i];
       const doorX = R.x - R.side * (R.w / 2);
       if (LH_RULES.lhNear(P.x, P.z, doorX, R.z, 2.2)){
-        if (R.owner === 'me') return {id:'door', label: R.door.closed ? '🚪 Open door' : (Math.abs(P.x - R.x) < R.w / 2 - 0.2 ? '🚪 Close door' : '🚪 Enter your wagon'), R};
+        if (R.owner === 'me') return {id:'door', label: R.door.closed ? '🚪 Open door' : '🚪 Close door', R};
         if (R.door.closed && lh.keyholder === 'me') return {id:'unlock', label:'🔑 Unlock room', R};
         if (!R.door.closed) return {id:'enter', label:'🚪 Enter wagon ' + (R.id + 1), R};
       }
@@ -16397,7 +16425,11 @@ const Obby = (() => {
     return null;
   }
 
+  let _lhActAt = 0;
   function lhAct(){
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    if (now - _lhActAt < 250) return;
+    _lhActAt = now;
     if (!lh) return;
     if (lh.cut || lh.calm || lh.banish){ lhSkipCut(); return true; }
     const p = lhPrompt();
@@ -16407,9 +16439,10 @@ const Obby = (() => {
     else if (p.id === 'enter'){ if (p.R.door.closed) lhSetDoor(p.R, false); Object.assign(P, {x: p.R.x - p.R.side * 1.2, y: (p.R.floorY || 0.45) + 0.05, z: p.R.z, vx:0, vy:0, vz:0}); }
     else if (p.id === 'light') lhToggleLight(p.R);
     else if (p.id === 'door'){
-      if (!p.R.door.closed && p.R.owner === 'me' && Math.abs(P.x - p.R.x) > p.R.w / 2 - 0.2){
-        Object.assign(P, {x: p.R.x - p.R.side * 1.2, y: (p.R.floorY || 0.45) + 0.05, z: p.R.z, vx:0, vy:0, vz:0});
-      } else lhSetDoor(p.R, !p.R.door.closed);
+      // Always honor the prompt: Close door closes, Open door opens.
+      // Do not teleport-enter on a Close door click (that used to swallow the close).
+      const closing = !p.R.door.closed;
+      lhSetDoor(p.R, closing, 'player');
     }
     else if (p.id === 'unlock') lhUnlock(p.R);
     else if (p.id === 'bed'){ lh.bed = !lh.bed; if (lh.bed){ P.x = p.R.bed.x; P.z = p.R.bed.z; } }
@@ -17176,7 +17209,14 @@ const Obby = (() => {
       window.lhGoWagon = function(){ try { return lhGoWagon(); } catch (e){ return false; } };
       window.lhCharPose = lhCharPose;
       window.lhToggleMap = function(on){ try { return lhToggleMap(on); } catch (e){ return false; } };
-      window.lhSetDoor = function(id, closed){ try { const R = lh && lh.rooms[id]; if (R) lhSetDoor(R, closed); } catch (e){} };
+      window.lhSetDoor = function(id, closed){ try { const R = lh && lh.rooms[id]; if (R) lhSetDoor(R, closed, 'player'); } catch (e){} };
+      window.lhDoorState = function(id){
+        try {
+          const R = lh && lh.rooms[id == null ? lh.myRoom : id];
+          if (!R || !R.door) return null;
+          return {id:R.id, closed:!!R.door.closed, hold:!!R.door._holdClosed, ang:R.door.ang, target:R.door.target, plat:!!(R.door.plat && R.door.plat.active), auto:!!R.door._auto};
+        } catch (e){ return {err:String(e)}; }
+      };
       window.lhPerf = function(v){ try { return lhPerf(v); } catch (e){ return null; } };
       window.lhRefill = function(v){ try { if (lh){ lh.sanity = (v == null ? 100 : v); if (lh.sanity > 0) lh.glitched = false; } return lh && lh.sanity; } catch (e){ return null; } };
     }
@@ -23801,6 +23841,12 @@ function dhLayoutHud(){
           }
         } catch (e){}
         return false;
+      }
+      // Direct pointer on a HUD control (Close door, etc.): do not synthesize a
+      // second click. hudTryClick's target.click() plus the native click would
+      // toggle twice — close, then immediately open again.
+      if (!locked && ev && ev.target && ev.target.closest && ev.target !== canvas && !(canvas && canvas.contains && canvas.contains(ev.target))){
+        if (ev.target.closest(HUD_HIT_SEL)) return false;
       }
       const pts = [];
       if (ev && ev.clientX != null && ev.clientY != null) pts.push([ev.clientX, ev.clientY]);

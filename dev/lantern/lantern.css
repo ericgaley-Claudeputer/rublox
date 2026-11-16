@@ -96,6 +96,9 @@ body.lh-muffled #obby{filter:saturate(.85)}
 #obby.lhmode #lhRoot{display:block;position:absolute;inset:0;pointer-events:none;z-index:20}
 #obby.lhmode #lhMeter{display:block;pointer-events:none;z-index:21}
 #obby.lhmode #lhSetBtn,#obby.lhmode #lhFanfare.show,#obby.lhmode #lhMyWagon,#obby.lhmode #lhMapBtn,#obby.lhmode #lhAct.show{pointer-events:auto}
+/* #lhRoot is z-index 20 and covers the screen; the Close/Open door prompt must sit above it or Mac clicks never reach the button. */
+#lhAct.fsnear,#obby.lhmode #lhAct.show{z-index:22;pointer-events:auto}
+
 #obby.lhmode #lhCut,#obby.lhmode #lhCalm,#obby.lhmode #lhSet,#obby.lhmode #lhDraw,#obby.lhmode #lhMap{pointer-events:auto;z-index:90}
 #obby.lhmode #lhKeyTag{z-index:21}
 
