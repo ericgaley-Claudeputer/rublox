@@ -806,10 +806,41 @@
     return {ok:true, items: items, placed: it};
   }
 
+
+  // Maestro Gleam's wagon serenade: only after a continuous stay, then a cooldown.
+  const LH_SONG_STAY = 50;
+  const LH_SONG_COOLDOWN = 180;
+  const LH_SONG_TEST_STAY = 0.8;
+
+  function lhSongStayNeed(test){
+    return test === 'song' ? LH_SONG_TEST_STAY : LH_SONG_STAY;
+  }
+
+  function lhSongCooldown(test){
+    return test === 'song' ? 0 : LH_SONG_COOLDOWN;
+  }
+
+  function lhSongStayTick(inOwnRoom, stayT, dt){
+    if (!inOwnRoom) return 0;
+    return (stayT || 0) + Math.max(0, +dt || 0);
+  }
+
+  function lhSongShouldStart(st){
+    st = st || {};
+    if (st.alreadySinging) return false;
+    if (!st.inOwnRoom) return false;
+    const need = st.stayNeed != null ? +st.stayNeed : lhSongStayNeed(st.test);
+    const cd = st.cooldown != null ? +st.cooldown : lhSongCooldown(st.test);
+    if ((st.stayT || 0) < need) return false;
+    if (st.lastSongAt != null && ((st.now || 0) - st.lastSongAt) < cd) return false;
+    return true;
+  }
+
   const api = {
     LH_KEY, LH_VER, LH_HOST, LH_HOST_TITLE, LH_GAME, LH_STAMPS, LH_EYES,
     LH_WALL_PRESETS, LH_WALL_MAX_CHARS, LH_WALL_MAX_PER_PLAYER, LH_WALL_MAX_DIST, LH_PII_REASONS,
     LH_WAGON_H, LH_MIDWAY_WALL_H, LH_DOOR_OPEN_H, LH_KNOCK_COOLDOWN, LH_KNOCK_TIMEOUT, LH_KNOCK_SOLO_OPEN,
+    LH_SONG_STAY, LH_SONG_COOLDOWN, LH_SONG_TEST_STAY,
     LH_RIDE_SPEC, LH_CARNIVAL_GAMES, LH_PRIZES, LH_STARTER_DECOR, LH_WALL_STYLES, LH_FLOOR_STYLES, LH_DECOR_MAX,
     LH_COMPANY_R, LH_NEAR_R, LH_SUMMON_R, LH_TAG_R, LH_KEY_CD, LH_LAMP_R, LH_WAGON_ZS,
     LH_WAGONS_PER_SIDE, LH_WAGON_COUNT, LH_WAGON_SPACING, LH_WAGON_Z0, LH_WAGON_X,
@@ -826,6 +857,7 @@
     lhRoomContains, lhDoorAjar, lhRoomInteriorVisible, lhDoorwayLayout, lhDoorSealsOpening,
     lhWagonWallPlanes, lhRayWall, lhNormalizeWallText, lhAddWallWord, lhEraseWallWord, lhSanitizeWallWords,
     lhDoorPromptKind, lhKnockCooldownLeft, lhKnockAllowed, lhKnockResolve, lhKnockReplyMessage, lhJumpClearHeight, lhPickLine,
+    lhSongStayNeed, lhSongCooldown, lhSongStayTick, lhSongShouldStart,
     lhRidePickSeat, lhRideBoardOk, lhRideExitPoint, lhRideProgress,
     lhPrizeById, lhGameTickets, lhBuyPrize, lhEquipCosmetic,
     lhDecorCatalog, lhDecorClamp, lhNormalizeStyle, lhNormalizeDecor, lhDecorPlace, lhDecorRotate, lhDecorRemove, lhDecorMove,

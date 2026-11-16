@@ -1072,6 +1072,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 
 
 
+
 /* ---------- lantern hotel css ---------- */
 /* t286u Lantern Big Top HUD */
 #lhBox{display:none}
@@ -2228,7 +2229,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-14';
+const BUILD = '2026.11.16-15';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3515,6 +3516,7 @@ function drawLantern(ctx){
 
 
 
+
 function drawHaunt(ctx){
   sky(ctx, '#2a2450', '#5b4d7a');
   ctx.fillStyle = '#4a3f6b'; ctx.fillRect(0, 140, 320, 60);
@@ -4242,6 +4244,7 @@ function confetti(){
       const loc = (typeof location !== 'undefined' && location) || (typeof window !== 'undefined' && window.location) || null;
       const hash = loc && loc.hash ? String(loc.hash) : '';
       if (/(?:^|#|&)chattest=/i.test(hash)) return true;
+      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
@@ -6587,6 +6590,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
 
 
 
+
 /* ---------- lantern rules ---------- */
 /* Pure Lantern Big Top rules — safe to require() in tests and to load in the page. */
 (function (root) {
@@ -7396,10 +7400,41 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     return {ok:true, items: items, placed: it};
   }
 
+
+  // Maestro Gleam's wagon serenade: only after a continuous stay, then a cooldown.
+  const LH_SONG_STAY = 50;
+  const LH_SONG_COOLDOWN = 180;
+  const LH_SONG_TEST_STAY = 0.8;
+
+  function lhSongStayNeed(test){
+    return test === 'song' ? LH_SONG_TEST_STAY : LH_SONG_STAY;
+  }
+
+  function lhSongCooldown(test){
+    return test === 'song' ? 0 : LH_SONG_COOLDOWN;
+  }
+
+  function lhSongStayTick(inOwnRoom, stayT, dt){
+    if (!inOwnRoom) return 0;
+    return (stayT || 0) + Math.max(0, +dt || 0);
+  }
+
+  function lhSongShouldStart(st){
+    st = st || {};
+    if (st.alreadySinging) return false;
+    if (!st.inOwnRoom) return false;
+    const need = st.stayNeed != null ? +st.stayNeed : lhSongStayNeed(st.test);
+    const cd = st.cooldown != null ? +st.cooldown : lhSongCooldown(st.test);
+    if ((st.stayT || 0) < need) return false;
+    if (st.lastSongAt != null && ((st.now || 0) - st.lastSongAt) < cd) return false;
+    return true;
+  }
+
   const api = {
     LH_KEY, LH_VER, LH_HOST, LH_HOST_TITLE, LH_GAME, LH_STAMPS, LH_EYES,
     LH_WALL_PRESETS, LH_WALL_MAX_CHARS, LH_WALL_MAX_PER_PLAYER, LH_WALL_MAX_DIST, LH_PII_REASONS,
     LH_WAGON_H, LH_MIDWAY_WALL_H, LH_DOOR_OPEN_H, LH_KNOCK_COOLDOWN, LH_KNOCK_TIMEOUT, LH_KNOCK_SOLO_OPEN,
+    LH_SONG_STAY, LH_SONG_COOLDOWN, LH_SONG_TEST_STAY,
     LH_RIDE_SPEC, LH_CARNIVAL_GAMES, LH_PRIZES, LH_STARTER_DECOR, LH_WALL_STYLES, LH_FLOOR_STYLES, LH_DECOR_MAX,
     LH_COMPANY_R, LH_NEAR_R, LH_SUMMON_R, LH_TAG_R, LH_KEY_CD, LH_LAMP_R, LH_WAGON_ZS,
     LH_WAGONS_PER_SIDE, LH_WAGON_COUNT, LH_WAGON_SPACING, LH_WAGON_Z0, LH_WAGON_X,
@@ -7416,6 +7451,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     lhRoomContains, lhDoorAjar, lhRoomInteriorVisible, lhDoorwayLayout, lhDoorSealsOpening,
     lhWagonWallPlanes, lhRayWall, lhNormalizeWallText, lhAddWallWord, lhEraseWallWord, lhSanitizeWallWords,
     lhDoorPromptKind, lhKnockCooldownLeft, lhKnockAllowed, lhKnockResolve, lhKnockReplyMessage, lhJumpClearHeight, lhPickLine,
+    lhSongStayNeed, lhSongCooldown, lhSongStayTick, lhSongShouldStart,
     lhRidePickSeat, lhRideBoardOk, lhRideExitPoint, lhRideProgress,
     lhPrizeById, lhGameTickets, lhBuyPrize, lhEquipCosmetic,
     lhDecorCatalog, lhDecorClamp, lhNormalizeStyle, lhNormalizeDecor, lhDecorPlace, lhDecorRotate, lhDecorRemove, lhDecorMove,
@@ -8248,7 +8284,7 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
     if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
@@ -16918,7 +16954,7 @@ const Obby = (() => {
       doodleOpen: false, setOpen: false, writeOpen: false, writeStyle: 'paint', writeSel: 0, lastHud: '', words: (prog.wallWords || []).slice(), wordMeshes: [], knockAt: {}, knockOffer: null, knockWait: null,
       trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null, riding: null, arcade: null, boothOpen: false, games: [], booth: null, gameCd: {}, decorOpen: false, decorSel: 0, decorPick: null,
       syncT: 0, visitAwarded: false, _nearT: 0, _isoT: 0, _darkT: 0,
-      breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0,
+      breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0, songStayT: 0, lastSongAt: null, songStayNeed: null, songCd: null,
       lastDing: 0, savedFp: null
     };
     try { lhBuildFairground(); } catch (e){}
@@ -17879,12 +17915,14 @@ const Obby = (() => {
       lhSaveProg(lh.prog);
     }
     if (lh){
-      lh.serenadeAt = 28 + Math.random() * 10;
       lh.vesperAt = 40 + Math.random() * 20;
       lh.exitAt = 22;
       lh.keyAt = 16;
+      lh.songStayT = 0;
+      lh.lastSongAt = null;
+      lh.songStayNeed = LH_RULES.lhSongStayNeed ? LH_RULES.lhSongStayNeed(lh.test) : (lh.test === 'song' ? 0.8 : 50);
+      lh.songCd = LH_RULES.lhSongCooldown ? LH_RULES.lhSongCooldown(lh.test) : (lh.test === 'song' ? 0 : 180);
       if (lh.test === 'vesper') lh.vesperAt = 0.6;
-      if (lh.test === 'song') lh.serenadeAt = 0.8;
       if (lh.test === 'exit') lh.exitAt = 0.5;
       if (lh.test === 'cellar'){ lh.keyAt = 99; setTimeout(() => { try { if (lh && lh.test === 'cellar') lhStartBanish(lh.npcs.find(n => n.glitched) || {kind:'me'}); } catch (e){} }, 900); }
     }
@@ -19240,6 +19278,8 @@ const Obby = (() => {
   function lhStartSong(){
     if (!lh || lh.song) return;
     lh.song = {t: 0, dur: 5};
+    lh.lastSongAt = lh.t;
+    lh.songStayT = 0;
     if (typeof toast === 'function') toast('🎵 ' + LH_HOST_TITLE + ' sings: “Lanterns glow, don\'t walk alone — stay together, we\'re going home!”');
     const n = lhEl('lhCut');
     if (n){
@@ -19850,9 +19890,8 @@ const Obby = (() => {
       lhAward('lh:keys');
       if (typeof toast === 'function') toast('🔑 You got the key bunch! Unlock a friend\'s door if you need to help.');
     }
-    if (!lh.song && lh.t >= lh.serenadeAt && lh.area === 'room' && lh.room === lh.myRoom && lh.rooms[lh.myRoom] && lh.rooms[lh.myRoom].door.closed){
-      lhStartSong();
-    }
+    // Maestro Gleam's serenade is handled after the current room is known,
+    // and only after a continuous stay (not on entering).
     if ((!lh.vesper || !lh.vesper.on) && lh.t >= lh.vesperAt) lhSpawnVesper();
     if (lh.exitDoor && !lh.exitDoor.shown && lh.t >= lh.exitAt){
       lh.exitDoor.shown = true; if (lh.exitDoor.mesh) lh.exitDoor.mesh.visible = true;
@@ -19864,6 +19903,20 @@ const Obby = (() => {
 
     const area = lhPlayerArea();
     lh.area = area.area; lh.room = area.room; lh.lit = !!area.lit; lh.dark = !!area.dark;
+    const inOwnWagon = !!(lh.area === 'room' && lh.room === lh.myRoom && lh.rooms[lh.myRoom]);
+    lh.songStayT = LH_RULES.lhSongStayTick ? LH_RULES.lhSongStayTick(inOwnWagon, lh.songStayT, dt) : (inOwnWagon ? (lh.songStayT || 0) + dt : 0);
+    if (LH_RULES.lhSongShouldStart ? LH_RULES.lhSongShouldStart({
+      inOwnRoom: inOwnWagon,
+      alreadySinging: !!lh.song,
+      stayT: lh.songStayT,
+      lastSongAt: lh.lastSongAt,
+      now: lh.t,
+      test: lh.test,
+      stayNeed: lh.songStayNeed,
+      cooldown: lh.songCd
+    }) : (inOwnWagon && !lh.song && (lh.songStayT || 0) >= (lh.songStayNeed || 50))){
+      lhStartSong();
+    }
     const near = lhCompanyNear();
     lh.company = !!near.company;
     // Any lantern light source: path lamps, string lights, or a lit wagon.
@@ -27042,6 +27095,8 @@ function start(m = 'obby', d = null){
     $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }
     if (mode === 'dance') danceEnter();
     $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
+    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
+        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
         $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }

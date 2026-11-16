@@ -737,7 +737,7 @@
       doodleOpen: false, setOpen: false, writeOpen: false, writeStyle: 'paint', writeSel: 0, lastHud: '', words: (prog.wallWords || []).slice(), wordMeshes: [], knockAt: {}, knockOffer: null, knockWait: null,
       trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null, riding: null, arcade: null, boothOpen: false, games: [], booth: null, gameCd: {}, decorOpen: false, decorSel: 0, decorPick: null,
       syncT: 0, visitAwarded: false, _nearT: 0, _isoT: 0, _darkT: 0,
-      breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0,
+      breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0, songStayT: 0, lastSongAt: null, songStayNeed: null, songCd: null,
       lastDing: 0, savedFp: null
     };
     try { lhBuildFairground(); } catch (e){}
@@ -1698,12 +1698,14 @@
       lhSaveProg(lh.prog);
     }
     if (lh){
-      lh.serenadeAt = 28 + Math.random() * 10;
       lh.vesperAt = 40 + Math.random() * 20;
       lh.exitAt = 22;
       lh.keyAt = 16;
+      lh.songStayT = 0;
+      lh.lastSongAt = null;
+      lh.songStayNeed = LH_RULES.lhSongStayNeed ? LH_RULES.lhSongStayNeed(lh.test) : (lh.test === 'song' ? 0.8 : 50);
+      lh.songCd = LH_RULES.lhSongCooldown ? LH_RULES.lhSongCooldown(lh.test) : (lh.test === 'song' ? 0 : 180);
       if (lh.test === 'vesper') lh.vesperAt = 0.6;
-      if (lh.test === 'song') lh.serenadeAt = 0.8;
       if (lh.test === 'exit') lh.exitAt = 0.5;
       if (lh.test === 'cellar'){ lh.keyAt = 99; setTimeout(() => { try { if (lh && lh.test === 'cellar') lhStartBanish(lh.npcs.find(n => n.glitched) || {kind:'me'}); } catch (e){} }, 900); }
     }
@@ -3059,6 +3061,8 @@
   function lhStartSong(){
     if (!lh || lh.song) return;
     lh.song = {t: 0, dur: 5};
+    lh.lastSongAt = lh.t;
+    lh.songStayT = 0;
     if (typeof toast === 'function') toast('🎵 ' + LH_HOST_TITLE + ' sings: “Lanterns glow, don\'t walk alone — stay together, we\'re going home!”');
     const n = lhEl('lhCut');
     if (n){
@@ -3669,9 +3673,8 @@
       lhAward('lh:keys');
       if (typeof toast === 'function') toast('🔑 You got the key bunch! Unlock a friend\'s door if you need to help.');
     }
-    if (!lh.song && lh.t >= lh.serenadeAt && lh.area === 'room' && lh.room === lh.myRoom && lh.rooms[lh.myRoom] && lh.rooms[lh.myRoom].door.closed){
-      lhStartSong();
-    }
+    // Maestro Gleam's serenade is handled after the current room is known,
+    // and only after a continuous stay (not on entering).
     if ((!lh.vesper || !lh.vesper.on) && lh.t >= lh.vesperAt) lhSpawnVesper();
     if (lh.exitDoor && !lh.exitDoor.shown && lh.t >= lh.exitAt){
       lh.exitDoor.shown = true; if (lh.exitDoor.mesh) lh.exitDoor.mesh.visible = true;
@@ -3683,6 +3686,20 @@
 
     const area = lhPlayerArea();
     lh.area = area.area; lh.room = area.room; lh.lit = !!area.lit; lh.dark = !!area.dark;
+    const inOwnWagon = !!(lh.area === 'room' && lh.room === lh.myRoom && lh.rooms[lh.myRoom]);
+    lh.songStayT = LH_RULES.lhSongStayTick ? LH_RULES.lhSongStayTick(inOwnWagon, lh.songStayT, dt) : (inOwnWagon ? (lh.songStayT || 0) + dt : 0);
+    if (LH_RULES.lhSongShouldStart ? LH_RULES.lhSongShouldStart({
+      inOwnRoom: inOwnWagon,
+      alreadySinging: !!lh.song,
+      stayT: lh.songStayT,
+      lastSongAt: lh.lastSongAt,
+      now: lh.t,
+      test: lh.test,
+      stayNeed: lh.songStayNeed,
+      cooldown: lh.songCd
+    }) : (inOwnWagon && !lh.song && (lh.songStayT || 0) >= (lh.songStayNeed || 50))){
+      lhStartSong();
+    }
     const near = lhCompanyNear();
     lh.company = !!near.company;
     // Any lantern light source: path lamps, string lights, or a lit wagon.

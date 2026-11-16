@@ -7,10 +7,10 @@ const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const RULES = require(path.join(ROOT, 'dev/lantern/lantern_rules.js'));
 const BUILD = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).build || JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
-test('BUILD stamp is 2026.11.16-14 in lantern files and version.json', () => {
+test('BUILD stamp is 2026.11.16-15 in lantern files and version.json', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
-  assert.equal(v.build, '2026.11.16-14');
-  assert.match(HTML, /const BUILD = '2026\.11\.16-14'/);
+  assert.equal(v.build, '2026.11.16-15');
+  assert.match(HTML, /const BUILD = '2026\.11\.16-15'/);
 });
 
 test('Lantern Big Top is a playable GAMES card with original branding', () => {
@@ -870,4 +870,49 @@ test('equipped pet can follow into Lantern Big Top', () => {
   const pf = require(path.join(ROOT, 'dev/petfollow/petfollow_rules.js'));
   assert.equal(pf.pfShouldFollow('lantern', {hide:false}, true), true);
   assert.match(HTML, /pfEnter\(mode\)/);
+});
+
+test('Maestro Gleam only sings after a continuous stay in your wagon, then cools down', () => {
+  assert.equal(RULES.LH_SONG_STAY, 50);
+  assert.equal(RULES.LH_SONG_COOLDOWN, 180);
+  assert.equal(RULES.LH_SONG_TEST_STAY, 0.8);
+  assert.equal(RULES.lhSongStayNeed(), 50);
+  assert.equal(RULES.lhSongStayNeed('song'), 0.8);
+  assert.equal(RULES.lhSongCooldown(), 180);
+  assert.equal(RULES.lhSongCooldown('song'), 0);
+
+  // Leaving the wagon resets the stay timer; staying accumulates.
+  assert.equal(RULES.lhSongStayTick(false, 20, 1), 0);
+  assert.equal(RULES.lhSongStayTick(true, 20, 1), 21);
+  assert.equal(RULES.lhSongStayTick(true, 0, 0.8), 0.8);
+
+  // Entering (stayT = 0) never starts the song, even late in a visit.
+  assert.equal(RULES.lhSongShouldStart({inOwnRoom:true, stayT:0, now:100}), false);
+  assert.equal(RULES.lhSongShouldStart({inOwnRoom:true, stayT:49.9, now:100}), false);
+  assert.equal(RULES.lhSongShouldStart({inOwnRoom:true, stayT:50, now:100}), true);
+  assert.equal(RULES.lhSongShouldStart({inOwnRoom:false, stayT:50, now:100}), false);
+  assert.equal(RULES.lhSongShouldStart({inOwnRoom:true, stayT:50, alreadySinging:true, now:100}), false);
+
+  // After a song, wait a few minutes before it can play again.
+  assert.equal(RULES.lhSongShouldStart({inOwnRoom:true, stayT:50, lastSongAt:10, now:100}), false);
+  assert.equal(RULES.lhSongShouldStart({inOwnRoom:true, stayT:50, lastSongAt:10, now:189}), false);
+  assert.equal(RULES.lhSongShouldStart({inOwnRoom:true, stayT:50, lastSongAt:10, now:190}), true);
+
+  // #lhtest=song is still earnable by staying briefly, not by merely entering.
+  assert.equal(RULES.lhSongShouldStart({inOwnRoom:true, stayT:0, now:1, test:'song'}), false);
+  assert.equal(RULES.lhSongShouldStart({inOwnRoom:true, stayT:0.5, now:1, test:'song'}), false);
+  assert.equal(RULES.lhSongShouldStart({inOwnRoom:true, stayT:0.8, now:1, test:'song'}), true);
+
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  assert.match(js, /lhSongShouldStart/);
+  assert.match(js, /lhSongStayTick/);
+  assert.match(js, /lhAward\('lh:song'\)/);
+  assert.match(js, /inOwnWagon/);
+  assert.doesNotMatch(js, /lh\.t >= lh\.serenadeAt && lh\.area === 'room'/);
+  assert.doesNotMatch(js, /if \(lh\.test === 'song'\) lh\.serenadeAt/);
+  const songBadge = RULES.LH_BADGES.find(b => b.id === 'lh-song');
+  assert.ok(songBadge);
+  assert.equal(songBadge.name, 'Midway Serenade');
+  assert.equal(songBadge.note, 'lh:song');
+  assert.match(HTML, /prove:s => !!\(s\.notes && s\.notes\['lh:song'\]\)/);
 });
