@@ -5050,10 +5050,14 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     return null;
   }
   function chMp(){
-    /* Do not read window.mp — that is the #mp Play-together DIV, not the room object. */
+    /* window.mp is the #mp Play-together DIV, not the room object. Prefer Obby.mp.
+       Tests may bind a real room object named mp; ignore DOM nodes. */
     try {
       const O = chGame();
       if (O && O.mp && typeof O.mp === 'object' && typeof O.mp.on === 'boolean') return O.mp;
+    } catch (e){}
+    try {
+      if (typeof mp !== 'undefined' && mp && typeof mp === 'object' && typeof mp.on === 'boolean' && !mp.tagName && !mp.nodeName) return mp;
     } catch (e){}
     return null;
   }
