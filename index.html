@@ -1410,6 +1410,46 @@ body.lh-muffled #obby{filter:saturate(.85)}
 #pyFlash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:20;transition:opacity .05s linear}
 @media (max-width:700px){ .trcols{flex-direction:column} .qbox,.trbox{padding:12px} #pyAct{bottom:120px} }
 </style>
+
+<style id="evLbCss">
+html.snowfest-on body, body.snowfest-on{ background-image: none; }
+#evSnowLayer{display:none;pointer-events:none;position:fixed;inset:0;z-index:40;overflow:hidden}
+html.snowfest-on #evSnowLayer, body.snowfest-on #evSnowLayer{display:block}
+#evSnowLayer i{position:absolute;top:-20px;color:#fff;text-shadow:0 0 4px rgba(180,210,255,.8);animation:evFall linear infinite}
+@keyframes evFall{0%{transform:translateY(-10px) rotate(0)}100%{transform:translateY(110vh) rotate(360deg)}}
+html.snowfest-on #hero{background:linear-gradient(160deg,#8eb7e8,#eaf4ff 55%,#fff);border-color:#8eb7e8}
+#evBanner{display:none;margin:12px 0 0;padding:14px 16px;border:3px solid #1d2340;border-radius:16px;background:#eaf4ff;box-shadow:3px 3px 0 #1d2340}
+html.snowfest-on #evBanner, body.snowfest-on #evBanner{display:block}
+#evBanner h3{margin:0 0 4px;font-size:20px}
+#evBanner p{margin:0 0 8px}
+#evChip{display:none;margin-left:6px}
+html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-items:center;gap:4px}
+#evShop.show,.evoverlay.show{display:flex}
+.evoverlay{position:fixed;inset:0;background:rgba(29,35,64,.45);z-index:240;display:none;align-items:center;justify-content:center;padding:16px}
+.evbox{position:relative;max-width:520px;width:100%;max-height:90vh;overflow:auto;background:#eaf4ff;border:4px solid #1d2340;border-radius:20px;padding:16px;box-shadow:6px 6px 0 #1d2340}
+.evitem{display:flex;gap:10px;align-items:center;background:#fff;border:2px solid #1d2340;border-radius:14px;padding:10px;margin:8px 0}
+.evem{font-size:28px}
+.evitem b{display:block}
+.evitem small{display:block;opacity:.8}
+#leaderboard{padding:8px 16px 28px}
+.lbtabs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.lbtabs button{border:2px solid #1d2340;border-radius:999px;padding:8px 14px;background:#fff;font-weight:800}
+.lbtabs button.on{background:#3a86ff;color:#fff}
+.lbrow{display:flex;gap:8px;align-items:center;background:#fff;border:2px solid #1d2340;border-radius:12px;padding:8px 10px;margin:6px 0}
+.lbem,.lbrank{width:28px;text-align:center;font-weight:800}
+.lbname{flex:1;font-weight:700}
+.lbempty,.lbnote{opacity:.8;margin:8px 0}
+.lbcat h3{margin:14px 0 6px}
+#evgBox{position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center}
+#evgBox #evgHint{display:inline-block;background:rgba(29,35,64,.82);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:14px}
+#evgAct,#evgShopBtn{position:absolute;z-index:8;padding:12px 16px;font-size:18px;border:3px solid #1d2340;border-radius:16px;background:#ffd23f;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+#evgAct{right:16px;bottom:96px}
+#evgAct.show{display:block}
+#evgShopBtn{right:16px;bottom:160px;display:none;background:#eaf4ff}
+.evmode #evgShopBtn{display:block}
+#evNextNote{margin:8px 16px;font-weight:700;color:#445}
+@media (max-width:700px){ #evgAct{bottom:120px} #evgShopBtn{bottom:184px} }
+</style>
 <nav>
     <button data-go="home" class="active"><i>🏠</i><span>Home</span></button>
     <button data-go="games"><i>🎮</i><span>Games</span></button>
@@ -1418,9 +1458,11 @@ body.lh-muffled #obby{filter:saturate(.85)}
     <button data-go="friends"><i>👫</i><span>Friends</span></button>
     <button data-go="achievements"><i>🏆</i><span>Achievements</span></button>
     <button data-go="quests"><i>📜</i><span>Quests</span></button>
+    <button data-go="leaderboard"><i>🏅</i><span>Board</span></button>
   </nav>
   <div class="spacer"></div>
   <button class="coinchip" id="coinBtn" title="Rublox Coins (pretend money!) - click for your daily bonus"><span class="coin"></span><span id="coinNum">500</span><span id="bonusDot">🎁</span></button>
+  <button class="coinchip" id="evChip" title="Snowflakes (festival currency)" style="display:none"><span>❄️</span><span id="evChipNum">0</span></button>
   <button class="iconbtn" id="setBtn" title="Settings" aria-label="Settings">⚙️</button>
   <button class="iconbtn" id="themeBtn" title="Light / Dark mode">🌙</button>
   <button class="chip" id="chip" title="Change your name"><canvas id="chipAv" width="76" height="76"></canvas><span id="chipName">Player</span></button>
@@ -1435,8 +1477,17 @@ body.lh-muffled #obby{filter:saturate(.85)}
       <button class="big green" data-go="avatar" style="margin-left:8px">🧍 Make my Avatar</button>
       <button class="big" data-go="achievements" style="margin-left:8px">🏆 Achievements</button>
       <button class="big" data-go="quests" style="margin-left:8px">📜 Daily Quests</button>
+      <button class="big" data-go="leaderboard" style="margin-left:8px">🏅 Leaderboard</button>
       <button class="big" data-go="friends" style="margin-left:8px">👫 Friends</button>
     </div>
+  <div id="evBanner">
+    <h3>❄️ Snow Festival is on!</h3>
+    <p>Visit the festival grounds, try the winter games, and earn ❄️ snowflakes for limited-time items. It runs December 1 through January 15 — or turn on a preview in Settings.</p>
+    <button class="big green" id="evPlayBtn" type="button">❄️ Play the Snow Festival</button>
+    <button class="big" id="evShopBtn" type="button" style="margin-left:8px">🎁 Event shop</button>
+  </div>
+  <p id="evNextNote"></p>
+
   </section>
 
   <section class="continue" id="continue" hidden>
@@ -1552,6 +1603,21 @@ body.lh-muffled #obby{filter:saturate(.85)}
   </section>
 
 
+
+  <section id="leaderboard">
+    <h2>🏅 Leaderboard</h2>
+    <p class="lbnote">Your best scores on this device. In a multiplayer room you can also compare with friends who are playing with you right now — no online server, and no typing.</p>
+    <div class="lbtabs">
+      <button type="button" class="on" data-lbtab="me">🏅 My bests</button>
+      <button type="button" data-lbtab="room">👫 Friends in this room</button>
+    </div>
+    <div id="lbMe"></div>
+    <div id="lbRoomWrap" style="display:none">
+      <p class="lbnote" id="lbRoomNote"></p>
+      <div id="lbRoom"></div>
+    </div>
+  </section>
+
   <section id="quests">
     <div class="qhead">
       <h2>📜 Daily Quests</h2>
@@ -1573,6 +1639,17 @@ body.lh-muffled #obby{filter:saturate(.85)}
   </section>
   <footer>Made with 💙 for friends &amp; family · Rublox</footer>
 </main>
+
+  <div class="evoverlay" id="evShop"><div class="mbox evbox">
+    <button type="button" class="qclose" id="evShopClose" aria-label="Close event shop">✕</button>
+    <h2>🎁 Snow Festival Shop</h2>
+    <div id="evShopBal">❄️ 0 snowflakes</div>
+    <p class="lbnote">Buy limited-time festival items with snowflakes you earn from the winter games and daily quests. These are not paid items.</p>
+    <div id="evShopList"></div>
+  </div></div>
+  <div id="evgBox" class="evgbox" style="display:none"><div id="evgHint">Snow Festival</div></div>
+  <button type="button" id="evgAct">Throw</button>
+  <button type="button" id="evgShopBtn">🎁 Shop</button>
   <div class="qoverlay" id="qPanel"><div class="mbox qbox">
     <button type="button" class="qclose" id="qClose" aria-label="Close quests">✕</button>
     <h2>📜 Daily Quests</h2>
@@ -1671,6 +1748,10 @@ body.lh-muffled #obby{filter:saturate(.85)}
       <label class="invrow"><input type="radio" name="wxSetMode" id="wxSetAuto" value="auto" checked><span>Auto<small>Day turns to night, and weather can change.</small></span></label>
       <label class="invrow"><input type="radio" name="wxSetMode" id="wxSetDay" value="day"><span>Always day<small>Keep bright daylight in games that use this.</small></span></label>
       <label class="invrow"><input type="radio" name="wxSetMode" id="wxSetOff" value="off"><span>Off<small>Leave each game's own sky and lighting alone.</small></span></label>
+    </div>
+    <div class="evset" id="evSet">
+      <div style="color:var(--muted);font-weight:700;margin-top:12px">❄️ Seasonal events</div>
+      <label class="invrow"><input type="checkbox" id="evForceSnow"><span>Preview the Snow Festival<small>Turn the winter fair on before December 1. It stays on this device until you uncheck this, or you can also use #snowfest=1 in the page address.</small></span></label>
     </div>
     <div class="pfset" id="pfSet">
       <div style="color:var(--muted);font-weight:700;margin-top:12px">🐾 Pet follower</div>
@@ -2324,7 +2405,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-19';
+const BUILD = '2026.11.16-20';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3057,7 +3138,7 @@ $('#saveAv').onclick = () => {
     off: 'off'
   };
   const WX_SKIP = ['splash', 'waterpark', 'race', 'photostudio', 'dance', 'bakery', 'icecream', 'tower', 'fashion'];
-  const WX_SNOW = ['obby', 'build', 'hide', 'stable', 'tag'];
+  const WX_SNOW = ['obby', 'build', 'hide', 'stable', 'tag', 'party', 'snowfest', 'pets', 'autumn', 'pethotel'];
   const WX_FOG = ['haunt', 'lantern', 'hide', 'petisland', 'obby', 'build'];
   const WX_RAIN = ['obby', 'build', 'lantern', 'hide', 'autumn', 'stable', 'petisland', 'pets', 'tag', 'dreamhouse', 'pethotel', 'haunt'];
 
@@ -3324,6 +3405,7 @@ function wxTick(dt, modeId, env){
     wx.weather = WX_RULES.wxPickWeather ? WX_RULES.wxPickWeather(wx.modeId, Math.random) : 'clear';
   }
   if (set.mode === 'day') wx.weather = 'clear';
+  try { if (typeof evFestOn === 'function' && evFestOn() && (wx.modeId === 'party' || wx.modeId === 'snowfest' || (WX_RULES.wxWeatherAllowed && WX_RULES.wxWeatherAllowed('snow', wx.modeId)))) wx.weather = 'snow'; } catch (e){}
   const sky = WX_RULES.wxSky ? WX_RULES.wxSky(wx.modeId, clock.phase, wx.weather) : '#8fd3ff';
   const fog = WX_RULES.wxFog ? WX_RULES.wxFog(wx.modeId, clock.phase, wx.weather) : {color: sky, near:70, far:200};
   const dim = WX_RULES.wxLightScale ? WX_RULES.wxLightScale(clock.phase, wx.weather) : 1;
@@ -3461,7 +3543,371 @@ try {
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
+
+/* Pure seasonal-event rules — local dates, force flags, snowflakes, shop. */
+(function (root) {
+  'use strict';
+
+  const EV_KEY = 'rubloxSeason';
+  const EV_VER = 1;
+  const EV_HASH_RE = /(?:^|#|&)(?:snowfest|evtest)=([A-Za-z0-9_-]*)/i;
+
+  const EV_SEASONS = [
+    {
+      id: 'snow', name: 'Snow Festival', emoji: '❄️',
+      start: '12-01', end: '01-15',
+      currency: 'flakes', currencyName: 'Snowflakes', currencyEmoji: '❄️',
+      blurb: 'A cozy winter fair: toss snowballs, sled the hill, build a snowman, and skate the rink!',
+      color: '#cfe8ff'
+    },
+    {
+      id: 'bloom', name: 'Bloom Picnic', emoji: '🌸',
+      start: '03-20', end: '04-20',
+      placeholder: true,
+      currency: 'petals', currencyName: 'Petals', currencyEmoji: '🌸',
+      blurb: 'A spring picnic is planned for later — picnic blankets, flower crowns, and games in the sun.',
+      color: '#ffe4f0'
+    }
+  ];
+
+  const EV_SHOP = [
+    {id: 'ev-snow-hat', ev: 'snow', n: 'Snowflake Cap', e: '❄️', cost: 40, kind: 'hat', desc: 'A sparkly winter cap for the festival.'},
+    {id: 'ev-snow-scarf', ev: 'snow', n: 'Cozy Scarf', e: '🧣', cost: 30, kind: 'wear', desc: 'A warm scarf in festive red.'},
+    {id: 'ev-snow-boots', ev: 'snow', n: 'Frost Boots', e: '🥾', cost: 25, kind: 'wear', desc: 'Boots made for snowy strolls.'},
+    {id: 'ev-snow-pin', ev: 'snow', n: 'Festival Pin', e: '🎖️', cost: 15, kind: 'pin', desc: 'A shiny pin to remember the fair.'},
+    {id: 'ev-snow-skates', ev: 'snow', n: 'Ice Skates', e: '⛸️', cost: 50, kind: 'wear', desc: 'Skates for the festival rink.'}
+  ];
+
+  const EV_FLAKE = {
+    toss: 8, tossHit: 2, sled: 12, snowman: 20, skate: 6, skateRing: 2,
+    quest: 5, daily: 3
+  };
+
+  function evToday(now){
+    const d = now != null ? new Date(now) : new Date();
+    const y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate();
+    return y + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+  }
+
+  function evMd(now){
+    const d = now != null ? new Date(now) : new Date();
+    const m = d.getMonth() + 1, day = d.getDate();
+    return (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+  }
+
+  function evInWindow(md, start, end){
+    if (!md || !start || !end) return false;
+    if (start <= end) return md >= start && md <= end;
+    return md >= start || md <= end; // wraps the new year
+  }
+
+  function evSeasonById(id){ return EV_SEASONS.find(s => s.id === id) || null; }
+
+  function evHashForce(hash){
+    const m = EV_HASH_RE.exec(String(hash || ''));
+    if (!m) return '';
+    const v = String(m[1] || 'snow').toLowerCase();
+    if (v === '0' || v === 'off' || v === 'no') return '';
+    if (v === '1' || v === 'on' || v === 'true' || v === '' || v === 'snowfest') return 'snow';
+    return evSeasonById(v) ? v : 'snow';
+  }
+
+  function evFresh(){
+    return {ver: EV_VER, force: '', flakes: 0, inv: {}, wear: '', best: {}, done: {}, earned: 0, spent: 0, daily: ''};
+  }
+
+  function evLoad(raw){
+    const o = raw && typeof raw === 'object' ? raw : null;
+    const s = evFresh();
+    if (!o) return s;
+    if (o.force === 'snow' || o.force === 'bloom' || o.force === '') s.force = o.force;
+    s.flakes = Math.max(0, o.flakes | 0);
+    s.earned = Math.max(0, o.earned | 0);
+    s.spent = Math.max(0, o.spent | 0);
+    s.wear = typeof o.wear === 'string' ? o.wear.slice(0, 24) : '';
+    s.daily = typeof o.daily === 'string' ? o.daily : '';
+    if (o.inv && typeof o.inv === 'object') for (const k in o.inv) if (o.inv[k]) s.inv[String(k)] = 1;
+    if (o.best && typeof o.best === 'object') {
+      const b = {};
+      if (o.best.toss != null) b.toss = Math.max(0, o.best.toss | 0);
+      if (o.best.sled != null && isFinite(+o.best.sled)) b.sled = Math.max(0, +o.best.sled);
+      if (o.best.skate != null) b.skate = Math.max(0, o.best.skate | 0);
+      if (o.best.snowman != null) b.snowman = Math.max(0, o.best.snowman | 0);
+      s.best = b;
+    }
+    if (o.done && typeof o.done === 'object') for (const k in o.done) if (o.done[k]) s.done[String(k)] = 1;
+    if (s.wear && !s.inv[s.wear]) s.wear = '';
+    return s;
+  }
+
+  function evIsOn(id, now, opts){
+    opts = opts || {};
+    const want = id || 'snow';
+    const forced = opts.force || evHashForce(opts.hash) || (opts.state && opts.state.force) || '';
+    if (forced) return forced === want;
+    const s = evSeasonById(want);
+    if (!s || s.placeholder) return false;
+    return evInWindow(evMd(now), s.start, s.end);
+  }
+
+  function evActive(now, opts){
+    opts = opts || {};
+    const forced = opts.force || evHashForce(opts.hash) || (opts.state && opts.state.force) || '';
+    if (forced) return evSeasonById(forced) && !evSeasonById(forced).placeholder ? evSeasonById(forced) : evSeasonById('snow');
+    for (const s of EV_SEASONS){
+      if (s.placeholder) continue;
+      if (evInWindow(evMd(now), s.start, s.end)) return s;
+    }
+    return null;
+  }
+
+  function evNext(now){
+    const md = evMd(now);
+    const d = now != null ? new Date(now) : new Date();
+    const y = d.getFullYear();
+    function nextDate(s){
+      const [sm, sd] = s.start.split('-').map(Number);
+      let when = new Date(y, sm - 1, sd);
+      if (evMd(when) < md && !(s.start > s.end)) when = new Date(y + 1, sm - 1, sd);
+      if (s.start > s.end && md <= s.end) when = new Date(y, sm - 1, sd); // already in wrap? next is this year's start already passed
+      return when;
+    }
+    const upcoming = EV_SEASONS.slice().sort((a, b) => nextDate(a) - nextDate(b));
+    return upcoming[0] || null;
+  }
+
+  function evAward(state, n, why){
+    state = evLoad(state);
+    const add = Math.max(0, n | 0);
+    state.flakes += add;
+    state.earned += add;
+    return {state, add, why: why || '', flakes: state.flakes};
+  }
+
+  function evDaily(state, now){
+    state = evLoad(state);
+    const day = evToday(now);
+    if (state.daily === day) return {ok: false, why: 'claimed', state, add: 0};
+    state.daily = day;
+    return evAward(state, EV_FLAKE.daily, 'daily');
+  }
+
+  function evBuy(state, itemId){
+    state = evLoad(state);
+    const it = EV_SHOP.find(x => x.id === itemId);
+    if (!it) return {ok: false, why: 'missing', state};
+    if (state.inv[it.id]) return {ok: false, why: 'owned', state};
+    if (state.flakes < it.cost) return {ok: false, why: 'flakes', state};
+    state.flakes -= it.cost;
+    state.spent += it.cost;
+    state.inv[it.id] = 1;
+    return {ok: true, why: 'ok', state, item: it};
+  }
+
+  function evWear(state, itemId){
+    state = evLoad(state);
+    if (!itemId){ state.wear = ''; return {ok: true, why: 'off', state}; }
+    if (!state.inv[itemId]) return {ok: false, why: 'owned', state};
+    state.wear = state.wear === itemId ? '' : itemId;
+    return {ok: true, why: state.wear ? 'on' : 'off', state};
+  }
+
+  function evNoteBest(state, key, value, higher){
+    state = evLoad(state);
+    const v = +value;
+    if (!isFinite(v)) return {ok: false, state, better: false};
+    const prev = state.best[key];
+    const better = prev == null || (higher ? v > prev : v < prev);
+    if (better) state.best[key] = v;
+    state.done[key] = 1;
+    return {ok: true, state, better, best: state.best[key]};
+  }
+
+  function evShopFor(evId){ return EV_SHOP.filter(x => x.ev === (evId || 'snow')); }
+
+  const api = {
+    EV_KEY, EV_VER, EV_HASH_RE, EV_SEASONS, EV_SHOP, EV_FLAKE,
+    evToday, evMd, evInWindow, evSeasonById, evHashForce, evFresh, evLoad,
+    evIsOn, evActive, evNext, evAward, evDaily, evBuy, evWear, evNoteBest, evShopFor
+  };
+  root.EVRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+/* Pure personal / room leaderboard rules — no backend, names already in-game. */
+(function (root) {
+  'use strict';
+
+  const LB_KEY = 'rubloxBoard';
+  const LB_VER = 1;
+
+  // kind: 'high' bigger is better, 'low' smaller (times) is better.
+  const LB_ROWS = [
+    {id: 'tower-best', name: 'Tower of Doom — best height', emoji: '🗼', kind: 'high', unit: 'm'},
+    {id: 'tower-time', name: 'Tower of Doom — fastest win', emoji: '⏱️', kind: 'low', unit: 's'},
+    {id: 'obby-done', name: 'Obby Rush — levels beaten', emoji: '🏃', kind: 'high', unit: ''},
+    {id: 'obby-time', name: 'Obby Rush — best level time', emoji: '🏁', kind: 'low', unit: 's'},
+    {id: 'race-best', name: 'Pet Kart — best race', emoji: '🏎️', kind: 'low', unit: 's'},
+    {id: 'splash-best', name: "Don't Splash! — best time", emoji: '🌊', kind: 'low', unit: 's'},
+    {id: 'lava-best', name: 'Lava Escape — best height', emoji: '🌋', kind: 'high', unit: 'm'},
+    {id: 'nds-best', name: 'Disaster Island — best streak', emoji: '🌪️', kind: 'high', unit: ''},
+    {id: 'quest-streak', name: 'Daily Quests — best streak', emoji: '🔥', kind: 'high', unit: ''},
+    {id: 'lh-tickets', name: 'Lantern Big Top — tickets', emoji: '🎟️', kind: 'high', unit: ''},
+    {id: 'snow-toss', name: 'Snowball toss — best score', emoji: '❄️', kind: 'high', unit: ''},
+    {id: 'snow-sled', name: 'Sled hill — best time', emoji: '🛷', kind: 'low', unit: 's'},
+    {id: 'snow-skate', name: 'Ice rink — best score', emoji: '⛸️', kind: 'high', unit: ''}
+  ];
+
+  function lbFresh(){ return {ver: LB_VER, best: {}, name: ''}; }
+
+  function lbLoad(raw){
+    const s = lbFresh();
+    const o = raw && typeof raw === 'object' ? raw : null;
+    if (!o) return s;
+    if (o.best && typeof o.best === 'object'){
+      for (const k in o.best){
+        const v = +o.best[k];
+        if (isFinite(v)) s.best[String(k)] = v;
+      }
+    }
+    if (typeof o.name === 'string') s.name = o.name.slice(0, 16);
+    return s;
+  }
+
+  function lbMinPos(obj){
+    let best = null;
+    if (!obj || typeof obj !== 'object') return null;
+    for (const k in obj){
+      const v = +obj[k];
+      if (!isFinite(v) || v <= 0) continue;
+      if (best == null || v < best) best = v;
+    }
+    return best;
+  }
+
+  function lbSnapshot(saves, extra){
+    saves = saves || {};
+    extra = extra && typeof extra === 'object' ? extra : {};
+    const tower = saves.tower || {};
+    const obby = saves.obby || {};
+    const race = saves.race || {};
+    const splash = saves.splash || {};
+    const season = saves.season || {};
+    const quests = saves.quests || {};
+    const lantern = saves.lantern || {};
+    const board = lbLoad(saves.board);
+    const out = {};
+    const set = (id, v) => { if (v != null && isFinite(+v)) out[id] = +v; };
+
+    set('tower-best', tower.best | 0 ? (tower.best | 0) : null);
+    set('tower-time', tower.winTime != null ? +tower.winTime : (board.best['tower-time'] != null ? board.best['tower-time'] : (extra['tower-time'] != null ? extra['tower-time'] : null)));
+    const done = obby.done && typeof obby.done === 'object' ? Object.keys(obby.done).length : 0;
+    set('obby-done', done || null);
+    set('obby-time', lbMinPos(obby.best));
+    set('race-best', lbMinPos(race.best));
+    set('splash-best', lbMinPos(splash.best));
+    set('lava-best', saves.lava != null && +saves.lava > 0 ? +saves.lava : null);
+    set('nds-best', saves.nds != null && +saves.nds > 0 ? +saves.nds : null);
+    const streak = Math.max(quests.streak | 0, board.best['quest-streak'] | 0);
+    set('quest-streak', streak || null);
+    const tickets = (lantern.tickets | 0) || (lantern.prog && (lantern.prog.tickets | 0)) || 0;
+    set('lh-tickets', tickets || null);
+    const sb = season.best || {};
+    set('snow-toss', sb.toss != null ? sb.toss : board.best['snow-toss']);
+    set('snow-sled', sb.sled != null ? sb.sled : board.best['snow-sled']);
+    set('snow-skate', sb.skate != null ? sb.skate : board.best['snow-skate']);
+    // extras / board can fill gaps
+    for (const id in board.best) if (out[id] == null) set(id, board.best[id]);
+    for (const id in extra) if (out[id] == null) set(id, extra[id]);
+    return out;
+  }
+
+  function lbNote(state, id, value){
+    state = lbLoad(state);
+    const row = LB_ROWS.find(r => r.id === id);
+    if (!row) return {ok: false, why: 'missing', state};
+    const v = +value;
+    if (!isFinite(v)) return {ok: false, why: 'value', state};
+    const prev = state.best[id];
+    const better = prev == null || (row.kind === 'high' ? v > prev : v < prev);
+    if (better) state.best[id] = v;
+    return {ok: true, why: 'ok', state, better, best: state.best[id]};
+  }
+
+  function lbFmt(id, value, fmtTime){
+    const row = LB_ROWS.find(r => r.id === id);
+    if (value == null || !isFinite(+value)) return '—';
+    const v = +value;
+    if (row && row.kind === 'low'){
+      if (typeof fmtTime === 'function') return fmtTime(v);
+      const m = Math.floor(v / 60), s = v - m * 60;
+      return m + ':' + s.toFixed(1).padStart(4, '0');
+    }
+    const n = (v === (v | 0)) ? String(v | 0) : String(Math.round(v * 10) / 10);
+    return n + (row && row.unit ? ' ' + row.unit : '');
+  }
+
+  function lbView(scores){
+    scores = scores || {};
+    return LB_ROWS.map(r => ({
+      id: r.id, name: r.name, emoji: r.emoji, kind: r.kind, unit: r.unit,
+      value: scores[r.id] != null && isFinite(+scores[r.id]) ? +scores[r.id] : null,
+      text: lbFmt(r.id, scores[r.id])
+    })).filter(r => r.value != null);
+  }
+
+  function lbCleanName(name){
+    return String(name || 'Friend').replace(/[<>]/g, '').slice(0, 16) || 'Friend';
+  }
+
+  // Room table: list of {uid, name, scores}. Rank each row among real players only.
+  function lbRoomTable(list, rowId){
+    const row = LB_ROWS.find(r => r.id === rowId);
+    if (!row) return [];
+    const people = (Array.isArray(list) ? list : []).map(p => ({
+      uid: String(p.uid || ''),
+      name: lbCleanName(p.name),
+      value: p.scores && isFinite(+p.scores[rowId]) ? +p.scores[rowId] : null
+    }));
+    const ranked = people.filter(p => p.value != null).sort((a, b) => row.kind === 'high' ? b.value - a.value : a.value - b.value);
+    ranked.forEach((p, i) => { p.rank = i + 1; p.text = lbFmt(rowId, p.value); });
+    return ranked;
+  }
+
+  function lbWire(scores){
+    const o = {};
+    const src = scores || {};
+    LB_ROWS.forEach(r => { if (src[r.id] != null && isFinite(+src[r.id])) o[r.id] = +src[r.id]; });
+    return o;
+  }
+
+  const api = {
+    LB_KEY, LB_VER, LB_ROWS,
+    lbFresh, lbLoad, lbMinPos, lbSnapshot, lbNote, lbFmt, lbView,
+    lbCleanName, lbRoomTable, lbWire
+  };
+  root.LBRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+function evFestOn(){
+  try {
+    if (typeof EVRules === 'undefined') return false;
+    const raw = (typeof load === 'function') ? load(EVRules.EV_KEY, null) : null;
+    return !!EVRules.evIsOn('snow', Date.now(), {hash: (typeof location !== 'undefined' && location.hash) || '', state: EVRules.evLoad(raw)});
+  } catch (e){ return false; }
+}
+function evBootChrome(){
+  try {
+    const on = evFestOn();
+    if (document.documentElement) document.documentElement.classList.toggle('snowfest-on', on);
+    if (document.body) document.body.classList.toggle('snowfest-on', on);
+  } catch (e){}
+}
+try { evBootChrome(); } catch (e){}
+
 const GAMES = [
+  {id:'snowfest', name:'Snow Festival', emoji:'❄️', tag:'A winter fair: snowball toss, sled hill, snowman building, and ice skating!', draw: drawSnowFest, playable: true, isNew: true},
   {id:'party', name:'Party Pad', emoji:'🎉', tag:'A cozy hangout for friends: dance, sit, snap a photo, kick the ball!', draw: drawParty, playable: true, isNew: true},
   {id:'lantern', name:'Lantern Big Top', emoji:'🏮', tag:'Stay close and stay bright under a colorful circus tent!', draw: drawLantern, playable: true, isNew: true},
   {id:'dreamhouse', name:'Dream House Builders', emoji:'🏡', tag:'Re-build your house with bricks, paint, furniture and upgrades!', draw: drawDreamHouse, playable: true, isNew: true},
@@ -3559,6 +4005,22 @@ function drawDance(ctx){
   ctx.font = '26px sans-serif'; ['←','↓','↑','→'].forEach((a, i) => { ctx.fillStyle = '#fff'; ctx.fillText(a, 70 + i * 50, 80); });
   guy(ctx, 160, 160, 12, '#ff6fb5'); ctx.font = '22px sans-serif'; ctx.fillText('💃', 40, 60); ctx.fillText('🎵', 260, 60);
 }
+function drawSnowFest(ctx){
+  if (!ctx) return;
+  if (typeof sky === 'function') sky(ctx, '#c8def6', '#f7fbff');
+  else { ctx.fillStyle = '#c8def6'; ctx.fillRect(0, 0, 320, 200); }
+  ctx.fillStyle = '#f4fbff'; ctx.fillRect(0, 150, 320, 50);
+  ctx.fillStyle = '#dbeaf8'; ctx.fillRect(0, 148, 320, 8);
+  ctx.fillStyle = '#1f7a4c';
+  ctx.beginPath(); ctx.moveTo(50, 150); ctx.lineTo(70, 90); ctx.lineTo(90, 150); ctx.fill();
+  ctx.fillStyle = '#c45c4a'; ctx.fillRect(240, 110, 50, 40); ctx.fillStyle = '#6b3c2a'; ctx.fillRect(248, 90, 34, 22);
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(160, 135, 18, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(160, 112, 13, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#ff9f1c'; ctx.fillRect(156, 110, 12, 4);
+  if (typeof guy === 'function') guy(ctx, 200, 150, 12, '#3a86ff');
+  ctx.font = '22px sans-serif'; ctx.fillText('❄️', 30, 50); ctx.fillText('🛷', 270, 60); ctx.fillText('⛸️', 120, 70);
+}
+
 function drawParty(ctx){
     if (!ctx) return;
     if (typeof sky === 'function') sky(ctx, '#f6c58a', '#ffe9c4');
@@ -3835,7 +4297,8 @@ function drawNds(ctx){
 }
 function buildGames(){
   const grid = $('#grid'); grid.innerHTML = '';
-  GAMES.forEach((g, i) => {
+  const evList = GAMES.filter(g => g.id !== 'snowfest' || (typeof evFestOn === 'function' && evFestOn()));
+  evList.forEach((g, i) => {
     const card = document.createElement('div');
     card.className = 'card'; card.dataset.game = g.id; card.style.animationDelay = (i * .08) + 's';
     card.innerHTML = `<canvas width="320" height="200"></canvas>${g.isNew ? '<span class="badge play">✨ New!</span>' : g.playable ? '<span class="badge play">🎉 Play now!</span>' : '<span class="badge">🚧 Coming soon</span>'}
@@ -4188,6 +4651,7 @@ function confetti(){
     {id: 'lantern', name: 'Lantern Big Top', emoji: '🏮'},
     {id: 'collection', name: 'Collection', emoji: '🪙'},
     {id: 'quests', name: 'Daily Quests', emoji: '📜'},
+    {id: 'season', name: 'Seasons', emoji: '❄️'},
   ];
   // Known Adopt-a-Pet rarities so backfill works even before PET_KINDS is in scope.
   const ACH_PET_R = {mouse:0,cat:0,dog:0,bunny:0,hamster:0,duck:1,frog:1,turtle:1,hedgehog:1,fox:2,penguin:2,owl:2,koala:2,pie:2,redpanda:3,snowleo:3,phoenix:3,unicorn:4,dragon:4};
@@ -4297,6 +4761,11 @@ function confetti(){
     {id:'quest-ten', cat:'quests', emoji:'⭐', name:'Quest Fan', desc:'Claim 10 daily quests.', coins:20, prove:s => !!(s.quests && (s.quests.totalClaimed|0) >= 10)},
     {id:'trade-first', cat:'friends', emoji:'🤝', name:'Fair Trade', desc:'Finish a trade with a friend in the same room.', coins:15, prove:s => !!(s.notes && s.notes['trade-done'])},
     {id:'party-first', cat:'friends', emoji:'🎉', name:'Party Starter', desc:'Visit the Party Pad.', coins:8, prove:s => !!(s.notes && (s.notes['play:party'] || s.notes['party-first']))},
+    {id:'ev-snow-visit', cat:'season', emoji:'❄️', name:'Festival Friend', desc:'Visit the Snow Festival grounds.', coins:8, prove:s => !!(s.notes && (s.notes['ev-snow-visit'] || s.notes['play:snowfest']))},
+    {id:'ev-snow-flakes', cat:'season', emoji:'✨', name:'Flurry of Flakes', desc:'Earn 25 snowflakes at the festival.', coins:12, prove:s => !!(s.notes && s.notes['ev-snow-flakes']) || !!(s.season && (s.season.earned|0) >= 25)},
+    {id:'ev-snow-shop', cat:'season', emoji:'🎁', name:'Souvenir Shelf', desc:'Buy a Snow Festival item with snowflakes.', coins:12, prove:s => !!(s.notes && s.notes['ev-snow-shop'])},
+    {id:'ev-snow-snowman', cat:'season', emoji:'⛄', name:'Snow Pal', desc:'Build a snowman at the festival.', coins:12, prove:s => !!(s.notes && s.notes['ev-snow-snowman']) || !!(s.season && s.season.done && s.season.done.snowman)},
+    {id:'ev-snow-all', cat:'season', emoji:'🏅', name:'Winter Circuit', desc:'Try the toss, the sled hill, the snowman, and the ice rink.', coins:20, prove:s => !!(s.notes && s.notes['ev-snow-all'])},
                 // Collection
     {id:'welcome', cat:'collection', emoji:'👋', name:'Hello, Friend', desc:'Pick a player name and join Rublox.', coins:5, prove:s => !!(s.player && s.player.name)},
     {id:'first-game', cat:'collection', emoji:'🎮', name:'Let\'s Play', desc:'Start any Rublox game.', coins:5, prove:s => !!(s.notes && s.notes.play) || !!(s.recent && s.recent.length >= 1)},
@@ -8876,14 +9345,14 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; py = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
-    if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; py = null; evg = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
+    if (mode === 'snowfest') buildSnowFest(); else if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
     else if (mode === 'build') [[-40,22,30,2.5],[45,28,-20,3],[0,35,-60,3.5],[-30,18,-40,2]].forEach(a => cloud(...a));
     else if (mode === 'pets') [[-50,30,-40,3],[40,34,-10,3.5],[-20,38,40,3],[30,30,80,3.5],[-60,32,90,3]].forEach(a => cloud(...a));
-    else if (mode !== 'tag' && mode !== 'obby' && mode !== 'lantern' && mode !== 'dreamhouse' && mode !== 'party') [[-30,10,40,2],[35,18,80,2.5],[-40,25,130,3],[30,8,20,1.5],[25,30,170,2.5],[-25,5,95,1.8],[0,40,230,4]].forEach(a => cloud(...a));
+    else if (mode !== 'tag' && mode !== 'obby' && mode !== 'lantern' && mode !== 'dreamhouse' && mode !== 'party' && mode !== 'snowfest') [[-30,10,40,2],[35,18,80,2.5],[-40,25,130,3],[30,8,20,1.5],[25,30,170,2.5],[-25,5,95,1.8],[0,40,230,4]].forEach(a => cloud(...a));
     // player + shadow
     model = buildPlayer(avatar); scene.add(model.g);
     blob = new THREE.Mesh(new THREE.CircleGeometry(.6, 20), new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: .25, depthWrite: false}));
@@ -9831,7 +10300,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
       ejectXZ(axis, B, b);
     }
   }
@@ -10645,6 +11114,7 @@ const Obby = (() => {
     else if (d.t === 'lh'){ try { if (typeof lhFromGuest === 'function') lhFromGuest(g, d); } catch (e){} }
     else if (d.t === 'tr'){ try { if (typeof trFromGuest === 'function') trFromGuest(g, d); } catch (e){} }
     else if (d.t === 'py'){ try { if (typeof partyFromGuest === 'function') partyFromGuest(g, d); } catch (e){} }
+    else if (d.t === 'lb'){ try { if (typeof lbFromGuest === 'function') lbFromGuest(g, d); } catch (e){} }
   }
   function mpTagReq(g, d){
     const T = tg;
@@ -10699,6 +11169,7 @@ const Obby = (() => {
       case 'lh': try { if (typeof lhFromHost === 'function') lhFromHost(d); } catch (e){} break;
       case 'tr': try { if (typeof trFromHost === 'function') trFromHost(d); } catch (e){} break;
       case 'py': try { if (typeof partyFromHost === 'function') partyFromHost(d); } catch (e){} break;
+      case 'lb': try { if (typeof lbFromHost === 'function') lbFromHost(d); } catch (e){} break;
     }
   }
   function mpSnap(d){
@@ -16646,6 +17117,7 @@ const Obby = (() => {
     const bonus = 40 + Math.floor(maxY / 4), p = tdProg(); p.wins++; p.best = Math.max(p.best, Math.floor(maxY)); p.coins += bonus; save(TD_KEY, p);
     setCoins(coins + bonus); td.earned = bonus; runCoins = (runCoins || 0) + bonus; confetti(); SND.win();
     try { if (typeof qNoteHook === 'function') qNoteHook('tower-win', 1); } catch (e){}
+    try { if (typeof lbRecord === 'function' && td) lbRecord('tower-time', td.t); } catch (e){}
     banner('🏆 Summit! You beat the Tower of Doom! +' + bonus + ' 🪙');
     $('#oWin').classList.add('show');
     $('#oWinStats').innerHTML = '🗼 Tower of Doom cleared!<br>⏱️ ' + fmt(td.t, true) + ' · 📏 ' + Math.floor(maxY) + 'm<br>🎁 +' + bonus + ' Rublox Coins';
@@ -27270,7 +27742,7 @@ function dhLayoutHud(){
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest'){ // pull the camera in front of walls so buildings don't block the view
       dist = clipOrbitCam(tx, ty, tz, cam.dist, mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2);
     }
     camera.position.set(tx + Math.sin(cam.yaw) * cp * dist, ty + Math.sin(cam.pitch) * dist, tz + Math.cos(cam.yaw) * cp * dist);
@@ -27477,7 +27949,7 @@ function dhLayoutHud(){
       if (ic) iceCreamUpdate(dt);
       if (ph) petHotelUpdate(dt);
       if (sb) stableUpdate(dt);
-      if (py) partyUpdate(dt); if (lh) lanternUpdate(dt);
+      if (evg) snowfestUpdate(dt); if (py) partyUpdate(dt); if (lh) lanternUpdate(dt);
       if (hm) hauntUpdate(dt);
       if (db) danceUpdate(dt);
       if (dh) dreamhouseUpdate(dt);
@@ -28060,7 +28532,7 @@ function dhLayoutHud(){
   }
 
 function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party', 'snowfest'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     recordRecentGame(mode);
@@ -28159,6 +28631,10 @@ function start(m = 'obby', d = null){
     { const _pyb = $('#pyBox'); if (_pyb) _pyb.style.display = mode === 'party' ? '' : 'none'; const _pya = $('#pyAct'); if (_pya && mode !== 'party') _pya.classList.remove('show'); }
     $('#obby').classList.toggle('pymode', mode === 'party');
     if (mode === 'party') partyEnter();
+    { const _eb = $('#evgBox'); if (_eb) _eb.style.display = mode === 'snowfest' ? '' : 'none'; const _ea = $('#evgAct'); if (_ea && mode !== 'snowfest') _ea.classList.remove('show'); }
+    $('#obby').classList.toggle('evmode', mode === 'snowfest');
+    if (mode === 'snowfest') snowfestEnter();
+    try { if (typeof lbShare === 'function') lbShare(); } catch (e){}
     try { if (typeof qBind === 'function') qBind(); if (typeof trBind === 'function') trBind(); if (typeof trTickHud === 'function') trTickHud(); } catch (e){}
     $('#hmBox').style.display = mode === 'haunt' ? '' : 'none'; ['#hmAct'].forEach(id => $(id).classList.remove('show'));
     if (mode === 'haunt'){ if (!window.__hmBound){ window.__hmBound = true; $('#hmAct').onclick = () => hmAct(); }
@@ -28993,6 +29469,7 @@ function start(m = 'obby', d = null){
       setCoins(cur + amt);
     } catch (e){}
     try { if (typeof toast === 'function') toast((label || 'Quest complete!') + ' +' + amt + ' 🪙'); } catch (e){}
+    try { if (typeof evOn === 'function' && evOn() && typeof evGive === 'function') evGive((typeof EV_API !== 'undefined' && EV_API && EV_API.EV_FLAKE) ? EV_API.EV_FLAKE.quest : 5, 'Quest'); } catch (e){}
     try { if (typeof SND !== 'undefined' && SND.coin) SND.coin(); } catch (e){}
   }
 
@@ -29643,6 +30120,7 @@ function start(m = 'obby', d = null){
     checkpoints[0] = {idx: 0, spawn: {x: R.spawn.x, y: R.spawn.y, z: R.spawn.z}, flag: new THREE.Object3D()};
     P.x = R.spawn.x; P.y = R.spawn.y; P.z = R.spawn.z; P.face = R.spawn.face; P.vx = P.vy = P.vz = 0;
   }
+    try { if (typeof evDecorParty === 'function') evDecorParty(); } catch (e){}
 
   function partyHud(){
     if (!py) return;
@@ -29815,6 +30293,722 @@ function start(m = 'obby', d = null){
 
   try { setTimeout(() => { try { qBind(); trBind(); qEnsure(); qPaint(); } catch (e){} }, 0); } catch (e){}
 
+
+  /* ---------- Seasonal events (t296u) — date-driven Snow Festival, snowflakes, shop ---------- */
+  let evState = null;
+  const EV_API = (typeof EVRules !== 'undefined' && EVRules) ? EVRules : (typeof window !== 'undefined' ? window.EVRules : null);
+
+  function evOpts(){
+    let hash = '';
+    try { hash = String((location && location.hash) || ''); } catch (e){}
+    return {hash, state: evEnsure(), now: Date.now()};
+  }
+
+  function evPersist(s){
+    evState = s;
+    try { if (typeof save === 'function') save(EV_API.EV_KEY, s); } catch (e){}
+    return s;
+  }
+
+  function evEnsure(){
+    if (!EV_API) return null;
+    if (evState) return evState;
+    try { evState = EV_API.evLoad(typeof load === 'function' ? load(EV_API.EV_KEY, null) : null); }
+    catch (e){ evState = EV_API.evFresh(); }
+    return evState;
+  }
+
+  function evOn(id){
+    if (!EV_API) return false;
+    try { return !!EV_API.evIsOn(id || 'snow', Date.now(), evOpts()); } catch (e){ return false; }
+  }
+
+  function evNowSeason(){
+    if (!EV_API) return null;
+    try { return EV_API.evActive(Date.now(), evOpts()); } catch (e){ return null; }
+  }
+
+  function evHashOn(){
+    try { return !!(EV_API && EV_API.evHashForce(String((location && location.hash) || ''))); } catch (e){ return false; }
+  }
+
+  function evSetForce(on){
+    const s = evEnsure(); if (!s) return;
+    s.force = on ? 'snow' : '';
+    evPersist(s);
+    evApplyChrome();
+  }
+
+  function evFlakes(){ const s = evEnsure(); return s ? (s.flakes | 0) : 0; }
+
+  function evGive(n, why){
+    if (!EV_API) return 0;
+    const r = EV_API.evAward(evEnsure(), n, why);
+    evPersist(r.state);
+    evPaintHud();
+    try { if (r.add && why && typeof toast === 'function') toast(why + ' +' + r.add + ' ❄️'); } catch (e){}
+    try { if (typeof achSweep === 'function') achSweep({silent: true, pay: true, source: 'season'}); } catch (e){}
+    try {
+      if (typeof achNote === 'function'){
+        if ((r.state.earned | 0) >= 25) achNote('ev-snow-flakes');
+      }
+    } catch (e){}
+    return r.add;
+  }
+
+  function evTryDaily(){
+    if (!EV_API || !evOn()) return;
+    const r = EV_API.evDaily(evEnsure(), Date.now());
+    if (r && r.add){ evPersist(r.state); evPaintHud(); try { toast('❄️ Festival hello! +' + r.add + ' snowflakes'); } catch (e){} }
+  }
+
+  function evBuyItem(id){
+    if (!EV_API) return;
+    const r = EV_API.evBuy(evEnsure(), id);
+    if (!r.ok){
+      try { banner(r.why === 'flakes' ? '❄️ You need more snowflakes for that.' : r.why === 'owned' ? 'You already have that!' : 'That item is not in the shop.'); } catch (e){}
+      return;
+    }
+    evPersist(r.state);
+    evPaintShop(); evPaintHud();
+    try { if (typeof SND !== 'undefined' && SND.coin) SND.coin(); } catch (e){}
+    try { toast('🎁 ' + r.item.n + ' is yours!'); } catch (e){}
+    try { if (typeof achNote === 'function') achNote('ev-snow-shop'); } catch (e){}
+  }
+
+  function evToggleWear(id){
+    if (!EV_API) return;
+    const r = EV_API.evWear(evEnsure(), id);
+    evPersist(r.state);
+    evPaintShop();
+  }
+
+  function evMark(key, value, higher){
+    if (!EV_API) return;
+    const r = EV_API.evNoteBest(evEnsure(), key, value, higher);
+    evPersist(r.state);
+    try { if (typeof lbFromSeason === 'function') lbFromSeason(); } catch (e){}
+    try {
+      if (typeof achNote === 'function'){
+        if (key === 'snowman') achNote('ev-snow-snowman');
+        const d = evEnsure().done || {};
+        if (d.toss && d.sled && d.snowman && d.skate) achNote('ev-snow-all');
+      }
+    } catch (e){}
+    return r;
+  }
+
+  function evPaintHud(){
+    const on = evOn();
+    const chip = document.getElementById('evChip');
+    const n = document.getElementById('evChipNum');
+    if (chip) chip.style.display = on ? '' : 'none';
+    if (n) n.textContent = String(evFlakes());
+    const ban = document.getElementById('evBanner');
+    if (ban) ban.style.display = on ? '' : 'none';
+    const next = document.getElementById('evNextNote');
+    if (next && EV_API){
+      const cur = evNowSeason();
+      if (cur){ next.style.display = 'none'; }
+      else {
+        const nx = EV_API.evNext(Date.now());
+        next.style.display = '';
+        next.textContent = nx ? (nx.emoji + ' Coming later: ' + nx.name + (nx.placeholder ? ' — a placeholder for the next season.' : '')) : '';
+      }
+    }
+  }
+
+  function evPaintShop(){
+    const box = document.getElementById('evShopList');
+    if (!box || !EV_API) return;
+    const s = evEnsure();
+    const list = EV_API.evShopFor('snow');
+    box.innerHTML = list.map(it => {
+      const owned = !!(s.inv && s.inv[it.id]);
+      const wear = s.wear === it.id;
+      const btn = owned
+        ? '<button type="button" class="big ' + (wear ? 'green' : '') + ' evwear" data-id="' + it.id + '">' + (wear ? '✅ Wearing' : 'Wear') + '</button>'
+        : '<button type="button" class="big green evbuy" data-id="' + it.id + '"' + (s.flakes < it.cost ? ' disabled' : '') + '>Buy · ' + it.cost + ' ❄️</button>';
+      return '<div class="evitem"><span class="evem">' + it.e + '</span><div><b>' + it.n + '</b><small>' + it.desc + '</small></div>' + btn + '</div>';
+    }).join('');
+    const bal = document.getElementById('evShopBal');
+    if (bal) bal.textContent = '❄️ ' + evFlakes() + ' snowflakes';
+    box.querySelectorAll('.evbuy').forEach(b => { b.onclick = ev => { ev.preventDefault(); evBuyItem(b.getAttribute('data-id')); }; });
+    box.querySelectorAll('.evwear').forEach(b => { b.onclick = ev => { ev.preventDefault(); evToggleWear(b.getAttribute('data-id')); }; });
+  }
+
+  function evOpenShop(on){
+    evPaintShop(); evPaintHud();
+    const p = document.getElementById('evShop');
+    if (p) p.classList.toggle('show', on !== false);
+  }
+
+  function evCloseShop(){ const p = document.getElementById('evShop'); if (p) p.classList.remove('show'); }
+
+  function evApplyChrome(){
+    const on = evOn();
+    try { document.documentElement.classList.toggle('snowfest-on', on); document.body.classList.toggle('snowfest-on', on); } catch (e){}
+    evPaintHud();
+    evEnsureSnowDom();
+    const tg = document.getElementById('evForceSnow');
+    if (tg){
+      const s = evEnsure();
+      tg.checked = !!(s && s.force === 'snow') || evHashOn();
+      tg.disabled = evHashOn();
+    }
+    try {
+      if (typeof renderGames === 'function') renderGames();
+      else if (typeof drawGames === 'function') drawGames();
+    } catch (e){}
+  }
+
+  function evEnsureSnowDom(){
+    let layer = document.getElementById('evSnowLayer');
+    if (!layer){
+      layer = document.createElement('div');
+      layer.id = 'evSnowLayer';
+      layer.setAttribute('aria-hidden', 'true');
+      for (let i = 0; i < 28; i++){
+        const f = document.createElement('i');
+        f.style.left = (Math.random() * 100) + '%';
+        f.style.animationDelay = (Math.random() * 6) + 's';
+        f.style.animationDuration = (7 + Math.random() * 7) + 's';
+        f.style.opacity = String(0.45 + Math.random() * 0.5);
+        f.style.fontSize = (10 + Math.random() * 14) + 'px';
+        f.textContent = '❄';
+        layer.appendChild(f);
+      }
+      document.body.appendChild(layer);
+    }
+  }
+
+  function evDecorParty(api){
+    if (!evOn() || !api || typeof scene === 'undefined') return;
+    try {
+      const tree = new THREE.Mesh(new THREE.ConeGeometry(1.1, 2.6, 8), new THREE.MeshLambertMaterial({color: '#1f7a4c'}));
+      tree.position.set(-8, 2.0, 8); scene.add(tree);
+      const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.5, 0.5, 8), new THREE.MeshLambertMaterial({color: '#8d5524'}));
+      pot.position.set(-8, 0.35, 8); scene.add(pot);
+      [[-6, 9], [6, 9], [-10, -6], [10, -6]].forEach(([x, z]) => {
+        if (typeof plat === 'function') plat(x, 0.7, z, 1.8, 1.8, '#f4fbff', 0.7);
+      });
+    } catch (e){}
+  }
+
+  function evWxForce(modeId){
+    if (!evOn()) return null;
+    if (modeId === 'party' || modeId === 'snowfest') return 'snow';
+    try {
+      if (typeof WX_RULES !== 'undefined' && WX_RULES.wxWeatherAllowed && WX_RULES.wxWeatherAllowed('snow', modeId)) return 'snow';
+    } catch (e){}
+    return null;
+  }
+
+  function evBind(){
+    if (window.__evBound) return;
+    window.__evBound = true;
+    evEnsure(); evEnsureSnowDom(); evApplyChrome(); evTryDaily();
+    const force = document.getElementById('evForceSnow');
+    if (force) force.addEventListener('change', () => evSetForce(!!force.checked));
+    const open = document.getElementById('evShopBtn');
+    if (open) open.addEventListener('click', ev => { ev.preventDefault(); evOpenShop(true); });
+    const close = document.getElementById('evShopClose');
+    if (close) close.addEventListener('click', ev => { ev.preventDefault(); evCloseShop(); });
+    const pan = document.getElementById('evShop');
+    if (pan) pan.addEventListener('click', ev => { if (ev.target === pan) evCloseShop(); });
+    const play = document.getElementById('evPlayBtn');
+    if (play) play.addEventListener('click', ev => { ev.preventDefault(); try { if (typeof Obby !== 'undefined' && Obby.play) Obby.play('snowfest'); } catch (e){} });
+    window.addEventListener('hashchange', () => evApplyChrome());
+  }
+
+  /* ---------- Leaderboard (t296u) — personal bests + friends in this room, no backend ---------- */
+  let lbState = null, lbRoom = {}, lbTab = 'me';
+  const LB_API = (typeof LBRules !== 'undefined' && LBRules) ? LBRules : (typeof window !== 'undefined' ? window.LBRules : null);
+
+  function lbPersist(s){
+    lbState = s;
+    try { if (typeof save === 'function') save(LB_API.LB_KEY, s); } catch (e){}
+    return s;
+  }
+
+  function lbEnsure(){
+    if (!LB_API) return null;
+    if (lbState) return lbState;
+    try { lbState = LB_API.lbLoad(typeof load === 'function' ? load(LB_API.LB_KEY, null) : null); }
+    catch (e){ lbState = LB_API.lbFresh(); }
+    return lbState;
+  }
+
+  function lbSaves(){
+    const L = (k, d) => { try { return typeof load === 'function' ? load(k, d) : d; } catch (e){ return d; } };
+    return {
+      tower: L('rubloxTower', null),
+      obby: L('rubloxObby', null),
+      race: L('rubloxRace', null),
+      splash: L('rubloxSplash2', null),
+      lava: L('rubloxLavaBest', 0),
+      nds: L('rubloxNdsBest', 0),
+      quests: L('rubloxQuests', null),
+      lantern: L('rubloxLantern', null),
+      season: L('rubloxSeason', null),
+      board: evStateOrBoard()
+    };
+  }
+
+  function evStateOrBoard(){ return lbEnsure(); }
+
+  function lbMine(){
+    if (!LB_API) return {};
+    return LB_API.lbSnapshot(lbSaves(), lbEnsure() && lbEnsure().best);
+  }
+
+  function lbRecord(id, value){
+    if (!LB_API) return;
+    const r = LB_API.lbNote(lbEnsure(), id, value);
+    if (r.ok) lbPersist(r.state);
+    lbPaint();
+    lbShare();
+    return r;
+  }
+
+  function lbFromSeason(){ lbPaint(); lbShare(); }
+
+  function lbFmtTime(v){
+    const m = Math.floor(v / 60), s = v - m * 60;
+    return m + ':' + s.toFixed(1).padStart(4, '0');
+  }
+
+  function lbPaintMe(){
+    if (!LB_API) return;
+    const box = document.getElementById('lbMe'); if (!box) return;
+    const rows = LB_API.lbView(lbMine());
+    if (!rows.length){
+      box.innerHTML = '<div class="lbempty">Play some games to fill your best scores! Everything here is saved on this device.</div>';
+      return;
+    }
+    box.innerHTML = rows.map(r => '<div class="lbrow"><span class="lbem">' + r.emoji + '</span><span class="lbname">' + r.name + '</span><b>' + LB_API.lbFmt(r.id, r.value, lbFmtTime) + '</b></div>').join('');
+  }
+
+  function lbPaintRoom(){
+    if (!LB_API) return;
+    const box = document.getElementById('lbRoom'); if (!box) return;
+    const inRoom = !!(typeof mp !== 'undefined' && mp && mp.on);
+    const note = document.getElementById('lbRoomNote');
+    if (note) note.textContent = inRoom
+      ? 'Live scores from friends in this room. Names are the ones already used in the game.'
+      : 'Join a room with a friend to compare your best scores live. There is no online server — just this room.';
+    const list = [];
+    const mineName = (() => { try { const p = typeof load === 'function' ? load('rubloxPlayer', {}) : {}; return (p && p.name) || 'You'; } catch (e){ return 'You'; } })();
+    const myUid = (typeof mp !== 'undefined' && mp && mp.me) ? mp.me : 'me';
+    list.push({uid: myUid, name: mineName, scores: lbMine()});
+    Object.keys(lbRoom).forEach(uid => {
+      if (uid === myUid) return;
+      list.push(lbRoom[uid]);
+    });
+    if (!inRoom && list.length <= 1){
+      box.innerHTML = '<div class="lbempty">No friends in a room right now. Host or join a game, and their best scores will show up here.</div>';
+      return;
+    }
+    const cats = (LB_API.LB_ROWS || []).filter(r => list.some(p => p.scores && p.scores[r.id] != null));
+    if (!cats.length){
+      box.innerHTML = '<div class="lbempty">No shared scores in this room yet. Play a game, then come back!</div>';
+      return;
+    }
+    box.innerHTML = cats.map(r => {
+      const ranked = LB_API.lbRoomTable(list, r.id);
+      if (!ranked.length) return '';
+      return '<div class="lbcat"><h3>' + r.emoji + ' ' + r.name + '</h3>' +
+        ranked.map(p => '<div class="lbrow"><span class="lbrank">' + p.rank + '</span><span class="lbname">' + p.name + '</span><b>' + p.text + '</b></div>').join('') + '</div>';
+    }).join('');
+  }
+
+  function lbPaint(){
+    lbPaintMe();
+    lbPaintRoom();
+    document.querySelectorAll('[data-lbtab]').forEach(b => b.classList.toggle('on', b.getAttribute('data-lbtab') === lbTab));
+    const me = document.getElementById('lbMe');
+    const rm = document.getElementById('lbRoomWrap');
+    if (me) me.style.display = lbTab === 'me' ? '' : 'none';
+    if (rm) rm.style.display = lbTab === 'room' ? '' : 'none';
+  }
+
+  function lbSetTab(tab){ lbTab = tab === 'room' ? 'room' : 'me'; lbPaint(); }
+
+  function lbShare(){
+    if (typeof mp === 'undefined' || !mp || !mp.on || !LB_API) return;
+    const msg = {t: 'lb', a: 'mine', scores: LB_API.lbWire(lbMine())};
+    try {
+      if (mp.host){ lbFromGuest({uid: mp.me, name: (load('rubloxPlayer', {}) || {}).name || 'You'}, msg); }
+      else if (typeof mpSend === 'function') mpSend(msg);
+    } catch (e){}
+  }
+
+  function lbBroadcastRoom(){
+    if (!mp || !mp.host) return;
+    const list = Object.keys(lbRoom).map(uid => ({uid, name: lbRoom[uid].name, scores: lbRoom[uid].scores}));
+    const msg = {t: 'lb', a: 'room', list};
+    try { if (typeof mpBroadcast === 'function') mpBroadcast(msg); } catch (e){}
+  }
+
+  function lbFromGuest(g, d){
+    if (!d || d.t !== 'lb' || !mp || !mp.host) return;
+    if (d.a === 'mine'){
+      const uid = (g && g.uid) || 'g';
+      const name = (g && g.name) || 'Friend';
+      lbRoom[uid] = {uid, name: LB_API.lbCleanName(name), scores: LB_API.lbWire(d.scores)};
+      lbBroadcastRoom();
+      lbPaint();
+    }
+  }
+
+  function lbFromHost(d){
+    if (!d || d.t !== 'lb') return;
+    if (d.a === 'room' && Array.isArray(d.list)){
+      const next = {};
+      d.list.forEach(p => {
+        if (!p || !p.uid) return;
+        next[p.uid] = {uid: p.uid, name: LB_API.lbCleanName(p.name), scores: LB_API.lbWire(p.scores)};
+      });
+      lbRoom = next;
+      lbPaint();
+    }
+  }
+
+  function lbOnJoin(){ lbShare(); }
+  function lbOnLeave(uid){
+    if (uid && lbRoom[uid]){ delete lbRoom[uid]; if (mp && mp.host) lbBroadcastRoom(); lbPaint(); }
+    if (uid === 'host'){ lbRoom = {}; lbPaint(); }
+  }
+
+  function lbDemoRoom(){
+    const mine = lbMine();
+    if (!mine['tower-best']) mine['tower-best'] = 12;
+    if (!mine['obby-done']) mine['obby-done'] = 4;
+    lbRoom = {
+      friend: {uid: 'friend', name: 'Sam', scores: {'tower-best': 20, 'obby-done': 2, 'quest-streak': 3, 'snow-toss': 9}},
+      pal: {uid: 'pal', name: 'Riley', scores: {'tower-best': 8, 'obby-done': 7, 'lava-best': 15}}
+    };
+    lbTab = 'room';
+    lbPaint();
+  }
+
+  function lbBind(){
+    if (window.__lbBound) return;
+    window.__lbBound = true;
+    lbEnsure();
+    document.querySelectorAll('[data-lbtab]').forEach(b => b.addEventListener('click', ev => { ev.preventDefault(); lbSetTab(b.getAttribute('data-lbtab')); }));
+    lbPaint();
+  }
+
+  /* ---------- Snow Festival grounds (t296u) — toss, sled, snowman, skate ---------- */
+  let evg = null;
+
+  function buildSnowFest(){
+    evg = {
+      trash: [], balls: [], rings: [], targets: [], carry: null, sled: false, sledT: 0,
+      tossHits: 0, skateGot: 0, man: {base:0, mid:0, head:0, face:0}, hint: '', act: '',
+      flash: 0
+    };
+    scene.background = new THREE.Color('#9ec0e0');
+    scene.fog = new THREE.Fog('#9ec0e0', 55, 140);
+    scene.traverse(o => {
+      if (o.isHemisphereLight){ o.intensity = 0.7; o.color.set('#f7fbff'); o.groundColor.set('#9bb3c9'); }
+      if (o.isDirectionalLight){ o.intensity = 0.45; o.color.set('#fff6e0'); o.position.set(20, 40, 10); }
+    });
+
+    // snow field + plaza
+    plat(0, 0, 4, 64, 72, '#d5e6f4', 1.2);
+    plat(0, 0.06, 2, 14, 14, '#c5d8ec', 0.06);
+    // rims
+    plat(0, 4, -32, 64, 1.2, '#d5e6f5', 4, {noEdge: true});
+    plat(0, 4, 40, 64, 1.2, '#d5e6f5', 4, {noEdge: true});
+    plat(-32, 4, 4, 1.2, 72, '#d5e6f5', 4, {noEdge: true});
+    plat(32, 4, 4, 1.2, 72, '#d5e6f5', 4, {noEdge: true});
+
+    // trees
+    [[-20, 14], [20, 14], [-24, -8], [24, -8], [-10, 28], [10, 28], [-22, 24], [22, 24]].forEach(([x, z]) => evgTree(x, z));
+
+    // festival tree
+    evgTree(0, -2, 1.5);
+    evgLabel('❄️ Snow Festival', 0, 6.2, -2, 'rgba(40,70,110,.92)');
+
+    // --- Ice rink (north / -Z) ---
+    evg.rink = plat(0, 0.08, -16, 16, 12, '#b9e4ff', 0.1);
+    evg.rink.ice = true;
+    evgLabel('⛸️ Ice rink — skate and grab flakes!', 0, 3.2, -22, 'rgba(40,90,140,.92)');
+    const ringSpots = [[-5,-16], [5,-16], [0,-12], [0,-20], [-4,-13], [4,-13], [-4,-19], [4,-19]];
+    ringSpots.forEach(([x, z], i) => {
+      const m = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.1, 8, 16), new THREE.MeshBasicMaterial({color: i % 2 ? '#5ad0ff' : '#ffe08a'}));
+      m.rotation.x = Math.PI / 2; m.position.set(x, 0.7, z); scene.add(m); evg.trash.push(m);
+      evg.rings.push({x, z, m, got: false});
+    });
+
+    // --- Snowball toss (east) ---
+    plat(18, 0.2, 2, 6, 6, '#e8f3ff', 0.2);
+    evgLabel('❄️ Snowball toss — press E / Ⓧ to throw!', 18, 3.4, -2, 'rgba(40,70,110,.92)');
+    [[24, 0.9, -2], [26, 1.6, 2], [24, 2.3, 6]].forEach(([x, y, z], i) => {
+      const t = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.2, 16), new THREE.MeshLambertMaterial({color: i === 2 ? '#ff6fb5' : '#ffd23f'}));
+      t.rotation.x = Math.PI / 2; t.position.set(x, y, z); scene.add(t); evg.trash.push(t);
+      evg.targets.push({x, y, z, m: t, hit: false, r: 0.7});
+    });
+
+    // --- Snowman (west) ---
+    plat(-18, 0.15, 2, 10, 8, '#eef7ff', 0.15);
+    evgLabel('⛄ Build a snowman — pick up 3 snowballs!', -18, 3.4, -3, 'rgba(40,70,110,.92)');
+    evg.manBase = {x: -18, z: 2};
+    evg.bits = [
+      {k: 'base', x: -22, z: 4, r: 0.7, got: false, m: evgBall(-22, 0.7, 4, 0.7)},
+      {k: 'mid', x: -22, z: 0, r: 0.55, got: false, m: evgBall(-22, 0.55, 0, 0.55)},
+      {k: 'head', x: -14, z: 4, r: 0.4, got: false, m: evgBall(-14, 0.4, 4, 0.4)}
+    ];
+    evg.manParts = [];
+
+    // --- Sled hill (south / +Z) ---
+    // stepped slope from y=6 at z=18 down to y=0.2 at z=34
+    for (let i = 0; i < 8; i++){
+      const z = 18 + i * 2.2, y = 5.5 - i * 0.7, w = 7 + i * 0.2;
+      plat(0, y, z, w, 2.4, i % 2 ? '#e8f3ff' : '#d7ebfb', 0.5);
+    }
+    plat(0, 0.2, 36, 10, 4, '#f4fbff', 0.2);
+    evg.sledStart = {x: 0, y: 6.2, z: 16.5};
+    evg.sledFin = {x: 0, z: 36, r: 3.2};
+    evgLabel('🛷 Sled hill — stand on the sled and go!', 0, 8.2, 15, 'rgba(40,70,110,.92)');
+    const sled = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.18, 2.2), new THREE.MeshLambertMaterial({color: '#c45c4a'}));
+    sled.position.set(0, 5.9, 16.6); scene.add(sled); evg.trash.push(sled); evg.sledMesh = sled;
+
+    evgLabel('🎁 Festival shop is in the pause menu or the ❄️ button', 0, 2.6, 6, 'rgba(40,70,110,.88)');
+
+    checkpoints[0] = {idx: 0, spawn: {x: 0, y: 0.5, z: 8}, flag: new THREE.Object3D()};
+    P.x = 0; P.y = 0.5; P.z = 8; P.face = Math.PI; P.vx = P.vy = P.vz = 0;
+  }
+
+  function evgBall(x, y, z, r){
+    const m = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 10), new THREE.MeshLambertMaterial({color: '#f7fbff'}));
+    m.position.set(x, y, z); scene.add(m); evg.trash.push(m); return m;
+  }
+
+  function evgTree(x, z, scale){
+    scale = scale || 1;
+    const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.28*scale, 0.35*scale, 0.5*scale, 6), new THREE.MeshLambertMaterial({color: '#8d5524'}));
+    pot.position.set(x, 0.25*scale, z); scene.add(pot); evg.trash.push(pot);
+    const leaf = new THREE.Mesh(new THREE.ConeGeometry(1.0*scale, 2.4*scale, 8), new THREE.MeshLambertMaterial({color: '#1f7a4c'}));
+    leaf.position.set(x, 1.6*scale, z); scene.add(leaf); evg.trash.push(leaf);
+    const snow = new THREE.Mesh(new THREE.ConeGeometry(0.7*scale, 0.5*scale, 8), new THREE.MeshLambertMaterial({color: '#ffffff'}));
+    snow.position.set(x, 2.5*scale, z); scene.add(snow); evg.trash.push(snow);
+  }
+
+  function evgLabel(text, x, y, z, bg){
+    try {
+      const m = (typeof label === 'function') ? label(text, bg || 'rgba(40,70,110,.92)', '#fff', 420) : null;
+      if (m){ m.position.set(x, y, z); m.scale.multiplyScalar(0.8); scene.add(m); evg.trash.push(m); }
+    } catch (e){}
+  }
+
+  function snowfestEnter(){
+    if (!evg) return;
+    cam.pitch = 0.38; cam.dist = 13;
+    P.face = Math.PI;
+    try { if (window.rubloxMusic && rubloxMusic.kick) rubloxMusic.kick(); } catch (e){}
+    try { if (typeof achNote === 'function') achNote('ev-snow-visit'); } catch (e){}
+    try { if (typeof evTryDaily === 'function') evTryDaily(); } catch (e){}
+    evgHud();
+    const act = document.getElementById('evgAct');
+    if (act && !window.__evgActBound){ window.__evgActBound = true; act.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); snowfestAct(); }; }
+    const shop = document.getElementById('evgShopBtn');
+    if (shop && !window.__evgShopBound){ window.__evgShopBound = true; shop.onclick = ev => { ev.preventDefault(); evOpenShop(true); }; }
+    banner('❄️ Welcome to the Snow Festival! Earn snowflakes and try every booth.');
+  }
+
+  function snowfestStop(){
+    if (!evg) return;
+    try { evg.trash.forEach(m => { if (m && m.parent) m.parent.remove(m); }); } catch (e){}
+    evg.balls.forEach(b => { try { if (b.m && b.m.parent) b.m.parent.remove(b.m); } catch (e){} });
+    const box = document.getElementById('evgBox'); if (box) box.style.display = 'none';
+    const act = document.getElementById('evgAct'); if (act) act.classList.remove('show');
+    evg = null;
+  }
+
+  function evgHud(){
+    if (!evg) return;
+    const box = document.getElementById('evgBox');
+    const hint = document.getElementById('evgHint');
+    const act = document.getElementById('evgAct');
+    if (box) box.style.display = (typeof mode !== 'undefined' && mode === 'snowfest') ? '' : 'none';
+    if (hint) hint.textContent = evg.hint || '❄️ Snow Festival — toss, sled, build, skate!';
+    if (act){
+      if (evg.act){ act.textContent = evg.act; act.classList.add('show'); }
+      else act.classList.remove('show');
+    }
+  }
+
+  function evgOnRink(){ return evg && Math.abs(P.x) < 8 && Math.abs(P.z + 16) < 6 && P.y < 1.2; }
+  function evgNearToss(){ return evg && Math.hypot(P.x - 18, P.z - 2) < 3.2; }
+  function evgNearSled(){ return evg && !evg.sled && Math.hypot(P.x - evg.sledStart.x, P.z - evg.sledStart.z) < 2.2 && P.y > 4.5; }
+  function evgNearMan(){ return evg && Math.hypot(P.x + 18, P.z - 2) < 6; }
+
+  function evgThrow(){
+    if (!evg || evg.sled) return false;
+    if (!evgNearToss() && !evg.carry) return false;
+    const face = P.face || 0;
+    const sp = 16;
+    const m = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), new THREE.MeshLambertMaterial({color: '#f7fbff'}));
+    m.position.set(P.x, P.y + 1.4, P.z); scene.add(m); evg.trash.push(m);
+    evg.balls.push({m, x: P.x, y: P.y + 1.4, z: P.z, vx: Math.sin(face) * sp, vy: 4.5, vz: Math.cos(face) * sp, life: 2.4});
+    try { if (typeof SND !== 'undefined' && SND.jump) SND.jump(); } catch (e){}
+    return true;
+  }
+
+  function evgPickOrBuild(){
+    if (!evg) return false;
+    if (evg.carry){
+      if (Math.hypot(P.x - evg.manBase.x, P.z - evg.manBase.z) < 2.2){
+        evg.man[evg.carry] = 1;
+        evgPlaceMan(evg.carry);
+        evg.carry = null;
+        evgCheckMan();
+        banner('⛄ Stacked!');
+        return true;
+      }
+      return false;
+    }
+    const bit = evg.bits.find(b => !b.got && Math.hypot(P.x - b.x, P.z - b.z) < 1.6);
+    if (!bit) return false;
+    bit.got = true; evg.carry = bit.k;
+    if (bit.m) bit.m.visible = false;
+    banner('⛄ Carrying a snowball — take it to the middle!');
+    return true;
+  }
+
+  function evgPlaceMan(k){
+    const y = k === 'base' ? 0.7 : k === 'mid' ? 1.7 : 2.5;
+    const r = k === 'base' ? 0.7 : k === 'mid' ? 0.55 : 0.4;
+    const m = evgBall(evg.manBase.x, y, evg.manBase.z, r);
+    evg.manParts.push(m);
+    if (k === 'head'){
+      const nose = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.35, 6), new THREE.MeshLambertMaterial({color: '#ff9f1c'}));
+      nose.rotation.x = Math.PI / 2; nose.position.set(evg.manBase.x, 2.55, evg.manBase.z + 0.4); scene.add(nose); evg.trash.push(nose);
+      const hat = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.35, 10), new THREE.MeshLambertMaterial({color: '#1d2340'}));
+      hat.position.set(evg.manBase.x, 3.05, evg.manBase.z); scene.add(hat); evg.trash.push(hat);
+    }
+  }
+
+  function evgCheckMan(){
+    if (evg.man.base && evg.man.mid && evg.man.head && !evg.man.done){
+      evg.man.done = true;
+      evgMarkDone('snowman', 1, true);
+      evGive(EV_API && EV_API.EV_FLAKE ? EV_API.EV_FLAKE.snowman : 20, 'Snowman');
+      try { if (typeof confetti === 'function') confetti(); } catch (e){}
+      banner('⛄ A perfect snowman! You earned snowflakes!');
+    }
+  }
+
+  function evgStartSled(){
+    if (!evg || evg.sled) return false;
+    if (!evgNearSled()) return false;
+    evg.sled = true; evg.sledT = 0;
+    P.x = evg.sledStart.x; P.y = evg.sledStart.y; P.z = evg.sledStart.z; P.vx = 0; P.vz = 8; P.vy = 0;
+    banner('🛷 Sledding! Steer with move, hop off at the bottom.');
+    return true;
+  }
+
+  function evgMarkDone(key, value, higher){
+    try { if (typeof evMark === 'function') evMark(key, value, higher); } catch (e){}
+  }
+
+  function snowfestAct(){
+    if (!evg || paused || over || choosing) return false;
+    if (evgStartSled()) return true;
+    if (evgPickOrBuild()) return true;
+    if (evgThrow()) return true;
+    return false;
+  }
+
+  function snowfestKey(e){
+    if (!evg || e.repeat) return false;
+    if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ snowfestAct(); return true; }
+    return false;
+  }
+
+  function snowfestPad(jp){
+    if (!evg) return false;
+    if (jp && (jp[2] || jp[3])){ snowfestAct(); return true; }
+    return false;
+  }
+
+  function snowfestUpdate(dt){
+    if (!evg) return;
+    if (P.y < -4){ const s = checkpoints[0] && checkpoints[0].spawn; if (s){ P.x = s.x; P.y = s.y; P.z = s.z; P.vx = P.vy = P.vz = 0; evg.sled = false; evg.carry = null; } }
+
+    // ice skating: low friction + ring pickup
+    if (evgOnRink() && !evg.sled){
+      P.vx *= Math.pow(0.992, dt * 60);
+      P.vz *= Math.pow(0.992, dt * 60);
+      evg.rings.forEach(r => {
+        if (r.got) return;
+        if (Math.hypot(P.x - r.x, P.z - r.z) < 0.9){
+          r.got = true; evg.skateGot++; if (r.m) r.m.visible = false;
+          evGive((EV_API && EV_API.EV_FLAKE ? EV_API.EV_FLAKE.skateRing : 2), '');
+        }
+      });
+      if (evg.skateGot >= evg.rings.length && !evg.doneSkate){
+        evg.doneSkate = true;
+        evgMarkDone('skate', evg.skateGot, true);
+        evGive(EV_API && EV_API.EV_FLAKE ? EV_API.EV_FLAKE.skate : 6, 'Ice rink');
+        banner('⛸️ You grabbed every flake on the rink!');
+      }
+    }
+
+    // sled
+    if (evg.sled){
+      evg.sledT += dt;
+      P.vz = Math.max(P.vz, 9);
+      P.y = Math.max(P.y, 0.3);
+      if (evg.sledMesh) evg.sledMesh.position.set(P.x, P.y + 0.1, P.z);
+      if (Math.hypot(P.x - evg.sledFin.x, P.z - evg.sledFin.z) < evg.sledFin.r || evg.sledT > 12){
+        evg.sled = false;
+        const t = +evg.sledT.toFixed(2);
+        evgMarkDone('sled', t, false);
+        evGive(EV_API && EV_API.EV_FLAKE ? EV_API.EV_FLAKE.sled : 12, 'Sled hill');
+        banner('🛷 Finish! ' + t.toFixed(1) + 's — snowflakes for you!');
+        if (evg.sledMesh) evg.sledMesh.position.set(0, 5.9, 16.6);
+      }
+    }
+
+    // snowball projectiles
+    evg.balls = evg.balls.filter(b => {
+      b.vy -= 22 * dt; b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt; b.life -= dt;
+      if (b.m) b.m.position.set(b.x, b.y, b.z);
+      evg.targets.forEach(t => {
+        if (t.hit) return;
+        if (Math.hypot(b.x - t.x, b.y - t.y, b.z - t.z) < t.r + 0.25){
+          t.hit = true; evg.tossHits++;
+          if (t.m && t.m.material) t.m.material.color.set('#2ec27e');
+          evGive(EV_API && EV_API.EV_FLAKE ? EV_API.EV_FLAKE.tossHit : 2, '');
+        }
+      });
+      if (b.y < 0 || b.life <= 0){ if (b.m && b.m.parent) b.m.parent.remove(b.m); return false; }
+      return true;
+    });
+    if (evg.tossHits >= evg.targets.length && !evg.doneToss){
+      evg.doneToss = true;
+      evgMarkDone('toss', evg.tossHits, true);
+      evGive(EV_API && EV_API.EV_FLAKE ? EV_API.EV_FLAKE.toss : 8, 'Snowball toss');
+      banner('❄️ Every target! Nice throws!');
+    }
+
+    evg.hint = evg.sled ? '🛷 Sledding! Steer and ride to the bottom.' :
+      evgNearSled() ? '🛷 Hop on the sled — press E / Ⓧ or the Act button.' :
+      evgOnRink() ? ('⛸️ Skate the rink! Flakes ' + evg.skateGot + ' / ' + evg.rings.length) :
+      evgNearToss() ? '❄️ Face the targets and press E / Ⓧ to throw a snowball.' :
+      evg.carry ? '⛄ Carry the snowball to the middle circle and press E / Ⓧ.' :
+      evgNearMan() ? (evg.man.done ? '⛄ What a snowman!' : '⛄ Pick up a snowball and stack it in the middle.') :
+      '❄️ Visit the rink, toss booth, snowman, or sled hill. Earn snowflakes!';
+    evg.act = evgNearSled() ? '🛷 Sled' : evg.carry ? '⛄ Place' : evgNearMan() && evg.bits.some(b => !b.got && Math.hypot(P.x-b.x,P.z-b.z)<1.6) ? '⛄ Pick up' : evgNearToss() ? '❄️ Throw' : '';
+    evgHud();
+  }
+
+  try { setTimeout(() => { try { evBind(); lbBind(); evApplyChrome(); evPaintHud(); lbPaint(); } catch (e){} }, 0); } catch (e){}
+
   function stop(){
     if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}
     if (typeof dhCloseReset === 'function') dhCloseReset();
@@ -29826,15 +31020,24 @@ function start(m = 'obby', d = null){
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame'); setHomeInert(false);
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (py) partyStop(); if (lh) lanternStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (evg) snowfestStop(); if (py) partyStop(); if (lh) lanternStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
+    try { if (typeof lbOnLeave === 'function') lbOnLeave('host'); } catch (e){}
     try { if (typeof trOnDrop === 'function') trOnDrop('host'); } catch (e){} try { qClose(); const _tr = document.getElementById('trPanel'); if (_tr) _tr.classList.remove('show'); } catch (e){}
     try { if (typeof chSync === 'function') chSync(); } catch (e){}
   }
 
   // debug / test hook
   window.obbyDebug = {
+    evOn: () => (typeof evOn === 'function' ? evOn() : (typeof evFestOn === 'function' && evFestOn())),
+    evForce: (on) => { if (typeof evSetForce === 'function') evSetForce(!!on); },
+    evShop: () => { if (typeof evOpenShop === 'function') evOpenShop(true); },
+    evGive: (n) => { if (typeof evGive === 'function') evGive(n, 'Preview'); },
+    evState: () => (typeof evEnsure === 'function' ? evEnsure() : null),
+    lbPaint: () => { if (typeof lbPaint === 'function') lbPaint(); },
+    lbDemo: () => { if (typeof lbDemoRoom === 'function') lbDemoRoom(); },
+    lbMine: () => (typeof lbMine === 'function' ? lbMine() : null),
     qState: () => (typeof qEnsure === 'function' ? qEnsure() : null),
     qOpen: (on) => { if (typeof qOpen === 'function') qOpen(on !== false); },
     qDemo(claimed){
