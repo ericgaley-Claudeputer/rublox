@@ -36,7 +36,7 @@ const wl = (HTML.match(/mode = \[([^\]]+)\]\.includes\(m\) \? m : 'obby'/) || []
 const missing = cards.filter(id => id !== 'obby' && !wl.includes("'" + id + "'"));
 chk('every playable card id is in the start() mode whitelist', cards.length > 6 && missing.length === 0, {cards, missing});
 chk('card click dispatches Obby.play(card id)', /card\.onclick = \(\) => g\.playable \? Obby\.play\(g\.id\)/.test(HTML));
-const MODES = [['petisland', 'island'], ['bakery', 'bakery'], ['waterpark', 'waterpark'], ['photostudio', 'photo'], ['fashion', 'fashion'], ['tower', 'tower'], ['icecream', 'icecream'], ['stable', 'stable'], ['haunt', 'haunt'], ['dance', 'dance']];
+const MODES = [['petisland', 'island'], ['bakery', 'bakery'], ['waterpark', 'waterpark'], ['photostudio', 'photo'], ['fashion', 'fashion'], ['tower', 'tower'], ['icecream', 'icecream'], ['stable', 'stable'], ['haunt', 'haunt'], ['dance', 'dance'], ['lantern', 'lantern']];
 for (const [id, dbg] of MODES){
   const W = page(); let err = null, n = 0;
   try { W.run("Obby.play('" + id + "')"); n = W.frames(90); } catch (e){ err = e.message; }

@@ -7,6 +7,7 @@
     {id: 'adventure', name: 'Adventure', emoji: '🏃'},
     {id: 'creative', name: 'Creative', emoji: '🎨'},
     {id: 'friends', name: 'Friends', emoji: '👫'},
+    {id: 'lantern', name: 'Lantern Hotel', emoji: '🏮'},
     {id: 'collection', name: 'Collection', emoji: '🪙'}
   ];
   // Known Adopt-a-Pet rarities so backfill works even before PET_KINDS is in scope.
@@ -89,6 +90,23 @@
     {id:'fr-session', cat:'friends', emoji:'🎮', name:'We Played!', desc:'Add a friend after you played together in a room.', coins:15, prove:s => !!(s.notes && s.notes['fr:session'])},
     {id:'ch-hello', cat:'friends', emoji:'💬', name:'First Hello', desc:'Say Hi! in a multiplayer room.', coins:5, prove:s => !!(s.notes && s.notes['ch:hello'])},
     {id:'ch-gg', cat:'friends', emoji:'🏆', name:'Said GG', desc:'Send a Good Game (GG!) in a multiplayer room.', coins:5, prove:s => !!(s.notes && s.notes['ch:gg'])},
+    // Lantern Hotel
+    {id:'lh-welcome', cat:'lantern', emoji:'🏮', name:'Welcome In', desc:'Check in to Lantern Hotel for the first time.', coins:5, prove:s => !!(s.notes && s.notes['lh:welcome'])},
+    {id:'lh-back', cat:'lantern', emoji:'🔑', name:'Back Again', desc:'Return to Lantern Hotel for another stay.', coins:5, prove:s => !!(s.notes && s.notes['lh:back'])},
+    {id:'lh-fizzle', cat:'lantern', emoji:'👁️', name:'All Fizzled Out', desc:'Let your Sanity run out and fizzle.', coins:15, prove:s => !!(s.notes && s.notes['lh:fizzle'])},
+    {id:'lh-breath', cat:'lantern', emoji:'😮‍💨', name:'Take a Breath', desc:'Have a calm-down moment and restore your Sanity.', coins:10, prove:s => !!(s.notes && s.notes['lh:breath'])},
+    {id:'lh-cellar', cat:'lantern', emoji:'🚪', name:'Down to the Cellar', desc:'Get sent to the cellar by Miss Fanfare.', coins:15, prove:s => !!(s.notes && s.notes['lh:cellar'])},
+    {id:'lh-keys', cat:'lantern', emoji:'🔑', name:'Key Bunch', desc:'Be picked as the Key Holder.', coins:10, prove:s => !!(s.notes && s.notes['lh:keys'])},
+        {id:'lh-find', cat:'lantern', emoji:'🫣', name:'Who\'s in There?', desc:'As Key Holder, unlock a room and find a fizzled guest.', coins:15, prove:s => !!(s.notes && s.notes['lh:find'])},
+    {id:'lh-tagged', cat:'lantern', emoji:'💨', name:'Too Close!', desc:'Get tagged by a fizzled guest.', coins:10, prove:s => !!(s.notes && s.notes['lh:tagged'])},
+    {id:'lh-song', cat:'lantern', emoji:'🎵', name:'Hallway Serenade', desc:'Hear Miss Fanfare singing outside your room.', coins:10, prove:s => !!(s.notes && s.notes['lh:song'])},
+    {id:'lh-exit', cat:'lantern', emoji:'🚪', name:'Was That a Door?', desc:'Spot a mysterious exit door.', coins:10, prove:s => !!(s.notes && s.notes['lh:exit'])},
+    {id:'lh-words', cat:'lantern', emoji:'📛', name:'Watch Your Words', desc:'Have a chat line filtered by the hotel word filter.', coins:5, prove:s => !!(s.notes && s.notes['lh:words'])},
+    {id:'lh-vision', cat:'lantern', emoji:'🌀', name:'Seeing Things', desc:'Start seeing odd shapes when your Sanity gets low.', coins:10, prove:s => !!(s.notes && s.notes['lh:vision'])},
+        {id:'lh-enough', cat:'lantern', emoji:'😤', name:'That\'s Enough!', desc:'Get Miss Fanfare all worked up.', coins:15, prove:s => !!(s.notes && s.notes['lh:enough'])},
+        {id:'lh-all', cat:'lantern', emoji:'😵', name:'Everyone\'s Fizzled', desc:'Watch Miss Fanfare\'s meltdown when every guest has fizzled.', coins:20, prove:s => !!(s.notes && s.notes['lh:all'])},
+    {id:'lh-vesper', cat:'lantern', emoji:'🌙', name:'Mystery Guest', desc:'Meet the late-night visitor in your hotel.', coins:20, prove:s => !!(s.notes && s.notes['lh:vesper'])},
+    {id:'lh-peek', cat:'lantern', emoji:'👀', name:'Gotcha!', desc:'Get fizzled by the late-night visitor.', coins:20, prove:s => !!(s.notes && s.notes['lh:peek'])},
     // Collection
     {id:'welcome', cat:'collection', emoji:'👋', name:'Hello, Friend', desc:'Pick a player name and join Rublox.', coins:5, prove:s => !!(s.player && s.player.name)},
     {id:'first-game', cat:'collection', emoji:'🎮', name:'Let\'s Play', desc:'Start any Rublox game.', coins:5, prove:s => !!(s.notes && s.notes.play) || !!(s.recent && s.recent.length >= 1)},
