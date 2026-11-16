@@ -1,12 +1,21 @@
   <div id="lhRoot" style="display:none">
     <div id="lhMeter" aria-label="Sanity meter"></div>
     <div id="lhKeyTag">🔑 Key Holder</div>
-    <button type="button" id="lhSetBtn" aria-label="Hotel settings">⚙️ Hotel settings</button>
-    <button type="button" id="lhFanfare" aria-label="Call Miss Fanfare">🎩 Call Miss Fanfare</button>
+    <button type="button" id="lhSetBtn" aria-label="Big Top settings">⚙️ Big Top settings</button>
+    <button type="button" id="lhFanfare" aria-label="Call Maestro Gleam">🎩 Call Maestro Gleam</button>
+    <div id="lhScare" aria-hidden="true">
+      <div id="lhVignette"></div>
+      <div id="lhStatic"></div>
+      <div id="lhTear"></div>
+      <div id="lhEdgeEyes">
+        <i data-k="0"></i><i data-k="1"></i><i data-k="2"></i><i data-k="3"></i>
+        <i data-k="4"></i><i data-k="5"></i><i data-k="6"></i><i data-k="7"></i>
+      </div>
+    </div>
     <div id="lhVision" aria-hidden="true"><i>✦</i><i>👁️</i><i>◇</i><i>✦</i></div>
     <div id="lhCut">
-      <div id="lhCutEyes"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-      <div id="lhCutCap">Oh no… you're all fizzled!</div>
+      <div id="lhCutEyes"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div id="lhCutCap">The lanterns wink out. Eyes open in the dark… you're all fizzled!</div>
       <button type="button" id="lhSkip">Skip ▶</button>
     </div>
     <div id="lhCalm">
@@ -16,9 +25,9 @@
     </div>
     <div id="lhSet">
       <div class="mbox">
-        <h2>🏮 Hotel settings</h2>
-        <label><input type="checkbox" id="lhVis"> Glitched vision<small>Odd shapes appear when Sanity is low or you're fizzled.</small></label>
-        <label><input type="checkbox" id="lhMuff"> Muffled sound<small>Sounds get soft and distant when things get woozy.</small></label>
+        <h2>🏮 Big Top settings</h2>
+        <label><input type="checkbox" id="lhVis"> Glitched vision<small>Odd shapes, a dark vignette, and a wobbly view when Sanity is low or you're fizzled. Turn off to tone that down.</small></label>
+        <label><input type="checkbox" id="lhMuff"> Muffled sound<small>Sounds get soft and distant when things get woozy, including the whispery hum.</small></label>
         <div style="font-weight:900;margin-top:8px">Cancellation</div>
         <small>When a friend rings your doorbell or flips your lights during a fizzle-in-progress:</small>
         <label><input type="radio" name="lhCan" id="lhCanFifty" value="fifty"> 50/50</label>

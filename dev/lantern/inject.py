@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Inject Lantern Hotel into index.html and related files. Idempotent."""
+"""Inject Lantern Big Top into index.html and related files. Idempotent."""
 from pathlib import Path
 import json, re, sys
 
@@ -7,8 +7,8 @@ ROOT = Path(__file__).resolve().parents[2]
 IDX = ROOT / 'index.html'
 DEV = ROOT / 'dev/lantern'
 ACH = ROOT / 'dev/achievements/achievements.js'
-BUILD = '2026.11.16-1'
-OLD_BUILD = '2026.11.15-5'
+BUILD = '2026.11.16-2'
+OLD_BUILD = '2026.11.16-2'
 
 def once(text, old, new, label):
     if new.strip() and new in text and old not in text:
@@ -48,7 +48,7 @@ def main():
         raise SystemExit('real TADC/official names leaked into page rules')
     rules_block = '\n/* ---------- lantern rules ---------- */\n' + rules_page + '\n/* ---------- /lantern rules ---------- */\n'
     if '/* ---------- lantern rules ---------- */' in html:
-        html = re.sub(r'/\* ---------- lantern rules ---------- \*/.*?/\* ---------- /lantern rules ---------- \*/\n', rules_block, html, count=1, flags=re.S)
+        html = re.sub(r'/\* ---------- lantern rules ---------- \*/.*?/\* ---------- /lantern rules ---------- \*/\n', lambda _m: rules_block, html, count=1, flags=re.S)
         log.append('refresh rules')
     else:
         html, m = once(html, '  /* ===================== end Chat ===================== */',
@@ -65,21 +65,33 @@ def main():
         else:
             raise SystemExit('no drawHaunt')
     else:
-        log.append('skip drawLantern')
+        import re as _re
+        m = _re.search(r'function drawLantern\(ctx\)\{[\s\S]*?\n\}', html)
+        if m:
+            html = html[:m.start()] + draw + html[m.end():]
+            log.append('refresh drawLantern')
+        else:
+            log.append('skip drawLantern')
 
     # --- GAMES tile ---
-    tile = "  {id:'lantern', name:'Lantern Hotel', emoji:'🏮', tag:'Stay close and stay bright in a colorful funhouse hotel!', draw: drawLantern, playable: true, isNew: true},\n"
+    tile = "  {id:'lantern', name:'Lantern Big Top', emoji:'🏮', tag:'Stay close and stay bright under a colorful circus tent!', draw: drawLantern, playable: true, isNew: true},\n"
     if "id:'lantern'" not in html:
         html, m = once(html, 'const GAMES = [\n', 'const GAMES = [\n' + tile, 'GAMES')
         log.append(m)
     else:
-        log.append('skip GAMES')
+        import re as _re
+        html2, n = _re.subn(r"\{id:'lantern', name:'[^']*', emoji:'[^']*', tag:'[^']*', draw: drawLantern, playable: true, isNew: true\},", tile.strip(), html, count=1)
+        if n:
+            html = html2
+            log.append('refresh GAMES')
+        else:
+            log.append('skip GAMES')
 
     # --- CSS ---
     css = (DEV / 'lantern.css').read_text()
     css_block = '\n/* ---------- lantern hotel css ---------- */\n' + css + '\n/* ---------- /lantern hotel css ---------- */\n'
     if '/* ---------- lantern hotel css ---------- */' in html:
-        html = re.sub(r'/\* ---------- lantern hotel css ---------- \*/.*?/\* ---------- /lantern hotel css ---------- \*/\n', css_block, html, count=1, flags=re.S)
+        html = re.sub(r'/\* ---------- lantern hotel css ---------- \*/.*?/\* ---------- /lantern hotel css ---------- \*/\n', lambda _m: css_block, html, count=1, flags=re.S)
         log.append('refresh css')
     else:
         # append before last </style> closest to ohud styles — use first </style> after .hmnear
@@ -90,19 +102,20 @@ def main():
         log.append('ok css')
 
     # --- lhBox in stats ---
-    box = '      <span id="lhBox" style="display:none"><b id="lhN">🏮 Lantern Hotel</b></span>\n'
+    box = '      <span id="lhBox" style="display:none"><b id="lhN">🏮 Lantern Big Top</b></span>\n'
     if 'id="lhBox"' not in html:
         html, m = once(html, '      <span id="hmBox" style="display:none"><b id="hmN">👻 Escape</b></span>\n',
                        '      <span id="hmBox" style="display:none"><b id="hmN">👻 Escape</b></span>\n' + box, 'lhBox')
         log.append(m)
     else:
-        log.append('skip lhBox')
+        html = html.replace('🏮 Lantern Hotel', '🏮 Lantern Big Top')
+        log.append('refresh lhBox')
 
     # --- HUD ---
     hud = (DEV / 'lantern_hud.html').read_text().rstrip() + '\n'
     hud_block = '  <!-- lantern hotel hud -->\n' + hud + '  <!-- /lantern hotel hud -->\n'
     if '<!-- lantern hotel hud -->' in html:
-        html = re.sub(r'  <!-- lantern hotel hud -->.*?  <!-- /lantern hotel hud -->\n', hud_block, html, count=1, flags=re.S)
+        html = re.sub(r'  <!-- lantern hotel hud -->.*?  <!-- /lantern hotel hud -->\n', lambda _m: hud_block, html, count=1, flags=re.S)
         log.append('refresh hud')
     else:
         html, m = once(html, '  <button class="fsnear hmnear" id="hmAct"></button>\n',
@@ -115,7 +128,7 @@ def main():
         js = '\n'.join(('  ' + line if line else line) for line in js.splitlines()) + '\n'
     js_block = '  /* ---------- lantern hotel ---------- */\n' + js + '  /* ---------- /lantern hotel ---------- */\n'
     if '/* ---------- lantern hotel ---------- */' in html:
-        html = re.sub(r'  /\* ---------- lantern hotel ---------- \*/.*?  /\* ---------- /lantern hotel ---------- \*/\n', js_block, html, count=1, flags=re.S)
+        html = re.sub(r'  /\* ---------- lantern hotel ---------- \*/.*?  /\* ---------- /lantern hotel ---------- \*/\n', lambda _m: js_block, html, count=1, flags=re.S)
         log.append('refresh lantern.js')
     else:
         hook = '  /* ===================== t227u: 👻 GIGGLE MANOR'
@@ -317,9 +330,15 @@ def main():
         if "if (mode === 'lantern')" in html and 'Stay close and stay bright' not in html:
             html, m = once(html,
                 "if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }",
-                "if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter();\n      $('#oTip').innerHTML = (typeof pad !== 'undefined' && pad && pad.on ? '🕹️ Left thumb move · ⬆️ jump · swipe to look · 👁️ first person<br>👆 Yellow button rings the doorbell, flips lights, or uses a thing. 🎩 Call Miss Fanfare when a friend is fizzled!' : '⌨️ WASD move · Space jump · Shift run · Drag / lock-click to look · V first person · E use (doorbell, lights, door, bed, doodles)<br>Stay close and stay bright! Type Fanfare in chat near a fizzled friend to send them to the cellar (or use the button in single-player).'); }",
+                "if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter();\n      $('#oTip').innerHTML = (typeof pad !== 'undefined' && pad && pad.on ? '🕹️ Left thumb move · ⬆️ jump · swipe to look · 👁️ first person<br>👆 Yellow button rings the doorbell, flips lights, or uses a thing. 🎩 Call Maestro Gleam when a friend is fizzled!' : '⌨️ WASD move · Space jump · Shift run · Drag / lock-click to look · V first person · E use (doorbell, lights, door, bed, doodles)<br>Stay close and stay bright! Type Gleam in chat near a fizzled friend to send them to the cellar (or use the button in single-player).'); }",
                 'tips')
             log.append(m)
+
+    # refresh already-injected tip copy if the host or title changed
+    html = html.replace('Call Miss Fanfare when a friend is fizzled!', 'Call Maestro Gleam when a friend is fizzled!')
+    html = html.replace('Type Fanfare in chat near a fizzled friend', 'Type Gleam in chat near a fizzled friend')
+    html = html.replace('Lantern Hotel', 'Lantern Big Top')
+    html = html.replace('Miss Fanfare', 'Maestro Gleam')
 
     # --- class toggle ---
     if "classList.toggle('lhmode'" not in html:
@@ -340,23 +359,70 @@ def main():
     # can't import js. parse badges from rules via node or regex
     badges = []
     raw = (DEV / 'lantern_rules.js').read_text()
-    for m in re.finditer(r"\{id:'([^']+)', real:'[^']*', realDesc:'[^']*', name:'((?:\\'|[^'])*)', desc:'((?:\\'|[^'])*)', emoji:'([^']+)', coins:(\d+), note:'([^']+)'", raw):
-        badges.append(m.groups())
+    def take_str(s, i):
+        q = s[i]
+        if q not in "'\"":
+            return None, i
+        i += 1
+        out = []
+        while i < len(s):
+            if s[i] == chr(92) and i + 1 < len(s):
+                out.append(s[i+1]); i += 2; continue
+            if s[i] == q:
+                return ''.join(out), i + 1
+            out.append(s[i]); i += 1
+        return None, i
+    for m in re.finditer(r"\{id:", raw):
+        i = m.end()
+        ident, i = take_str(raw, i)
+        if not ident or not ident.startswith('lh-'):
+            continue
+        fields = {'id': ident}
+        # scan this object
+        end = raw.find('}', i)
+        chunk = raw[i:end+1] if end>0 else raw[i:i+800]
+        for key in ('name', 'desc', 'emoji', 'note', 'coins'):
+            km = re.search(r"\b" + key + r":", chunk)
+            if not km: continue
+            j = km.end()
+            while j < len(chunk) and chunk[j] in ' \t':
+                j += 1
+            if key == 'coins':
+                cm = re.match(r'(\d+)', chunk[j:])
+                if cm: fields['coins'] = cm.group(1)
+            else:
+                val, _ = take_str(chunk, j)
+                if val is not None: fields[key] = val
+        if all(k in fields for k in ('id','name','desc','emoji','coins','note')):
+            badges.append((fields['id'], fields['name'], fields['desc'], fields['emoji'], fields['coins'], fields['note']))
+
     if len(badges) != 16:
         raise SystemExit('expected 16 badges, got %d' % len(badges))
-    ach_lines = ["    // Lantern Hotel"]
+    ach_lines = ["    // Lantern Big Top"]
+    def jq(s):
+        return str(s).replace("\\", "\\\\").replace("'", "\\'")
     for id_, name, desc, emoji, coins, note in badges:
-        ach_lines.append("    {id:'%s', cat:'lantern', emoji:'%s', name:'%s', desc:'%s', coins:%s, prove:s => !!(s.notes && s.notes['%s'])}," % (id_, emoji, name, desc, coins, note))
+        ach_lines.append("    {id:'%s', cat:'lantern', emoji:'%s', name:'%s', desc:'%s', coins:%s, prove:s => !!(s.notes && s.notes['%s'])}," % (id_, emoji, jq(name), jq(desc), coins, note))
     ach_block = '\n'.join(ach_lines) + '\n'
-    cat_line = "    {id: 'lantern', name: 'Lantern Hotel', emoji: '🏮'},\n"
+    cat_line = "    {id: 'lantern', name: 'Lantern Big Top', emoji: '🏮'},\n"
 
     def patch_ach(path):
         t = path.read_text()
+        t = t.replace("{id: 'lantern', name: 'Lantern Hotel', emoji: '🏮'}", "{id: 'lantern', name: 'Lantern Big Top', emoji: '🏮'}")
+        t = t.replace("    // Lantern Hotel", "    // Lantern Big Top")
         if "id: 'lantern'" not in t:
             t = t.replace("    {id: 'friends', name: 'Friends', emoji: '👫'},\n",
                           "    {id: 'friends', name: 'Friends', emoji: '👫'},\n" + cat_line, 1)
         if "id:'lh-welcome'" not in t:
             t = t.replace("    // Collection\n", ach_block + "    // Collection\n", 1)
+        else:
+            import re as _re
+            t2, n = _re.subn(r"    // Lantern Big Top\n(?:    \{id:'lh-[^\n]+\n)+", ach_block, t, count=1)
+            if n:
+                t = t2
+            else:
+                t2, n = _re.subn(r"    // Lantern Hotel\n(?:    \{id:'lh-[^\n]+\n)+", ach_block, t, count=1)
+                t = t2 if n else t
         path.write_text(t)
         return path.name
 

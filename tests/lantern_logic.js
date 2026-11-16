@@ -7,14 +7,14 @@ const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const RULES = require(path.join(ROOT, 'dev/lantern/lantern_rules.js'));
 const BUILD = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).build || JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
-test('BUILD stamp is 2026.11.16-1 in lantern files and version.json', () => {
+test('BUILD stamp is 2026.11.16-2 in lantern files and version.json', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
-  assert.equal(v.build, '2026.11.16-1');
-  assert.match(HTML, /const BUILD = '2026\.11\.16-1'/);
+  assert.equal(v.build, '2026.11.16-2');
+  assert.match(HTML, /const BUILD = '2026\.11\.16-2'/);
 });
 
-test('Lantern Hotel is a playable GAMES card with original branding', () => {
-  assert.match(HTML, /id:'lantern',\s*name:'Lantern Hotel'/);
+test('Lantern Big Top is a playable GAMES card with original branding', () => {
+  assert.match(HTML, /id:'lantern',\s*name:'Lantern Big Top'/);
   assert.match(HTML, /function drawLantern/);
   assert.doesNotMatch(HTML, /Experience Abstraction/);
   assert.doesNotMatch(HTML, /\bCaine\b/);
@@ -22,7 +22,9 @@ test('Lantern Hotel is a playable GAMES card with original branding', () => {
   assert.doesNotMatch(HTML, /\bKaufmo\b/);
   assert.doesNotMatch(HTML, /The Amazing Digital Circus/);
   assert.doesNotMatch(HTML, /Glitch Circus Hotel/);
-  assert.match(HTML, /Miss Fanfare/);
+  assert.match(HTML, /Maestro Gleam/);
+  assert.doesNotMatch(HTML, /Miss Fanfare/);
+  assert.doesNotMatch(HTML, /Lantern Hotel/);
 });
 
 test('start() whitelist includes lantern and does not fall back to obby', () => {
@@ -100,14 +102,15 @@ test('cancellation settings: always / never / 50/50', () => {
   assert.equal(RULES.lhCancelSucceeds('fifty', () => 0.9), false);
 });
 
-test('host name Fanfare is detected in filtered chat text, not as a substring of other words', () => {
-  assert.ok(RULES.lhHostNameIn('Fanfare'));
-  assert.ok(RULES.lhHostNameIn('hey Fanfare come here'));
-  assert.ok(RULES.lhHostNameIn('FANFARE!!!'));
-  assert.ok(!RULES.lhHostNameIn('fanfareish'));
+test('host name Gleam is detected in filtered chat text, not as a substring of other words', () => {
+  assert.ok(RULES.lhHostNameIn('Gleam'));
+  assert.ok(RULES.lhHostNameIn('hey Gleam come here'));
+  assert.ok(RULES.lhHostNameIn('GLEAM!!!'));
+  assert.ok(RULES.lhHostNameIn('Maestro Gleam'));
+  assert.ok(!RULES.lhHostNameIn('gleaming'));
   assert.ok(!RULES.lhHostNameIn('hello there'));
   assert.ok(RULES.lhCensored('####'));
-  assert.ok(!RULES.lhCensored('Fanfare'));
+  assert.ok(!RULES.lhCensored('Gleam'));
 });
 
 test('doodles accept stamps only, never free text', () => {
@@ -122,7 +125,7 @@ test('doodles accept stamps only, never free text', () => {
   assert.equal(c[0].color, '#ff6b9a');
 });
 
-test('16 official badges are mapped 1:1 to original Lantern Hotel achievements', () => {
+test('16 official badges are mapped 1:1 to original Lantern Big Top achievements', () => {
   assert.equal(RULES.LH_BADGES.length, 16);
   const ids = RULES.LH_BADGES.map(b => b.id);
   assert.equal(new Set(ids).size, 16);
@@ -152,7 +155,7 @@ test('16 official badges are mapped 1:1 to original Lantern Hotel achievements',
     assert.doesNotMatch(b.desc, /Caine|Kaufmo|Pomni|Eniac|Daisy Bell|abstract/i);
   });
   // registry in the built page
-  assert.match(HTML, /id: 'lantern', name: 'Lantern Hotel'/);
+  assert.match(HTML, /id: 'lantern', name: 'Lantern Big Top'/);
   RULES.LH_BADGES.forEach(b => {
     assert.ok(HTML.includes("id:'" + b.id + "'"), b.id);
     assert.ok(HTML.includes("cat:'lantern'"), b.id + ' cat');
@@ -202,4 +205,24 @@ test('entry wiring lists lantern as a launchable mode', () => {
   const w = fs.readFileSync(path.join(ROOT, 'dev/haunt/entry_wiring.js'), 'utf8');
   assert.match(w, /\['lantern', 'lantern'\]/);
   assert.match(HTML, /lantern: \(\) => lh/);
+});
+
+test('circus world, midway wagons, and scare FX are in the mode module', () => {
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  assert.match(js, /lhFerris/);
+  assert.match(js, /lhCarousel/);
+  assert.match(js, /Cotton Candy/);
+  assert.match(js, /Popcorn/);
+  assert.match(js, /Midway/);
+  assert.match(js, /lhScareTick/);
+  assert.match(js, /lhPlaySting/);
+  assert.match(js, /lhWhisper/);
+  assert.match(HTML, /id="lhScare"/);
+  assert.match(HTML, /id="lhVignette"/);
+  assert.match(HTML, /id="lhEdgeEyes"/);
+  assert.match(HTML, /Call Maestro Gleam/);
+  assert.match(HTML, /Big Top settings/);
+  assert.match(HTML, /Skip ▶/);
+  assert.doesNotMatch(js, /\bCaine\b/);
+  assert.doesNotMatch(js, /Digital Circus/);
 });

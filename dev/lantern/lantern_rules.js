@@ -1,11 +1,11 @@
-/* Pure Lantern Hotel rules — safe to require() in tests and to load in the page. */
+/* Pure Lantern Big Top rules — safe to require() in tests and to load in the page. */
 (function (root) {
   'use strict';
   const LH_KEY = 'rubloxLantern';
   const LH_VER = 1;
-  const LH_HOST = 'Fanfare';
-  const LH_HOST_TITLE = 'Miss Fanfare';
-  const LH_GAME = 'Lantern Hotel';
+  const LH_HOST = 'Gleam';
+  const LH_HOST_TITLE = 'Maestro Gleam';
+  const LH_GAME = 'Lantern Big Top';
   const LH_STAMPS = ['star', 'heart', 'circle', 'square', 'squiggle', 'smile', 'lantern', 'swirl'];
   const LH_EYES = 5;
   const LH_COMPANY_R = 8;
@@ -75,7 +75,7 @@
 
   function lhHostNameIn(text){
     const t = String(text || '').replace(/#/g, ' ').replace(/[^A-Za-z0-9 ]+/g, ' ');
-    return /(^|\s)fanfare(\s|$)/i.test(t);
+    return /(^|\s)(gleam|maestro\s+gleam)(\s|$)/i.test(t);
   }
 
   function lhDefaultSettings(){
@@ -146,21 +146,21 @@
   }
 
   const LH_BADGES = [
-    {id:'lh-welcome', real:'Welcome!', realDesc:'To your new home!', name:'Welcome In', desc:'Check in to Lantern Hotel for the first time.', emoji:'🏮', coins:5, note:'lh:welcome'},
-    {id:'lh-back', real:'Welcome back', realDesc:'Enjoying your stay, huh?', name:'Back Again', desc:'Return to Lantern Hotel for another stay.', emoji:'🔑', coins:5, note:'lh:back'},
+    {id:'lh-welcome', real:'Welcome!', realDesc:'To your new home!', name:'Welcome In', desc:'Check in to Lantern Big Top for the first time.', emoji:'🏮', coins:5, note:'lh:welcome'},
+    {id:'lh-back', real:'Welcome back', realDesc:'Enjoying your stay, huh?', name:'Back Again', desc:'Return to Lantern Big Top for another stay.', emoji:'🔑', coins:5, note:'lh:back'},
     {id:'lh-fizzle', real:"I don't feel well...", realDesc:'Go insane and abstract.', name:'All Fizzled Out', desc:'Let your Sanity run out and fizzle.', emoji:'👁️', coins:15, note:'lh:fizzle'},
     {id:'lh-breath', real:'God you look stupid...', realDesc:'Experience a panic attack.', name:'Take a Breath', desc:'Have a calm-down moment and restore your Sanity.', emoji:'😮‍💨', coins:10, note:'lh:breath'},
-    {id:'lh-cellar', real:'And into the cellar you go!', realDesc:'Get found and sent to the cellar by Caine.', name:'Down to the Cellar', desc:'Get sent to the cellar by Miss Fanfare.', emoji:'🚪', coins:15, note:'lh:cellar'},
+    {id:'lh-cellar', real:'And into the cellar you go!', realDesc:'Get found and sent to the cellar by Caine.', name:'Down to the Cellar', desc:'Get sent to the cellar by Maestro Gleam.', emoji:'🚪', coins:15, note:'lh:cellar'},
     {id:'lh-keys', real:"I've got keys everywhere!", realDesc:'Be selected as the keyholder.', name:'Key Bunch', desc:'Be picked as the Key Holder.', emoji:'🔑', coins:10, note:'lh:keys'},
     {id:'lh-find', real:'What... is that?', realDesc:"Unlock someone's room and find them abstracted. (Keyholder)", name:"Who's in There?", desc:'As Key Holder, unlock a room and find a fizzled guest.', emoji:'🫣', coins:15, note:'lh:find'},
     {id:'lh-tagged', real:'Whoa Kaufmo, listen!', realDesc:'Get attacked by an abstracted person.', name:'Too Close!', desc:'Get tagged by a fizzled guest.', emoji:'💨', coins:10, note:'lh:tagged'},
-    {id:'lh-song', real:'Daisy, Daisy...', realDesc:'Witness Caine singing "Daisy Bell" outside your room.', name:'Hallway Serenade', desc:'Hear Miss Fanfare singing outside your room.', emoji:'🎵', coins:10, note:'lh:song'},
+    {id:'lh-song', real:'Daisy, Daisy...', realDesc:'Witness Caine singing "Daisy Bell" outside your room.', name:'Midway Serenade', desc:'Hear Maestro Gleam singing outside your wagon.', emoji:'🎵', coins:10, note:'lh:song'},
     {id:'lh-exit', real:'I-I swear, I saw one!', realDesc:'Encounter an exit door.', name:'Was That a Door?', desc:'Spot a mysterious exit door.', emoji:'🚪', coins:10, note:'lh:exit'},
-    {id:'lh-words', real:'No foul language around here!', realDesc:'Have your mouth censored by the swear bar.', name:'Watch Your Words', desc:'Have a chat line filtered by the hotel word filter.', emoji:'📛', coins:5, note:'lh:words'},
+    {id:'lh-words', real:'No foul language around here!', realDesc:'Have your mouth censored by the swear bar.', name:'Watch Your Words', desc:'Have a chat line filtered by the circus word filter.', emoji:'📛', coins:5, note:'lh:words'},
     {id:'lh-vision', real:'A stare of bad luck...', realDesc:"Start seeing things that aren’t there.", name:'Seeing Things', desc:'Start seeing odd shapes when your Sanity gets low.', emoji:'🌀', coins:10, note:'lh:vision'},
-    {id:'lh-enough', real:'WHY DO YOU TORMENT ME?', realDesc:'Get Caine to successfully crash out.', name:"That's Enough!", desc:'Get Miss Fanfare all worked up.', emoji:'😤', coins:15, note:'lh:enough'},
-    {id:'lh-all', real:'They abandoned me...', realDesc:'Witness Caine having a meltdown by everyone abstracting.', name:"Everyone's Fizzled", desc:"Watch Miss Fanfare's meltdown when every guest has fizzled.", emoji:'😵', coins:20, note:'lh:all'},
-    {id:'lh-vesper', real:'Hello neighbor, welcome home!', realDesc:'Encounter Eniac on your current server. (Secret)', name:'Mystery Guest', desc:'Meet the late-night visitor in your hotel.', emoji:'🌙', coins:20, note:'lh:vesper', secret:true},
+    {id:'lh-enough', real:'WHY DO YOU TORMENT ME?', realDesc:'Get Caine to successfully crash out.', name:"That's Enough!", desc:'Get Maestro Gleam all worked up.', emoji:'😤', coins:15, note:'lh:enough'},
+    {id:'lh-all', real:'They abandoned me...', realDesc:'Witness Caine having a meltdown by everyone abstracting.', name:"Everyone's Fizzled", desc:"Watch Maestro Gleam's meltdown when every guest has fizzled.", emoji:'😵', coins:20, note:'lh:all'},
+    {id:'lh-vesper', real:'Hello neighbor, welcome home!', realDesc:'Encounter Eniac on your current server. (Secret)', name:'Mystery Guest', desc:'Meet the late-night visitor under the big top.', emoji:'🌙', coins:20, note:'lh:vesper', secret:true},
     {id:'lh-peek', real:'Peekaboo.', realDesc:'Get abstracted by Eniac. (Secret)', name:'Gotcha!', desc:'Get fizzled by the late-night visitor.', emoji:'👀', coins:20, note:'lh:peek', secret:true}
   ];
 

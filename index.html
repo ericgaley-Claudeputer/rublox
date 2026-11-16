@@ -1060,8 +1060,10 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 @media (max-height:500px){#pNamePanel .mbox,#pAdoptPanel .mbox{padding:10px 18px;max-height:94vh;overflow:auto}#pNamePanel .emoji,#pAdoptPanel .emoji{font-size:26px;margin:0}#pNamePanel h2,#pAdoptPanel h2{font-size:20px;margin:2px 0}#pNamePanel .stats{font-size:13px}#pNamePanel .pname{padding:6px 10px;font-size:18px}#pNamePanel .psugg{margin:6px 0}#pNamePanel .pmsg:empty{display:none}#pNamePanel .owinbtns .big{margin:3px}#pNamePanel .owinbtns,#pAdoptPanel .owinbtns{margin-top:6px}#pNamePanel .owinbtns .big,#pAdoptPanel .owinbtns .big{padding:8px 14px;font-size:15px}}
 @media (max-height:500px){.pgoal{font-size:14px;top:calc(max(8px,env(safe-area-inset-top)) + 50px)}.ppet{top:calc(max(8px,env(safe-area-inset-top)) + 96px);width:170px;padding:5px 8px}.ppn{font-size:13px}.pgrowbar{height:14px}.pgrowbar span{line-height:14px}.ppedals button{width:72px;height:72px}#pGas{width:86px;height:86px}.touchui .pact,.pdrive.touchui .pact{bottom:max(116px,calc(env(safe-area-inset-bottom) + 106px));font-size:16px;padding:10px 14px}.pmode.touchui .otip{top:calc(96px + env(safe-area-inset-top));left:calc(50% - 90px);max-width:60vw}}
 
+
+
 /* ---------- lantern hotel css ---------- */
-/* t286u Lantern Hotel HUD */
+/* t286u Lantern Big Top HUD */
 #lhBox{display:none}
 #lhMeter{display:none;position:absolute;left:max(10px,env(safe-area-inset-left));bottom:18px;z-index:8;pointer-events:none;font-family:inherit}
 .touchui #lhMeter{bottom:158px;left:max(10px,env(safe-area-inset-left))}
@@ -1083,16 +1085,30 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 .lhnear small{color:#d61c8c}
 #lhCut,#lhCalm{display:none;position:absolute;inset:0;z-index:30;background:rgba(10,4,20,.72);align-items:center;justify-content:center;flex-direction:column;text-align:center;color:#fff;pointer-events:auto}
 #lhCut.show,#lhCalm.show{display:flex}
-#lhCutEyes{font-size:64px;letter-spacing:8px;animation:lhblink 0.9s ease-in-out infinite;margin-bottom:12px}
-#lhCutEyes i{display:inline-block;width:52px;height:36px;margin:0 6px;border-radius:50%;background:#fff6d8;border:4px solid #1d2340;position:relative;animation:lhblink 1.1s ease-in-out infinite}
-#lhCutEyes i:nth-child(2){animation-delay:.15s;background:#c5b0ff}
-#lhCutEyes i:nth-child(3){animation-delay:.3s;background:#7cffd0}
-#lhCutEyes i:nth-child(4){animation-delay:.45s;background:#ffd25a}
-#lhCutEyes i:nth-child(5){animation-delay:.6s;background:#ff8ad8}
+#lhCut.show{background:rgba(2,0,6,.92);animation:lhcutshake .18s ease-in-out 4}
+#lhCutEyes{font-size:64px;letter-spacing:8px;animation:lhblink 0.9s ease-in-out infinite;margin-bottom:12px;max-width:90%;display:flex;flex-wrap:wrap;justify-content:center}
+#lhCutEyes i{display:inline-block;width:52px;height:36px;margin:6px;border-radius:50%;background:#fff6d8;border:4px solid #1d2340;position:relative;animation:lhblink 1.1s ease-in-out infinite,lheyepop .6s ease-out both}
+#lhCutEyes i:nth-child(2){animation-delay:.12s;background:#c5b0ff}
+#lhCutEyes i:nth-child(3){animation-delay:.24s;background:#7cffd0}
+#lhCutEyes i:nth-child(4){animation-delay:.36s;background:#ffd25a}
+#lhCutEyes i:nth-child(5){animation-delay:.48s;background:#ff8ad8}
+#lhCutEyes i:nth-child(6){animation-delay:.08s;background:#ff6b6b}
+#lhCutEyes i:nth-child(7){animation-delay:.2s;background:#b8ff7a}
+#lhCutEyes i:nth-child(8){animation-delay:.4s;background:#7ad0ff}
+#lhCutEyes i:nth-child(9){animation-delay:.55s;background:#ffe600}
+#lhCutEyes i:nth-child(10){animation-delay:.18s;background:#ff9ad8}
+#lhCutEyes i:nth-child(11){animation-delay:.33s;background:#d0c4ff}
+#lhCutEyes i:nth-child(12){animation-delay:.5s;background:#fff6d8}
 #lhCutEyes i:after{content:"";position:absolute;left:18px;top:8px;width:14px;height:14px;border-radius:50%;background:#3a1860;box-shadow:-6px -4px 0 1px #fff}
 @keyframes lhblink{0%,100%{transform:scaleY(1)}40%{transform:scaleY(1)}48%{transform:scaleY(.08)}56%{transform:scaleY(1)}}
-#lhCutCap,#lhCalmCap{font-weight:900;font-size:22px;max-width:520px;line-height:1.3;padding:0 16px;text-shadow:0 3px 0 #1d2340}
-#lhSkip,#lhCalmSkip{margin-top:16px;border:3px solid #fff;border-radius:14px;background:#6b3cff;color:#fff;font:inherit;font-weight:900;padding:8px 16px;cursor:pointer}
+@keyframes lheyepop{from{opacity:0;transform:scale(.2)}to{opacity:1}}
+@keyframes lhcutshake{0%,100%{transform:translate(0,0)}25%{transform:translate(-7px,3px)}50%{transform:translate(6px,-4px)}75%{transform:translate(-4px,-2px)}}
+#lhCut:before,#lhCut:after{content:"";position:absolute;left:0;right:0;height:14%;background:repeating-linear-gradient(90deg,transparent 0 10px,#0a0a12 10px 14px,transparent 14px 22px);opacity:0;pointer-events:none}
+#lhCut.show:before{top:12%;animation:lhtear 0.9s steps(3) infinite;opacity:.55}
+#lhCut.show:after{bottom:18%;animation:lhtear 1.1s steps(3) infinite reverse;opacity:.4}
+@keyframes lhtear{0%,100%{transform:translateX(0)}50%{transform:translateX(-18px)}}
+#lhCutCap,#lhCalmCap{font-weight:900;font-size:22px;max-width:520px;line-height:1.3;padding:0 16px;text-shadow:0 3px 0 #1d2340;z-index:1}
+#lhSkip,#lhCalmSkip{margin-top:16px;border:3px solid #fff;border-radius:14px;background:#6b3cff;color:#fff;font:inherit;font-weight:900;padding:8px 16px;cursor:pointer;z-index:1}
 .lh-breathe{width:110px;height:110px;border:6px solid #fff;border-radius:50%;margin:8px auto 16px;background:radial-gradient(circle at 40% 40%,#7cffd0,#6b3cff);animation:lhbreathe 2.2s ease-in-out infinite}
 @keyframes lhbreathe{0%,100%{transform:scale(.82)}50%{transform:scale(1.08)}}
 #lhSet,#lhDraw{display:none;position:absolute;inset:0;z-index:25;background:rgba(20,8,36,.55);align-items:center;justify-content:center;pointer-events:auto}
@@ -1113,19 +1129,46 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 #lhVision i:nth-child(4){right:10%;bottom:20%;animation-delay:1.7s}
 @keyframes lhfloat{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-10px) rotate(8deg)}}
 body.lh-muffled #obby{filter:saturate(.85)}
+/* Sanity scare overlays (toned down when Glitched vision is off). Slow, not strobing. */
+#lhScare{display:none;position:absolute;inset:0;z-index:6;pointer-events:none;opacity:0}
+#lhScare.show{display:block;opacity:1}
+#lhVignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 38%,rgba(0,0,0,calc(var(--lh-vignette,0)*0.85)) 100%);transition:background .4s linear}
+#lhStatic{position:absolute;inset:0;opacity:calc(var(--lh-static,0) * 0.22);mix-blend-mode:screen;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.18) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(0,0,0,.25) 0 1px,transparent 1px 2px);animation:lhstatic 0.9s steps(2) infinite}
+@keyframes lhstatic{0%,100%{transform:translate(0,0)}50%{transform:translate(-6px,3px)}}
+#lhTear{position:absolute;inset:0;opacity:calc(var(--lh-tear,0) * 0.5);background:repeating-linear-gradient(90deg,transparent 0 40px,rgba(255,255,255,.2) 40px 42px,transparent 42px 90px);animation:lhtear 1.4s steps(2) infinite}
+#lhEdgeEyes{position:absolute;inset:0}
+#lhEdgeEyes i{position:absolute;width:28px;height:18px;border-radius:50%;background:#fff6d8;border:3px solid #140814;opacity:calc(var(--lh-eyes,0) * 0.9);transform:scaleY(var(--lh-blink,1));box-shadow:0 0 10px rgba(255,230,160,.45)}
+#lhEdgeEyes i:after{content:"";position:absolute;left:8px;top:3px;width:9px;height:9px;border-radius:50%;background:#2a1040;box-shadow:-3px -2px 0 1px #fff}
+#lhEdgeEyes i:nth-child(1){left:2%;top:18%}
+#lhEdgeEyes i:nth-child(2){right:3%;top:22%}
+#lhEdgeEyes i:nth-child(3){left:4%;bottom:28%}
+#lhEdgeEyes i:nth-child(4){right:5%;bottom:24%}
+#lhEdgeEyes i:nth-child(5){left:18%;top:6%}
+#lhEdgeEyes i:nth-child(6){right:20%;top:8%}
+#lhEdgeEyes i:nth-child(7){left:8%;top:48%}
+#lhEdgeEyes i:nth-child(8){right:7%;top:52%}
 @media (max-width:760px),(max-height:520px){
   .lh-meterbox{padding:6px 8px;min-width:110px}
   .lh-eyes{font-size:16px}
   #lhCutCap,#lhCalmCap{font-size:18px}
   #lhCutEyes i{width:36px;height:24px}
+  #lhEdgeEyes i{width:22px;height:14px}
 }
-
-
 #obby.lhmode #lhRoot{display:block;position:absolute;inset:0;pointer-events:none;z-index:20}
 #obby.lhmode #lhMeter{display:block;pointer-events:none;z-index:21}
 #obby.lhmode #lhSetBtn,#obby.lhmode #lhFanfare.show,#obby.lhmode #lhAct.show{pointer-events:auto}
 #obby.lhmode #lhCut,#obby.lhmode #lhCalm,#obby.lhmode #lhSet,#obby.lhmode #lhDraw{pointer-events:auto;z-index:90}
 #obby.lhmode #lhKeyTag{z-index:21}
+
+/* Start-fail safety net (kept here so lantern css refresh does not drop it). */
+#oStartFail{display:none;position:absolute;inset:0;z-index:240;background:rgba(16,22,48,.78);place-items:center;padding:24px;pointer-events:auto;font-family:inherit}
+#oStartFail.show{display:grid}
+#oStartFail .ostartfail-box{background:#fff;color:#1c1630;border-radius:24px;padding:28px 24px 22px;max-width:420px;width:min(420px,100%);text-align:center;box-shadow:0 18px 48px rgba(0,0,0,.3)}
+#oStartFail .ostartfail-emoji{font-size:42px;line-height:1;margin-bottom:8px}
+#oStartFail h2{margin:0 0 10px;font-size:22px}
+#oStartFail p{margin:0 0 18px;color:#4a4560;font-weight:700;line-height:1.45}
+#oStartFail #oStartFailExit{pointer-events:auto}
+
 /* ---------- /lantern hotel css ---------- */
 </style>
 <style id="mobileHud">
@@ -1513,7 +1556,7 @@ body.lh-muffled #obby{filter:saturate(.85)}
       <span id="oStageBox">🏁 Lv <b id="oLvl">1</b><span id="oCpWrap"> · 🚩 <b id="oStage">1</b>/<b id="oStageN">3</b></span></span>
       <span id="dbBox" style="display:none"><b id="dbN">💃 Dance</b></span>
       <span id="hmBox" style="display:none"><b id="hmN">👻 Escape</b></span>
-      <span id="lhBox" style="display:none"><b id="lhN">🏮 Lantern Hotel</b></span>
+      <span id="lhBox" style="display:none"><b id="lhN">🏮 Lantern Big Top</b></span>
       <span id="sbBox" style="display:none"><b id="sbN">🐴 Stable</b></span>
       <span id="icBox" style="display:none"><b id="icN">🍦 0</b></span>
       <span id="phBox" style="display:none"><b id="phN">🏨 Pet Hotel</b></span>
@@ -1563,6 +1606,15 @@ body.lh-muffled #obby{filter:saturate(.85)}
   <div class="obanner" id="oBanner"></div>
   <div class="ocross" id="oCross"></div><div class="odot" id="oDot"></div>
   <div class="obig" id="oBig"></div>
+  <div id="oStartFail" class="ostartfail" role="alertdialog" aria-labelledby="oStartFailTitle" aria-describedby="oStartFailText">
+    <div class="ostartfail-box">
+      <div class="ostartfail-emoji">😢</div>
+      <h2 id="oStartFailTitle">This game couldn't start</h2>
+      <p id="oStartFailText">Something went wrong while opening this game. Tap Exit to go back and try again.</p>
+      <button class="big" id="oStartFailExit">🚪 Exit</button>
+    </div>
+  </div>
+
   <div class="otouch" id="oTouch">
     <div class="ojzone" id="oJoyZone"></div>
     <div class="ojoy" id="oJoy"><div class="oknob" id="oKnob"></div></div>
@@ -1703,12 +1755,21 @@ body.lh-muffled #obby{filter:saturate(.85)}
   <div id="lhRoot" style="display:none">
     <div id="lhMeter" aria-label="Sanity meter"></div>
     <div id="lhKeyTag">🔑 Key Holder</div>
-    <button type="button" id="lhSetBtn" aria-label="Hotel settings">⚙️ Hotel settings</button>
-    <button type="button" id="lhFanfare" aria-label="Call Miss Fanfare">🎩 Call Miss Fanfare</button>
+    <button type="button" id="lhSetBtn" aria-label="Big Top settings">⚙️ Big Top settings</button>
+    <button type="button" id="lhFanfare" aria-label="Call Maestro Gleam">🎩 Call Maestro Gleam</button>
+    <div id="lhScare" aria-hidden="true">
+      <div id="lhVignette"></div>
+      <div id="lhStatic"></div>
+      <div id="lhTear"></div>
+      <div id="lhEdgeEyes">
+        <i data-k="0"></i><i data-k="1"></i><i data-k="2"></i><i data-k="3"></i>
+        <i data-k="4"></i><i data-k="5"></i><i data-k="6"></i><i data-k="7"></i>
+      </div>
+    </div>
     <div id="lhVision" aria-hidden="true"><i>✦</i><i>👁️</i><i>◇</i><i>✦</i></div>
     <div id="lhCut">
-      <div id="lhCutEyes"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-      <div id="lhCutCap">Oh no… you're all fizzled!</div>
+      <div id="lhCutEyes"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div id="lhCutCap">The lanterns wink out. Eyes open in the dark… you're all fizzled!</div>
       <button type="button" id="lhSkip">Skip ▶</button>
     </div>
     <div id="lhCalm">
@@ -1718,9 +1779,9 @@ body.lh-muffled #obby{filter:saturate(.85)}
     </div>
     <div id="lhSet">
       <div class="mbox">
-        <h2>🏮 Hotel settings</h2>
-        <label><input type="checkbox" id="lhVis"> Glitched vision<small>Odd shapes appear when Sanity is low or you're fizzled.</small></label>
-        <label><input type="checkbox" id="lhMuff"> Muffled sound<small>Sounds get soft and distant when things get woozy.</small></label>
+        <h2>🏮 Big Top settings</h2>
+        <label><input type="checkbox" id="lhVis"> Glitched vision<small>Odd shapes, a dark vignette, and a wobbly view when Sanity is low or you're fizzled. Turn off to tone that down.</small></label>
+        <label><input type="checkbox" id="lhMuff"> Muffled sound<small>Sounds get soft and distant when things get woozy, including the whispery hum.</small></label>
         <div style="font-weight:900;margin-top:8px">Cancellation</div>
         <small>When a friend rings your doorbell or flips your lights during a fizzle-in-progress:</small>
         <label><input type="radio" name="lhCan" id="lhCanFifty" value="fifty"> 50/50</label>
@@ -1988,7 +2049,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-1';
+const BUILD = '2026.11.16-2';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2709,7 +2770,7 @@ $('#saveAv').onclick = () => {
 
 /* ---------- games ---------- */
 const GAMES = [
-  {id:'lantern', name:'Lantern Hotel', emoji:'🏮', tag:'Stay close and stay bright in a colorful funhouse hotel!', draw: drawLantern, playable: true, isNew: true},
+  {id:'lantern', name:'Lantern Big Top', emoji:'🏮', tag:'Stay close and stay bright under a colorful circus tent!', draw: drawLantern, playable: true, isNew: true},
   {id:'dreamhouse', name:'Dream House Builders', emoji:'🏡', tag:'Re-build your house with bricks, paint, furniture and upgrades!', draw: drawDreamHouse, playable: true, isNew: true},
   {id:'pethotel', name:'Pet Hotel', emoji:'🏨', tag:'Check in guest pets, feed, bathe, play, tuck them in, then check out for coins!', draw: drawPetHotel, playable: true, isNew: true},
   {id:'dance', name:'Bossa Beat Dance Battle', emoji:'💃', tag:'Hit the arrows to original bossa beats — dance-off with friends!', draw: drawDance, playable: true, isNew: true},
@@ -2809,25 +2870,48 @@ function drawLantern(ctx){
   if (!ctx) return;
   if (typeof sky === 'function') sky(ctx, '#7ec8ff', '#ffd9f0');
   else { ctx.fillStyle = '#7ec8ff'; ctx.fillRect(0, 0, 320, 200); }
-  ctx.fillStyle = '#ff8fc8'; ctx.fillRect(36, 48, 248, 118);
-  ctx.fillStyle = '#fff7fb'; ctx.fillRect(36, 48, 248, 16);
-  ctx.fillStyle = '#6b3cff'; ctx.fillRect(140, 24, 40, 28);
+  // grass
+  ctx.fillStyle = '#7bc96f'; ctx.fillRect(0, 150, 320, 50);
+  // ferris wheel (back left)
+  ctx.strokeStyle = '#6b3cff'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(52, 100, 36, 0, Math.PI * 2); ctx.stroke();
+  for (let i = 0; i < 8; i++){
+    const a = i * Math.PI / 4;
+    ctx.beginPath(); ctx.moveTo(52, 100); ctx.lineTo(52 + Math.cos(a) * 36, 100 + Math.sin(a) * 36); ctx.stroke();
+    ctx.fillStyle = ['#ff6b6b','#ffd25a','#7cffd0','#8ecaff'][i % 4];
+    ctx.beginPath(); ctx.arc(52 + Math.cos(a) * 36, 100 + Math.sin(a) * 36, 5, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.fillStyle = '#4a2a10'; ctx.fillRect(49, 136, 6, 20);
+  // striped big top
+  const stripes = ['#e31c23', '#fff8f0'];
+  ctx.beginPath(); ctx.moveTo(160, 18); ctx.lineTo(286, 150); ctx.lineTo(34, 150); ctx.closePath();
+  ctx.save(); ctx.clip();
+  for (let i = 0; i < 16; i++){
+    ctx.fillStyle = stripes[i % 2];
+    ctx.beginPath(); ctx.moveTo(160, 18); ctx.lineTo(34 + i * 16, 150); ctx.lineTo(34 + (i + 1) * 16, 150); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+  ctx.strokeStyle = '#1d2340'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(160, 18); ctx.lineTo(286, 150); ctx.lineTo(34, 150); ctx.closePath(); ctx.stroke();
+  // flag
   ctx.fillStyle = '#ffd25a';
-  ctx.beginPath(); ctx.moveTo(130, 28); ctx.lineTo(160, 8); ctx.lineTo(190, 28); ctx.fill();
-  ctx.fillStyle = '#c8f0ff'; ctx.fillRect(56, 78, 44, 36); ctx.fillRect(220, 78, 44, 36);
-  ctx.fillStyle = '#ffe8a8'; ctx.fillRect(130, 110, 60, 56);
-  ctx.fillStyle = '#6b3cff'; ctx.fillRect(148, 128, 24, 38);
-  ctx.fillStyle = '#ffd25a';
-  [[70, 64], [160, 40], [250, 64], [100, 160], [210, 160]].forEach(([x, y]) => {
-    ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(160, 18); ctx.lineTo(160, 4); ctx.lineTo(184, 12); ctx.lineTo(160, 16); ctx.fill();
+  // doorway
+  ctx.fillStyle = '#3a1860'; ctx.fillRect(140, 110, 40, 40);
+  ctx.fillStyle = '#ffd25a'; ctx.beginPath(); ctx.arc(160, 110, 20, Math.PI, 0); ctx.fill();
+  // balloons
+  [['#ff6b9a', 230, 70], ['#6b3cff', 248, 62], ['#7cffd0', 240, 50]].forEach(([c, x, y]) => {
+    ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(x, y, 10, 13, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#1d2340'; ctx.beginPath(); ctx.moveTo(x, y + 12); ctx.lineTo(x + 4, 150); ctx.stroke();
   });
   if (typeof guy === 'function') guy(ctx, 96, 176, 12, '#d61c8c');
   if (typeof guy === 'function') guy(ctx, 200, 176, 12, '#3a86ff');
   ctx.font = '22px sans-serif';
   ctx.fillText('🏮', 150, 70);
-  ctx.fillText('👁️', 64, 70);
-  ctx.fillText('👁️', 232, 70);
+  ctx.fillText('🎩', 152, 100);
 }
+
+
 function drawHaunt(ctx){
   sky(ctx, '#2a2450', '#5b4d7a');
   ctx.fillStyle = '#4a3f6b'; ctx.fillRect(0, 140, 320, 60);
@@ -3380,7 +3464,7 @@ function confetti(){
     {id: 'adventure', name: 'Adventure', emoji: '🏃'},
     {id: 'creative', name: 'Creative', emoji: '🎨'},
     {id: 'friends', name: 'Friends', emoji: '👫'},
-    {id: 'lantern', name: 'Lantern Hotel', emoji: '🏮'},
+    {id: 'lantern', name: 'Lantern Big Top', emoji: '🏮'},
     {id: 'collection', name: 'Collection', emoji: '🪙'}
   ];
   // Known Adopt-a-Pet rarities so backfill works even before PET_KINDS is in scope.
@@ -3463,24 +3547,24 @@ function confetti(){
     {id:'fr-session', cat:'friends', emoji:'🎮', name:'We Played!', desc:'Add a friend after you played together in a room.', coins:15, prove:s => !!(s.notes && s.notes['fr:session'])},
     {id:'ch-hello', cat:'friends', emoji:'💬', name:'First Hello', desc:'Say Hi! in a multiplayer room.', coins:5, prove:s => !!(s.notes && s.notes['ch:hello'])},
     {id:'ch-gg', cat:'friends', emoji:'🏆', name:'Said GG', desc:'Send a Good Game (GG!) in a multiplayer room.', coins:5, prove:s => !!(s.notes && s.notes['ch:gg'])},
-    // Lantern Hotel
-    {id:'lh-welcome', cat:'lantern', emoji:'🏮', name:'Welcome In', desc:'Check in to Lantern Hotel for the first time.', coins:5, prove:s => !!(s.notes && s.notes['lh:welcome'])},
-    {id:'lh-back', cat:'lantern', emoji:'🔑', name:'Back Again', desc:'Return to Lantern Hotel for another stay.', coins:5, prove:s => !!(s.notes && s.notes['lh:back'])},
+    // Lantern Big Top
+    {id:'lh-welcome', cat:'lantern', emoji:'🏮', name:'Welcome In', desc:'Check in to Lantern Big Top for the first time.', coins:5, prove:s => !!(s.notes && s.notes['lh:welcome'])},
+    {id:'lh-back', cat:'lantern', emoji:'🔑', name:'Back Again', desc:'Return to Lantern Big Top for another stay.', coins:5, prove:s => !!(s.notes && s.notes['lh:back'])},
     {id:'lh-fizzle', cat:'lantern', emoji:'👁️', name:'All Fizzled Out', desc:'Let your Sanity run out and fizzle.', coins:15, prove:s => !!(s.notes && s.notes['lh:fizzle'])},
     {id:'lh-breath', cat:'lantern', emoji:'😮‍💨', name:'Take a Breath', desc:'Have a calm-down moment and restore your Sanity.', coins:10, prove:s => !!(s.notes && s.notes['lh:breath'])},
-    {id:'lh-cellar', cat:'lantern', emoji:'🚪', name:'Down to the Cellar', desc:'Get sent to the cellar by Miss Fanfare.', coins:15, prove:s => !!(s.notes && s.notes['lh:cellar'])},
+    {id:'lh-cellar', cat:'lantern', emoji:'🚪', name:'Down to the Cellar', desc:'Get sent to the cellar by Maestro Gleam.', coins:15, prove:s => !!(s.notes && s.notes['lh:cellar'])},
     {id:'lh-keys', cat:'lantern', emoji:'🔑', name:'Key Bunch', desc:'Be picked as the Key Holder.', coins:10, prove:s => !!(s.notes && s.notes['lh:keys'])},
-        {id:'lh-find', cat:'lantern', emoji:'🫣', name:'Who\'s in There?', desc:'As Key Holder, unlock a room and find a fizzled guest.', coins:15, prove:s => !!(s.notes && s.notes['lh:find'])},
+    {id:'lh-find', cat:'lantern', emoji:'🫣', name:'Who\'s in There?', desc:'As Key Holder, unlock a room and find a fizzled guest.', coins:15, prove:s => !!(s.notes && s.notes['lh:find'])},
     {id:'lh-tagged', cat:'lantern', emoji:'💨', name:'Too Close!', desc:'Get tagged by a fizzled guest.', coins:10, prove:s => !!(s.notes && s.notes['lh:tagged'])},
-    {id:'lh-song', cat:'lantern', emoji:'🎵', name:'Hallway Serenade', desc:'Hear Miss Fanfare singing outside your room.', coins:10, prove:s => !!(s.notes && s.notes['lh:song'])},
+    {id:'lh-song', cat:'lantern', emoji:'🎵', name:'Midway Serenade', desc:'Hear Maestro Gleam singing outside your wagon.', coins:10, prove:s => !!(s.notes && s.notes['lh:song'])},
     {id:'lh-exit', cat:'lantern', emoji:'🚪', name:'Was That a Door?', desc:'Spot a mysterious exit door.', coins:10, prove:s => !!(s.notes && s.notes['lh:exit'])},
-    {id:'lh-words', cat:'lantern', emoji:'📛', name:'Watch Your Words', desc:'Have a chat line filtered by the hotel word filter.', coins:5, prove:s => !!(s.notes && s.notes['lh:words'])},
+    {id:'lh-words', cat:'lantern', emoji:'📛', name:'Watch Your Words', desc:'Have a chat line filtered by the circus word filter.', coins:5, prove:s => !!(s.notes && s.notes['lh:words'])},
     {id:'lh-vision', cat:'lantern', emoji:'🌀', name:'Seeing Things', desc:'Start seeing odd shapes when your Sanity gets low.', coins:10, prove:s => !!(s.notes && s.notes['lh:vision'])},
-        {id:'lh-enough', cat:'lantern', emoji:'😤', name:'That\'s Enough!', desc:'Get Miss Fanfare all worked up.', coins:15, prove:s => !!(s.notes && s.notes['lh:enough'])},
-        {id:'lh-all', cat:'lantern', emoji:'😵', name:'Everyone\'s Fizzled', desc:'Watch Miss Fanfare\'s meltdown when every guest has fizzled.', coins:20, prove:s => !!(s.notes && s.notes['lh:all'])},
-    {id:'lh-vesper', cat:'lantern', emoji:'🌙', name:'Mystery Guest', desc:'Meet the late-night visitor in your hotel.', coins:20, prove:s => !!(s.notes && s.notes['lh:vesper'])},
+    {id:'lh-enough', cat:'lantern', emoji:'😤', name:'That\'s Enough!', desc:'Get Maestro Gleam all worked up.', coins:15, prove:s => !!(s.notes && s.notes['lh:enough'])},
+    {id:'lh-all', cat:'lantern', emoji:'😵', name:'Everyone\'s Fizzled', desc:'Watch Maestro Gleam\'s meltdown when every guest has fizzled.', coins:20, prove:s => !!(s.notes && s.notes['lh:all'])},
+    {id:'lh-vesper', cat:'lantern', emoji:'🌙', name:'Mystery Guest', desc:'Meet the late-night visitor under the big top.', coins:20, prove:s => !!(s.notes && s.notes['lh:vesper'])},
     {id:'lh-peek', cat:'lantern', emoji:'👀', name:'Gotcha!', desc:'Get fizzled by the late-night visitor.', coins:20, prove:s => !!(s.notes && s.notes['lh:peek'])},
-    // Collection
+                // Collection
     {id:'welcome', cat:'collection', emoji:'👋', name:'Hello, Friend', desc:'Pick a player name and join Rublox.', coins:5, prove:s => !!(s.player && s.player.name)},
     {id:'first-game', cat:'collection', emoji:'🎮', name:'Let\'s Play', desc:'Start any Rublox game.', coins:5, prove:s => !!(s.notes && s.notes.play) || !!(s.recent && s.recent.length >= 1)},
     {id:'shop-buy', cat:'collection', emoji:'🛍️', name:'Window Shopper No More', desc:'Buy your first item from the shop.', coins:8, prove:s => achOwnedN(s) >= 1},
@@ -3550,6 +3634,8 @@ function confetti(){
       const loc = (typeof location !== 'undefined' && location) || (typeof window !== 'undefined' && window.location) || null;
       const hash = loc && loc.hash ? String(loc.hash) : '';
       if (/(?:^|#|&)chattest=/i.test(hash)) return true;
+      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
+      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
     } catch (e){}
     return false;
@@ -5866,15 +5952,17 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     }
   } catch (e){}
 
+
+
 /* ---------- lantern rules ---------- */
-/* Pure Lantern Hotel rules — safe to require() in tests and to load in the page. */
+/* Pure Lantern Big Top rules — safe to require() in tests and to load in the page. */
 (function (root) {
   'use strict';
   const LH_KEY = 'rubloxLantern';
   const LH_VER = 1;
-  const LH_HOST = 'Fanfare';
-  const LH_HOST_TITLE = 'Miss Fanfare';
-  const LH_GAME = 'Lantern Hotel';
+  const LH_HOST = 'Gleam';
+  const LH_HOST_TITLE = 'Maestro Gleam';
+  const LH_GAME = 'Lantern Big Top';
   const LH_STAMPS = ['star', 'heart', 'circle', 'square', 'squiggle', 'smile', 'lantern', 'swirl'];
   const LH_EYES = 5;
   const LH_COMPANY_R = 8;
@@ -5944,7 +6032,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
 
   function lhHostNameIn(text){
     const t = String(text || '').replace(/#/g, ' ').replace(/[^A-Za-z0-9 ]+/g, ' ');
-    return /(^|\s)fanfare(\s|$)/i.test(t);
+    return /(^|\s)(gleam|maestro\s+gleam)(\s|$)/i.test(t);
   }
 
   function lhDefaultSettings(){
@@ -6014,24 +6102,24 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     return t.length > 0 && /^#+$/.test(t);
   }
 
-    const LH_BADGES = [
-    {id:'lh-welcome', name:'Welcome In', desc:'Check in to Lantern Hotel for the first time.', emoji:'🏮', coins:5, note:'lh:welcome'},
-    {id:'lh-back', name:'Back Again', desc:'Return to Lantern Hotel for another stay.', emoji:'🔑', coins:5, note:'lh:back'},
-    {id:'lh-fizzle', name:'All Fizzled Out', desc:'Let your Sanity run out and fizzle.', emoji:'👁️', coins:15, note:'lh:fizzle'},
+  const LH_BADGES = [
+    {id:'lh-welcome', name:'Welcome In', desc:'Check in to Lantern Big Top for the first time.', emoji:'🏮', coins:5, note:'lh:welcome'},
+    {id:'lh-back', name:'Back Again', desc:'Return to Lantern Big Top for another stay.', emoji:'🔑', coins:5, note:'lh:back'},
+    {id:'lh-fizzle', real:"I don't feel well...", realDesc:'Go insane and abstract.', name:'All Fizzled Out', desc:'Let your Sanity run out and fizzle.', emoji:'👁️', coins:15, note:'lh:fizzle'},
     {id:'lh-breath', name:'Take a Breath', desc:'Have a calm-down moment and restore your Sanity.', emoji:'😮‍💨', coins:10, note:'lh:breath'},
-    {id:'lh-cellar', name:'Down to the Cellar', desc:'Get sent to the cellar by Miss Fanfare.', emoji:'🚪', coins:15, note:'lh:cellar'},
-    {id:'lh-keys', name:'Key Bunch', desc:'Be picked as the Key Holder.', emoji:'🔑', coins:10, note:'lh:keys'},
-    {id:'lh-find', name:'Who\'s in There?', desc:'As Key Holder, unlock a room and find a fizzled guest.', emoji:'🫣', coins:15, note:'lh:find'},
+    {id:'lh-cellar', name:'Down to the Cellar', desc:'Get sent to the cellar by Maestro Gleam.', emoji:'🚪', coins:15, note:'lh:cellar'},
+    {id:'lh-keys', real:"I've got keys everywhere!", realDesc:'Be selected as the keyholder.', name:'Key Bunch', desc:'Be picked as the Key Holder.', emoji:'🔑', coins:10, note:'lh:keys'},
+    {id:'lh-find', real:'What... is that?', realDesc:"Unlock someone's room and find them abstracted. (Keyholder)", name:"Who's in There?", desc:'As Key Holder, unlock a room and find a fizzled guest.', emoji:'🫣', coins:15, note:'lh:find'},
     {id:'lh-tagged', name:'Too Close!', desc:'Get tagged by a fizzled guest.', emoji:'💨', coins:10, note:'lh:tagged'},
-    {id:'lh-song', name:'Hallway Serenade', desc:'Hear Miss Fanfare singing outside your room.', emoji:'🎵', coins:10, note:'lh:song'},
+    {id:'lh-song', name:'Midway Serenade', desc:'Hear Maestro Gleam singing outside your wagon.', emoji:'🎵', coins:10, note:'lh:song'},
     {id:'lh-exit', name:'Was That a Door?', desc:'Spot a mysterious exit door.', emoji:'🚪', coins:10, note:'lh:exit'},
-    {id:'lh-words', name:'Watch Your Words', desc:'Have a chat line filtered by the hotel word filter.', emoji:'📛', coins:5, note:'lh:words'},
-    {id:'lh-vision', name:'Seeing Things', desc:'Start seeing odd shapes when your Sanity gets low.', emoji:'🌀', coins:10, note:'lh:vision'},
-    {id:'lh-enough', name:'That\'s Enough!', desc:'Get Miss Fanfare all worked up.', emoji:'😤', coins:15, note:'lh:enough'},
-    {id:'lh-all', name:'Everyone\'s Fizzled', desc:'Watch Miss Fanfare\'s meltdown when every guest has fizzled.', emoji:'😵', coins:20, note:'lh:all'},
-    {id:'lh-vesper', name:'Mystery Guest', desc:'Meet the late-night visitor in your hotel.', emoji:'🌙', coins:20, note:'lh:vesper', secret:true},
-    {id:'lh-peek', name:'Gotcha!', desc:'Get fizzled by the late-night visitor.', emoji:'👀', coins:20, note:'lh:peek', secret:true},
-  ]
+    {id:'lh-words', name:'Watch Your Words', desc:'Have a chat line filtered by the circus word filter.', emoji:'📛', coins:5, note:'lh:words'},
+    {id:'lh-vision', real:'A stare of bad luck...', realDesc:"Start seeing things that aren’t there.", name:'Seeing Things', desc:'Start seeing odd shapes when your Sanity gets low.', emoji:'🌀', coins:10, note:'lh:vision'},
+    {id:'lh-enough', name:"That's Enough!", desc:'Get Maestro Gleam all worked up.', emoji:'😤', coins:15, note:'lh:enough'},
+    {id:'lh-all', name:"Everyone's Fizzled", desc:'Watch Maestro Gleam\'s meltdown when every guest has fizzled.', emoji:'😵', coins:20, note:'lh:all'},
+    {id:'lh-vesper', name:'Mystery Guest', desc:'Meet the late-night visitor under the big top.', emoji:'🌙', coins:20, note:'lh:vesper', secret:true},
+    {id:'lh-peek', name:'Gotcha!', desc:'Get fizzled by the late-night visitor.', emoji:'👀', coins:20, note:'lh:peek', secret:true}
+  ];
 
   const api = {
     LH_KEY, LH_VER, LH_HOST, LH_HOST_TITLE, LH_GAME, LH_STAMPS, LH_EYES,
@@ -6867,7 +6955,7 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null;
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null;
     if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
@@ -14798,11 +14886,11 @@ const Obby = (() => {
     return false;
   }
   /* ---------- lantern hotel ---------- */
-  /* ===================== t286u: 🏮 LANTERN HOTEL ===================== */
+  /* ===================== t286u/t289u: 🏮 LANTERN BIG TOP ===================== */
   const LH_RULES = (typeof LHRules !== 'undefined' && LHRules) ? LHRules : (typeof window !== 'undefined' && window.LHRules) || {};
   const LH_KEY = LH_RULES.LH_KEY || 'rubloxLantern';
-  const LH_HOST = LH_RULES.LH_HOST || 'Fanfare';
-  const LH_HOST_TITLE = LH_RULES.LH_HOST_TITLE || 'Miss Fanfare';
+  const LH_HOST = LH_RULES.LH_HOST || 'Gleam';
+  const LH_HOST_TITLE = LH_RULES.LH_HOST_TITLE || 'Maestro Gleam';
   let lh = null;
 
   function lhEl(id){ return (typeof $ === 'function' ? $(id[0] === '#' ? id : '#' + id) : (typeof document !== 'undefined' && document.getElementById(id.replace(/^#/, '')))); }
@@ -14886,26 +14974,32 @@ const Obby = (() => {
   function lhMkGlitch(parent, opts){
     opts = opts || {};
     const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(1.15, 2.4, 0.85), lhMat('#120814', {basic:true}));
-    body.position.y = 1.2;
+    const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.55, 0.9), lhMat('#050308', {basic:true}));
+    body.position.y = 1.25;
     g.add(body);
-    const jag = new THREE.Mesh(new THREE.BoxGeometry(1.35, 0.35, 1.0), lhMat('#2a1030', {basic:true, emit:'#3a1548'}));
-    jag.position.y = 1.7; jag.rotation.z = 0.2;
+    const jag = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.4, 1.05), lhMat('#0a0610', {basic:true, emit:'#1a0820'}));
+    jag.position.y = 1.85; jag.rotation.z = 0.25;
     g.add(jag);
-    const cols = ['#7cff4f', '#00e5ff', '#ff2bd6', '#ffe600', '#ff7ad9', '#7f7cff'];
+    const jag2 = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.8, 0.2), lhMat('#000000', {basic:true, emit:'#140818'}));
+    jag2.position.set(0.55, 1.2, 0); jag2.rotation.z = -0.3;
+    g.add(jag2);
+    const cols = ['#7cff4f', '#00e5ff', '#ff2bd6', '#ffe600', '#ff7ad9', '#7f7cff', '#ff3030', '#ffffff'];
     const eyes = [];
-    const n = lhLow() ? 6 : 11;
+    const n = lhLow() ? 8 : 16;
     for (let i = 0; i < n; i++){
       const tex = lhEyeTex(cols[i % cols.length]);
-      const pl = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.24), new THREE.MeshBasicMaterial({map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide}));
-      pl.position.set((Math.random() - 0.5) * 1.1, 0.7 + Math.random() * 1.8, 0.4 + (Math.random() - 0.5) * 0.5);
+      const sz = 0.26 + (i % 3) * 0.08;
+      const pl = new THREE.Mesh(new THREE.PlaneGeometry(sz, sz * 0.72), new THREE.MeshBasicMaterial({map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide}));
+      const side = (i % 3) - 1;
+      pl.position.set((Math.random() - 0.5) * 1.25, 0.45 + Math.random() * 2.15, (side === 0 ? 0.48 : 0.15) + (Math.random() - 0.5) * 0.55);
+      if (side !== 0) pl.rotation.y = side * 0.8;
       g.add(pl);
-      eyes.push({m: pl, t: Math.random() * 2, per: 0.6 + Math.random() * 1.2, col: cols[i % cols.length]});
+      eyes.push({m: pl, t: Math.random() * 2, per: 0.5 + Math.random() * 1.3, col: cols[i % cols.length]});
     }
     g.visible = false;
     parent.add(g);
     if (lh) lh.trash.push(g);
-    return {g, body, jag, eyes};
+    return {g, body, jag, jag2, eyes};
   }
 
   function lhApplyLook(slot, on){
@@ -14935,12 +15029,22 @@ const Obby = (() => {
       const k = (Math.sin(e.t / e.per * Math.PI * 2) * 0.5 + 0.5);
       if (e.m && e.m.scale) e.m.scale.y = k < 0.12 ? 0.08 : 1;
     });
-    if (fx.jag) fx.jag.rotation.z = 0.15 + Math.sin((lh && lh.t || 0) * 8) * 0.2;
-    if (fx.body) fx.body.position.x = Math.sin((lh && lh.t || 0) * 11) * 0.04;
+    const tt = (lh && lh.t || 0);
+    if (fx.jag) fx.jag.rotation.z = 0.15 + Math.sin(tt * 11) * 0.28;
+    if (fx.jag2) fx.jag2.rotation.z = -0.3 + Math.sin(tt * 13) * 0.2;
+    if (fx.body){
+      fx.body.position.x = Math.sin(tt * 17) * 0.07;
+      fx.body.position.y = 1.25 + Math.sin(tt * 23) * 0.04;
+      fx.body.scale.x = 1 + Math.sin(tt * 19) * 0.08;
+      if (fx.body.material && fx.body.material.color){
+        const flash = Math.sin(tt * 29) > 0.82;
+        fx.body.material.color.set(flash ? '#1a0a22' : '#050308');
+      }
+    }
   }
 
   function lhRoomsSpec(){
-    // six private rooms along a south hallway
+    // six private circus-wagon rooms along a south midway
     const specs = [];
     const zs = [11, 18, 25];
     zs.forEach((z, i) => {
@@ -14948,6 +15052,132 @@ const Obby = (() => {
       specs.push({id: i + 3, x: 13, z, side: 1, owner: null});
     });
     return specs;
+  }
+
+
+  function lhStripeTex(a, b, nx, ny){
+    const key = String(a) + String(b) + (nx || 4) + 'x' + (ny || 1);
+    lh._tex = lh._tex || {};
+    if (lh._tex[key]) return lh._tex[key];
+    const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+    const g = c.getContext('2d');
+    for (let i = 0; i < 8; i++){
+      g.fillStyle = i % 2 === 0 ? a : b;
+      g.fillRect((64 / 8) * i, 0, 8.2, 64);
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(nx || 4, ny || 1);
+    tex.magFilter = THREE.NearestFilter;
+    tex.needsUpdate = true;
+    lh._tex[key] = tex;
+    return tex;
+  }
+  function lhPaintStripe(mesh, a, b, nx, ny){
+    if (!mesh || !mesh.material) return;
+    try {
+      const src = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+      const m = src.clone();
+      m.map = lhStripeTex(a || '#e31c23', b || '#fff8f0', nx, ny);
+      m.color = new THREE.Color('#ffffff');
+      m.needsUpdate = true;
+      mesh.material = m;
+    } catch (e){}
+  }
+  function lhBulb(x, y, z, col){
+    const geo = lh._bulbGeo || (lh._bulbGeo = new THREE.SphereGeometry(lhLow() ? 0.08 : 0.11, 6, 6));
+    const m = lhMesh(geo, lhMat(col, {basic:true, emit: col}), x, y, z);
+    if (!lh.bulbs) lh.bulbs = [];
+    lh.bulbs.push(m);
+    return m;
+  }
+  function lhStringLights(pts){
+    const cols = ['#ffd25a', '#ff6b6b', '#7cffd0', '#8ecaff', '#ff8ad8'];
+    (pts || []).forEach((p, i) => lhBulb(p[0], p[1], p[2], cols[i % cols.length]));
+  }
+  function lhBalloons(x, y, z, n){
+    const cols = ['#ff6b9a', '#6b3cff', '#7cffd0', '#ffd25a', '#ff6b6b'];
+    const count = lhLow() ? Math.min(3, n || 3) : (n || 4);
+    for (let i = 0; i < count; i++){
+      const m = lhMesh(new THREE.SphereGeometry(0.28, 8, 8), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}), x + (i - 1) * 0.28, y + 0.15 * (i % 2), z + (i % 2) * 0.12);
+      if (m) m.scale.y = 1.2;
+    }
+    lhMesh(new THREE.BoxGeometry(0.04, 1.1, 0.04), lhMat('#1d2340'), x, y - 0.7, z);
+  }
+  function lhStand(x, z, color, title){
+    lhBox(x, 0.7, z, 1.8, 1.2, color, 0.7);
+    lhBox(x, 1.15, z, 2.0, 1.4, '#fff8f0', 0.12);
+    lhBox(x, 1.7, z, 2.05, 0.16, '#e31c23', 0.16);
+    if (title) lhLabel(title, 'rgba(80,20,40,.92)', x, 2.15, z);
+  }
+  function lhPins(x, z){
+    const cols = ['#e31c23', '#3a86ff', '#ffd25a'];
+    for (let i = 0; i < 3; i++){
+      const p = lhMesh(new THREE.CylinderGeometry(0.08, 0.12, 0.7, 6), lhMat(cols[i]), x + i * 0.28, 0.4, z);
+      if (p) p.rotation.z = 0.4 + i * 0.2;
+      lhMesh(new THREE.SphereGeometry(0.14, 8, 8), lhMat(cols[i], {emit: cols[i]}), x - 0.4 + i * 0.22, 0.18, z + 0.35);
+    }
+  }
+  function lhFerris(x, y, z){
+    const g = new THREE.Group();
+    const segs = lhLow() ? 8 : 10;
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(3.4, 0.1, 6, segs), lhMat('#6b3cff', {emit:'#7a5cff'}));
+    g.add(rim);
+    const axle = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.8, 6), lhMat('#1d2340'));
+    axle.rotation.x = Math.PI / 2; g.add(axle);
+    const cols = ['#e31c23', '#ffd25a', '#3a86ff', '#2ec27e', '#ff8ad8'];
+    for (let i = 0; i < segs; i++){
+      const a = (i / segs) * Math.PI * 2;
+      const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.07, 3.4, 0.07), lhMat('#fff8f0'));
+      spoke.rotation.z = a; g.add(spoke);
+      const car = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.4, 0.45), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}));
+      car.position.set(Math.sin(a) * 3.4, Math.cos(a) * 3.4, 0);
+      g.add(car);
+    }
+    const pole = new THREE.Mesh(new THREE.BoxGeometry(0.3, 3.6, 0.3), lhMat('#4a2a10'));
+    pole.position.y = -1.8; g.add(pole);
+    g.position.set(x, y, z);
+    g.rotation.y = 0.35;
+    scene.add(g);
+    if (lh){ lh.trash.push(g); lh.rides = lh.rides || []; lh.rides.push({g, kind:'ferris'}); }
+    return g;
+  }
+  function lhCarousel(x, z){
+    const g = new THREE.Group();
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.4, 0.3, lhLow() ? 8 : 12), lhMat('#ffd25a'));
+    base.position.y = 0.15; g.add(base);
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 2.6, 6), lhMat('#e31c23'));
+    pole.position.y = 1.4; g.add(pole);
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(2.3, 0.9, lhLow() ? 8 : 12), lhMat('#e31c23'));
+    roof.position.y = 2.7; g.add(roof);
+    lhPaintStripe(roof, '#e31c23', '#fff8f0', 8, 1);
+    const cols = ['#ff6b9a', '#3a86ff', '#2ec27e', '#ff9f1c'];
+    const n = lhLow() ? 3 : 4;
+    for (let i = 0; i < n; i++){
+      const a = (i / n) * Math.PI * 2;
+      const h = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.55, 0.18), lhMat(cols[i]));
+      h.position.set(Math.sin(a) * 1.4, 0.85, Math.cos(a) * 1.4);
+      g.add(h);
+    }
+    g.position.set(x, 0, z);
+    scene.add(g);
+    if (lh){ lh.trash.push(g); lh.rides = lh.rides || []; lh.rides.push({g, kind:'carousel'}); }
+    return g;
+  }
+  function lhTrailerBits(R, wall){
+    if (!R) return;
+    const wheelZ = [R.z - 1.8, R.z + 1.8];
+    wheelZ.forEach(wz => {
+      const w = lhMesh(new THREE.CylinderGeometry(0.38, 0.38, 0.22, 10), lhMat('#1d2340'), R.x + R.side * (R.w / 2 - 0.2), 0.38, wz);
+      if (w) w.rotation.z = Math.PI / 2;
+    });
+    // peaked canvas roof
+    const roof = lhMesh(new THREE.ConeGeometry(R.w * 0.58, 1.1, 8), lhMat(wall || '#ffb3de'), R.x, 3.7, R.z);
+    if (roof){ lhPaintStripe(roof, wall || '#e31c23', '#fff8f0', 6, 1); if (roof.material){ roof.material.side = THREE.DoubleSide; roof.material.needsUpdate = true; } }
+    // awning over the door (midway side)
+    const ix = R.x - R.side * (R.w / 2);
+    const aw = lhMesh(new THREE.BoxGeometry(1.6, 0.08, 1.8), lhMat('#fff8f0'), ix - R.side * 0.7, 2.55, R.z);
+    if (aw){ aw.rotation.z = R.side * 0.25; lhPaintStripe(aw, '#e31c23', '#fff8f0', 5, 1); }
   }
 
   function buildLantern(){
@@ -14963,43 +15193,67 @@ const Obby = (() => {
       rooms: [], npcs: [], host: null, vesper: null, exitDoor: null,
       keyholder: null, keyCd: 0, pester: 0, taggedLock: 0,
       doodleOpen: false, setOpen: false, lastHud: '',
-      trash: [], fish: [], boards: null, fxMe: null,
+      trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], _tex: {}, _lhCamFov: null,
       syncT: 0, visitAwarded: false, _nearT: 0, _isoT: 0, _darkT: 0,
       breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0,
       lastDing: 0, savedFp: null
     };
     scene.background = new THREE.Color('#7ec8ff');
-    if (scene.fog){ scene.fog.color = new THREE.Color('#b8e4ff'); scene.fog.near = lhLow() ? 22 : 36; scene.fog.far = lhLow() ? 70 : 110; }
-    // floors
-    lhBox(0, 0, -2, 38, 22, '#f6d7ef', 0.2);
-    // checker tiles on lobby (cheap)
-    if (!lhLow()){
-      for (let i = -4; i <= 4; i++) for (let j = -3; j <= 2; j++){
-        if (((i + j) & 1) === 0) lhBox(i * 2.2, 0.11, j * 2.2 - 2, 2.15, 2.15, '#fff7fb', 0.02);
+    if (scene.fog){ scene.fog.color = new THREE.Color('#c8e8ff'); scene.fog.near = lhLow() ? 24 : 40; scene.fog.far = lhLow() ? 80 : 120; }
+    // sawdust / big-top floor
+    const floor = lhBox(0, 0, -2, 38, 22, '#f3d7a0', 0.2);
+    // center ring
+    try {
+      const ring = lhMesh(new THREE.CylinderGeometry(5.1, 5.1, 0.1, lhLow() ? 16 : 24), lhMat('#c9956b'), 0, 0.16, -2);
+      const nCurb = lhLow() ? 12 : 18;
+      for (let i = 0; i < nCurb; i++){
+        const a = (i / nCurb) * Math.PI * 2;
+        const curb = lhBox(Math.sin(a) * 5.25, 0.32, Math.cos(a) * 5.25 - 2, 0.85, 0.85, (i % 2) ? '#fff8f0' : '#e31c23', 0.32);
       }
-    }
-    // lobby walls / ceiling lip
-    lhBox(0, 2.2, -13.1, 38, 0.4, '#ff8fc8', 4.4);
-    lhBox(-19.1, 2.2, -2, 0.4, 22, '#ffb3de', 4.4);
-    lhBox(19.1, 2.2, -2, 0.4, 22, '#ffb3de', 4.4);
-    // front wall of lobby opening into hallway at z=9
-    lhBox(-12, 2.2, 8.9, 14, 0.4, '#ffa8d4', 4.4);
-    lhBox(12, 2.2, 8.9, 14, 0.4, '#ffa8d4', 4.4);
-    // colorful pillars
+    } catch (e){}
+    // striped tent walls
+    const north = lhBox(0, 2.4, -13.1, 38, 0.4, '#fff8f0', 4.8);
+    if (north && north.mesh) lhPaintStripe(north.mesh, '#e31c23', '#fff8f0', 14, 1);
+    const westW = lhBox(-19.1, 2.4, -2, 0.4, 22, '#fff8f0', 4.8);
+    if (westW && westW.mesh) lhPaintStripe(westW.mesh, '#e31c23', '#fff8f0', 8, 1);
+    const eastW = lhBox(19.1, 2.4, -2, 0.4, 22, '#fff8f0', 4.8);
+    if (eastW && eastW.mesh) lhPaintStripe(eastW.mesh, '#e31c23', '#fff8f0', 8, 1);
+    // front wall of the big top, opening onto the midway at z=9
+    const fL = lhBox(-12, 2.4, 8.9, 14, 0.4, '#fff8f0', 4.8);
+    if (fL && fL.mesh) lhPaintStripe(fL.mesh, '#e31c23', '#fff8f0', 6, 1);
+    const fR = lhBox(12, 2.4, 8.9, 14, 0.4, '#fff8f0', 4.8);
+    if (fR && fR.mesh) lhPaintStripe(fR.mesh, '#e31c23', '#fff8f0', 6, 1);
+    // tent canopy (open cone, cheap)
+    try {
+      const segs = lhLow() ? 8 : 14;
+      const canopy = lhMesh(new THREE.ConeGeometry(23, 7.5, segs, 1, true), lhMat('#fff8f0'), 0, 9.2, -2);
+      if (canopy){ lhPaintStripe(canopy, '#e31c23', '#fff8f0', 12, 1); if (canopy.material){ canopy.material.side = THREE.DoubleSide; canopy.material.needsUpdate = true; } }
+      const peak = lhMesh(new THREE.CylinderGeometry(0.08, 0.08, 2.2, 5), lhMat('#ffd25a', {emit:'#ffd25a'}), 0, 13.4, -2);
+      const flag = lhMesh(new THREE.BoxGeometry(1.1, 0.55, 0.04), lhMat('#ffd25a', {emit:'#ffe27a'}), 0.55, 14.2, -2);
+    } catch (e){}
+    // colorful tent poles
     [[-10, -8], [10, -8], [-10, 4], [10, 4]].forEach(([x, z], i) => {
       const cols = ['#7cffd0', '#ffd25a', '#8ecaff', '#ff8ad8'];
-      lhBox(x, 2.2, z, 0.8, 0.8, cols[i], 4.4);
+      lhBox(x, 2.4, z, 0.55, 0.55, cols[i], 4.8);
     });
-    // desk + stage for Miss Fanfare
-    lhBox(0, 0.6, -10.2, 6, 2.4, '#6b3cff', 0.6);
-    lhBox(0, 0.15, -10.2, 7.2, 3.2, '#ffd25a', 0.15);
-    lhLabel(LH_HOST_TITLE, 'rgba(80,20,90,.92)', 0, 3.3, -10.2);
-    // aquarium lounge (east)
+    // bleachers around the ring (leave the center and south opening clear)
+    for (let s = 0; s < 3; s++){
+      lhBox(-11.2 - s * 0.7, 0.28 + s * 0.38, -2, 2.2, 8 - s * 0.4, (s % 2) ? '#e31c23' : '#fff8f0', 0.28);
+      lhBox(11.2 + s * 0.7, 0.28 + s * 0.38, -2, 2.2, 8 - s * 0.4, (s % 2) ? '#e31c23' : '#fff8f0', 0.28);
+    }
+    lhLabel('Bleachers', 'rgba(80,20,40,.88)', -12.2, 2.1, -6.4);
+    // ringmaster stage for Maestro Gleam
+    lhBox(0, 0.7, -10.2, 6.4, 3.0, '#6b3cff', 0.7);
+    const stageLip = lhBox(0, 0.18, -10.2, 7.4, 3.6, '#ffd25a', 0.18);
+    if (stageLip && stageLip.mesh) lhPaintStripe(stageLip.mesh, '#e31c23', '#ffd25a', 8, 1);
+    lhBox(0, 2.6, -11.6, 6.6, 0.2, '#fff8f0', 0.5);
+    lhLabel(LH_HOST_TITLE, 'rgba(80,20,90,.92)', 0, 3.5, -10.2);
+    // sideshow aquarium lounge (east)
     lhBox(14, 0, -6, 10, 10, '#b9f3ff', 0.12);
     // tank
     const tank = lhMesh(new THREE.BoxGeometry(6.4, 3.2, 1.6), lhMat('#7fe7ff', {trans:0.35, emit:'#3ad0ff'}), 15.4, 1.8, -9.4);
     lhBox(15.4, 0.2, -9.4, 6.6, 1.8, '#245a70', 0.4);
-    lhLabel('Aquarium Lounge', 'rgba(10,60,80,.9)', 14, 3.6, -5.2);
+    lhLabel('Aquarium Sideshow', 'rgba(10,60,80,.9)', 14, 3.6, -5.2);
     if (!lhLow()){
       const fcols = ['#ff7ad9', '#7cff4f', '#ffd25a', '#00e5ff'];
       for (let i = 0; i < 5; i++){
@@ -15010,13 +15264,17 @@ const Obby = (() => {
     // board (top fizzles)
     lh.boards = lhLabel('⭐ Top fizzles\n— none yet —', 'rgba(20,30,60,.9)', 12.4, 2.6, -3.4);
 
-    // hallway
-    lhBox(0, 0, 20, 8, 24, '#efe0ff', 0.12);
-    lhBox(-4.2, 2.2, 20, 0.35, 24, '#d9b8ff', 4.4);
-    lhBox(4.2, 2.2, 20, 0.35, 24, '#d9b8ff', 4.4);
-    lhBox(0, 4.5, 20, 8.4, 24, '#fff0fb', 0.2);
-    // runner carpet
-    lhBox(0, 0.13, 20, 2.2, 23, '#ff5aa0', 0.04);
+    // midway (same walkable corridor, circus dressings on the sides)
+    const mid = lhBox(0, 0, 20, 8, 24, '#e8c98a', 0.12);
+    const mL = lhBox(-4.2, 2.2, 20, 0.35, 24, '#fff8f0', 4.4);
+    const mR = lhBox(4.2, 2.2, 20, 0.35, 24, '#fff8f0', 4.4);
+    if (mL && mL.mesh) lhPaintStripe(mL.mesh, '#e31c23', '#fff8f0', 2, 8);
+    if (mR && mR.mesh) lhPaintStripe(mR.mesh, '#e31c23', '#fff8f0', 2, 8);
+    const mC = lhBox(0, 4.5, 20, 8.4, 24, '#fff0fb', 0.2);
+    if (mC && mC.mesh) lhPaintStripe(mC.mesh, '#e31c23', '#fff8f0', 10, 1);
+    // carnival runner
+    lhBox(0, 0.13, 20, 2.2, 23, '#e31c23', 0.04);
+    lhLabel('Midway', 'rgba(80,20,40,.9)', 0, 3.0, 10.4);
 
     // rooms
     const specs = lhRoomsSpec();
@@ -15055,7 +15313,9 @@ const Obby = (() => {
       lh.rooms.push(rec);
       lh.lights[R.id] = true;
       lh.doors[R.id] = false;
-      lhLabel('Room ' + (R.id + 1), 'rgba(80,20,60,.88)', R.x, 2.9, R.z - 2.6);
+      lhLabel('Wagon ' + (R.id + 1), 'rgba(80,20,60,.88)', R.x, 2.9, R.z - 2.6);
+      if (R.sw || true){ const walls = []; /* stripe outer wall if present */ }
+      lhTrailerBits(rec, wall);
     });
 
     // bathroom at end of hall
@@ -15078,7 +15338,27 @@ const Obby = (() => {
     }
     lhBox(-8, 2.7, -16.4, 8, 5, '#ffd9ef', 0.18);
     lhBox(-8, 3.6, -18.8, 8.2, 0.25, '#ff8fc8', 1.8);
-    lhLabel('Lookout', 'rgba(80,20,60,.9)', -8, 4.4, -16.4);
+    lhLabel('Lookout', 'rgba(80,20,60,.9)', -8, 4.4, -16.4); // ferris wheel visible from here
+
+
+    // carnival props, stands, and rides (cheap meshes, skipped pieces on low gfx)
+    lhStand(-7.2, 8.6, '#fff3d0', 'Popcorn');
+    lhStand(7.2, 8.6, '#ffd0e8', 'Cotton Candy');
+    lhBalloons(-6.2, 2.4, 7.4, 4);
+    lhBalloons(6.4, 2.4, 7.2, 3);
+    lhPins(0, 6.6);
+    // string lights along the midway eaves and tent opening
+    const midLights = [];
+    for (let z = 9; z <= 32; z += lhLow() ? 3.5 : 2.2){
+      midLights.push([-3.9, 4.15, z], [3.9, 4.15, z]);
+    }
+    for (let a = 0; a < 10; a++){
+      const ang = (a / 10) * Math.PI - Math.PI / 2;
+      midLights.push([Math.sin(ang) * 16, 5.4, Math.cos(ang) * 10 - 2]);
+    }
+    lhStringLights(midLights);
+    try { lhCarousel(-14.2, -6.2); } catch (e){}
+    try { lhFerris(-16.5, 5.2, -16.6); } catch (e){}
 
     // dark nook
     lhBox(-16.5, 0, 6.5, 5, 5, '#2a2040', 0.12);
@@ -15153,7 +15433,7 @@ const Obby = (() => {
     } catch (e){}
     lh.myRoom = mine;
     if (lh.rooms[mine]) lh.rooms[mine].owner = 'me';
-    if (lh.rooms[mine]) lhLabel('Your room', 'rgba(80,20,60,.92)', lh.rooms[mine].x, 3.15, lh.rooms[mine].z);
+    if (lh.rooms[mine]) lhLabel('Your wagon', 'rgba(80,20,60,.92)', lh.rooms[mine].x, 3.15, lh.rooms[mine].z);
 
     // test fixtures
     if (test === 'glitch' || test === 'xform'){
@@ -15275,7 +15555,7 @@ const Obby = (() => {
       });
     }
     try {
-      if (typeof cam !== "undefined" && cam){ cam.pitch = 0.16; cam.dist = 7; if (cam.yaw == null) cam.yaw = Math.PI; }
+      if (typeof cam !== "undefined" && cam){ cam.pitch = 0.18; cam.dist = 8; cam.yaw = 0; }
     } catch (e){}
     lhHookChat();
     lhWriteSettings();
@@ -15301,12 +15581,19 @@ const Obby = (() => {
 
   function lanternStop(){
     try {
-      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhVision'].forEach(id => {
+      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhVision','lhScare'].forEach(id => {
         const n = lhEl(id); if (!n) return;
         if (id === 'lhMeter' || id === 'lhBox' || id === 'lhRoot') n.style.display = 'none';
         else { n.classList.remove('show'); n.style.display = 'none'; }
       });
       const act = lhEl('lhAct'); if (act) act.classList.remove('show');
+    } catch (e){}
+    try { lhStopWhisper(); } catch (e){}
+    try {
+      if (lh && lh._lhCamFov && typeof camera !== 'undefined' && camera){
+        camera.fov = lh._lhCamFov; camera.rotation.z = 0;
+        if (camera.updateProjectionMatrix) camera.updateProjectionMatrix();
+      }
     } catch (e){}
     if (lh && lh.prog) lhSaveProg(lh.prog);
     lh = null;
@@ -15344,7 +15631,7 @@ const Obby = (() => {
   function lhOnChat(text, uid){
     if (!lh) return;
     if (LH_RULES.lhCensored && LH_RULES.lhCensored(text)){ lhAward('lh:words'); return; }
-    if (!(LH_RULES.lhHostNameIn ? LH_RULES.lhHostNameIn(text) : /fanfare/i.test(String(text||'')))) return;
+    if (!(LH_RULES.lhHostNameIn ? LH_RULES.lhHostNameIn(text) : /gleam/i.test(String(text||'')))) return;
     const fromMe = !uid || uid === 'me' || (typeof mp !== 'undefined' && mp && (uid === mp.me || (mp.host && uid === 'H')));
     if (fromMe || true) lhCallHost(false, uid);
   }
@@ -15542,7 +15829,7 @@ const Obby = (() => {
     if (!lh) return;
     const lines = [
       'Keep the lanterns lit, and stay with your friends!',
-      'If someone fizzles, type my name — Fanfare — nearby.',
+      'If someone fizzles, type my name — Gleam — nearby.',
       'Dark rooms are cozy, but don\'t linger alone too long.',
       'Breathe if the world goes woozy. I\'ve got you.'
     ];
@@ -15610,9 +15897,10 @@ const Obby = (() => {
     const n = lhEl('lhCut');
     if (n){
       n.style.display = ''; n.classList.add('show');
-      const cap = lhEl('lhCutCap'); if (cap) cap.textContent = '👁️ Oh no… you\'re all fizzled! Stay silly, not scary — time to tag friends!';
+      const cap = lhEl('lhCutCap'); if (cap) cap.textContent = 'The lanterns wink out. Eyes open in the dark… you\'re all fizzled.';
       const eyes = lhEl('lhCutEyes');
-      if (eyes) eyes.innerHTML = '<i></i><i></i><i></i><i></i><i></i><i></i>';
+      if (eyes) eyes.innerHTML = '<i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>';
+      try { lhPlaySting(); } catch (e){}
     }
   }
 
@@ -15666,7 +15954,7 @@ const Obby = (() => {
     const n = lhEl('lhCut');
     if (n){
       n.style.display = ''; n.classList.add('show', 'lh-song');
-      const cap = lhEl('lhCutCap'); if (cap) cap.textContent = '🎵 Lanterns glow, don\'t walk alone, stay together, we\'re going home! Keep the lights on, stay in view — Miss Fanfare\'s watching over you!';
+      const cap = lhEl('lhCutCap'); if (cap) cap.textContent = '🎵 Lanterns glow, don\'t walk alone, stay together, we\'re going home! Keep the lights on, stay in view — Maestro Gleam\'s watching over you!';
       const eyes = lhEl('lhCutEyes'); if (eyes) eyes.innerHTML = '🎶🏮🎶';
     }
     lhAward('lh:song');
@@ -15836,7 +16124,7 @@ const Obby = (() => {
       if (lh.vesper.model && lh.vesper.model.g) lh.vesper.model.g.position.set(lh.vesper.x, 0, lh.vesper.z);
       if (!lh.vesper.seen && LH_RULES.lhNear(P.x, P.z, lh.vesper.x, lh.vesper.z, 6)){
         lh.vesper.seen = true; lhAward('lh:vesper');
-        if (typeof toast === 'function') toast('🌙 A late-night visitor waves from the hall…');
+        if (typeof toast === 'function') toast('🌙 A late-night visitor waves from the midway…');
       }
     }
     lh.fish.forEach(f => {
@@ -15870,7 +16158,7 @@ const Obby = (() => {
         Object.assign(P, {x:0, y:0.05, z:0, vx:0, vy:0, vz:0});
         lh.sanity = 100;
         lh.transforming = false; lh.cut = null; lh.bed = false;
-        if (typeof toast === 'function') toast('💨 You got tagged! Back to the bright lobby.');
+        if (typeof toast === 'function') toast('💨 You got tagged! Back to the bright big top.');
         if (typeof big === 'function') big('Tagged!');
         setTimeout(() => { try { if (typeof big === 'function') big(''); } catch (e){} }, 900);
       } else {
@@ -15879,6 +16167,114 @@ const Obby = (() => {
         if (typeof toast === 'function') toast('💨 A fizzled guest tagged you! Sanity dipped.');
       }
     }
+  }
+
+
+  function lhAc(){
+    try {
+      if (typeof muted !== 'undefined' && muted) return null;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      if (!lh._ac) lh._ac = new AC();
+      if (lh._ac.state === 'suspended' && lh._ac.resume) lh._ac.resume();
+      return lh._ac;
+    } catch (e){ return null; }
+  }
+  function lhStopWhisper(){
+    try { if (lh && lh._whisp && lh._whisp.stop) lh._whisp.stop(); } catch (e){}
+    try { if (lh && lh._whispG) lh._whispG.disconnect(); } catch (e){}
+    if (lh){ lh._whisp = null; lh._whispG = null; }
+  }
+  function lhWhisper(intensity){
+    const ac = lhAc();
+    if (!ac || !lh) return;
+    const want = intensity > 0.28;
+    if (!want){ lhStopWhisper(); return; }
+    if (lh._whisp) return;
+    try {
+      const buf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
+      const d = buf.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < d.length; i++){ last = last * 0.97 + (Math.random() * 2 - 1) * 0.03; d[i] = last; }
+      const src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
+      const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 420; f.Q.value = 0.7;
+      const g = ac.createGain();
+      const muff = !!(lhSet().muffledSound);
+      g.gain.value = muff ? 0.012 : 0.03;
+      src.connect(f); f.connect(g); g.connect(ac.destination);
+      src.start();
+      lh._whisp = src; lh._whispG = g;
+    } catch (e){}
+  }
+  function lhPlaySting(){
+    const ac = lhAc();
+    if (!ac) return;
+    try {
+      const muff = !!(lhSet().muffledSound);
+      const o = ac.createOscillator(), o2 = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter();
+      o.type = 'sawtooth'; o2.type = 'triangle';
+      o.frequency.value = 180; o2.frequency.value = 90;
+      f.type = 'lowpass'; f.frequency.value = muff ? 500 : 1400;
+      g.gain.value = muff ? 0.07 : 0.16; // never louder than a normal in-game cue
+      o.connect(f); o2.connect(f); f.connect(g); g.connect(ac.destination);
+      o.start(); o2.start();
+      o.frequency.exponentialRampToValueAtTime(70, ac.currentTime + 0.55);
+      o2.frequency.exponentialRampToValueAtTime(40, ac.currentTime + 0.7);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.85);
+      o.stop(ac.currentTime + 0.9); o2.stop(ac.currentTime + 0.9);
+    } catch (e){}
+  }
+  function lhScareTick(dt){
+    if (!lh) return;
+    const vis = !!(lhSet().glitchedVision);
+    const raw = lh.glitched ? 1 : Math.max(0, Math.min(1, (55 - lh.sanity) / 55));
+    const k = vis ? raw : raw * 0.12;
+    const scare = lhEl('lhScare');
+    if (scare){
+      scare.classList.toggle('show', k > 0.02 || (vis && lh.glitched));
+      scare.style.setProperty('--lh-vignette', k.toFixed(3));
+      scare.style.setProperty('--lh-static', vis ? (k * 0.85).toFixed(3) : '0');
+      scare.style.setProperty('--lh-tear', vis && k > 0.55 ? ((k - 0.55) * 1.4).toFixed(3) : '0');
+      scare.style.setProperty('--lh-eyes', vis && k > 0.35 ? ((k - 0.2) * 1.1).toFixed(3) : '0');
+      const blink = (Math.sin((lh.t || 0) * 3.2) * 0.5 + 0.5) < 0.08 ? 0.08 : 1;
+      scare.style.setProperty('--lh-blink', String(blink));
+      const eyes = scare.querySelectorAll('#lhEdgeEyes i');
+      const yaw = (typeof cam !== 'undefined' && cam && cam.yaw) || 0;
+      eyes.forEach((el, i) => {
+        const look = Math.sin(yaw + i) * 4;
+        el.style.marginLeft = look + 'px';
+      });
+    }
+    // gentle bulb dim (not a strobe — stays well under 3 flashes/sec)
+    if (lh.bulbs && lh.bulbs.length){
+      const dim = vis && k > 0.3 ? 0.55 + Math.sin(lh.t * 1.7) * 0.35 * k : 1;
+      lh.bulbs.forEach((m, i) => {
+        if (!m) return;
+        const phase = 0.75 + 0.25 * Math.sin(lh.t * 1.3 + i * 0.7);
+        m.visible = true;
+        if (m.material && m.material.opacity != null){ m.material.transparent = true; m.material.opacity = Math.max(0.25, dim * phase); }
+        else if (m.scale) m.scale.setScalar(0.85 + 0.2 * dim * phase);
+      });
+    }
+    try {
+      if (typeof camera !== 'undefined' && camera){
+        if (lh._lhCamFov == null) lh._lhCamFov = camera.fov || 70;
+        const wob = vis ? k : 0;
+        camera.rotation.z = Math.sin(lh.t * 4.6) * 0.07 * wob + Math.sin(lh.t * 2.1) * 0.03 * wob;
+        if (camera.fov != null && camera.updateProjectionMatrix){
+          camera.fov = lh._lhCamFov + Math.sin(lh.t * 2.6) * 3.2 * wob;
+          camera.updateProjectionMatrix();
+        }
+      }
+    } catch (e){}
+    if (lh.rides){
+      lh.rides.forEach(r => {
+        if (!r || !r.g) return;
+        if (r.kind === 'ferris') r.g.rotation.z += dt * 0.35;
+        if (r.kind === 'carousel') r.g.rotation.y += dt * 0.6;
+      });
+    }
+    lhWhisper(vis ? k : k * 0.3);
   }
 
   function lhVisionTick(){
@@ -16037,6 +16433,7 @@ const Obby = (() => {
     lhMoveNpcs(dt);
     lhDoTag(dt);
     lhVisionTick();
+    lhScareTick(dt);
     if (model && model._lhFX) lhBlink(model._lhFX, dt);
     if (lh.glitched && model){ try { lhApplyLook(model, true); } catch (e){} }
     // slightly faster when glitched
@@ -16059,7 +16456,7 @@ const Obby = (() => {
     }
   } catch (e){}
 
-  /* ===================== end Lantern Hotel ===================== */
+  /* ===================== end Lantern Big Top ===================== */
   /* ---------- /lantern hotel ---------- */
   /* ===================== t227u: 👻 GIGGLE MANOR — polish: facing, cam min, camSkip walls, sticky levers ===================== */
   const HM_KEY = 'rubloxHaunt', HM_TIME = 180, HM_PICK = 1.8, HM_NEAR = 3.2;
@@ -21914,8 +22311,8 @@ function dhLayoutHud(){
       return;
     }
     if (mode === 'lantern'){
-      $('#oTip').innerHTML = (on ? '🕹️ Left thumb move · ⬆️ jump · swipe to look · 👁️ first person<br>👆 The yellow button rings the doorbell, flips lights, or uses a thing. 🎩 Call Miss Fanfare when a friend is fizzled!'
-        : '⌨️ WASD move · Space jump · Shift run · Drag / lock-click to look · V first person · E use (doorbell, lights, door, bed, doodles)<br>Stay close and stay bright! Type Fanfare in chat near a fizzled friend to send them to the cellar (or use the button in single-player).');
+      $('#oTip').innerHTML = (on ? '🕹️ Left thumb move · ⬆️ jump · swipe to look · 👁️ first person<br>👆 The yellow button rings the doorbell, flips lights, or uses a thing. 🎩 Call Maestro Gleam when a friend is fizzled!'
+        : '⌨️ WASD move · Space jump · Shift run · Drag / lock-click to look · V first person · E use (doorbell, lights, door, bed, doodles)<br>Stay close and stay bright! Type Gleam in chat near a fizzled friend to send them to the cellar (or use the button in single-player).');
       return;
     }
     if (mode === 'haunt'){
@@ -22307,7 +22704,24 @@ function dhLayoutHud(){
         try { renderer.dispose(); } catch (e){}
         renderer = null;
       }
-      renderer = new THREE.WebGLRenderer({antialias: wantAA, powerPreference: gfxIsLow && gfxIsLow() ? 'low-power' : 'high-performance'});
+      const attempts = [
+        {antialias: wantAA, powerPreference: (typeof gfxIsLow === 'function' && gfxIsLow()) ? 'low-power' : 'high-performance'},
+        {antialias: false, powerPreference: 'low-power', failIfMajorPerformanceCaveat: false},
+        {antialias: false, powerPreference: 'default', failIfMajorPerformanceCaveat: false, depth: true},
+        {antialias: false, failIfMajorPerformanceCaveat: false}
+      ];
+      let lastErr = null;
+      for (let i = 0; i < attempts.length; i++){
+        try {
+          renderer = new THREE.WebGLRenderer(attempts[i]);
+          lastErr = null;
+          break;
+        } catch (e){ lastErr = e; renderer = null; }
+      }
+      if (!renderer){
+        const err = lastErr || new Error('Error creating WebGL context.');
+        throw err;
+      }
       if (renderer.shadowMap) renderer.shadowMap.enabled = false;
       renderer.setPixelRatio((typeof gfxPixelRatio === 'function') ? gfxPixelRatio() : Math.min(1.5, devicePixelRatio || 1));
       const host = document.getElementById('obbyView');
@@ -22758,6 +23172,62 @@ function dhLayoutHud(){
       if (ae && ae.blur && (!ae.closest || !ae.closest('#obby, #dhResetModal, dialog.modal'))){ try { ae.blur(); } catch (e){} }
     }
   }
+
+  /* If mode init throws (WebGL context, a missing hook, a mid-build exception),
+     show a friendly overlay and keep Exit working instead of a frozen blue screen. */
+  function startFailExit(){
+    try { if (typeof releasePointerForHud === 'function') releasePointerForHud(); } catch (e){}
+    try { if (typeof stop === 'function') stop(); } catch (e){
+      try { running = false; } catch (e2){}
+      try { const o = document.getElementById('obby'); if (o) o.classList.remove('show'); } catch (e2){}
+      try { document.body.style.overflow = ''; document.documentElement.classList.remove('ingame'); } catch (e2){}
+      try { if (typeof setHomeInert === 'function') setHomeInert(false); } catch (e2){}
+    }
+    try { const f = document.getElementById('oStartFail'); if (f) f.classList.remove('show'); } catch (e){}
+  }
+  function startFailBindExit(){
+    try {
+      if (!bound && typeof bind === 'function') bind();
+    } catch (e){}
+    const hook = ev => {
+      if (ev && ev.preventDefault) ev.preventDefault();
+      startFailExit();
+    };
+    ['oExit','oExit2','oExit3','oHome','oHome2','oStartFailExit'].forEach(id => {
+      const n = document.getElementById(id);
+      if (!n) return;
+      n.onclick = hook;
+    });
+  }
+  function startFail(err){
+    try { running = false; } catch (e){}
+    try { paused = true; } catch (e){}
+    try { if (typeof raf !== 'undefined' && raf){ cancelAnimationFrame(raf); raf = 0; } } catch (e){}
+    try { if (typeof loopId !== 'undefined') loopId++; } catch (e){}
+    try { startFailBindExit(); } catch (e){}
+    const raw = (err && (err.message || err.stack || err)) ? String(err.message || err) : '';
+    const webgl = /webgl/i.test(raw);
+    const title = "This game couldn't start";
+    const text = webgl
+      ? "This game needs 3D graphics, and they couldn't start on this device. Tap Exit to go back."
+      : "Something went wrong while opening this game. Tap Exit to go back and try again.";
+    try { console.error('Rublox start failed', err); } catch (e){}
+    try {
+      const box = document.getElementById('oStartFail');
+      const t = document.getElementById('oStartFailText');
+      const h = document.getElementById('oStartFailTitle');
+      if (t) t.textContent = text;
+      if (h) h.textContent = title;
+      if (box) box.classList.add('show');
+    } catch (e){}
+    try {
+      if (typeof showMsg === 'function'){
+        // soonModal is marked inert while #obby is open, so this is a backup only.
+        showMsg('😢', title, text);
+      }
+    } catch (e){}
+  }
+
 function start(m = 'obby', d = null){
     mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
@@ -22765,6 +23235,8 @@ function start(m = 'obby', d = null){
     recordRecentGame(mode);
     try { if (typeof achNote === 'function') achNote('play', {mode}); } catch (e){}
     $('#obby').classList.add('show'); document.body.style.overflow = 'hidden'; document.documentElement.classList.add('ingame'); setHomeInert(true);
+    try { const __sf = document.getElementById('oStartFail'); if (__sf) __sf.classList.remove('show'); } catch (e){}
+    try { /* start-safety */
     paused = false; menuOpen = false; $('#oPausePanel').classList.remove('show');
     if ($('#obby') && $('#obby').classList){ $('#obby').classList.remove('paused', 'dh-paused', 'dh-intro'); }
     if (typeof dhSyncPauseHud === 'function') dhSyncPauseHud();
@@ -22849,7 +23321,7 @@ function start(m = 'obby', d = null){
     }
     $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }
     if (mode === 'dance') danceEnter();
-        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
+    $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
     $('#hmBox').style.display = mode === 'haunt' ? '' : 'none'; ['#hmAct'].forEach(id => $(id).classList.remove('show'));
     if (mode === 'haunt'){ if (!window.__hmBound){ window.__hmBound = true; $('#hmAct').onclick = () => hmAct(); }
@@ -22892,6 +23364,7 @@ function start(m = 'obby', d = null){
         $('#piAct').onclick = () => piAct(); $('#piBook').onclick = () => piJournal(true); $('#piClose').onclick = () => piJournal(false); $('#piHome').onclick = () => { piJournal(false); stop(); }; }
       $('#piBook').classList.add('show'); petIslandEnter(); }
     mpOnStart();
+    } catch (err) { try { startFail(err); } catch (e2){ try { console.error('Rublox start failed', err); } catch (e3){} } }
   }
   /* ===================== Pet Hotel (original game): check in guest pets, care for them, check out for coins. ===================== */
   const PH_KEY = 'rubloxPetHotel';
@@ -23684,6 +24157,7 @@ function start(m = 'obby', d = null){
     dance: () => db && {ph: db.ph, t: db.t, score: db.score, combo: db.combo, hits: db.hits, misses: db.misses, chart: db.chart.length, earned: db.earned, prog: dbProg()},
     dbHit: d => dbHit(d), dbTo(t){ if (db) db.t = t; },
     lantern: () => lh && {sanity: lh.sanity, glitched: !!lh.glitched, transforming: !!lh.transforming, area: lh.area, room: lh.room, isolated: !!lh.isolated, dark: !!lh.dark, near: !!lh.nearGlitched, company: !!lh.company, keyholder: lh.keyholder, test: lh.test, visits: lh.prog && lh.prog.visits, settings: lh.prog && lh.prog.settings, npcs: (lh.npcs||[]).map(n => ({id:n.id, x:+n.x.toFixed(2), z:+n.z.toFixed(2), glitched:!!n.glitched})), P:{x:+P.x.toFixed(2), y:+P.y.toFixed(2), z:+P.z.toFixed(2)}},
+    lhSet(o){ if (!lh || !o) return null; Object.assign(lh, o); try { if (typeof lhScareTick === 'function') lhScareTick(0.16); } catch (e){} try { if (typeof lhHud === 'function') lhHud(); } catch (e){} try { if (typeof lhVisionTick === 'function') lhVisionTick(); } catch (e){} return this.lantern(); },
     lhTo(x, z, y){ Object.assign(P, {x, y: y == null ? .05 : y, z, vx: 0, vy: 0, vz: 0}); },
     lhAct: () => (typeof lhAct === 'function' ? lhAct() : (lh && lhAct && lhAct())),
     haunt: () => hm && {ph: hm.ph, t: hm.t, keys: hm.keys, patternDone: !!hm.patternDone, colour: hm.colour, needCol: hm.needCol, levers: hm.levers.slice(), doorOpen: hm.doorOpen, near: hm.near, earned: hm.earned, prog: hmProg()},

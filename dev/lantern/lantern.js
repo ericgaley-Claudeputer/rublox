@@ -1,8 +1,8 @@
-  /* ===================== t286u: 🏮 LANTERN HOTEL ===================== */
+  /* ===================== t286u/t289u: 🏮 LANTERN BIG TOP ===================== */
   const LH_RULES = (typeof LHRules !== 'undefined' && LHRules) ? LHRules : (typeof window !== 'undefined' && window.LHRules) || {};
   const LH_KEY = LH_RULES.LH_KEY || 'rubloxLantern';
-  const LH_HOST = LH_RULES.LH_HOST || 'Fanfare';
-  const LH_HOST_TITLE = LH_RULES.LH_HOST_TITLE || 'Miss Fanfare';
+  const LH_HOST = LH_RULES.LH_HOST || 'Gleam';
+  const LH_HOST_TITLE = LH_RULES.LH_HOST_TITLE || 'Maestro Gleam';
   let lh = null;
 
   function lhEl(id){ return (typeof $ === 'function' ? $(id[0] === '#' ? id : '#' + id) : (typeof document !== 'undefined' && document.getElementById(id.replace(/^#/, '')))); }
@@ -86,26 +86,32 @@
   function lhMkGlitch(parent, opts){
     opts = opts || {};
     const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(1.15, 2.4, 0.85), lhMat('#120814', {basic:true}));
-    body.position.y = 1.2;
+    const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.55, 0.9), lhMat('#050308', {basic:true}));
+    body.position.y = 1.25;
     g.add(body);
-    const jag = new THREE.Mesh(new THREE.BoxGeometry(1.35, 0.35, 1.0), lhMat('#2a1030', {basic:true, emit:'#3a1548'}));
-    jag.position.y = 1.7; jag.rotation.z = 0.2;
+    const jag = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.4, 1.05), lhMat('#0a0610', {basic:true, emit:'#1a0820'}));
+    jag.position.y = 1.85; jag.rotation.z = 0.25;
     g.add(jag);
-    const cols = ['#7cff4f', '#00e5ff', '#ff2bd6', '#ffe600', '#ff7ad9', '#7f7cff'];
+    const jag2 = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.8, 0.2), lhMat('#000000', {basic:true, emit:'#140818'}));
+    jag2.position.set(0.55, 1.2, 0); jag2.rotation.z = -0.3;
+    g.add(jag2);
+    const cols = ['#7cff4f', '#00e5ff', '#ff2bd6', '#ffe600', '#ff7ad9', '#7f7cff', '#ff3030', '#ffffff'];
     const eyes = [];
-    const n = lhLow() ? 6 : 11;
+    const n = lhLow() ? 8 : 16;
     for (let i = 0; i < n; i++){
       const tex = lhEyeTex(cols[i % cols.length]);
-      const pl = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.24), new THREE.MeshBasicMaterial({map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide}));
-      pl.position.set((Math.random() - 0.5) * 1.1, 0.7 + Math.random() * 1.8, 0.4 + (Math.random() - 0.5) * 0.5);
+      const sz = 0.26 + (i % 3) * 0.08;
+      const pl = new THREE.Mesh(new THREE.PlaneGeometry(sz, sz * 0.72), new THREE.MeshBasicMaterial({map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide}));
+      const side = (i % 3) - 1;
+      pl.position.set((Math.random() - 0.5) * 1.25, 0.45 + Math.random() * 2.15, (side === 0 ? 0.48 : 0.15) + (Math.random() - 0.5) * 0.55);
+      if (side !== 0) pl.rotation.y = side * 0.8;
       g.add(pl);
-      eyes.push({m: pl, t: Math.random() * 2, per: 0.6 + Math.random() * 1.2, col: cols[i % cols.length]});
+      eyes.push({m: pl, t: Math.random() * 2, per: 0.5 + Math.random() * 1.3, col: cols[i % cols.length]});
     }
     g.visible = false;
     parent.add(g);
     if (lh) lh.trash.push(g);
-    return {g, body, jag, eyes};
+    return {g, body, jag, jag2, eyes};
   }
 
   function lhApplyLook(slot, on){
@@ -135,12 +141,22 @@
       const k = (Math.sin(e.t / e.per * Math.PI * 2) * 0.5 + 0.5);
       if (e.m && e.m.scale) e.m.scale.y = k < 0.12 ? 0.08 : 1;
     });
-    if (fx.jag) fx.jag.rotation.z = 0.15 + Math.sin((lh && lh.t || 0) * 8) * 0.2;
-    if (fx.body) fx.body.position.x = Math.sin((lh && lh.t || 0) * 11) * 0.04;
+    const tt = (lh && lh.t || 0);
+    if (fx.jag) fx.jag.rotation.z = 0.15 + Math.sin(tt * 11) * 0.28;
+    if (fx.jag2) fx.jag2.rotation.z = -0.3 + Math.sin(tt * 13) * 0.2;
+    if (fx.body){
+      fx.body.position.x = Math.sin(tt * 17) * 0.07;
+      fx.body.position.y = 1.25 + Math.sin(tt * 23) * 0.04;
+      fx.body.scale.x = 1 + Math.sin(tt * 19) * 0.08;
+      if (fx.body.material && fx.body.material.color){
+        const flash = Math.sin(tt * 29) > 0.82;
+        fx.body.material.color.set(flash ? '#1a0a22' : '#050308');
+      }
+    }
   }
 
   function lhRoomsSpec(){
-    // six private rooms along a south hallway
+    // six private circus-wagon rooms along a south midway
     const specs = [];
     const zs = [11, 18, 25];
     zs.forEach((z, i) => {
@@ -148,6 +164,132 @@
       specs.push({id: i + 3, x: 13, z, side: 1, owner: null});
     });
     return specs;
+  }
+
+
+  function lhStripeTex(a, b, nx, ny){
+    const key = String(a) + String(b) + (nx || 4) + 'x' + (ny || 1);
+    lh._tex = lh._tex || {};
+    if (lh._tex[key]) return lh._tex[key];
+    const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+    const g = c.getContext('2d');
+    for (let i = 0; i < 8; i++){
+      g.fillStyle = i % 2 === 0 ? a : b;
+      g.fillRect((64 / 8) * i, 0, 8.2, 64);
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(nx || 4, ny || 1);
+    tex.magFilter = THREE.NearestFilter;
+    tex.needsUpdate = true;
+    lh._tex[key] = tex;
+    return tex;
+  }
+  function lhPaintStripe(mesh, a, b, nx, ny){
+    if (!mesh || !mesh.material) return;
+    try {
+      const src = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+      const m = src.clone();
+      m.map = lhStripeTex(a || '#e31c23', b || '#fff8f0', nx, ny);
+      m.color = new THREE.Color('#ffffff');
+      m.needsUpdate = true;
+      mesh.material = m;
+    } catch (e){}
+  }
+  function lhBulb(x, y, z, col){
+    const geo = lh._bulbGeo || (lh._bulbGeo = new THREE.SphereGeometry(lhLow() ? 0.08 : 0.11, 6, 6));
+    const m = lhMesh(geo, lhMat(col, {basic:true, emit: col}), x, y, z);
+    if (!lh.bulbs) lh.bulbs = [];
+    lh.bulbs.push(m);
+    return m;
+  }
+  function lhStringLights(pts){
+    const cols = ['#ffd25a', '#ff6b6b', '#7cffd0', '#8ecaff', '#ff8ad8'];
+    (pts || []).forEach((p, i) => lhBulb(p[0], p[1], p[2], cols[i % cols.length]));
+  }
+  function lhBalloons(x, y, z, n){
+    const cols = ['#ff6b9a', '#6b3cff', '#7cffd0', '#ffd25a', '#ff6b6b'];
+    const count = lhLow() ? Math.min(3, n || 3) : (n || 4);
+    for (let i = 0; i < count; i++){
+      const m = lhMesh(new THREE.SphereGeometry(0.28, 8, 8), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}), x + (i - 1) * 0.28, y + 0.15 * (i % 2), z + (i % 2) * 0.12);
+      if (m) m.scale.y = 1.2;
+    }
+    lhMesh(new THREE.BoxGeometry(0.04, 1.1, 0.04), lhMat('#1d2340'), x, y - 0.7, z);
+  }
+  function lhStand(x, z, color, title){
+    lhBox(x, 0.7, z, 1.8, 1.2, color, 0.7);
+    lhBox(x, 1.15, z, 2.0, 1.4, '#fff8f0', 0.12);
+    lhBox(x, 1.7, z, 2.05, 0.16, '#e31c23', 0.16);
+    if (title) lhLabel(title, 'rgba(80,20,40,.92)', x, 2.15, z);
+  }
+  function lhPins(x, z){
+    const cols = ['#e31c23', '#3a86ff', '#ffd25a'];
+    for (let i = 0; i < 3; i++){
+      const p = lhMesh(new THREE.CylinderGeometry(0.08, 0.12, 0.7, 6), lhMat(cols[i]), x + i * 0.28, 0.4, z);
+      if (p) p.rotation.z = 0.4 + i * 0.2;
+      lhMesh(new THREE.SphereGeometry(0.14, 8, 8), lhMat(cols[i], {emit: cols[i]}), x - 0.4 + i * 0.22, 0.18, z + 0.35);
+    }
+  }
+  function lhFerris(x, y, z){
+    const g = new THREE.Group();
+    const segs = lhLow() ? 8 : 10;
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(3.4, 0.1, 6, segs), lhMat('#6b3cff', {emit:'#7a5cff'}));
+    g.add(rim);
+    const axle = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.8, 6), lhMat('#1d2340'));
+    axle.rotation.x = Math.PI / 2; g.add(axle);
+    const cols = ['#e31c23', '#ffd25a', '#3a86ff', '#2ec27e', '#ff8ad8'];
+    for (let i = 0; i < segs; i++){
+      const a = (i / segs) * Math.PI * 2;
+      const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.07, 3.4, 0.07), lhMat('#fff8f0'));
+      spoke.rotation.z = a; g.add(spoke);
+      const car = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.4, 0.45), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}));
+      car.position.set(Math.sin(a) * 3.4, Math.cos(a) * 3.4, 0);
+      g.add(car);
+    }
+    const pole = new THREE.Mesh(new THREE.BoxGeometry(0.3, 3.6, 0.3), lhMat('#4a2a10'));
+    pole.position.y = -1.8; g.add(pole);
+    g.position.set(x, y, z);
+    g.rotation.y = 0.35;
+    scene.add(g);
+    if (lh){ lh.trash.push(g); lh.rides = lh.rides || []; lh.rides.push({g, kind:'ferris'}); }
+    return g;
+  }
+  function lhCarousel(x, z){
+    const g = new THREE.Group();
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.4, 0.3, lhLow() ? 8 : 12), lhMat('#ffd25a'));
+    base.position.y = 0.15; g.add(base);
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 2.6, 6), lhMat('#e31c23'));
+    pole.position.y = 1.4; g.add(pole);
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(2.3, 0.9, lhLow() ? 8 : 12), lhMat('#e31c23'));
+    roof.position.y = 2.7; g.add(roof);
+    lhPaintStripe(roof, '#e31c23', '#fff8f0', 8, 1);
+    const cols = ['#ff6b9a', '#3a86ff', '#2ec27e', '#ff9f1c'];
+    const n = lhLow() ? 3 : 4;
+    for (let i = 0; i < n; i++){
+      const a = (i / n) * Math.PI * 2;
+      const h = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.55, 0.18), lhMat(cols[i]));
+      h.position.set(Math.sin(a) * 1.4, 0.85, Math.cos(a) * 1.4);
+      g.add(h);
+    }
+    g.position.set(x, 0, z);
+    scene.add(g);
+    if (lh){ lh.trash.push(g); lh.rides = lh.rides || []; lh.rides.push({g, kind:'carousel'}); }
+    return g;
+  }
+  function lhTrailerBits(R, wall){
+    if (!R) return;
+    const wheelZ = [R.z - 1.8, R.z + 1.8];
+    wheelZ.forEach(wz => {
+      const w = lhMesh(new THREE.CylinderGeometry(0.38, 0.38, 0.22, 10), lhMat('#1d2340'), R.x + R.side * (R.w / 2 - 0.2), 0.38, wz);
+      if (w) w.rotation.z = Math.PI / 2;
+    });
+    // peaked canvas roof
+    const roof = lhMesh(new THREE.ConeGeometry(R.w * 0.58, 1.1, 8), lhMat(wall || '#ffb3de'), R.x, 3.7, R.z);
+    if (roof){ lhPaintStripe(roof, wall || '#e31c23', '#fff8f0', 6, 1); if (roof.material){ roof.material.side = THREE.DoubleSide; roof.material.needsUpdate = true; } }
+    // awning over the door (midway side)
+    const ix = R.x - R.side * (R.w / 2);
+    const aw = lhMesh(new THREE.BoxGeometry(1.6, 0.08, 1.8), lhMat('#fff8f0'), ix - R.side * 0.7, 2.55, R.z);
+    if (aw){ aw.rotation.z = R.side * 0.25; lhPaintStripe(aw, '#e31c23', '#fff8f0', 5, 1); }
   }
 
   function buildLantern(){
@@ -163,43 +305,67 @@
       rooms: [], npcs: [], host: null, vesper: null, exitDoor: null,
       keyholder: null, keyCd: 0, pester: 0, taggedLock: 0,
       doodleOpen: false, setOpen: false, lastHud: '',
-      trash: [], fish: [], boards: null, fxMe: null,
+      trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], _tex: {}, _lhCamFov: null,
       syncT: 0, visitAwarded: false, _nearT: 0, _isoT: 0, _darkT: 0,
       breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0,
       lastDing: 0, savedFp: null
     };
     scene.background = new THREE.Color('#7ec8ff');
-    if (scene.fog){ scene.fog.color = new THREE.Color('#b8e4ff'); scene.fog.near = lhLow() ? 22 : 36; scene.fog.far = lhLow() ? 70 : 110; }
-    // floors
-    lhBox(0, 0, -2, 38, 22, '#f6d7ef', 0.2);
-    // checker tiles on lobby (cheap)
-    if (!lhLow()){
-      for (let i = -4; i <= 4; i++) for (let j = -3; j <= 2; j++){
-        if (((i + j) & 1) === 0) lhBox(i * 2.2, 0.11, j * 2.2 - 2, 2.15, 2.15, '#fff7fb', 0.02);
+    if (scene.fog){ scene.fog.color = new THREE.Color('#c8e8ff'); scene.fog.near = lhLow() ? 24 : 40; scene.fog.far = lhLow() ? 80 : 120; }
+    // sawdust / big-top floor
+    const floor = lhBox(0, 0, -2, 38, 22, '#f3d7a0', 0.2);
+    // center ring
+    try {
+      const ring = lhMesh(new THREE.CylinderGeometry(5.1, 5.1, 0.1, lhLow() ? 16 : 24), lhMat('#c9956b'), 0, 0.16, -2);
+      const nCurb = lhLow() ? 12 : 18;
+      for (let i = 0; i < nCurb; i++){
+        const a = (i / nCurb) * Math.PI * 2;
+        const curb = lhBox(Math.sin(a) * 5.25, 0.32, Math.cos(a) * 5.25 - 2, 0.85, 0.85, (i % 2) ? '#fff8f0' : '#e31c23', 0.32);
       }
-    }
-    // lobby walls / ceiling lip
-    lhBox(0, 2.2, -13.1, 38, 0.4, '#ff8fc8', 4.4);
-    lhBox(-19.1, 2.2, -2, 0.4, 22, '#ffb3de', 4.4);
-    lhBox(19.1, 2.2, -2, 0.4, 22, '#ffb3de', 4.4);
-    // front wall of lobby opening into hallway at z=9
-    lhBox(-12, 2.2, 8.9, 14, 0.4, '#ffa8d4', 4.4);
-    lhBox(12, 2.2, 8.9, 14, 0.4, '#ffa8d4', 4.4);
-    // colorful pillars
+    } catch (e){}
+    // striped tent walls
+    const north = lhBox(0, 2.4, -13.1, 38, 0.4, '#fff8f0', 4.8);
+    if (north && north.mesh) lhPaintStripe(north.mesh, '#e31c23', '#fff8f0', 14, 1);
+    const westW = lhBox(-19.1, 2.4, -2, 0.4, 22, '#fff8f0', 4.8);
+    if (westW && westW.mesh) lhPaintStripe(westW.mesh, '#e31c23', '#fff8f0', 8, 1);
+    const eastW = lhBox(19.1, 2.4, -2, 0.4, 22, '#fff8f0', 4.8);
+    if (eastW && eastW.mesh) lhPaintStripe(eastW.mesh, '#e31c23', '#fff8f0', 8, 1);
+    // front wall of the big top, opening onto the midway at z=9
+    const fL = lhBox(-12, 2.4, 8.9, 14, 0.4, '#fff8f0', 4.8);
+    if (fL && fL.mesh) lhPaintStripe(fL.mesh, '#e31c23', '#fff8f0', 6, 1);
+    const fR = lhBox(12, 2.4, 8.9, 14, 0.4, '#fff8f0', 4.8);
+    if (fR && fR.mesh) lhPaintStripe(fR.mesh, '#e31c23', '#fff8f0', 6, 1);
+    // tent canopy (open cone, cheap)
+    try {
+      const segs = lhLow() ? 8 : 14;
+      const canopy = lhMesh(new THREE.ConeGeometry(23, 7.5, segs, 1, true), lhMat('#fff8f0'), 0, 9.2, -2);
+      if (canopy){ lhPaintStripe(canopy, '#e31c23', '#fff8f0', 12, 1); if (canopy.material){ canopy.material.side = THREE.DoubleSide; canopy.material.needsUpdate = true; } }
+      const peak = lhMesh(new THREE.CylinderGeometry(0.08, 0.08, 2.2, 5), lhMat('#ffd25a', {emit:'#ffd25a'}), 0, 13.4, -2);
+      const flag = lhMesh(new THREE.BoxGeometry(1.1, 0.55, 0.04), lhMat('#ffd25a', {emit:'#ffe27a'}), 0.55, 14.2, -2);
+    } catch (e){}
+    // colorful tent poles
     [[-10, -8], [10, -8], [-10, 4], [10, 4]].forEach(([x, z], i) => {
       const cols = ['#7cffd0', '#ffd25a', '#8ecaff', '#ff8ad8'];
-      lhBox(x, 2.2, z, 0.8, 0.8, cols[i], 4.4);
+      lhBox(x, 2.4, z, 0.55, 0.55, cols[i], 4.8);
     });
-    // desk + stage for Miss Fanfare
-    lhBox(0, 0.6, -10.2, 6, 2.4, '#6b3cff', 0.6);
-    lhBox(0, 0.15, -10.2, 7.2, 3.2, '#ffd25a', 0.15);
-    lhLabel(LH_HOST_TITLE, 'rgba(80,20,90,.92)', 0, 3.3, -10.2);
-    // aquarium lounge (east)
+    // bleachers around the ring (leave the center and south opening clear)
+    for (let s = 0; s < 3; s++){
+      lhBox(-11.2 - s * 0.7, 0.28 + s * 0.38, -2, 2.2, 8 - s * 0.4, (s % 2) ? '#e31c23' : '#fff8f0', 0.28);
+      lhBox(11.2 + s * 0.7, 0.28 + s * 0.38, -2, 2.2, 8 - s * 0.4, (s % 2) ? '#e31c23' : '#fff8f0', 0.28);
+    }
+    lhLabel('Bleachers', 'rgba(80,20,40,.88)', -12.2, 2.1, -6.4);
+    // ringmaster stage for Maestro Gleam
+    lhBox(0, 0.7, -10.2, 6.4, 3.0, '#6b3cff', 0.7);
+    const stageLip = lhBox(0, 0.18, -10.2, 7.4, 3.6, '#ffd25a', 0.18);
+    if (stageLip && stageLip.mesh) lhPaintStripe(stageLip.mesh, '#e31c23', '#ffd25a', 8, 1);
+    lhBox(0, 2.6, -11.6, 6.6, 0.2, '#fff8f0', 0.5);
+    lhLabel(LH_HOST_TITLE, 'rgba(80,20,90,.92)', 0, 3.5, -10.2);
+    // sideshow aquarium lounge (east)
     lhBox(14, 0, -6, 10, 10, '#b9f3ff', 0.12);
     // tank
     const tank = lhMesh(new THREE.BoxGeometry(6.4, 3.2, 1.6), lhMat('#7fe7ff', {trans:0.35, emit:'#3ad0ff'}), 15.4, 1.8, -9.4);
     lhBox(15.4, 0.2, -9.4, 6.6, 1.8, '#245a70', 0.4);
-    lhLabel('Aquarium Lounge', 'rgba(10,60,80,.9)', 14, 3.6, -5.2);
+    lhLabel('Aquarium Sideshow', 'rgba(10,60,80,.9)', 14, 3.6, -5.2);
     if (!lhLow()){
       const fcols = ['#ff7ad9', '#7cff4f', '#ffd25a', '#00e5ff'];
       for (let i = 0; i < 5; i++){
@@ -210,13 +376,17 @@
     // board (top fizzles)
     lh.boards = lhLabel('⭐ Top fizzles\n— none yet —', 'rgba(20,30,60,.9)', 12.4, 2.6, -3.4);
 
-    // hallway
-    lhBox(0, 0, 20, 8, 24, '#efe0ff', 0.12);
-    lhBox(-4.2, 2.2, 20, 0.35, 24, '#d9b8ff', 4.4);
-    lhBox(4.2, 2.2, 20, 0.35, 24, '#d9b8ff', 4.4);
-    lhBox(0, 4.5, 20, 8.4, 24, '#fff0fb', 0.2);
-    // runner carpet
-    lhBox(0, 0.13, 20, 2.2, 23, '#ff5aa0', 0.04);
+    // midway (same walkable corridor, circus dressings on the sides)
+    const mid = lhBox(0, 0, 20, 8, 24, '#e8c98a', 0.12);
+    const mL = lhBox(-4.2, 2.2, 20, 0.35, 24, '#fff8f0', 4.4);
+    const mR = lhBox(4.2, 2.2, 20, 0.35, 24, '#fff8f0', 4.4);
+    if (mL && mL.mesh) lhPaintStripe(mL.mesh, '#e31c23', '#fff8f0', 2, 8);
+    if (mR && mR.mesh) lhPaintStripe(mR.mesh, '#e31c23', '#fff8f0', 2, 8);
+    const mC = lhBox(0, 4.5, 20, 8.4, 24, '#fff0fb', 0.2);
+    if (mC && mC.mesh) lhPaintStripe(mC.mesh, '#e31c23', '#fff8f0', 10, 1);
+    // carnival runner
+    lhBox(0, 0.13, 20, 2.2, 23, '#e31c23', 0.04);
+    lhLabel('Midway', 'rgba(80,20,40,.9)', 0, 3.0, 10.4);
 
     // rooms
     const specs = lhRoomsSpec();
@@ -255,7 +425,9 @@
       lh.rooms.push(rec);
       lh.lights[R.id] = true;
       lh.doors[R.id] = false;
-      lhLabel('Room ' + (R.id + 1), 'rgba(80,20,60,.88)', R.x, 2.9, R.z - 2.6);
+      lhLabel('Wagon ' + (R.id + 1), 'rgba(80,20,60,.88)', R.x, 2.9, R.z - 2.6);
+      if (R.sw || true){ const walls = []; /* stripe outer wall if present */ }
+      lhTrailerBits(rec, wall);
     });
 
     // bathroom at end of hall
@@ -278,7 +450,27 @@
     }
     lhBox(-8, 2.7, -16.4, 8, 5, '#ffd9ef', 0.18);
     lhBox(-8, 3.6, -18.8, 8.2, 0.25, '#ff8fc8', 1.8);
-    lhLabel('Lookout', 'rgba(80,20,60,.9)', -8, 4.4, -16.4);
+    lhLabel('Lookout', 'rgba(80,20,60,.9)', -8, 4.4, -16.4); // ferris wheel visible from here
+
+
+    // carnival props, stands, and rides (cheap meshes, skipped pieces on low gfx)
+    lhStand(-7.2, 8.6, '#fff3d0', 'Popcorn');
+    lhStand(7.2, 8.6, '#ffd0e8', 'Cotton Candy');
+    lhBalloons(-6.2, 2.4, 7.4, 4);
+    lhBalloons(6.4, 2.4, 7.2, 3);
+    lhPins(0, 6.6);
+    // string lights along the midway eaves and tent opening
+    const midLights = [];
+    for (let z = 9; z <= 32; z += lhLow() ? 3.5 : 2.2){
+      midLights.push([-3.9, 4.15, z], [3.9, 4.15, z]);
+    }
+    for (let a = 0; a < 10; a++){
+      const ang = (a / 10) * Math.PI - Math.PI / 2;
+      midLights.push([Math.sin(ang) * 16, 5.4, Math.cos(ang) * 10 - 2]);
+    }
+    lhStringLights(midLights);
+    try { lhCarousel(-14.2, -6.2); } catch (e){}
+    try { lhFerris(-16.5, 5.2, -16.6); } catch (e){}
 
     // dark nook
     lhBox(-16.5, 0, 6.5, 5, 5, '#2a2040', 0.12);
@@ -353,7 +545,7 @@
     } catch (e){}
     lh.myRoom = mine;
     if (lh.rooms[mine]) lh.rooms[mine].owner = 'me';
-    if (lh.rooms[mine]) lhLabel('Your room', 'rgba(80,20,60,.92)', lh.rooms[mine].x, 3.15, lh.rooms[mine].z);
+    if (lh.rooms[mine]) lhLabel('Your wagon', 'rgba(80,20,60,.92)', lh.rooms[mine].x, 3.15, lh.rooms[mine].z);
 
     // test fixtures
     if (test === 'glitch' || test === 'xform'){
@@ -475,7 +667,7 @@
       });
     }
     try {
-      if (typeof cam !== "undefined" && cam){ cam.pitch = 0.16; cam.dist = 7; if (cam.yaw == null) cam.yaw = Math.PI; }
+      if (typeof cam !== "undefined" && cam){ cam.pitch = 0.18; cam.dist = 8; cam.yaw = 0; }
     } catch (e){}
     lhHookChat();
     lhWriteSettings();
@@ -501,12 +693,19 @@
 
   function lanternStop(){
     try {
-      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhVision'].forEach(id => {
+      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhVision','lhScare'].forEach(id => {
         const n = lhEl(id); if (!n) return;
         if (id === 'lhMeter' || id === 'lhBox' || id === 'lhRoot') n.style.display = 'none';
         else { n.classList.remove('show'); n.style.display = 'none'; }
       });
       const act = lhEl('lhAct'); if (act) act.classList.remove('show');
+    } catch (e){}
+    try { lhStopWhisper(); } catch (e){}
+    try {
+      if (lh && lh._lhCamFov && typeof camera !== 'undefined' && camera){
+        camera.fov = lh._lhCamFov; camera.rotation.z = 0;
+        if (camera.updateProjectionMatrix) camera.updateProjectionMatrix();
+      }
     } catch (e){}
     if (lh && lh.prog) lhSaveProg(lh.prog);
     lh = null;
@@ -544,7 +743,7 @@
   function lhOnChat(text, uid){
     if (!lh) return;
     if (LH_RULES.lhCensored && LH_RULES.lhCensored(text)){ lhAward('lh:words'); return; }
-    if (!(LH_RULES.lhHostNameIn ? LH_RULES.lhHostNameIn(text) : /fanfare/i.test(String(text||'')))) return;
+    if (!(LH_RULES.lhHostNameIn ? LH_RULES.lhHostNameIn(text) : /gleam/i.test(String(text||'')))) return;
     const fromMe = !uid || uid === 'me' || (typeof mp !== 'undefined' && mp && (uid === mp.me || (mp.host && uid === 'H')));
     if (fromMe || true) lhCallHost(false, uid);
   }
@@ -742,7 +941,7 @@
     if (!lh) return;
     const lines = [
       'Keep the lanterns lit, and stay with your friends!',
-      'If someone fizzles, type my name — Fanfare — nearby.',
+      'If someone fizzles, type my name — Gleam — nearby.',
       'Dark rooms are cozy, but don\'t linger alone too long.',
       'Breathe if the world goes woozy. I\'ve got you.'
     ];
@@ -810,9 +1009,10 @@
     const n = lhEl('lhCut');
     if (n){
       n.style.display = ''; n.classList.add('show');
-      const cap = lhEl('lhCutCap'); if (cap) cap.textContent = '👁️ Oh no… you\'re all fizzled! Stay silly, not scary — time to tag friends!';
+      const cap = lhEl('lhCutCap'); if (cap) cap.textContent = 'The lanterns wink out. Eyes open in the dark… you\'re all fizzled.';
       const eyes = lhEl('lhCutEyes');
-      if (eyes) eyes.innerHTML = '<i></i><i></i><i></i><i></i><i></i><i></i>';
+      if (eyes) eyes.innerHTML = '<i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>';
+      try { lhPlaySting(); } catch (e){}
     }
   }
 
@@ -866,7 +1066,7 @@
     const n = lhEl('lhCut');
     if (n){
       n.style.display = ''; n.classList.add('show', 'lh-song');
-      const cap = lhEl('lhCutCap'); if (cap) cap.textContent = '🎵 Lanterns glow, don\'t walk alone, stay together, we\'re going home! Keep the lights on, stay in view — Miss Fanfare\'s watching over you!';
+      const cap = lhEl('lhCutCap'); if (cap) cap.textContent = '🎵 Lanterns glow, don\'t walk alone, stay together, we\'re going home! Keep the lights on, stay in view — Maestro Gleam\'s watching over you!';
       const eyes = lhEl('lhCutEyes'); if (eyes) eyes.innerHTML = '🎶🏮🎶';
     }
     lhAward('lh:song');
@@ -1036,7 +1236,7 @@
       if (lh.vesper.model && lh.vesper.model.g) lh.vesper.model.g.position.set(lh.vesper.x, 0, lh.vesper.z);
       if (!lh.vesper.seen && LH_RULES.lhNear(P.x, P.z, lh.vesper.x, lh.vesper.z, 6)){
         lh.vesper.seen = true; lhAward('lh:vesper');
-        if (typeof toast === 'function') toast('🌙 A late-night visitor waves from the hall…');
+        if (typeof toast === 'function') toast('🌙 A late-night visitor waves from the midway…');
       }
     }
     lh.fish.forEach(f => {
@@ -1070,7 +1270,7 @@
         Object.assign(P, {x:0, y:0.05, z:0, vx:0, vy:0, vz:0});
         lh.sanity = 100;
         lh.transforming = false; lh.cut = null; lh.bed = false;
-        if (typeof toast === 'function') toast('💨 You got tagged! Back to the bright lobby.');
+        if (typeof toast === 'function') toast('💨 You got tagged! Back to the bright big top.');
         if (typeof big === 'function') big('Tagged!');
         setTimeout(() => { try { if (typeof big === 'function') big(''); } catch (e){} }, 900);
       } else {
@@ -1079,6 +1279,114 @@
         if (typeof toast === 'function') toast('💨 A fizzled guest tagged you! Sanity dipped.');
       }
     }
+  }
+
+
+  function lhAc(){
+    try {
+      if (typeof muted !== 'undefined' && muted) return null;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      if (!lh._ac) lh._ac = new AC();
+      if (lh._ac.state === 'suspended' && lh._ac.resume) lh._ac.resume();
+      return lh._ac;
+    } catch (e){ return null; }
+  }
+  function lhStopWhisper(){
+    try { if (lh && lh._whisp && lh._whisp.stop) lh._whisp.stop(); } catch (e){}
+    try { if (lh && lh._whispG) lh._whispG.disconnect(); } catch (e){}
+    if (lh){ lh._whisp = null; lh._whispG = null; }
+  }
+  function lhWhisper(intensity){
+    const ac = lhAc();
+    if (!ac || !lh) return;
+    const want = intensity > 0.28;
+    if (!want){ lhStopWhisper(); return; }
+    if (lh._whisp) return;
+    try {
+      const buf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
+      const d = buf.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < d.length; i++){ last = last * 0.97 + (Math.random() * 2 - 1) * 0.03; d[i] = last; }
+      const src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
+      const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 420; f.Q.value = 0.7;
+      const g = ac.createGain();
+      const muff = !!(lhSet().muffledSound);
+      g.gain.value = muff ? 0.012 : 0.03;
+      src.connect(f); f.connect(g); g.connect(ac.destination);
+      src.start();
+      lh._whisp = src; lh._whispG = g;
+    } catch (e){}
+  }
+  function lhPlaySting(){
+    const ac = lhAc();
+    if (!ac) return;
+    try {
+      const muff = !!(lhSet().muffledSound);
+      const o = ac.createOscillator(), o2 = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter();
+      o.type = 'sawtooth'; o2.type = 'triangle';
+      o.frequency.value = 180; o2.frequency.value = 90;
+      f.type = 'lowpass'; f.frequency.value = muff ? 500 : 1400;
+      g.gain.value = muff ? 0.07 : 0.16; // never louder than a normal in-game cue
+      o.connect(f); o2.connect(f); f.connect(g); g.connect(ac.destination);
+      o.start(); o2.start();
+      o.frequency.exponentialRampToValueAtTime(70, ac.currentTime + 0.55);
+      o2.frequency.exponentialRampToValueAtTime(40, ac.currentTime + 0.7);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.85);
+      o.stop(ac.currentTime + 0.9); o2.stop(ac.currentTime + 0.9);
+    } catch (e){}
+  }
+  function lhScareTick(dt){
+    if (!lh) return;
+    const vis = !!(lhSet().glitchedVision);
+    const raw = lh.glitched ? 1 : Math.max(0, Math.min(1, (55 - lh.sanity) / 55));
+    const k = vis ? raw : raw * 0.12;
+    const scare = lhEl('lhScare');
+    if (scare){
+      scare.classList.toggle('show', k > 0.02 || (vis && lh.glitched));
+      scare.style.setProperty('--lh-vignette', k.toFixed(3));
+      scare.style.setProperty('--lh-static', vis ? (k * 0.85).toFixed(3) : '0');
+      scare.style.setProperty('--lh-tear', vis && k > 0.55 ? ((k - 0.55) * 1.4).toFixed(3) : '0');
+      scare.style.setProperty('--lh-eyes', vis && k > 0.35 ? ((k - 0.2) * 1.1).toFixed(3) : '0');
+      const blink = (Math.sin((lh.t || 0) * 3.2) * 0.5 + 0.5) < 0.08 ? 0.08 : 1;
+      scare.style.setProperty('--lh-blink', String(blink));
+      const eyes = scare.querySelectorAll('#lhEdgeEyes i');
+      const yaw = (typeof cam !== 'undefined' && cam && cam.yaw) || 0;
+      eyes.forEach((el, i) => {
+        const look = Math.sin(yaw + i) * 4;
+        el.style.marginLeft = look + 'px';
+      });
+    }
+    // gentle bulb dim (not a strobe — stays well under 3 flashes/sec)
+    if (lh.bulbs && lh.bulbs.length){
+      const dim = vis && k > 0.3 ? 0.55 + Math.sin(lh.t * 1.7) * 0.35 * k : 1;
+      lh.bulbs.forEach((m, i) => {
+        if (!m) return;
+        const phase = 0.75 + 0.25 * Math.sin(lh.t * 1.3 + i * 0.7);
+        m.visible = true;
+        if (m.material && m.material.opacity != null){ m.material.transparent = true; m.material.opacity = Math.max(0.25, dim * phase); }
+        else if (m.scale) m.scale.setScalar(0.85 + 0.2 * dim * phase);
+      });
+    }
+    try {
+      if (typeof camera !== 'undefined' && camera){
+        if (lh._lhCamFov == null) lh._lhCamFov = camera.fov || 70;
+        const wob = vis ? k : 0;
+        camera.rotation.z = Math.sin(lh.t * 4.6) * 0.07 * wob + Math.sin(lh.t * 2.1) * 0.03 * wob;
+        if (camera.fov != null && camera.updateProjectionMatrix){
+          camera.fov = lh._lhCamFov + Math.sin(lh.t * 2.6) * 3.2 * wob;
+          camera.updateProjectionMatrix();
+        }
+      }
+    } catch (e){}
+    if (lh.rides){
+      lh.rides.forEach(r => {
+        if (!r || !r.g) return;
+        if (r.kind === 'ferris') r.g.rotation.z += dt * 0.35;
+        if (r.kind === 'carousel') r.g.rotation.y += dt * 0.6;
+      });
+    }
+    lhWhisper(vis ? k : k * 0.3);
   }
 
   function lhVisionTick(){
@@ -1237,6 +1545,7 @@
     lhMoveNpcs(dt);
     lhDoTag(dt);
     lhVisionTick();
+    lhScareTick(dt);
     if (model && model._lhFX) lhBlink(model._lhFX, dt);
     if (lh.glitched && model){ try { lhApplyLook(model, true); } catch (e){} }
     // slightly faster when glitched
@@ -1259,4 +1568,4 @@
     }
   } catch (e){}
 
-  /* ===================== end Lantern Hotel ===================== */
+  /* ===================== end Lantern Big Top ===================== */
