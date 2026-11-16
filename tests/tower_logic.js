@@ -155,3 +155,39 @@ test('jump assist is tower-only coyote plus jump buffer, and does not change JUM
   assert.doesNotMatch(TOWER_JS, /JUMP\s*=\s*\d/);
   assert.doesNotMatch(HTML, /mode === 'tower'[^\n]{0,120}JUMP\s*=\s*\d/);
 });
+
+test('consecutive pads have a visible gap, a modest rise, and 3.5 m of headroom, and never overlap', () => {
+  assert.equal(R.TD_GAP_MIN, 1.5);
+  assert.equal(R.TD_GAP_MAX, 2.5);
+  assert.equal(R.TD_RISE_MIN, 0.6);
+  assert.equal(R.TD_RISE_MAX, 1.2);
+  assert.equal(R.TD_HEADROOM, 3.5);
+  assert.equal(R.TD_RISE, 1.0);
+  assert.equal(R.TD_SPAN, 7.0);
+  const check = (layout, label) => {
+    const path = R.tdPathPlats(layout);
+    assert.ok(path[0] && path[0].role === 'spawn', label + ' path should start at spawn');
+    assert.ok(path.some(p => p.role === 'finish'), label + ' missing finish');
+    for (let i = 0; i < path.length - 1; i++){
+      const a = path[i], b = path[i + 1];
+      const r = R.tdConsecutiveOk(a, b, layout.plats);
+      assert.equal(r.overlap, false, label + ' overlap ' + a.role + ' -> ' + b.role);
+      assert.equal(r.ok, true, label + ' ' + a.role + '@' + a.y + ' -> ' + b.role + '@' + b.y + ' ' + r.why + ' gap=' + r.gap + ' dy=' + r.dy + ' room=' + r.room.headroom);
+      assert.ok(r.gap >= R.TD_GAP_MIN - 1e-9 && r.gap <= R.TD_GAP_MAX + 1e-9, label + ' gap ' + r.gap);
+      assert.ok(r.dy >= R.TD_RISE_MIN - 1e-9 && r.dy <= R.TD_RISE_MAX + 1e-9, label + ' rise ' + r.dy);
+      assert.ok(r.room.ok, label + ' headroom ' + r.room.headroom);
+      assert.ok(r.path.ok, label + ' path headroom ' + r.path.headroom);
+    }
+    for (const p of path){
+      const room = R.tdHeadroom(p, layout.plats);
+      assert.ok(room.ok, label + ' pad ' + p.role + '@' + p.y + ' headroom ' + room.headroom);
+    }
+  };
+  for (const a of R.TD_KINDS){
+    for (const b of R.TD_KINDS){
+      const kinds = Array.from({length: R.TD_SECTIONS}, (_, i) => (i % 2 ? b : a));
+      check(R.tdLayoutFromKinds(kinds), a + '->' + b);
+    }
+  }
+  for (let seed = 0; seed < 200; seed++) check(R.tdLayout(seed), 'seed ' + seed);
+});

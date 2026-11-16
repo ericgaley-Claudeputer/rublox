@@ -33,8 +33,8 @@
     td = {ph: 'play', t: 0, goo: TD_GOO_START, topY: (layout && layout.topY) || (TD_SECTIONS * TD_H + 6), paid: false, earned: 0, kind: (layout && layout.kinds) ? layout.kinds.slice() : [], near: -1, seed, grace: TD_GRACE, layout};
     scene.background = new THREE.Color('#b8e0ff');
     if (scene.fog){ scene.fog.color = new THREE.Color('#d7f0ff'); scene.fog.near = 40; scene.fog.far = 180; }
-    // Rims so you can't walk off the start island into the void (island is 18x18 at z=-5).
-    [[0, 4.2, 18.4, .6], [0, -14.2, 18.4, .6], [9.2, -5, .6, 18.4], [-9.2, -5, .6, 18.4]].forEach(([x, z, w, d]) => plat(x, 1.1, z, w, d, '#ffe08a', 1.1));
+    // Rims so you can't walk off the start island into the void (island is 32x18 at z=-5).
+    [[0, 4.4, 32.8, .6], [0, -14.4, 32.8, .6], [16.4, -5, .6, 18.8], [-16.4, -5, .6, 18.8]].forEach(([x, z, w, d]) => plat(x, 1.1, z, w, d, '#ffe08a', 1.1));
     const colors = ['#c39bff', '#7fd6ff', '#ffb3c7', '#ffe08a', '#9ff0c8', '#ff9f6b'];
     if (layout){
       const rnd = tdSeed(seed);
@@ -53,7 +53,7 @@
           if (p.role === 'checkpoint') coin(p.x, p.y + 1.8, p.z);
         }
         if (p.role === 'finish'){
-          finish = {mesh: b.mesh, b, y: p.y + 0.4};
+          finish = {mesh: b.mesh, b, y: p.y + 0.4, x: p.x, z: p.z, w: p.w, d: p.d};
         }
         if (p.role === 'pad' || p.role === 'beam' || p.role === 'bridge' || p.role === 'spiral'){
           // a few coins along the climb, not on every pad
@@ -62,9 +62,10 @@
       }
     }
     // goo cylinder: mesh center so its TOP face sits at td.goo (height 2.4 → centre = goo - 1.2)
-    const goo = new THREE.Mesh(new THREE.CylinderGeometry(20, 20, 2.4, 28), new THREE.MeshLambertMaterial({color: '#b388ff', transparent: true, opacity: .9}));
-    goo.position.set(0, td.goo - 1.2, -4); scene.add(goo); td.gooMesh = goo;
-    Object.assign(P, {x: 0, y: .55, z: -5, vx: 0, vy: 0, vz: 0, jumpBuf: 0, jumpHeld: false}); P.face = 0; cam.yaw = 0; cam.pitch = .35; cam.dist = 12;
+    const goo = new THREE.Mesh(new THREE.CylinderGeometry(26, 26, 2.4, 28), new THREE.MeshLambertMaterial({color: '#b388ff', transparent: true, opacity: .9}));
+    goo.position.set(0, td.goo - 1.2, -5); scene.add(goo); td.gooMesh = goo;
+    const spawn = layout && layout.plats && layout.plats.find(p => p.role === 'spawn');
+    Object.assign(P, {x: spawn ? spawn.x : -10.5, y: spawn ? spawn.y + 0.05 : .55, z: spawn ? spawn.z : -8.5, vx: 0, vy: 0, vz: 0, jumpBuf: 0, jumpHeld: false}); P.face = 0; cam.yaw = 0; cam.pitch = .35; cam.dist = 14;
     topY = td.topY; maxY = 0;
   }
   function towerEnter(){ if (!td) return; td.ph = 'play'; td.t = 0; td.goo = TD_GOO_START; td.grace = TD_GRACE; td.paid = false; td.earned = 0; choosing = false; over = false;
@@ -91,7 +92,7 @@
     if (!td || td.ph !== 'play' || over) return;
     tdNoteBest();
     if (typeof SND !== 'undefined' && SND.die) SND.die();
-    const sp = (checkpoints[cpIndex] && checkpoints[cpIndex].spawn) || {x: 0, y: .05, z: -5.5};
+    const sp = (checkpoints[cpIndex] && checkpoints[cpIndex].spawn) || {x: -10.5, y: .55, z: -8.5};
     if (td.goo > sp.y - 1.2) td.goo = sp.y - 1.5;
     td.grace = Math.max(td.grace || 0, TD_CP_GRACE);
     if (td.gooMesh) td.gooMesh.position.y = td.goo - 1.2;
@@ -110,7 +111,7 @@
     if (td.gooMesh) td.gooMesh.position.y = td.goo - 1.2;
     // Touching goo bounces you to the last gold pad — it does not end the run.
     if (td.grace <= 0 && P.y < td.goo + .15){ towerGooHit(); return; }
-    if (finish && P.y >= finish.y - .2 && Math.hypot(P.x, P.z + 8) < 3.2) towerWin();
+    if (finish && P.y >= finish.y - .5 && Math.hypot(P.x - (finish.x || 0), P.z - (finish.z || 0)) < Math.max(3.2, ((finish.w || 5.2) / 2) + 0.8)) towerWin();
     towerHud();
   }
   function towerAnimate(dt){ if (!td || !td.gooMesh) return; td.gooMesh.rotation.y += .004; }
@@ -145,11 +146,12 @@
     const bufT = (TD_RULES && TD_RULES.TD_JUMP_BUF != null) ? TD_RULES.TD_JUMP_BUF : 0.15;
     if (inp.jump && !P.jumpHeld) P.jumpBuf = bufT;
     P.jumpHeld = !!inp.jump;
-    if (P.jumpBuf > 0) P.jumpBuf -= dt;
     P.coyote = P.onGround ? coyoteT : P.coyote - dt;
     if (P.jumpBuf > 0 && P.coyote > 0 && P.vy <= .01){
       P.vy = JUMP; P.coyote = 0; P.jumpBuf = 0; P.jumped = true; P.airT = 0;
       if (typeof SND !== 'undefined' && SND.jump) SND.jump();
+    } else if (P.jumpBuf > 0){
+      P.jumpBuf -= dt;
     }
   }
   function tdPad(jp){ return false; }

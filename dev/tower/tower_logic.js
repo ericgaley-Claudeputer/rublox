@@ -20,6 +20,28 @@
   const TD_MIN_JUMP_GAP = 0.5; // required whenever a hop is taller than a walk-up (no overhangs)
   const TD_COYOTE = 0.2;
   const TD_JUMP_BUF = 0.15;
+  // v3 layout: a rising spiral with a *visible* gap between pad edges, a modest
+  // rise, and at least 3.5 m of air above every pad and along every jump path.
+  const TD_GAP_MIN = 1.5;
+  const TD_GAP_MAX = 2.5;
+  const TD_RISE_MIN = 0.6;
+  const TD_RISE_MAX = 1.2;
+  const TD_HEADROOM = 3.5;
+  const TD_SLOTS = 8;
+  // 2x4 axis-aligned switchback. Adjacent centers are TD_SPAN apart so the
+  // visible AABB gap between 4.8 m pads is 2.2 m (1.8–2.2 m with landings).
+  // 8 unique cells * 1.0 m rise = 8.0 m before a column repeats: underside
+  // clearance 7.6 m, which leaves 4.8 m of jump room above the 2.8 m body.
+  const TD_SPAN = 7.0;
+  const TD_SPIRAL_R = 7.0;
+  const TD_PAD_W = 4.8;
+  const TD_PAD_D = 4.8;
+  const TD_RISE = 1.0;
+  const TD_STEPS_PER_SEC = 8;
+  const TD_GRID_COLS = 4;
+  const TD_GRID_ROWS = 2;
+  const TD_SPAWN_Y = 0.5;
+  const TD_CENTER = {x: 0, z: -5};
 
   const TD_SECTIONS = 12;
   const TD_H = 7.2;
@@ -148,48 +170,120 @@
     return p;
   }
 
-  // Generous kid-friendly sections: walk-up ledges (rise 0.55, touching) or
-  // short hops (rise ≤ 1.2, gap 0.8–1.6), pads at least 4 m across, no overhangs.
+  function tdUnderside(p){
+    return p.y - (p.h || 0.4);
+  }
+
+  function tdSlotPos(k){
+    const L = TD_SPAN;
+    const i = ((k % TD_SLOTS) + TD_SLOTS) % TD_SLOTS;
+    // Snake: 0,0 1,0 2,0 3,0 then 3,1 2,1 1,1 0,1 and wrap 0,1 -> 0,0.
+    const row = i < TD_GRID_COLS ? 0 : 1;
+    const col = i < TD_GRID_COLS ? i : (TD_SLOTS - 1 - i);
+    const x0 = TD_CENTER.x - (TD_GRID_COLS - 1) * L / 2;
+    const z0 = TD_CENTER.z - (TD_GRID_ROWS - 1) * L / 2;
+    return {x: x0 + col * L, z: z0 + row * L};
+  }
+
+  function tdClimbY(stepIndex){
+    return TD_SPAWN_Y + TD_RISE * (stepIndex + 1);
+  }
+
+  // Distance from a point to an AABB in XZ.
+  function tdPointAabbGap(x, z, p){
+    const gx = Math.max(0, Math.abs(x - p.x) - (p.w || 0) / 2);
+    const gz = Math.max(0, Math.abs(z - p.z) - (p.d || 0) / 2);
+    return Math.hypot(gx, gz);
+  }
+
+  // Distance from a segment in XZ to an AABB (0 if it clips the box).
+  function tdSegAabbGap(x1, z1, x2, z2, p){
+    let best = 1e9;
+    const steps = 12;
+    for (let i = 0; i <= steps; i++){
+      const t = i / steps;
+      const d = tdPointAabbGap(x1 + (x2 - x1) * t, z1 + (z2 - z1) * t, p);
+      if (d < best) best = d;
+    }
+    return best;
+  }
+
+  // Clear air above a pad's footprint (and a little around it). Floors below
+  // the standing surface are ignored. Returns Infinity when the sky is empty.
+  function tdHeadroom(pad, plats, opts){
+    opts = opts || {};
+    const margin = opts.margin != null ? opts.margin : TD_PHYS.r;
+    let min = Infinity, blocker = null;
+    for (const q of (plats || [])){
+      if (q === pad) continue;
+      if (q.role === 'decor') continue;
+      const under = tdUnderside(q);
+      if (under <= pad.y + 1e-6) continue;
+      if (tdAabbGap(pad, q) > margin) continue;
+      const h = under - pad.y - TD_PHYS.bodyH;
+      if (h < min){ min = h; blocker = q; }
+    }
+    return {ok: min >= TD_HEADROOM - 1e-9, headroom: min, blocker, need: TD_HEADROOM, bodyH: TD_PHYS.bodyH};
+  }
+
+  // Clear air along the jump from `from` to `to` (the flight corridor, not the
+  // two pads themselves). Anything whose XZ comes within the player radius of
+  // the center-to-center segment must sit at least TD_HEADROOM above `from`.
+  function tdJumpPathClear(from, to, plats, opts){
+    opts = opts || {};
+    const radius = opts.radius != null ? opts.radius : (TD_PHYS.r + 0.2);
+    let min = Infinity, blocker = null;
+    for (const q of (plats || [])){
+      if (q === from || q === to) continue;
+      if (q.role === 'decor') continue;
+      const under = tdUnderside(q);
+      if (under <= from.y + 1e-6) continue;
+      if (tdSegAabbGap(from.x, from.z, to.x, to.z, q) > radius) continue;
+      const h = under - from.y - TD_PHYS.bodyH;
+      if (h < min){ min = h; blocker = q; }
+    }
+    return {ok: min >= TD_HEADROOM - 1e-9, headroom: min, blocker, need: TD_HEADROOM, bodyH: TD_PHYS.bodyH};
+  }
+
+  function tdConsecutiveOk(from, to, plats, opts){
+    const gap = tdAabbGap(from, to);
+    const dy = to.y - from.y;
+    const hop = tdJumpCheck(from, to, opts);
+    const room = tdHeadroom(from, plats, opts);
+    const path = tdJumpPathClear(from, to, plats, opts);
+    const overlap = tdOverlapsXZ(from, to);
+    const gapOk = gap >= TD_GAP_MIN - 1e-9 && gap <= TD_GAP_MAX + 1e-9;
+    const riseOk = dy >= TD_RISE_MIN - 1e-9 && dy <= TD_RISE_MAX + 1e-9;
+    const ok = hop.ok && !overlap && gapOk && riseOk && room.ok && path.ok;
+    let why = 'ok';
+    if (overlap) why = 'overlap';
+    else if (!gapOk) why = 'gap';
+    else if (!riseOk) why = 'rise';
+    else if (!room.ok) why = 'headroom';
+    else if (!path.ok) why = 'path-headroom';
+    else if (!hop.ok) why = hop.why;
+    return {ok, why, gap, dy, hop, room, path, overlap};
+  }
+
+  // Generous kid-friendly spiral: visible 2 m edge gaps, 0.9 m rises, 5.4 m
+  // of air before a column repeats, pads at least 4 m across, no overhangs.
   function tdSectionPlats(y0, kind, sectionIndex){
     const plats = [];
     const add = (x, y, z, w, d, role) => {
       plats.push({x, y, z, w, d, h: 0.4, role: role || 'pad', kind, section: sectionIndex});
       return plats[plats.length - 1];
     };
-    const landY = y0 + TD_H - 0.2;
-    const rise = 0.55;
-    // Continue a compact vertical stair from the previous landing (or the spawn).
-    const startY = sectionIndex === 0 ? 1.05 : (y0 - 0.2 + rise);
-    const n = Math.max(1, Math.round((landY - startY) / rise));
-    const step = (landY - startY) / n; // ~0.55, never above a walk-up
-    const z0 = -5;
-    for (let k = 0; k < n; k++){
-      const y = startY + k * step;
-      let x = 0, z = z0, w = 4.4, d = 4.4, role = 'pad';
-      if (kind === 'steps'){
-        x = ((k % 2) ? 1 : -1) * 1.5;
-      } else if (kind === 'zig'){
-        x = ((k % 2) ? 1 : -1) * 1.8;
-        z = z0 + ((k % 4) < 2 ? 1.1 : -1.1);
-      } else if (kind === 'pads'){
-        const corner = k % 4, cx = (corner === 0 || corner === 1) ? 1.8 : -1.8, cz = (corner === 1 || corner === 2) ? -1.8 : 1.8;
-        x = cx; z = z0 + cz;
-      } else if (kind === 'beam'){
-        if (k % 2 === 0){ x = 0; w = 7.5; d = 4.4; role = 'beam'; }
-        else { x = ((k % 4) < 2 ? 1 : -1) * 1.4; }
-      } else if (kind === 'bridge'){
-        if (k % 3 === 1){ x = 0; w = 8.0; d = 4.4; role = 'bridge'; }
-        else { x = ((k % 2) ? 1 : -1) * 1.6; }
-      } else {
-        const ang = k * 1.05;
-        x = Math.cos(ang) * 1.7; z = z0 + Math.sin(ang) * 1.7; w = 4.5; d = 4.5; role = 'spiral';
-      }
-      add(x, y, z, w, d, role);
-    }
     const gold = TD_CP_SECTIONS.indexOf(sectionIndex + 1) >= 0;
-    add(0, landY, z0, 5.2, 5.2, gold ? 'checkpoint' : 'landing');
-    tdPush(plats, {x: -9.2, y: y0 + 2.4, z: z0, w: 0.4, d: 8, h: 3.2, role: 'rail', kind, section: sectionIndex});
-    tdPush(plats, {x: 9.2, y: y0 + 2.4, z: z0, w: 0.4, d: 8, h: 3.2, role: 'rail', kind, section: sectionIndex});
+    for (let k = 0; k < TD_STEPS_PER_SEC; k++){
+      const stepIndex = sectionIndex * TD_STEPS_PER_SEC + k;
+      const pos = tdSlotPos(stepIndex + 1);
+      const y = tdClimbY(stepIndex);
+      const last = k === TD_STEPS_PER_SEC - 1;
+      const w = last ? 5.2 : TD_PAD_W;
+      const d = last ? 5.2 : TD_PAD_D;
+      const role = last ? (gold ? 'checkpoint' : 'landing') : (kind === 'beam' ? 'beam' : kind === 'bridge' ? 'bridge' : kind === 'spin' ? 'spiral' : 'pad');
+      add(pos.x, y, pos.z, w, d, role);
+    }
     return plats;
   }
 
@@ -197,12 +291,12 @@
     const list = kinds && kinds.length ? kinds.slice(0, TD_SECTIONS) : tdPickKinds(1);
     while (list.length < TD_SECTIONS) list.push('steps');
     const plats = [];
-    tdPush(plats, {x: 0, y: 0, z: -5, w: 18, d: 18, h: 0.4, role: 'island', section: -1});
-    tdPush(plats, {x: 0, y: 0.5, z: -5, w: 5.2, d: 5.2, h: 0.35, role: 'spawn', section: -1});
-    const checkpoints = [{x: 0, y: 0.5, z: -5, w: 5.2, d: 5.2, idx: 0, section: -1}];
+    tdPush(plats, {x: TD_CENTER.x, y: 0, z: TD_CENTER.z, w: 32, d: 18, h: 0.4, role: 'island', section: -1});
+    const spawnPos = tdSlotPos(0);
+    const spawn = tdPush(plats, {x: spawnPos.x, y: TD_SPAWN_Y, z: spawnPos.z, w: 5.2, d: 5.2, h: 0.35, role: 'spawn', section: -1});
+    const checkpoints = [{x: spawn.x, y: spawn.y, z: spawn.z, w: spawn.w, d: spawn.d, idx: 0, section: -1}];
     for (let i = 0; i < TD_SECTIONS; i++){
-      const y0 = 1.2 + i * TD_H;
-      const sect = tdSectionPlats(y0, list[i], i);
+      const sect = tdSectionPlats(1.2 + i * TD_H, list[i], i);
       for (const p of sect){
         plats.push(p);
         if (p.role === 'checkpoint'){
@@ -210,18 +304,25 @@
         }
       }
     }
-    const top = 1.2 + TD_SECTIONS * TD_H;
-    const lastLand = plats.filter(p => p.role === 'landing' || p.role === 'checkpoint').slice(-1)[0];
-    const summitY = (lastLand ? lastLand.y : top) + 0.55;
-    const finZ = lastLand ? lastLand.z : -5;
-    const finish = {x: 0, y: summitY + 0.45, z: finZ, w: 4.4, d: 4.4, h: 0.3, role: 'finish'};
-    tdPush(plats, {x: 0, y: summitY, z: finZ, w: 6.0, d: 6.0, h: 0.45, role: 'summit', section: TD_SECTIONS});
-    tdPush(plats, finish);
-    return {plats, checkpoints, finish, kinds: list.slice(), top: summitY, topY: summitY + 6};
+    const lastStep = TD_SECTIONS * TD_STEPS_PER_SEC;
+    const sumPos = tdSlotPos(lastStep + 1);
+    const finPos = tdSlotPos(lastStep + 2);
+    const summitY = tdClimbY(lastStep);
+    const finishY = tdClimbY(lastStep + 1);
+    const summit = tdPush(plats, {x: sumPos.x, y: summitY, z: sumPos.z, w: 5.2, d: 5.2, h: 0.4, role: 'summit', section: TD_SECTIONS});
+    const finish = tdPush(plats, {x: finPos.x, y: finishY, z: finPos.z, w: 5.2, d: 5.2, h: 0.4, role: 'finish', section: TD_SECTIONS});
+    return {plats, checkpoints, finish, summit, kinds: list.slice(), top: finishY, topY: finishY + 6};
   }
 
   function tdLayout(seed){
     return tdLayoutFromKinds(tdPickKinds(seed == null ? 1 : seed));
+  }
+
+  // Climb path in order: spawn, then each spiral pad, then summit and finish.
+  // The start island is a safety floor, not a step on the path.
+  function tdPathPlats(layout){
+    const plats = (layout && layout.plats) ? layout.plats : (layout || []);
+    return plats.filter(p => tdIsStandable(p) && p.role !== 'island');
   }
 
   function tdGooSpeed(maxY){
@@ -261,16 +362,14 @@
     return {best: Math.max(0, r.best | 0), wins: Math.max(0, r.wins | 0), coins: Math.max(0, +r.coins || 0)};
   }
 
-  function tdPathPlats(layout){
-    return (layout.plats || []).filter(tdIsStandable);
-  }
-
   const api = {
     TD_PHYS, TD_SECTIONS, TD_H, TD_MARGIN, TD_MEAS_HEIGHT, TD_MEAS_HEIGHT_60, TD_MEAS_HEIGHT_30, TD_MEAS_HEIGHT_20,
     TD_MEAS_REACH_WALK, TD_LIMIT_H, TD_LIMIT_R, TD_MIN_JUMP_GAP, TD_COYOTE, TD_JUMP_BUF,
+    TD_GAP_MIN, TD_GAP_MAX, TD_RISE_MIN, TD_RISE_MAX, TD_HEADROOM, TD_SLOTS, TD_SPAN, TD_SPIRAL_R, TD_PAD_W, TD_PAD_D, TD_RISE, TD_STEPS_PER_SEC, TD_GRID_COLS, TD_GRID_ROWS, TD_SPAWN_Y, TD_CENTER,
     TD_GOO_BASE, TD_GOO_ACCEL, TD_GOO_ACCEL_CAP,
     TD_GRACE, TD_CP_GRACE, TD_GOO_START, TD_MIN_PAD, TD_KINDS, TD_CP_SECTIONS, TD_CLIMB_RATE, TD_KEY,
     tdMaxJumpHeight, tdAirTime, tdMaxReach, tdAabbGap, tdOverlapsXZ, tdIsStandable, tdJumpCheck, tdWalkReachable,
+    tdUnderside, tdSlotPos, tdClimbY, tdHeadroom, tdJumpPathClear, tdConsecutiveOk,
     tdSeed, tdPickKinds, tdSectionPlats, tdLayoutFromKinds, tdLayout, tdGooSpeed, tdGooVsClimber, tdLoadProg, tdPathPlats
   };
   root.TDRules = api;

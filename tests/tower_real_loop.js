@@ -106,6 +106,7 @@ test('boots the real game loop and plays Tower of Doom headlessly', () => {
   assert.equal(W.run('typeof obbyDebug.physTick'), 'function');
   assert.equal(W.run('typeof obbyDebug.edgeHop'), 'function');
   assert.equal(W.run('typeof obbyDebug.tdWalkClimb'), 'function');
+  assert.equal(W.run('typeof obbyDebug.tdTryJump'), 'function');
   W.run('__tdSeed = 7');
   W.run("Obby.play('tower')");
   W.frames(8);
@@ -145,8 +146,9 @@ test('real update loop at 30 fps can climb sample generous gaps (walk speed, no 
     [0, 0.55],
     [0.5, 1.2],
     [1.0, 1.4],
-    [3.5, 0],
-    [2.0, 1.0]
+    [2.0, 1.0],
+    [2.2, 1.0],
+    [3.5, 0]
   ];
   for (const [gap, rise] of samples){
     const r = JSON.parse(W.run('JSON.stringify(obbyDebug.edgeHop('+gap+','+rise+',{fps:30, padW:4.5, padD:4.5, hold:false}))'));
@@ -166,4 +168,50 @@ test('real update loop at 30 fps climbs generated Tower of Doom layouts', () => 
     assert.equal(r.ok, true, 'seed '+seed+' 30 fps climb failed: '+JSON.stringify(r));
     assert.ok(r.maxY >= 80, 'seed '+seed+' only reached y='+r.maxY);
   }
+});
+
+test('pressing jump from rest on the start pad produces upward velocity (Space, mobile, gamepad, 30 and 60 fps)', () => {
+  assert.ok(W, 'boot failed');
+  W.run('__tdSeed = 7');
+  W.run("Obby.play('tower')");
+  for (const fps of [30, 60]){
+    for (const via of ['space', 'touch', 'gamepad']){
+      const r = JSON.parse(W.run('JSON.stringify(obbyDebug.tdTryJump({fps:'+fps+', via:'+JSON.stringify(via)+', hold:false}))'));
+      assert.equal(r.settled, true, via + ' @' + fps + ' did not stand on the start pad: ' + JSON.stringify(r));
+      assert.equal(r.fired, true, via + ' @' + fps + ' did not fire a jump: ' + JSON.stringify(r));
+      assert.ok(r.peakVy >= 15, via + ' @' + fps + ' peak vy ' + r.peakVy);
+      assert.ok(r.height >= 2.0, via + ' @' + fps + ' was blocked (height ' + r.height + '): ' + JSON.stringify(r));
+    }
+  }
+});
+
+test('jumping from rest on every climb pad at 30 fps clears 2 m (no ceiling bonk)', () => {
+  assert.ok(W, 'boot failed');
+  W.run('__tdSeed = 7');
+  W.run("Obby.play('tower')");
+  const path = JSON.parse(W.run(`JSON.stringify((() => {
+    try {
+      const rules = (typeof TDRules !== 'undefined' && TDRules) ? TDRules : {};
+      const L = rules.tdLayout ? rules.tdLayout(7) : null;
+      if (!L) return [];
+      const list = rules.tdPathPlats ? rules.tdPathPlats(L) : (L.plats || []);
+      return list.filter(p => p.role !== 'island').map(p => ({x:p.x,y:p.y,z:p.z,role:p.role}));
+    } catch (e){ return []; }
+  })())`));
+  // td and TDRules are IIFE-private — fall back to a debug hook or recompute via TDRules on the page.
+  let pads = path;
+  if (!pads.length){
+    pads = JSON.parse(W.run(`JSON.stringify((() => {
+      const L = (typeof TDRules !== 'undefined' && TDRules.tdLayout) ? TDRules.tdLayout(7) : null;
+      if (!L) return [];
+      return (TDRules.tdPathPlats ? TDRules.tdPathPlats(L) : L.plats).filter(p => p.role !== 'island' && p.role !== 'rail' && p.role !== 'decor').map(p => ({x:p.x,y:p.y,z:p.z,role:p.role}));
+    })())`));
+  }
+  assert.ok(pads.length >= 10, 'could not read climb path: ' + JSON.stringify(pads).slice(0, 200));
+  const bad = [];
+  for (const p of pads){
+    const r = JSON.parse(W.run('JSON.stringify(obbyDebug.tdTryJump({fps:30, via:"space", hold:false, x:'+p.x+', y:'+p.y+', z:'+p.z+'}))'));
+    if (!r.ok) bad.push({role:p.role, y:p.y, r});
+  }
+  assert.equal(bad.length, 0, 'ceilings or failed jumps: ' + JSON.stringify(bad.slice(0, 5)));
 });
