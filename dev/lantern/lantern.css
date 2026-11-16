@@ -11,7 +11,7 @@
 .lh-bar i{display:block;height:100%;background:linear-gradient(90deg,#7cffd0,#ffd25a,#ff8ad8);border-radius:8px}
 .lh-why{font-size:11px;font-weight:800;margin-top:4px;max-width:160px;line-height:1.25;color:#ffe8fb}
 #lhKeyTag{display:none;position:absolute;left:50%;top:58px;transform:translateX(-50%);z-index:8;background:#6b3cff;color:#fff;border:3px solid #fff;border-radius:14px;padding:4px 10px;font-weight:900;font-size:14px;pointer-events:none}
-#lhSetBtn,#lhFanfare,#lhMyWagon,#lhMapBtn,#lhWriteBtn{display:none;position:absolute;z-index:8;border:3px solid #fff;border-radius:16px;padding:7px 12px;font:inherit;font-weight:900;cursor:pointer;color:#fff}
+#lhSetBtn,#lhFanfare,#lhMyWagon,#lhMapBtn,#lhWriteBtn,#lhDecorBtn{display:none;position:absolute;z-index:8;border:3px solid #fff;border-radius:16px;padding:7px 12px;font:inherit;font-weight:900;cursor:pointer;color:#fff}
 #lhSetBtn{right:max(10px,env(safe-area-inset-right));bottom:18px;background:#6b3cff;box-shadow:0 4px 0 #3a1ca0}
 .touchui #lhSetBtn{bottom:158px}
 #lhMyWagon{right:max(10px,env(safe-area-inset-right));bottom:68px;background:#d61c8c;box-shadow:0 4px 0 #8a0a58}
@@ -22,7 +22,7 @@
 .touchui #lhWriteBtn{bottom:308px}
 #lhWriteBtn.lh-ready{box-shadow:0 4px 0 #4a0810,0 0 0 3px #ffd25a}
 #lhFanfare{left:50%;bottom:200px;transform:translateX(-50%);background:#d61c8c;box-shadow:0 4px 0 #8a0a58}
-#lhFanfare.show,#lhSetBtn,#lhMyWagon,#lhMapBtn,#lhWriteBtn{display:block}
+#lhFanfare.show,#lhSetBtn,#lhMyWagon,#lhMapBtn,#lhWriteBtn,#lhDecorBtn.show{display:block}
 .lhnear{background:#d61c8c;box-shadow:0 4px 0 #8a0a58}
 .lhnear small{color:#d61c8c}
 #lhCut,#lhCalm{display:none;position:absolute;inset:0;z-index:30;background:rgba(10,4,20,.72);align-items:center;justify-content:center;flex-direction:column;text-align:center;color:#fff;pointer-events:auto}
@@ -53,10 +53,10 @@
 #lhSkip,#lhCalmSkip{margin-top:16px;border:3px solid #fff;border-radius:14px;background:#6b3cff;color:#fff;font:inherit;font-weight:900;padding:8px 16px;cursor:pointer;z-index:1}
 .lh-breathe{width:110px;height:110px;border:6px solid #fff;border-radius:50%;margin:8px auto 16px;background:radial-gradient(circle at 40% 40%,#7cffd0,#6b3cff);animation:lhbreathe 2.2s ease-in-out infinite}
 @keyframes lhbreathe{0%,100%{transform:scale(.82)}50%{transform:scale(1.08)}}
-#lhSet,#lhDraw,#lhWrite,#lhKnock{display:none;position:absolute;inset:0;z-index:25;background:rgba(20,8,36,.55);align-items:center;justify-content:center;pointer-events:auto}
-#lhSet.show,#lhDraw.show,#lhWrite.show,#lhKnock.show{display:flex}
-#lhSet .mbox,#lhDraw .mbox,#lhWrite .mbox,#lhKnock .mbox{background:#fff7fb;border:4px solid #1d2340;border-radius:20px;padding:16px;max-width:420px;width:calc(100% - 28px);color:#1d2340;box-shadow:0 8px 0 rgba(80,20,90,.25)}
-#lhSet h2,#lhDraw h2,#lhWrite h2,#lhKnock h2{margin:0 0 8px;font-size:22px}
+#lhSet,#lhDraw,#lhWrite,#lhKnock,#lhGame,#lhBooth,#lhDecor{display:none;position:absolute;inset:0;z-index:25;background:rgba(20,8,36,.55);align-items:center;justify-content:center;pointer-events:auto}
+#lhSet.show,#lhDraw.show,#lhWrite.show,#lhKnock.show,#lhGame.show,#lhBooth.show,#lhDecor.show{display:flex}
+#lhSet .mbox,#lhDraw .mbox,#lhWrite .mbox,#lhKnock .mbox,#lhGame .mbox,#lhBooth .mbox,#lhDecor .mbox{background:#fff7fb;border:4px solid #1d2340;border-radius:20px;padding:16px;max-width:420px;width:calc(100% - 28px);color:#1d2340;box-shadow:0 8px 0 rgba(80,20,90,.25)}
+#lhSet h2,#lhDraw h2,#lhWrite h2,#lhKnock h2,#lhGame h2,#lhBooth h2,#lhDecor h2{margin:0 0 8px;font-size:22px}
 #lhWritePresets{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
 #lhWritePresets button,#lhWriteStyle button{border:3px solid #1d2340;border-radius:14px;background:#fff;font:inherit;font-weight:900;padding:10px 12px;cursor:pointer;min-height:44px;color:#1d2340}
 #lhWritePresets button.on,#lhWriteStyle button.on{background:#8a1020;color:#fff;border-color:#4a0810}
@@ -107,11 +107,11 @@ body.lh-muffled #obby{filter:saturate(.85)}
 }
 #obby.lhmode #lhRoot{display:block;position:absolute;inset:0;pointer-events:none;z-index:20}
 #obby.lhmode #lhMeter{display:block;pointer-events:none;z-index:21}
-#obby.lhmode #lhSetBtn,#obby.lhmode #lhFanfare.show,#obby.lhmode #lhMyWagon,#obby.lhmode #lhMapBtn,#obby.lhmode #lhWriteBtn,#obby.lhmode #lhAct.show{pointer-events:auto}
+#obby.lhmode #lhSetBtn,#obby.lhmode #lhFanfare.show,#obby.lhmode #lhMyWagon,#obby.lhmode #lhMapBtn,#obby.lhmode #lhWriteBtn,#obby.lhmode #lhDecorBtn.show,#obby.lhmode #lhAct.show{pointer-events:auto}
 /* #lhRoot is z-index 20 and covers the screen; the Close/Open door prompt must sit above it or Mac clicks never reach the button. */
 #lhAct.fsnear,#obby.lhmode #lhAct.show{z-index:22;pointer-events:auto}
 
-#obby.lhmode #lhCut,#obby.lhmode #lhCalm,#obby.lhmode #lhSet,#obby.lhmode #lhDraw,#obby.lhmode #lhWrite,#obby.lhmode #lhKnock,#obby.lhmode #lhMap{pointer-events:auto;z-index:90}
+#obby.lhmode #lhCut,#obby.lhmode #lhCalm,#obby.lhmode #lhSet,#obby.lhmode #lhDraw,#obby.lhmode #lhWrite,#obby.lhmode #lhKnock,#obby.lhmode #lhGame,#obby.lhmode #lhBooth,#obby.lhmode #lhDecor,#obby.lhmode #lhMap{pointer-events:auto;z-index:90}
 #obby.lhmode #lhKeyTag{z-index:21}
 
 /* Start-fail safety net (kept here so lantern css refresh does not drop it). */
@@ -143,3 +143,44 @@ body.lh-muffled #obby{filter:saturate(.85)}
 #lhKnockOpen,#lhKnockKeep{flex:1;min-height:48px;min-width:120px;border:3px solid #1d2340;border-radius:14px;font:inherit;font-weight:900;padding:12px 14px;cursor:pointer}
 #lhKnockOpen{background:#2ec27e;color:#08351c}
 #lhKnockKeep{background:#efe8f8;color:#1d2340}
+
+#lhGame .mbox,#lhBooth .mbox{max-width:520px}
+.lh-game-hint{font-size:13px;font-weight:700;margin:0 0 8px;line-height:1.35}
+#lhGameBody{min-height:160px;margin:6px 0}
+#lhGameBar{display:flex;gap:10px;align-items:center;margin-top:8px}
+#lhGameScore{flex:1;font-weight:900}
+#lhGameClose,#lhBoothClose{min-height:48px}
+#lhTickets{font-weight:900;font-size:13px;margin-top:6px;color:#ffe8a0}
+.lh-pegs,.lh-balloons,.lh-ducks,.lh-holes{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;min-height:120px}
+.lh-peg,.lh-balloon,.lh-duck,.lh-hole{border:3px solid #1d2340;border-radius:16px;background:#fff;font:inherit;font-weight:900;min-width:72px;min-height:64px;padding:8px 10px;cursor:pointer;color:#1d2340;position:relative}
+.lh-peg.on,.lh-balloon.on,.lh-duck.on,.lh-hole.on{background:#ffd25a;box-shadow:0 0 0 3px #6b3cff}
+.lh-peg.hit{background:#2ec27e;color:#08351c}
+.lh-balloon.popped{background:#efe8f8;opacity:.45;cursor:default}
+.lh-hole.lit{background:#7cffd0;box-shadow:0 0 12px #7cffd0}
+.lh-hole.whack{background:#ff8ad8}
+.lh-darts{display:flex;justify-content:center;gap:4px;margin-bottom:8px;font-size:22px}
+#lhBoothList{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:min(52vh,380px);overflow:auto;margin:8px 0;padding-right:4px}
+.lh-prize{border:3px solid #1d2340;border-radius:14px;background:#fff;padding:10px 10px 8px;text-align:left;cursor:pointer;font:inherit;color:#1d2340;min-height:92px}
+.lh-prize .nm{font-weight:900;font-size:14px}
+.lh-prize .ds{font-size:11px;font-weight:700;opacity:.75;margin:2px 0 6px}
+.lh-prize .cs{font-weight:900;font-size:13px}
+.lh-prize.owned{background:#e8fff4;cursor:default}
+.lh-prize.on{box-shadow:0 0 0 3px #6b3cff}
+.lh-prize.wear{background:#fff3d0}
+@media (max-width:760px){
+  #lhBoothList{grid-template-columns:1fr}
+  .lh-peg,.lh-balloon,.lh-duck,.lh-hole{min-width:64px;min-height:56px}
+}
+
+#lhDecorBtn{right:max(10px,env(safe-area-inset-right));bottom:218px;background:#2a6b8a;box-shadow:0 4px 0 #143d52}
+.touchui #lhDecorBtn{bottom:358px}
+#lhDecor .mbox{max-width:520px;max-height:min(86vh,640px);overflow:auto}
+.lh-decor-sec{font-weight:900;margin:10px 0 6px;font-size:14px}
+.lh-swatches{display:flex;flex-wrap:wrap;gap:8px}
+.lh-swatches button,.lh-drow button{border:3px solid #1d2340;border-radius:12px;background:#fff;font:inherit;font-weight:800;padding:8px 10px;cursor:pointer;color:#1d2340;min-height:44px}
+.lh-swatches button.on{background:#6b3cff;color:#fff;border-color:#3a1ca0}
+#lhDecorPlace{width:100%;margin:10px 0 4px;min-height:48px}
+#lhDecorList{display:flex;flex-direction:column;gap:6px;max-height:160px;overflow:auto}
+.lh-drow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;border:2px solid #eadfbf;border-radius:12px;padding:6px 8px;background:#fff}
+.lh-drow .nm{flex:1;font-weight:800;font-size:13px}
+.lh-drow button{min-height:40px;padding:6px 8px}

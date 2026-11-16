@@ -111,7 +111,13 @@
       settings: lhNormalizeSettings(o.settings),
       doodles: o.doodles && typeof o.doodles === 'object' ? o.doodles : {},
       coins: Math.max(0, +o.coins || 0),
-      wallWords: lhSanitizeWallWords(o.wallWords)
+      wallWords: lhSanitizeWallWords(o.wallWords),
+      rides: (o.rides && typeof o.rides === 'object') ? o.rides : {},
+      tickets: Math.max(0, o.tickets | 0),
+      prizes: (o.prizes && typeof o.prizes === 'object') ? o.prizes : {},
+      wear: (o.wear && typeof o.wear === 'object') ? o.wear : {},
+      decor: Array.isArray(o.decor) ? o.decor : [],
+      wagonStyle: (o.wagonStyle && typeof o.wagonStyle === 'object') ? o.wagonStyle : {}
     };
   }
 
@@ -284,7 +290,12 @@
     {id:'lh-enough', real:'WHY DO YOU TORMENT ME?', realDesc:'Get Caine to successfully crash out.', name:"That's Enough!", desc:'Get Maestro Gleam all worked up.', emoji:'😤', coins:15, note:'lh:enough'},
     {id:'lh-all', real:'They abandoned me...', realDesc:'Witness Caine having a meltdown by everyone abstracting.', name:"Everyone's Fizzled", desc:"Watch Maestro Gleam's meltdown when every guest has fizzled.", emoji:'😵', coins:20, note:'lh:all'},
     {id:'lh-vesper', real:'Hello neighbor, welcome home!', realDesc:'Encounter Eniac on your current server. (Secret)', name:'Mystery Guest', desc:'Meet the late-night visitor under the big top.', emoji:'🌙', coins:20, note:'lh:vesper', secret:true},
-    {id:'lh-peek', real:'Peekaboo.', realDesc:'Get abstracted by Eniac. (Secret)', name:'Gotcha!', desc:'Get fizzled by the late-night visitor.', emoji:'👀', coins:20, note:'lh:peek', secret:true}
+    {id:'lh-peek', real:'Peekaboo.', realDesc:'Get abstracted by Eniac. (Secret)', name:'Gotcha!', desc:'Get fizzled by the late-night visitor.', emoji:'👀', coins:20, note:'lh:peek', secret:true},
+    {id:'lh-ride', name:'First Spin', desc:'Hop on a fairground ride.', emoji:'🎡', coins:10, note:'lh:ride'},
+    {id:'lh-rides', name:'Ride the Midway', desc:'Take a turn on the Ferris wheel, the carousel, and the swing ride.', emoji:'🎠', coins:15, note:'lh:rides'},
+    {id:'lh-tickets', name:'Ticket Winner', desc:'Win prize tickets at a carnival game.', emoji:'🎟️', coins:10, note:'lh:tickets'},
+    {id:'lh-prize', name:'Booth Bargain', desc:'Trade tickets for a prize at the booth.', emoji:'🧸', coins:10, note:'lh:prize'},
+    {id:'lh-decor', name:'Home Sweet Wagon', desc:'Decorate your wagon with a new item or a fresh coat of paint.', emoji:'🛋️', coins:10, note:'lh:decor'}
   ];
 
 
@@ -595,10 +606,242 @@
     return (jump * jump) / (2 * grav);
   }
 
+
+  const LH_RIDE_SPEC = [
+    {id:'ferris', name:'Ferris Wheel', emoji:'🎡', boardR: 5.8},
+    {id:'carousel', name:'Carousel', emoji:'🎠', boardR: 3.6},
+    {id:'swing', name:'Swing Ride', emoji:'🎪', boardR: 4.2}
+  ];
+
+  function lhRidePickSeat(taken, count){
+    const n = Math.max(0, count | 0);
+    taken = taken || [];
+    for (let i = 0; i < n; i++){
+      if (!taken[i]) return i;
+    }
+    return -1;
+  }
+
+  function lhRideBoardOk(st){
+    st = st || {};
+    if (st.alreadyOn) return {ok: false, reason: 'seated'};
+    if (!st.near) return {ok: false, reason: 'far'};
+    const seat = st.seat == null ? -1 : st.seat;
+    if (seat < 0) return {ok: false, reason: 'full'};
+    return {ok: true, seat: seat};
+  }
+
+  function lhRideExitPoint(ride){
+    ride = ride || {};
+    const x = +ride.x || 0, z = +ride.z || 0;
+    if (ride.kind === 'ferris') return {x: x + 5.2, y: 0.12, z: z};
+    if (ride.kind === 'swing') return {x: x + 4.4, y: 0.12, z: z + 1};
+    return {x: x + 3.6, y: 0.12, z: z + 1.2};
+  }
+
+  function lhRideProgress(prev, kind){
+    const rides = {};
+    const src = prev && typeof prev === 'object' ? prev : {};
+    Object.keys(src).forEach(k => { if (src[k]) rides[k] = true; });
+    const first = !rides.ferris && !rides.carousel && !rides.swing;
+    if (kind) rides[kind] = true;
+    const all = !!(rides.ferris && rides.carousel && rides.swing);
+    return {rides: rides, first: first, all: all};
+  }
+
+
+  const LH_CARNIVAL_GAMES = [
+    {id:'rings', name:'Ring Toss', emoji:'⭕', throws:3, per:2, bonus:4},
+    {id:'darts', name:'Balloon Darts', emoji:'🎈', throws:5, per:2, bonus:4},
+    {id:'ducks', name:'Duck Pond', emoji:'🦆'},
+    {id:'whack', name:'Whack-a-Glow', emoji:'✨', seconds:12, per:1, bonus:5, bonusAt:10}
+  ];
+
+  const LH_PRIZES = [
+    {id:'hat-party', name:'Sparkle Party Hat', kind:'cosmetic', slot:'hat', cost:8, emoji:'🎩', desc:'A tall striped party hat.'},
+    {id:'hat-star', name:'Star Shades', kind:'cosmetic', slot:'hat', cost:10, emoji:'😎', desc:'Starry shades for the midway.'},
+    {id:'plush-glow', name:'Glowbug Plush', kind:'plush', cost:12, emoji:'🐛', desc:'A soft glowbug for your wagon.'},
+    {id:'plush-tent', name:'Little Tent Plush', kind:'plush', cost:12, emoji:'🎪', desc:'A squishy little big top.'},
+    {id:'plush-horse', name:'Carousel Horse Plush', kind:'plush', cost:15, emoji:'🎠', desc:'A painted wooden horse pal.'},
+    {id:'decor-lamp', name:'Wagon Lantern', kind:'decor', cost:8, emoji:'🏮', desc:'A warm lantern for your shelf.'},
+    {id:'decor-bunting', name:'Fair Bunting', kind:'decor', cost:6, emoji:'🎏', desc:'Colorful flags for your wall.'},
+    {id:'decor-rug', name:'Star Rug', kind:'decor', cost:10, emoji:'⭐', desc:'A starry rug for the floor.'},
+    {id:'decor-jar', name:'Candy Jar', kind:'decor', cost:7, emoji:'🍬', desc:'A jar of midway sweets.'},
+    {id:'decor-lights', name:'String Lights', kind:'decor', cost:10, emoji:'✨', desc:'Twinkly lights along the wall.'},
+    {id:'decor-plant', name:'Fern Friend', kind:'decor', cost:6, emoji:'🌿', desc:'A leafy wagon plant.'},
+    {id:'decor-poster', name:'Big Top Poster', kind:'decor', cost:5, emoji:'🖼️', desc:'A painted fairground poster.'}
+  ];
+
+  function lhPrizeById(id){
+    return LH_PRIZES.find(p => p.id === id) || null;
+  }
+
+  function lhGameTickets(gameId, score, rand){
+    const g = LH_CARNIVAL_GAMES.find(x => x.id === gameId);
+    score = Math.max(0, score | 0);
+    if (!g) return 0;
+    if (g.id === 'ducks'){
+      const r = (typeof rand === 'function' ? rand() : Math.random());
+      if (r < 0.08) return 8;
+      if (r < 0.35) return 3;
+      if (r < 0.7) return 2;
+      return 1;
+    }
+    let n = score * (g.per || 1);
+    if (g.bonus && (g.bonusAt != null ? score >= g.bonusAt : (g.throws && score >= g.throws))) n += g.bonus;
+    return n;
+  }
+
+  function lhBuyPrize(state, prizeId){
+    state = state || {};
+    const prize = lhPrizeById(prizeId);
+    if (!prize) return {ok:false, reason:'unknown', tickets: Math.max(0, state.tickets|0), prizes: Object.assign({}, state.prizes || {})};
+    const tickets = Math.max(0, state.tickets|0);
+    const prizes = Object.assign({}, state.prizes || {});
+    if (prizes[prizeId]) return {ok:false, reason:'owned', tickets: tickets, prizes: prizes, prize: prize};
+    if (tickets < prize.cost) return {ok:false, reason:'cost', tickets: tickets, prizes: prizes, prize: prize};
+    prizes[prizeId] = true;
+    return {ok:true, tickets: tickets - prize.cost, prizes: prizes, prize: prize};
+  }
+
+  function lhEquipCosmetic(wear, prizeId){
+    const prize = lhPrizeById(prizeId);
+    const next = Object.assign({}, wear && typeof wear === 'object' ? wear : {});
+    if (!prize || prize.kind !== 'cosmetic') return {ok:false, wear: next, reason:'not-cosmetic'};
+    const slot = prize.slot || 'hat';
+    if (next[slot] === prizeId) delete next[slot];
+    else next[slot] = prizeId;
+    return {ok:true, wear: next, equipped: next[slot] || null, slot: slot};
+  }
+
+
+  const LH_STARTER_DECOR = [
+    {id:'start-stool', name:'Little Stool', emoji:'🪑', kind:'decor'},
+    {id:'start-cushion', name:'Soft Cushion', emoji:'🟪', kind:'decor'},
+    {id:'start-crate', name:'Toy Crate', emoji:'📦', kind:'decor'},
+    {id:'start-mat', name:'Welcome Mat', emoji:'🟫', kind:'decor'},
+    {id:'start-picture', name:'Sunny Frame', emoji:'🖼️', kind:'decor'},
+    {id:'start-lamp', name:'Bedside Lamp', emoji:'💡', kind:'decor'}
+  ];
+  const LH_WALL_STYLES = [
+    {id:'plain', name:'Warm Cream'},
+    {id:'stripe', name:'Candy Stripe'},
+    {id:'stars', name:'Night Stars'},
+    {id:'dots', name:'Confetti Dots'}
+  ];
+  const LH_FLOOR_STYLES = [
+    {id:'wood', name:'Wagon Wood'},
+    {id:'check', name:'Picnic Check'},
+    {id:'star', name:'Starry Floor'},
+    {id:'plain', name:'Soft Boards'}
+  ];
+  const LH_DECOR_MAX = 24;
+
+  function lhDecorCatalog(prizes){
+    const have = prizes && typeof prizes === 'object' ? prizes : {};
+    const out = LH_STARTER_DECOR.map(p => Object.assign({starter:true}, p));
+    (LH_PRIZES || []).forEach(p => {
+      if ((p.kind === 'decor' || p.kind === 'plush') && have[p.id]) out.push(Object.assign({}, p));
+    });
+    return out;
+  }
+
+  function lhDecorClamp(dx, dz, w, d, inset){
+    const pad = inset == null ? 1.1 : inset;
+    const hw = Math.max(0.4, (w || 8) / 2 - pad);
+    const hd = Math.max(0.4, (d || 6.2) / 2 - pad);
+    const x = Math.max(-hw, Math.min(hw, +dx || 0));
+    const z = Math.max(-hd, Math.min(hd, +dz || 0));
+    return {x: x, z: z};
+  }
+
+  function lhNormalizeStyle(style){
+    style = style && typeof style === 'object' ? style : {};
+    const wall = (LH_WALL_STYLES.some(s => s.id === style.wall) ? style.wall : 'plain');
+    const floor = (LH_FLOOR_STYLES.some(s => s.id === style.floor) ? style.floor : 'wood');
+    return {wall: wall, floor: floor};
+  }
+
+  function lhNormalizeDecor(list){
+    if (!Array.isArray(list)) return [];
+    const out = [];
+    list.forEach((it, i) => {
+      if (!it || !it.item) return;
+      const pos = lhDecorClamp(it.x, it.z, 8, 6.2, 1.1);
+      const rot = ((it.rot | 0) % 4 + 4) % 4;
+      out.push({id: String(it.id || ('d' + i)), item: String(it.item), x: pos.x, z: pos.z, rot: rot});
+    });
+    return out.slice(0, LH_DECOR_MAX);
+  }
+
+  function lhDecorPlace(list, itemId, x, z, rot){
+    const items = lhNormalizeDecor(list);
+    if (items.length >= LH_DECOR_MAX) return {ok:false, reason:'full', items: items};
+    if (!itemId) return {ok:false, reason:'item', items: items};
+    const pos = lhDecorClamp(x, z, 8, 6.2, 1.1);
+    const rec = {id: 'd' + Date.now().toString(36) + Math.floor(Math.random()*1000).toString(36), item: itemId, x: pos.x, z: pos.z, rot: ((rot|0)%4+4)%4};
+    items.push(rec);
+    return {ok:true, items: items, placed: rec};
+  }
+
+  function lhDecorRotate(list, id){
+    const items = lhNormalizeDecor(list);
+    const it = items.find(x => x.id === id);
+    if (!it) return {ok:false, reason:'missing', items: items};
+    it.rot = (it.rot + 1) % 4;
+    return {ok:true, items: items, placed: it};
+  }
+
+  function lhDecorRemove(list, id){
+    const items = lhNormalizeDecor(list).filter(x => x.id !== id);
+    return {ok:true, items: items};
+  }
+
+  function lhDecorMove(list, id, x, z){
+    const items = lhNormalizeDecor(list);
+    const it = items.find(n => n.id === id);
+    if (!it) return {ok:false, reason:'missing', items: items};
+    const pos = lhDecorClamp(x, z, 8, 6.2, 1.1);
+    it.x = pos.x; it.z = pos.z;
+    return {ok:true, items: items, placed: it};
+  }
+
+
+  // Maestro Gleam's wagon serenade: only after a continuous stay, then a cooldown.
+  const LH_SONG_STAY = 50;
+  const LH_SONG_COOLDOWN = 180;
+  const LH_SONG_TEST_STAY = 0.8;
+
+  function lhSongStayNeed(test){
+    return test === 'song' ? LH_SONG_TEST_STAY : LH_SONG_STAY;
+  }
+
+  function lhSongCooldown(test){
+    return test === 'song' ? 0 : LH_SONG_COOLDOWN;
+  }
+
+  function lhSongStayTick(inOwnRoom, stayT, dt){
+    if (!inOwnRoom) return 0;
+    return (stayT || 0) + Math.max(0, +dt || 0);
+  }
+
+  function lhSongShouldStart(st){
+    st = st || {};
+    if (st.alreadySinging) return false;
+    if (!st.inOwnRoom) return false;
+    const need = st.stayNeed != null ? +st.stayNeed : lhSongStayNeed(st.test);
+    const cd = st.cooldown != null ? +st.cooldown : lhSongCooldown(st.test);
+    if ((st.stayT || 0) < need) return false;
+    if (st.lastSongAt != null && ((st.now || 0) - st.lastSongAt) < cd) return false;
+    return true;
+  }
+
   const api = {
     LH_KEY, LH_VER, LH_HOST, LH_HOST_TITLE, LH_GAME, LH_STAMPS, LH_EYES,
     LH_WALL_PRESETS, LH_WALL_MAX_CHARS, LH_WALL_MAX_PER_PLAYER, LH_WALL_MAX_DIST, LH_PII_REASONS,
     LH_WAGON_H, LH_MIDWAY_WALL_H, LH_DOOR_OPEN_H, LH_KNOCK_COOLDOWN, LH_KNOCK_TIMEOUT, LH_KNOCK_SOLO_OPEN,
+    LH_SONG_STAY, LH_SONG_COOLDOWN, LH_SONG_TEST_STAY,
+    LH_RIDE_SPEC, LH_CARNIVAL_GAMES, LH_PRIZES, LH_STARTER_DECOR, LH_WALL_STYLES, LH_FLOOR_STYLES, LH_DECOR_MAX,
     LH_COMPANY_R, LH_NEAR_R, LH_SUMMON_R, LH_TAG_R, LH_KEY_CD, LH_LAMP_R, LH_WAGON_ZS,
     LH_WAGONS_PER_SIDE, LH_WAGON_COUNT, LH_WAGON_SPACING, LH_WAGON_Z0, LH_WAGON_X,
     LH_MIDWAY_WALL_X, LH_MIDWAY_Z0, LH_MIDWAY_Z1, LH_DOOR_HALF,
@@ -614,6 +857,10 @@
     lhRoomContains, lhDoorAjar, lhRoomInteriorVisible, lhDoorwayLayout, lhDoorSealsOpening,
     lhWagonWallPlanes, lhRayWall, lhNormalizeWallText, lhAddWallWord, lhEraseWallWord, lhSanitizeWallWords,
     lhDoorPromptKind, lhKnockCooldownLeft, lhKnockAllowed, lhKnockResolve, lhKnockReplyMessage, lhJumpClearHeight, lhPickLine,
+    lhSongStayNeed, lhSongCooldown, lhSongStayTick, lhSongShouldStart,
+    lhRidePickSeat, lhRideBoardOk, lhRideExitPoint, lhRideProgress,
+    lhPrizeById, lhGameTickets, lhBuyPrize, lhEquipCosmetic,
+    lhDecorCatalog, lhDecorClamp, lhNormalizeStyle, lhNormalizeDecor, lhDecorPlace, lhDecorRotate, lhDecorRemove, lhDecorMove,
     LH_KNOCK_SOLO_OPEN_LINES, LH_KNOCK_SOLO_STAY_LINES
   };
   root.LHRules = api;

@@ -1067,6 +1067,12 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 
 
 
+
+
+
+
+
+
 /* ---------- lantern hotel css ---------- */
 /* t286u Lantern Big Top HUD */
 #lhBox{display:none}
@@ -1081,7 +1087,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 .lh-bar i{display:block;height:100%;background:linear-gradient(90deg,#7cffd0,#ffd25a,#ff8ad8);border-radius:8px}
 .lh-why{font-size:11px;font-weight:800;margin-top:4px;max-width:160px;line-height:1.25;color:#ffe8fb}
 #lhKeyTag{display:none;position:absolute;left:50%;top:58px;transform:translateX(-50%);z-index:8;background:#6b3cff;color:#fff;border:3px solid #fff;border-radius:14px;padding:4px 10px;font-weight:900;font-size:14px;pointer-events:none}
-#lhSetBtn,#lhFanfare,#lhMyWagon,#lhMapBtn,#lhWriteBtn{display:none;position:absolute;z-index:8;border:3px solid #fff;border-radius:16px;padding:7px 12px;font:inherit;font-weight:900;cursor:pointer;color:#fff}
+#lhSetBtn,#lhFanfare,#lhMyWagon,#lhMapBtn,#lhWriteBtn,#lhDecorBtn{display:none;position:absolute;z-index:8;border:3px solid #fff;border-radius:16px;padding:7px 12px;font:inherit;font-weight:900;cursor:pointer;color:#fff}
 #lhSetBtn{right:max(10px,env(safe-area-inset-right));bottom:18px;background:#6b3cff;box-shadow:0 4px 0 #3a1ca0}
 .touchui #lhSetBtn{bottom:158px}
 #lhMyWagon{right:max(10px,env(safe-area-inset-right));bottom:68px;background:#d61c8c;box-shadow:0 4px 0 #8a0a58}
@@ -1092,7 +1098,7 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 .touchui #lhWriteBtn{bottom:308px}
 #lhWriteBtn.lh-ready{box-shadow:0 4px 0 #4a0810,0 0 0 3px #ffd25a}
 #lhFanfare{left:50%;bottom:200px;transform:translateX(-50%);background:#d61c8c;box-shadow:0 4px 0 #8a0a58}
-#lhFanfare.show,#lhSetBtn,#lhMyWagon,#lhMapBtn,#lhWriteBtn{display:block}
+#lhFanfare.show,#lhSetBtn,#lhMyWagon,#lhMapBtn,#lhWriteBtn,#lhDecorBtn.show{display:block}
 .lhnear{background:#d61c8c;box-shadow:0 4px 0 #8a0a58}
 .lhnear small{color:#d61c8c}
 #lhCut,#lhCalm{display:none;position:absolute;inset:0;z-index:30;background:rgba(10,4,20,.72);align-items:center;justify-content:center;flex-direction:column;text-align:center;color:#fff;pointer-events:auto}
@@ -1123,10 +1129,10 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 #lhSkip,#lhCalmSkip{margin-top:16px;border:3px solid #fff;border-radius:14px;background:#6b3cff;color:#fff;font:inherit;font-weight:900;padding:8px 16px;cursor:pointer;z-index:1}
 .lh-breathe{width:110px;height:110px;border:6px solid #fff;border-radius:50%;margin:8px auto 16px;background:radial-gradient(circle at 40% 40%,#7cffd0,#6b3cff);animation:lhbreathe 2.2s ease-in-out infinite}
 @keyframes lhbreathe{0%,100%{transform:scale(.82)}50%{transform:scale(1.08)}}
-#lhSet,#lhDraw,#lhWrite,#lhKnock{display:none;position:absolute;inset:0;z-index:25;background:rgba(20,8,36,.55);align-items:center;justify-content:center;pointer-events:auto}
-#lhSet.show,#lhDraw.show,#lhWrite.show,#lhKnock.show{display:flex}
-#lhSet .mbox,#lhDraw .mbox,#lhWrite .mbox,#lhKnock .mbox{background:#fff7fb;border:4px solid #1d2340;border-radius:20px;padding:16px;max-width:420px;width:calc(100% - 28px);color:#1d2340;box-shadow:0 8px 0 rgba(80,20,90,.25)}
-#lhSet h2,#lhDraw h2,#lhWrite h2,#lhKnock h2{margin:0 0 8px;font-size:22px}
+#lhSet,#lhDraw,#lhWrite,#lhKnock,#lhGame,#lhBooth,#lhDecor{display:none;position:absolute;inset:0;z-index:25;background:rgba(20,8,36,.55);align-items:center;justify-content:center;pointer-events:auto}
+#lhSet.show,#lhDraw.show,#lhWrite.show,#lhKnock.show,#lhGame.show,#lhBooth.show,#lhDecor.show{display:flex}
+#lhSet .mbox,#lhDraw .mbox,#lhWrite .mbox,#lhKnock .mbox,#lhGame .mbox,#lhBooth .mbox,#lhDecor .mbox{background:#fff7fb;border:4px solid #1d2340;border-radius:20px;padding:16px;max-width:420px;width:calc(100% - 28px);color:#1d2340;box-shadow:0 8px 0 rgba(80,20,90,.25)}
+#lhSet h2,#lhDraw h2,#lhWrite h2,#lhKnock h2,#lhGame h2,#lhBooth h2,#lhDecor h2{margin:0 0 8px;font-size:22px}
 #lhWritePresets{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
 #lhWritePresets button,#lhWriteStyle button{border:3px solid #1d2340;border-radius:14px;background:#fff;font:inherit;font-weight:900;padding:10px 12px;cursor:pointer;min-height:44px;color:#1d2340}
 #lhWritePresets button.on,#lhWriteStyle button.on{background:#8a1020;color:#fff;border-color:#4a0810}
@@ -1177,11 +1183,11 @@ body.lh-muffled #obby{filter:saturate(.85)}
 }
 #obby.lhmode #lhRoot{display:block;position:absolute;inset:0;pointer-events:none;z-index:20}
 #obby.lhmode #lhMeter{display:block;pointer-events:none;z-index:21}
-#obby.lhmode #lhSetBtn,#obby.lhmode #lhFanfare.show,#obby.lhmode #lhMyWagon,#obby.lhmode #lhMapBtn,#obby.lhmode #lhWriteBtn,#obby.lhmode #lhAct.show{pointer-events:auto}
+#obby.lhmode #lhSetBtn,#obby.lhmode #lhFanfare.show,#obby.lhmode #lhMyWagon,#obby.lhmode #lhMapBtn,#obby.lhmode #lhWriteBtn,#obby.lhmode #lhDecorBtn.show,#obby.lhmode #lhAct.show{pointer-events:auto}
 /* #lhRoot is z-index 20 and covers the screen; the Close/Open door prompt must sit above it or Mac clicks never reach the button. */
 #lhAct.fsnear,#obby.lhmode #lhAct.show{z-index:22;pointer-events:auto}
 
-#obby.lhmode #lhCut,#obby.lhmode #lhCalm,#obby.lhmode #lhSet,#obby.lhmode #lhDraw,#obby.lhmode #lhWrite,#obby.lhmode #lhKnock,#obby.lhmode #lhMap{pointer-events:auto;z-index:90}
+#obby.lhmode #lhCut,#obby.lhmode #lhCalm,#obby.lhmode #lhSet,#obby.lhmode #lhDraw,#obby.lhmode #lhWrite,#obby.lhmode #lhKnock,#obby.lhmode #lhGame,#obby.lhmode #lhBooth,#obby.lhmode #lhDecor,#obby.lhmode #lhMap{pointer-events:auto;z-index:90}
 #obby.lhmode #lhKeyTag{z-index:21}
 
 /* Start-fail safety net (kept here so lantern css refresh does not drop it). */
@@ -1213,6 +1219,47 @@ body.lh-muffled #obby{filter:saturate(.85)}
 #lhKnockOpen,#lhKnockKeep{flex:1;min-height:48px;min-width:120px;border:3px solid #1d2340;border-radius:14px;font:inherit;font-weight:900;padding:12px 14px;cursor:pointer}
 #lhKnockOpen{background:#2ec27e;color:#08351c}
 #lhKnockKeep{background:#efe8f8;color:#1d2340}
+
+#lhGame .mbox,#lhBooth .mbox{max-width:520px}
+.lh-game-hint{font-size:13px;font-weight:700;margin:0 0 8px;line-height:1.35}
+#lhGameBody{min-height:160px;margin:6px 0}
+#lhGameBar{display:flex;gap:10px;align-items:center;margin-top:8px}
+#lhGameScore{flex:1;font-weight:900}
+#lhGameClose,#lhBoothClose{min-height:48px}
+#lhTickets{font-weight:900;font-size:13px;margin-top:6px;color:#ffe8a0}
+.lh-pegs,.lh-balloons,.lh-ducks,.lh-holes{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;min-height:120px}
+.lh-peg,.lh-balloon,.lh-duck,.lh-hole{border:3px solid #1d2340;border-radius:16px;background:#fff;font:inherit;font-weight:900;min-width:72px;min-height:64px;padding:8px 10px;cursor:pointer;color:#1d2340;position:relative}
+.lh-peg.on,.lh-balloon.on,.lh-duck.on,.lh-hole.on{background:#ffd25a;box-shadow:0 0 0 3px #6b3cff}
+.lh-peg.hit{background:#2ec27e;color:#08351c}
+.lh-balloon.popped{background:#efe8f8;opacity:.45;cursor:default}
+.lh-hole.lit{background:#7cffd0;box-shadow:0 0 12px #7cffd0}
+.lh-hole.whack{background:#ff8ad8}
+.lh-darts{display:flex;justify-content:center;gap:4px;margin-bottom:8px;font-size:22px}
+#lhBoothList{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:min(52vh,380px);overflow:auto;margin:8px 0;padding-right:4px}
+.lh-prize{border:3px solid #1d2340;border-radius:14px;background:#fff;padding:10px 10px 8px;text-align:left;cursor:pointer;font:inherit;color:#1d2340;min-height:92px}
+.lh-prize .nm{font-weight:900;font-size:14px}
+.lh-prize .ds{font-size:11px;font-weight:700;opacity:.75;margin:2px 0 6px}
+.lh-prize .cs{font-weight:900;font-size:13px}
+.lh-prize.owned{background:#e8fff4;cursor:default}
+.lh-prize.on{box-shadow:0 0 0 3px #6b3cff}
+.lh-prize.wear{background:#fff3d0}
+@media (max-width:760px){
+  #lhBoothList{grid-template-columns:1fr}
+  .lh-peg,.lh-balloon,.lh-duck,.lh-hole{min-width:64px;min-height:56px}
+}
+
+#lhDecorBtn{right:max(10px,env(safe-area-inset-right));bottom:218px;background:#2a6b8a;box-shadow:0 4px 0 #143d52}
+.touchui #lhDecorBtn{bottom:358px}
+#lhDecor .mbox{max-width:520px;max-height:min(86vh,640px);overflow:auto}
+.lh-decor-sec{font-weight:900;margin:10px 0 6px;font-size:14px}
+.lh-swatches{display:flex;flex-wrap:wrap;gap:8px}
+.lh-swatches button,.lh-drow button{border:3px solid #1d2340;border-radius:12px;background:#fff;font:inherit;font-weight:800;padding:8px 10px;cursor:pointer;color:#1d2340;min-height:44px}
+.lh-swatches button.on{background:#6b3cff;color:#fff;border-color:#3a1ca0}
+#lhDecorPlace{width:100%;margin:10px 0 4px;min-height:48px}
+#lhDecorList{display:flex;flex-direction:column;gap:6px;max-height:160px;overflow:auto}
+.lh-drow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;border:2px solid #eadfbf;border-radius:12px;padding:6px 8px;background:#fff}
+.lh-drow .nm{flex:1;font-weight:800;font-size:13px}
+.lh-drow button{min-height:40px;padding:6px 8px}
 
 /* ---------- /lantern hotel css ---------- */
 </style>
@@ -1531,6 +1578,16 @@ body.lh-muffled #obby{filter:saturate(.85)}
       </label>
       <label class="invrow"><input type="checkbox" id="setShowFps"><span>Show FPS<small>On-screen frames-per-second counter</small></span></label>
     </div>
+    <div class="wxset" id="wxSet">
+      <div style="color:var(--muted);font-weight:700;margin-top:12px">🌤️ Weather and time</div>
+      <label class="invrow"><input type="radio" name="wxSetMode" id="wxSetAuto" value="auto" checked><span>Auto<small>Day turns to night, and weather can change.</small></span></label>
+      <label class="invrow"><input type="radio" name="wxSetMode" id="wxSetDay" value="day"><span>Always day<small>Keep bright daylight in games that use this.</small></span></label>
+      <label class="invrow"><input type="radio" name="wxSetMode" id="wxSetOff" value="off"><span>Off<small>Leave each game's own sky and lighting alone.</small></span></label>
+    </div>
+    <div class="pfset" id="pfSet">
+      <div style="color:var(--muted);font-weight:700;margin-top:12px">🐾 Pet follower</div>
+      <label class="invrow"><input type="checkbox" id="pfSetHide"><span>Hide my pet<small>Your equipped pet from Adopt a Pet follows you into other games. Check this to hide it.</small></span></label>
+    </div>
     <div class="chset" id="chSet">
       <div class="chset-title">💬 Chat</div>
       <label class="invrow"><input type="radio" name="chSetMode" id="chSetOn" value="on" checked><span>Chat On<small>Friends in the room can send messages and quick chat</small></span></label>
@@ -1804,6 +1861,7 @@ body.lh-muffled #obby{filter:saturate(.85)}
     <button type="button" id="lhMyWagon" aria-label="Go to my wagon">🎪 Go to my wagon</button>
     <button type="button" id="lhMapBtn" aria-label="Open map">🗺️ Map</button>
     <button type="button" id="lhWriteBtn" aria-label="Write a word on the wall">✍️ Write</button>
+    <button type="button" id="lhDecorBtn" aria-label="Decorate your wagon">🛋️ Decorate</button>
     <button type="button" id="lhFanfare" aria-label="Call Maestro Gleam">🎩 Call Maestro Gleam</button>
     <div id="lhScare" aria-hidden="true">
       <div id="lhVignette"></div>
@@ -1876,6 +1934,41 @@ body.lh-muffled #obby{filter:saturate(.85)}
         </div>
         <button type="button" class="big gray" id="lhWriteErase">🧽 Erase my last word</button>
         <button type="button" class="big gray" id="lhWriteClose">Cancel</button>
+      </div>
+    </div>
+        <div id="lhGame">
+      <div class="mbox">
+        <h2 id="lhGameTitle">Carnival game</h2>
+        <div id="lhGameHint" class="lh-game-hint">E / tap / A to play. B or Esc to leave.</div>
+        <div id="lhGameBody"></div>
+        <div id="lhGameBar">
+          <div id="lhGameScore"></div>
+          <button type="button" class="big gray" id="lhGameClose">Leave</button>
+        </div>
+      </div>
+    </div>
+    <div id="lhBooth">
+      <div class="mbox">
+        <h2>🎟️ Prize Booth</h2>
+        <div id="lhBoothBal" class="lh-game-hint">0 tickets</div>
+        <div id="lhBoothList"></div>
+        <button type="button" class="big gray" id="lhBoothClose">Done ✅</button>
+      </div>
+    </div>
+        <div id="lhDecor">
+      <div class="mbox">
+        <h2>🛋️ Decorate your wagon</h2>
+        <div class="lh-game-hint">Only you can edit. Friends see your room when the door is open.</div>
+        <div class="lh-decor-sec">Wallpaper</div>
+        <div id="lhWallStyles" class="lh-swatches"></div>
+        <div class="lh-decor-sec">Floor</div>
+        <div id="lhFloorStyles" class="lh-swatches"></div>
+        <div class="lh-decor-sec">Place an item</div>
+        <div id="lhDecorInv" class="lh-swatches"></div>
+        <button type="button" class="big green" id="lhDecorPlace">Place in front of me</button>
+        <div class="lh-decor-sec">In this wagon</div>
+        <div id="lhDecorList"></div>
+        <button type="button" class="big gray" id="lhDecorClose">Done ✅</button>
       </div>
     </div>
     <div id="lhDraw">
@@ -2136,7 +2229,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-9';
+const BUILD = '2026.11.16-15';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2856,6 +2949,423 @@ $('#saveAv').onclick = () => {
 };
 
 /* ---------- games ---------- */
+
+/* Rublox global weather + day/night — original, mode-safe, save-compatible. */
+(function (root) {
+  const WX_KEY = 'rubloxWeather';
+  const WX_VER = 1;
+  const WX_DAY_LEN = 180;
+  const WX_WEATHER_LEN = 48;
+  const WX_MODES = {
+    auto: 'auto',
+    day: 'day',
+    off: 'off'
+  };
+  const WX_SKIP = ['splash', 'waterpark', 'race', 'photostudio', 'dance', 'bakery', 'icecream', 'tower', 'fashion'];
+  const WX_SNOW = ['obby', 'build', 'hide', 'stable', 'tag'];
+  const WX_FOG = ['haunt', 'lantern', 'hide', 'petisland', 'obby', 'build'];
+  const WX_RAIN = ['obby', 'build', 'lantern', 'hide', 'autumn', 'stable', 'petisland', 'pets', 'tag', 'dreamhouse', 'pethotel', 'haunt'];
+
+  function wxDefault(){ return {ver: WX_VER, mode: 'auto'}; }
+
+  function wxNormalize(raw){
+    const d = wxDefault();
+    const o = (raw && typeof raw === 'object') ? raw : {};
+    const mode = (o.mode === 'day' || o.mode === 'off' || o.mode === 'auto') ? o.mode : 'auto';
+    return {ver: WX_VER, mode: mode};
+  }
+
+  function wxLoadState(raw){
+    if (typeof raw === 'string'){
+      try { raw = JSON.parse(raw); } catch (e){ raw = null; }
+    }
+    return wxNormalize(raw);
+  }
+
+  function wxEnabled(modeId, setting){
+    const st = wxNormalize(setting);
+    if (st.mode === 'off') return false;
+    if (!modeId) return false;
+    return WX_SKIP.indexOf(modeId) < 0;
+  }
+
+  function wxClock(t, dayLen){
+    const len = dayLen > 0 ? dayLen : WX_DAY_LEN;
+    const u = ((t % len) + len) % len / len;
+    let phase = 'day', sun = 1;
+    if (u < 0.12){ phase = 'dawn'; sun = 0.45 + u / 0.12 * 0.55; }
+    else if (u < 0.52){ phase = 'day'; sun = 1; }
+    else if (u < 0.68){ phase = 'dusk'; sun = 1 - (u - 0.52) / 0.16 * 0.7; }
+    else { phase = 'night'; sun = 0.22 + Math.max(0, 0.08 - Math.abs(u - 0.86) * 0.2); }
+    return {u: u, phase: phase, sun: Math.max(0.16, Math.min(1, sun))};
+  }
+
+  function wxForceDay(clock){
+    return {u: 0.3, phase: 'day', sun: 1};
+  }
+
+  function wxWeatherAllowed(kind, modeId){
+    if (kind === 'clear') return true;
+    if (kind === 'rain') return WX_RAIN.indexOf(modeId) >= 0;
+    if (kind === 'snow') return WX_SNOW.indexOf(modeId) >= 0;
+    if (kind === 'fog') return WX_FOG.indexOf(modeId) >= 0;
+    return false;
+  }
+
+  function wxPickWeather(modeId, rand){
+    const r = (typeof rand === 'function' ? rand() : Math.random());
+    const pool = ['clear', 'clear', 'clear'];
+    if (wxWeatherAllowed('rain', modeId)) pool.push('rain', 'rain');
+    if (wxWeatherAllowed('fog', modeId)) pool.push('fog');
+    if (wxWeatherAllowed('snow', modeId)) pool.push('snow');
+    const i = Math.max(0, Math.min(pool.length - 1, (r * pool.length) | 0));
+    return pool[i];
+  }
+
+  function wxSky(modeId, phase, weather){
+    const lantern = modeId === 'lantern';
+    const pal = lantern ? {
+      dawn: '#c9a0d8',
+      day: '#7ec8ff',
+      dusk: '#5a2a6a',
+      night: '#1b1633'
+    } : {
+      dawn: '#ffc8a0',
+      day: '#8fd3ff',
+      dusk: '#e07a4a',
+      night: '#1a2248'
+    };
+    let hex = pal[phase] || pal.day;
+    if (weather === 'rain') hex = phase === 'night' ? (lantern ? '#161022' : '#2a3348') : (lantern ? '#4a3a68' : '#6a8aaa');
+    if (weather === 'snow') hex = phase === 'night' ? '#2a3a58' : '#d8e8f8';
+    if (weather === 'fog') hex = phase === 'night' ? '#2a2a38' : '#c8d0d8';
+    return hex;
+  }
+
+  function wxFog(modeId, phase, weather){
+    const sky = wxSky(modeId, phase, weather);
+    let near = 70, far = 200;
+    if (phase === 'dusk'){ near = 50; far = 160; }
+    if (phase === 'night'){ near = 28; far = 120; }
+    if (weather === 'rain'){ near = Math.min(near, 40); far = Math.min(far, 140); }
+    if (weather === 'snow'){ near = Math.min(near, 45); far = Math.min(far, 150); }
+    if (weather === 'fog'){ near = 8; far = 48; }
+    if (modeId === 'lantern'){
+      near = weather === 'fog' ? 10 : (phase === 'night' ? 22 : 50);
+      far = weather === 'fog' ? 55 : (phase === 'night' ? 140 : 200);
+    }
+    return {color: sky, near: near, far: far};
+  }
+
+  function wxLightScale(phase, weather){
+    const clock = {dawn: 0.72, day: 1, dusk: 0.55, night: 0.32};
+    let s = clock[phase] != null ? clock[phase] : 1;
+    if (weather === 'rain' || weather === 'fog') s *= 0.85;
+    if (weather === 'snow') s *= 0.92;
+    return s;
+  }
+
+  function wxParticleCount(quality, weather, mobile){
+    if (!weather || weather === 'clear' || weather === 'fog') return 0;
+    const low = quality === 'low' || mobile;
+    if (weather === 'rain') return low ? 40 : 120;
+    if (weather === 'snow') return low ? 28 : 80;
+    return 0;
+  }
+
+  const api = {
+    WX_KEY, WX_VER, WX_DAY_LEN, WX_WEATHER_LEN, WX_MODES, WX_SKIP, WX_SNOW, WX_FOG, WX_RAIN,
+    wxDefault, wxNormalize, wxLoadState, wxEnabled, wxClock, wxForceDay,
+    wxWeatherAllowed, wxPickWeather, wxSky, wxFog, wxLightScale, wxParticleCount
+  };
+  root.WXRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+/* ---------- rublox weather ---------- */
+const WX_RULES = (typeof WXRules !== 'undefined' && WXRules) ? WXRules : (typeof window !== 'undefined' && window.WXRules) || {};
+const WX_KEY = WX_RULES.WX_KEY || 'rubloxWeather';
+let wx = null;
+
+function wxLoad(){
+  let raw = null;
+  try { raw = (typeof load === 'function') ? load(WX_KEY, null) : (typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem(WX_KEY) || 'null') : null); } catch (e){}
+  return WX_RULES.wxLoadState ? WX_RULES.wxLoadState(raw) : {ver:1, mode:'auto'};
+}
+function wxSave(p){
+  p = p || (wx && wx.set) || wxLoad();
+  try {
+    const body = WX_RULES.wxNormalize ? WX_RULES.wxNormalize(p) : p;
+    if (typeof save === 'function') save(WX_KEY, body);
+    else if (typeof localStorage !== 'undefined') localStorage.setItem(WX_KEY, JSON.stringify(body));
+  } catch (e){}
+}
+function wxSetting(){ return (wx && wx.set) || wxLoad(); }
+function wxSetMode(mode){
+  const next = WX_RULES.wxNormalize ? WX_RULES.wxNormalize({mode: mode}) : {mode: mode || 'auto'};
+  if (wx) wx.set = next;
+  wxSave(next);
+  wxSyncUi();
+  return next.mode;
+}
+function wxSyncUi(){
+  try {
+    const st = wxSetting();
+    ['auto','day','off'].forEach(m => {
+      const n = document.getElementById('wxSet' + m.charAt(0).toUpperCase() + m.slice(1));
+      if (n) n.checked = st.mode === m;
+    });
+  } catch (e){}
+}
+function wxHex(c){
+  try { return new THREE.Color(c); } catch (e){ return null; }
+}
+function wxEnsure(){
+  if (wx) return wx;
+  wx = {set: wxLoad(), t: 0, weatherT: 0, weather: 'clear', modeId: null, drops: null, base: null, _last: ''};
+  return wx;
+}
+function wxEnter(modeId){
+  wxEnsure();
+  wx.modeId = modeId || (typeof mode !== 'undefined' ? mode : null);
+  wx.base = null;
+  wx._last = '';
+  if (wx.drops && wx.drops.parent){ try { wx.drops.parent.remove(wx.drops); } catch (e){} }
+  wx.drops = null;
+  if (!(WX_RULES.wxEnabled && WX_RULES.wxEnabled(wx.modeId, wx.set))){
+    wxClearDrops();
+    return wx;
+  }
+  if (wx.set.mode === 'auto'){
+    wx.weather = WX_RULES.wxPickWeather ? WX_RULES.wxPickWeather(wx.modeId, Math.random) : 'clear';
+  } else wx.weather = 'clear';
+  wx.weatherT = 0;
+  return wx;
+}
+function wxStop(){
+  wxClearDrops();
+}
+function wxClearDrops(){
+  if (wx && wx.drops){
+    try { if (wx.drops.parent) wx.drops.parent.remove(wx.drops); } catch (e){}
+    try { if (wx.drops.geometry) wx.drops.geometry.dispose(); } catch (e){}
+    wx.drops = null;
+  }
+}
+function wxLow(){
+  try { return (typeof gfxIsLow === 'function' && gfxIsLow()) || (typeof LOWQ !== 'undefined' && LOWQ); } catch (e){ return false; }
+}
+function wxMakeDrops(kind, count){
+  wxClearDrops();
+  if (!count || typeof THREE === 'undefined' || !wxScene()) return;
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++){
+    pos[i*3] = (Math.random() - 0.5) * 28;
+    pos[i*3+1] = Math.random() * 16;
+    pos[i*3+2] = (Math.random() - 0.5) * 28;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({
+    color: kind === 'snow' ? 0xffffff : 0xb8d0ff,
+    size: kind === 'snow' ? 0.12 : 0.05,
+    transparent: true,
+    opacity: kind === 'snow' ? 0.9 : 0.65,
+    depthWrite: false
+  });
+  const pts = new THREE.Points(geo, mat);
+  pts.name = 'wxDrops';
+  pts.frustumCulled = false;
+  const sc = wxScene();
+  if (!sc) return;
+  sc.add(pts);
+  wx.drops = pts;
+  wx.dropsKind = kind;
+}
+function wxTickDrops(dt){
+  if (!wx || !wx.drops) return;
+  const attr = wx.drops.geometry && wx.drops.geometry.getAttribute('position');
+  if (!attr) return;
+  const arr = attr.array;
+  const snow = wx.dropsKind === 'snow';
+  const spd = snow ? 2.2 : 14;
+  const drift = snow ? 0.8 : 0.2;
+  for (let i = 0; i < arr.length; i += 3){
+    arr[i] += (snow ? Math.sin((wx.t + i) * 0.7) : 0) * drift * dt;
+    arr[i+1] -= spd * dt;
+    if (arr[i+1] < -2){ arr[i+1] += 16; arr[i] = (Math.random() - 0.5) * 28; arr[i+2] = (Math.random() - 0.5) * 28; }
+  }
+  attr.needsUpdate = true;
+  try {
+    const cam = wxCam(); if (cam) wx.drops.position.copy(cam.position);
+  } catch (e){}
+}
+function wxBind(env){
+  env = env || {};
+  if (env.scene) wxEnsure().scene = env.scene;
+  if (env.camera) wxEnsure().camera = env.camera;
+  return wxEnsure();
+}
+function wxScene(){ return (wx && wx.scene) || (typeof scene !== 'undefined' ? scene : null); }
+function wxCam(){ return (wx && wx.camera) || (typeof camera !== 'undefined' ? camera : null); }
+function wxTick(dt, modeId, env){
+  wxEnsure();
+  if (env) wxBind(env);
+  if (modeId) wx.modeId = modeId;
+  const set = wx.set || wxLoad();
+  wx.set = set;
+  if (!(WX_RULES.wxEnabled && WX_RULES.wxEnabled(wx.modeId, set))){
+    if (wx.drops) wxClearDrops();
+    return;
+  }
+  dt = Math.min(0.08, +dt || 0.016);
+  wx.t += dt;
+  wx.weatherT += dt;
+  const clock = (set.mode === 'day')
+    ? (WX_RULES.wxForceDay ? WX_RULES.wxForceDay() : {phase:'day', sun:1})
+    : (WX_RULES.wxClock ? WX_RULES.wxClock(wx.t, WX_RULES.WX_DAY_LEN) : {phase:'day', sun:1});
+  if (set.mode === 'auto' && wx.weatherT > (WX_RULES.WX_WEATHER_LEN || 48)){
+    wx.weatherT = 0;
+    wx.weather = WX_RULES.wxPickWeather ? WX_RULES.wxPickWeather(wx.modeId, Math.random) : 'clear';
+  }
+  if (set.mode === 'day') wx.weather = 'clear';
+  const sky = WX_RULES.wxSky ? WX_RULES.wxSky(wx.modeId, clock.phase, wx.weather) : '#8fd3ff';
+  const fog = WX_RULES.wxFog ? WX_RULES.wxFog(wx.modeId, clock.phase, wx.weather) : {color: sky, near:70, far:200};
+  const dim = WX_RULES.wxLightScale ? WX_RULES.wxLightScale(clock.phase, wx.weather) : 1;
+  const sig = set.mode + '|' + clock.phase + '|' + wx.weather + '|' + wx.modeId;
+  try {
+    const scn = wxScene();
+    if (scn){
+      if (scn.background && scn.background.isColor) scn.background.lerp(wxHex(sky), 0.08);
+      else scn.background = wxHex(sky);
+      if (scn.fog){
+        if (scn.fog.color) scn.fog.color.lerp(wxHex(fog.color), 0.08);
+        scn.fog.near = (scn.fog.near || fog.near) * 0.92 + fog.near * 0.08;
+        scn.fog.far = (scn.fog.far || fog.far) * 0.92 + fog.far * 0.08;
+      } else {
+        scn.fog = new THREE.Fog(fog.color, fog.near, fog.far);
+      }
+      if (sig !== wx._last){
+        scn.traverse(o => {
+          if (!o || !o.isLight) return;
+          if (o._wxBase == null) o._wxBase = o.intensity;
+          o.intensity = o._wxBase * dim;
+        });
+        wx._last = sig;
+      }
+    }
+  } catch (e){}
+  const want = WX_RULES.wxParticleCount ? WX_RULES.wxParticleCount(wxLow() ? 'low' : 'high', wx.weather, wxLow()) : 0;
+  if (want && (!wx.drops || wx.dropsKind !== wx.weather)) wxMakeDrops(wx.weather, want);
+  if (!want && wx.drops) wxClearDrops();
+  if (wx.drops) wxTickDrops(dt);
+  wx.phase = clock.phase;
+  wx.sun = clock.sun;
+}
+
+try {
+  if (typeof window !== 'undefined'){
+    window.wxEnter = wxEnter;
+    window.wxBind = wxBind;
+    window.wxTick = wxTick;
+    window.wxStop = wxStop;
+    window.wxSetMode = wxSetMode;
+    window.wxSetting = wxSetting;
+    window.wxSyncUi = wxSyncUi;
+    window.wxState = function(){ return wx ? {mode: wx.set && wx.set.mode, phase: wx.phase, weather: wx.weather, t: wx.t, modeId: wx.modeId, drops: !!(wx.drops)} : null; };
+    window.wxForce = function(phase, weather){
+      wxEnsure();
+      if (weather) wx.weather = weather;
+      if (phase === 'day') wx.t = (WX_RULES.WX_DAY_LEN || 180) * 0.3;
+      if (phase === 'dusk') wx.t = (WX_RULES.WX_DAY_LEN || 180) * 0.6;
+      if (phase === 'night') wx.t = (WX_RULES.WX_DAY_LEN || 180) * 0.8;
+      if (phase === 'dawn') wx.t = (WX_RULES.WX_DAY_LEN || 180) * 0.05;
+      wx._last = '';
+      wxTick(0.016, wx.modeId);
+      return window.wxState();
+    };
+  }
+} catch (e){}
+/* ---------- end rublox weather ---------- */
+
+/* Equipped Adopt-a-Pet follower across Rublox modes. Optional hide toggle. */
+(function (root) {
+  const PF_KEY = 'rubloxPetFollow';
+  const PF_PETS_KEY = 'rubloxPets';
+  const PF_VER = 1;
+  const PF_SKIP = ['race', 'splash', 'waterpark', 'pets', 'petisland'];
+  const PF_DIST = 1.55;
+  const PF_CATCH = 12;
+
+  function pfDefault(){ return {ver: PF_VER, hide: false}; }
+
+  function pfNormalize(raw){
+    const o = (raw && typeof raw === 'object') ? raw : {};
+    return {ver: PF_VER, hide: !!o.hide};
+  }
+
+  function pfLoadToggle(raw){
+    if (typeof raw === 'string'){
+      try { raw = JSON.parse(raw); } catch (e){ raw = null; }
+    }
+    return pfNormalize(raw);
+  }
+
+  function pfActiveFromSave(raw){
+    if (typeof raw === 'string'){
+      try { raw = JSON.parse(raw); } catch (e){ raw = null; }
+    }
+    if (!raw || typeof raw !== 'object' || !Array.isArray(raw.pets) || !raw.pets.length) return null;
+    const a = Math.max(0, Math.min(raw.pets.length - 1, raw.a | 0));
+    const p = raw.pets[a];
+    if (!p || !p.k) return null;
+    return {
+      k: String(p.k),
+      c: Math.max(0, Math.min(2, p.c | 0)),
+      n: String(p.n || 'Buddy').slice(0, 16),
+      xp: Math.max(0, +p.xp || 0),
+      acc: (p.acc && typeof p.acc === 'object') ? p.acc : {},
+      a: a
+    };
+  }
+
+  function pfStage(xp){
+    const x = Math.max(0, +xp || 0);
+    if (x >= 400) return 3;
+    if (x >= 120) return 2;
+    if (x >= 30) return 1;
+    return 0;
+  }
+
+  function pfShouldFollow(modeId, setting, hasPet){
+    if (!hasPet) return false;
+    if (pfNormalize(setting).hide) return false;
+    if (!modeId || PF_SKIP.indexOf(modeId) >= 0) return false;
+    return true;
+  }
+
+  function pfFollowStep(px, pz, face, x, z, dt){
+    const behind = PF_DIST;
+    const tx = px - Math.sin(face || 0) * behind;
+    const tz = pz - Math.cos(face || 0) * behind;
+    const dx = tx - x, dz = tz - z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+    if (dist > PF_CATCH) return {x: tx, z: tz, face: face || 0, moving: false, tele: true};
+    if (dist < 0.35) return {x: x, z: z, face: face || 0, moving: false, tele: false};
+    const sp = Math.min(10, 3.5 + dist * 2.2);
+    const nx = x + dx / dist * sp * dt;
+    const nz = z + dz / dist * sp * dt;
+    return {x: nx, z: nz, face: Math.atan2(dx, dz), moving: true, tele: false, sp: sp};
+  }
+
+  const api = {
+    PF_KEY, PF_PETS_KEY, PF_VER, PF_SKIP, PF_DIST, PF_CATCH,
+    pfDefault, pfNormalize, pfLoadToggle, pfActiveFromSave, pfStage, pfShouldFollow, pfFollowStep
+  };
+  root.PFRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
 const GAMES = [
   {id:'lantern', name:'Lantern Big Top', emoji:'🏮', tag:'Stay close and stay bright under a colorful circus tent!', draw: drawLantern, playable: true, isNew: true},
   {id:'dreamhouse', name:'Dream House Builders', emoji:'🏡', tag:'Re-build your house with bricks, paint, furniture and upgrades!', draw: drawDreamHouse, playable: true, isNew: true},
@@ -2997,6 +3507,12 @@ function drawLantern(ctx){
   ctx.fillText('🏮', 150, 70);
   ctx.fillText('🎩', 152, 100);
 }
+
+
+
+
+
+
 
 
 
@@ -3653,6 +4169,11 @@ function confetti(){
     {id:'lh-all', cat:'lantern', emoji:'😵', name:'Everyone\'s Fizzled', desc:'Watch Maestro Gleam\'s meltdown when every guest has fizzled.', coins:20, prove:s => !!(s.notes && s.notes['lh:all'])},
     {id:'lh-vesper', cat:'lantern', emoji:'🌙', name:'Mystery Guest', desc:'Meet the late-night visitor under the big top.', coins:20, prove:s => !!(s.notes && s.notes['lh:vesper'])},
     {id:'lh-peek', cat:'lantern', emoji:'👀', name:'Gotcha!', desc:'Get fizzled by the late-night visitor.', coins:20, prove:s => !!(s.notes && s.notes['lh:peek'])},
+    {id:'lh-ride', cat:'lantern', emoji:'🎡', name:'First Spin', desc:'Hop on a fairground ride.', coins:10, prove:s => !!(s.notes && s.notes['lh:ride'])},
+    {id:'lh-rides', cat:'lantern', emoji:'🎠', name:'Ride the Midway', desc:'Take a turn on the Ferris wheel, the carousel, and the swing ride.', coins:15, prove:s => !!(s.notes && s.notes['lh:rides'])},
+    {id:'lh-tickets', cat:'lantern', emoji:'🎟️', name:'Ticket Winner', desc:'Win prize tickets at a carnival game.', coins:10, prove:s => !!(s.notes && s.notes['lh:tickets'])},
+    {id:'lh-prize', cat:'lantern', emoji:'🧸', name:'Booth Bargain', desc:'Trade tickets for a prize at the booth.', coins:10, prove:s => !!(s.notes && s.notes['lh:prize'])},
+    {id:'lh-decor', cat:'lantern', emoji:'🛋️', name:'Home Sweet Wagon', desc:'Decorate your wagon with a new item or a fresh coat of paint.', coins:10, prove:s => !!(s.notes && s.notes['lh:decor'])},
                 // Collection
     {id:'welcome', cat:'collection', emoji:'👋', name:'Hello, Friend', desc:'Pick a player name and join Rublox.', coins:5, prove:s => !!(s.player && s.player.name)},
     {id:'first-game', cat:'collection', emoji:'🎮', name:'Let\'s Play', desc:'Start any Rublox game.', coins:5, prove:s => !!(s.notes && s.notes.play) || !!(s.recent && s.recent.length >= 1)},
@@ -3723,6 +4244,12 @@ function confetti(){
       const loc = (typeof location !== 'undefined' && location) || (typeof window !== 'undefined' && window.location) || null;
       const hash = loc && loc.hash ? String(loc.hash) : '';
       if (/(?:^|#|&)chattest=/i.test(hash)) return true;
+      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
+      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
+      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
+      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
+      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
+      if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
       if (/(?:^|#|&)(?:lh|gh)test=/i.test(hash)) return true;
@@ -4288,7 +4815,13 @@ if (setShowFps) setShowFps.addEventListener('change', () => {
   save('rubloxShowFps', window.gfx.showFps);
   syncGfxUi();
 });
-$('#setBtn').onclick = () => { syncInvert(); syncGfxUi(); if (typeof chSyncSettings === 'function') chSyncSettings(); $('#setModal').classList.add('show'); };
+$('#setBtn').onclick = () => { syncInvert(); syncGfxUi(); if (typeof chSyncSettings === 'function') chSyncSettings(); if (typeof wxSyncUi === 'function') wxSyncUi(); if (typeof pfSyncUi === 'function') pfSyncUi(); $('#setModal').classList.add('show'); };
+['wxSetAuto','wxSetDay','wxSetOff'].forEach(id => { const n = document.getElementById(id); if (n) n.addEventListener('change', () => { if (n.checked && typeof wxSetMode === 'function') wxSetMode(n.value); }); });
+if (typeof wxSyncUi === 'function') try { wxSyncUi(); } catch (e){}
+if (typeof pfSyncUi === 'function') try { pfSyncUi(); } catch (e){}
+const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEventListener('change', () => { if (typeof pfSetHide === 'function') pfSetHide(!!pfHide.checked); });
+
+
 $('#setOk').onclick = () => $('#setModal').classList.remove('show');
 $('#setModal').onclick = e => { if (e.target.id === 'setModal') $('#setModal').classList.remove('show'); };
 document.addEventListener('keydown', e => {
@@ -6052,6 +6585,12 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
 
 
 
+
+
+
+
+
+
 /* ---------- lantern rules ---------- */
 /* Pure Lantern Big Top rules — safe to require() in tests and to load in the page. */
 (function (root) {
@@ -6166,7 +6705,13 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
       settings: lhNormalizeSettings(o.settings),
       doodles: o.doodles && typeof o.doodles === 'object' ? o.doodles : {},
       coins: Math.max(0, +o.coins || 0),
-      wallWords: lhSanitizeWallWords(o.wallWords)
+      wallWords: lhSanitizeWallWords(o.wallWords),
+      rides: (o.rides && typeof o.rides === 'object') ? o.rides : {},
+      tickets: Math.max(0, o.tickets | 0),
+      prizes: (o.prizes && typeof o.prizes === 'object') ? o.prizes : {},
+      wear: (o.wear && typeof o.wear === 'object') ? o.wear : {},
+      decor: Array.isArray(o.decor) ? o.decor : [],
+      wagonStyle: (o.wagonStyle && typeof o.wagonStyle === 'object') ? o.wagonStyle : {}
     };
   }
 
@@ -6339,7 +6884,12 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     {id:'lh-enough', name:"That's Enough!", desc:'Get Maestro Gleam all worked up.', emoji:'😤', coins:15, note:'lh:enough'},
     {id:'lh-all', name:"Everyone's Fizzled", desc:"Watch Maestro Gleam's meltdown when every guest has fizzled.", emoji:'😵', coins:20, note:'lh:all'},
     {id:'lh-vesper', name:'Mystery Guest', desc:'Meet the late-night visitor under the big top.', emoji:'🌙', coins:20, note:'lh:vesper', secret:true},
-    {id:'lh-peek', name:'Gotcha!', desc:'Get fizzled by the late-night visitor.', emoji:'👀', coins:20, note:'lh:peek', secret:true}
+    {id:'lh-peek', name:'Gotcha!', desc:'Get fizzled by the late-night visitor.', emoji:'👀', coins:20, note:'lh:peek', secret:true},
+    {id:'lh-ride', name:'First Spin', desc:'Hop on a fairground ride.', emoji:'🎡', coins:10, note:'lh:ride'},
+    {id:'lh-rides', name:'Ride the Midway', desc:'Take a turn on the Ferris wheel, the carousel, and the swing ride.', emoji:'🎠', coins:15, note:'lh:rides'},
+    {id:'lh-tickets', name:'Ticket Winner', desc:'Win prize tickets at a carnival game.', emoji:'🎟️', coins:10, note:'lh:tickets'},
+    {id:'lh-prize', name:'Booth Bargain', desc:'Trade tickets for a prize at the booth.', emoji:'🧸', coins:10, note:'lh:prize'},
+    {id:'lh-decor', name:'Home Sweet Wagon', desc:'Decorate your wagon with a new item or a fresh coat of paint.', emoji:'🛋️', coins:10, note:'lh:decor'}
   ];
 
 
@@ -6650,10 +7200,242 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     return (jump * jump) / (2 * grav);
   }
 
+
+  const LH_RIDE_SPEC = [
+    {id:'ferris', name:'Ferris Wheel', emoji:'🎡', boardR: 5.8},
+    {id:'carousel', name:'Carousel', emoji:'🎠', boardR: 3.6},
+    {id:'swing', name:'Swing Ride', emoji:'🎪', boardR: 4.2}
+  ];
+
+  function lhRidePickSeat(taken, count){
+    const n = Math.max(0, count | 0);
+    taken = taken || [];
+    for (let i = 0; i < n; i++){
+      if (!taken[i]) return i;
+    }
+    return -1;
+  }
+
+  function lhRideBoardOk(st){
+    st = st || {};
+    if (st.alreadyOn) return {ok: false, reason: 'seated'};
+    if (!st.near) return {ok: false, reason: 'far'};
+    const seat = st.seat == null ? -1 : st.seat;
+    if (seat < 0) return {ok: false, reason: 'full'};
+    return {ok: true, seat: seat};
+  }
+
+  function lhRideExitPoint(ride){
+    ride = ride || {};
+    const x = +ride.x || 0, z = +ride.z || 0;
+    if (ride.kind === 'ferris') return {x: x + 5.2, y: 0.12, z: z};
+    if (ride.kind === 'swing') return {x: x + 4.4, y: 0.12, z: z + 1};
+    return {x: x + 3.6, y: 0.12, z: z + 1.2};
+  }
+
+  function lhRideProgress(prev, kind){
+    const rides = {};
+    const src = prev && typeof prev === 'object' ? prev : {};
+    Object.keys(src).forEach(k => { if (src[k]) rides[k] = true; });
+    const first = !rides.ferris && !rides.carousel && !rides.swing;
+    if (kind) rides[kind] = true;
+    const all = !!(rides.ferris && rides.carousel && rides.swing);
+    return {rides: rides, first: first, all: all};
+  }
+
+
+  const LH_CARNIVAL_GAMES = [
+    {id:'rings', name:'Ring Toss', emoji:'⭕', throws:3, per:2, bonus:4},
+    {id:'darts', name:'Balloon Darts', emoji:'🎈', throws:5, per:2, bonus:4},
+    {id:'ducks', name:'Duck Pond', emoji:'🦆'},
+    {id:'whack', name:'Whack-a-Glow', emoji:'✨', seconds:12, per:1, bonus:5, bonusAt:10}
+  ];
+
+  const LH_PRIZES = [
+    {id:'hat-party', name:'Sparkle Party Hat', kind:'cosmetic', slot:'hat', cost:8, emoji:'🎩', desc:'A tall striped party hat.'},
+    {id:'hat-star', name:'Star Shades', kind:'cosmetic', slot:'hat', cost:10, emoji:'😎', desc:'Starry shades for the midway.'},
+    {id:'plush-glow', name:'Glowbug Plush', kind:'plush', cost:12, emoji:'🐛', desc:'A soft glowbug for your wagon.'},
+    {id:'plush-tent', name:'Little Tent Plush', kind:'plush', cost:12, emoji:'🎪', desc:'A squishy little big top.'},
+    {id:'plush-horse', name:'Carousel Horse Plush', kind:'plush', cost:15, emoji:'🎠', desc:'A painted wooden horse pal.'},
+    {id:'decor-lamp', name:'Wagon Lantern', kind:'decor', cost:8, emoji:'🏮', desc:'A warm lantern for your shelf.'},
+    {id:'decor-bunting', name:'Fair Bunting', kind:'decor', cost:6, emoji:'🎏', desc:'Colorful flags for your wall.'},
+    {id:'decor-rug', name:'Star Rug', kind:'decor', cost:10, emoji:'⭐', desc:'A starry rug for the floor.'},
+    {id:'decor-jar', name:'Candy Jar', kind:'decor', cost:7, emoji:'🍬', desc:'A jar of midway sweets.'},
+    {id:'decor-lights', name:'String Lights', kind:'decor', cost:10, emoji:'✨', desc:'Twinkly lights along the wall.'},
+    {id:'decor-plant', name:'Fern Friend', kind:'decor', cost:6, emoji:'🌿', desc:'A leafy wagon plant.'},
+    {id:'decor-poster', name:'Big Top Poster', kind:'decor', cost:5, emoji:'🖼️', desc:'A painted fairground poster.'}
+  ];
+
+  function lhPrizeById(id){
+    return LH_PRIZES.find(p => p.id === id) || null;
+  }
+
+  function lhGameTickets(gameId, score, rand){
+    const g = LH_CARNIVAL_GAMES.find(x => x.id === gameId);
+    score = Math.max(0, score | 0);
+    if (!g) return 0;
+    if (g.id === 'ducks'){
+      const r = (typeof rand === 'function' ? rand() : Math.random());
+      if (r < 0.08) return 8;
+      if (r < 0.35) return 3;
+      if (r < 0.7) return 2;
+      return 1;
+    }
+    let n = score * (g.per || 1);
+    if (g.bonus && (g.bonusAt != null ? score >= g.bonusAt : (g.throws && score >= g.throws))) n += g.bonus;
+    return n;
+  }
+
+  function lhBuyPrize(state, prizeId){
+    state = state || {};
+    const prize = lhPrizeById(prizeId);
+    if (!prize) return {ok:false, reason:'unknown', tickets: Math.max(0, state.tickets|0), prizes: Object.assign({}, state.prizes || {})};
+    const tickets = Math.max(0, state.tickets|0);
+    const prizes = Object.assign({}, state.prizes || {});
+    if (prizes[prizeId]) return {ok:false, reason:'owned', tickets: tickets, prizes: prizes, prize: prize};
+    if (tickets < prize.cost) return {ok:false, reason:'cost', tickets: tickets, prizes: prizes, prize: prize};
+    prizes[prizeId] = true;
+    return {ok:true, tickets: tickets - prize.cost, prizes: prizes, prize: prize};
+  }
+
+  function lhEquipCosmetic(wear, prizeId){
+    const prize = lhPrizeById(prizeId);
+    const next = Object.assign({}, wear && typeof wear === 'object' ? wear : {});
+    if (!prize || prize.kind !== 'cosmetic') return {ok:false, wear: next, reason:'not-cosmetic'};
+    const slot = prize.slot || 'hat';
+    if (next[slot] === prizeId) delete next[slot];
+    else next[slot] = prizeId;
+    return {ok:true, wear: next, equipped: next[slot] || null, slot: slot};
+  }
+
+
+  const LH_STARTER_DECOR = [
+    {id:'start-stool', name:'Little Stool', emoji:'🪑', kind:'decor'},
+    {id:'start-cushion', name:'Soft Cushion', emoji:'🟪', kind:'decor'},
+    {id:'start-crate', name:'Toy Crate', emoji:'📦', kind:'decor'},
+    {id:'start-mat', name:'Welcome Mat', emoji:'🟫', kind:'decor'},
+    {id:'start-picture', name:'Sunny Frame', emoji:'🖼️', kind:'decor'},
+    {id:'start-lamp', name:'Bedside Lamp', emoji:'💡', kind:'decor'}
+  ];
+  const LH_WALL_STYLES = [
+    {id:'plain', name:'Warm Cream'},
+    {id:'stripe', name:'Candy Stripe'},
+    {id:'stars', name:'Night Stars'},
+    {id:'dots', name:'Confetti Dots'}
+  ];
+  const LH_FLOOR_STYLES = [
+    {id:'wood', name:'Wagon Wood'},
+    {id:'check', name:'Picnic Check'},
+    {id:'star', name:'Starry Floor'},
+    {id:'plain', name:'Soft Boards'}
+  ];
+  const LH_DECOR_MAX = 24;
+
+  function lhDecorCatalog(prizes){
+    const have = prizes && typeof prizes === 'object' ? prizes : {};
+    const out = LH_STARTER_DECOR.map(p => Object.assign({starter:true}, p));
+    (LH_PRIZES || []).forEach(p => {
+      if ((p.kind === 'decor' || p.kind === 'plush') && have[p.id]) out.push(Object.assign({}, p));
+    });
+    return out;
+  }
+
+  function lhDecorClamp(dx, dz, w, d, inset){
+    const pad = inset == null ? 1.1 : inset;
+    const hw = Math.max(0.4, (w || 8) / 2 - pad);
+    const hd = Math.max(0.4, (d || 6.2) / 2 - pad);
+    const x = Math.max(-hw, Math.min(hw, +dx || 0));
+    const z = Math.max(-hd, Math.min(hd, +dz || 0));
+    return {x: x, z: z};
+  }
+
+  function lhNormalizeStyle(style){
+    style = style && typeof style === 'object' ? style : {};
+    const wall = (LH_WALL_STYLES.some(s => s.id === style.wall) ? style.wall : 'plain');
+    const floor = (LH_FLOOR_STYLES.some(s => s.id === style.floor) ? style.floor : 'wood');
+    return {wall: wall, floor: floor};
+  }
+
+  function lhNormalizeDecor(list){
+    if (!Array.isArray(list)) return [];
+    const out = [];
+    list.forEach((it, i) => {
+      if (!it || !it.item) return;
+      const pos = lhDecorClamp(it.x, it.z, 8, 6.2, 1.1);
+      const rot = ((it.rot | 0) % 4 + 4) % 4;
+      out.push({id: String(it.id || ('d' + i)), item: String(it.item), x: pos.x, z: pos.z, rot: rot});
+    });
+    return out.slice(0, LH_DECOR_MAX);
+  }
+
+  function lhDecorPlace(list, itemId, x, z, rot){
+    const items = lhNormalizeDecor(list);
+    if (items.length >= LH_DECOR_MAX) return {ok:false, reason:'full', items: items};
+    if (!itemId) return {ok:false, reason:'item', items: items};
+    const pos = lhDecorClamp(x, z, 8, 6.2, 1.1);
+    const rec = {id: 'd' + Date.now().toString(36) + Math.floor(Math.random()*1000).toString(36), item: itemId, x: pos.x, z: pos.z, rot: ((rot|0)%4+4)%4};
+    items.push(rec);
+    return {ok:true, items: items, placed: rec};
+  }
+
+  function lhDecorRotate(list, id){
+    const items = lhNormalizeDecor(list);
+    const it = items.find(x => x.id === id);
+    if (!it) return {ok:false, reason:'missing', items: items};
+    it.rot = (it.rot + 1) % 4;
+    return {ok:true, items: items, placed: it};
+  }
+
+  function lhDecorRemove(list, id){
+    const items = lhNormalizeDecor(list).filter(x => x.id !== id);
+    return {ok:true, items: items};
+  }
+
+  function lhDecorMove(list, id, x, z){
+    const items = lhNormalizeDecor(list);
+    const it = items.find(n => n.id === id);
+    if (!it) return {ok:false, reason:'missing', items: items};
+    const pos = lhDecorClamp(x, z, 8, 6.2, 1.1);
+    it.x = pos.x; it.z = pos.z;
+    return {ok:true, items: items, placed: it};
+  }
+
+
+  // Maestro Gleam's wagon serenade: only after a continuous stay, then a cooldown.
+  const LH_SONG_STAY = 50;
+  const LH_SONG_COOLDOWN = 180;
+  const LH_SONG_TEST_STAY = 0.8;
+
+  function lhSongStayNeed(test){
+    return test === 'song' ? LH_SONG_TEST_STAY : LH_SONG_STAY;
+  }
+
+  function lhSongCooldown(test){
+    return test === 'song' ? 0 : LH_SONG_COOLDOWN;
+  }
+
+  function lhSongStayTick(inOwnRoom, stayT, dt){
+    if (!inOwnRoom) return 0;
+    return (stayT || 0) + Math.max(0, +dt || 0);
+  }
+
+  function lhSongShouldStart(st){
+    st = st || {};
+    if (st.alreadySinging) return false;
+    if (!st.inOwnRoom) return false;
+    const need = st.stayNeed != null ? +st.stayNeed : lhSongStayNeed(st.test);
+    const cd = st.cooldown != null ? +st.cooldown : lhSongCooldown(st.test);
+    if ((st.stayT || 0) < need) return false;
+    if (st.lastSongAt != null && ((st.now || 0) - st.lastSongAt) < cd) return false;
+    return true;
+  }
+
   const api = {
     LH_KEY, LH_VER, LH_HOST, LH_HOST_TITLE, LH_GAME, LH_STAMPS, LH_EYES,
     LH_WALL_PRESETS, LH_WALL_MAX_CHARS, LH_WALL_MAX_PER_PLAYER, LH_WALL_MAX_DIST, LH_PII_REASONS,
     LH_WAGON_H, LH_MIDWAY_WALL_H, LH_DOOR_OPEN_H, LH_KNOCK_COOLDOWN, LH_KNOCK_TIMEOUT, LH_KNOCK_SOLO_OPEN,
+    LH_SONG_STAY, LH_SONG_COOLDOWN, LH_SONG_TEST_STAY,
+    LH_RIDE_SPEC, LH_CARNIVAL_GAMES, LH_PRIZES, LH_STARTER_DECOR, LH_WALL_STYLES, LH_FLOOR_STYLES, LH_DECOR_MAX,
     LH_COMPANY_R, LH_NEAR_R, LH_SUMMON_R, LH_TAG_R, LH_KEY_CD, LH_LAMP_R, LH_WAGON_ZS,
     LH_WAGONS_PER_SIDE, LH_WAGON_COUNT, LH_WAGON_SPACING, LH_WAGON_Z0, LH_WAGON_X,
     LH_MIDWAY_WALL_X, LH_MIDWAY_Z0, LH_MIDWAY_Z1, LH_DOOR_HALF,
@@ -6669,6 +7451,10 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     lhRoomContains, lhDoorAjar, lhRoomInteriorVisible, lhDoorwayLayout, lhDoorSealsOpening,
     lhWagonWallPlanes, lhRayWall, lhNormalizeWallText, lhAddWallWord, lhEraseWallWord, lhSanitizeWallWords,
     lhDoorPromptKind, lhKnockCooldownLeft, lhKnockAllowed, lhKnockResolve, lhKnockReplyMessage, lhJumpClearHeight, lhPickLine,
+    lhSongStayNeed, lhSongCooldown, lhSongStayTick, lhSongShouldStart,
+    lhRidePickSeat, lhRideBoardOk, lhRideExitPoint, lhRideProgress,
+    lhPrizeById, lhGameTickets, lhBuyPrize, lhEquipCosmetic,
+    lhDecorCatalog, lhDecorClamp, lhNormalizeStyle, lhNormalizeDecor, lhDecorPlace, lhDecorRotate, lhDecorRemove, lhDecorMove,
     LH_KNOCK_SOLO_OPEN_LINES, LH_KNOCK_SOLO_STAY_LINES
   };
   root.LHRules = api;
@@ -7498,7 +8284,7 @@ const Obby = (() => {
     blinkers = []; fallers = []; lasers = []; convs = []; winds = []; voidY = -25; G = null;
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
-    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
+    nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
     if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
@@ -9105,7 +9891,7 @@ const Obby = (() => {
     if (pt){ const q = pt.pet, C = pt.car, qs = q ? Math.hypot(q.vx, q.vz) : 0;
       return [r(P.x), r(P.y), r(P.z), r(pt.drive ? C.yaw : P.face), pt.drive ? 4 : s, pt.drive ? 0 : r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0,
         [r(C.x), r(C.z), r(C.yaw), pt.drive ? 1 : 0, r(C.v)], q ? [q.d.k, q.d.c, q.stage, r(q.x), r(q.y), r(q.z), r(q.face), trickAct(q) || {eat: 2, sleep: 3, happy: 4, car: 5}[q.act] || (qs > .6 ? 1 : 0), q.d.n, r(qs), pt.leashOn ? 1 : 0, accStr(q.d.acc)] : 0]; }
-    return [r(P.x), r(P.y), r(P.z), r(P.face), s, r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0];
+    return [r(P.x), r(P.y), r(P.z), r(P.face), s, r(sp), emote ? emote.id : '', emote ? r(emote.t) : 0, 0, (typeof pfWire === 'function' ? pfWire() : 0)];
   }
   function mpRoster(){ return [{uid: 'H', ...myLook(), pl: 1}, ...[...mp.guests.values()].filter(g => g.ready).map(g => ({uid: g.uid, name: g.name, av: g.av, pl: g.plot || 0}))]; }
   function mpSetRoster(r){
@@ -9167,7 +9953,7 @@ const Obby = (() => {
     if (E.fresh){ E.x = E.tx; E.y = E.ty; E.z = E.tz; E.face = E.tf; E.fresh = false; }
   }
   function mpPetsEnt(E, dt, on){
-    on = on && mode === 'pets' && E.m === 'pets';
+    on = on && ((mode === 'pets' && E.m === 'pets') || (typeof pfShowRemote === 'function' && pfShowRemote(mode, E)));
     if (E.carM) E.carM.g.visible = on && !!E.car;
     if (E.petM) E.petM.m.g.visible = on && !!E.pet;
     if (E.leashL) E.leashL.visible = false;   // shown again below while they're walking their pet
@@ -15454,7 +16240,7 @@ const Obby = (() => {
   function lhSaveProg(p){
     p = p || (lh && lh.prog) || lhProg();
     try {
-      const body = {ver: LH_RULES.LH_VER || 1, visits: p.visits|0, settings: (LH_RULES.lhNormalizeSettings ? LH_RULES.lhNormalizeSettings(p.settings) : p.settings), doodles: p.doodles || {}, coins: +p.coins || 0, wallWords: (lh && lh.words) ? lh.words : (p.wallWords || [])};
+      const body = {ver: LH_RULES.LH_VER || 1, visits: p.visits|0, settings: (LH_RULES.lhNormalizeSettings ? LH_RULES.lhNormalizeSettings(p.settings) : p.settings), doodles: p.doodles || {}, coins: +p.coins || 0, wallWords: (lh && lh.words) ? lh.words : (p.wallWords || []), rides: (p.rides && typeof p.rides === 'object') ? p.rides : {}, tickets: Math.max(0, (p.tickets|0)), prizes: (p.prizes && typeof p.prizes === 'object') ? p.prizes : {}, wear: (p.wear && typeof p.wear === 'object') ? p.wear : {}, decor: Array.isArray(p.decor) ? p.decor : [], wagonStyle: (p.wagonStyle && typeof p.wagonStyle === 'object') ? p.wagonStyle : {}};
       if (typeof save === 'function') save(LH_KEY, body);
       else if (typeof localStorage !== 'undefined') localStorage.setItem(LH_KEY, JSON.stringify(body));
     } catch (e){}
@@ -15780,6 +16566,21 @@ const Obby = (() => {
     lhBox(x, 1.7, z, 2.05, 0.16, '#e31c23', 0.16);
     if (title) lhLabel(title, 'rgba(80,20,40,.92)', x, 2.15, z);
   }
+  function lhPrizeBooth(x, z){
+    lhBox(x, 1.1, z, 3.2, 1.6, '#fff3d0', 1.1);
+    lhBox(x, 1.7, z, 3.4, 1.8, '#fff8f0', 0.14);
+    lhBox(x, 2.35, z, 3.5, 0.2, '#e31c23', 0.18);
+    const cols = ['#ff6b9a', '#3a86ff', '#ffd25a', '#2ec27e', '#ff8ad8', '#6b3cff'];
+    for (let i = 0; i < 6; i++){
+      const bx = x - 1.2 + (i % 3) * 1.2;
+      const by = 0.85 + Math.floor(i / 3) * 0.55;
+      const bz = z - 0.15;
+      lhBox(bx, by, bz, 0.4, 0.35, cols[i], 0.35);
+    }
+    try { lhFloorBox(x + 0.2, z + 1.5, 1.8, 1.8, '#f0c860', 'pad'); } catch (e){}
+    try { lhLabel('Prize Booth  ·  trade tickets', 'rgba(80,20,40,.92)', x, 2.9, z); } catch (e){}
+    if (lh) lh.booth = {x: x, z: z, r: 2.8};
+  }
   function lhPins(x, z){
     const cols = ['#e31c23', '#3a86ff', '#ffd25a'];
     for (let i = 0; i < 3; i++){
@@ -15789,50 +16590,81 @@ const Obby = (() => {
     }
   }
   function lhFerris(x, y, z){
-    const g = new THREE.Group();
-    const segs = lhLow() ? 8 : 10;
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(3.4, 0.1, 6, segs), lhMat('#6b3cff', {emit:'#7a5cff'}));
-    g.add(rim);
+    const axleY = (y == null ? 5.2 : y);
+    const root = new THREE.Group();
+    root.position.set(x, 0, z);
+    root.rotation.y = 0.35;
+    const pole = new THREE.Mesh(new THREE.BoxGeometry(0.3, axleY + 0.2, 0.3), lhMat('#4a2a10'));
+    pole.position.y = (axleY + 0.2) / 2; root.add(pole);
+    const legA = new THREE.Mesh(new THREE.BoxGeometry(0.22, axleY + 0.4, 0.22), lhMat('#3a2410'));
+    legA.position.set(-1.7, (axleY + 0.2) / 2, 0.12); legA.rotation.z = 0.32; root.add(legA);
+    const legB = legA.clone(); legB.position.x = 1.7; legB.rotation.z = -0.32; root.add(legB);
+    const wheel = new THREE.Group(); wheel.position.y = axleY; root.add(wheel);
+    const segs = lhLow() ? 6 : 8;
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(3.4, 0.1, 6, lhLow() ? 8 : 12), lhMat('#6b3cff', {emit:'#7a5cff'}));
+    wheel.add(rim);
     const axle = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.8, 6), lhMat('#1d2340'));
-    axle.rotation.x = Math.PI / 2; g.add(axle);
-    const cols = ['#e31c23', '#ffd25a', '#3a86ff', '#2ec27e', '#ff8ad8'];
+    axle.rotation.x = Math.PI / 2; wheel.add(axle);
+    const cols = ['#e31c23', '#ffd25a', '#3a86ff', '#2ec27e', '#ff8ad8', '#8ecaff'];
+    const seats = [];
     for (let i = 0; i < segs; i++){
       const a = (i / segs) * Math.PI * 2;
       const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.07, 3.4, 0.07), lhMat('#fff8f0'));
-      spoke.rotation.z = a; g.add(spoke);
-      const car = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.4, 0.45), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}));
+      spoke.rotation.z = a; wheel.add(spoke);
+      const car = new THREE.Group();
       car.position.set(Math.sin(a) * 3.4, Math.cos(a) * 3.4, 0);
-      g.add(car);
+      const box = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.42, 0.55), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}));
+      box.position.y = -0.16; car.add(box);
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.06, 0.06), lhMat('#ffd25a'));
+      bar.position.set(0, 0.14, 0.2); car.add(bar);
+      wheel.add(car);
+      seats.push({mesh: car, index: i, sitY: 0.22});
     }
-    const pole = new THREE.Mesh(new THREE.BoxGeometry(0.3, 3.6, 0.3), lhMat('#4a2a10'));
-    pole.position.y = -1.8; g.add(pole);
-    g.position.set(x, y, z);
-    g.rotation.y = 0.35;
-    scene.add(g);
-    if (lh){ lh.trash.push(g); lh.rides = lh.rides || []; lh.rides.push({g, kind:'ferris'}); }
-    return g;
+    scene.add(root);
+    if (lh){
+      lh.trash.push(root); lh.rides = lh.rides || [];
+      lh.rides.push({kind:'ferris', name:'Ferris Wheel', g: root, wheel: wheel, seats: seats, taken: [], x: x, z: z, boardR: 5.8, axleY: axleY});
+    }
+    try { lhFloorBox(x + 4.6, z, 1.8, 1.8, '#f0c860', 'pad'); } catch (e){}
+    try { lhLabel('Ferris Wheel  ·  E to ride', 'rgba(80,20,40,.92)', x, 9.4, z); } catch (e){}
+    return root;
   }
   function lhCarousel(x, z){
-    const g = new THREE.Group();
+    const root = new THREE.Group();
     const base = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.4, 0.3, lhLow() ? 8 : 12), lhMat('#ffd25a'));
-    base.position.y = 0.15; g.add(base);
+    base.position.y = 0.15; root.add(base);
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 2.6, 6), lhMat('#e31c23'));
-    pole.position.y = 1.4; g.add(pole);
+    pole.position.y = 1.4; root.add(pole);
     const roof = new THREE.Mesh(new THREE.ConeGeometry(2.3, 0.9, lhLow() ? 8 : 12), lhMat('#e31c23'));
-    roof.position.y = 2.7; g.add(roof);
-    lhPaintStripe(roof, '#e31c23', '#fff8f0', 8, 1);
+    roof.position.y = 2.7; root.add(roof);
+    try { lhPaintStripe(roof, '#e31c23', '#fff8f0', 8, 1); } catch (e){}
+    const platform = new THREE.Group(); root.add(platform);
     const cols = ['#ff6b9a', '#3a86ff', '#2ec27e', '#ff9f1c'];
     const n = lhLow() ? 3 : 4;
+    const seats = [];
     for (let i = 0; i < n; i++){
       const a = (i / n) * Math.PI * 2;
-      const h = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.55, 0.18), lhMat(cols[i]));
-      h.position.set(Math.sin(a) * 1.4, 0.85, Math.cos(a) * 1.4);
-      g.add(h);
+      const horse = new THREE.Group();
+      horse.position.set(Math.sin(a) * 1.4, 0.85, Math.cos(a) * 1.4);
+      horse.rotation.y = a + Math.PI / 2;
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.38, 0.18), lhMat(cols[i % cols.length]));
+      body.position.y = 0.05; horse.add(body);
+      const head = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.18, 0.14), lhMat(cols[i % cols.length]));
+      head.position.set(0.22, 0.22, 0); horse.add(head);
+      const saddle = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.08, 0.2), lhMat('#8a4a20'));
+      saddle.position.set(-0.02, 0.26, 0); horse.add(saddle);
+      platform.add(horse);
+      seats.push({mesh: horse, index: i, sitY: 0.42, baseY: 0.85});
     }
-    g.position.set(x, 0, z);
-    scene.add(g);
-    if (lh){ lh.trash.push(g); lh.rides = lh.rides || []; lh.rides.push({g, kind:'carousel'}); }
-    return g;
+    root.position.set(x, 0, z);
+    scene.add(root);
+    if (lh){
+      lh.trash.push(root); lh.rides = lh.rides || [];
+      lh.rides.push({kind:'carousel', name:'Carousel', g: root, wheel: platform, seats: seats, taken: [], x: x, z: z, boardR: 3.6});
+    }
+    try { lhFloorBox(x + 3.0, z + 1.0, 1.5, 1.5, '#f0c860', 'pad'); } catch (e){}
+    try { lhLabel('Carousel  ·  E to ride', 'rgba(80,40,10,.92)', x, 4.4, z); } catch (e){}
+    return root;
   }
   function lhTrailerBits(R, wall){
     if (!R) return;
@@ -15907,28 +16739,42 @@ const Obby = (() => {
   }
 
   function lhSwing(x, z){
-    const g = new THREE.Group();
+    const root = new THREE.Group();
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 5.2, 8), lhMat('#4a2a10'));
-    pole.position.y = 2.6; g.add(pole);
+    pole.position.y = 2.6; root.add(pole);
     const cap = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 2.6, 0.16, lhLow() ? 8 : 12), lhMat('#e31c23'));
-    cap.position.y = 5.1; g.add(cap);
-    const arms = new THREE.Group(); arms.position.y = 4.8; g.add(arms);
+    cap.position.y = 5.1; root.add(cap);
+    const arms = new THREE.Group(); arms.position.y = 4.8; root.add(arms);
     const n = lhLow() ? 4 : 6;
     const cols = ['#ff6b9a', '#3a86ff', '#ffd25a', '#2ec27e', '#ff8ad8', '#8ecaff'];
+    const seats = [];
     for (let i = 0; i < n; i++){
       const a = (i / n) * Math.PI * 2;
       const arm = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.07, 0.07), lhMat('#fff8f0'));
       arm.position.set(Math.sin(a) * 1.2, 0, Math.cos(a) * 1.2);
       arm.rotation.y = -a + Math.PI / 2;
       arms.add(arm);
-      const seat = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.18, 0.32), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}));
+      const chain = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.5, 0.04), lhMat('#c8b8a0'));
+      chain.position.set(Math.sin(a) * 2.3, -0.75, Math.cos(a) * 2.3);
+      arms.add(chain);
+      const seat = new THREE.Group();
       seat.position.set(Math.sin(a) * 2.3, -1.6, Math.cos(a) * 2.3);
+      const board = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.4), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}));
+      seat.add(board);
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.05, 0.05), lhMat('#ffd25a'));
+      bar.position.set(0, 0.22, 0.16); seat.add(bar);
       arms.add(seat);
+      seats.push({mesh: seat, index: i, sitY: 0.38});
     }
-    g.position.set(x, 0, z);
-    scene.add(g);
-    if (lh){ lh.trash.push(g); lh.rides = lh.rides || []; lh.rides.push({g: arms, kind:'swing'}); lh.props = lh.props || []; lh.props.push(g); }
-    return g;
+    root.position.set(x, 0, z);
+    scene.add(root);
+    if (lh){
+      lh.trash.push(root); lh.rides = lh.rides || []; lh.props = lh.props || []; lh.props.push(root);
+      lh.rides.push({kind:'swing', name:'Swing Ride', g: root, wheel: arms, seats: seats, taken: [], x: x, z: z, boardR: 4.2});
+    }
+    try { lhFloorBox(x + 3.6, z + 1.0, 1.5, 1.5, '#f0c860', 'pad'); } catch (e){}
+    try { lhLabel('Swing Ride  ·  E to ride', 'rgba(80,20,40,.92)', x, 6.2, z); } catch (e){}
+    return root;
   }
   function lhBuildFunhouse(cx, cz){
     const w = 16, d = 14;
@@ -16026,8 +16872,8 @@ const Obby = (() => {
     lhBox(-20, 1.15, 118, 190, 0.4, '#4a2a10', 2.2);
     lhBox(-114, 1.15, 9, 0.4, 218, '#4a2a10', 2.2);
     lhBox(54, 1.15, 9, 0.4, 218, '#4a2a10', 2.2);
-    // ticket booth just outside the west flaps
-    lhStand(-32, -4, '#fff3d0', 'Tickets');
+    // prize booth just outside the west flaps
+    try { lhPrizeBooth(-32, -4); } catch (e){ lhStand(-32, -4, '#fff3d0', 'Prize Booth'); if (lh) lh.booth = {x:-32, z:-4, r:2.8}; }
     // Food Court
     lhStand(-54, 4, '#fff3d0', 'Popcorn');
     lhStand(-64, 4, '#ffd0e8', 'Cotton Candy');
@@ -16041,11 +16887,19 @@ const Obby = (() => {
     // Games Alley
     lhStand(-54, 36, '#ffd0e8', 'Ring Toss');
     lhStand(-66, 36, '#d0f0ff', 'Balloon Darts');
-    lhStand(-54, 46, '#ffe29a', 'Bottle Knock');
+    lhStand(-54, 46, '#ffe29a', 'Whack-a-Glow');
+    lhStand(-70, 46, '#ffd0e8', 'Duck Pond');
     if (!lhLow()){
-      lhStand(-70, 46, '#ffd0e8', 'Duck Pond');
       lhPins(-60, 42);
       lhBalloons(-48, 2.2, 40, 3);
+    }
+    if (lh){
+      lh.games = [
+        {id:'rings', name:'Ring Toss', emoji:'⭕', x:-54, z:36, r:2.4},
+        {id:'darts', name:'Balloon Darts', emoji:'🎈', x:-66, z:36, r:2.4},
+        {id:'whack', name:'Whack-a-Glow', emoji:'✨', x:-54, z:46, r:2.4},
+        {id:'ducks', name:'Duck Pond', emoji:'🦆', x:-70, z:46, r:2.4}
+      ];
     }
     lhLabel('Games Alley', 'rgba(20,40,70,.92)', -62, 3.2, 50);
     // Rides
@@ -16098,9 +16952,9 @@ const Obby = (() => {
       rooms: [], npcs: [], host: null, vesper: null, exitDoor: null,
       keyholder: null, keyCd: 0, pester: 0, taggedLock: 0,
       doodleOpen: false, setOpen: false, writeOpen: false, writeStyle: 'paint', writeSel: 0, lastHud: '', words: (prog.wallWords || []).slice(), wordMeshes: [], knockAt: {}, knockOffer: null, knockWait: null,
-      trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null,
+      trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null, riding: null, arcade: null, boothOpen: false, games: [], booth: null, gameCd: {}, decorOpen: false, decorSel: 0, decorPick: null,
       syncT: 0, visitAwarded: false, _nearT: 0, _isoT: 0, _darkT: 0,
-      breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0,
+      breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0, songStayT: 0, lastSongAt: null, songStayNeed: null, songCd: null,
       lastDing: 0, savedFp: null
     };
     try { lhBuildFairground(); } catch (e){}
@@ -16221,15 +17075,21 @@ const Obby = (() => {
       const roomFl = lhFloorBox(R.x, R.z, w, d, floor, 'wagon', floorY);
       const recDraft = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, h, floorY};
       const lay = LH_RULES.lhDoorwayLayout ? LH_RULES.lhDoorwayLayout(recDraft) : {ix: R.x - R.side * (w / 2), stubZ0: R.z - 2.22, stubZ1: R.z + 2.22, stubD: 1.98, transomY: 4.4, transomH: 2.4, transomD: 2.32, transomTop: h, wallTop: h, openH: 3.2};
+      const wallMeshes = [];
+      const takeWall = function(box){
+        const b = lhSolid(box);
+        if (b && b.mesh) wallMeshes.push(b.mesh);
+        return b;
+      };
       // plat() takes the TOP of the box, not the center — use top=h so walls run from the floor to h.
-      lhSolid(lhBox(R.x + R.side * (w / 2 + 0.12), h, R.z, 0.32, d + 0.3, wall, h));
-      lhSolid(lhBox(R.x, h, R.z - d / 2, w, 0.32, wall, h));
-      lhSolid(lhBox(R.x, h, R.z + d / 2, w, 0.32, wall, h));
+      takeWall(lhBox(R.x + R.side * (w / 2 + 0.12), h, R.z, 0.32, d + 0.3, wall, h));
+      takeWall(lhBox(R.x, h, R.z - d / 2, w, 0.32, wall, h));
+      takeWall(lhBox(R.x, h, R.z + d / 2, w, 0.32, wall, h));
       const ix = lay.ix;
-      lhSolid(lhBox(ix, h, lay.stubZ0, 0.32, lay.stubD, wall, h));
-      lhSolid(lhBox(ix, h, lay.stubZ1, 0.32, lay.stubD, wall, h));
+      takeWall(lhBox(ix, h, lay.stubZ0, 0.32, lay.stubD, wall, h));
+      takeWall(lhBox(ix, h, lay.stubZ1, 0.32, lay.stubD, wall, h));
       // transom is a solid from the door head to the wall top (stops jumps over a closed door)
-      lhSolid(lhBox(ix, lay.transomTop || h, R.z, 0.32, lay.transomD, wall, lay.transomH));
+      takeWall(lhBox(ix, lay.transomTop || h, R.z, 0.32, lay.transomD, wall, lay.transomH));
       const ceil = lhMesh(new THREE.BoxGeometry(w + 0.2, 0.16, d + 0.2), lhMat('#fff7fb'), R.x, h, R.z);
       if (ceil) lhPaintStripe(ceil, '#fff7fb', wall, 8, 1);
       // frosted, opaque windows — decorative light, not a view into the room
@@ -16259,7 +17119,8 @@ const Obby = (() => {
       const crayon = furnish ? lhMesh(new THREE.BoxGeometry(2.8, 1.8, 0.08), lhMat('#fffef6'), cx, 1.5, cz) : null;
       if (crayon) interior.add(crayon);
       const door = {g: null, mesh: null, plat: null, closed: true, ang: 0, target: 0, id: R.id};
-      const rec = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, h, floorY, bed: {x: bx, z: bz}, switch: {x: sx, z: sz}, bell: {x: dx, z: dz}, wall: {x: cx, z: cz}, crayon, door, owner: null, lit: true, sw, bellM: bell, interior};
+      const decorG = new THREE.Group(); decorG.name = 'lhDecor' + R.id; interior.add(decorG);
+      const rec = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, h, floorY, bed: {x: bx, z: bz}, switch: {x: sx, z: sz}, bell: {x: dx, z: dz}, wall: {x: cx, z: cz}, crayon, door, owner: null, lit: true, sw, bellM: bell, interior, decorG, wallMeshes, floorMesh: roomFl && roomFl.mesh, baseWall: wall, baseFloor: floor, netDecor: [], netStyle: null};
       lh.rooms.push(rec);
       lh.lights[R.id] = true;
       lh.doors[R.id] = true;
@@ -16405,6 +17266,7 @@ const Obby = (() => {
       lhDecal(padG);
       lh.wagonMark = {x: mouthX, z: R.z, mesh: mark};
     }
+    try { if (lh && lh.rooms) lh.rooms.forEach(R => { lhApplyWagonStyle(R); lhRebuildDecor(R); }); } catch (e){}
     // teleport pad in the big top, near the midway mouth
     try {
       const pad = lhMesh(new THREE.CylinderGeometry(1.15, 1.15, 0.14, 14), lhMat('#6b3cff', {emit:'#8d6cff'}), 0, lhY('pad'), tentZ1 - 2);
@@ -17003,6 +17865,16 @@ const Obby = (() => {
       const mapc = lhEl('lhMapClose'); if (mapc) mapc.onclick = () => lhToggleMap(false);
       const mapo = lhEl('lhMap'); if (mapo) mapo.addEventListener('click', ev => { if (ev.target === mapo) lhToggleMap(false); });
       const wrb = lhEl('lhWriteBtn'); if (wrb) wrb.onclick = () => lhOpenWrite();
+      const deb = lhEl('lhDecorBtn'); if (deb) deb.onclick = () => lhOpenDecor();
+      const dcl = lhEl('lhDecorClose'); if (dcl) dcl.onclick = () => lhCloseDecor();
+      const dpl = lhEl('lhDecorPlace'); if (dpl) dpl.onclick = () => lhPlaceSelectedDecor();
+      const dp = lhEl('lhDecor'); if (dp) dp.addEventListener('click', ev => { if (ev.target === dp) lhCloseDecor(); });
+
+      const gcl = lhEl('lhGameClose'); if (gcl) gcl.onclick = () => lhCloseArcade();
+      const gp = lhEl('lhGame'); if (gp) gp.addEventListener('click', ev => { if (ev.target === gp) lhCloseArcade(); });
+      const bcl = lhEl('lhBoothClose'); if (bcl) bcl.onclick = () => lhCloseBooth();
+      const bp = lhEl('lhBooth'); if (bp) bp.addEventListener('click', ev => { if (ev.target === bp) lhCloseBooth(); });
+
       const wrc = lhEl('lhWriteClose'); if (wrc) wrc.onclick = () => lhCloseWrite();
       const wrp = lhEl('lhWrite'); if (wrp) wrp.addEventListener('click', ev => { if (ev.target === wrp) lhCloseWrite(); });
       const wrgo = lhEl('lhWriteGo'); if (wrgo) wrgo.onclick = () => lhSubmitCustomWord();
@@ -17043,12 +17915,14 @@ const Obby = (() => {
       lhSaveProg(lh.prog);
     }
     if (lh){
-      lh.serenadeAt = 28 + Math.random() * 10;
       lh.vesperAt = 40 + Math.random() * 20;
       lh.exitAt = 22;
       lh.keyAt = 16;
+      lh.songStayT = 0;
+      lh.lastSongAt = null;
+      lh.songStayNeed = LH_RULES.lhSongStayNeed ? LH_RULES.lhSongStayNeed(lh.test) : (lh.test === 'song' ? 0.8 : 50);
+      lh.songCd = LH_RULES.lhSongCooldown ? LH_RULES.lhSongCooldown(lh.test) : (lh.test === 'song' ? 0 : 180);
       if (lh.test === 'vesper') lh.vesperAt = 0.6;
-      if (lh.test === 'song') lh.serenadeAt = 0.8;
       if (lh.test === 'exit') lh.exitAt = 0.5;
       if (lh.test === 'cellar'){ lh.keyAt = 99; setTimeout(() => { try { if (lh && lh.test === 'cellar') lhStartBanish(lh.npcs.find(n => n.glitched) || {kind:'me'}); } catch (e){} }, 900); }
     }
@@ -17058,7 +17932,7 @@ const Obby = (() => {
 
   function lanternStop(){
     try {
-      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhWrite','lhKnock','lhVision','lhScare','lhMyWagon','lhMap','lhMapBtn','lhWriteBtn'].forEach(id => {
+      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhWrite','lhKnock','lhGame','lhBooth','lhDecor','lhVision','lhScare','lhMyWagon','lhMap','lhMapBtn','lhWriteBtn','lhDecorBtn'].forEach(id => {
         const n = lhEl(id); if (!n) return;
         if (id === 'lhMeter' || id === 'lhBox' || id === 'lhRoot') n.style.display = 'none';
         else { n.classList.remove('show'); n.style.display = 'none'; }
@@ -17072,6 +17946,8 @@ const Obby = (() => {
         if (camera.updateProjectionMatrix) camera.updateProjectionMatrix();
       }
     } catch (e){}
+    try { lhCloseArcade(); lhCloseBooth(); lhCloseDecor(); } catch (e){}
+    if (lh && lh.riding){ try { lhDismountRide(true); } catch (e){} }
     if (lh && lh.prog) lhSaveProg(lh.prog);
     lh = null;
   }
@@ -17215,10 +18091,674 @@ const Obby = (() => {
     return {area:'outside', room:-1, lit:!!lamp, dark:!lamp, bath:false, cellar:false, outside:true};
   }
 
+
+  function lhRideByKind(kind){
+    if (!lh || !lh.rides) return null;
+    return lh.rides.find(r => r && r.kind === kind) || null;
+  }
+  function lhSeatWorld(seat){
+    const v = (typeof THREE !== 'undefined') ? new THREE.Vector3() : {x:0,y:0,z:0};
+    if (!seat || !seat.mesh || !seat.mesh.updateWorldMatrix) return v;
+    try {
+      seat.mesh.updateWorldMatrix(true, false);
+      seat.mesh.getWorldPosition(v);
+      v.y += (seat.sitY || 0.3);
+    } catch (e){}
+    return v;
+  }
+  function lhBestSeat(ride, from){
+    if (!ride || !ride.seats) return -1;
+    const taken = ride.taken || [];
+    let best = -1, bestScore = 1e9;
+    for (let i = 0; i < ride.seats.length; i++){
+      if (taken[i]) continue;
+      const w = lhSeatWorld(ride.seats[i]);
+      let score;
+      if (ride.kind === 'ferris') score = w.y;
+      else if (from){
+        const dx = w.x - from.x, dz = w.z - from.z;
+        score = Math.sqrt(dx*dx + dz*dz);
+      } else score = i;
+      if (score < bestScore){ bestScore = score; best = i; }
+    }
+    return best;
+  }
+  function lhNearRide(){
+    if (!lh || !lh.rides || typeof P === 'undefined' || !P) return null;
+    let best = null, bestD = 99;
+    lh.rides.forEach(r => {
+      if (!r) return;
+      const d = LH_RULES.lhDist ? LH_RULES.lhDist(P.x, P.z, r.x, r.z) : 99;
+      if (d <= (r.boardR || 4) && d < bestD){ bestD = d; best = r; }
+    });
+    return best;
+  }
+  function lhClearSeat(kind, seat, uid){
+    const ride = lhRideByKind(kind);
+    if (!ride) return;
+    ride.taken = ride.taken || [];
+    if (uid){
+      if (ride.taken[seat] === uid) ride.taken[seat] = null;
+      for (let i = 0; i < (ride.seats || []).length; i++){
+        if (ride.taken[i] === uid && i !== seat) ride.taken[i] = null;
+      }
+    } else if (seat != null) ride.taken[seat] = null;
+  }
+  function lhBoardRide(ride, seatIdx){
+    if (!lh || !ride) return false;
+    if (lh.riding) lhDismountRide(true);
+    const seat = (seatIdx == null) ? lhBestSeat(ride, P) : seatIdx;
+    const ok = LH_RULES.lhRideBoardOk ? LH_RULES.lhRideBoardOk({near: true, alreadyOn: false, seat: seat}) : {ok: seat >= 0, seat: seat};
+    if (!ok.ok){
+      if (ok.reason === 'full' && typeof toast === 'function') toast('🎟️ Every seat is taken — wait for a spin!');
+      return false;
+    }
+    ride.taken = ride.taken || [];
+    ride.taken[ok.seat] = 'me';
+    lh.riding = {kind: ride.kind, seat: ok.seat, name: ride.name || ride.kind};
+    try { lhApplyLocalRide(); } catch (e){}
+    try {
+      lh.prog = lh.prog || lhProg();
+      const was = (lh.prog.rides && lh.prog.rides[ride.kind]);
+      const prog = LH_RULES.lhRideProgress ? LH_RULES.lhRideProgress(lh.prog.rides, ride.kind) : {rides: Object.assign({}, lh.prog.rides || {}, {[ride.kind]: true}), first: !was, all: false};
+      lh.prog.rides = prog.rides;
+      lhSaveProg(lh.prog);
+      if (!was) lhAward('lh:ride');
+      if (prog.all) lhAward('lh:rides');
+    } catch (e){}
+    try { lhNet({k:'ride', kind: ride.kind, seat: ok.seat, on: true}); } catch (e){}
+    if (typeof toast === 'function') toast((ride.kind === 'ferris' ? '🎡' : ride.kind === 'carousel' ? '🎠' : '🎪') + ' Hopped on the ' + (ride.name || 'ride') + '! E / X to hop off.');
+    return true;
+  }
+  function lhDismountRide(silent){
+    if (!lh || !lh.riding) return false;
+    const kind = lh.riding.kind, seat = lh.riding.seat;
+    const ride = lhRideByKind(kind);
+    lhClearSeat(kind, seat, 'me');
+    const ex = (LH_RULES.lhRideExitPoint ? LH_RULES.lhRideExitPoint(ride || {kind: kind, x: P && P.x, z: P && P.z}) : {x: (ride && ride.x || 0) + 4, y: 0.12, z: (ride && ride.z || 0)});
+    try {
+      if (typeof P !== 'undefined' && P){
+        P.x = ex.x; P.y = ex.y; P.z = ex.z;
+        P.vx = 0; P.vy = 0; P.vz = 0;
+        P.onGround = true;
+      }
+    } catch (e){}
+    lh.riding = null;
+    try { lhNet({k:'ride', kind: kind, seat: seat, on: false}); } catch (e){}
+    if (!silent && typeof toast === 'function') toast('👋 Hopped off.');
+    return true;
+  }
+  function lhApplyLocalRide(){
+    if (!lh || !lh.riding || typeof P === 'undefined' || !P) return;
+    const ride = lhRideByKind(lh.riding.kind);
+    if (!ride || !ride.seats || !ride.seats[lh.riding.seat]){ lhDismountRide(true); return; }
+    const v = lhSeatWorld(ride.seats[lh.riding.seat]);
+    P.x = v.x; P.y = v.y; P.z = v.z;
+    P.vx = 0; P.vy = 0; P.vz = 0;
+    P.onGround = true;
+    try { if (typeof onGround !== 'undefined') onGround = true; } catch (e){}
+  }
+  function lhMyUid(){
+    try { return (typeof mp !== 'undefined' && mp && (mp.host ? 'H' : (mp.me || 'g0'))) || 'me'; } catch (e){ return 'me'; }
+  }
+  function lhApplyRemoteRide(uid, info){
+    if (!lh || !uid || uid === 'me' || uid === lhMyUid()) return;
+    const on = !!(info && (info.on !== false) && info.kind != null && info.seat != null);
+    lh.rides.forEach(r => {
+      if (!r) return;
+      r.taken = r.taken || [];
+      for (let i = 0; i < (r.seats || []).length; i++){
+        if (r.taken[i] === uid) r.taken[i] = null;
+      }
+    });
+    if (on){
+      const ride = lhRideByKind(info.kind);
+      if (ride){ ride.taken = ride.taken || []; ride.taken[info.seat] = uid; }
+    }
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.ents){
+        const E = mp.ents.get(uid);
+        if (E){
+          E.lh = E.lh || {};
+          E.lh.ride = on ? {kind: info.kind, seat: info.seat} : null;
+        }
+      }
+    } catch (e){}
+  }
+  function lhSnapRemoteRiders(){
+    if (!lh || !lh.rides) return;
+    try {
+      if (typeof mp === 'undefined' || !mp || !mp.ents) return;
+      mp.ents.forEach((E, uid) => {
+        const rideInfo = E && E.lh && E.lh.ride;
+        if (!rideInfo) return;
+        const ride = lhRideByKind(rideInfo.kind);
+        if (!ride || !ride.seats || !ride.seats[rideInfo.seat]) return;
+        const v = lhSeatWorld(ride.seats[rideInfo.seat]);
+        if (E.model && E.model.g) E.model.g.position.set(v.x, v.y, v.z);
+        if (E.x != null){ E.x = v.x; E.y = v.y; E.z = v.z; }
+      });
+    } catch (e){}
+  }
+  function lhTickRides(dt){
+    if (!lh || !lh.rides) return;
+    lh.rides.forEach(r => {
+      if (!r) return;
+      const spin = r.wheel || r.g;
+      if (!spin) return;
+      if (r.kind === 'ferris'){
+        spin.rotation.z += dt * 0.35;
+        (r.seats || []).forEach(s => { if (s && s.mesh) s.mesh.rotation.z = -spin.rotation.z; });
+      } else if (r.kind === 'carousel'){
+        spin.rotation.y += dt * 0.6;
+        (r.seats || []).forEach((s, i) => {
+          if (!s || !s.mesh) return;
+          s.mesh.position.y = (s.baseY || 0.85) + Math.sin(((lh.t || 0) * 2.4) + i) * 0.18;
+        });
+      } else if (r.kind === 'swing'){
+        spin.rotation.y += dt * 0.9;
+      }
+    });
+    if (lh.riding) lhApplyLocalRide();
+    lhSnapRemoteRiders();
+  }
+
+
+  function lhTickets(){
+    try { return Math.max(0, ((lh && lh.prog && lh.prog.tickets) | 0)); } catch (e){ return 0; }
+  }
+  function lhGiveTickets(n, why){
+    n = Math.max(0, n | 0);
+    if (!lh) return 0;
+    lh.prog = lh.prog || lhProg();
+    if (n > 0){
+      lh.prog.tickets = Math.max(0, (lh.prog.tickets | 0) + n);
+      lhSaveProg(lh.prog);
+      lhAward('lh:tickets');
+      if (typeof toast === 'function') toast('🎟️ +' + n + ' prize ticket' + (n === 1 ? '' : 's') + (why ? ' — ' + why : '') + '!');
+    } else if (typeof toast === 'function') toast('🎟️ No tickets this time — try again!');
+    return n;
+  }
+  function lhNearGame(){
+    if (!lh || !lh.games || typeof P === 'undefined' || !P) return null;
+    let best = null, bestD = 99;
+    lh.games.forEach(g => {
+      const d = LH_RULES.lhDist ? LH_RULES.lhDist(P.x, P.z, g.x, g.z) : 99;
+      if (d <= (g.r || 2.4) && d < bestD){ bestD = d; best = g; }
+    });
+    return best;
+  }
+  function lhNearBooth(){
+    if (!lh || !lh.booth || typeof P === 'undefined' || !P) return false;
+    return !!(LH_RULES.lhNear && LH_RULES.lhNear(P.x, P.z, lh.booth.x, lh.booth.z, lh.booth.r || 2.8));
+  }
+  function lhCloseArcade(){
+    if (!lh) return;
+    lh.arcade = null;
+    const n = lhEl('lhGame');
+    if (n){ n.classList.remove('show'); n.style.display = 'none'; }
+  }
+  function lhCloseBooth(){
+    if (!lh) return;
+    lh.boothOpen = false;
+    const n = lhEl('lhBooth');
+    if (n){ n.classList.remove('show'); n.style.display = 'none'; }
+  }
+  function lhOpenBooth(){
+    if (!lh) return false;
+    if (lh.arcade) lhCloseArcade();
+    lh.boothOpen = true;
+    lh.boothSel = 0;
+    const n = lhEl('lhBooth');
+    if (n){ n.style.display = 'flex'; n.classList.add('show'); }
+    lhFillBooth();
+    return true;
+  }
+  function lhFillBooth(){
+    if (!lh) return;
+    const prizes = (LH_RULES.LH_PRIZES || []);
+    const owned = (lh.prog && lh.prog.prizes) || {};
+    const wear = (lh.prog && lh.prog.wear) || {};
+    const bal = lhEl('lhBoothBal');
+    if (bal) bal.textContent = lhTickets() + ' ticket' + (lhTickets() === 1 ? '' : 's') + ' in your pocket';
+    const list = lhEl('lhBoothList');
+    if (!list) return;
+    list.innerHTML = '';
+    prizes.forEach((p, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      const have = !!owned[p.id];
+      const on = (lh.boothSel || 0) === i;
+      const wearing = !!(p.slot && wear[p.slot] === p.id);
+      b.className = 'lh-prize' + (have ? ' owned' : '') + (on ? ' on' : '') + (wearing ? ' wear' : '');
+      b.innerHTML = '<div class="nm">' + (p.emoji || '') + ' ' + p.name + '</div><div class="ds">' + (p.desc || '') + '</div><div class="cs">' + (have ? (wearing ? 'Wearing — tap to take off' : (p.kind === 'cosmetic' ? 'Owned — tap to wear' : 'Owned')) : ('🎟️ ' + p.cost + ' tickets')) + '</div>';
+      b.onclick = () => { lh.boothSel = i; if (have && p.kind === 'cosmetic') lhWearPrize(p.id); else if (!have) lhBuyAtBooth(p.id); else lhFillBooth(); };
+      list.appendChild(b);
+    });
+  }
+  function lhBuyAtBooth(id){
+    if (!lh) return false;
+    lh.prog = lh.prog || lhProg();
+    const res = LH_RULES.lhBuyPrize ? LH_RULES.lhBuyPrize({tickets: lh.prog.tickets, prizes: lh.prog.prizes}, id) : {ok:false, reason:'unknown'};
+    if (!res.ok){
+      if (typeof toast === 'function') toast(res.reason === 'cost' ? '🎟️ Need more tickets for that one.' : res.reason === 'owned' ? 'You already have that prize!' : 'That prize is not at the booth.');
+      lhFillBooth();
+      return false;
+    }
+    lh.prog.tickets = res.tickets;
+    lh.prog.prizes = res.prizes;
+    lhSaveProg(lh.prog);
+    lhAward('lh:prize');
+    if (typeof toast === 'function') toast((res.prize && res.prize.emoji ? res.prize.emoji + ' ' : '') + 'You got the ' + (res.prize && res.prize.name || 'prize') + '!');
+    if (res.prize && res.prize.kind === 'cosmetic') lhWearPrize(res.prize.id, true);
+    else lhFillBooth();
+    return true;
+  }
+  function lhWearPrize(id, forceOn){
+    if (!lh) return false;
+    lh.prog = lh.prog || lhProg();
+    if (!(lh.prog.prizes && lh.prog.prizes[id]) && !forceOn) return false;
+    const res = LH_RULES.lhEquipCosmetic ? LH_RULES.lhEquipCosmetic(lh.prog.wear, id) : {ok:false};
+    if (!res.ok) return false;
+    if (forceOn && res.equipped !== id){
+      const again = LH_RULES.lhEquipCosmetic(res.wear, id);
+      lh.prog.wear = again.wear;
+    } else lh.prog.wear = res.wear;
+    lhSaveProg(lh.prog);
+    if (typeof toast === 'function'){
+      const prize = LH_RULES.lhPrizeById && LH_RULES.lhPrizeById(id);
+      toast(lh.prog.wear && prize && lh.prog.wear[prize.slot || 'hat'] === id ? ('You put on the ' + prize.name + '!') : 'Taken off.');
+    }
+    lhFillBooth();
+    return true;
+  }
+  function lhOpenGame(id){
+    if (!lh) return false;
+    if (lh.boothOpen) lhCloseBooth();
+    const spec = (LH_RULES.LH_CARNIVAL_GAMES || []).find(g => g.id === id) || (lh.games || []).find(g => g.id === id);
+    if (!spec) return false;
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    const cd = (lh.gameCd && lh.gameCd[id]) || 0;
+    if (now < cd){
+      if (typeof toast === 'function') toast('⏳ This booth is resetting — try again in a moment.');
+      return false;
+    }
+    const arcade = {id: spec.id, name: spec.name || id, emoji: spec.emoji || '🎟️', t: 0, over: false, sel: 0, score: 0, left: spec.throws || 0};
+    if (spec.id === 'rings'){ arcade.left = 3; arcade.pegs = [false, false, false]; arcade.sel = 1; }
+    if (spec.id === 'darts'){ arcade.left = 5; arcade.pops = [false,false,false,false,false,false,false,false,false,false,false,false]; }
+    if (spec.id === 'ducks'){ arcade.picked = -1; arcade.sel = 2; arcade.left = 1; }
+    if (spec.id === 'whack'){ arcade.leftTime = 12; arcade.lit = -1; arcade.litT = 0; arcade.hits = 0; }
+    lh.arcade = arcade;
+    const n = lhEl('lhGame');
+    if (n){ n.style.display = 'flex'; n.classList.add('show'); }
+    const title = lhEl('lhGameTitle');
+    if (title) title.textContent = (arcade.emoji ? arcade.emoji + ' ' : '') + arcade.name;
+    const hint = lhEl('lhGameHint');
+    if (hint){
+      hint.textContent = arcade.id === 'rings' ? 'Move with arrows or the stick, then tap / A / X to toss a ring. 3 throws.'
+        : arcade.id === 'darts' ? 'Tap a balloon or highlight one and press A / X. 5 darts.'
+        : arcade.id === 'ducks' ? 'Pick a duck! Tap one, or move and press A / X.'
+        : 'Whack the glowing pad — tap it, or move and press A / X. 12 seconds!';
+    }
+    lhPaintGame();
+    return true;
+  }
+  function lhPaintGame(){
+    const a = lh && lh.arcade;
+    const body = lhEl('lhGameBody');
+    const score = lhEl('lhGameScore');
+    if (!a || !body) return;
+    if (a.over){
+      body.innerHTML = '<div style="text-align:center;font-weight:900;font-size:22px;padding:24px 8px">' + (a.endMsg || 'All done!') + '</div>';
+      if (score) score.textContent = a.won != null ? ('🎟️ +' + a.won + ' tickets') : '';
+      return;
+    }
+    const btn = (cls, i, label, extra) => '<button type="button" class="' + cls + (a.sel === i ? ' on' : '') + (extra || '') + '" data-i="' + i + '">' + label + '</button>';
+    if (a.id === 'rings'){
+      body.innerHTML = '<div class="lh-pegs">' + [0,1,2].map(i => btn('lh-peg', i, a.pegs[i] ? '⭕' : '🍾', a.pegs[i] ? ' hit' : '')).join('') + '</div>';
+      if (score) score.textContent = (3 - a.left) + '/3 throws  ·  ' + a.score + ' on the bottles';
+    } else if (a.id === 'darts'){
+      const darts = '🎯'.repeat(a.left) + '·'.repeat(Math.max(0, 5 - a.left));
+      body.innerHTML = '<div class="lh-darts">' + darts + '</div><div class="lh-balloons">' + a.pops.map((p,i) => btn('lh-balloon', i, p ? '💥' : '🎈', p ? ' popped' : '')).join('') + '</div>';
+      if (score) score.textContent = a.score + ' popped  ·  ' + a.left + ' dart' + (a.left===1?'':'s') + ' left';
+    } else if (a.id === 'ducks'){
+      const faces = ['🦆','🐥','🦆','🐤','🦆'];
+      body.innerHTML = '<div class="lh-ducks">' + faces.map((f,i) => btn('lh-duck', i, f)).join('') + '</div>';
+      if (score) score.textContent = 'Pick a duck and see how many tickets it hid!';
+    } else if (a.id === 'whack'){
+      body.innerHTML = '<div class="lh-holes">' + [0,1,2,3,4,5].map(i => btn('lh-hole', i, a.lit === i ? '✨' : '•', a.lit === i ? ' lit' : '')).join('') + '</div>';
+      if (score) score.textContent = a.hits + ' hits  ·  ' + Math.ceil(Math.max(0, a.leftTime)) + 's left';
+    }
+    body.querySelectorAll('button[data-i]').forEach(b => {
+      b.onclick = () => { a.sel = +b.getAttribute('data-i'); lhGameFire(a.sel); };
+    });
+  }
+  function lhGameFire(i){
+    const a = lh && lh.arcade;
+    if (!a || a.over) return;
+    if (i == null) i = a.sel || 0;
+    a.sel = i;
+    if (a.id === 'rings'){
+      if (a.left <= 0) return;
+      a.left--;
+      if (!a.pegs[i]){ a.pegs[i] = true; a.score++; }
+      if (a.left <= 0 || a.score >= 3) lhFinishGame();
+      else lhPaintGame();
+    } else if (a.id === 'darts'){
+      if (a.left <= 0) return;
+      if (a.pops[i]){ lhPaintGame(); return; }
+      a.pops[i] = true; a.score++; a.left--;
+      if (a.left <= 0 || a.score >= 12) lhFinishGame();
+      else lhPaintGame();
+    } else if (a.id === 'ducks'){
+      if (a.picked >= 0) return;
+      a.picked = i;
+      lhFinishGame();
+    } else if (a.id === 'whack'){
+      if (a.lit === i){ a.hits++; a.score = a.hits; a.lit = -1; a.litT = 0.12; lhPaintGame(); }
+    }
+  }
+  function lhFinishGame(){
+    const a = lh && lh.arcade;
+    if (!a || a.over) return;
+    a.over = true;
+    const score = a.id === 'whack' ? a.hits : a.score;
+    const won = LH_RULES.lhGameTickets ? LH_RULES.lhGameTickets(a.id, score) : score;
+    a.won = lhGiveTickets(won, a.name);
+    a.endMsg = a.won > 0 ? ('Nice! You won ' + a.won + ' ticket' + (a.won===1?'':'s') + '!') : 'So close — have another go!';
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    lh.gameCd = lh.gameCd || {};
+    lh.gameCd[a.id] = now + 3500;
+    lhPaintGame();
+  }
+  function lhGameMove(dx, dy){
+    const a = lh && lh.arcade;
+    if (!a || a.over) return;
+    const cols = a.id === 'darts' ? 4 : a.id === 'whack' ? 3 : a.id === 'ducks' ? 5 : 3;
+    const count = a.id === 'darts' ? 12 : a.id === 'whack' ? 6 : a.id === 'ducks' ? 5 : 3;
+    let i = a.sel || 0;
+    const x = i % cols, y = (i / cols) | 0;
+    const nx = Math.max(0, Math.min(cols - 1, x + (dx || 0)));
+    const rows = Math.ceil(count / cols);
+    const ny = Math.max(0, Math.min(rows - 1, y + (dy || 0)));
+    const next = Math.max(0, Math.min(count - 1, ny * cols + nx));
+    a.sel = next;
+    lhPaintGame();
+  }
+  function lhTickArcade(dt){
+    const a = lh && lh.arcade;
+    if (!a || a.over) return;
+    a.t += dt;
+    if (a.id === 'whack'){
+      a.leftTime -= dt;
+      a.litT -= dt;
+      if (a.leftTime <= 0){ a.score = a.hits; lhFinishGame(); return; }
+      if (a.litT <= 0){
+        if (a.lit >= 0 && Math.random() < 0.55) a.lit = -1;
+        else {
+          let n = (Math.random() * 6) | 0;
+          if (n === a.lit) n = (n + 1 + ((Math.random()*5)|0)) % 6;
+          a.lit = n;
+        }
+        a.litT = 0.45 + Math.random() * 0.45;
+        lhPaintGame();
+      }
+    }
+  }
+
+
+  function lhStyleOf(R){
+    if (!R) return (LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle({}) : {wall:'plain', floor:'wood'});
+    const mine = R.owner === 'me' && lh && lh.prog;
+    const raw = mine ? lh.prog.wagonStyle : (R.netStyle || {});
+    return LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(raw) : (raw || {wall:'plain', floor:'wood'});
+  }
+  function lhItemsOf(R){
+    if (!R) return [];
+    const raw = (R.owner === 'me' && lh && lh.prog) ? lh.prog.decor : (R.netDecor || []);
+    return LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(raw) : (raw || []);
+  }
+  function lhDecorTex(kind, style, base){
+    lh._tex = lh._tex || {};
+    const key = 'sty-' + kind + '-' + style + '-' + (base || '');
+    if (lh._tex[key]) return lh._tex[key];
+    try {
+      const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+      const g = c.getContext('2d');
+      g.fillStyle = base || (kind === 'floor' ? '#e8c98a' : '#fff1f8');
+      g.fillRect(0, 0, 64, 64);
+      if (style === 'stripe'){
+        for (let i = 0; i < 8; i++){ g.fillStyle = i % 2 ? '#e31c23' : '#fff8f0'; g.fillRect(i * 8, 0, 8, 64); }
+      } else if (style === 'stars' || style === 'star'){
+        g.fillStyle = kind === 'floor' ? '#2a1848' : '#2a2060';
+        g.fillRect(0, 0, 64, 64);
+        g.fillStyle = '#ffd25a';
+        [[8,10],[24,28],[40,12],[52,36],[16,48],[36,52],[56,18]].forEach(p => { g.beginPath(); g.arc(p[0], p[1], 2.4, 0, Math.PI*2); g.fill(); });
+      } else if (style === 'dots'){
+        const cols = ['#ff6b9a', '#3a86ff', '#ffd25a', '#2ec27e', '#6b3cff'];
+        for (let i = 0; i < 16; i++){ g.fillStyle = cols[i % cols.length]; g.beginPath(); g.arc(8 + (i%4)*16, 8 + ((i/4)|0)*16, 4, 0, Math.PI*2); g.fill(); }
+      } else if (style === 'check'){
+        for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++){ g.fillStyle = (x+y)%2 ? '#e31c23' : '#fff8f0'; g.fillRect(x*16, y*16, 16, 16); }
+      } else if (style === 'wood'){
+        g.fillStyle = '#c9844a'; g.fillRect(0,0,64,64);
+        g.strokeStyle = 'rgba(80,40,16,.45)'; g.lineWidth = 2;
+        for (let y = 8; y < 64; y += 16){ g.beginPath(); g.moveTo(0,y); g.lineTo(64,y); g.stroke(); }
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(kind === 'floor' ? 4 : 2, kind === 'floor' ? 3 : 2);
+      tex.needsUpdate = true;
+      lh._tex[key] = tex;
+      return tex;
+    } catch (e){ return null; }
+  }
+  function lhTintMesh(mesh, color, tex){
+    if (!mesh || !mesh.material) return;
+    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    mats.forEach(m => {
+      if (!m) return;
+      if (tex){ m.map = tex; if (m.color) m.color.set('#ffffff'); }
+      else { m.map = null; if (m.color && color) m.color.set(color); }
+      m.needsUpdate = true;
+    });
+  }
+  function lhApplyWagonStyle(R, style){
+    if (!R) return;
+    const st = style || lhStyleOf(R);
+    const wallTex = (st.wall && st.wall !== 'plain') ? lhDecorTex('wall', st.wall, R.baseWall) : null;
+    const floorTex = (st.floor && st.floor !== 'plain') ? lhDecorTex('floor', st.floor, R.baseFloor) : null;
+    (R.wallMeshes || []).forEach(m => lhTintMesh(m, st.wall === 'plain' ? R.baseWall : '#ffffff', wallTex));
+    if (R.floorMesh) lhTintMesh(R.floorMesh, st.floor === 'plain' ? R.baseFloor : '#ffffff', floorTex);
+  }
+  function lhDecorSpec(id){
+    const cat = LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog((lh && lh.prog && lh.prog.prizes) || {}) : (LH_RULES.LH_STARTER_DECOR || []);
+    return cat.find(p => p.id === id) || (LH_RULES.lhPrizeById && LH_RULES.lhPrizeById(id)) || {id: id, name: 'Decor', emoji:'🛋️'};
+  }
+  function lhMakeDecorMesh(spec, rot){
+    const col = ({
+      'start-stool':'#8a4a20', 'start-cushion':'#ff6b9a', 'start-crate':'#c9844a', 'start-mat':'#6b3cff',
+      'start-picture':'#fff8f0', 'start-lamp':'#ffd25a', 'plush-glow':'#7cffd0', 'plush-tent':'#e31c23',
+      'plush-horse':'#ff8ad8', 'decor-lamp':'#ffb347', 'decor-bunting':'#3a86ff', 'decor-rug':'#6b3cff',
+      'decor-jar':'#ff6b9a', 'decor-lights':'#ffe27a', 'decor-plant':'#2ec27e', 'decor-poster':'#fff6d8'
+    })[spec && spec.id] || '#ffd25a';
+    const g = new THREE.Group();
+    const box = (w,h,d,c,y) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), lhMat(c)); m.position.y = y == null ? h/2 : y; g.add(m); return m; };
+    const id = spec && spec.id;
+    if (id === 'start-stool'){ box(0.55, 0.18, 0.55, col, 0.45); box(0.1, 0.45, 0.1, '#5a3010', 0.22); }
+    else if (id === 'start-cushion'){ box(0.7, 0.2, 0.7, col, 0.12); }
+    else if (id === 'start-crate'){ box(0.6, 0.5, 0.6, col, 0.25); }
+    else if (id === 'start-mat' || id === 'decor-rug'){ box(1.2, 0.05, 0.8, col, 0.03); }
+    else if (id === 'start-picture' || id === 'decor-poster'){ box(0.7, 0.55, 0.06, col, 1.15); }
+    else if (id === 'start-lamp' || id === 'decor-lamp'){ box(0.16, 0.5, 0.16, '#fff8f0', 0.4); box(0.28, 0.22, 0.28, col, 0.72); }
+    else if (id === 'plush-glow' || id === 'plush-tent' || id === 'plush-horse'){ box(0.45, 0.42, 0.32, col, 0.24); }
+    else if (id === 'decor-jar'){ box(0.28, 0.36, 0.28, col, 0.22); }
+    else if (id === 'decor-plant'){ box(0.22, 0.2, 0.22, '#8a4a20', 0.1); box(0.4, 0.45, 0.4, col, 0.42); }
+    else if (id === 'decor-bunting' || id === 'decor-lights'){ box(1.4, 0.12, 0.08, col, 1.35); }
+    else { box(0.45, 0.45, 0.45, col, 0.22); }
+    g.rotation.y = (rot || 0) * Math.PI / 2;
+    return g;
+  }
+  function lhRebuildDecor(R){
+    if (!R || !R.decorG) return;
+    while (R.decorG.children.length){ const ch = R.decorG.children[0]; R.decorG.remove(ch); try { if (ch.geometry) ch.geometry.dispose(); } catch (e){} }
+    const items = lhItemsOf(R);
+    items.forEach(it => {
+      const spec = lhDecorSpec(it.item);
+      const mesh = lhMakeDecorMesh(spec, it.rot);
+      mesh.position.set(R.x + it.x, R.floorY || lhY('wagon'), R.z + it.z);
+      mesh.userData = {lhDecorId: it.id, item: it.item};
+      R.decorG.add(mesh);
+    });
+    // decor stays inside the interior group so a closed door hides it
+    if (R.interior && R.decorG.parent !== R.interior) R.interior.add(R.decorG);
+  }
+  function lhSyncMyDecor(){
+    if (!lh) return;
+    const R = lh.rooms && lh.rooms[lh.myRoom];
+    if (!R || R.owner !== 'me') return;
+    try { lhNet({k:'decor', room: R.id, items: lh.prog.decor || [], style: lh.prog.wagonStyle || {}}); } catch (e){}
+  }
+  function lhSaveDecor(){
+    if (!lh) return;
+    lh.prog = lh.prog || lhProg();
+    lh.prog.decor = LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(lh.prog.decor) : (lh.prog.decor || []);
+    lh.prog.wagonStyle = LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(lh.prog.wagonStyle) : (lh.prog.wagonStyle || {});
+    lhSaveProg(lh.prog);
+    const R = lh.rooms && lh.rooms[lh.myRoom];
+    if (R){ lhApplyWagonStyle(R); lhRebuildDecor(R); }
+    lhSyncMyDecor();
+  }
+  function lhCloseDecor(){
+    if (!lh) return;
+    lh.decorOpen = false;
+    const n = lhEl('lhDecor');
+    if (n){ n.classList.remove('show'); n.style.display = 'none'; }
+  }
+  function lhOpenDecor(){
+    if (!lh) return false;
+    const R = lh.rooms && lh.rooms[lh.myRoom];
+    if (!R || R.owner !== 'me'){ if (typeof toast === 'function') toast('🛋️ Decorate your own wagon.'); return false; }
+    if (lh.arcade) lhCloseArcade();
+    if (lh.boothOpen) lhCloseBooth();
+    lh.decorOpen = true;
+    const n = lhEl('lhDecor');
+    if (n){ n.style.display = 'flex'; n.classList.add('show'); }
+    lhFillDecor();
+    return true;
+  }
+  function lhFillDecor(){
+    if (!lh) return;
+    lh.prog = lh.prog || lhProg();
+    const style = LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(lh.prog.wagonStyle) : (lh.prog.wagonStyle || {});
+    const cat = LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog(lh.prog.prizes || {}) : (LH_RULES.LH_STARTER_DECOR || []);
+    if (lh.decorSel == null || lh.decorSel >= cat.length) lh.decorSel = 0;
+    const paint = (el, list, cur, kind) => {
+      if (!el) return;
+      el.innerHTML = '';
+      list.forEach(s => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = (cur === s.id) ? 'on' : '';
+        b.textContent = s.name;
+        b.onclick = () => {
+          lh.prog.wagonStyle = Object.assign({}, style, kind === 'wall' ? {wall:s.id} : {floor:s.id});
+          lhAward('lh:decor');
+          lhSaveDecor();
+          lhFillDecor();
+        };
+        el.appendChild(b);
+      });
+    };
+    paint(lhEl('lhWallStyles'), LH_RULES.LH_WALL_STYLES || [], style.wall, 'wall');
+    paint(lhEl('lhFloorStyles'), LH_RULES.LH_FLOOR_STYLES || [], style.floor, 'floor');
+    const inv = lhEl('lhDecorInv');
+    if (inv){
+      inv.innerHTML = '';
+      cat.forEach((s, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = (lh.decorSel === i) ? 'on' : '';
+        b.textContent = (s.emoji || '') + ' ' + s.name;
+        b.onclick = () => { lh.decorSel = i; lhFillDecor(); };
+        inv.appendChild(b);
+      });
+    }
+    const list = lhEl('lhDecorList');
+    if (list){
+      list.innerHTML = '';
+      const items = LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(lh.prog.decor) : (lh.prog.decor || []);
+      if (!items.length){ list.textContent = 'Nothing placed yet — pick an item and place it in front of you.'; list.style.fontWeight = '700'; }
+      items.forEach(it => {
+        const spec = lhDecorSpec(it.item);
+        const row = document.createElement('div');
+        row.className = 'lh-drow';
+        row.innerHTML = '<div class="nm">' + (spec.emoji || '🛋️') + ' ' + (spec.name || it.item) + '</div>';
+        const mk = (label, fn) => { const b = document.createElement('button'); b.type='button'; b.textContent=label; b.onclick=fn; row.appendChild(b); };
+        mk('🔄', () => { const r = LH_RULES.lhDecorRotate(lh.prog.decor, it.id); if (r.ok){ lh.prog.decor = r.items; lhAward('lh:decor'); lhSaveDecor(); lhFillDecor(); } });
+        mk('Move here', () => { const pos = lhDecorFront(); const r = LH_RULES.lhDecorMove(lh.prog.decor, it.id, pos.x, pos.z); if (r.ok){ lh.prog.decor = r.items; lhSaveDecor(); lhFillDecor(); } });
+        mk('Remove', () => { const r = LH_RULES.lhDecorRemove(lh.prog.decor, it.id); lh.prog.decor = r.items; lhSaveDecor(); lhFillDecor(); });
+        list.appendChild(row);
+      });
+    }
+  }
+  function lhDecorFront(){
+    const R = lh && lh.rooms && lh.rooms[lh.myRoom];
+    let yaw = 0;
+    try { if (typeof cam !== 'undefined' && cam && cam.yaw != null) yaw = cam.yaw; } catch (e){}
+    const px = (typeof P !== 'undefined' && P) ? P.x : (R && R.x || 0);
+    const pz = (typeof P !== 'undefined' && P) ? P.z : (R && R.z || 0);
+    const fx = px - Math.sin(yaw) * 1.3;
+    const fz = pz - Math.cos(yaw) * 1.3;
+    const dx = fx - (R && R.x || 0);
+    const dz = fz - (R && R.z || 0);
+    return LH_RULES.lhDecorClamp ? LH_RULES.lhDecorClamp(dx, dz, (R && R.w) || 8, (R && R.d) || 6.2, 1.1) : {x:dx, z:dz};
+  }
+  function lhPlaceSelectedDecor(){
+    if (!lh) return false;
+    lh.prog = lh.prog || lhProg();
+    const cat = LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog(lh.prog.prizes || {}) : (LH_RULES.LH_STARTER_DECOR || []);
+    const spec = cat[lh.decorSel || 0];
+    if (!spec) return false;
+    const pos = lhDecorFront();
+    const r = LH_RULES.lhDecorPlace ? LH_RULES.lhDecorPlace(lh.prog.decor, spec.id, pos.x, pos.z, 0) : {ok:false};
+    if (!r.ok){
+      if (typeof toast === 'function') toast(r.reason === 'full' ? '🛋️ Your wagon is full — remove something first.' : 'Could not place that.');
+      return false;
+    }
+    lh.prog.decor = r.items;
+    lhAward('lh:decor');
+    lhSaveDecor();
+    lhFillDecor();
+    if (typeof toast === 'function') toast((spec.emoji || '🛋️') + ' Placed the ' + spec.name + '.');
+    return true;
+  }
+  function lhReceiveDecor(d){
+    if (!lh || !d || d.room == null || !lh.rooms[d.room]) return;
+    const R = lh.rooms[d.room];
+    if (R.owner === 'me') return;
+    R.netDecor = LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(d.items) : (d.items || []);
+    R.netStyle = LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(d.style) : (d.style || {});
+    lhApplyWagonStyle(R);
+    lhRebuildDecor(R);
+  }
+
   function lhPrompt(){
     if (!lh || lh.cut || lh.calm || lh.banish) return null;
+    if (lh.riding){
+      const nm = (lh.riding.name || 'ride');
+      return {id:'hopoff', label: '👋 Hop off the ' + nm};
+    }
     const a = lhPlayerArea();
     const near = lhCompanyNear();
+    const ride = lhNearRide();
+    if (ride){
+      const seat = lhBestSeat(ride, P);
+      if (seat >= 0) return {id:'ride', label: (ride.kind === 'ferris' ? '🎡' : ride.kind === 'carousel' ? '🎠' : '🎪') + ' Ride the ' + (ride.name || 'ride'), ride: ride, seat: seat};
+      return {id:'ridefull', label:'🎟️ Ride is full'};
+    }
+    if (lhNearBooth()) return {id:'booth', label:'🎟️ Prize Booth'};
+    const game = lhNearGame();
+    if (game) return {id:'game', label: (game.emoji || '🎟️') + ' Play ' + game.name, game: game};
     if (lh.wagonPad && LH_RULES.lhNear(P.x, P.z, lh.wagonPad.x, lh.wagonPad.z, 2.0))
       return {id:'gowagon', label:'🎪 Go to my wagon'};
     // In-room actions first so the light switch and bed are not hidden by the door prompt —
@@ -17233,6 +18773,7 @@ const Obby = (() => {
         return {id:'light', label: R.lit ? '💡 Turn lights off' : '💡 Turn lights on', R};
       if (LH_RULES.lhNear(P.x, P.z, R.bed.x, R.bed.z, 1.6)) return {id:'bed', label: lh.bed ? '🛏️ Get up' : '🛏️ Sit on bed', R};
       if (R.owner === 'me' && LH_RULES.lhNear(P.x, P.z, R.wall.x, R.wall.z, 1.7) && !atDoor) return {id:'draw', label:'🖍️ Draw on the wall', R};
+      if (R.owner === 'me' && !atDoor) return {id:'decorate', label:'🛋️ Decorate wagon', R};
       if (R.owner === 'me' && atDoor) return {id:'door', label: R.door.closed ? '🚪 Open door' : '🚪 Close door', R};
     }
     const ownWord = lhWordAtLook();
@@ -17270,7 +18811,13 @@ const Obby = (() => {
     if (lh.cut || lh.calm || lh.banish){ lhSkipCut(); return true; }
     const p = lhPrompt();
     if (!p) return false;
-    if (p.id === 'bell') lhRing(p.R);
+    if (p.id === 'hopoff') lhDismountRide();
+    else if (p.id === 'ride') lhBoardRide(p.ride, p.seat);
+    else if (p.id === 'ridefull'){ if (typeof toast === 'function') toast('🎟️ Every seat is taken — wait for a spin!'); }
+    else if (p.id === 'game') lhOpenGame(p.game && p.game.id);
+    else if (p.id === 'booth') lhOpenBooth();
+    else if (p.id === 'decorate') lhOpenDecor();
+    else if (p.id === 'bell') lhRing(p.R);
     else if (p.id === 'gowagon') lhGoWagon();
     else if (p.id === 'enter'){
       if (p.R.door.closed){ if (typeof toast === 'function') toast('🚪 Knock first — you can\'t just walk in.'); return false; }
@@ -17731,6 +19278,8 @@ const Obby = (() => {
   function lhStartSong(){
     if (!lh || lh.song) return;
     lh.song = {t: 0, dur: 5};
+    lh.lastSongAt = lh.t;
+    lh.songStayT = 0;
     if (typeof toast === 'function') toast('🎵 ' + LH_HOST_TITLE + ' sings: “Lanterns glow, don\'t walk alone — stay together, we\'re going home!”');
     const n = lhEl('lhCut');
     if (n){
@@ -17856,6 +19405,36 @@ const Obby = (() => {
       if ((e.code === 'Enter' || e.key === 'Enter') && !e.repeat){ lhKnockReply(true, 'open'); return true; }
       return true;
     }
+    if (lh.arcade){
+      if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseArcade(); return true; }
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA'){ lhGameMove(-1, 0); return true; }
+      if (e.code === 'ArrowRight' || e.code === 'KeyD'){ lhGameMove(1, 0); return true; }
+      if (e.code === 'ArrowUp' || e.code === 'KeyW'){ lhGameMove(0, -1); return true; }
+      if (e.code === 'ArrowDown' || e.code === 'KeyS'){ lhGameMove(0, 1); return true; }
+      if ((e.code === 'Space' || e.code === 'Enter' || e.code === 'KeyE' || e.code === 'KeyX') && !e.repeat){ lhGameFire(lh.arcade.sel); return true; }
+      return true;
+    }
+    if (lh.boothOpen){
+      if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseBooth(); return true; }
+      const n = (LH_RULES.LH_PRIZES || []).length || 1;
+      if (e.code === 'ArrowLeft' || e.code === 'ArrowUp' || e.code === 'KeyA' || e.code === 'KeyW'){ lh.boothSel = ((lh.boothSel || 0) - 1 + n) % n; lhFillBooth(); return true; }
+      if (e.code === 'ArrowRight' || e.code === 'ArrowDown' || e.code === 'KeyD' || e.code === 'KeyS'){ lh.boothSel = ((lh.boothSel || 0) + 1) % n; lhFillBooth(); return true; }
+      if ((e.code === 'Enter' || e.code === 'Space' || e.code === 'KeyE' || e.code === 'KeyX') && !e.repeat){
+        const prize = (LH_RULES.LH_PRIZES || [])[lh.boothSel || 0];
+        if (prize){ if (lh.prog && lh.prog.prizes && lh.prog.prizes[prize.id] && prize.kind === 'cosmetic') lhWearPrize(prize.id); else lhBuyAtBooth(prize.id); }
+        return true;
+      }
+      return true;
+    }
+    if (lh.decorOpen){
+      if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseDecor(); return true; }
+      const cat = (LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog((lh.prog && lh.prog.prizes) || {}) : []) || [];
+      const n = cat.length || 1;
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA' || e.code === 'ArrowUp' || e.code === 'KeyW'){ lh.decorSel = ((lh.decorSel || 0) - 1 + n) % n; lhFillDecor(); return true; }
+      if (e.code === 'ArrowRight' || e.code === 'KeyD' || e.code === 'ArrowDown' || e.code === 'KeyS'){ lh.decorSel = ((lh.decorSel || 0) + 1) % n; lhFillDecor(); return true; }
+      if ((e.code === 'Enter' || e.code === 'Space' || e.code === 'KeyE') && !e.repeat){ lhPlaceSelectedDecor(); return true; }
+      return true;
+    }
     if (lh.writeOpen){
       if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseWrite(); return true; }
       // Let the custom text field receive typing; G should not re-toggle.
@@ -17870,6 +19449,7 @@ const Obby = (() => {
     }
     if (e.code === 'KeyE' && !e.repeat){ lhAct(); return true; }
     if (e.code === 'KeyG' && !e.repeat){ lhOpenWrite(); return true; }
+    if (e.code === 'KeyT' && !e.repeat){ lhOpenDecor(); return true; }
     if (e.code === 'KeyM' && !e.repeat){ lhToggleMap(); return true; }
     if (e.code === 'KeyV') return false;
     return false;
@@ -17882,6 +19462,44 @@ const Obby = (() => {
       if (jp[1] && !lh._padB){ lh._padB = true; lhKnockReply(false, 'closed'); return true; }
       if (!jp[0] && !jp[2]) lh._padPick = false;
       if (!jp[1]) lh._padB = false;
+      return true;
+    }
+    if (lh.arcade){
+      if (jp[1] && !lh._padB){ lh._padB = true; lhCloseArcade(); return true; }
+      if (!jp[1]) lh._padB = false;
+      if ((jp[14] || jp[12]) && !lh._padD){ lh._padD = true; lhGameMove(jp[14] ? -1 : 0, jp[12] ? -1 : 0); return true; }
+      if ((jp[15] || jp[13]) && !lh._padD){ lh._padD = true; lhGameMove(jp[15] ? 1 : 0, jp[13] ? 1 : 0); return true; }
+      if (!jp[14] && !jp[15] && !jp[12] && !jp[13]) lh._padD = false;
+      if ((jp[0] || jp[2]) && !lh._padPick){ lh._padPick = true; lhGameFire(lh.arcade.sel); return true; }
+      if (!jp[0] && !jp[2]) lh._padPick = false;
+      return true;
+    }
+    if (lh.boothOpen){
+      if (jp[1] && !lh._padB){ lh._padB = true; lhCloseBooth(); return true; }
+      if (!jp[1]) lh._padB = false;
+      const n = (LH_RULES.LH_PRIZES || []).length || 1;
+      if ((jp[14] || jp[12]) && !lh._padD){ lh._padD = true; lh.boothSel = ((lh.boothSel || 0) - 1 + n) % n; lhFillBooth(); return true; }
+      if ((jp[15] || jp[13]) && !lh._padD){ lh._padD = true; lh.boothSel = ((lh.boothSel || 0) + 1) % n; lhFillBooth(); return true; }
+      if (!jp[14] && !jp[15] && !jp[12] && !jp[13]) lh._padD = false;
+      if ((jp[0] || jp[2]) && !lh._padPick){
+        lh._padPick = true;
+        const prize = (LH_RULES.LH_PRIZES || [])[lh.boothSel || 0];
+        if (prize){ if (lh.prog && lh.prog.prizes && lh.prog.prizes[prize.id] && prize.kind === 'cosmetic') lhWearPrize(prize.id); else lhBuyAtBooth(prize.id); }
+        return true;
+      }
+      if (!jp[0] && !jp[2]) lh._padPick = false;
+      return true;
+    }
+    if (lh.decorOpen){
+      if (jp[1] && !lh._padB){ lh._padB = true; lhCloseDecor(); return true; }
+      if (!jp[1]) lh._padB = false;
+      const cat = (LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog((lh.prog && lh.prog.prizes) || {}) : []) || [];
+      const n = cat.length || 1;
+      if ((jp[14] || jp[12]) && !lh._padD){ lh._padD = true; lh.decorSel = ((lh.decorSel || 0) - 1 + n) % n; lhFillDecor(); return true; }
+      if ((jp[15] || jp[13]) && !lh._padD){ lh._padD = true; lh.decorSel = ((lh.decorSel || 0) + 1) % n; lhFillDecor(); return true; }
+      if (!jp[14] && !jp[15] && !jp[12] && !jp[13]) lh._padD = false;
+      if ((jp[0] || jp[2]) && !lh._padPick){ lh._padPick = true; lhPlaceSelectedDecor(); return true; }
+      if (!jp[0] && !jp[2]) lh._padPick = false;
       return true;
     }
     if (lh.writeOpen){
@@ -17903,11 +19521,14 @@ const Obby = (() => {
     }
     if (jp[2] && !lh._padX){ lh._padX = true; lhAct(); return true; }
     if (!jp[2]) lh._padX = false;
-    if (jp[1] && (lh.doodleOpen || lh.setOpen || lh.mapOpen || lh.writeOpen || lh.knockOffer || lh.cut || lh.calm || lh.banish)){ lhCloseDraw(); lhCloseWrite(); if (lh.knockOffer) lhKnockReply(false, 'closed'); lhToggleSet(false); lhToggleMap(false); lhSkipCut(); return true; }
+    if (jp[1] && lh.riding && !lh._padB){ lh._padB = true; lhDismountRide(); return true; }
+    if (jp[1] && (lh.doodleOpen || lh.setOpen || lh.mapOpen || lh.writeOpen || lh.knockOffer || lh.arcade || lh.boothOpen || lh.decorOpen || lh.cut || lh.calm || lh.banish)){ lhCloseDraw(); lhCloseWrite(); lhCloseArcade(); lhCloseBooth(); lhCloseDecor(); if (lh.knockOffer) lhKnockReply(false, 'closed'); lhToggleSet(false); lhToggleMap(false); lhSkipCut(); return true; }
     if (jp[3] && !lh._padY){ lh._padY = true; lhToggleMap(); return true; }
     if (!jp[3]) lh._padY = false;
     if (jp[4] && !lh._padLB){ lh._padLB = true; lhOpenWrite(); return true; }
     if (!jp[4]) lh._padLB = false;
+    if (jp[5] && !lh._padRB){ lh._padRB = true; lhOpenDecor(); return true; }
+    if (!jp[5]) lh._padRB = false;
     if (jp[8] && !lh._padView){ lh._padView = true; /* view often chat */ }
     if (!jp[8]) lh._padView = false;
     return false;
@@ -18117,14 +19738,7 @@ const Obby = (() => {
         }
       }
     } catch (e){}
-    if (lh.rides){
-      lh.rides.forEach(r => {
-        if (!r || !r.g) return;
-        if (r.kind === 'ferris') r.g.rotation.z += dt * 0.35;
-        if (r.kind === 'carousel') r.g.rotation.y += dt * 0.6;
-        if (r.kind === 'swing') r.g.rotation.y += dt * 0.9;
-      });
-    }
+    try { lhTickRides(dt); } catch (e){}
     lhWhisper(vis ? k : k * 0.3);
   }
 
@@ -18154,7 +19768,8 @@ const Obby = (() => {
       const lampWarm = !!(lh.nearLamp && !lh.glitched && !lh.nearGlitched);
       html += '</div><div class="lh-bar' + (lampWarm ? ' lh-lamp' : '') + '"><i style="width:' + Math.max(0, Math.min(100, lh.sanity)) + '%"></i></div>';
       const why = lh.glitched ? 'Fizzled — tag friends (gently!)' : lh.nearGlitched ? 'Too close to a fizzled friend…' : lampWarm ? 'The lantern warms you…' : lh.area === 'woods' || (lh.area === 'outside' && lh.dark) ? 'The fairground is dark… stay near a lantern!' : lh.dark && lh.isolated ? 'Alone in the dark…' : lh.dark ? 'It\'s pretty dark…' : lh.isolated ? 'Nobody nearby…' : 'Stay close, stay bright!';
-      html += '<div class="lh-why">' + why + '</div></div>';
+      html += '<div class="lh-why">' + why + '</div>';
+      html += '<div id="lhTickets">🎟️ ' + lhTickets() + ' ticket' + (lhTickets()===1?'':'s') + '</div></div>';
       try { meter.classList.toggle('lh-lamp', lampWarm); } catch (e){}
       if (html !== lh.lastHud){ meter.innerHTML = html; lh.lastHud = html; }
     }
@@ -18180,6 +19795,13 @@ const Obby = (() => {
     const mine = lhEl('lhMyWagon'); if (mine){ mine.style.display = ''; mine.classList.add('show'); }
     const mapb = lhEl('lhMapBtn'); if (mapb){ mapb.style.display = ''; mapb.classList.add('show'); }
     const wrb = lhEl('lhWriteBtn'); if (wrb){ wrb.style.display = ''; wrb.classList.add('show'); wrb.classList.toggle('lh-ready', !!lhLookWallHit()); }
+    const deb = lhEl('lhDecorBtn');
+    if (deb){
+      const mine = !!(lh.rooms && lh.rooms[lh.myRoom] && lh.rooms[lh.myRoom].owner === 'me' && lh.area === 'room' && lh.room === lh.myRoom);
+      deb.classList.toggle('show', mine);
+      deb.style.display = mine ? '' : 'none';
+    }
+
     if (lh.mapOpen) lhDrawMap();
   }
 
@@ -18196,7 +19818,9 @@ const Obby = (() => {
         room: lh.room,
         lights: lh.lights,
         doors: lh.doors,
-        keyholder: lh.keyholder
+        keyholder: lh.keyholder,
+        riding: lh.riding ? {kind: lh.riding.kind, seat: lh.riding.seat, on: true} : null,
+        decor: (lh.rooms && lh.rooms[lh.myRoom] && lh.rooms[lh.myRoom].owner === 'me') ? {room: lh.myRoom, items: (lh.prog && lh.prog.decor) || [], style: (lh.prog && lh.prog.wagonStyle) || {}} : null
       }, extra || {});
       if (typeof mpBroadcast === 'function' && mp.host) mpBroadcast(msg);
       else if (typeof mpSend === 'function') mpSend(msg);
@@ -18242,12 +19866,21 @@ const Obby = (() => {
     }
     if (d.keyholder && !lh.keyholder) lh.keyholder = d.keyholder;
     if (d.k === 'banish' && d.uid && (d.uid === (typeof mp !== 'undefined' && mp && mp.me))) lhStartBanish({kind:'me'});
+    if (d.k === 'ride') lhApplyRemoteRide(uid, d);
+    else if (d.riding) lhApplyRemoteRide(uid, d.riding);
+    else if (d.riding === null && uid) lhApplyRemoteRide(uid, {on: false});
+    if (d.k === 'decor') lhReceiveDecor(d);
+    else if (d.decor && d.decor.room != null) lhReceiveDecor(d.decor);
   }
 
   function lanternUpdate(dt){
     if (!lh) return;
     dt = Math.min(0.05, +dt || 0.016);
     lh.t += dt;
+    if (lh.riding){ try { lhApplyLocalRide(); } catch (e){} }
+    if (lh.arcade){ try { P.vx = 0; P.vz = 0; } catch (e){} try { lhTickArcade(dt); } catch (e){} }
+    if (lh.boothOpen){ try { P.vx = 0; P.vz = 0; } catch (e){} }
+    if (lh.decorOpen){ try { P.vx = 0; P.vz = 0; } catch (e){} }
     if (lh.taggedLock > 0) lh.taggedLock -= dt;
     if (lh.keyCd > 0) lh.keyCd -= dt;
 
@@ -18257,9 +19890,8 @@ const Obby = (() => {
       lhAward('lh:keys');
       if (typeof toast === 'function') toast('🔑 You got the key bunch! Unlock a friend\'s door if you need to help.');
     }
-    if (!lh.song && lh.t >= lh.serenadeAt && lh.area === 'room' && lh.room === lh.myRoom && lh.rooms[lh.myRoom] && lh.rooms[lh.myRoom].door.closed){
-      lhStartSong();
-    }
+    // Maestro Gleam's serenade is handled after the current room is known,
+    // and only after a continuous stay (not on entering).
     if ((!lh.vesper || !lh.vesper.on) && lh.t >= lh.vesperAt) lhSpawnVesper();
     if (lh.exitDoor && !lh.exitDoor.shown && lh.t >= lh.exitAt){
       lh.exitDoor.shown = true; if (lh.exitDoor.mesh) lh.exitDoor.mesh.visible = true;
@@ -18271,6 +19903,20 @@ const Obby = (() => {
 
     const area = lhPlayerArea();
     lh.area = area.area; lh.room = area.room; lh.lit = !!area.lit; lh.dark = !!area.dark;
+    const inOwnWagon = !!(lh.area === 'room' && lh.room === lh.myRoom && lh.rooms[lh.myRoom]);
+    lh.songStayT = LH_RULES.lhSongStayTick ? LH_RULES.lhSongStayTick(inOwnWagon, lh.songStayT, dt) : (inOwnWagon ? (lh.songStayT || 0) + dt : 0);
+    if (LH_RULES.lhSongShouldStart ? LH_RULES.lhSongShouldStart({
+      inOwnRoom: inOwnWagon,
+      alreadySinging: !!lh.song,
+      stayT: lh.songStayT,
+      lastSongAt: lh.lastSongAt,
+      now: lh.t,
+      test: lh.test,
+      stayNeed: lh.songStayNeed,
+      cooldown: lh.songCd
+    }) : (inOwnWagon && !lh.song && (lh.songStayT || 0) >= (lh.songStayNeed || 50))){
+      lhStartSong();
+    }
     const near = lhCompanyNear();
     lh.company = !!near.company;
     // Any lantern light source: path lamps, string lights, or a lit wagon.
@@ -18360,6 +20006,82 @@ const Obby = (() => {
           const viewer = P ? {x:P.x, z:P.z} : null;
           return {id:R.id, inside: !!(viewer && LH_RULES.lhRoomContains(R, viewer.x, viewer.z, 0.02)), doorClosed: !!(R.door && R.door.closed), visible: !!(R.interior && R.interior.visible), hasInterior: !!R.interior, childCount: R.interior ? R.interior.children.length : 0};
         } catch (e){ return {err:String(e)}; }
+      };
+      window.lhOpenDecor = function(){ try { return lhOpenDecor(); } catch (e){ return false; } };
+      window.lhCloseDecor = function(){ try { lhCloseDecor(); } catch (e){} };
+      window.lhPlaceDecor = function(id){
+        try {
+          if (!lh) return false;
+          const cat = LH_RULES.lhDecorCatalog(lh.prog && lh.prog.prizes || {});
+          const i = Math.max(0, cat.findIndex(x => x.id === id));
+          lh.decorSel = i >= 0 ? i : 0;
+          if (id && i < 0){ /* still try */ }
+          return lhPlaceSelectedDecor();
+        } catch (e){ return false; }
+      };
+      window.lhSetStyle = function(wall, floor){
+        try {
+          if (!lh) return null;
+          lh.prog = lh.prog || lhProg();
+          lh.prog.wagonStyle = LH_RULES.lhNormalizeStyle({wall: wall || (lh.prog.wagonStyle && lh.prog.wagonStyle.wall), floor: floor || (lh.prog.wagonStyle && lh.prog.wagonStyle.floor)});
+          lhAward('lh:decor');
+          lhSaveDecor();
+          return lh.prog.wagonStyle;
+        } catch (e){ return {err:String(e)}; }
+      };
+      window.lhDecorState = function(){
+        try {
+          const R = lh && lh.rooms && lh.rooms[lh.myRoom];
+          return {open: !!(lh && lh.decorOpen), style: lh && lh.prog && lh.prog.wagonStyle, items: lh && lh.prog && lh.prog.decor, childCount: R && R.decorG ? R.decorG.children.length : 0, parent: R && R.decorG && R.decorG.parent && R.decorG.parent.name};
+        } catch (e){ return {err:String(e)}; }
+      };
+      window.lhOpenGame = function(id){ try { return lhOpenGame(id || 'rings'); } catch (e){ return false; } };
+
+      window.lhCloseGame = function(){ try { lhCloseArcade(); } catch (e){} };
+      window.lhOpenBooth = function(){ try { return lhOpenBooth(); } catch (e){ return false; } };
+      window.lhCloseBooth = function(){ try { lhCloseBooth(); } catch (e){} };
+      window.lhTickets = function(v){ try { if (!lh) return 0; lh.prog = lh.prog || lhProg(); if (v != null){ lh.prog.tickets = Math.max(0, v|0); lhSaveProg(lh.prog); } return lhTickets(); } catch (e){ return 0; } };
+      window.lhBuyPrize = function(id){ try { return lhBuyAtBooth(id); } catch (e){ return false; } };
+      window.lhGoGames = function(id){
+        try {
+          const g = (lh && lh.games || []).find(x => x.id === (id || 'rings')) || (lh && lh.games && lh.games[0]);
+          if (!g || typeof P === 'undefined' || !P) return false;
+          P.x = g.x + 1.6; P.y = 0.12; P.z = g.z + 1.6; P.vx = 0; P.vy = 0; P.vz = 0;
+          return true;
+        } catch (e){ return false; }
+      };
+      window.lhGoBooth = function(){
+        try {
+          if (!lh || !lh.booth || typeof P === 'undefined' || !P) return false;
+          P.x = lh.booth.x + 1.4; P.y = 0.12; P.z = lh.booth.z + 1.6; P.vx = 0; P.vy = 0; P.vz = 0;
+          return true;
+        } catch (e){ return false; }
+      };
+      window.lhBoardRide = function(kind, seat){
+
+        try {
+          const ride = (kind && lhRideByKind(kind)) || lhNearRide() || (lh && lh.rides && lh.rides[0]);
+          return ride ? lhBoardRide(ride, seat) : false;
+        } catch (e){ return false; }
+      };
+      window.lhDismount = function(){ try { return lhDismountRide(); } catch (e){ return false; } };
+      window.lhRideState = function(){
+        try {
+          if (!lh) return null;
+          return {
+            riding: lh.riding,
+            pos: (typeof P !== 'undefined' && P) ? {x:P.x, y:P.y, z:P.z} : null,
+            rides: (lh.rides || []).map(r => ({kind:r.kind, x:r.x, z:r.z, seats:(r.seats||[]).length, taken:(r.taken||[]).slice()}))
+          };
+        } catch (e){ return {err:String(e)}; }
+      };
+      window.lhGoRides = function(kind){
+        try {
+          const ride = lhRideByKind(kind || 'ferris') || (lh && lh.rides && lh.rides[0]);
+          if (!ride || typeof P === 'undefined' || !P) return false;
+          P.x = ride.x + 4.2; P.y = 0.12; P.z = ride.z; P.vx = 0; P.vy = 0; P.vz = 0;
+          return true;
+        } catch (e){ return false; }
       };
       window.lhSetGlitched = function(on){
         try {
@@ -24533,6 +26255,130 @@ function dhLayoutHud(){
       $('#oWarn').classList.toggle('on', !sleeping && !over && !won && dist < 5);
     }
   }
+  /* ---------- pet follow ---------- */
+  const PF_RULES = (typeof PFRules !== 'undefined' && PFRules) ? PFRules : (typeof window !== 'undefined' && window.PFRules) || {};
+  const PF_KEY = PF_RULES.PF_KEY || 'rubloxPetFollow';
+  let pf = null;
+
+  function pfLoad(){
+    let raw = null;
+    try { raw = (typeof load === 'function') ? load(PF_KEY, null) : null; } catch (e){}
+    return PF_RULES.pfLoadToggle ? PF_RULES.pfLoadToggle(raw) : {ver:1, hide:false};
+  }
+  function pfSave(p){
+    p = PF_RULES.pfNormalize ? PF_RULES.pfNormalize(p || (pf && pf.set) || pfLoad()) : (p || {hide:false});
+    try { if (typeof save === 'function') save(PF_KEY, p); } catch (e){}
+    return p;
+  }
+  function pfSetting(){ return (pf && pf.set) || pfLoad(); }
+  function pfSetHide(on){
+    const next = pfSave({hide: !!on});
+    if (pf) pf.set = next;
+    pfSyncUi();
+    if (next.hide) pfStop(true);
+    else if (typeof mode !== 'undefined') pfEnter(mode);
+    return next.hide;
+  }
+  function pfSyncUi(){
+    try {
+      const n = document.getElementById('pfSetHide');
+      if (n) n.checked = !!(pfSetting().hide);
+    } catch (e){}
+  }
+  function pfReadActive(){
+    try {
+      const key = PF_RULES.PF_PETS_KEY || 'rubloxPets';
+      const raw = (typeof load === 'function') ? load(key, null) : null;
+      return PF_RULES.pfActiveFromSave ? PF_RULES.pfActiveFromSave(raw) : null;
+    } catch (e){ return null; }
+  }
+  function pfWant(modeId){
+    const d = pfReadActive();
+    return !!(PF_RULES.pfShouldFollow && PF_RULES.pfShouldFollow(modeId, pfSetting(), !!d));
+  }
+  function pfEnter(modeId){
+    pf = pf || {set: pfLoad(), pet: null, modeId: null};
+    pf.set = pfLoad();
+    pf.modeId = modeId || (typeof mode !== 'undefined' ? mode : null);
+    if (!pfWant(pf.modeId)){ pfStop(true); return null; }
+    const d = pfReadActive();
+    if (!d){ pfStop(true); return null; }
+    if (pf.pet && pf.pet.k === d.k && pf.pet.c === d.c) return pf.pet;
+    pfStop(true);
+    try {
+      const st = (typeof stageOf === 'function') ? stageOf(+d.xp || 0) : (PF_RULES.pfStage ? PF_RULES.pfStage(d.xp) : 1);
+      if (typeof buildPet !== 'function' || typeof scene === 'undefined') return null;
+      const m = buildPet(d.k, d.c, st);
+      try { if (typeof dress === 'function') dress(m, (typeof accClean === 'function') ? accClean(d.acc) : d.acc); } catch (e){}
+      const nm = (typeof petNameClean === 'function' ? petNameClean(d.n) : d.n) || 'Buddy';
+      try {
+        const tag = (typeof label === 'function') ? label('🐾 ' + nm, 'rgba(255,111,181,.92)', '#fff', 220) : null;
+        if (tag){ tag.scale.multiplyScalar(0.5); tag.position.y = (m.top || 1.2) + 0.45; m.g.add(tag); }
+      } catch (e){}
+      const px = (typeof P !== 'undefined' && P) ? P.x : 0, pz = (typeof P !== 'undefined' && P) ? P.z : 0;
+      const face = (typeof P !== 'undefined' && P) ? P.face : 0;
+      const x = px - Math.sin(face) * 1.55, z = pz - Math.cos(face) * 1.55;
+      m.g.position.set(x, (P && P.y) || 0, z);
+      scene.add(m.g);
+      pf.pet = {m: m, k: d.k, c: d.c, n: nm, acc: d.acc, xp: d.xp, x: x, y: (P && P.y) || 0, z: z, face: face, sp: 0};
+    } catch (e){ pf.pet = null; }
+    return pf.pet;
+  }
+  function pfStop(keep){
+    if (pf && pf.pet && pf.pet.m && pf.pet.m.g){
+      try { if (typeof scene !== 'undefined' && scene) scene.remove(pf.pet.m.g); } catch (e){}
+    }
+    if (pf) pf.pet = null;
+    if (!keep) pf = null;
+  }
+  function pfWire(){
+    if (!pf || !pf.pet) return 0;
+    const q = pf.pet, r = v => Math.round(v * 100) / 100;
+    const st = (typeof stageOf === 'function') ? stageOf(+q.xp || 0) : (PF_RULES.pfStage ? PF_RULES.pfStage(q.xp) : 1);
+    const acc = (typeof accStr === 'function') ? accStr(q.acc) : '';
+    return [q.k, q.c, st, r(q.x), r(q.y), r(q.z), r(q.face), q.sp > 0.6 ? 1 : 0, q.n, r(q.sp), 0, acc];
+  }
+  function pfShowRemote(modeId, E){
+    if (!E || !E.pet) return false;
+    if (!modeId || (PF_RULES.PF_SKIP || []).indexOf(modeId) >= 0) return false;
+    if (modeId === 'pets' || modeId === 'petisland') return false;
+    return E.m === modeId;
+  }
+  function pfTick(dt, modeId){
+    if (modeId && pf) pf.modeId = modeId;
+    if (!pfWant(modeId || (pf && pf.modeId))){ if (pf && pf.pet) pfStop(true); return; }
+    if (!pf || !pf.pet){ pfEnter(modeId); if (!pf || !pf.pet) return; }
+    if (typeof P === 'undefined' || !P || !pf.pet.m) return;
+    dt = Math.min(0.08, +dt || 0.016);
+    const step = PF_RULES.pfFollowStep ? PF_RULES.pfFollowStep(P.x, P.z, P.face, pf.pet.x, pf.pet.z, dt) : null;
+    if (step){
+      pf.pet.x = step.x; pf.pet.z = step.z; pf.pet.face = step.face;
+      pf.pet.sp = step.moving ? (step.sp || 6) : 0;
+    }
+    let y = P.y || 0;
+    if (y > 3.2) y = pf.pet.y || 0; // stay on the ground while the player rides high
+    else pf.pet.y = y;
+    try {
+      pf.pet.m.g.position.set(pf.pet.x, pf.pet.y, pf.pet.z);
+      pf.pet.m.g.rotation.y = pf.pet.face;
+      if (typeof animPet === 'function') animPet(pf.pet.m, pf.pet.sp > 0.6 ? 1 : 0, pf.pet.sp, dt, (typeof worldT !== 'undefined' ? worldT : 0));
+    } catch (e){}
+  }
+
+  try {
+    if (typeof window !== 'undefined'){
+      window.pfEnter = pfEnter;
+      window.pfTick = pfTick;
+      window.pfStop = pfStop;
+      window.pfSetHide = pfSetHide;
+      window.pfSyncUi = pfSyncUi;
+      window.pfWire = pfWire;
+      window.pfShowRemote = pfShowRemote;
+      window.pfState = function(){ return pf ? {hide: !!(pf.set && pf.set.hide), pet: pf.pet && {k: pf.pet.k, n: pf.pet.n, x: pf.pet.x, z: pf.pet.z}, modeId: pf.modeId} : null; };
+    }
+  } catch (e){}
+  /* ---------- end pet follow ---------- */
+
   function armGameLoop(){
     if (raf){ try { cancelAnimationFrame(raf); } catch (e){} raf = 0; }
     loopId++;
@@ -24582,7 +26428,7 @@ function dhLayoutHud(){
     }
     const frameDt = Math.min(0.45, raw);
     if (document.pointerLockElement && (!fpOn() || paused || menuOpen || choosing || won || over)) document.exitPointerLock();
-    animate(paused ? 0 : frameDt); updateCamera(); renderer.render(scene, camera); hud(); if (typeof chTick === 'function') try { chTick(); } catch (e){}
+    animate(paused ? 0 : frameDt); updateCamera(); if (typeof wxTick === 'function') try { wxTick(frameDt, mode, {scene: scene, camera: camera}); } catch (e){} if (typeof pfTick === 'function') try { pfTick(frameDt, mode); } catch (e){} renderer.render(scene, camera); hud(); if (typeof chTick === 'function') try { chTick(); } catch (e){}
     tickGfxFps(frameDt);
   }
   function tickGfxFps(dt){
@@ -24899,7 +26745,7 @@ function dhLayoutHud(){
     $('#pMouseSens').oninput = e => { const r = $('#mouseSens'); r.value = e.target.value; r.dispatchEvent(new Event('input')); menuVals(); };
     $('#pMapBtn').onclick = () => { const m = $('#pMap'); m.classList.toggle('show'); $('#pMapBtn').textContent = m.classList.contains('show') ? '🎮 Hide button map' : '🎮 Button map'; };
     setInterval(() => { if ($('#oPausePanel').classList.contains('show')) menuPad(); }, 1000);
-    const HUD_HIT_SEL = '#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhVisit, #dhSteps, #dhResetModal, .obtns, #oExit, #oExit2, #oExit3, #oFP, #oPause, #oMute, #setBtn, #setModal, #oPausePanel, #chRoot, #chPanel, #chWheel, #chBtn, #lhRoot, #lhAct, #lhSet, #lhDraw, #lhWrite, #lhWriteBtn, #lhKnock, #lhCut, #lhCalm, #lhMeter, #lhFanfare, #lhSetBtn, #lhMyWagon, #lhMapBtn, #lhMap, #lhWall, button, a, input, label, select';
+    const HUD_HIT_SEL = '#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhVisit, #dhSteps, #dhResetModal, .obtns, #oExit, #oExit2, #oExit3, #oFP, #oPause, #oMute, #setBtn, #setModal, #oPausePanel, #chRoot, #chPanel, #chWheel, #chBtn, #lhRoot, #lhAct, #lhSet, #lhDraw, #lhWrite, #lhWriteBtn, #lhKnock, #lhGame, #lhBooth, #lhDecor, #lhDecorBtn, #lhCut, #lhCalm, #lhMeter, #lhFanfare, #lhSetBtn, #lhMyWagon, #lhMapBtn, #lhMap, #lhWall, button, a, input, label, select';
     function releasePointerForHud(){
       try { if (typeof document !== 'undefined' && document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e){}
     }
@@ -25185,6 +27031,8 @@ function start(m = 'obby', d = null){
     buildEmoteMenu(); $('#oEmos').classList.remove('show');
     $('#oTip').classList.toggle('hide', choosing); tipTimer = mode === 'obby' && INTRO[level] ? 11 : 8; $('#oSkip').classList.remove('show');
     $('#lvlModal').classList.remove('show');
+    try { if (typeof wxEnter === 'function') wxEnter(mode); } catch (e){}
+    try { if (typeof pfEnter === 'function') pfEnter(mode); } catch (e){}
     resize(); armGameLoop(); checkRotate(); try { if (typeof chSync === 'function') chSync(); } catch (e){}
     if (mode === 'obby') banner('🏃 Level ' + level + ' · ' + worldOf(level).emoji + ' ' + worldOf(level).name);
     else if (mode === 'nds') banner('🏝️ Disaster Island!');
@@ -25247,6 +27095,18 @@ function start(m = 'obby', d = null){
     $('#dbBox').style.display = mode === 'dance' ? '' : 'none'; if (mode !== 'dance'){ const L = $('#dbLane'); if (L) L.style.display = 'none'; }
     if (mode === 'dance') danceEnter();
     $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
+    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
+        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
+    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
+        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
+    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
+        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
+    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
+        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
+    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
+        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
+    if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
+        $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
         $('#lhBox').style.display = mode === 'lantern' ? '' : 'none'; ['#lhAct'].forEach(id => { const n = $(id); if (n && n.classList) n.classList.remove('show'); });
     if (mode === 'lantern'){ if (!window.__lhBound){ /* bound in lanternEnter */ } lanternEnter(); }
@@ -26039,6 +27899,8 @@ function start(m = 'obby', d = null){
   function stop(){
     if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}
     if (typeof dhCloseReset === 'function') dhCloseReset();
+    try { if (typeof wxStop === 'function') wxStop(); } catch (e){}
+    try { if (typeof pfStop === 'function') pfStop(); } catch (e){}
     running = false; loopId++; if (raf){ try { cancelAnimationFrame(raf); } catch (e){} raf = 0; } if (document.pointerLockElement) document.exitPointerLock(); fp.shown = null; menuOpen = false; paused = false;
     if (typeof dhClosePauseMenus === 'function') dhClosePauseMenus();
     $('#obby').classList.remove('fpv', 'paused', 'dh-paused', 'dh-intro'); $('#oPausePanel').classList.remove('show'); if (model){ model.g.visible = true; if (model.head) model.head.visible = true; }

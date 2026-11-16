@@ -23,7 +23,7 @@
   function lhSaveProg(p){
     p = p || (lh && lh.prog) || lhProg();
     try {
-      const body = {ver: LH_RULES.LH_VER || 1, visits: p.visits|0, settings: (LH_RULES.lhNormalizeSettings ? LH_RULES.lhNormalizeSettings(p.settings) : p.settings), doodles: p.doodles || {}, coins: +p.coins || 0, wallWords: (lh && lh.words) ? lh.words : (p.wallWords || [])};
+      const body = {ver: LH_RULES.LH_VER || 1, visits: p.visits|0, settings: (LH_RULES.lhNormalizeSettings ? LH_RULES.lhNormalizeSettings(p.settings) : p.settings), doodles: p.doodles || {}, coins: +p.coins || 0, wallWords: (lh && lh.words) ? lh.words : (p.wallWords || []), rides: (p.rides && typeof p.rides === 'object') ? p.rides : {}, tickets: Math.max(0, (p.tickets|0)), prizes: (p.prizes && typeof p.prizes === 'object') ? p.prizes : {}, wear: (p.wear && typeof p.wear === 'object') ? p.wear : {}, decor: Array.isArray(p.decor) ? p.decor : [], wagonStyle: (p.wagonStyle && typeof p.wagonStyle === 'object') ? p.wagonStyle : {}};
       if (typeof save === 'function') save(LH_KEY, body);
       else if (typeof localStorage !== 'undefined') localStorage.setItem(LH_KEY, JSON.stringify(body));
     } catch (e){}
@@ -349,6 +349,21 @@
     lhBox(x, 1.7, z, 2.05, 0.16, '#e31c23', 0.16);
     if (title) lhLabel(title, 'rgba(80,20,40,.92)', x, 2.15, z);
   }
+  function lhPrizeBooth(x, z){
+    lhBox(x, 1.1, z, 3.2, 1.6, '#fff3d0', 1.1);
+    lhBox(x, 1.7, z, 3.4, 1.8, '#fff8f0', 0.14);
+    lhBox(x, 2.35, z, 3.5, 0.2, '#e31c23', 0.18);
+    const cols = ['#ff6b9a', '#3a86ff', '#ffd25a', '#2ec27e', '#ff8ad8', '#6b3cff'];
+    for (let i = 0; i < 6; i++){
+      const bx = x - 1.2 + (i % 3) * 1.2;
+      const by = 0.85 + Math.floor(i / 3) * 0.55;
+      const bz = z - 0.15;
+      lhBox(bx, by, bz, 0.4, 0.35, cols[i], 0.35);
+    }
+    try { lhFloorBox(x + 0.2, z + 1.5, 1.8, 1.8, '#f0c860', 'pad'); } catch (e){}
+    try { lhLabel('Prize Booth  ·  trade tickets', 'rgba(80,20,40,.92)', x, 2.9, z); } catch (e){}
+    if (lh) lh.booth = {x: x, z: z, r: 2.8};
+  }
   function lhPins(x, z){
     const cols = ['#e31c23', '#3a86ff', '#ffd25a'];
     for (let i = 0; i < 3; i++){
@@ -358,50 +373,81 @@
     }
   }
   function lhFerris(x, y, z){
-    const g = new THREE.Group();
-    const segs = lhLow() ? 8 : 10;
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(3.4, 0.1, 6, segs), lhMat('#6b3cff', {emit:'#7a5cff'}));
-    g.add(rim);
+    const axleY = (y == null ? 5.2 : y);
+    const root = new THREE.Group();
+    root.position.set(x, 0, z);
+    root.rotation.y = 0.35;
+    const pole = new THREE.Mesh(new THREE.BoxGeometry(0.3, axleY + 0.2, 0.3), lhMat('#4a2a10'));
+    pole.position.y = (axleY + 0.2) / 2; root.add(pole);
+    const legA = new THREE.Mesh(new THREE.BoxGeometry(0.22, axleY + 0.4, 0.22), lhMat('#3a2410'));
+    legA.position.set(-1.7, (axleY + 0.2) / 2, 0.12); legA.rotation.z = 0.32; root.add(legA);
+    const legB = legA.clone(); legB.position.x = 1.7; legB.rotation.z = -0.32; root.add(legB);
+    const wheel = new THREE.Group(); wheel.position.y = axleY; root.add(wheel);
+    const segs = lhLow() ? 6 : 8;
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(3.4, 0.1, 6, lhLow() ? 8 : 12), lhMat('#6b3cff', {emit:'#7a5cff'}));
+    wheel.add(rim);
     const axle = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.8, 6), lhMat('#1d2340'));
-    axle.rotation.x = Math.PI / 2; g.add(axle);
-    const cols = ['#e31c23', '#ffd25a', '#3a86ff', '#2ec27e', '#ff8ad8'];
+    axle.rotation.x = Math.PI / 2; wheel.add(axle);
+    const cols = ['#e31c23', '#ffd25a', '#3a86ff', '#2ec27e', '#ff8ad8', '#8ecaff'];
+    const seats = [];
     for (let i = 0; i < segs; i++){
       const a = (i / segs) * Math.PI * 2;
       const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.07, 3.4, 0.07), lhMat('#fff8f0'));
-      spoke.rotation.z = a; g.add(spoke);
-      const car = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.4, 0.45), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}));
+      spoke.rotation.z = a; wheel.add(spoke);
+      const car = new THREE.Group();
       car.position.set(Math.sin(a) * 3.4, Math.cos(a) * 3.4, 0);
-      g.add(car);
+      const box = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.42, 0.55), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}));
+      box.position.y = -0.16; car.add(box);
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.06, 0.06), lhMat('#ffd25a'));
+      bar.position.set(0, 0.14, 0.2); car.add(bar);
+      wheel.add(car);
+      seats.push({mesh: car, index: i, sitY: 0.22});
     }
-    const pole = new THREE.Mesh(new THREE.BoxGeometry(0.3, 3.6, 0.3), lhMat('#4a2a10'));
-    pole.position.y = -1.8; g.add(pole);
-    g.position.set(x, y, z);
-    g.rotation.y = 0.35;
-    scene.add(g);
-    if (lh){ lh.trash.push(g); lh.rides = lh.rides || []; lh.rides.push({g, kind:'ferris'}); }
-    return g;
+    scene.add(root);
+    if (lh){
+      lh.trash.push(root); lh.rides = lh.rides || [];
+      lh.rides.push({kind:'ferris', name:'Ferris Wheel', g: root, wheel: wheel, seats: seats, taken: [], x: x, z: z, boardR: 5.8, axleY: axleY});
+    }
+    try { lhFloorBox(x + 4.6, z, 1.8, 1.8, '#f0c860', 'pad'); } catch (e){}
+    try { lhLabel('Ferris Wheel  ·  E to ride', 'rgba(80,20,40,.92)', x, 9.4, z); } catch (e){}
+    return root;
   }
   function lhCarousel(x, z){
-    const g = new THREE.Group();
+    const root = new THREE.Group();
     const base = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.4, 0.3, lhLow() ? 8 : 12), lhMat('#ffd25a'));
-    base.position.y = 0.15; g.add(base);
+    base.position.y = 0.15; root.add(base);
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 2.6, 6), lhMat('#e31c23'));
-    pole.position.y = 1.4; g.add(pole);
+    pole.position.y = 1.4; root.add(pole);
     const roof = new THREE.Mesh(new THREE.ConeGeometry(2.3, 0.9, lhLow() ? 8 : 12), lhMat('#e31c23'));
-    roof.position.y = 2.7; g.add(roof);
-    lhPaintStripe(roof, '#e31c23', '#fff8f0', 8, 1);
+    roof.position.y = 2.7; root.add(roof);
+    try { lhPaintStripe(roof, '#e31c23', '#fff8f0', 8, 1); } catch (e){}
+    const platform = new THREE.Group(); root.add(platform);
     const cols = ['#ff6b9a', '#3a86ff', '#2ec27e', '#ff9f1c'];
     const n = lhLow() ? 3 : 4;
+    const seats = [];
     for (let i = 0; i < n; i++){
       const a = (i / n) * Math.PI * 2;
-      const h = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.55, 0.18), lhMat(cols[i]));
-      h.position.set(Math.sin(a) * 1.4, 0.85, Math.cos(a) * 1.4);
-      g.add(h);
+      const horse = new THREE.Group();
+      horse.position.set(Math.sin(a) * 1.4, 0.85, Math.cos(a) * 1.4);
+      horse.rotation.y = a + Math.PI / 2;
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.38, 0.18), lhMat(cols[i % cols.length]));
+      body.position.y = 0.05; horse.add(body);
+      const head = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.18, 0.14), lhMat(cols[i % cols.length]));
+      head.position.set(0.22, 0.22, 0); horse.add(head);
+      const saddle = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.08, 0.2), lhMat('#8a4a20'));
+      saddle.position.set(-0.02, 0.26, 0); horse.add(saddle);
+      platform.add(horse);
+      seats.push({mesh: horse, index: i, sitY: 0.42, baseY: 0.85});
     }
-    g.position.set(x, 0, z);
-    scene.add(g);
-    if (lh){ lh.trash.push(g); lh.rides = lh.rides || []; lh.rides.push({g, kind:'carousel'}); }
-    return g;
+    root.position.set(x, 0, z);
+    scene.add(root);
+    if (lh){
+      lh.trash.push(root); lh.rides = lh.rides || [];
+      lh.rides.push({kind:'carousel', name:'Carousel', g: root, wheel: platform, seats: seats, taken: [], x: x, z: z, boardR: 3.6});
+    }
+    try { lhFloorBox(x + 3.0, z + 1.0, 1.5, 1.5, '#f0c860', 'pad'); } catch (e){}
+    try { lhLabel('Carousel  ·  E to ride', 'rgba(80,40,10,.92)', x, 4.4, z); } catch (e){}
+    return root;
   }
   function lhTrailerBits(R, wall){
     if (!R) return;
@@ -476,28 +522,42 @@
   }
 
   function lhSwing(x, z){
-    const g = new THREE.Group();
+    const root = new THREE.Group();
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 5.2, 8), lhMat('#4a2a10'));
-    pole.position.y = 2.6; g.add(pole);
+    pole.position.y = 2.6; root.add(pole);
     const cap = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 2.6, 0.16, lhLow() ? 8 : 12), lhMat('#e31c23'));
-    cap.position.y = 5.1; g.add(cap);
-    const arms = new THREE.Group(); arms.position.y = 4.8; g.add(arms);
+    cap.position.y = 5.1; root.add(cap);
+    const arms = new THREE.Group(); arms.position.y = 4.8; root.add(arms);
     const n = lhLow() ? 4 : 6;
     const cols = ['#ff6b9a', '#3a86ff', '#ffd25a', '#2ec27e', '#ff8ad8', '#8ecaff'];
+    const seats = [];
     for (let i = 0; i < n; i++){
       const a = (i / n) * Math.PI * 2;
       const arm = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.07, 0.07), lhMat('#fff8f0'));
       arm.position.set(Math.sin(a) * 1.2, 0, Math.cos(a) * 1.2);
       arm.rotation.y = -a + Math.PI / 2;
       arms.add(arm);
-      const seat = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.18, 0.32), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}));
+      const chain = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.5, 0.04), lhMat('#c8b8a0'));
+      chain.position.set(Math.sin(a) * 2.3, -0.75, Math.cos(a) * 2.3);
+      arms.add(chain);
+      const seat = new THREE.Group();
       seat.position.set(Math.sin(a) * 2.3, -1.6, Math.cos(a) * 2.3);
+      const board = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.4), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}));
+      seat.add(board);
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.05, 0.05), lhMat('#ffd25a'));
+      bar.position.set(0, 0.22, 0.16); seat.add(bar);
       arms.add(seat);
+      seats.push({mesh: seat, index: i, sitY: 0.38});
     }
-    g.position.set(x, 0, z);
-    scene.add(g);
-    if (lh){ lh.trash.push(g); lh.rides = lh.rides || []; lh.rides.push({g: arms, kind:'swing'}); lh.props = lh.props || []; lh.props.push(g); }
-    return g;
+    root.position.set(x, 0, z);
+    scene.add(root);
+    if (lh){
+      lh.trash.push(root); lh.rides = lh.rides || []; lh.props = lh.props || []; lh.props.push(root);
+      lh.rides.push({kind:'swing', name:'Swing Ride', g: root, wheel: arms, seats: seats, taken: [], x: x, z: z, boardR: 4.2});
+    }
+    try { lhFloorBox(x + 3.6, z + 1.0, 1.5, 1.5, '#f0c860', 'pad'); } catch (e){}
+    try { lhLabel('Swing Ride  ·  E to ride', 'rgba(80,20,40,.92)', x, 6.2, z); } catch (e){}
+    return root;
   }
   function lhBuildFunhouse(cx, cz){
     const w = 16, d = 14;
@@ -595,8 +655,8 @@
     lhBox(-20, 1.15, 118, 190, 0.4, '#4a2a10', 2.2);
     lhBox(-114, 1.15, 9, 0.4, 218, '#4a2a10', 2.2);
     lhBox(54, 1.15, 9, 0.4, 218, '#4a2a10', 2.2);
-    // ticket booth just outside the west flaps
-    lhStand(-32, -4, '#fff3d0', 'Tickets');
+    // prize booth just outside the west flaps
+    try { lhPrizeBooth(-32, -4); } catch (e){ lhStand(-32, -4, '#fff3d0', 'Prize Booth'); if (lh) lh.booth = {x:-32, z:-4, r:2.8}; }
     // Food Court
     lhStand(-54, 4, '#fff3d0', 'Popcorn');
     lhStand(-64, 4, '#ffd0e8', 'Cotton Candy');
@@ -610,11 +670,19 @@
     // Games Alley
     lhStand(-54, 36, '#ffd0e8', 'Ring Toss');
     lhStand(-66, 36, '#d0f0ff', 'Balloon Darts');
-    lhStand(-54, 46, '#ffe29a', 'Bottle Knock');
+    lhStand(-54, 46, '#ffe29a', 'Whack-a-Glow');
+    lhStand(-70, 46, '#ffd0e8', 'Duck Pond');
     if (!lhLow()){
-      lhStand(-70, 46, '#ffd0e8', 'Duck Pond');
       lhPins(-60, 42);
       lhBalloons(-48, 2.2, 40, 3);
+    }
+    if (lh){
+      lh.games = [
+        {id:'rings', name:'Ring Toss', emoji:'⭕', x:-54, z:36, r:2.4},
+        {id:'darts', name:'Balloon Darts', emoji:'🎈', x:-66, z:36, r:2.4},
+        {id:'whack', name:'Whack-a-Glow', emoji:'✨', x:-54, z:46, r:2.4},
+        {id:'ducks', name:'Duck Pond', emoji:'🦆', x:-70, z:46, r:2.4}
+      ];
     }
     lhLabel('Games Alley', 'rgba(20,40,70,.92)', -62, 3.2, 50);
     // Rides
@@ -667,9 +735,9 @@
       rooms: [], npcs: [], host: null, vesper: null, exitDoor: null,
       keyholder: null, keyCd: 0, pester: 0, taggedLock: 0,
       doodleOpen: false, setOpen: false, writeOpen: false, writeStyle: 'paint', writeSel: 0, lastHud: '', words: (prog.wallWords || []).slice(), wordMeshes: [], knockAt: {}, knockOffer: null, knockWait: null,
-      trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null,
+      trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null, riding: null, arcade: null, boothOpen: false, games: [], booth: null, gameCd: {}, decorOpen: false, decorSel: 0, decorPick: null,
       syncT: 0, visitAwarded: false, _nearT: 0, _isoT: 0, _darkT: 0,
-      breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0,
+      breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0, songStayT: 0, lastSongAt: null, songStayNeed: null, songCd: null,
       lastDing: 0, savedFp: null
     };
     try { lhBuildFairground(); } catch (e){}
@@ -790,15 +858,21 @@
       const roomFl = lhFloorBox(R.x, R.z, w, d, floor, 'wagon', floorY);
       const recDraft = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, h, floorY};
       const lay = LH_RULES.lhDoorwayLayout ? LH_RULES.lhDoorwayLayout(recDraft) : {ix: R.x - R.side * (w / 2), stubZ0: R.z - 2.22, stubZ1: R.z + 2.22, stubD: 1.98, transomY: 4.4, transomH: 2.4, transomD: 2.32, transomTop: h, wallTop: h, openH: 3.2};
+      const wallMeshes = [];
+      const takeWall = function(box){
+        const b = lhSolid(box);
+        if (b && b.mesh) wallMeshes.push(b.mesh);
+        return b;
+      };
       // plat() takes the TOP of the box, not the center — use top=h so walls run from the floor to h.
-      lhSolid(lhBox(R.x + R.side * (w / 2 + 0.12), h, R.z, 0.32, d + 0.3, wall, h));
-      lhSolid(lhBox(R.x, h, R.z - d / 2, w, 0.32, wall, h));
-      lhSolid(lhBox(R.x, h, R.z + d / 2, w, 0.32, wall, h));
+      takeWall(lhBox(R.x + R.side * (w / 2 + 0.12), h, R.z, 0.32, d + 0.3, wall, h));
+      takeWall(lhBox(R.x, h, R.z - d / 2, w, 0.32, wall, h));
+      takeWall(lhBox(R.x, h, R.z + d / 2, w, 0.32, wall, h));
       const ix = lay.ix;
-      lhSolid(lhBox(ix, h, lay.stubZ0, 0.32, lay.stubD, wall, h));
-      lhSolid(lhBox(ix, h, lay.stubZ1, 0.32, lay.stubD, wall, h));
+      takeWall(lhBox(ix, h, lay.stubZ0, 0.32, lay.stubD, wall, h));
+      takeWall(lhBox(ix, h, lay.stubZ1, 0.32, lay.stubD, wall, h));
       // transom is a solid from the door head to the wall top (stops jumps over a closed door)
-      lhSolid(lhBox(ix, lay.transomTop || h, R.z, 0.32, lay.transomD, wall, lay.transomH));
+      takeWall(lhBox(ix, lay.transomTop || h, R.z, 0.32, lay.transomD, wall, lay.transomH));
       const ceil = lhMesh(new THREE.BoxGeometry(w + 0.2, 0.16, d + 0.2), lhMat('#fff7fb'), R.x, h, R.z);
       if (ceil) lhPaintStripe(ceil, '#fff7fb', wall, 8, 1);
       // frosted, opaque windows — decorative light, not a view into the room
@@ -828,7 +902,8 @@
       const crayon = furnish ? lhMesh(new THREE.BoxGeometry(2.8, 1.8, 0.08), lhMat('#fffef6'), cx, 1.5, cz) : null;
       if (crayon) interior.add(crayon);
       const door = {g: null, mesh: null, plat: null, closed: true, ang: 0, target: 0, id: R.id};
-      const rec = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, h, floorY, bed: {x: bx, z: bz}, switch: {x: sx, z: sz}, bell: {x: dx, z: dz}, wall: {x: cx, z: cz}, crayon, door, owner: null, lit: true, sw, bellM: bell, interior};
+      const decorG = new THREE.Group(); decorG.name = 'lhDecor' + R.id; interior.add(decorG);
+      const rec = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, h, floorY, bed: {x: bx, z: bz}, switch: {x: sx, z: sz}, bell: {x: dx, z: dz}, wall: {x: cx, z: cz}, crayon, door, owner: null, lit: true, sw, bellM: bell, interior, decorG, wallMeshes, floorMesh: roomFl && roomFl.mesh, baseWall: wall, baseFloor: floor, netDecor: [], netStyle: null};
       lh.rooms.push(rec);
       lh.lights[R.id] = true;
       lh.doors[R.id] = true;
@@ -974,6 +1049,7 @@
       lhDecal(padG);
       lh.wagonMark = {x: mouthX, z: R.z, mesh: mark};
     }
+    try { if (lh && lh.rooms) lh.rooms.forEach(R => { lhApplyWagonStyle(R); lhRebuildDecor(R); }); } catch (e){}
     // teleport pad in the big top, near the midway mouth
     try {
       const pad = lhMesh(new THREE.CylinderGeometry(1.15, 1.15, 0.14, 14), lhMat('#6b3cff', {emit:'#8d6cff'}), 0, lhY('pad'), tentZ1 - 2);
@@ -1572,6 +1648,16 @@
       const mapc = lhEl('lhMapClose'); if (mapc) mapc.onclick = () => lhToggleMap(false);
       const mapo = lhEl('lhMap'); if (mapo) mapo.addEventListener('click', ev => { if (ev.target === mapo) lhToggleMap(false); });
       const wrb = lhEl('lhWriteBtn'); if (wrb) wrb.onclick = () => lhOpenWrite();
+      const deb = lhEl('lhDecorBtn'); if (deb) deb.onclick = () => lhOpenDecor();
+      const dcl = lhEl('lhDecorClose'); if (dcl) dcl.onclick = () => lhCloseDecor();
+      const dpl = lhEl('lhDecorPlace'); if (dpl) dpl.onclick = () => lhPlaceSelectedDecor();
+      const dp = lhEl('lhDecor'); if (dp) dp.addEventListener('click', ev => { if (ev.target === dp) lhCloseDecor(); });
+
+      const gcl = lhEl('lhGameClose'); if (gcl) gcl.onclick = () => lhCloseArcade();
+      const gp = lhEl('lhGame'); if (gp) gp.addEventListener('click', ev => { if (ev.target === gp) lhCloseArcade(); });
+      const bcl = lhEl('lhBoothClose'); if (bcl) bcl.onclick = () => lhCloseBooth();
+      const bp = lhEl('lhBooth'); if (bp) bp.addEventListener('click', ev => { if (ev.target === bp) lhCloseBooth(); });
+
       const wrc = lhEl('lhWriteClose'); if (wrc) wrc.onclick = () => lhCloseWrite();
       const wrp = lhEl('lhWrite'); if (wrp) wrp.addEventListener('click', ev => { if (ev.target === wrp) lhCloseWrite(); });
       const wrgo = lhEl('lhWriteGo'); if (wrgo) wrgo.onclick = () => lhSubmitCustomWord();
@@ -1612,12 +1698,14 @@
       lhSaveProg(lh.prog);
     }
     if (lh){
-      lh.serenadeAt = 28 + Math.random() * 10;
       lh.vesperAt = 40 + Math.random() * 20;
       lh.exitAt = 22;
       lh.keyAt = 16;
+      lh.songStayT = 0;
+      lh.lastSongAt = null;
+      lh.songStayNeed = LH_RULES.lhSongStayNeed ? LH_RULES.lhSongStayNeed(lh.test) : (lh.test === 'song' ? 0.8 : 50);
+      lh.songCd = LH_RULES.lhSongCooldown ? LH_RULES.lhSongCooldown(lh.test) : (lh.test === 'song' ? 0 : 180);
       if (lh.test === 'vesper') lh.vesperAt = 0.6;
-      if (lh.test === 'song') lh.serenadeAt = 0.8;
       if (lh.test === 'exit') lh.exitAt = 0.5;
       if (lh.test === 'cellar'){ lh.keyAt = 99; setTimeout(() => { try { if (lh && lh.test === 'cellar') lhStartBanish(lh.npcs.find(n => n.glitched) || {kind:'me'}); } catch (e){} }, 900); }
     }
@@ -1627,7 +1715,7 @@
 
   function lanternStop(){
     try {
-      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhWrite','lhKnock','lhVision','lhScare','lhMyWagon','lhMap','lhMapBtn','lhWriteBtn'].forEach(id => {
+      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhWrite','lhKnock','lhGame','lhBooth','lhDecor','lhVision','lhScare','lhMyWagon','lhMap','lhMapBtn','lhWriteBtn','lhDecorBtn'].forEach(id => {
         const n = lhEl(id); if (!n) return;
         if (id === 'lhMeter' || id === 'lhBox' || id === 'lhRoot') n.style.display = 'none';
         else { n.classList.remove('show'); n.style.display = 'none'; }
@@ -1641,6 +1729,8 @@
         if (camera.updateProjectionMatrix) camera.updateProjectionMatrix();
       }
     } catch (e){}
+    try { lhCloseArcade(); lhCloseBooth(); lhCloseDecor(); } catch (e){}
+    if (lh && lh.riding){ try { lhDismountRide(true); } catch (e){} }
     if (lh && lh.prog) lhSaveProg(lh.prog);
     lh = null;
   }
@@ -1784,10 +1874,674 @@
     return {area:'outside', room:-1, lit:!!lamp, dark:!lamp, bath:false, cellar:false, outside:true};
   }
 
+
+  function lhRideByKind(kind){
+    if (!lh || !lh.rides) return null;
+    return lh.rides.find(r => r && r.kind === kind) || null;
+  }
+  function lhSeatWorld(seat){
+    const v = (typeof THREE !== 'undefined') ? new THREE.Vector3() : {x:0,y:0,z:0};
+    if (!seat || !seat.mesh || !seat.mesh.updateWorldMatrix) return v;
+    try {
+      seat.mesh.updateWorldMatrix(true, false);
+      seat.mesh.getWorldPosition(v);
+      v.y += (seat.sitY || 0.3);
+    } catch (e){}
+    return v;
+  }
+  function lhBestSeat(ride, from){
+    if (!ride || !ride.seats) return -1;
+    const taken = ride.taken || [];
+    let best = -1, bestScore = 1e9;
+    for (let i = 0; i < ride.seats.length; i++){
+      if (taken[i]) continue;
+      const w = lhSeatWorld(ride.seats[i]);
+      let score;
+      if (ride.kind === 'ferris') score = w.y;
+      else if (from){
+        const dx = w.x - from.x, dz = w.z - from.z;
+        score = Math.sqrt(dx*dx + dz*dz);
+      } else score = i;
+      if (score < bestScore){ bestScore = score; best = i; }
+    }
+    return best;
+  }
+  function lhNearRide(){
+    if (!lh || !lh.rides || typeof P === 'undefined' || !P) return null;
+    let best = null, bestD = 99;
+    lh.rides.forEach(r => {
+      if (!r) return;
+      const d = LH_RULES.lhDist ? LH_RULES.lhDist(P.x, P.z, r.x, r.z) : 99;
+      if (d <= (r.boardR || 4) && d < bestD){ bestD = d; best = r; }
+    });
+    return best;
+  }
+  function lhClearSeat(kind, seat, uid){
+    const ride = lhRideByKind(kind);
+    if (!ride) return;
+    ride.taken = ride.taken || [];
+    if (uid){
+      if (ride.taken[seat] === uid) ride.taken[seat] = null;
+      for (let i = 0; i < (ride.seats || []).length; i++){
+        if (ride.taken[i] === uid && i !== seat) ride.taken[i] = null;
+      }
+    } else if (seat != null) ride.taken[seat] = null;
+  }
+  function lhBoardRide(ride, seatIdx){
+    if (!lh || !ride) return false;
+    if (lh.riding) lhDismountRide(true);
+    const seat = (seatIdx == null) ? lhBestSeat(ride, P) : seatIdx;
+    const ok = LH_RULES.lhRideBoardOk ? LH_RULES.lhRideBoardOk({near: true, alreadyOn: false, seat: seat}) : {ok: seat >= 0, seat: seat};
+    if (!ok.ok){
+      if (ok.reason === 'full' && typeof toast === 'function') toast('🎟️ Every seat is taken — wait for a spin!');
+      return false;
+    }
+    ride.taken = ride.taken || [];
+    ride.taken[ok.seat] = 'me';
+    lh.riding = {kind: ride.kind, seat: ok.seat, name: ride.name || ride.kind};
+    try { lhApplyLocalRide(); } catch (e){}
+    try {
+      lh.prog = lh.prog || lhProg();
+      const was = (lh.prog.rides && lh.prog.rides[ride.kind]);
+      const prog = LH_RULES.lhRideProgress ? LH_RULES.lhRideProgress(lh.prog.rides, ride.kind) : {rides: Object.assign({}, lh.prog.rides || {}, {[ride.kind]: true}), first: !was, all: false};
+      lh.prog.rides = prog.rides;
+      lhSaveProg(lh.prog);
+      if (!was) lhAward('lh:ride');
+      if (prog.all) lhAward('lh:rides');
+    } catch (e){}
+    try { lhNet({k:'ride', kind: ride.kind, seat: ok.seat, on: true}); } catch (e){}
+    if (typeof toast === 'function') toast((ride.kind === 'ferris' ? '🎡' : ride.kind === 'carousel' ? '🎠' : '🎪') + ' Hopped on the ' + (ride.name || 'ride') + '! E / X to hop off.');
+    return true;
+  }
+  function lhDismountRide(silent){
+    if (!lh || !lh.riding) return false;
+    const kind = lh.riding.kind, seat = lh.riding.seat;
+    const ride = lhRideByKind(kind);
+    lhClearSeat(kind, seat, 'me');
+    const ex = (LH_RULES.lhRideExitPoint ? LH_RULES.lhRideExitPoint(ride || {kind: kind, x: P && P.x, z: P && P.z}) : {x: (ride && ride.x || 0) + 4, y: 0.12, z: (ride && ride.z || 0)});
+    try {
+      if (typeof P !== 'undefined' && P){
+        P.x = ex.x; P.y = ex.y; P.z = ex.z;
+        P.vx = 0; P.vy = 0; P.vz = 0;
+        P.onGround = true;
+      }
+    } catch (e){}
+    lh.riding = null;
+    try { lhNet({k:'ride', kind: kind, seat: seat, on: false}); } catch (e){}
+    if (!silent && typeof toast === 'function') toast('👋 Hopped off.');
+    return true;
+  }
+  function lhApplyLocalRide(){
+    if (!lh || !lh.riding || typeof P === 'undefined' || !P) return;
+    const ride = lhRideByKind(lh.riding.kind);
+    if (!ride || !ride.seats || !ride.seats[lh.riding.seat]){ lhDismountRide(true); return; }
+    const v = lhSeatWorld(ride.seats[lh.riding.seat]);
+    P.x = v.x; P.y = v.y; P.z = v.z;
+    P.vx = 0; P.vy = 0; P.vz = 0;
+    P.onGround = true;
+    try { if (typeof onGround !== 'undefined') onGround = true; } catch (e){}
+  }
+  function lhMyUid(){
+    try { return (typeof mp !== 'undefined' && mp && (mp.host ? 'H' : (mp.me || 'g0'))) || 'me'; } catch (e){ return 'me'; }
+  }
+  function lhApplyRemoteRide(uid, info){
+    if (!lh || !uid || uid === 'me' || uid === lhMyUid()) return;
+    const on = !!(info && (info.on !== false) && info.kind != null && info.seat != null);
+    lh.rides.forEach(r => {
+      if (!r) return;
+      r.taken = r.taken || [];
+      for (let i = 0; i < (r.seats || []).length; i++){
+        if (r.taken[i] === uid) r.taken[i] = null;
+      }
+    });
+    if (on){
+      const ride = lhRideByKind(info.kind);
+      if (ride){ ride.taken = ride.taken || []; ride.taken[info.seat] = uid; }
+    }
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.ents){
+        const E = mp.ents.get(uid);
+        if (E){
+          E.lh = E.lh || {};
+          E.lh.ride = on ? {kind: info.kind, seat: info.seat} : null;
+        }
+      }
+    } catch (e){}
+  }
+  function lhSnapRemoteRiders(){
+    if (!lh || !lh.rides) return;
+    try {
+      if (typeof mp === 'undefined' || !mp || !mp.ents) return;
+      mp.ents.forEach((E, uid) => {
+        const rideInfo = E && E.lh && E.lh.ride;
+        if (!rideInfo) return;
+        const ride = lhRideByKind(rideInfo.kind);
+        if (!ride || !ride.seats || !ride.seats[rideInfo.seat]) return;
+        const v = lhSeatWorld(ride.seats[rideInfo.seat]);
+        if (E.model && E.model.g) E.model.g.position.set(v.x, v.y, v.z);
+        if (E.x != null){ E.x = v.x; E.y = v.y; E.z = v.z; }
+      });
+    } catch (e){}
+  }
+  function lhTickRides(dt){
+    if (!lh || !lh.rides) return;
+    lh.rides.forEach(r => {
+      if (!r) return;
+      const spin = r.wheel || r.g;
+      if (!spin) return;
+      if (r.kind === 'ferris'){
+        spin.rotation.z += dt * 0.35;
+        (r.seats || []).forEach(s => { if (s && s.mesh) s.mesh.rotation.z = -spin.rotation.z; });
+      } else if (r.kind === 'carousel'){
+        spin.rotation.y += dt * 0.6;
+        (r.seats || []).forEach((s, i) => {
+          if (!s || !s.mesh) return;
+          s.mesh.position.y = (s.baseY || 0.85) + Math.sin(((lh.t || 0) * 2.4) + i) * 0.18;
+        });
+      } else if (r.kind === 'swing'){
+        spin.rotation.y += dt * 0.9;
+      }
+    });
+    if (lh.riding) lhApplyLocalRide();
+    lhSnapRemoteRiders();
+  }
+
+
+  function lhTickets(){
+    try { return Math.max(0, ((lh && lh.prog && lh.prog.tickets) | 0)); } catch (e){ return 0; }
+  }
+  function lhGiveTickets(n, why){
+    n = Math.max(0, n | 0);
+    if (!lh) return 0;
+    lh.prog = lh.prog || lhProg();
+    if (n > 0){
+      lh.prog.tickets = Math.max(0, (lh.prog.tickets | 0) + n);
+      lhSaveProg(lh.prog);
+      lhAward('lh:tickets');
+      if (typeof toast === 'function') toast('🎟️ +' + n + ' prize ticket' + (n === 1 ? '' : 's') + (why ? ' — ' + why : '') + '!');
+    } else if (typeof toast === 'function') toast('🎟️ No tickets this time — try again!');
+    return n;
+  }
+  function lhNearGame(){
+    if (!lh || !lh.games || typeof P === 'undefined' || !P) return null;
+    let best = null, bestD = 99;
+    lh.games.forEach(g => {
+      const d = LH_RULES.lhDist ? LH_RULES.lhDist(P.x, P.z, g.x, g.z) : 99;
+      if (d <= (g.r || 2.4) && d < bestD){ bestD = d; best = g; }
+    });
+    return best;
+  }
+  function lhNearBooth(){
+    if (!lh || !lh.booth || typeof P === 'undefined' || !P) return false;
+    return !!(LH_RULES.lhNear && LH_RULES.lhNear(P.x, P.z, lh.booth.x, lh.booth.z, lh.booth.r || 2.8));
+  }
+  function lhCloseArcade(){
+    if (!lh) return;
+    lh.arcade = null;
+    const n = lhEl('lhGame');
+    if (n){ n.classList.remove('show'); n.style.display = 'none'; }
+  }
+  function lhCloseBooth(){
+    if (!lh) return;
+    lh.boothOpen = false;
+    const n = lhEl('lhBooth');
+    if (n){ n.classList.remove('show'); n.style.display = 'none'; }
+  }
+  function lhOpenBooth(){
+    if (!lh) return false;
+    if (lh.arcade) lhCloseArcade();
+    lh.boothOpen = true;
+    lh.boothSel = 0;
+    const n = lhEl('lhBooth');
+    if (n){ n.style.display = 'flex'; n.classList.add('show'); }
+    lhFillBooth();
+    return true;
+  }
+  function lhFillBooth(){
+    if (!lh) return;
+    const prizes = (LH_RULES.LH_PRIZES || []);
+    const owned = (lh.prog && lh.prog.prizes) || {};
+    const wear = (lh.prog && lh.prog.wear) || {};
+    const bal = lhEl('lhBoothBal');
+    if (bal) bal.textContent = lhTickets() + ' ticket' + (lhTickets() === 1 ? '' : 's') + ' in your pocket';
+    const list = lhEl('lhBoothList');
+    if (!list) return;
+    list.innerHTML = '';
+    prizes.forEach((p, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      const have = !!owned[p.id];
+      const on = (lh.boothSel || 0) === i;
+      const wearing = !!(p.slot && wear[p.slot] === p.id);
+      b.className = 'lh-prize' + (have ? ' owned' : '') + (on ? ' on' : '') + (wearing ? ' wear' : '');
+      b.innerHTML = '<div class="nm">' + (p.emoji || '') + ' ' + p.name + '</div><div class="ds">' + (p.desc || '') + '</div><div class="cs">' + (have ? (wearing ? 'Wearing — tap to take off' : (p.kind === 'cosmetic' ? 'Owned — tap to wear' : 'Owned')) : ('🎟️ ' + p.cost + ' tickets')) + '</div>';
+      b.onclick = () => { lh.boothSel = i; if (have && p.kind === 'cosmetic') lhWearPrize(p.id); else if (!have) lhBuyAtBooth(p.id); else lhFillBooth(); };
+      list.appendChild(b);
+    });
+  }
+  function lhBuyAtBooth(id){
+    if (!lh) return false;
+    lh.prog = lh.prog || lhProg();
+    const res = LH_RULES.lhBuyPrize ? LH_RULES.lhBuyPrize({tickets: lh.prog.tickets, prizes: lh.prog.prizes}, id) : {ok:false, reason:'unknown'};
+    if (!res.ok){
+      if (typeof toast === 'function') toast(res.reason === 'cost' ? '🎟️ Need more tickets for that one.' : res.reason === 'owned' ? 'You already have that prize!' : 'That prize is not at the booth.');
+      lhFillBooth();
+      return false;
+    }
+    lh.prog.tickets = res.tickets;
+    lh.prog.prizes = res.prizes;
+    lhSaveProg(lh.prog);
+    lhAward('lh:prize');
+    if (typeof toast === 'function') toast((res.prize && res.prize.emoji ? res.prize.emoji + ' ' : '') + 'You got the ' + (res.prize && res.prize.name || 'prize') + '!');
+    if (res.prize && res.prize.kind === 'cosmetic') lhWearPrize(res.prize.id, true);
+    else lhFillBooth();
+    return true;
+  }
+  function lhWearPrize(id, forceOn){
+    if (!lh) return false;
+    lh.prog = lh.prog || lhProg();
+    if (!(lh.prog.prizes && lh.prog.prizes[id]) && !forceOn) return false;
+    const res = LH_RULES.lhEquipCosmetic ? LH_RULES.lhEquipCosmetic(lh.prog.wear, id) : {ok:false};
+    if (!res.ok) return false;
+    if (forceOn && res.equipped !== id){
+      const again = LH_RULES.lhEquipCosmetic(res.wear, id);
+      lh.prog.wear = again.wear;
+    } else lh.prog.wear = res.wear;
+    lhSaveProg(lh.prog);
+    if (typeof toast === 'function'){
+      const prize = LH_RULES.lhPrizeById && LH_RULES.lhPrizeById(id);
+      toast(lh.prog.wear && prize && lh.prog.wear[prize.slot || 'hat'] === id ? ('You put on the ' + prize.name + '!') : 'Taken off.');
+    }
+    lhFillBooth();
+    return true;
+  }
+  function lhOpenGame(id){
+    if (!lh) return false;
+    if (lh.boothOpen) lhCloseBooth();
+    const spec = (LH_RULES.LH_CARNIVAL_GAMES || []).find(g => g.id === id) || (lh.games || []).find(g => g.id === id);
+    if (!spec) return false;
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    const cd = (lh.gameCd && lh.gameCd[id]) || 0;
+    if (now < cd){
+      if (typeof toast === 'function') toast('⏳ This booth is resetting — try again in a moment.');
+      return false;
+    }
+    const arcade = {id: spec.id, name: spec.name || id, emoji: spec.emoji || '🎟️', t: 0, over: false, sel: 0, score: 0, left: spec.throws || 0};
+    if (spec.id === 'rings'){ arcade.left = 3; arcade.pegs = [false, false, false]; arcade.sel = 1; }
+    if (spec.id === 'darts'){ arcade.left = 5; arcade.pops = [false,false,false,false,false,false,false,false,false,false,false,false]; }
+    if (spec.id === 'ducks'){ arcade.picked = -1; arcade.sel = 2; arcade.left = 1; }
+    if (spec.id === 'whack'){ arcade.leftTime = 12; arcade.lit = -1; arcade.litT = 0; arcade.hits = 0; }
+    lh.arcade = arcade;
+    const n = lhEl('lhGame');
+    if (n){ n.style.display = 'flex'; n.classList.add('show'); }
+    const title = lhEl('lhGameTitle');
+    if (title) title.textContent = (arcade.emoji ? arcade.emoji + ' ' : '') + arcade.name;
+    const hint = lhEl('lhGameHint');
+    if (hint){
+      hint.textContent = arcade.id === 'rings' ? 'Move with arrows or the stick, then tap / A / X to toss a ring. 3 throws.'
+        : arcade.id === 'darts' ? 'Tap a balloon or highlight one and press A / X. 5 darts.'
+        : arcade.id === 'ducks' ? 'Pick a duck! Tap one, or move and press A / X.'
+        : 'Whack the glowing pad — tap it, or move and press A / X. 12 seconds!';
+    }
+    lhPaintGame();
+    return true;
+  }
+  function lhPaintGame(){
+    const a = lh && lh.arcade;
+    const body = lhEl('lhGameBody');
+    const score = lhEl('lhGameScore');
+    if (!a || !body) return;
+    if (a.over){
+      body.innerHTML = '<div style="text-align:center;font-weight:900;font-size:22px;padding:24px 8px">' + (a.endMsg || 'All done!') + '</div>';
+      if (score) score.textContent = a.won != null ? ('🎟️ +' + a.won + ' tickets') : '';
+      return;
+    }
+    const btn = (cls, i, label, extra) => '<button type="button" class="' + cls + (a.sel === i ? ' on' : '') + (extra || '') + '" data-i="' + i + '">' + label + '</button>';
+    if (a.id === 'rings'){
+      body.innerHTML = '<div class="lh-pegs">' + [0,1,2].map(i => btn('lh-peg', i, a.pegs[i] ? '⭕' : '🍾', a.pegs[i] ? ' hit' : '')).join('') + '</div>';
+      if (score) score.textContent = (3 - a.left) + '/3 throws  ·  ' + a.score + ' on the bottles';
+    } else if (a.id === 'darts'){
+      const darts = '🎯'.repeat(a.left) + '·'.repeat(Math.max(0, 5 - a.left));
+      body.innerHTML = '<div class="lh-darts">' + darts + '</div><div class="lh-balloons">' + a.pops.map((p,i) => btn('lh-balloon', i, p ? '💥' : '🎈', p ? ' popped' : '')).join('') + '</div>';
+      if (score) score.textContent = a.score + ' popped  ·  ' + a.left + ' dart' + (a.left===1?'':'s') + ' left';
+    } else if (a.id === 'ducks'){
+      const faces = ['🦆','🐥','🦆','🐤','🦆'];
+      body.innerHTML = '<div class="lh-ducks">' + faces.map((f,i) => btn('lh-duck', i, f)).join('') + '</div>';
+      if (score) score.textContent = 'Pick a duck and see how many tickets it hid!';
+    } else if (a.id === 'whack'){
+      body.innerHTML = '<div class="lh-holes">' + [0,1,2,3,4,5].map(i => btn('lh-hole', i, a.lit === i ? '✨' : '•', a.lit === i ? ' lit' : '')).join('') + '</div>';
+      if (score) score.textContent = a.hits + ' hits  ·  ' + Math.ceil(Math.max(0, a.leftTime)) + 's left';
+    }
+    body.querySelectorAll('button[data-i]').forEach(b => {
+      b.onclick = () => { a.sel = +b.getAttribute('data-i'); lhGameFire(a.sel); };
+    });
+  }
+  function lhGameFire(i){
+    const a = lh && lh.arcade;
+    if (!a || a.over) return;
+    if (i == null) i = a.sel || 0;
+    a.sel = i;
+    if (a.id === 'rings'){
+      if (a.left <= 0) return;
+      a.left--;
+      if (!a.pegs[i]){ a.pegs[i] = true; a.score++; }
+      if (a.left <= 0 || a.score >= 3) lhFinishGame();
+      else lhPaintGame();
+    } else if (a.id === 'darts'){
+      if (a.left <= 0) return;
+      if (a.pops[i]){ lhPaintGame(); return; }
+      a.pops[i] = true; a.score++; a.left--;
+      if (a.left <= 0 || a.score >= 12) lhFinishGame();
+      else lhPaintGame();
+    } else if (a.id === 'ducks'){
+      if (a.picked >= 0) return;
+      a.picked = i;
+      lhFinishGame();
+    } else if (a.id === 'whack'){
+      if (a.lit === i){ a.hits++; a.score = a.hits; a.lit = -1; a.litT = 0.12; lhPaintGame(); }
+    }
+  }
+  function lhFinishGame(){
+    const a = lh && lh.arcade;
+    if (!a || a.over) return;
+    a.over = true;
+    const score = a.id === 'whack' ? a.hits : a.score;
+    const won = LH_RULES.lhGameTickets ? LH_RULES.lhGameTickets(a.id, score) : score;
+    a.won = lhGiveTickets(won, a.name);
+    a.endMsg = a.won > 0 ? ('Nice! You won ' + a.won + ' ticket' + (a.won===1?'':'s') + '!') : 'So close — have another go!';
+    const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    lh.gameCd = lh.gameCd || {};
+    lh.gameCd[a.id] = now + 3500;
+    lhPaintGame();
+  }
+  function lhGameMove(dx, dy){
+    const a = lh && lh.arcade;
+    if (!a || a.over) return;
+    const cols = a.id === 'darts' ? 4 : a.id === 'whack' ? 3 : a.id === 'ducks' ? 5 : 3;
+    const count = a.id === 'darts' ? 12 : a.id === 'whack' ? 6 : a.id === 'ducks' ? 5 : 3;
+    let i = a.sel || 0;
+    const x = i % cols, y = (i / cols) | 0;
+    const nx = Math.max(0, Math.min(cols - 1, x + (dx || 0)));
+    const rows = Math.ceil(count / cols);
+    const ny = Math.max(0, Math.min(rows - 1, y + (dy || 0)));
+    const next = Math.max(0, Math.min(count - 1, ny * cols + nx));
+    a.sel = next;
+    lhPaintGame();
+  }
+  function lhTickArcade(dt){
+    const a = lh && lh.arcade;
+    if (!a || a.over) return;
+    a.t += dt;
+    if (a.id === 'whack'){
+      a.leftTime -= dt;
+      a.litT -= dt;
+      if (a.leftTime <= 0){ a.score = a.hits; lhFinishGame(); return; }
+      if (a.litT <= 0){
+        if (a.lit >= 0 && Math.random() < 0.55) a.lit = -1;
+        else {
+          let n = (Math.random() * 6) | 0;
+          if (n === a.lit) n = (n + 1 + ((Math.random()*5)|0)) % 6;
+          a.lit = n;
+        }
+        a.litT = 0.45 + Math.random() * 0.45;
+        lhPaintGame();
+      }
+    }
+  }
+
+
+  function lhStyleOf(R){
+    if (!R) return (LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle({}) : {wall:'plain', floor:'wood'});
+    const mine = R.owner === 'me' && lh && lh.prog;
+    const raw = mine ? lh.prog.wagonStyle : (R.netStyle || {});
+    return LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(raw) : (raw || {wall:'plain', floor:'wood'});
+  }
+  function lhItemsOf(R){
+    if (!R) return [];
+    const raw = (R.owner === 'me' && lh && lh.prog) ? lh.prog.decor : (R.netDecor || []);
+    return LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(raw) : (raw || []);
+  }
+  function lhDecorTex(kind, style, base){
+    lh._tex = lh._tex || {};
+    const key = 'sty-' + kind + '-' + style + '-' + (base || '');
+    if (lh._tex[key]) return lh._tex[key];
+    try {
+      const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+      const g = c.getContext('2d');
+      g.fillStyle = base || (kind === 'floor' ? '#e8c98a' : '#fff1f8');
+      g.fillRect(0, 0, 64, 64);
+      if (style === 'stripe'){
+        for (let i = 0; i < 8; i++){ g.fillStyle = i % 2 ? '#e31c23' : '#fff8f0'; g.fillRect(i * 8, 0, 8, 64); }
+      } else if (style === 'stars' || style === 'star'){
+        g.fillStyle = kind === 'floor' ? '#2a1848' : '#2a2060';
+        g.fillRect(0, 0, 64, 64);
+        g.fillStyle = '#ffd25a';
+        [[8,10],[24,28],[40,12],[52,36],[16,48],[36,52],[56,18]].forEach(p => { g.beginPath(); g.arc(p[0], p[1], 2.4, 0, Math.PI*2); g.fill(); });
+      } else if (style === 'dots'){
+        const cols = ['#ff6b9a', '#3a86ff', '#ffd25a', '#2ec27e', '#6b3cff'];
+        for (let i = 0; i < 16; i++){ g.fillStyle = cols[i % cols.length]; g.beginPath(); g.arc(8 + (i%4)*16, 8 + ((i/4)|0)*16, 4, 0, Math.PI*2); g.fill(); }
+      } else if (style === 'check'){
+        for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++){ g.fillStyle = (x+y)%2 ? '#e31c23' : '#fff8f0'; g.fillRect(x*16, y*16, 16, 16); }
+      } else if (style === 'wood'){
+        g.fillStyle = '#c9844a'; g.fillRect(0,0,64,64);
+        g.strokeStyle = 'rgba(80,40,16,.45)'; g.lineWidth = 2;
+        for (let y = 8; y < 64; y += 16){ g.beginPath(); g.moveTo(0,y); g.lineTo(64,y); g.stroke(); }
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(kind === 'floor' ? 4 : 2, kind === 'floor' ? 3 : 2);
+      tex.needsUpdate = true;
+      lh._tex[key] = tex;
+      return tex;
+    } catch (e){ return null; }
+  }
+  function lhTintMesh(mesh, color, tex){
+    if (!mesh || !mesh.material) return;
+    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    mats.forEach(m => {
+      if (!m) return;
+      if (tex){ m.map = tex; if (m.color) m.color.set('#ffffff'); }
+      else { m.map = null; if (m.color && color) m.color.set(color); }
+      m.needsUpdate = true;
+    });
+  }
+  function lhApplyWagonStyle(R, style){
+    if (!R) return;
+    const st = style || lhStyleOf(R);
+    const wallTex = (st.wall && st.wall !== 'plain') ? lhDecorTex('wall', st.wall, R.baseWall) : null;
+    const floorTex = (st.floor && st.floor !== 'plain') ? lhDecorTex('floor', st.floor, R.baseFloor) : null;
+    (R.wallMeshes || []).forEach(m => lhTintMesh(m, st.wall === 'plain' ? R.baseWall : '#ffffff', wallTex));
+    if (R.floorMesh) lhTintMesh(R.floorMesh, st.floor === 'plain' ? R.baseFloor : '#ffffff', floorTex);
+  }
+  function lhDecorSpec(id){
+    const cat = LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog((lh && lh.prog && lh.prog.prizes) || {}) : (LH_RULES.LH_STARTER_DECOR || []);
+    return cat.find(p => p.id === id) || (LH_RULES.lhPrizeById && LH_RULES.lhPrizeById(id)) || {id: id, name: 'Decor', emoji:'🛋️'};
+  }
+  function lhMakeDecorMesh(spec, rot){
+    const col = ({
+      'start-stool':'#8a4a20', 'start-cushion':'#ff6b9a', 'start-crate':'#c9844a', 'start-mat':'#6b3cff',
+      'start-picture':'#fff8f0', 'start-lamp':'#ffd25a', 'plush-glow':'#7cffd0', 'plush-tent':'#e31c23',
+      'plush-horse':'#ff8ad8', 'decor-lamp':'#ffb347', 'decor-bunting':'#3a86ff', 'decor-rug':'#6b3cff',
+      'decor-jar':'#ff6b9a', 'decor-lights':'#ffe27a', 'decor-plant':'#2ec27e', 'decor-poster':'#fff6d8'
+    })[spec && spec.id] || '#ffd25a';
+    const g = new THREE.Group();
+    const box = (w,h,d,c,y) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), lhMat(c)); m.position.y = y == null ? h/2 : y; g.add(m); return m; };
+    const id = spec && spec.id;
+    if (id === 'start-stool'){ box(0.55, 0.18, 0.55, col, 0.45); box(0.1, 0.45, 0.1, '#5a3010', 0.22); }
+    else if (id === 'start-cushion'){ box(0.7, 0.2, 0.7, col, 0.12); }
+    else if (id === 'start-crate'){ box(0.6, 0.5, 0.6, col, 0.25); }
+    else if (id === 'start-mat' || id === 'decor-rug'){ box(1.2, 0.05, 0.8, col, 0.03); }
+    else if (id === 'start-picture' || id === 'decor-poster'){ box(0.7, 0.55, 0.06, col, 1.15); }
+    else if (id === 'start-lamp' || id === 'decor-lamp'){ box(0.16, 0.5, 0.16, '#fff8f0', 0.4); box(0.28, 0.22, 0.28, col, 0.72); }
+    else if (id === 'plush-glow' || id === 'plush-tent' || id === 'plush-horse'){ box(0.45, 0.42, 0.32, col, 0.24); }
+    else if (id === 'decor-jar'){ box(0.28, 0.36, 0.28, col, 0.22); }
+    else if (id === 'decor-plant'){ box(0.22, 0.2, 0.22, '#8a4a20', 0.1); box(0.4, 0.45, 0.4, col, 0.42); }
+    else if (id === 'decor-bunting' || id === 'decor-lights'){ box(1.4, 0.12, 0.08, col, 1.35); }
+    else { box(0.45, 0.45, 0.45, col, 0.22); }
+    g.rotation.y = (rot || 0) * Math.PI / 2;
+    return g;
+  }
+  function lhRebuildDecor(R){
+    if (!R || !R.decorG) return;
+    while (R.decorG.children.length){ const ch = R.decorG.children[0]; R.decorG.remove(ch); try { if (ch.geometry) ch.geometry.dispose(); } catch (e){} }
+    const items = lhItemsOf(R);
+    items.forEach(it => {
+      const spec = lhDecorSpec(it.item);
+      const mesh = lhMakeDecorMesh(spec, it.rot);
+      mesh.position.set(R.x + it.x, R.floorY || lhY('wagon'), R.z + it.z);
+      mesh.userData = {lhDecorId: it.id, item: it.item};
+      R.decorG.add(mesh);
+    });
+    // decor stays inside the interior group so a closed door hides it
+    if (R.interior && R.decorG.parent !== R.interior) R.interior.add(R.decorG);
+  }
+  function lhSyncMyDecor(){
+    if (!lh) return;
+    const R = lh.rooms && lh.rooms[lh.myRoom];
+    if (!R || R.owner !== 'me') return;
+    try { lhNet({k:'decor', room: R.id, items: lh.prog.decor || [], style: lh.prog.wagonStyle || {}}); } catch (e){}
+  }
+  function lhSaveDecor(){
+    if (!lh) return;
+    lh.prog = lh.prog || lhProg();
+    lh.prog.decor = LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(lh.prog.decor) : (lh.prog.decor || []);
+    lh.prog.wagonStyle = LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(lh.prog.wagonStyle) : (lh.prog.wagonStyle || {});
+    lhSaveProg(lh.prog);
+    const R = lh.rooms && lh.rooms[lh.myRoom];
+    if (R){ lhApplyWagonStyle(R); lhRebuildDecor(R); }
+    lhSyncMyDecor();
+  }
+  function lhCloseDecor(){
+    if (!lh) return;
+    lh.decorOpen = false;
+    const n = lhEl('lhDecor');
+    if (n){ n.classList.remove('show'); n.style.display = 'none'; }
+  }
+  function lhOpenDecor(){
+    if (!lh) return false;
+    const R = lh.rooms && lh.rooms[lh.myRoom];
+    if (!R || R.owner !== 'me'){ if (typeof toast === 'function') toast('🛋️ Decorate your own wagon.'); return false; }
+    if (lh.arcade) lhCloseArcade();
+    if (lh.boothOpen) lhCloseBooth();
+    lh.decorOpen = true;
+    const n = lhEl('lhDecor');
+    if (n){ n.style.display = 'flex'; n.classList.add('show'); }
+    lhFillDecor();
+    return true;
+  }
+  function lhFillDecor(){
+    if (!lh) return;
+    lh.prog = lh.prog || lhProg();
+    const style = LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(lh.prog.wagonStyle) : (lh.prog.wagonStyle || {});
+    const cat = LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog(lh.prog.prizes || {}) : (LH_RULES.LH_STARTER_DECOR || []);
+    if (lh.decorSel == null || lh.decorSel >= cat.length) lh.decorSel = 0;
+    const paint = (el, list, cur, kind) => {
+      if (!el) return;
+      el.innerHTML = '';
+      list.forEach(s => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = (cur === s.id) ? 'on' : '';
+        b.textContent = s.name;
+        b.onclick = () => {
+          lh.prog.wagonStyle = Object.assign({}, style, kind === 'wall' ? {wall:s.id} : {floor:s.id});
+          lhAward('lh:decor');
+          lhSaveDecor();
+          lhFillDecor();
+        };
+        el.appendChild(b);
+      });
+    };
+    paint(lhEl('lhWallStyles'), LH_RULES.LH_WALL_STYLES || [], style.wall, 'wall');
+    paint(lhEl('lhFloorStyles'), LH_RULES.LH_FLOOR_STYLES || [], style.floor, 'floor');
+    const inv = lhEl('lhDecorInv');
+    if (inv){
+      inv.innerHTML = '';
+      cat.forEach((s, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = (lh.decorSel === i) ? 'on' : '';
+        b.textContent = (s.emoji || '') + ' ' + s.name;
+        b.onclick = () => { lh.decorSel = i; lhFillDecor(); };
+        inv.appendChild(b);
+      });
+    }
+    const list = lhEl('lhDecorList');
+    if (list){
+      list.innerHTML = '';
+      const items = LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(lh.prog.decor) : (lh.prog.decor || []);
+      if (!items.length){ list.textContent = 'Nothing placed yet — pick an item and place it in front of you.'; list.style.fontWeight = '700'; }
+      items.forEach(it => {
+        const spec = lhDecorSpec(it.item);
+        const row = document.createElement('div');
+        row.className = 'lh-drow';
+        row.innerHTML = '<div class="nm">' + (spec.emoji || '🛋️') + ' ' + (spec.name || it.item) + '</div>';
+        const mk = (label, fn) => { const b = document.createElement('button'); b.type='button'; b.textContent=label; b.onclick=fn; row.appendChild(b); };
+        mk('🔄', () => { const r = LH_RULES.lhDecorRotate(lh.prog.decor, it.id); if (r.ok){ lh.prog.decor = r.items; lhAward('lh:decor'); lhSaveDecor(); lhFillDecor(); } });
+        mk('Move here', () => { const pos = lhDecorFront(); const r = LH_RULES.lhDecorMove(lh.prog.decor, it.id, pos.x, pos.z); if (r.ok){ lh.prog.decor = r.items; lhSaveDecor(); lhFillDecor(); } });
+        mk('Remove', () => { const r = LH_RULES.lhDecorRemove(lh.prog.decor, it.id); lh.prog.decor = r.items; lhSaveDecor(); lhFillDecor(); });
+        list.appendChild(row);
+      });
+    }
+  }
+  function lhDecorFront(){
+    const R = lh && lh.rooms && lh.rooms[lh.myRoom];
+    let yaw = 0;
+    try { if (typeof cam !== 'undefined' && cam && cam.yaw != null) yaw = cam.yaw; } catch (e){}
+    const px = (typeof P !== 'undefined' && P) ? P.x : (R && R.x || 0);
+    const pz = (typeof P !== 'undefined' && P) ? P.z : (R && R.z || 0);
+    const fx = px - Math.sin(yaw) * 1.3;
+    const fz = pz - Math.cos(yaw) * 1.3;
+    const dx = fx - (R && R.x || 0);
+    const dz = fz - (R && R.z || 0);
+    return LH_RULES.lhDecorClamp ? LH_RULES.lhDecorClamp(dx, dz, (R && R.w) || 8, (R && R.d) || 6.2, 1.1) : {x:dx, z:dz};
+  }
+  function lhPlaceSelectedDecor(){
+    if (!lh) return false;
+    lh.prog = lh.prog || lhProg();
+    const cat = LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog(lh.prog.prizes || {}) : (LH_RULES.LH_STARTER_DECOR || []);
+    const spec = cat[lh.decorSel || 0];
+    if (!spec) return false;
+    const pos = lhDecorFront();
+    const r = LH_RULES.lhDecorPlace ? LH_RULES.lhDecorPlace(lh.prog.decor, spec.id, pos.x, pos.z, 0) : {ok:false};
+    if (!r.ok){
+      if (typeof toast === 'function') toast(r.reason === 'full' ? '🛋️ Your wagon is full — remove something first.' : 'Could not place that.');
+      return false;
+    }
+    lh.prog.decor = r.items;
+    lhAward('lh:decor');
+    lhSaveDecor();
+    lhFillDecor();
+    if (typeof toast === 'function') toast((spec.emoji || '🛋️') + ' Placed the ' + spec.name + '.');
+    return true;
+  }
+  function lhReceiveDecor(d){
+    if (!lh || !d || d.room == null || !lh.rooms[d.room]) return;
+    const R = lh.rooms[d.room];
+    if (R.owner === 'me') return;
+    R.netDecor = LH_RULES.lhNormalizeDecor ? LH_RULES.lhNormalizeDecor(d.items) : (d.items || []);
+    R.netStyle = LH_RULES.lhNormalizeStyle ? LH_RULES.lhNormalizeStyle(d.style) : (d.style || {});
+    lhApplyWagonStyle(R);
+    lhRebuildDecor(R);
+  }
+
   function lhPrompt(){
     if (!lh || lh.cut || lh.calm || lh.banish) return null;
+    if (lh.riding){
+      const nm = (lh.riding.name || 'ride');
+      return {id:'hopoff', label: '👋 Hop off the ' + nm};
+    }
     const a = lhPlayerArea();
     const near = lhCompanyNear();
+    const ride = lhNearRide();
+    if (ride){
+      const seat = lhBestSeat(ride, P);
+      if (seat >= 0) return {id:'ride', label: (ride.kind === 'ferris' ? '🎡' : ride.kind === 'carousel' ? '🎠' : '🎪') + ' Ride the ' + (ride.name || 'ride'), ride: ride, seat: seat};
+      return {id:'ridefull', label:'🎟️ Ride is full'};
+    }
+    if (lhNearBooth()) return {id:'booth', label:'🎟️ Prize Booth'};
+    const game = lhNearGame();
+    if (game) return {id:'game', label: (game.emoji || '🎟️') + ' Play ' + game.name, game: game};
     if (lh.wagonPad && LH_RULES.lhNear(P.x, P.z, lh.wagonPad.x, lh.wagonPad.z, 2.0))
       return {id:'gowagon', label:'🎪 Go to my wagon'};
     // In-room actions first so the light switch and bed are not hidden by the door prompt —
@@ -1802,6 +2556,7 @@
         return {id:'light', label: R.lit ? '💡 Turn lights off' : '💡 Turn lights on', R};
       if (LH_RULES.lhNear(P.x, P.z, R.bed.x, R.bed.z, 1.6)) return {id:'bed', label: lh.bed ? '🛏️ Get up' : '🛏️ Sit on bed', R};
       if (R.owner === 'me' && LH_RULES.lhNear(P.x, P.z, R.wall.x, R.wall.z, 1.7) && !atDoor) return {id:'draw', label:'🖍️ Draw on the wall', R};
+      if (R.owner === 'me' && !atDoor) return {id:'decorate', label:'🛋️ Decorate wagon', R};
       if (R.owner === 'me' && atDoor) return {id:'door', label: R.door.closed ? '🚪 Open door' : '🚪 Close door', R};
     }
     const ownWord = lhWordAtLook();
@@ -1839,7 +2594,13 @@
     if (lh.cut || lh.calm || lh.banish){ lhSkipCut(); return true; }
     const p = lhPrompt();
     if (!p) return false;
-    if (p.id === 'bell') lhRing(p.R);
+    if (p.id === 'hopoff') lhDismountRide();
+    else if (p.id === 'ride') lhBoardRide(p.ride, p.seat);
+    else if (p.id === 'ridefull'){ if (typeof toast === 'function') toast('🎟️ Every seat is taken — wait for a spin!'); }
+    else if (p.id === 'game') lhOpenGame(p.game && p.game.id);
+    else if (p.id === 'booth') lhOpenBooth();
+    else if (p.id === 'decorate') lhOpenDecor();
+    else if (p.id === 'bell') lhRing(p.R);
     else if (p.id === 'gowagon') lhGoWagon();
     else if (p.id === 'enter'){
       if (p.R.door.closed){ if (typeof toast === 'function') toast('🚪 Knock first — you can\'t just walk in.'); return false; }
@@ -2300,6 +3061,8 @@
   function lhStartSong(){
     if (!lh || lh.song) return;
     lh.song = {t: 0, dur: 5};
+    lh.lastSongAt = lh.t;
+    lh.songStayT = 0;
     if (typeof toast === 'function') toast('🎵 ' + LH_HOST_TITLE + ' sings: “Lanterns glow, don\'t walk alone — stay together, we\'re going home!”');
     const n = lhEl('lhCut');
     if (n){
@@ -2425,6 +3188,36 @@
       if ((e.code === 'Enter' || e.key === 'Enter') && !e.repeat){ lhKnockReply(true, 'open'); return true; }
       return true;
     }
+    if (lh.arcade){
+      if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseArcade(); return true; }
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA'){ lhGameMove(-1, 0); return true; }
+      if (e.code === 'ArrowRight' || e.code === 'KeyD'){ lhGameMove(1, 0); return true; }
+      if (e.code === 'ArrowUp' || e.code === 'KeyW'){ lhGameMove(0, -1); return true; }
+      if (e.code === 'ArrowDown' || e.code === 'KeyS'){ lhGameMove(0, 1); return true; }
+      if ((e.code === 'Space' || e.code === 'Enter' || e.code === 'KeyE' || e.code === 'KeyX') && !e.repeat){ lhGameFire(lh.arcade.sel); return true; }
+      return true;
+    }
+    if (lh.boothOpen){
+      if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseBooth(); return true; }
+      const n = (LH_RULES.LH_PRIZES || []).length || 1;
+      if (e.code === 'ArrowLeft' || e.code === 'ArrowUp' || e.code === 'KeyA' || e.code === 'KeyW'){ lh.boothSel = ((lh.boothSel || 0) - 1 + n) % n; lhFillBooth(); return true; }
+      if (e.code === 'ArrowRight' || e.code === 'ArrowDown' || e.code === 'KeyD' || e.code === 'KeyS'){ lh.boothSel = ((lh.boothSel || 0) + 1) % n; lhFillBooth(); return true; }
+      if ((e.code === 'Enter' || e.code === 'Space' || e.code === 'KeyE' || e.code === 'KeyX') && !e.repeat){
+        const prize = (LH_RULES.LH_PRIZES || [])[lh.boothSel || 0];
+        if (prize){ if (lh.prog && lh.prog.prizes && lh.prog.prizes[prize.id] && prize.kind === 'cosmetic') lhWearPrize(prize.id); else lhBuyAtBooth(prize.id); }
+        return true;
+      }
+      return true;
+    }
+    if (lh.decorOpen){
+      if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseDecor(); return true; }
+      const cat = (LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog((lh.prog && lh.prog.prizes) || {}) : []) || [];
+      const n = cat.length || 1;
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA' || e.code === 'ArrowUp' || e.code === 'KeyW'){ lh.decorSel = ((lh.decorSel || 0) - 1 + n) % n; lhFillDecor(); return true; }
+      if (e.code === 'ArrowRight' || e.code === 'KeyD' || e.code === 'ArrowDown' || e.code === 'KeyS'){ lh.decorSel = ((lh.decorSel || 0) + 1) % n; lhFillDecor(); return true; }
+      if ((e.code === 'Enter' || e.code === 'Space' || e.code === 'KeyE') && !e.repeat){ lhPlaceSelectedDecor(); return true; }
+      return true;
+    }
     if (lh.writeOpen){
       if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseWrite(); return true; }
       // Let the custom text field receive typing; G should not re-toggle.
@@ -2439,6 +3232,7 @@
     }
     if (e.code === 'KeyE' && !e.repeat){ lhAct(); return true; }
     if (e.code === 'KeyG' && !e.repeat){ lhOpenWrite(); return true; }
+    if (e.code === 'KeyT' && !e.repeat){ lhOpenDecor(); return true; }
     if (e.code === 'KeyM' && !e.repeat){ lhToggleMap(); return true; }
     if (e.code === 'KeyV') return false;
     return false;
@@ -2451,6 +3245,44 @@
       if (jp[1] && !lh._padB){ lh._padB = true; lhKnockReply(false, 'closed'); return true; }
       if (!jp[0] && !jp[2]) lh._padPick = false;
       if (!jp[1]) lh._padB = false;
+      return true;
+    }
+    if (lh.arcade){
+      if (jp[1] && !lh._padB){ lh._padB = true; lhCloseArcade(); return true; }
+      if (!jp[1]) lh._padB = false;
+      if ((jp[14] || jp[12]) && !lh._padD){ lh._padD = true; lhGameMove(jp[14] ? -1 : 0, jp[12] ? -1 : 0); return true; }
+      if ((jp[15] || jp[13]) && !lh._padD){ lh._padD = true; lhGameMove(jp[15] ? 1 : 0, jp[13] ? 1 : 0); return true; }
+      if (!jp[14] && !jp[15] && !jp[12] && !jp[13]) lh._padD = false;
+      if ((jp[0] || jp[2]) && !lh._padPick){ lh._padPick = true; lhGameFire(lh.arcade.sel); return true; }
+      if (!jp[0] && !jp[2]) lh._padPick = false;
+      return true;
+    }
+    if (lh.boothOpen){
+      if (jp[1] && !lh._padB){ lh._padB = true; lhCloseBooth(); return true; }
+      if (!jp[1]) lh._padB = false;
+      const n = (LH_RULES.LH_PRIZES || []).length || 1;
+      if ((jp[14] || jp[12]) && !lh._padD){ lh._padD = true; lh.boothSel = ((lh.boothSel || 0) - 1 + n) % n; lhFillBooth(); return true; }
+      if ((jp[15] || jp[13]) && !lh._padD){ lh._padD = true; lh.boothSel = ((lh.boothSel || 0) + 1) % n; lhFillBooth(); return true; }
+      if (!jp[14] && !jp[15] && !jp[12] && !jp[13]) lh._padD = false;
+      if ((jp[0] || jp[2]) && !lh._padPick){
+        lh._padPick = true;
+        const prize = (LH_RULES.LH_PRIZES || [])[lh.boothSel || 0];
+        if (prize){ if (lh.prog && lh.prog.prizes && lh.prog.prizes[prize.id] && prize.kind === 'cosmetic') lhWearPrize(prize.id); else lhBuyAtBooth(prize.id); }
+        return true;
+      }
+      if (!jp[0] && !jp[2]) lh._padPick = false;
+      return true;
+    }
+    if (lh.decorOpen){
+      if (jp[1] && !lh._padB){ lh._padB = true; lhCloseDecor(); return true; }
+      if (!jp[1]) lh._padB = false;
+      const cat = (LH_RULES.lhDecorCatalog ? LH_RULES.lhDecorCatalog((lh.prog && lh.prog.prizes) || {}) : []) || [];
+      const n = cat.length || 1;
+      if ((jp[14] || jp[12]) && !lh._padD){ lh._padD = true; lh.decorSel = ((lh.decorSel || 0) - 1 + n) % n; lhFillDecor(); return true; }
+      if ((jp[15] || jp[13]) && !lh._padD){ lh._padD = true; lh.decorSel = ((lh.decorSel || 0) + 1) % n; lhFillDecor(); return true; }
+      if (!jp[14] && !jp[15] && !jp[12] && !jp[13]) lh._padD = false;
+      if ((jp[0] || jp[2]) && !lh._padPick){ lh._padPick = true; lhPlaceSelectedDecor(); return true; }
+      if (!jp[0] && !jp[2]) lh._padPick = false;
       return true;
     }
     if (lh.writeOpen){
@@ -2472,11 +3304,14 @@
     }
     if (jp[2] && !lh._padX){ lh._padX = true; lhAct(); return true; }
     if (!jp[2]) lh._padX = false;
-    if (jp[1] && (lh.doodleOpen || lh.setOpen || lh.mapOpen || lh.writeOpen || lh.knockOffer || lh.cut || lh.calm || lh.banish)){ lhCloseDraw(); lhCloseWrite(); if (lh.knockOffer) lhKnockReply(false, 'closed'); lhToggleSet(false); lhToggleMap(false); lhSkipCut(); return true; }
+    if (jp[1] && lh.riding && !lh._padB){ lh._padB = true; lhDismountRide(); return true; }
+    if (jp[1] && (lh.doodleOpen || lh.setOpen || lh.mapOpen || lh.writeOpen || lh.knockOffer || lh.arcade || lh.boothOpen || lh.decorOpen || lh.cut || lh.calm || lh.banish)){ lhCloseDraw(); lhCloseWrite(); lhCloseArcade(); lhCloseBooth(); lhCloseDecor(); if (lh.knockOffer) lhKnockReply(false, 'closed'); lhToggleSet(false); lhToggleMap(false); lhSkipCut(); return true; }
     if (jp[3] && !lh._padY){ lh._padY = true; lhToggleMap(); return true; }
     if (!jp[3]) lh._padY = false;
     if (jp[4] && !lh._padLB){ lh._padLB = true; lhOpenWrite(); return true; }
     if (!jp[4]) lh._padLB = false;
+    if (jp[5] && !lh._padRB){ lh._padRB = true; lhOpenDecor(); return true; }
+    if (!jp[5]) lh._padRB = false;
     if (jp[8] && !lh._padView){ lh._padView = true; /* view often chat */ }
     if (!jp[8]) lh._padView = false;
     return false;
@@ -2686,14 +3521,7 @@
         }
       }
     } catch (e){}
-    if (lh.rides){
-      lh.rides.forEach(r => {
-        if (!r || !r.g) return;
-        if (r.kind === 'ferris') r.g.rotation.z += dt * 0.35;
-        if (r.kind === 'carousel') r.g.rotation.y += dt * 0.6;
-        if (r.kind === 'swing') r.g.rotation.y += dt * 0.9;
-      });
-    }
+    try { lhTickRides(dt); } catch (e){}
     lhWhisper(vis ? k : k * 0.3);
   }
 
@@ -2723,7 +3551,8 @@
       const lampWarm = !!(lh.nearLamp && !lh.glitched && !lh.nearGlitched);
       html += '</div><div class="lh-bar' + (lampWarm ? ' lh-lamp' : '') + '"><i style="width:' + Math.max(0, Math.min(100, lh.sanity)) + '%"></i></div>';
       const why = lh.glitched ? 'Fizzled — tag friends (gently!)' : lh.nearGlitched ? 'Too close to a fizzled friend…' : lampWarm ? 'The lantern warms you…' : lh.area === 'woods' || (lh.area === 'outside' && lh.dark) ? 'The fairground is dark… stay near a lantern!' : lh.dark && lh.isolated ? 'Alone in the dark…' : lh.dark ? 'It\'s pretty dark…' : lh.isolated ? 'Nobody nearby…' : 'Stay close, stay bright!';
-      html += '<div class="lh-why">' + why + '</div></div>';
+      html += '<div class="lh-why">' + why + '</div>';
+      html += '<div id="lhTickets">🎟️ ' + lhTickets() + ' ticket' + (lhTickets()===1?'':'s') + '</div></div>';
       try { meter.classList.toggle('lh-lamp', lampWarm); } catch (e){}
       if (html !== lh.lastHud){ meter.innerHTML = html; lh.lastHud = html; }
     }
@@ -2749,6 +3578,13 @@
     const mine = lhEl('lhMyWagon'); if (mine){ mine.style.display = ''; mine.classList.add('show'); }
     const mapb = lhEl('lhMapBtn'); if (mapb){ mapb.style.display = ''; mapb.classList.add('show'); }
     const wrb = lhEl('lhWriteBtn'); if (wrb){ wrb.style.display = ''; wrb.classList.add('show'); wrb.classList.toggle('lh-ready', !!lhLookWallHit()); }
+    const deb = lhEl('lhDecorBtn');
+    if (deb){
+      const mine = !!(lh.rooms && lh.rooms[lh.myRoom] && lh.rooms[lh.myRoom].owner === 'me' && lh.area === 'room' && lh.room === lh.myRoom);
+      deb.classList.toggle('show', mine);
+      deb.style.display = mine ? '' : 'none';
+    }
+
     if (lh.mapOpen) lhDrawMap();
   }
 
@@ -2765,7 +3601,9 @@
         room: lh.room,
         lights: lh.lights,
         doors: lh.doors,
-        keyholder: lh.keyholder
+        keyholder: lh.keyholder,
+        riding: lh.riding ? {kind: lh.riding.kind, seat: lh.riding.seat, on: true} : null,
+        decor: (lh.rooms && lh.rooms[lh.myRoom] && lh.rooms[lh.myRoom].owner === 'me') ? {room: lh.myRoom, items: (lh.prog && lh.prog.decor) || [], style: (lh.prog && lh.prog.wagonStyle) || {}} : null
       }, extra || {});
       if (typeof mpBroadcast === 'function' && mp.host) mpBroadcast(msg);
       else if (typeof mpSend === 'function') mpSend(msg);
@@ -2811,12 +3649,21 @@
     }
     if (d.keyholder && !lh.keyholder) lh.keyholder = d.keyholder;
     if (d.k === 'banish' && d.uid && (d.uid === (typeof mp !== 'undefined' && mp && mp.me))) lhStartBanish({kind:'me'});
+    if (d.k === 'ride') lhApplyRemoteRide(uid, d);
+    else if (d.riding) lhApplyRemoteRide(uid, d.riding);
+    else if (d.riding === null && uid) lhApplyRemoteRide(uid, {on: false});
+    if (d.k === 'decor') lhReceiveDecor(d);
+    else if (d.decor && d.decor.room != null) lhReceiveDecor(d.decor);
   }
 
   function lanternUpdate(dt){
     if (!lh) return;
     dt = Math.min(0.05, +dt || 0.016);
     lh.t += dt;
+    if (lh.riding){ try { lhApplyLocalRide(); } catch (e){} }
+    if (lh.arcade){ try { P.vx = 0; P.vz = 0; } catch (e){} try { lhTickArcade(dt); } catch (e){} }
+    if (lh.boothOpen){ try { P.vx = 0; P.vz = 0; } catch (e){} }
+    if (lh.decorOpen){ try { P.vx = 0; P.vz = 0; } catch (e){} }
     if (lh.taggedLock > 0) lh.taggedLock -= dt;
     if (lh.keyCd > 0) lh.keyCd -= dt;
 
@@ -2826,9 +3673,8 @@
       lhAward('lh:keys');
       if (typeof toast === 'function') toast('🔑 You got the key bunch! Unlock a friend\'s door if you need to help.');
     }
-    if (!lh.song && lh.t >= lh.serenadeAt && lh.area === 'room' && lh.room === lh.myRoom && lh.rooms[lh.myRoom] && lh.rooms[lh.myRoom].door.closed){
-      lhStartSong();
-    }
+    // Maestro Gleam's serenade is handled after the current room is known,
+    // and only after a continuous stay (not on entering).
     if ((!lh.vesper || !lh.vesper.on) && lh.t >= lh.vesperAt) lhSpawnVesper();
     if (lh.exitDoor && !lh.exitDoor.shown && lh.t >= lh.exitAt){
       lh.exitDoor.shown = true; if (lh.exitDoor.mesh) lh.exitDoor.mesh.visible = true;
@@ -2840,6 +3686,20 @@
 
     const area = lhPlayerArea();
     lh.area = area.area; lh.room = area.room; lh.lit = !!area.lit; lh.dark = !!area.dark;
+    const inOwnWagon = !!(lh.area === 'room' && lh.room === lh.myRoom && lh.rooms[lh.myRoom]);
+    lh.songStayT = LH_RULES.lhSongStayTick ? LH_RULES.lhSongStayTick(inOwnWagon, lh.songStayT, dt) : (inOwnWagon ? (lh.songStayT || 0) + dt : 0);
+    if (LH_RULES.lhSongShouldStart ? LH_RULES.lhSongShouldStart({
+      inOwnRoom: inOwnWagon,
+      alreadySinging: !!lh.song,
+      stayT: lh.songStayT,
+      lastSongAt: lh.lastSongAt,
+      now: lh.t,
+      test: lh.test,
+      stayNeed: lh.songStayNeed,
+      cooldown: lh.songCd
+    }) : (inOwnWagon && !lh.song && (lh.songStayT || 0) >= (lh.songStayNeed || 50))){
+      lhStartSong();
+    }
     const near = lhCompanyNear();
     lh.company = !!near.company;
     // Any lantern light source: path lamps, string lights, or a lit wagon.
@@ -2929,6 +3789,82 @@
           const viewer = P ? {x:P.x, z:P.z} : null;
           return {id:R.id, inside: !!(viewer && LH_RULES.lhRoomContains(R, viewer.x, viewer.z, 0.02)), doorClosed: !!(R.door && R.door.closed), visible: !!(R.interior && R.interior.visible), hasInterior: !!R.interior, childCount: R.interior ? R.interior.children.length : 0};
         } catch (e){ return {err:String(e)}; }
+      };
+      window.lhOpenDecor = function(){ try { return lhOpenDecor(); } catch (e){ return false; } };
+      window.lhCloseDecor = function(){ try { lhCloseDecor(); } catch (e){} };
+      window.lhPlaceDecor = function(id){
+        try {
+          if (!lh) return false;
+          const cat = LH_RULES.lhDecorCatalog(lh.prog && lh.prog.prizes || {});
+          const i = Math.max(0, cat.findIndex(x => x.id === id));
+          lh.decorSel = i >= 0 ? i : 0;
+          if (id && i < 0){ /* still try */ }
+          return lhPlaceSelectedDecor();
+        } catch (e){ return false; }
+      };
+      window.lhSetStyle = function(wall, floor){
+        try {
+          if (!lh) return null;
+          lh.prog = lh.prog || lhProg();
+          lh.prog.wagonStyle = LH_RULES.lhNormalizeStyle({wall: wall || (lh.prog.wagonStyle && lh.prog.wagonStyle.wall), floor: floor || (lh.prog.wagonStyle && lh.prog.wagonStyle.floor)});
+          lhAward('lh:decor');
+          lhSaveDecor();
+          return lh.prog.wagonStyle;
+        } catch (e){ return {err:String(e)}; }
+      };
+      window.lhDecorState = function(){
+        try {
+          const R = lh && lh.rooms && lh.rooms[lh.myRoom];
+          return {open: !!(lh && lh.decorOpen), style: lh && lh.prog && lh.prog.wagonStyle, items: lh && lh.prog && lh.prog.decor, childCount: R && R.decorG ? R.decorG.children.length : 0, parent: R && R.decorG && R.decorG.parent && R.decorG.parent.name};
+        } catch (e){ return {err:String(e)}; }
+      };
+      window.lhOpenGame = function(id){ try { return lhOpenGame(id || 'rings'); } catch (e){ return false; } };
+
+      window.lhCloseGame = function(){ try { lhCloseArcade(); } catch (e){} };
+      window.lhOpenBooth = function(){ try { return lhOpenBooth(); } catch (e){ return false; } };
+      window.lhCloseBooth = function(){ try { lhCloseBooth(); } catch (e){} };
+      window.lhTickets = function(v){ try { if (!lh) return 0; lh.prog = lh.prog || lhProg(); if (v != null){ lh.prog.tickets = Math.max(0, v|0); lhSaveProg(lh.prog); } return lhTickets(); } catch (e){ return 0; } };
+      window.lhBuyPrize = function(id){ try { return lhBuyAtBooth(id); } catch (e){ return false; } };
+      window.lhGoGames = function(id){
+        try {
+          const g = (lh && lh.games || []).find(x => x.id === (id || 'rings')) || (lh && lh.games && lh.games[0]);
+          if (!g || typeof P === 'undefined' || !P) return false;
+          P.x = g.x + 1.6; P.y = 0.12; P.z = g.z + 1.6; P.vx = 0; P.vy = 0; P.vz = 0;
+          return true;
+        } catch (e){ return false; }
+      };
+      window.lhGoBooth = function(){
+        try {
+          if (!lh || !lh.booth || typeof P === 'undefined' || !P) return false;
+          P.x = lh.booth.x + 1.4; P.y = 0.12; P.z = lh.booth.z + 1.6; P.vx = 0; P.vy = 0; P.vz = 0;
+          return true;
+        } catch (e){ return false; }
+      };
+      window.lhBoardRide = function(kind, seat){
+
+        try {
+          const ride = (kind && lhRideByKind(kind)) || lhNearRide() || (lh && lh.rides && lh.rides[0]);
+          return ride ? lhBoardRide(ride, seat) : false;
+        } catch (e){ return false; }
+      };
+      window.lhDismount = function(){ try { return lhDismountRide(); } catch (e){ return false; } };
+      window.lhRideState = function(){
+        try {
+          if (!lh) return null;
+          return {
+            riding: lh.riding,
+            pos: (typeof P !== 'undefined' && P) ? {x:P.x, y:P.y, z:P.z} : null,
+            rides: (lh.rides || []).map(r => ({kind:r.kind, x:r.x, z:r.z, seats:(r.seats||[]).length, taken:(r.taken||[]).slice()}))
+          };
+        } catch (e){ return {err:String(e)}; }
+      };
+      window.lhGoRides = function(kind){
+        try {
+          const ride = lhRideByKind(kind || 'ferris') || (lh && lh.rides && lh.rides[0]);
+          if (!ride || typeof P === 'undefined' || !P) return false;
+          P.x = ride.x + 4.2; P.y = 0.12; P.z = ride.z; P.vx = 0; P.vy = 0; P.vz = 0;
+          return true;
+        } catch (e){ return false; }
       };
       window.lhSetGlitched = function(on){
         try {
