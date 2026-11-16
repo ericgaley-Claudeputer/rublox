@@ -318,11 +318,29 @@
     return true;
   }
 
+  function frAddInEl(){
+    if (typeof $ === 'function'){
+      const el = $('#frAddIn') || $('frAddIn');
+      if (el) return el;
+    }
+    return (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('frAddIn') : null;
+  }
+  function frReselectAddBox(inp){
+    inp = inp || frAddInEl();
+    if (!inp) return false;
+    try {
+      if (typeof inp.focus === 'function') inp.focus();
+      const len = String(inp.value || '').length;
+      if (typeof inp.setSelectionRange === 'function') inp.setSelectionRange(0, len);
+      else if (typeof inp.select === 'function') inp.select();
+    } catch (e){}
+    return true;
+  }
   function frTryAddFromBox(){
-    const inp = (typeof $ === 'function') ? $('#frAddIn') : null;
+    const inp = frAddInEl();
     const raw = inp ? inp.value : '';
     const c = frNormCode(raw);
-    if (!c){ frMsg('Friend codes are 6 letters. Check the code and try again.'); return false; }
+    if (!c){ frMsg('Friend codes are 6 letters. Check the code and try again.'); frReselectAddBox(inp); return false; }
     const rec = frAdd(c, {name: 'Friend ' + c, from: 'code'});
     if (rec.ok){
       if (inp) inp.value = '';
@@ -333,6 +351,9 @@
     else if (rec.reason === 'already') frMsg('You already added ' + ((rec.friend && rec.friend.name) || 'this friend') + '.');
     else if (rec.reason === 'full') frMsg('Your list is full (20 friends). Remove one to add another.');
     else frMsg('Friend codes are 6 letters. Check the code and try again.');
+    // Keep the rejected text and the error; select it so the next typing replaces it
+    // instead of appending (ABCDE + FUNDAY used to become ABCDEF).
+    frReselectAddBox(inp);
     return false;
   }
 
@@ -530,6 +551,8 @@
     window.frRender = frRender;
     window.frOpen = frOpen;
     window.frCopyCode = frCopyCode;
+    window.frTryAddFromBox = frTryAddFromBox;
+    window.frReselectAddBox = frReselectAddBox;
     window.frJoinFriend = frJoinFriend;
     window.frAskRemove = frAskRemove;
     window.frInit = frInit;

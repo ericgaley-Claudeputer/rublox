@@ -26,7 +26,11 @@ function fresh(opts) {
       appendChild(c){ this.children.push(c); this.innerHTML += (c.outerHTML || ''); return c; },
       addEventListener(){}, removeEventListener(){},
       setAttribute(k,v){ this[k]=v; }, getAttribute(k){ return this[k]; },
-      focus(){}, select(){}, click(){},
+      selectionStart: 0, selectionEnd: 0, focused: false,
+      focus(){ this.focused = true; },
+      select(){ this.focused = true; this.selectionStart = 0; this.selectionEnd = String(this.value || '').length; },
+      setSelectionRange(a, b){ this.selectionStart = a | 0; this.selectionEnd = b | 0; },
+      click(){},
       querySelector(){ return null; },
       querySelectorAll(){ return []; }
     };
@@ -263,6 +267,46 @@ function fresh(opts) {
     SRC.includes("ev.stopPropagation(); frTryAddFromBox()")
       && SRC.includes("ev.stopPropagation(); frCopyCode()")
       && !SRC.includes("closest('[data-frjoin],[data-frrm],[data-frpend],#frCopy,#frAddBtn')"));
+})();
+
+
+(function(){
+  const W = fresh({hash: '#frtest=empty'});
+  W.frInit();
+  const inp = W.document.getElementById('frAddIn');
+  const msg = W.document.getElementById('frMsg');
+  inp.value = 'ABCDE';
+  const bad = W.frTryAddFromBox();
+  chk('a rejected short code keeps the typed text and the error, and selects it so the next typing replaces it',
+    bad === false
+      && inp.value === 'ABCDE'
+      && /6 letters/.test(msg.textContent)
+      && inp.focused === true
+      && inp.selectionStart === 0
+      && inp.selectionEnd === 5,
+    {value: inp.value, msg: msg.textContent, start: inp.selectionStart, end: inp.selectionEnd, focused: inp.focused});
+  // Simulate the next typing replacing the selection, the way a real input does.
+  inp.value = 'RUBYFX';
+  inp.selectionStart = inp.selectionEnd = 6;
+  const mine = W.frMyCode();
+  inp.value = mine;
+  const self = W.frTryAddFromBox();
+  chk('rejecting your own code also keeps the text, leaves the error, and re-selects the box',
+    self === false
+      && inp.value === mine
+      && /own code/.test(msg.textContent)
+      && inp.selectionStart === 0
+      && inp.selectionEnd === mine.length,
+    {value: inp.value, msg: msg.textContent, start: inp.selectionStart, end: inp.selectionEnd});
+  inp.value = 'ILOILO';
+  const inv = W.frTryAddFromBox();
+  chk('an invalid 6-letter code is rejected the same way (selected, error still visible)',
+    inv === false
+      && inp.value === 'ILOILO'
+      && /6 letters/.test(msg.textContent)
+      && inp.selectionStart === 0
+      && inp.selectionEnd === 6,
+    {value: inp.value, msg: msg.textContent});
 })();
 
 console.log('RESULT', pass, '/', pass + fail);
