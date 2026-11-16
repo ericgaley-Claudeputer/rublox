@@ -7,10 +7,10 @@ const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const RULES = require(path.join(ROOT, 'dev/lantern/lantern_rules.js'));
 const BUILD = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).build || JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
-test('BUILD stamp is 2026.11.16-5 in lantern files and version.json', () => {
+test('BUILD stamp is 2026.11.16-6 in lantern files and version.json', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
-  assert.equal(v.build, '2026.11.16-5');
-  assert.match(HTML, /const BUILD = '2026\.11\.16-5'/);
+  assert.equal(v.build, '2026.11.16-6');
+  assert.match(HTML, /const BUILD = '2026\.11\.16-6'/);
 });
 
 test('Lantern Big Top is a playable GAMES card with original branding', () => {
@@ -84,6 +84,18 @@ test('sanity drains: proximity is fastest, isolation and darkness have delays, c
   assert.ok(Math.abs(dNear) > Math.abs(dDark), 'proximity faster than darkness');
   const heal = RULES.lhSanityDelta({...rest}, 1);
   assert.ok(heal > 0, 'restore in light with company');
+  // 4x slower than the original 4 / 5 / 16 drain and 8 restore
+  assert.equal(dIso, -1);
+  assert.equal(dDark, -1.25);
+  assert.equal(dNear, -4);
+  assert.equal(heal, 2);
+  assert.equal(RULES.RATES.isolate, 1);
+  assert.equal(RULES.RATES.dark, 1.25);
+  assert.equal(RULES.RATES.near, 4);
+  assert.equal(RULES.RATES.restore, 2);
+  assert.equal(RULES.RATES.stareBonus, 1);
+  const stareN = {...near, staring:true, _nearT: 1};
+  assert.equal(RULES.lhSanityDelta(stareN, 1), -5);
   assert.equal(RULES.lhSanityDelta({glitched:true, isolated:true, dark:true, nearGlitched:true}, 1), 0);
   assert.equal(RULES.lhSanityDelta({cutscene:true, isolated:true}, 1), 0);
 });
@@ -176,6 +188,28 @@ test('summon requires a nearby glitched target', () => {
   assert.equal(RULES.lhSummonOk(true, 4, 8), true);
   assert.equal(RULES.lhSummonOk(true, 12, 8), false);
   assert.equal(RULES.lhSummonOk(false, 1, 8), false);
+});
+
+test('a fizzled player cannot summon the host, in solo or multiplayer', () => {
+  assert.equal(RULES.lhSummonBlocked({glitched:true}), true);
+  assert.equal(RULES.lhSummonBlocked({glitched:false}), false);
+  assert.equal(RULES.lhSummonBlocked({}), false);
+  assert.equal(RULES.lhSummonOk(true, 4, 8, true), false);
+  assert.equal(RULES.lhSummonOk(true, 4, 8, false), true);
+  const msg = RULES.lhSummonDeniedMsg();
+  assert.match(msg, /can.t hear you/i);
+  assert.match(msg, /fizzled/i);
+  assert.doesNotMatch(msg, /\bkill\b/i);
+  assert.doesNotMatch(msg, /abstract/i);
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  assert.match(js, /lhSummonBlocked/);
+  assert.match(js, /lhUidIsGlitched/);
+  assert.match(js, /I can\\'t hear you while you\\'re fizzled/);
+  // every summon path (chat, button, E / prompt, controller, debug hook) goes through lhCallHost
+  assert.match(js, /fan\.onclick = \(\) => \{ lhCallHost\(true\); \}/);
+  assert.match(js, /p\.id === 'fanfare'\) lhCallHost\(true\)/);
+  assert.match(js, /window\.lhCallHost = function\(\)\{ try \{ lhCallHost\(true\); \}/);
+  assert.match(js, /lhCallHost\(false, uid\)/);
 });
 
 test('HUD hit list includes lantern panels so pointer lock is released', () => {

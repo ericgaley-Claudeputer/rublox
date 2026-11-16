@@ -2078,7 +2078,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-5';
+const BUILD = '2026.11.16-6';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -5986,6 +5986,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
 
 
 
+
 /* ---------- lantern rules ---------- */
 /* Pure Lantern Big Top rules — safe to require() in tests and to load in the page. */
 (function (root) {
@@ -6007,11 +6008,11 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     isolateDelay: 2,
     darkDelay: 3,
     nearDelay: 0.5,
-    isolate: 4,
-    dark: 5,
-    near: 16,
-    restore: 8,
-    stareBonus: 4
+    isolate: 1,
+    dark: 1.25,
+    near: 4,
+    restore: 2,
+    stareBonus: 1
   };
 
   function lhTestHash(hash){
@@ -6222,9 +6223,20 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     return Math.sqrt(dx * dx + dz * dz);
   }
 
-  function lhSummonOk(targetGlitched, dist, radius){
+  function lhSummonOk(targetGlitched, dist, radius, callerGlitched){
+    if (callerGlitched) return false;
     if (!targetGlitched) return false;
     return (+dist || 99) <= (radius == null ? LH_SUMMON_R : radius);
+  }
+
+  // A fizzled (glitched) player cannot summon the ringmaster, in solo or MP.
+  function lhSummonBlocked(st){
+    st = st || {};
+    return !!st.glitched;
+  }
+
+  function lhSummonDeniedMsg(){
+    return '🎩 ' + LH_HOST_TITLE + ': “I can\'t hear you while you\'re fizzled.”';
   }
 
   function lhCensored(text){
@@ -6262,7 +6274,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     RATES, LH_BADGES,
     lhTestHash, lhTestActive, lhClampSanity, lhEyeFill, lhSanityDelta,
     lhCancelSucceeds, lhHostNameIn, lhDefaultSettings, lhNormalizeSettings,
-    lhLoadState, lhStampOk, lhAddDoodle, lhNear, lhDist, lhSummonOk, lhCensored,
+    lhLoadState, lhStampOk, lhAddDoodle, lhNear, lhDist, lhSummonOk, lhSummonBlocked, lhSummonDeniedMsg, lhCensored,
     lhMidwayWallSegments, lhMidwayBlocksSide, lhNearLamp,
     lhWagonZs, lhWagonCount, lhDoorTarget, lhDoorShouldAutoOpen, lhGroundGapOk, lhMapLayout
   };
@@ -16299,8 +16311,29 @@ const Obby = (() => {
     if (!lh) return;
     if (LH_RULES.lhCensored && LH_RULES.lhCensored(text)){ lhAward('lh:words'); return; }
     if (!(LH_RULES.lhHostNameIn ? LH_RULES.lhHostNameIn(text) : /gleam/i.test(String(text||'')))) return;
-    const fromMe = !uid || uid === 'me' || (typeof mp !== 'undefined' && mp && (uid === mp.me || (mp.host && uid === 'H')));
-    if (fromMe || true) lhCallHost(false, uid);
+    lhCallHost(false, uid);
+  }
+
+  function lhUidIsMe(uid){
+    if (uid == null || uid === 'me') return true;
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.on){
+        if (uid === mp.me) return true;
+        if (mp.host && uid === 'H') return true;
+      }
+    } catch (e){}
+    return false;
+  }
+
+  function lhUidIsGlitched(uid){
+    if (lhUidIsMe(uid)) return !!(lh && lh.glitched);
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.ents && uid){
+        const E = mp.ents.get ? mp.ents.get(uid) : null;
+        if (E && E.lh) return !!E.lh.glitched;
+      }
+    } catch (e){}
+    return false;
   }
 
   function lhOthers(){
@@ -16556,8 +16589,20 @@ const Obby = (() => {
 
   function lhCallHost(fromBtn, uid){
     if (!lh) return;
+    const caller = fromBtn ? 'me' : uid;
+    const callerGlitched = lhUidIsGlitched(caller);
+    const blocked = LH_RULES.lhSummonBlocked ? LH_RULES.lhSummonBlocked({glitched: callerGlitched}) : !!callerGlitched;
+    if (blocked){
+      // Only the local fizzled player sees the "can't hear you" note.
+      if (fromBtn || lhUidIsMe(caller)){
+        const msg = (LH_RULES.lhSummonDeniedMsg && LH_RULES.lhSummonDeniedMsg()) || ('🎩 ' + LH_HOST_TITLE + ': “I can\'t hear you while you\'re fizzled.”');
+        if (typeof toast === 'function') toast(msg);
+      }
+      return;
+    }
     const near = lhCompanyNear();
     let target = null;
+    // A healthy friend can still summon help for a fizzled local player.
     if (lh.glitched) target = {kind:'me', glitched:true, x:P.x, z:P.z};
     else if (near.closestG && near.bestG <= (LH_RULES.LH_SUMMON_R || 8)) target = near.closestG;
     if (!target){
@@ -17219,6 +17264,16 @@ const Obby = (() => {
       };
       window.lhPerf = function(v){ try { return lhPerf(v); } catch (e){ return null; } };
       window.lhRefill = function(v){ try { if (lh){ lh.sanity = (v == null ? 100 : v); if (lh.sanity > 0) lh.glitched = false; } return lh && lh.sanity; } catch (e){ return null; } };
+      window.lhSetGlitched = function(on){
+        try {
+          if (!lh) return false;
+          lh.glitched = !!on;
+          if (on) lh.sanity = 0;
+          else if (lh.sanity <= 0) lh.sanity = 100;
+          try { if (typeof model !== 'undefined' && model) lhApplyLook(model, !!on); } catch (e){}
+          return !!lh.glitched;
+        } catch (e){ return false; }
+      };
     }
   } catch (e){}
 

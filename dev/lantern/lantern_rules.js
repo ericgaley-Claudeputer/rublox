@@ -18,11 +18,11 @@
     isolateDelay: 2,
     darkDelay: 3,
     nearDelay: 0.5,
-    isolate: 4,
-    dark: 5,
-    near: 16,
-    restore: 8,
-    stareBonus: 4
+    isolate: 1,
+    dark: 1.25,
+    near: 4,
+    restore: 2,
+    stareBonus: 1
   };
 
   function lhTestHash(hash){
@@ -233,9 +233,20 @@
     return Math.sqrt(dx * dx + dz * dz);
   }
 
-  function lhSummonOk(targetGlitched, dist, radius){
+  function lhSummonOk(targetGlitched, dist, radius, callerGlitched){
+    if (callerGlitched) return false;
     if (!targetGlitched) return false;
     return (+dist || 99) <= (radius == null ? LH_SUMMON_R : radius);
+  }
+
+  // A fizzled (glitched) player cannot summon the ringmaster, in solo or MP.
+  function lhSummonBlocked(st){
+    st = st || {};
+    return !!st.glitched;
+  }
+
+  function lhSummonDeniedMsg(){
+    return '🎩 ' + LH_HOST_TITLE + ': “I can\'t hear you while you\'re fizzled.”';
   }
 
   function lhCensored(text){
@@ -273,7 +284,7 @@
     RATES, LH_BADGES,
     lhTestHash, lhTestActive, lhClampSanity, lhEyeFill, lhSanityDelta,
     lhCancelSucceeds, lhHostNameIn, lhDefaultSettings, lhNormalizeSettings,
-    lhLoadState, lhStampOk, lhAddDoodle, lhNear, lhDist, lhSummonOk, lhCensored,
+    lhLoadState, lhStampOk, lhAddDoodle, lhNear, lhDist, lhSummonOk, lhSummonBlocked, lhSummonDeniedMsg, lhCensored,
     lhMidwayWallSegments, lhMidwayBlocksSide, lhNearLamp,
     lhWagonZs, lhWagonCount, lhDoorTarget, lhDoorShouldAutoOpen, lhGroundGapOk, lhMapLayout
   };

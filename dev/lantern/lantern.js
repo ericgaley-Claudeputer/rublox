@@ -1273,8 +1273,29 @@
     if (!lh) return;
     if (LH_RULES.lhCensored && LH_RULES.lhCensored(text)){ lhAward('lh:words'); return; }
     if (!(LH_RULES.lhHostNameIn ? LH_RULES.lhHostNameIn(text) : /gleam/i.test(String(text||'')))) return;
-    const fromMe = !uid || uid === 'me' || (typeof mp !== 'undefined' && mp && (uid === mp.me || (mp.host && uid === 'H')));
-    if (fromMe || true) lhCallHost(false, uid);
+    lhCallHost(false, uid);
+  }
+
+  function lhUidIsMe(uid){
+    if (uid == null || uid === 'me') return true;
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.on){
+        if (uid === mp.me) return true;
+        if (mp.host && uid === 'H') return true;
+      }
+    } catch (e){}
+    return false;
+  }
+
+  function lhUidIsGlitched(uid){
+    if (lhUidIsMe(uid)) return !!(lh && lh.glitched);
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.ents && uid){
+        const E = mp.ents.get ? mp.ents.get(uid) : null;
+        if (E && E.lh) return !!E.lh.glitched;
+      }
+    } catch (e){}
+    return false;
   }
 
   function lhOthers(){
@@ -1530,8 +1551,20 @@
 
   function lhCallHost(fromBtn, uid){
     if (!lh) return;
+    const caller = fromBtn ? 'me' : uid;
+    const callerGlitched = lhUidIsGlitched(caller);
+    const blocked = LH_RULES.lhSummonBlocked ? LH_RULES.lhSummonBlocked({glitched: callerGlitched}) : !!callerGlitched;
+    if (blocked){
+      // Only the local fizzled player sees the "can't hear you" note.
+      if (fromBtn || lhUidIsMe(caller)){
+        const msg = (LH_RULES.lhSummonDeniedMsg && LH_RULES.lhSummonDeniedMsg()) || ('🎩 ' + LH_HOST_TITLE + ': “I can\'t hear you while you\'re fizzled.”');
+        if (typeof toast === 'function') toast(msg);
+      }
+      return;
+    }
     const near = lhCompanyNear();
     let target = null;
+    // A healthy friend can still summon help for a fizzled local player.
     if (lh.glitched) target = {kind:'me', glitched:true, x:P.x, z:P.z};
     else if (near.closestG && near.bestG <= (LH_RULES.LH_SUMMON_R || 8)) target = near.closestG;
     if (!target){
@@ -2193,6 +2226,16 @@
       };
       window.lhPerf = function(v){ try { return lhPerf(v); } catch (e){ return null; } };
       window.lhRefill = function(v){ try { if (lh){ lh.sanity = (v == null ? 100 : v); if (lh.sanity > 0) lh.glitched = false; } return lh && lh.sanity; } catch (e){ return null; } };
+      window.lhSetGlitched = function(on){
+        try {
+          if (!lh) return false;
+          lh.glitched = !!on;
+          if (on) lh.sanity = 0;
+          else if (lh.sanity <= 0) lh.sanity = 100;
+          try { if (typeof model !== 'undefined' && model) lhApplyLook(model, !!on); } catch (e){}
+          return !!lh.glitched;
+        } catch (e){ return false; }
+      };
     }
   } catch (e){}
 
