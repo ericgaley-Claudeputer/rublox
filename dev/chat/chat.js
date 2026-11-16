@@ -100,8 +100,11 @@
     return null;
   }
   function chMp(){
-    try { if (typeof mp !== 'undefined' && mp) return mp; } catch (e){}
-    try { const O = chGame(); if (O && O.mp) return O.mp; } catch (e){}
+    /* Do not read window.mp — that is the #mp Play-together DIV, not the room object. */
+    try {
+      const O = chGame();
+      if (O && O.mp && typeof O.mp === 'object' && typeof O.mp.on === 'boolean') return O.mp;
+    } catch (e){}
     return null;
   }
   function chMpSend(msg){
