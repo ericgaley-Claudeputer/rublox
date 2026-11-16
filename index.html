@@ -1411,6 +1411,31 @@ body.lh-muffled #obby{filter:saturate(.85)}
 @media (max-width:700px){ .trcols{flex-direction:column} .qbox,.trbox{padding:12px} #pyAct{bottom:120px} }
 </style>
 
+
+<style id="t297Css">
+#t297Box{position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center;display:none}
+#t297Box #t297Hint{display:inline-block;background:rgba(29,35,64,.82);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:14px}
+#t297Act{position:absolute;right:16px;bottom:96px;z-index:8;padding:12px 16px;font-size:18px;border:3px solid #1d2340;border-radius:16px;background:#ffd23f;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+#t297Act.show{display:block}
+.cafemode #cafeBoardBtn,.cafemode #cafeDecorBtn,.fishmode #fishIndexBtn,.huntmode #huntMapBtn,.psmode #psVoteOpen{display:block}
+#cafeBoardBtn,#cafeDecorBtn,#fishIndexBtn,#huntMapBtn,#psVoteOpen{position:absolute;z-index:8;right:16px;bottom:160px;padding:10px 14px;font-size:16px;border:3px solid #1d2340;border-radius:16px;background:#fff3e0;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+.cafemode #cafeDecorBtn{bottom:216px}
+.t297overlay{position:fixed;inset:0;background:rgba(29,35,64,.45);z-index:240;display:none;align-items:center;justify-content:center;padding:16px}
+.t297overlay.show{display:flex}
+.t297box{position:relative;max-width:520px;width:100%;max-height:90vh;overflow:auto;background:#fff8ee;border:4px solid #1d2340;border-radius:20px;padding:16px;box-shadow:6px 6px 0 #1d2340}
+.t297box h3{margin:0 0 8px}
+.t297row{display:flex;gap:8px;align-items:center;justify-content:space-between;background:#fff;border:2px solid #1d2340;border-radius:12px;padding:8px 10px;margin:6px 0;font-weight:700}
+.t297row.dim{opacity:.55}
+.t297x{position:absolute;right:10px;top:8px;border:0;background:transparent;font-size:22px;font-weight:800;cursor:pointer}
+#fishBar{display:none;position:absolute;left:50%;bottom:140px;transform:translateX(-50%);z-index:9;width:min(420px,80%);height:22px;background:#fff;border:3px solid #1d2340;border-radius:999px;overflow:hidden}
+#fishBar.show{display:block}
+#fishSweet{position:absolute;top:0;bottom:0;background:#2ec27e}
+#fishCursor{position:absolute;top:-2px;bottom:-2px;width:6px;margin-left:-3px;background:#1d2340;border-radius:2px}
+#cafeDecorList button{display:block;width:100%;margin:6px 0;padding:8px 10px;border:2px solid #1d2340;border-radius:12px;background:#fff;font-weight:800;text-align:left}
+#psVoteBox .psvotes{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0}
+#psVoteBox .psvotes button{width:44px;height:44px;border:3px solid #1d2340;border-radius:12px;background:#ffd23f;font-weight:800}
+@media (max-width:700px){ #t297Act{bottom:120px} #cafeBoardBtn,#fishIndexBtn,#huntMapBtn,#psVoteOpen{bottom:184px} .cafemode #cafeDecorBtn{bottom:240px} }
+</style>
 <style id="evLbCss">
 html.snowfest-on body, body.snowfest-on{ background-image: none; }
 #evSnowLayer{display:none;pointer-events:none;position:fixed;inset:0;z-index:40;overflow:hidden}
@@ -1640,6 +1665,47 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
   <footer>Made with 💙 for friends &amp; family · Rublox</footer>
 </main>
 
+  <div id="cafeBoard" class="t297overlay" role="dialog" aria-label="Cafe tickets">
+    <div class="t297box">
+      <button type="button" class="t297x" id="cafeBoardX" aria-label="Close">×</button>
+      <h3>📋 Ticket board</h3>
+      <p>Make each order at the matching station, then serve it at the counter.</p>
+      <div id="cafeBoardList"></div>
+    </div>
+  </div>
+  <div id="cafeDecor" class="t297overlay" role="dialog" aria-label="Cafe decor">
+    <div class="t297box">
+      <button type="button" class="t297x" id="cafeDecorX" aria-label="Close">×</button>
+      <h3>🪴 Café decor</h3>
+      <p>Spend coins you earned serving friends. These stay on this device.</p>
+      <div id="cafeDecorList"></div>
+    </div>
+  </div>
+  <div id="fishIndex" class="t297overlay" role="dialog" aria-label="Fish index">
+    <div class="t297box">
+      <button type="button" class="t297x" id="fishIndexX" aria-label="Close">×</button>
+      <h3 id="fishIndexHead">📖 Fish Index</h3>
+      <div id="fishIndexList"></div>
+    </div>
+  </div>
+  <div id="huntMap" class="t297overlay" role="dialog" aria-label="Treasure map">
+    <div class="t297box">
+      <button type="button" class="t297x" id="huntMapX" aria-label="Close">×</button>
+      <h3>🗺️ Today's Treasure Trail</h3>
+      <p>A new map each local day. Dig at the landmark in the clue.</p>
+      <div id="huntMapList"></div>
+    </div>
+  </div>
+  <div id="psVoteBox" class="t297overlay" role="dialog" aria-label="Vote on the show">
+    <div class="t297box">
+      <button type="button" class="t297x" id="psVoteX" aria-label="Close">×</button>
+      <h3>⭐ Score the show</h3>
+      <p>Friends in this room can give a score from 1 to 10. No typing — just tap a number.</p>
+      <div class="psvotes"><button type="button" data-psvote="1">1</button><button type="button" data-psvote="2">2</button><button type="button" data-psvote="3">3</button><button type="button" data-psvote="4">4</button><button type="button" data-psvote="5">5</button><button type="button" data-psvote="6">6</button><button type="button" data-psvote="7">7</button><button type="button" data-psvote="8">8</button><button type="button" data-psvote="9">9</button><button type="button" data-psvote="10">10</button></div>
+    </div>
+  </div>
+
+
   <div class="evoverlay" id="evShop"><div class="mbox evbox">
     <button type="button" class="qclose" id="evShopClose" aria-label="Close event shop">✕</button>
     <h2>🎁 Snow Festival Shop</h2>
@@ -1772,9 +1838,9 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
         <span><i>R ●</i>Right stick: look around</span>
         <span><i class="ba">A</i>Jump · pick in menus</span>
         <span><i class="bb">B</i>Back · close menu (Pets: 🐾 my pets)</span>
-        <span><i class="bx">X</i>Emote wheel (Build: build/delete · Pets: pet / use)</span>
+        <span><i>View</i>Emote wheel (then D-pad to pick, A to play, B to close)</span>
         <span><i class="by">Y</i>Camera behind me (Build: undo · Pets: 🦮 walk)</span>
-        <span><i>LB RB</i>Quick emotes (Build: pick block · Pets: LB 🍖 feed, RB 🎾 throw)</span>
+        <span><i>LB RB</i>Build: pick block · Pets: LB 🍖 feed, RB 🎾 throw</span>
         <span><i>LT RT</i>Zoom out / in (Build: delete / place)</span>
         <span><i>☰</i>Menu: pause (Home: settings)</span>
         <span><i style="font-size:8px;letter-spacing:-.2px">VIEW</i>View: quick chat in a room · help · skip level (Home: shop)</span>
@@ -1874,6 +1940,14 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
     </div>
   </div>
   <div class="otip" id="oTip"></div>
+
+  <div id="t297Box" style="display:none"><span id="t297Hint"></span></div>
+  <button type="button" id="t297Act">✨ Do it</button>
+  <button type="button" id="cafeBoardBtn">📋 Tickets</button>
+  <button type="button" id="cafeDecorBtn">🪴 Decor</button>
+  <button type="button" id="fishIndexBtn">📖 Index</button>
+  <button type="button" id="huntMapBtn">🗺️ Map</button>
+  <div id="fishBar" aria-hidden="true"><i id="fishSweet"></i><i id="fishCursor"></i></div>
   <div class="obanner" id="oBanner"></div>
   <div class="ocross" id="oCross"></div><div class="odot" id="oDot"></div>
   <div class="obig" id="oBig"></div>
@@ -1893,7 +1967,7 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
     <button class="orun" id="oRun" aria-label="Run" aria-pressed="false">🏃</button>
   </div>
   <div class="ostam full" id="oStam" style="display:none" title="Run energy"><i>🏃</i><b><u id="oStamF"></u></b></div>
-  <button class="oemo" id="oEmoBtn" title="Emotes (keys 1-8)" aria-label="Emotes">😀</button>
+  <button class="oemo" id="oEmoBtn" title="Emotes (keys 1-7, 8 if unlocked, or View on a controller)" aria-label="Emotes">😀</button>
   <button class="oemo" id="oQuestBtn" title="Daily Quests" aria-label="Daily Quests">📜</button>
   <button class="oemo" id="oTradeBtn" title="Trade with a friend" aria-label="Trade" style="display:none">🤝</button>
   <div class="oemos" id="oEmos"></div>
@@ -2405,7 +2479,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-20';
+const BUILD = '2026.11.16-21';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2924,14 +2998,17 @@ const ANIM_LIST = [
   ['waddle','🍩','Belly Waddle',300,'Short steps, wobbly side-to-side, arms out, belly first!'],
   ['flail','🍔','Dina\'s Flail Run',300,'Stiff legs, flailing arms, a little lean. Very awkward. Very fast-ish.'],
 ];
-const EMOTES = {
-  wave:  {key:1, emoji:'👋', name:'Wave',  price:75,  dur:2.6},
-  dance: {key:2, emoji:'💃', name:'Dance', price:150, dur:Infinity},
-  cheer: {key:3, emoji:'🙌', name:'Cheer', price:100, dur:2.6},
-  sit:   {key:4, emoji:'🪑', name:'Sit',   price:75,  dur:Infinity},
-  flip:  {key:5, emoji:'🍳', name:'Burger Flip',   price:150, dur:2.2},
-  groan: {key:6, emoji:'😩', name:'Awkward Groan', price:100, dur:2.8},
-  facepalm: {key:7, emoji:'🤦', name:'Big Facepalm', price:100, dur:2.4},
+const EMOTES = (typeof EmoRules !== 'undefined' && EmoRules.emoMerge) ? EmoRules.emoMerge() : {
+  wave:  {key:1, emoji:'👋', name:'Wave',  price:0, dur:2.6},
+  dance: {key:2, emoji:'💃', name:'Dance', price:0, dur:Infinity},
+  sit:   {key:3, emoji:'🪑', name:'Sit',   price:0, dur:Infinity},
+  cheer: {key:4, emoji:'🙌', name:'Cheer', price:0, dur:2.6},
+  clap:  {key:5, emoji:'👏', name:'Clap',  price:0, dur:2.4},
+  laugh: {key:6, emoji:'😄', name:'Laugh', price:0, dur:2.6},
+  sleep: {key:7, emoji:'😴', name:'Sleep', price:0, dur:Infinity},
+  flip:  {key:0, emoji:'🍳', name:'Burger Flip',   price:150, dur:2.2},
+  groan: {key:0, emoji:'😩', name:'Awkward Groan', price:100, dur:2.8},
+  facepalm: {key:0, emoji:'🤦', name:'Big Facepalm', price:100, dur:2.4},
   skate: {key:8, emoji:'🛹', name:'Skate Trick',  price:150, dur:2.4},
 };
 const TAU = Math.PI * 2;
@@ -3026,6 +3103,9 @@ function emotePose(id, t){
     else { const w = Math.sin((t - 1.2)*6); p.lRo = .7; p.lR = -.2; p.aLo = 1.35 + w*.15; p.aRo = 1.35 - w*.15; p.tilt = w*.08; p.lean = .1; }
   }
   else if (id === 'sit'){ p.y = -.72; p.lL = p.lR = -1.57; p.aL = p.aR = -.6; p.lean = -.05; }
+  else if (id === 'clap'){ p.aL = p.aR = -1.1 + Math.sin(t*16)*.55; p.aLo = p.aRo = 1.1; p.hz = Math.sin(t*8)*.08; }
+  else if (id === 'laugh'){ p.aLo = p.aRo = .4 + Math.sin(t*10)*.2; p.y = Math.abs(Math.sin(t*10))*.12; p.tilt = Math.sin(t*8)*.18; p.hz = -.15 + Math.sin(t*10)*.1; p.lean = .08; }
+  else if (id === 'sleep'){ p.y = -.72; p.lL = p.lR = -1.57; p.aL = p.aR = .3; p.hz = .45; p.lean = .12; }
   return p;
 }
 // looping "show off" cycle for shop previews: idle -> walk -> jump
@@ -3137,10 +3217,10 @@ $('#saveAv').onclick = () => {
     day: 'day',
     off: 'off'
   };
-  const WX_SKIP = ['splash', 'waterpark', 'race', 'photostudio', 'dance', 'bakery', 'icecream', 'tower', 'fashion'];
-  const WX_SNOW = ['obby', 'build', 'hide', 'stable', 'tag', 'party', 'snowfest', 'pets', 'autumn', 'pethotel'];
-  const WX_FOG = ['haunt', 'lantern', 'hide', 'petisland', 'obby', 'build'];
-  const WX_RAIN = ['obby', 'build', 'lantern', 'hide', 'autumn', 'stable', 'petisland', 'pets', 'tag', 'dreamhouse', 'pethotel', 'haunt'];
+  const WX_SKIP = ['splash', 'waterpark', 'race', 'photostudio', 'dance', 'bakery', 'icecream', 'tower', 'fashion', 'cafe', 'petshow'];
+  const WX_SNOW = ['obby', 'build', 'hide', 'stable', 'tag', 'party', 'snowfest', 'pets', 'autumn', 'pethotel', 'fish', 'hunt'];
+  const WX_FOG = ['haunt', 'lantern', 'hide', 'petisland', 'obby', 'build', 'hunt'];
+  const WX_RAIN = ['obby', 'build', 'lantern', 'hide', 'autumn', 'stable', 'petisland', 'pets', 'tag', 'dreamhouse', 'pethotel', 'haunt', 'fish', 'hunt'];
 
   function wxDefault(){ return {ver: WX_VER, mode: 'auto'}; }
 
@@ -3755,7 +3835,14 @@ try {
     {id: 'lh-tickets', name: 'Lantern Big Top — tickets', emoji: '🎟️', kind: 'high', unit: ''},
     {id: 'snow-toss', name: 'Snowball toss — best score', emoji: '❄️', kind: 'high', unit: ''},
     {id: 'snow-sled', name: 'Sled hill — best time', emoji: '🛷', kind: 'low', unit: 's'},
-    {id: 'snow-skate', name: 'Ice rink — best score', emoji: '⛸️', kind: 'high', unit: ''}
+    {id: 'snow-skate', name: 'Ice rink — best score', emoji: '⛸️', kind: 'high', unit: ''},
+    {id: 'hide-wins', name: 'Hide and Seek — wins', emoji: '🙈', kind: 'high', unit: ''},
+    {id: 'hide-finds', name: 'Hide and Seek — finds', emoji: '🔍', kind: 'high', unit: ''},
+    {id: 'cafe-served', name: 'Cozy Corner Café — served', emoji: '☕', kind: 'high', unit: ''},
+    {id: 'fish-kinds', name: 'Ripple Lake — kinds caught', emoji: '🎣', kind: 'high', unit: ''},
+    {id: 'fish-biggest', name: 'Ripple Lake — biggest fish', emoji: '🐟', kind: 'high', unit: 'cm'},
+    {id: 'ps-best', name: 'Pet Talent Show — best score', emoji: '🎭', kind: 'high', unit: ''},
+    {id: 'hunt-maps', name: 'Treasure Trail — maps finished', emoji: '🗺️', kind: 'high', unit: ''}
   ];
 
   function lbFresh(){ return {ver: LB_VER, best: {}, name: ''}; }
@@ -3816,6 +3903,19 @@ try {
     set('snow-toss', sb.toss != null ? sb.toss : board.best['snow-toss']);
     set('snow-sled', sb.sled != null ? sb.sled : board.best['snow-sled']);
     set('snow-skate', sb.skate != null ? sb.skate : board.best['snow-skate']);
+    const hide = saves.hide || {};
+    set('hide-wins', hide.wins | 0 ? (hide.wins | 0) : null);
+    set('hide-finds', hide.finds | 0 ? (hide.finds | 0) : null);
+    const cafeS = saves.cafe || {};
+    set('cafe-served', cafeS.served | 0 ? (cafeS.served | 0) : (cafeS.best | 0 ? (cafeS.best | 0) : null));
+    const fishS = saves.fish || {};
+    const kinds = fishS.caught && typeof fishS.caught === 'object' ? Object.keys(fishS.caught).length : 0;
+    set('fish-kinds', kinds || null);
+    set('fish-biggest', fishS.biggest ? +fishS.biggest : null);
+    const psS = saves.petshow || {};
+    set('ps-best', psS.best ? +psS.best : null);
+    const huntS = saves.hunt || {};
+    set('hunt-maps', huntS.maps | 0 ? (huntS.maps | 0) : null);
     // extras / board can fill gaps
     for (const id in board.best) if (out[id] == null) set(id, board.best[id]);
     for (const id in extra) if (out[id] == null) set(id, extra[id]);
@@ -3906,7 +4006,534 @@ function evBootChrome(){
 }
 try { evBootChrome(); } catch (e){}
 
+/* Core emote rules: free set works anywhere; shop extras stay optional. */
+(function (root) {
+  'use strict';
+
+  const EMO_FREE = ['wave', 'dance', 'sit', 'cheer', 'clap', 'laugh', 'sleep'];
+  const EMO_CORE = {
+    wave:  {key:1, emoji:'👋', name:'Wave',  price:0, dur:2.6},
+    dance: {key:2, emoji:'💃', name:'Dance', price:0, dur:Infinity},
+    sit:   {key:3, emoji:'🪑', name:'Sit',   price:0, dur:Infinity},
+    cheer: {key:4, emoji:'🙌', name:'Cheer', price:0, dur:2.6},
+    clap:  {key:5, emoji:'👏', name:'Clap',  price:0, dur:2.4},
+    laugh: {key:6, emoji:'😄', name:'Laugh', price:0, dur:2.6},
+    sleep: {key:7, emoji:'😴', name:'Sleep', price:0, dur:Infinity}
+  };
+  const EMO_SHOP = {
+    flip:  {key:0, emoji:'🍳', name:'Burger Flip',   price:150, dur:2.2},
+    groan: {key:0, emoji:'😩', name:'Awkward Groan', price:100, dur:2.8},
+    facepalm: {key:0, emoji:'🤦', name:'Big Facepalm', price:100, dur:2.4},
+    skate: {key:8, emoji:'🛹', name:'Skate Trick',  price:150, dur:2.4}
+  };
+
+  function emoMerge(base){
+    const out = Object.assign({}, base || {}, EMO_SHOP, EMO_CORE);
+    return out;
+  }
+
+  function emoAllowed(id, owned){
+    const e = EMO_CORE[id] || EMO_SHOP[id];
+    if (!e) return false;
+    if (e.price === 0 || EMO_FREE.indexOf(id) >= 0) return true;
+    if (!owned) return false;
+    if (owned.has) return owned.has('emote-' + id) || owned.has(id);
+    if (Array.isArray(owned)) return owned.indexOf('emote-' + id) >= 0 || owned.indexOf(id) >= 0;
+    return !!owned['emote-' + id] || !!owned[id];
+  }
+
+  function emoList(owned){
+    return Object.keys(emoMerge()).filter(id => emoAllowed(id, owned));
+  }
+
+  function emoLooping(id){
+    const e = EMO_CORE[id] || EMO_SHOP[id];
+    return !!(e && e.dur === Infinity);
+  }
+
+  function emoCancelOnMove(id){
+    return id === 'sit' || id === 'sleep' || id === 'dance';
+  }
+
+  // View / Back (standard button 8) toggles the wheel; D-pad navigates when open.
+  const EMO_PAD_VIEW = 8, EMO_PAD_A = 0, EMO_PAD_B = 1, EMO_PAD_LEFT = 14, EMO_PAD_RIGHT = 15, EMO_PAD_UP = 12, EMO_PAD_DOWN = 13;
+
+  const api = {
+    EMO_FREE, EMO_CORE, EMO_SHOP,
+    EMO_PAD_VIEW, EMO_PAD_A, EMO_PAD_B, EMO_PAD_LEFT, EMO_PAD_RIGHT, EMO_PAD_UP, EMO_PAD_DOWN,
+    emoMerge, emoAllowed, emoList, emoLooping, emoCancelOnMove
+  };
+  root.EmoRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+/* Cozy Corner Café rules — tickets, recipes, decor. No paid backend. */
+(function (root) {
+  'use strict';
+
+  const CAFE_KEY = 'rubloxCafe';
+  const CAFE_VER = 1;
+  const CAFE_MENU = [
+    {id:'cocoa',  name:'Warm Cocoa',   emoji:'☕', price:6,  st:'cocoa',  steps:['cocoa']},
+    {id:'tea',    name:'Honey Tea',    emoji:'🍵', price:5,  st:'tea',    steps:['tea']},
+    {id:'latte',  name:'Sunny Latte',  emoji:'🥛', price:7,  st:'latte',  steps:['latte']},
+    {id:'fizz',   name:'Berry Fizz',   emoji:'🍓', price:6,  st:'fizz',   steps:['fizz']},
+    {id:'muffin', name:'Cloud Muffin', emoji:'🧁', price:5,  st:'oven',   steps:['oven']},
+    {id:'cookie', name:'Choco Cookie', emoji:'🍪', price:4,  st:'oven',   steps:['oven']},
+    {id:'tart',   name:'Peach Tart',   emoji:'🥧', price:8,  st:'oven',   steps:['oven']}
+  ];
+  const CAFE_DECOR = [
+    {id:'plant', name:'Leafy Plant', emoji:'🪴', cost:20},
+    {id:'lamp',  name:'Warm Lamp',   emoji:'💡', cost:25},
+    {id:'rug',   name:'Cozy Rug',    emoji:'🧶', cost:30},
+    {id:'art',   name:'Window Art',  emoji:'🖼️', cost:35},
+    {id:'piano', name:'Tiny Piano',  emoji:'🎹', cost:50}
+  ];
+
+  function cafeFresh(){ return {ver: CAFE_VER, served:0, earned:0, best:0, decor:[], day:'', dayN:0}; }
+
+  function cafeLoad(raw){
+    const s = cafeFresh();
+    const o = raw && typeof raw === 'object' ? raw : null;
+    if (!o) return s;
+    s.served = Math.max(0, o.served | 0);
+    s.earned = Math.max(0, o.earned | 0);
+    s.best = Math.max(0, o.best | 0);
+    s.day = typeof o.day === 'string' ? o.day : '';
+    s.dayN = Math.max(0, o.dayN | 0);
+    if (Array.isArray(o.decor)){
+      s.decor = o.decor.filter(id => CAFE_DECOR.some(d => d.id === id)).slice(0, CAFE_DECOR.length);
+    }
+    return s;
+  }
+
+  function cafeItem(id){ return CAFE_MENU.find(m => m.id === id) || null; }
+
+  function cafeTicket(seq, itemId){
+    const it = cafeItem(itemId) || CAFE_MENU[(seq >>> 0) % CAFE_MENU.length];
+    return {n: (seq | 0) + 1, id: it.id, name: it.name, emoji: it.emoji, price: it.price, st: it.st};
+  }
+
+  function cafeMake(ticket, station){
+    if (!ticket || !station) return {ok:false, why:'need'};
+    const it = cafeItem(ticket.id);
+    if (!it) return {ok:false, why:'item'};
+    if (it.st !== station) return {ok:false, why:'station'};
+    return {ok:true, why:'ok', item: it};
+  }
+
+  function cafeServe(state, ticket){
+    state = cafeLoad(state);
+    const it = ticket && cafeItem(ticket.id);
+    if (!it) return {ok:false, why:'item', state, coins:0};
+    state.served += 1;
+    state.earned += it.price;
+    if (state.served > state.best) state.best = state.served;
+    return {ok:true, why:'ok', state, coins: it.price, item: it};
+  }
+
+  function cafeBuyDecor(state, id, coins){
+    state = cafeLoad(state);
+    const d = CAFE_DECOR.find(x => x.id === id);
+    if (!d) return {ok:false, why:'item', state, coins: coins|0};
+    if (state.decor.indexOf(id) >= 0) return {ok:false, why:'have', state, coins: coins|0};
+    if ((coins|0) < d.cost) return {ok:false, why:'coins', state, coins: coins|0};
+    state.decor = state.decor.concat([id]);
+    return {ok:true, why:'ok', state, coins: (coins|0) - d.cost, item: d};
+  }
+
+  const api = {
+    CAFE_KEY, CAFE_VER, CAFE_MENU, CAFE_DECOR,
+    cafeFresh, cafeLoad, cafeItem, cafeTicket, cafeMake, cafeServe, cafeBuyDecor
+  };
+  root.CafeRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+/* Ripple Lake fishing rules — rarities, collection, seasonal ice fish. */
+(function (root) {
+  'use strict';
+
+  const FISH_KEY = 'rubloxFish';
+  const FISH_VER = 1;
+  const FISH_LIST = [
+    {id:'minnow',   name:'Splish Minnow',  emoji:'🐟', r:0, wt:28, coin:2,  lo:8,  hi:16},
+    {id:'sunperch', name:'Sunperch',       emoji:'🐠', r:0, wt:22, coin:3,  lo:10, hi:20},
+    {id:'trout',    name:'Ribbon Trout',   emoji:'🐟', r:0, wt:18, coin:3,  lo:14, hi:26},
+    {id:'carp',     name:'Daisy Carp',     emoji:'🐠', r:0, wt:16, coin:3,  lo:16, hi:30},
+    {id:'bass',     name:'Pebble Bass',    emoji:'🐟', r:1, wt:14, coin:5,  lo:18, hi:34},
+    {id:'pike',     name:'Moss Pike',      emoji:'🐟', r:1, wt:12, coin:6,  lo:22, hi:40},
+    {id:'catfish',  name:'Cloud Catfish',  emoji:'🐟', r:1, wt:10, coin:6,  lo:20, hi:38},
+    {id:'bluegill', name:'Berry Bluegill', emoji:'🐠', r:1, wt:10, coin:5,  lo:12, hi:22},
+    {id:'koi',      name:'Copper Koi',     emoji:'🐟', r:2, wt:6,  coin:10, lo:16, hi:28},
+    {id:'loach',    name:'Glow Loach',     emoji:'🐟', r:2, wt:5,  coin:10, lo:10, hi:20},
+    {id:'starfin',  name:'Starfin',        emoji:'🌟', r:2, wt:4,  coin:12, lo:14, hi:24},
+    {id:'eel',      name:'Marble Eel',     emoji:'🐍', r:2, wt:4,  coin:12, lo:20, hi:36},
+    {id:'salmon',   name:'Silk Salmon',    emoji:'🐟', r:2, wt:4,  coin:12, lo:24, hi:42},
+    {id:'bubble',   name:'Bubblefish',     emoji:'🫧', r:2, wt:3,  coin:14, lo:8,  hi:16},
+    {id:'moon',     name:'Moon Perch',     emoji:'🌙', r:3, wt:2,  coin:20, lo:16, hi:28},
+    {id:'golden',   name:'Goldenfin',      emoji:'✨', r:3, wt:1.5,coin:24, lo:18, hi:32},
+    {id:'tetra',    name:'Fairy Tetra',    emoji:'🧚', r:3, wt:1.2,coin:26, lo:6,  hi:12},
+    {id:'thunder',  name:'Thunder Bass',   emoji:'⚡', r:3, wt:1,  coin:28, lo:28, hi:50},
+    {id:'crown',    name:'Crown Koi',      emoji:'👑', r:3, wt:0.7,coin:35, lo:20, hi:36},
+    {id:'frost',    name:'Frost Minnow',   emoji:'❄️', r:1, wt:10, coin:8,  lo:8,  hi:16, ice:true},
+    {id:'icepike',  name:'Ice Pike',       emoji:'🧊', r:2, wt:5,  coin:16, lo:22, hi:40, ice:true},
+    {id:'cocoa',    name:'Cocoa Crappie',  emoji:'🍫', r:2, wt:4,  coin:14, lo:12, hi:22, ice:true},
+    {id:'flake',    name:'Snowflake Tang', emoji:'❄️', r:3, wt:1,  coin:30, lo:10, hi:18, ice:true}
+  ];
+  const FISH_RARITY = [
+    {n:'Common',    e:'⚪', c:'#9aa3b5'},
+    {n:'Uncommon',  e:'🟢', c:'#2ec27e'},
+    {n:'Rare',      e:'🔵', c:'#3a86ff'},
+    {n:'Legendary', e:'🌟', c:'#ffc61a'}
+  ];
+
+  function fishFresh(){ return {ver: FISH_VER, caught:{}, best:{}, total:0, earned:0, biggest:0}; }
+
+  function fishLoad(raw){
+    const s = fishFresh();
+    const o = raw && typeof raw === 'object' ? raw : null;
+    if (!o) return s;
+    s.total = Math.max(0, o.total | 0);
+    s.earned = Math.max(0, o.earned | 0);
+    s.biggest = Math.max(0, +o.biggest || 0);
+    if (o.caught && typeof o.caught === 'object'){
+      for (const k in o.caught){ const v = o.caught[k] | 0; if (v > 0 && FISH_LIST.some(f => f.id === k)) s.caught[k] = v; }
+    }
+    if (o.best && typeof o.best === 'object'){
+      for (const k in o.best){ const v = +o.best[k]; if (isFinite(v) && v > 0 && FISH_LIST.some(f => f.id === k)) s.best[k] = v; }
+    }
+    return s;
+  }
+
+  function fishPool(ice){
+    return FISH_LIST.filter(f => ice ? true : !f.ice);
+  }
+
+  function fishPick(rand, ice, quality){
+    const pool = fishPool(!!ice);
+    const q = Math.max(0, Math.min(1, +quality || 0));
+    // Better timing shifts weight toward rarer fish.
+    const rows = pool.map(f => ({f, w: Math.max(0.05, f.wt * (1 + q * f.r * 0.85))}));
+    let sum = 0; rows.forEach(r => { sum += r.w; });
+    let t = ((typeof rand === 'function') ? rand() : Math.random()) * sum;
+    for (const r of rows){ t -= r.w; if (t <= 0) return r.f; }
+    return rows[rows.length - 1].f;
+  }
+
+  function fishSize(f, rand, quality){
+    const q = Math.max(0, Math.min(1, +quality || 0));
+    const u = (typeof rand === 'function') ? rand() : Math.random();
+    const span = f.hi - f.lo;
+    const cm = f.lo + span * (0.25 * u + 0.75 * q * q);
+    return Math.round(cm * 10) / 10;
+  }
+
+  function fishCatch(state, fish, size){
+    state = fishLoad(state);
+    if (!fish) return {ok:false, why:'miss', state, coins:0};
+    const cm = Math.max(fish.lo, Math.min(fish.hi, +size || fish.lo));
+    state.caught[fish.id] = (state.caught[fish.id] | 0) + 1;
+    if (state.best[fish.id] == null || cm > state.best[fish.id]) state.best[fish.id] = cm;
+    state.total += 1;
+    if (cm > state.biggest) state.biggest = cm;
+    const bonus = cm >= fish.hi - 1 ? 2 : 0;
+    const coins = fish.coin + bonus;
+    state.earned += coins;
+    return {ok:true, why:'ok', state, coins, size: cm, fish, first: state.caught[fish.id] === 1};
+  }
+
+  function fishKinds(state){
+    state = fishLoad(state);
+    return Object.keys(state.caught).length;
+  }
+
+  function fishIndex(state, ice){
+    state = fishLoad(state);
+    const pool = FISH_LIST.filter(f => ice || !f.ice);
+    return pool.map(f => ({
+      id: f.id, name: f.name, emoji: f.emoji, r: f.r, ice: !!f.ice,
+      rarity: FISH_RARITY[f.r].n, rec: FISH_RARITY[f.r].e,
+      count: state.caught[f.id] | 0,
+      best: state.best[f.id] || null,
+      found: (state.caught[f.id] | 0) > 0
+    }));
+  }
+
+  // quality 0..1 from timing minigame (1 = perfect center).
+  function fishQuality(cursor, sweet, width){
+    const w = Math.max(0.04, +width || 0.16);
+    const d = Math.abs((+cursor || 0) - (+sweet || 0.5));
+    if (d > w) return 0;
+    return Math.max(0, Math.min(1, 1 - d / w));
+  }
+
+  const api = {
+    FISH_KEY, FISH_VER, FISH_LIST, FISH_RARITY,
+    fishFresh, fishLoad, fishPool, fishPick, fishSize, fishCatch, fishKinds, fishIndex, fishQuality
+  };
+  root.FishRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+/* Pet Talent Show rules — tricks, scores, ribbons. Votes are numeric only. */
+(function (root) {
+  'use strict';
+
+  const PS_KEY = 'rubloxPetShow';
+  const PS_VER = 1;
+  const PS_TRICKS = [
+    {id:'sit',   name:'Sit',       emoji:'🪑', beats:3},
+    {id:'spin',  name:'Spin',      emoji:'💫', beats:4},
+    {id:'jump',  name:'Jump',      emoji:'⬆️', beats:3},
+    {id:'roll',  name:'Roll Over', emoji:'🔄', beats:4},
+    {id:'high',  name:'High Five', emoji:'🖐️', beats:3}
+  ];
+  const PS_RIBBON = [
+    {id:'part', min:0,  name:'Participant Ribbon', emoji:'🎀'},
+    {id:'bronze', min:6,  name:'Bronze Ribbon', emoji:'🥉'},
+    {id:'silver', min:7.5,name:'Silver Ribbon', emoji:'🥈'},
+    {id:'gold',   min:9,  name:'Gold Ribbon',   emoji:'🥇'}
+  ];
+
+  function psFresh(){ return {ver: PS_VER, tricks:{}, shows:0, best:0, ribbons:{}, earned:0}; }
+
+  function psLoad(raw){
+    const s = psFresh();
+    const o = raw && typeof raw === 'object' ? raw : null;
+    if (!o) return s;
+    s.shows = Math.max(0, o.shows | 0);
+    s.best = Math.max(0, +o.best || 0);
+    s.earned = Math.max(0, o.earned | 0);
+    if (o.tricks && typeof o.tricks === 'object'){
+      for (const pid in o.tricks){
+        const list = Array.isArray(o.tricks[pid]) ? o.tricks[pid] : [];
+        s.tricks[String(pid)] = list.filter(id => PS_TRICKS.some(t => t.id === id)).slice(0, PS_TRICKS.length);
+      }
+    }
+    if (o.ribbons && typeof o.ribbons === 'object'){
+      for (const k in o.ribbons){ if (PS_RIBBON.some(r => r.id === k) && (o.ribbons[k]|0) > 0) s.ribbons[k] = o.ribbons[k]|0; }
+    }
+    return s;
+  }
+
+  function psTrick(id){ return PS_TRICKS.find(t => t.id === id) || null; }
+
+  function psKnown(state, petId){
+    state = psLoad(state);
+    return (state.tricks[String(petId)] || []).slice();
+  }
+
+  function psTeach(state, petId, trickId, quality){
+    state = psLoad(state);
+    const t = psTrick(trickId);
+    if (!t) return {ok:false, why:'trick', state};
+    if (!petId) return {ok:false, why:'pet', state};
+    const q = Math.max(0, Math.min(1, +quality || 0));
+    if (q < 0.45) return {ok:false, why:'miss', state};
+    const id = String(petId);
+    const have = state.tricks[id] ? state.tricks[id].slice() : [];
+    const first = have.indexOf(t.id) < 0;
+    if (first) have.push(t.id);
+    state.tricks[id] = have;
+    return {ok:true, why:'ok', state, first, trick: t, all: have.length >= PS_TRICKS.length};
+  }
+
+  function psJudge(tricks, qualities, votes){
+    const list = Array.isArray(tricks) ? tricks : [];
+    const qs = Array.isArray(qualities) ? qualities : [];
+    if (!list.length) return {ok:false, why:'empty', score:0, ribbon: PS_RIBBON[0]};
+    let sum = 0;
+    list.forEach((id, i) => {
+      const t = psTrick(id);
+      const q = Math.max(0, Math.min(1, +qs[i] || 0.5));
+      sum += (t ? 1.4 : 0.6) * q;
+    });
+    const avg = sum / list.length; // 0..1.4
+    let score = Math.round((5 + avg * 3.6) * 10) / 10; // ~5..10
+    const vs = (Array.isArray(votes) ? votes : []).map(v => +v).filter(v => isFinite(v) && v >= 1 && v <= 10);
+    if (vs.length){
+      const mean = vs.reduce((a, b) => a + b, 0) / vs.length;
+      score = Math.round(((score * 0.7) + (mean * 0.3)) * 10) / 10;
+    }
+    score = Math.max(1, Math.min(10, score));
+    let ribbon = PS_RIBBON[0];
+    PS_RIBBON.forEach(r => { if (score >= r.min) ribbon = r; });
+    return {ok:true, why:'ok', score, ribbon, judges: 3};
+  }
+
+  function psRecord(state, result){
+    state = psLoad(state);
+    if (!result || !result.ok) return {ok:false, why:'score', state, coins:0};
+    state.shows += 1;
+    if (result.score > state.best) state.best = result.score;
+    const rid = result.ribbon && result.ribbon.id;
+    if (rid) state.ribbons[rid] = (state.ribbons[rid] | 0) + 1;
+    const coins = 6 + Math.round(result.score);
+    state.earned += coins;
+    return {ok:true, why:'ok', state, coins, ribbon: result.ribbon, score: result.score};
+  }
+
+  function psCleanVote(v){
+    const n = +v;
+    if (!isFinite(n)) return null;
+    const x = Math.round(n);
+    if (x < 1 || x > 10) return null;
+    return x;
+  }
+
+  const api = {
+    PS_KEY, PS_VER, PS_TRICKS, PS_RIBBON,
+    psFresh, psLoad, psTrick, psKnown, psTeach, psJudge, psRecord, psCleanVote
+  };
+  root.PsRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+/* Treasure Trail rules — daily seeded map, clues, digs, chests. */
+(function (root) {
+  'use strict';
+
+  const HUNT_KEY = 'rubloxHunt';
+  const HUNT_VER = 1;
+  const HUNT_SPOTS = [
+    {id:'mill',   name:'Red Mill',    emoji:'🏭', clue:'Look where the red mill turns in the breeze.', x:-16, z:-12},
+    {id:'bridge', name:'Blue Bridge', emoji:'🌉', clue:'Cross the little blue bridge over the brook.', x:14, z:-10},
+    {id:'oak',    name:'Tall Oak',    emoji:'🌳', clue:'Stand in the shade of the tallest oak.', x:-12, z:16},
+    {id:'dune',   name:'Sandy Dune',  emoji:'🏜️', clue:'Dig at the warm sandy dune.', x:18, z:14},
+    {id:'arch',   name:'Stone Arch',  emoji:'🪨', clue:'The stone arch hides a secret at its feet.', x:0, z:22},
+    {id:'well',   name:'Wishing Well',emoji:'🪙', clue:'Make a wish at the old stone well.', x:-20, z:4},
+    {id:'dock',   name:'Quiet Dock',  emoji:'⚓', clue:'The quiet dock has a loose plank.', x:20, z:-2},
+    {id:'camp',   name:'Campfire Ring',emoji:'🔥', clue:'The last spark of the campfire ring is the clue.', x:2, z:-20}
+  ];
+
+  function huntDay(now){
+    const d = now != null ? new Date(now) : new Date();
+    const y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate();
+    return y + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+  }
+
+  function huntSeed(str){
+    let x = 2166136261;
+    const s = String(str || '');
+    for (let i = 0; i < s.length; i++){ x ^= s.charCodeAt(i); x = Math.imul(x, 16777619) >>> 0; }
+    return () => { x = (Math.imul(x, 1664525) + 1013904223) >>> 0; return x / 4294967296; };
+  }
+
+  function huntShuffle(arr, rand){
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(rand() * (i + 1));
+      const t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function huntMap(day){
+    const d = day || huntDay();
+    const rand = huntSeed('trail:v2:' + d);
+    const order = huntShuffle(HUNT_SPOTS, rand);
+    const start = Math.floor(rand() * order.length);
+    const spots = [0,1,2,3].map(i => order[(start + i) % order.length]);
+    return {
+      day: d,
+      steps: spots.map((s, i) => ({
+        i,
+        id: s.id,
+        name: s.name,
+        emoji: s.emoji,
+        clue: s.clue,
+        x: s.x,
+        z: s.z,
+        prize: i === spots.length - 1 ? 25 : 8 + i * 3
+      }))
+    };
+  }
+
+  function huntFresh(day){
+    const map = huntMap(day);
+    return {ver: HUNT_VER, day: map.day, step: 0, found: [], maps: 0, earned: 0, streak: 0, lastDay: '', dug: []};
+  }
+
+  function huntLoad(raw, now){
+    const day = huntDay(now);
+    const fresh = huntFresh(day);
+    const o = raw && typeof raw === 'object' ? raw : null;
+    if (!o) return fresh;
+    fresh.maps = Math.max(0, o.maps | 0);
+    fresh.earned = Math.max(0, o.earned | 0);
+    fresh.streak = Math.max(0, o.streak | 0);
+    fresh.lastDay = typeof o.lastDay === 'string' ? o.lastDay : '';
+    if (o.day === day){
+      fresh.step = Math.max(0, Math.min(4, o.step | 0));
+      fresh.found = Array.isArray(o.found) ? o.found.filter(id => typeof id === 'string').slice(0, 4) : [];
+      fresh.dug = Array.isArray(o.dug) ? o.dug.filter(id => typeof id === 'string').slice(0, 16) : [];
+    }
+    return fresh;
+  }
+
+  function huntCurrent(state, now){
+    state = huntLoad(state, now);
+    const map = huntMap(state.day);
+    const step = map.steps[state.step] || null;
+    return {state, map, step, done: state.step >= map.steps.length};
+  }
+
+  function huntDig(state, spotId, now){
+    const cur = huntCurrent(state, now);
+    state = cur.state;
+    if (cur.done) return {ok:false, why:'done', state, coins:0};
+    const step = cur.step;
+    if (!step) return {ok:false, why:'map', state, coins:0};
+    if (state.dug.indexOf(spotId) < 0) state.dug = state.dug.concat([String(spotId || '')]);
+    if (spotId !== step.id) return {ok:false, why:'empty', state, coins:0, hint: step.clue};
+    if (state.found.indexOf(step.id) >= 0) return {ok:false, why:'have', state, coins:0};
+    state.found = state.found.concat([step.id]);
+    state.step += 1;
+    const coins = step.prize;
+    state.earned += coins;
+    const finished = state.step >= cur.map.steps.length;
+    if (finished){
+      state.maps += 1;
+      if (state.lastDay && state.lastDay !== state.day){
+        // streak if yesterday? keep simple: increment when a new day map is finished after a previous finish
+      }
+      if (state.lastDay !== state.day){
+        const prev = state.lastDay;
+        state.streak = (prev && _huntNext(prev) === state.day) ? (state.streak + 1) : 1;
+        state.lastDay = state.day;
+      }
+    }
+    return {ok:true, why: finished ? 'map' : 'chest', state, coins, step, finished};
+  }
+
+  function _huntNext(day){
+    const p = String(day || '').split('-').map(Number);
+    if (p.length !== 3 || !p[0]) return day;
+    const d = new Date(p[0], p[1] - 1, p[2]);
+    d.setDate(d.getDate() + 1);
+    return huntDay(d);
+  }
+
+  function huntNear(x, z, step, r){
+    if (!step) return false;
+    const rad = r != null ? r : 2.4;
+    return Math.hypot((+x || 0) - step.x, (+z || 0) - step.z) <= rad;
+  }
+
+  const api = {
+    HUNT_KEY, HUNT_VER, HUNT_SPOTS,
+    huntDay, huntSeed, huntMap, huntFresh, huntLoad, huntCurrent, huntDig, huntNear
+  };
+  root.HuntRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
 const GAMES = [
+  {id:'cafe', name:'Cozy Corner Café', emoji:'☕', tag:'Make drinks and treats, serve ticket orders, and decorate the café!', draw: drawCafe, playable: true, isNew: true},
+  {id:'fish', name:'Ripple Lake Fishing', emoji:'🎣', tag:'Cast, time the bite, and fill your fish index — ice fishing during the Snow Festival!', draw: drawFish, playable: true, isNew: true},
+  {id:'petshow', name:'Pet Talent Show', emoji:'🎭', tag:'Teach your pets tricks and perform for the judges — friends can score the show!', draw: drawPetShow, playable: true, isNew: true},
+  {id:'hunt', name:'Treasure Trail', emoji:'🗺️', tag:'A new clue map every day. Dig up chests around Compass Cove!', draw: drawHunt, playable: true, isNew: true},
   {id:'snowfest', name:'Snow Festival', emoji:'❄️', tag:'A winter fair: snowball toss, sled hill, snowman building, and ice skating!', draw: drawSnowFest, playable: true, isNew: true},
   {id:'party', name:'Party Pad', emoji:'🎉', tag:'A cozy hangout for friends: dance, sit, snap a photo, kick the ball!', draw: drawParty, playable: true, isNew: true},
   {id:'lantern', name:'Lantern Big Top', emoji:'🏮', tag:'Stay close and stay bright under a colorful circus tent!', draw: drawLantern, playable: true, isNew: true},
@@ -4005,6 +4632,53 @@ function drawDance(ctx){
   ctx.font = '26px sans-serif'; ['←','↓','↑','→'].forEach((a, i) => { ctx.fillStyle = '#fff'; ctx.fillText(a, 70 + i * 50, 80); });
   guy(ctx, 160, 160, 12, '#ff6fb5'); ctx.font = '22px sans-serif'; ctx.fillText('💃', 40, 60); ctx.fillText('🎵', 260, 60);
 }
+function drawCafe(ctx){
+  if (!ctx) return;
+  if (typeof sky === 'function') sky(ctx, '#f3d7b5', '#fff3e0');
+  else { ctx.fillStyle = '#f3d7b5'; ctx.fillRect(0, 0, 320, 200); }
+  ctx.fillStyle = '#c48a5a'; ctx.fillRect(0, 130, 320, 70);
+  ctx.fillStyle = '#8d4f2a'; ctx.fillRect(40, 80, 240, 70);
+  ctx.fillStyle = '#6b3a1d'; ctx.fillRect(40, 70, 240, 14);
+  ctx.fillStyle = '#fff'; ctx.fillRect(70, 100, 40, 30); ctx.fillRect(140, 100, 40, 30); ctx.fillRect(210, 100, 40, 30);
+  ctx.fillStyle = '#6b3a1d'; ctx.fillRect(60, 150, 50, 20); ctx.fillRect(200, 150, 50, 20);
+  if (typeof guy === 'function') guy(ctx, 160, 150, 12, '#c45c4a');
+  ctx.font = '22px sans-serif'; ctx.fillText('☕', 60, 60); ctx.fillText('🧁', 250, 60);
+}
+function drawFish(ctx){
+  if (!ctx) return;
+  if (typeof sky === 'function') sky(ctx, '#87c8ef', '#e8f6ff');
+  else { ctx.fillStyle = '#87c8ef'; ctx.fillRect(0, 0, 320, 200); }
+  ctx.fillStyle = '#2f8f6a'; ctx.fillRect(0, 150, 320, 50);
+  ctx.fillStyle = '#3aa0d8'; ctx.fillRect(0, 120, 320, 40);
+  ctx.fillStyle = '#8d5524'; ctx.fillRect(40, 110, 140, 14);
+  ctx.fillStyle = '#6b3a1d'; ctx.fillRect(40, 110, 16, 50);
+  if (typeof guy === 'function') guy(ctx, 90, 110, 11, '#3a86ff');
+  ctx.font = '22px sans-serif'; ctx.fillText('🎣', 200, 90); ctx.fillText('🐟', 240, 140); ctx.fillText('🐠', 60, 145);
+}
+function drawPetShow(ctx){
+  if (!ctx) return;
+  if (typeof sky === 'function') sky(ctx, '#d8c6f0', '#fff');
+  else { ctx.fillStyle = '#d8c6f0'; ctx.fillRect(0, 0, 320, 200); }
+  ctx.fillStyle = '#6b4aa0'; ctx.fillRect(30, 70, 260, 80);
+  ctx.fillStyle = '#f4e27a'; ctx.fillRect(80, 110, 160, 40);
+  ctx.fillStyle = '#3d2a62'; ctx.fillRect(50, 80, 24, 28); ctx.fillRect(150, 80, 24, 28); ctx.fillRect(250, 80, 24, 28);
+  if (typeof guy === 'function') guy(ctx, 160, 150, 12, '#ff9f1c');
+  ctx.font = '22px sans-serif'; ctx.fillText('🐾', 40, 50); ctx.fillText('🎀', 260, 50); ctx.fillText('🥇', 150, 55);
+}
+function drawHunt(ctx){
+  if (!ctx) return;
+  if (typeof sky === 'function') sky(ctx, '#f7d7a0', '#fff4d8');
+  else { ctx.fillStyle = '#f7d7a0'; ctx.fillRect(0, 0, 320, 200); }
+  ctx.fillStyle = '#d9b56a'; ctx.fillRect(0, 140, 320, 60);
+  ctx.fillStyle = '#2f8f4a';
+  ctx.beginPath(); ctx.moveTo(40, 150); ctx.lineTo(70, 80); ctx.lineTo(100, 150); ctx.fill();
+  ctx.fillStyle = '#8d5524'; ctx.fillRect(200, 100, 50, 50);
+  ctx.fillStyle = '#c45c4a'; ctx.beginPath(); ctx.moveTo(190, 100); ctx.lineTo(225, 70); ctx.lineTo(260, 100); ctx.fill();
+  ctx.fillStyle = '#ffc61a'; ctx.beginPath(); ctx.arc(160, 160, 14, 0, Math.PI*2); ctx.fill();
+  if (typeof guy === 'function') guy(ctx, 130, 150, 11, '#3a86ff');
+  ctx.font = '22px sans-serif'; ctx.fillText('🗺️', 40, 50); ctx.fillText('💎', 250, 60);
+}
+
 function drawSnowFest(ctx){
   if (!ctx) return;
   if (typeof sky === 'function') sky(ctx, '#c8def6', '#f7fbff');
@@ -4711,6 +5385,25 @@ function confetti(){
     {id:'dance-play', cat:'adventure', emoji:'💃', name:'On the Floor', desc:'Play a Bossa Beat Dance Battle.', coins:8, prove:s => !!(s.dance && (s.dance.plays | 0) >= 1)},
     {id:'dance-score', cat:'adventure', emoji:'🎶', name:'Rhythm Ace', desc:'Score 50 or more in a dance battle.', coins:15, prove:s => !!(s.dance && (s.dance.best | 0) >= 50)},
     {id:'hide-win', cat:'adventure', emoji:'🙈', name:'Found You', desc:'Win a game of Hide and Seek.', coins:15, prove:s => !!(s.hide && (s.hide.wins | 0) >= 1)},
+
+    {id:'emo-wave', cat:'collection', emoji:'👋', name:'Say Hello', desc:'Wave at someone with an emote.', coins:8, prove:s => !!(s.notes && s.notes['emo-wave'])},
+    {id:'emo-sit', cat:'collection', emoji:'🪑', name:'Take a Seat', desc:'Sit anywhere with the sit emote.', coins:8, prove:s => !!(s.notes && s.notes['emo-sit'])},
+    {id:'emo-all', cat:'collection', emoji:'😄', name:'Mood Ring', desc:'Try all 7 free emotes: wave, dance, sit, cheer, clap, laugh, and sleep.', coins:15, prove:s => !!(s.notes && s.notes['emo-all'])},
+    {id:'hide-finds', cat:'adventure', emoji:'🔍', name:'I Spy', desc:'Find 5 hiders in Hide and Seek.', coins:12, prove:s => !!(s.hide && (s.hide.finds | 0) >= 5)},
+    {id:'hide-safe', cat:'adventure', emoji:'🏃', name:'Still Hidden', desc:'Win Hide and Seek as a hider.', coins:12, prove:s => !!(s.notes && s.notes['hide-safe']) || !!(s.hide && (s.hide.wins | 0) >= 1 && (s.hide.safe | 0) >= 1)},
+    {id:'cafe-first', cat:'adventure', emoji:'☕', name:'First Service', desc:'Serve a ticket at Cozy Corner Café.', coins:10, prove:s => !!(s.notes && s.notes['cafe-first']) || !!(s.cafe && (s.cafe.served | 0) >= 1)},
+    {id:'cafe-20', cat:'adventure', emoji:'🧁', name:'Busy Shift', desc:'Serve 20 café tickets.', coins:18, prove:s => !!(s.cafe && (s.cafe.served | 0) >= 20)},
+    {id:'cafe-decor', cat:'creative', emoji:'🪴', name:'Cozy Corners', desc:'Buy a décor item for the café.', coins:10, prove:s => !!(s.notes && s.notes['cafe-decor']) || !!(s.cafe && s.cafe.decor && s.cafe.decor.length >= 1)},
+    {id:'fish-first', cat:'adventure', emoji:'🎣', name:'First Catch', desc:'Catch a fish at Ripple Lake.', coins:10, prove:s => !!(s.notes && s.notes['fish-first']) || !!(s.fish && (s.fish.total | 0) >= 1)},
+    {id:'fish-rare', cat:'adventure', emoji:'🌟', name:'Rare Bite', desc:'Catch a rare or legendary fish.', coins:15, prove:s => !!(s.notes && s.notes['fish-rare'])},
+    {id:'fish-index', cat:'collection', emoji:'📖', name:'Lake Journal', desc:'Catch 10 different kinds of fish.', coins:20, prove:s => !!(s.fish && s.fish.caught && Object.keys(s.fish.caught).length >= 10)},
+    {id:'fish-ice', cat:'season', emoji:'🧊', name:'Ice Angler', desc:'Go ice fishing during the Snow Festival.', coins:12, prove:s => !!(s.notes && s.notes['fish-ice'])},
+    {id:'ps-teach', cat:'pets', emoji:'🐾', name:'Trick Teacher', desc:'Teach a pet a trick.', coins:10, prove:s => !!(s.notes && s.notes['ps-teach'])},
+    {id:'ps-show', cat:'pets', emoji:'🎭', name:'Center Stage', desc:'Finish a Pet Talent Show routine.', coins:12, prove:s => !!(s.petshow && (s.petshow.shows | 0) >= 1) || !!(s.notes && s.notes['ps-show'])},
+    {id:'ps-gold', cat:'pets', emoji:'🥇', name:'Gold Ribbon', desc:'Earn a gold ribbon at the Pet Talent Show.', coins:18, prove:s => !!(s.petshow && s.petshow.ribbons && (s.petshow.ribbons.gold | 0) >= 1)},
+    {id:'hunt-first', cat:'adventure', emoji:'📦', name:'First Clue', desc:'Dig up a chest on the Treasure Trail.', coins:10, prove:s => !!(s.notes && s.notes['hunt-first']) || !!(s.hunt && (s.hunt.found && s.hunt.found.length))},
+    {id:'hunt-map', cat:'adventure', emoji:'💎', name:'Map Master', desc:'Finish a daily Treasure Trail map.', coins:15, prove:s => !!(s.hunt && (s.hunt.maps | 0) >= 1)},
+    {id:'hunt-week', cat:'adventure', emoji:'🗺️', name:'Trail Regular', desc:'Finish 3 daily treasure maps.', coins:20, prove:s => !!(s.hunt && (s.hunt.maps | 0) >= 3)},
     {id:'autumn-all', cat:'adventure', emoji:'🎃', name:'Pumpkin Patch', desc:'Find all 12 pumpkins at Cozy Autumn Farm.', coins:20, prove:s => !!(s.notes && s.notes['autumn:all']) || !!(s.autumnDay)},
     // Creative
     {id:'bk-first', cat:'creative', emoji:'🧁', name:'Fresh from the Oven', desc:'Fill your first bakery order.', coins:10, prove:s => !!(s.bakery && (s.bakery.served | 0) >= 1)},
@@ -8102,7 +8795,13 @@ if (!player) askName();
     {id: 'tag-play', ev: 'play:tag', title: 'Tag In', desc: 'Play a game of Block Tag.', emoji: '🏷️', goal: 1, reward: 15},
     {id: 'wp-play', ev: 'play:waterpark', title: 'Wheeee!', desc: 'Play a round at Splash Summit.', emoji: '🛝', goal: 1, reward: 15},
     {id: 'obby-win', ev: 'obby-win', title: 'Obby Finish', desc: 'Finish an Obby Rush level.', emoji: '🏁', goal: 1, reward: 20},
-    {id: 'dance-play', ev: 'play:dance', title: 'Hit the Beat', desc: 'Play Bossa Beat Dance Battle.', emoji: '💃', goal: 1, reward: 15}
+    {id: 'dance-play', ev: 'play:dance', title: 'Hit the Beat', desc: 'Play Bossa Beat Dance Battle.', emoji: '💃', goal: 1, reward: 15},
+    {id: 'hide-play', ev: 'play:hide', title: 'Count to Ten', desc: 'Play a game of Hide and Seek.', emoji: '🙈', goal: 1, reward: 15},
+    {id: 'cafe-serve', ev: 'cafe-serve', title: 'Café Shift', desc: 'Serve 3 tickets at Cozy Corner Café.', emoji: '☕', goal: 3, reward: 20},
+    {id: 'fish-catch', ev: 'fish-catch', title: 'Go Fish', desc: 'Catch 2 fish at Ripple Lake.', emoji: '🎣', goal: 2, reward: 20},
+    {id: 'ps-trick', ev: 'ps-trick', title: 'New Trick', desc: 'Teach a pet a trick.', emoji: '🐾', goal: 1, reward: 15},
+    {id: 'hunt-chest', ev: 'hunt-chest', title: 'X Marks the Spot', desc: 'Dig up a chest on the Treasure Trail.', emoji: '🗺️', goal: 1, reward: 20},
+    {id: 'emote-play', ev: 'emote-use', title: 'Strike a Pose', desc: 'Use any emote 3 times.', emoji: '😄', goal: 3, reward: 10},
   ];
 
   function qToday(now){
@@ -9346,13 +10045,13 @@ const Obby = (() => {
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
     nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; py = null; evg = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
-    if (mode === 'snowfest') buildSnowFest(); else if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    if (mode === 'cafe') buildCafe(); else if (mode === 'fish') buildFish(); else if (mode === 'petshow') buildPetShow(); else if (mode === 'hunt') buildHunt(); else if (mode === 'snowfest') buildSnowFest(); else if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
     else if (mode === 'build') [[-40,22,30,2.5],[45,28,-20,3],[0,35,-60,3.5],[-30,18,-40,2]].forEach(a => cloud(...a));
     else if (mode === 'pets') [[-50,30,-40,3],[40,34,-10,3.5],[-20,38,40,3],[30,30,80,3.5],[-60,32,90,3]].forEach(a => cloud(...a));
-    else if (mode !== 'tag' && mode !== 'obby' && mode !== 'lantern' && mode !== 'dreamhouse' && mode !== 'party' && mode !== 'snowfest') [[-30,10,40,2],[35,18,80,2.5],[-40,25,130,3],[30,8,20,1.5],[25,30,170,2.5],[-25,5,95,1.8],[0,40,230,4]].forEach(a => cloud(...a));
+    else if (mode !== 'tag' && mode !== 'obby' && mode !== 'lantern' && mode !== 'dreamhouse' && mode !== 'party' && mode !== 'snowfest' && mode !== 'cafe' && mode !== 'fish' && mode !== 'petshow' && mode !== 'hunt') [[-30,10,40,2],[35,18,80,2.5],[-40,25,130,3],[30,8,20,1.5],[25,30,170,2.5],[-25,5,95,1.8],[0,40,230,4]].forEach(a => cloud(...a));
     // player + shadow
     model = buildPlayer(avatar); scene.add(model.g);
     blob = new THREE.Mesh(new THREE.CircleGeometry(.6, 20), new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: .25, depthWrite: false}));
@@ -10300,7 +10999,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
       ejectXZ(axis, B, b);
     }
   }
@@ -11115,6 +11814,7 @@ const Obby = (() => {
     else if (d.t === 'tr'){ try { if (typeof trFromGuest === 'function') trFromGuest(g, d); } catch (e){} }
     else if (d.t === 'py'){ try { if (typeof partyFromGuest === 'function') partyFromGuest(g, d); } catch (e){} }
     else if (d.t === 'lb'){ try { if (typeof lbFromGuest === 'function') lbFromGuest(g, d); } catch (e){} }
+    else if (d.t === 'ps'){ try { if (typeof psFromNet === 'function') psFromNet(g, d); } catch (e){} }
   }
   function mpTagReq(g, d){
     const T = tg;
@@ -13946,8 +14646,13 @@ const Obby = (() => {
     const me = hsUid(), was = hs.fd.includes(me) ? 'found' : hsSeeker(me) ? 'seek' : 'safe', mine = hs.fb[me] || 0;
     let prize = 0; if (was === 'safe') prize = 25; prize += mine * 10; if (hs.win === 'seek' && hsSeeker(me)) prize += 15;
     if (prize){ setCoins(coins + prize); runCoins += prize; hs.earned += prize; }
-    if ((was === 'safe' && hs.win === 'hide') || (hs.win === 'seek' && hsSeeker(me))) hs.sv.wins++; hs.sv.finds += mine; save('rubloxHide', hs.sv);
+    if ((was === 'safe' && hs.win === 'hide') || (hs.win === 'seek' && hsSeeker(me))) hs.sv.wins++; hs.sv.finds += mine;
+    if (was === 'safe' && hs.win === 'hide') hs.sv.safe = (hs.sv.safe | 0) + 1;
+    save('rubloxHide', hs.sv);
     const iWin = (hs.win === 'hide' && was === 'safe') || (hs.win === 'seek' && hsSeeker(me) && !hs.fd.includes(me)) || (hs.win === 'seek' && mine > 0);
+    try { if (typeof qNoteHook === 'function'){ if (iWin) qNoteHook('hide-win', 1); if (mine) qNoteHook('hide-find', mine); } } catch (e){}
+    try { if (typeof lbRecord === 'function'){ if (hs.sv.wins) lbRecord('hide-wins', hs.sv.wins); if (hs.sv.finds) lbRecord('hide-finds', hs.sv.finds); } } catch (e){}
+    try { if (was === 'safe' && hs.win === 'hide' && typeof achNote === 'function') achNote('hide-safe'); } catch (e){}
     if (iWin){ SND.win(); confetti(); } else SND.jump();
     $('#hsEndE').textContent = hs.win === 'seek' ? '🙈' : '🏃';
     $('#hsEndT').textContent = hs.win === 'seek' ? 'The seekers found everyone!' : 'Time! The hiders win!';
@@ -27295,7 +28000,9 @@ const Obby = (() => {
     P.walk += dt * sp * (sp > SPEED * 1.15 ? 1.5 : 1.3);
     { const fv = run.on && !(pt && pt.drive) ? 66 : 60; if (!rc && Math.abs(camera.fov - fv) > .05){ camera.fov += (fv - camera.fov) * Math.min(1, dt * 6); camera.updateProjectionMatrix(); } }
     if (mode === 'tag'){ const v = Math.round(run.stam / STAM_MAX * 100) + (run.tired ? 1000 : 0); if (v !== run.shown){ run.shown = v; $('#oStamF').style.width = (v % 1000) + '%'; $('#oStam').classList.toggle('tired', run.tired); $('#oStam').classList.toggle('full', v === 100); } }
-    if (emote){ emote.t += dt; if (emote.t > EMOTES[emote.id].dur || (!P.onGround && P.airT > .25)) emote = null; }
+    if (emote){ emote.t += dt; const moving = Math.hypot(P.vx, P.vz) > 0.45 || (!P.onGround && P.airT > .25);
+      const cancelMove = (typeof EmoRules !== 'undefined' && EmoRules.emoCancelOnMove) ? EmoRules.emoCancelOnMove(emote.id) : (emote.id === 'sit' || emote.id === 'sleep' || emote.id === 'dance');
+      if (emote.t > EMOTES[emote.id].dur || (moving && cancelMove) || (!P.onGround && P.airT > .25)) emote = null; }
     const st = {state: P.climbing ? 'climb' : !P.onGround && P.airT > .08 ? 'jump' : sp > .8 ? 'walk' : 'idle', t: worldT, ph: P.walk, sp: Math.min(sp > SPEED * 1.15 ? 1.3 : 1, sp / 5), air: P.airT, jumped: P.jumped};
     applyPose(dt, (sb && sbPose()) || (db && dbPose()) || psPosed() || (rc && rc.me ? rcPose(rc.me) : pt && pt.drive ? SIT_POSE : emote ? emotePose(emote.id, emote.t) : animPose(avatar.anim || 'default', st)));
     if (pt && pt.drive){ model.g.rotation.y = pt.car.yaw; blob.visible = false; return; }
@@ -27323,19 +28030,22 @@ const Obby = (() => {
     if (!running || paused || won || over || choosing) return;
     const E = EMOTES[id]; if (!E) return;
     $('#oEmos').classList.remove('show');
-    if (!owned.has('emote-' + id)){ banner('🔒 Get the ' + E.name + ' emote in the 🛍️ Shop!'); return; }
+    const emoOk = (typeof EmoRules !== 'undefined' && EmoRules.emoAllowed) ? EmoRules.emoAllowed(id, owned) : (E.price === 0 || owned.has('emote-' + id));
+    if (!emoOk){ banner('🔒 Get the ' + E.name + ' emote in the 🛍️ Shop!'); return; }
+    if (emote && emote.id === id){ emote = null; return; }
     if (!P.onGround){ return; }
     emote = {id, t: 0}; P.vx = P.vz = 0;
+    try { if (typeof qNoteHook === 'function') qNoteHook('emote-use', 1); if (typeof achNote === 'function'){ achNote('emo-' + id); const need = (typeof EmoRules !== 'undefined' && EmoRules.EMO_FREE) ? EmoRules.EMO_FREE : ['wave','dance','sit','cheer','clap','laugh','sleep']; if (need.every(k => ach.notes && ach.notes['emo-' + k])) achNote('emo-all'); } } catch (e){}
   }
   function buildEmoteMenu(){
-    $('#oEmos').innerHTML = Object.entries(EMOTES).map(([id, E]) => `<button data-emote="${id}" class="${owned.has('emote-' + id) ? '' : 'lock'}">${owned.has('emote-' + id) ? E.emoji : '🔒'} ${E.name} <small>${E.key}</small></button>`).join('');
+    $('#oEmos').innerHTML = Object.entries(EMOTES).map(([id, E]) => { const ok = (typeof EmoRules !== 'undefined' && EmoRules.emoAllowed) ? EmoRules.emoAllowed(id, owned) : (E.price === 0 || owned.has('emote-' + id)); const key = E.key ? E.key : '★'; return `<button data-emote="${id}" class="${ok ? '' : 'lock'}">${ok ? E.emoji : '🔒'} ${E.name} <small>${key}</small></button>`; }).join('');
     $('#oEmos').querySelectorAll('button').forEach(b => b.onclick = e => { e.stopPropagation(); playEmote(b.dataset.emote); });
   }
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
     const line = mode === 'dreamhouse' ? (typeof dh !== 'undefined' && dh && dh.visiting ? '🎮 Left stick move · Right stick look · Ⓐ jump · Ⓧ like the house · ☰ menu' : '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · Ⓨ invite friends · ⓁⓇ job · ✚▼ show spots · ☰ menu') : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'pethotel' ? '🎮 Left stick move · Ⓐ jump · Ⓧ check in / care / check out · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
-      : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · Ⓧ emotes · LT/RT zoom · ☰ pause';
+      : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · View emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
   function padInput(s, dt){
@@ -27412,12 +28122,20 @@ const Obby = (() => {
       cam.dist = Math.max(5, Math.min(30, cam.dist + ((s.v[6] || 0) - (s.v[7] || 0)) * 14 * dt));
     }
     if (jp[3]) behind();
-    if (jp[2]){ buildEmoteMenu(); $('#oEmos').classList.add('show'); return; }
-    if (jp[4] || jp[5]){
-      const mine = Object.keys(EMOTES).filter(id => owned.has('emote-' + id));
-      if (!mine.length){ banner('🔒 Get emotes in the 🛍️ Shop!'); return; }
-      pad.emo = ((pad.emo < 0 ? (jp[5] ? -1 : 0) : pad.emo) + (jp[5] ? 1 : -1) + mine.length) % mine.length;
-      const id = mine[pad.emo]; playEmote(id); banner(EMOTES[id].emoji + ' ' + EMOTES[id].name);
+    const wheel = $('#oEmos') && $('#oEmos').classList.contains('show');
+    if (jp[8]){ buildEmoteMenu(); $('#oEmos').classList.toggle('show'); return; }   // View / Back — does not clash with A/X/LB/RB
+    if (wheel){
+      const mine = Object.keys(EMOTES).filter(id => (typeof EmoRules !== 'undefined' && EmoRules.emoAllowed) ? EmoRules.emoAllowed(id, owned) : (EMOTES[id].price === 0 || owned.has('emote-' + id)));
+      if (jp[1] || jp[13]){ $('#oEmos').classList.remove('show'); return; }
+      if (mine.length && (jp[14] || jp[15] || jp[12] || jp[0])){
+        pad.emo = ((pad.emo < 0 ? 0 : pad.emo) + (jp[15] || jp[12] ? 1 : jp[14] ? -1 : 0) + mine.length) % mine.length;
+        const id = mine[pad.emo];
+        const btns = $('#oEmos').querySelectorAll('button');
+        btns.forEach((b, i) => b.classList.toggle('on', i === pad.emo));
+        if (jp[0] || jp[12]){ playEmote(id); banner(EMOTES[id].emoji + ' ' + EMOTES[id].name); }
+        return;
+      }
+      if (jp[0] || jp[1] || jp[12] || jp[13] || jp[14] || jp[15]) return;
     }
   }
   // t162u: on phones the extra buttons ride in the top bar; Jump stays alone at the bottom right
@@ -27742,7 +28460,7 @@ function dhLayoutHud(){
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt'){ // pull the camera in front of walls so buildings don't block the view
       dist = clipOrbitCam(tx, ty, tz, cam.dist, mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2);
     }
     camera.position.set(tx + Math.sin(cam.yaw) * cp * dist, ty + Math.sin(cam.pitch) * dist, tz + Math.cos(cam.yaw) * cp * dist);
@@ -28532,7 +29250,7 @@ function dhLayoutHud(){
   }
 
 function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party', 'snowfest'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party', 'snowfest', 'cafe', 'fish', 'petshow', 'hunt'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     recordRecentGame(mode);
@@ -28634,6 +29352,16 @@ function start(m = 'obby', d = null){
     { const _eb = $('#evgBox'); if (_eb) _eb.style.display = mode === 'snowfest' ? '' : 'none'; const _ea = $('#evgAct'); if (_ea && mode !== 'snowfest') _ea.classList.remove('show'); }
     $('#obby').classList.toggle('evmode', mode === 'snowfest');
     if (mode === 'snowfest') snowfestEnter();
+    if (mode === 'cafe') cafeEnter();
+    if (mode === 'fish') fishEnter();
+    if (mode === 'petshow') psEnter();
+    if (mode === 'hunt') huntEnter();
+    try { if (typeof qNoteEv === 'function') qNoteEv('play', {mode: mode}); } catch (e){}
+    { const _tbox = document.getElementById('t297Box'); if (_tbox) _tbox.style.display = ['cafe','fish','petshow','hunt'].includes(mode) ? '' : 'none'; }
+    $('#obby').classList.toggle('cafemode', mode === 'cafe');
+    $('#obby').classList.toggle('fishmode', mode === 'fish');
+    $('#obby').classList.toggle('psmode', mode === 'petshow');
+    $('#obby').classList.toggle('huntmode', mode === 'hunt');
     try { if (typeof lbShare === 'function') lbShare(); } catch (e){}
     try { if (typeof qBind === 'function') qBind(); if (typeof trBind === 'function') trBind(); if (typeof trTickHud === 'function') trTickHud(); } catch (e){}
     $('#hmBox').style.display = mode === 'haunt' ? '' : 'none'; ['#hmAct'].forEach(id => $(id).classList.remove('show'));
@@ -29459,7 +30187,7 @@ function start(m = 'obby', d = null){
     const evs = [String(ev)];
     if (ev === 'play' && data && data.mode) evs.push('play:' + data.mode);
     if (ev === 'lh:ride') evs.push('lh-ride');
-    qNoteHook(evs, 1);
+    evs.forEach(evName => qNoteHook(evName, 1));
   }
 
   function qAward(amt, label){
@@ -30551,6 +31279,11 @@ function start(m = 'obby', d = null){
       quests: L('rubloxQuests', null),
       lantern: L('rubloxLantern', null),
       season: L('rubloxSeason', null),
+      hide: L('rubloxHide', null),
+      cafe: L('rubloxCafe', null),
+      fish: L('rubloxFish', null),
+      petshow: L('rubloxPetShow', null),
+      hunt: L('rubloxHunt', null),
       board: evStateOrBoard()
     };
   }
@@ -31009,6 +31742,677 @@ function start(m = 'obby', d = null){
 
   try { setTimeout(() => { try { evBind(); lbBind(); evApplyChrome(); evPaintHud(); lbPaint(); } catch (e){} }, 0); } catch (e){}
 
+  /* ---------- t297u shared helpers + Cozy Café, Ripple Lake, Pet Talent Show, Treasure Trail ---------- */
+  let cafe = null, fishg = null, psg = null, huntg = null;
+
+  function t297Lab(text, x, y, z, bg){
+    try {
+      const m = (typeof label === 'function') ? label(text, bg || 'rgba(29,35,64,.9)', '#fff', 420) : null;
+      if (m){ m.position.set(x, y, z); m.scale.multiplyScalar(0.8); scene.add(m); return m; }
+    } catch (e){}
+    return null;
+  }
+  function t297Keep(st, m){ if (m && st && st.trash) st.trash.push(m); return m; }
+  function t297Tree(st, x, z, col){
+    const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.28, 0.7, 6), new THREE.MeshLambertMaterial({color:'#8d5524'}));
+    pot.position.set(x, 0.35, z); scene.add(pot); t297Keep(st, pot);
+    const leaf = new THREE.Mesh(new THREE.ConeGeometry(1.05, 2.2, 8), new THREE.MeshLambertMaterial({color: col || '#2f8f4a'}));
+    leaf.position.set(x, 1.7, z); scene.add(leaf); t297Keep(st, leaf);
+  }
+  function t297Hud(text, act){
+    const hint = document.getElementById('t297Hint');
+    if (hint) hint.textContent = text || '';
+    const btn = document.getElementById('t297Act');
+    if (btn){ if (act){ btn.textContent = act; btn.classList.add('show'); } else btn.classList.remove('show'); }
+  }
+  function t297Near(x, z, r){ return Math.hypot(P.x - x, P.z - z) <= (r == null ? 1.8 : r); }
+  function t297Note(ev, n){ try { if (typeof qNoteHook === 'function') qNoteHook(ev, n == null ? 1 : n); } catch (e){} }
+  function t297Ach(id){ try { if (typeof achNote === 'function') achNote(id); } catch (e){} }
+  function t297Board(id, v){ try { if (typeof lbRecord === 'function') lbRecord(id, v); } catch (e){} }
+  function t297Pay(n, label){
+    if (!(n > 0)) return;
+    try { setCoins(coins + n); runCoins = (runCoins || 0) + n; } catch (e){}
+    try { if (typeof banner === 'function') banner((label || 'Nice!') + ' +' + n + ' 🪙'); } catch (e){}
+    try { if (typeof SND !== 'undefined' && SND.coin) SND.coin(); } catch (e){}
+  }
+  function t297Save(key, obj){ try { if (typeof save === 'function') save(key, obj); } catch (e){} }
+  function t297Pets(){
+    try {
+      if (typeof activePet === 'function'){
+        const a = activePet();
+        if (a) return [a].concat(((typeof pt !== 'undefined' && pt && pt.s && Array.isArray(pt.s.pets)) ? pt.s.pets : []).filter(p => p && p !== a));
+      }
+    } catch (e){}
+    try {
+      const s = (typeof load === 'function') ? load('rubloxPets', null) : null;
+      const list = s && Array.isArray(s.pets) ? s.pets : [];
+      if (list.length){
+        const i = Math.max(0, s.a | 0);
+        if (list[i]) return [list[i]].concat(list.filter((_, k) => k !== i));
+        return list.slice();
+      }
+    } catch (e){}
+    return [];
+  }
+
+  /* ===== Cozy Corner Café ===== */
+  function buildCafe(){
+    const R = (typeof CafeRules !== 'undefined') ? CafeRules : null;
+    const sv = R ? R.cafeLoad(typeof load === 'function' ? load(R.CAFE_KEY, null) : null) : {served:0, earned:0, decor:[]};
+    cafe = {trash:[], sv, tickets:[], hold:null, near:null, npcs:[], seq:0, t:0, remote: !!(typeof mpGuest === 'function' && mpGuest())};
+    scene.background = new THREE.Color('#f4e0c4');
+    scene.fog = new THREE.Fog('#f4e0c4', 28, 80);
+    plat(0, 0, 0, 22, 20, '#d9b089', 0.2);
+    plat(0, 4.4, -10.2, 22, 0.4, '#8d4f2a', 8.8, {noEdge:true});
+    plat(0, 4.4, 10.2, 22, 0.4, '#8d4f2a', 8.8, {noEdge:true});
+    plat(-11.2, 4.4, 0, 0.4, 20, '#8d4f2a', 8.8, {noEdge:true});
+    plat(11.2, 4.4, 0, 0.4, 20, '#8d4f2a', 8.8, {noEdge:true});
+    plat(0, 8.8, 0, 22.4, 20.4, '#f7efe4', 0.3, {noEdge:true});
+    // counter
+    plat(0, 1.1, -3, 10, 1.4, '#6b3a1d', 1.1);
+    plat(0, 0.5, -5.6, 10, 3.2, '#c48a5a', 0.5);
+    cafe.stations = [
+      {id:'cocoa', x:-3.2, z:-5.2, name:'☕ Cocoa'},
+      {id:'tea',   x:-1.1, z:-5.2, name:'🍵 Tea'},
+      {id:'latte', x: 1.1, z:-5.2, name:'🥛 Latte'},
+      {id:'fizz',  x: 3.2, z:-5.2, name:'🍓 Fizz'},
+      {id:'oven',  x: 0,   z:-7.2, name:'Oven'}
+    ];
+    cafe.stations.forEach(s => {
+      const col = s.id === 'oven' ? '#555' : '#fff8ee';
+      const m = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.7, 1.1), new THREE.MeshLambertMaterial({color: col}));
+      m.position.set(s.x, 1.4, s.z); scene.add(m); t297Keep(cafe, m);
+      t297Keep(cafe, t297Lab(s.name, s.x, 2.2, s.z, 'rgba(80,40,20,.9)'));
+    });
+    t297Keep(cafe, t297Lab('☕ Cozy Corner Café', 0, 3.4, -2.2, 'rgba(80,40,20,.92)'));
+    // seats
+    [[-6, 3], [-3, 3], [3, 3], [6, 3], [-6, 6], [6, 6]].forEach(([x,z]) => {
+      plat(x, 0.45, z, 1.2, 1.2, '#c45c4a', 0.45);
+    });
+    // door gap marker
+    plat(0, 0.05, 9.4, 2.4, 0.6, '#6b3a1d', 0.05);
+    t297Keep(cafe, t297Lab('🚪 Door', 0, 2.4, 9.2));
+    // decor already owned
+    (sv.decor || []).forEach(id => cafePlaceDecor(id, true));
+    cafeNextTickets(true);
+    if (!mp.on) cafeSpawnNpc();
+    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:6}, flag:new THREE.Object3D()};
+    Object.assign(P, {x:0,y:0.5,z:6, vx:0,vy:0,vz:0, face:Math.PI});
+  }
+  function cafePlaceDecor(id, silent){
+    if (!cafe) return;
+    const spots = {plant:[-8, 7], lamp:[8, 7], rug:[0, 4], art:[-9, -1], piano:[8, -1]};
+    const p = spots[id]; if (!p) return;
+    const col = {plant:'#2f8f4a', lamp:'#ffd23f', rug:'#c45c4a', art:'#3a86ff', piano:'#2a2a32'}[id] || '#fff';
+    const m = new THREE.Mesh(new THREE.BoxGeometry(id==='rug'?2.4:0.8, id==='rug'?0.06:1.1, id==='rug'?1.6:0.8), new THREE.MeshLambertMaterial({color:col}));
+    m.position.set(p[0], id==='rug'?0.24:0.7, p[1]); scene.add(m); t297Keep(cafe, m);
+    if (!silent) t297Keep(cafe, t297Lab((CafeRules.CAFE_DECOR.find(d=>d.id===id)||{}).emoji || '✨', p[0], 1.8, p[1]));
+  }
+  function cafeNextTickets(reset){
+    if (!cafe || !CafeRules) return;
+    if (reset) cafe.tickets = [];
+    while (cafe.tickets.length < 3){
+      cafe.seq += 1;
+      cafe.tickets.push(CafeRules.cafeTicket(cafe.seq, CafeRules.CAFE_MENU[cafe.seq % CafeRules.CAFE_MENU.length].id));
+    }
+    cafePaintBoard();
+  }
+  function cafePaintBoard(){
+    const el = document.getElementById('cafeBoardList');
+    if (!el || !cafe) return;
+    el.innerHTML = (cafe.tickets || []).map(t => '<div class="t297row"><span>'+t.emoji+' Ticket #'+t.n+'</span><b>'+t.name+'</b></div>').join('') || '<p>No tickets right now.</p>';
+    const dec = document.getElementById('cafeDecorList');
+    if (dec && CafeRules){
+      dec.innerHTML = CafeRules.CAFE_DECOR.map(d => {
+        const have = cafe.sv.decor.indexOf(d.id) >= 0;
+        return '<button type="button" data-cafedec="'+d.id+'" '+(have?'disabled':'')+'>'+d.emoji+' '+d.name+(have?' ✓':' · '+d.cost+' 🪙')+'</button>';
+      }).join('');
+      dec.querySelectorAll('button').forEach(b => b.onclick = ev => { ev.preventDefault(); cafeBuy(b.getAttribute('data-cafedec')); });
+    }
+  }
+  function cafeBuy(id){
+    if (!cafe || !CafeRules || cafe.remote) return;
+    const r = CafeRules.cafeBuyDecor(cafe.sv, id, coins);
+    if (!r.ok){ banner(r.why === 'coins' ? 'Need more coins for that decor.' : 'Already have that!'); return; }
+    cafe.sv = r.state; t297Save(CafeRules.CAFE_KEY, cafe.sv);
+    setCoins(r.coins);
+    cafePlaceDecor(id, false);
+    cafePaintBoard();
+    t297Ach('cafe-decor');
+    banner('Decor added! ' + r.item.emoji);
+  }
+  function cafeSpawnNpc(){
+    if (!cafe) return;
+    for (let i = 0; i < 2; i++){
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.4, 0.5), new THREE.MeshLambertMaterial({color: i ? '#3a86ff' : '#2ec27e'}));
+      const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshLambertMaterial({color:'#f6d2b0'}));
+      const g = new THREE.Group(); g.add(body); head.position.y = 1.05; g.add(head);
+      const x = (i ? 3 : -3), z = 9;
+      g.position.set(x, 0.7, z); scene.add(g); t297Keep(cafe, g);
+      cafe.npcs.push({g, x, z, y:0.7, wait: 2 + i * 3, want:null, phase:'idle'});
+    }
+  }
+  function cafeEnter(){
+    if (!cafe) return;
+    cam.pitch = 0.36; cam.dist = 12;
+    t297Note('play:cafe'); t297Ach('cafe-visit');
+    cafePaintBoard();
+    const act = document.getElementById('t297Act');
+    if (act && !window.__t297ActBound){ window.__t297ActBound = true; act.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); t297Act(); }; }
+    ['cafeBoardBtn','cafeDecorBtn','cafeBoardX','cafeDecorX'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.__t297){ el.__t297 = true; el.onclick = ev => { ev.preventDefault(); cafeToggle(id); }; }
+    });
+    banner('☕ Welcome to Cozy Corner Café! Make the ticket drinks and treats, then serve them.');
+    t297Hud('Walk to a station and press E / Ⓧ to make the next ticket.', '☕ Make');
+  }
+  function cafeToggle(id){
+    const board = document.getElementById('cafeBoard');
+    const dec = document.getElementById('cafeDecor');
+    if (id === 'cafeBoardBtn' || id === 'cafeBoardX'){ if (board) board.classList.toggle('show', id !== 'cafeBoardX'); if (id !== 'cafeBoardX' && dec) dec.classList.remove('show'); }
+    if (id === 'cafeDecorBtn' || id === 'cafeDecorX'){ if (dec) dec.classList.toggle('show', id !== 'cafeDecorX'); if (id !== 'cafeDecorX' && board) board.classList.remove('show'); cafePaintBoard(); }
+  }
+  function cafeStop(){
+    if (!cafe) return;
+    try { cafe.trash.forEach(m => { if (m && m.parent) m.parent.remove(m); }); } catch (e){}
+    ['cafeBoard','cafeDecor'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('show'); });
+    cafe = null;
+  }
+  function cafeStationNear(){
+    if (!cafe) return null;
+    let best = null, bd = 99;
+    cafe.stations.forEach(s => { const d = Math.hypot(P.x - s.x, P.z - s.z); if (d < 1.6 && d < bd){ bd = d; best = s; } });
+    return best;
+  }
+  function cafeAct(){
+    if (!cafe || !CafeRules) return false;
+    const st = cafeStationNear();
+    if (cafe.hold){
+      // serve at the front of the counter
+      if (t297Near(0, -2.2, 2.2) || st){
+        const r = CafeRules.cafeServe(cafe.sv, cafe.hold);
+        if (r.ok){
+          cafe.sv = r.state; t297Save(CafeRules.CAFE_KEY, cafe.sv);
+          t297Pay(r.coins, r.item.emoji + ' Served ' + r.item.name);
+          t297Note('cafe-serve'); t297Ach('cafe-first');
+          if (cafe.sv.served >= 20) t297Ach('cafe-20');
+          t297Board('cafe-served', cafe.sv.served);
+          cafe.tickets = cafe.tickets.filter(t => t !== cafe.hold && t.n !== cafe.hold.n);
+          cafe.hold = null; cafeNextTickets(false); cafePaintBoard();
+          return true;
+        }
+      }
+    }
+    if (!st){ banner('Stand at a station or the counter.'); return true; }
+    const want = cafe.tickets.find(t => CafeRules.cafeItem(t.id).st === st.id);
+    if (!want){ banner('No ticket needs the ' + st.name + ' right now. Check the board!'); return true; }
+    const mk = CafeRules.cafeMake(want, st.id);
+    if (!mk.ok){ banner('That station is for a different ticket.'); return true; }
+    cafe.hold = want;
+    banner('Made ' + want.emoji + ' ' + want.name + '! Take it to the counter to serve.');
+    t297Hud('Carry the ' + want.name + ' to the counter and press E / Ⓧ to serve.', '🍽️ Serve');
+    return true;
+  }
+  function cafeUpdate(dt){
+    if (!cafe) return;
+    cafe.t += dt;
+    if (!mp.on && cafe.npcs){
+      cafe.npcs.forEach((n, i) => {
+        if (n.phase === 'idle'){ n.wait -= dt; if (n.wait <= 0){ n.phase = 'walk'; n.tx = i ? 2 : -2; n.tz = -1.6; } }
+        else if (n.phase === 'walk'){
+          n.x += (n.tx - n.x) * Math.min(1, dt * 1.6); n.z += (n.tz - n.z) * Math.min(1, dt * 1.6);
+          if (Math.hypot(n.x-n.tx, n.z-n.tz) < 0.2){ n.phase = 'wait'; n.wait = 8; }
+        } else if (n.phase === 'wait'){ n.wait -= dt; if (n.wait <= 0){ n.phase = 'leave'; n.tx = i ? 3 : -3; n.tz = 9; } }
+        else if (n.phase === 'leave'){
+          n.x += (n.tx - n.x) * Math.min(1, dt * 1.6); n.z += (n.tz - n.z) * Math.min(1, dt * 1.6);
+          if (Math.hypot(n.x-n.tx, n.z-n.tz) < 0.3){ n.phase = 'idle'; n.wait = 4 + i; }
+        }
+        if (n.g) n.g.position.set(n.x, n.y, n.z);
+      });
+    }
+    const st = cafeStationNear();
+    if (cafe.hold) t297Hud('Serve the ' + cafe.hold.name + ' at the counter.', '🍽️ Serve');
+    else if (st) t297Hud('Make a ticket at the ' + st.name + '.', '☕ Make');
+    else t297Hud('Check the ticket board, then use a station.', '');
+  }
+  function cafeKey(e){
+    if (!cafe || e.repeat) return false;
+    if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ cafeAct(); return true; }
+    if (e.code === 'KeyB'){ cafeToggle('cafeBoardBtn'); return true; }
+    return false;
+  }
+  function cafePad(jp){ if (!cafe) return false; if (jp && (jp[2] || jp[3])){ cafeAct(); return true; } return false; }
+
+  /* ===== Ripple Lake Fishing ===== */
+  function buildFish(){
+    const R = (typeof FishRules !== 'undefined') ? FishRules : null;
+    const ice = !!(typeof evFestOn === 'function' && evFestOn());
+    const sv = R ? R.fishLoad(typeof load === 'function' ? load(R.FISH_KEY, null) : null) : {caught:{}, total:0};
+    fishg = {trash:[], sv, ice, hook:null, q:0, t:0, sweet:0.5, cursor:0, dir:1, biting:false, near:false};
+    scene.background = new THREE.Color(ice ? '#c5d8ec' : '#87c8ef');
+    scene.fog = new THREE.Fog(ice ? '#c5d8ec' : '#87c8ef', 40, 110);
+    plat(0, 0, 8, 48, 28, ice ? '#d5e6f4' : '#6dbf7a', 1.0);
+    // lake
+    const lake = plat(0, ice ? 0.05 : -0.25, -8, 28, 22, ice ? '#d8eefc' : '#2f8ec8', ice ? 0.1 : 0.8);
+    if (lake) lake.ice = !!ice;
+    // pier
+    plat(0, 0.35, -1, 3.2, 10, '#8d5524', 0.35);
+    plat(0, 0.35, -6.5, 4.2, 3, '#8d5524', 0.35);
+    [[-16, 10], [16, 10], [-18, 4], [18, 4], [-14, 16], [14, 16]].forEach(([x,z]) => t297Tree(fishg, x, z, ice ? '#1f5a3a' : '#2f8f4a'));
+    t297Keep(fishg, t297Lab(ice ? '🧊 Ice fishing hole — press E / Ⓧ to drop a line!' : '🎣 Cast from the pier — press E / Ⓧ!', 0, 3.2, -6.5));
+    t297Keep(fishg, t297Lab('📖 Fish Index — press I or the book button', 0, 2.6, 4));
+    if (ice){
+      const hole = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 0.2, 16), new THREE.MeshLambertMaterial({color:'#1d4e7a'}));
+      hole.position.set(0, 0.12, -7.2); scene.add(hole); t297Keep(fishg, hole);
+    }
+    checkpoints[0] = {idx:0, spawn:{x:0,y:0.6,z:6}, flag:new THREE.Object3D()};
+    Object.assign(P, {x:0,y:0.6,z:6, vx:0,vy:0,vz:0, face:Math.PI});
+  }
+  function fishEnter(){
+    if (!fishg) return;
+    cam.pitch = 0.38; cam.dist = 13;
+    t297Note('play:fish'); t297Ach('fish-visit');
+    if (fishg.ice) t297Ach('fish-ice');
+    const act = document.getElementById('t297Act');
+    if (act && !window.__t297ActBound){ window.__t297ActBound = true; act.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); t297Act(); }; }
+    const idx = document.getElementById('fishIndexBtn');
+    const x = document.getElementById('fishIndexX');
+    if (idx && !idx.__t297){ idx.__t297 = true; idx.onclick = ev => { ev.preventDefault(); fishToggleIndex(); }; }
+    if (x && !x.__t297){ x.__t297 = true; x.onclick = ev => { ev.preventDefault(); fishToggleIndex(false); }; }
+    banner(fishg.ice ? '🧊 The lake is frozen for the Snow Festival! Ice-only fish are in season.' : '🎣 Welcome to Ripple Lake! Cast from the pier and time the bite.');
+    t297Hud('Walk onto the pier and press E / Ⓧ to cast.', '🎣 Cast');
+  }
+  function fishStop(){
+    if (!fishg) return;
+    try { fishg.trash.forEach(m => { if (m && m.parent) m.parent.remove(m); }); } catch (e){}
+    const bar = document.getElementById('fishBar'); if (bar) bar.classList.remove('show');
+    const idx = document.getElementById('fishIndex'); if (idx) idx.classList.remove('show');
+    fishg = null;
+  }
+  function fishToggleIndex(on){
+    const el = document.getElementById('fishIndex');
+    if (!el) return;
+    const show = on == null ? !el.classList.contains('show') : !!on;
+    el.classList.toggle('show', show);
+    if (show) fishPaintIndex();
+  }
+  function fishPaintIndex(){
+    const el = document.getElementById('fishIndexList');
+    if (!el || !fishg || !FishRules) return;
+    const rows = FishRules.fishIndex(fishg.sv, fishg.ice);
+    const kinds = FishRules.fishKinds(fishg.sv);
+    const head = document.getElementById('fishIndexHead');
+    if (head) head.textContent = 'Fish Index — ' + kinds + ' kinds caught';
+    el.innerHTML = rows.map(r => '<div class="t297row '+(r.found?'':'dim')+'"><span>'+(r.found?r.emoji:'❓')+' '+ (r.found?r.name:'???')+'</span><b>'+(r.found?(r.rec+' · '+r.count+' · best '+r.best+' cm'):r.rarity)+'</b></div>').join('');
+  }
+  function fishOnPier(){ return P.z < 1.2 && P.z > -8.5 && Math.abs(P.x) < 2.6; }
+  function fishAct(){
+    if (!fishg || !FishRules) return false;
+    if (!fishOnPier()){ banner('Walk onto the pier to fish.'); return true; }
+    if (!fishg.hook){
+      fishg.hook = 'wait'; fishg.t = 0; fishg.cursor = 0; fishg.dir = 1; fishg.sweet = 0.35 + Math.random() * 0.3; fishg.biting = false;
+      const bar = document.getElementById('fishBar'); if (bar) bar.classList.add('show');
+      banner('The line is out... wait for a nibble, then hit the green zone!');
+      t297Hud('Wait for the bite, then press E / Ⓧ in the green zone!', '🎣 Hook');
+      return true;
+    }
+    if (fishg.hook === 'wait' && !fishg.biting){ banner('Not a bite yet — wait for the splash!'); return true; }
+    const q = FishRules.fishQuality(fishg.cursor, fishg.sweet, 0.16);
+    const bar = document.getElementById('fishBar'); if (bar) bar.classList.remove('show');
+    fishg.hook = null;
+    if (q <= 0){ banner('It got away! Try again.'); try { if (SND && SND.hit) SND.hit(); } catch(e){} return true; }
+    const f = FishRules.fishPick(Math.random, fishg.ice, q);
+    const size = FishRules.fishSize(f, Math.random, q);
+    const r = FishRules.fishCatch(fishg.sv, f, size);
+    fishg.sv = r.state; t297Save(FishRules.FISH_KEY, fishg.sv);
+    t297Pay(r.coins, (r.first ? 'New catch! ' : '') + f.emoji + ' ' + f.name + ' · ' + r.size + ' cm');
+    t297Note('fish-catch'); t297Ach('fish-first');
+    if (f.r >= 2) t297Ach('fish-rare');
+    if (FishRules.fishKinds(fishg.sv) >= 10) t297Ach('fish-index');
+    if (f.ice) t297Ach('fish-ice');
+    t297Board('fish-kinds', FishRules.fishKinds(fishg.sv));
+    t297Board('fish-biggest', fishg.sv.biggest);
+    fishPaintIndex();
+    return true;
+  }
+  function fishUpdate(dt){
+    if (!fishg) return;
+    if (fishg.hook === 'wait'){
+      fishg.t += dt;
+      if (!fishg.biting && fishg.t > 1.2 + Math.random()*0.4){ fishg.biting = true; fishg.t = 0; banner('💥 A bite! Time the green zone!'); }
+      if (fishg.biting){
+        fishg.cursor += fishg.dir * dt * 1.25;
+        if (fishg.cursor > 1){ fishg.cursor = 1; fishg.dir = -1; }
+        if (fishg.cursor < 0){ fishg.cursor = 0; fishg.dir = 1; }
+        const cur = document.getElementById('fishCursor');
+        const sw = document.getElementById('fishSweet');
+        if (cur) cur.style.left = (fishg.cursor * 100) + '%';
+        if (sw){ sw.style.left = ((fishg.sweet - 0.16) * 100) + '%'; sw.style.width = '32%'; }
+        if (fishg.t > 3.2){ fishg.hook = null; const bar = document.getElementById('fishBar'); if (bar) bar.classList.remove('show'); banner('It got away! Cast again.'); }
+      }
+    }
+    if (!fishg.hook) t297Hud(fishOnPier() ? 'Press E / Ⓧ to cast.' : 'Walk onto the pier to fish.', fishOnPier() ? '🎣 Cast' : '');
+  }
+  function fishKey(e){
+    if (!fishg || e.repeat) return false;
+    if (e.code === 'KeyI'){ fishToggleIndex(); return true; }
+    if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ fishAct(); return true; }
+    return false;
+  }
+  function fishPad(jp){ if (!fishg) return false; if (jp && (jp[2] || jp[3])){ fishAct(); return true; } return false; }
+
+  /* ===== Pet Talent Show ===== */
+  function buildPetShow(){
+    const R = (typeof PsRules !== 'undefined') ? PsRules : null;
+    const sv = R ? R.psLoad(typeof load === 'function' ? load(R.PS_KEY, null) : null) : {tricks:{}, shows:0, best:0};
+    const pets = t297Pets();
+    const pal = {id:'pal', n:'Stage Pal', name:'Stage Pal', kind:'bunny', emoji:'🐰'};
+    const use = pets.length ? pets[0] : pal;
+    psg = {trash:[], sv, pets, pet: use, pal: !pets.length, near:null, show:false, step:0, qs:[], routine:[], votes:{}, t:0, remote: !!(typeof mpGuest === 'function' && mpGuest())};
+    scene.background = new THREE.Color('#d8c6f0');
+    scene.fog = new THREE.Fog('#d8c6f0', 32, 90);
+    plat(0, 0, 2, 28, 28, '#efe7fb', 0.2);
+    // stage
+    plat(0, 0.7, -8, 12, 8, '#f4e27a', 0.7);
+    plat(0, 0.2, -2.2, 10, 2.2, '#6b4aa0', 0.2);
+    t297Keep(psg, t297Lab('🎭 Stage — start a show here', 0, 3.4, -5));
+    // judges as fixtures
+    [[-3, -11.2], [0, -11.2], [3, -11.2]].forEach(([x,z], i) => {
+      plat(x, 1.0, z, 1.4, 1.0, '#3d2a62', 1.0);
+      const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshLambertMaterial({color:'#f6d2b0'}));
+      head.position.set(x, 2.15, z); scene.add(head); t297Keep(psg, head);
+      t297Keep(psg, t297Lab('Judge', x, 2.8, z, 'rgba(40,20,70,.92)'));
+    });
+    t297Keep(psg, t297Lab('🐾 Pet Talent Show', 0, 5.2, -8));
+    // practice mats
+    psg.mats = (PsRules ? PsRules.PS_TRICKS : []).map((t, i) => {
+      const x = -8 + i * 4, z = 8;
+      plat(x, 0.12, z, 2.2, 2.2, i % 2 ? '#ffd6ea' : '#d6f0ff', 0.12);
+      t297Keep(psg, t297Lab(t.emoji + ' ' + t.name, x, 2.2, z));
+      return {id:t.id, x, z, name:t.name, emoji:t.emoji};
+    });
+    // seats
+    for (let i = -3; i <= 3; i++) plat(i * 2.2, 0.4, 12, 1.6, 1.2, '#6b4aa0', 0.4);
+    // pet mesh placeholder
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 10), new THREE.MeshLambertMaterial({color:'#f0b862'}));
+    body.position.set(2, 0.55, 2); scene.add(body); t297Keep(psg, body); psg.petM = body;
+    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:4}, flag:new THREE.Object3D()};
+    Object.assign(P, {x:0,y:0.5,z:4, vx:0,vy:0,vz:0, face:Math.PI});
+  }
+  function psEnter(){
+    if (!psg) return;
+    cam.pitch = 0.36; cam.dist = 13;
+    t297Note('play:petshow'); t297Ach('ps-visit');
+    const act = document.getElementById('t297Act');
+    if (act && !window.__t297ActBound){ window.__t297ActBound = true; act.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); t297Act(); }; }
+    ['psVoteX','psVote'].forEach(id => {
+      const el = document.getElementById(id === 'psVote' ? 'psVoteBox' : id);
+    });
+    const box = document.getElementById('psVoteBox');
+    if (box && !box.__t297){
+      box.__t297 = true;
+      box.querySelectorAll('[data-psvote]').forEach(b => b.onclick = ev => { ev.preventDefault(); psCastVote(+b.getAttribute('data-psvote')); });
+    }
+    const vx = document.getElementById('psVoteX');
+    if (vx && !vx.__t297){ vx.__t297 = true; vx.onclick = ev => { ev.preventDefault(); const el=document.getElementById('psVoteBox'); if (el) el.classList.remove('show'); }; }
+    if (psg.pal) banner('🐰 Bring a pal from Adopt a Pet next time — today Stage Pal will practice with you!');
+    else banner('🐾 Teach ' + (psg.pet.n || psg.pet.name || 'your pet') + ' tricks on the mats, then perform on the stage!');
+    t297Hud('Practice a trick on a mat, or start a show on the stage.', '');
+  }
+  function psStop(){
+    if (!psg) return;
+    try { psg.trash.forEach(m => { if (m && m.parent) m.parent.remove(m); }); } catch (e){}
+    const el = document.getElementById('psVoteBox'); if (el) el.classList.remove('show');
+    psg = null;
+  }
+  function psKnown(){
+    if (!psg || !PsRules) return [];
+    return PsRules.psKnown(psg.sv, psg.pet && (psg.pet.id || psg.pet.n || 'pal'));
+  }
+  function psMatNear(){
+    if (!psg) return null;
+    let best=null, bd=99;
+    (psg.mats||[]).forEach(m => { const d=Math.hypot(P.x-m.x,P.z-m.z); if (d<1.6 && d<bd){ bd=d; best=m; } });
+    return best;
+  }
+  function psAct(){
+    if (!psg || !PsRules) return false;
+    if (psg.show) return true;
+    const mat = psMatNear();
+    if (mat){
+      const q = 0.55 + Math.random() * 0.45;
+      const r = PsRules.psTeach(psg.sv, psg.pet.id || psg.pet.n || 'pal', mat.id, q);
+      if (!r.ok){ banner('Almost! Try the ' + mat.name + ' again.'); return true; }
+      psg.sv = r.state; t297Save(PsRules.PS_KEY, psg.sv);
+      t297Note('ps-trick'); t297Ach('ps-teach');
+      banner((r.first ? 'Learned! ' : 'Nailed it! ') + mat.emoji + ' ' + mat.name);
+      return true;
+    }
+    if (t297Near(0, -6, 3.2)){
+      const known = psKnown();
+      if (!known.length){ banner('Teach a trick on a practice mat first!'); return true; }
+      psg.show = true; psg.routine = known.slice(); psg.qs = []; psg.step = 0; psg.t = 0; psg.votes = {};
+      banner('Showtime! ' + (psg.pet.n || psg.pet.name) + ' will perform ' + known.length + ' trick' + (known.length>1?'s':'') + '!');
+      if (mp.on){ const el=document.getElementById('psVoteBox'); if (el) el.classList.add('show'); }
+      return true;
+    }
+    banner('Practice on a mat, or walk onto the stage to perform.');
+    return true;
+  }
+  function psCastVote(n){
+    if (!psg || !PsRules) return;
+    const v = PsRules.psCleanVote(n);
+    if (v == null) return;
+    const uid = (typeof mp !== 'undefined' && mp && mp.me) ? String(mp.me) : 'me';
+    psg.votes[uid] = v;
+    try {
+      if (typeof mpSend === 'function') mpSend({t:'ps', a:'vote', n:v});
+    } catch (e){}
+    banner('Your score: ' + v + '/10');
+  }
+  function psFromNet(g, d){
+    if (!psg || !d || d.t !== 'ps') return;
+    if (d.a === 'vote'){
+      const v = PsRules.psCleanVote(d.n);
+      if (v == null) return;
+      const uid = String((g && g.uid) || 'friend');
+      psg.votes[uid] = v;
+    }
+  }
+  function psFinish(){
+    if (!psg || !PsRules) return;
+    const votes = Object.keys(psg.votes).map(k => psg.votes[k]);
+    const judged = PsRules.psJudge(psg.routine, psg.qs, votes);
+    const rec = PsRules.psRecord(psg.sv, judged);
+    psg.show = false;
+    if (rec.ok){
+      psg.sv = rec.state; t297Save(PsRules.PS_KEY, psg.sv);
+      t297Pay(rec.coins, rec.ribbon.emoji + ' ' + rec.ribbon.name + ' · ' + rec.score + '/10');
+      t297Note('ps-show'); t297Ach('ps-show');
+      if (rec.ribbon.id === 'gold') t297Ach('ps-gold');
+      t297Board('ps-best', psg.sv.best);
+    }
+    const el=document.getElementById('psVoteBox'); if (el) el.classList.remove('show');
+  }
+  function psUpdate(dt){
+    if (!psg) return;
+    if (psg.petM){
+      const wob = psg.show ? Math.abs(Math.sin((psg.t||0)*8))*0.2 : Math.sin((worldT||0)*2)*0.05;
+      psg.petM.position.set(psg.show ? 0 : 2, 0.55 + wob, psg.show ? -7.2 : 2);
+      psg.petM.rotation.y += dt * (psg.show ? 4 : 0.4);
+    }
+    if (psg.show){
+      psg.t += dt;
+      const cur = psg.routine[psg.step];
+      if (psg.t > 1.6){
+        psg.qs.push(0.7 + Math.random()*0.3);
+        psg.step += 1; psg.t = 0;
+        if (psg.step >= psg.routine.length) psFinish();
+        else banner('Next trick: ' + (PsRules.psTrick(psg.routine[psg.step])||{}).emoji);
+      } else t297Hud('Performing ' + ((PsRules.psTrick(cur)||{}).name || 'a trick') + '...', '');
+      return;
+    }
+    const mat = psMatNear();
+    if (mat) t297Hud('Teach ' + (psg.pet.n || psg.pet.name || 'your pal') + ' to ' + mat.name + '.', mat.emoji + ' Practice');
+    else if (t297Near(0, -6, 3.2)) t297Hud('Start a show with the tricks you taught!', '🎭 Show');
+    else t297Hud('Practice on a mat, then perform on the stage.', '');
+  }
+  function psKey(e){
+    if (!psg || e.repeat) return false;
+    if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ psAct(); return true; }
+    if (e.code && /^Digit[1-9]$/.test(e.code) && psg.show && mp.on){ psCastVote(+e.code.slice(-1)); return true; }
+    return false;
+  }
+  function psPad(jp){ if (!psg) return false; if (jp && (jp[2] || jp[3])){ psAct(); return true; } return false; }
+
+  /* ===== Treasure Trail ===== */
+  function buildHunt(){
+    const R = (typeof HuntRules !== 'undefined') ? HuntRules : null;
+    const now = Date.now();
+    const sv = R ? R.huntLoad(typeof load === 'function' ? load(R.HUNT_KEY, null) : null, now) : {step:0, found:[]};
+    const cur = R ? R.huntCurrent(sv, now) : {map:{steps:[]}, step:null, done:false, state:sv};
+    huntg = {trash:[], sv: cur.state, map: cur.map, marks:{}, t:0};
+    scene.background = new THREE.Color('#f7d7a0');
+    scene.fog = new THREE.Fog('#f7e4b8', 45, 120);
+    plat(0, 0, 0, 56, 56, '#e8c97a', 1.0);
+    // brook
+    plat(8, 0.05, -8, 3, 18, '#5dade2', 0.2);
+    (HuntRules ? HuntRules.HUNT_SPOTS : []).forEach(s => {
+      const col = {mill:'#c45c4a', bridge:'#3a86ff', oak:'#2f8f4a', dune:'#e8c36a', arch:'#9aa3b5', well:'#7a8a9a', dock:'#8d5524', camp:'#c45c4a'}[s.id] || '#8d5524';
+      if (s.id === 'oak') t297Tree(huntg, s.x, s.z, '#1f7a4c');
+      else if (s.id === 'bridge'){ plat(s.x, 0.5, s.z, 4, 1.4, '#3a86ff', 0.5); }
+      else if (s.id === 'dune'){ plat(s.x, 0.8, s.z, 4, 4, '#e8c36a', 0.8); }
+      else if (s.id === 'arch'){
+        plat(s.x-1.3, 1.6, s.z, 0.6, 0.6, '#9aa3b5', 1.6);
+        plat(s.x+1.3, 1.6, s.z, 0.6, 0.6, '#9aa3b5', 1.6);
+        plat(s.x, 3.4, s.z, 3.2, 0.6, '#9aa3b5', 0.6);
+      } else {
+        plat(s.x, 1.4, s.z, 2.2, 2.2, col, 1.4);
+      }
+      const lab = t297Keep(huntg, t297Lab(s.emoji + ' ' + s.name, s.x, 3.4, s.z));
+      huntg.marks[s.id] = {x:s.x, z:s.z, lab};
+    });
+    t297Keep(huntg, t297Lab('🗺️ Treasure Trail — follow today\'s clues!', 0, 3.2, 4));
+    checkpoints[0] = {idx:0, spawn:{x:0,y:0.6,z:6}, flag:new THREE.Object3D()};
+    Object.assign(P, {x:0,y:0.6,z:6, vx:0,vy:0,vz:0, face:Math.PI});
+  }
+  function huntEnter(){
+    if (!huntg) return;
+    cam.pitch = 0.4; cam.dist = 16;
+    t297Note('play:hunt'); t297Ach('hunt-visit');
+    const act = document.getElementById('t297Act');
+    if (act && !window.__t297ActBound){ window.__t297ActBound = true; act.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); t297Act(); }; }
+    const mb = document.getElementById('huntMapBtn');
+    const mx = document.getElementById('huntMapX');
+    if (mb && !mb.__t297){ mb.__t297 = true; mb.onclick = ev => { ev.preventDefault(); huntToggleMap(); }; }
+    if (mx && !mx.__t297){ mx.__t297 = true; mx.onclick = ev => { ev.preventDefault(); huntToggleMap(false); }; }
+    huntPaintMap();
+    const step = huntg.map && huntg.map.steps[huntg.sv.step];
+    banner(step ? ('🗺️ Today\'s first clue: ' + step.clue) : '🗺️ You already finished today\'s map — come back tomorrow!');
+    t297Hud(step ? step.clue : 'Today\'s map is done. Wander or come back tomorrow!', '🗺️ Map');
+  }
+  function huntStop(){
+    if (!huntg) return;
+    try { huntg.trash.forEach(m => { if (m && m.parent) m.parent.remove(m); }); } catch (e){}
+    const el = document.getElementById('huntMap'); if (el) el.classList.remove('show');
+    huntg = null;
+  }
+  function huntToggleMap(on){
+    const el = document.getElementById('huntMap');
+    if (!el) return;
+    const show = on == null ? !el.classList.contains('show') : !!on;
+    el.classList.toggle('show', show);
+    if (show) huntPaintMap();
+  }
+  function huntPaintMap(){
+    const el = document.getElementById('huntMapList');
+    if (!el || !huntg) return;
+    const steps = (huntg.map && huntg.map.steps) || [];
+    el.innerHTML = steps.map((s, i) => {
+      const done = i < (huntg.sv.step|0);
+      const cur = i === (huntg.sv.step|0);
+      return '<div class="t297row '+(done?'dim':'')+'"><span>'+(done?'✅':(cur?'👉':s.emoji))+' '+(cur||done?s.name:'Hidden clue')+'</span><b>'+(cur?s.clue:(done?'Found!':'???'))+'</b></div>';
+    }).join('');
+  }
+  function huntSpotNear(){
+    if (!huntg || !HuntRules) return null;
+    let best=null, bd=99;
+    HuntRules.HUNT_SPOTS.forEach(s => { const d=Math.hypot(P.x-s.x,P.z-s.z); if (d<2.6 && d<bd){ bd=d; best=s; } });
+    return best;
+  }
+  function huntAct(){
+    if (!huntg || !HuntRules) return false;
+    const s = huntSpotNear();
+    if (!s){ huntToggleMap(); return true; }
+    const r = HuntRules.huntDig(huntg.sv, s.id, Date.now());
+    huntg.sv = r.state; t297Save(HuntRules.HUNT_KEY, huntg.sv);
+    if (!r.ok){
+      banner(r.why === 'empty' ? ('Nothing here. ' + (r.hint || 'Check your map!')) : r.why === 'done' ? 'Today\'s map is finished — new clues tomorrow!' : 'Already dug here.');
+      huntPaintMap();
+      return true;
+    }
+    t297Pay(r.coins, r.finished ? '💎 You found the last chest!' : ('📦 A chest at the ' + s.name + '!'));
+    t297Note('hunt-chest'); t297Ach('hunt-first');
+    if (r.finished){
+      t297Ach('hunt-map');
+      if ((huntg.sv.maps|0) >= 3) t297Ach('hunt-week');
+      t297Board('hunt-maps', huntg.sv.maps);
+    }
+    huntg.map = HuntRules.huntCurrent(huntg.sv, Date.now()).map;
+    huntPaintMap();
+    const next = huntg.map.steps[huntg.sv.step];
+    if (next) banner('Next clue: ' + next.clue);
+    return true;
+  }
+  function huntUpdate(){
+    if (!huntg || !HuntRules) return;
+    const s = huntSpotNear();
+    const cur = huntg.map && huntg.map.steps[huntg.sv.step];
+    if (s) t297Hud('Dig at the ' + s.name + '?', '⛏️ Dig');
+    else if (cur) t297Hud(cur.clue, '🗺️ Map');
+    else t297Hud('Today\'s map is complete!', '🗺️ Map');
+  }
+  function huntKey(e){
+    if (!huntg || e.repeat) return false;
+    if (e.code === 'KeyM'){ huntToggleMap(); return true; }
+    if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ huntAct(); return true; }
+    return false;
+  }
+  function huntPad(jp){ if (!huntg) return false; if (jp && (jp[2] || jp[3])){ huntAct(); return true; } return false; }
+
+  function t297Act(){
+    if (mode === 'cafe') return cafeAct();
+    if (mode === 'fish') return fishAct();
+    if (mode === 'petshow') return psAct();
+    if (mode === 'hunt') return huntAct();
+    return false;
+  }
+  function t297Update(dt){
+    if (cafe) cafeUpdate(dt);
+    if (fishg) fishUpdate(dt);
+    if (psg) psUpdate(dt);
+    if (huntg) huntUpdate(dt);
+  }
+  function t297Key(e){
+    if (mode === 'cafe') return cafeKey(e);
+    if (mode === 'fish') return fishKey(e);
+    if (mode === 'petshow') return psKey(e);
+    if (mode === 'hunt') return huntKey(e);
+    return false;
+  }
+  function t297Pad(jp){
+    if (mode === 'cafe') return cafePad(jp);
+    if (mode === 'fish') return fishPad(jp);
+    if (mode === 'petshow') return psPad(jp);
+    if (mode === 'hunt') return huntPad(jp);
+    return false;
+  }
+  function t297Stop(){
+    cafeStop(); fishStop(); psStop(); huntStop();
+    const box = document.getElementById('t297Box'); if (box) box.style.display = 'none';
+    const act = document.getElementById('t297Act'); if (act) act.classList.remove('show');
+  }
+
   function stop(){
     if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}
     if (typeof dhCloseReset === 'function') dhCloseReset();
@@ -31020,7 +32424,7 @@ function start(m = 'obby', d = null){
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame'); setHomeInert(false);
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (evg) snowfestStop(); if (py) partyStop(); if (lh) lanternStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (evg) snowfestStop(); if (typeof t297Stop === 'function') t297Stop(); if (py) partyStop(); if (lh) lanternStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
     try { if (typeof lbOnLeave === 'function') lbOnLeave('host'); } catch (e){}
@@ -31033,6 +32437,12 @@ function start(m = 'obby', d = null){
     evOn: () => (typeof evOn === 'function' ? evOn() : (typeof evFestOn === 'function' && evFestOn())),
     evForce: (on) => { if (typeof evSetForce === 'function') evSetForce(!!on); },
     evShop: () => { if (typeof evOpenShop === 'function') evOpenShop(true); },
+    emoWheel: () => { try { buildEmoteMenu(); const w = document.getElementById('oEmos'); if (w) w.classList.add('show'); } catch (e){} },
+    fishIndex: () => { try { if (typeof fishToggleIndex === 'function') fishToggleIndex(true); } catch (e){} },
+    huntMap: () => { try { if (typeof huntToggleMap === 'function') huntToggleMap(true); } catch (e){} },
+    cafeBoard: () => { try { if (typeof cafeToggle === 'function') cafeToggle('cafeBoardBtn'); } catch (e){} },
+    hideStart: () => { try { if (typeof hsStart === 'function') hsStart(); } catch (e){} },
+
     evGive: (n) => { if (typeof evGive === 'function') evGive(n, 'Preview'); },
     evState: () => (typeof evEnsure === 'function' ? evEnsure() : null),
     lbPaint: () => { if (typeof lbPaint === 'function') lbPaint(); },

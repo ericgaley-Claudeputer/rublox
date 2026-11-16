@@ -19,7 +19,14 @@
     {id: 'lh-tickets', name: 'Lantern Big Top — tickets', emoji: '🎟️', kind: 'high', unit: ''},
     {id: 'snow-toss', name: 'Snowball toss — best score', emoji: '❄️', kind: 'high', unit: ''},
     {id: 'snow-sled', name: 'Sled hill — best time', emoji: '🛷', kind: 'low', unit: 's'},
-    {id: 'snow-skate', name: 'Ice rink — best score', emoji: '⛸️', kind: 'high', unit: ''}
+    {id: 'snow-skate', name: 'Ice rink — best score', emoji: '⛸️', kind: 'high', unit: ''},
+    {id: 'hide-wins', name: 'Hide and Seek — wins', emoji: '🙈', kind: 'high', unit: ''},
+    {id: 'hide-finds', name: 'Hide and Seek — finds', emoji: '🔍', kind: 'high', unit: ''},
+    {id: 'cafe-served', name: 'Cozy Corner Café — served', emoji: '☕', kind: 'high', unit: ''},
+    {id: 'fish-kinds', name: 'Ripple Lake — kinds caught', emoji: '🎣', kind: 'high', unit: ''},
+    {id: 'fish-biggest', name: 'Ripple Lake — biggest fish', emoji: '🐟', kind: 'high', unit: 'cm'},
+    {id: 'ps-best', name: 'Pet Talent Show — best score', emoji: '🎭', kind: 'high', unit: ''},
+    {id: 'hunt-maps', name: 'Treasure Trail — maps finished', emoji: '🗺️', kind: 'high', unit: ''}
   ];
 
   function lbFresh(){ return {ver: LB_VER, best: {}, name: ''}; }
@@ -80,6 +87,19 @@
     set('snow-toss', sb.toss != null ? sb.toss : board.best['snow-toss']);
     set('snow-sled', sb.sled != null ? sb.sled : board.best['snow-sled']);
     set('snow-skate', sb.skate != null ? sb.skate : board.best['snow-skate']);
+    const hide = saves.hide || {};
+    set('hide-wins', hide.wins | 0 ? (hide.wins | 0) : null);
+    set('hide-finds', hide.finds | 0 ? (hide.finds | 0) : null);
+    const cafeS = saves.cafe || {};
+    set('cafe-served', cafeS.served | 0 ? (cafeS.served | 0) : (cafeS.best | 0 ? (cafeS.best | 0) : null));
+    const fishS = saves.fish || {};
+    const kinds = fishS.caught && typeof fishS.caught === 'object' ? Object.keys(fishS.caught).length : 0;
+    set('fish-kinds', kinds || null);
+    set('fish-biggest', fishS.biggest ? +fishS.biggest : null);
+    const psS = saves.petshow || {};
+    set('ps-best', psS.best ? +psS.best : null);
+    const huntS = saves.hunt || {};
+    set('hunt-maps', huntS.maps | 0 ? (huntS.maps | 0) : null);
     // extras / board can fill gaps
     for (const id in board.best) if (out[id] == null) set(id, board.best[id]);
     for (const id in extra) if (out[id] == null) set(id, extra[id]);
