@@ -1,44 +1,121 @@
-# ===== t227u: 🗼 Tower of Doom — climb stacked sections while bubbly goo rises (stacked on Photo Studio) =====
-rep("""  {id:'photostudio', name:'Star Snaps Photo Studio',""", """  {id:'tower', name:'Tower of Doom', emoji:'🗼', tag:'Climb a stacked tower while bubbly goo rises from below!', draw: drawTower, playable: true, isNew: true},
-  {id:'photostudio', name:'Star Snaps Photo Studio',""")
-rep("function drawPhotoStudio(ctx){", r"""function drawTower(ctx){
-  sky(ctx, '#9fd8ff', '#fff6d8');
-  ctx.fillStyle = '#8fd39a'; ctx.fillRect(0, 160, 320, 40);
-  for (let i = 0; i < 6; i++){ ctx.fillStyle = ['#c39bff','#7fd6ff','#ffb3c7','#ffe08a','#9ff0c8','#ff9f6b'][i]; ctx.fillRect(140 - i * 4, 150 - i * 22, 40 + i * 8, 18); }
-  ctx.fillStyle = '#b388ff'; ctx.globalAlpha = .85; ctx.fillRect(40, 170, 240, 22); ctx.globalAlpha = 1;
-  guy(ctx, 160, 70, 10, '#ff6fb5'); ctx.font = '22px sans-serif'; ctx.fillText('🗼', 40, 60); ctx.fillText('🫧', 260, 180);
-}
-function drawPhotoStudio(ctx){""")
-rep("""      <span id="psBox" style="display:none">""", """      <span id="tdBox" style="display:none">🗼 <b id="tdH">0</b>m · 🫧 <b id="tdGoo">0</b></span>
-      <span id="psBox" style="display:none">""")
-rep(".psnear{background:#ff6fb5;box-shadow:0 4px 0 #c94f8d}", """.tdBox b{color:#8b5cf6}
-.psnear{background:#ff6fb5;box-shadow:0 4px 0 #c94f8d}""")
-rep("  /* ---------- per-frame ---------- */\n", open('/workspace/rublox/tests/p42/tower.js').read() + "  /* ---------- per-frame ---------- */\n")
-rep("isl = null; bk = null; wp = null; psx = null;\n    if (mode === 'photostudio') buildPhotoStudio();", "isl = null; bk = null; wp = null; psx = null; td = null;\n    if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio();")
-rep("mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio') && B.onGround && up > 0 && up <= .62)", "mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower') && B.onGround && up > 0 && up <= .62)")
-rep("mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio'){ if (P.y < -25) respawn(); return; }", "mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower'){ if (P.y < -25) respawn(); return; }")
-rep("mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio'){ // pull the camera", "mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower'){ // pull the camera")
-rep("      if (psx) photostudioUpdate(dt);\n", "      if (psx) photostudioUpdate(dt);\n      if (td) towerUpdate(dt);\n")
-rep("    if (psx) photostudioAnimate(dt);\n", "    if (psx) photostudioAnimate(dt);\n    if (td) towerAnimate(dt);\n")
-rep("'bakery', 'waterpark', 'photostudio'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' ? null : d;",
-    "'bakery', 'waterpark', 'photostudio', 'tower'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' ? null : d;")
-rep("    else if (mode === 'photostudio') banner(", "    else if (mode === 'tower') banner('🗼 Welcome to the Tower of Doom! Climb past the bubbly goo!');\n    else if (mode === 'photostudio') banner(")
-rep("mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio') && touchUI",
-    "mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower') && touchUI")
-rep("    $('#psBox').style.display = mode === 'photostudio' ? '' : 'none';", """    $('#tdBox').style.display = mode === 'tower' ? '' : 'none';
-    if (mode === 'tower') towerEnter();
-    $('#psBox').style.display = mode === 'photostudio' ? '' : 'none';""")
-rep(" if (psx) photostudioStop();", " if (psx) photostudioStop(); if (td) towerStop();")
-rep("    const line = mode === 'photostudio' ?", "    const line = mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ?")
-rep("    if (mode === 'photostudio'){\n      $('#oTip').innerHTML", """    if (mode === 'tower'){
-      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · Ⓐ jump' : '⌨️ WASD move · Space jump · Esc menu')
-        + "<br>🗼 Climb the stacked tower — gold pads are checkpoints · don't let the bubbly goo catch you!";
-      return;
-    }
-    if (mode === 'photostudio'){
-      $('#oTip').innerHTML""")
-rep("    if (mode === 'photostudio' && psx && psPad(jp)) return;", "    if (mode === 'tower' && td && tdPad(jp)) return;\n    if (mode === 'photostudio' && psx && psPad(jp)) return;")
-rep("      if (mode === 'photostudio' && psx && psKey(e)) return;", "      if (mode === 'tower' && td && tdKey(e)) return;\n      if (mode === 'photostudio' && psx && psKey(e)) return;")
-rep("  window.obbyDebug = {\n", """  window.obbyDebug = {
-    tower: () => td && {ph: td.ph, t: td.t, goo: td.goo, maxY, earned: td.earned, paid: td.paid, kind: td.kind.slice(), prog: tdProg()},
-""")
+#!/usr/bin/env python3
+"""Inject Tower of Doom rules and runtime into index.html. Idempotent."""
+from pathlib import Path
+import re
+
+ROOT = Path(__file__).resolve().parents[2]
+IDX = ROOT / 'index.html'
+DEV = ROOT / 'dev/tower'
+
+def once(text, old, new, label):
+    if new.strip() and new in text and old not in text:
+        return text, f'skip {label}'
+    if old not in text:
+        raise SystemExit(f'missing hook for {label}: {old[:160]!r}')
+    return text.replace(old, new, 1), f'ok {label}'
+
+def main():
+    log = []
+    html = IDX.read_text()
+    rules = (DEV / 'tower_logic.js').read_text()
+    runtime = (DEV / 'tower.js').read_text()
+    if not runtime.endswith('\n'):
+        runtime += '\n'
+
+    rules_block = '\n  /* ---------- tower rules ---------- */\n' + rules + '\n  /* ---------- /tower rules ---------- */\n'
+    if '/* ---------- tower rules ---------- */' in html:
+        html = re.sub(
+            r'  /\* ---------- tower rules ---------- \*/.*?/\* ---------- /tower rules ---------- \*/\n',
+            lambda _m: rules_block,
+            html,
+            count=1,
+            flags=re.S,
+        )
+        log.append('refresh rules')
+    else:
+        needle = '  /* ===================== t227u: \U0001f5fc TOWER OF DOOM'
+        if needle not in html:
+            raise SystemExit('missing tower block start')
+        html = html.replace(needle, rules_block + needle, 1)
+        log.append('ok rules')
+
+    start = html.find('  /* ===================== t227u: \U0001f5fc TOWER OF DOOM')
+    end = html.find('  /* ===================== t227u: \U0001f366 SCOOP CIRCUS')
+    if start < 0 or end < 0 or end <= start:
+        raise SystemExit(f'tower runtime markers missing start={start} end={end}')
+    html = html[:start] + runtime + html[end:]
+    log.append('refresh tower.js')
+
+    old_checks = (
+        "    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ if (P.y < -25) respawn(); return; }"
+    )
+    new_checks = (
+        "    if (mode === 'tower'){ if (P.y < -25) respawn(); collectCoins(); if (typeof towerChecks === 'function') towerChecks(); return; }\n"
+        "    if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ if (P.y < -25) respawn(); return; }"
+    )
+    html, m = once(html, old_checks, new_checks, 'tower-checks')
+    log.append(m)
+
+    html, m = once(
+        html,
+        "    else if (mode === 'tower') banner('🗼 Welcome to the Tower of Doom! Climb past the bubbly goo!');",
+        "    else if (mode === 'tower') banner('🗼 Welcome to the Tower of Doom! Gold pads save your climb, and the goo sends you back to one.');",
+        'welcome',
+    )
+    log.append(m)
+
+    old_tip = (
+        "    if (mode === 'tower'){\n"
+        "      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · Ⓐ jump' : '⌨️ WASD move · Space jump · Esc menu')\n"
+        "        + \"<br>🗼 Climb the stacked tower — gold pads are checkpoints · don't let the bubbly goo catch you!\";\n"
+        "      return;\n"
+        "    }"
+    )
+    new_tip = (
+        "    if (mode === 'tower'){\n"
+        "      $('#oTip').innerHTML = (on ? '🕹️ Left thumb moves · Ⓐ jump' : '⌨️ WASD move · Space jump · Esc menu')\n"
+        "        + \"<br>🗼 Climb the stacked tower — gold pads are checkpoints. The bubbly goo is slow and sends you back to the last gold pad; it does not end your climb!\";\n"
+        "      return;\n"
+        "    }"
+    )
+    html, m = once(html, old_tip, new_tip, 'tip')
+    log.append(m)
+
+    old_debug = "    tower: () => td && {ph: td.ph, t: td.t, goo: td.goo, maxY, earned: td.earned, paid: td.paid, kind: td.kind.slice(), prog: tdProg()},"
+    new_debug = (
+        "    tower: () => td && {ph: td.ph, t: td.t, goo: td.goo, grace: td.grace, maxY, earned: td.earned, paid: td.paid, kind: td.kind.slice(), seed: td.seed, prog: tdProg(), cp: (typeof cpIndex !== 'undefined' ? cpIndex : 0)},\n"
+        "    tdGoo(y){ if (td && y != null){ td.goo = +y; if (td.gooMesh) td.gooMesh.position.y = td.goo - 1.2; } return td && td.goo; },"
+    )
+    # already-patched form (from the previous tip)
+    if old_debug not in html and 'tdGoo(y)' in html:
+        log.append('skip debug')
+    else:
+        html, m = once(html, old_debug, new_debug, 'debug')
+        log.append(m)
+
+    html, m = once(
+        html,
+        "  const P = {x:0, y:0, z:0, vx:0, vy:0, vz:0, ground:null, onGround:false, coyote:0, face:0, walk:0};",
+        "  const P = {x:0, y:0, z:0, vx:0, vy:0, vz:0, ground:null, onGround:false, coyote:0, face:0, walk:0, jumpBuf:0, jumpHeld:false};",
+        'p-jumpbuf',
+    )
+    log.append(m)
+
+    html, m = once(
+        html,
+        "    P.coyote = P.onGround ? .1 : P.coyote - dt;\n    if (inp.jump && P.coyote > 0 && P.vy <= .01){ P.vy = JUMP; P.coyote = 0; P.jumped = true; P.airT = 0; SND.jump(); }",
+        "    if (typeof tdJumpAssist === 'function' && typeof mode !== 'undefined' && mode === 'tower' && td){ tdJumpAssist(dt, inp); }\n"
+        "    else {\n"
+        "      P.coyote = P.onGround ? .1 : P.coyote - dt;\n"
+        "      if (inp.jump && P.coyote > 0 && P.vy <= .01){ P.vy = JUMP; P.coyote = 0; P.jumped = true; P.airT = 0; SND.jump(); }\n"
+        "    }",
+        'jump-assist',
+    )
+    log.append(m)
+
+    IDX.write_text(html)
+    log.append('wrote index.html ' + str(IDX.stat().st_size) + ' bytes')
+    print('\n'.join(log))
+
+if __name__ == '__main__':
+    main()
