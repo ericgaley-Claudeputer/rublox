@@ -18,12 +18,12 @@
   function lhProg(){
     let raw = null;
     try { raw = (typeof load === 'function') ? load(LH_KEY, null) : (typeof localStorage !== 'undefined' ? localStorage.getItem(LH_KEY) : null); } catch (e){}
-    return LH_RULES.lhLoadState ? LH_RULES.lhLoadState(raw) : {ver:1, visits:0, settings:{glitchedVision:true, muffledSound:true, cancellation:'fifty', skipKeyholder:false}, doodles:{}, coins:0};
+    return LH_RULES.lhLoadState ? LH_RULES.lhLoadState(raw) : {ver:1, visits:0, settings:{glitchedVision:true, muffledSound:true, cancellation:'fifty', skipKeyholder:false}, doodles:{}, coins:0, wallWords:[]};
   }
   function lhSaveProg(p){
     p = p || (lh && lh.prog) || lhProg();
     try {
-      const body = {ver: LH_RULES.LH_VER || 1, visits: p.visits|0, settings: (LH_RULES.lhNormalizeSettings ? LH_RULES.lhNormalizeSettings(p.settings) : p.settings), doodles: p.doodles || {}, coins: +p.coins || 0};
+      const body = {ver: LH_RULES.LH_VER || 1, visits: p.visits|0, settings: (LH_RULES.lhNormalizeSettings ? LH_RULES.lhNormalizeSettings(p.settings) : p.settings), doodles: p.doodles || {}, coins: +p.coins || 0, wallWords: (lh && lh.words) ? lh.words : (p.wallWords || [])};
       if (typeof save === 'function') save(LH_KEY, body);
       else if (typeof localStorage !== 'undefined') localStorage.setItem(LH_KEY, JSON.stringify(body));
     } catch (e){}
@@ -664,7 +664,7 @@
       lights: {}, doors: {},
       rooms: [], npcs: [], host: null, vesper: null, exitDoor: null,
       keyholder: null, keyCd: 0, pester: 0, taggedLock: 0,
-      doodleOpen: false, setOpen: false, lastHud: '',
+      doodleOpen: false, setOpen: false, writeOpen: false, writeStyle: 'paint', writeSel: 0, lastHud: '', words: (prog.wallWords || []).slice(), wordMeshes: [],
       trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null,
       syncT: 0, visitAwarded: false, _nearT: 0, _isoT: 0, _darkT: 0,
       breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0,
@@ -766,39 +766,70 @@
     lhLabel('Midway', 'rgba(80,20,40,.9)', 0, 3.0, midZ0 + 8);
 
     // rooms — up to 20 numbered wagons, each with a real hinged door
+    // Solid shell + frosted windows; interiors live in R.interior and hide when the door is closed and the viewer is outside.
     const specs = lhRoomsSpec();
     const wallCols = ['#ffb3de', '#b9f0c8', '#ffd7a0', '#c5d8ff', '#f3c6ff', '#ffe29a'];
     const floorCols = ['#fff1f8', '#e8fff2', '#fff6e8', '#eef4ff', '#fbecff', '#fff8e0'];
+    const lhSolid = function(box){
+      try {
+        if (box && box.mesh && box.mesh.material){
+          box.mesh.material.side = THREE.DoubleSide;
+          box.mesh.material.needsUpdate = true;
+        }
+      } catch (e){}
+      return box;
+    };
     specs.forEach(R => {
       const w = 8, d = 6.2, h = 3.2;
       const floorY = lhY('wagon');
       const wall = wallCols[R.id % wallCols.length];
       const floor = floorCols[R.id % floorCols.length];
       const roomFl = lhFloorBox(R.x, R.z, w, d, floor, 'wagon', floorY);
-      lhBox(R.x + R.side * (w / 2 + 0.12), h / 2, R.z, 0.28, d + 0.3, wall, h);
-      lhBox(R.x, h / 2, R.z - d / 2, w, 0.28, wall, h);
-      lhBox(R.x, h / 2, R.z + d / 2, w, 0.28, wall, h);
-      const ix = R.x - R.side * (w / 2);
-      lhBox(ix, h / 2, R.z - 2.35, 0.28, 1.6, wall, h);
-      lhBox(ix, h / 2, R.z + 2.35, 0.28, 1.6, wall, h);
+      const recDraft = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, h, floorY};
+      const lay = LH_RULES.lhDoorwayLayout ? LH_RULES.lhDoorwayLayout(recDraft) : {ix: R.x - R.side * (w / 2), stubZ0: R.z - 2.22, stubZ1: R.z + 2.22, stubD: 1.98, transomY: 2.8, transomH: 0.8, transomD: 2.32};
+      lhSolid(lhBox(R.x + R.side * (w / 2 + 0.12), h / 2, R.z, 0.32, d + 0.3, wall, h));
+      lhSolid(lhBox(R.x, h / 2, R.z - d / 2, w, 0.32, wall, h));
+      lhSolid(lhBox(R.x, h / 2, R.z + d / 2, w, 0.32, wall, h));
+      const ix = lay.ix;
+      lhSolid(lhBox(ix, h / 2, lay.stubZ0, 0.32, lay.stubD, wall, h));
+      lhSolid(lhBox(ix, h / 2, lay.stubZ1, 0.32, lay.stubD, wall, h));
+      // transom seals the gap above the door so you cannot peek inside when it is shut
+      lhSolid(lhBox(ix, lay.transomY, R.z, 0.32, lay.transomD, wall, lay.transomH));
       const ceil = lhMesh(new THREE.BoxGeometry(w + 0.2, 0.16, d + 0.2), lhMat('#fff7fb'), R.x, h, R.z);
       if (ceil) lhPaintStripe(ceil, '#fff7fb', wall, 8, 1);
+      // frosted, opaque windows — decorative light, not a view into the room
+      const frostMat = lhMat('#d8e8f8', {emit:'#c8daf0'});
+      if (frostMat){ frostMat.transparent = false; frostMat.side = THREE.DoubleSide; frostMat.needsUpdate = true; }
+      [-1, 1].forEach(sz => {
+        const wm = lhMesh(new THREE.BoxGeometry(1.55, 1.1, 0.08), frostMat || lhMat('#d8e8f8'), R.x, 1.65, R.z + sz * (d / 2));
+        if (wm && wm.material){ wm.material.side = THREE.DoubleSide; wm.material.transparent = false; }
+      });
+      const interior = new THREE.Group();
+      interior.name = 'lhInt' + R.id;
+      interior.visible = false;
+      scene.add(interior);
+      if (lh) lh.trash.push(interior);
       const bx = R.x + R.side * 1.8, bz = R.z;
-      lhBox(bx, floorY + 0.4, bz, 2.2, 1.5, '#fffaf0', 0.4);
-      lhBox(bx + R.side * 0.7, floorY + 0.68, bz, 0.4, 1.5, '#ff8fc8', 0.28);
+      const bed = lhBox(bx, floorY + 0.4, bz, 2.2, 1.5, '#fffaf0', 0.4);
+      const pillow = lhBox(bx + R.side * 0.7, floorY + 0.68, bz, 0.4, 1.5, '#ff8fc8', 0.28);
+      if (bed && bed.mesh) interior.add(bed.mesh);
+      if (pillow && pillow.mesh) interior.add(pillow.mesh);
       const sx = ix + R.side * 0.7, sz = R.z - 1.35;
       const sw = lhMesh(new THREE.BoxGeometry(0.12, 0.3, 0.2), lhMat('#fffbe8', {emit:'#fff3b0'}), sx, 1.4, sz);
+      if (sw) interior.add(sw);
       const dx = ix + R.side * 0.25, dz = R.z + 2.15;
       const bell = lhMesh(new THREE.BoxGeometry(0.16, 0.22, 0.16), lhMat('#ffd25a', {emit:'#ffcc44'}), dx, 1.35, dz);
       const cx = R.x, cz = R.z - d / 2 + 0.2;
       const furnish = !lhLow() || R.id < 4;
       const crayon = furnish ? lhMesh(new THREE.BoxGeometry(2.8, 1.8, 0.08), lhMat('#fffef6'), cx, 1.5, cz) : null;
+      if (crayon) interior.add(crayon);
       const door = {g: null, mesh: null, plat: null, closed: true, ang: 0, target: 0, id: R.id};
-      const rec = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, floorY, bed: {x: bx, z: bz}, switch: {x: sx, z: sz}, bell: {x: dx, z: dz}, wall: {x: cx, z: cz}, crayon, door, owner: null, lit: true, sw, bellM: bell};
+      const rec = {id: R.id, x: R.x, z: R.z, side: R.side, w, d, h, floorY, bed: {x: bx, z: bz}, switch: {x: sx, z: sz}, bell: {x: dx, z: dz}, wall: {x: cx, z: cz}, crayon, door, owner: null, lit: true, sw, bellM: bell, interior};
       lh.rooms.push(rec);
       lh.lights[R.id] = true;
       lh.doors[R.id] = true;
-      lhLabel('Wagon ' + (R.id + 1), 'rgba(80,20,60,.88)', R.x, 2.9, R.z - 2.6);
+      // Wagon number sits outside by the awning so it does not show through a closed door
+      lhLabel('Wagon ' + (R.id + 1), 'rgba(80,20,60,.88)', ix - R.side * 0.95, 2.75, R.z);
       const pathLen = Math.abs(ix) - midX;
       const pathMid = R.side * (midX + pathLen / 2);
       lhFloorBox(pathMid, R.z, pathLen + 0.2, 2.6, '#e8c98a', 'path');
@@ -812,6 +843,7 @@
       lhMakeHingeDoor(rec);
       lhSetDoor(rec, true);
     });
+    try { lhRestoreWallWords(); } catch (e){}
 
     // bathroom at the end of the long midway
     const bathZ = midZ1 + 6;
@@ -1031,22 +1063,24 @@
 
   function lhMakeHingeDoor(R){
     if (!R || !R.door) return;
-    const ix = R.x - R.side * (R.w / 2);
-    const hingeZ = R.z - 1.1;
+    const lay = LH_RULES.lhDoorwayLayout ? LH_RULES.lhDoorwayLayout(R) : {ix: R.x - R.side * (R.w / 2), hingeZ: R.z - 1.12, doorThick: 0.16, doorH: 2.44, doorD: 2.3, openW: 2.24, openH: 2.4};
+    const ix = lay.ix;
+    const hingeZ = lay.hingeZ;
     const g = new THREE.Group();
     g.position.set(ix, 0, hingeZ);
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.35, 2.15), lhMat('#6b3cff', {emit:'#3a1ca0'}));
-    mesh.position.set(0, 1.25, 1.075);
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(lay.doorThick, lay.doorH, lay.doorD), lhMat('#6b3cff', {emit:'#3a1ca0'}));
+    mesh.position.set(0, lay.doorH / 2, lay.doorD / 2);
+    if (mesh.material){ mesh.material.side = THREE.DoubleSide; mesh.material.transparent = false; mesh.material.needsUpdate = true; }
     g.add(mesh);
-    const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.22, 2.15), lhMat('#fff8f0'));
-    stripe.position.set(0, 2.15, 1.075);
+    const stripe = new THREE.Mesh(new THREE.BoxGeometry(lay.doorThick + 0.02, 0.22, lay.doorD), lhMat('#fff8f0'));
+    stripe.position.set(0, lay.doorH - 0.22, lay.doorD / 2);
     g.add(stripe);
     const knob = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), lhMat('#ffd25a', {emit:'#ffe27a'}));
-    knob.position.set(-R.side * 0.12, 1.15, 1.85);
+    knob.position.set(-R.side * 0.12, 1.15, lay.doorD - 0.28);
     g.add(knob);
     scene.add(g);
     if (lh) lh.trash.push(g);
-    const platBox = plat(ix, 1.25, R.z, 0.28, 2.2, '#6b3cff', 2.5);
+    const platBox = plat(ix, lay.openH / 2, R.z, 0.28, lay.openW, '#6b3cff', lay.openH);
     if (platBox && platBox.mesh){ platBox.mesh.visible = false; if (lh) lh.trash.push(platBox.mesh); }
     R.door.g = g;
     R.door.mesh = mesh;
@@ -1103,6 +1137,354 @@
       R.door._auto = true;
       lhSetDoor(R, false);
     }
+  }
+
+
+  function lhChatMode(){
+    try { if (typeof chMode === 'function') return chMode(); } catch (e){}
+    return 'on';
+  }
+  function lhWordUid(){
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.on) return mp.host ? 'H' : (mp.me || 'g0');
+    } catch (e){}
+    return 'me';
+  }
+  function lhLookRay(){
+    let ox = (P && P.x) || 0, oy = ((P && P.y) || 0) + 1.35, oz = (P && P.z) || 0;
+    let dx = 0, dy = 0, dz = -1;
+    try {
+      if (typeof camera !== 'undefined' && camera && camera.getWorldDirection){
+        ox = camera.position.x; oy = camera.position.y; oz = camera.position.z;
+        const e = new THREE.Vector3();
+        camera.getWorldDirection(e);
+        dx = e.x; dy = e.y; dz = e.z;
+      } else if (typeof cam !== 'undefined' && cam){
+        const yaw = cam.yaw || 0, pitch = cam.pitch || 0;
+        dx = -Math.sin(yaw) * Math.cos(pitch);
+        dy = Math.sin(pitch);
+        dz = -Math.cos(yaw) * Math.cos(pitch);
+      }
+    } catch (e){}
+    return {ox, oy, oz, dx, dy, dz};
+  }
+  function lhAllWallPlanes(){
+    const planes = [];
+    if (!lh || !lh.rooms) return planes;
+    lh.rooms.forEach(R => {
+      const list = LH_RULES.lhWagonWallPlanes ? LH_RULES.lhWagonWallPlanes(R) : [];
+      list.forEach(p => planes.push(p));
+    });
+    return planes;
+  }
+  function lhLookWallHit(){
+    if (!lh || !P) return null;
+    const ray = lhLookRay();
+    const maxd = LH_RULES.LH_WALL_MAX_DIST || 3.4;
+    const hit = LH_RULES.lhRayWall ? LH_RULES.lhRayWall(ray.ox, ray.oy, ray.oz, ray.dx, ray.dy, ray.dz, lhAllWallPlanes(), maxd) : null;
+    if (!hit) return null;
+    // Do not write in the open doorway gap
+    if (hit.wall === 'door'){
+      const R = lh.rooms[hit.room];
+      if (R){
+        const lay = LH_RULES.lhDoorwayLayout ? LH_RULES.lhDoorwayLayout(R) : null;
+        if (lay && Math.abs(hit.z - R.z) <= lay.openW / 2 && hit.y <= lay.openH){
+          if (R.door && !R.door.closed) return null;
+        }
+      }
+    }
+    return hit;
+  }
+  function lhWordAtLook(){
+    const hit = lhLookWallHit();
+    if (!hit || !lh || !lh.words) return null;
+    const uid = lhWordUid();
+    let best = null, bestD = 0.85;
+    lh.words.forEach(w => {
+      if (!w || w.uid !== uid) return;
+      const d = Math.sqrt((w.x - hit.x) ** 2 + (w.y - hit.y) ** 2 + (w.z - hit.z) ** 2);
+      if (d < bestD){ bestD = d; best = w; }
+    });
+    return best;
+  }
+  function lhPaintWordCanvas(text, style){
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 256;
+    const g = c.getContext('2d');
+    g.clearRect(0, 0, 512, 256);
+    const letters = String(text || '').split('');
+    const n = Math.max(1, letters.length);
+    const slot = 480 / n;
+    const paint = style !== 'chalk';
+    letters.forEach((ch, i) => {
+      const x = 16 + slot * i + slot * 0.08;
+      const y = 128 + Math.sin(i * 1.7) * 12 + (i % 3) * 5;
+      g.save();
+      g.translate(x, y);
+      g.rotate((Math.sin(i * 2.2) * 0.13) + (i - n / 2) * 0.025);
+      if (paint){
+        g.font = '900 ' + (76 + (i % 3) * 6) + 'px "Comic Sans MS","Chalkboard SE",cursive,sans-serif';
+        g.fillStyle = i % 2 ? '#8a0a10' : '#c4141c';
+        g.shadowColor = '#3a0000';
+        g.shadowBlur = 6;
+        g.fillText(ch, 0, 0);
+        g.shadowBlur = 0;
+        g.fillStyle = '#6a0710';
+        const dw = 3 + (i % 3);
+        const dh = 16 + (i * 11) % 34;
+        g.fillRect(12, 6, dw, dh);
+        g.beginPath(); g.arc(12 + dw / 2, 6 + dh, dw / 2 + 1, 0, Math.PI * 2); g.fill();
+      } else {
+        g.font = '900 ' + (70 + (i % 3) * 6) + 'px "Chalkboard SE","Comic Sans MS",cursive,sans-serif';
+        g.fillStyle = '#f3efe0';
+        g.globalAlpha = 0.95;
+        g.fillText(ch, 0, 0);
+        g.globalAlpha = 0.35;
+        g.fillText(ch, 1.8, 1.4);
+      }
+      g.restore();
+    });
+    return c;
+  }
+  function lhSpawnWordMesh(word, fadeIn){
+    if (!lh || !word || typeof THREE === 'undefined') return null;
+    try {
+      const can = lhPaintWordCanvas(word.text, word.style);
+      const tex = new THREE.CanvasTexture(can);
+      tex.needsUpdate = true;
+      const w = Math.max(0.9, 0.32 * String(word.text || '').length);
+      const h = 0.58;
+      const mat = new THREE.MeshBasicMaterial({
+        map: tex, transparent: true, depthTest: true, depthWrite: false,
+        side: THREE.DoubleSide, alphaTest: 0.08
+      });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+      const nx = word.nx || 0, nz = word.nz || 0;
+      const nlen = Math.sqrt(nx * nx + nz * nz) || 1;
+      mesh.position.set(word.x + (nx / nlen) * 0.04, word.y, word.z + (nz / nlen) * 0.04);
+      mesh.lookAt(mesh.position.x + nx / nlen, mesh.position.y, mesh.position.z + nz / nlen);
+      const R = word.interior && lh.rooms && lh.rooms[word.room];
+      if (R && R.interior) R.interior.add(mesh);
+      else scene.add(mesh);
+      lh.trash.push(mesh);
+      const item = {mesh, word, fading: false, fade: fadeIn ? 0 : 1};
+      if (fadeIn && mat) mat.opacity = 0;
+      lh.wordMeshes = lh.wordMeshes || [];
+      lh.wordMeshes.push(item);
+      return item;
+    } catch (e){ return null; }
+  }
+  function lhRemoveWordMesh(id){
+    if (!lh || !lh.wordMeshes) return;
+    lh.wordMeshes = lh.wordMeshes.filter(item => {
+      if (!item || !item.word || item.word.id !== id) return true;
+      try {
+        if (item.mesh){
+          if (item.mesh.parent) item.mesh.parent.remove(item.mesh);
+          if (item.mesh.material && item.mesh.material.map) item.mesh.material.map.dispose();
+          if (item.mesh.material) item.mesh.material.dispose();
+          if (item.mesh.geometry) item.mesh.geometry.dispose();
+        }
+      } catch (e){}
+      return false;
+    });
+  }
+  function lhFadeWordMesh(id){
+    if (!lh || !lh.wordMeshes) return;
+    lh.wordMeshes.forEach(item => {
+      if (item && item.word && item.word.id === id) item.fading = true;
+    });
+  }
+  function lhTickWordFades(dt){
+    if (!lh || !lh.wordMeshes) return;
+    const gone = [];
+    lh.wordMeshes.forEach(item => {
+      if (!item || !item.mesh) return;
+      if (item.fading){
+        item.fade = Math.max(0, (item.fade == null ? 1 : item.fade) - dt * 1.2);
+        if (item.mesh.material) item.mesh.material.opacity = item.fade;
+        if (item.fade <= 0) gone.push(item.word && item.word.id);
+      } else if (item.fade < 1){
+        item.fade = Math.min(1, (item.fade || 0) + dt * 2);
+        if (item.mesh.material) item.mesh.material.opacity = item.fade;
+      }
+    });
+    gone.forEach(id => { if (id) lhRemoveWordMesh(id); });
+  }
+  function lhRestoreWallWords(){
+    if (!lh) return;
+    (lh.words || []).forEach(w => lhSpawnWordMesh(w));
+  }
+  function lhPlaceWallWord(raw, opts){
+    opts = opts || {};
+    if (!lh) return {ok: false, reason: 'no-game'};
+    const hit = opts.hit || lhLookWallHit();
+    if (!hit) return {ok: false, reason: 'no-wall'};
+    const mode = opts.chatMode != null ? opts.chatMode : lhChatMode();
+    const filter = (typeof chatFilter === 'function') ? chatFilter : null;
+    const norm = LH_RULES.lhNormalizeWallText ? LH_RULES.lhNormalizeWallText(raw, {chatMode: mode, chatFilter: filter}) : {ok: !!(raw && String(raw).trim()), text: String(raw || '').trim().slice(0, 12)};
+    if (!norm.ok){
+      if (norm.reason === 'pii' || norm.reason === 'filtered'){
+        if (typeof toast === 'function') toast(norm.reason === 'pii' ? '📛 Personal info is blocked.' : '📛 That word was filtered (####).');
+        try { if (norm.reason === 'filtered' || norm.reason === 'pii') lhAward('lh:words'); } catch (e){}
+      } else if (norm.reason === 'presets-only'){
+        if (typeof toast === 'function') toast('✍️ Chat is set to presets only — pick a word from the list.');
+      } else if (typeof toast === 'function') toast('✍️ Face a wall and pick a word.');
+      return norm;
+    }
+    const rec = {
+      text: norm.text,
+      style: (opts.style || (lh && lh.writeStyle) || 'paint'),
+      uid: opts.uid || lhWordUid(),
+      x: hit.x, y: hit.y, z: hit.z,
+      nx: hit.nx, ny: 0, nz: hit.nz,
+      room: hit.room, interior: !!hit.interior
+    };
+    const added = LH_RULES.lhAddWallWord ? LH_RULES.lhAddWallWord(lh.words || [], rec) : {list: (lh.words || []).concat([rec]), added: rec, faded: []};
+    lh.words = added.list;
+    if (lh.prog) lh.prog.wallWords = lh.words;
+    (added.faded || []).forEach(w => lhFadeWordMesh(w.id));
+    if (added.added) lhSpawnWordMesh(added.added, true);
+    try { lhSaveProg(lh.prog); } catch (e){}
+    try { if (added.added) lhNet({k:'word', op:'add', word: added.added}); } catch (e){}
+    if (typeof toast === 'function' && added.added) toast('✍️ Wrote “' + added.added.text + '”');
+    return {ok: true, word: added.added};
+  }
+  function lhEraseMyWord(id){
+    if (!lh) return false;
+    const uid = lhWordUid();
+    let target = id;
+    if (!target){
+      const look = lhWordAtLook();
+      if (look) target = look.id;
+      else {
+        const mine = (lh.words || []).filter(w => w && w.uid === uid);
+        if (mine.length) target = mine[mine.length - 1].id;
+      }
+    }
+    if (!target){ if (typeof toast === 'function') toast('🧽 No writing of yours to erase.'); return false; }
+    const res = LH_RULES.lhEraseWallWord ? LH_RULES.lhEraseWallWord(lh.words || [], target, uid) : {erased: null, list: lh.words, reason: 'missing'};
+    if (!res.erased){
+      if (typeof toast === 'function') toast(res.reason === 'not-owner' ? '🧽 You can only erase your own words.' : '🧽 Nothing to erase.');
+      return false;
+    }
+    lh.words = res.list;
+    if (lh.prog) lh.prog.wallWords = lh.words;
+    lhFadeWordMesh(res.erased.id);
+    try { lhSaveProg(lh.prog); } catch (e){}
+    try { lhNet({k:'word', op:'erase', id: res.erased.id, uid: uid}); } catch (e){}
+    if (typeof toast === 'function') toast('🧽 Erased “' + res.erased.text + '”');
+    return true;
+  }
+  function lhReceiveWord(word){
+    if (!lh || !word) return;
+    const added = LH_RULES.lhAddWallWord ? LH_RULES.lhAddWallWord(lh.words || [], word) : {list: (lh.words || []).concat([word]), added: word, faded: []};
+    lh.words = added.list;
+    (added.faded || []).forEach(w => lhFadeWordMesh(w.id));
+    if (added.added && !(lh.wordMeshes || []).some(it => it && it.word && it.word.id === added.added.id)) lhSpawnWordMesh(added.added, true);
+  }
+  function lhReceiveErase(id, uid){
+    if (!lh) return;
+    const res = LH_RULES.lhEraseWallWord ? LH_RULES.lhEraseWallWord(lh.words || [], id, uid) : {erased: null, list: lh.words};
+    // Host/peers already authorized on their side; still honor an explicit erase of a known id from that uid.
+    if (!res.erased && uid){
+      const res2 = LH_RULES.lhEraseWallWord(lh.words || [], id, uid);
+      lh.words = res2.list;
+      if (res2.erased) lhFadeWordMesh(id);
+      return;
+    }
+    lh.words = res.list;
+    if (res.erased) lhFadeWordMesh(res.erased.id);
+  }
+  function lhOpenWrite(){
+    if (!lh) return false;
+    if (lh.cut || lh.calm || lh.banish) return false;
+    const hit = lhLookWallHit();
+    if (!hit){ if (typeof toast === 'function') toast('✍️ Face a wall to write on it.'); return false; }
+    lh.writeOpen = true;
+    lh.writeHit = hit;
+    lh.writeSel = lh.writeSel || 0;
+    const n = lhEl('lhWrite');
+    if (n){ n.style.display = 'flex'; n.classList.add('show'); }
+    lhFillWritePanel();
+    return true;
+  }
+  function lhCloseWrite(){
+    if (!lh) return;
+    lh.writeOpen = false;
+    const n = lhEl('lhWrite');
+    if (n){ n.classList.remove('show'); n.style.display = 'none'; }
+    const inp = lhEl('lhWriteIn');
+    try { if (inp) inp.blur(); } catch (e){}
+  }
+  function lhFillWritePanel(){
+    if (!lh) return;
+    const presets = (LH_RULES.LH_WALL_PRESETS || ['HELP', 'EXIT', 'GET OUT']);
+    const box = lhEl('lhWritePresets');
+    if (box){
+      box.innerHTML = '';
+      presets.forEach((w, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'lh-wpreset' + (i === (lh.writeSel || 0) ? ' on' : '');
+        b.textContent = w;
+        b.setAttribute('data-lhword', w);
+        b.onclick = () => { lh.writeSel = i; lhPlaceWallWord(w, {hit: lh.writeHit, style: lh.writeStyle}); lhCloseWrite(); };
+        box.appendChild(b);
+      });
+    }
+    const canType = lhChatMode() === 'on';
+    const custom = lhEl('lhWriteCustom');
+    if (custom) custom.style.display = canType ? '' : 'none';
+    const hint = lhEl('lhWriteHint');
+    if (hint) hint.textContent = canType ? 'Pick a spooky word, or type a short one (12 letters).' : 'Chat is set to presets only — pick a word from the list.';
+    const inp = lhEl('lhWriteIn');
+    if (inp){ inp.value = ''; inp.maxLength = LH_RULES.LH_WALL_MAX_CHARS || 12; }
+    document.querySelectorAll('[data-lhstyle]').forEach(b => {
+      b.classList.toggle('on', b.getAttribute('data-lhstyle') === (lh.writeStyle || 'paint'));
+    });
+  }
+  function lhSubmitCustomWord(){
+    if (!lh || !lh.writeOpen) return false;
+    if (lhChatMode() !== 'on'){ if (typeof toast === 'function') toast('✍️ Chat is set to presets only.'); return false; }
+    const inp = lhEl('lhWriteIn');
+    const text = inp ? inp.value : '';
+    const r = lhPlaceWallWord(text, {hit: lh.writeHit, style: lh.writeStyle});
+    if (r && r.ok) lhCloseWrite();
+    return !!(r && r.ok);
+  }
+  function lhTickPrivacy(){
+    if (!lh || !lh.rooms || !P) return;
+    const viewer = {x: P.x, z: P.z};
+    lh.rooms.forEach(R => {
+      const vis = LH_RULES.lhRoomInteriorVisible ? LH_RULES.lhRoomInteriorVisible(R, viewer) : true;
+      if (R.interior) R.interior.visible = vis;
+    });
+    const hideOcc = (x, z, g) => {
+      if (!g) return;
+      const R = (lh.rooms || []).find(r => LH_RULES.lhRoomContains && LH_RULES.lhRoomContains(r, x, z, 0));
+      if (!R){ g.visible = true; return; }
+      g.visible = !!(LH_RULES.lhRoomInteriorVisible && LH_RULES.lhRoomInteriorVisible(R, viewer));
+    };
+    (lh.npcs || []).forEach(n => hideOcc(n.x, n.z, n.model && n.model.g));
+    if (lh.vesper) hideOcc(lh.vesper.x, lh.vesper.z, lh.vesper.model && lh.vesper.model.g);
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.ents){
+        mp.ents.forEach(E => {
+          if (!E) return;
+          const x = E.x != null ? E.x : E.tx, z = E.z != null ? E.z : E.tz;
+          const g = (E.model && E.model.g) || E.g || E.mesh;
+          hideOcc(x, z, g);
+        });
+      }
+    } catch (e){}
+    (lh.wordMeshes || []).forEach(item => {
+      if (!item || !item.mesh || !item.word) return;
+      if (item.fading && item.fade <= 0){ item.mesh.visible = false; return; }
+      if (!item.word.interior){ item.mesh.visible = true; return; }
+      const R = lh.rooms[item.word.room];
+      item.mesh.visible = !R || !!(LH_RULES.lhRoomInteriorVisible && LH_RULES.lhRoomInteriorVisible(R, viewer));
+    });
   }
 
   function lhToggleMap(on){
@@ -1185,6 +1567,16 @@
       const mapb = lhEl('lhMapBtn'); if (mapb) mapb.onclick = () => lhToggleMap();
       const mapc = lhEl('lhMapClose'); if (mapc) mapc.onclick = () => lhToggleMap(false);
       const mapo = lhEl('lhMap'); if (mapo) mapo.addEventListener('click', ev => { if (ev.target === mapo) lhToggleMap(false); });
+      const wrb = lhEl('lhWriteBtn'); if (wrb) wrb.onclick = () => lhOpenWrite();
+      const wrc = lhEl('lhWriteClose'); if (wrc) wrc.onclick = () => lhCloseWrite();
+      const wrp = lhEl('lhWrite'); if (wrp) wrp.addEventListener('click', ev => { if (ev.target === wrp) lhCloseWrite(); });
+      const wrgo = lhEl('lhWriteGo'); if (wrgo) wrgo.onclick = () => lhSubmitCustomWord();
+      const wrer = lhEl('lhWriteErase'); if (wrer) wrer.onclick = () => { lhEraseMyWord(); lhCloseWrite(); };
+      const wrin = lhEl('lhWriteIn');
+      if (wrin) wrin.addEventListener('keydown', ev => { if (ev.key === 'Enter'){ ev.preventDefault(); lhSubmitCustomWord(); } if (ev.key === 'Escape'){ ev.preventDefault(); lhCloseWrite(); } });
+      document.querySelectorAll('[data-lhstyle]').forEach(b => {
+        b.addEventListener('click', () => { if (lh){ lh.writeStyle = b.getAttribute('data-lhstyle') || 'paint'; lhFillWritePanel(); } });
+      });
       const drawc = lhEl('lhDrawClose'); if (drawc) drawc.onclick = () => lhCloseDraw();
       const setc = lhEl('lhSetClose'); if (setc) setc.onclick = () => lhToggleSet(false);
       const skip = lhEl('lhSkip'); if (skip) skip.onclick = () => lhSkipCut();
@@ -1229,7 +1621,7 @@
 
   function lanternStop(){
     try {
-      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhVision','lhScare','lhMyWagon','lhMap','lhMapBtn'].forEach(id => {
+      ['lhMeter','lhBox','lhRoot','lhCut','lhCalm','lhSet','lhDraw','lhWrite','lhVision','lhScare','lhMyWagon','lhMap','lhMapBtn','lhWriteBtn'].forEach(id => {
         const n = lhEl(id); if (!n) return;
         if (id === 'lhMeter' || id === 'lhBox' || id === 'lhRoot') n.style.display = 'none';
         else { n.classList.remove('show'); n.style.display = 'none'; }
@@ -1406,6 +1798,9 @@
       if (R.owner === 'me' && LH_RULES.lhNear(P.x, P.z, R.wall.x, R.wall.z, 1.7) && !atDoor) return {id:'draw', label:'🖍️ Draw on the wall', R};
       if (R.owner === 'me' && atDoor) return {id:'door', label: R.door.closed ? '🚪 Open door' : '🚪 Close door', R};
     }
+    const ownWord = lhWordAtLook();
+    if (ownWord) return {id:'erase', label:'🧽 Erase writing', word: ownWord};
+    if (lhLookWallHit()) return {id:'write', label:'✍️ Write a word'};
     // door first (so Open/Close is not hidden by the doorbell). Close works inside and outside.
     for (let i = 0; i < lh.rooms.length; i++){
       const R = lh.rooms[i];
@@ -1449,6 +1844,8 @@
     else if (p.id === 'unlock') lhUnlock(p.R);
     else if (p.id === 'bed'){ lh.bed = !lh.bed; if (lh.bed){ P.x = p.R.bed.x; P.z = p.R.bed.z; } }
     else if (p.id === 'draw') lhOpenDraw(p.R);
+    else if (p.id === 'write') lhOpenWrite();
+    else if (p.id === 'erase') lhEraseMyWord(p.word && p.word.id);
     else if (p.id === 'mirror') lhStareMirror();
     else if (p.id === 'host') lhTalkHost();
     else if (p.id === 'fanfare') lhCallHost(true);
@@ -1799,6 +2196,11 @@
     if (lh.mapOpen){
       if (e.code === 'Escape' || e.key === 'Escape' || e.code === 'KeyM'){ lhToggleMap(false); return true; }
     }
+    if (lh.writeOpen){
+      if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseWrite(); return true; }
+      // Let the custom text field receive typing; G should not re-toggle.
+      return false;
+    }
     if (lh.doodleOpen || lh.setOpen){
       if (e.code === 'Escape' || e.key === 'Escape'){ lhCloseDraw(); lhToggleSet(false); return true; }
       return false;
@@ -1807,18 +2209,38 @@
       if (e.code === 'Escape' || e.code === 'Space' || e.code === 'KeyE' || e.key === 'Enter'){ lhSkipCut(); return true; }
     }
     if (e.code === 'KeyE' && !e.repeat){ lhAct(); return true; }
+    if (e.code === 'KeyG' && !e.repeat){ lhOpenWrite(); return true; }
     if (e.code === 'KeyM' && !e.repeat){ lhToggleMap(); return true; }
     if (e.code === 'KeyV') return false;
     return false;
   }
   function lhPad(jp){
     if (!lh || !jp) return false;
-    // X = use (button 2), B = back (1), A is jump
+    // X = use (button 2), B = back (1), A is jump, Y = map (3), LB = write (4)
+    if (lh.writeOpen){
+      if (jp[1] && !lh._padB){ lh._padB = true; lhCloseWrite(); return true; }
+      if (!jp[1]) lh._padB = false;
+      const presets = LH_RULES.LH_WALL_PRESETS || [];
+      const n = presets.length || 1;
+      if ((jp[14] || jp[12]) && !lh._padD){ lh._padD = true; lh.writeSel = ((lh.writeSel || 0) - 1 + n) % n; lhFillWritePanel(); return true; }
+      if ((jp[15] || jp[13]) && !lh._padD){ lh._padD = true; lh.writeSel = ((lh.writeSel || 0) + 1) % n; lhFillWritePanel(); return true; }
+      if (!jp[14] && !jp[15] && !jp[12] && !jp[13]) lh._padD = false;
+      if ((jp[0] || jp[2]) && !lh._padPick){
+        lh._padPick = true;
+        const w = presets[lh.writeSel || 0];
+        if (w){ lhPlaceWallWord(w, {hit: lh.writeHit, style: lh.writeStyle}); lhCloseWrite(); }
+        return true;
+      }
+      if (!jp[0] && !jp[2]) lh._padPick = false;
+      return true;
+    }
     if (jp[2] && !lh._padX){ lh._padX = true; lhAct(); return true; }
     if (!jp[2]) lh._padX = false;
-    if (jp[1] && (lh.doodleOpen || lh.setOpen || lh.mapOpen || lh.cut || lh.calm || lh.banish)){ lhCloseDraw(); lhToggleSet(false); lhToggleMap(false); lhSkipCut(); return true; }
+    if (jp[1] && (lh.doodleOpen || lh.setOpen || lh.mapOpen || lh.writeOpen || lh.cut || lh.calm || lh.banish)){ lhCloseDraw(); lhCloseWrite(); lhToggleSet(false); lhToggleMap(false); lhSkipCut(); return true; }
     if (jp[3] && !lh._padY){ lh._padY = true; lhToggleMap(); return true; }
     if (!jp[3]) lh._padY = false;
+    if (jp[4] && !lh._padLB){ lh._padLB = true; lhOpenWrite(); return true; }
+    if (!jp[4]) lh._padLB = false;
     if (jp[8] && !lh._padView){ lh._padView = true; /* view often chat */ }
     if (!jp[8]) lh._padView = false;
     return false;
@@ -2090,6 +2512,7 @@
     const setb = lhEl('lhSetBtn'); if (setb) setb.style.display = '';
     const mine = lhEl('lhMyWagon'); if (mine){ mine.style.display = ''; mine.classList.add('show'); }
     const mapb = lhEl('lhMapBtn'); if (mapb){ mapb.style.display = ''; mapb.classList.add('show'); }
+    const wrb = lhEl('lhWriteBtn'); if (wrb){ wrb.style.display = ''; wrb.classList.add('show'); wrb.classList.toggle('lh-ready', !!lhLookWallHit()); }
     if (lh.mapOpen) lhDrawMap();
   }
 
@@ -2139,6 +2562,15 @@
     if (d.k === 'light' && lh.rooms[d.room]){ lhTintRoom(lh.rooms[d.room], d.on); if (lh.transforming && lh.room === d.room) lhTryCancel('light'); }
     if (d.k === 'unlock' && lh.rooms[d.room]) lhSetDoor(lh.rooms[d.room], false);
     if (d.k === 'doodle' && lh.rooms[d.room]){ lh.prog.doodles[d.room] = d.doodle; lhPaintWall(lh.rooms[d.room], d.doodle); }
+    if (d.k === 'word'){
+      if (d.op === 'add' && d.word) lhReceiveWord(d.word);
+      else if (d.op === 'erase' && d.id) lhReceiveErase(d.id, d.uid);
+      else if (d.op === 'sync' && Array.isArray(d.words)){
+        (lh.wordMeshes || []).slice().forEach(it => { if (it && it.word) lhRemoveWordMesh(it.word.id); });
+        lh.words = [];
+        d.words.forEach(w => lhReceiveWord(w));
+      }
+    }
     if (d.keyholder && !lh.keyholder) lh.keyholder = d.keyholder;
     if (d.k === 'banish' && d.uid && (d.uid === (typeof mp !== 'undefined' && mp && mp.me))) lhStartBanish({kind:'me'});
   }
@@ -2199,7 +2631,7 @@
 
     if (lh.bed && (Math.abs(P.x - (area.R && area.R.bed.x || 0)) > 2 || Math.abs(P.z - (area.R && area.R.bed.z || 0)) > 2)) lh.bed = false;
 
-    try { lhTickDoors(dt); lhOwnerAutoDoor(); lhCullTick(); } catch (e){}
+    try { lhTickDoors(dt); lhOwnerAutoDoor(); lhCullTick(); lhTickPrivacy(); lhTickWordFades(dt); } catch (e){}
     if ((lh.t * 2 | 0) !== ((lh.t - dt) * 2 | 0)) { try { lhApplyView(); } catch (e){} }
     lhMoveNpcs(dt);
     lhDoTag(dt);
@@ -2237,6 +2669,19 @@
       };
       window.lhPerf = function(v){ try { return lhPerf(v); } catch (e){ return null; } };
       window.lhRefill = function(v){ try { if (lh){ lh.sanity = (v == null ? 100 : v); if (lh.sanity > 0) lh.glitched = false; } return lh && lh.sanity; } catch (e){ return null; } };
+      window.lhOpenWrite = function(){ try { return lhOpenWrite(); } catch (e){ return false; } };
+      window.lhCloseWrite = function(){ try { lhCloseWrite(); } catch (e){} };
+      window.lhWriteWord = function(text, opts){ try { return lhPlaceWallWord(text, opts || {}); } catch (e){ return {ok:false, err:String(e)}; } };
+      window.lhEraseWord = function(id){ try { return lhEraseMyWord(id); } catch (e){ return false; } };
+      window.lhWallHit = function(){ try { return lhLookWallHit(); } catch (e){ return null; } };
+      window.lhPrivacy = function(id){
+        try {
+          const R = lh && lh.rooms[id == null ? lh.myRoom : id];
+          if (!R) return null;
+          const viewer = P ? {x:P.x, z:P.z} : null;
+          return {id:R.id, inside: !!(viewer && LH_RULES.lhRoomContains(R, viewer.x, viewer.z, 0.02)), doorClosed: !!(R.door && R.door.closed), visible: !!(R.interior && R.interior.visible), hasInterior: !!R.interior, childCount: R.interior ? R.interior.children.length : 0};
+        } catch (e){ return {err:String(e)}; }
+      };
       window.lhSetGlitched = function(on){
         try {
           if (!lh) return false;

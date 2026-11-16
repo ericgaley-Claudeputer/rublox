@@ -7,8 +7,8 @@ ROOT = Path(__file__).resolve().parents[2]
 IDX = ROOT / 'index.html'
 DEV = ROOT / 'dev/lantern'
 ACH = ROOT / 'dev/achievements/achievements.js'
-BUILD = '2026.11.16-7'
-OLD_BUILD = '2026.11.16-3'
+BUILD = '2026.11.16-8'
+OLD_BUILD = '2026.11.16-7'
 
 def once(text, old, new, label):
     if new.strip() and new in text and old not in text:
@@ -28,6 +28,7 @@ def main():
         ROOT / 'tests/home_play.js', ROOT / 'tests/tag_logic.js',
         ROOT / 'tests/chat_logic.js', ROOT / 'tests/perf.js',
         ROOT / 'tests/continue_logic.js', ROOT / 'tests/dreamhouse_loop.js',
+        ROOT / 'tests/start_safety.js', ROOT / 'tests/lantern_logic.js',
     ]
     for f in stamp_files:
         t = f.read_text()
@@ -222,6 +223,9 @@ def main():
     if '#lhRoot' not in html:
         html, m = once(html, old_sel, new_sel, 'HUD_HIT_SEL')
         log.append(m)
+    elif '#lhWrite' not in html[html.find('const HUD_HIT_SEL'):html.find('const HUD_HIT_SEL')+800]:
+        html = html.replace('#lhDraw, #lhCut', '#lhDraw, #lhWrite, #lhWriteBtn, #lhCut', 1)
+        log.append('ok HUD_HIT_SEL write')
     else:
         log.append('skip HUD_HIT_SEL')
 
