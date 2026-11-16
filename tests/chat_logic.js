@@ -229,6 +229,9 @@ chk('dhInertExempt includes chat root', HTML.includes("id === 'chRoot'") || HTML
 chk('chat achievements are in the registry', HTML.includes("id:'ch-hello'") && HTML.includes("id:'ch-gg'") && HTML.includes('First Hello') && HTML.includes('Said GG'));
 chk('achBlockPersist treats chattest as a test hash', /achBlockPersist[\s\S]{0,500}chattest/.test(HTML));
 chk('BUILD is 2026.11.15-4', HTML.includes("const BUILD = '2026.11.15-4'"));
+chk('Obby exports mp so room chat can see the room from the home script',
+  HTML.includes('get mp(){ return mp; }') && HTML.includes('window.Obby = Obby') && HTML.includes('chMp()'));
+
 
 console.log('chat_logic ' + pass + '/' + (pass + fail) + (fail ? ' FAILED' : ' ok'));
 if (fail) process.exit(1);

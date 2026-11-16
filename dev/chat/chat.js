@@ -92,8 +92,31 @@
   }
   function chToggleMute(name){ return chIsMuted(name) ? chUnmute(name) : chMute(name); }
 
+  function chGame(){
+    try {
+      if (typeof window !== 'undefined' && window.Obby) return window.Obby;
+      if (typeof Obby !== 'undefined') return Obby;
+    } catch (e){}
+    return null;
+  }
+  function chMp(){
+    try { if (typeof mp !== 'undefined' && mp) return mp; } catch (e){}
+    try { const O = chGame(); if (O && O.mp) return O.mp; } catch (e){}
+    return null;
+  }
+  function chMpSend(msg){
+    try { if (typeof mpSend === 'function') return mpSend(msg); } catch (e){}
+    try { const O = chGame(); if (O && typeof O.mpSend === 'function') return O.mpSend(msg); } catch (e){}
+  }
+  function chMpBroadcast(msg, except){
+    try { if (typeof mpBroadcast === 'function') return mpBroadcast(msg, except); } catch (e){}
+    try { const O = chGame(); if (O && typeof O.mpBroadcast === 'function') return O.mpBroadcast(msg, except); } catch (e){}
+  }
   function chInRoom(){
-    try { return !!(typeof mp !== 'undefined' && mp && mp.on); } catch (e){ return false; }
+    try {
+      const m = chMp();
+      return !!(m && m.on);
+    } catch (e){ return false; }
   }
   function chAllowed(){
     if (chTestDemo()) return chMode() !== 'off';
@@ -165,12 +188,17 @@
   function chMyName(){
     try {
       if (typeof myLook === 'function') return myLook().name || 'You';
+      const O = chGame();
+      if (O && typeof O.myLook === 'function') return (O.myLook().name || 'You');
       if (typeof player !== 'undefined' && player && player.name) return (typeof cleanName === 'function') ? cleanName(player.name) : String(player.name).slice(0, 16);
     } catch (e){}
     return 'You';
   }
   function chMyUid(){
-    try { if (typeof mp !== 'undefined' && mp && mp.on) return mp.me || (mp.host ? 'H' : ''); } catch (e){}
+    try {
+      const m = chMp();
+      if (m && m.on) return m.me || (m.host ? 'H' : '');
+    } catch (e){}
     return 'local';
   }
   function chPeople(){
@@ -185,13 +213,14 @@
       out.push({uid: id, name: n, me: !!me});
     };
     try {
-      if (typeof mp !== 'undefined' && mp && mp.on){
-        if (mp.host){
+      const m = chMp();
+      if (m && m.on){
+        if (m.host){
           add('H', chMyName(), true);
-          if (mp.guests && mp.guests.forEach) mp.guests.forEach(g => { if (g && g.ready) add(g.uid, g.name, false); });
-          else if (mp.guests && mp.guests.values) for (const g of mp.guests.values()) if (g && g.ready) add(g.uid, g.name, false);
-        } else if (Array.isArray(mp.roster)){
-          mp.roster.forEach(p => { if (p) add(p.uid, p.name, p.uid === mp.me); });
+          if (m.guests && m.guests.forEach) m.guests.forEach(g => { if (g && g.ready) add(g.uid, g.name, false); });
+          else if (m.guests && m.guests.values) for (const g of m.guests.values()) if (g && g.ready) add(g.uid, g.name, false);
+        } else if (Array.isArray(m.roster)){
+          m.roster.forEach(p => { if (p) add(p.uid, p.name, p.uid === m.me); });
         }
       }
     } catch (e){}
@@ -255,9 +284,10 @@
   }
   function chNetSend(text, quick){
     try {
-      if (typeof mp === 'undefined' || !mp || !mp.on) return;
+      const m = chMp();
+      if (!m || !m.on) return;
       const msg = {t: 'chat', v: 1, uid: chMyUid(), name: chMyName(), text: String(text), q: quick ? 1 : 0};
-      if (typeof mpSend === 'function') mpSend(msg);
+      chMpSend(msg);
     } catch (e){}
   }
   function chFromGuest(g, d){
@@ -271,7 +301,7 @@
     g._chSent.push(now);
     const out = {t: 'chat', v: 1, uid: acc.uid || g.uid, name: acc.name, text: acc.text, q: acc.quick ? 1 : 0};
     chShow({name: acc.name, text: acc.text, me: false, uid: out.uid, quick: acc.quick});
-    try { if (typeof mpBroadcast === 'function') mpBroadcast(out, g.conn); } catch (e){}
+    try { chMpBroadcast(out, g.conn); } catch (e){}
   }
   function chFromHost(d){
     if (!d || d.t !== 'chat') return;
@@ -517,9 +547,11 @@
 
   function chProject(x, y, z){
     try {
-      if (typeof THREE === 'undefined' || typeof camera === 'undefined' || !camera) return null;
+      if (typeof THREE === 'undefined') return null;
+      const cam = (typeof camera !== 'undefined' && camera) || (chGame() && chGame().camera);
+      if (!cam) return null;
       const v = new THREE.Vector3(+x, +y, +z);
-      v.project(camera);
+      v.project(cam);
       if (v.z < -1 || v.z > 1) return null;
       const w = (typeof innerWidth === 'number' ? innerWidth : 800);
       const h = (typeof innerHeight === 'number' ? innerHeight : 600);
@@ -529,16 +561,19 @@
   function chPosFor(uid, name){
     try {
       if (uid && (uid === chMyUid() || uid === 'local' || uid === 'me')){
-        if (typeof P !== 'undefined' && P) return {x: P.x, y: (P.y || 0) + 2.15, z: P.z};
+        const Pv = (typeof P !== 'undefined' && P) || (chGame() && chGame().P);
+        if (Pv) return {x: Pv.x, y: (Pv.y || 0) + 2.15, z: Pv.z};
       }
-      if (typeof mp !== 'undefined' && mp && mp.ents){
-        const E = mp.ents.get && mp.ents.get(uid);
+      const m = chMp();
+      if (m && m.ents){
+        const E = m.ents.get && m.ents.get(uid);
         if (E) return {x: E.x, y: (E.y || 0) + 2.15, z: E.z};
-        if (mp.ents.forEach){
+        if (m.ents.forEach){
           let found = null;
-          mp.ents.forEach((ent, id) => {
+          m.ents.forEach((ent, id) => {
             if (found) return;
-            const look = (typeof mpLook === 'function') ? mpLook(id) : null;
+            const lookFn = (typeof mpLook === 'function') ? mpLook : (chGame() && chGame().mpLook);
+            const look = (typeof lookFn === 'function') ? lookFn(id) : null;
             if (look && chMuteKey(look.short || look.name) === chMuteKey(name)) found = ent;
           });
           if (found) return {x: found.x, y: (found.y || 0) + 2.15, z: found.z};
@@ -553,7 +588,7 @@
     chPruneBubbles();
     const now = chNow();
     if (!ch.bubbles.length){ box.innerHTML = ''; return; }
-    const runningGame = (typeof running !== 'undefined' && running);
+    const runningGame = (typeof running !== 'undefined' && running) || !!(chGame() && chGame().running);
     box.innerHTML = ch.bubbles.map((b, i) => {
       const left = Math.max(0, CH_BUBBLE_MS - (now - b.at));
       let style = '';
