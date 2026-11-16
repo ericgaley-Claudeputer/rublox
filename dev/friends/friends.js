@@ -483,7 +483,7 @@
   }
 
   /* Best-effort presence over the same free PeerJS transport as family rooms.
-     Only works while both people have Rublox open. No chat, no stranger search. */
+     Only works while both people have Rublox open. No stranger search. */
   function frPresencePayload(){
     const room = (typeof mp !== 'undefined' && mp && mp.on && mp.code) ? String(mp.code) : '';
     let gameMode = '';

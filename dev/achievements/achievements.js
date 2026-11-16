@@ -87,6 +87,8 @@
     {id:'fr-code', cat:'friends', emoji:'📋', name:'Pass It On', desc:'Copy your 6-letter friend code to share with family.', coins:5, prove:s => !!(s.friends && s.friends.copied) || !!(s.notes && s.notes['fr:code'])},
     {id:'fr-join', cat:'friends', emoji:'🚪', name:'Come Play', desc:'Join a friend who is already in a game.', coins:15, prove:s => !!(s.notes && s.notes['fr:join'])},
     {id:'fr-session', cat:'friends', emoji:'🎮', name:'We Played!', desc:'Add a friend after you played together in a room.', coins:15, prove:s => !!(s.notes && s.notes['fr:session'])},
+    {id:'ch-hello', cat:'friends', emoji:'💬', name:'First Hello', desc:'Say Hi! in a multiplayer room.', coins:5, prove:s => !!(s.notes && s.notes['ch:hello'])},
+    {id:'ch-gg', cat:'friends', emoji:'🏆', name:'Said GG', desc:'Send a Good Game (GG!) in a multiplayer room.', coins:5, prove:s => !!(s.notes && s.notes['ch:gg'])},
     // Collection
     {id:'welcome', cat:'collection', emoji:'👋', name:'Hello, Friend', desc:'Pick a player name and join Rublox.', coins:5, prove:s => !!(s.player && s.player.name)},
     {id:'first-game', cat:'collection', emoji:'🎮', name:'Let\'s Play', desc:'Start any Rublox game.', coins:5, prove:s => !!(s.notes && s.notes.play) || !!(s.recent && s.recent.length >= 1)},
@@ -154,6 +156,9 @@
       if (achTestHash()) return true;
       if (typeof dhTestBlockPersist === 'function' && dhTestBlockPersist()) return true;
       if (typeof dhTestActive === 'function' && dhTestActive()) return true;
+      const loc = (typeof location !== 'undefined' && location) || (typeof window !== 'undefined' && window.location) || null;
+      const hash = loc && loc.hash ? String(loc.hash) : '';
+      if (/(?:^|#|&)chattest=/i.test(hash)) return true;
     } catch (e){}
     return false;
   }
