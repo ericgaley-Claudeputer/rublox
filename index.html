@@ -1789,7 +1789,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.15-1';
+const BUILD = '2026.11.15-3';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -4343,22 +4343,80 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     return true;
   }
 
+  function frAddInEl(){
+    if (typeof $ === 'function'){
+      const el = $('#frAddIn') || $('frAddIn');
+      if (el) return el;
+    }
+    return (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('frAddIn') : null;
+  }
+  function frShownCode(raw){
+    return String(raw || '').toUpperCase().replace(/[\s\u0000-\u001f<>]/g, '').slice(0, 16);
+  }
+  function frFocusAddBox(inp){
+    inp = inp || frAddInEl();
+    if (!inp || typeof inp.focus !== 'function') return false;
+    const go = () => { try { inp.focus(); } catch (e){} };
+    go();
+    try {
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(go);
+      else if (typeof setTimeout === 'function') setTimeout(go, 0);
+    } catch (e){}
+    return true;
+  }
+  function frSelectAddBox(inp){
+    inp = inp || frAddInEl();
+    if (!inp) return false;
+    try {
+      const len = String(inp.value || '').length;
+      if (!len) return true;
+      if (typeof inp.setSelectionRange === 'function') inp.setSelectionRange(0, len);
+      else if (typeof inp.select === 'function') inp.select();
+    } catch (e){}
+    return true;
+  }
+  // Clearing is the robust reject path: a click on Add friend blurs the box, and a
+  // later click into it collapses any select-all. Quote the typed code in the error
+  // so the kid can still see it. If any text is still there, the next focus/pointerdown
+  // selects it so typing replaces rather than appends.
+  function frRejectAddBox(inp, raw, message){
+    frMsg(message);
+    inp = inp || frAddInEl();
+    if (inp){
+      inp.value = '';
+      inp._frReject = true;
+      frFocusAddBox(inp);
+    }
+    return false;
+  }
+  function frOnAddInResume(inp){
+    inp = inp || frAddInEl();
+    if (!inp || !inp._frReject) return;
+    if (inp.value) frSelectAddBox(inp);
+  }
   function frTryAddFromBox(){
-    const inp = (typeof $ === 'function') ? $('#frAddIn') : null;
+    const inp = frAddInEl();
     const raw = inp ? inp.value : '';
+    const shown = frShownCode(raw);
     const c = frNormCode(raw);
-    if (!c){ frMsg('Friend codes are 6 letters. Check the code and try again.'); return false; }
+    if (!c){
+      const msg = shown
+        ? (shown + ' is not a valid friend code. Friend codes are 6 letters — try again.')
+        : 'Friend codes are 6 letters. Check the code and try again.';
+      return frRejectAddBox(inp, raw, msg);
+    }
     const rec = frAdd(c, {name: 'Friend ' + c, from: 'code'});
     if (rec.ok){
-      if (inp) inp.value = '';
+      if (inp){ inp.value = ''; inp._frReject = false; }
       frMsg('Added ' + rec.friend.name + '! They can add you back with your code ' + frMyCode() + '.', true);
       return true;
     }
-    if (rec.reason === 'self') frMsg('That is your own code.');
-    else if (rec.reason === 'already') frMsg('You already added ' + ((rec.friend && rec.friend.name) || 'this friend') + '.');
-    else if (rec.reason === 'full') frMsg('Your list is full (20 friends). Remove one to add another.');
-    else frMsg('Friend codes are 6 letters. Check the code and try again.');
-    return false;
+    let msg;
+    if (rec.reason === 'self') msg = (shown || c) + ' is your own code.';
+    else if (rec.reason === 'already') msg = 'You already added ' + ((rec.friend && rec.friend.name) || shown || 'this friend') + '.';
+    else if (rec.reason === 'full') msg = 'Your list is full (20 friends). Remove one to add another.';
+    else msg = (shown || c) + ' is not a valid friend code. Friend codes are 6 letters — try again.';
+    return frRejectAddBox(inp, raw, msg);
   }
 
   function frAskRemove(code){
@@ -4432,7 +4490,16 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     const inp = document.getElementById('frAddIn');
     if (inp && !inp._frBound){
       inp._frBound = true;
-      inp.addEventListener('keydown', ev => { if (ev.key === 'Enter'){ ev.preventDefault(); frTryAddFromBox(); } });
+      inp.addEventListener('keydown', ev => { if (ev.key === 'Enter'){ ev.preventDefault(); ev.stopPropagation(); frTryAddFromBox(); } });
+      const resume = () => frOnAddInResume(inp);
+      inp.addEventListener('focus', resume);
+      inp.addEventListener('pointerdown', () => {
+        try {
+          if (typeof requestAnimationFrame === 'function') requestAnimationFrame(resume);
+          else if (typeof setTimeout === 'function') setTimeout(resume, 0);
+          else resume();
+        } catch (e){ resume(); }
+      });
     }
     const copy = document.getElementById('frCopy');
     if (copy && !copy._frBound){ copy._frBound = true; copy.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); frCopyCode(); }); }
@@ -4555,6 +4622,9 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     window.frRender = frRender;
     window.frOpen = frOpen;
     window.frCopyCode = frCopyCode;
+    window.frTryAddFromBox = frTryAddFromBox;
+    window.frRejectAddBox = frRejectAddBox;
+    window.frFocusAddBox = frFocusAddBox;
     window.frJoinFriend = frJoinFriend;
     window.frAskRemove = frAskRemove;
     window.frInit = frInit;
@@ -4562,6 +4632,8 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
     window.frPingFriends = frPingFriends;
   }
   /* ===================== end Friends ===================== */
+
+
 
 
 
