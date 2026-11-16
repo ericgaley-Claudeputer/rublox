@@ -7,8 +7,8 @@ ROOT = Path(__file__).resolve().parents[2]
 IDX = ROOT / 'index.html'
 DEV = ROOT / 'dev/lantern'
 ACH = ROOT / 'dev/achievements/achievements.js'
-BUILD = '2026.11.16-9'
-OLD_BUILD = '2026.11.16-8'
+BUILD = '2026.11.16-10'
+OLD_BUILD = '2026.11.16-9'
 
 def once(text, old, new, label):
     if new.strip() and new in text and old not in text:
@@ -403,8 +403,8 @@ def main():
         if all(k in fields for k in ('id','name','desc','emoji','coins','note')):
             badges.append((fields['id'], fields['name'], fields['desc'], fields['emoji'], fields['coins'], fields['note']))
 
-    if len(badges) != 16:
-        raise SystemExit('expected 16 badges, got %d' % len(badges))
+    if len(badges) < 16:
+        raise SystemExit('expected at least 16 badges, got %d' % len(badges))
     ach_lines = ["    // Lantern Big Top"]
     def jq(s):
         return str(s).replace("\\", "\\\\").replace("'", "\\'")

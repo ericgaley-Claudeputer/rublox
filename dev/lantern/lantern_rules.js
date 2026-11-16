@@ -111,7 +111,11 @@
       settings: lhNormalizeSettings(o.settings),
       doodles: o.doodles && typeof o.doodles === 'object' ? o.doodles : {},
       coins: Math.max(0, +o.coins || 0),
-      wallWords: lhSanitizeWallWords(o.wallWords)
+      wallWords: lhSanitizeWallWords(o.wallWords),
+      rides: (o.rides && typeof o.rides === 'object') ? o.rides : {},
+      tickets: Math.max(0, o.tickets | 0),
+      decor: Array.isArray(o.decor) ? o.decor : [],
+      wagonStyle: (o.wagonStyle && typeof o.wagonStyle === 'object') ? o.wagonStyle : {}
     };
   }
 
@@ -284,7 +288,9 @@
     {id:'lh-enough', real:'WHY DO YOU TORMENT ME?', realDesc:'Get Caine to successfully crash out.', name:"That's Enough!", desc:'Get Maestro Gleam all worked up.', emoji:'😤', coins:15, note:'lh:enough'},
     {id:'lh-all', real:'They abandoned me...', realDesc:'Witness Caine having a meltdown by everyone abstracting.', name:"Everyone's Fizzled", desc:"Watch Maestro Gleam's meltdown when every guest has fizzled.", emoji:'😵', coins:20, note:'lh:all'},
     {id:'lh-vesper', real:'Hello neighbor, welcome home!', realDesc:'Encounter Eniac on your current server. (Secret)', name:'Mystery Guest', desc:'Meet the late-night visitor under the big top.', emoji:'🌙', coins:20, note:'lh:vesper', secret:true},
-    {id:'lh-peek', real:'Peekaboo.', realDesc:'Get abstracted by Eniac. (Secret)', name:'Gotcha!', desc:'Get fizzled by the late-night visitor.', emoji:'👀', coins:20, note:'lh:peek', secret:true}
+    {id:'lh-peek', real:'Peekaboo.', realDesc:'Get abstracted by Eniac. (Secret)', name:'Gotcha!', desc:'Get fizzled by the late-night visitor.', emoji:'👀', coins:20, note:'lh:peek', secret:true},
+    {id:'lh-ride', name:'First Spin', desc:'Hop on a fairground ride.', emoji:'🎡', coins:10, note:'lh:ride'},
+    {id:'lh-rides', name:'Ride the Midway', desc:'Take a turn on the Ferris wheel, the carousel, and the swing ride.', emoji:'🎠', coins:15, note:'lh:rides'}
   ];
 
 
@@ -595,10 +601,54 @@
     return (jump * jump) / (2 * grav);
   }
 
+
+  const LH_RIDE_SPEC = [
+    {id:'ferris', name:'Ferris Wheel', emoji:'🎡', boardR: 5.8},
+    {id:'carousel', name:'Carousel', emoji:'🎠', boardR: 3.6},
+    {id:'swing', name:'Swing Ride', emoji:'🎪', boardR: 4.2}
+  ];
+
+  function lhRidePickSeat(taken, count){
+    const n = Math.max(0, count | 0);
+    taken = taken || [];
+    for (let i = 0; i < n; i++){
+      if (!taken[i]) return i;
+    }
+    return -1;
+  }
+
+  function lhRideBoardOk(st){
+    st = st || {};
+    if (st.alreadyOn) return {ok: false, reason: 'seated'};
+    if (!st.near) return {ok: false, reason: 'far'};
+    const seat = st.seat == null ? -1 : st.seat;
+    if (seat < 0) return {ok: false, reason: 'full'};
+    return {ok: true, seat: seat};
+  }
+
+  function lhRideExitPoint(ride){
+    ride = ride || {};
+    const x = +ride.x || 0, z = +ride.z || 0;
+    if (ride.kind === 'ferris') return {x: x + 5.2, y: 0.12, z: z};
+    if (ride.kind === 'swing') return {x: x + 4.4, y: 0.12, z: z + 1};
+    return {x: x + 3.6, y: 0.12, z: z + 1.2};
+  }
+
+  function lhRideProgress(prev, kind){
+    const rides = {};
+    const src = prev && typeof prev === 'object' ? prev : {};
+    Object.keys(src).forEach(k => { if (src[k]) rides[k] = true; });
+    const first = !rides.ferris && !rides.carousel && !rides.swing;
+    if (kind) rides[kind] = true;
+    const all = !!(rides.ferris && rides.carousel && rides.swing);
+    return {rides: rides, first: first, all: all};
+  }
+
   const api = {
     LH_KEY, LH_VER, LH_HOST, LH_HOST_TITLE, LH_GAME, LH_STAMPS, LH_EYES,
     LH_WALL_PRESETS, LH_WALL_MAX_CHARS, LH_WALL_MAX_PER_PLAYER, LH_WALL_MAX_DIST, LH_PII_REASONS,
     LH_WAGON_H, LH_MIDWAY_WALL_H, LH_DOOR_OPEN_H, LH_KNOCK_COOLDOWN, LH_KNOCK_TIMEOUT, LH_KNOCK_SOLO_OPEN,
+    LH_RIDE_SPEC,
     LH_COMPANY_R, LH_NEAR_R, LH_SUMMON_R, LH_TAG_R, LH_KEY_CD, LH_LAMP_R, LH_WAGON_ZS,
     LH_WAGONS_PER_SIDE, LH_WAGON_COUNT, LH_WAGON_SPACING, LH_WAGON_Z0, LH_WAGON_X,
     LH_MIDWAY_WALL_X, LH_MIDWAY_Z0, LH_MIDWAY_Z1, LH_DOOR_HALF,
@@ -614,6 +664,7 @@
     lhRoomContains, lhDoorAjar, lhRoomInteriorVisible, lhDoorwayLayout, lhDoorSealsOpening,
     lhWagonWallPlanes, lhRayWall, lhNormalizeWallText, lhAddWallWord, lhEraseWallWord, lhSanitizeWallWords,
     lhDoorPromptKind, lhKnockCooldownLeft, lhKnockAllowed, lhKnockResolve, lhKnockReplyMessage, lhJumpClearHeight, lhPickLine,
+    lhRidePickSeat, lhRideBoardOk, lhRideExitPoint, lhRideProgress,
     LH_KNOCK_SOLO_OPEN_LINES, LH_KNOCK_SOLO_STAY_LINES
   };
   root.LHRules = api;

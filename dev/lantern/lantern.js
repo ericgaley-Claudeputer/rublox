@@ -23,7 +23,7 @@
   function lhSaveProg(p){
     p = p || (lh && lh.prog) || lhProg();
     try {
-      const body = {ver: LH_RULES.LH_VER || 1, visits: p.visits|0, settings: (LH_RULES.lhNormalizeSettings ? LH_RULES.lhNormalizeSettings(p.settings) : p.settings), doodles: p.doodles || {}, coins: +p.coins || 0, wallWords: (lh && lh.words) ? lh.words : (p.wallWords || [])};
+      const body = {ver: LH_RULES.LH_VER || 1, visits: p.visits|0, settings: (LH_RULES.lhNormalizeSettings ? LH_RULES.lhNormalizeSettings(p.settings) : p.settings), doodles: p.doodles || {}, coins: +p.coins || 0, wallWords: (lh && lh.words) ? lh.words : (p.wallWords || []), rides: (p.rides && typeof p.rides === 'object') ? p.rides : {}, tickets: Math.max(0, (p.tickets|0)), decor: Array.isArray(p.decor) ? p.decor : [], wagonStyle: (p.wagonStyle && typeof p.wagonStyle === 'object') ? p.wagonStyle : {}};
       if (typeof save === 'function') save(LH_KEY, body);
       else if (typeof localStorage !== 'undefined') localStorage.setItem(LH_KEY, JSON.stringify(body));
     } catch (e){}
@@ -358,50 +358,81 @@
     }
   }
   function lhFerris(x, y, z){
-    const g = new THREE.Group();
-    const segs = lhLow() ? 8 : 10;
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(3.4, 0.1, 6, segs), lhMat('#6b3cff', {emit:'#7a5cff'}));
-    g.add(rim);
+    const axleY = (y == null ? 5.2 : y);
+    const root = new THREE.Group();
+    root.position.set(x, 0, z);
+    root.rotation.y = 0.35;
+    const pole = new THREE.Mesh(new THREE.BoxGeometry(0.3, axleY + 0.2, 0.3), lhMat('#4a2a10'));
+    pole.position.y = (axleY + 0.2) / 2; root.add(pole);
+    const legA = new THREE.Mesh(new THREE.BoxGeometry(0.22, axleY + 0.4, 0.22), lhMat('#3a2410'));
+    legA.position.set(-1.7, (axleY + 0.2) / 2, 0.12); legA.rotation.z = 0.32; root.add(legA);
+    const legB = legA.clone(); legB.position.x = 1.7; legB.rotation.z = -0.32; root.add(legB);
+    const wheel = new THREE.Group(); wheel.position.y = axleY; root.add(wheel);
+    const segs = lhLow() ? 6 : 8;
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(3.4, 0.1, 6, lhLow() ? 8 : 12), lhMat('#6b3cff', {emit:'#7a5cff'}));
+    wheel.add(rim);
     const axle = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.8, 6), lhMat('#1d2340'));
-    axle.rotation.x = Math.PI / 2; g.add(axle);
-    const cols = ['#e31c23', '#ffd25a', '#3a86ff', '#2ec27e', '#ff8ad8'];
+    axle.rotation.x = Math.PI / 2; wheel.add(axle);
+    const cols = ['#e31c23', '#ffd25a', '#3a86ff', '#2ec27e', '#ff8ad8', '#8ecaff'];
+    const seats = [];
     for (let i = 0; i < segs; i++){
       const a = (i / segs) * Math.PI * 2;
       const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.07, 3.4, 0.07), lhMat('#fff8f0'));
-      spoke.rotation.z = a; g.add(spoke);
-      const car = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.4, 0.45), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}));
+      spoke.rotation.z = a; wheel.add(spoke);
+      const car = new THREE.Group();
       car.position.set(Math.sin(a) * 3.4, Math.cos(a) * 3.4, 0);
-      g.add(car);
+      const box = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.42, 0.55), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}));
+      box.position.y = -0.16; car.add(box);
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.06, 0.06), lhMat('#ffd25a'));
+      bar.position.set(0, 0.14, 0.2); car.add(bar);
+      wheel.add(car);
+      seats.push({mesh: car, index: i, sitY: 0.22});
     }
-    const pole = new THREE.Mesh(new THREE.BoxGeometry(0.3, 3.6, 0.3), lhMat('#4a2a10'));
-    pole.position.y = -1.8; g.add(pole);
-    g.position.set(x, y, z);
-    g.rotation.y = 0.35;
-    scene.add(g);
-    if (lh){ lh.trash.push(g); lh.rides = lh.rides || []; lh.rides.push({g, kind:'ferris'}); }
-    return g;
+    scene.add(root);
+    if (lh){
+      lh.trash.push(root); lh.rides = lh.rides || [];
+      lh.rides.push({kind:'ferris', name:'Ferris Wheel', g: root, wheel: wheel, seats: seats, taken: [], x: x, z: z, boardR: 5.8, axleY: axleY});
+    }
+    try { lhFloorBox(x + 4.6, z, 1.8, 1.8, '#f0c860', 'pad'); } catch (e){}
+    try { lhLabel('Ferris Wheel  ·  E to ride', 'rgba(80,20,40,.92)', x, 9.4, z); } catch (e){}
+    return root;
   }
   function lhCarousel(x, z){
-    const g = new THREE.Group();
+    const root = new THREE.Group();
     const base = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.4, 0.3, lhLow() ? 8 : 12), lhMat('#ffd25a'));
-    base.position.y = 0.15; g.add(base);
+    base.position.y = 0.15; root.add(base);
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 2.6, 6), lhMat('#e31c23'));
-    pole.position.y = 1.4; g.add(pole);
+    pole.position.y = 1.4; root.add(pole);
     const roof = new THREE.Mesh(new THREE.ConeGeometry(2.3, 0.9, lhLow() ? 8 : 12), lhMat('#e31c23'));
-    roof.position.y = 2.7; g.add(roof);
-    lhPaintStripe(roof, '#e31c23', '#fff8f0', 8, 1);
+    roof.position.y = 2.7; root.add(roof);
+    try { lhPaintStripe(roof, '#e31c23', '#fff8f0', 8, 1); } catch (e){}
+    const platform = new THREE.Group(); root.add(platform);
     const cols = ['#ff6b9a', '#3a86ff', '#2ec27e', '#ff9f1c'];
     const n = lhLow() ? 3 : 4;
+    const seats = [];
     for (let i = 0; i < n; i++){
       const a = (i / n) * Math.PI * 2;
-      const h = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.55, 0.18), lhMat(cols[i]));
-      h.position.set(Math.sin(a) * 1.4, 0.85, Math.cos(a) * 1.4);
-      g.add(h);
+      const horse = new THREE.Group();
+      horse.position.set(Math.sin(a) * 1.4, 0.85, Math.cos(a) * 1.4);
+      horse.rotation.y = a + Math.PI / 2;
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.38, 0.18), lhMat(cols[i % cols.length]));
+      body.position.y = 0.05; horse.add(body);
+      const head = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.18, 0.14), lhMat(cols[i % cols.length]));
+      head.position.set(0.22, 0.22, 0); horse.add(head);
+      const saddle = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.08, 0.2), lhMat('#8a4a20'));
+      saddle.position.set(-0.02, 0.26, 0); horse.add(saddle);
+      platform.add(horse);
+      seats.push({mesh: horse, index: i, sitY: 0.42, baseY: 0.85});
     }
-    g.position.set(x, 0, z);
-    scene.add(g);
-    if (lh){ lh.trash.push(g); lh.rides = lh.rides || []; lh.rides.push({g, kind:'carousel'}); }
-    return g;
+    root.position.set(x, 0, z);
+    scene.add(root);
+    if (lh){
+      lh.trash.push(root); lh.rides = lh.rides || [];
+      lh.rides.push({kind:'carousel', name:'Carousel', g: root, wheel: platform, seats: seats, taken: [], x: x, z: z, boardR: 3.6});
+    }
+    try { lhFloorBox(x + 3.0, z + 1.0, 1.5, 1.5, '#f0c860', 'pad'); } catch (e){}
+    try { lhLabel('Carousel  ·  E to ride', 'rgba(80,40,10,.92)', x, 4.4, z); } catch (e){}
+    return root;
   }
   function lhTrailerBits(R, wall){
     if (!R) return;
@@ -476,28 +507,42 @@
   }
 
   function lhSwing(x, z){
-    const g = new THREE.Group();
+    const root = new THREE.Group();
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 5.2, 8), lhMat('#4a2a10'));
-    pole.position.y = 2.6; g.add(pole);
+    pole.position.y = 2.6; root.add(pole);
     const cap = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 2.6, 0.16, lhLow() ? 8 : 12), lhMat('#e31c23'));
-    cap.position.y = 5.1; g.add(cap);
-    const arms = new THREE.Group(); arms.position.y = 4.8; g.add(arms);
+    cap.position.y = 5.1; root.add(cap);
+    const arms = new THREE.Group(); arms.position.y = 4.8; root.add(arms);
     const n = lhLow() ? 4 : 6;
     const cols = ['#ff6b9a', '#3a86ff', '#ffd25a', '#2ec27e', '#ff8ad8', '#8ecaff'];
+    const seats = [];
     for (let i = 0; i < n; i++){
       const a = (i / n) * Math.PI * 2;
       const arm = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.07, 0.07), lhMat('#fff8f0'));
       arm.position.set(Math.sin(a) * 1.2, 0, Math.cos(a) * 1.2);
       arm.rotation.y = -a + Math.PI / 2;
       arms.add(arm);
-      const seat = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.18, 0.32), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}));
+      const chain = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.5, 0.04), lhMat('#c8b8a0'));
+      chain.position.set(Math.sin(a) * 2.3, -0.75, Math.cos(a) * 2.3);
+      arms.add(chain);
+      const seat = new THREE.Group();
       seat.position.set(Math.sin(a) * 2.3, -1.6, Math.cos(a) * 2.3);
+      const board = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.4), lhMat(cols[i % cols.length], {emit: cols[i % cols.length]}));
+      seat.add(board);
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.05, 0.05), lhMat('#ffd25a'));
+      bar.position.set(0, 0.22, 0.16); seat.add(bar);
       arms.add(seat);
+      seats.push({mesh: seat, index: i, sitY: 0.38});
     }
-    g.position.set(x, 0, z);
-    scene.add(g);
-    if (lh){ lh.trash.push(g); lh.rides = lh.rides || []; lh.rides.push({g: arms, kind:'swing'}); lh.props = lh.props || []; lh.props.push(g); }
-    return g;
+    root.position.set(x, 0, z);
+    scene.add(root);
+    if (lh){
+      lh.trash.push(root); lh.rides = lh.rides || []; lh.props = lh.props || []; lh.props.push(root);
+      lh.rides.push({kind:'swing', name:'Swing Ride', g: root, wheel: arms, seats: seats, taken: [], x: x, z: z, boardR: 4.2});
+    }
+    try { lhFloorBox(x + 3.6, z + 1.0, 1.5, 1.5, '#f0c860', 'pad'); } catch (e){}
+    try { lhLabel('Swing Ride  ·  E to ride', 'rgba(80,20,40,.92)', x, 6.2, z); } catch (e){}
+    return root;
   }
   function lhBuildFunhouse(cx, cz){
     const w = 16, d = 14;
@@ -667,7 +712,7 @@
       rooms: [], npcs: [], host: null, vesper: null, exitDoor: null,
       keyholder: null, keyCd: 0, pester: 0, taggedLock: 0,
       doodleOpen: false, setOpen: false, writeOpen: false, writeStyle: 'paint', writeSel: 0, lastHud: '', words: (prog.wallWords || []).slice(), wordMeshes: [], knockAt: {}, knockOffer: null, knockWait: null,
-      trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null,
+      trash: [], fish: [], boards: null, fxMe: null, bulbs: [], rides: [], lamps: [], props: [], wagonPad: null, wagonMark: null, mapOpen: false, _tex: {}, _lhCamFov: null, riding: null,
       syncT: 0, visitAwarded: false, _nearT: 0, _isoT: 0, _darkT: 0,
       breathReady: 0, serenadeAt: 0, vesperAt: 0, exitAt: 0, keyAt: 0,
       lastDing: 0, savedFp: null
@@ -1641,6 +1686,7 @@
         if (camera.updateProjectionMatrix) camera.updateProjectionMatrix();
       }
     } catch (e){}
+    if (lh && lh.riding){ try { lhDismountRide(true); } catch (e){} }
     if (lh && lh.prog) lhSaveProg(lh.prog);
     lh = null;
   }
@@ -1784,10 +1830,192 @@
     return {area:'outside', room:-1, lit:!!lamp, dark:!lamp, bath:false, cellar:false, outside:true};
   }
 
+
+  function lhRideByKind(kind){
+    if (!lh || !lh.rides) return null;
+    return lh.rides.find(r => r && r.kind === kind) || null;
+  }
+  function lhSeatWorld(seat){
+    const v = (typeof THREE !== 'undefined') ? new THREE.Vector3() : {x:0,y:0,z:0};
+    if (!seat || !seat.mesh || !seat.mesh.updateWorldMatrix) return v;
+    try {
+      seat.mesh.updateWorldMatrix(true, false);
+      seat.mesh.getWorldPosition(v);
+      v.y += (seat.sitY || 0.3);
+    } catch (e){}
+    return v;
+  }
+  function lhBestSeat(ride, from){
+    if (!ride || !ride.seats) return -1;
+    const taken = ride.taken || [];
+    let best = -1, bestScore = 1e9;
+    for (let i = 0; i < ride.seats.length; i++){
+      if (taken[i]) continue;
+      const w = lhSeatWorld(ride.seats[i]);
+      let score;
+      if (ride.kind === 'ferris') score = w.y;
+      else if (from){
+        const dx = w.x - from.x, dz = w.z - from.z;
+        score = Math.sqrt(dx*dx + dz*dz);
+      } else score = i;
+      if (score < bestScore){ bestScore = score; best = i; }
+    }
+    return best;
+  }
+  function lhNearRide(){
+    if (!lh || !lh.rides || typeof P === 'undefined' || !P) return null;
+    let best = null, bestD = 99;
+    lh.rides.forEach(r => {
+      if (!r) return;
+      const d = LH_RULES.lhDist ? LH_RULES.lhDist(P.x, P.z, r.x, r.z) : 99;
+      if (d <= (r.boardR || 4) && d < bestD){ bestD = d; best = r; }
+    });
+    return best;
+  }
+  function lhClearSeat(kind, seat, uid){
+    const ride = lhRideByKind(kind);
+    if (!ride) return;
+    ride.taken = ride.taken || [];
+    if (uid){
+      if (ride.taken[seat] === uid) ride.taken[seat] = null;
+      for (let i = 0; i < (ride.seats || []).length; i++){
+        if (ride.taken[i] === uid && i !== seat) ride.taken[i] = null;
+      }
+    } else if (seat != null) ride.taken[seat] = null;
+  }
+  function lhBoardRide(ride, seatIdx){
+    if (!lh || !ride) return false;
+    if (lh.riding) lhDismountRide(true);
+    const seat = (seatIdx == null) ? lhBestSeat(ride, P) : seatIdx;
+    const ok = LH_RULES.lhRideBoardOk ? LH_RULES.lhRideBoardOk({near: true, alreadyOn: false, seat: seat}) : {ok: seat >= 0, seat: seat};
+    if (!ok.ok){
+      if (ok.reason === 'full' && typeof toast === 'function') toast('🎟️ Every seat is taken — wait for a spin!');
+      return false;
+    }
+    ride.taken = ride.taken || [];
+    ride.taken[ok.seat] = 'me';
+    lh.riding = {kind: ride.kind, seat: ok.seat, name: ride.name || ride.kind};
+    try { lhApplyLocalRide(); } catch (e){}
+    try {
+      lh.prog = lh.prog || lhProg();
+      const was = (lh.prog.rides && lh.prog.rides[ride.kind]);
+      const prog = LH_RULES.lhRideProgress ? LH_RULES.lhRideProgress(lh.prog.rides, ride.kind) : {rides: Object.assign({}, lh.prog.rides || {}, {[ride.kind]: true}), first: !was, all: false};
+      lh.prog.rides = prog.rides;
+      lhSaveProg(lh.prog);
+      if (!was) lhAward('lh:ride');
+      if (prog.all) lhAward('lh:rides');
+    } catch (e){}
+    try { lhNet({k:'ride', kind: ride.kind, seat: ok.seat, on: true}); } catch (e){}
+    if (typeof toast === 'function') toast((ride.kind === 'ferris' ? '🎡' : ride.kind === 'carousel' ? '🎠' : '🎪') + ' Hopped on the ' + (ride.name || 'ride') + '! E / X to hop off.');
+    return true;
+  }
+  function lhDismountRide(silent){
+    if (!lh || !lh.riding) return false;
+    const kind = lh.riding.kind, seat = lh.riding.seat;
+    const ride = lhRideByKind(kind);
+    lhClearSeat(kind, seat, 'me');
+    const ex = (LH_RULES.lhRideExitPoint ? LH_RULES.lhRideExitPoint(ride || {kind: kind, x: P && P.x, z: P && P.z}) : {x: (ride && ride.x || 0) + 4, y: 0.12, z: (ride && ride.z || 0)});
+    try {
+      if (typeof P !== 'undefined' && P){
+        P.x = ex.x; P.y = ex.y; P.z = ex.z;
+        P.vx = 0; P.vy = 0; P.vz = 0;
+        P.onGround = true;
+      }
+    } catch (e){}
+    lh.riding = null;
+    try { lhNet({k:'ride', kind: kind, seat: seat, on: false}); } catch (e){}
+    if (!silent && typeof toast === 'function') toast('👋 Hopped off.');
+    return true;
+  }
+  function lhApplyLocalRide(){
+    if (!lh || !lh.riding || typeof P === 'undefined' || !P) return;
+    const ride = lhRideByKind(lh.riding.kind);
+    if (!ride || !ride.seats || !ride.seats[lh.riding.seat]){ lhDismountRide(true); return; }
+    const v = lhSeatWorld(ride.seats[lh.riding.seat]);
+    P.x = v.x; P.y = v.y; P.z = v.z;
+    P.vx = 0; P.vy = 0; P.vz = 0;
+    P.onGround = true;
+    try { if (typeof onGround !== 'undefined') onGround = true; } catch (e){}
+  }
+  function lhMyUid(){
+    try { return (typeof mp !== 'undefined' && mp && (mp.host ? 'H' : (mp.me || 'g0'))) || 'me'; } catch (e){ return 'me'; }
+  }
+  function lhApplyRemoteRide(uid, info){
+    if (!lh || !uid || uid === 'me' || uid === lhMyUid()) return;
+    const on = !!(info && (info.on !== false) && info.kind != null && info.seat != null);
+    lh.rides.forEach(r => {
+      if (!r) return;
+      r.taken = r.taken || [];
+      for (let i = 0; i < (r.seats || []).length; i++){
+        if (r.taken[i] === uid) r.taken[i] = null;
+      }
+    });
+    if (on){
+      const ride = lhRideByKind(info.kind);
+      if (ride){ ride.taken = ride.taken || []; ride.taken[info.seat] = uid; }
+    }
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.ents){
+        const E = mp.ents.get(uid);
+        if (E){
+          E.lh = E.lh || {};
+          E.lh.ride = on ? {kind: info.kind, seat: info.seat} : null;
+        }
+      }
+    } catch (e){}
+  }
+  function lhSnapRemoteRiders(){
+    if (!lh || !lh.rides) return;
+    try {
+      if (typeof mp === 'undefined' || !mp || !mp.ents) return;
+      mp.ents.forEach((E, uid) => {
+        const rideInfo = E && E.lh && E.lh.ride;
+        if (!rideInfo) return;
+        const ride = lhRideByKind(rideInfo.kind);
+        if (!ride || !ride.seats || !ride.seats[rideInfo.seat]) return;
+        const v = lhSeatWorld(ride.seats[rideInfo.seat]);
+        if (E.model && E.model.g) E.model.g.position.set(v.x, v.y, v.z);
+        if (E.x != null){ E.x = v.x; E.y = v.y; E.z = v.z; }
+      });
+    } catch (e){}
+  }
+  function lhTickRides(dt){
+    if (!lh || !lh.rides) return;
+    lh.rides.forEach(r => {
+      if (!r) return;
+      const spin = r.wheel || r.g;
+      if (!spin) return;
+      if (r.kind === 'ferris'){
+        spin.rotation.z += dt * 0.35;
+        (r.seats || []).forEach(s => { if (s && s.mesh) s.mesh.rotation.z = -spin.rotation.z; });
+      } else if (r.kind === 'carousel'){
+        spin.rotation.y += dt * 0.6;
+        (r.seats || []).forEach((s, i) => {
+          if (!s || !s.mesh) return;
+          s.mesh.position.y = (s.baseY || 0.85) + Math.sin(((lh.t || 0) * 2.4) + i) * 0.18;
+        });
+      } else if (r.kind === 'swing'){
+        spin.rotation.y += dt * 0.9;
+      }
+    });
+    if (lh.riding) lhApplyLocalRide();
+    lhSnapRemoteRiders();
+  }
+
   function lhPrompt(){
     if (!lh || lh.cut || lh.calm || lh.banish) return null;
+    if (lh.riding){
+      const nm = (lh.riding.name || 'ride');
+      return {id:'hopoff', label: '👋 Hop off the ' + nm};
+    }
     const a = lhPlayerArea();
     const near = lhCompanyNear();
+    const ride = lhNearRide();
+    if (ride){
+      const seat = lhBestSeat(ride, P);
+      if (seat >= 0) return {id:'ride', label: (ride.kind === 'ferris' ? '🎡' : ride.kind === 'carousel' ? '🎠' : '🎪') + ' Ride the ' + (ride.name || 'ride'), ride: ride, seat: seat};
+      return {id:'ridefull', label:'🎟️ Ride is full'};
+    }
     if (lh.wagonPad && LH_RULES.lhNear(P.x, P.z, lh.wagonPad.x, lh.wagonPad.z, 2.0))
       return {id:'gowagon', label:'🎪 Go to my wagon'};
     // In-room actions first so the light switch and bed are not hidden by the door prompt —
@@ -1839,7 +2067,10 @@
     if (lh.cut || lh.calm || lh.banish){ lhSkipCut(); return true; }
     const p = lhPrompt();
     if (!p) return false;
-    if (p.id === 'bell') lhRing(p.R);
+    if (p.id === 'hopoff') lhDismountRide();
+    else if (p.id === 'ride') lhBoardRide(p.ride, p.seat);
+    else if (p.id === 'ridefull'){ if (typeof toast === 'function') toast('🎟️ Every seat is taken — wait for a spin!'); }
+    else if (p.id === 'bell') lhRing(p.R);
     else if (p.id === 'gowagon') lhGoWagon();
     else if (p.id === 'enter'){
       if (p.R.door.closed){ if (typeof toast === 'function') toast('🚪 Knock first — you can\'t just walk in.'); return false; }
@@ -2472,6 +2703,7 @@
     }
     if (jp[2] && !lh._padX){ lh._padX = true; lhAct(); return true; }
     if (!jp[2]) lh._padX = false;
+    if (jp[1] && lh.riding && !lh._padB){ lh._padB = true; lhDismountRide(); return true; }
     if (jp[1] && (lh.doodleOpen || lh.setOpen || lh.mapOpen || lh.writeOpen || lh.knockOffer || lh.cut || lh.calm || lh.banish)){ lhCloseDraw(); lhCloseWrite(); if (lh.knockOffer) lhKnockReply(false, 'closed'); lhToggleSet(false); lhToggleMap(false); lhSkipCut(); return true; }
     if (jp[3] && !lh._padY){ lh._padY = true; lhToggleMap(); return true; }
     if (!jp[3]) lh._padY = false;
@@ -2686,14 +2918,7 @@
         }
       }
     } catch (e){}
-    if (lh.rides){
-      lh.rides.forEach(r => {
-        if (!r || !r.g) return;
-        if (r.kind === 'ferris') r.g.rotation.z += dt * 0.35;
-        if (r.kind === 'carousel') r.g.rotation.y += dt * 0.6;
-        if (r.kind === 'swing') r.g.rotation.y += dt * 0.9;
-      });
-    }
+    try { lhTickRides(dt); } catch (e){}
     lhWhisper(vis ? k : k * 0.3);
   }
 
@@ -2765,7 +2990,8 @@
         room: lh.room,
         lights: lh.lights,
         doors: lh.doors,
-        keyholder: lh.keyholder
+        keyholder: lh.keyholder,
+        riding: lh.riding ? {kind: lh.riding.kind, seat: lh.riding.seat, on: true} : null
       }, extra || {});
       if (typeof mpBroadcast === 'function' && mp.host) mpBroadcast(msg);
       else if (typeof mpSend === 'function') mpSend(msg);
@@ -2811,12 +3037,16 @@
     }
     if (d.keyholder && !lh.keyholder) lh.keyholder = d.keyholder;
     if (d.k === 'banish' && d.uid && (d.uid === (typeof mp !== 'undefined' && mp && mp.me))) lhStartBanish({kind:'me'});
+    if (d.k === 'ride') lhApplyRemoteRide(uid, d);
+    else if (d.riding) lhApplyRemoteRide(uid, d.riding);
+    else if (d.riding === null && uid) lhApplyRemoteRide(uid, {on: false});
   }
 
   function lanternUpdate(dt){
     if (!lh) return;
     dt = Math.min(0.05, +dt || 0.016);
     lh.t += dt;
+    if (lh.riding){ try { lhApplyLocalRide(); } catch (e){} }
     if (lh.taggedLock > 0) lh.taggedLock -= dt;
     if (lh.keyCd > 0) lh.keyCd -= dt;
 
@@ -2929,6 +3159,31 @@
           const viewer = P ? {x:P.x, z:P.z} : null;
           return {id:R.id, inside: !!(viewer && LH_RULES.lhRoomContains(R, viewer.x, viewer.z, 0.02)), doorClosed: !!(R.door && R.door.closed), visible: !!(R.interior && R.interior.visible), hasInterior: !!R.interior, childCount: R.interior ? R.interior.children.length : 0};
         } catch (e){ return {err:String(e)}; }
+      };
+      window.lhBoardRide = function(kind, seat){
+        try {
+          const ride = (kind && lhRideByKind(kind)) || lhNearRide() || (lh && lh.rides && lh.rides[0]);
+          return ride ? lhBoardRide(ride, seat) : false;
+        } catch (e){ return false; }
+      };
+      window.lhDismount = function(){ try { return lhDismountRide(); } catch (e){ return false; } };
+      window.lhRideState = function(){
+        try {
+          if (!lh) return null;
+          return {
+            riding: lh.riding,
+            pos: (typeof P !== 'undefined' && P) ? {x:P.x, y:P.y, z:P.z} : null,
+            rides: (lh.rides || []).map(r => ({kind:r.kind, x:r.x, z:r.z, seats:(r.seats||[]).length, taken:(r.taken||[]).slice()}))
+          };
+        } catch (e){ return {err:String(e)}; }
+      };
+      window.lhGoRides = function(kind){
+        try {
+          const ride = lhRideByKind(kind || 'ferris') || (lh && lh.rides && lh.rides[0]);
+          if (!ride || typeof P === 'undefined' || !P) return false;
+          P.x = ride.x + 4.2; P.y = 0.12; P.z = ride.z; P.vx = 0; P.vy = 0; P.vz = 0;
+          return true;
+        } catch (e){ return false; }
       };
       window.lhSetGlitched = function(on){
         try {

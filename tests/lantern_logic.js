@@ -7,10 +7,10 @@ const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const RULES = require(path.join(ROOT, 'dev/lantern/lantern_rules.js'));
 const BUILD = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).build || JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
-test('BUILD stamp is 2026.11.16-9 in lantern files and version.json', () => {
+test('BUILD stamp is 2026.11.16-10 in lantern files and version.json', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
-  assert.equal(v.build, '2026.11.16-9');
-  assert.match(HTML, /const BUILD = '2026\.11\.16-9'/);
+  assert.equal(v.build, '2026.11.16-10');
+  assert.match(HTML, /const BUILD = '2026\.11\.16-10'/);
 });
 
 test('Lantern Big Top is a playable GAMES card with original branding', () => {
@@ -138,10 +138,12 @@ test('doodles accept stamps only, never free text', () => {
 });
 
 test('16 official badges are mapped 1:1 to original Lantern Big Top achievements', () => {
-  assert.equal(RULES.LH_BADGES.length, 16);
-  const ids = RULES.LH_BADGES.map(b => b.id);
+  const official = RULES.LH_BADGES.filter(b => b.real);
+  assert.equal(official.length, 16);
+  assert.ok(RULES.LH_BADGES.length >= 18);
+  const ids = official.map(b => b.id);
   assert.equal(new Set(ids).size, 16);
-  const reals = RULES.LH_BADGES.map(b => b.real);
+  const reals = official.map(b => b.real);
   assert.deepEqual(reals, [
     'Welcome!',
     'Welcome back',
@@ -162,7 +164,7 @@ test('16 official badges are mapped 1:1 to original Lantern Big Top achievements
   ]);
   // in-game names must be original (no TADC / official badge titles)
   RULES.LH_BADGES.forEach(b => {
-    assert.notEqual(b.name, b.real);
+    if (b.real) assert.notEqual(b.name, b.real);
     assert.doesNotMatch(b.name, /Caine|Kaufmo|Pomni|Eniac|Daisy/);
     assert.doesNotMatch(b.desc, /Caine|Kaufmo|Pomni|Eniac|Daisy Bell|abstract/i);
   });
@@ -641,4 +643,84 @@ test('a knock may be answered, ignored, or stay closed if nobody is home', () =>
   assert.match(js, /lhKnockReply\(true/);
   assert.match(js, /lhShowKnockPopup/);
   assert.match(js, /k:'knock'/);
+});
+
+test('optional save fields stay compatible and default empty', () => {
+  const fresh = RULES.lhLoadState(null);
+  assert.deepEqual(fresh.rides, {});
+  assert.equal(fresh.tickets, 0);
+  assert.deepEqual(fresh.decor, []);
+  assert.deepEqual(fresh.wagonStyle, {});
+  const old = RULES.lhLoadState({ver:1, visits:3, coins:8, settings:{cancellation:'always'}});
+  assert.equal(old.visits, 3);
+  assert.equal(old.coins, 8);
+  assert.deepEqual(old.rides, {});
+  assert.equal(old.tickets, 0);
+  const kept = RULES.lhLoadState({rides:{ferris:true}, tickets:12, decor:[{id:'lamp'}], wagonStyle:{wall:'stripe'}});
+  assert.equal(kept.rides.ferris, true);
+  assert.equal(kept.tickets, 12);
+  assert.equal(kept.decor[0].id, 'lamp');
+  assert.equal(kept.wagonStyle.wall, 'stripe');
+});
+
+test('ride seat picking, boarding rules, exits, and midway progress', () => {
+  assert.equal(RULES.lhRidePickSeat([], 4), 0);
+  assert.equal(RULES.lhRidePickSeat(['me', null, 'p2'], 3), 1);
+  assert.equal(RULES.lhRidePickSeat(['a','b','c'], 3), -1);
+  assert.equal(RULES.LH_RIDE_SPEC.length, 3);
+  assert.deepEqual(RULES.LH_RIDE_SPEC.map(r => r.id), ['ferris','carousel','swing']);
+  assert.equal(RULES.lhRideBoardOk({near:false, seat:0}).ok, false);
+  assert.equal(RULES.lhRideBoardOk({near:false, seat:0}).reason, 'far');
+  assert.equal(RULES.lhRideBoardOk({near:true, alreadyOn:true, seat:0}).reason, 'seated');
+  assert.equal(RULES.lhRideBoardOk({near:true, seat:-1}).reason, 'full');
+  const ok = RULES.lhRideBoardOk({near:true, seat:2});
+  assert.equal(ok.ok, true);
+  assert.equal(ok.seat, 2);
+  const ferris = RULES.lhRideExitPoint({kind:'ferris', x:-80, z:-36});
+  assert.ok(ferris.x > -80);
+  assert.equal(ferris.y, 0.12);
+  const first = RULES.lhRideProgress({}, 'ferris');
+  assert.equal(first.first, true);
+  assert.equal(first.all, false);
+  assert.equal(first.rides.ferris, true);
+  const mid = RULES.lhRideProgress(first.rides, 'carousel');
+  assert.equal(mid.first, false);
+  assert.equal(mid.all, false);
+  const all = RULES.lhRideProgress(mid.rides, 'swing');
+  assert.equal(all.all, true);
+  const extra = RULES.LH_BADGES.filter(b => !b.real);
+  assert.ok(extra.some(b => b.id === 'lh-ride' && b.note === 'lh:ride'));
+  assert.ok(extra.some(b => b.id === 'lh-rides' && b.note === 'lh:rides'));
+  extra.forEach(b => {
+    assert.ok(!b.real);
+    assert.doesNotMatch((b.name || '') + (b.desc || ''), /Caine|Kaufmo|Pomni|Eniac|Daisy|Digital Circus|TADC/i);
+  });
+});
+
+test('fairground rides are boardable with camera-follow and MP co-ride hooks', () => {
+  const js = fs.readFileSync(path.join(ROOT, 'dev/lantern/lantern.js'), 'utf8');
+  assert.match(js, /function lhBoardRide/);
+  assert.match(js, /function lhDismountRide/);
+  assert.match(js, /function lhTickRides/);
+  assert.match(js, /function lhApplyLocalRide/);
+  assert.match(js, /function lhSnapRemoteRiders/);
+  assert.match(js, /function lhApplyRemoteRide/);
+  assert.match(js, /p\.id === 'hopoff'/);
+  assert.match(js, /p\.id === 'ride'/);
+  assert.match(js, /k:'ride'/);
+  assert.match(js, /window\.lhBoardRide/);
+  assert.match(js, /window\.lhDismount/);
+  assert.match(js, /window\.lhRideState/);
+  assert.match(js, /window\.lhGoRides/);
+  // seats stay upright on the Ferris wheel
+  assert.match(js, /s\.mesh\.rotation\.z = -spin\.rotation\.z/);
+  // camera rides along by pinning the player to the seat
+  assert.match(js, /P\.x = v\.x; P\.y = v\.y; P\.z = v\.z/);
+  // Xbox B hops off
+  assert.match(js, /jp\[1\] && lh\.riding/);
+  // original ride names only
+  assert.match(js, /Ferris Wheel/);
+  assert.match(js, /Carousel/);
+  assert.match(js, /Swing Ride/);
+  assert.doesNotMatch(js, /Digital Circus|Caine|Pomni|Kaufmo/);
 });
