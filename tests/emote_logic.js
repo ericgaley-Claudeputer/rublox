@@ -27,4 +27,26 @@ describe('emotes', () => {
     assert.equal(E.EMO_PAD_VIEW, 8);
     assert.ok(E.EMO_PAD_VIEW !== 0 && E.EMO_PAD_VIEW !== 2 && E.EMO_PAD_VIEW !== 4 && E.EMO_PAD_VIEW !== 5);
   });
+
+  test('every assigned emote hotkey is unique, labels match bindings, and extras without a key are wheel-only', () => {
+    const merged = E.emoMerge();
+    const uniq = E.emoKeyUnique(merged);
+    assert.equal(uniq.ok, true);
+    assert.equal(Object.keys(uniq.keys).length, 10);
+    assert.deepEqual(Object.keys(uniq.keys).sort(), ['0','1','2','3','4','5','6','7','8','9']);
+    assert.equal(uniq.keys['1'], 'wave');
+    assert.equal(uniq.keys['7'], 'sleep');
+    assert.equal(uniq.keys['8'], 'skate');
+    assert.equal(uniq.keys['9'], 'flip');
+    assert.equal(uniq.keys['0'], 'groan');
+    assert.equal(E.emoHasKey(merged.facepalm), false);
+    assert.equal(E.emoKeyLabel(merged.groan), '0');
+    assert.equal(E.emoKeyLabel(merged.facepalm), '');
+    assert.equal(E.emoByCode('Digit0', merged), 'groan');
+    assert.equal(E.emoByCode('Numpad9', merged), 'flip');
+    assert.equal(E.emoByCode('Digit8', merged), 'skate');
+    assert.equal(E.emoByCode('Digitnull', merged), null);
+    const labels = Object.keys(merged).map(id => E.emoKeyLabel(merged[id])).filter(Boolean);
+    assert.equal(new Set(labels).size, labels.length);
+  });
 });

@@ -389,9 +389,8 @@
     });
     // seats
     for (let i = -3; i <= 3; i++) plat(i * 2.2, 0.4, 12, 1.6, 1.2, '#6b4aa0', 0.4);
-    // pet mesh placeholder
-    const body = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 10), new THREE.MeshLambertMaterial({color:'#f0b862'}));
-    body.position.set(2, 0.55, 2); scene.add(body); t297Keep(psg, body); psg.petM = body;
+    // Real pet mesh (every species, including dogs) — attached in psEnter/psUpdate.
+    psg.mesh = null; psg.ownMesh = false; psg.useFollow = false; psg.busy = null; psg.lastMat = null; psg.holdFollow = false;
     checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:4}, flag:new THREE.Object3D()};
     Object.assign(P, {x:0,y:0.5,z:4, vx:0,vy:0,vz:0, face:Math.PI});
   }
@@ -413,41 +412,130 @@
     if (vx && !vx.__t297){ vx.__t297 = true; vx.onclick = ev => { ev.preventDefault(); const el=document.getElementById('psVoteBox'); if (el) el.classList.remove('show'); }; }
     if (psg.pal) banner('🐰 Bring a pal from Adopt a Pet next time — today Stage Pal will practice with you!');
     else banner('🐾 Teach ' + (psg.pet.n || psg.pet.name || 'your pet') + ' tricks on the mats, then perform on the stage!');
-    t297Hud('Practice a trick on a mat, or start a show on the stage.', '');
+    t297Hud('Step on a practice mat — your pet will do the trick!', '');
+    psAttachPet();
   }
   function psStop(){
     if (!psg) return;
+    if (typeof pf !== 'undefined' && pf) pf.holdFollow = false;
     try { psg.trash.forEach(m => { if (m && m.parent) m.parent.remove(m); }); } catch (e){}
     const el = document.getElementById('psVoteBox'); if (el) el.classList.remove('show');
     psg = null;
   }
   function psKnown(){
     if (!psg || !PsRules) return [];
-    return PsRules.psKnown(psg.sv, psg.pet && (psg.pet.id || psg.pet.n || 'pal'));
+    return PsRules.psKnown(psg.sv, psg.pet && (PsRules.psPetId ? PsRules.psPetId(psg.pet) : (psg.pet.id || psg.pet.n || psg.pet.name || 'pal')));
   }
   function psMatNear(){
     if (!psg) return null;
+    if (typeof PsRules !== 'undefined' && PsRules.psOnMat) return PsRules.psOnMat(P.x, P.z, psg.mats, 1.6);
     let best=null, bd=99;
-    (psg.mats||[]).forEach(m => { const d=Math.hypot(P.x-m.x,P.z-m.z); if (d<1.6 && d<bd){ bd=d; best=m; } });
+    (psg.mats||[]).forEach(m => { const d=Math.hypot(P.x-m.x,P.z-m.z); if (d<=1.6 && d<bd){ bd=d; best=m; } });
     return best;
+  }
+
+  function psAttachPet(){
+    if (!psg) return null;
+    if (typeof pf !== 'undefined' && pf && pf.pet && pf.pet.m && pf.pet.m.g){
+      if (psg.ownMesh && psg.mesh && psg.mesh.g && psg.mesh !== pf.pet.m){
+        try { if (psg.mesh.g.parent) psg.mesh.g.parent.remove(psg.mesh.g); } catch (e){}
+        psg.ownMesh = false;
+      }
+      psg.mesh = pf.pet.m;
+      psg.useFollow = true;
+      return psg.mesh;
+    }
+    if (psg.mesh && psg.mesh.g) return psg.mesh;
+    const pet = psg.pet || {};
+    const kind = (typeof PsRules !== 'undefined' && PsRules.psPetKind) ? PsRules.psPetKind(pet) : (pet.k || pet.kind || 'bunny');
+    const k = (typeof PET_KINDS !== 'undefined' && PET_KINDS[kind]) ? kind : 'bunny';
+    const c = pet.c | 0;
+    const st = (typeof stageOf === 'function') ? stageOf(+pet.xp || 0) : 2;
+    if (typeof buildPet === 'function'){
+      const m = buildPet(k, c, st);
+      try { if (typeof dress === 'function') dress(m, pet.acc); } catch (e){}
+      try {
+        const nm = pet.n || pet.name || 'Pal';
+        const tag = (typeof label === 'function') ? label('🐾 ' + nm, 'rgba(255,111,181,.92)', '#fff', 220) : null;
+        if (tag){ tag.scale.multiplyScalar(0.5); tag.position.y = (m.top || 1.2) + 0.45; m.g.add(tag); }
+      } catch (e){}
+      m.g.position.set(P.x || 2, 0, (P.z || 2) - 1.4);
+      scene.add(m.g);
+      t297Keep(psg, m.g);
+      psg.mesh = m;
+      psg.ownMesh = true;
+      psg.useFollow = false;
+      return m;
+    }
+    return null;
+  }
+  function psPetMesh(){
+    if (!psg) return null;
+    if (psg.useFollow && typeof pf !== 'undefined' && pf && pf.pet && pf.pet.m) return pf.pet.m;
+    return psg.mesh || null;
+  }
+  function psStartPractice(mat){
+    if (!psg || !PsRules || !mat || psg.show) return false;
+    if (psg.busy && psg.busy.kind === 'practice' && psg.busy.id === mat.id) return true;
+    const q = 0.7 + Math.random() * 0.3;
+    const pid = PsRules.psPetId ? PsRules.psPetId(psg.pet) : (psg.pet.id || psg.pet.n || psg.pet.name || 'pal');
+    const r = PsRules.psTeach(psg.sv, pid, mat.id, q);
+    psg.busy = {kind:'practice', id: mat.id, t:0, dur:1.8, x: mat.x, z: mat.z, y:0};
+    psg.holdFollow = true;
+    if (typeof pf !== 'undefined' && pf) pf.holdFollow = true;
+    psg.lastMat = mat.id;
+    if (!r.ok){ banner('Almost! Try the ' + mat.name + ' again.'); return true; }
+    psg.sv = r.state; t297Save(PsRules.PS_KEY, psg.sv);
+    t297Note('ps-trick'); t297Ach('ps-teach');
+    banner((r.first ? 'Learned! ' : 'Nailed it! ') + mat.emoji + ' ' + mat.name);
+    return true;
+  }
+  function psDrivePet(dt){
+    if (!psg) return;
+    psAttachPet();
+    const M = psPetMesh();
+    if (!M || !M.g) return;
+    if (M.inner){ M.g.rotation.x = 0; M.g.rotation.z = 0; }
+    if (psg.busy && PsRules && PsRules.psTrickPose){
+      const b = psg.busy;
+      const pose = PsRules.psTrickPose(b.id, b.t, b.dur);
+      const y = (b.y || 0) + (pose.hop || 0);
+      M.g.position.set(b.x, y, b.z);
+      M.g.rotation.y = pose.yaw || 0;
+      if (typeof animPet === 'function') animPet(M, pose.act, 0, dt, (typeof worldT !== 'undefined' ? worldT : b.t));
+      if (pose.roll){ if (M.inner) M.inner.rotation.z = pose.roll; else M.g.rotation.z = pose.roll; }
+      if (psg.useFollow && typeof pf !== 'undefined' && pf && pf.pet){ pf.pet.x = b.x; pf.pet.y = y; pf.pet.z = b.z; pf.pet.sp = 0; pf.pet.face = pose.yaw || 0; }
+      return;
+    }
+    if (psg.useFollow) return;
+    const face = (typeof P !== 'undefined' && P) ? (P.face || 0) : 0;
+    const tx = P.x - Math.sin(face) * 1.55, tz = P.z - Math.cos(face) * 1.55;
+    const dx = tx - M.g.position.x, dz = tz - M.g.position.z, dd = Math.hypot(dx, dz);
+    let sp = 0;
+    if (dd > 0.35){
+      const v = Math.min(7, dd * 4);
+      M.g.position.x += dx / dd * v * dt;
+      M.g.position.z += dz / dd * v * dt;
+      M.g.rotation.y = Math.atan2(dx, dz);
+      sp = v;
+    }
+    M.g.position.y = 0;
+    if (typeof animPet === 'function') animPet(M, sp > 0.6 ? 1 : 0, sp, dt, (typeof worldT !== 'undefined' ? worldT : 0));
   }
   function psAct(){
     if (!psg || !PsRules) return false;
     if (psg.show) return true;
     const mat = psMatNear();
     if (mat){
-      const q = 0.55 + Math.random() * 0.45;
-      const r = PsRules.psTeach(psg.sv, psg.pet.id || psg.pet.n || 'pal', mat.id, q);
-      if (!r.ok){ banner('Almost! Try the ' + mat.name + ' again.'); return true; }
-      psg.sv = r.state; t297Save(PsRules.PS_KEY, psg.sv);
-      t297Note('ps-trick'); t297Ach('ps-teach');
-      banner((r.first ? 'Learned! ' : 'Nailed it! ') + mat.emoji + ' ' + mat.name);
-      return true;
+      if (psg.busy) psg.busy = null;
+      return psStartPractice(mat);
     }
     if (t297Near(0, -6, 3.2)){
       const known = psKnown();
       if (!known.length){ banner('Teach a trick on a practice mat first!'); return true; }
       psg.show = true; psg.routine = known.slice(); psg.qs = []; psg.step = 0; psg.t = 0; psg.votes = {};
+      psg.busy = {kind:'show', id: psg.routine[0], t:0, dur:1.6, x:0, z:-7.2, y:0, step:0};
+      psg.holdFollow = true; if (typeof pf !== 'undefined' && pf) pf.holdFollow = true;
       banner('Showtime! ' + (psg.pet.n || psg.pet.name) + ' will perform ' + known.length + ' trick' + (known.length>1?'s':'') + '!');
       if (mp.on){ const el=document.getElementById('psVoteBox'); if (el) el.classList.add('show'); }
       return true;
@@ -492,26 +580,41 @@
   }
   function psUpdate(dt){
     if (!psg) return;
-    if (psg.petM){
-      const wob = psg.show ? Math.abs(Math.sin((psg.t||0)*8))*0.2 : Math.sin((worldT||0)*2)*0.05;
-      psg.petM.position.set(psg.show ? 0 : 2, 0.55 + wob, psg.show ? -7.2 : 2);
-      psg.petM.rotation.y += dt * (psg.show ? 4 : 0.4);
-    }
     if (psg.show){
+      psg.holdFollow = true; if (typeof pf !== 'undefined' && pf) pf.holdFollow = true;
       psg.t += dt;
+      if (psg.busy && psg.busy.kind === 'show') psg.busy.t += dt;
       const cur = psg.routine[psg.step];
+      if (!psg.busy || psg.busy.step !== psg.step){
+        psg.busy = {kind:'show', id: cur, t:0, dur:1.6, x:0, z:-7.2, y:0, step: psg.step};
+      }
+      psDrivePet(dt);
       if (psg.t > 1.6){
         psg.qs.push(0.7 + Math.random()*0.3);
         psg.step += 1; psg.t = 0;
-        if (psg.step >= psg.routine.length) psFinish();
-        else banner('Next trick: ' + (PsRules.psTrick(psg.routine[psg.step])||{}).emoji);
+        if (psg.step >= psg.routine.length){ psg.busy = null; psg.holdFollow = false; if (typeof pf !== 'undefined' && pf) pf.holdFollow = false; psFinish(); }
+        else {
+          psg.busy = {kind:'show', id: psg.routine[psg.step], t:0, dur:1.6, x:0, z:-7.2, y:0, step: psg.step};
+          banner('Next trick: ' + (PsRules.psTrick(psg.routine[psg.step])||{}).emoji);
+        }
       } else t297Hud('Performing ' + ((PsRules.psTrick(cur)||{}).name || 'a trick') + '...', '');
       return;
     }
     const mat = psMatNear();
-    if (mat) t297Hud('Teach ' + (psg.pet.n || psg.pet.name || 'your pal') + ' to ' + mat.name + '.', mat.emoji + ' Practice');
-    else if (t297Near(0, -6, 3.2)) t297Hud('Start a show with the tricks you taught!', '🎭 Show');
-    else t297Hud('Practice on a mat, then perform on the stage.', '');
+    if (mat){
+      if (!psg.busy && psg.lastMat !== mat.id) psStartPractice(mat);
+      t297Hud('Watch ' + (psg.pet.n || psg.pet.name || 'your pal') + ' do ' + mat.name + ' — or press Practice again.', (mat.emoji || '🐾') + ' Practice');
+    } else {
+      psg.lastMat = null;
+      if (!psg.busy){ psg.holdFollow = false; if (typeof pf !== 'undefined' && pf) pf.holdFollow = false; }
+      if (t297Near(0, -6, 3.2)) t297Hud('Start a show with the tricks you taught!', '🎭 Show');
+      else t297Hud('Step on a practice mat and your pet will do the trick.', '');
+    }
+    if (psg.busy){
+      psg.busy.t += dt;
+      if (psg.busy.t >= psg.busy.dur) psg.busy = null;
+    }
+    psDrivePet(dt);
   }
   function psKey(e){
     if (!psg || e.repeat) return false;

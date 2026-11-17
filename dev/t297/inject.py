@@ -293,9 +293,9 @@ def patch_emotes(html):
   clap:  {key:5, emoji:'👏', name:'Clap',  price:0, dur:2.4},
   laugh: {key:6, emoji:'😄', name:'Laugh', price:0, dur:2.6},
   sleep: {key:7, emoji:'😴', name:'Sleep', price:0, dur:Infinity},
-  flip:  {key:0, emoji:'🍳', name:'Burger Flip',   price:150, dur:2.2},
+  flip:  {key:9, emoji:'🍳', name:'Burger Flip',   price:150, dur:2.2},
   groan: {key:0, emoji:'😩', name:'Awkward Groan', price:100, dur:2.8},
-  facepalm: {key:0, emoji:'🤦', name:'Big Facepalm', price:100, dur:2.4},
+  facepalm: {key:null, emoji:'🤦', name:'Big Facepalm', price:100, dur:2.4},
   skate: {key:8, emoji:'🛹', name:'Skate Trick',  price:150, dur:2.4},
 };"""
     html = replace_once(html, old, new, 'EMOTES catalog')

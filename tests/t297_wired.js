@@ -8,9 +8,9 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
 describe('t297 emotes and new modes wiring', () => {
-  test('BUILD is 2026.11.16-21 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.16-21'"));
-    assert.equal(version.build, '2026.11.16-21');
+  test('BUILD is 2026.11.16-22 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.16-22'"));
+    assert.equal(version.build, '2026.11.16-22');
   });
 
   test('free emotes work anywhere and the wheel uses View, not A/X/LB/RB', () => {
@@ -46,6 +46,37 @@ describe('t297 emotes and new modes wiring', () => {
     const vote = html.slice(html.indexOf('id="psVoteBox"'), html.indexOf('id="psVoteBox"') + 1200);
     const board = html.slice(html.indexOf('id="cafeBoard"'), html.indexOf('id="cafeBoard"') + 800);
     assert.ok(!/contenteditable|textarea|<input[^>]*type=["']?text/i.test(vote + board));
+  });
+
+  test('pet talent show update is hooked and every species including dogs performs on the pads', () => {
+    const loopIdx = html.indexOf('if (evg) snowfestUpdate(dt)');
+    const defIdx = html.indexOf('function t297Update');
+    assert.ok(loopIdx > 0 && html.slice(loopIdx, loopIdx + 220).includes('t297Update(dt)'));
+    assert.ok(defIdx > 0 && loopIdx !== defIdx);
+    assert.match(html, /if \(!psg\.busy && psg\.lastMat !== mat\.id\) psStartPractice\(mat\)/);
+    assert.match(html, /function psStartPractice/);
+    assert.match(html, /function psAttachPet/);
+    assert.match(html, /buildPet\(k, c, st\)/);
+    assert.match(html, /if \(pf\.holdFollow\) return;/);
+    assert.equal(html.includes('psg.petM = body'), false);
+    assert.ok(!/kind\s*===\s*['"]dog['"]/.test(html.slice(html.indexOf('function psStartPractice'), html.indexOf('function psStartPractice') + 2500)));
+  });
+
+  test('emote hotkeys in the page are unique and labels are not shared', () => {
+    const E = require('../dev/t297/emote_logic.js');
+    const uniq = E.emoKeyUnique();
+    assert.equal(uniq.ok, true);
+    assert.equal(E.emoByCode('Digit0'), 'groan');
+    assert.equal(E.emoByCode('Digit9'), 'flip');
+    assert.equal(E.emoKeyLabel(E.emoMerge().facepalm), '');
+    assert.match(html, /flip:\s*\{key:9/);
+    assert.match(html, /groan:\s*\{key:0/);
+    assert.match(html, /facepalm:\s*\{key:null/);
+    assert.ok(!html.includes("flip:  {key:0"));
+    const shop = html.slice(html.indexOf('const EMO_SHOP'), html.indexOf('const EMO_SHOP') + 700);
+    const keys = [...shop.matchAll(/key:\s*([^,}\s]+)/g)].map(m => m[1]);
+    const assigned = keys.filter(k => k !== 'null');
+    assert.equal(new Set(assigned).size, assigned.length);
   });
 
   test('fishing can go on ice during the Snow Festival', () => {

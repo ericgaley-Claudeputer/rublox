@@ -96,6 +96,40 @@
     return {ok:true, why:'ok', state, coins, ribbon: result.ribbon, score: result.score};
   }
 
+
+  function psPetKind(pet){
+    if (!pet || typeof pet !== 'object') return 'bunny';
+    return String(pet.k || pet.kind || 'bunny');
+  }
+  function psPetId(pet){
+    if (!pet || typeof pet !== 'object') return 'pal';
+    return String(pet.id || pet.key || pet.n || pet.name || 'pal');
+  }
+  // Every species, including dogs, can perform every trick. No kind is excluded.
+  function psSpeciesCanTrick(kind, trickId){
+    return !!(kind && psTrick(trickId));
+  }
+  function psOnMat(px, pz, mats, radius){
+    const r = radius == null ? 1.6 : radius;
+    let best = null, bd = r;
+    (mats || []).forEach(m => {
+      if (!m) return;
+      const d = Math.hypot((+px || 0) - m.x, (+pz || 0) - m.z);
+      if (d <= r && d <= bd){ bd = d; best = m; }
+    });
+    return best;
+  }
+  function psTrickPose(id, t, dur){
+    const d = dur > 0 ? dur : 1.8;
+    const u = Math.max(0, Math.min(1, (+t || 0) / d));
+    if (id === 'sit')  return {act:3, yaw:0, roll:0, pitch:0, hop:0};
+    if (id === 'spin') return {act:4, yaw: u * Math.PI * 2, roll:0, pitch:0, hop:0};
+    if (id === 'jump') return {act:4, yaw:0, roll:0, pitch:0, hop: Math.sin(u * Math.PI) * 0.7};
+    if (id === 'roll') return {act:3, yaw:0, roll: u * Math.PI * 2, pitch:0, hop:0.12};
+    if (id === 'high') return {act:5, yaw:0, roll:0, pitch:0, hop:0};
+    return {act:4, yaw:0, roll:0, pitch:0, hop:0};
+  }
+
   function psCleanVote(v){
     const n = +v;
     if (!isFinite(n)) return null;
@@ -106,7 +140,8 @@
 
   const api = {
     PS_KEY, PS_VER, PS_TRICKS, PS_RIBBON,
-    psFresh, psLoad, psTrick, psKnown, psTeach, psJudge, psRecord, psCleanVote
+    psFresh, psLoad, psTrick, psKnown, psTeach, psJudge, psRecord, psCleanVote,
+    psPetKind, psPetId, psSpeciesCanTrick, psOnMat, psTrickPose
   };
   root.PsRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

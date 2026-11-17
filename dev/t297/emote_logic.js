@@ -12,12 +12,49 @@
     laugh: {key:6, emoji:'😄', name:'Laugh', price:0, dur:2.6},
     sleep: {key:7, emoji:'😴', name:'Sleep', price:0, dur:Infinity}
   };
+  // 11 emotes, 10 number keys (1-9 and 0). Facepalm is wheel-only so no two share a key.
   const EMO_SHOP = {
-    flip:  {key:0, emoji:'🍳', name:'Burger Flip',   price:150, dur:2.2},
+    flip:  {key:9, emoji:'🍳', name:'Burger Flip',   price:150, dur:2.2},
     groan: {key:0, emoji:'😩', name:'Awkward Groan', price:100, dur:2.8},
-    facepalm: {key:0, emoji:'🤦', name:'Big Facepalm', price:100, dur:2.4},
+    facepalm: {key:null, emoji:'🤦', name:'Big Facepalm', price:100, dur:2.4},
     skate: {key:8, emoji:'🛹', name:'Skate Trick',  price:150, dur:2.4}
   };
+
+
+  function emoHasKey(e){
+    if (!e) return false;
+    const k = e.key;
+    return k === 0 || k === '0' || (typeof k === 'number' && k >= 1 && k <= 9);
+  }
+
+  function emoKeyLabel(e){
+    return emoHasKey(e) ? String(e.key) : '';
+  }
+
+  function emoCodes(e){
+    if (!emoHasKey(e)) return [];
+    const d = String(e.key);
+    return ['Digit' + d, 'Numpad' + d];
+  }
+
+  function emoByCode(code, catalog){
+    const list = catalog || emoMerge();
+    const hits = Object.keys(list).filter(id => emoCodes(list[id]).indexOf(code) >= 0);
+    return hits.length === 1 ? hits[0] : null;
+  }
+
+  function emoKeyUnique(catalog){
+    const used = {};
+    const list = catalog || emoMerge();
+    for (const id of Object.keys(list)){
+      const e = list[id];
+      if (!emoHasKey(e)) continue;
+      const k = String(e.key);
+      if (used[k]) return {ok:false, clash:[used[k], id], key:k};
+      used[k] = id;
+    }
+    return {ok:true, keys: used};
+  }
 
   function emoMerge(base){
     const out = Object.assign({}, base || {}, EMO_SHOP, EMO_CORE);
@@ -53,7 +90,8 @@
   const api = {
     EMO_FREE, EMO_CORE, EMO_SHOP,
     EMO_PAD_VIEW, EMO_PAD_A, EMO_PAD_B, EMO_PAD_LEFT, EMO_PAD_RIGHT, EMO_PAD_UP, EMO_PAD_DOWN,
-    emoMerge, emoAllowed, emoList, emoLooping, emoCancelOnMove
+    emoMerge, emoAllowed, emoList, emoLooping, emoCancelOnMove,
+    emoHasKey, emoKeyLabel, emoCodes, emoByCode, emoKeyUnique
   };
   root.EmoRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

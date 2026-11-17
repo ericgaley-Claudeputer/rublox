@@ -1967,7 +1967,7 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
     <button class="orun" id="oRun" aria-label="Run" aria-pressed="false">🏃</button>
   </div>
   <div class="ostam full" id="oStam" style="display:none" title="Run energy"><i>🏃</i><b><u id="oStamF"></u></b></div>
-  <button class="oemo" id="oEmoBtn" title="Emotes (keys 1-7, 8 if unlocked, or View on a controller)" aria-label="Emotes">😀</button>
+  <button class="oemo" id="oEmoBtn" title="Emotes (keys 1-9 and 0, or the 😀 wheel; View on a controller)" aria-label="Emotes">😀</button>
   <button class="oemo" id="oQuestBtn" title="Daily Quests" aria-label="Daily Quests">📜</button>
   <button class="oemo" id="oTradeBtn" title="Trade with a friend" aria-label="Trade" style="display:none">🤝</button>
   <div class="oemos" id="oEmos"></div>
@@ -2479,7 +2479,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-21';
+const BUILD = '2026.11.16-22';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3006,9 +3006,9 @@ const EMOTES = (typeof EmoRules !== 'undefined' && EmoRules.emoMerge) ? EmoRules
   clap:  {key:5, emoji:'👏', name:'Clap',  price:0, dur:2.4},
   laugh: {key:6, emoji:'😄', name:'Laugh', price:0, dur:2.6},
   sleep: {key:7, emoji:'😴', name:'Sleep', price:0, dur:Infinity},
-  flip:  {key:0, emoji:'🍳', name:'Burger Flip',   price:150, dur:2.2},
+  flip:  {key:9, emoji:'🍳', name:'Burger Flip',   price:150, dur:2.2},
   groan: {key:0, emoji:'😩', name:'Awkward Groan', price:100, dur:2.8},
-  facepalm: {key:0, emoji:'🤦', name:'Big Facepalm', price:100, dur:2.4},
+  facepalm: {key:null, emoji:'🤦', name:'Big Facepalm', price:100, dur:2.4},
   skate: {key:8, emoji:'🛹', name:'Skate Trick',  price:150, dur:2.4},
 };
 const TAU = Math.PI * 2;
@@ -4020,12 +4020,49 @@ try { evBootChrome(); } catch (e){}
     laugh: {key:6, emoji:'😄', name:'Laugh', price:0, dur:2.6},
     sleep: {key:7, emoji:'😴', name:'Sleep', price:0, dur:Infinity}
   };
+  // 11 emotes, 10 number keys (1-9 and 0). Facepalm is wheel-only so no two share a key.
   const EMO_SHOP = {
-    flip:  {key:0, emoji:'🍳', name:'Burger Flip',   price:150, dur:2.2},
+    flip:  {key:9, emoji:'🍳', name:'Burger Flip',   price:150, dur:2.2},
     groan: {key:0, emoji:'😩', name:'Awkward Groan', price:100, dur:2.8},
-    facepalm: {key:0, emoji:'🤦', name:'Big Facepalm', price:100, dur:2.4},
+    facepalm: {key:null, emoji:'🤦', name:'Big Facepalm', price:100, dur:2.4},
     skate: {key:8, emoji:'🛹', name:'Skate Trick',  price:150, dur:2.4}
   };
+
+
+  function emoHasKey(e){
+    if (!e) return false;
+    const k = e.key;
+    return k === 0 || k === '0' || (typeof k === 'number' && k >= 1 && k <= 9);
+  }
+
+  function emoKeyLabel(e){
+    return emoHasKey(e) ? String(e.key) : '';
+  }
+
+  function emoCodes(e){
+    if (!emoHasKey(e)) return [];
+    const d = String(e.key);
+    return ['Digit' + d, 'Numpad' + d];
+  }
+
+  function emoByCode(code, catalog){
+    const list = catalog || emoMerge();
+    const hits = Object.keys(list).filter(id => emoCodes(list[id]).indexOf(code) >= 0);
+    return hits.length === 1 ? hits[0] : null;
+  }
+
+  function emoKeyUnique(catalog){
+    const used = {};
+    const list = catalog || emoMerge();
+    for (const id of Object.keys(list)){
+      const e = list[id];
+      if (!emoHasKey(e)) continue;
+      const k = String(e.key);
+      if (used[k]) return {ok:false, clash:[used[k], id], key:k};
+      used[k] = id;
+    }
+    return {ok:true, keys: used};
+  }
 
   function emoMerge(base){
     const out = Object.assign({}, base || {}, EMO_SHOP, EMO_CORE);
@@ -4061,7 +4098,8 @@ try { evBootChrome(); } catch (e){}
   const api = {
     EMO_FREE, EMO_CORE, EMO_SHOP,
     EMO_PAD_VIEW, EMO_PAD_A, EMO_PAD_B, EMO_PAD_LEFT, EMO_PAD_RIGHT, EMO_PAD_UP, EMO_PAD_DOWN,
-    emoMerge, emoAllowed, emoList, emoLooping, emoCancelOnMove
+    emoMerge, emoAllowed, emoList, emoLooping, emoCancelOnMove,
+    emoHasKey, emoKeyLabel, emoCodes, emoByCode, emoKeyUnique
   };
   root.EmoRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -4374,6 +4412,40 @@ try { evBootChrome(); } catch (e){}
     return {ok:true, why:'ok', state, coins, ribbon: result.ribbon, score: result.score};
   }
 
+
+  function psPetKind(pet){
+    if (!pet || typeof pet !== 'object') return 'bunny';
+    return String(pet.k || pet.kind || 'bunny');
+  }
+  function psPetId(pet){
+    if (!pet || typeof pet !== 'object') return 'pal';
+    return String(pet.id || pet.key || pet.n || pet.name || 'pal');
+  }
+  // Every species, including dogs, can perform every trick. No kind is excluded.
+  function psSpeciesCanTrick(kind, trickId){
+    return !!(kind && psTrick(trickId));
+  }
+  function psOnMat(px, pz, mats, radius){
+    const r = radius == null ? 1.6 : radius;
+    let best = null, bd = r;
+    (mats || []).forEach(m => {
+      if (!m) return;
+      const d = Math.hypot((+px || 0) - m.x, (+pz || 0) - m.z);
+      if (d <= r && d <= bd){ bd = d; best = m; }
+    });
+    return best;
+  }
+  function psTrickPose(id, t, dur){
+    const d = dur > 0 ? dur : 1.8;
+    const u = Math.max(0, Math.min(1, (+t || 0) / d));
+    if (id === 'sit')  return {act:3, yaw:0, roll:0, pitch:0, hop:0};
+    if (id === 'spin') return {act:4, yaw: u * Math.PI * 2, roll:0, pitch:0, hop:0};
+    if (id === 'jump') return {act:4, yaw:0, roll:0, pitch:0, hop: Math.sin(u * Math.PI) * 0.7};
+    if (id === 'roll') return {act:3, yaw:0, roll: u * Math.PI * 2, pitch:0, hop:0.12};
+    if (id === 'high') return {act:5, yaw:0, roll:0, pitch:0, hop:0};
+    return {act:4, yaw:0, roll:0, pitch:0, hop:0};
+  }
+
   function psCleanVote(v){
     const n = +v;
     if (!isFinite(n)) return null;
@@ -4384,7 +4456,8 @@ try { evBootChrome(); } catch (e){}
 
   const api = {
     PS_KEY, PS_VER, PS_TRICKS, PS_RIBBON,
-    psFresh, psLoad, psTrick, psKnown, psTeach, psJudge, psRecord, psCleanVote
+    psFresh, psLoad, psTrick, psKnown, psTeach, psJudge, psRecord, psCleanVote,
+    psPetKind, psPetId, psSpeciesCanTrick, psOnMat, psTrickPose
   };
   root.PsRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -5107,7 +5180,7 @@ const ITEMS = [
     .map(([v,n,p]) => ({id:'pants-'+v, cat:'pants', emoji:'👖', name:n, price:p, slot:'pantsPat', val:v})),
   ...FACE_LIST.map(([v,n,p,rare]) => ({id:'face-'+v, cat:'face', emoji:'😀', name:n, price:p, slot:'face', val:v, rare, def: v === 'smile'})),
   ...ANIM_LIST.map(([v,e,n,p,d]) => ({id:'anim-'+v, cat:'anim', emoji:e, name:n, price:p, slot:'anim', val:v, desc:d, def: v === 'default'})),
-  ...Object.entries(EMOTES).map(([v,E]) => ({id:'emote-'+v, cat:'anim', emoji:E.emoji, name:E.name + ' Emote', price:E.price, emote:v, desc:'Press ' + E.key + ' or tap 😀 in games'})),
+  ...Object.entries(EMOTES).map(([v,E]) => ({id:'emote-'+v, cat:'anim', emoji:E.emoji, name:E.name + ' Emote', price:E.price, emote:v, desc:((typeof EmoRules!=='undefined' && EmoRules.emoHasKey(E)) ? ('Press ' + EmoRules.emoKeyLabel(E) + ' or tap 😀 in games') : 'Use the 😀 emote wheel in games')})),
   // 🍔 Burger Family pack (original characters from our own made-up diner, the Sizzle Shack)
   {id:'fam-dad',    cat:'burger', emoji:'👨‍🍳', name:'Chef Hank (Dad)',     price:450, desc:'Puffy chef toque, ketchup-splat apron, big goofy grin', set:['hat-toque','shirt-apron','hair-short','face-grin','pants-jeans'],
     look:{head:SIZZLE_SKIN, shirt:'#2a9d8f', pants:'#3d6fb5', hairColor:'#2b1d14'}},
@@ -5216,7 +5289,17 @@ function buy(it){
   try { if (typeof achSweep === 'function') achSweep({source:'shop'}); } catch (e){}
   save('rubloxOwned', [...owned]);
   if (it.emote) refreshLook(); else wear(it, true);
-  toast(it.emote ? `You got ${it.emote === 'sit' ? 'the' : 'the'} ${it.name}! Press ${EMOTES[it.emote].key} in games 🎉` : 'You got the ' + it.name + '! 🎉'); confetti();
+  function emoLabelFor(id){
+    const E = EMOTES[id];
+    if (!E) return '';
+    if (typeof EmoRules !== 'undefined' && EmoRules.emoKeyLabel) return EmoRules.emoKeyLabel(E);
+    return (E.key || E.key === 0) ? String(E.key) : '';
+  }
+  function emoHowTo(id){
+    const k = emoLabelFor(id);
+    return k ? ('Press ' + k + ' or tap 😀') : 'Tap 😀 and pick it in the emote wheel';
+  }
+    toast(it.emote ? `You got the ${it.name}! ${emoHowTo(it.emote)} 🎉` : 'You got the ' + it.name + '! 🎉'); confetti();
 }
 function thumb(canvas, it){
   if (it.cat === 'anim'){
@@ -5257,7 +5340,7 @@ function renderShop(){
       ${on && !it.emote ? `<span class="tagl wear">${it.slot === 'anim' ? 'Equipped' : 'Wearing'}</span>` : ''}
       <div class="in"><h4>${it.emoji} ${it.name}</h4>${!it.set && !it.emote && SLOTS.find(x => x[0] === it.slot) ? (([, e, n]) => `<span class="slotl" data-slot="${it.slot}">${e} ${n}</span>`)(SLOTS.find(x => x[0] === it.slot)) : ''}${it.desc ? `<div class="desc">${it.desc}</div>` : ''}
       <div class="price"><span class="coin sm"></span>${own ? (it.price === 0 ? 'Free' : 'Owned') : it.price}</div>
-      <div class="row">${it.emote && own ? `<button class="sbtn" disabled data-act="none">🎮 Key ${EMOTES[it.emote].key}</button>`
+      <div class="row">${it.emote && own ? `<button class="sbtn" disabled data-act="none">${emoLabelFor(it.emote) ? ("🎮 Key " + emoLabelFor(it.emote)) : "😀 Wheel"}</button>`
         : own ? (on && it.def ? `<button class="sbtn" disabled data-act="none">✅ ${it.slot === 'anim' ? 'Equipped' : 'Wearing'}</button>`
           : `<button class="sbtn ${on ? 'off' : ''}" data-act="equip">${on ? (it.slot === 'anim' ? '↩️ Unequip' : '🙅 Take off') : it.slot === 'anim' ? '🕺 Equip' : !it.set && slotVal(it.slot) && it.slot !== 'face' && it.slot !== 'hair' ? '🔄 Swap' : it.slot === 'face' ? '😀 Wear' : '👕 Wear'}</button>`)
         : `<button class="sbtn buy" data-act="buy">🛒 Buy</button>`}</div></div>`;
@@ -5273,9 +5356,9 @@ function renderStuff(){
   mine.forEach(it => {
     const b = document.createElement('button'); const on = isOn(it);
     b.className = 'sitem' + (on ? ' on' : ''); b.dataset.item = it.id; b.title = on ? 'Take off' : 'Wear';
-    b.innerHTML = `<canvas width="144" height="144"></canvas><span>${it.emoji} ${it.name}</span><span>${it.emote ? '🎮 Key ' + EMOTES[it.emote].key : on ? (it.slot === 'anim' ? '✅ Equipped' : '✅ Wearing') : it.slot === 'anim' ? '➕ Equip' : '➕ Wear'}</span>`;
+    b.innerHTML = `<canvas width="144" height="144"></canvas><span>${it.emoji} ${it.name}</span><span>${it.emote ? (emoLabelFor(it.emote) ? '🎮 Key ' + emoLabelFor(it.emote) : '😀 Wheel') : on ? (it.slot === 'anim' ? '✅ Equipped' : '✅ Wearing') : it.slot === 'anim' ? '➕ Equip' : '➕ Wear'}</span>`;
     thumb(b.querySelector('canvas'), it);
-    b.onclick = () => { if (it.emote){ toast(`Press ${EMOTES[it.emote].key} in a game (or tap 😀) to ${it.emote}! ${EMOTES[it.emote].emoji}`); return; } if (on && it.def) return; wear(it, !on); };
+    b.onclick = () => { if (it.emote){ toast(`${emoHowTo(it.emote)} to ${it.emote}! ${EMOTES[it.emote].emoji}`); return; } if (on && it.def) return; wear(it, !on); };
     box.appendChild(b);
   });
 }
@@ -17291,6 +17374,94 @@ const Obby = (() => {
     if (psx.flash > 0){ psx.flash = Math.max(0, psx.flash - dt * 3); $('#psFlash').style.opacity = psx.flash; } }
   function photoCam(){ if (!psx || !psx.cam) return false; const c = psCamPos(psx.s, PS_MARK[0], .45, PS_MARK[1]); camera.position.set(c.x, c.y, c.z); camera.lookAt(c.tx, c.ty, c.tz); return true; }
   function psPosed(){ return psx && psx.cam && psx.s.pose > 0 ? Object.assign({lL: 0, lR: 0}, FS_POSES[psx.s.pose - 1].p(psx.s.pose === 4 ? 0 : worldT)) : null; }   // twirl is held still for the camera
+  function psAttachPet(){
+    if (!psg) return null;
+    if (typeof pf !== 'undefined' && pf && pf.pet && pf.pet.m && pf.pet.m.g){
+      if (psg.ownMesh && psg.mesh && psg.mesh.g && psg.mesh !== pf.pet.m){
+        try { if (psg.mesh.g.parent) psg.mesh.g.parent.remove(psg.mesh.g); } catch (e){}
+        psg.ownMesh = false;
+      }
+      psg.mesh = pf.pet.m;
+      psg.useFollow = true;
+      return psg.mesh;
+    }
+    if (psg.mesh && psg.mesh.g) return psg.mesh;
+    const pet = psg.pet || {};
+    const kind = (typeof PsRules !== 'undefined' && PsRules.psPetKind) ? PsRules.psPetKind(pet) : (pet.k || pet.kind || 'bunny');
+    const k = (typeof PET_KINDS !== 'undefined' && PET_KINDS[kind]) ? kind : 'bunny';
+    const c = pet.c | 0;
+    const st = (typeof stageOf === 'function') ? stageOf(+pet.xp || 0) : 2;
+    if (typeof buildPet === 'function'){
+      const m = buildPet(k, c, st);
+      try { if (typeof dress === 'function') dress(m, pet.acc); } catch (e){}
+      try {
+        const nm = pet.n || pet.name || 'Pal';
+        const tag = (typeof label === 'function') ? label('🐾 ' + nm, 'rgba(255,111,181,.92)', '#fff', 220) : null;
+        if (tag){ tag.scale.multiplyScalar(0.5); tag.position.y = (m.top || 1.2) + 0.45; m.g.add(tag); }
+      } catch (e){}
+      m.g.position.set(P.x || 2, 0, (P.z || 2) - 1.4);
+      scene.add(m.g);
+      t297Keep(psg, m.g);
+      psg.mesh = m;
+      psg.ownMesh = true;
+      psg.useFollow = false;
+      return m;
+    }
+    return null;
+  }
+  function psPetMesh(){
+    if (!psg) return null;
+    if (psg.useFollow && typeof pf !== 'undefined' && pf && pf.pet && pf.pet.m) return pf.pet.m;
+    return psg.mesh || null;
+  }
+  function psStartPractice(mat){
+    if (!psg || !PsRules || !mat || psg.show) return false;
+    if (psg.busy && psg.busy.kind === 'practice' && psg.busy.id === mat.id) return true;
+    const q = 0.7 + Math.random() * 0.3;
+    const pid = PsRules.psPetId ? PsRules.psPetId(psg.pet) : (psg.pet.id || psg.pet.n || psg.pet.name || 'pal');
+    const r = PsRules.psTeach(psg.sv, pid, mat.id, q);
+    psg.busy = {kind:'practice', id: mat.id, t:0, dur:1.8, x: mat.x, z: mat.z, y:0};
+    psg.holdFollow = true;
+    if (typeof pf !== 'undefined' && pf) pf.holdFollow = true;
+    psg.lastMat = mat.id;
+    if (!r.ok){ banner('Almost! Try the ' + mat.name + ' again.'); return true; }
+    psg.sv = r.state; t297Save(PsRules.PS_KEY, psg.sv);
+    t297Note('ps-trick'); t297Ach('ps-teach');
+    banner((r.first ? 'Learned! ' : 'Nailed it! ') + mat.emoji + ' ' + mat.name);
+    return true;
+  }
+  function psDrivePet(dt){
+    if (!psg) return;
+    psAttachPet();
+    const M = psPetMesh();
+    if (!M || !M.g) return;
+    if (M.inner){ M.g.rotation.x = 0; M.g.rotation.z = 0; }
+    if (psg.busy && PsRules && PsRules.psTrickPose){
+      const b = psg.busy;
+      const pose = PsRules.psTrickPose(b.id, b.t, b.dur);
+      const y = (b.y || 0) + (pose.hop || 0);
+      M.g.position.set(b.x, y, b.z);
+      M.g.rotation.y = pose.yaw || 0;
+      if (typeof animPet === 'function') animPet(M, pose.act, 0, dt, (typeof worldT !== 'undefined' ? worldT : b.t));
+      if (pose.roll){ if (M.inner) M.inner.rotation.z = pose.roll; else M.g.rotation.z = pose.roll; }
+      if (psg.useFollow && typeof pf !== 'undefined' && pf && pf.pet){ pf.pet.x = b.x; pf.pet.y = y; pf.pet.z = b.z; pf.pet.sp = 0; pf.pet.face = pose.yaw || 0; }
+      return;
+    }
+    if (psg.useFollow) return;
+    const face = (typeof P !== 'undefined' && P) ? (P.face || 0) : 0;
+    const tx = P.x - Math.sin(face) * 1.55, tz = P.z - Math.cos(face) * 1.55;
+    const dx = tx - M.g.position.x, dz = tz - M.g.position.z, dd = Math.hypot(dx, dz);
+    let sp = 0;
+    if (dd > 0.35){
+      const v = Math.min(7, dd * 4);
+      M.g.position.x += dx / dd * v * dt;
+      M.g.position.z += dz / dd * v * dt;
+      M.g.rotation.y = Math.atan2(dx, dz);
+      sp = v;
+    }
+    M.g.position.y = 0;
+    if (typeof animPet === 'function') animPet(M, sp > 0.6 ? 1 : 0, sp, dt, (typeof worldT !== 'undefined' ? worldT : 0));
+  }
   function psAct(){ if (!psx) return false; if (psx.cam) return psSnap(); psCamOn(true); return true; }   // works from anywhere: you're placed on the photo spot automatically
   function psPad(jp){ if (!psx) return false; if (psx.gal) return false;
     if (!psx.cam){ if (jp[2]){ psAct(); return true; } if (jp[3]){ psGalOpen(true); return true; } return false; }
@@ -28038,7 +28209,7 @@ const Obby = (() => {
     try { if (typeof qNoteHook === 'function') qNoteHook('emote-use', 1); if (typeof achNote === 'function'){ achNote('emo-' + id); const need = (typeof EmoRules !== 'undefined' && EmoRules.EMO_FREE) ? EmoRules.EMO_FREE : ['wave','dance','sit','cheer','clap','laugh','sleep']; if (need.every(k => ach.notes && ach.notes['emo-' + k])) achNote('emo-all'); } } catch (e){}
   }
   function buildEmoteMenu(){
-    $('#oEmos').innerHTML = Object.entries(EMOTES).map(([id, E]) => { const ok = (typeof EmoRules !== 'undefined' && EmoRules.emoAllowed) ? EmoRules.emoAllowed(id, owned) : (E.price === 0 || owned.has('emote-' + id)); const key = E.key ? E.key : '★'; return `<button data-emote="${id}" class="${ok ? '' : 'lock'}">${ok ? E.emoji : '🔒'} ${E.name} <small>${key}</small></button>`; }).join('');
+    $('#oEmos').innerHTML = Object.entries(EMOTES).map(([id, E]) => { const ok = (typeof EmoRules !== 'undefined' && EmoRules.emoAllowed) ? EmoRules.emoAllowed(id, owned) : (E.price === 0 || owned.has('emote-' + id)); const key = (typeof EmoRules !== 'undefined' && EmoRules.emoKeyLabel) ? EmoRules.emoKeyLabel(E) : (E.key || E.key === 0 ? String(E.key) : ''); return `<button data-emote="${id}" class="${ok ? '' : 'lock'}">${ok ? E.emoji : '🔒'} ${E.name}${key ? ' <small>'+key+'</small>' : ''}</button>`; }).join('');
     $('#oEmos').querySelectorAll('button').forEach(b => b.onclick = e => { e.stopPropagation(); playEmote(b.dataset.emote); });
   }
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
@@ -28074,6 +28245,23 @@ const Obby = (() => {
     cam.pitch = Math.max(fpOn() ? -1.3 : -.05, Math.min(fpOn() ? 1.4 : 1.3, cam.pitch + pad.ly * 1.9 * k * dt * (inv.y ? -1 : 1)));
     const behind = () => { cam.yaw = P.face + Math.PI; cam.pitch = fpOn() ? .08 : .42; };
     if (jp[11]){ const now = performance.now(); if (now - fp.r3 < 400){ fp.r3 = -1e9; setFP(!fp.on); } else { fp.r3 = now; behind(); } }   // R3 twice = first person
+    const emoWheelOpen = $('#oEmos') && $('#oEmos').classList.contains('show');
+    if (jp[8] && !($('#oSkip') && $('#oSkip').classList.contains('show'))){
+      buildEmoteMenu(); $('#oEmos').classList.toggle('show'); return;
+    }
+    if (emoWheelOpen){
+      const mine = Object.keys(EMOTES).filter(id => (typeof EmoRules !== 'undefined' && EmoRules.emoAllowed) ? EmoRules.emoAllowed(id, owned) : (EMOTES[id].price === 0 || owned.has('emote-' + id)));
+      if (jp[1] || jp[13]){ $('#oEmos').classList.remove('show'); return; }
+      if (mine.length && (jp[14] || jp[15] || jp[12] || jp[0])){
+        pad.emo = ((pad.emo < 0 ? 0 : pad.emo) + (jp[15] || jp[12] ? 1 : jp[14] ? -1 : 0) + mine.length) % mine.length;
+        const id = mine[pad.emo];
+        const btns = $('#oEmos').querySelectorAll('button');
+        btns.forEach((b, i) => b.classList.toggle('on', i === pad.emo));
+        if (jp[0] || jp[12]){ playEmote(id); banner(EMOTES[id].emoji + ' ' + EMOTES[id].name); }
+        return;
+      }
+      if (jp[0] || jp[1] || jp[12] || jp[13] || jp[14] || jp[15]) return;
+    }
     if (typeof chPad === 'function' && chPad(s, jp)) return;
     if (jp[8]){
       if ($('#oSkip').classList.contains('show')) $('#oSkip').click();
@@ -28121,6 +28309,9 @@ const Obby = (() => {
     } else {
       cam.dist = Math.max(5, Math.min(30, cam.dist + ((s.v[6] || 0) - (s.v[7] || 0)) * 14 * dt));
     }
+    if (['cafe','fish','petshow','hunt'].includes(mode) && typeof t297Pad === 'function' && t297Pad(jp)) return;
+    if (mode === 'snowfest' && typeof evg !== 'undefined' && evg && typeof snowfestPad === 'function' && snowfestPad(jp)) return;
+    if (mode === 'party' && typeof py !== 'undefined' && py && typeof partyPad === 'function' && partyPad(jp)) return;
     if (jp[3]) behind();
     const wheel = $('#oEmos') && $('#oEmos').classList.contains('show');
     if (jp[8]){ buildEmoteMenu(); $('#oEmos').classList.toggle('show'); return; }   // View / Back — does not clash with A/X/LB/RB
@@ -28598,6 +28789,7 @@ function dhLayoutHud(){
     if (modeId && pf) pf.modeId = modeId;
     if (!pfWant(modeId || (pf && pf.modeId))){ if (pf && pf.pet) pfStop(true); return; }
     if (!pf || !pf.pet){ pfEnter(modeId); if (!pf || !pf.pet) return; }
+    if (pf.holdFollow) return;
     if (typeof P === 'undefined' || !P || !pf.pet.m) return;
     dt = Math.min(0.08, +dt || 0.016);
     const step = PF_RULES.pfFollowStep ? PF_RULES.pfFollowStep(P.x, P.z, P.face, pf.pet.x, pf.pet.z, dt) : null;
@@ -28667,7 +28859,7 @@ function dhLayoutHud(){
       if (ic) iceCreamUpdate(dt);
       if (ph) petHotelUpdate(dt);
       if (sb) stableUpdate(dt);
-      if (evg) snowfestUpdate(dt); if (py) partyUpdate(dt); if (lh) lanternUpdate(dt);
+      if (evg) snowfestUpdate(dt); if (py) partyUpdate(dt); if (lh) lanternUpdate(dt); if (typeof t297Update === 'function') t297Update(dt);
       if (hm) hauntUpdate(dt);
       if (db) danceUpdate(dt);
       if (dh) dreamhouseUpdate(dt);
@@ -28842,7 +29034,10 @@ function dhLayoutHud(){
       if (e.code === 'Escape' || e.code === 'KeyP'){ if (!won && !over && !choosing) setPause(!(paused || menuOpen)); return; }
       if (mode === 'fashion' && fs && fs.ph === 'walk' && /^Digit[1-7]$/.test(e.code) && fsKey(e)) return;
       if (mode === 'dreamhouse' && dh && dhKey(e)) return;
-      const em = Object.keys(EMOTES).find(k => 'Digit' + EMOTES[k].key === e.code || 'Numpad' + EMOTES[k].key === e.code);
+      if (['cafe','fish','petshow','hunt'].includes(mode) && typeof t297Key === 'function' && t297Key(e)) return;
+      if (mode === 'snowfest' && typeof evg !== 'undefined' && evg && typeof snowfestKey === 'function' && snowfestKey(e)) return;
+      if (mode === 'party' && typeof py !== 'undefined' && py && typeof partyKey === 'function' && partyKey(e)) return;
+      const em = (typeof EmoRules !== 'undefined' && EmoRules.emoByCode) ? EmoRules.emoByCode(e.code, EMOTES) : Object.keys(EMOTES).find(k => { const key = EMOTES[k].key; return key != null && key !== '' && ('Digit' + key === e.code || 'Numpad' + key === e.code); });
       if (em && !e.repeat){ playEmote(em); return; }
       if (mode === 'dance' && db && dbKey(e)) return;
       if (mode === 'lantern' && lh && lhKey(e)) return;
@@ -32133,9 +32328,8 @@ function start(m = 'obby', d = null){
     });
     // seats
     for (let i = -3; i <= 3; i++) plat(i * 2.2, 0.4, 12, 1.6, 1.2, '#6b4aa0', 0.4);
-    // pet mesh placeholder
-    const body = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 10), new THREE.MeshLambertMaterial({color:'#f0b862'}));
-    body.position.set(2, 0.55, 2); scene.add(body); t297Keep(psg, body); psg.petM = body;
+    // Real pet mesh (every species, including dogs) — attached in psEnter/psUpdate.
+    psg.mesh = null; psg.ownMesh = false; psg.useFollow = false; psg.busy = null; psg.lastMat = null; psg.holdFollow = false;
     checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:4}, flag:new THREE.Object3D()};
     Object.assign(P, {x:0,y:0.5,z:4, vx:0,vy:0,vz:0, face:Math.PI});
   }
@@ -32157,22 +32351,25 @@ function start(m = 'obby', d = null){
     if (vx && !vx.__t297){ vx.__t297 = true; vx.onclick = ev => { ev.preventDefault(); const el=document.getElementById('psVoteBox'); if (el) el.classList.remove('show'); }; }
     if (psg.pal) banner('🐰 Bring a pal from Adopt a Pet next time — today Stage Pal will practice with you!');
     else banner('🐾 Teach ' + (psg.pet.n || psg.pet.name || 'your pet') + ' tricks on the mats, then perform on the stage!');
-    t297Hud('Practice a trick on a mat, or start a show on the stage.', '');
+    t297Hud('Step on a practice mat — your pet will do the trick!', '');
+    psAttachPet();
   }
   function psStop(){
     if (!psg) return;
+    if (typeof pf !== 'undefined' && pf) pf.holdFollow = false;
     try { psg.trash.forEach(m => { if (m && m.parent) m.parent.remove(m); }); } catch (e){}
     const el = document.getElementById('psVoteBox'); if (el) el.classList.remove('show');
     psg = null;
   }
   function psKnown(){
     if (!psg || !PsRules) return [];
-    return PsRules.psKnown(psg.sv, psg.pet && (psg.pet.id || psg.pet.n || 'pal'));
+    return PsRules.psKnown(psg.sv, psg.pet && (PsRules.psPetId ? PsRules.psPetId(psg.pet) : (psg.pet.id || psg.pet.n || psg.pet.name || 'pal')));
   }
   function psMatNear(){
     if (!psg) return null;
+    if (typeof PsRules !== 'undefined' && PsRules.psOnMat) return PsRules.psOnMat(P.x, P.z, psg.mats, 1.6);
     let best=null, bd=99;
-    (psg.mats||[]).forEach(m => { const d=Math.hypot(P.x-m.x,P.z-m.z); if (d<1.6 && d<bd){ bd=d; best=m; } });
+    (psg.mats||[]).forEach(m => { const d=Math.hypot(P.x-m.x,P.z-m.z); if (d<=1.6 && d<bd){ bd=d; best=m; } });
     return best;
   }
   function psAct(){
@@ -32180,18 +32377,15 @@ function start(m = 'obby', d = null){
     if (psg.show) return true;
     const mat = psMatNear();
     if (mat){
-      const q = 0.55 + Math.random() * 0.45;
-      const r = PsRules.psTeach(psg.sv, psg.pet.id || psg.pet.n || 'pal', mat.id, q);
-      if (!r.ok){ banner('Almost! Try the ' + mat.name + ' again.'); return true; }
-      psg.sv = r.state; t297Save(PsRules.PS_KEY, psg.sv);
-      t297Note('ps-trick'); t297Ach('ps-teach');
-      banner((r.first ? 'Learned! ' : 'Nailed it! ') + mat.emoji + ' ' + mat.name);
-      return true;
+      if (psg.busy) psg.busy = null;
+      return psStartPractice(mat);
     }
     if (t297Near(0, -6, 3.2)){
       const known = psKnown();
       if (!known.length){ banner('Teach a trick on a practice mat first!'); return true; }
       psg.show = true; psg.routine = known.slice(); psg.qs = []; psg.step = 0; psg.t = 0; psg.votes = {};
+      psg.busy = {kind:'show', id: psg.routine[0], t:0, dur:1.6, x:0, z:-7.2, y:0, step:0};
+      psg.holdFollow = true; if (typeof pf !== 'undefined' && pf) pf.holdFollow = true;
       banner('Showtime! ' + (psg.pet.n || psg.pet.name) + ' will perform ' + known.length + ' trick' + (known.length>1?'s':'') + '!');
       if (mp.on){ const el=document.getElementById('psVoteBox'); if (el) el.classList.add('show'); }
       return true;
@@ -32236,27 +32430,43 @@ function start(m = 'obby', d = null){
   }
   function psUpdate(dt){
     if (!psg) return;
-    if (psg.petM){
-      const wob = psg.show ? Math.abs(Math.sin((psg.t||0)*8))*0.2 : Math.sin((worldT||0)*2)*0.05;
-      psg.petM.position.set(psg.show ? 0 : 2, 0.55 + wob, psg.show ? -7.2 : 2);
-      psg.petM.rotation.y += dt * (psg.show ? 4 : 0.4);
-    }
     if (psg.show){
+      psg.holdFollow = true; if (typeof pf !== 'undefined' && pf) pf.holdFollow = true;
       psg.t += dt;
+      if (psg.busy && psg.busy.kind === 'show') psg.busy.t += dt;
       const cur = psg.routine[psg.step];
+      if (!psg.busy || psg.busy.step !== psg.step){
+        psg.busy = {kind:'show', id: cur, t:0, dur:1.6, x:0, z:-7.2, y:0, step: psg.step};
+      }
+      psDrivePet(dt);
       if (psg.t > 1.6){
         psg.qs.push(0.7 + Math.random()*0.3);
         psg.step += 1; psg.t = 0;
-        if (psg.step >= psg.routine.length) psFinish();
-        else banner('Next trick: ' + (PsRules.psTrick(psg.routine[psg.step])||{}).emoji);
+        if (psg.step >= psg.routine.length){ psg.busy = null; psg.holdFollow = false; if (typeof pf !== 'undefined' && pf) pf.holdFollow = false; psFinish(); }
+        else {
+          psg.busy = {kind:'show', id: psg.routine[psg.step], t:0, dur:1.6, x:0, z:-7.2, y:0, step: psg.step};
+          banner('Next trick: ' + (PsRules.psTrick(psg.routine[psg.step])||{}).emoji);
+        }
       } else t297Hud('Performing ' + ((PsRules.psTrick(cur)||{}).name || 'a trick') + '...', '');
       return;
     }
     const mat = psMatNear();
-    if (mat) t297Hud('Teach ' + (psg.pet.n || psg.pet.name || 'your pal') + ' to ' + mat.name + '.', mat.emoji + ' Practice');
-    else if (t297Near(0, -6, 3.2)) t297Hud('Start a show with the tricks you taught!', '🎭 Show');
-    else t297Hud('Practice on a mat, then perform on the stage.', '');
+    if (mat){
+      if (!psg.busy && psg.lastMat !== mat.id) psStartPractice(mat);
+      t297Hud('Watch ' + (psg.pet.n || psg.pet.name || 'your pal') + ' do ' + mat.name + ' — or press Practice again.', (mat.emoji || '🐾') + ' Practice');
+    } else {
+      psg.lastMat = null;
+      if (!psg.busy){ psg.holdFollow = false; if (typeof pf !== 'undefined' && pf) pf.holdFollow = false; }
+      if (t297Near(0, -6, 3.2)) t297Hud('Start a show with the tricks you taught!', '🎭 Show');
+      else t297Hud('Step on a practice mat and your pet will do the trick.', '');
+    }
+    if (psg.busy){
+      psg.busy.t += dt;
+      if (psg.busy.t >= psg.busy.dur) psg.busy = null;
+    }
+    psDrivePet(dt);
   }
+
   function psKey(e){
     if (!psg || e.repeat) return false;
     if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ psAct(); return true; }
