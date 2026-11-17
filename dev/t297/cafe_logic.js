@@ -73,9 +73,28 @@
     return {ok:true, why:'ok', state, coins: (coins|0) - d.cost, item: d};
   }
 
+
+  const T297_OVERLAY_IDS = ['cafeDecor', 'cafeBoard', 'fishIndex', 'huntMap', 'psVoteBox'];
+  const T297_WALK_AWAY = 4.5;
+  const T297_REOPEN_MS = 700;
+  function t297OverlayIds(){ return T297_OVERLAY_IDS.slice(); }
+  function t297UiWalkAway(openX, openZ, px, pz, radius){
+    if (openX == null || openZ == null) return false;
+    const r = radius == null ? T297_WALK_AWAY : radius;
+    return Math.hypot((+px || 0) - openX, (+pz || 0) - openZ) > r;
+  }
+  // After a close, a proximity trigger must not immediately re-open the popup.
+  function t297UiMayOpen(closedAt, now, cooldown){
+    const c = cooldown == null ? T297_REOPEN_MS : cooldown;
+    if (closedAt == null) return true;
+    return ((+now || 0) - (+closedAt || 0)) >= c;
+  }
+  function t297UiCloseReasons(){ return ['x', 'escape', 'xbox-b', 'tap', 'walk']; }
+
   const api = {
     CAFE_KEY, CAFE_VER, CAFE_MENU, CAFE_DECOR,
-    cafeFresh, cafeLoad, cafeItem, cafeTicket, cafeMake, cafeServe, cafeBuyDecor
+    cafeFresh, cafeLoad, cafeItem, cafeTicket, cafeMake, cafeServe, cafeBuyDecor,
+    t297OverlayIds, t297UiWalkAway, t297UiMayOpen, t297UiCloseReasons, T297_WALK_AWAY, T297_REOPEN_MS
   };
   root.CafeRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

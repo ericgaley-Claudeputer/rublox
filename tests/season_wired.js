@@ -8,9 +8,9 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
 describe('season and leaderboard wiring', () => {
-  test('BUILD is 2026.11.16-22 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.16-22'"));
-    assert.equal(version.build, '2026.11.16-22');
+  test('BUILD is 2026.11.16-23 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.16-23'"));
+    assert.equal(version.build, '2026.11.16-23');
   });
 
   test('Snow Festival is date-driven, hash-forceable, and previewable in Settings', () => {

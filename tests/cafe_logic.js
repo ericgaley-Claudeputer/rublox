@@ -26,4 +26,17 @@ describe('cozy cafe', () => {
     assert.equal(legacy.served, 3);
     assert.deepEqual(legacy.decor, ['plant']);
   });
+
+  test('decor popup closes on X, Esc, Xbox B, a tap, or walking away, and does not re-open from proximity', () => {
+    const reasons = C.t297UiCloseReasons();
+    for (const r of ['x', 'escape', 'xbox-b', 'tap', 'walk']) assert.ok(reasons.includes(r));
+    assert.equal(C.t297UiWalkAway(0, 6, 0, 6), false);
+    assert.equal(C.t297UiWalkAway(0, 6, 0, 7), false);
+    assert.equal(C.t297UiWalkAway(0, 6, 0, 6 + 5), true);
+    assert.equal(C.t297UiWalkAway(-3, -5, 6, 9), true);
+    assert.equal(C.t297UiMayOpen(null, 1000), true);
+    assert.equal(C.t297UiMayOpen(1000, 1200), false);
+    assert.equal(C.t297UiMayOpen(1000, 1000 + C.T297_REOPEN_MS), true);
+    assert.deepEqual(C.t297OverlayIds().slice(0, 2), ['cafeDecor', 'cafeBoard']);
+  });
 });

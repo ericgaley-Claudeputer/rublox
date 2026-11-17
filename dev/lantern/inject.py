@@ -7,8 +7,8 @@ ROOT = Path(__file__).resolve().parents[2]
 IDX = ROOT / 'index.html'
 DEV = ROOT / 'dev/lantern'
 ACH = ROOT / 'dev/achievements/achievements.js'
-BUILD = '2026.11.16-22'
-OLD_BUILD = '2026.11.16-21'
+BUILD = '2026.11.16-23'
+OLD_BUILD = '2026.11.16-22'
 
 def once(text, old, new, label):
     if new.strip() and new in text and old not in text:

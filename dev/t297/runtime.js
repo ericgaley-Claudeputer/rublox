@@ -1,6 +1,93 @@
   /* ---------- t297u shared helpers + Cozy Café, Ripple Lake, Pet Talent Show, Treasure Trail ---------- */
   let cafe = null, fishg = null, psg = null, huntg = null;
 
+  let t297Ui = {id:null, x:0, z:0, openAt:0, closedAt:0};
+
+  function t297OverlayList(){
+    if (typeof CafeRules !== 'undefined' && CafeRules.t297OverlayIds) return CafeRules.t297OverlayIds();
+    return ['cafeDecor','cafeBoard','fishIndex','huntMap','psVoteBox'];
+  }
+  function t297OverlayOpen(){
+    return t297OverlayList().find(id => {
+      const el = document.getElementById(id);
+      return el && el.classList.contains('show');
+    }) || null;
+  }
+  function t297OverlayClose(id){
+    const ids = id ? [id] : t297OverlayList();
+    let closed = false;
+    ids.forEach(i => {
+      const el = document.getElementById(i);
+      if (el && el.classList.contains('show')){ el.classList.remove('show'); closed = true; }
+    });
+    if (closed){
+      t297Ui.id = null;
+      t297Ui.closedAt = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    }
+    return closed;
+  }
+  function t297OverlayShow(id, on){
+    const el = document.getElementById(id);
+    if (!el) return false;
+    const show = on == null ? !el.classList.contains('show') : !!on;
+    if (show){
+      const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+      const may = (typeof CafeRules !== 'undefined' && CafeRules.t297UiMayOpen)
+        ? CafeRules.t297UiMayOpen(t297Ui.closedAt, now)
+        : (t297Ui.closedAt == null || (now - t297Ui.closedAt) >= 700);
+      // Manual X / Esc / B / tap / a HUD button may always re-open later; only block
+      // an automatic proximity re-open (on === true with a recent close and no user id).
+      if (on === true && !may && t297Ui._auto) return false;
+      t297OverlayList().forEach(i => { if (i !== id){ const o = document.getElementById(i); if (o) o.classList.remove('show'); } });
+      el.classList.add('show');
+      t297Ui.id = id;
+      t297Ui.x = (typeof P !== 'undefined' && P) ? P.x : 0;
+      t297Ui.z = (typeof P !== 'undefined' && P) ? P.z : 0;
+      t297Ui.openAt = now;
+      try { if (typeof document !== 'undefined' && document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e){}
+      return true;
+    }
+    return t297OverlayClose(id);
+  }
+  function t297OverlayTick(){
+    const open = t297OverlayOpen();
+    if (!open || !t297Ui || t297Ui.id !== open) return;
+    if (typeof P === 'undefined' || !P) return;
+    const away = (typeof CafeRules !== 'undefined' && CafeRules.t297UiWalkAway)
+      ? CafeRules.t297UiWalkAway(t297Ui.x, t297Ui.z, P.x, P.z)
+      : Math.hypot(P.x - t297Ui.x, P.z - t297Ui.z) > 4.5;
+    if (away) t297OverlayClose(open);
+  }
+  function t297BindOverlays(){
+    if (typeof window !== 'undefined' && window.__t297OvBound) return;
+    if (typeof window !== 'undefined') window.__t297OvBound = true;
+    t297OverlayList().forEach(id => {
+      const el = document.getElementById(id);
+      if (!el || el.__t297Ov) return;
+      el.__t297Ov = true;
+      el.addEventListener('click', ev => {
+        if (ev.target === el){ ev.preventDefault(); ev.stopPropagation(); t297OverlayClose(id); }
+      });
+      const x = el.querySelector('.t297x');
+      if (x && !x.__t297OvX){
+        x.__t297OvX = true;
+        x.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); t297OverlayClose(id); });
+      }
+    });
+  }
+  function t297EatOverlayKey(e){
+    if (!t297OverlayOpen()) return false;
+    const c = e && (e.code || e.key);
+    if (c === 'Escape' || c === 'Esc' || c === 'KeyB'){ t297OverlayClose(); return true; }
+    return false;
+  }
+  function t297EatOverlayPad(jp){
+    if (!jp || !t297OverlayOpen()) return false;
+    if (jp[1]){ t297OverlayClose(); return true; }
+    return false;
+  }
+
+
   function t297Lab(text, x, y, z, bg){
     try {
       const m = (typeof label === 'function') ? label(text, bg || 'rgba(29,35,64,.9)', '#fff', 420) : null;
@@ -163,15 +250,16 @@
     t297Hud('Walk to a station and press E / Ⓧ to make the next ticket.', '☕ Make');
   }
   function cafeToggle(id){
-    const board = document.getElementById('cafeBoard');
-    const dec = document.getElementById('cafeDecor');
-    if (id === 'cafeBoardBtn' || id === 'cafeBoardX'){ if (board) board.classList.toggle('show', id !== 'cafeBoardX'); if (id !== 'cafeBoardX' && dec) dec.classList.remove('show'); }
-    if (id === 'cafeDecorBtn' || id === 'cafeDecorX'){ if (dec) dec.classList.toggle('show', id !== 'cafeDecorX'); if (id !== 'cafeDecorX' && board) board.classList.remove('show'); cafePaintBoard(); }
+    t297BindOverlays();
+    if (id === 'cafeBoardBtn') t297OverlayShow('cafeBoard', true);
+    else if (id === 'cafeBoardX') t297OverlayClose('cafeBoard');
+    else if (id === 'cafeDecorBtn'){ t297OverlayShow('cafeDecor', true); cafePaintBoard(); }
+    else if (id === 'cafeDecorX') t297OverlayClose('cafeDecor');
   }
   function cafeStop(){
     if (!cafe) return;
     try { cafe.trash.forEach(m => { if (m && m.parent) m.parent.remove(m); }); } catch (e){}
-    ['cafeBoard','cafeDecor'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('show'); });
+    t297OverlayClose();
     cafe = null;
   }
   function cafeStationNear(){
@@ -233,11 +321,12 @@
   }
   function cafeKey(e){
     if (!cafe || e.repeat) return false;
+    if (t297EatOverlayKey(e)) return true;
     if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ cafeAct(); return true; }
     if (e.code === 'KeyB'){ cafeToggle('cafeBoardBtn'); return true; }
     return false;
   }
-  function cafePad(jp){ if (!cafe) return false; if (jp && (jp[2] || jp[3])){ cafeAct(); return true; } return false; }
+  function cafePad(jp){ if (!cafe) return false; if (t297EatOverlayPad(jp)) return true; if (jp && (jp[2] || jp[3])){ cafeAct(); return true; } return false; }
 
   /* ===== Ripple Lake Fishing ===== */
   function buildFish(){
@@ -286,11 +375,10 @@
     fishg = null;
   }
   function fishToggleIndex(on){
-    const el = document.getElementById('fishIndex');
-    if (!el) return;
-    const show = on == null ? !el.classList.contains('show') : !!on;
-    el.classList.toggle('show', show);
-    if (show) fishPaintIndex();
+    t297BindOverlays();
+    const show = on == null ? (t297OverlayOpen() !== 'fishIndex') : !!on;
+    if (show){ t297OverlayShow('fishIndex', true); fishPaintIndex(); }
+    else t297OverlayClose('fishIndex');
   }
   function fishPaintIndex(){
     const el = document.getElementById('fishIndexList');
@@ -351,11 +439,12 @@
   }
   function fishKey(e){
     if (!fishg || e.repeat) return false;
+    if (t297EatOverlayKey(e)) return true;
     if (e.code === 'KeyI'){ fishToggleIndex(); return true; }
     if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ fishAct(); return true; }
     return false;
   }
-  function fishPad(jp){ if (!fishg) return false; if (jp && (jp[2] || jp[3])){ fishAct(); return true; } return false; }
+  function fishPad(jp){ if (!fishg) return false; if (t297EatOverlayPad(jp)) return true; if (jp && (jp[2] || jp[3])){ fishAct(); return true; } return false; }
 
   /* ===== Pet Talent Show ===== */
   function buildPetShow(){
@@ -537,7 +626,7 @@
       psg.busy = {kind:'show', id: psg.routine[0], t:0, dur:1.6, x:0, z:-7.2, y:0, step:0};
       psg.holdFollow = true; if (typeof pf !== 'undefined' && pf) pf.holdFollow = true;
       banner('Showtime! ' + (psg.pet.n || psg.pet.name) + ' will perform ' + known.length + ' trick' + (known.length>1?'s':'') + '!');
-      if (mp.on){ const el=document.getElementById('psVoteBox'); if (el) el.classList.add('show'); }
+      if (mp.on){ t297BindOverlays(); t297OverlayShow('psVoteBox', true); }
       return true;
     }
     banner('Practice on a mat, or walk onto the stage to perform.');
@@ -618,11 +707,12 @@
   }
   function psKey(e){
     if (!psg || e.repeat) return false;
+    if (t297EatOverlayKey(e)) return true;
     if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ psAct(); return true; }
     if (e.code && /^Digit[1-9]$/.test(e.code) && psg.show && mp.on){ psCastVote(+e.code.slice(-1)); return true; }
     return false;
   }
-  function psPad(jp){ if (!psg) return false; if (jp && (jp[2] || jp[3])){ psAct(); return true; } return false; }
+  function psPad(jp){ if (!psg) return false; if (t297EatOverlayPad(jp)) return true; if (jp && (jp[2] || jp[3])){ psAct(); return true; } return false; }
 
   /* ===== Treasure Trail ===== */
   function buildHunt(){
@@ -677,11 +767,10 @@
     huntg = null;
   }
   function huntToggleMap(on){
-    const el = document.getElementById('huntMap');
-    if (!el) return;
-    const show = on == null ? !el.classList.contains('show') : !!on;
-    el.classList.toggle('show', show);
-    if (show) huntPaintMap();
+    t297BindOverlays();
+    const show = on == null ? (t297OverlayOpen() !== 'huntMap') : !!on;
+    if (show){ t297OverlayShow('huntMap', true); huntPaintMap(); }
+    else t297OverlayClose('huntMap');
   }
   function huntPaintMap(){
     const el = document.getElementById('huntMapList');
@@ -733,11 +822,12 @@
   }
   function huntKey(e){
     if (!huntg || e.repeat) return false;
+    if (t297EatOverlayKey(e)) return true;
     if (e.code === 'KeyM'){ huntToggleMap(); return true; }
     if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ huntAct(); return true; }
     return false;
   }
-  function huntPad(jp){ if (!huntg) return false; if (jp && (jp[2] || jp[3])){ huntAct(); return true; } return false; }
+  function huntPad(jp){ if (!huntg) return false; if (t297EatOverlayPad(jp)) return true; if (jp && (jp[2] || jp[3])){ huntAct(); return true; } return false; }
 
   function t297Act(){
     if (mode === 'cafe') return cafeAct();
@@ -747,12 +837,15 @@
     return false;
   }
   function t297Update(dt){
+    t297BindOverlays();
+    t297OverlayTick();
     if (cafe) cafeUpdate(dt);
     if (fishg) fishUpdate(dt);
     if (psg) psUpdate(dt);
     if (huntg) huntUpdate(dt);
   }
   function t297Key(e){
+    if (t297EatOverlayKey(e)) return true;
     if (mode === 'cafe') return cafeKey(e);
     if (mode === 'fish') return fishKey(e);
     if (mode === 'petshow') return psKey(e);
@@ -760,6 +853,7 @@
     return false;
   }
   function t297Pad(jp){
+    if (t297EatOverlayPad(jp)) return true;
     if (mode === 'cafe') return cafePad(jp);
     if (mode === 'fish') return fishPad(jp);
     if (mode === 'petshow') return psPad(jp);

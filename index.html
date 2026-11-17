@@ -2479,7 +2479,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.16-22';
+const BUILD = '2026.11.16-23';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -4180,9 +4180,28 @@ try { evBootChrome(); } catch (e){}
     return {ok:true, why:'ok', state, coins: (coins|0) - d.cost, item: d};
   }
 
+
+  const T297_OVERLAY_IDS = ['cafeDecor', 'cafeBoard', 'fishIndex', 'huntMap', 'psVoteBox'];
+  const T297_WALK_AWAY = 4.5;
+  const T297_REOPEN_MS = 700;
+  function t297OverlayIds(){ return T297_OVERLAY_IDS.slice(); }
+  function t297UiWalkAway(openX, openZ, px, pz, radius){
+    if (openX == null || openZ == null) return false;
+    const r = radius == null ? T297_WALK_AWAY : radius;
+    return Math.hypot((+px || 0) - openX, (+pz || 0) - openZ) > r;
+  }
+  // After a close, a proximity trigger must not immediately re-open the popup.
+  function t297UiMayOpen(closedAt, now, cooldown){
+    const c = cooldown == null ? T297_REOPEN_MS : cooldown;
+    if (closedAt == null) return true;
+    return ((+now || 0) - (+closedAt || 0)) >= c;
+  }
+  function t297UiCloseReasons(){ return ['x', 'escape', 'xbox-b', 'tap', 'walk']; }
+
   const api = {
     CAFE_KEY, CAFE_VER, CAFE_MENU, CAFE_DECOR,
-    cafeFresh, cafeLoad, cafeItem, cafeTicket, cafeMake, cafeServe, cafeBuyDecor
+    cafeFresh, cafeLoad, cafeItem, cafeTicket, cafeMake, cafeServe, cafeBuyDecor,
+    t297OverlayIds, t297UiWalkAway, t297UiMayOpen, t297UiCloseReasons, T297_WALK_AWAY, T297_REOPEN_MS
   };
   root.CafeRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -28262,6 +28281,7 @@ const Obby = (() => {
       }
       if (jp[0] || jp[1] || jp[12] || jp[13] || jp[14] || jp[15]) return;
     }
+    if (typeof t297EatOverlayPad === 'function' && t297EatOverlayPad(jp)) return;
     if (typeof chPad === 'function' && chPad(s, jp)) return;
     if (jp[8]){
       if ($('#oSkip').classList.contains('show')) $('#oSkip').click();
@@ -29024,6 +29044,7 @@ function dhLayoutHud(){
       if (e.code === 'Escape'){
         const sm = document.getElementById('setModal');
         if (sm && sm.classList.contains('show')){ sm.classList.remove('show'); if (e.preventDefault) e.preventDefault(); return; }
+        if (typeof t297OverlayOpen === 'function' && t297OverlayOpen()){ t297OverlayClose(); if (e.preventDefault) e.preventDefault(); return; }
       }
       if ((e.code === 'Escape' || e.code === 'KeyP') && typeof dhCutPlaying === 'function' && dhCutPlaying()){ if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); if (typeof dhSkipCut === 'function') dhSkipCut(); return; }
       if (e.code === 'Escape' && document.pointerLockElement){ document.exitPointerLock(); fp.unlockT = performance.now(); fp.eatEsc = true; return; }
@@ -29081,7 +29102,7 @@ function dhLayoutHud(){
       el.addEventListener('mousemove', e => { if (document.pointerLockElement !== el || !running || paused) return; const inv = window.rubloxInvert || {}, k = window.rubloxMouseSens || 1;
         cam.yaw -= e.movementX * .0013 * k * (inv.x ? -1 : 1); cam.pitch = Math.max(-1.3, Math.min(1.4, cam.pitch + e.movementY * .0012 * k * (inv.y ? -1 : 1)));
         if (typeof hudCursorMove === 'function') hudCursorMove(e.movementX, e.movementY); });
-      el.addEventListener('pointerdown', e => { if (typeof hudTryClick === 'function' && hudTryClick(e)) return; const hit = (typeof document !== 'undefined' && document.elementFromPoint) ? document.elementFromPoint(e.clientX, e.clientY) : (e.target); if (hit && hit !== el && hit.closest && hit.closest('#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhSteps, .obtns, #setModal, #oPausePanel, button, a, input, label')) return; if (typeof dhIsUiEvent === 'function' && dhIsUiEvent(e)) return; if (e.pointerType === 'mouse' && fpOn() && !paused && !choosing && !fp.noLock && document.pointerLockElement !== el){ fp.req = true; try { const r = el.requestPointerLock(); if (r && r.catch) r.catch(() => { fp.noLock = true; }); } catch(_){ fp.noLock = true; } return; }
+      el.addEventListener('pointerdown', e => { if (typeof hudTryClick === 'function' && hudTryClick(e)) return; if (typeof t297OverlayOpen === 'function' && t297OverlayOpen()) return; const hit = (typeof document !== 'undefined' && document.elementFromPoint) ? document.elementFromPoint(e.clientX, e.clientY) : (e.target); if (hit && hit !== el && hit.closest && hit.closest('#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhSteps, .obtns, #setModal, #oPausePanel, .t297overlay, button, a, input, label')) return; if (typeof dhIsUiEvent === 'function' && dhIsUiEvent(e)) return; if (e.pointerType === 'mouse' && fpOn() && !paused && !choosing && !fp.noLock && document.pointerLockElement !== el){ fp.req = true; try { const r = el.requestPointerLock(); if (r && r.catch) r.catch(() => { fp.noLock = true; }); } catch(_){ fp.noLock = true; } return; }
         if (mode === 'dreamhouse' && dh && !paused && !choosing && typeof dhPointer === 'function' && (document.pointerLockElement === el || e.pointerType !== 'mouse')){ if (e.button === 0 || e.pointerType !== 'mouse') dhPointer(true); } });
       el.addEventListener('pointerup', e => { if (mode === 'dreamhouse' && typeof dhPointer === 'function') dhPointer(false); });
       el.addEventListener('pointerdown', e => { drag = {x: e.clientX, y: e.clientY, id: e.pointerId}; try { el.setPointerCapture(e.pointerId); } catch(_){}   /* not allowed while the mouse is locked */ });
@@ -31939,6 +31960,93 @@ function start(m = 'obby', d = null){
 
   /* ---------- t297u shared helpers + Cozy Café, Ripple Lake, Pet Talent Show, Treasure Trail ---------- */
   let cafe = null, fishg = null, psg = null, huntg = null;
+  let t297Ui = {id:null, x:0, z:0, openAt:0, closedAt:0};
+
+  function t297OverlayList(){
+    if (typeof CafeRules !== 'undefined' && CafeRules.t297OverlayIds) return CafeRules.t297OverlayIds();
+    return ['cafeDecor','cafeBoard','fishIndex','huntMap','psVoteBox'];
+  }
+  function t297OverlayOpen(){
+    return t297OverlayList().find(id => {
+      const el = document.getElementById(id);
+      return el && el.classList.contains('show');
+    }) || null;
+  }
+  function t297OverlayClose(id){
+    const ids = id ? [id] : t297OverlayList();
+    let closed = false;
+    ids.forEach(i => {
+      const el = document.getElementById(i);
+      if (el && el.classList.contains('show')){ el.classList.remove('show'); closed = true; }
+    });
+    if (closed){
+      t297Ui.id = null;
+      t297Ui.closedAt = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    }
+    return closed;
+  }
+  function t297OverlayShow(id, on){
+    const el = document.getElementById(id);
+    if (!el) return false;
+    const show = on == null ? !el.classList.contains('show') : !!on;
+    if (show){
+      const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+      const may = (typeof CafeRules !== 'undefined' && CafeRules.t297UiMayOpen)
+        ? CafeRules.t297UiMayOpen(t297Ui.closedAt, now)
+        : (t297Ui.closedAt == null || (now - t297Ui.closedAt) >= 700);
+      // Manual X / Esc / B / tap / a HUD button may always re-open later; only block
+      // an automatic proximity re-open (on === true with a recent close and no user id).
+      if (on === true && !may && t297Ui._auto) return false;
+      t297OverlayList().forEach(i => { if (i !== id){ const o = document.getElementById(i); if (o) o.classList.remove('show'); } });
+      el.classList.add('show');
+      t297Ui.id = id;
+      t297Ui.x = (typeof P !== 'undefined' && P) ? P.x : 0;
+      t297Ui.z = (typeof P !== 'undefined' && P) ? P.z : 0;
+      t297Ui.openAt = now;
+      try { if (typeof document !== 'undefined' && document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e){}
+      return true;
+    }
+    return t297OverlayClose(id);
+  }
+  function t297OverlayTick(){
+    const open = t297OverlayOpen();
+    if (!open || !t297Ui || t297Ui.id !== open) return;
+    if (typeof P === 'undefined' || !P) return;
+    const away = (typeof CafeRules !== 'undefined' && CafeRules.t297UiWalkAway)
+      ? CafeRules.t297UiWalkAway(t297Ui.x, t297Ui.z, P.x, P.z)
+      : Math.hypot(P.x - t297Ui.x, P.z - t297Ui.z) > 4.5;
+    if (away) t297OverlayClose(open);
+  }
+  function t297BindOverlays(){
+    if (typeof window !== 'undefined' && window.__t297OvBound) return;
+    if (typeof window !== 'undefined') window.__t297OvBound = true;
+    t297OverlayList().forEach(id => {
+      const el = document.getElementById(id);
+      if (!el || el.__t297Ov) return;
+      el.__t297Ov = true;
+      el.addEventListener('click', ev => {
+        if (ev.target === el){ ev.preventDefault(); ev.stopPropagation(); t297OverlayClose(id); }
+      });
+      const x = el.querySelector('.t297x');
+      if (x && !x.__t297OvX){
+        x.__t297OvX = true;
+        x.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); t297OverlayClose(id); });
+      }
+    });
+  }
+  function t297EatOverlayKey(e){
+    if (!t297OverlayOpen()) return false;
+    const c = e && (e.code || e.key);
+    if (c === 'Escape' || c === 'Esc' || c === 'KeyB'){ t297OverlayClose(); return true; }
+    return false;
+  }
+  function t297EatOverlayPad(jp){
+    if (!jp || !t297OverlayOpen()) return false;
+    if (jp[1]){ t297OverlayClose(); return true; }
+    return false;
+  }
+
+
 
   function t297Lab(text, x, y, z, bg){
     try {
@@ -32098,19 +32206,21 @@ function start(m = 'obby', d = null){
       const el = document.getElementById(id);
       if (el && !el.__t297){ el.__t297 = true; el.onclick = ev => { ev.preventDefault(); cafeToggle(id); }; }
     });
+    t297BindOverlays();
     banner('☕ Welcome to Cozy Corner Café! Make the ticket drinks and treats, then serve them.');
     t297Hud('Walk to a station and press E / Ⓧ to make the next ticket.', '☕ Make');
   }
   function cafeToggle(id){
-    const board = document.getElementById('cafeBoard');
-    const dec = document.getElementById('cafeDecor');
-    if (id === 'cafeBoardBtn' || id === 'cafeBoardX'){ if (board) board.classList.toggle('show', id !== 'cafeBoardX'); if (id !== 'cafeBoardX' && dec) dec.classList.remove('show'); }
-    if (id === 'cafeDecorBtn' || id === 'cafeDecorX'){ if (dec) dec.classList.toggle('show', id !== 'cafeDecorX'); if (id !== 'cafeDecorX' && board) board.classList.remove('show'); cafePaintBoard(); }
+    t297BindOverlays();
+    if (id === 'cafeBoardBtn') t297OverlayShow('cafeBoard', true);
+    else if (id === 'cafeBoardX') t297OverlayClose('cafeBoard');
+    else if (id === 'cafeDecorBtn'){ t297OverlayShow('cafeDecor', true); cafePaintBoard(); }
+    else if (id === 'cafeDecorX') t297OverlayClose('cafeDecor');
   }
   function cafeStop(){
     if (!cafe) return;
     try { cafe.trash.forEach(m => { if (m && m.parent) m.parent.remove(m); }); } catch (e){}
-    ['cafeBoard','cafeDecor'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('show'); });
+    t297OverlayClose();
     cafe = null;
   }
   function cafeStationNear(){
@@ -32172,11 +32282,12 @@ function start(m = 'obby', d = null){
   }
   function cafeKey(e){
     if (!cafe || e.repeat) return false;
+    if (t297EatOverlayKey(e)) return true;
     if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ cafeAct(); return true; }
     if (e.code === 'KeyB'){ cafeToggle('cafeBoardBtn'); return true; }
     return false;
   }
-  function cafePad(jp){ if (!cafe) return false; if (jp && (jp[2] || jp[3])){ cafeAct(); return true; } return false; }
+  function cafePad(jp){ if (!cafe) return false; if (t297EatOverlayPad(jp)) return true; if (jp && (jp[2] || jp[3])){ cafeAct(); return true; } return false; }
 
   /* ===== Ripple Lake Fishing ===== */
   function buildFish(){
@@ -32225,11 +32336,10 @@ function start(m = 'obby', d = null){
     fishg = null;
   }
   function fishToggleIndex(on){
-    const el = document.getElementById('fishIndex');
-    if (!el) return;
-    const show = on == null ? !el.classList.contains('show') : !!on;
-    el.classList.toggle('show', show);
-    if (show) fishPaintIndex();
+    t297BindOverlays();
+    const show = on == null ? (t297OverlayOpen() !== 'fishIndex') : !!on;
+    if (show){ t297OverlayShow('fishIndex', true); fishPaintIndex(); }
+    else t297OverlayClose('fishIndex');
   }
   function fishPaintIndex(){
     const el = document.getElementById('fishIndexList');
@@ -32290,11 +32400,12 @@ function start(m = 'obby', d = null){
   }
   function fishKey(e){
     if (!fishg || e.repeat) return false;
+    if (t297EatOverlayKey(e)) return true;
     if (e.code === 'KeyI'){ fishToggleIndex(); return true; }
     if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ fishAct(); return true; }
     return false;
   }
-  function fishPad(jp){ if (!fishg) return false; if (jp && (jp[2] || jp[3])){ fishAct(); return true; } return false; }
+  function fishPad(jp){ if (!fishg) return false; if (t297EatOverlayPad(jp)) return true; if (jp && (jp[2] || jp[3])){ fishAct(); return true; } return false; }
 
   /* ===== Pet Talent Show ===== */
   function buildPetShow(){
@@ -32387,7 +32498,7 @@ function start(m = 'obby', d = null){
       psg.busy = {kind:'show', id: psg.routine[0], t:0, dur:1.6, x:0, z:-7.2, y:0, step:0};
       psg.holdFollow = true; if (typeof pf !== 'undefined' && pf) pf.holdFollow = true;
       banner('Showtime! ' + (psg.pet.n || psg.pet.name) + ' will perform ' + known.length + ' trick' + (known.length>1?'s':'') + '!');
-      if (mp.on){ const el=document.getElementById('psVoteBox'); if (el) el.classList.add('show'); }
+      if (mp.on){ t297BindOverlays(); t297OverlayShow('psVoteBox', true); }
       return true;
     }
     banner('Practice on a mat, or walk onto the stage to perform.');
@@ -32469,11 +32580,12 @@ function start(m = 'obby', d = null){
 
   function psKey(e){
     if (!psg || e.repeat) return false;
+    if (t297EatOverlayKey(e)) return true;
     if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ psAct(); return true; }
     if (e.code && /^Digit[1-9]$/.test(e.code) && psg.show && mp.on){ psCastVote(+e.code.slice(-1)); return true; }
     return false;
   }
-  function psPad(jp){ if (!psg) return false; if (jp && (jp[2] || jp[3])){ psAct(); return true; } return false; }
+  function psPad(jp){ if (!psg) return false; if (t297EatOverlayPad(jp)) return true; if (jp && (jp[2] || jp[3])){ psAct(); return true; } return false; }
 
   /* ===== Treasure Trail ===== */
   function buildHunt(){
@@ -32528,11 +32640,10 @@ function start(m = 'obby', d = null){
     huntg = null;
   }
   function huntToggleMap(on){
-    const el = document.getElementById('huntMap');
-    if (!el) return;
-    const show = on == null ? !el.classList.contains('show') : !!on;
-    el.classList.toggle('show', show);
-    if (show) huntPaintMap();
+    t297BindOverlays();
+    const show = on == null ? (t297OverlayOpen() !== 'huntMap') : !!on;
+    if (show){ t297OverlayShow('huntMap', true); huntPaintMap(); }
+    else t297OverlayClose('huntMap');
   }
   function huntPaintMap(){
     const el = document.getElementById('huntMapList');
@@ -32584,11 +32695,12 @@ function start(m = 'obby', d = null){
   }
   function huntKey(e){
     if (!huntg || e.repeat) return false;
+    if (t297EatOverlayKey(e)) return true;
     if (e.code === 'KeyM'){ huntToggleMap(); return true; }
     if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ huntAct(); return true; }
     return false;
   }
-  function huntPad(jp){ if (!huntg) return false; if (jp && (jp[2] || jp[3])){ huntAct(); return true; } return false; }
+  function huntPad(jp){ if (!huntg) return false; if (t297EatOverlayPad(jp)) return true; if (jp && (jp[2] || jp[3])){ huntAct(); return true; } return false; }
 
   function t297Act(){
     if (mode === 'cafe') return cafeAct();
@@ -32598,12 +32710,15 @@ function start(m = 'obby', d = null){
     return false;
   }
   function t297Update(dt){
+    t297BindOverlays();
+    t297OverlayTick();
     if (cafe) cafeUpdate(dt);
     if (fishg) fishUpdate(dt);
     if (psg) psUpdate(dt);
     if (huntg) huntUpdate(dt);
   }
   function t297Key(e){
+    if (t297EatOverlayKey(e)) return true;
     if (mode === 'cafe') return cafeKey(e);
     if (mode === 'fish') return fishKey(e);
     if (mode === 'petshow') return psKey(e);
@@ -32611,6 +32726,7 @@ function start(m = 'obby', d = null){
     return false;
   }
   function t297Pad(jp){
+    if (t297EatOverlayPad(jp)) return true;
     if (mode === 'cafe') return cafePad(jp);
     if (mode === 'fish') return fishPad(jp);
     if (mode === 'petshow') return psPad(jp);

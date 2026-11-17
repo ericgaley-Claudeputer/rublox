@@ -8,9 +8,9 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
 describe('t297 emotes and new modes wiring', () => {
-  test('BUILD is 2026.11.16-22 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.16-22'"));
-    assert.equal(version.build, '2026.11.16-22');
+  test('BUILD is 2026.11.16-23 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.16-23'"));
+    assert.equal(version.build, '2026.11.16-23');
   });
 
   test('free emotes work anywhere and the wheel uses View, not A/X/LB/RB', () => {
@@ -60,6 +60,22 @@ describe('t297 emotes and new modes wiring', () => {
     assert.match(html, /if \(pf\.holdFollow\) return;/);
     assert.equal(html.includes('psg.petM = body'), false);
     assert.ok(!/kind\s*===\s*['"]dog['"]/.test(html.slice(html.indexOf('function psStartPractice'), html.indexOf('function psStartPractice') + 2500)));
+  });
+
+  test('cafe decor and other t297 popups close without trapping pointer lock or auto-reopening', () => {
+    assert.match(html, /function t297OverlayClose/);
+    assert.match(html, /function t297OverlayTick/);
+    assert.match(html, /t297EatOverlayPad/);
+    assert.match(html, /t297EatOverlayKey/);
+    const esc = html.indexOf("if (typeof t297OverlayOpen === 'function' && t297OverlayOpen()){ t297OverlayClose();");
+    const pause = html.indexOf("if (e.code === 'Escape' || e.code === 'KeyP'){ if (!won && !over && !choosing) setPause");
+    assert.ok(esc > 0 && pause > esc, 'Escape must close the popup before it pauses the game');
+    assert.match(html, /exitPointerLock/);
+    assert.match(html, /\.t297overlay/);
+    assert.match(html, /if \(typeof t297OverlayOpen === 'function' && t297OverlayOpen\(\)\) return;/);
+    assert.match(html, /ev\.target === el\)/);
+    assert.match(html, /t297UiWalkAway/);
+    assert.match(html, /t297UiMayOpen/);
   });
 
   test('emote hotkeys in the page are unique and labels are not shared', () => {
