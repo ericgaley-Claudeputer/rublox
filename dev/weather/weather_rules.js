@@ -9,10 +9,10 @@
     day: 'day',
     off: 'off'
   };
-  const WX_SKIP = ['splash', 'waterpark', 'race', 'photostudio', 'dance', 'bakery', 'icecream', 'tower', 'fashion', 'cafe', 'petshow'];
-  const WX_SNOW = ['obby', 'build', 'hide', 'stable', 'tag', 'party', 'snowfest', 'pets', 'autumn', 'pethotel', 'fish', 'hunt'];
+  const WX_SKIP = ['splash', 'waterpark', 'race', 'photostudio', 'dance', 'bakery', 'icecream', 'tower', 'fashion', 'cafe', 'petshow', 'camp'];
+  const WX_SNOW = ['obby', 'build', 'hide', 'stable', 'tag', 'party', 'snowfest', 'pets', 'autumn', 'pethotel', 'fish', 'hunt', 'garden', 'meadow', 'rides', 'hive'];
   const WX_FOG = ['haunt', 'lantern', 'hide', 'petisland', 'obby', 'build', 'hunt'];
-  const WX_RAIN = ['obby', 'build', 'lantern', 'hide', 'autumn', 'stable', 'petisland', 'pets', 'tag', 'dreamhouse', 'pethotel', 'haunt', 'fish', 'hunt'];
+  const WX_RAIN = ['obby', 'build', 'lantern', 'hide', 'autumn', 'stable', 'petisland', 'pets', 'tag', 'dreamhouse', 'pethotel', 'haunt', 'fish', 'hunt', 'garden', 'meadow', 'rides', 'hive'];
 
   function wxDefault(){ return {ver: WX_VER, mode: 'auto'}; }
 

@@ -502,9 +502,9 @@ function notInWall(z, zFace, thick, r){
   return z <= lo + EPS || z >= hi - EPS;
 }
 
-test('BUILD is 2026.11.16-23 and matches version.json', () => {
-  assert.ok(html.includes("const BUILD = '2026.11.16-23'"));
-  assert.strictEqual(version.build, '2026.11.16-23');
+test('BUILD is 2026.11.18-1 and matches version.json', () => {
+  assert.ok(html.includes("const BUILD = '2026.11.18-1'"));
+  assert.strictEqual(version.build, '2026.11.18-1');
 });
 
 test('index.html wires DH clip into step() and exposes a #dhdebug collider path', () => {

@@ -8,9 +8,9 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
 describe('quests, trade, and party wiring', () => {
-  test('BUILD is 2026.11.16-23 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.16-23'"));
-    assert.equal(version.build, '2026.11.16-23');
+  test('BUILD is 2026.11.18-1 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.18-1'"));
+    assert.equal(version.build, '2026.11.18-1');
   });
 
   test('daily quests persist under rubloxQuests and have a claimable panel', () => {
