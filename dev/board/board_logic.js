@@ -26,7 +26,13 @@
     {id: 'fish-kinds', name: 'Ripple Lake — kinds caught', emoji: '🎣', kind: 'high', unit: ''},
     {id: 'fish-biggest', name: 'Ripple Lake — biggest fish', emoji: '🐟', kind: 'high', unit: 'cm'},
     {id: 'ps-best', name: 'Pet Talent Show — best score', emoji: '🎭', kind: 'high', unit: ''},
-    {id: 'hunt-maps', name: 'Treasure Trail — maps finished', emoji: '🗺️', kind: 'high', unit: ''}
+    {id: 'hunt-maps', name: 'Treasure Trail — maps finished', emoji: '🗺️', kind: 'high', unit: ''},
+    {id: 'garden-harvested', name: 'Sunny Patch Garden — harvested', emoji: '🌱', kind: 'high', unit: ''},
+    {id: 'meadow-best', name: 'Chow Chuck Meadow — longest toss', emoji: '🥣', kind: 'high', unit: ''},
+    {id: 'rides-rides', name: 'Rideland Workshop — rides taken', emoji: '🎢', kind: 'high', unit: ''},
+    {id: 'hive-honey', name: 'Honeyhill Hive — pots of honey', emoji: '🍯', kind: 'high', unit: ''},
+    {id: 'camp-sunrises', name: 'Campfire Grove — sunrises', emoji: '🌅', kind: 'high', unit: ''}
+
   ];
 
   function lbFresh(){ return {ver: LB_VER, best: {}, name: ''}; }
@@ -100,6 +106,17 @@
     set('ps-best', psS.best ? +psS.best : null);
     const huntS = saves.hunt || {};
     set('hunt-maps', huntS.maps | 0 ? (huntS.maps | 0) : null);
+    const gardenS = saves.garden || {};
+    set('garden-harvested', gardenS.harvested | 0 ? (gardenS.harvested | 0) : null);
+    const meadowS = saves.meadow || {};
+    set('meadow-best', meadowS.best ? +meadowS.best : null);
+    const ridesS = saves.rides || {};
+    set('rides-rides', ridesS.rides | 0 ? (ridesS.rides | 0) : null);
+    const hiveS = saves.hive || {};
+    set('hive-honey', hiveS.made | 0 ? (hiveS.made | 0) : null);
+    const campS = saves.camp || {};
+    set('camp-sunrises', campS.sunrises | 0 ? (campS.sunrises | 0) : null);
+
     // extras / board can fill gaps
     for (const id in board.best) if (out[id] == null) set(id, board.best[id]);
     for (const id in extra) if (out[id] == null) set(id, extra[id]);

@@ -1,0 +1,5 @@
+    {id: 'garden-harvest', ev: 'garden-harvest', title: 'Garden Day', desc: 'Harvest a plant at Sunny Patch Garden.', emoji: '🌱', goal: 1, reward: 20},
+    {id: 'meadow-throw', ev: 'meadow-throw', title: 'Snack Toss', desc: 'Throw 2 snacks at Chow Chuck Meadow.', emoji: '🥣', goal: 2, reward: 20},
+    {id: 'rides-ride', ev: 'rides-ride', title: 'Ride Time', desc: 'Ride something at Rideland Workshop.', emoji: '🎢', goal: 1, reward: 15},
+    {id: 'hive-honey', ev: 'hive-honey', title: 'Honey Helper', desc: 'Make a pot of honey at Honeyhill Hive.', emoji: '🍯', goal: 1, reward: 20},
+    {id: 'camp-sunrise', ev: 'camp-sunrise', title: 'Stay Cozy', desc: 'Keep the Campfire Grove fire bright until sunrise.', emoji: '🔥', goal: 1, reward: 25},

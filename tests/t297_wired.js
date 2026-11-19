@@ -8,9 +8,9 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
 describe('t297 emotes and new modes wiring', () => {
-  test('BUILD is 2026.11.16-23 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.16-23'"));
-    assert.equal(version.build, '2026.11.16-23');
+  test('BUILD is 2026.11.19-5 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.19-5'"));
+    assert.equal(version.build, '2026.11.19-5');
   });
 
   test('free emotes work anywhere and the wheel uses View, not A/X/LB/RB', () => {
@@ -26,7 +26,8 @@ describe('t297 emotes and new modes wiring', () => {
   test('cafe, fishing, pet show, and treasure trail are playable modes', () => {
     for (const id of ['cafe', 'fish', 'petshow', 'hunt']){
       assert.ok(html.includes("id:'" + id + "'"), id + ' card');
-      assert.ok(html.includes("'" + id + "'") && html.includes("'hunt'].includes(m)"), 'whitelist ' + id);
+      const wl = html.match(/mode = \[([^\]]+)\]\.includes\(m\) \? m : 'obby'/);
+      assert.ok(wl && wl[1].includes("'" + id + "'"), 'whitelist ' + id);
     }
     assert.match(html, /function buildCafe\(/);
     assert.match(html, /function buildFish\(/);

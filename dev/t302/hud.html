@@ -1,0 +1,83 @@
+
+  <div id="t302Box" style="display:none"><span id="t302Hint"></span></div>
+  <div id="t302Coins">🪙 Your coins: 0</div>
+  <button type="button" id="t302Act">✨ Do it</button>
+  <button type="button" id="gardenShopBtn">🌱 Shop</button>
+  <button type="button" id="meadowBookBtn">📖 Book</button>
+  <button type="button" id="ridesPaletteBtn">🎟️ Kit</button>
+  <button type="button" id="ridesHelpBtn">❓ Help</button>
+  <button type="button" id="hiveQuestBtn">🐝 Quests</button>
+  <button type="button" id="campCraftBtn">🧺 Craft</button>
+  <button type="button" id="ridesDelBtn">🗑️ Delete</button>
+  <button type="button" id="ridesUndoBtn">↩️ Undo</button>
+  <button type="button" id="ridesTestBtn">🎠 Test ride</button>
+  <div id="campCompass" aria-hidden="true"><i id="campNeedle"></i><b>🏕️</b></div>
+  <canvas id="campMap" width="160" height="160" aria-label="Map back to camp"></canvas>
+  <div id="t302Meter"><div id="t302MeterFill"></div><div id="t302MeterLab"></div></div>
+  <div id="gardenShop" class="t297overlay" role="dialog" aria-label="Seed shop">
+    <div class="t297box">
+      <button type="button" class="t297x" id="gardenShopX" aria-label="Close">×</button>
+      <h3>🌱 Seed Shop</h3>
+      <p>Buy original Sunny Patch seeds. Rarer seeds and lucky mutations glow and sell for more. Close with ×, Esc, Xbox B, a backdrop tap, or by walking away.</p>
+      <div id="gardenShopList"></div>
+    </div>
+  </div>
+  <div id="meadowBook" class="t297overlay" role="dialog" aria-label="Meadow book">
+    <div class="t297box">
+      <button type="button" class="t297x" id="meadowBookX" aria-label="Close">×</button>
+      <h3>📖 Meadow Book</h3>
+      <p>Friends share the meadow, but every pal you meet is yours alone. Rarity and your rebirth badge live in this book.</p>
+      <div id="meadowBookList"></div>
+    </div>
+  </div>
+  <div id="ridesPalette" class="t297overlay" role="dialog" aria-label="Ride kit">
+    <div class="t297box">
+      <button type="button" class="t297x" id="ridesPaletteX" aria-label="Close">×</button>
+      <h3>🎟️ Rideland Kit</h3>
+      <p>Pick a ride piece, place it on your lot, then hop on. Press Help anytime for the track tutorial. Friends may ride too.</p>
+      <div id="ridesPaletteList"></div>
+    </div>
+  </div>
+  <div id="hiveQuest" class="t297overlay" role="dialog" aria-label="Hive quests">
+    <div class="t297box">
+      <button type="button" class="t297x" id="hiveQuestX" aria-label="Close">×</button>
+      <h3>🐝 Honeyhill Quests</h3>
+      <p>Friendly bear neighbors only visit in single-player. There is never any fighting.</p>
+      <div id="hiveQuestList"></div>
+    </div>
+  </div>
+  <div id="campCraft" class="t297overlay" role="dialog" aria-label="Camp craft">
+    <div class="t297box">
+      <button type="button" class="t297x" id="campCraftX" aria-label="Close">×</button>
+      <h3>🧺 Camp Craft</h3>
+      <p>Hunt logs in the forest (pick up fallen ones, chop stumps), carry a few back, and stash them at camp. Craft a cozy blanket or a Glow Lantern. A lantern shine scares the Gloam back into the trees. Survive 5 nights to win.</p>
+      <div id="campCraftList"></div>
+    </div>
+  </div>
+
+
+  <div id="t302Tut" aria-live="polite">
+    <div id="t302TutCard">
+      <div id="t302TutStep"></div>
+      <h3 id="t302TutTitle">Rideland tutorial</h3>
+      <p id="t302TutBody"></p>
+      <div class="t297row" style="justify-content:flex-end;gap:8px">
+        <button type="button" id="t302TutSkip">Skip</button>
+        <button type="button" id="t302TutNext">Next</button>
+      </div>
+    </div>
+  </div>
+  <div id="t302Vignette"></div>
+  <div id="t302Scare" aria-hidden="true"><div class="t302ScareFace"><i class="t302ScareEye l"></i><i class="t302ScareEye r"></i><b class="t302ScareGrin"></b></div></div>
+  <button type="button" id="t302LessBtn" title="Less scary uses the milder Gloam from before. Off is the really scary default.">😌 Less scary</button>
+  <div id="campWin" class="t297overlay" role="dialog" aria-label="Camp result">
+    <div class="t297box">
+      <button type="button" class="t297x" id="campWinX" aria-label="Close">×</button>
+      <h3 id="campWinTitle">🌅 Sunrise!</h3>
+      <p id="campWinBody">You kept the grove safe through five spooky nights.</p>
+      <div class="t297row" style="justify-content:center;gap:10px">
+        <button type="button" id="campWinAgain">🔁 Play again</button>
+        <button type="button" id="campWinClose">Close</button>
+      </div>
+    </div>
+  </div>
