@@ -64,20 +64,45 @@
     elv.bubbles.push({mesh:m, t: sec == null ? 3.2 : sec});
   }
 
-  function elevSpawnPals(run){
+  function elevPalKey(seats){
+    return (seats || []).map(s => (s && s.id ? s.id : s) + '@' + (+(s && s.x) || 0) + ',' + (+(s && s.z) || 0)).join('|');
+  }
+
+  function elevShowPals(){
     if (!elv) return;
+    const seats = (typeof ElevRules !== 'undefined' && ElevRules.elevCleanPals) ? ElevRules.elevCleanPals(elv.run && elv.run.pals) : ((elv.run && elv.run.pals) || []);
+    const key = elevPalKey(seats);
+    if (elv.palKey === key) return;
+    elv.palKey = key;
     (elv.pals || []).forEach(p => { try { if (p.mesh) scene.remove(p.mesh); } catch (e){} });
     elv.pals = [];
     elv.pal = null;
-    if (!run || !run.buddy || elevIsMp()) return;
-    const list = (typeof ElevRules !== 'undefined' && ElevRules.elevPalsAboard) ? ElevRules.elevPalsAboard(run, Math.random) : [];
-    const spots = [[-3.2,-2.0],[3.2,1.6],[-3.4,2.2],[2.6,-3.0],[-1.6,3.0]];
-    list.forEach((pal, i) => {
-      const s = spots[i % spots.length];
-      const mesh = elevMakePal(pal, s[0], s[1]);
-      elv.pals.push({id: pal.id, pal, mesh, x:s[0], z:s[1]});
+    seats.forEach(s => {
+      const pal = ElevRules.elevPal(s.id);
+      if (!pal) return;
+      const mesh = elevMakePal(pal, s.x, s.z);
+      elv.pals.push({id: pal.id, pal, mesh, x:s.x, z:s.z});
     });
     if (elv.pals[0]) elv.pal = elv.pals[0].mesh;
+  }
+
+  function elevSpawnPals(run){
+    if (!elv || !run) return;
+    if (!elevIsGuest()){
+      if (!run.buddy) run.pals = [];
+      else if (!run.pals || !run.pals.length){
+        if (typeof ElevRules !== 'undefined' && ElevRules.elevPalsAboard) ElevRules.elevPalsAboard(run, Math.random);
+      }
+    }
+    elevShowPals();
+  }
+
+  function elevShowTalk(talk, force){
+    if (!elv || !talk || !talk.text) return;
+    const seq = talk.seq | 0;
+    if (!force && elv.talkSeen === seq && seq) return;
+    elv.talkSeen = seq;
+    elevSay(talk.who, talk.text, talk.x, talk.y, talk.z, talk.sec);
   }
 
   function elevTickTalk(dt){
@@ -88,23 +113,20 @@
       try { scene.remove(b.mesh); } catch (e){}
       return false;
     });
+    if (elevIsGuest()){
+      if (elv.run && elv.run.talk) elevShowTalk(elv.run.talk);
+      return;
+    }
     elv.talkT = (elv.talkT || 0) - dt;
     if (elv.talkT > 0) return;
     elv.talkT = 3.4 + Math.random() * 2.2;
     const run = elv.run;
-    if (!run) return;
-    const kind = run.phase === 'ride' ? 'ride' : (run.phase === 'floor' && ElevRules.elevFloor(run.floor) ? ElevRules.elevFloor(run.floor).kind : run.phase);
-    if (elevIsMp() || !run.buddy){
-      const line = ElevRules.elevIntercom(run, run.phase === 'floor' ? 'floor' : (run.event && run.phase === 'ride' ? 'event' : run.phase), Math.random);
-      if (elv.host) elevSay('🛎️ Bingle', String(line).replace(/^🛎️\s*/, ''), elv.host.position.x, 2.4, elv.host.position.z, 3.4);
-      return;
+    if (!run || !run.buddy) return;
+    const talk = (typeof ElevRules !== 'undefined' && ElevRules.elevHostTalk) ? ElevRules.elevHostTalk(run, Math.random) : null;
+    if (talk){
+      elevShowTalk(talk, true);
+      elevNetSync();
     }
-    const pals = elv.pals || [];
-    if (!pals.length) return;
-    const slot = pals[Math.floor(Math.random() * pals.length)];
-    const joke = Math.random() < 0.28;
-    const line = ElevRules.elevTalkLine(slot.pal, {kind, phase: run.phase, joke, i: Math.floor(Math.random()*8)});
-    if (line) elevSay((slot.pal.emoji || '') + ' ' + slot.pal.name, line, slot.x, 2.3, slot.z, 3.6);
   }
 
   const elevMuzak = (() => {
@@ -234,14 +256,17 @@
 
   function elevFromNet(g, d){
     if (!elv || !d || d.t !== 'elev') return;
-    if (d.a === 'ding' && !elevIsGuest()){
-      if (elv.run.phase === 'lobby') elevGo(true);
+    if ((d.a === 'hello' || d.a === 'ding') && !elevIsGuest()){
+      if (d.a === 'ding' && elv.run.phase === 'lobby') elevGo(true);
+      else elevNetSync();
       return;
     }
     if (d.a !== 'sync' || !d.snap) return;
     if (!elevIsGuest()) return;
     const before = elv.run.phase;
     ElevRules.elevApplyWire(elv.run, d.snap);
+    elevShowPals();
+    if (elv.run.talk) elevShowTalk(elv.run.talk);
     if (before !== elv.run.phase) elevOnPhase(before, elv.run.phase);
   }
   function elevFromHost(d){ elevFromNet(null, d); }
@@ -257,8 +282,11 @@
       elevTone([520, 780, 1040], 0.08, 'sine', 0.05);
       banner(elv.run.quote);
       if (elv.run.watching) banner('🛎️ Hang tight in the cab — we will catch the next stop!');
+      if (elv.run.event && elv.run.event.id === 'sneeze') elevTone([880, 660, 520], 0.09, 'triangle', 0.05);
+      if (elv.run.event && elv.run.event.id === 'stuck') elevTone([180, 140], 0.14, 'sine', 0.05);
+      elevShowPals();
     }
-    if (before === 'ride' && now === 'floor') elevArrive();
+    if (before === 'ride' && now === 'floor'){ elevArrive(); elevShowPals(); }
     if (now === 'lobby' || now === 'inter'){ elevMuzak.stop(); elevPaintBoard(); }
     if (now === 'inter') elevReturnToCab(elv.run.quote);
     elevPaintBoard();
@@ -724,6 +752,7 @@
     elevBindOverlay('elevShop', 'elevShopX');
     elevSyncLessBtn();
     elevPaintBoard();
+    try { if (elevIsGuest() && typeof mpSend === 'function') mpSend({t:'elev', a:'hello'}); } catch (e){}
     const sb = document.getElementById('elevShopBtn');
     if (sb && !sb.__elev){ sb.__elev = true; sb.addEventListener('click', ev => { ev.preventDefault(); elevOpenShop(); }); }
     const lb = document.getElementById('elevLessBtn');
@@ -961,11 +990,21 @@
     const wob = (run.phase === 'ride' && run.event && run.event.id === 'wobble') ? 16 : (run.phase === 'ride' ? 8 : 6);
     if (elv.host) elv.host.rotation.y = Math.sin(time * 2) * 0.3;
     if (elv.host) elv.host.position.y = 0.2 + Math.sin(time * wob) * (run.phase === 'ride' ? 0.14 : 0.04);
+    const stuck = !!(run.phase === 'ride' && run.event && run.event.id === 'stuck' && (ElevRules.ELEV_RIDE - (run.t || 0)) < 1.25);
     if (run.phase === 'ride'){
-      try { if (typeof cam !== 'undefined' && cam) cam.shake = Math.sin(time * wob) * (run.event && run.event.id === 'wobble' ? 0.08 : 0.03); } catch (e){}
-      const n = 1 + ((run.survived | 0) % 20);
-      if (elv.dialLab && elv.dialLab.element) {}
-      if (elv.dial) elv.dial.rotation.y += dt * 3;
+      try { if (typeof cam !== 'undefined' && cam) cam.shake = stuck ? 0 : Math.sin(time * wob) * (run.event && run.event.id === 'wobble' ? 0.08 : (run.event && run.event.id === 'sneeze' ? 0.06 : 0.03)); } catch (e){}
+      if (elv.dial && !stuck) elv.dial.rotation.y += dt * 3;
+      const n = 1 + ((run.survived | 0) % 99);
+      if (elv.dialN !== n){
+        elv.dialN = n;
+        try { if (elv.dialLab) scene.remove(elv.dialLab); } catch (e){}
+        const cz = (typeof ElevRules !== 'undefined' && ElevRules.ELEV_CAB_Z) || -5;
+        elv.dialLab = elevLab('🛎️ ' + n, 0, 4.2, cz + 0.4);
+      }
+    }
+    if (!elevIsGuest()){
+      elv.syncT = (elv.syncT || 0) - dt;
+      if (elv.syncT <= 0){ elv.syncT = 0.45; elevNetSync(); }
     }
     if (elv.cabLight && run.phase === 'ride' && run.event && run.event.id === 'flicker'){
       elv.cabLight.intensity = 0.45 + Math.abs(Math.sin(time * 22)) * 1.1;

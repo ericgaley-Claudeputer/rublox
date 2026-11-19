@@ -244,7 +244,7 @@
     return d;
   }
 
-  function elevBuddyAllowed(mp){ return !mp; }
+  function elevBuddyAllowed(mp){ return true; } // Wobblevator exception: friendly cab riders, not opponents, in solo and MP
   function elevNoFight(){ return true; }
   function elevNoGore(){ return true; }
   function elevEveryoneOkay(){ return true; }
@@ -344,20 +344,78 @@
     return '🛎️ ' + elevHostLine(-1, rand);
   }
 
-  function elevPalsAboard(run, rand){
-    if (!run || !run.buddy) return [];
-    const r = typeof rand === 'function' ? rand : Math.random;
-    const f = elevFloor(run.floor);
+  const ELEV_PAL_SPOTS = [[-3.6,-2.2],[3.6,1.8],[-3.6,2.4],[3.4,-3.0],[-1.8,3.4]];
+  const ELEV_PAL_MAX = 4;
+
+  function elevPalSpots(){ return ELEV_PAL_SPOTS.map(s => s.slice()); }
+
+  function elevPalMayRide(run, pal){
+    if (!pal) return false;
+    const f = elevFloor(run && run.floor);
     const kind = f ? f.kind : '';
-    const pool = ELEV_PALS.filter(p => {
-      if (p.hop === 'creepy') return kind === 'creepy' || run.phase === 'lobby';
-      if (p.hop === 'shopoff' && kind === 'shop' && (run.phase === 'floor' || run.phase === 'inter')) return false;
-      return true;
+    const phase = (run && run.phase) || '';
+    if (pal.hop === 'creepy') return kind === 'creepy' || phase === 'lobby' || phase === 'board' || phase === 'ride';
+    if (pal.hop === 'shopoff' && kind === 'shop' && (phase === 'floor' || phase === 'inter')) return false;
+    return true;
+  }
+
+  function elevSeatPals(run, list){
+    const spots = elevPalSpots();
+    const taken = {};
+    const prev = {};
+    (run && run.pals || []).forEach(s => {
+      if (s && s.id) prev[s.id] = s;
     });
+    const seats = [];
+    (list || []).forEach(pal => {
+      if (!pal || seats.length >= ELEV_PAL_MAX) return;
+      const keep = prev[pal.id];
+      let x, z;
+      if (keep && keep.x != null && keep.z != null && !taken[keep.x + ',' + keep.z]){
+        x = +keep.x; z = +keep.z;
+      } else {
+        const free = spots.find(s => !taken[s[0] + ',' + s[1]]) || spots[seats.length % spots.length];
+        x = free[0]; z = free[1];
+      }
+      taken[x + ',' + z] = true;
+      seats.push({id: pal.id, x: x, z: z});
+    });
+    if (run) run.pals = seats;
+    return seats;
+  }
+
+  function elevCleanPals(list){
+    const out = [];
+    const used = {};
+    (Array.isArray(list) ? list : []).forEach(s => {
+      if (!s || out.length >= ELEV_PAL_MAX) return;
+      const id = s.id || s;
+      const pal = elevPal(id);
+      if (!pal || used[pal.id]) return;
+      used[pal.id] = true;
+      let x = (s && s.x != null) ? +s.x : elevPalSpots()[out.length][0];
+      let z = (s && s.z != null) ? +s.z : elevPalSpots()[out.length][1];
+      if (!isFinite(x)) x = 0;
+      if (!isFinite(z)) z = 0;
+      x = Math.max(-4.4, Math.min(4.4, x));
+      z = Math.max(-4.4, Math.min(4.4, z));
+      out.push({id: pal.id, x: x, z: z});
+    });
+    return out;
+  }
+
+  function elevPalIds(run){
+    return ((run && run.pals) || []).map(s => s && (s.id || s)).filter(Boolean);
+  }
+
+  function elevPalsAboard(run, rand){
+    if (!run || !run.buddy) { if (run) run.pals = []; return []; }
+    const r = typeof rand === 'function' ? rand : Math.random;
+    const pool = ELEV_PALS.filter(p => elevPalMayRide(run, p));
     const n = 2 + Math.floor(r() * 2);
     const out = [];
     const used = {};
-    for (let i = 0; i < pool.length && out.length < n; i++){
+    for (let i = 0; i < pool.length && out.length < n && out.length < ELEV_PAL_MAX; i++){
       const p = pool[Math.floor(r() * pool.length)];
       if (!p || used[p.id]) continue;
       used[p.id] = true;
@@ -370,8 +428,63 @@
         }
       }
     }
-    run.pals = out.map(p => p.id);
+    elevSeatPals(run, out);
     return out;
+  }
+
+  function elevPalsHop(run, rand){
+    if (!run || !run.buddy) { if (run) run.pals = []; return []; }
+    const r = typeof rand === 'function' ? rand : Math.random;
+    const stay = [];
+    const used = {};
+    elevCleanPals(run.pals).forEach(s => {
+      const pal = elevPal(s.id);
+      if (pal && elevPalMayRide(run, pal) && !used[pal.id]){ used[pal.id] = true; stay.push(pal); }
+    });
+    const pool = ELEV_PALS.filter(p => elevPalMayRide(run, p) && !used[p.id]);
+    const f = elevFloor(run.floor);
+    if (f && f.kind === 'creepy'){
+      const extra = pool.filter(p => p.hop === 'creepy');
+      if (extra.length && stay.length < ELEV_PAL_MAX && r() < 0.7){
+        const p = extra[Math.floor(r() * extra.length)];
+        if (p){ used[p.id] = true; stay.push(p); }
+      }
+    }
+    return elevSeatPals(run, stay);
+  }
+
+  function elevHostTalk(run, rand){
+    const r = typeof rand === 'function' ? rand : Math.random;
+    const seats = elevCleanPals(run && run.pals);
+    const kind = (run && run.phase === 'ride') ? 'ride' : (run && run.phase === 'floor' && elevFloor(run.floor) ? elevFloor(run.floor).kind : (run && run.phase) || '');
+    const wantCom = !seats.length || r() < 0.34 || !!(run && run.event && r() < 0.25);
+    const seq = ((run && run.talkSeq) || 0) + 1;
+    if (run) run.talkSeq = seq;
+    if (wantCom){
+      const line = elevIntercom(run, (run && run.phase === 'floor') ? 'floor' : (run && run.event && run.phase === 'ride' ? 'event' : (run && run.phase) || 'ride'), r);
+      const talk = {seq, kind:'intercom', who:'🛎️ Bingle', text: String(line).replace(/^🛎️\s*/, ''), x:3.2, y:2.4, z:-1.4, sec:3.4};
+      if (run) run.talk = talk;
+      return talk;
+    }
+    const slot = seats[Math.floor(r() * seats.length)];
+    const pal = elevPal(slot.id);
+    const joke = r() < 0.28;
+    const line = elevTalkLine(pal, {kind, phase: run && run.phase, joke, i: Math.floor(r()*8)});
+    const talk = {seq, kind:'pal', palId: pal.id, who: (pal.emoji || '') + ' ' + pal.name, text: line, x:slot.x, y:2.3, z:slot.z, sec:3.6};
+    if (run) run.talk = talk;
+    return talk;
+  }
+
+  function elevCleanTalk(talk){
+    if (!talk || typeof talk !== 'object') return null;
+    const text = String(talk.text || '').slice(0, 160);
+    const who = String(talk.who || '').slice(0, 48);
+    if (!text) return null;
+    const x = Math.max(-5, Math.min(5, +talk.x || 0));
+    const y = Math.max(0.4, Math.min(4, +talk.y || 2.3));
+    const z = Math.max(-5, Math.min(5, +talk.z || 0));
+    const palId = talk.palId && elevPal(talk.palId) ? talk.palId : '';
+    return {seq: talk.seq | 0, kind: talk.kind === 'intercom' ? 'intercom' : 'pal', palId, who, text, x, y, z, sec: Math.max(1, Math.min(6, +talk.sec || 3.4))};
   }
 
   function elevBuyItem(state, wallet, itemId){
@@ -602,6 +715,7 @@
       for (let i = 0; i < n; i++) run.pads.push(false);
     }
     run.quote = (f.emoji || '') + ' ' + f.name + ' — ' + f.hint;
+    if (run.buddy) elevPalsHop(run, rand);
     return run;
   }
 
@@ -871,7 +985,11 @@
       hostLine: run.hostLine,
       event: run.event && run.event.id,
       snow: !!run.snow,
-      watchingHint: !!run.watching
+      watchingHint: !!run.watching,
+      buddy: !!run.buddy,
+      pals: elevCleanPals(run.pals),
+      talk: elevCleanTalk(run.talk),
+      talkSeq: run.talkSeq | 0
     };
   }
 
@@ -887,8 +1005,12 @@
     if (snap.event){
       const ev = ELEV_RIDE_EVENTS.find(e => e.id === snap.event);
       if (ev) run.event = ev;
-    }
+    } else if (snap.event === null) run.event = null;
     if (snap.snow != null) run.snow = !!snap.snow;
+    if (snap.buddy != null) run.buddy = !!snap.buddy;
+    if (Array.isArray(snap.pals)) run.pals = elevCleanPals(snap.pals);
+    if (snap.talk) run.talk = elevCleanTalk(snap.talk);
+    if (snap.talkSeq != null) run.talkSeq = snap.talkSeq | 0;
     return run;
   }
 
@@ -955,10 +1077,10 @@
   }
 
   const api = {
-    ELEV_KEY, ELEV_VER, ELEV_SHOP_EVERY, ELEV_RIDE, ELEV_INTER, ELEV_BOARD, ELEV_BAG_KEEP, ELEV_FLOORS, ELEV_PALS, ELEV_HOST, ELEV_QUIZ, ELEV_SHOP, ELEV_RIDE_EVENTS,
+    ELEV_KEY, ELEV_VER, ELEV_SHOP_EVERY, ELEV_RIDE, ELEV_INTER, ELEV_BOARD, ELEV_BAG_KEEP, ELEV_FLOORS, ELEV_PALS, ELEV_HOST, ELEV_QUIZ, ELEV_SHOP, ELEV_RIDE_EVENTS, ELEV_PAL_SPOTS, ELEV_PAL_MAX,
     ELEV_CAB_W, ELEV_CAB_D, ELEV_CAB_Z, ELEV_HALL_W, ELEV_ROOM_Z, ELEV_FLOOR_TOP, ELEV_BODY_R,
     elevFloor, elevPal, elevClearMode, elevRoomOf, elevSpawnOf, elevBoxHit, elevOnSolid, elevSimStep, elevTimerWins, elevFresh, elevLoad, elevBuddyAllowed, elevNoFight, elevNoGore, elevEveryoneOkay,
-    elevShopItem, elevShopList, elevInheritLessScary, elevSetLessScary, elevStreakBonus, elevBeginBoard, elevCloseDoors, elevPickRideEvent, elevTalkLine, elevIntercom, elevPalsAboard, elevBuyItem, elevWearHat, elevApplyPack, elevWire, elevApplyWire,
+    elevShopItem, elevShopList, elevInheritLessScary, elevSetLessScary, elevStreakBonus, elevBeginBoard, elevCloseDoors, elevPickRideEvent, elevTalkLine, elevIntercom, elevPalSpots, elevPalMayRide, elevSeatPals, elevCleanPals, elevPalIds, elevPalsAboard, elevPalsHop, elevHostTalk, elevCleanTalk, elevBuyItem, elevWearHat, elevApplyPack, elevWire, elevApplyWire,
     elevSnowOn, elevHostLine, elevPickPal, elevStartRun, elevDueShop, elevPool, elevRebuildBag, elevPickFloor, elevBeginFloor, elevBeginRide,
     elevReward, elevClearFloor, elevFailFloor, elevBuySnack, elevRing, elevPaint, elevPickItem, elevTurnIn,
     elevTouchHazard, elevReachDoor, elevStayLit, elevQuiz, elevStack, elevBeat, elevPadStand, elevBossReady, elevTagBoss,

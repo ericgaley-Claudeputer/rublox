@@ -17,9 +17,9 @@ const BANNED = [
 ];
 
 describe('Wobblevator wiring', () => {
-  test('BUILD is 2026.11.19-9 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.19-9'"));
-    assert.equal(version.build, '2026.11.19-9');
+  test('BUILD is 2026.11.19-10 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.19-10'"));
+    assert.equal(version.build, '2026.11.19-10');
   });
 
   test('the mode is a playable menu game with an original name and save key', () => {
@@ -63,10 +63,14 @@ describe('Wobblevator wiring', () => {
     assert.ok(esc > 0 && pause > esc, 'Escape must close popups before it pauses');
   });
 
-  test('passengers are solo-only and names stay original', () => {
+  test('passengers ride in solo and multiplayer, and names stay original', () => {
     assert.equal(E.elevBuddyAllowed(false), true);
-    assert.equal(E.elevBuddyAllowed(true), false);
+    assert.equal(E.elevBuddyAllowed(true), true);
     assert.match(html, /elevBuddyAllowed/);
+    assert.match(html, /elevHostTalk/);
+    assert.match(html, /elevShowPals/);
+    assert.ok(html.includes("a:'hello'"));
+    assert.equal(html.includes('|| elevIsMp()) return'), false);
     assert.match(html, /Bingle the Bellhop/);
     const blob = html.slice(html.indexOf('const ELEV_KEY'), html.indexOf('function drawElevator('))
       + html.slice(html.indexOf('/* ---------- Wobblevator'), html.indexOf('function stop(){'));
@@ -118,6 +122,8 @@ describe('Wobblevator wiring', () => {
     assert.ok(html.includes('#elevShopBtn'));
     assert.ok(html.includes('#elevLessBtn'));
     assert.match(html, /ELEV_CAB_W\s*=\s*10/);
+    assert.ok(html.includes('elevHostTalk'));
+    assert.ok(html.includes('MP_MAX = 10,'));
   });
 
 

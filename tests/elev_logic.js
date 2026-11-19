@@ -25,16 +25,17 @@ describe('Wobblevator', () => {
     assert.equal(E.elevEveryoneOkay(), true);
   });
 
-  test('passengers only ride along in single-player', () => {
+  test('chatty passengers ride in solo and in multiplayer, and they are not opponents', () => {
     assert.equal(E.elevBuddyAllowed(false), true);
-    assert.equal(E.elevBuddyAllowed(true), false);
+    assert.equal(E.elevBuddyAllowed(true), true);
     const solo = E.elevStartRun(E.elevFresh(), 0, false).run;
     assert.equal(solo.buddy, true);
     const pal = E.elevPickPal(solo, () => 0);
     assert.ok(pal && pal.id);
     const mp = E.elevStartRun(E.elevFresh(), 0, true).run;
-    assert.equal(mp.buddy, false);
-    assert.equal(E.elevPickPal(mp, () => 0), null);
+    assert.equal(mp.buddy, true);
+    assert.ok(E.elevPickPal(mp, () => 0) && E.elevPickPal(mp, () => 0).id);
+    assert.equal(E.elevNoFight(), true);
   });
 
   test('a run boards, rides to a floor, clears it for coins, and tracks the best streak', () => {
@@ -389,6 +390,59 @@ describe('Wobblevator', () => {
     const {run} = E.elevStartRun(E.elevFresh(), 0, false);
     E.elevBeginRide(run, () => 0);
     assert.ok(run.event === null || (run.event.id && run.event.text));
+  });
+
+
+  test('the host picks passengers, seats, and lines, and every client sees the same cab', () => {
+    const host = E.elevStartRun(E.elevFresh(), 0, true).run;
+    assert.equal(host.buddy, true);
+    E.elevBeginRide(host, () => 0.2);
+    const aboard = E.elevPalsAboard(host, () => 0.2);
+    assert.ok(aboard.length >= 2);
+    assert.ok((host.pals || []).length >= 2);
+    host.pals.forEach(s => {
+      assert.ok(E.elevPal(s.id));
+      assert.ok(Math.abs(s.x) <= 4.4 && Math.abs(s.z) <= 4.4);
+    });
+    const talk = E.elevHostTalk(host, () => 0.9);
+    assert.ok(talk && talk.text && talk.who);
+    assert.ok(talk.seq >= 1);
+    const snap = E.elevWire(host);
+    assert.ok(Array.isArray(snap.pals) && snap.pals.length === host.pals.length);
+    assert.equal(snap.pals[0].id, host.pals[0].id);
+    assert.equal(snap.pals[0].x, host.pals[0].x);
+    assert.equal(snap.pals[0].z, host.pals[0].z);
+    assert.equal(snap.talk.text, talk.text);
+    assert.equal(snap.talk.who, talk.who);
+    const joiner = E.elevStartRun(E.elevFresh(), 0, true).run;
+    joiner.pals = [];
+    joiner.talk = null;
+    E.elevApplyWire(joiner, snap);
+    assert.equal(joiner.phase, host.phase);
+    assert.equal(joiner.floor, host.floor);
+    assert.deepEqual(joiner.pals, host.pals);
+    assert.equal(joiner.talk.text, talk.text);
+    assert.equal(joiner.talk.who, talk.who);
+    assert.equal(joiner.talk.x, talk.x);
+    assert.equal(joiner.talk.z, talk.z);
+  });
+
+  test('solo still boards chatty passengers, and they do not change the score or take player slots', () => {
+    const {state, run} = E.elevStartRun(E.elevFresh(), 0, false);
+    assert.equal(run.buddy, true);
+    E.elevBeginFloor(run, 'pillowpath');
+    const pay = E.elevReward(run);
+    run.pals = E.elevCleanPals([{id:'sock', x:-3, z:-2},{id:'niblet', x:3, z:2},{id:'echo', x:-3, z:2}]);
+    assert.equal(E.elevReward(run), pay);
+    const mid = E.elevClearFloor(state, run);
+    assert.equal(mid.pay, pay);
+    assert.equal(E.ELEV_PAL_MAX < 10, true);
+    E.elevBeginFloor(mid.run, 'snackstop');
+    E.elevSeatPals(mid.run, [E.elevPal('polo'), E.elevPal('marm')]);
+    const after = E.elevPalsHop(mid.run, () => 0);
+    assert.equal(after.some(s => s.id === 'polo'), false);
+    const soloTalk = E.elevHostTalk(mid.run, () => 0);
+    assert.ok(soloTalk && soloTalk.text);
   });
 
 
