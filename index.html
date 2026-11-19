@@ -571,6 +571,24 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .gpmode label.invrow.gpf{outline-offset:1px}
 .gpmode .gpedit{outline:4px solid #2ec27e!important;outline-offset:3px;box-shadow:0 0 0 9px rgba(46,194,126,.35)!important}
 #setModal .mbox{max-width:540px;max-height:calc(100vh - 32px);overflow:auto}
+/* Reset a game — Settings list and confirm dialog */
+.resetset{margin:16px 0 10px;text-align:left}
+.resetset-title{color:var(--muted);font-weight:700;margin:0 0 6px}
+.resetset-help{margin:0 0 8px;color:var(--muted);font-size:13px;font-weight:700;line-height:1.35}
+#resetList{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:min(38vh, 320px);overflow:auto;padding:2px;margin:0 0 8px;-webkit-overflow-scrolling:touch}
+button.resetgame{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;margin:0;padding:8px 10px;border-radius:12px;border:3px solid var(--line);background:var(--bg2);color:var(--text);font-weight:800;font-size:14px;text-align:left;cursor:pointer;line-height:1.2}
+button.resetgame .re{flex:none}
+button.resetgame:active{transform:translateY(1px)}
+#resetAllBtn{width:100%;margin:4px 0 0}
+#resetModal{z-index:10001;pointer-events:auto}
+#resetModal .mbox{max-width:440px}
+#resetModal #resetBody,#resetModal #resetHint{font-weight:700;color:var(--muted);margin:0 0 10px;line-height:1.4}
+#resetType{width:100%;margin:0 0 12px;padding:10px 12px;border:3px solid var(--line);border-radius:12px;font-weight:800;font-size:16px}
+#resetModal .resetacts{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+#resetCancel,#resetConfirm{margin:0;flex:1;min-width:120px;min-height:48px}
+body.reset-open #obby, body.reset-open #setModal, body.reset-open #oPausePanel{pointer-events:none}
+body.reset-open #resetModal, body.reset-open #resetModal .mbox, body.reset-open #resetCancel, body.reset-open #resetConfirm, body.reset-open #resetType{pointer-events:auto !important}
+@media (max-width:520px){#resetList{grid-template-columns:1fr}}
 .padsec{margin:14px 0 6px;text-align:left}
 .padsec h3{margin:0 0 6px;font-size:19px;text-align:center}
 .padst{font-weight:800;font-size:14px;color:var(--muted);background:var(--bg2);border:3px dashed var(--line);border-radius:14px;padding:8px 12px;text-align:center}
@@ -1889,8 +1907,27 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
         <span><i>R3</i>Click right stick: camera behind me · click twice: 👁️ first person</span>
       </div>
     </div>
+    <div class="resetset" id="resetSet">
+      <div class="resetset-title">♻️ Reset a game</div>
+      <p class="resetset-help">Erase one game's progress on this device. Coins, your character, outfits, and achievements stay. Adopt a Pet is the only reset that clears your pet collection. If you are in a friend room, only this device is reset.</p>
+      <div id="resetList"></div>
+      <button type="button" class="big gray" id="resetAllBtn">Reset ALL games</button>
+    </div>
     <button class="big red" id="setDhReset" style="margin-bottom:8px">🏡 Reset Dream House</button>
     <button class="big green" id="setOk">Done ✅</button>
+  </div>
+</div>
+<div class="modal" id="resetModal" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+  <div class="mbox">
+    <span class="emoji" id="resetEmoji">♻️</span>
+    <h2 id="resetTitle">Reset a game?</h2>
+    <p class="stats" id="resetBody">This erases its progress and can't be undone.</p>
+    <p class="stats" id="resetHint" hidden>Type RESET or press Confirm again.</p>
+    <input id="resetType" type="text" maxlength="16" autocomplete="off" spellcheck="false" aria-label="Type RESET to confirm" hidden>
+    <div class="resetacts">
+      <button class="big gray" id="resetCancel" type="button">Cancel</button>
+      <button class="big red" id="resetConfirm" type="button">Confirm</button>
+    </div>
   </div>
 </div>
 <dialog class="modal dhresetbox" id="dhResetModal" aria-labelledby="dhResetTitle">
@@ -2627,7 +2664,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.19-2';
+const BUILD = '2026.11.19-3';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -7664,10 +7701,307 @@ if (typeof pfSyncUi === 'function') try { pfSyncUi(); } catch (e){}
 const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEventListener('change', () => { if (typeof pfSetHide === 'function') pfSetHide(!!pfHide.checked); });
 
 
+
+/* Reset a game — Settings tool that clears one game's local save keys (or all games, with a double confirm). */
+(function (root) {
+  const RESET_ALL_WORD = 'RESET';
+
+  // Never cleared by "Reset ALL games". Individual Adopt a Pet reset may clear rubloxPets.
+  const RESET_KEEP_ON_ALL = [
+    'rubloxCoins',          // wallet
+    'rubloxPlayer',         // character name/color
+    'rubloxAvatar',         // outfits / appearance
+    'rubloxOwned',          // owned accessories
+    'rubloxAchievements',   // achievements
+    'rubloxPets',           // pet collection (only Adopt a Pet reset clears this)
+    'rubloxPetFollow',      // follow-toggle setting
+    'rubloxFriends',
+    'rubloxChat',
+    'rubloxTrades',
+    'rubloxBoard',
+    'rubloxQuests',
+    'rubloxRecentGames',
+    'rubloxBonus',
+    'rubloxGraphics',
+    'rubloxShowFps',
+    'rubloxDark',
+    'rubloxInvert',
+    'rubloxFP',
+    'rubloxMouseSens',
+    'rubloxPadSens',
+    'rubloxMusic',
+    'rubloxMute',
+    'rubloxWeather',
+    'rubloxThrowTurn',
+    'rubloxSpotify',
+    'rubloxSpotifyPkce',
+    'rubloxReloadTo'
+  ];
+
+  // Inventory of every game-progress save key found in the code (load/save and KEY constants).
+  const RESET_GAMES = [
+    {id:'garden', name:'Sunny Patch Garden', emoji:'🌱', keys:['rubloxGarden']},
+    {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', keys:['rubloxMeadow']},
+    {id:'rides', name:'Rideland Workshop', emoji:'🎢', keys:['rubloxRides']},
+    {id:'hive', name:'Honeyhill Hive', emoji:'🐝', keys:['rubloxHive']},
+    {id:'camp', name:'Campfire Grove', emoji:'🔥', keys:['rubloxCamp']},
+    {id:'cafe', name:'Cozy Corner Café', emoji:'☕', keys:['rubloxCafe']},
+    {id:'fish', name:'Ripple Lake Fishing', emoji:'🎣', keys:['rubloxFish']},
+    {id:'petshow', name:'Pet Talent Show', emoji:'🎭', keys:['rubloxPetShow']},
+    {id:'hunt', name:'Treasure Trail', emoji:'🗺️', keys:['rubloxHunt']},
+    {id:'snowfest', name:'Snow Festival', emoji:'❄️', keys:['rubloxSeason']},
+    {id:'lantern', name:'Lantern Big Top', emoji:'🏮', keys:['rubloxLantern']},
+    {id:'dreamhouse', name:'Dream House Builders', emoji:'🏡', keys:['rubloxDreamHouse']},
+    {id:'pethotel', name:'Pet Hotel', emoji:'🏨', keys:['rubloxPetHotel']},
+    {id:'dance', name:'Bossa Beat Dance Battle', emoji:'💃', keys:['rubloxDance']},
+    {id:'haunt', name:'Giggle Manor Escape', emoji:'👻', keys:['rubloxHaunt']},
+    {id:'stable', name:'Clover Meadow Stables', emoji:'🐴', keys:['rubloxStable']},
+    {id:'icecream', name:'Scoop Circus Ice Cream', emoji:'🍦', keys:['rubloxIceCream']},
+    {id:'tower', name:'Tower of Doom', emoji:'🗼', keys:['rubloxTower']},
+    {id:'photostudio', name:'Star Snaps Photo Studio', emoji:'📸', keys:['rubloxPhotoStudio', 'rubloxPhotos']},
+    {id:'waterpark', name:'Splash Summit Water Park', emoji:'🌊', keys:['rubloxWaterPark']},
+    {id:'bakery', name:'Sweet Team Bakery', emoji:'🧁', keys:['rubloxBakery']},
+    {id:'petisland', name:'Pet Adventure Island', emoji:'🏝️', keys:['rubloxPetIsland']},
+    {id:'autumn', name:'Cozy Autumn Farm', emoji:'🍂', keys:['rubloxAutumnDay']},
+    {id:'fashion', name:'Fashion Show', emoji:'👗', keys:['rubloxFashion', 'rubloxFsLook', 'rubloxFsTime']},
+    {id:'hide', name:'Hide and Seek', emoji:'🙈', keys:['rubloxHide']},
+    {id:'splash', name:"Don't Splash!", emoji:'🌊', keys:['rubloxSplash2']},
+    {id:'race', name:'Pet Kart Racing', emoji:'🏁', keys:['rubloxRace']},
+    {id:'pets', name:'Adopt a Pet', emoji:'🐾', keys:['rubloxPets']},
+    {id:'obby', name:'Obby Rush', emoji:'🏃', keys:['rubloxObby']},
+    {id:'build', name:'Build World', emoji:'🧱', keys:['rubloxBuild', 'rubloxBuildBest', 'rubloxBuildDay', 'rubloxBuildSel', 'rubloxBuildSlots']},
+    {id:'lava', name:'Lava Escape', emoji:'🌋', keys:['rubloxLavaBest']},
+    {id:'nds', name:'Disaster Island', emoji:'🌪️', keys:['rubloxNdsBest']}
+  ];
+
+  function resetGame(id){ return RESET_GAMES.find(g => g.id === id) || null; }
+  function resetKeys(id){ const g = resetGame(id); return g ? g.keys.slice() : []; }
+  function resetAllKeys(){
+    const seen = new Set();
+    const keys = [];
+    RESET_GAMES.forEach(g => {
+      if (g.id === 'pets') return; // keep the pet collection on Reset ALL
+      g.keys.forEach(k => { if (RESET_KEEP_ON_ALL.indexOf(k) < 0 && !seen.has(k)){ seen.add(k); keys.push(k); } });
+    });
+    return keys;
+  }
+  function resetIsKept(key){ return RESET_KEEP_ON_ALL.indexOf(key) >= 0; }
+
+  function resetConfirmTitle(id){
+    if (id === 'all') return 'Reset ALL games?';
+    const g = resetGame(id);
+    return g ? ('Reset ' + g.name + '?') : 'Reset this game?';
+  }
+  function resetConfirmBody(id){
+    if (id === 'all'){
+      return 'This erases progress in every game and can\'t be undone. Your coins, character, outfits, pet collection, and achievements will be kept.';
+    }
+    const g = resetGame(id);
+    const name = g ? g.name : 'this game';
+    const extra = (id === 'pets') ? ' This includes your Adopt a Pet collection on this device.' : '';
+    return 'Reset ' + name + '? This erases its progress and can\'t be undone.' + extra;
+  }
+
+  function resetApplyToStore(store, keys){
+    const next = (store && typeof store === 'object') ? Object.assign({}, store) : {};
+    (keys || []).forEach(k => { if (Object.prototype.hasOwnProperty.call(next, k)) delete next[k]; });
+    return next;
+  }
+  function resetApply(store, id){ return resetApplyToStore(store, resetKeys(id)); }
+  function resetApplyAll(store){ return resetApplyToStore(store, resetAllKeys()); }
+
+  // Double confirm for Reset ALL: first Confirm opens step 2; second Confirm (or typing RESET) applies.
+  function resetAllFresh(){ return {step: 0, typed: ''}; }
+  function resetAllStart(st){ return {step: 1, typed: (st && st.typed) || ''}; }
+  function resetAllType(st, text){ st = st && typeof st === 'object' ? st : resetAllFresh(); return {step: st.step || 0, typed: String(text || '')}; }
+  function resetAllCanApply(st, pressConfirm){
+    st = st && typeof st === 'object' ? st : resetAllFresh();
+    const step = st.step | 0;
+    const typed = String(st.typed || '').trim().toUpperCase() === RESET_ALL_WORD;
+    if (step >= 1 && typed) return true;
+    if (pressConfirm && step >= 1) return true;
+    return false;
+  }
+  function resetAllAdvance(st, pressConfirm){
+    st = st && typeof st === 'object' ? {step: st.step | 0, typed: String(st.typed || '')} : resetAllFresh();
+    if (resetAllCanApply(st, pressConfirm)) return {ok:true, apply:true, state: {step: 0, typed: ''}};
+    if (pressConfirm && st.step < 1) return {ok:true, apply:false, state: {step: 1, typed: st.typed}};
+    if (pressConfirm && st.step === 1) return {ok:true, apply:true, state: {step: 0, typed: ''}};
+    return {ok:false, apply:false, state: st};
+  }
+
+  const api = {
+    RESET_GAMES, RESET_KEEP_ON_ALL, RESET_ALL_WORD,
+    resetGame, resetKeys, resetAllKeys, resetIsKept,
+    resetConfirmTitle, resetConfirmBody,
+    resetApplyToStore, resetApply, resetApplyAll,
+    resetAllFresh, resetAllStart, resetAllType, resetAllCanApply, resetAllAdvance
+  };
+  root.ResetRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+/* Reset a game — Settings wiring (local saves only; never broadcasts in multiplayer). */
+(function () {
+  const $ = (id) => document.getElementById(id);
+  let resetDlg = {id: null, all: false, step: 0, typed: ''};
+
+  function resetRules(){
+    return (typeof ResetRules !== 'undefined' && ResetRules) || (typeof window !== 'undefined' ? window.ResetRules : null);
+  }
+  function resetMpOn(){
+    try { if (typeof mp !== 'undefined' && mp && mp.on) return true; } catch (e){}
+    return false;
+  }
+  function resetToast(msg){
+    if (typeof toast === 'function') toast(msg);
+  }
+  function resetClearLocal(keys){
+    (keys || []).forEach((k) => { try { localStorage.removeItem(k); } catch (e){} });
+  }
+  function resetMemory(id){
+    try {
+      const G = (typeof Obby !== 'undefined') ? Obby : (typeof window !== 'undefined' ? window.Obby : null);
+      if (G && G.running && G.mode === id && typeof G.stop === 'function') G.stop();
+      if (id === 'pets' && typeof pfSyncUi === 'function') pfSyncUi();
+    } catch (e){}
+  }
+  function resetPaintList(){
+    const R = resetRules();
+    const list = $('resetList');
+    if (!R || !list) return;
+    list.innerHTML = '';
+    R.RESET_GAMES.forEach((g) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'resetgame';
+      b.dataset.reset = g.id;
+      b.setAttribute('aria-label', 'Reset ' + g.name);
+      b.innerHTML = '<span class="re">' + g.emoji + '</span><span>' + g.name + '</span>';
+      b.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); resetOpen(g.id); });
+      list.appendChild(b);
+    });
+  }
+  function resetOpen(id){
+    const R = resetRules(); if (!R) return;
+    const all = id === 'all';
+    const g = all ? null : R.resetGame(id);
+    if (!all && !g) return;
+    resetDlg = all ? Object.assign(R.resetAllFresh(), {id: 'all', all: true}) : {id, all: false, step: 0, typed: ''};
+    const modal = $('resetModal'); if (!modal) return;
+    const title = $('resetTitle'), body = $('resetBody'), hint = $('resetHint'), typ = $('resetType'), emo = $('resetEmoji');
+    if (title) title.textContent = R.resetConfirmTitle(all ? 'all' : id);
+    if (body) body.textContent = R.resetConfirmBody(all ? 'all' : id);
+    if (emo) emo.textContent = all ? '♻️' : (g.emoji || '♻️');
+    const showType = all && resetDlg.step >= 1;
+    if (hint) hint.hidden = !showType;
+    if (typ){ typ.hidden = !showType; typ.value = ''; if (showType) typ.placeholder = 'Type RESET'; }
+    modal.classList.add('show');
+    if (document.body) document.body.classList.add('reset-open');
+    const no = $('resetCancel'); if (no) try { no.focus(); } catch (e){}
+  }
+  function resetClose(){
+    const modal = $('resetModal');
+    if (modal) modal.classList.remove('show');
+    if (document.body) document.body.classList.remove('reset-open');
+    resetDlg = {id: null, all: false, step: 0, typed: ''};
+    const typ = $('resetType'); if (typ) typ.value = '';
+  }
+  function resetModalIsOpen(){
+    const m = $('resetModal');
+    return !!(m && m.classList.contains('show'));
+  }
+  function resetDo(id){
+    const R = resetRules(); if (!R) return false;
+    const keys = id === 'all' ? R.resetAllKeys() : R.resetKeys(id);
+    if (!keys.length && id !== 'all') return false;
+    resetClearLocal(keys);
+    if (id === 'all') R.RESET_GAMES.forEach((g) => { if (g.id !== 'pets') resetMemory(g.id); });
+    else resetMemory(id);
+    const name = id === 'all' ? 'Every game' : ((R.resetGame(id) || {}).name || 'This game');
+    const loc = resetMpOn() ? ' on this device only' : '';
+    resetToast(name + ' progress was reset' + loc + '.');
+    return true;
+  }
+  function resetConfirm(){
+    const R = resetRules(); if (!R) return;
+    if (!resetDlg || !resetDlg.id) return;
+    if (resetDlg.all){
+      resetDlg.typed = ($('resetType') && $('resetType').value) || resetDlg.typed || '';
+      const act = R.resetAllAdvance({step: resetDlg.step, typed: resetDlg.typed}, true);
+      if (!act.apply){
+        resetDlg.step = act.state.step;
+        resetDlg.typed = act.state.typed;
+        const hint = $('resetHint'), typ = $('resetType'), title = $('resetTitle');
+        if (title) title.textContent = 'Press Confirm again?';
+        if (hint){ hint.hidden = false; hint.textContent = 'Type RESET or press Confirm again. This can\'t be undone.'; }
+        if (typ){ typ.hidden = false; typ.value = resetDlg.typed; try { typ.focus(); typ.select(); } catch (e){} }
+        return;
+      }
+      resetDo('all');
+      resetClose();
+      return;
+    }
+    resetDo(resetDlg.id);
+    resetClose();
+  }
+  function resetOnKey(e){
+    if (!e) return false;
+    const code = e.code || e.key || '';
+    if (!resetModalIsOpen()) return false;
+    if (code === 'Escape' || code === 'Esc' || e.key === 'Escape' || e.key === 'Esc'){
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      resetClose();
+      return true;
+    }
+    if ((code === 'Enter' || e.key === 'Enter') && e.target && e.target.id === 'resetType'){
+      resetDlg.typed = e.target.value || '';
+      if (e.preventDefault) e.preventDefault();
+      resetConfirm();
+      return true;
+    }
+    return false;
+  }
+
+  function resetBind(){
+    resetPaintList();
+    const all = $('resetAllBtn');
+    if (all) all.onclick = (ev) => { ev.preventDefault(); ev.stopPropagation(); resetOpen('all'); };
+    const yes = $('resetConfirm');
+    if (yes) yes.onclick = (ev) => { ev.preventDefault(); ev.stopPropagation(); resetConfirm(); };
+    const no = $('resetCancel');
+    if (no) no.onclick = (ev) => { ev.preventDefault(); ev.stopPropagation(); resetClose(); };
+    const typ = $('resetType');
+    if (typ) typ.addEventListener('input', () => { resetDlg.typed = typ.value || ''; });
+    const modal = $('resetModal');
+    if (modal) modal.addEventListener('click', (e) => { if (e.target === modal || e.target.id === 'resetModal') resetClose(); });
+    document.addEventListener('keydown', (ev) => { resetOnKey(ev); }, true);
+    const setBtn = $('setBtn');
+    if (setBtn) setBtn.addEventListener('click', () => resetPaintList());
+  }
+
+  if (typeof document !== 'undefined'){
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', resetBind);
+    else resetBind();
+  }
+
+  if (typeof window !== 'undefined'){
+    window.resetOpen = resetOpen;
+    window.resetClose = resetClose;
+    window.resetModalIsOpen = resetModalIsOpen;
+    window.resetOnKey = resetOnKey;
+    window.resetDo = resetDo;
+    window.resetPaintList = resetPaintList;
+  }
+})();
+
 $('#setOk').onclick = () => $('#setModal').classList.remove('show');
 $('#setModal').onclick = e => { if (e.target.id === 'setModal') $('#setModal').classList.remove('show'); };
 document.addEventListener('keydown', e => {
   if (e.code !== 'Escape' && e.key !== 'Escape') return;
+  if (typeof resetModalIsOpen === 'function' && resetModalIsOpen()){ if (typeof resetClose === 'function') resetClose(); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return; }
   const sm = document.getElementById('setModal');
   if (sm && sm.classList.contains('show')){
     sm.classList.remove('show');
@@ -7679,7 +8013,7 @@ document.addEventListener('keydown', e => {
 function dhInertExempt(el){
   if (!el) return true;
   const id = el.id || '';
-  if (id === 'obby' || id === 'dhResetModal' || id === 'achToast' || id === 'frConfirm' || id === 'chRoot' || id === 'chPanel' || id === 'chWheel' || id === 'lhRoot' || id === 'lhSet' || id === 'lhDraw' || id === 'lhCut' || id === 'lhCalm') return true;
+  if (id === 'obby' || id === 'dhResetModal' || id === 'resetModal' || id === 'achToast' || id === 'frConfirm' || id === 'chRoot' || id === 'chPanel' || id === 'chWheel' || id === 'lhRoot' || id === 'lhSet' || id === 'lhDraw' || id === 'lhCut' || id === 'lhCalm') return true;
   const tag = (el.tagName || '').toLowerCase();
   if (tag === 'dialog') return true;
   const cls = el.classList;
@@ -30514,6 +30848,7 @@ function dhLayoutHud(){
       if (mode === 'dreamhouse' && dh && (dh.shopOpen || dh.yardOpen || dh.upOpen) && (e.code === 'Escape' || e.code === 'KeyB') && !e.repeat){ dhKey(e); return; }
       if (e.code === 'Escape' && typeof dhOnResetKey === 'function' && dhOnResetKey(e)) return;
       if (e.code === 'Escape'){
+        if (typeof resetModalIsOpen === 'function' && resetModalIsOpen()){ if (typeof resetClose === 'function') resetClose(); if (e.preventDefault) e.preventDefault(); return; }
         const sm = document.getElementById('setModal');
         if (sm && sm.classList.contains('show')){ sm.classList.remove('show'); if (e.preventDefault) e.preventDefault(); return; }
         if (typeof t297OverlayOpen === 'function' && t297OverlayOpen()){ t297OverlayClose(); if (e.preventDefault) e.preventDefault(); return; }
@@ -36338,6 +36673,7 @@ try { if (typeof window !== 'undefined') window.Obby = Obby; } catch (e){}
     if (c.root.id === 'spPick'){ const lv = list.filter(e => e.classList.contains('splv')); return lv.find(e => e.classList.contains('cur')) || lv[0] || list[0]; }
     if (c.root.id === 'lvlModal'){ const open = list.filter(e => e.classList.contains('lvbtn')); const nd = open.filter(e => !e.classList.contains('done')); return nd[nd.length - 1] || open[open.length - 1] || list[0]; }
     if (c.kind === 'page'){ const main = list.filter(e => e.closest('main') && inView(e.getBoundingClientRect())); return main[0] || list.find(e => e.matches('nav button.active')) || list[0]; }
+    if (c.root && c.root.id === 'resetModal'){ const no = list.find(e => e.id === 'resetCancel'); if (no) return no; }
     return list.find(e => e.matches('.big.green') && e.style.display !== 'none') || list[0];
   }
   function setFocus(el){
@@ -36383,7 +36719,7 @@ try { if (typeof window !== 'undefined') window.Obby = Obby; } catch (e){}
   }
   function closeOf(c){
     const id = c.root.id;
-    const map = {lvlModal: '#lvClose', setModal: '#setOk', soonModal: '#soonOk', oPausePanel: '#oResume', dhResetModal: '#dhResetNo', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', fsPick: '#fsExplore', fsEnd: '#fsHome2', fsWard: '#fsWardClose', piPanel: '#piClose', bkPanel: '#bkClose', wpPanel: '#wpClose', psGal: '#psGalClose', icPanel: '#icClose', sbPick: '#sbPickClose', bShare: '#bShareClose', bTestEnd: '#bTestBack', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pTrickPanel: '#pTrickClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
+    const map = {lvlModal: '#lvClose', setModal: '#setOk', resetModal: '#resetCancel', soonModal: '#soonOk', oPausePanel: '#oResume', dhResetModal: '#dhResetNo', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', fsPick: '#fsExplore', fsEnd: '#fsHome2', fsWard: '#fsWardClose', piPanel: '#piClose', bkPanel: '#bkClose', wpPanel: '#wpClose', psGal: '#psGalClose', icPanel: '#icClose', sbPick: '#sbPickClose', bShare: '#bShareClose', bTestEnd: '#bTestBack', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pTrickPanel: '#pTrickClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
     if (id === 'rcPick'){ const b = document.querySelector('#rcBack'); if (b && !b.hidden) return b; }   // B in the ride list = back to the modes
     if (map[id]) return document.querySelector(map[id]);
     return null;

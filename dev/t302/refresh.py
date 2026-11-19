@@ -5,8 +5,8 @@ import json
 
 ROOT = Path(__file__).resolve().parents[2]
 T302 = Path(__file__).resolve().parent
-BUILD = "2026.11.19-2"
-OLD = "2026.11.19-1"
+BUILD = "2026.11.19-3"
+OLD = "2026.11.19-2"
 
 
 def read(name: str) -> str:
