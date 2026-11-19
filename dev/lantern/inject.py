@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[2]
 IDX = ROOT / 'index.html'
 DEV = ROOT / 'dev/lantern'
 ACH = ROOT / 'dev/achievements/achievements.js'
-BUILD = '2026.11.19-1'
+BUILD = '2026.11.19-2'
 OLD_BUILD = '2026.11.19-1'
 
 def once(text, old, new, label):

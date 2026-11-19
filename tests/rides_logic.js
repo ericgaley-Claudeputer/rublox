@@ -29,7 +29,6 @@ describe('Rideland Workshop', () => {
 
   test('a simple closed coaster loop can be ridden, but a short path cannot', () => {
     let s = R.ridesFresh();
-    // 2x2 square of curves
     [[0,0,0],[0,1,1],[1,1,2],[1,0,3]].forEach(([x,z,r]) => {
       const p = R.ridesPlace(s, 'curve', x, z, r, 'me');
       assert.equal(p.ok, true, p.why);
@@ -52,5 +51,45 @@ describe('Rideland Workshop', () => {
       ids.add(r.kind.id);
     }
     assert.equal(ids.size, R.RIDES_KINDS.length);
+    assert.ok(ids.has('slope') && ids.has('loop'));
+  });
+
+  test('slope and loop pieces connect like track and can be placed on the lot', () => {
+    let s = R.ridesFresh();
+    const slope = R.ridesPlace(s, 'slope', 4, 4, 0, 'me');
+    assert.equal(slope.ok, true, slope.why);
+    const loop = R.ridesPlace(slope.state, 'loop', 4, 5, 1, 'me');
+    assert.equal(loop.ok, true, loop.why);
+    assert.equal(R.ridesIsTrack('slope'), true);
+    assert.equal(R.ridesIsTrack('loop'), true);
+    assert.equal(R.ridesIsTrack('carousel'), false);
+  });
+
+  test('the track tutorial steps through straight, curve, slope, loop, closing, and riding, and can be skipped or replayed', () => {
+    let s = R.ridesFresh();
+    const start = R.ridesTutStart(s);
+    assert.equal(start.step.id, 'hi');
+    s = R.ridesTutNext(start.state).state;
+    assert.equal(R.ridesTutStep(s).id, 'track');
+    const placed = R.ridesPlace(s, 'track', 2, 2, 0, 'me');
+    const note = R.ridesTutNote(placed.state, 'place', 'track');
+    assert.equal(note.advanced, true);
+    assert.equal(note.step.id, 'curve');
+    const skip = R.ridesTutSkip(note.state);
+    assert.equal(skip.state.tutDone, true);
+    assert.equal(skip.state.tut.on, false);
+    const replay = R.ridesTutStart(skip.state);
+    assert.equal(replay.step.id, 'hi');
+    assert.equal(replay.state.tut.on, true);
+    let t = R.ridesTutStart(R.ridesFresh()).state;
+    t.tut.step = R.RIDES_TUT.findIndex(x => x.id === 'close');
+    [[0,0,0],[0,1,1],[1,1,2],[1,0,3]].forEach(([x,z,r]) => { t = R.ridesPlace(t, 'curve', x, z, r, 'me').state; });
+    const closed = R.ridesTutNote(t, 'place', 'curve');
+    assert.equal(closed.advanced, true);
+    assert.equal(closed.step.id, 'ride');
+    const boarded = R.ridesBoard(closed.state, closed.state.pieces[0].id, 'me');
+    const rode = R.ridesTutNote(boarded.state, 'board', 'curve');
+    assert.equal(rode.advanced, true);
+    assert.equal(rode.step.id, 'done');
   });
 });

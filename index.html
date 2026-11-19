@@ -1456,7 +1456,24 @@ body.lh-muffled #obby{filter:saturate(.85)}
 #t302LessBtn{position:absolute;z-index:8;left:16px;bottom:96px;padding:8px 12px;font-size:14px;border:3px solid #1d2340;border-radius:16px;background:#efe7ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
 .campmode #t302LessBtn{display:block}
 @media (max-width:700px){ #t302LessBtn{bottom:120px;left:12px} }
+
+#t302Coins{display:none;position:absolute;left:12px;top:112px;z-index:8;background:#fff8e6;color:#1d2340;border:3px solid #1d2340;border-radius:16px;padding:8px 14px;font-weight:900;font-size:18px;box-shadow:3px 3px 0 #1d2340;pointer-events:none}
+.gardenmode #t302Coins{display:block}
+#ridesHelpBtn{position:absolute;z-index:8;right:16px;bottom:224px;padding:10px 14px;font-size:16px;border:3px solid #1d2340;border-radius:16px;background:#e8f4ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+.ridesmode #ridesHelpBtn{display:block}
+#t302Tut{display:none;position:absolute;left:12px;right:12px;top:118px;z-index:9;pointer-events:none}
+#t302Tut.show{display:block}
+#t302TutCard{pointer-events:auto;margin:0 auto;max-width:540px;background:#fffdf6;border:3px solid #1d2340;border-radius:18px;padding:12px 16px 14px;box-shadow:4px 4px 0 #1d2340;text-align:left}
+#t302TutStep{font-weight:800;font-size:13px;color:#5b6180;margin:0 0 2px}
+#t302TutTitle{margin:0 0 6px;font-size:18px}
+#t302TutBody{margin:0 0 10px;font-weight:700;font-size:15px;color:#1d2340}
+#t302TutCard .t297row{pointer-events:auto}
+#t302TutNext,#t302TutSkip{font:inherit;font-weight:800;padding:8px 14px;border-radius:12px;border:3px solid #1d2340;background:#ffd23f;cursor:pointer}
+#t302TutSkip{background:#fff}
+.t302rare{font-weight:900}
+@media (max-width:700px){ #t302Coins{top:104px;font-size:16px;padding:6px 12px} #ridesHelpBtn{bottom:248px} #t302Tut{top:150px} }
 </style>
+
 
 
 <style id="evLbCss">
@@ -1967,10 +1984,12 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
   <div id="t297Box" style="display:none"><span id="t297Hint"></span></div>
   <button type="button" id="t297Act">✨ Do it</button>
   <div id="t302Box" style="display:none"><span id="t302Hint"></span></div>
+  <div id="t302Coins">🪙 Your coins: 0</div>
   <button type="button" id="t302Act">✨ Do it</button>
   <button type="button" id="gardenShopBtn">🌱 Shop</button>
   <button type="button" id="meadowBookBtn">📖 Book</button>
   <button type="button" id="ridesPaletteBtn">🎟️ Kit</button>
+  <button type="button" id="ridesHelpBtn">❓ Help</button>
   <button type="button" id="hiveQuestBtn">🐝 Quests</button>
   <button type="button" id="campCraftBtn">🧺 Craft</button>
   <div id="t302Meter"><div id="t302MeterFill"></div><div id="t302MeterLab"></div></div>
@@ -1978,7 +1997,7 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
     <div class="t297box">
       <button type="button" class="t297x" id="gardenShopX" aria-label="Close">×</button>
       <h3>🌱 Seed Shop</h3>
-      <p>Buy original Sunny Patch seeds. Close with ×, Esc, Xbox B, a backdrop tap, or by walking away.</p>
+      <p>Buy original Sunny Patch seeds. Rarer seeds and lucky mutations glow and sell for more. Close with ×, Esc, Xbox B, a backdrop tap, or by walking away.</p>
       <div id="gardenShopList"></div>
     </div>
   </div>
@@ -1986,7 +2005,7 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
     <div class="t297box">
       <button type="button" class="t297x" id="meadowBookX" aria-label="Close">×</button>
       <h3>📖 Meadow Book</h3>
-      <p>Friends share the meadow, but every pal you meet is yours alone. Nobody takes anyone's animals.</p>
+      <p>Friends share the meadow, but every pal you meet is yours alone. Rarity and your rebirth badge live in this book.</p>
       <div id="meadowBookList"></div>
     </div>
   </div>
@@ -1994,7 +2013,7 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
     <div class="t297box">
       <button type="button" class="t297x" id="ridesPaletteX" aria-label="Close">×</button>
       <h3>🎟️ Rideland Kit</h3>
-      <p>Pick a ride piece, place it on your lot, then hop on. Friends may ride too.</p>
+      <p>Pick a ride piece, place it on your lot, then hop on. Press Help anytime for the track tutorial. Friends may ride too.</p>
       <div id="ridesPaletteList"></div>
     </div>
   </div>
@@ -2012,6 +2031,33 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
       <h3>🧺 Camp Craft</h3>
       <p>Craft a cozy blanket or a Glow Lantern from sticks you gathered. A lantern shine scares the Gloam back into the trees.</p>
       <div id="campCraftList"></div>
+    </div>
+  </div>
+
+
+  <div id="t302Tut" aria-live="polite">
+    <div id="t302TutCard">
+      <div id="t302TutStep"></div>
+      <h3 id="t302TutTitle">Rideland tutorial</h3>
+      <p id="t302TutBody"></p>
+      <div class="t297row" style="justify-content:flex-end;gap:8px">
+        <button type="button" id="t302TutSkip">Skip</button>
+        <button type="button" id="t302TutNext">Next</button>
+      </div>
+    </div>
+  </div>
+  <div id="t302Vignette"></div>
+  <div id="t302Scare"></div>
+  <button type="button" id="t302LessBtn">😌 Less scary</button>
+  <div id="campWin" class="t297overlay" role="dialog" aria-label="Camp result">
+    <div class="t297box">
+      <button type="button" class="t297x" id="campWinX" aria-label="Close">×</button>
+      <h3 id="campWinTitle">🌅 Sunrise!</h3>
+      <p id="campWinBody">You kept the grove safe until sunrise.</p>
+      <div class="t297row" style="justify-content:center;gap:10px">
+        <button type="button" id="campWinAgain">🔁 Play again</button>
+        <button type="button" id="campWinClose">Close</button>
+      </div>
     </div>
   </div>
 
@@ -2581,7 +2627,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.19-1';
+const BUILD = '2026.11.19-2';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -4732,25 +4778,36 @@ try { evBootChrome(); } catch (e){}
 
 
 
+
 /* Sunny Patch Garden — original seeds, real-time plots, prize stand. Save key rubloxGarden. */
 (function (root) {
   const GARDEN_KEY = 'rubloxGarden';
   const GARDEN_VER = 1;
   const GARDEN_PLOTS = 9;
   const GARDEN_STAND = 3;
-  const GARDEN_SEEDS = [
-    {id:'sprout', name:'Silly Sprout', emoji:'🌱', cost:2, sell:3, grow:15000, color:'#7ad46a'},
-    {id:'bean', name:'Giggle Bean', emoji:'🫘', cost:5, sell:8, grow:45000, color:'#c45c4a'},
-    {id:'cloud', name:'Cloudberry', emoji:'☁️', cost:10, sell:20, grow:120000, color:'#cfe8ff'},
-    {id:'melon', name:'Moon Melon', emoji:'🍈', cost:20, sell:45, grow:300000, color:'#b4e07a'},
-    {id:'squash', name:'Sparkle Squash', emoji:'✨', cost:35, sell:90, grow:600000, color:'#f4c84a'}
+  const GARDEN_RARITIES = [
+    {id:'common', name:'Common', color:'#7ad46a', glow:null},
+    {id:'uncommon', name:'Uncommon', color:'#3a86ff', glow:'#7ec8ff'},
+    {id:'rare', name:'Rare', color:'#b48cff', glow:'#d4b8ff'},
+    {id:'epic', name:'Epic', color:'#ff9f1c', glow:'#ffd23f'},
+    {id:'legendary', name:'Legendary', color:'#ffd23f', glow:'#fff4c2'}
   ];
+  const GARDEN_SEEDS = [
+    {id:'sprout', name:'Silly Sprout', emoji:'🌱', cost:2, sell:3, grow:15000, color:'#7ad46a', rarity:'common'},
+    {id:'bean', name:'Giggle Bean', emoji:'🫘', cost:5, sell:8, grow:45000, color:'#c45c4a', rarity:'common'},
+    {id:'cloud', name:'Cloudberry', emoji:'☁️', cost:10, sell:20, grow:120000, color:'#cfe8ff', rarity:'uncommon'},
+    {id:'melon', name:'Moon Melon', emoji:'🍈', cost:20, sell:45, grow:300000, color:'#b4e07a', rarity:'rare'},
+    {id:'squash', name:'Sparkle Squash', emoji:'✨', cost:35, sell:90, grow:600000, color:'#f4c84a', rarity:'epic'},
+    {id:'prism', name:'Prism Peony', emoji:'🌺', cost:80, sell:220, grow:900000, color:'#ff6fb5', rarity:'legendary'}
+  ];
+  const RARITY_RANK = {common:0, uncommon:1, rare:2, epic:3, legendary:4};
+  const MUT_MUL = [1, 1.8, 3, 5, 8];
 
   function gardenFresh(){
     return {
       ver: GARDEN_VER,
       pouch: {},
-      plots: Array.from({length: GARDEN_PLOTS}, (_, i) => ({id:i, seed:null, plantedAt:0})),
+      plots: Array.from({length: GARDEN_PLOTS}, (_, i) => ({id:i, seed:null, plantedAt:0, rarity:null})),
       basket: [],
       stand: Array(GARDEN_STAND).fill(null),
       sold: 0,
@@ -4760,7 +4817,45 @@ try { evBootChrome(); } catch (e){}
     };
   }
 
-  function gardenSeed(id){ return GARDEN_SEEDS.find(s => s.id === id) || null; }
+  function gardenSeed(id){
+    if (id && typeof id === 'object') id = id.id;
+    return GARDEN_SEEDS.find(s => s.id === id) || null;
+  }
+  function gardenRarity(id){ return GARDEN_RARITIES.find(r => r.id === id) || null; }
+  function gardenRarityId(id){ return gardenRarity(id) ? id : null; }
+
+  function gardenItem(x){
+    if (!x) return null;
+    if (typeof x === 'string'){
+      const seed = gardenSeed(x);
+      return seed ? {id: seed.id, rarity: seed.rarity || 'common'} : null;
+    }
+    const seed = gardenSeed(x.id);
+    if (!seed) return null;
+    return {id: seed.id, rarity: gardenRarityId(x.rarity) || seed.rarity || 'common'};
+  }
+
+  function gardenSellValue(item){
+    const it = gardenItem(item);
+    const seed = it && gardenSeed(it.id);
+    if (!seed) return 0;
+    const baseR = seed.rarity || 'common';
+    const r = it.rarity || baseR;
+    const steps = Math.max(0, (RARITY_RANK[r] || 0) - (RARITY_RANK[baseR] || 0));
+    return Math.round(seed.sell * (MUT_MUL[steps] || 1));
+  }
+
+  function gardenRollRarity(seedId, rng){
+    const seed = gardenSeed(seedId);
+    const rank = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+    let i = Math.max(0, rank.indexOf((seed && seed.rarity) || 'common'));
+    const r = typeof rng === 'function' ? +rng() : Math.random();
+    const n = isFinite(r) ? r : 1;
+    if (n < 0.004) i = Math.min(4, i + 4);
+    else if (n < 0.02) i = Math.min(4, i + 2);
+    else if (n < 0.14) i = Math.min(4, i + 1);
+    return rank[i];
+  }
 
   function gardenLoad(raw){
     const d = gardenFresh();
@@ -4774,26 +4869,24 @@ try { evBootChrome(); } catch (e){}
     if (Array.isArray(o.plots)){
       d.plots = d.plots.map((p, i) => {
         const q = o.plots[i] || {};
-        const seed = gardenSeed(q.seed) ? q.seed : null;
+        const seed = gardenSeed(q.seed) ? (q.seed.id || q.seed) : null;
         const plantedAt = seed && +q.plantedAt > 0 ? +q.plantedAt : 0;
-        return {id:i, seed, plantedAt};
+        const rarity = seed ? (gardenRarityId(q.rarity) || gardenSeed(seed).rarity || 'common') : null;
+        return {id:i, seed, plantedAt, rarity};
       });
     }
     if (Array.isArray(o.basket)){
-      d.basket = o.basket.map(x => gardenSeed(x) ? x : (x && gardenSeed(x.id) ? x.id : null)).filter(Boolean).slice(0, 40);
+      d.basket = o.basket.map(x => gardenItem(x)).filter(Boolean).slice(0, 40);
     }
     if (Array.isArray(o.stand)){
-      d.stand = d.stand.map((_, i) => {
-        const x = o.stand[i];
-        return gardenSeed(x) ? x : (x && gardenSeed(x.id) ? x.id : null);
-      });
+      d.stand = d.stand.map((_, i) => gardenItem(o.stand[i]));
     }
     d.sold = Math.max(0, o.sold | 0);
     d.earned = Math.max(0, o.earned | 0);
     d.planted = Math.max(0, o.planted | 0);
     d.harvested = Math.max(0, o.harvested | 0);
     d.starter = !!o.starter;
-    d.pick = gardenSeed(o.pick) ? o.pick : null;
+    d.pick = gardenSeed(o.pick) ? (o.pick.id || o.pick) : null;
     return d;
   }
 
@@ -4819,7 +4912,7 @@ try { evBootChrome(); } catch (e){}
     return {ok:true, why:'ok', state, coins: c - seed.cost, seed};
   }
 
-  function gardenPlant(state, plotId, seedId, now, coins){
+  function gardenPlant(state, plotId, seedId, now, coins, rng){
     state = gardenLoad(state);
     const i = plotId | 0;
     if (i < 0 || i >= GARDEN_PLOTS) return {ok:false, why:'plot', state, coins: coins|0};
@@ -4839,10 +4932,13 @@ try { evBootChrome(); } catch (e){}
     }
     state.pouch[seed.id] = (state.pouch[seed.id] | 0) - 1;
     if (state.pouch[seed.id] <= 0) delete state.pouch[seed.id];
+    const rarity = gardenRollRarity(seed.id, rng);
     plot.seed = seed.id;
     plot.plantedAt = +now || 0;
+    plot.rarity = rarity;
     state.planted++;
-    return {ok:true, why:'ok', state, coins: coins|0, plot, seed};
+    const mutated = rarity !== (seed.rarity || 'common');
+    return {ok:true, why:'ok', state, coins: coins|0, plot, seed, rarity, mutated};
   }
 
   function gardenHarvest(state, plotId, now){
@@ -4851,12 +4947,15 @@ try { evBootChrome(); } catch (e){}
     if (i < 0 || i >= GARDEN_PLOTS) return {ok:false, why:'plot', state};
     const plot = state.plots[i];
     if (!gardenReady(plot, now)) return {ok:false, why:'wait', state, stage: gardenStage(plot, now)};
+    const packed = gardenItem({id: plot.seed, rarity: plot.rarity});
     const seed = plot.seed;
+    const def = packed && gardenSeed(packed.id);
     plot.seed = null;
     plot.plantedAt = 0;
-    state.basket.push(seed);
+    plot.rarity = null;
+    state.basket.push(packed);
     state.harvested++;
-    return {ok:true, why:'ok', state, seed, item: gardenSeed(seed)};
+    return {ok:true, why:'ok', state, seed, item: def, packed, rarity: packed && packed.rarity};
   }
 
   function gardenSell(state, index){
@@ -4864,12 +4963,13 @@ try { evBootChrome(); } catch (e){}
     if (!state.basket.length) return {ok:false, why:'empty', state, pay:0};
     const i = index == null ? state.basket.length - 1 : (index | 0);
     if (i < 0 || i >= state.basket.length) return {ok:false, why:'item', state, pay:0};
-    const sid = state.basket.splice(i, 1)[0];
-    const seed = gardenSeed(sid);
-    const pay = seed ? seed.sell : 0;
+    const packed = state.basket.splice(i, 1)[0];
+    const item = gardenItem(packed);
+    const seed = item && gardenSeed(item.id);
+    const pay = gardenSellValue(item);
     state.sold++;
     state.earned += pay;
-    return {ok:true, why:'ok', state, seed: sid, item: seed, pay};
+    return {ok:true, why:'ok', state, seed: item && item.id, item: seed, rarity: item && item.rarity, packed: item, pay};
   }
 
   function gardenShow(state, slot, index){
@@ -4879,11 +4979,11 @@ try { evBootChrome(); } catch (e){}
     if (!state.basket.length) return {ok:false, why:'empty', state};
     const i = index == null ? state.basket.length - 1 : (index | 0);
     if (i < 0 || i >= state.basket.length) return {ok:false, why:'item', state};
-    const sid = state.basket.splice(i, 1)[0];
+    const packed = gardenItem(state.basket.splice(i, 1)[0]);
     const prev = state.stand[s];
-    state.stand[s] = sid;
-    if (prev) state.basket.push(prev);
-    return {ok:true, why:'ok', state, seed: sid, prev};
+    state.stand[s] = packed;
+    if (prev) state.basket.push(gardenItem(prev) || prev);
+    return {ok:true, why:'ok', state, seed: packed && packed.id, item: packed, prev};
   }
 
   function gardenPouchCount(state){
@@ -4910,14 +5010,15 @@ try { evBootChrome(); } catch (e){}
 
   function gardenPick(state, seedId){
     state = gardenLoad(state);
-    if (seedId && gardenSeed(seedId)) state.pick = seedId;
+    if (seedId && gardenSeed(seedId)) state.pick = gardenSeed(seedId).id;
     else if (!gardenSeed(state.pick)) state.pick = state.pick || null;
     return state;
   }
 
   const api = {
-    GARDEN_KEY, GARDEN_VER, GARDEN_PLOTS, GARDEN_STAND, GARDEN_SEEDS,
-    gardenFresh, gardenLoad, gardenSeed, gardenStage, gardenReady,
+    GARDEN_KEY, GARDEN_VER, GARDEN_PLOTS, GARDEN_STAND, GARDEN_SEEDS, GARDEN_RARITIES,
+    gardenFresh, gardenLoad, gardenSeed, gardenItem, gardenRarity, gardenRarityId,
+    gardenSellValue, gardenRollRarity, gardenStage, gardenReady,
     gardenBuy, gardenPlant, gardenHarvest, gardenSell, gardenShow, gardenPouchCount,
     gardenGrantStarter, gardenLeft, gardenPick
   };
@@ -4925,34 +5026,83 @@ try { evBootChrome(); } catch (e){}
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
-/* Chow Chuck Meadow — snack toss, power meter, original animals, personal book. Save key rubloxMeadow. */
+/* Chow Chuck Meadow — snack toss, slow levels, rebirth, rarity pals. Save key rubloxMeadow. */
 (function (root) {
   const MEADOW_KEY = 'rubloxMeadow';
   const MEADOW_VER = 1;
   const MEADOW_BASE = 12;
-  const MEADOW_STEP = 2;
-  const MEADOW_MAX_TRAIN = 18;
+  const MEADOW_STEP = 3;
+  const MEADOW_MAX_LEVEL = 20;
+  const MEADOW_MAX_TRAIN = 18; // kept so older saves/tests still have a named cap
+  const MEADOW_REBIRTH_LEVEL = 10;
+  const MEADOW_XP_THROW = 3;
+  const MEADOW_XP_TRAIN = 14;
+  const MEADOW_XP_FIND = 22;
+  const MEADOW_REBIRTH_MUL = 0.4;
+  const MEADOW_RARITIES = [
+    {id:'common', name:'Common', color:'#7ad46a'},
+    {id:'uncommon', name:'Uncommon', color:'#3a86ff'},
+    {id:'rare', name:'Rare', color:'#b48cff'},
+    {id:'epic', name:'Epic', color:'#ff9f1c'},
+    {id:'legendary', name:'Legendary', color:'#ffd23f'},
+    {id:'secret', name:'Secret', color:'#c9b6ff'}
+  ];
+  const MEADOW_BADGES = [
+    {id:'sprout', name:'Meadow Sprout', emoji:'🌱', at:0},
+    {id:'born', name:'Reborn Tosser', emoji:'♻️', at:1},
+    {id:'hero', name:'Snack Hero', emoji:'🎖️', at:3},
+    {id:'legend', name:'Chuck Legend', emoji:'🏆', at:5},
+    {id:'mythic', name:'Meadow Mythic', emoji:'🌟', at:10}
+  ];
   const MEADOW_ANIMALS = [
-    {id:'puddle', name:'Puddle Pup', emoji:'🐶', color:'#7ec8e3'},
-    {id:'clover', name:'Clover Kit', emoji:'🦊', color:'#f4a05c'},
-    {id:'berry', name:'Berry Bun', emoji:'🐰', color:'#e88bb0'},
-    {id:'moss', name:'Moss Mouse', emoji:'🐭', color:'#8fbf6a'},
-    {id:'starlit', name:'Starlit Fawn', emoji:'🦌', color:'#d4b483'}
+    {id:'puddle', name:'Puddle Pup', emoji:'🐶', color:'#7ec8e3', rarity:'common'},
+    {id:'clover', name:'Clover Kit', emoji:'🦊', color:'#f4a05c', rarity:'uncommon'},
+    {id:'berry', name:'Berry Bun', emoji:'🐰', color:'#e88bb0', rarity:'rare'},
+    {id:'moss', name:'Moss Mouse', emoji:'🐭', color:'#8fbf6a', rarity:'epic'},
+    {id:'starlit', name:'Starlit Fawn', emoji:'🦌', color:'#d4b483', rarity:'legendary'},
+    {id:'wisp', name:'Dusk Wisp', emoji:'🌙', color:'#c9b6ff', rarity:'secret'}
   ];
   const MEADOW_FIELDS = [
     {id:'patch', name:'Sunny Patch', min:8, animal:'puddle'},
     {id:'hill', name:'Clover Hill', min:16, animal:'clover'},
     {id:'brook', name:'Berry Brook', min:24, animal:'berry'},
     {id:'hollow', name:'Moss Hollow', min:32, animal:'moss'},
-    {id:'glade', name:'Star Glade', min:40, animal:'starlit'}
+    {id:'glade', name:'Star Glade', min:40, animal:'starlit', secret:'wisp', secretChance:0.1}
   ];
 
   function meadowFresh(){
-    return {ver: MEADOW_VER, found:[], trained:0, throws:0, best:0, snacks:12};
+    return {ver: MEADOW_VER, found:[], trained:0, throws:0, best:0, snacks:12, xp:0, rebirths:0, badge:'sprout'};
   }
 
   function meadowAnimal(id){ return MEADOW_ANIMALS.find(a => a.id === id) || null; }
   function meadowField(id){ return MEADOW_FIELDS.find(f => f.id === id) || null; }
+  function meadowRarity(id){ return MEADOW_RARITIES.find(r => r.id === id) || null; }
+
+  function meadowXpToReach(level){
+    const L = Math.max(0, level | 0);
+    let t = 0;
+    for (let i = 1; i <= L; i++) t += 40 + i * 25;
+    return t;
+  }
+
+  function meadowLevelFromXp(xp){
+    const n = Math.max(0, +xp || 0);
+    let lvl = 0;
+    while (lvl < MEADOW_MAX_LEVEL && n >= meadowXpToReach(lvl + 1)) lvl++;
+    return lvl;
+  }
+
+  function meadowBadge(rebirths){
+    const n = rebirths | 0;
+    let b = MEADOW_BADGES[0];
+    MEADOW_BADGES.forEach(x => { if (n >= x.at) b = x; });
+    return b;
+  }
+
+  function meadowXpMul(state){
+    state = state && state.ver != null ? state : meadowLoad(state);
+    return 1 + Math.max(0, state.rebirths | 0) * MEADOW_REBIRTH_MUL;
+  }
 
   function meadowLoad(raw){
     const d = meadowFresh();
@@ -4965,12 +5115,22 @@ try { evBootChrome(); } catch (e){}
     d.throws = Math.max(0, o.throws | 0);
     d.best = Math.max(0, +o.best || 0);
     d.snacks = Math.max(0, o.snacks == null ? 12 : (o.snacks | 0));
+    d.rebirths = Math.max(0, o.rebirths | 0);
+    if (o.xp == null && d.trained > 0) d.xp = meadowXpToReach(d.trained);
+    else d.xp = Math.max(0, +o.xp || 0);
+    const badge = meadowBadge(d.rebirths);
+    d.badge = (o.badge && MEADOW_BADGES.some(b => b.id === o.badge)) ? o.badge : badge.id;
     return d;
+  }
+
+  function meadowLevel(state){
+    state = meadowLoad(state);
+    return meadowLevelFromXp(state.xp);
   }
 
   function meadowPower(state){
     state = meadowLoad(state);
-    return MEADOW_BASE + state.trained * MEADOW_STEP;
+    return MEADOW_BASE + meadowLevel(state) * MEADOW_STEP;
   }
 
   function meadowCharge(v){
@@ -4985,6 +5145,17 @@ try { evBootChrome(); } catch (e){}
     return best;
   }
 
+  function meadowGrantXp(state, amount){
+    state = meadowLoad(state);
+    const raw = Math.max(0, +amount || 0);
+    if (!raw) return {state, gained:0, level: meadowLevel(state)};
+    const gained = Math.round(raw * meadowXpMul(state) * 10) / 10;
+    const before = meadowLevel(state);
+    state.xp = Math.round((state.xp + gained) * 10) / 10;
+    const level = meadowLevel(state);
+    return {state, gained, level, up: level > before};
+  }
+
   function meadowToss(state, charge, ownerId, animalOwnerId){
     state = meadowLoad(state);
     if (animalOwnerId && ownerId && animalOwnerId !== ownerId){
@@ -4997,35 +5168,65 @@ try { evBootChrome(); } catch (e){}
     state.snacks -= 1;
     state.throws += 1;
     if (dist > state.best) state.best = Math.round(dist * 10) / 10;
-    return {ok:true, why:'ok', state, dist};
+    const xp = meadowGrantXp(state, MEADOW_XP_THROW);
+    state = xp.state;
+    return {ok:true, why:'ok', state, dist, xp: xp.gained, level: xp.level, leveled: xp.up};
   }
 
-  function meadowAward(state, fieldLike){
+  function meadowAward(state, fieldLike, rng){
     state = meadowLoad(state);
     const field = fieldLike && (meadowField(fieldLike.id) || meadowField(fieldLike.field) || fieldLike);
-    const aid = field && (field.animal || field.id);
+    const meta = field && field.id ? meadowField(field.id) || field : field;
+    let aid = meta && (meta.animal || fieldLike.animal || fieldLike.id);
+    const secretId = meta && meta.secret;
+    const chance = (meta && meta.secretChance != null) ? +meta.secretChance : 0;
+    const roll = typeof rng === 'function' ? +rng() : Math.random();
+    if (secretId && chance > 0 && roll < chance) aid = secretId;
     const animal = meadowAnimal(aid);
     let foundNew = false;
     if (animal && state.found.indexOf(animal.id) < 0){
       state.found.push(animal.id);
       foundNew = true;
+      const xp = meadowGrantXp(state, MEADOW_XP_FIND);
+      state = xp.state;
     }
-    return {state, field: field && field.id ? meadowField(field.id) || field : field, animal, foundNew};
+    return {state, field: meta && meta.id ? meadowField(meta.id) || meta : meta, animal, foundNew};
   }
 
-  function meadowThrow(state, charge, ownerId, animalOwnerId){
+  function meadowThrow(state, charge, ownerId, animalOwnerId, rng){
     const tossed = meadowToss(state, charge, ownerId, animalOwnerId);
     if (!tossed.ok) return tossed;
     const field = meadowFieldAt(tossed.dist);
-    const got = field ? meadowAward(tossed.state, field) : {state:tossed.state, field:null, animal:null, foundNew:false};
-    return {ok:true, why:'ok', state: got.state, dist: tossed.dist, field: got.field, animal: got.animal, foundNew: got.foundNew};
+    const got = field ? meadowAward(tossed.state, field, rng) : {state:tossed.state, field:null, animal:null, foundNew:false};
+    return Object.assign({}, tossed, {ok:true, why:'ok', state: got.state, field: got.field, animal: got.animal, foundNew: got.foundNew});
   }
 
   function meadowTrain(state){
     state = meadowLoad(state);
-    if (state.trained >= MEADOW_MAX_TRAIN) return {ok:false, why:'max', state};
-    state.trained += 1;
-    return {ok:true, why:'ok', state, power: meadowPower(state)};
+    if (meadowLevel(state) >= MEADOW_MAX_LEVEL) return {ok:false, why:'max', state, power: meadowPower(state)};
+    const xp = meadowGrantXp(state, MEADOW_XP_TRAIN);
+    state = xp.state;
+    state.trained = Math.min(MEADOW_MAX_TRAIN, meadowLevel(state));
+    return {ok:true, why:'ok', state, power: meadowPower(state), xp: xp.gained, level: xp.level, leveled: xp.up};
+  }
+
+  function meadowCanRebirth(state){
+    state = meadowLoad(state);
+    return meadowLevel(state) >= MEADOW_REBIRTH_LEVEL;
+  }
+
+  function meadowRebirth(state){
+    state = meadowLoad(state);
+    if (!meadowCanRebirth(state)){
+      return {ok:false, why:'level', state, need: MEADOW_REBIRTH_LEVEL, level: meadowLevel(state)};
+    }
+    state.xp = 0;
+    state.trained = 0;
+    state.snacks = 12;
+    state.rebirths = (state.rebirths | 0) + 1;
+    const badge = meadowBadge(state.rebirths);
+    state.badge = badge.id;
+    return {ok:true, why:'ok', state, rebirths: state.rebirths, badge, mul: meadowXpMul(state), power: meadowPower(state)};
   }
 
   function meadowRestock(state, n){
@@ -5036,11 +5237,32 @@ try { evBootChrome(); } catch (e){}
 
   function meadowBook(state){
     state = meadowLoad(state);
+    const badge = meadowBadge(state.rebirths);
     return MEADOW_ANIMALS.map(a => ({
       id: a.id, name: a.name, emoji: a.emoji, color: a.color,
+      rarity: a.rarity,
+      rarityInfo: meadowRarity(a.rarity),
       found: state.found.indexOf(a.id) >= 0,
-      field: MEADOW_FIELDS.find(f => f.animal === a.id)
-    }));
+      field: MEADOW_FIELDS.find(f => f.animal === a.id || f.secret === a.id)
+    })).concat(); // book is just the animals; callers also read level from state
+  }
+
+  function meadowCard(state){
+    state = meadowLoad(state);
+    const badge = meadowBadge(state.rebirths);
+    const level = meadowLevel(state);
+    const into = meadowXpToReach(level + 1);
+    const prev = meadowXpToReach(level);
+    return {
+      level, xp: state.xp, next: into, need: Math.max(0, into - state.xp),
+      progress: level >= MEADOW_MAX_LEVEL ? 1 : (into === prev ? 1 : (state.xp - prev) / (into - prev)),
+      power: meadowPower(state),
+      rebirths: state.rebirths,
+      canRebirth: meadowCanRebirth(state),
+      rebirthNeed: MEADOW_REBIRTH_LEVEL,
+      mul: meadowXpMul(state),
+      badge
+    };
   }
 
   function meadowCanTake(ownerId, otherId){
@@ -5066,24 +5288,27 @@ try { evBootChrome(); } catch (e){}
     return best;
   }
 
-  function meadowThrowTo(state, charge, fromX, fromZ, dirX, dirZ, fields, ownerId, animalOwnerId){
+  function meadowThrowTo(state, charge, fromX, fromZ, dirX, dirZ, fields, ownerId, animalOwnerId, rng){
     const tossed = meadowToss(state, charge, ownerId, animalOwnerId);
     if (!tossed.ok) return tossed;
     const land = meadowLanding(fromX, fromZ, dirX, dirZ, tossed.dist);
     const hit = meadowHitField(fields, land.x, land.z, 5.5);
     if (!hit){
-      return {ok:true, why:'ok', state: tossed.state, dist: tossed.dist, land, field:null, animal:null, foundNew:false, missed:true};
+      return Object.assign({}, tossed, {ok:true, why:'ok', land, field:null, animal:null, foundNew:false, missed:true});
     }
-    const got = meadowAward(tossed.state, hit);
-    return {ok:true, why:'ok', state: got.state, dist: tossed.dist, land, field: got.field || hit, animal: got.animal, foundNew: got.foundNew, missed:false};
+    const got = meadowAward(tossed.state, hit, rng);
+    return Object.assign({}, tossed, {ok:true, why:'ok', state: got.state, land, field: got.field || hit, animal: got.animal, foundNew: got.foundNew, missed:false});
   }
 
   const api = {
-    MEADOW_KEY, MEADOW_VER, MEADOW_BASE, MEADOW_STEP, MEADOW_MAX_TRAIN,
-    MEADOW_ANIMALS, MEADOW_FIELDS,
-    meadowFresh, meadowLoad, meadowAnimal, meadowField, meadowPower, meadowCharge,
+    MEADOW_KEY, MEADOW_VER, MEADOW_BASE, MEADOW_STEP, MEADOW_MAX_TRAIN, MEADOW_MAX_LEVEL,
+    MEADOW_REBIRTH_LEVEL, MEADOW_XP_THROW, MEADOW_XP_TRAIN, MEADOW_XP_FIND, MEADOW_REBIRTH_MUL,
+    MEADOW_ANIMALS, MEADOW_FIELDS, MEADOW_RARITIES, MEADOW_BADGES,
+    meadowFresh, meadowLoad, meadowAnimal, meadowField, meadowRarity, meadowPower, meadowCharge,
     meadowFieldAt, meadowToss, meadowThrow, meadowThrowTo, meadowLanding, meadowHitField,
-    meadowTrain, meadowRestock, meadowBook, meadowCanTake
+    meadowTrain, meadowRestock, meadowBook, meadowCard, meadowCanTake,
+    meadowLevel, meadowXpToReach, meadowGrantXp, meadowXpMul, meadowBadge,
+    meadowCanRebirth, meadowRebirth
   };
   root.MeadowRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -5101,11 +5326,24 @@ try { evBootChrome(); } catch (e){}
     {id:'drop', name:'Giggle Drop Tower', emoji:'🗼', size:1, color:'#8b5cf6'},
     {id:'cups', name:'Twirl Cups', emoji:'🍵', size:2, color:'#ff6fb5'},
     {id:'track', name:'Coaster Track', emoji:'🛤️', size:1, color:'#1d2340'},
-    {id:'curve', name:'Coaster Curve', emoji:'↩️', size:1, color:'#4b5563'}
+    {id:'curve', name:'Coaster Curve', emoji:'↩️', size:1, color:'#4b5563'},
+    {id:'slope', name:'Coaster Slope', emoji:'↗️', size:1, color:'#6b7280'},
+    {id:'loop', name:'Coaster Loop', emoji:'🔁', size:1, color:'#7c3aed'}
+  ];
+  const RIDES_TRACKS = ['track', 'curve', 'slope', 'loop'];
+  const RIDES_TUT = [
+    {id:'hi', title:'Welcome to Rideland!', body:'We will build a coaster together: a straight track, a curve, an up-or-down slope, a loop-the-loop, then close the loop and ride it. Press Next to begin, or Skip if you already know how. This works with keyboard, on-screen buttons, and an Xbox pad.'},
+    {id:'track', title:'1. Straight track', body:'Cycle pieces with Q, LB / RB, or Pick in the Ride Kit until you have 🛤️ Coaster Track. Stand on a grid square and press E / Ⓧ / Place.', need:'place:track'},
+    {id:'curve', title:'2. Curve', body:'Cycle to ↩️ Coaster Curve. Press R or Ⓨ to rotate it, then place it so the track turns a corner.', need:'place:curve'},
+    {id:'slope', title:'3. Up and down slope', body:'Cycle to ↗️ Coaster Slope. Rotate to choose up or down, then place it so the ride climbs or drops.', need:'place:slope'},
+    {id:'loop', title:'4. Loop-the-loop', body:'Cycle to 🔁 Coaster Loop and place it. This is the big flip in the middle of the ride!', need:'place:loop'},
+    {id:'close', title:'5. Close the loop', body:'Keep placing track, curves, slopes, or loops until the coaster joins back on itself. A short open path cannot be ridden.', need:'close'},
+    {id:'ride', title:'6. Ride it!', body:'Walk onto any coaster piece and press E / Ⓧ / Ride. Hop off the same way, or with Ⓑ.', need:'ride'},
+    {id:'done', title:'You did it!', body:'Nice riding! Press Help anytime to replay this lesson. Friends may hop on rides you build.'}
   ];
 
   function ridesFresh(){
-    return {ver: RIDES_VER, pieces:[], placed:0, rides:0, kind:'carousel', rot:0};
+    return {ver: RIDES_VER, pieces:[], placed:0, rides:0, kind:'carousel', rot:0, tutDone:false, tut:null};
   }
 
   function ridesKind(id){ return RIDES_KINDS.find(k => k.id === id) || null; }
@@ -5132,7 +5370,17 @@ try { evBootChrome(); } catch (e){}
     d.rides = Math.max(0, o.rides | 0);
     d.kind = ridesKind(o.kind) ? o.kind : 'carousel';
     d.rot = ((o.rot | 0) % 4 + 4) % 4;
+    d.tutDone = !!o.tutDone;
+    if (o.tut && typeof o.tut === 'object'){
+      const step = Math.max(0, Math.min(RIDES_TUT.length - 1, o.tut.step | 0));
+      d.tut = {on: !!o.tut.on, step};
+    } else d.tut = null;
     return d;
+  }
+
+  function ridesIsTrack(kind){
+    const id = kind && kind.id ? kind.id : kind;
+    return RIDES_TRACKS.indexOf(id) >= 0;
   }
 
   function ridesCycleKind(state, dir){
@@ -5216,7 +5464,7 @@ try { evBootChrome(); } catch (e){}
     const p = state.pieces.find(x => x.id === (id | 0));
     if (!p) return {ok:false, why:'missing', state};
     if (!ridesCanBoard(p, riderId)) return {ok:false, why:'deny', state};
-    if (p.kind === 'track' || p.kind === 'curve'){
+    if (ridesIsTrack(p.kind)){
       const loop = ridesCoasterLoop(state);
       if (!loop.ok) return {ok:false, why:'noloop', state, piece:p};
     }
@@ -5231,7 +5479,7 @@ try { evBootChrome(); } catch (e){}
 
   function ridesCoasterLoop(state){
     state = ridesLoad(state);
-    const tracks = state.pieces.filter(p => p.kind === 'track' || p.kind === 'curve');
+    const tracks = state.pieces.filter(p => ridesIsTrack(p.kind));
     if (tracks.length < 4) return {ok:false, why:'short', count: tracks.length};
     const nodes = new Map();
     function key(x,z){ return x + ',' + z; }
@@ -5241,7 +5489,7 @@ try { evBootChrome(); } catch (e){}
     }
     tracks.forEach(p => {
       const dir = p.rot % 4;
-      if (p.kind === 'track'){
+      if (p.kind === 'track' || p.kind === 'slope' || p.kind === 'loop'){
         const dx = (dir === 0 || dir === 2) ? 1 : 0;
         const dz = dx ? 0 : 1;
         addEdge(key(p.gx, p.gz), key(p.gx + dx, p.gz + dz));
@@ -5281,22 +5529,78 @@ try { evBootChrome(); } catch (e){}
     return {ok:found, why: found ? 'ok' : 'open', count: tracks.length};
   }
 
+  function ridesTutStep(state){
+    state = ridesLoad(state);
+    const i = (state.tut && state.tut.on) ? (state.tut.step | 0) : -1;
+    return (i >= 0 && RIDES_TUT[i]) ? Object.assign({index:i, count: RIDES_TUT.length}, RIDES_TUT[i]) : null;
+  }
+  function ridesTutStart(state){
+    state = ridesLoad(state);
+    state.tut = {on:true, step:0};
+    return {ok:true, state, step: ridesTutStep(state)};
+  }
+  function ridesTutSkip(state){
+    state = ridesLoad(state);
+    state.tut = {on:false, step: RIDES_TUT.length - 1};
+    state.tutDone = true;
+    return {ok:true, state, step:null};
+  }
+  function ridesTutClose(state){
+    state = ridesLoad(state);
+    if (state.tut) state.tut.on = false;
+    return {ok:true, state, step:null};
+  }
+  function ridesTutAdvance(state){
+    state = ridesLoad(state);
+    if (!state.tut || !state.tut.on) return {ok:false, why:'off', state, step:null, advanced:false};
+    const i = state.tut.step | 0;
+    if (i >= RIDES_TUT.length - 1){
+      state.tut.on = false;
+      state.tut.step = RIDES_TUT.length - 1;
+      state.tutDone = true;
+      return {ok:true, state, step:null, advanced:true, done:true};
+    }
+    state.tut.step = i + 1;
+    if (state.tut.step >= RIDES_TUT.length - 1) state.tutDone = true;
+    return {ok:true, state, step: ridesTutStep(state), advanced:true, done: state.tut.step >= RIDES_TUT.length - 1};
+  }
+  function ridesTutNext(state){ return ridesTutAdvance(state); }
+  function ridesTutNote(state, ev, kind){
+    state = ridesLoad(state);
+    if (!state.tut || !state.tut.on) return {ok:true, advanced:false, state, step: ridesTutStep(state)};
+    const step = RIDES_TUT[state.tut.step | 0];
+    if (!step || !step.need) return {ok:true, advanced:false, state, step: ridesTutStep(state)};
+    let hit = false;
+    if (step.need.indexOf('place:') === 0){
+      hit = ev === 'place' && kind === step.need.slice(6);
+    } else if (step.need === 'close'){
+      hit = ev === 'place' && ridesCoasterLoop(state).ok;
+    } else if (step.need === 'ride'){
+      hit = ev === 'board';
+    }
+    if (!hit) return {ok:true, advanced:false, state, step: ridesTutStep(state)};
+    return ridesTutAdvance(state);
+  }
+
+
   const api = {
-    RIDES_KEY, RIDES_VER, RIDES_GRID, RIDES_CELL, RIDES_KINDS,
-    ridesFresh, ridesLoad, ridesKind, ridesCycleKind, ridesRotate, ridesCells,
+    RIDES_KEY, RIDES_VER, RIDES_GRID, RIDES_CELL, RIDES_KINDS, RIDES_TRACKS, RIDES_TUT,
+    ridesFresh, ridesLoad, ridesKind, ridesIsTrack, ridesCycleKind, ridesRotate, ridesCells,
     ridesFits, ridesPlace, ridesRemove, ridesAt, ridesCanBoard, ridesBoard,
-    ridesWorld, ridesCoasterLoop
+    ridesWorld, ridesCoasterLoop,
+    ridesTutStep, ridesTutStart, ridesTutSkip, ridesTutClose, ridesTutAdvance, ridesTutNext, ridesTutNote
   };
   root.RidesRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
-/* Honeyhill Hive — gentle bee swarm, pollen, honey, bear quests, no fighting. Save key rubloxHive. */
+/* Honeyhill Hive — gentle bee swarm, pollen regen, bear quests, no fighting. Save key rubloxHive. */
 (function (root) {
   const HIVE_KEY = 'rubloxHive';
   const HIVE_VER = 1;
   const HIVE_PER = 10;
   const HIVE_MAX_BEES = 12;
+  const HIVE_REGEN = 14000;
   const HIVE_FLOWERS = [
     {id:'sun', name:'Sunnycup', color:'#ffd23f', pollen:2, trail:'meadow'},
     {id:'blue', name:'Bluebell Pop', color:'#5aa9ff', pollen:3, trail:'meadow'},
@@ -5320,6 +5624,18 @@ try { evBootChrome(); } catch (e){}
     {id:'clover-badge', name:'Clover Path Sticker', emoji:'🍀'},
     {id:'honey-badge', name:'Golden Honey Sticker', emoji:'🍯'}
   ];
+  // Walkable Clover Trail: a path through the clover field, with signs, leading to flowers and Berry Bear.
+  const HIVE_CLOVER_PATH = [
+    {x:-2.2, z:2.2, sign:null},
+    {x:-4.4, z:2.8, sign:'🍀 Clover Trail'},
+    {x:-7.0, z:3.2, sign:null},
+    {x:-9.6, z:2.6, sign:'🐻 Berry Bear picnic'},
+    {x:-11.4, z:2.2, sign:null},
+    {x:-8.2, z:5.0, sign:'🌼 Clover flowers this way'},
+    {x:-8.0, z:7.2, sign:null},
+    {x:-6.2, z:9.4, sign:null},
+    {x:-9.2, z:11.4, sign:'🍀 Clover Trail end'}
+  ];
 
   function hiveFresh(){
     return {
@@ -5332,7 +5648,8 @@ try { evBootChrome(); } catch (e){}
       stickers: [],
       trails: ['meadow'],
       quests: {},
-      visits: []
+      visits: [],
+      blooms: {}
     };
   }
 
@@ -5340,6 +5657,7 @@ try { evBootChrome(); } catch (e){}
   function hiveBear(id){ return HIVE_BEARS.find(b => b.id === id) || null; }
   function hiveTrail(id){ return HIVE_TRAILS.find(t => t.id === id) || null; }
   function hiveSticker(id){ return HIVE_STICKERS.find(s => s.id === id) || null; }
+  function hiveCloverPath(){ return HIVE_CLOVER_PATH.slice(); }
 
   function hiveLoad(raw){
     const d = hiveFresh();
@@ -5362,6 +5680,12 @@ try { evBootChrome(); } catch (e){}
       });
     }
     if (Array.isArray(o.visits)) d.visits = o.visits.filter(id => hiveTrail(id));
+    if (o.blooms && typeof o.blooms === 'object'){
+      HIVE_FLOWERS.forEach(f => {
+        const t = +o.blooms[f.id];
+        if (t > 0) d.blooms[f.id] = t;
+      });
+    }
     return d;
   }
 
@@ -5370,14 +5694,34 @@ try { evBootChrome(); } catch (e){}
     return state.trails.indexOf(trailId) >= 0;
   }
 
+  function hiveBloom(state, flowerId, now){
+    state = hiveLoad(state);
+    if (!hiveFlower(flowerId)) return 0;
+    const last = +state.blooms[flowerId] || 0;
+    if (!last) return 1;
+    const t = Math.max(0, (+now || 0) - last);
+    return Math.max(0, Math.min(1, t / HIVE_REGEN));
+  }
+
+  function hiveBloomLeft(state, flowerId, now){
+    const amt = hiveBloom(state, flowerId, now);
+    if (amt >= 1) return 0;
+    const last = +hiveLoad(state).blooms[flowerId] || 0;
+    return Math.max(0, HIVE_REGEN - Math.max(0, (+now || 0) - last));
+  }
+
   function hiveCollect(state, flowerId, now){
     state = hiveLoad(state);
     const f = hiveFlower(flowerId);
     if (!f) return {ok:false, why:'flower', state};
     if (!hiveTrailOpen(state, f.trail)) return {ok:false, why:'locked', state};
+    const t = (now == null) ? 0 : +now;
+    const amt = (now == null && !state.blooms[f.id]) ? 1 : hiveBloom(state, f.id, t);
+    if (amt < 1) return {ok:false, why:'empty', state, left: hiveBloomLeft(state, f.id, t), bloom: amt, flower:f};
     state.pollen += f.pollen;
     state.collected++;
-    return {ok:true, why:'ok', state, flower:f, got:f.pollen};
+    state.blooms[f.id] = (now == null ? 1 : t) || 1;
+    return {ok:true, why:'ok', state, flower:f, got:f.pollen, bloom:0};
   }
 
   function hiveMakeHoney(state){
@@ -5429,9 +5773,11 @@ try { evBootChrome(); } catch (e){}
   function hiveFight(){ return false; }
 
   const api = {
-    HIVE_KEY, HIVE_VER, HIVE_PER, HIVE_MAX_BEES, HIVE_FLOWERS, HIVE_TRAILS, HIVE_BEARS, HIVE_STICKERS,
+    HIVE_KEY, HIVE_VER, HIVE_PER, HIVE_MAX_BEES, HIVE_REGEN, HIVE_FLOWERS, HIVE_TRAILS, HIVE_BEARS, HIVE_STICKERS,
+    HIVE_CLOVER_PATH,
     hiveFresh, hiveLoad, hiveFlower, hiveBear, hiveTrail, hiveSticker, hiveTrailOpen,
-    hiveCollect, hiveMakeHoney, hiveVisit, hiveStartQuest, hiveTurnIn, hiveFight
+    hiveCollect, hiveMakeHoney, hiveVisit, hiveStartQuest, hiveTurnIn, hiveFight,
+    hiveBloom, hiveBloomLeft, hiveCloverPath
   };
   root.HiveRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -33923,6 +34269,13 @@ function start(m = 'obby', d = null){
     const btn = document.getElementById('t302Act');
     if (btn){ if (act){ btn.textContent = act; btn.classList.add('show'); } else btn.classList.remove('show'); }
   }
+  function t302PaintCoins(){
+    const el = document.getElementById('t302Coins');
+    if (!el) return;
+    const on = (typeof mode !== 'undefined' && mode === 'garden');
+    el.style.display = on ? 'block' : 'none';
+    if (on) el.textContent = '🪙 Your coins: ' + t302Coins();
+  }
   function t302Meter(show, amt, label){
     const el = document.getElementById('t302Meter');
     const fill = document.getElementById('t302MeterFill');
@@ -33950,7 +34303,7 @@ function start(m = 'obby', d = null){
       act.addEventListener('pointerup', ev => { ev.preventDefault(); ev.stopPropagation(); t302Pointer(false, ev, true); });
       act.addEventListener('pointercancel', ev => { t302Pointer(false, ev, true); });
     }
-    ['gardenShopBtn','meadowBookBtn','ridesPaletteBtn','hiveQuestBtn','campCraftBtn','t302LessBtn','campWinAgain','campWinClose'].forEach(id => {
+    ['gardenShopBtn','meadowBookBtn','ridesPaletteBtn','ridesHelpBtn','hiveQuestBtn','campCraftBtn','t302LessBtn','campWinAgain','campWinClose','t302TutNext','t302TutSkip'].forEach(id => {
       const el = document.getElementById(id);
       if (el && !el.__t302){ el.__t302 = true; el.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); t302Open(id); }; }
     });
@@ -33989,6 +34342,9 @@ function start(m = 'obby', d = null){
     if (which === 't302LessBtn'){ campToggleLess(); return; }
     if (which === 'campWinAgain'){ campRetry(); return; }
     if (which === 'campWinClose'){ if (typeof t297OverlayClose === 'function') t297OverlayClose('campWin'); return; }
+    if (which === 'ridesHelpBtn'){ ridesHelp(); return; }
+    if (which === 't302TutNext'){ ridesTutGo(); return; }
+    if (which === 't302TutSkip'){ ridesTutSkipNow(); return; }
     const map = {gardenShopBtn:'gardenShop', meadowBookBtn:'meadowBook', ridesPaletteBtn:'ridesPalette', hiveQuestBtn:'hiveQuest', campCraftBtn:'campCraft'};
     const id = map[which] || which;
     if (id === 'gardenShop') gardenPaintShop();
@@ -34057,14 +34413,25 @@ function start(m = 'obby', d = null){
     const st = GardenRules.gardenStage(plot, t302Now());
     if (!st || !plot || !plot.seed) { p.stage = 0; return; }
     const seed = GardenRules.gardenSeed(plot.seed);
-    const col = seed ? seed.color : '#7ad46a';
+    const item = GardenRules.gardenItem({id: plot.seed, rarity: plot.rarity});
+    const rare = item && GardenRules.gardenRarity(item.rarity);
+    const col = (rare && rare.color) || (seed ? seed.color : '#7ad46a');
     const h = st === 1 ? 0.5 : st === 2 ? 1.1 : 1.7;
     const stem = t302Mesh(new THREE.CylinderGeometry(0.06, 0.08, h, 6), '#2f8f4a', p.x, 0.2 + h/2, p.z, gd);
     const top = t302Mesh(st === 3 ? new THREE.SphereGeometry(0.46, 10, 8) : new THREE.ConeGeometry(0.3, 0.55, 7), col, p.x, 0.2 + h + 0.2, p.z, gd);
     const bits = [stem, top];
+    if (rare && rare.glow){
+      const glow = new THREE.Mesh(new THREE.SphereGeometry(st === 3 ? 0.72 : 0.48, 10, 8), new THREE.MeshBasicMaterial({color: rare.glow, transparent:true, opacity: 0.35}));
+      glow.position.set(p.x, 0.2 + h + 0.2, p.z);
+      scene.add(glow); t302Keep(gd, glow);
+      bits.push(glow);
+    }
     if (st === 3){
       const spark = t302Mesh(new THREE.SphereGeometry(0.12, 6, 5), '#fff4c2', p.x + 0.35, 0.2 + h + 0.45, p.z, gd);
       bits.push(spark);
+    }
+    if (rare && item.rarity !== 'common'){
+      bits.push(t302Lab((seed ? seed.emoji + ' ' : '') + rare.name, p.x, 0.2 + h + 1.15, p.z));
     }
     p.mesh = bits;
     p.stage = st;
@@ -34074,12 +34441,19 @@ function start(m = 'obby', d = null){
     gd.standM = [];
     (gd.sv.stand || []).forEach((sid, i) => {
       if (!sid) return;
-      const seed = GardenRules.gardenSeed(sid);
+      const item = GardenRules.gardenItem(sid);
+      const seed = item && GardenRules.gardenSeed(item.id);
+      const rare = item && GardenRules.gardenRarity(item.rarity);
       const pos = gd.standPos[i];
       if (!pos || !seed) return;
-      const m = t302Mesh(new THREE.SphereGeometry(0.38, 8, 6), seed.color, pos.x, 1.4, pos.z, gd);
+      const m = t302Mesh(new THREE.SphereGeometry(0.38, 8, 6), (rare && rare.color) || seed.color, pos.x, 1.4, pos.z, gd);
       gd.standM.push(m);
-      gd.standM.push(t302Lab(seed.emoji + ' ' + seed.name, pos.x, 2.1, pos.z));
+      if (rare && rare.glow){
+        const glow = new THREE.Mesh(new THREE.SphereGeometry(0.58, 8, 6), new THREE.MeshBasicMaterial({color: rare.glow, transparent:true, opacity:0.32}));
+        glow.position.set(pos.x, 1.4, pos.z);
+        scene.add(glow); t302Keep(gd, glow); gd.standM.push(glow);
+      }
+      gd.standM.push(t302Lab(seed.emoji + ' ' + seed.name + (rare && rare.id !== 'common' ? ' · ' + rare.name : ''), pos.x, 2.1, pos.z));
     });
   }
   function gardenEnter(){
@@ -34090,6 +34464,7 @@ function start(m = 'obby', d = null){
     const n = GardenRules.gardenPouchCount(gd.sv);
     banner(n ? '🌱 Sunny Patch Garden! You have ' + n + ' seed' + (n===1?'':'s') + '. Plant them in a bed — they keep growing even while you are away.' : '🌱 Welcome to Sunny Patch Garden! Buy seeds at the shop, plant them, and come back later to harvest.');
     t302Hud('Goal: plant, wait (even while away), harvest, then sell or show a prize.', '🌱 Plant');
+    t302PaintCoins();
   }
   function gardenPaintShop(){
     const box = document.getElementById('gardenShopList');
@@ -34099,8 +34474,10 @@ function start(m = 'obby', d = null){
       const n = (gd.sv.pouch[s.id] | 0);
       const sel = pick === s.id ? '  ← selected' : '';
       const secs = Math.round(s.grow / 1000);
-      return `<div class="t297row"><span>${s.emoji} ${s.name} — ${s.cost} 🪙, sells for ${s.sell} 🪙, grows in ${secs}s · pouch ${n}${sel}</span><span><button type="button" data-gpick="${s.id}">Pick</button> <button type="button" data-gseed="${s.id}">Buy</button></span></div>`;
-    }).join('') + `<div class="t297row"><span>🧺 Basket: ${(gd.sv.basket||[]).length}  ·  earned ${gd.sv.earned|0} 🪙</span><button type="button" data-gsell="1">Sell one</button></div>`;
+      const rare = GardenRules.gardenRarity(s.rarity);
+      const tint = rare ? rare.color : '#1d2340';
+      return `<div class="t297row"><span>${s.emoji} ${s.name} — <b class="t302rare" style="color:${tint}">${rare ? rare.name : ''}</b> · ${s.cost} 🪙, sells for ${s.sell} 🪙, grows in ${secs}s · pouch ${n}${sel}</span><span><button type="button" data-gpick="${s.id}">Pick</button> <button type="button" data-gseed="${s.id}">Buy</button></span></div>`;
+    }).join('') + `<div class="t297row"><span>🧺 Basket: ${(gd.sv.basket||[]).length}  ·  earned ${gd.sv.earned|0} 🪙  ·  wallet ${t302Coins()} 🪙</span><button type="button" data-gsell="1">Sell one</button></div>`;
     box.querySelectorAll('[data-gseed]').forEach(btn => { btn.onclick = ev => { ev.preventDefault(); gardenBuy(btn.getAttribute('data-gseed')); }; });
     box.querySelectorAll('[data-gpick]').forEach(btn => { btn.onclick = ev => { ev.preventDefault(); gd.sv = GardenRules.gardenPick(gd.sv, btn.getAttribute('data-gpick')); gardenPersist(gd.sv); gardenPaintShop(); banner('Ready to plant ' + GardenRules.gardenSeed(gd.sv.pick).name + '!'); }; });
     const sell = box.querySelector('[data-gsell]');
@@ -34113,16 +34490,18 @@ function start(m = 'obby', d = null){
     r.state = GardenRules.gardenPick(r.state, id);
     gardenPersist(r.state);
     gardenPaintShop();
+    t302PaintCoins();
     t302Snd('coin');
-    banner('Bought a ' + r.seed.name + ' seed! Press E on an empty bed to plant it.');
+    banner('Bought a ' + r.seed.name + ' seed (' + (r.seed.rarity || 'common') + ')! Press E on an empty bed to plant it. You have ' + r.coins + ' 🪙.');
   }
   function gardenDoSell(){
     const r = GardenRules.gardenSell(gd.sv);
     if (!r.ok){ banner('Nothing in the basket to sell yet. Harvest a ripe plant first!'); return; }
     gardenPersist(r.state);
-    t302Pay(r.pay, r.item.emoji + ' Sold ' + r.item.name);
+    t302Pay(r.pay, r.item.emoji + ' Sold ' + r.item.name + (r.rarity && r.rarity !== 'common' ? ' (' + r.rarity + ')' : ''));
     t302Note('garden-sell'); t302Board('garden-sold', r.state.sold);
     t302Snd('coin');
+    t302PaintCoins();
     gardenPaintShop();
   }
   function gardenAct(){
@@ -34143,7 +34522,9 @@ function start(m = 'obby', d = null){
           gardenGrowMesh(gd.plots[gd.near.id]);
           t302Note('garden-harvest'); t302Ach('garden-harvest'); t302Board('garden-harvested', r.state.harvested);
           t302Snd('win');
-          banner(r.item.emoji + ' Harvested ' + r.item.name + '! Sell it at the shop or show it on the stand.');
+          const rare = r.rarity && GardenRules.gardenRarity(r.rarity);
+          const mutated = r.rarity && r.item && r.rarity !== (r.item.rarity || 'common');
+          banner(r.item.emoji + ' Harvested ' + r.item.name + (mutated ? ' — it mutated to ' + rare.name + '!' : (rare && rare.id !== 'common' ? ' (' + rare.name + ')' : '')) + '! Sell it at the shop or show it on the stand.');
         }
         return true;
       }
@@ -34159,8 +34540,10 @@ function start(m = 'obby', d = null){
         gardenGrowMesh(gd.plots[gd.near.id]);
         t302Note('garden-plant'); t302Ach('garden-plant');
         t302Snd('boing');
+        t302PaintCoins();
         const secs = Math.round(r.seed.grow / 1000);
-        banner('Planted a ' + r.seed.name + '! It will be ready in ' + secs + 's, even if you leave.');
+        const rare = r.rarity && GardenRules.gardenRarity(r.rarity);
+        banner('Planted a ' + r.seed.name + (r.mutated && rare ? ' — lucky ' + rare.name + ' mutation!' : '') + '! It will be ready in ' + secs + 's, even if you leave.');
       } else if (r.why === 'coins' || r.why === 'seed'){
         t302Open('gardenShop');
         banner('Buy or pick a seed at the shop first!');
@@ -34171,6 +34554,7 @@ function start(m = 'obby', d = null){
   }
   function gardenUpdate(){
     if (!gd) return;
+    t302PaintCoins();
     gd.plots.forEach(p => {
       const st = GardenRules.gardenStage(gd.sv.plots[p.id], t302Now());
       if (st !== p.stage){ gardenGrowMesh(p); if (st === 3) t302Tone([660, 880], 0.08, 'triangle', 0.04); }
@@ -34234,15 +34618,24 @@ function start(m = 'obby', d = null){
       const z = 12 + i * 12;
       const x = (i % 2 === 0) ? -4 : 5;
       plat(x, 0.08, z, 8, 8, '#6fbf5a', 0.08);
-      t302Lab(f.name, x, 2.6, z - 3);
       const a = MeadowRules.meadowAnimal(f.animal);
+      const rare = a && MeadowRules.meadowRarity(a.rarity);
+      t302Lab(f.name + (rare ? ' · ' + rare.name : ''), x, 2.6, z - 3);
       const body = t302Mesh(new THREE.SphereGeometry(0.7, 10, 8), a.color, x, 0.9, z, mw);
       const head = t302Mesh(new THREE.SphereGeometry(0.42, 8, 6), a.color, x, 1.45, z + 0.15, mw);
       const earL = t302Mesh(new THREE.SphereGeometry(0.16, 6, 5), a.color, x - 0.28, 1.75, z + 0.1, mw);
       const earR = t302Mesh(new THREE.SphereGeometry(0.16, 6, 5), a.color, x + 0.28, 1.75, z + 0.1, mw);
-      t302Lab(a.emoji + ' ' + a.name, x, 2.3, z);
+      if (rare && rare.id !== 'common'){
+        const glow = new THREE.Mesh(new THREE.SphereGeometry(1.05, 10, 8), new THREE.MeshBasicMaterial({color: rare.color, transparent:true, opacity:0.22}));
+        glow.position.set(x, 1.1, z); scene.add(glow); t302Keep(mw, glow);
+      }
+      t302Lab(a.emoji + ' ' + a.name + (rare ? ' (' + rare.name + ')' : ''), x, 2.3, z);
       mw.fields.push({f, x, z, body, head, earL, earR, id:f.id, animal:f.animal});
     });
+    t302Mesh(new THREE.CylinderGeometry(0.7, 0.9, 0.35, 10), '#c9b6ff', 0, 0.25, -3, mw);
+    t302Mesh(new THREE.SphereGeometry(0.35, 8, 6), '#ffd23f', 0, 0.8, -3, mw);
+    t302Lab('♻️ Rebirth Stone', 0, 2.0, -3);
+    mw.stone = {x:0, z:-3};
     checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:6}, flag:new THREE.Object3D()};
   }
   function meadowEnter(){
@@ -34250,16 +34643,25 @@ function start(m = 'obby', d = null){
     cam.pitch = 0.36; cam.dist = 14;
     t302Note('play:meadow'); t302Ach('meadow-visit');
     t302BindHud();
-    banner('🥣 Chow Chuck Meadow! Hold to charge, face a field, and let go so the snack lands near a pal. Train to throw farther. Their book is yours alone.');
+    const card = MeadowRules.meadowCard(mw.sv);
+    banner('🥣 Chow Chuck Meadow! Hold to charge, face a field, and let go so the snack lands near a pal. Leveling takes a while — rebirth at the stone to gain a forever XP boost. ' + card.badge.emoji + ' ' + card.badge.name + ' · Lv ' + card.level + '.');
     t302Hud('Hold E, the Charge button, or RT to throw. Aim with the camera. Restock snacks at the crate.', '🥣 Charge');
   }
   function meadowPaintBook(){
     const box = document.getElementById('meadowBookList');
     if (!box || !mw) return;
+    const card = MeadowRules.meadowCard(mw.sv);
     box.innerHTML = MeadowRules.meadowBook(mw.sv).map(a => {
+      const rare = a.rarityInfo || MeadowRules.meadowRarity(a.rarity);
       const mark = a.found ? 'in your book!' : 'still out in the ' + (a.field ? a.field.name : 'fields');
-      return `<div class="t297row${a.found ? '' : ' dim'}"><span>${a.emoji} ${a.name}</span><span>${mark}</span></div>`;
-    }).join('') + `<div class="t297row"><span>💪 Throw power ${MeadowRules.meadowPower(mw.sv)}  ·  best ${mw.sv.best || 0}  ·  snacks ${mw.sv.snacks}</span></div>`;
+      const tint = rare ? rare.color : '#1d2340';
+      return `<div class="t297row${a.found ? '' : ' dim'}"><span>${a.emoji} ${a.name} — <b class="t302rare" style="color:${tint}">${rare ? rare.name : ''}</b></span><span>${mark}</span></div>`;
+    }).join('') +
+      `<div class="t297row"><span>${card.badge.emoji} ${card.badge.name}  ·  rebirths ${card.rebirths}  ·  XP boost ×${card.mul.toFixed(1)}</span></div>` +
+      `<div class="t297row"><span>💪 Lv ${card.level}  ·  power ${card.power}  ·  XP ${Math.floor(card.xp)}/${card.next}  ·  best ${mw.sv.best || 0}  ·  snacks ${mw.sv.snacks}</span>` +
+      (card.canRebirth ? '<button type="button" data-mreb="1">♻️ Rebirth</button>' : `<span>Rebirth at Lv ${card.rebirthNeed}</span>`) + '</div>';
+    const reb = box.querySelector('[data-mreb]');
+    if (reb) reb.onclick = ev => { ev.preventDefault(); meadowDoRebirth(); meadowPaintBook(); };
   }
   function meadowAim(){
     const yaw = (cam && cam.yaw != null) ? cam.yaw + Math.PI : ((P && P.face != null) ? P.face : 0);
@@ -34285,7 +34687,11 @@ function start(m = 'obby', d = null){
     t302Note('meadow-throw'); t302Ach('meadow-throw');
     t302Board('meadow-best', r.state.best);
     t302Snd('boing');
-    if (r.foundNew){ t302Ach('meadow-friend'); t302Note('meadow-friend'); t302Snd('cp'); banner(r.animal.emoji + ' You met ' + r.animal.name + ' in ' + (r.field.name || 'the field') + '!'); }
+    if (r.foundNew){
+      t302Ach('meadow-friend'); t302Note('meadow-friend'); t302Snd('cp');
+      const rare = MeadowRules.meadowRarity(r.animal.rarity);
+      banner(r.animal.emoji + ' You met ' + r.animal.name + (rare ? ' (' + rare.name + ')' : '') + ' in ' + (r.field.name || 'the field') + '!');
+    }
     else if (r.animal) banner('A snack for ' + r.animal.name + '! ' + r.dist.toFixed(1) + ' steps.');
     else banner('Tossed ' + r.dist.toFixed(1) + ' steps, but it missed the pals. Aim at a field and charge longer or train!');
     t302Send({a:'toss', d:r.dist});
@@ -34298,11 +34704,15 @@ function start(m = 'obby', d = null){
   function meadowAct(){
     if (!mw) return false;
     if (mw.near === 'book'){ t302Open('meadowBook'); return true; }
+    if (mw.near === 'stone'){ meadowDoRebirth(); return true; }
     if (mw.near === 'train'){
       if (mw.trainCd > 0){ banner('Catch your breath — try training again in a moment.'); return true; }
       const r = MeadowRules.meadowTrain(mw.sv);
-      if (r.ok){ meadowPersist(r.state); mw.trainCd = 1.1; t302Ach('meadow-train'); t302Snd('jump'); banner('💪 Training paid off! Throws now go up to ' + r.power + ' steps.'); }
-      else banner('You are already as strong as the training post allows!');
+      if (r.ok){
+        meadowPersist(r.state); mw.trainCd = 1.1; t302Ach('meadow-train'); t302Snd('jump');
+        banner(r.leveled ? ('💪 Level up! You are Lv ' + r.level + '. Throws now go up to ' + r.power + ' steps.') : ('💪 Training earned ' + r.xp + ' XP. Lv ' + r.level + ' — throws go up to ' + r.power + ' steps.'));
+      }
+      else banner('You have reached the max throw level for this run. Rebirth at the stone to start a faster climb!');
       return true;
     }
     if (mw.near === 'crate'){
@@ -34314,6 +34724,19 @@ function start(m = 'obby', d = null){
       return true;
     }
     return false;
+  }
+  function meadowDoRebirth(){
+    if (!mw) return false;
+    const r = MeadowRules.meadowRebirth(mw.sv);
+    if (!r.ok){
+      banner('Rebirth unlocks at level ' + r.need + '. You are Lv ' + r.level + '. Keep tossing and training — it takes a while, and it gets faster after each rebirth.');
+      return true;
+    }
+    meadowPersist(r.state);
+    t302Note('meadow-rebirth'); t302Ach('meadow-rebirth');
+    t302Snd('win');
+    banner(r.badge.emoji + ' Rebirth ' + r.rebirths + '! You earned the ' + r.badge.name + ' badge. Level reset, but XP now comes ' + r.mul.toFixed(1) + '× faster.');
+    return true;
   }
   function meadowPointer(down, fromBtn){
     if (down) meadowBeginCharge();
@@ -34346,10 +34769,14 @@ function start(m = 'obby', d = null){
     if (t302Near(mw.book.x, mw.book.z, 2)) near = 'book';
     if (t302Near(mw.train.x, mw.train.z, 2)) near = 'train';
     if (t302Near(mw.crate.x, mw.crate.z, 1.8)) near = 'crate';
+    if (mw.stone && t302Near(mw.stone.x, mw.stone.z, 2)) near = 'stone';
     mw.near = near;
-    if (near === 'book') t302Hud('E / Ⓧ — open your meadow book. Friends share the meadow, but this book is yours.', '');
-    else if (near === 'train') t302Hud('E / Ⓧ — train for stronger throws.', '💪 Train');
+    const card = MeadowRules.meadowCard(mw.sv);
+    if (!mw.charging) t302Meter(true, card.progress, card.badge.emoji + ' Lv ' + card.level + '  ·  ' + Math.floor(card.need) + ' XP to next  ·  ' + card.rebirths + ' rebirths');
+    if (near === 'book') t302Hud('E / Ⓧ — open your meadow book. Rarity and your rebirth badge are listed there.', '');
+    else if (near === 'train') t302Hud('E / Ⓧ — train for XP. Leveling is slow, but rebirths make it faster.', '💪 Train');
     else if (near === 'crate') t302Hud('E / Ⓧ — refill your snacks.', '🍪 Refill');
+    else if (near === 'stone') t302Hud(card.canRebirth ? 'E / Ⓧ — rebirth! Level resets, but later XP comes faster, and you keep a badge.' : ('Rebirth at Lv ' + card.rebirthNeed + '. You are Lv ' + card.level + '.'), card.canRebirth ? '♻️ Rebirth' : '');
     else t302Hud('Goal: land a snack near a pal to add them to your book. Hold E, Charge, or RT, then release. Aim with the camera.', mw.charging ? '🥣 Throw!' : '🥣 Charge');
   }
 
@@ -34410,6 +34837,18 @@ function start(m = 'obby', d = null){
         cup.position.set(Math.cos(a) * 0.9, 0.55, Math.sin(a) * 0.9);
         g.add(cup);
       }
+    } else if (p.kind === 'slope'){
+      const rail = new THREE.Mesh(new THREE.BoxGeometry(3.1, 0.22, 0.55), t302Mat('#6b7280'));
+      rail.position.y = 1.0;
+      rail.rotation.z = (p.rot % 2 === 0) ? -0.45 : 0.45;
+      g.add(rail);
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.2, 0.2), t302Mat('#8d5524')); post.position.set(1.1, 0.6, 0); g.add(post);
+    } else if (p.kind === 'loop'){
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(1.15, 0.14, 8, 18), t302Mat('#7c3aed'));
+      ring.position.y = 1.4;
+      ring.rotation.y = Math.PI / 2;
+      g.add(ring);
+      const base = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.2, 0.6), t302Mat('#1d2340')); base.position.y = 0.2; g.add(base);
     } else {
       const rail = new THREE.Mesh(new THREE.BoxGeometry(p.kind === 'curve' ? 2.2 : 3, 0.25, 0.6), t302Mat('#1d2340'));
       rail.position.y = 0.6;
@@ -34427,8 +34866,10 @@ function start(m = 'obby', d = null){
     cam.pitch = 0.46; cam.dist = 16;
     t302Note('play:rides'); t302Ach('rides-visit');
     t302BindHud();
-    banner('🎢 Rideland Workshop! Cycle pieces with Q or bumpers, E / Ⓧ to place or ride, C to pick up your own ride. Friends may hop on too.');
-    t302Hud('Goal: place a ride, then hop on! Q cycles, R rotates, C picks up.', '🧱 Place');
+    banner('🎢 Rideland Workshop! Cycle pieces with Q or bumpers, E / Ⓧ to place or ride, C to pick up your own ride. Press Help for a step-by-step track tutorial.');
+    t302Hud('Goal: place a ride, then hop on! Q cycles, R rotates, C picks up. H opens Help.', '🧱 Place');
+    if (!rd.sv.tutDone) ridesHelp(true);
+    else ridesTutPaint();
   }
   function ridesPaintPalette(){
     const box = document.getElementById('ridesPaletteList');
@@ -34480,6 +34921,7 @@ function start(m = 'obby', d = null){
       t302Send({a:'board', id: piece.id});
       t302Snd('jump');
       banner('Whoosh! Riding the ' + RidesRules.ridesKind(piece.kind).name + '. E / Ⓧ to hop off.');
+      ridesTutOn('board', piece.kind);
       return true;
     }
     const r = RidesRules.ridesPlace(rd.sv, rd.sv.kind, cell.gx, cell.gz, rd.sv.rot, t302Uid());
@@ -34490,6 +34932,7 @@ function start(m = 'obby', d = null){
     t302Send({a:'place', piece:r.piece});
     t302Snd('boing');
     banner('Placed a ' + RidesRules.ridesKind(r.piece.kind).name + '!');
+    ridesTutOn('place', r.piece.kind);
     return true;
   }
   function ridesDismount(){
@@ -34518,13 +34961,18 @@ function start(m = 'obby', d = null){
       const g = p && rd.meshes[p.id];
       if (g){
         rd.boarding.t += dt;
-        if (p.kind === 'track' || p.kind === 'curve'){
-          const loop = rd.sv.pieces.filter(x => x.kind === 'track' || x.kind === 'curve');
+        if (RidesRules.ridesIsTrack(p.kind)){
+          const loop = rd.sv.pieces.filter(x => RidesRules.ridesIsTrack(x.kind));
           const n = Math.max(1, loop.length);
           const t = rd.boarding.t * 1.4;
           const i = Math.floor(t) % n, f = t - Math.floor(t), j = (i + 1) % n;
-          const a = RidesRules.ridesWorld(loop[i].gx, loop[i].gz), b = RidesRules.ridesWorld(loop[j].gx, loop[j].gz);
-          P.x = a.x + (b.x - a.x) * f; P.z = a.z + (b.z - a.z) * f; P.y = 1.4; P.vy = 0;
+          const cur = loop[i], nxt = loop[j];
+          const a = RidesRules.ridesWorld(cur.gx, cur.gz), b = RidesRules.ridesWorld(nxt.gx, nxt.gz);
+          P.x = a.x + (b.x - a.x) * f; P.z = a.z + (b.z - a.z) * f;
+          let y = 1.4;
+          if (cur.kind === 'slope') y = 1.2 + ((cur.rot % 2 === 0) ? 0.3 + f * 1.8 : 2.1 - f * 1.8);
+          if (cur.kind === 'loop') y = 1.3 + Math.sin(f * Math.PI) * 2.4;
+          P.y = y; P.vy = 0;
         } else if (p.kind === 'drop'){
           const car = g.getObjectByName('car');
           P.x = g.position.x; P.z = g.position.z; P.y = (car ? car.position.y : 1.6) + 0.6; P.vy = 0;
@@ -34555,7 +35003,61 @@ function start(m = 'obby', d = null){
     else if (piece) t302Hud('E / Ⓧ — ride the ' + RidesRules.ridesKind(piece.kind).name + '. C picks it up if it is yours. Friends may ride too!', '🎢 Ride');
     else t302Hud((kind ? kind.emoji + ' ' + kind.name : 'Piece') + ' ready. E / Ⓧ to place on the green square. Q cycles, R rotates, C picks up.', '🧱 Place');
   }
+  function ridesHelp(auto){
+    if (!rd) return;
+    const r = RidesRules.ridesTutStart(rd.sv);
+    ridesPersist(r.state);
+    ridesTutPaint();
+    if (!auto) t302Snd('cp');
+  }
+  function ridesTutGo(){
+    if (!rd) return;
+    const r = RidesRules.ridesTutNext(rd.sv);
+    ridesPersist(r.state);
+    ridesTutPaint();
+    t302Snd('jump');
+  }
+  function ridesTutSkipNow(){
+    if (!rd) return;
+    const r = RidesRules.ridesTutSkip(rd.sv);
+    ridesPersist(r.state);
+    ridesTutPaint();
+    banner('Tutorial tucked away. Press Help anytime to replay it.');
+  }
+  function ridesTutOn(ev, kind){
+    if (!rd) return;
+    const r = RidesRules.ridesTutNote(rd.sv, ev, kind);
+    if (r.advanced){
+      ridesPersist(r.state);
+      ridesTutPaint();
+      t302Snd('cp');
+      if (r.step) banner(r.step.title);
+      else if (r.done) banner('Tutorial complete! Press Help to play it again.');
+    }
+  }
+  function ridesTutPaint(){
+    const box = document.getElementById('t302Tut');
+    if (!box) return;
+    const step = rd && RidesRules.ridesTutStep(rd.sv);
+    if (!step){ box.classList.remove('show'); return; }
+    box.classList.add('show');
+    const st = document.getElementById('t302TutStep');
+    const title = document.getElementById('t302TutTitle');
+    const body = document.getElementById('t302TutBody');
+    const next = document.getElementById('t302TutNext');
+    const skip = document.getElementById('t302TutSkip');
+    if (st) st.textContent = 'Step ' + (step.index + 1) + ' of ' + step.count + '  ·  keyboard, touch, or Xbox';
+    if (title) title.textContent = step.title;
+    if (body) body.textContent = step.body;
+    if (next) next.textContent = step.id === 'done' ? 'Close' : 'Next';
+    if (skip) skip.style.display = step.id === 'done' ? 'none' : '';
+  }
   function ridesKey(e){
+    if (e.code === 'KeyH'){ ridesHelp(); return true; }
+    if (rd && rd.sv && rd.sv.tut && rd.sv.tut.on){
+      if (e.code === 'Enter' || e.code === 'KeyN' || e.code === 'ArrowRight'){ if (!e.repeat) ridesTutGo(); return true; }
+      if (e.code === 'Backspace' || e.code === 'KeyU'){ if (!e.repeat) ridesTutSkipNow(); return true; }
+    }
     if (e.code === 'KeyQ'){ const r = RidesRules.ridesCycleKind(rd.sv, e.shiftKey ? -1 : 1); ridesPersist(r.state); banner(r.kind.emoji + ' ' + r.kind.name); t302Snd('jump'); return true; }
     if (e.code === 'KeyR'){ const r = RidesRules.ridesRotate(rd.sv, 1); ridesPersist(r.state); banner('Rotated.'); return true; }
     if (e.code === 'KeyC'){
@@ -34569,6 +35071,10 @@ function start(m = 'obby', d = null){
     return false;
   }
   function ridesPad(jp){
+    if (rd && rd.sv && rd.sv.tut && rd.sv.tut.on){
+      if (t302Edge('tutNext', jp && jp[15])){ ridesTutGo(); return true; }
+      if (t302Edge('tutSkip', jp && jp[8])){ ridesTutSkipNow(); return true; }
+    }
     if (t302Edge('ridesLB', jp && jp[4])){ const r = RidesRules.ridesCycleKind(rd.sv, -1); ridesPersist(r.state); banner(r.kind.emoji + ' ' + r.kind.name); return true; }
     if (t302Edge('ridesRB', jp && jp[5])){ const r = RidesRules.ridesCycleKind(rd.sv, 1); ridesPersist(r.state); banner(r.kind.emoji + ' ' + r.kind.name); return true; }
     if (t302Edge('ridesY', jp && jp[3])){ const r = RidesRules.ridesRotate(rd.sv, 1); ridesPersist(r.state); return true; }
@@ -34599,6 +35105,28 @@ function start(m = 'obby', d = null){
       const bloom = t302Mesh(new THREE.SphereGeometry(0.48, 8, 6), f.color, pos[0], 0.6, pos[1], hv, {transparent:true, opacity: locked ? 0.35 : 1});
       t302Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.6, 6), '#2f8f4a', pos[0], 0.3, pos[1], hv);
       hv.flowers.push({f, x:pos[0], z:pos[1], m:bloom, locked});
+    });
+    plat(-8.2, 0.04, 7.2, 16, 16, '#8fce6a', 0.04);
+    for (let i = 0; i < 28; i++){
+      const cx = -15 + ((i * 5) % 14), cz = 1 + ((i * 7) % 14);
+      t302Mesh(new THREE.SphereGeometry(0.16, 6, 5), i % 2 ? '#6fbf5a' : '#3fa85a', cx, 0.16, cz, hv);
+    }
+    const cpath = HiveRules.hiveCloverPath();
+    cpath.forEach((node, i) => {
+      t302Mesh(new THREE.CylinderGeometry(0.7, 0.75, 0.08, 8), '#c4a574', node.x, 0.08, node.z, hv);
+      if (i < cpath.length - 1){
+        const nx = cpath[i + 1];
+        const mx = (node.x + nx.x) / 2, mz = (node.z + nx.z) / 2;
+        const dx = nx.x - node.x, dz = nx.z - node.z;
+        const len = Math.hypot(dx, dz) || 1;
+        const plank = t302Mesh(new THREE.BoxGeometry(1.15, 0.07, len), '#d9b089', mx, 0.07, mz, hv);
+        plank.rotation.y = Math.atan2(dx, dz);
+      }
+      if (node.sign){
+        t302Mesh(new THREE.BoxGeometry(0.12, 1.3, 0.12), '#6b3a1d', node.x, 0.65, node.z, hv);
+        t302Mesh(new THREE.BoxGeometry(1.15, 0.55, 0.08), '#fff8e6', node.x, 1.4, node.z, hv);
+        t302Lab(node.sign, node.x, 2.15, node.z);
+      }
     });
     t302Lab('🌸 Clover Trail', -8, 2.4, 5);
     t302Lab(HiveRules.hiveTrailOpen(sv, 'brook') ? '💧 Brook Trail' : '🔒 Brook Trail (help a bear!)', 9, 2.4, 5);
@@ -34638,7 +35166,7 @@ function start(m = 'obby', d = null){
     cam.pitch = 0.4; cam.dist = 14;
     t302Note('play:hive'); t302Ach('hive-visit');
     t302BindHud();
-    banner('🐝 Honeyhill Hive! Walk the open flower trails to collect pollen, then make honey at the hive. Bear neighbors visit in solo play — no fighting, ever.');
+    banner('🐝 Honeyhill Hive! Follow the signed Clover Trail to the clover field. Flowers refill after you collect them. Make honey at the hive. Bear neighbors visit in solo play — no fighting, ever.');
     t302Hud('Goal: collect pollen, make honey, help the bears. Pollen ' + hv.sv.pollen + '  Honey ' + hv.sv.honey, '🍯 Honey');
   }
   function hivePaintQuest(){
@@ -34709,23 +35237,34 @@ function start(m = 'obby', d = null){
       const r = 0.8 + (i % 3) * 0.25;
       b.m.position.set(P.x + Math.cos(a) * r, 1.4 + Math.sin(time * 3 + i) * 0.2, P.z + Math.sin(a) * r);
     });
+    const now = t302Now();
     hv.flowers.forEach(fl => {
-      if (fl.m) fl.m.position.y = 0.6 + Math.sin(time * 2 + fl.x) * 0.08;
+      const bloom = fl.locked ? 0 : HiveRules.hiveBloom(hv.sv, fl.f.id, now);
+      if (fl.m){
+        fl.m.position.y = 0.35 + 0.25 * bloom + Math.sin(time * 2 + fl.x) * 0.06;
+        const s = 0.35 + 0.65 * bloom;
+        fl.m.scale.setScalar(s);
+        if (fl.m.material){ fl.m.material.transparent = true; fl.m.material.opacity = fl.locked ? 0.35 : (0.35 + 0.65 * bloom); }
+      }
       if (t302Near(fl.x, fl.z, 1.4)){
         if (fl.locked){
           if (time - (hv.lockToast || 0) > 2.2){ hv.lockToast = time; banner('This trail is still closed. Help a bear neighbor to open it!'); }
           return;
         }
         const last = hv.cool[fl.f.id] || 0;
-        if (time - last > 1.2){
+        if (time - last > 0.8){
           hv.cool[fl.f.id] = time;
-          const r = HiveRules.hiveCollect(hv.sv, fl.f.id);
+          const r = HiveRules.hiveCollect(hv.sv, fl.f.id, now);
           if (r.ok){
             hivePersist(r.state);
             t302Note('hive-pollen');
             t302Tone([880, 1040], 0.05, 'sine', 0.035);
             const vis = HiveRules.hiveVisit(hv.sv, fl.f.trail);
             if (vis.ok) hivePersist(vis.state);
+            banner('🌼 +' + r.got + ' pollen from ' + r.flower.name + '! It will refill in ' + Math.round(HiveRules.HIVE_REGEN / 1000) + 's.');
+          } else if (r.why === 'empty'){
+            const sec = Math.max(1, Math.ceil((r.left || 0) / 1000));
+            if (time - (hv.emptyToast || 0) > 1.6){ hv.emptyToast = time; banner('This flower is refilling — come back in ' + sec + 's. You can watch it fill back up.'); }
           }
         }
       }
@@ -34736,7 +35275,7 @@ function start(m = 'obby', d = null){
     hv.near = near;
     if (near && near.kind === 'hive') t302Hud('E / Ⓧ — turn pollen into honey. Pollen ' + hv.sv.pollen + '  Honey ' + hv.sv.honey, '🍯 Make honey');
     else if (near && near.kind === 'bear') t302Hud('E / Ⓧ — talk to ' + HiveRules.hiveBear(near.id).name + '. They never fight.', '🧸 Talk');
-    else t302Hud('Goal: gather pollen on open trails, make honey, help the bears. Pollen ' + hv.sv.pollen + '  Honey ' + hv.sv.honey + '  Bees ' + hv.sv.bees + '. Open Quests to start or turn in a job.', '');
+    else t302Hud('Goal: gather pollen on open trails (flowers refill over time), make honey, help the bears. Pollen ' + hv.sv.pollen + '  Honey ' + hv.sv.honey + '  Bees ' + hv.sv.bees + '. Open Quests to start or turn in a job.', '');
   }
 
   /* ---------- Campfire Grove (kid-friendly horror) ---------- */
@@ -35044,6 +35583,7 @@ function start(m = 'obby', d = null){
   }
   function t302Update(dt){
     t302BindOverlays();
+    t302PaintCoins();
     const step = t302Dt(dt);
     if (gd) gardenUpdate(step);
     if (mw) meadowUpdate(step);
@@ -35104,6 +35644,8 @@ function start(m = 'obby', d = null){
     t302Meter(false);
     t302Hud('', '');
     t302Box(false);
+    t302PaintCoins();
+    const tut = document.getElementById('t302Tut'); if (tut) tut.classList.remove('show');
     const vig = document.getElementById('t302Vignette'); if (vig) vig.classList.remove('show');
     const sc = document.getElementById('t302Scare'); if (sc) sc.classList.remove('show');
     if (typeof t297OverlayClose === 'function') T302_OVERLAY_IDS.forEach(id => t297OverlayClose(id));
@@ -35133,9 +35675,11 @@ function start(m = 'obby', d = null){
     if (typeof window !== 'undefined') window.t302Debug = {
       modes: T302_MODES,
       readyGarden(){ if (!gd) return; const now = t302Now(); gd.sv.plots.forEach(p => { if (p.seed) p.plantedAt = now - 10 * 60 * 1000; }); gardenPersist(gd.sv); gd.plots.forEach(p => gardenGrowMesh(p)); },
-      stockGarden(){ if (!gd) return; let s = GardenRules.gardenGrantStarter(gd.sv); const r1 = GardenRules.gardenBuy(s, 'sprout', 999); const r2 = GardenRules.gardenBuy(r1.state, 'melon', 999); try { setCoins(999); } catch(e){} gardenPersist(r2.state); const plant = GardenRules.gardenPlant(r2.state, 0, 'sprout', t302Now() - GardenRules.gardenSeed('sprout').grow, 999); const plant2 = GardenRules.gardenPlant(plant.ok?plant.state:r2.state, 4, 'melon', t302Now() - GardenRules.gardenSeed('melon').grow * 0.6, 999); const use = plant2.ok?plant2.state:(plant.ok?plant.state:r2.state); gardenPersist(use); gd.plots.forEach(p => gardenGrowMesh(p)); },
-      fillRides(){ if (!rd) return; [['carousel',2,2,0],['swings',5,2,0],['drop',1,5,0],['cups',5,5,0],['curve',0,0,0],['curve',0,1,1],['curve',1,1,2],['curve',1,0,3]].forEach(q => { const r = RidesRules.ridesPlace(rd.sv, q[0], q[1], q[2], q[3], 'me'); if (r.ok){ rd.sv = r.state; ridesBuildPiece(r.piece); } }); ridesPersist(rd.sv); },
+      stockGarden(){ if (!gd) return; let s = GardenRules.gardenGrantStarter(gd.sv); const r1 = GardenRules.gardenBuy(s, 'sprout', 999); const r2 = GardenRules.gardenBuy(r1.state, 'melon', 999); const r3 = GardenRules.gardenBuy(r2.state, 'prism', 999); try { setCoins(240); } catch(e){} gardenPersist(r3.state); const plant = GardenRules.gardenPlant(r3.state, 0, 'sprout', t302Now() - GardenRules.gardenSeed('sprout').grow, 999, () => 0); const mid = plant.ok?plant.state:r3.state; const plant2 = GardenRules.gardenPlant(mid, 4, 'melon', t302Now() - GardenRules.gardenSeed('melon').grow * 0.6, 999, () => 0.5); const mid2 = plant2.ok?plant2.state:mid; const plant3 = GardenRules.gardenPlant(mid2, 8, 'prism', t302Now() - GardenRules.gardenSeed('prism').grow, 999, () => 0.5); const use = plant3.ok?plant3.state:mid2; gardenPersist(use); gd.plots.forEach(p => gardenGrowMesh(p)); t302PaintCoins(); },
+      fillRides(){ if (!rd) return; [['carousel',2,2,0],['swings',5,2,0],['drop',1,5,0],['cups',5,5,0],['curve',0,0,0],['curve',0,1,1],['curve',1,1,2],['curve',1,0,3],['slope',6,6,0],['loop',3,6,0]].forEach(q => { const r = RidesRules.ridesPlace(rd.sv, q[0], q[1], q[2], q[3], 'me'); if (r.ok){ rd.sv = r.state; ridesBuildPiece(r.piece); } }); ridesPersist(rd.sv); },
+      startTut(){ if (!rd) return; ridesHelp(); },
       fillHive(){ if (!hv) return; hv.sv.pollen = 20; hv.sv.honey = 3; hivePersist(hv.sv); },
+      readyMeadow(){ if (!mw) return; let s = MeadowRules.meadowGrantXp(mw.sv, MeadowRules.meadowXpToReach(10)).state; s.found = ['puddle','clover','berry','moss','starlit','wisp']; s.rebirths = 2; s.badge = MeadowRules.meadowBadge(2).id; meadowPersist(s); },
       spookyCamp(){ if (!cg) return; cg.run.t = CampRules.CAMP_NIGHT * 0.35; cg.run.fire = 0.38; cg.run.gloam = 7.5; cg.sv.lessScary = false; }
     };
   } catch (e){}

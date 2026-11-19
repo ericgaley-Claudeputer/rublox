@@ -12,7 +12,13 @@ describe('Honeyhill Hive', () => {
     const early = H.hiveMakeHoney(c.state);
     assert.equal(early.ok, false);
     s = c.state;
-    while (s.pollen < H.HIVE_PER) s = H.hiveCollect(s, 'blue').state;
+    let now = 1000;
+    while (s.pollen < H.HIVE_PER){
+      const n = H.hiveCollect(s, 'blue', now);
+      assert.equal(n.ok, true, n.why);
+      s = n.state;
+      now += H.HIVE_REGEN;
+    }
     const pot = H.hiveMakeHoney(s);
     assert.equal(pot.ok, true);
     assert.ok(pot.pots >= 1);
@@ -43,5 +49,36 @@ describe('Honeyhill Hive', () => {
     assert.equal(s.extra, undefined);
     assert.deepEqual(s.trails, ['meadow']);
     assert.deepEqual(s.stickers, ['berry-badge']);
+  });
+
+  test('pollen regenerates on a flower over time after it is collected', () => {
+    let now = 5000;
+    const a = H.hiveCollect(H.hiveFresh(), 'sun', now);
+    assert.equal(a.ok, true);
+    const soon = H.hiveCollect(a.state, 'sun', now + 200);
+    assert.equal(soon.ok, false);
+    assert.equal(soon.why, 'empty');
+    assert.ok(H.hiveBloom(a.state, 'sun', now + 200) < 1);
+    assert.ok(H.hiveBloomLeft(a.state, 'sun', now + 200) > 0);
+    const mid = now + Math.floor(H.HIVE_REGEN / 2);
+    const half = H.hiveBloom(a.state, 'sun', mid);
+    assert.ok(half > 0.4 && half < 0.7);
+    const ready = H.hiveCollect(a.state, 'sun', now + H.HIVE_REGEN);
+    assert.equal(ready.ok, true);
+    assert.equal(ready.state.collected, 2);
+  });
+
+  test('Clover Trail is a walkable signed path toward the clover flowers and Berry Bear', () => {
+    const path = H.hiveCloverPath();
+    assert.ok(path.length >= 6);
+    const signs = path.filter(p => p.sign);
+    assert.ok(signs.length >= 3);
+    assert.ok(signs.some(p => /Clover Trail/i.test(p.sign)));
+    const bear = {x:-12, z:2};
+    const flowers = {x:-8, z:6};
+    const nearBear = path.some(p => Math.hypot(p.x - bear.x, p.z - bear.z) <= 3);
+    const nearFlowers = path.some(p => Math.hypot(p.x - flowers.x, p.z - flowers.z) <= 3);
+    assert.equal(nearBear, true);
+    assert.equal(nearFlowers, true);
   });
 });

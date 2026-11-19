@@ -39,6 +39,13 @@
     const btn = document.getElementById('t302Act');
     if (btn){ if (act){ btn.textContent = act; btn.classList.add('show'); } else btn.classList.remove('show'); }
   }
+  function t302PaintCoins(){
+    const el = document.getElementById('t302Coins');
+    if (!el) return;
+    const on = (typeof mode !== 'undefined' && mode === 'garden');
+    el.style.display = on ? 'block' : 'none';
+    if (on) el.textContent = '🪙 Your coins: ' + t302Coins();
+  }
   function t302Meter(show, amt, label){
     const el = document.getElementById('t302Meter');
     const fill = document.getElementById('t302MeterFill');
@@ -66,7 +73,7 @@
       act.addEventListener('pointerup', ev => { ev.preventDefault(); ev.stopPropagation(); t302Pointer(false, ev, true); });
       act.addEventListener('pointercancel', ev => { t302Pointer(false, ev, true); });
     }
-    ['gardenShopBtn','meadowBookBtn','ridesPaletteBtn','hiveQuestBtn','campCraftBtn','t302LessBtn','campWinAgain','campWinClose'].forEach(id => {
+    ['gardenShopBtn','meadowBookBtn','ridesPaletteBtn','ridesHelpBtn','hiveQuestBtn','campCraftBtn','t302LessBtn','campWinAgain','campWinClose','t302TutNext','t302TutSkip'].forEach(id => {
       const el = document.getElementById(id);
       if (el && !el.__t302){ el.__t302 = true; el.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); t302Open(id); }; }
     });
@@ -105,6 +112,9 @@
     if (which === 't302LessBtn'){ campToggleLess(); return; }
     if (which === 'campWinAgain'){ campRetry(); return; }
     if (which === 'campWinClose'){ if (typeof t297OverlayClose === 'function') t297OverlayClose('campWin'); return; }
+    if (which === 'ridesHelpBtn'){ ridesHelp(); return; }
+    if (which === 't302TutNext'){ ridesTutGo(); return; }
+    if (which === 't302TutSkip'){ ridesTutSkipNow(); return; }
     const map = {gardenShopBtn:'gardenShop', meadowBookBtn:'meadowBook', ridesPaletteBtn:'ridesPalette', hiveQuestBtn:'hiveQuest', campCraftBtn:'campCraft'};
     const id = map[which] || which;
     if (id === 'gardenShop') gardenPaintShop();
@@ -173,14 +183,25 @@
     const st = GardenRules.gardenStage(plot, t302Now());
     if (!st || !plot || !plot.seed) { p.stage = 0; return; }
     const seed = GardenRules.gardenSeed(plot.seed);
-    const col = seed ? seed.color : '#7ad46a';
+    const item = GardenRules.gardenItem({id: plot.seed, rarity: plot.rarity});
+    const rare = item && GardenRules.gardenRarity(item.rarity);
+    const col = (rare && rare.color) || (seed ? seed.color : '#7ad46a');
     const h = st === 1 ? 0.5 : st === 2 ? 1.1 : 1.7;
     const stem = t302Mesh(new THREE.CylinderGeometry(0.06, 0.08, h, 6), '#2f8f4a', p.x, 0.2 + h/2, p.z, gd);
     const top = t302Mesh(st === 3 ? new THREE.SphereGeometry(0.46, 10, 8) : new THREE.ConeGeometry(0.3, 0.55, 7), col, p.x, 0.2 + h + 0.2, p.z, gd);
     const bits = [stem, top];
+    if (rare && rare.glow){
+      const glow = new THREE.Mesh(new THREE.SphereGeometry(st === 3 ? 0.72 : 0.48, 10, 8), new THREE.MeshBasicMaterial({color: rare.glow, transparent:true, opacity: 0.35}));
+      glow.position.set(p.x, 0.2 + h + 0.2, p.z);
+      scene.add(glow); t302Keep(gd, glow);
+      bits.push(glow);
+    }
     if (st === 3){
       const spark = t302Mesh(new THREE.SphereGeometry(0.12, 6, 5), '#fff4c2', p.x + 0.35, 0.2 + h + 0.45, p.z, gd);
       bits.push(spark);
+    }
+    if (rare && item.rarity !== 'common'){
+      bits.push(t302Lab((seed ? seed.emoji + ' ' : '') + rare.name, p.x, 0.2 + h + 1.15, p.z));
     }
     p.mesh = bits;
     p.stage = st;
@@ -190,12 +211,19 @@
     gd.standM = [];
     (gd.sv.stand || []).forEach((sid, i) => {
       if (!sid) return;
-      const seed = GardenRules.gardenSeed(sid);
+      const item = GardenRules.gardenItem(sid);
+      const seed = item && GardenRules.gardenSeed(item.id);
+      const rare = item && GardenRules.gardenRarity(item.rarity);
       const pos = gd.standPos[i];
       if (!pos || !seed) return;
-      const m = t302Mesh(new THREE.SphereGeometry(0.38, 8, 6), seed.color, pos.x, 1.4, pos.z, gd);
+      const m = t302Mesh(new THREE.SphereGeometry(0.38, 8, 6), (rare && rare.color) || seed.color, pos.x, 1.4, pos.z, gd);
       gd.standM.push(m);
-      gd.standM.push(t302Lab(seed.emoji + ' ' + seed.name, pos.x, 2.1, pos.z));
+      if (rare && rare.glow){
+        const glow = new THREE.Mesh(new THREE.SphereGeometry(0.58, 8, 6), new THREE.MeshBasicMaterial({color: rare.glow, transparent:true, opacity:0.32}));
+        glow.position.set(pos.x, 1.4, pos.z);
+        scene.add(glow); t302Keep(gd, glow); gd.standM.push(glow);
+      }
+      gd.standM.push(t302Lab(seed.emoji + ' ' + seed.name + (rare && rare.id !== 'common' ? ' · ' + rare.name : ''), pos.x, 2.1, pos.z));
     });
   }
   function gardenEnter(){
@@ -206,6 +234,7 @@
     const n = GardenRules.gardenPouchCount(gd.sv);
     banner(n ? '🌱 Sunny Patch Garden! You have ' + n + ' seed' + (n===1?'':'s') + '. Plant them in a bed — they keep growing even while you are away.' : '🌱 Welcome to Sunny Patch Garden! Buy seeds at the shop, plant them, and come back later to harvest.');
     t302Hud('Goal: plant, wait (even while away), harvest, then sell or show a prize.', '🌱 Plant');
+    t302PaintCoins();
   }
   function gardenPaintShop(){
     const box = document.getElementById('gardenShopList');
@@ -215,8 +244,10 @@
       const n = (gd.sv.pouch[s.id] | 0);
       const sel = pick === s.id ? '  ← selected' : '';
       const secs = Math.round(s.grow / 1000);
-      return `<div class="t297row"><span>${s.emoji} ${s.name} — ${s.cost} 🪙, sells for ${s.sell} 🪙, grows in ${secs}s · pouch ${n}${sel}</span><span><button type="button" data-gpick="${s.id}">Pick</button> <button type="button" data-gseed="${s.id}">Buy</button></span></div>`;
-    }).join('') + `<div class="t297row"><span>🧺 Basket: ${(gd.sv.basket||[]).length}  ·  earned ${gd.sv.earned|0} 🪙</span><button type="button" data-gsell="1">Sell one</button></div>`;
+      const rare = GardenRules.gardenRarity(s.rarity);
+      const tint = rare ? rare.color : '#1d2340';
+      return `<div class="t297row"><span>${s.emoji} ${s.name} — <b class="t302rare" style="color:${tint}">${rare ? rare.name : ''}</b> · ${s.cost} 🪙, sells for ${s.sell} 🪙, grows in ${secs}s · pouch ${n}${sel}</span><span><button type="button" data-gpick="${s.id}">Pick</button> <button type="button" data-gseed="${s.id}">Buy</button></span></div>`;
+    }).join('') + `<div class="t297row"><span>🧺 Basket: ${(gd.sv.basket||[]).length}  ·  earned ${gd.sv.earned|0} 🪙  ·  wallet ${t302Coins()} 🪙</span><button type="button" data-gsell="1">Sell one</button></div>`;
     box.querySelectorAll('[data-gseed]').forEach(btn => { btn.onclick = ev => { ev.preventDefault(); gardenBuy(btn.getAttribute('data-gseed')); }; });
     box.querySelectorAll('[data-gpick]').forEach(btn => { btn.onclick = ev => { ev.preventDefault(); gd.sv = GardenRules.gardenPick(gd.sv, btn.getAttribute('data-gpick')); gardenPersist(gd.sv); gardenPaintShop(); banner('Ready to plant ' + GardenRules.gardenSeed(gd.sv.pick).name + '!'); }; });
     const sell = box.querySelector('[data-gsell]');
@@ -229,16 +260,18 @@
     r.state = GardenRules.gardenPick(r.state, id);
     gardenPersist(r.state);
     gardenPaintShop();
+    t302PaintCoins();
     t302Snd('coin');
-    banner('Bought a ' + r.seed.name + ' seed! Press E on an empty bed to plant it.');
+    banner('Bought a ' + r.seed.name + ' seed (' + (r.seed.rarity || 'common') + ')! Press E on an empty bed to plant it. You have ' + r.coins + ' 🪙.');
   }
   function gardenDoSell(){
     const r = GardenRules.gardenSell(gd.sv);
     if (!r.ok){ banner('Nothing in the basket to sell yet. Harvest a ripe plant first!'); return; }
     gardenPersist(r.state);
-    t302Pay(r.pay, r.item.emoji + ' Sold ' + r.item.name);
+    t302Pay(r.pay, r.item.emoji + ' Sold ' + r.item.name + (r.rarity && r.rarity !== 'common' ? ' (' + r.rarity + ')' : ''));
     t302Note('garden-sell'); t302Board('garden-sold', r.state.sold);
     t302Snd('coin');
+    t302PaintCoins();
     gardenPaintShop();
   }
   function gardenAct(){
@@ -259,7 +292,9 @@
           gardenGrowMesh(gd.plots[gd.near.id]);
           t302Note('garden-harvest'); t302Ach('garden-harvest'); t302Board('garden-harvested', r.state.harvested);
           t302Snd('win');
-          banner(r.item.emoji + ' Harvested ' + r.item.name + '! Sell it at the shop or show it on the stand.');
+          const rare = r.rarity && GardenRules.gardenRarity(r.rarity);
+          const mutated = r.rarity && r.item && r.rarity !== (r.item.rarity || 'common');
+          banner(r.item.emoji + ' Harvested ' + r.item.name + (mutated ? ' — it mutated to ' + rare.name + '!' : (rare && rare.id !== 'common' ? ' (' + rare.name + ')' : '')) + '! Sell it at the shop or show it on the stand.');
         }
         return true;
       }
@@ -275,8 +310,10 @@
         gardenGrowMesh(gd.plots[gd.near.id]);
         t302Note('garden-plant'); t302Ach('garden-plant');
         t302Snd('boing');
+        t302PaintCoins();
         const secs = Math.round(r.seed.grow / 1000);
-        banner('Planted a ' + r.seed.name + '! It will be ready in ' + secs + 's, even if you leave.');
+        const rare = r.rarity && GardenRules.gardenRarity(r.rarity);
+        banner('Planted a ' + r.seed.name + (r.mutated && rare ? ' — lucky ' + rare.name + ' mutation!' : '') + '! It will be ready in ' + secs + 's, even if you leave.');
       } else if (r.why === 'coins' || r.why === 'seed'){
         t302Open('gardenShop');
         banner('Buy or pick a seed at the shop first!');
@@ -287,6 +324,7 @@
   }
   function gardenUpdate(){
     if (!gd) return;
+    t302PaintCoins();
     gd.plots.forEach(p => {
       const st = GardenRules.gardenStage(gd.sv.plots[p.id], t302Now());
       if (st !== p.stage){ gardenGrowMesh(p); if (st === 3) t302Tone([660, 880], 0.08, 'triangle', 0.04); }
@@ -350,15 +388,24 @@
       const z = 12 + i * 12;
       const x = (i % 2 === 0) ? -4 : 5;
       plat(x, 0.08, z, 8, 8, '#6fbf5a', 0.08);
-      t302Lab(f.name, x, 2.6, z - 3);
       const a = MeadowRules.meadowAnimal(f.animal);
+      const rare = a && MeadowRules.meadowRarity(a.rarity);
+      t302Lab(f.name + (rare ? ' · ' + rare.name : ''), x, 2.6, z - 3);
       const body = t302Mesh(new THREE.SphereGeometry(0.7, 10, 8), a.color, x, 0.9, z, mw);
       const head = t302Mesh(new THREE.SphereGeometry(0.42, 8, 6), a.color, x, 1.45, z + 0.15, mw);
       const earL = t302Mesh(new THREE.SphereGeometry(0.16, 6, 5), a.color, x - 0.28, 1.75, z + 0.1, mw);
       const earR = t302Mesh(new THREE.SphereGeometry(0.16, 6, 5), a.color, x + 0.28, 1.75, z + 0.1, mw);
-      t302Lab(a.emoji + ' ' + a.name, x, 2.3, z);
+      if (rare && rare.id !== 'common'){
+        const glow = new THREE.Mesh(new THREE.SphereGeometry(1.05, 10, 8), new THREE.MeshBasicMaterial({color: rare.color, transparent:true, opacity:0.22}));
+        glow.position.set(x, 1.1, z); scene.add(glow); t302Keep(mw, glow);
+      }
+      t302Lab(a.emoji + ' ' + a.name + (rare ? ' (' + rare.name + ')' : ''), x, 2.3, z);
       mw.fields.push({f, x, z, body, head, earL, earR, id:f.id, animal:f.animal});
     });
+    t302Mesh(new THREE.CylinderGeometry(0.7, 0.9, 0.35, 10), '#c9b6ff', 0, 0.25, -3, mw);
+    t302Mesh(new THREE.SphereGeometry(0.35, 8, 6), '#ffd23f', 0, 0.8, -3, mw);
+    t302Lab('♻️ Rebirth Stone', 0, 2.0, -3);
+    mw.stone = {x:0, z:-3};
     checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:6}, flag:new THREE.Object3D()};
   }
   function meadowEnter(){
@@ -366,16 +413,25 @@
     cam.pitch = 0.36; cam.dist = 14;
     t302Note('play:meadow'); t302Ach('meadow-visit');
     t302BindHud();
-    banner('🥣 Chow Chuck Meadow! Hold to charge, face a field, and let go so the snack lands near a pal. Train to throw farther. Their book is yours alone.');
+    const card = MeadowRules.meadowCard(mw.sv);
+    banner('🥣 Chow Chuck Meadow! Hold to charge, face a field, and let go so the snack lands near a pal. Leveling takes a while — rebirth at the stone to gain a forever XP boost. ' + card.badge.emoji + ' ' + card.badge.name + ' · Lv ' + card.level + '.');
     t302Hud('Hold E, the Charge button, or RT to throw. Aim with the camera. Restock snacks at the crate.', '🥣 Charge');
   }
   function meadowPaintBook(){
     const box = document.getElementById('meadowBookList');
     if (!box || !mw) return;
+    const card = MeadowRules.meadowCard(mw.sv);
     box.innerHTML = MeadowRules.meadowBook(mw.sv).map(a => {
+      const rare = a.rarityInfo || MeadowRules.meadowRarity(a.rarity);
       const mark = a.found ? 'in your book!' : 'still out in the ' + (a.field ? a.field.name : 'fields');
-      return `<div class="t297row${a.found ? '' : ' dim'}"><span>${a.emoji} ${a.name}</span><span>${mark}</span></div>`;
-    }).join('') + `<div class="t297row"><span>💪 Throw power ${MeadowRules.meadowPower(mw.sv)}  ·  best ${mw.sv.best || 0}  ·  snacks ${mw.sv.snacks}</span></div>`;
+      const tint = rare ? rare.color : '#1d2340';
+      return `<div class="t297row${a.found ? '' : ' dim'}"><span>${a.emoji} ${a.name} — <b class="t302rare" style="color:${tint}">${rare ? rare.name : ''}</b></span><span>${mark}</span></div>`;
+    }).join('') +
+      `<div class="t297row"><span>${card.badge.emoji} ${card.badge.name}  ·  rebirths ${card.rebirths}  ·  XP boost ×${card.mul.toFixed(1)}</span></div>` +
+      `<div class="t297row"><span>💪 Lv ${card.level}  ·  power ${card.power}  ·  XP ${Math.floor(card.xp)}/${card.next}  ·  best ${mw.sv.best || 0}  ·  snacks ${mw.sv.snacks}</span>` +
+      (card.canRebirth ? '<button type="button" data-mreb="1">♻️ Rebirth</button>' : `<span>Rebirth at Lv ${card.rebirthNeed}</span>`) + '</div>';
+    const reb = box.querySelector('[data-mreb]');
+    if (reb) reb.onclick = ev => { ev.preventDefault(); meadowDoRebirth(); meadowPaintBook(); };
   }
   function meadowAim(){
     const yaw = (cam && cam.yaw != null) ? cam.yaw + Math.PI : ((P && P.face != null) ? P.face : 0);
@@ -401,7 +457,11 @@
     t302Note('meadow-throw'); t302Ach('meadow-throw');
     t302Board('meadow-best', r.state.best);
     t302Snd('boing');
-    if (r.foundNew){ t302Ach('meadow-friend'); t302Note('meadow-friend'); t302Snd('cp'); banner(r.animal.emoji + ' You met ' + r.animal.name + ' in ' + (r.field.name || 'the field') + '!'); }
+    if (r.foundNew){
+      t302Ach('meadow-friend'); t302Note('meadow-friend'); t302Snd('cp');
+      const rare = MeadowRules.meadowRarity(r.animal.rarity);
+      banner(r.animal.emoji + ' You met ' + r.animal.name + (rare ? ' (' + rare.name + ')' : '') + ' in ' + (r.field.name || 'the field') + '!');
+    }
     else if (r.animal) banner('A snack for ' + r.animal.name + '! ' + r.dist.toFixed(1) + ' steps.');
     else banner('Tossed ' + r.dist.toFixed(1) + ' steps, but it missed the pals. Aim at a field and charge longer or train!');
     t302Send({a:'toss', d:r.dist});
@@ -414,11 +474,15 @@
   function meadowAct(){
     if (!mw) return false;
     if (mw.near === 'book'){ t302Open('meadowBook'); return true; }
+    if (mw.near === 'stone'){ meadowDoRebirth(); return true; }
     if (mw.near === 'train'){
       if (mw.trainCd > 0){ banner('Catch your breath — try training again in a moment.'); return true; }
       const r = MeadowRules.meadowTrain(mw.sv);
-      if (r.ok){ meadowPersist(r.state); mw.trainCd = 1.1; t302Ach('meadow-train'); t302Snd('jump'); banner('💪 Training paid off! Throws now go up to ' + r.power + ' steps.'); }
-      else banner('You are already as strong as the training post allows!');
+      if (r.ok){
+        meadowPersist(r.state); mw.trainCd = 1.1; t302Ach('meadow-train'); t302Snd('jump');
+        banner(r.leveled ? ('💪 Level up! You are Lv ' + r.level + '. Throws now go up to ' + r.power + ' steps.') : ('💪 Training earned ' + r.xp + ' XP. Lv ' + r.level + ' — throws go up to ' + r.power + ' steps.'));
+      }
+      else banner('You have reached the max throw level for this run. Rebirth at the stone to start a faster climb!');
       return true;
     }
     if (mw.near === 'crate'){
@@ -430,6 +494,19 @@
       return true;
     }
     return false;
+  }
+  function meadowDoRebirth(){
+    if (!mw) return false;
+    const r = MeadowRules.meadowRebirth(mw.sv);
+    if (!r.ok){
+      banner('Rebirth unlocks at level ' + r.need + '. You are Lv ' + r.level + '. Keep tossing and training — it takes a while, and it gets faster after each rebirth.');
+      return true;
+    }
+    meadowPersist(r.state);
+    t302Note('meadow-rebirth'); t302Ach('meadow-rebirth');
+    t302Snd('win');
+    banner(r.badge.emoji + ' Rebirth ' + r.rebirths + '! You earned the ' + r.badge.name + ' badge. Level reset, but XP now comes ' + r.mul.toFixed(1) + '× faster.');
+    return true;
   }
   function meadowPointer(down, fromBtn){
     if (down) meadowBeginCharge();
@@ -462,10 +539,14 @@
     if (t302Near(mw.book.x, mw.book.z, 2)) near = 'book';
     if (t302Near(mw.train.x, mw.train.z, 2)) near = 'train';
     if (t302Near(mw.crate.x, mw.crate.z, 1.8)) near = 'crate';
+    if (mw.stone && t302Near(mw.stone.x, mw.stone.z, 2)) near = 'stone';
     mw.near = near;
-    if (near === 'book') t302Hud('E / Ⓧ — open your meadow book. Friends share the meadow, but this book is yours.', '');
-    else if (near === 'train') t302Hud('E / Ⓧ — train for stronger throws.', '💪 Train');
+    const card = MeadowRules.meadowCard(mw.sv);
+    if (!mw.charging) t302Meter(true, card.progress, card.badge.emoji + ' Lv ' + card.level + '  ·  ' + Math.floor(card.need) + ' XP to next  ·  ' + card.rebirths + ' rebirths');
+    if (near === 'book') t302Hud('E / Ⓧ — open your meadow book. Rarity and your rebirth badge are listed there.', '');
+    else if (near === 'train') t302Hud('E / Ⓧ — train for XP. Leveling is slow, but rebirths make it faster.', '💪 Train');
     else if (near === 'crate') t302Hud('E / Ⓧ — refill your snacks.', '🍪 Refill');
+    else if (near === 'stone') t302Hud(card.canRebirth ? 'E / Ⓧ — rebirth! Level resets, but later XP comes faster, and you keep a badge.' : ('Rebirth at Lv ' + card.rebirthNeed + '. You are Lv ' + card.level + '.'), card.canRebirth ? '♻️ Rebirth' : '');
     else t302Hud('Goal: land a snack near a pal to add them to your book. Hold E, Charge, or RT, then release. Aim with the camera.', mw.charging ? '🥣 Throw!' : '🥣 Charge');
   }
 
@@ -526,6 +607,18 @@
         cup.position.set(Math.cos(a) * 0.9, 0.55, Math.sin(a) * 0.9);
         g.add(cup);
       }
+    } else if (p.kind === 'slope'){
+      const rail = new THREE.Mesh(new THREE.BoxGeometry(3.1, 0.22, 0.55), t302Mat('#6b7280'));
+      rail.position.y = 1.0;
+      rail.rotation.z = (p.rot % 2 === 0) ? -0.45 : 0.45;
+      g.add(rail);
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.2, 0.2), t302Mat('#8d5524')); post.position.set(1.1, 0.6, 0); g.add(post);
+    } else if (p.kind === 'loop'){
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(1.15, 0.14, 8, 18), t302Mat('#7c3aed'));
+      ring.position.y = 1.4;
+      ring.rotation.y = Math.PI / 2;
+      g.add(ring);
+      const base = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.2, 0.6), t302Mat('#1d2340')); base.position.y = 0.2; g.add(base);
     } else {
       const rail = new THREE.Mesh(new THREE.BoxGeometry(p.kind === 'curve' ? 2.2 : 3, 0.25, 0.6), t302Mat('#1d2340'));
       rail.position.y = 0.6;
@@ -543,8 +636,10 @@
     cam.pitch = 0.46; cam.dist = 16;
     t302Note('play:rides'); t302Ach('rides-visit');
     t302BindHud();
-    banner('🎢 Rideland Workshop! Cycle pieces with Q or bumpers, E / Ⓧ to place or ride, C to pick up your own ride. Friends may hop on too.');
-    t302Hud('Goal: place a ride, then hop on! Q cycles, R rotates, C picks up.', '🧱 Place');
+    banner('🎢 Rideland Workshop! Cycle pieces with Q or bumpers, E / Ⓧ to place or ride, C to pick up your own ride. Press Help for a step-by-step track tutorial.');
+    t302Hud('Goal: place a ride, then hop on! Q cycles, R rotates, C picks up. H opens Help.', '🧱 Place');
+    if (!rd.sv.tutDone) ridesHelp(true);
+    else ridesTutPaint();
   }
   function ridesPaintPalette(){
     const box = document.getElementById('ridesPaletteList');
@@ -596,6 +691,7 @@
       t302Send({a:'board', id: piece.id});
       t302Snd('jump');
       banner('Whoosh! Riding the ' + RidesRules.ridesKind(piece.kind).name + '. E / Ⓧ to hop off.');
+      ridesTutOn('board', piece.kind);
       return true;
     }
     const r = RidesRules.ridesPlace(rd.sv, rd.sv.kind, cell.gx, cell.gz, rd.sv.rot, t302Uid());
@@ -606,6 +702,7 @@
     t302Send({a:'place', piece:r.piece});
     t302Snd('boing');
     banner('Placed a ' + RidesRules.ridesKind(r.piece.kind).name + '!');
+    ridesTutOn('place', r.piece.kind);
     return true;
   }
   function ridesDismount(){
@@ -634,13 +731,18 @@
       const g = p && rd.meshes[p.id];
       if (g){
         rd.boarding.t += dt;
-        if (p.kind === 'track' || p.kind === 'curve'){
-          const loop = rd.sv.pieces.filter(x => x.kind === 'track' || x.kind === 'curve');
+        if (RidesRules.ridesIsTrack(p.kind)){
+          const loop = rd.sv.pieces.filter(x => RidesRules.ridesIsTrack(x.kind));
           const n = Math.max(1, loop.length);
           const t = rd.boarding.t * 1.4;
           const i = Math.floor(t) % n, f = t - Math.floor(t), j = (i + 1) % n;
-          const a = RidesRules.ridesWorld(loop[i].gx, loop[i].gz), b = RidesRules.ridesWorld(loop[j].gx, loop[j].gz);
-          P.x = a.x + (b.x - a.x) * f; P.z = a.z + (b.z - a.z) * f; P.y = 1.4; P.vy = 0;
+          const cur = loop[i], nxt = loop[j];
+          const a = RidesRules.ridesWorld(cur.gx, cur.gz), b = RidesRules.ridesWorld(nxt.gx, nxt.gz);
+          P.x = a.x + (b.x - a.x) * f; P.z = a.z + (b.z - a.z) * f;
+          let y = 1.4;
+          if (cur.kind === 'slope') y = 1.2 + ((cur.rot % 2 === 0) ? 0.3 + f * 1.8 : 2.1 - f * 1.8);
+          if (cur.kind === 'loop') y = 1.3 + Math.sin(f * Math.PI) * 2.4;
+          P.y = y; P.vy = 0;
         } else if (p.kind === 'drop'){
           const car = g.getObjectByName('car');
           P.x = g.position.x; P.z = g.position.z; P.y = (car ? car.position.y : 1.6) + 0.6; P.vy = 0;
@@ -671,7 +773,61 @@
     else if (piece) t302Hud('E / Ⓧ — ride the ' + RidesRules.ridesKind(piece.kind).name + '. C picks it up if it is yours. Friends may ride too!', '🎢 Ride');
     else t302Hud((kind ? kind.emoji + ' ' + kind.name : 'Piece') + ' ready. E / Ⓧ to place on the green square. Q cycles, R rotates, C picks up.', '🧱 Place');
   }
+  function ridesHelp(auto){
+    if (!rd) return;
+    const r = RidesRules.ridesTutStart(rd.sv);
+    ridesPersist(r.state);
+    ridesTutPaint();
+    if (!auto) t302Snd('cp');
+  }
+  function ridesTutGo(){
+    if (!rd) return;
+    const r = RidesRules.ridesTutNext(rd.sv);
+    ridesPersist(r.state);
+    ridesTutPaint();
+    t302Snd('jump');
+  }
+  function ridesTutSkipNow(){
+    if (!rd) return;
+    const r = RidesRules.ridesTutSkip(rd.sv);
+    ridesPersist(r.state);
+    ridesTutPaint();
+    banner('Tutorial tucked away. Press Help anytime to replay it.');
+  }
+  function ridesTutOn(ev, kind){
+    if (!rd) return;
+    const r = RidesRules.ridesTutNote(rd.sv, ev, kind);
+    if (r.advanced){
+      ridesPersist(r.state);
+      ridesTutPaint();
+      t302Snd('cp');
+      if (r.step) banner(r.step.title);
+      else if (r.done) banner('Tutorial complete! Press Help to play it again.');
+    }
+  }
+  function ridesTutPaint(){
+    const box = document.getElementById('t302Tut');
+    if (!box) return;
+    const step = rd && RidesRules.ridesTutStep(rd.sv);
+    if (!step){ box.classList.remove('show'); return; }
+    box.classList.add('show');
+    const st = document.getElementById('t302TutStep');
+    const title = document.getElementById('t302TutTitle');
+    const body = document.getElementById('t302TutBody');
+    const next = document.getElementById('t302TutNext');
+    const skip = document.getElementById('t302TutSkip');
+    if (st) st.textContent = 'Step ' + (step.index + 1) + ' of ' + step.count + '  ·  keyboard, touch, or Xbox';
+    if (title) title.textContent = step.title;
+    if (body) body.textContent = step.body;
+    if (next) next.textContent = step.id === 'done' ? 'Close' : 'Next';
+    if (skip) skip.style.display = step.id === 'done' ? 'none' : '';
+  }
   function ridesKey(e){
+    if (e.code === 'KeyH'){ ridesHelp(); return true; }
+    if (rd && rd.sv && rd.sv.tut && rd.sv.tut.on){
+      if (e.code === 'Enter' || e.code === 'KeyN' || e.code === 'ArrowRight'){ if (!e.repeat) ridesTutGo(); return true; }
+      if (e.code === 'Backspace' || e.code === 'KeyU'){ if (!e.repeat) ridesTutSkipNow(); return true; }
+    }
     if (e.code === 'KeyQ'){ const r = RidesRules.ridesCycleKind(rd.sv, e.shiftKey ? -1 : 1); ridesPersist(r.state); banner(r.kind.emoji + ' ' + r.kind.name); t302Snd('jump'); return true; }
     if (e.code === 'KeyR'){ const r = RidesRules.ridesRotate(rd.sv, 1); ridesPersist(r.state); banner('Rotated.'); return true; }
     if (e.code === 'KeyC'){
@@ -685,6 +841,10 @@
     return false;
   }
   function ridesPad(jp){
+    if (rd && rd.sv && rd.sv.tut && rd.sv.tut.on){
+      if (t302Edge('tutNext', jp && jp[15])){ ridesTutGo(); return true; }
+      if (t302Edge('tutSkip', jp && jp[8])){ ridesTutSkipNow(); return true; }
+    }
     if (t302Edge('ridesLB', jp && jp[4])){ const r = RidesRules.ridesCycleKind(rd.sv, -1); ridesPersist(r.state); banner(r.kind.emoji + ' ' + r.kind.name); return true; }
     if (t302Edge('ridesRB', jp && jp[5])){ const r = RidesRules.ridesCycleKind(rd.sv, 1); ridesPersist(r.state); banner(r.kind.emoji + ' ' + r.kind.name); return true; }
     if (t302Edge('ridesY', jp && jp[3])){ const r = RidesRules.ridesRotate(rd.sv, 1); ridesPersist(r.state); return true; }
@@ -715,6 +875,28 @@
       const bloom = t302Mesh(new THREE.SphereGeometry(0.48, 8, 6), f.color, pos[0], 0.6, pos[1], hv, {transparent:true, opacity: locked ? 0.35 : 1});
       t302Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.6, 6), '#2f8f4a', pos[0], 0.3, pos[1], hv);
       hv.flowers.push({f, x:pos[0], z:pos[1], m:bloom, locked});
+    });
+    plat(-8.2, 0.04, 7.2, 16, 16, '#8fce6a', 0.04);
+    for (let i = 0; i < 28; i++){
+      const cx = -15 + ((i * 5) % 14), cz = 1 + ((i * 7) % 14);
+      t302Mesh(new THREE.SphereGeometry(0.16, 6, 5), i % 2 ? '#6fbf5a' : '#3fa85a', cx, 0.16, cz, hv);
+    }
+    const cpath = HiveRules.hiveCloverPath();
+    cpath.forEach((node, i) => {
+      t302Mesh(new THREE.CylinderGeometry(0.7, 0.75, 0.08, 8), '#c4a574', node.x, 0.08, node.z, hv);
+      if (i < cpath.length - 1){
+        const nx = cpath[i + 1];
+        const mx = (node.x + nx.x) / 2, mz = (node.z + nx.z) / 2;
+        const dx = nx.x - node.x, dz = nx.z - node.z;
+        const len = Math.hypot(dx, dz) || 1;
+        const plank = t302Mesh(new THREE.BoxGeometry(1.15, 0.07, len), '#d9b089', mx, 0.07, mz, hv);
+        plank.rotation.y = Math.atan2(dx, dz);
+      }
+      if (node.sign){
+        t302Mesh(new THREE.BoxGeometry(0.12, 1.3, 0.12), '#6b3a1d', node.x, 0.65, node.z, hv);
+        t302Mesh(new THREE.BoxGeometry(1.15, 0.55, 0.08), '#fff8e6', node.x, 1.4, node.z, hv);
+        t302Lab(node.sign, node.x, 2.15, node.z);
+      }
     });
     t302Lab('🌸 Clover Trail', -8, 2.4, 5);
     t302Lab(HiveRules.hiveTrailOpen(sv, 'brook') ? '💧 Brook Trail' : '🔒 Brook Trail (help a bear!)', 9, 2.4, 5);
@@ -754,7 +936,7 @@
     cam.pitch = 0.4; cam.dist = 14;
     t302Note('play:hive'); t302Ach('hive-visit');
     t302BindHud();
-    banner('🐝 Honeyhill Hive! Walk the open flower trails to collect pollen, then make honey at the hive. Bear neighbors visit in solo play — no fighting, ever.');
+    banner('🐝 Honeyhill Hive! Follow the signed Clover Trail to the clover field. Flowers refill after you collect them. Make honey at the hive. Bear neighbors visit in solo play — no fighting, ever.');
     t302Hud('Goal: collect pollen, make honey, help the bears. Pollen ' + hv.sv.pollen + '  Honey ' + hv.sv.honey, '🍯 Honey');
   }
   function hivePaintQuest(){
@@ -825,23 +1007,34 @@
       const r = 0.8 + (i % 3) * 0.25;
       b.m.position.set(P.x + Math.cos(a) * r, 1.4 + Math.sin(time * 3 + i) * 0.2, P.z + Math.sin(a) * r);
     });
+    const now = t302Now();
     hv.flowers.forEach(fl => {
-      if (fl.m) fl.m.position.y = 0.6 + Math.sin(time * 2 + fl.x) * 0.08;
+      const bloom = fl.locked ? 0 : HiveRules.hiveBloom(hv.sv, fl.f.id, now);
+      if (fl.m){
+        fl.m.position.y = 0.35 + 0.25 * bloom + Math.sin(time * 2 + fl.x) * 0.06;
+        const s = 0.35 + 0.65 * bloom;
+        fl.m.scale.setScalar(s);
+        if (fl.m.material){ fl.m.material.transparent = true; fl.m.material.opacity = fl.locked ? 0.35 : (0.35 + 0.65 * bloom); }
+      }
       if (t302Near(fl.x, fl.z, 1.4)){
         if (fl.locked){
           if (time - (hv.lockToast || 0) > 2.2){ hv.lockToast = time; banner('This trail is still closed. Help a bear neighbor to open it!'); }
           return;
         }
         const last = hv.cool[fl.f.id] || 0;
-        if (time - last > 1.2){
+        if (time - last > 0.8){
           hv.cool[fl.f.id] = time;
-          const r = HiveRules.hiveCollect(hv.sv, fl.f.id);
+          const r = HiveRules.hiveCollect(hv.sv, fl.f.id, now);
           if (r.ok){
             hivePersist(r.state);
             t302Note('hive-pollen');
             t302Tone([880, 1040], 0.05, 'sine', 0.035);
             const vis = HiveRules.hiveVisit(hv.sv, fl.f.trail);
             if (vis.ok) hivePersist(vis.state);
+            banner('🌼 +' + r.got + ' pollen from ' + r.flower.name + '! It will refill in ' + Math.round(HiveRules.HIVE_REGEN / 1000) + 's.');
+          } else if (r.why === 'empty'){
+            const sec = Math.max(1, Math.ceil((r.left || 0) / 1000));
+            if (time - (hv.emptyToast || 0) > 1.6){ hv.emptyToast = time; banner('This flower is refilling — come back in ' + sec + 's. You can watch it fill back up.'); }
           }
         }
       }
@@ -852,7 +1045,7 @@
     hv.near = near;
     if (near && near.kind === 'hive') t302Hud('E / Ⓧ — turn pollen into honey. Pollen ' + hv.sv.pollen + '  Honey ' + hv.sv.honey, '🍯 Make honey');
     else if (near && near.kind === 'bear') t302Hud('E / Ⓧ — talk to ' + HiveRules.hiveBear(near.id).name + '. They never fight.', '🧸 Talk');
-    else t302Hud('Goal: gather pollen on open trails, make honey, help the bears. Pollen ' + hv.sv.pollen + '  Honey ' + hv.sv.honey + '  Bees ' + hv.sv.bees + '. Open Quests to start or turn in a job.', '');
+    else t302Hud('Goal: gather pollen on open trails (flowers refill over time), make honey, help the bears. Pollen ' + hv.sv.pollen + '  Honey ' + hv.sv.honey + '  Bees ' + hv.sv.bees + '. Open Quests to start or turn in a job.', '');
   }
 
   /* ---------- Campfire Grove (kid-friendly horror) ---------- */
@@ -1160,6 +1353,7 @@
   }
   function t302Update(dt){
     t302BindOverlays();
+    t302PaintCoins();
     const step = t302Dt(dt);
     if (gd) gardenUpdate(step);
     if (mw) meadowUpdate(step);
@@ -1220,6 +1414,8 @@
     t302Meter(false);
     t302Hud('', '');
     t302Box(false);
+    t302PaintCoins();
+    const tut = document.getElementById('t302Tut'); if (tut) tut.classList.remove('show');
     const vig = document.getElementById('t302Vignette'); if (vig) vig.classList.remove('show');
     const sc = document.getElementById('t302Scare'); if (sc) sc.classList.remove('show');
     if (typeof t297OverlayClose === 'function') T302_OVERLAY_IDS.forEach(id => t297OverlayClose(id));
@@ -1249,9 +1445,11 @@
     if (typeof window !== 'undefined') window.t302Debug = {
       modes: T302_MODES,
       readyGarden(){ if (!gd) return; const now = t302Now(); gd.sv.plots.forEach(p => { if (p.seed) p.plantedAt = now - 10 * 60 * 1000; }); gardenPersist(gd.sv); gd.plots.forEach(p => gardenGrowMesh(p)); },
-      stockGarden(){ if (!gd) return; let s = GardenRules.gardenGrantStarter(gd.sv); const r1 = GardenRules.gardenBuy(s, 'sprout', 999); const r2 = GardenRules.gardenBuy(r1.state, 'melon', 999); try { setCoins(999); } catch(e){} gardenPersist(r2.state); const plant = GardenRules.gardenPlant(r2.state, 0, 'sprout', t302Now() - GardenRules.gardenSeed('sprout').grow, 999); const plant2 = GardenRules.gardenPlant(plant.ok?plant.state:r2.state, 4, 'melon', t302Now() - GardenRules.gardenSeed('melon').grow * 0.6, 999); const use = plant2.ok?plant2.state:(plant.ok?plant.state:r2.state); gardenPersist(use); gd.plots.forEach(p => gardenGrowMesh(p)); },
-      fillRides(){ if (!rd) return; [['carousel',2,2,0],['swings',5,2,0],['drop',1,5,0],['cups',5,5,0],['curve',0,0,0],['curve',0,1,1],['curve',1,1,2],['curve',1,0,3]].forEach(q => { const r = RidesRules.ridesPlace(rd.sv, q[0], q[1], q[2], q[3], 'me'); if (r.ok){ rd.sv = r.state; ridesBuildPiece(r.piece); } }); ridesPersist(rd.sv); },
+      stockGarden(){ if (!gd) return; let s = GardenRules.gardenGrantStarter(gd.sv); const r1 = GardenRules.gardenBuy(s, 'sprout', 999); const r2 = GardenRules.gardenBuy(r1.state, 'melon', 999); const r3 = GardenRules.gardenBuy(r2.state, 'prism', 999); try { setCoins(240); } catch(e){} gardenPersist(r3.state); const plant = GardenRules.gardenPlant(r3.state, 0, 'sprout', t302Now() - GardenRules.gardenSeed('sprout').grow, 999, () => 0); const mid = plant.ok?plant.state:r3.state; const plant2 = GardenRules.gardenPlant(mid, 4, 'melon', t302Now() - GardenRules.gardenSeed('melon').grow * 0.6, 999, () => 0.5); const mid2 = plant2.ok?plant2.state:mid; const plant3 = GardenRules.gardenPlant(mid2, 8, 'prism', t302Now() - GardenRules.gardenSeed('prism').grow, 999, () => 0.5); const use = plant3.ok?plant3.state:mid2; gardenPersist(use); gd.plots.forEach(p => gardenGrowMesh(p)); t302PaintCoins(); },
+      fillRides(){ if (!rd) return; [['carousel',2,2,0],['swings',5,2,0],['drop',1,5,0],['cups',5,5,0],['curve',0,0,0],['curve',0,1,1],['curve',1,1,2],['curve',1,0,3],['slope',6,6,0],['loop',3,6,0]].forEach(q => { const r = RidesRules.ridesPlace(rd.sv, q[0], q[1], q[2], q[3], 'me'); if (r.ok){ rd.sv = r.state; ridesBuildPiece(r.piece); } }); ridesPersist(rd.sv); },
+      startTut(){ if (!rd) return; ridesHelp(); },
       fillHive(){ if (!hv) return; hv.sv.pollen = 20; hv.sv.honey = 3; hivePersist(hv.sv); },
+      readyMeadow(){ if (!mw) return; let s = MeadowRules.meadowGrantXp(mw.sv, MeadowRules.meadowXpToReach(10)).state; s.found = ['puddle','clover','berry','moss','starlit','wisp']; s.rebirths = 2; s.badge = MeadowRules.meadowBadge(2).id; meadowPersist(s); },
       spookyCamp(){ if (!cg) return; cg.run.t = CampRules.CAMP_NIGHT * 0.35; cg.run.fire = 0.38; cg.run.gloam = 7.5; cg.sv.lessScary = false; }
     };
   } catch (e){}

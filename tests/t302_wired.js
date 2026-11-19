@@ -8,9 +8,9 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
 describe('t302 five play modes wiring', () => {
-  test('BUILD is 2026.11.19-1 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.19-1'"));
-    assert.equal(version.build, '2026.11.19-1');
+  test('BUILD is 2026.11.19-2 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.19-2'"));
+    assert.equal(version.build, '2026.11.19-2');
   });
 
   test('all five modes are playable menu games with original names and save keys', () => {
@@ -91,6 +91,30 @@ describe('t302 five play modes wiring', () => {
     assert.match(html, /gardenGrantStarter/);
     assert.match(html, /meadowThrowTo/);
     assert.match(html, /document\.pointerLockElement/);
+  });
+
+
+  test('Garden shows a coin wallet, rarities, rides has a tutorial, hive regen and clover path, meadow rebirth', () => {
+    assert.match(html, /id="t302Coins"/);
+    assert.match(html, /Your coins/);
+    assert.match(html, /Prism Peony/);
+    assert.match(html, /gardenRollRarity/);
+    assert.match(html, /gardenSellValue/);
+    assert.match(html, /id="ridesHelpBtn"/);
+    assert.match(html, /RIDES_TUT/);
+    assert.match(html, /ridesTutStart/);
+    assert.match(html, /function ridesHelp/);
+    assert.match(html, /id="t302Tut"/);
+    assert.match(html, /Coaster Slope/);
+    assert.match(html, /Coaster Loop/);
+    assert.match(html, /HIVE_REGEN/);
+    assert.match(html, /hiveBloom/);
+    assert.match(html, /hiveCloverPath/);
+    assert.match(html, /Clover flowers this way/);
+    assert.match(html, /meadowRebirth/);
+    assert.match(html, /Rebirth Stone/);
+    assert.match(html, /Dusk Wisp/);
+    assert.match(html, /MEADOW_REBIRTH_LEVEL/);
   });
 
 });

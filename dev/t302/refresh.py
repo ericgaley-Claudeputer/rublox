@@ -5,8 +5,8 @@ import json
 
 ROOT = Path(__file__).resolve().parents[2]
 T302 = Path(__file__).resolve().parent
-BUILD = "2026.11.19-1"
-OLD = "2026.11.18-1"
+BUILD = "2026.11.19-2"
+OLD = "2026.11.19-1"
 
 
 def read(name: str) -> str:
@@ -101,7 +101,8 @@ def main() -> int:
     lt = lan.read_text()
     lt = lt.replace(f"BUILD = '{OLD}'", f"BUILD = '{BUILD}'")
     lt = lt.replace("OLD_BUILD = '2026.11.16-23'", f"OLD_BUILD = '{OLD}'")
-    # already bumped is fine
+    import re as _re
+    lt = _re.sub(r"OLD_BUILD = '2026\.11\.\d+-\d+'", f"OLD_BUILD = '{OLD}'", lt, count=1)
     lan.write_text(lt)
 
     cafe = ROOT / "dev/t297/cafe_logic.js"
@@ -140,6 +141,11 @@ def main() -> int:
         'id="campWin"',
         "t302Vignette",
         "Less scary",
+        'id="t302Coins"',
+        'id="ridesHelpBtn"',
+        "meadowRebirth",
+        "hiveBloom",
+        "RIDES_TUT",
         "t302Update(dt)",
         'id="wxSetAuto"',
         'id="hero"',

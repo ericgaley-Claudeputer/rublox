@@ -1,9 +1,10 @@
-/* Honeyhill Hive — gentle bee swarm, pollen, honey, bear quests, no fighting. Save key rubloxHive. */
+/* Honeyhill Hive — gentle bee swarm, pollen regen, bear quests, no fighting. Save key rubloxHive. */
 (function (root) {
   const HIVE_KEY = 'rubloxHive';
   const HIVE_VER = 1;
   const HIVE_PER = 10;
   const HIVE_MAX_BEES = 12;
+  const HIVE_REGEN = 14000;
   const HIVE_FLOWERS = [
     {id:'sun', name:'Sunnycup', color:'#ffd23f', pollen:2, trail:'meadow'},
     {id:'blue', name:'Bluebell Pop', color:'#5aa9ff', pollen:3, trail:'meadow'},
@@ -27,6 +28,18 @@
     {id:'clover-badge', name:'Clover Path Sticker', emoji:'🍀'},
     {id:'honey-badge', name:'Golden Honey Sticker', emoji:'🍯'}
   ];
+  // Walkable Clover Trail: a path through the clover field, with signs, leading to flowers and Berry Bear.
+  const HIVE_CLOVER_PATH = [
+    {x:-2.2, z:2.2, sign:null},
+    {x:-4.4, z:2.8, sign:'🍀 Clover Trail'},
+    {x:-7.0, z:3.2, sign:null},
+    {x:-9.6, z:2.6, sign:'🐻 Berry Bear picnic'},
+    {x:-11.4, z:2.2, sign:null},
+    {x:-8.2, z:5.0, sign:'🌼 Clover flowers this way'},
+    {x:-8.0, z:7.2, sign:null},
+    {x:-6.2, z:9.4, sign:null},
+    {x:-9.2, z:11.4, sign:'🍀 Clover Trail end'}
+  ];
 
   function hiveFresh(){
     return {
@@ -39,7 +52,8 @@
       stickers: [],
       trails: ['meadow'],
       quests: {},
-      visits: []
+      visits: [],
+      blooms: {}
     };
   }
 
@@ -47,6 +61,7 @@
   function hiveBear(id){ return HIVE_BEARS.find(b => b.id === id) || null; }
   function hiveTrail(id){ return HIVE_TRAILS.find(t => t.id === id) || null; }
   function hiveSticker(id){ return HIVE_STICKERS.find(s => s.id === id) || null; }
+  function hiveCloverPath(){ return HIVE_CLOVER_PATH.slice(); }
 
   function hiveLoad(raw){
     const d = hiveFresh();
@@ -69,6 +84,12 @@
       });
     }
     if (Array.isArray(o.visits)) d.visits = o.visits.filter(id => hiveTrail(id));
+    if (o.blooms && typeof o.blooms === 'object'){
+      HIVE_FLOWERS.forEach(f => {
+        const t = +o.blooms[f.id];
+        if (t > 0) d.blooms[f.id] = t;
+      });
+    }
     return d;
   }
 
@@ -77,14 +98,34 @@
     return state.trails.indexOf(trailId) >= 0;
   }
 
+  function hiveBloom(state, flowerId, now){
+    state = hiveLoad(state);
+    if (!hiveFlower(flowerId)) return 0;
+    const last = +state.blooms[flowerId] || 0;
+    if (!last) return 1;
+    const t = Math.max(0, (+now || 0) - last);
+    return Math.max(0, Math.min(1, t / HIVE_REGEN));
+  }
+
+  function hiveBloomLeft(state, flowerId, now){
+    const amt = hiveBloom(state, flowerId, now);
+    if (amt >= 1) return 0;
+    const last = +hiveLoad(state).blooms[flowerId] || 0;
+    return Math.max(0, HIVE_REGEN - Math.max(0, (+now || 0) - last));
+  }
+
   function hiveCollect(state, flowerId, now){
     state = hiveLoad(state);
     const f = hiveFlower(flowerId);
     if (!f) return {ok:false, why:'flower', state};
     if (!hiveTrailOpen(state, f.trail)) return {ok:false, why:'locked', state};
+    const t = (now == null) ? 0 : +now;
+    const amt = (now == null && !state.blooms[f.id]) ? 1 : hiveBloom(state, f.id, t);
+    if (amt < 1) return {ok:false, why:'empty', state, left: hiveBloomLeft(state, f.id, t), bloom: amt, flower:f};
     state.pollen += f.pollen;
     state.collected++;
-    return {ok:true, why:'ok', state, flower:f, got:f.pollen};
+    state.blooms[f.id] = (now == null ? 1 : t) || 1;
+    return {ok:true, why:'ok', state, flower:f, got:f.pollen, bloom:0};
   }
 
   function hiveMakeHoney(state){
@@ -136,9 +177,11 @@
   function hiveFight(){ return false; }
 
   const api = {
-    HIVE_KEY, HIVE_VER, HIVE_PER, HIVE_MAX_BEES, HIVE_FLOWERS, HIVE_TRAILS, HIVE_BEARS, HIVE_STICKERS,
+    HIVE_KEY, HIVE_VER, HIVE_PER, HIVE_MAX_BEES, HIVE_REGEN, HIVE_FLOWERS, HIVE_TRAILS, HIVE_BEARS, HIVE_STICKERS,
+    HIVE_CLOVER_PATH,
     hiveFresh, hiveLoad, hiveFlower, hiveBear, hiveTrail, hiveSticker, hiveTrailOpen,
-    hiveCollect, hiveMakeHoney, hiveVisit, hiveStartQuest, hiveTurnIn, hiveFight
+    hiveCollect, hiveMakeHoney, hiveVisit, hiveStartQuest, hiveTurnIn, hiveFight,
+    hiveBloom, hiveBloomLeft, hiveCloverPath
   };
   root.HiveRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

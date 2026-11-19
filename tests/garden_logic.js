@@ -14,8 +14,8 @@ describe('Sunny Patch Garden', () => {
     assert.equal(messy.pouch.notASeed, undefined);
     assert.equal(messy.plots[0].seed, 'bean');
     assert.equal(messy.plots[1].seed, null);
-    assert.deepEqual(messy.basket, ['melon']);
-    assert.equal(messy.stand[0], 'squash');
+    assert.equal(messy.basket[0].id, 'melon');
+    assert.equal(messy.stand[0].id, 'squash');
     assert.equal(messy.stand[1], null);
   });
 
@@ -30,7 +30,6 @@ describe('Sunny Patch Garden', () => {
     assert.equal(G.gardenPouchCount(plant.state), 0);
     assert.equal(G.gardenStage(plant.state.plots[0], 1_000), 1);
     assert.equal(G.gardenReady(plant.state.plots[0], 1_000 + 14_000), false);
-    // jump forward as if the player left and came back
     const later = 1_000 + G.gardenSeed('sprout').grow;
     assert.equal(G.gardenReady(plant.state.plots[0], later), true);
     const early = G.gardenHarvest(plant.state, 0, 1_000 + 1000);
@@ -51,7 +50,7 @@ describe('Sunny Patch Garden', () => {
     assert.equal(sold.state.earned, sold.pay);
     const show = G.gardenShow(sold.state, 1, 0);
     assert.equal(show.ok, true);
-    assert.equal(show.state.stand[1], 'melon');
+    assert.equal(show.state.stand[1].id, 'melon');
     assert.equal(show.state.basket.length, 0);
   });
 
@@ -73,7 +72,7 @@ describe('Sunny Patch Garden', () => {
   });
 
   test('grow countdown reaches zero exactly when the plant is ready', () => {
-    const plant = G.gardenPlant(G.gardenLoad({pouch:{sprout:1}, starter:true}), 2, 'sprout', 1000, 0);
+    const plant = G.gardenPlant(G.gardenLoad({pouch:{sprout:1}, starter:true}), 2, 'sprout', 1000, 0, () => 0.5);
     assert.equal(G.gardenLeft(plant.state.plots[2], 1000), G.gardenSeed('sprout').grow);
     assert.equal(G.gardenReady(plant.state.plots[2], 1000 + G.gardenSeed('sprout').grow - 1), false);
     assert.equal(G.gardenLeft(plant.state.plots[2], 1000 + G.gardenSeed('sprout').grow), 0);
@@ -83,9 +82,30 @@ describe('Sunny Patch Garden', () => {
   test('the seed picker prefers the chosen seed in the pouch', () => {
     let s = G.gardenLoad({pouch:{sprout:1, bean:1}, starter:true});
     s = G.gardenPick(s, 'bean');
-    const p = G.gardenPlant(s, 1, null, 50, 0);
+    const p = G.gardenPlant(s, 1, null, 50, 0, () => 0.5);
     assert.equal(p.ok, true);
     assert.equal(p.seed.id, 'bean');
   });
 
+  test('seeds have rarity tiers and mutations sell for more than the base plant', () => {
+    const tiers = G.GARDEN_SEEDS.map(s => s.rarity);
+    assert.ok(tiers.includes('common') && tiers.includes('uncommon') && tiers.includes('rare'));
+    assert.ok(tiers.includes('epic') && tiers.includes('legendary'));
+    const prism = G.gardenSeed('prism');
+    assert.equal(prism.rarity, 'legendary');
+    assert.ok(prism.sell > G.gardenSeed('squash').sell);
+    const sprout = G.gardenPlant(G.gardenLoad({pouch:{sprout:1}, starter:true}), 0, 'sprout', 10, 0, () => 0.5);
+    assert.equal(sprout.rarity, 'common');
+    assert.equal(sprout.mutated, false);
+    const mutated = G.gardenPlant(G.gardenLoad({pouch:{sprout:1}, starter:true}), 0, 'sprout', 10, 0, () => 0);
+    assert.equal(mutated.rarity, 'legendary');
+    assert.equal(mutated.mutated, true);
+    const later = 10 + G.gardenSeed('sprout').grow;
+    const got = G.gardenHarvest(mutated.state, 0, later);
+    assert.equal(got.rarity, 'legendary');
+    const sold = G.gardenSell(got.state);
+    assert.ok(sold.pay > G.gardenSeed('sprout').sell);
+    assert.equal(sold.pay, G.gardenSellValue({id:'sprout', rarity:'legendary'}));
+    assert.equal(G.gardenSellValue('cloud'), G.gardenSeed('cloud').sell);
+  });
 });
