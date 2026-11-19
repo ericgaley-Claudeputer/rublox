@@ -1,15 +1,25 @@
   <div id="elevBox" style="display:none"><span id="elevHint"></span></div>
   <button type="button" id="elevAct">✨ Do it</button>
   <button type="button" id="elevHelpBtn">❓ Help</button>
+  <button type="button" id="elevIndexBtn">📒 Floors</button>
   <div id="elevMeter"><div id="elevMeterFill"></div><div id="elevMeterLab"></div></div>
   <div id="elevHelp" class="t297overlay" role="dialog" aria-label="Wobblevator help">
     <div class="t297box">
       <button type="button" class="t297x" id="elevHelpX" aria-label="Close">×</button>
       <h3>🛗 Wobblevator</h3>
       <p>Ride Bingle the Bellhop’s wobbly lift between surprise floors. Clear the mini-event, hop back in, and see how far your streak can go. If a floor gets too wobbly, everyone is okay — you’re back in the lift with a fresh streak.</p>
-      <p><b>Keyboard:</b> WASD move · Space jump · E act · Esc closes this help.</p>
-      <p><b>Mobile:</b> Move with the stick, jump with the button, and tap the yellow action button.</p>
-      <p><b>Xbox:</b> Left stick move · Ⓐ jump · Ⓧ act · Ⓑ or Esc close popups.</p>
-      <p>In single-player, quirky passengers may ride along. In multiplayer, only real friends share the lift.</p>
+      <p>Open <b>Floors</b> to see your collection. Floors don’t repeat until you’ve seen most of them. Snow Festival days unlock cozy holiday stops, and a rare secret floor is hiding in the shaft.</p>
+      <p><b>Keyboard:</b> WASD move · Space jump · E act · I floors · H help · Esc closes popups.</p>
+      <p><b>Mobile:</b> Move with the stick, jump with the button, and tap the yellow action button or Floors.</p>
+      <p><b>Xbox:</b> Left stick move · Ⓐ jump · Ⓧ act · Ⓨ floors · Ⓑ or Esc close popups.</p>
+      <p>In single-player, quirky passengers may ride along. In multiplayer, only real friends share the lift — and some floors let friends light two pads together.</p>
+    </div>
+  </div>
+  <div id="elevIndex" class="t297overlay" role="dialog" aria-label="Wobblevator floors seen">
+    <div class="t297box elevIdxBox">
+      <button type="button" class="t297x" id="elevIndexX" aria-label="Close">×</button>
+      <h3>📒 Floors Seen</h3>
+      <p id="elevIndexSub">Floors seen: 0 / 0</p>
+      <div id="elevIndexList"></div>
     </div>
   </div>

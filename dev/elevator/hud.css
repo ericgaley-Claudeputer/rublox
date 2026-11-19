@@ -4,11 +4,22 @@
 .elevmode #elevBox{display:block}
 #elevAct{position:absolute;right:16px;bottom:96px;z-index:8;padding:12px 16px;font-size:18px;border:3px solid #1d2340;border-radius:16px;background:#ffd23f;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
 #elevAct.show{display:block}
-#elevHelpBtn{position:absolute;z-index:8;right:16px;bottom:160px;padding:10px 14px;font-size:16px;border:3px solid #1d2340;border-radius:16px;background:#e8f4ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
-.elevmode #elevHelpBtn{display:block}
+#elevHelpBtn,#elevIndexBtn{position:absolute;z-index:8;right:16px;padding:10px 14px;font-size:16px;border:3px solid #1d2340;border-radius:16px;background:#e8f4ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+#elevHelpBtn{bottom:160px}
+#elevIndexBtn{bottom:224px;background:#fff3c8}
+.elevmode #elevHelpBtn,.elevmode #elevIndexBtn{display:block}
 #elevMeter{display:none;position:absolute;left:50%;bottom:140px;transform:translateX(-50%);z-index:9;width:min(420px,80%);height:22px;background:#fff;border:3px solid #1d2340;border-radius:999px;overflow:hidden}
 #elevMeter.show{display:block}
 #elevMeterFill{position:absolute;top:0;bottom:0;left:0;width:0;background:#7c5cff}
 #elevMeterLab{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#1d2340;pointer-events:none}
-@media (max-width:700px){ #elevAct{bottom:120px} #elevHelpBtn{bottom:184px} #elevMeter{bottom:164px} }
+#elevIndex .elevIdxBox{max-width:min(720px,94vw);max-height:min(80vh,720px);overflow:auto}
+#elevIndexList{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-top:10px}
+.elevIdx{display:flex;flex-direction:column;gap:2px;background:#fff;border:3px solid #1d2340;border-radius:14px;padding:8px 10px;min-height:74px}
+.elevIdx.seen{background:#e8ffe9}
+.elevIdx.locked{background:#eef2f6;opacity:.85}
+.elevIdx.new{background:#fff8e0}
+.elevIdxE{font-size:22px;line-height:1}
+.elevIdxN{font-weight:800;font-size:14px}
+.elevIdx small{font-weight:700;color:#5a6478}
+@media (max-width:700px){ #elevAct{bottom:120px} #elevHelpBtn{bottom:184px} #elevIndexBtn{bottom:248px} #elevMeter{bottom:164px} }
 </style>

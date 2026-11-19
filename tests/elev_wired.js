@@ -17,9 +17,9 @@ const BANNED = [
 ];
 
 describe('Wobblevator wiring', () => {
-  test('BUILD is 2026.11.19-6 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.19-6'"));
-    assert.equal(version.build, '2026.11.19-6');
+  test('BUILD is 2026.11.19-7 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.19-7'"));
+    assert.equal(version.build, '2026.11.19-7');
   });
 
   test('the mode is a playable menu game with an original name and save key', () => {
@@ -46,11 +46,13 @@ describe('Wobblevator wiring', () => {
 
   test('help popup uses the shared close path and works on mobile and Xbox', () => {
     assert.ok(html.includes('id="elevHelp"'));
+    assert.ok(html.includes('id="elevIndex"'));
     assert.ok(html.includes("class=\"t297overlay\""));
-    assert.match(html, /campWin', 'elevHelp'/);
-    assert.match(html, /mode === 'elevator' \? '🎮 Left stick move · Ⓐ jump · Ⓧ act · Ⓑ close popups · ☰ menu'/);
+    assert.match(html, /elevHelp', 'elevIndex'/);
+    assert.match(html, /mode === 'elevator' \? '🎮 Left stick move · Ⓐ jump · Ⓧ act · Ⓨ floors · Ⓑ close popups · ☰ menu'/);
     assert.ok(html.includes('id="elevAct"'));
     assert.ok(html.includes('id="elevHelpBtn"'));
+    assert.ok(html.includes('id="elevIndexBtn"'));
     const runtime = html.slice(html.indexOf('function elevKey'), html.indexOf('function elevKey') + 1200);
     assert.equal(/Digit[0-9]/.test(runtime), false, 'elevator keys must not bind number keys used by emotes');
     const esc = html.indexOf("if (typeof t297OverlayOpen === 'function' && t297OverlayOpen()){ t297OverlayClose();");
@@ -69,9 +71,12 @@ describe('Wobblevator wiring', () => {
   });
 
   test('achievements, board, weather skip, and Reset a game all hook the mode', () => {
-    for (const id of ['elev-ride', 'elev-five', 'elev-twelve', 'elev-creepy', 'elev-find']){
+    for (const id of ['elev-ride', 'elev-five', 'elev-twelve', 'elev-creepy', 'elev-find', 'elev-seen25', 'elev-seenall']){
       assert.ok(html.includes("id:'" + id + "'"), id);
     }
+    assert.ok(html.includes('function elevFloorSpec('));
+    assert.ok(html.includes('function elevRebuildBag('));
+    assert.ok(E.ELEV_FLOORS.length >= 45);
     assert.match(html, /snap\.elevator = L\('rubloxElevator'/);
     assert.ok(board.LB_ROWS.some(r => r.id === 'elev-best'));
     assert.match(html, /id: 'elev-best'/);

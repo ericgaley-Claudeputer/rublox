@@ -27,6 +27,7 @@
   function elevAch(id){ try { if (typeof achNote === 'function') achNote(id); } catch (e){} }
   function elevBoard(v){ try { if (typeof lbRecord === 'function') lbRecord('elev-best', v); } catch (e){} }
   function elevTone(freqs, dur, type, vol){ try { if (typeof beep === 'function') beep(freqs, dur, type || 'sine', vol == null ? 0.05 : vol); } catch (e){} }
+  function elevSnowNow(){ try { return !!(typeof evFestOn === 'function' && evFestOn()); } catch (e){ return false; } }
 
   function elevMakeBingle(x, y, z){
     const g = new THREE.Group();
@@ -58,8 +59,26 @@
     return g;
   }
 
+  function elevPlat(x, top, z, w, d, color, h){
+    const b = plat(x, top, z, w, d, color, h == null ? 1 : h);
+    if (elv && elv.floorSolids) elv.floorSolids.push(b);
+    if (b && b.mesh) elevFkeep(b.mesh);
+    return b;
+  }
+
   function elevClearFloorMeshes(){
     if (!elv) return;
+    (elv.floorSolids || []).forEach(b => {
+      try { if (b) b.active = false; } catch (e){}
+      try { if (b && b.mesh) scene.remove(b.mesh); } catch (e){}
+      try {
+        if (typeof solids !== 'undefined' && solids){
+          const i = solids.indexOf(b);
+          if (i >= 0) solids.splice(i, 1);
+        }
+      } catch (e){}
+    });
+    elv.floorSolids = [];
     (elv.floorTrash || []).forEach(m => { try { scene.remove(m); } catch (e){} });
     elv.floorTrash = [];
     elv.hazards = [];
@@ -71,135 +90,12 @@
     elv.tiles = [];
     elv.turnIn = null;
     elv.lightDisc = null;
-  }
-
-  function elevBuildRoom(col, w, d){
-    elevMesh(new THREE.BoxGeometry(w, 0.2, d), col, 0, 0.1, -30, true);
-    elevMesh(new THREE.BoxGeometry(w, 6, 0.3), '#d8d0c4', 0, 3, -30 - d/2, true);
-    elevMesh(new THREE.BoxGeometry(0.3, 6, d), '#d8d0c4', -w/2, 3, -30, true);
-    elevMesh(new THREE.BoxGeometry(0.3, 6, d), '#d8d0c4', w/2, 3, -30, true);
-    plat(0, 0.2, -30, w, d, col, 0.2);
-  }
-  function elevDoorPad(x, z){
-    const m = elevMesh(new THREE.BoxGeometry(2.2, 0.15, 2.2), '#ffd23f', x, 0.28, z, true, {emissive:'#7a5a00'});
-    elv.door = {x, z, mesh:m};
-    elevLab('🚪 Door', x, 1.6, z, true);
-    return m;
-  }
-
-  function elevBuildFloor(id){
-    elevClearFloorMeshes();
-    elevRestoreSky();
-    const f = ElevRules.elevFloor(id);
-    if (!f) return;
-    const z0 = -30;
-    if (id === 'pillowpath'){
-      elevBuildRoom('#f3d6ea', 16, 28);
-      [[0,-22,0],[2.2,-18,0.5],[-2,-14,1],[2,-10,1.5],[-1.4,-6,2],[0,-2,2.4]].forEach(p => {
-        elevMesh(new THREE.BoxGeometry(2.4, 0.5, 2.0), '#ffd0e8', p[0], 0.4 + p[2], z0 + p[1] + 14, true);
-        plat(p[0], 0.65 + p[2], z0 + p[1] + 14, 2.4, 2.0, '#ffd0e8', 0.5);
-      });
-      elevDoorPad(0, z0 - 10);
-    } else if (id === 'jellyhills'){
-      elevBuildRoom('#e5d4ff', 16, 28);
-      [[0,-20,0],[3,-16,0.8],[-3,-12,1.4],[0,-8,2],[2.5,-4,2.6]].forEach(p => {
-        const m = elevMesh(new THREE.SphereGeometry(1.3, 8, 6), '#b57cff', p[0], 0.6 + p[2]*0.2, z0 + p[1] + 14, true);
-        const pad = plat(p[0], 1.1 + p[2]*0.2, z0 + p[1] + 14, 2.2, 2.2, '#c9a2ff', 0.3);
-        try { if (typeof jumpPads !== 'undefined') jumpPads.push(pad); } catch (e){}
-      });
-      elevDoorPad(0, z0 - 10);
-    } else if (id === 'sockhunt' || id === 'lostlunch'){
-      elevBuildRoom(id === 'sockhunt' ? '#dce8ff' : '#ffe9c8', 18, 18);
-      const spots = [[-5,-26], [4,-24], [0,-34], [-4,-32], [5,-33]];
-      const realAt = 2;
-      spots.forEach((s, i) => {
-        const real = i === realAt;
-        const col = real ? (id === 'sockhunt' ? '#3a86ff' : '#c45c1a') : '#cfc8ba';
-        const m = elevMesh(new THREE.BoxGeometry(0.7, 0.35, 0.9), col, s[0], 0.4, s[1], true);
-        elv.pickups.push({mesh:m, x:s[0], z:s[1], item: real ? (id === 'sockhunt' ? 'sock' : 'lunch') : 'decoy'});
-      });
-      elv.turnIn = {x:0, z:-22};
-      elevLab(id === 'sockhunt' ? '🧦 Basket' : '🐥 Picnic', 0, 1.6, -22, true);
-    } else if (id === 'soapsurge'){
-      elevBuildRoom('#c8f0ff', 16, 16);
-      for (let i = 0; i < 5; i++){
-        const m = elevMesh(new THREE.BoxGeometry(1.6, 0.3, 0.9), '#9fe7ff', (i-2)*2.4, 0.4, -30, true);
-        elv.hazards.push({mesh:m, kind:'soap', i, speed: 3 + i * 0.4});
-      }
-      elevDoorPad(0, -38);
-    } else if (id === 'pieparade'){
-      elevBuildRoom('#ffe6d6', 16, 16);
-      for (let i = 0; i < 4; i++){
-        const m = elevMesh(new THREE.SphereGeometry(0.45, 8, 6), '#e07a3f', -8, 1.1, -26 - i*2, true);
-        elv.hazards.push({mesh:m, kind:'pie', i, speed: 5 + i});
-      }
-      elevDoorPad(0, -38);
-    } else if (id === 'balloonbounce'){
-      elevBuildRoom('#fff0f6', 16, 16);
-      for (let i = 0; i < 5; i++){
-        const m = elevMesh(new THREE.SphereGeometry(0.6, 8, 6), i%2 ? '#ff6fb5' : '#3a86ff', (i-2)*2.2, 1.2, -28, true);
-        elv.hazards.push({mesh:m, kind:'balloon', i, speed: 2.2 + i * 0.3});
-      }
-      elevDoorPad(0, -38);
-    } else if (id === 'confetticannon'){
-      elevBuildRoom('#fff7d6', 16, 16);
-      elevMesh(new THREE.CylinderGeometry(0.6, 0.8, 1.4, 8), '#1d2340', 0, 0.8, -22, true);
-      for (let i = 0; i < 8; i++){
-        const m = elevMesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), ['#ff4d5e','#ffd23f','#2ec27e','#3a86ff'][i%4], 0, 1.2, -24, true);
-        elv.hazards.push({mesh:m, kind:'confetti', i, speed: 3 + (i%3)});
-      }
-    } else if (id === 'chimeorder'){
-      elevBuildRoom('#efe7ff', 16, 14);
-      const cols = ['#ff4d5e','#ffd23f','#3a86ff'];
-      [-3, 0, 3].forEach((x, i) => {
-        const m = elevMesh(new THREE.SphereGeometry(0.55, 10, 8, 0, Math.PI*2, 0, Math.PI*0.7), cols[i], x, 1.1, -30, true, {emissive: cols[i]});
-        elv.bells.push({mesh:m, x, z:-30, i});
-        elevLab('🔔 ' + (i + 1), x, 2.1, -30, true);
-      });
-    } else if (id === 'lanternhall'){
-      elevBuildRoom('#1a1630', 16, 20);
-      const disc = elevMesh(new THREE.CylinderGeometry(2.2, 2.2, 0.08, 16), '#ffe566', 0, 0.25, -24, true, {emissive:'#7a5a00'});
-      elv.lightDisc = disc;
-      const lamp = elevMesh(new THREE.CylinderGeometry(0.3, 0.3, 1.6, 8), '#ffd23f', 0, 1.0, -38, true, {emissive:'#7a5a00'});
-      elv.door = {x:0, z:-38, mesh:lamp};
-      elevLab('🕯️ Lamp', 0, 2.4, -38, true);
-      scene.background = new THREE.Color('#141028');
-      if (scene.fog){ scene.fog.color.set('#141028'); scene.fog.near = 6; scene.fog.far = 28; }
-    } else if (id === 'shadowpeek'){
-      elevBuildRoom('#16141f', 16, 18);
-      for (let i = 0; i < 3; i++){
-        const m = elevMesh(new THREE.BoxGeometry(1.2, 2.2, 0.4), '#0b0a10', -5 + i*5, 1.2, -34, true);
-        elv.hazards.push({mesh:m, kind:'peek', i, speed: 1.4 + i*0.2});
-      }
-      elevDoorPad(0, -38);
-      scene.background = new THREE.Color('#121018');
-    } else if (id === 'tickletiles'){
-      elevBuildRoom('#e8ffe9', 14, 14);
-      for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++){
-        const grumpy = (i + j) % 3 === 0;
-        const x = -4.5 + i * 3, z = -24 - j * 3;
-        const m = elevMesh(new THREE.BoxGeometry(2.6, 0.12, 2.6), grumpy ? '#8b5cf6' : '#ffd23f', x, 0.26, z, true);
-        elv.tiles.push({mesh:m, x, z, grumpy});
-      }
-      elevDoorPad(0, -38);
-    } else if (id === 'partypaint'){
-      elevBuildRoom('#fff4e0', 16, 14);
-      [-4, 0, 4].forEach((x, i) => {
-        const m = elevMesh(new THREE.BoxGeometry(1.6, 1.8, 0.12), '#f4f0e8', x, 1.3, -32, true);
-        elv.paints.push({mesh:m, x, z:-32, i, done:false});
-        elevLab('🙂', x, 2.5, -32, true);
-      });
-    } else if (id === 'snackstop'){
-      elevBuildRoom('#ffe8cc', 14, 14);
-      elevMesh(new THREE.BoxGeometry(4.2, 1.4, 1.4), '#c45c1a', 0, 0.8, -32, true);
-      elevMesh(new THREE.CylinderGeometry(0.3, 0.3, 0.2, 10), '#c45c1a', 0, 1.6, -32, true);
-      elv.turnIn = {x:0, z:-32, shop:true};
-      elevLab('🍪 Lucky cookie — 8 🪙', 0, 2.4, -32, true);
-      elevDoorPad(0, -38);
-    } else {
-      elevBuildRoom('#efe7ff', 14, 14);
-      elevDoorPad(0, -38);
-    }
+    elv.quiz = [];
+    elv.stackBase = null;
+    elv.drum = null;
+    elv.pads = [];
+    elv.boss = null;
+    elv.bossBell = null;
   }
 
   function elevRestoreSky(){
@@ -207,18 +103,231 @@
     if (scene.fog){ scene.fog.color.set('#b8e0ff'); scene.fog.near = 28; scene.fog.far = 90; }
   }
 
+  function elevApplyLook(f){
+    const sky = (f && f.sky) || '#b8e0ff';
+    scene.background = new THREE.Color(sky);
+    const creepy = f && (f.kind === 'creepy' || f.secret || f.id === 'jinglejog' || f.id === 'starmap' || f.id === 'sparklerush' || f.id === 'drowsydrake');
+    if (scene.fog){
+      scene.fog.color.set(sky);
+      scene.fog.near = creepy ? 6 : 22;
+      scene.fog.far = creepy ? 30 : 90;
+    }
+  }
+
+  function elevBuildRoom(col, w, d, wall){
+    wall = wall || '#d8d0c4';
+    elevMesh(new THREE.BoxGeometry(w, 0.2, d), col, 0, 0.1, -30, true);
+    elevMesh(new THREE.BoxGeometry(w, 6, 0.3), wall, 0, 3, -30 - d/2, true);
+    elevMesh(new THREE.BoxGeometry(0.3, 6, d), wall, -w/2, 3, -30, true);
+    elevMesh(new THREE.BoxGeometry(0.3, 6, d), wall, w/2, 3, -30, true);
+    elevPlat(0, 0.2, -30, w, d, col, 0.2);
+  }
+  function elevDoorPad(x, z, label){
+    const m = elevMesh(new THREE.BoxGeometry(2.2, 0.15, 2.2), '#ffd23f', x, 0.28, z, true, {emissive:'#7a5a00'});
+    elv.door = {x, z, mesh:m};
+    elevLab(label || '🚪 Door', x, 1.6, z, true);
+    return m;
+  }
+
+  function elevObbyPads(f){
+    const known = {
+      pillowpath: [[0,-22,0],[2.2,-18,0.5],[-2,-14,1],[2,-10,1.5],[-1.4,-6,2],[0,-2,2.4]],
+      jellyhills: [[0,-20,0],[3,-16,0.8],[-3,-12,1.4],[0,-8,2],[2.5,-4,2.6]],
+      cloudsteps: [[0,-20,0],[-2.4,-16,0.7],[2.2,-12,1.4],[0,-8,2.1],[2.4,-4,2.8]],
+      cheeseramps: [[0,-20,0],[2.6,-16,0.6],[-2.2,-12,1.2],[2,-8,1.9],[0,-4,2.6]],
+      booknooks: [[-2,-20,0],[1.5,-16,0.7],[-1.8,-11,1.5],[2.2,-7,2.2],[0,-3,2.9]],
+      mittenmaze: [[0,-20,0],[-3,-16,0.4],[3,-12,0.9],[-2,-8,1.5],[2.4,-4,2.2]],
+      scarfprint: [[0,-20,0],[0,-14,0],[0,-8,0],[0,-3,0]],
+      jinglejog: [[0,-20,0],[2,-14,0],[-2,-8,0],[0,-3,0]],
+      skyterrace: [[-3,-18,0],[0,-12,0.4],[3,-8,0.8],[0,-3,1.1]]
+    };
+    return known[f.id] || [[0,-20,0],[2.4,-15,0.7],[-2.2,-10,1.4],[1.6,-5,2.1]];
+  }
+
+  function elevBuildObby(f){
+    const deep = (f.kind === 'race' || f.id === 'skyterrace') ? 22 : 28;
+    elevBuildRoom(f.floor || '#efe7ff', 16, deep, f.wall);
+    elevObbyPads(f).forEach(p => {
+      const y = 0.4 + (p[2] || 0);
+      const shape = (f.id === 'jellyhills' || f.id === 'cloudsteps') ? new THREE.SphereGeometry(1.2, 8, 6) : new THREE.BoxGeometry(2.4, 0.5, 2.0);
+      elevMesh(shape, f.accent || '#ffd0e8', p[0], y, -30 + p[1] + 14, true);
+      elevPlat(p[0], y + 0.25, -30 + p[1] + 14, 2.4, 2.0, f.accent || '#ffd0e8', 0.5);
+    });
+    if (f.kind === 'holiday'){
+      for (let i = 0; i < 5; i++) elevMesh(new THREE.SphereGeometry(0.35, 8, 6), '#fff', (i-2)*2.4, 0.5, -22, true);
+    }
+    elevDoorPad(0, -40, f.kind === 'race' ? '🏁 Finish' : '🚪 Door');
+  }
+
+  function elevBuildFind(f){
+    elevBuildRoom(f.floor || '#dce8ff', 18, 18, f.wall);
+    const spots = [[-5,-26],[4,-24],[0,-34],[-4,-32],[5,-33]];
+    const realAt = 2;
+    spots.forEach((s, i) => {
+      const real = i === realAt;
+      const col = real ? (f.accent || '#3a86ff') : '#cfc8ba';
+      const m = elevMesh(new THREE.BoxGeometry(0.7, 0.35, 0.9), col, s[0], 0.4, s[1], true, real ? {emissive: f.accent || '#3a86ff'} : null);
+      elv.pickups.push({mesh:m, x:s[0], z:s[1], item: real ? (f.item || 'item') : 'decoy'});
+    });
+    elv.turnIn = {x:0, z:-22};
+    const drop = f.item === 'sock' ? '🧦 Basket' : f.item === 'lunch' ? '🐥 Picnic' : f.item === 'star' ? '⭐ Map' : f.item === 'cup' ? '🍵 Saucer' : f.item === 'charm' ? '🕳️ Well' : '🧺 Drop-off';
+    elevLab(drop, 0, 1.6, -22, true);
+  }
+
+  function elevBuildHazards(f){
+    elevBuildRoom(f.floor || '#ffe6d6', 16, 16, f.wall);
+    const kind = f.haz || 'pie';
+    const n = kind === 'confetti' ? 8 : (kind === 'flake' ? 7 : 5);
+    for (let i = 0; i < n; i++){
+      let geo, col, y = 1.1;
+      if (kind === 'soap' || kind === 'foam'){ geo = new THREE.BoxGeometry(1.6, 0.3, 0.9); col = f.accent; y = 0.4; }
+      else if (kind === 'balloon'){ geo = new THREE.SphereGeometry(0.6, 8, 6); col = i%2 ? '#ff6fb5' : '#3a86ff'; }
+      else if (kind === 'confetti'){ geo = new THREE.BoxGeometry(0.4, 0.4, 0.4); col = ['#ff4d5e','#ffd23f','#2ec27e','#3a86ff'][i%4]; }
+      else if (kind === 'peek' || kind === 'wink'){ geo = new THREE.BoxGeometry(1.2, 2.2, 0.4); col = '#0b0a10'; y = 1.2; }
+      else { geo = new THREE.SphereGeometry(0.45, 8, 6); col = f.accent || '#e07a3f'; }
+      const m = elevMesh(geo, col, (i-2)*2, y, -28, true);
+      elv.hazards.push({mesh:m, kind, i, speed: 2.2 + i * 0.3});
+    }
+    if (kind === 'confetti') elevMesh(new THREE.CylinderGeometry(0.6, 0.8, 1.4, 8), '#1d2340', 0, 0.8, -22, true);
+    if (kind !== 'confetti') elevDoorPad(0, -38);
+  }
+
+  function elevBuildSeq(f){
+    elevBuildRoom(f.floor || '#efe7ff', 16, 14, f.wall);
+    const cols = ['#ff4d5e','#ffd23f','#3a86ff','#2ec27e'];
+    const n = (f.seq != null) ? f.seq : 3;
+    const span = 8;
+    for (let i = 0; i < n; i++){
+      const x = -span/2 + (n === 1 ? span/2 : i * (span/(n-1)));
+      const g = (f.id === 'echoeggs') ? new THREE.SphereGeometry(0.55, 10, 8) : (f.id === 'goldengong' ? new THREE.CylinderGeometry(0.9, 0.9, 0.16, 16) : new THREE.SphereGeometry(0.55, 10, 8, 0, Math.PI*2, 0, Math.PI*0.7));
+      const m = elevMesh(g, cols[i%cols.length], x, 1.1, -30, true, {emissive: cols[i%cols.length]});
+      elv.bells.push({mesh:m, x, z:-30, i});
+      elevLab((f.id === 'echoeggs' ? '🥚 ' : f.id === 'goldengong' ? '🥇 ' : '🔔 ') + (i+1), x, 2.1, -30, true);
+    }
+  }
+
+  function elevBuildPaint(f){
+    elevBuildRoom(f.floor || '#fff4e0', 16, 14, f.wall);
+    const n = f.paints || 3;
+    for (let i = 0; i < n; i++){
+      const x = -4 + i * (8 / Math.max(1, n-1));
+      const m = elevMesh(new THREE.BoxGeometry(1.6, 1.8, 0.12), '#f4f0e8', x, 1.3, -32, true);
+      elv.paints.push({mesh:m, x, z:-32, i, done:false});
+      elevLab(f.id === 'honkfloor' ? '📯' : f.id === 'mustachewall' ? '🖼️' : '🙂', x, 2.5, -32, true);
+    }
+  }
+
+  function elevBuildLit(f){
+    elevBuildRoom(f.floor || '#1a1630', 16, 20, f.wall);
+    const disc = elevMesh(new THREE.CylinderGeometry(2.2, 2.2, 0.08, 16), f.accent || '#ffe566', 0, 0.25, -24, true, {emissive:'#7a5a00'});
+    elv.lightDisc = disc;
+    const lamp = elevMesh(new THREE.CylinderGeometry(0.3, 0.3, 1.6, 8), f.accent || '#ffd23f', 0, 1.0, -38, true, {emissive:'#7a5a00'});
+    elv.door = {x:0, z:-38, mesh:lamp};
+    elevLab('🕯️ Lamp', 0, 2.4, -38, true);
+  }
+
+  function elevBuildTiles(f){
+    elevBuildRoom(f.floor || '#e8ffe9', 14, 14, f.wall);
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++){
+      const grumpy = (i + j) % 3 === 0;
+      const x = -4.5 + i * 3, z = -24 - j * 3;
+      const m = elevMesh(new THREE.BoxGeometry(2.6, 0.12, 2.6), grumpy ? '#8b5cf6' : (f.accent || '#ffd23f'), x, 0.26, z, true);
+      elv.tiles.push({mesh:m, x, z, grumpy});
+    }
+    elevDoorPad(0, -38);
+  }
+
+  function elevBuildShop(f){
+    elevBuildRoom(f.floor || '#ffe8cc', 14, 14, f.wall);
+    elevMesh(new THREE.BoxGeometry(4.2, 1.4, 1.4), f.accent || '#c45c1a', 0, 0.8, -32, true);
+    elevMesh(new THREE.CylinderGeometry(0.3, 0.3, 0.2, 10), f.accent || '#c45c1a', 0, 1.6, -32, true);
+    elv.turnIn = {x:0, z:-32, shop:true};
+    elevLab(f.id === 'cocoanook' ? '☕ Lucky cocoa — 8 🪙' : '🍪 Lucky cookie — 8 🪙', 0, 2.4, -32, true);
+    elevDoorPad(0, -38);
+  }
+
+  function elevBuildQuiz(f){
+    elevBuildRoom(f.floor || '#e8f0ff', 16, 16, f.wall);
+    const q = elv.run && elv.run.quiz;
+    elevLab('❓ ' + (q && q.q ? q.q : 'Quiz!'), 0, 3.2, -24, true);
+    (q && q.a ? q.a : ['A','B','C']).forEach((ans, i) => {
+      const x = -5 + i * 5;
+      const m = elevMesh(new THREE.BoxGeometry(3.2, 1.6, 0.2), '#fff', x, 1.2, -32, true);
+      elv.quiz.push({mesh:m, x, z:-32, i});
+      elevLab((i+1) + '. ' + ans, x, 2.4, -32, true);
+    });
+  }
+
+  function elevBuildStack(f){
+    elevBuildRoom(f.floor || '#e8f8d8', 14, 14, f.wall);
+    const base = elevMesh(new THREE.BoxGeometry(2.2, 0.3, 2.2), f.accent || '#7cbf3a', 0, 0.35, -30, true);
+    elv.stackBase = {mesh:base, x:0, z:-30};
+    elv.turnIn = {x:0, z:-30, stack:true};
+    elevLab(f.id === 'cupstack' ? '🥤 Stack here' : '🧱 Stack here', 0, 2.0, -30, true);
+  }
+
+  function elevBuildRhythm(f){
+    elevBuildRoom(f.floor || '#f8e0c8', 14, 14, f.wall);
+    const drum = elevMesh(new THREE.CylinderGeometry(1.3, 1.3, 0.7, 16), f.accent || '#c45c1a', 0, 0.55, -30, true, {emissive:'#4a2000'});
+    elv.drum = {mesh:drum, x:0, z:-30};
+    elv.turnIn = {x:0, z:-30, rhythm:true};
+    elevLab(f.id === 'xylobop' ? '🎶 Tap the glow' : '🥁 Tap the glow', 0, 2.0, -30, true);
+  }
+
+  function elevBuildCoop(f){
+    elevBuildRoom(f.floor || '#e8e4ff', 16, 16, f.wall);
+    [-4, 4].forEach((x, i) => {
+      const m = elevMesh(new THREE.CylinderGeometry(1.3, 1.3, 0.16, 16), f.accent || '#7c5cff', x, 0.28, -30, true, {emissive: f.accent || '#7c5cff'});
+      elv.pads.push({mesh:m, x, z:-30, i, on:false});
+      elevLab(i === 0 ? '⭐ Pad A' : '⭐ Pad B', x, 1.6, -30, true);
+    });
+    elevDoorPad(0, -38);
+  }
+
+  function elevBuildBoss(f){
+    elevBuildRoom(f.floor || '#efe0ff', 18, 20, f.wall);
+    const body = elevMesh(new THREE.SphereGeometry(1.8, 10, 8), f.accent || '#8b5cf6', 0, 2.0, -34, true);
+    const hat = elevMesh(new THREE.CylinderGeometry(0.5, 0.6, 0.5, 8), '#ffd23f', 0, 3.8, -34, true, {emissive:'#7a5a00'});
+    elv.boss = {mesh:body, hat, x:0, z:-34};
+    elv.hazards.push({mesh:body, kind:'boss', i:0, speed: 1.6});
+    const bell = elevMesh(new THREE.SphereGeometry(0.4, 8, 6), '#ffd23f', 0, 4.3, -34, true, {emissive:'#7a5a00'});
+    elv.bossBell = {mesh:bell, x:0, z:-34};
+    elevLab(f.id === 'drowsydrake' ? '🐲 Bedtime bell' : '🛡️ Hat bell', 0, 5.2, -34, true);
+  }
+
+  function elevBuildFloor(id){
+    elevClearFloorMeshes();
+    const f = ElevRules.elevFloor(id);
+    if (!f) return;
+    elevApplyLook(f);
+    const clear = ElevRules.elevClearMode(f);
+    if (f.tiles) elevBuildTiles(f);
+    else if (clear === 'door') elevBuildObby(f);
+    else if (clear === 'find') elevBuildFind(f);
+    else if (clear === 'timer') elevBuildHazards(f);
+    else if (clear === 'seq') elevBuildSeq(f);
+    else if (clear === 'paint') elevBuildPaint(f);
+    else if (clear === 'lit') elevBuildLit(f);
+    else if (clear === 'shop') elevBuildShop(f);
+    else if (clear === 'quiz') elevBuildQuiz(f);
+    else if (clear === 'stack') elevBuildStack(f);
+    else if (clear === 'rhythm') elevBuildRhythm(f);
+    else if (clear === 'coop') elevBuildCoop(f);
+    else if (clear === 'boss') elevBuildBoss(f);
+    else elevBuildObby(f);
+  }
+
   function buildElevator(){
     const sv = elevState();
     const started = ElevRules.elevStartRun(sv, Date.now(), !!(typeof mp !== 'undefined' && mp && mp.on));
+    started.run.snow = elevSnowNow();
     elevPersist(started.state);
-    elv = {trash:[], floorTrash:[], sv: started.state, run: started.run, hazards:[], pickups:[], bells:[], paints:[], tiles:[], door:null, host:null, pal:null, doors:[], near:null};
+    elv = {trash:[], floorTrash:[], floorSolids:[], sv: started.state, run: started.run, hazards:[], pickups:[], bells:[], paints:[], tiles:[], door:null, host:null, pal:null, doors:[], near:null, quiz:[], pads:[]};
     elevRestoreSky();
     plat(0, 0, 8, 28, 28, '#c8bea8', 0.2);
     plat(0, 0, 14, 18, 10, '#d9d4c8', 0.08);
-    // lobby walls / awning
     elevMesh(new THREE.BoxGeometry(18, 0.4, 1), '#f4efe4', 0, 4.2, 19, false);
     elevLab('🛗 Wobblevator Lobby', 0, 3.2, 18);
-    // elevator cab
     plat(0, 0.05, 0, 6.4, 6.4, '#c9a24a', 0.08);
     elevMesh(new THREE.BoxGeometry(6.4, 0.9, 0.2), '#efe6d4', 0, 4.05, 3.2, false);
     elevMesh(new THREE.BoxGeometry(0.2, 4.4, 6.4), '#efe6d4', -3.2, 2.3, 0, false);
@@ -227,7 +336,6 @@
     const dL = elevMesh(new THREE.BoxGeometry(2.6, 3.6, 0.16), '#d4a017', -1.35, 1.9, -3.2, false);
     const dR = elevMesh(new THREE.BoxGeometry(2.6, 3.6, 0.16), '#d4a017', 1.35, 1.9, -3.2, false);
     elv.doors = [dL, dR];
-    // back of cab (lobby side) opening
     elevMesh(new THREE.BoxGeometry(1.2, 4.4, 0.2), '#efe6d4', -2.6, 2.3, 3.2, false);
     elevMesh(new THREE.BoxGeometry(1.2, 4.4, 0.2), '#efe6d4', 2.6, 2.3, 3.2, false);
     elevLab('🛎️ Board here', 0, 3.4, 3.6);
@@ -269,9 +377,37 @@
   function elevInCab(){ return Math.abs(P.x) < 2.8 && Math.abs(P.z) < 2.8; }
   function elevSetDoors(open){
     if (!elv || !elv.doors) return;
-    const t = open ? 2.2 : 0.15;
     elv.doors[0].position.x += ((open ? -2.5 : -1.35) - elv.doors[0].position.x) * 0.2;
     elv.doors[1].position.x += ((open ? 2.5 : 1.35) - elv.doors[1].position.x) * 0.2;
+  }
+
+  function elevBindOverlay(id, xId){
+    const el = document.getElementById(id);
+    if (!el || el.__elevOv) return;
+    el.__elevOv = true;
+    el.addEventListener('click', ev => { if (ev.target === el && typeof t297OverlayClose === 'function') t297OverlayClose(id); });
+    const x = document.getElementById(xId);
+    if (x) x.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); if (typeof t297OverlayClose === 'function') t297OverlayClose(id); });
+  }
+
+  function elevPaintIndex(){
+    const list = document.getElementById('elevIndexList');
+    const sub = document.getElementById('elevIndexSub');
+    if (!list) return;
+    const rows = ElevRules.elevIndexRows(elv ? elv.sv : elevState(), {snow: elevSnowNow()});
+    const seen = rows.filter(r => r.seen).length;
+    if (sub) sub.textContent = 'Floors seen: ' + seen + ' / ' + rows.length;
+    list.innerHTML = rows.map(r => {
+      const cls = r.seen ? 'seen' : (r.locked ? 'locked' : 'new');
+      const tag = r.seen ? 'Seen' : (r.locked ? 'Snow Festival' : (r.secret ? 'Secret' : 'Not yet'));
+      return '<div class="elevIdx ' + cls + '"><span class="elevIdxE">' + r.emoji + '</span><span class="elevIdxN">' + r.name + '</span><small>' + tag + '</small></div>';
+    }).join('');
+  }
+
+  function elevOpenHelp(){ if (typeof t297OverlayShow === 'function') t297OverlayShow('elevHelp', true); }
+  function elevOpenIndex(){
+    elevPaintIndex();
+    if (typeof t297OverlayShow === 'function') t297OverlayShow('elevIndex', true);
   }
 
   function elevEnter(){
@@ -279,17 +415,14 @@
     cam.pitch = 0.28; cam.dist = 12;
     try { if (typeof achNote === 'function') achNote('play:elevator'); } catch (e){}
     elevAch('elev-ride');
-    banner('🛎️ Wobblevator! Walk into the lift and press E / Ⓧ. Bingle the Bellhop will take you to surprise floors. If one gets too wobbly, everyone is okay!');
-    elevHud('Walk into the elevator, then press E / Ⓧ to ride. Open Help anytime.', '🛗 Ride');
-    const help = document.getElementById('elevHelp');
-    if (help && !help.__elevOv){
-      help.__elevOv = true;
-      help.addEventListener('click', ev => { if (ev.target === help && typeof t297OverlayClose === 'function') t297OverlayClose('elevHelp'); });
-      const x = document.getElementById('elevHelpX');
-      if (x) x.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); if (typeof t297OverlayClose === 'function') t297OverlayClose('elevHelp'); });
-    }
+    banner('🛎️ Wobblevator! Walk into the lift and press E / Ⓧ. Open Floors (I / Ⓨ) to see your collection. If a floor gets too wobbly, everyone is okay!');
+    elevHud('Walk into the elevator, then press E / Ⓧ to ride. Open Help or Floors anytime.', '🛗 Ride');
+    elevBindOverlay('elevHelp', 'elevHelpX');
+    elevBindOverlay('elevIndex', 'elevIndexX');
     const hb = document.getElementById('elevHelpBtn');
     if (hb && !hb.__elev){ hb.__elev = true; hb.addEventListener('click', ev => { ev.preventDefault(); elevOpenHelp(); }); }
+    const ib = document.getElementById('elevIndexBtn');
+    if (ib && !ib.__elev){ ib.__elev = true; ib.addEventListener('click', ev => { ev.preventDefault(); elevOpenIndex(); }); }
     const ab = document.getElementById('elevAct');
     if (ab && !ab.__elev){ ab.__elev = true; ab.addEventListener('click', ev => { ev.preventDefault(); elevAct(); }); }
     if (typeof t297BindOverlays === 'function'){
@@ -297,13 +430,10 @@
     }
   }
 
-  function elevOpenHelp(){
-    if (typeof t297OverlayShow === 'function') t297OverlayShow('elevHelp', true);
-  }
-
   function elevGo(){
     if (!elv || elv.run.phase !== 'lobby') return;
     if (!elevInCab()){ banner('Step all the way into the lift first!'); return; }
+    elv.run.snow = elevSnowNow();
     ElevRules.elevBeginRide(elv.run, Math.random);
     elevTone([520, 780, 1040], 0.08, 'sine', 0.05);
     banner(elv.run.quote);
@@ -316,8 +446,8 @@
     P.x = 0; P.z = -22; P.y = 0.5; P.vy = 0;
     elevTone([330, 440], 0.07, 'triangle', 0.05);
     banner(elv.run.quote);
-    if (id === 'chimeorder' && elv.run.seq && elv.run.seq.length){
-      const names = ['red', 'yellow', 'blue'];
+    if (ElevRules.elevClearMode(ElevRules.elevFloor(id)) === 'seq' && elv.run.seq && elv.run.seq.length){
+      const names = ['first', 'second', 'third', 'fourth'];
       banner('🛎️ Bingle hummed: ' + elv.run.seq.map(i => names[i] || (i+1)).join(', then ') + '!');
     }
     if (elv.run.buddy && elv.run.palId){
@@ -349,13 +479,20 @@
     if (!r.ok) return;
     elevPersist(r.state);
     elv.run = r.run;
+    ElevRules.elevBadges(r.state, r.run).forEach(id => elevAch(id));
     elevTone([180, 90], 0.12, 'triangle', 0.06);
     elevReturnToCab(r.run.quote);
   }
 
+  function elevOnBeat(){
+    if (!elv) return false;
+    const t = (elv.run.beatT || 0) % 1;
+    return t < 0.28 || t > 0.86;
+  }
+
   function elevAct(){
     if (!elv) return false;
-    if (typeof t297EatOverlayKey === 'function' && t297OverlayOpen && t297OverlayOpen()) return true;
+    if (typeof t297OverlayOpen === 'function' && t297OverlayOpen()) return true;
     const run = elv.run;
     if (run.phase === 'lobby'){ elevGo(); return true; }
     if (run.phase !== 'floor') return false;
@@ -380,6 +517,16 @@
         return true;
       }
     }
+    if (elv.quiz && elv.quiz.length){
+      const q = elv.quiz.find(o => elevNear(o.x, o.z, 1.8));
+      if (q){
+        const r = ElevRules.elevQuiz(run, q.i);
+        elevTone(r.ok ? [640, 800] : [160], 0.08, 'sine', 0.06);
+        if (r.ok){ if (run.wantClear) elevDoClear(); }
+        else banner('Not that one — try another answer!');
+        return true;
+      }
+    }
     if (elv.pickups && elv.pickups.length){
       const p = elv.pickups.find(o => !o.got && elevNear(o.x, o.z, 1.5));
       if (p){
@@ -399,10 +546,27 @@
         if (r.ok){
           elevPersist(r.state);
           try { setCoins(r.wallet); } catch (e){}
-          banner('🍪 Lucky cookie! The next floor pays a little extra.');
+          banner('Lucky treat! The next floor pays a little extra.');
           elevTone([700, 880], 0.08, 'sine', 0.05);
-        } else if (r.why === 'coins') banner('Need ' + r.need + ' more coins for a lucky cookie.');
-        else if (r.why === 'have') banner('You already grabbed a cookie this stop.');
+        } else if (r.why === 'coins') banner('Need ' + r.need + ' more coins for a lucky treat.');
+        else if (r.why === 'have') banner('You already grabbed a treat this stop.');
+        return true;
+      }
+      if (elv.turnIn.stack){
+        const r = ElevRules.elevStack(run);
+        if (r.ok){
+          const y = 0.55 + r.stacked * 0.38;
+          elevMesh(new THREE.BoxGeometry(1.2, 0.36, 1.2), '#fff4d8', 0, y, -30, true);
+          elevTone([500 + r.stacked * 60], 0.06, 'sine', 0.05);
+          if (run.wantClear) elevDoClear();
+        }
+        return true;
+      }
+      if (elv.turnIn.rhythm){
+        const r = ElevRules.elevBeat(run, elevOnBeat());
+        elevTone(r.ok ? [720, 880] : [180], 0.06, 'sine', 0.06);
+        if (run.wantClear) elevDoClear();
+        if (run.wantFail) elevDoFail();
         return true;
       }
       if (run.holding){
@@ -410,6 +574,21 @@
         if (run.wantClear) elevDoClear();
         return true;
       }
+    }
+    if (elv.pads && elv.pads.length){
+      const p = elv.pads.find(o => elevNear(o.x, o.z, 1.6));
+      if (p){
+        ElevRules.elevPadStand(run, p.i, true);
+        p.mesh.material.color.set('#ffd23f');
+        elevTone([600], 0.06, 'sine', 0.05);
+        if (run.wantClear) elevDoClear();
+        return true;
+      }
+    }
+    if (elv.bossBell && run.bossTag && elevNear(elv.bossBell.x, elv.bossBell.z, 2.2)){
+      ElevRules.elevTagBoss(run);
+      if (run.wantClear) elevDoClear();
+      return true;
     }
     return false;
   }
@@ -428,26 +607,32 @@
     if (run.wantClear) elevDoClear();
     else if (run.wantFail) elevDoFail();
 
-    const openDoors = run.phase === 'lobby' || run.phase === 'floor' || run.phase === 'inter';
-    elevSetDoors(openDoors);
+    elevSetDoors(run.phase === 'lobby' || run.phase === 'floor' || run.phase === 'inter');
     if (elv.host) elv.host.rotation.y = Math.sin(time * 2) * 0.3;
     if (elv.host) elv.host.position.y = 0.2 + Math.sin(time * 6) * (run.phase === 'ride' ? 0.12 : 0.04);
 
     const f = ElevRules.elevFloor(run.floor);
     const maxT = run.phase === 'floor' && f ? f.seconds : (run.phase === 'ride' ? ElevRules.ELEV_RIDE : ElevRules.ELEV_INTER);
-    const lab = '🛗 ' + (run.survived || 0) + ' floors  ·  best ' + (elv.sv.best || 0) + (run.phase === 'floor' && f ? ('  ·  ' + f.emoji + ' ' + f.name + '  ·  ' + Math.ceil(run.t) + 's') : (run.phase === 'ride' ? '  ·  riding…' : ''));
+    const seenN = (elv.sv && elv.sv.seen && elv.sv.seen.length) || 0;
+    const lab = '🛗 ' + (run.survived || 0) + ' floors  ·  best ' + (elv.sv.best || 0) + '  ·  seen ' + seenN + (run.phase === 'floor' && f ? ('  ·  ' + f.emoji + ' ' + f.name + '  ·  ' + Math.ceil(run.t) + 's') : (run.phase === 'ride' ? '  ·  riding…' : ''));
     elevMeter(true, run.phase === 'floor' ? run.t : (run.phase === 'ride' ? run.t : 1), lab, maxT);
 
     if (run.phase === 'floor'){
       (elv.hazards || []).forEach(h => {
         if (!h.mesh) return;
         const t = time * h.speed;
-        if (h.kind === 'soap') h.mesh.position.set(Math.sin(t + h.i) * 5, 0.4, -30 + Math.cos(t * 0.7 + h.i) * 5);
-        else if (h.kind === 'pie') h.mesh.position.set(((t * 3 + h.i * 4) % 18) - 9, 1.1 + Math.sin(t) * 0.3, -26 - (h.i % 3) * 3);
-        else if (h.kind === 'balloon') h.mesh.position.set(Math.sin(t + h.i) * 5, 1.1 + Math.abs(Math.sin(t * 1.4)) * 1.2, -30 + Math.cos(t + h.i) * 4);
-        else if (h.kind === 'confetti') h.mesh.position.set(Math.sin(t * 1.3 + h.i) * 6, 0.8 + (t + h.i) % 3, -28 + Math.cos(t + h.i) * 4);
-        else if (h.kind === 'peek') h.mesh.position.z = -34 + Math.sin(t) * 3;
-        if (Math.hypot(P.x - h.mesh.position.x, P.z - h.mesh.position.z) < (h.kind === 'peek' ? 1.1 : 0.9) && Math.abs(P.y - h.mesh.position.y) < 1.4){
+        if (h.kind === 'soap' || h.kind === 'foam') h.mesh.position.set(Math.sin(t + h.i) * 5, 0.4, -30 + Math.cos(t * 0.7 + h.i) * 5);
+        else if (h.kind === 'pie' || h.kind === 'muffin') h.mesh.position.set(((t * 3 + h.i * 4) % 18) - 9, 1.1 + Math.sin(t) * 0.3, -26 - (h.i % 3) * 3);
+        else if (h.kind === 'balloon' || h.kind === 'sparkle') h.mesh.position.set(Math.sin(t + h.i) * 5, 1.1 + Math.abs(Math.sin(t * 1.4)) * 1.2, -30 + Math.cos(t + h.i) * 4);
+        else if (h.kind === 'confetti' || h.kind === 'leaf' || h.kind === 'ribbon' || h.kind === 'flake') h.mesh.position.set(Math.sin(t * 1.3 + h.i) * 6, 0.8 + (t + h.i) % 3, -28 + Math.cos(t + h.i) * 4);
+        else if (h.kind === 'peek' || h.kind === 'wink') h.mesh.position.z = -34 + Math.sin(t) * 3;
+        else if (h.kind === 'boss'){
+          h.mesh.position.x = Math.sin(t) * (run.bossTag ? 1.2 : 4);
+          if (elv.boss && elv.boss.hat) elv.boss.hat.position.x = h.mesh.position.x;
+          if (elv.bossBell) { elv.bossBell.mesh.position.x = h.mesh.position.x; elv.bossBell.x = h.mesh.position.x; }
+        }
+        const rad = h.kind === 'boss' ? (run.bossTag ? 0.8 : 1.6) : (h.kind === 'peek' || h.kind === 'wink' ? 1.1 : 0.9);
+        if (!run.bossTag && Math.hypot(P.x - h.mesh.position.x, P.z - h.mesh.position.z) < rad && Math.abs(P.y - h.mesh.position.y) < 1.6){
           ElevRules.elevTouchHazard(run);
         }
       });
@@ -460,6 +645,20 @@
         elv.lightDisc.position.z = -24 + Math.cos(time * 0.6) * 6;
         const lit = Math.hypot(P.x - elv.lightDisc.position.x, P.z - elv.lightDisc.position.z) < 2.6;
         ElevRules.elevStayLit(run, lit);
+      }
+      if (elv.drum && elv.drum.mesh && elv.drum.mesh.material){
+        const glow = elevOnBeat();
+        elv.drum.mesh.material.emissive.set(glow ? '#ffd23f' : '#4a2000');
+      }
+      if (elv.pads){
+        elv.pads.forEach(p => {
+          if (elevNear(p.x, p.z, 1.4) && !p.on){
+            p.on = true;
+            ElevRules.elevPadStand(run, p.i, true);
+            p.mesh.material.color.set('#ffd23f');
+          }
+        });
+        if (run.wantClear) elevDoClear();
       }
       if (elv.door && elevNear(elv.door.x, elv.door.z, 1.5)){
         ElevRules.elevReachDoor(run);
@@ -476,11 +675,18 @@
       elevHud(run.quote || 'The lift is wobbling to the next floor…', '');
     } else if (run.phase === 'floor' && f){
       if (elv.bells && elv.bells.some(o => elevNear(o.x, o.z, 1.6))) act = '🔔 Ring';
-      else if (elv.paints && elv.paints.some(o => !o.done && elevNear(o.x, o.z, 1.7))) act = '🎨 Paint';
+      else if (elv.paints && elv.paints.some(o => !o.done && elevNear(o.x, o.z, 1.7))) act = (f.id === 'honkfloor' ? '📯 Honk' : '🎨 Paint');
+      else if (elv.quiz && elv.quiz.some(o => elevNear(o.x, o.z, 1.8))) act = '❓ Answer';
       else if (elv.pickups && elv.pickups.some(o => !o.got && elevNear(o.x, o.z, 1.5))) act = '🤲 Pick up';
-      else if (elv.turnIn && elevNear(elv.turnIn.x, elv.turnIn.z, 1.8)) act = elv.turnIn.shop ? '🍪 Buy' : '🧺 Drop off';
+      else if (elv.turnIn && elevNear(elv.turnIn.x, elv.turnIn.z, 1.8)) act = elv.turnIn.shop ? '🛒 Buy' : elv.turnIn.stack ? '🧱 Stack' : elv.turnIn.rhythm ? '🥁 Tap' : '🧺 Drop off';
+      else if (elv.pads && elv.pads.some(o => elevNear(o.x, o.z, 1.6))) act = '⭐ Pad';
+      else if (elv.bossBell && run.bossTag && elevNear(elv.bossBell.x, elv.bossBell.z, 2.2)) act = '🛎️ Bell';
       else if (elv.door && elevNear(elv.door.x, elv.door.z, 1.6)) act = '🚪 Door';
-      elevHud(f.hint + (run.holding ? '  Holding the find!' : ''), act);
+      let extra = run.holding ? '  Holding the find!' : '';
+      if (f.clear === 'rhythm') extra += '  Hits ' + (run.beats || 0) + '/' + (f.need || 6);
+      if (f.clear === 'stack') extra += '  Stack ' + (run.stacked || 0) + '/' + (f.need || 5);
+      if (run.bossTag) extra += '  Tag the bell!';
+      elevHud(f.hint + extra, act);
     } else {
       elevHud('Back in the lift. Next floor coming up!', '');
     }
@@ -491,16 +697,14 @@
     if (typeof t297EatOverlayKey === 'function' && t297EatOverlayKey(e)) return true;
     if (e.type === 'keyup') return false;
     const c = e.code || e.key;
-    if (c === 'KeyE' || c === 'KeyF' || c === 'Space'){ /* space is jump; don't steal */ }
     if (c === 'KeyE' || c === 'KeyF'){ elevAct(); return true; }
     if (c === 'KeyH'){ elevOpenHelp(); return true; }
+    if (c === 'KeyI'){ elevOpenIndex(); return true; }
     return false;
   }
   function elevPad(jp){
     if (!elv || !jp) return false;
     if (typeof t297EatOverlayPad === 'function' && t297EatOverlayPad(jp)) return true;
-    if (jp[0] || jp[2]){ elevAct(); return true; } // A or X — A is also jump; X is safer. Don't block A.
-    // use button 2 (X) only for act if we can detect edge... use 2
     return false;
   }
   function elevPadEdge(jp){
@@ -508,6 +712,8 @@
     if (typeof t297EatOverlayPad === 'function' && t297EatOverlayPad(jp)) return true;
     if (!elv._x && jp[2]){ elv._x = true; elevAct(); return true; }
     if (!jp[2]) elv._x = false;
+    if (!elv._y && jp[3]){ elv._y = true; elevOpenIndex(); return true; }
+    if (!jp[3]) elv._y = false;
     return false;
   }
   function elevStop(){
@@ -518,7 +724,7 @@
     elevHud('', '');
     elevMeter(false);
     const box = document.getElementById('elevBox'); if (box) box.style.display = 'none';
-    if (typeof t297OverlayClose === 'function') t297OverlayClose('elevHelp');
+    if (typeof t297OverlayClose === 'function'){ t297OverlayClose('elevHelp'); t297OverlayClose('elevIndex'); }
     const ob = document.getElementById('obby');
     if (ob) ob.classList.remove('elevmode');
   }
@@ -530,5 +736,6 @@
       if (!elv) return;
       ElevRules.elevBeginFloor(elv.run, id || 'lanternhall', Math.random);
       elevArrive();
-    }
+    },
+    index(){ elevOpenIndex(); }
   };
