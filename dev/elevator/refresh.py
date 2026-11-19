@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refresh already-injected Wobblevator sources and bump BUILD to 2026.11.19-7."""
+"""Refresh already-injected Wobblevator sources and bump BUILD to 2026.11.19-8."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -7,8 +7,8 @@ import json
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-BUILD = "2026.11.19-7"
-OLD_BUILD = "2026.11.19-6"
+BUILD = "2026.11.19-8"
+OLD_BUILD = "2026.11.19-7"
 ELEV = Path(__file__).resolve().parent
 
 
@@ -100,6 +100,22 @@ def patch_html(html: str) -> str:
             "#elevAct, #elevHelpBtn, #elevIndexBtn, #elevHelp, #elevIndex, #elevBox, #elevMeter,",
             "HUD_HIT_SEL",
         )
+
+    if "if (mode === 'elevator'){ if (P.y < -2 && typeof elevCatchFall === 'function') elevCatchFall(); return; }" not in html:
+        html = replace_once(
+            html,
+            "if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ if (P.y < -25) respawn(); return; }",
+            "if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ if (P.y < -25) respawn(); return; }\n    if (mode === 'elevator'){ if (P.y < -2 && typeof elevCatchFall === 'function') elevCatchFall(); return; }",
+            "elevator fall catch in checks()",
+        )
+
+    if "mode === 'hunt' || mode === 'elevator')" not in html:
+        html = replace_once(
+            html,
+            "mode === 'petshow' || mode === 'hunt') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62)",
+            "mode === 'petshow' || mode === 'hunt' || mode === 'elevator') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62)",
+            "elevator walk-up steps",
+        )
     return html
 
 
@@ -129,6 +145,10 @@ def verify(html: str) -> None:
         "bag": "function elevRebuildBag(",
         "runtime index": "function elevOpenIndex(",
         "xbox": "Ⓨ floors",
+        "room of": "function elevRoomOf(",
+        "catch fall": "function elevCatchFall(",
+        "checks catch": "if (mode === 'elevator'){ if (P.y < -2 && typeof elevCatchFall === 'function') elevCatchFall(); return; }",
+        "walk up": "mode === 'hunt' || mode === 'elevator')",
     }
     missing = [k for k, v in checks.items() if v not in html]
     if missing:

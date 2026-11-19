@@ -61,6 +61,7 @@
 
   function elevPlat(x, top, z, w, d, color, h){
     const b = plat(x, top, z, w, d, color, h == null ? 1 : h);
+    if (b) b.floorOnly = true;
     if (elv && elv.floorSolids) elv.floorSolids.push(b);
     if (b && b.mesh) elevFkeep(b.mesh);
     return b;
@@ -116,11 +117,22 @@
 
   function elevBuildRoom(col, w, d, wall){
     wall = wall || '#d8d0c4';
-    elevMesh(new THREE.BoxGeometry(w, 0.2, d), col, 0, 0.1, -30, true);
-    elevMesh(new THREE.BoxGeometry(w, 6, 0.3), wall, 0, 3, -30 - d/2, true);
-    elevMesh(new THREE.BoxGeometry(0.3, 6, d), wall, -w/2, 3, -30, true);
-    elevMesh(new THREE.BoxGeometry(0.3, 6, d), wall, w/2, 3, -30, true);
-    elevPlat(0, 0.2, -30, w, d, col, 0.2);
+    const z = (typeof ElevRules !== 'undefined' && ElevRules.ELEV_ROOM_Z) || -30;
+    const top = (typeof ElevRules !== 'undefined' && ElevRules.ELEV_FLOOR_TOP) || 0.2;
+    const cabZ = (typeof ElevRules !== 'undefined' && ElevRules.ELEV_CAB_Z) || -3.2;
+    elevMesh(new THREE.BoxGeometry(w, 0.2, d), col, 0, top / 2, z, true);
+    elevMesh(new THREE.BoxGeometry(w, 6, 0.3), wall, 0, 3, z - d/2, true);
+    elevMesh(new THREE.BoxGeometry(0.3, 6, d), wall, -w/2, 3, z, true);
+    elevMesh(new THREE.BoxGeometry(0.3, 6, d), wall, w/2, 3, z, true);
+    elevPlat(0, top, z, w, d, col, top);
+    const front = z + d / 2;
+    if (front < cabZ - 0.05){
+      const hz = (front + cabZ) / 2;
+      const hd = (cabZ - front) + 0.6;
+      elevPlat(0, top, hz, 6.4, hd, col, top);
+      elevMesh(new THREE.BoxGeometry(6.4, top, hd), col, 0, top / 2, hz, true);
+    }
+    if (elv) elv.room = {x:0, z, w, d, top};
   }
   function elevDoorPad(x, z, label){
     const m = elevMesh(new THREE.BoxGeometry(2.2, 0.15, 2.2), '#ffd23f', x, 0.28, z, true, {emissive:'#7a5a00'});
@@ -353,7 +365,9 @@
     const hallLight = new THREE.PointLight(0xffe8c8, 0.7, 40);
     hallLight.position.set(0, 5, -28);
     scene.add(hallLight); elevKeep(hallLight);
-    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:14}, flag:new THREE.Object3D()};
+    elv.lobbySpawn = {x:0, y:0.5, z:14};
+    checkpoints[0] = {idx:0, spawn:{x:0, y:0.5, z:14}, flag:new THREE.Object3D()};
+    if (typeof P !== 'undefined'){ P.x = 0; P.y = 0.5; P.z = 14; P.vx = 0; P.vy = 0; P.vz = 0; P.onGround = false; P.ground = null; }
   }
 
   function elevHud(text, act){
@@ -439,11 +453,30 @@
     banner(elv.run.quote);
   }
 
+  function elevPlacePlayer(s){
+    if (!s || typeof P === 'undefined') return;
+    P.x = s.x; P.y = s.y; P.z = s.z;
+    P.vx = 0; P.vy = 0; P.vz = 0;
+    P.onGround = false; P.ground = null;
+    try { if (typeof cam !== 'undefined' && cam) cam.yaw = 0; } catch (e){}
+  }
+
+  function elevCatchFall(){
+    if (!elv || !elv.run || elv.run.phase !== 'floor' || !elv.floorStart) return false;
+    if (!(P.y < -1)) return false;
+    elevPlacePlayer(elv.floorStart);
+    try { banner('🫧 Whoops! Bingle scooped you back onto the floor. Everyone is okay!'); } catch (e){}
+    return true;
+  }
+
   function elevArrive(){
     if (!elv) return;
     const id = elv.run.floor;
     elevBuildFloor(id);
-    P.x = 0; P.z = -22; P.y = 0.5; P.vy = 0;
+    const spawn = (typeof ElevRules !== 'undefined' && ElevRules.elevSpawnOf) ? ElevRules.elevSpawnOf(id) : {x:0, y:0.5, z:-30, top:0.2};
+    elv.floorStart = {x:spawn.x, y:spawn.y, z:spawn.z, top:spawn.top};
+    if (typeof checkpoints !== 'undefined' && checkpoints[0]) checkpoints[0].spawn = {x:spawn.x, y:spawn.y, z:spawn.z};
+    elevPlacePlayer(elv.floorStart);
     elevTone([330, 440], 0.07, 'triangle', 0.05);
     banner(elv.run.quote);
     if (ElevRules.elevClearMode(ElevRules.elevFloor(id)) === 'seq' && elv.run.seq && elv.run.seq.length){
@@ -459,7 +492,10 @@
   function elevReturnToCab(msg){
     elevClearFloorMeshes();
     elevRestoreSky();
-    P.x = 0; P.z = 0; P.y = 0.5; P.vy = 0;
+    const cab = {x:0, y:0.5, z:0};
+    elv.floorStart = null;
+    if (elv.lobbySpawn && typeof checkpoints !== 'undefined' && checkpoints[0]) checkpoints[0].spawn = {x:elv.lobbySpawn.x, y:elv.lobbySpawn.y, z:elv.lobbySpawn.z};
+    elevPlacePlayer(cab);
     if (msg) banner(msg);
   }
 
@@ -604,6 +640,7 @@
       banner(run.quote);
       elevTone([440, 550], 0.06, 'sine', 0.04);
     }
+    if (run.phase === 'floor' && P.y < -1) elevCatchFall();
     if (run.wantClear) elevDoClear();
     else if (run.wantFail) elevDoFail();
 
@@ -731,11 +768,29 @@
 
   if (typeof window !== 'undefined') window.elevDebug = {
     floors(){ return ElevRules.ELEV_FLOORS.map(f => f.id); },
-    cab(){ if (!elv) return; P.x = 0; P.z = 0; P.y = 0.5; elv.run.phase = 'lobby'; elevRestoreSky(); elevClearFloorMeshes(); },
+    cab(){ if (!elv) return; if (elv.lobbySpawn && checkpoints[0]) checkpoints[0].spawn = {x:elv.lobbySpawn.x, y:elv.lobbySpawn.y, z:elv.lobbySpawn.z}; P.x = 0; P.z = 0; P.y = 0.5; P.vx = 0; P.vy = 0; P.vz = 0; elv.run.phase = 'lobby'; elv.floorStart = null; elevRestoreSky(); elevClearFloorMeshes(); },
     floor(id){
       if (!elv) return;
       ElevRules.elevBeginFloor(elv.run, id || 'lanternhall', Math.random);
       elevArrive();
     },
-    index(){ elevOpenIndex(); }
+    index(){ elevOpenIndex(); },
+    catchFall(){ return elevCatchFall(); },
+    to(x,y,z){ Object.assign(P, {x:+x, y:+y, z:+z, vx:0, vy:0, vz:0, onGround:false, ground:null}); return this.probe(); },
+    probe(){
+      if (!elv) return null;
+      const active = (typeof solids !== 'undefined' && solids) ? solids.filter(b => b && b.active) : [];
+      const under = (typeof colTop === 'function') ? colTop(P.x, P.z) : 0;
+      return {
+        phase: elv.run && elv.run.phase,
+        floor: elv.run && elv.run.floor,
+        P:{x:+P.x, y:+P.y, z:+P.z, vy:+P.vy, onGround:!!P.onGround},
+        start: elv.floorStart || null,
+        room: elv.room || null,
+        solids: active.length,
+        floorSolids: (elv.floorSolids || []).filter(b => b && b.active).length,
+        under: +under,
+        wantFail: !!(elv.run && elv.run.wantFail)
+      };
+    }
   };

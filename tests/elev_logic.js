@@ -241,4 +241,29 @@ describe('Wobblevator', () => {
     assert.equal(hid.seen, false);
     assert.equal(hid.name, '???');
   });
+
+
+  test('every floor spawns the player on solid ground and a fall is scooped back', () => {
+    const R = E.ELEV_BODY_R;
+    assert.ok(E.ELEV_FLOORS.length >= 45);
+    E.ELEV_FLOORS.forEach(f => {
+      const room = E.elevRoomOf(f);
+      const spawn = E.elevSpawnOf(f);
+      assert.ok(room && room.w > 4 && room.d > 4, f.id + ' needs a real room');
+      assert.ok(room.hall && room.hall.d > 4, f.id + ' needs a hall from the cab');
+      assert.equal(E.elevOnSolid(spawn.x, spawn.z, room, R), true, f.id + ' spawn must be on the slab');
+      // the live bug: z = -22 sat past the front edge of 14-deep rooms
+      const legacy = {x:0, y:0.5, z:-22};
+      const sim = E.elevSimStep(f.id, 3, {fps:60});
+      assert.equal(sim.fell, false, f.id + ' should not free-fall from spawn');
+      assert.ok(sim.y >= sim.top - 0.01, f.id + ' y=' + sim.y + ' below floor ' + sim.top);
+      assert.ok(sim.onGround, f.id + ' should be grounded after a few seconds');
+      assert.ok(sim.minY >= sim.top - 0.05, f.id + ' minY ' + sim.minY + ' dipped below the floor');
+      const drop = E.elevSimStep(f.id, 2, {x:0, y:2, z:-80, fps:60, catchFall:true});
+      assert.ok(drop.caught >= 1, f.id + ' fall-safety net should respawn at the start');
+      assert.equal(drop.fell, false);
+      assert.ok(E.elevOnSolid(drop.x, drop.z, room, R), f.id + ' catch should land back on the floor');
+    });
+  });
+
 });
