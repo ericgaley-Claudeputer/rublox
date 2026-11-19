@@ -58,6 +58,8 @@
     d.earned = Math.max(0, o.earned | 0);
     d.planted = Math.max(0, o.planted | 0);
     d.harvested = Math.max(0, o.harvested | 0);
+    d.starter = !!o.starter;
+    d.pick = gardenSeed(o.pick) ? o.pick : null;
     return d;
   }
 
@@ -89,9 +91,9 @@
     if (i < 0 || i >= GARDEN_PLOTS) return {ok:false, why:'plot', state, coins: coins|0};
     const plot = state.plots[i];
     if (plot.seed) return {ok:false, why:'busy', state, coins: coins|0};
-    let sid = seedId;
-    if (!sid){
-      sid = GARDEN_SEEDS.map(s => s.id).find(id => (state.pouch[id] | 0) > 0) || null;
+    let sid = seedId || state.pick;
+    if (!sid || (state.pouch[sid] | 0) <= 0){
+      sid = GARDEN_SEEDS.map(s => s.id).find(id => (state.pouch[id] | 0) > 0) || sid || null;
     }
     const seed = gardenSeed(sid);
     if (!seed) return {ok:false, why:'seed', state, coins: coins|0};
@@ -155,10 +157,35 @@
     return Object.keys(state.pouch).reduce((n, k) => n + (state.pouch[k] | 0), 0);
   }
 
+  function gardenGrantStarter(state){
+    state = gardenLoad(state);
+    const unused = !state.planted && !state.harvested && !state.sold && !Object.keys(state.pouch).length && !(state.basket && state.basket.length);
+    if (!state.starter && unused){
+      state.pouch.sprout = 3;
+    }
+    state.starter = true;
+    return state;
+  }
+
+  function gardenLeft(plot, now){
+    if (!plot || !plot.seed || !plot.plantedAt) return 0;
+    const seed = gardenSeed(plot.seed);
+    if (!seed) return 0;
+    return Math.max(0, seed.grow - Math.max(0, (+now || 0) - plot.plantedAt));
+  }
+
+  function gardenPick(state, seedId){
+    state = gardenLoad(state);
+    if (seedId && gardenSeed(seedId)) state.pick = seedId;
+    else if (!gardenSeed(state.pick)) state.pick = state.pick || null;
+    return state;
+  }
+
   const api = {
     GARDEN_KEY, GARDEN_VER, GARDEN_PLOTS, GARDEN_STAND, GARDEN_SEEDS,
     gardenFresh, gardenLoad, gardenSeed, gardenStage, gardenReady,
-    gardenBuy, gardenPlant, gardenHarvest, gardenSell, gardenShow, gardenPouchCount
+    gardenBuy, gardenPlant, gardenHarvest, gardenSell, gardenShow, gardenPouchCount,
+    gardenGrantStarter, gardenLeft, gardenPick
   };
   root.GardenRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

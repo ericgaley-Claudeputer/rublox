@@ -8,9 +8,9 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
 describe('t302 five play modes wiring', () => {
-  test('BUILD is 2026.11.18-1 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.18-1'"));
-    assert.equal(version.build, '2026.11.18-1');
+  test('BUILD is 2026.11.19-1 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.19-1'"));
+    assert.equal(version.build, '2026.11.19-1');
   });
 
   test('all five modes are playable menu games with original names and save keys', () => {
@@ -40,11 +40,11 @@ describe('t302 five play modes wiring', () => {
   });
 
   test('new popups join the shared close path and do not steal emote number keys', () => {
-    for (const id of ['gardenShop', 'meadowBook', 'ridesPalette', 'hiveQuest', 'campCraft']){
+    for (const id of ['gardenShop', 'meadowBook', 'ridesPalette', 'hiveQuest', 'campCraft', 'campWin']){
       assert.ok(html.includes('id="' + id + '"'), id);
       assert.ok(html.includes("'" + id + "'") || html.includes('"' + id + '"'));
     }
-    assert.match(html, /gardenShop', 'meadowBook', 'ridesPalette', 'hiveQuest', 'campCraft'/);
+    assert.match(html, /gardenShop', 'meadowBook', 'ridesPalette', 'hiveQuest', 'campCraft', 'campWin'/);
     const runtime = html.slice(html.indexOf('function t302Key'), html.indexOf('function t302Key') + 2500);
     assert.equal(/Digit[0-9]/.test(runtime), false, 't302 keys must not bind number keys used by emotes');
     assert.match(html, /function t297OverlayClose/);
@@ -59,7 +59,8 @@ describe('t302 five play modes wiring', () => {
     assert.match(html, /campBuddyAllowed/);
     assert.match(html, /d\.t === 't302'/);
     assert.match(html, /hiveFight\(\)/);
-    assert.match(html, /campNoMonsters/);
+    assert.match(html, /campNoFight/);
+    assert.match(html, /campNoGore/);
   });
 
   test('achievements and daily quests hook the new modes', () => {
@@ -70,4 +71,26 @@ describe('t302 five play modes wiring', () => {
     assert.match(html, /ev: 'camp-sunrise'/);
     assert.match(html, /snap\.garden = L\('rubloxGarden'/);
   });
+
+  test('Campfire Grove is a kid-friendly horror mode with a Less scary toggle and a win screen', () => {
+    assert.match(html, /the Gloam/);
+    assert.match(html, /campGloamTarget/);
+    assert.match(html, /campShine/);
+    assert.match(html, /campSetLessScary/);
+    assert.match(html, /t302LessBtn/);
+    assert.match(html, /id="campWin"/);
+    assert.match(html, /t302Vignette/);
+    assert.match(html, /t302Scare/);
+    assert.match(html, /function campRetry/);
+    assert.ok(!/Digit[0-9]/.test(html.slice(html.indexOf('function t302Key'), html.indexOf('function t302Key') + 2500)));
+  });
+
+  test('Xbox and mobile actions are edge-triggered and garden grants starter seeds', () => {
+    assert.match(html, /function t302Edge/);
+    assert.match(html, /if \(e\.repeat && mode !== 'meadow'\) return false;/);
+    assert.match(html, /gardenGrantStarter/);
+    assert.match(html, /meadowThrowTo/);
+    assert.match(html, /document\.pointerLockElement/);
+  });
+
 });

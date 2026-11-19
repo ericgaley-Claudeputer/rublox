@@ -7,8 +7,8 @@ import json
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-BUILD = "2026.11.18-1"
-OLD_BUILD = "2026.11.16-23"
+BUILD = "2026.11.19-1"
+OLD_BUILD = "2026.11.19-1"
 T302 = Path(__file__).resolve().parent
 
 
@@ -64,7 +64,7 @@ def logic_block() -> str:
 
 
 def patch_html(html: str) -> str:
-    html = replace_once(html, "const BUILD = '2026.11.16-23'", f"const BUILD = '{BUILD}'", "BUILD const")
+    html = replace_once(html, "const BUILD = '2026.11.18-1'", f"const BUILD = '{BUILD}'", "BUILD const")
 
     html = insert_before(
         html,

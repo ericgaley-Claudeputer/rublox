@@ -58,7 +58,7 @@
     return best;
   }
 
-  function meadowThrow(state, charge, ownerId, animalOwnerId){
+  function meadowToss(state, charge, ownerId, animalOwnerId){
     state = meadowLoad(state);
     if (animalOwnerId && ownerId && animalOwnerId !== ownerId){
       return {ok:false, why:'owned', state, dist:0};
@@ -70,16 +70,28 @@
     state.snacks -= 1;
     state.throws += 1;
     if (dist > state.best) state.best = Math.round(dist * 10) / 10;
-    const field = meadowFieldAt(dist);
-    let animal = null, foundNew = false;
-    if (field){
-      animal = meadowAnimal(field.animal);
-      if (animal && state.found.indexOf(animal.id) < 0){
-        state.found.push(animal.id);
-        foundNew = true;
-      }
+    return {ok:true, why:'ok', state, dist};
+  }
+
+  function meadowAward(state, fieldLike){
+    state = meadowLoad(state);
+    const field = fieldLike && (meadowField(fieldLike.id) || meadowField(fieldLike.field) || fieldLike);
+    const aid = field && (field.animal || field.id);
+    const animal = meadowAnimal(aid);
+    let foundNew = false;
+    if (animal && state.found.indexOf(animal.id) < 0){
+      state.found.push(animal.id);
+      foundNew = true;
     }
-    return {ok:true, why:'ok', state, dist, field, animal, foundNew};
+    return {state, field: field && field.id ? meadowField(field.id) || field : field, animal, foundNew};
+  }
+
+  function meadowThrow(state, charge, ownerId, animalOwnerId){
+    const tossed = meadowToss(state, charge, ownerId, animalOwnerId);
+    if (!tossed.ok) return tossed;
+    const field = meadowFieldAt(tossed.dist);
+    const got = field ? meadowAward(tossed.state, field) : {state:tossed.state, field:null, animal:null, foundNew:false};
+    return {ok:true, why:'ok', state: got.state, dist: tossed.dist, field: got.field, animal: got.animal, foundNew: got.foundNew};
   }
 
   function meadowTrain(state){
@@ -109,11 +121,42 @@
     return ownerId === otherId;
   }
 
+  function meadowLanding(fromX, fromZ, dirX, dirZ, dist){
+    const L = Math.hypot(+dirX || 0, +dirZ || 0) || 1;
+    const d = Math.max(0, +dist || 0);
+    return {x: (+fromX || 0) + (dirX / L) * d, z: (+fromZ || 0) + (dirZ / L) * d, dist: d};
+  }
+
+  function meadowHitField(fields, x, z, radius){
+    const r = radius == null ? 5.5 : +radius;
+    let best = null, bestD = r;
+    (fields || []).forEach(f => {
+      if (!f) return;
+      const d = Math.hypot((+f.x || 0) - x, (+f.z || 0) - z);
+      const allow = f.r != null ? +f.r : r;
+      if (d <= allow && d <= bestD){ best = f; bestD = d; }
+    });
+    return best;
+  }
+
+  function meadowThrowTo(state, charge, fromX, fromZ, dirX, dirZ, fields, ownerId, animalOwnerId){
+    const tossed = meadowToss(state, charge, ownerId, animalOwnerId);
+    if (!tossed.ok) return tossed;
+    const land = meadowLanding(fromX, fromZ, dirX, dirZ, tossed.dist);
+    const hit = meadowHitField(fields, land.x, land.z, 5.5);
+    if (!hit){
+      return {ok:true, why:'ok', state: tossed.state, dist: tossed.dist, land, field:null, animal:null, foundNew:false, missed:true};
+    }
+    const got = meadowAward(tossed.state, hit);
+    return {ok:true, why:'ok', state: got.state, dist: tossed.dist, land, field: got.field || hit, animal: got.animal, foundNew: got.foundNew, missed:false};
+  }
+
   const api = {
     MEADOW_KEY, MEADOW_VER, MEADOW_BASE, MEADOW_STEP, MEADOW_MAX_TRAIN,
     MEADOW_ANIMALS, MEADOW_FIELDS,
     meadowFresh, meadowLoad, meadowAnimal, meadowField, meadowPower, meadowCharge,
-    meadowFieldAt, meadowThrow, meadowTrain, meadowRestock, meadowBook, meadowCanTake
+    meadowFieldAt, meadowToss, meadowThrow, meadowThrowTo, meadowLanding, meadowHitField,
+    meadowTrain, meadowRestock, meadowBook, meadowCanTake
   };
   root.MeadowRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

@@ -61,4 +61,31 @@ describe('Sunny Patch Garden', () => {
     assert.equal(G.gardenBuy(G.gardenFresh(), 'squash', 1).why, 'coins');
     assert.equal(G.gardenPlant(G.gardenFresh(), 0, 'sprout', 10, 0).why, 'coins');
   });
+
+  test('a brand-new garden gets three Silly Sprout starter seeds, later saves do not', () => {
+    const first = G.gardenGrantStarter(G.gardenFresh());
+    assert.equal(first.pouch.sprout, 3);
+    assert.equal(first.starter, true);
+    const again = G.gardenGrantStarter(first);
+    assert.equal(again.pouch.sprout, 3);
+    const busy = G.gardenGrantStarter(G.gardenLoad({planted:1, starter:false, pouch:{}}));
+    assert.equal(busy.pouch.sprout, undefined);
+  });
+
+  test('grow countdown reaches zero exactly when the plant is ready', () => {
+    const plant = G.gardenPlant(G.gardenLoad({pouch:{sprout:1}, starter:true}), 2, 'sprout', 1000, 0);
+    assert.equal(G.gardenLeft(plant.state.plots[2], 1000), G.gardenSeed('sprout').grow);
+    assert.equal(G.gardenReady(plant.state.plots[2], 1000 + G.gardenSeed('sprout').grow - 1), false);
+    assert.equal(G.gardenLeft(plant.state.plots[2], 1000 + G.gardenSeed('sprout').grow), 0);
+    assert.equal(G.gardenReady(plant.state.plots[2], 1000 + G.gardenSeed('sprout').grow), true);
+  });
+
+  test('the seed picker prefers the chosen seed in the pouch', () => {
+    let s = G.gardenLoad({pouch:{sprout:1, bean:1}, starter:true});
+    s = G.gardenPick(s, 'bean');
+    const p = G.gardenPlant(s, 1, null, 50, 0);
+    assert.equal(p.ok, true);
+    assert.equal(p.seed.id, 'bean');
+  });
+
 });

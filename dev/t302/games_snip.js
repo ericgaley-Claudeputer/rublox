@@ -2,4 +2,4 @@
   {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', tag:'Charge a snack toss and meet original friendly animals. Friends share the meadow, but nobody takes your pals!', draw: drawMeadow, playable: true, isNew: true},
   {id:'rides', name:'Rideland Workshop', emoji:'🎢', tag:'Place original rides on your lot, hop on, and let friends ride them too!', draw: drawRides, playable: true, isNew: true},
   {id:'hive', name:'Honeyhill Hive', emoji:'🐝', tag:'A gentle bee swarm follows you as you gather pollen, make honey, and help bear neighbors. No fighting!', draw: drawHive, playable: true, isNew: true},
-  {id:'camp', name:'Campfire Grove', emoji:'🔥', tag:'Keep the fire bright until sunrise. Cozy, not scary — and only real friends in multiplayer.', draw: drawCamp, playable: true, isNew: true},
+  {id:'camp', name:'Campfire Grove', emoji:'🔥', tag:'Keep the fire bright until sunrise. Spooky Gloam eyes watch from the dark — scare them back with fire and lanterns!', draw: drawCamp, playable: true, isNew: true},

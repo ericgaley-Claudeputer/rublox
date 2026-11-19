@@ -48,4 +48,22 @@ describe('Chow Chuck Meadow', () => {
     s.snacks = 0;
     assert.equal(M.meadowThrow(s, 1).why, 'snacks');
   });
+
+  test('an aimed toss only records an animal when the snack lands near that field', () => {
+    const fields = [
+      {id:'patch', x:0, z:10, animal:'puddle'},
+      {id:'hill', x:0, z:20, animal:'clover'}
+    ];
+    const hit = M.meadowThrowTo(M.meadowFresh(), 1, 0, 0, 0, 1, fields, 'me');
+    assert.equal(hit.ok, true);
+    assert.equal(hit.missed, false);
+    assert.equal(hit.animal.id, 'puddle');
+    assert.equal(hit.foundNew, true);
+    const miss = M.meadowThrowTo(M.meadowFresh(), 1, 0, 0, 1, 0, fields, 'me');
+    assert.equal(miss.ok, true);
+    assert.equal(miss.missed, true);
+    assert.equal(miss.animal, null);
+    assert.deepEqual(miss.state.found, []);
+  });
+
 });

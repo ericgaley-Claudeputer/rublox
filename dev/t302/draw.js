@@ -57,13 +57,16 @@ function drawHive(ctx){
 }
 function drawCamp(ctx){
   if (!ctx) return;
-  if (typeof sky === 'function') sky(ctx, '#1d2340', '#3b2a5c');
-  else { ctx.fillStyle = '#1d2340'; ctx.fillRect(0, 0, 320, 200); }
-  ctx.fillStyle = '#2a3a28'; ctx.fillRect(0, 150, 320, 50);
-  ctx.fillStyle = '#3d2a1a'; ctx.beginPath(); ctx.moveTo(40, 150); ctx.lineTo(80, 90); ctx.lineTo(120, 150); ctx.fill();
+  if (typeof sky === 'function') sky(ctx, '#0b0e1c', '#1b1630');
+  else { ctx.fillStyle = '#0b0e1c'; ctx.fillRect(0, 0, 320, 200); }
+  ctx.fillStyle = '#162016'; ctx.fillRect(0, 150, 320, 50);
+  ctx.fillStyle = '#1a120c'; ctx.beginPath(); ctx.moveTo(30, 150); ctx.lineTo(70, 80); ctx.lineTo(110, 150); ctx.fill();
   ctx.fillStyle = '#ff9f1c'; ctx.beginPath(); ctx.moveTo(150, 150); ctx.lineTo(170, 100); ctx.lineTo(190, 150); ctx.fill();
   ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.moveTo(158, 150); ctx.lineTo(170, 118); ctx.lineTo(182, 150); ctx.fill();
-  ctx.fillStyle = '#fff4c2'; ctx.beginPath(); ctx.arc(240, 40, 10, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#8cff7a';
+  ctx.beginPath(); ctx.arc(250, 70, 4, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(262, 72, 4, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#fff4c2'; ctx.beginPath(); ctx.arc(60, 36, 7, 0, Math.PI*2); ctx.fill();
   if (typeof guy === 'function') guy(ctx, 200, 120, 12, '#8d5524');
-  ctx.font = '22px sans-serif'; ctx.fillText('🔥', 40, 50); ctx.fillText('🏮', 260, 50);
+  ctx.font = '22px sans-serif'; ctx.fillText('🔥', 40, 50); ctx.fillText('👁️', 260, 50);
 }
