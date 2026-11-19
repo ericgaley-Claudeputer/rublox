@@ -136,16 +136,88 @@ describe('Campfire Grove', () => {
     assert.ok(C.campGloamTarget(shine.run, false) > C.campGloamTarget({fire:0.12, lantern:0}, false));
   });
 
-  test('Less scary keeps the Gloam farther away and does not jump-scare as quickly', () => {
+  test('Less scary selects the classic 2026.11.19-4 Gloam; the default is really scary', () => {
+    assert.equal(C.campGloamStyle(false), 'scary');
+    assert.equal(C.campGloamStyle(true), 'classic');
     const spooky = C.campGloamTarget({fire:0.2, lantern:0, phase:'night'}, false);
     const soft = C.campGloamTarget({fire:0.2, lantern:0, phase:'night'}, true);
     assert.ok(soft > spooky);
-    let {run} = C.campStartNight(C.campSetLessScary(C.campFresh(), true), 0, false);
-    run.fire = 0.1;
-    run.gx = 8; run.gz = 0;
-    C.campTick(run, 1.5, {lessScary:true, px:0, pz:0});
-    assert.equal(run.won, false);
+    const fire = 0.2, lantern = 0, k = (0.2 - 0.12) / 0.7;
+    assert.ok(Math.abs(soft - (2.8 + (18 - 2.8) * k)) < 1e-9);
     assert.equal(C.campSetLessScary(C.campFresh(), true).lessScary, true);
+    assert.equal(C.campSetLessScary(C.campFresh(), false).lessScary, false);
+  });
+
+  test('the really scary Gloam freezes when looked at, and the classic Gloam does not', () => {
+    const faceOn = 0;
+    const faceOff = Math.PI;
+    function setup(less){
+      const {run} = C.campStartNight(C.campSetLessScary(C.campFresh(), less), 0, false);
+      run.fire = 0.2;
+      run.gx = 0; run.gz = 16; run.gmode = 'stalk'; run.gcool = 8;
+      return run;
+    }
+    const scary = setup(false);
+    C.campTick(scary, 0.2, {lessScary:false, px:0, pz:8, face:faceOn, rand:() => 1});
+    assert.equal(scary.frozen, true);
+    assert.equal(scary.lookedAt, true);
+    assert.equal(scary.gx, 0);
+    assert.equal(scary.gz, 16);
+    C.campTick(scary, 0.2, {lessScary:false, px:0, pz:8, face:faceOff, rand:() => 1});
+    assert.equal(scary.frozen, false);
+    assert.ok(scary.gz !== 16);
+    const classic = setup(true);
+    C.campTick(classic, 0.2, {lessScary:true, px:0, pz:8, face:faceOn, rand:() => 1});
+    assert.equal(!!classic.frozen, false);
+    assert.ok(classic.gz !== 16);
+  });
+
+  test('the really scary Gloam can teleport-stalk, while the classic Gloam never does', () => {
+    function setup(less){
+      const {run} = C.campStartNight(C.campSetLessScary(C.campFresh(), less), 0, false);
+      run.fire = 0.08;
+      run.gx = 16; run.gz = 0; run.gmode = 'stalk'; run.gcool = 0;
+      return run;
+    }
+    // dFire is 7.5 so behind-you pops do not fire first, but teleport still can.
+    const scary = setup(false);
+    C.campTick(scary, 0.12, {lessScary:false, px:7.5, pz:0, face:Math.PI, rand:() => 0});
+    assert.equal(scary.teleported, true);
+    assert.ok(Math.hypot(scary.gx - 7.5, scary.gz - 0) > 4);
+    const classic = setup(true);
+    const gx = classic.gx, gz = classic.gz;
+    C.campTick(classic, 0.12, {lessScary:true, px:7.5, pz:0, face:Math.PI, rand:() => 0});
+    assert.equal(!!classic.teleported, false);
+    assert.ok(Math.hypot(classic.gx - gx, classic.gz - gz) < 3);
+  });
+
+  test('nights 4 and 5 chase faster, light still repels, and fake-out cues stay gore-free', () => {
+    assert.equal(C.campNightHard({phase:'night', survived:0}), false);
+    assert.equal(C.campNightHard({phase:'night', survived:3}), true);
+    assert.equal(C.campNightNum({phase:'night', survived:3}), 4);
+    function closeAfter(survived){
+      const {run} = C.campStartNight(C.campFresh(), 0, false);
+      run.survived = survived;
+      run.fire = 0.05;
+      run.gx = 16; run.gz = 0; run.gmode = 'chase'; run.chase = true; run.gcool = 8;
+      tickFor(run, 0.5, {lessScary:false, px:0, pz:0, face:Math.PI, rand:() => 1});
+      return Math.hypot(run.gx, run.gz);
+    }
+    assert.ok(closeAfter(4) < closeAfter(0) - 0.4);
+    const {run} = C.campStartNight(C.campFresh(), 0, false);
+    run.fire = 1;
+    run.gmode = 'chase';
+    run.gx = 16; run.gz = 0;
+    C.campTick(run, 0.5, {lessScary:false, px:0, pz:0, face:Math.PI, rand:() => 1});
+    assert.ok(run.gmode === 'retreat' || C.campLightAt(run, 0, 0, {px:0,pz:0}) > 0.5);
+    assert.equal(run.wantCatch, false);
+    const fake = C.campStartNight(C.campFresh(), 0, false).run;
+    fake.fire = 0.1;
+    fake.gx = 30; fake.gz = 0; fake.gmode = 'stalk'; fake.gcool = 8;
+    C.campTick(fake, 0.12, {lessScary:false, px:0, pz:0, face:Math.PI, rand:() => 0});
+    assert.equal(fake.fakeOut, true);
+    assert.equal(C.campNoGore(), true);
+    assert.equal(C.campEveryoneOkay(), true);
   });
 
   test('getting caught respawns at camp, drops sticks, and everyone is okay — it is never a fight', () => {

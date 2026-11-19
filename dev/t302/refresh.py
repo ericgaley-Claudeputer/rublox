@@ -5,8 +5,8 @@ import json
 
 ROOT = Path(__file__).resolve().parents[2]
 T302 = Path(__file__).resolve().parent
-BUILD = "2026.11.19-4"
-OLD = "2026.11.19-3"
+BUILD = "2026.11.19-5"
+OLD = "2026.11.19-4"
 
 
 def read(name: str) -> str:
@@ -92,7 +92,9 @@ def main() -> int:
         ("Keep the fire bright until sunrise. Cozy, not scary — and only real friends in multiplayer.",
          "Hunt logs by day and keep the fire bright through 5 spooky nights. The Gloam stalks the dark — scare it back with fire and lanterns!"),
         ("Keep the fire bright until sunrise. Spooky Gloam eyes watch from the dark — scare them back with fire and lanterns!",
-         "Hunt logs by day and keep the fire bright through 5 spooky nights. The Gloam stalks the dark — scare it back with fire and lanterns!"),
+         "Hunt logs by day and keep the fire bright through 5 nights. The really scary Gloam hunts the dark — or flip on Less scary for the milder Gloam. Light still keeps you safe!"),
+        ("Hunt logs by day and keep the fire bright through 5 spooky nights. The Gloam stalks the dark — scare it back with fire and lanterns!",
+         "Hunt logs by day and keep the fire bright through 5 nights. The really scary Gloam hunts the dark — or flip on Less scary for the milder Gloam. Light still keeps you safe!"),
     ]:
         if old_tag in html:
             html = html.replace(old_tag, new_tag)
@@ -157,6 +159,9 @@ def main() -> int:
         "ridesUndo",
         'id="ridesDelBtn"',
         'id="campMap"',
+        "campGloamStyle",
+        "t302ScareFace",
+        "Really scary",
         "t302Update(dt)",
         'id="wxSetAuto"',
         'id="hero"',

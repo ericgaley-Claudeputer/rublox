@@ -48,6 +48,17 @@
 #campNeedle{position:absolute;left:50%;top:8px;width:4px;height:22px;margin-left:-2px;background:#c23d4b;border-radius:2px;transform-origin:50% 24px}
 #campMap{position:absolute;z-index:8;right:16px;top:186px;width:128px;height:128px;border:3px solid #1d2340;border-radius:16px;background:#14331c;box-shadow:3px 3px 0 #1d2340;image-rendering:pixelated}
 #t302Scare.strong{background:rgba(20,0,30,.55)}
+#t302Scare .t302ScareFace{display:none;position:absolute;left:50%;top:42%;width:280px;height:280px;margin:-140px 0 0 -140px}
+#t302Scare.jump{background:rgba(4,0,10,.82)}
+#t302Scare.jump .t302ScareFace{display:block;animation:t302scarepop .18s ease-out}
+#t302Scare.jump.strong{background:rgba(2,0,8,.9)}
+.t302ScareEye{position:absolute;top:62px;width:42px;height:42px;border-radius:50%;background:#8cff4a;box-shadow:0 0 24px 10px rgba(140,255,74,.85), 0 0 60px 16px rgba(80,255,40,.4)}
+.t302ScareEye.l{left:58px;width:34px;height:34px;top:70px}
+.t302ScareEye.r{right:48px}
+.t302ScareGrin{position:absolute;left:50%;bottom:58px;width:170px;height:70px;margin-left:-85px;border:8px solid #1a1520;border-top:none;border-radius:0 0 140px 140px;box-shadow:0 8px 0 #0a0810;background:transparent}
+#t302Vignette.pulse{animation:t302vigpulse .7s ease-in-out infinite}
+@keyframes t302scarepop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes t302vigpulse{0%,100%{filter:brightness(1)}50%{filter:brightness(.72)}}
 @media (max-width:700px){
   #ridesDelBtn{bottom:304px}
   #ridesUndoBtn{bottom:360px}

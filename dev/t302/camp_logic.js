@@ -1,4 +1,5 @@
 /* Campfire Grove — kid-friendly spooky camp. Hunt logs by day, survive 5 nights. Original Gloam.
+   Default is really scary; Less scary uses the 2026.11.19-4 Gloam (behavior, visuals, sounds).
    Fire and lanterns scare it away. Caught = everyone is okay, respawn at camp, lose sticks. No fighting, no gore. Save key rubloxCamp. */
 (function (root) {
   const CAMP_KEY = 'rubloxCamp';
@@ -140,13 +141,35 @@
     return Math.min(1, lit);
   }
 
+  function campGloamStyle(lessScary){ return lessScary ? 'classic' : 'scary'; }
+  function campNightNum(run){
+    if (!run) return 1;
+    if (run.phase === 'night') return (run.survived | 0) + 1;
+    return Math.max(1, run.day | 0);
+  }
+  function campNightHard(run){ return campNightNum(run) >= 4; }
+  function campRng(opt){ return (opt && typeof opt.rand === 'function') ? opt.rand : Math.random; }
+  function campFacingGloam(run, px, pz, face){
+    const d = Math.hypot((run.gx || 0) - (px || 0), (run.gz || 0) - (pz || 0));
+    if (d < 0.2) return false;
+    const lx = Math.sin(face || 0), lz = Math.cos(face || 0);
+    const tx = ((run.gx || 0) - (px || 0)) / d, tz = ((run.gz || 0) - (pz || 0)) / d;
+    return (lx * tx + lz * tz) > 0.55;
+  }
+
   function campGloamTarget(run, lessScary){
     const fire = Math.max(0, run && run.fire || 0);
     const lantern = Math.max(0, run && run.lantern || 0);
     const lit = fire + Math.min(0.4, lantern * 0.08);
     const k = Math.max(0, Math.min(1, (lit - 0.12) / 0.7));
-    const far = lessScary ? 28 : 18;
-    const near = lessScary ? 9 : (lantern > 0 ? 7 : 2.8);
+    if (lessScary){
+      const far = 18;
+      const near = lantern > 0 ? 7 : 2.8;
+      return near + (far - near) * k;
+    }
+    const hard = campNightHard(run);
+    const far = hard ? 13 : 15;
+    const near = lantern > 0 ? 6 : (hard ? 2.1 : 2.3);
     return near + (far - near) * k;
   }
 
@@ -166,9 +189,9 @@
       failed: false,
       buddy: campBuddyAllowed(mp),
       mp: !!mp,
-      gx: less ? 36 : 28,
-      gz: less ? -30 : -24,
-      gmode: (phase === 'night') ? 'lurk' : 'hidden',
+      gx: less ? 28 : 22,
+      gz: less ? -24 : -18,
+      gmode: (phase === 'night') ? 'stalk' : 'hidden',
       gcool: 0,
       threat: 0,
       scarePop: false,
@@ -191,7 +214,7 @@
   function campStartNight(state, now, mp){
     const started = campStartRun(state, now, mp);
     started.run.phase = 'night';
-    started.run.gmode = started.state.lessScary ? 'lurk' : 'stalk';
+    started.run.gmode = 'stalk';
     started.run.t = 0;
     return started;
   }
@@ -264,7 +287,7 @@
     run.fire = Math.min(CAMP_MAX_FIRE, (run.fire || 0) + CAMP_STICK);
     if (run.fire > (run.best || 0)) run.best = run.fire;
     run.threat = Math.max(0, (run.threat || 0) * 0.3);
-    if (run.gmode === 'chase' || run.gmode === 'stalk') run.gmode = 'retreat';
+    if (run.gmode === 'chase' || run.gmode === 'stalk' || run.gmode === 'behind' || run.gmode === 'dart' || run.gmode === 'freeze') run.gmode = 'retreat';
     return {ok:true, why:'ok', state, run, fire: run.fire};
   }
 
@@ -308,6 +331,7 @@
     run.chase = false;
     run.threat = 0;
     run.gmode = 'retreat';
+    run.catchScare = true;
     run.gx = 24; run.gz = -22;
     return {ok:true, why:'ok', state, run, lostCarry, lostStash, everyoneOkay:true};
   }
@@ -323,10 +347,23 @@
     });
   }
 
-  function campStepGloam(run, dt, opt){
-    const less = !!(opt && opt.lessScary);
+  function campClearScaryFx(run){
+    run.frozen = false;
+    run.lookedAt = false;
+    run.teleported = false;
+    run.fakeOut = false;
+    run.whisper = false;
+    run.nearStep = false;
+    run.flicker = 0;
+    run.heart = 0;
+    return run;
+  }
+
+  function campStepGloamClassic(run, dt, opt){
+    const rnd = campRng(opt);
     const px = (opt && opt.px) || 0, pz = (opt && opt.pz) || 0;
     const face = (opt && opt.face) || 0;
+    campClearScaryFx(run);
     if (run.phase !== 'night' || run.won){
       run.gmode = 'hidden';
       run.chase = false;
@@ -337,8 +374,8 @@
     const lit = campLightAt(run, px, pz, {px, pz});
     const dPlayer = Math.hypot((run.gx || 0) - px, (run.gz || 0) - pz);
     const dFire = Math.hypot(px, pz);
-    const catchR = less ? 1.05 : 1.7;
-    const chaseNeed = less ? 22 : 13;
+    const catchR = 1.7;
+    const chaseNeed = 13;
     if (lit < 0.2 && dPlayer < catchR){
       run.wantCatch = true;
       return run;
@@ -351,44 +388,44 @@
       run.gmode = 'retreat';
       run.chase = false;
     } else if (run.gmode === 'hidden' || run.gmode === 'retreat'){
-      run.gmode = less ? 'lurk' : 'stalk';
+      run.gmode = 'stalk';
       run.chase = false;
     }
 
-    if (!less && run.gcool <= 0 && lit < 0.22 && dFire > 8 && Math.random() < (dt * 0.25)){
+    if (run.gcool <= 0 && lit < 0.22 && dFire > 8 && rnd() < (dt * 0.25)){
       run.gmode = 'behind';
       run.appearBehind = true;
       run.scarePop = true;
-      run.gcool = less ? 14 : 7;
+      run.gcool = 7;
       run.gx = px - Math.sin(face) * 3.2;
       run.gz = pz - Math.cos(face) * 3.2;
       return run;
     }
 
-    let tx = run.gx, tz = run.gz, spd = less ? 2.2 : 3.6;
+    let tx = run.gx, tz = run.gz, spd = 3.6;
     if (run.gmode === 'chase'){
       tx = px; tz = pz;
-      spd = less ? 3.4 : 6.2;
+      spd = 6.2;
     } else if (run.gmode === 'retreat'){
       const ang = Math.atan2(run.gx || 1, run.gz || 1);
       tx = Math.sin(ang) * 30; tz = Math.cos(ang) * 30;
-      spd = less ? 5 : 7;
+      spd = 7;
     } else if (run.gmode === 'dart'){
-      spd = less ? 6 : 11;
+      spd = 11;
     } else if (run.gmode === 'stalk'){
       const ang = Math.atan2(px - (run.gx || 0), pz - (run.gz || 0)) + 0.9;
       tx = px + Math.sin(ang) * 8;
       tz = pz + Math.cos(ang) * 8;
-      spd = less ? 1.6 : 2.8;
+      spd = 2.8;
     } else {
       const ang = (run.clock || 0) * 0.15;
       tx = Math.sin(ang) * 22 + 8; tz = Math.cos(ang) * 22 - 4;
-      spd = less ? 1.4 : 2.2;
+      spd = 2.2;
     }
-    if (!less && run.gcool <= 0 && run.gmode === 'stalk' && Math.random() < dt * 0.4){
+    if (run.gcool <= 0 && run.gmode === 'stalk' && rnd() < dt * 0.4){
       run.gmode = 'dart';
       run.gcool = 1.2;
-      const a = Math.random() * Math.PI * 2;
+      const a = rnd() * Math.PI * 2;
       tx = px + Math.sin(a) * 10; tz = pz + Math.cos(a) * 10;
       spd = 12;
     }
@@ -397,14 +434,162 @@
     const step = Math.min(dist, spd * dt);
     run.gx = (run.gx || 0) + dx / dist * step;
     run.gz = (run.gz || 0) + dz / dist * step;
-    const far = campGloamTarget(run, less);
+    const far = campGloamTarget(run, true);
     run.gloam = Math.hypot(run.gx || 0, run.gz || 0);
     if (run.gmode === 'behind' && run.gcool < 5.5) run.appearBehind = false;
-    if (lit < 0.2 && dPlayer < (less ? 7 : 5)) run.threat = (run.threat || 0) + dt;
+    if (lit < 0.2 && dPlayer < 5) run.threat = (run.threat || 0) + dt;
     else run.threat = Math.max(0, (run.threat || 0) - dt * 0.5);
-    if (!run.scarePop && run.threat > (less ? 2.2 : 0.45) && dPlayer < 6) run.scarePop = true;
+    if (!run.scarePop && run.threat > 0.45 && dPlayer < 6) run.scarePop = true;
     if (run.gloam > far + 8 && run.gmode === 'retreat') run.gmode = 'lurk';
     return run;
+  }
+
+  function campStepGloamScary(run, dt, opt){
+    const rnd = campRng(opt);
+    const px = (opt && opt.px) || 0, pz = (opt && opt.pz) || 0;
+    const face = (opt && opt.face) || 0;
+    const hard = campNightHard(run);
+    run.teleported = false;
+    run.fakeOut = false;
+    run.whisper = false;
+    run.nearStep = false;
+    if (run.phase !== 'night' || run.won){
+      campClearScaryFx(run);
+      run.gmode = 'hidden';
+      run.chase = false;
+      run.appearBehind = false;
+      return run;
+    }
+    run.gcool = Math.max(0, (run.gcool || 0) - dt);
+    const lit = campLightAt(run, px, pz, {px, pz});
+    const dPlayer = Math.hypot((run.gx || 0) - px, (run.gz || 0) - pz);
+    const dFire = Math.hypot(px, pz);
+    const catchR = hard ? 2.15 : 1.85;
+    const chaseNeed = hard ? 9 : 11;
+    if (lit < 0.2 && dPlayer < catchR){
+      run.wantCatch = true;
+      run.catchScare = true;
+      return run;
+    }
+    run.wantCatch = false;
+    if (lit > 0.55){
+      run.gmode = 'retreat';
+      run.chase = false;
+      run.frozen = false;
+    } else if (lit < 0.18 && dFire > chaseNeed){
+      run.gmode = 'chase';
+      run.chase = true;
+    } else if (run.gmode === 'hidden' || run.gmode === 'retreat'){
+      run.gmode = 'stalk';
+      run.chase = false;
+    }
+
+    const looking = campFacingGloam(run, px, pz, face) && dPlayer < 22 && lit < 0.6 && run.gmode !== 'retreat';
+    run.lookedAt = looking;
+    run.flicker = Math.max(0, Math.min(1, 1 - dPlayer / 14));
+    run.heart = Math.max(0, Math.min(1, 1 - dPlayer / 16));
+    if (looking){
+      run.frozen = true;
+      if (dPlayer < 8) run.threat = (run.threat || 0) + dt;
+      if (!run.scarePop && run.threat > 0.28 && dPlayer < 6) run.scarePop = true;
+      return run;
+    }
+    if (run.frozen){
+      run.frozen = false;
+      if (dPlayer < 10 && lit < 0.25) run.gcool = 0;
+    }
+
+    if (run.gcool <= 0 && lit < 0.22 && dFire > 8 && rnd() < (dt * (hard ? 0.4 : 0.28))){
+      run.gmode = 'behind';
+      run.appearBehind = true;
+      run.scarePop = true;
+      run.gcool = hard ? 5 : 8;
+      run.gx = px - Math.sin(face) * 2.8;
+      run.gz = pz - Math.cos(face) * 2.8;
+      run.nearStep = true;
+      run.flicker = 0.8;
+      run.heart = 0.85;
+      return run;
+    }
+
+    if (run.gcool <= 0 && lit < 0.25 && dFire > 7 && rnd() < (dt * (hard ? 0.55 : 0.28))){
+      let placed = false;
+      for (let i = 0; i < 6 && !placed; i++){
+        const a = rnd() * Math.PI * 2;
+        const r = 5.5 + rnd() * 5.5;
+        const nx = px + Math.sin(a) * r;
+        const nz = pz + Math.cos(a) * r;
+        if (campLightAt(run, nx, nz, {px, pz}) < 0.3 && Math.hypot(nx, nz) > 6){
+          run.gx = nx; run.gz = nz; placed = true;
+        }
+      }
+      if (placed){
+        run.teleported = true;
+        run.gmode = 'stalk';
+        run.gcool = hard ? 3.5 : 6;
+        if (Math.hypot((run.gx || 0) - px, (run.gz || 0) - pz) < 8) run.scarePop = true;
+        run.flicker = 0.7;
+        run.heart = 0.6;
+        return run;
+      }
+    }
+
+    if (dPlayer > 10 && rnd() < dt * 0.12){
+      run.fakeOut = true;
+      run.whisper = rnd() < 0.5;
+      run.nearStep = !run.whisper;
+    }
+
+    let tx = run.gx, tz = run.gz, spd = hard ? 4.2 : 3.4;
+    if (run.gmode === 'chase'){
+      tx = px; tz = pz;
+      spd = hard ? 9.0 : 7.4;
+    } else if (run.gmode === 'retreat'){
+      const ang = Math.atan2(run.gx || 1, run.gz || 1);
+      tx = Math.sin(ang) * 30; tz = Math.cos(ang) * 30;
+      spd = hard ? 9 : 8;
+    } else if (run.gmode === 'dart'){
+      spd = hard ? 14 : 12;
+    } else if (run.gmode === 'stalk'){
+      const ang = Math.atan2(px - (run.gx || 0), pz - (run.gz || 0)) + 0.9;
+      tx = px + Math.sin(ang) * 7;
+      tz = pz + Math.cos(ang) * 7;
+      spd = hard ? 4.6 : 3.6;
+    } else if (run.gmode === 'behind'){
+      tx = px - Math.sin(face) * 2.6;
+      tz = pz - Math.cos(face) * 2.6;
+      spd = 5;
+    } else {
+      const ang = (run.clock || 0) * 0.15;
+      tx = Math.sin(ang) * 22 + 8; tz = Math.cos(ang) * 22 - 4;
+      spd = hard ? 3.0 : 2.4;
+    }
+    if (run.gcool <= 0 && run.gmode === 'stalk' && rnd() < dt * (hard ? 0.55 : 0.4)){
+      run.gmode = 'dart';
+      run.gcool = 0.9;
+      const a = rnd() * Math.PI * 2;
+      tx = px + Math.sin(a) * 8; tz = pz + Math.cos(a) * 8;
+      spd = hard ? 14 : 12;
+    }
+    const dx = tx - (run.gx || 0), dz = tz - (run.gz || 0);
+    const dist = Math.hypot(dx, dz) || 1;
+    const step = Math.min(dist, spd * dt);
+    run.gx = (run.gx || 0) + dx / dist * step;
+    run.gz = (run.gz || 0) + dz / dist * step;
+    const far = campGloamTarget(run, false);
+    run.gloam = Math.hypot(run.gx || 0, run.gz || 0);
+    if (run.gmode === 'behind' && run.gcool < 5.5) run.appearBehind = false;
+    if (lit < 0.2 && dPlayer < 6) run.threat = (run.threat || 0) + dt;
+    else run.threat = Math.max(0, (run.threat || 0) - dt * 0.5);
+    if (!run.scarePop && run.threat > (hard ? 0.22 : 0.28) && dPlayer < 6) run.scarePop = true;
+    if (run.gloam > far + 8 && run.gmode === 'retreat') run.gmode = 'lurk';
+    if (dPlayer < 7) run.nearStep = true;
+    return run;
+  }
+
+  function campStepGloam(run, dt, opt){
+    if (opt && opt.lessScary) return campStepGloamClassic(run, dt, opt);
+    return campStepGloamScary(run, dt, opt);
   }
 
   function campTick(run, dt, opt){
@@ -419,7 +604,8 @@
     run.respawn = false;
     run.wantCatch = false;
     campRegenLogs(run);
-    const decay = (run.phase === 'day' ? CAMP_DAY_DECAY : CAMP_DECAY) * (hasBlanket ? 0.85 : 1) * (less ? 0.85 : 1);
+    const hard = !less && campNightHard(run);
+    const decay = (run.phase === 'day' ? CAMP_DAY_DECAY : CAMP_DECAY) * (hasBlanket ? 0.85 : 1) * (hard ? 1.12 : 1);
     run.fire = Math.max(0, (run.fire || 0) - decay * step);
     if (run.fire > (run.best || 0)) run.best = run.fire;
 
@@ -429,9 +615,9 @@
       if (run.t >= CAMP_DAY){
         run.phase = 'night';
         run.t = 0;
-        run.gmode = less ? 'lurk' : 'stalk';
-        run.gx = less ? 30 : 22;
-        run.gz = less ? -26 : -18;
+        run.gmode = 'stalk';
+        run.gx = less ? 22 : 18;
+        run.gz = less ? -18 : -14;
       }
     } else {
       campStepGloam(run, step, opt);
@@ -477,7 +663,8 @@
     CAMP_STICK, CAMP_MIN, CAMP_MAX_FIRE, CAMP_CARRY, CAMP_CHOP, CAMP_LOG_REGEN, CAMP_SIZE,
     CAMP_CRAFT, CAMP_LANDMARKS, CAMP_TRAILS, CAMP_LOG_SPOTS, CAMP_GLOAM_FAR: 18, CAMP_GLOAM_IN: 2.8,
     campFresh, campLoad, campItem, campLandmark, campBuddyAllowed, campNoFight, campNoGore, campEveryoneOkay,
-    campSetLessScary, campHas, campInDeep, campInWater, campZone, campCompass, campMakeLogs, campLog,
+    campSetLessScary, campGloamStyle, campNightNum, campNightHard, campFacingGloam,
+    campHas, campInDeep, campInWater, campZone, campCompass, campMakeLogs, campLog,
     campLightAt, campGloamTarget, campStartRun, campStartNight,
     campCanCarry, campPickLog, campGather, campChopLog, campStash, campAddStick, campShine, campCraft,
     campCaught, campTick, campFinish, campReward
