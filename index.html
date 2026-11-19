@@ -1526,6 +1526,20 @@ body.lh-muffled #obby{filter:saturate(.85)}
 
 
 
+<style id="elevCss">
+#elevBox{position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center;display:none}
+#elevBox #elevHint{display:inline-block;background:rgba(29,35,64,.82);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:14px}
+.elevmode #elevBox{display:block}
+#elevAct{position:absolute;right:16px;bottom:96px;z-index:8;padding:12px 16px;font-size:18px;border:3px solid #1d2340;border-radius:16px;background:#ffd23f;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+#elevAct.show{display:block}
+#elevHelpBtn{position:absolute;z-index:8;right:16px;bottom:160px;padding:10px 14px;font-size:16px;border:3px solid #1d2340;border-radius:16px;background:#e8f4ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+.elevmode #elevHelpBtn{display:block}
+#elevMeter{display:none;position:absolute;left:50%;bottom:140px;transform:translateX(-50%);z-index:9;width:min(420px,80%);height:22px;background:#fff;border:3px solid #1d2340;border-radius:999px;overflow:hidden}
+#elevMeter.show{display:block}
+#elevMeterFill{position:absolute;top:0;bottom:0;left:0;width:0;background:#7c5cff}
+#elevMeterLab{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#1d2340;pointer-events:none}
+@media (max-width:700px){ #elevAct{bottom:120px} #elevHelpBtn{bottom:184px} #elevMeter{bottom:164px} }
+</style>
 <style id="evLbCss">
 html.snowfest-on body, body.snowfest-on{ background-image: none; }
 #evSnowLayer{display:none;pointer-events:none;position:fixed;inset:0;z-index:40;overflow:hidden}
@@ -2052,6 +2066,22 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
 
   <div id="t297Box" style="display:none"><span id="t297Hint"></span></div>
   <button type="button" id="t297Act">✨ Do it</button>
+  <div id="elevBox" style="display:none"><span id="elevHint"></span></div>
+  <button type="button" id="elevAct">✨ Do it</button>
+  <button type="button" id="elevHelpBtn">❓ Help</button>
+  <div id="elevMeter"><div id="elevMeterFill"></div><div id="elevMeterLab"></div></div>
+  <div id="elevHelp" class="t297overlay" role="dialog" aria-label="Wobblevator help">
+    <div class="t297box">
+      <button type="button" class="t297x" id="elevHelpX" aria-label="Close">×</button>
+      <h3>🛗 Wobblevator</h3>
+      <p>Ride Bingle the Bellhop’s wobbly lift between surprise floors. Clear the mini-event, hop back in, and see how far your streak can go. If a floor gets too wobbly, everyone is okay — you’re back in the lift with a fresh streak.</p>
+      <p><b>Keyboard:</b> WASD move · Space jump · E act · Esc closes this help.</p>
+      <p><b>Mobile:</b> Move with the stick, jump with the button, and tap the yellow action button.</p>
+      <p><b>Xbox:</b> Left stick move · Ⓐ jump · Ⓧ act · Ⓑ or Esc close popups.</p>
+      <p>In single-player, quirky passengers may ride along. In multiplayer, only real friends share the lift.</p>
+    </div>
+  </div>
+
   <div id="t302Box" style="display:none"><span id="t302Hint"></span></div>
   <div id="t302Coins">🪙 Your coins: 0</div>
   <button type="button" id="t302Act">✨ Do it</button>
@@ -2670,7 +2700,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.19-5';
+const BUILD = '2026.11.19-6';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3408,7 +3438,7 @@ $('#saveAv').onclick = () => {
     day: 'day',
     off: 'off'
   };
-  const WX_SKIP = ['splash', 'waterpark', 'race', 'photostudio', 'dance', 'bakery', 'icecream', 'tower', 'fashion', 'cafe', 'petshow', 'camp'];
+  const WX_SKIP = ['splash', 'waterpark', 'race', 'photostudio', 'dance', 'bakery', 'icecream', 'tower', 'fashion', 'cafe', 'petshow', 'camp', 'elevator'];
   const WX_SNOW = ['obby', 'build', 'hide', 'stable', 'tag', 'party', 'snowfest', 'pets', 'autumn', 'pethotel', 'fish', 'hunt', 'garden', 'meadow', 'rides', 'hive'];
   const WX_FOG = ['haunt', 'lantern', 'hide', 'petisland', 'obby', 'build', 'hunt'];
   const WX_RAIN = ['obby', 'build', 'lantern', 'hide', 'autumn', 'stable', 'petisland', 'pets', 'tag', 'dreamhouse', 'pethotel', 'haunt', 'fish', 'hunt', 'garden', 'meadow', 'rides', 'hive'];
@@ -4039,7 +4069,8 @@ try {
     {id: 'meadow-best', name: 'Chow Chuck Meadow — longest toss', emoji: '🥣', kind: 'high', unit: ''},
     {id: 'rides-rides', name: 'Rideland Workshop — rides taken', emoji: '🎢', kind: 'high', unit: ''},
     {id: 'hive-honey', name: 'Honeyhill Hive — pots of honey', emoji: '🍯', kind: 'high', unit: ''},
-    {id: 'camp-sunrises', name: 'Campfire Grove — sunrises', emoji: '🌅', kind: 'high', unit: ''}
+    {id: 'camp-sunrises', name: 'Campfire Grove — sunrises', emoji: '🌅', kind: 'high', unit: ''},
+    {id: 'elev-best', name: 'Wobblevator — best streak', emoji: '🛗', kind: 'high', unit: ''}
   ];
 
   function lbFresh(){ return {ver: LB_VER, best: {}, name: ''}; }
@@ -4113,6 +4144,8 @@ try {
     set('ps-best', psS.best ? +psS.best : null);
     const huntS = saves.hunt || {};
     set('hunt-maps', huntS.maps | 0 ? (huntS.maps | 0) : null);
+    const elevS = saves.elevator || {};
+    set('elev-best', elevS.best | 0 ? (elevS.best | 0) : null);
     // extras / board can fill gaps
     for (const id in board.best) if (out[id] == null) set(id, board.best[id]);
     for (const id in extra) if (out[id] == null) set(id, extra[id]);
@@ -4378,7 +4411,7 @@ try { evBootChrome(); } catch (e){}
   }
 
 
-  const T297_OVERLAY_IDS = ['cafeDecor', 'cafeBoard', 'fishIndex', 'huntMap', 'psVoteBox', 'gardenShop', 'meadowBook', 'ridesPalette', 'hiveQuest', 'campCraft', 'campWin'];
+  const T297_OVERLAY_IDS = ['cafeDecor', 'cafeBoard', 'fishIndex', 'huntMap', 'psVoteBox', 'gardenShop', 'meadowBook', 'ridesPalette', 'hiveQuest', 'campCraft', 'campWin', 'elevHelp'];
   const T297_WALK_AWAY = 4.5;
   const T297_REOPEN_MS = 700;
   function t297OverlayIds(){ return T297_OVERLAY_IDS.slice(); }
@@ -6793,7 +6826,413 @@ function drawCamp(ctx){
   ctx.font = '22px sans-serif'; ctx.fillText('🔥', 40, 50); ctx.fillText('👁️', 260, 50);
 }
 
+
+/* Wobblevator — original Rublox elevator hop. Ride Bingle's wobbly lift
+   between quirky floors. Original names and floors only. Save key rubloxElevator.
+   Caught on a floor = everyone is okay, back in the lift, streak resets. No fighting, no gore. */
+(function (root) {
+  const ELEV_KEY = 'rubloxElevator';
+  const ELEV_VER = 1;
+  const ELEV_SHOP_EVERY = 8;
+  const ELEV_RIDE = 2.4;
+  const ELEV_INTER = 2.2;
+
+  const ELEV_FLOORS = [
+    {id:'pillowpath', name:'Pillow Path', emoji:'🛏️', kind:'obby', seconds:28, coins:6, hint:'Bounce across the pillows to the glowing door.'},
+    {id:'sockhunt', name:'Sock Hunt', emoji:'🧦', kind:'find', seconds:24, coins:6, hint:'Find Captain Sock’s missing sock and bring it back.'},
+    {id:'soapsurge', name:'Soap Surge', emoji:'🫧', kind:'survive', seconds:16, coins:7, hint:'The soap bars zoom around — don’t get slipped!'},
+    {id:'pieparade', name:'Pie Parade', emoji:'🥧', kind:'dodge', seconds:16, coins:7, hint:'Dodge the flying pies until the ding!'},
+    {id:'chimeorder', name:'Chime Order', emoji:'🔔', kind:'puzzle', seconds:22, coins:8, hint:'Ring the bells in the order Bingle hummed.'},
+    {id:'lanternhall', name:'Lantern Hall', emoji:'🕯️', kind:'creepy', seconds:20, coins:8, hint:'Stay in the moving lantern light and reach the lamp.'},
+    {id:'tickletiles', name:'Tickle Tiles', emoji:'😆', kind:'funny', seconds:18, coins:6, hint:'Step on the giggle tiles. Avoid the grumpy ones!'},
+    {id:'balloonbounce', name:'Balloon Bounce', emoji:'🎈', kind:'dodge', seconds:16, coins:7, hint:'Dodge the bouncy balloons and make it to the door.'},
+    {id:'lostlunch', name:'Lost Lunch', emoji:'🍱', kind:'find', seconds:22, coins:6, hint:'Niblet lost a lunchbox. Find it before the timer!'},
+    {id:'jellyhills', name:'Jelly Hills', emoji:'🟣', kind:'obby', seconds:28, coins:8, hint:'Boing over the jelly mounds to the door.'},
+    {id:'shadowpeek', name:'Shadow Peek', emoji:'👀', kind:'creepy', seconds:20, coins:8, hint:'Walk to the night-light. Don’t linger in the peeks.'},
+    {id:'partypaint', name:'Party Paint', emoji:'🎨', kind:'funny', seconds:20, coins:7, hint:'Tap the blank faces to give them big silly smiles.'},
+    {id:'snackstop', name:'Snack Stop', emoji:'🍪', kind:'shop', seconds:14, coins:4, hint:'A cozy rest. Buy a lucky cookie, or just ride on.'},
+    {id:'confetticannon', name:'Confetti Cannon', emoji:'🎉', kind:'dodge', seconds:15, coins:7, hint:'Confetti bursts out — hop around it until the ding!'}
+  ];
+
+  const ELEV_PALS = [
+    {id:'sock', name:'Captain Sock', emoji:'🧦', line:'I packed two socks and only found one. Typical!'},
+    {id:'niblet', name:'Niblet', emoji:'🐥', line:'If anyone sees a lunchbox, it is probably mine.'},
+    {id:'marm', name:'Marm', emoji:'🧶', line:'I brought extra yarn in case the lift gets drafty.'},
+    {id:'taro', name:'Taro', emoji:'📷', line:'Hold still — this wobble makes a great photo!'},
+    {id:'sprocket', name:'Sprocket', emoji:'🔧', line:'I tightened every bolt. The wobble is a feature.'}
+  ];
+
+  const ELEV_HOST = {id:'bingle', name:'Bingle the Bellhop', emoji:'🛎️', lines:[
+    'Going up... or maybe a little sideways!',
+    'Hold the handrail. It likes to dance.',
+    'Next stop, a surprise! I packed a smile.',
+    'Ding-ding! Please keep arms, hats, and socks inside.',
+    'If the floor gets too wobbly, we hop back in. Everyone is okay!'
+  ]};
+
+  function elevFloor(id){ return ELEV_FLOORS.find(f => f.id === id) || null; }
+  function elevPal(id){ return ELEV_PALS.find(p => p.id === id) || null; }
+
+  function elevFresh(){
+    return {
+      ver: ELEV_VER,
+      rides: 0,
+      cleared: 0,
+      failed: 0,
+      best: 0,
+      coins: 0,
+      seen: [],
+      found: 0,
+      creepy: 0,
+      shopped: 0
+    };
+  }
+
+  function elevLoad(raw){
+    const d = elevFresh();
+    const o = (raw && typeof raw === 'object') ? raw : {};
+    d.rides = Math.max(0, o.rides | 0);
+    d.cleared = Math.max(0, o.cleared | 0);
+    d.failed = Math.max(0, o.failed | 0);
+    d.best = Math.max(0, o.best | 0);
+    d.coins = Math.max(0, o.coins | 0);
+    d.found = Math.max(0, o.found | 0);
+    d.creepy = Math.max(0, o.creepy | 0);
+    d.shopped = Math.max(0, o.shopped | 0);
+    if (Array.isArray(o.seen)) d.seen = o.seen.filter(id => elevFloor(id));
+    d.ver = ELEV_VER;
+    return d;
+  }
+
+  function elevBuddyAllowed(mp){ return !mp; }
+  function elevNoFight(){ return true; }
+  function elevNoGore(){ return true; }
+  function elevEveryoneOkay(){ return true; }
+
+  function elevHostLine(n, rand){
+    const r = typeof rand === 'function' ? rand : Math.random;
+    const i = ((n | 0) >= 0) ? ((n | 0) % ELEV_HOST.lines.length) : Math.floor(r() * ELEV_HOST.lines.length);
+    return ELEV_HOST.lines[i];
+  }
+
+  function elevPickPal(run, rand){
+    if (!run || !run.buddy) return null;
+    const r = typeof rand === 'function' ? rand : Math.random;
+    const used = run.palId;
+    const pool = ELEV_PALS.filter(p => p.id !== used);
+    const pick = pool[Math.floor(r() * pool.length)] || ELEV_PALS[0];
+    return pick;
+  }
+
+  function elevFreshRun(state, now, mp){
+    return {
+      startedAt: +now || 0,
+      phase: 'lobby',
+      floor: null,
+      last: null,
+      t: 0,
+      streak: 0,
+      survived: 0,
+      coins: 0,
+      lucky: 0,
+      holding: null,
+      seq: [],
+      seqAt: 0,
+      painted: [],
+      lit: 1,
+      wantFail: false,
+      wantClear: false,
+      cleared: false,
+      failed: false,
+      shopDone: false,
+      buddy: elevBuddyAllowed(mp),
+      mp: !!mp,
+      palId: null,
+      hostLine: elevHostLine(0),
+      quote: ''
+    };
+  }
+
+  function elevStartRun(state, now, mp){
+    state = elevLoad(state);
+    state.rides += 1;
+    return {ok:true, state, run: elevFreshRun(state, now, mp)};
+  }
+
+  function elevDueShop(run){
+    if (!run) return false;
+    const n = (run.survived | 0) + 1;
+    return n > 0 && n % ELEV_SHOP_EVERY === 0;
+  }
+
+  function elevPickFloor(run, rand){
+    const r = typeof rand === 'function' ? rand : Math.random;
+    if (elevDueShop(run)) return elevFloor('snackstop');
+    const pool = ELEV_FLOORS.filter(f => f.kind !== 'shop' && f.id !== run.last);
+    const pick = pool[Math.floor(r() * pool.length)] || ELEV_FLOORS[0];
+    return pick;
+  }
+
+  function elevBeginFloor(run, floorId, rand){
+    if (!run) return run;
+    const f = elevFloor(floorId) || elevPickFloor(run, rand);
+    run.phase = 'floor';
+    run.floor = f.id;
+    run.last = f.id;
+    run.t = f.seconds;
+    run.cleared = false;
+    run.failed = false;
+    run.wantClear = false;
+    run.wantFail = false;
+    run.holding = null;
+    run.seqAt = 0;
+    run.painted = [];
+    run.shopDone = false;
+    run.lit = 1;
+    if (f.id === 'chimeorder'){
+      const r = typeof rand === 'function' ? rand : Math.random;
+      const bells = [0, 1, 2];
+      run.seq = [];
+      for (let i = 0; i < 3; i++){
+        const j = Math.floor(r() * bells.length);
+        run.seq.push(bells.splice(j, 1)[0]);
+      }
+    } else run.seq = [];
+    run.quote = (f.emoji || '') + ' ' + f.name + ' — ' + f.hint;
+    return run;
+  }
+
+  function elevBeginRide(run, rand){
+    if (!run) return run;
+    const f = elevPickFloor(run, rand);
+    const pal = elevPickPal(run, rand);
+    if (pal) run.palId = pal.id;
+    run.phase = 'ride';
+    run.floor = f.id;
+    run.t = ELEV_RIDE;
+    run.cleared = false;
+    run.failed = false;
+    run.wantClear = false;
+    run.wantFail = false;
+    run.hostLine = elevHostLine((run.survived | 0) + 1, rand);
+    run.quote = '🛎️ ' + ELEV_HOST.name + ': "' + run.hostLine + '"';
+    return run;
+  }
+
+  function elevReward(run, floor){
+    const f = floor || elevFloor(run && run.floor);
+    if (!f) return 0;
+    const streak = (run && run.streak) || 0;
+    const bonus = Math.min(8, Math.floor(streak / 3));
+    const lucky = (run && run.lucky) || 0;
+    return f.coins + bonus + lucky;
+  }
+
+  function elevMarkSeen(state, id){
+    if (!id) return state;
+    if (state.seen.indexOf(id) < 0) state.seen.push(id);
+    return state;
+  }
+
+  function elevClearFloor(state, run){
+    state = elevLoad(state);
+    if (!run || run.cleared) return {ok:false, why:'done', state, run};
+    const f = elevFloor(run.floor);
+    if (!f) return {ok:false, why:'floor', state, run};
+    if (f.kind === 'shop' && !run.shopDone && (run.t || 0) > 0.05){
+      /* waiting in the shop still counts as a safe clear when time runs out */
+    }
+    const pay = elevReward(run, f);
+    run.cleared = true;
+    run.failed = false;
+    run.wantClear = false;
+    run.lucky = 0;
+    run.streak = (run.streak | 0) + 1;
+    run.survived = (run.survived | 0) + 1;
+    run.coins = (run.coins | 0) + pay;
+    state.cleared += 1;
+    state.coins += pay;
+    if (run.streak > state.best) state.best = run.streak;
+    elevMarkSeen(state, f.id);
+    if (f.kind === 'find') state.found += 1;
+    if (f.kind === 'creepy') state.creepy += 1;
+    if (f.kind === 'shop') state.shopped += 1;
+    run.phase = 'inter';
+    run.t = ELEV_INTER;
+    run.quote = '✨ Floor cleared! +' + pay + ' 🪙  ·  Streak ' + run.streak;
+    return {ok:true, why:'ok', state, run, pay, floor:f};
+  }
+
+  function elevFailFloor(state, run){
+    state = elevLoad(state);
+    if (!run || run.cleared || run.failed) return {ok:false, why:'done', state, run};
+    const f = elevFloor(run.floor);
+    run.failed = true;
+    run.cleared = false;
+    run.wantFail = false;
+    run.streak = 0;
+    run.holding = null;
+    run.lucky = 0;
+    state.failed += 1;
+    if (f) elevMarkSeen(state, f.id);
+    run.phase = 'inter';
+    run.t = ELEV_INTER;
+    run.quote = 'The floor got too wobbly… but everyone is okay! Back in the lift.';
+    return {ok:true, why:'ok', state, run, everyoneOkay:true, floor:f};
+  }
+
+  function elevBuySnack(state, wallet, run){
+    state = elevLoad(state);
+    if (!run || run.floor !== 'snackstop') return {ok:false, why:'shop', state, run, wallet};
+    if (run.shopDone) return {ok:false, why:'have', state, run, wallet};
+    const cost = 8;
+    const coins = Math.max(0, wallet | 0);
+    if (coins < cost) return {ok:false, why:'coins', state, run, wallet:coins, need: cost - coins};
+    run.shopDone = true;
+    run.lucky = 4;
+    state.shopped += 1;
+    return {ok:true, why:'ok', state, run, wallet: coins - cost, spent:cost};
+  }
+
+  function elevRing(run, bell){
+    if (!run || run.floor !== 'chimeorder' || run.cleared) return {ok:false, why:'floor', run};
+    const want = run.seq[run.seqAt];
+    if ((bell | 0) !== want){
+      run.seqAt = 0;
+      return {ok:false, why:'wrong', run};
+    }
+    run.seqAt += 1;
+    if (run.seqAt >= run.seq.length) run.wantClear = true;
+    return {ok:true, why: run.wantClear ? 'done' : 'ok', run};
+  }
+
+  function elevPaint(run, id){
+    if (!run || run.floor !== 'partypaint' || run.cleared) return {ok:false, why:'floor', run};
+    const n = id | 0;
+    if (run.painted.indexOf(n) < 0) run.painted.push(n);
+    if (run.painted.length >= 3) run.wantClear = true;
+    return {ok:true, why: run.wantClear ? 'done' : 'ok', run, painted: run.painted.length};
+  }
+
+  function elevPickItem(run, item){
+    if (!run || run.cleared) return {ok:false, why:'done', run};
+    const f = elevFloor(run.floor);
+    if (!f || f.kind !== 'find') return {ok:false, why:'floor', run};
+    if (item !== 'sock' && item !== 'lunch') return {ok:false, why:'item', run};
+    const need = f.id === 'sockhunt' ? 'sock' : 'lunch';
+    if (item !== need) return {ok:false, why:'wrong', run};
+    run.holding = item;
+    return {ok:true, why:'ok', run};
+  }
+
+  function elevTurnIn(run){
+    if (!run || !run.holding) return {ok:false, why:'empty', run};
+    run.wantClear = true;
+    return {ok:true, why:'ok', run};
+  }
+
+  function elevTouchHazard(run){
+    if (!run || run.phase !== 'floor' || run.cleared || run.failed) return run;
+    const f = elevFloor(run.floor);
+    if (!f) return run;
+    if (f.kind === 'survive' || f.kind === 'dodge' || f.kind === 'creepy' || f.id === 'tickletiles') run.wantFail = true;
+    return run;
+  }
+
+  function elevReachDoor(run){
+    if (!run || run.phase !== 'floor' || run.cleared) return run;
+    const f = elevFloor(run.floor);
+    if (!f) return run;
+    if (f.kind === 'obby' || f.kind === 'dodge' || f.kind === 'survive' || f.kind === 'creepy' || f.id === 'tickletiles' || f.id === 'snackstop'){
+      if (f.kind === 'find') return run;
+      if (f.id === 'chimeorder' || f.id === 'partypaint') return run;
+      run.wantClear = true;
+    }
+    return run;
+  }
+
+  function elevStayLit(run, lit){
+    if (!run || run.floor !== 'lanternhall' && run.floor !== 'shadowpeek') return run;
+    run.lit = lit ? 1 : Math.max(0, (run.lit || 0) - 0.016);
+    if (run.lit <= 0) run.wantFail = true;
+    return run;
+  }
+
+  function elevTick(run, dt){
+    if (!run) return run;
+    let left = Math.max(0, +dt || 0);
+    while (left > 0){
+      const step = Math.min(0.2, left);
+      left -= step;
+      run.t = Math.max(0, (run.t || 0) - step);
+      if (run.phase === 'ride' && run.t <= 0){
+        elevBeginFloor(run, run.floor);
+      } else if (run.phase === 'floor' && run.t <= 0 && !run.cleared && !run.failed){
+        const f = elevFloor(run.floor);
+        if (f && (f.kind === 'survive' || f.kind === 'dodge' || f.kind === 'shop' || f.id === 'tickletiles')) run.wantClear = true;
+        else run.wantFail = true;
+        break;
+      } else if (run.phase === 'inter' && run.t <= 0){
+        elevBeginRide(run);
+      }
+    }
+    return run;
+  }
+
+  function elevBadges(state, run){
+    state = elevLoad(state);
+    const b = [];
+    if ((state.rides | 0) >= 1) b.push('elev-ride');
+    if ((run && (run.streak | 0) >= 5) || state.best >= 5) b.push('elev-five');
+    if ((run && (run.streak | 0) >= 12) || state.best >= 12) b.push('elev-twelve');
+    if ((state.creepy | 0) >= 1) b.push('elev-creepy');
+    if ((state.found | 0) >= 1) b.push('elev-find');
+    return b;
+  }
+
+  const api = {
+    ELEV_KEY, ELEV_VER, ELEV_SHOP_EVERY, ELEV_RIDE, ELEV_INTER, ELEV_FLOORS, ELEV_PALS, ELEV_HOST,
+    elevFloor, elevPal, elevFresh, elevLoad, elevBuddyAllowed, elevNoFight, elevNoGore, elevEveryoneOkay,
+    elevHostLine, elevPickPal, elevStartRun, elevDueShop, elevPickFloor, elevBeginFloor, elevBeginRide,
+    elevReward, elevClearFloor, elevFailFloor, elevBuySnack, elevRing, elevPaint, elevPickItem, elevTurnIn,
+    elevTouchHazard, elevReachDoor, elevStayLit, elevTick, elevBadges
+  };
+  root.ElevRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+function drawElevator(ctx){
+  if (!ctx) return;
+  if (typeof sky === 'function') sky(ctx, '#b8e0ff', '#ffe8a8');
+  else { ctx.fillStyle = '#b8e0ff'; ctx.fillRect(0, 0, 320, 200); }
+  ctx.fillStyle = '#8fbf6a'; ctx.fillRect(0, 150, 320, 50);
+  // lobby building
+  ctx.fillStyle = '#f4efe4'; ctx.fillRect(40, 70, 240, 90);
+  ctx.strokeStyle = '#1d2340'; ctx.lineWidth = 2; ctx.strokeRect(40, 70, 240, 90);
+  // elevator shaft
+  ctx.fillStyle = '#d9d2c5'; ctx.fillRect(118, 40, 84, 120);
+  ctx.strokeRect(118, 40, 84, 120);
+  // doors
+  ctx.fillStyle = '#c9a24a'; ctx.fillRect(128, 78, 30, 72); ctx.fillRect(162, 78, 30, 72);
+  ctx.strokeRect(128, 78, 30, 72); ctx.strokeRect(162, 78, 30, 72);
+  // bell / Bingle
+  ctx.fillStyle = '#ffd23f';
+  ctx.beginPath(); ctx.arc(160, 62, 14, Math.PI, 0); ctx.fill();
+  ctx.fillRect(146, 62, 28, 10);
+  ctx.fillStyle = '#1d2340'; ctx.beginPath(); ctx.arc(160, 74, 3, 0, Math.PI * 2); ctx.fill();
+  // floors lights
+  ['#ff6fb5','#3a86ff','#2ec27e','#ff9f1c'].forEach((c, i) => {
+    ctx.fillStyle = c; ctx.fillRect(128 + i * 16, 50, 12, 8);
+  });
+  if (typeof guy === 'function') guy(ctx, 92, 176, 12, '#8b5cf6');
+  if (typeof guy === 'function') guy(ctx, 230, 176, 12, '#ff9f1c');
+  ctx.font = '22px sans-serif';
+  ctx.fillText('🛎️', 150, 36);
+  ctx.fillText('🛗', 152, 120);
+}
+
 const GAMES = [
+  {id:'elevator', name:'Wobblevator', emoji:'🛗', tag:'Ride Bingle the Bellhop’s wobbly lift to surprise floors. Clear quirky mini-events, keep your streak, and hop back in — if a floor gets too wobbly, everyone is okay!', draw: drawElevator, playable: true, isNew: true},
   {id:'garden', name:'Sunny Patch Garden', emoji:'🌱', tag:'Buy silly original seeds, plant them, and watch them grow in real time — even while you are away!', draw: drawGarden, playable: true, isNew: true},
   {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', tag:'Charge a snack toss and meet original friendly animals. Friends share the meadow, but nobody takes your pals!', draw: drawMeadow, playable: true, isNew: true},
   {id:'rides', name:'Rideland Workshop', emoji:'🎢', tag:'Place original rides on your lot, hop on, and let friends ride them too!', draw: drawRides, playable: true, isNew: true},
@@ -7694,6 +8133,11 @@ function confetti(){
     {id:'hive-sticker', cat:'collection', emoji:'🧸', name:'Bear Badge', desc:'Finish a bee quest and earn a sticker.', coins:15, prove:s => !!(s.notes && s.notes['hive-sticker']) || !!(s.hive && s.hive.stickers && s.hive.stickers.length >= 1)},
     {id:'camp-craft', cat:'creative', emoji:'🧺', name:'Camp Crafter', desc:'Craft a blanket or lantern at Campfire Grove.', coins:10, prove:s => !!(s.notes && s.notes['camp-craft']) || !!(s.camp && s.camp.crafted && s.camp.crafted.length >= 1)},
     {id:'camp-sunrise', cat:'adventure', emoji:'🌅', name:'Made Sunrise', desc:'Keep the campfire bright until sunrise.', coins:15, prove:s => !!(s.notes && s.notes['camp-sunrise']) || !!(s.camp && (s.camp.sunrises | 0) >= 1)},
+    {id:'elev-ride', cat:'adventure', emoji:'🛗', name:'First Ride', desc:'Board Bingle the Bellhop’s Wobblevator.', coins:5, prove:s => !!(s.notes && s.notes['elev-ride']) || !!(s.elevator && (s.elevator.rides | 0) >= 1)},
+    {id:'elev-five', cat:'adventure', emoji:'5️⃣', name:'Five Floors Up', desc:'Clear a streak of 5 Wobblevator floors.', coins:10, prove:s => !!(s.notes && s.notes['elev-five']) || !!(s.elevator && (s.elevator.best | 0) >= 5)},
+    {id:'elev-twelve', cat:'adventure', emoji:'🌟', name:'Twelve-Floor Champ', desc:'Clear a streak of 12 Wobblevator floors.', coins:20, prove:s => !!(s.notes && s.notes['elev-twelve']) || !!(s.elevator && (s.elevator.best | 0) >= 12)},
+    {id:'elev-creepy', cat:'adventure', emoji:'🕯️', name:'Kept the Light', desc:'Clear a dim Wobblevator floor.', coins:10, prove:s => !!(s.notes && s.notes['elev-creepy']) || !!(s.elevator && (s.elevator.creepy | 0) >= 1)},
+    {id:'elev-find', cat:'collection', emoji:'🧦', name:'Keen Finder', desc:'Return a missing item on a Wobblevator floor.', coins:10, prove:s => !!(s.notes && s.notes['elev-find']) || !!(s.elevator && (s.elevator.found | 0) >= 1)},
     {id:'autumn-all', cat:'adventure', emoji:'🎃', name:'Pumpkin Patch', desc:'Find all 12 pumpkins at Cozy Autumn Farm.', coins:20, prove:s => !!(s.notes && s.notes['autumn:all']) || !!(s.autumnDay)},
     // Creative
     {id:'bk-first', cat:'creative', emoji:'🧁', name:'Fresh from the Oven', desc:'Fill your first bakery order.', coins:10, prove:s => !!(s.bakery && (s.bakery.served | 0) >= 1)},
@@ -7900,6 +8344,7 @@ function confetti(){
     snap.rides = L('rubloxRides', null);
     snap.hive = L('rubloxHive', null);
     snap.camp = L('rubloxCamp', null);
+    snap.elevator = L('rubloxElevator', null);
     if (extra && typeof extra === 'object') Object.keys(extra).forEach(k => { snap[k] = extra[k]; });
     return snap;
   }
@@ -12642,13 +13087,13 @@ const Obby = (() => {
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
     nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; py = null; evg = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
-    if (mode === 'garden') buildGarden(); else if (mode === 'meadow') buildMeadow(); else if (mode === 'rides') buildRides(); else if (mode === 'hive') buildHive(); else if (mode === 'camp') buildCamp(); else if (mode === 'cafe') buildCafe(); else if (mode === 'fish') buildFish(); else if (mode === 'petshow') buildPetShow(); else if (mode === 'hunt') buildHunt(); else if (mode === 'snowfest') buildSnowFest(); else if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    if (mode === 'elevator') buildElevator(); else if (mode === 'garden') buildGarden(); else if (mode === 'meadow') buildMeadow(); else if (mode === 'rides') buildRides(); else if (mode === 'hive') buildHive(); else if (mode === 'camp') buildCamp(); else if (mode === 'cafe') buildCafe(); else if (mode === 'fish') buildFish(); else if (mode === 'petshow') buildPetShow(); else if (mode === 'hunt') buildHunt(); else if (mode === 'snowfest') buildSnowFest(); else if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
     else if (mode === 'build') [[-40,22,30,2.5],[45,28,-20,3],[0,35,-60,3.5],[-30,18,-40,2]].forEach(a => cloud(...a));
     else if (mode === 'pets') [[-50,30,-40,3],[40,34,-10,3.5],[-20,38,40,3],[30,30,80,3.5],[-60,32,90,3]].forEach(a => cloud(...a));
-    else if (mode !== 'tag' && mode !== 'obby' && mode !== 'lantern' && mode !== 'dreamhouse' && mode !== 'party' && mode !== 'snowfest' && mode !== 'cafe' && mode !== 'fish' && mode !== 'petshow' && mode !== 'hunt' && mode !== 'garden' && mode !== 'meadow' && mode !== 'rides' && mode !== 'hive' && mode !== 'camp') [[-30,10,40,2],[35,18,80,2.5],[-40,25,130,3],[30,8,20,1.5],[25,30,170,2.5],[-25,5,95,1.8],[0,40,230,4]].forEach(a => cloud(...a));
+    else if (mode !== 'tag' && mode !== 'obby' && mode !== 'lantern' && mode !== 'dreamhouse' && mode !== 'party' && mode !== 'snowfest' && mode !== 'cafe' && mode !== 'fish' && mode !== 'petshow' && mode !== 'hunt' && mode !== 'garden' && mode !== 'meadow' && mode !== 'rides' && mode !== 'hive' && mode !== 'camp' && mode !== 'elevator') [[-30,10,40,2],[35,18,80,2.5],[-40,25,130,3],[30,8,20,1.5],[25,30,170,2.5],[-25,5,95,1.8],[0,40,230,4]].forEach(a => cloud(...a));
     // player + shadow
     model = buildPlayer(avatar); scene.add(model.g);
     blob = new THREE.Mesh(new THREE.CircleGeometry(.6, 20), new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: .25, depthWrite: false}));
@@ -30731,7 +31176,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'dreamhouse' ? (typeof dh !== 'undefined' && dh && dh.visiting ? '🎮 Left stick move · Right stick look · Ⓐ jump · Ⓧ like the house · ☰ menu' : '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · Ⓨ invite friends · ⓁⓇ job · ✚▼ show spots · ☰ menu') : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'pethotel' ? '🎮 Left stick move · Ⓐ jump · Ⓧ check in / care / check out · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'dreamhouse' ? (typeof dh !== 'undefined' && dh && dh.visiting ? '🎮 Left stick move · Right stick look · Ⓐ jump · Ⓧ like the house · ☰ menu' : '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · Ⓨ invite friends · ⓁⓇ job · ✚▼ show spots · ☰ menu') : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'elevator' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act · Ⓑ close popups · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'pethotel' ? '🎮 Left stick move · Ⓐ jump · Ⓧ check in / care / check out · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · View emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -30828,6 +31273,7 @@ const Obby = (() => {
     }
     if (['cafe','fish','petshow','hunt'].includes(mode) && typeof t297Pad === 'function' && t297Pad(jp)) return;
     if (['garden','meadow','rides','hive','camp'].includes(mode) && typeof t302Pad === 'function' && t302Pad(jp, s)) return;
+    if (mode === 'elevator' && typeof elevPadEdge === 'function' && elevPadEdge(jp)) return;
     if (mode === 'snowfest' && typeof evg !== 'undefined' && evg && typeof snowfestPad === 'function' && snowfestPad(jp)) return;
     if (mode === 'party' && typeof py !== 'undefined' && py && typeof partyPad === 'function' && partyPad(jp)) return;
     if (jp[3]) behind();
@@ -31377,7 +31823,7 @@ function dhLayoutHud(){
       if (ic) iceCreamUpdate(dt);
       if (ph) petHotelUpdate(dt);
       if (sb) stableUpdate(dt);
-      if (evg) snowfestUpdate(dt); if (py) partyUpdate(dt); if (lh) lanternUpdate(dt); if (typeof t297Update === 'function') t297Update(dt); if (typeof t302Update === 'function') t302Update(dt);
+      if (evg) snowfestUpdate(dt); if (py) partyUpdate(dt); if (lh) lanternUpdate(dt); if (typeof t297Update === 'function') t297Update(dt); if (typeof t302Update === 'function') t302Update(dt); if (typeof elevUpdate === 'function') elevUpdate(dt);
       if (hm) hauntUpdate(dt);
       if (db) danceUpdate(dt);
       if (dh) dreamhouseUpdate(dt);
@@ -31556,6 +32002,7 @@ function dhLayoutHud(){
       if (mode === 'dreamhouse' && dh && dhKey(e)) return;
       if (['cafe','fish','petshow','hunt'].includes(mode) && typeof t297Key === 'function' && t297Key(e)) return;
       if (['garden','meadow','rides','hive','camp'].includes(mode) && typeof t302Key === 'function' && t302Key(e)) return;
+      if (mode === 'elevator' && typeof elevKey === 'function' && elevKey(e)) return;
       if (mode === 'snowfest' && typeof evg !== 'undefined' && evg && typeof snowfestKey === 'function' && snowfestKey(e)) return;
       if (mode === 'party' && typeof py !== 'undefined' && py && typeof partyKey === 'function' && partyKey(e)) return;
       const em = (typeof EmoRules !== 'undefined' && EmoRules.emoByCode) ? EmoRules.emoByCode(e.code, EMOTES) : Object.keys(EMOTES).find(k => { const key = EMOTES[k].key; return key != null && key !== '' && ('Digit' + key === e.code || 'Numpad' + key === e.code); });
@@ -31582,7 +32029,7 @@ function dhLayoutHud(){
       }
       keys[e.code] = true;
     });
-    addEventListener('keyup', e => { if (typeof dhNoteLookKey === 'function') dhNoteLookKey(e, false); keys[e.code] = false; if (e.key) keys[e.key] = false; if (['garden','meadow','rides','hive','camp'].includes(mode) && typeof t302Key === 'function' && t302Key(e)) return; });
+    addEventListener('keyup', e => { if (typeof dhNoteLookKey === 'function') dhNoteLookKey(e, false); keys[e.code] = false; if (e.key) keys[e.key] = false; if (['garden','meadow','rides','hive','camp'].includes(mode) && typeof t302Key === 'function' && t302Key(e)) return; if (mode === 'elevator' && typeof elevKey === 'function' && elevKey(e)) return; });
     const clearHeldKeys = () => {
       for (const k in keys) keys[k] = false;
       if (typeof joy !== 'undefined' && joy){ joy.x = joy.y = 0; joy.jump = false; }
@@ -31711,7 +32158,7 @@ function dhLayoutHud(){
     $('#pMouseSens').oninput = e => { const r = $('#mouseSens'); r.value = e.target.value; r.dispatchEvent(new Event('input')); menuVals(); };
     $('#pMapBtn').onclick = () => { const m = $('#pMap'); m.classList.toggle('show'); $('#pMapBtn').textContent = m.classList.contains('show') ? '🎮 Hide button map' : '🎮 Button map'; };
     setInterval(() => { if ($('#oPausePanel').classList.contains('show')) menuPad(); }, 1000);
-    const HUD_HIT_SEL = '#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhVisit, #dhSteps, #dhResetModal, .obtns, #oExit, #oExit2, #oExit3, #oFP, #oPause, #oMute, #setBtn, #setModal, #oPausePanel, #chRoot, #chPanel, #chWheel, #chBtn, #lhRoot, #lhAct, #lhSet, #lhDraw, #lhWrite, #lhWriteBtn, #lhKnock, #lhGame, #lhBooth, #lhDecor, #lhDecorBtn, #lhCut, #lhCalm, #lhMeter, #lhFanfare, #lhSetBtn, #lhMyWagon, #lhMapBtn, #lhMap, #lhWall, button, a, input, label, select';
+    const HUD_HIT_SEL = '#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhVisit, #dhSteps, #dhResetModal, .obtns, #oExit, #oExit2, #oExit3, #oFP, #oPause, #oMute, #setBtn, #setModal, #oPausePanel, #chRoot, #chPanel, #chWheel, #chBtn, #lhRoot, #lhAct, #lhSet, #lhDraw, #lhWrite, #lhWriteBtn, #lhKnock, #lhGame, #lhBooth, #lhDecor, #lhDecorBtn, #lhCut, #lhCalm, #lhMeter, #lhFanfare, #lhSetBtn, #lhMyWagon, #lhMapBtn, #lhMap, #lhWall, #elevAct, #elevHelpBtn, #elevHelp, #elevBox, #elevMeter, button, a, input, label, select';
     function releasePointerForHud(){
       try { if (typeof document !== 'undefined' && document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e){}
     }
@@ -31966,7 +32413,7 @@ function dhLayoutHud(){
   }
 
 function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party', 'snowfest', 'cafe', 'fish', 'petshow', 'hunt', 'garden', 'meadow', 'rides', 'hive', 'camp'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt' || mode === 'garden' || mode === 'meadow' || mode === 'rides' || mode === 'hive' || mode === 'camp' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party', 'snowfest', 'cafe', 'fish', 'petshow', 'hunt', 'garden', 'meadow', 'rides', 'hive', 'camp', 'elevator'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt' || mode === 'garden' || mode === 'meadow' || mode === 'rides' || mode === 'hive' || mode === 'camp' || mode === 'elevator' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     recordRecentGame(mode);
@@ -32077,6 +32524,9 @@ function start(m = 'obby', d = null){
     if (mode === 'rides') ridesEnter();
     if (mode === 'hive') hiveEnter();
     if (mode === 'camp') campEnter();
+    if (mode === 'elevator') elevEnter();
+    { const _elev = document.getElementById('elevBox'); if (_elev) _elev.style.display = mode === 'elevator' ? '' : 'none'; }
+    $('#obby').classList.toggle('elevmode', mode === 'elevator');
     { const _t302 = document.getElementById('t302Box'); if (_t302) _t302.style.display = ['garden','meadow','rides','hive','camp'].includes(mode) ? '' : 'none'; }
     $('#obby').classList.toggle('gardenmode', mode === 'garden');
     $('#obby').classList.toggle('meadowmode', mode === 'meadow');
@@ -34016,7 +34466,8 @@ function start(m = 'obby', d = null){
       meadow: L('rubloxMeadow', null),
       rides: L('rubloxRides', null),
       hive: L('rubloxHive', null),
-      camp: L('rubloxCamp', null)
+      camp: L('rubloxCamp', null),
+      elevator: L('rubloxElevator', null)
     };
   }
 
@@ -37249,6 +37700,541 @@ function start(m = 'obby', d = null){
     };
   } catch (e){}
 
+  /* ---------- Wobblevator ---------- */
+  let elv = null;
+
+  function elevState(){ return ElevRules.elevLoad(typeof load === 'function' ? load(ElevRules.ELEV_KEY, null) : null); }
+  function elevPersist(s){ if (typeof save === 'function') save(ElevRules.ELEV_KEY, s); if (elv) elv.sv = s; }
+  function elevKeep(m){ if (m && elv && elv.trash) elv.trash.push(m); return m; }
+  function elevFkeep(m){ if (m && elv && elv.floorTrash) elv.floorTrash.push(m); return m; }
+  function elevMat(color, opts){ return new THREE.MeshLambertMaterial(Object.assign({color: color}, opts || {})); }
+  function elevMesh(geo, color, x, y, z, floor, opts){
+    const m = new THREE.Mesh(geo, elevMat(color, opts));
+    m.position.set(x, y, z);
+    scene.add(m);
+    if (floor) elevFkeep(m); else elevKeep(m);
+    return m;
+  }
+  function elevLab(text, x, y, z, floor){
+    try {
+      if (typeof t297Lab === 'function'){
+        const m = t297Lab(text, x, y, z);
+        if (m){ if (floor) elevFkeep(m); else elevKeep(m); return m; }
+      }
+    } catch (e){}
+    return null;
+  }
+  function elevNear(x, z, r){ return Math.hypot(P.x - x, P.z - z) <= (r == null ? 1.8 : r); }
+  function elevPay(n){ if (n > 0){ try { setCoins(coins + n); runCoins = (runCoins || 0) + n; } catch (e){} } }
+  function elevAch(id){ try { if (typeof achNote === 'function') achNote(id); } catch (e){} }
+  function elevBoard(v){ try { if (typeof lbRecord === 'function') lbRecord('elev-best', v); } catch (e){} }
+  function elevTone(freqs, dur, type, vol){ try { if (typeof beep === 'function') beep(freqs, dur, type || 'sine', vol == null ? 0.05 : vol); } catch (e){} }
+
+  function elevMakeBingle(x, y, z){
+    const g = new THREE.Group();
+    const bell = new THREE.Mesh(new THREE.SphereGeometry(0.55, 10, 8, 0, Math.PI * 2, 0, Math.PI * 0.65), elevMat('#ffd23f', {emissive:'#7a5a00'}));
+    bell.position.y = 0.35; g.add(bell);
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.08, 12), elevMat('#e8b83a'));
+    brim.position.y = 0.12; g.add(brim);
+    const clapper = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 6), elevMat('#1d2340'));
+    clapper.position.y = -0.08; g.add(clapper);
+    const e1 = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), new THREE.MeshBasicMaterial({color:'#1d2340'}));
+    e1.position.set(-0.16, 0.42, 0.42); g.add(e1);
+    const e2 = e1.clone(); e2.position.x = 0.16; g.add(e2);
+    const hat = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.28, 0.28, 8), elevMat('#3a86ff'));
+    hat.position.y = 0.82; g.add(hat);
+    g.position.set(x, y, z);
+    scene.add(g); elevKeep(g);
+    return g;
+  }
+  function elevMakePal(pal, x, z){
+    const g = new THREE.Group();
+    const col = pal.id === 'sock' ? '#3a86ff' : pal.id === 'niblet' ? '#ffd23f' : pal.id === 'marm' ? '#ff6fb5' : pal.id === 'taro' ? '#2ec27e' : '#8b5cf6';
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.9, 0.5), elevMat(col));
+    body.position.y = 0.55; g.add(body);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.45, 0.45), elevMat('#ffe0b0'));
+    head.position.y = 1.2; g.add(head);
+    g.position.set(x, 0, z);
+    scene.add(g); elevKeep(g);
+    elevLab((pal.emoji || '') + ' ' + pal.name, x, 1.9, z);
+    return g;
+  }
+
+  function elevClearFloorMeshes(){
+    if (!elv) return;
+    (elv.floorTrash || []).forEach(m => { try { scene.remove(m); } catch (e){} });
+    elv.floorTrash = [];
+    elv.hazards = [];
+    elv.pickups = [];
+    elv.bells = [];
+    elv.paints = [];
+    elv.door = null;
+    elv.lamp = null;
+    elv.tiles = [];
+    elv.turnIn = null;
+    elv.lightDisc = null;
+  }
+
+  function elevBuildRoom(col, w, d){
+    elevMesh(new THREE.BoxGeometry(w, 0.2, d), col, 0, 0.1, -30, true);
+    elevMesh(new THREE.BoxGeometry(w, 6, 0.3), '#d8d0c4', 0, 3, -30 - d/2, true);
+    elevMesh(new THREE.BoxGeometry(0.3, 6, d), '#d8d0c4', -w/2, 3, -30, true);
+    elevMesh(new THREE.BoxGeometry(0.3, 6, d), '#d8d0c4', w/2, 3, -30, true);
+    plat(0, 0.2, -30, w, d, col, 0.2);
+  }
+  function elevDoorPad(x, z){
+    const m = elevMesh(new THREE.BoxGeometry(2.2, 0.15, 2.2), '#ffd23f', x, 0.28, z, true, {emissive:'#7a5a00'});
+    elv.door = {x, z, mesh:m};
+    elevLab('🚪 Door', x, 1.6, z, true);
+    return m;
+  }
+
+  function elevBuildFloor(id){
+    elevClearFloorMeshes();
+    elevRestoreSky();
+    const f = ElevRules.elevFloor(id);
+    if (!f) return;
+    const z0 = -30;
+    if (id === 'pillowpath'){
+      elevBuildRoom('#f3d6ea', 16, 28);
+      [[0,-22,0],[2.2,-18,0.5],[-2,-14,1],[2,-10,1.5],[-1.4,-6,2],[0,-2,2.4]].forEach(p => {
+        elevMesh(new THREE.BoxGeometry(2.4, 0.5, 2.0), '#ffd0e8', p[0], 0.4 + p[2], z0 + p[1] + 14, true);
+        plat(p[0], 0.65 + p[2], z0 + p[1] + 14, 2.4, 2.0, '#ffd0e8', 0.5);
+      });
+      elevDoorPad(0, z0 - 10);
+    } else if (id === 'jellyhills'){
+      elevBuildRoom('#e5d4ff', 16, 28);
+      [[0,-20,0],[3,-16,0.8],[-3,-12,1.4],[0,-8,2],[2.5,-4,2.6]].forEach(p => {
+        const m = elevMesh(new THREE.SphereGeometry(1.3, 8, 6), '#b57cff', p[0], 0.6 + p[2]*0.2, z0 + p[1] + 14, true);
+        const pad = plat(p[0], 1.1 + p[2]*0.2, z0 + p[1] + 14, 2.2, 2.2, '#c9a2ff', 0.3);
+        try { if (typeof jumpPads !== 'undefined') jumpPads.push(pad); } catch (e){}
+      });
+      elevDoorPad(0, z0 - 10);
+    } else if (id === 'sockhunt' || id === 'lostlunch'){
+      elevBuildRoom(id === 'sockhunt' ? '#dce8ff' : '#ffe9c8', 18, 18);
+      const spots = [[-5,-26], [4,-24], [0,-34], [-4,-32], [5,-33]];
+      const realAt = 2;
+      spots.forEach((s, i) => {
+        const real = i === realAt;
+        const col = real ? (id === 'sockhunt' ? '#3a86ff' : '#c45c1a') : '#cfc8ba';
+        const m = elevMesh(new THREE.BoxGeometry(0.7, 0.35, 0.9), col, s[0], 0.4, s[1], true);
+        elv.pickups.push({mesh:m, x:s[0], z:s[1], item: real ? (id === 'sockhunt' ? 'sock' : 'lunch') : 'decoy'});
+      });
+      elv.turnIn = {x:0, z:-22};
+      elevLab(id === 'sockhunt' ? '🧦 Basket' : '🐥 Picnic', 0, 1.6, -22, true);
+    } else if (id === 'soapsurge'){
+      elevBuildRoom('#c8f0ff', 16, 16);
+      for (let i = 0; i < 5; i++){
+        const m = elevMesh(new THREE.BoxGeometry(1.6, 0.3, 0.9), '#9fe7ff', (i-2)*2.4, 0.4, -30, true);
+        elv.hazards.push({mesh:m, kind:'soap', i, speed: 3 + i * 0.4});
+      }
+      elevDoorPad(0, -38);
+    } else if (id === 'pieparade'){
+      elevBuildRoom('#ffe6d6', 16, 16);
+      for (let i = 0; i < 4; i++){
+        const m = elevMesh(new THREE.SphereGeometry(0.45, 8, 6), '#e07a3f', -8, 1.1, -26 - i*2, true);
+        elv.hazards.push({mesh:m, kind:'pie', i, speed: 5 + i});
+      }
+      elevDoorPad(0, -38);
+    } else if (id === 'balloonbounce'){
+      elevBuildRoom('#fff0f6', 16, 16);
+      for (let i = 0; i < 5; i++){
+        const m = elevMesh(new THREE.SphereGeometry(0.6, 8, 6), i%2 ? '#ff6fb5' : '#3a86ff', (i-2)*2.2, 1.2, -28, true);
+        elv.hazards.push({mesh:m, kind:'balloon', i, speed: 2.2 + i * 0.3});
+      }
+      elevDoorPad(0, -38);
+    } else if (id === 'confetticannon'){
+      elevBuildRoom('#fff7d6', 16, 16);
+      elevMesh(new THREE.CylinderGeometry(0.6, 0.8, 1.4, 8), '#1d2340', 0, 0.8, -22, true);
+      for (let i = 0; i < 8; i++){
+        const m = elevMesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), ['#ff4d5e','#ffd23f','#2ec27e','#3a86ff'][i%4], 0, 1.2, -24, true);
+        elv.hazards.push({mesh:m, kind:'confetti', i, speed: 3 + (i%3)});
+      }
+    } else if (id === 'chimeorder'){
+      elevBuildRoom('#efe7ff', 16, 14);
+      const cols = ['#ff4d5e','#ffd23f','#3a86ff'];
+      [-3, 0, 3].forEach((x, i) => {
+        const m = elevMesh(new THREE.SphereGeometry(0.55, 10, 8, 0, Math.PI*2, 0, Math.PI*0.7), cols[i], x, 1.1, -30, true, {emissive: cols[i]});
+        elv.bells.push({mesh:m, x, z:-30, i});
+        elevLab('🔔 ' + (i + 1), x, 2.1, -30, true);
+      });
+    } else if (id === 'lanternhall'){
+      elevBuildRoom('#1a1630', 16, 20);
+      const disc = elevMesh(new THREE.CylinderGeometry(2.2, 2.2, 0.08, 16), '#ffe566', 0, 0.25, -24, true, {emissive:'#7a5a00'});
+      elv.lightDisc = disc;
+      const lamp = elevMesh(new THREE.CylinderGeometry(0.3, 0.3, 1.6, 8), '#ffd23f', 0, 1.0, -38, true, {emissive:'#7a5a00'});
+      elv.door = {x:0, z:-38, mesh:lamp};
+      elevLab('🕯️ Lamp', 0, 2.4, -38, true);
+      scene.background = new THREE.Color('#141028');
+      if (scene.fog){ scene.fog.color.set('#141028'); scene.fog.near = 6; scene.fog.far = 28; }
+    } else if (id === 'shadowpeek'){
+      elevBuildRoom('#16141f', 16, 18);
+      for (let i = 0; i < 3; i++){
+        const m = elevMesh(new THREE.BoxGeometry(1.2, 2.2, 0.4), '#0b0a10', -5 + i*5, 1.2, -34, true);
+        elv.hazards.push({mesh:m, kind:'peek', i, speed: 1.4 + i*0.2});
+      }
+      elevDoorPad(0, -38);
+      scene.background = new THREE.Color('#121018');
+    } else if (id === 'tickletiles'){
+      elevBuildRoom('#e8ffe9', 14, 14);
+      for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++){
+        const grumpy = (i + j) % 3 === 0;
+        const x = -4.5 + i * 3, z = -24 - j * 3;
+        const m = elevMesh(new THREE.BoxGeometry(2.6, 0.12, 2.6), grumpy ? '#8b5cf6' : '#ffd23f', x, 0.26, z, true);
+        elv.tiles.push({mesh:m, x, z, grumpy});
+      }
+      elevDoorPad(0, -38);
+    } else if (id === 'partypaint'){
+      elevBuildRoom('#fff4e0', 16, 14);
+      [-4, 0, 4].forEach((x, i) => {
+        const m = elevMesh(new THREE.BoxGeometry(1.6, 1.8, 0.12), '#f4f0e8', x, 1.3, -32, true);
+        elv.paints.push({mesh:m, x, z:-32, i, done:false});
+        elevLab('🙂', x, 2.5, -32, true);
+      });
+    } else if (id === 'snackstop'){
+      elevBuildRoom('#ffe8cc', 14, 14);
+      elevMesh(new THREE.BoxGeometry(4.2, 1.4, 1.4), '#c45c1a', 0, 0.8, -32, true);
+      elevMesh(new THREE.CylinderGeometry(0.3, 0.3, 0.2, 10), '#c45c1a', 0, 1.6, -32, true);
+      elv.turnIn = {x:0, z:-32, shop:true};
+      elevLab('🍪 Lucky cookie — 8 🪙', 0, 2.4, -32, true);
+      elevDoorPad(0, -38);
+    } else {
+      elevBuildRoom('#efe7ff', 14, 14);
+      elevDoorPad(0, -38);
+    }
+  }
+
+  function elevRestoreSky(){
+    scene.background = new THREE.Color('#b8e0ff');
+    if (scene.fog){ scene.fog.color.set('#b8e0ff'); scene.fog.near = 28; scene.fog.far = 90; }
+  }
+
+  function buildElevator(){
+    const sv = elevState();
+    const started = ElevRules.elevStartRun(sv, Date.now(), !!(typeof mp !== 'undefined' && mp && mp.on));
+    elevPersist(started.state);
+    elv = {trash:[], floorTrash:[], sv: started.state, run: started.run, hazards:[], pickups:[], bells:[], paints:[], tiles:[], door:null, host:null, pal:null, doors:[], near:null};
+    elevRestoreSky();
+    plat(0, 0, 8, 28, 28, '#c8bea8', 0.2);
+    plat(0, 0, 14, 18, 10, '#d9d4c8', 0.08);
+    // lobby walls / awning
+    elevMesh(new THREE.BoxGeometry(18, 0.4, 1), '#f4efe4', 0, 4.2, 19, false);
+    elevLab('🛗 Wobblevator Lobby', 0, 3.2, 18);
+    // elevator cab
+    plat(0, 0.05, 0, 6.4, 6.4, '#c9a24a', 0.08);
+    elevMesh(new THREE.BoxGeometry(6.4, 0.9, 0.2), '#efe6d4', 0, 4.05, 3.2, false);
+    elevMesh(new THREE.BoxGeometry(0.2, 4.4, 6.4), '#efe6d4', -3.2, 2.3, 0, false);
+    elevMesh(new THREE.BoxGeometry(0.2, 4.4, 6.4), '#efe6d4', 3.2, 2.3, 0, false);
+    elevMesh(new THREE.BoxGeometry(6.4, 0.2, 6.4), '#fff8ee', 0, 4.5, 0, false);
+    const dL = elevMesh(new THREE.BoxGeometry(2.6, 3.6, 0.16), '#d4a017', -1.35, 1.9, -3.2, false);
+    const dR = elevMesh(new THREE.BoxGeometry(2.6, 3.6, 0.16), '#d4a017', 1.35, 1.9, -3.2, false);
+    elv.doors = [dL, dR];
+    // back of cab (lobby side) opening
+    elevMesh(new THREE.BoxGeometry(1.2, 4.4, 0.2), '#efe6d4', -2.6, 2.3, 3.2, false);
+    elevMesh(new THREE.BoxGeometry(1.2, 4.4, 0.2), '#efe6d4', 2.6, 2.3, 3.2, false);
+    elevLab('🛎️ Board here', 0, 3.4, 3.6);
+    elv.host = elevMakeBingle(2.0, 0.2, -1.6);
+    elevLab('🛎️ Bingle', 2.0, 2.1, -1.6);
+    if (started.run.buddy){
+      const pal = ElevRules.elevPickPal(started.run, Math.random);
+      if (pal){ started.run.palId = pal.id; elv.pal = elevMakePal(pal, -2.0, -1.2); }
+    }
+    const amb = new THREE.AmbientLight(0xfff4e8, 0.55);
+    scene.add(amb); elevKeep(amb);
+    const cabLight = new THREE.PointLight(0xfff2d0, 1.2, 36);
+    cabLight.position.set(0, 4.1, 0);
+    scene.add(cabLight); elevKeep(cabLight);
+    const hallLight = new THREE.PointLight(0xffe8c8, 0.7, 40);
+    hallLight.position.set(0, 5, -28);
+    scene.add(hallLight); elevKeep(hallLight);
+    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:14}, flag:new THREE.Object3D()};
+  }
+
+  function elevHud(text, act){
+    const hint = document.getElementById('elevHint');
+    if (hint) hint.textContent = text || '';
+    const btn = document.getElementById('elevAct');
+    if (btn){ if (act){ btn.textContent = act; btn.classList.add('show'); } else btn.classList.remove('show'); }
+  }
+  function elevMeter(on, t, lab, max){
+    const el = document.getElementById('elevMeter');
+    const fill = document.getElementById('elevMeterFill');
+    const tx = document.getElementById('elevMeterLab');
+    if (!el) return;
+    if (!on){ el.classList.remove('show'); return; }
+    el.classList.add('show');
+    const m = max > 0 ? max : 1;
+    if (fill) fill.style.width = Math.max(0, Math.min(100, (t / m) * 100)) + '%';
+    if (tx) tx.textContent = lab || '';
+  }
+
+  function elevInCab(){ return Math.abs(P.x) < 2.8 && Math.abs(P.z) < 2.8; }
+  function elevSetDoors(open){
+    if (!elv || !elv.doors) return;
+    const t = open ? 2.2 : 0.15;
+    elv.doors[0].position.x += ((open ? -2.5 : -1.35) - elv.doors[0].position.x) * 0.2;
+    elv.doors[1].position.x += ((open ? 2.5 : 1.35) - elv.doors[1].position.x) * 0.2;
+  }
+
+  function elevEnter(){
+    if (!elv) return;
+    cam.pitch = 0.28; cam.dist = 12;
+    try { if (typeof achNote === 'function') achNote('play:elevator'); } catch (e){}
+    elevAch('elev-ride');
+    banner('🛎️ Wobblevator! Walk into the lift and press E / Ⓧ. Bingle the Bellhop will take you to surprise floors. If one gets too wobbly, everyone is okay!');
+    elevHud('Walk into the elevator, then press E / Ⓧ to ride. Open Help anytime.', '🛗 Ride');
+    const help = document.getElementById('elevHelp');
+    if (help && !help.__elevOv){
+      help.__elevOv = true;
+      help.addEventListener('click', ev => { if (ev.target === help && typeof t297OverlayClose === 'function') t297OverlayClose('elevHelp'); });
+      const x = document.getElementById('elevHelpX');
+      if (x) x.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); if (typeof t297OverlayClose === 'function') t297OverlayClose('elevHelp'); });
+    }
+    const hb = document.getElementById('elevHelpBtn');
+    if (hb && !hb.__elev){ hb.__elev = true; hb.addEventListener('click', ev => { ev.preventDefault(); elevOpenHelp(); }); }
+    const ab = document.getElementById('elevAct');
+    if (ab && !ab.__elev){ ab.__elev = true; ab.addEventListener('click', ev => { ev.preventDefault(); elevAct(); }); }
+    if (typeof t297BindOverlays === 'function'){
+      try { window.__t297OvBound = false; t297BindOverlays(); } catch (e){}
+    }
+  }
+
+  function elevOpenHelp(){
+    if (typeof t297OverlayShow === 'function') t297OverlayShow('elevHelp', true);
+  }
+
+  function elevGo(){
+    if (!elv || elv.run.phase !== 'lobby') return;
+    if (!elevInCab()){ banner('Step all the way into the lift first!'); return; }
+    ElevRules.elevBeginRide(elv.run, Math.random);
+    elevTone([520, 780, 1040], 0.08, 'sine', 0.05);
+    banner(elv.run.quote);
+  }
+
+  function elevArrive(){
+    if (!elv) return;
+    const id = elv.run.floor;
+    elevBuildFloor(id);
+    P.x = 0; P.z = -22; P.y = 0.5; P.vy = 0;
+    elevTone([330, 440], 0.07, 'triangle', 0.05);
+    banner(elv.run.quote);
+    if (id === 'chimeorder' && elv.run.seq && elv.run.seq.length){
+      const names = ['red', 'yellow', 'blue'];
+      banner('🛎️ Bingle hummed: ' + elv.run.seq.map(i => names[i] || (i+1)).join(', then ') + '!');
+    }
+    if (elv.run.buddy && elv.run.palId){
+      const pal = ElevRules.elevPal(elv.run.palId);
+      if (pal && pal.line) setTimeout(() => { if (elv && elv.run.phase === 'floor') banner((pal.emoji || '') + ' ' + pal.name + ': "' + pal.line + '"'); }, 1200);
+    }
+  }
+
+  function elevReturnToCab(msg){
+    elevClearFloorMeshes();
+    elevRestoreSky();
+    P.x = 0; P.z = 0; P.y = 0.5; P.vy = 0;
+    if (msg) banner(msg);
+  }
+
+  function elevDoClear(){
+    const r = ElevRules.elevClearFloor(elv.sv, elv.run);
+    if (!r.ok) return;
+    elevPersist(r.state);
+    elv.run = r.run;
+    if (r.pay) elevPay(r.pay);
+    ElevRules.elevBadges(r.state, r.run).forEach(id => elevAch(id));
+    elevBoard(r.state.best);
+    elevTone([520, 660, 880], 0.1, 'sine', 0.06);
+    elevReturnToCab(r.run.quote);
+  }
+  function elevDoFail(){
+    const r = ElevRules.elevFailFloor(elv.sv, elv.run);
+    if (!r.ok) return;
+    elevPersist(r.state);
+    elv.run = r.run;
+    elevTone([180, 90], 0.12, 'triangle', 0.06);
+    elevReturnToCab(r.run.quote);
+  }
+
+  function elevAct(){
+    if (!elv) return false;
+    if (typeof t297EatOverlayKey === 'function' && t297OverlayOpen && t297OverlayOpen()) return true;
+    const run = elv.run;
+    if (run.phase === 'lobby'){ elevGo(); return true; }
+    if (run.phase !== 'floor') return false;
+    if (elv.bells && elv.bells.length){
+      const b = elv.bells.find(o => elevNear(o.x, o.z, 1.6));
+      if (b){
+        const r = ElevRules.elevRing(run, b.i);
+        elevTone(r.ok ? [480 + b.i * 80] : [160], 0.07, 'sine', 0.06);
+        if (r.why === 'wrong') banner('Oops, start the tune again!');
+        if (run.wantClear) elevDoClear();
+        return true;
+      }
+    }
+    if (elv.paints && elv.paints.length){
+      const p = elv.paints.find(o => !o.done && elevNear(o.x, o.z, 1.7));
+      if (p){
+        p.done = true;
+        p.mesh.material.color.set('#ffd23f');
+        ElevRules.elevPaint(run, p.i);
+        elevTone([600, 720], 0.06, 'sine', 0.05);
+        if (run.wantClear) elevDoClear();
+        return true;
+      }
+    }
+    if (elv.pickups && elv.pickups.length){
+      const p = elv.pickups.find(o => !o.got && elevNear(o.x, o.z, 1.5));
+      if (p){
+        const r = ElevRules.elevPickItem(run, p.item);
+        if (r.ok){
+          p.got = true; p.mesh.visible = false;
+          banner('Got it! Take it to the drop-off.');
+          elevTone([640], 0.06, 'sine', 0.05);
+        } else banner('That is not the right one!');
+        return true;
+      }
+    }
+    if (elv.turnIn && elevNear(elv.turnIn.x, elv.turnIn.z, 1.8)){
+      if (elv.turnIn.shop){
+        const wallet = (typeof coins === 'number') ? coins : 0;
+        const r = ElevRules.elevBuySnack(elv.sv, wallet, run);
+        if (r.ok){
+          elevPersist(r.state);
+          try { setCoins(r.wallet); } catch (e){}
+          banner('🍪 Lucky cookie! The next floor pays a little extra.');
+          elevTone([700, 880], 0.08, 'sine', 0.05);
+        } else if (r.why === 'coins') banner('Need ' + r.need + ' more coins for a lucky cookie.');
+        else if (r.why === 'have') banner('You already grabbed a cookie this stop.');
+        return true;
+      }
+      if (run.holding){
+        ElevRules.elevTurnIn(run);
+        if (run.wantClear) elevDoClear();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function elevUpdate(dt){
+    if (!elv) return;
+    dt = Math.max(0, Math.min(0.12, +dt || 0));
+    const run = elv.run;
+    const before = run.phase;
+    ElevRules.elevTick(run, dt);
+    if (before === 'ride' && run.phase === 'floor') elevArrive();
+    if (before === 'inter' && run.phase === 'ride'){
+      banner(run.quote);
+      elevTone([440, 550], 0.06, 'sine', 0.04);
+    }
+    if (run.wantClear) elevDoClear();
+    else if (run.wantFail) elevDoFail();
+
+    const openDoors = run.phase === 'lobby' || run.phase === 'floor' || run.phase === 'inter';
+    elevSetDoors(openDoors);
+    if (elv.host) elv.host.rotation.y = Math.sin(time * 2) * 0.3;
+    if (elv.host) elv.host.position.y = 0.2 + Math.sin(time * 6) * (run.phase === 'ride' ? 0.12 : 0.04);
+
+    const f = ElevRules.elevFloor(run.floor);
+    const maxT = run.phase === 'floor' && f ? f.seconds : (run.phase === 'ride' ? ElevRules.ELEV_RIDE : ElevRules.ELEV_INTER);
+    const lab = '🛗 ' + (run.survived || 0) + ' floors  ·  best ' + (elv.sv.best || 0) + (run.phase === 'floor' && f ? ('  ·  ' + f.emoji + ' ' + f.name + '  ·  ' + Math.ceil(run.t) + 's') : (run.phase === 'ride' ? '  ·  riding…' : ''));
+    elevMeter(true, run.phase === 'floor' ? run.t : (run.phase === 'ride' ? run.t : 1), lab, maxT);
+
+    if (run.phase === 'floor'){
+      (elv.hazards || []).forEach(h => {
+        if (!h.mesh) return;
+        const t = time * h.speed;
+        if (h.kind === 'soap') h.mesh.position.set(Math.sin(t + h.i) * 5, 0.4, -30 + Math.cos(t * 0.7 + h.i) * 5);
+        else if (h.kind === 'pie') h.mesh.position.set(((t * 3 + h.i * 4) % 18) - 9, 1.1 + Math.sin(t) * 0.3, -26 - (h.i % 3) * 3);
+        else if (h.kind === 'balloon') h.mesh.position.set(Math.sin(t + h.i) * 5, 1.1 + Math.abs(Math.sin(t * 1.4)) * 1.2, -30 + Math.cos(t + h.i) * 4);
+        else if (h.kind === 'confetti') h.mesh.position.set(Math.sin(t * 1.3 + h.i) * 6, 0.8 + (t + h.i) % 3, -28 + Math.cos(t + h.i) * 4);
+        else if (h.kind === 'peek') h.mesh.position.z = -34 + Math.sin(t) * 3;
+        if (Math.hypot(P.x - h.mesh.position.x, P.z - h.mesh.position.z) < (h.kind === 'peek' ? 1.1 : 0.9) && Math.abs(P.y - h.mesh.position.y) < 1.4){
+          ElevRules.elevTouchHazard(run);
+        }
+      });
+      if (elv.tiles){
+        const tile = elv.tiles.find(o => Math.hypot(P.x - o.x, P.z - o.z) < 1.3);
+        if (tile && tile.grumpy) ElevRules.elevTouchHazard(run);
+      }
+      if (elv.lightDisc){
+        elv.lightDisc.position.x = Math.sin(time * 0.8) * 4;
+        elv.lightDisc.position.z = -24 + Math.cos(time * 0.6) * 6;
+        const lit = Math.hypot(P.x - elv.lightDisc.position.x, P.z - elv.lightDisc.position.z) < 2.6;
+        ElevRules.elevStayLit(run, lit);
+      }
+      if (elv.door && elevNear(elv.door.x, elv.door.z, 1.5)){
+        ElevRules.elevReachDoor(run);
+        if (run.wantClear) elevDoClear();
+      }
+    }
+
+    if (run.wantFail) elevDoFail();
+
+    let act = '';
+    if (run.phase === 'lobby'){
+      elevHud(elevInCab() ? 'E / Ⓧ — ding the lift and ride with Bingle!' : 'Walk into the golden elevator to board.', elevInCab() ? '🛗 Ride' : '');
+    } else if (run.phase === 'ride'){
+      elevHud(run.quote || 'The lift is wobbling to the next floor…', '');
+    } else if (run.phase === 'floor' && f){
+      if (elv.bells && elv.bells.some(o => elevNear(o.x, o.z, 1.6))) act = '🔔 Ring';
+      else if (elv.paints && elv.paints.some(o => !o.done && elevNear(o.x, o.z, 1.7))) act = '🎨 Paint';
+      else if (elv.pickups && elv.pickups.some(o => !o.got && elevNear(o.x, o.z, 1.5))) act = '🤲 Pick up';
+      else if (elv.turnIn && elevNear(elv.turnIn.x, elv.turnIn.z, 1.8)) act = elv.turnIn.shop ? '🍪 Buy' : '🧺 Drop off';
+      else if (elv.door && elevNear(elv.door.x, elv.door.z, 1.6)) act = '🚪 Door';
+      elevHud(f.hint + (run.holding ? '  Holding the find!' : ''), act);
+    } else {
+      elevHud('Back in the lift. Next floor coming up!', '');
+    }
+  }
+
+  function elevKey(e){
+    if (!elv) return false;
+    if (typeof t297EatOverlayKey === 'function' && t297EatOverlayKey(e)) return true;
+    if (e.type === 'keyup') return false;
+    const c = e.code || e.key;
+    if (c === 'KeyE' || c === 'KeyF' || c === 'Space'){ /* space is jump; don't steal */ }
+    if (c === 'KeyE' || c === 'KeyF'){ elevAct(); return true; }
+    if (c === 'KeyH'){ elevOpenHelp(); return true; }
+    return false;
+  }
+  function elevPad(jp){
+    if (!elv || !jp) return false;
+    if (typeof t297EatOverlayPad === 'function' && t297EatOverlayPad(jp)) return true;
+    if (jp[0] || jp[2]){ elevAct(); return true; } // A or X — A is also jump; X is safer. Don't block A.
+    // use button 2 (X) only for act if we can detect edge... use 2
+    return false;
+  }
+  function elevPadEdge(jp){
+    if (!elv || !jp) return false;
+    if (typeof t297EatOverlayPad === 'function' && t297EatOverlayPad(jp)) return true;
+    if (!elv._x && jp[2]){ elv._x = true; elevAct(); return true; }
+    if (!jp[2]) elv._x = false;
+    return false;
+  }
+  function elevStop(){
+    if (!elv) return;
+    elevClearFloorMeshes();
+    (elv.trash || []).forEach(m => { try { scene.remove(m); } catch (e){} });
+    elv = null;
+    elevHud('', '');
+    elevMeter(false);
+    const box = document.getElementById('elevBox'); if (box) box.style.display = 'none';
+    if (typeof t297OverlayClose === 'function') t297OverlayClose('elevHelp');
+    const ob = document.getElementById('obby');
+    if (ob) ob.classList.remove('elevmode');
+  }
+
+  if (typeof window !== 'undefined') window.elevDebug = {
+    floors(){ return ElevRules.ELEV_FLOORS.map(f => f.id); },
+    cab(){ if (!elv) return; P.x = 0; P.z = 0; P.y = 0.5; elv.run.phase = 'lobby'; elevRestoreSky(); elevClearFloorMeshes(); },
+    floor(id){
+      if (!elv) return;
+      ElevRules.elevBeginFloor(elv.run, id || 'lanternhall', Math.random);
+      elevArrive();
+    }
+  };
+
   function stop(){
     if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}
     if (typeof dhCloseReset === 'function') dhCloseReset();
@@ -37260,7 +38246,7 @@ function start(m = 'obby', d = null){
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame'); setHomeInert(false);
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (evg) snowfestStop(); if (typeof t297Stop === 'function') t297Stop(); if (typeof t302Stop === 'function') t302Stop(); if (py) partyStop(); if (lh) lanternStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (evg) snowfestStop(); if (typeof t297Stop === 'function') t297Stop(); if (typeof t302Stop === 'function') t302Stop(); if (typeof elevStop === 'function') elevStop(); if (py) partyStop(); if (lh) lanternStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
     try { if (typeof lbOnLeave === 'function') lbOnLeave('host'); } catch (e){}

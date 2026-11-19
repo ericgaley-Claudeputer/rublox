@@ -31,7 +31,8 @@
     {id: 'meadow-best', name: 'Chow Chuck Meadow — longest toss', emoji: '🥣', kind: 'high', unit: ''},
     {id: 'rides-rides', name: 'Rideland Workshop — rides taken', emoji: '🎢', kind: 'high', unit: ''},
     {id: 'hive-honey', name: 'Honeyhill Hive — pots of honey', emoji: '🍯', kind: 'high', unit: ''},
-    {id: 'camp-sunrises', name: 'Campfire Grove — sunrises', emoji: '🌅', kind: 'high', unit: ''}
+    {id: 'camp-sunrises', name: 'Campfire Grove — sunrises', emoji: '🌅', kind: 'high', unit: ''},
+    {id: 'elev-best', name: 'Wobblevator — best streak', emoji: '🛗', kind: 'high', unit: ''}
 
   ];
 
@@ -116,6 +117,8 @@
     set('hive-honey', hiveS.made | 0 ? (hiveS.made | 0) : null);
     const campS = saves.camp || {};
     set('camp-sunrises', campS.sunrises | 0 ? (campS.sunrises | 0) : null);
+    const elevS = saves.elevator || {};
+    set('elev-best', elevS.best | 0 ? (elevS.best | 0) : null);
 
     // extras / board can fill gaps
     for (const id in board.best) if (out[id] == null) set(id, board.best[id]);
