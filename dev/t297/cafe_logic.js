@@ -74,7 +74,7 @@
   }
 
 
-  const T297_OVERLAY_IDS = ['cafeDecor', 'cafeBoard', 'fishIndex', 'huntMap', 'psVoteBox', 'gardenShop', 'meadowBook', 'ridesPalette', 'hiveQuest', 'campCraft', 'campWin'];
+  const T297_OVERLAY_IDS = ['cafeDecor', 'cafeBoard', 'fishIndex', 'huntMap', 'psVoteBox', 'gardenShop', 'meadowBook', 'ridesPalette', 'hiveQuest', 'campCraft', 'campWin', 'elevHelp', 'elevIndex'];
   const T297_WALK_AWAY = 4.5;
   const T297_REOPEN_MS = 700;
   function t297OverlayIds(){ return T297_OVERLAY_IDS.slice(); }

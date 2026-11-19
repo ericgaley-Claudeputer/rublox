@@ -36,6 +36,7 @@
 
   // Inventory of every game-progress save key found in the code (load/save and KEY constants).
   const RESET_GAMES = [
+    {id:'elevator', name:'Wobblevator', emoji:'🛗', keys:['rubloxElevator']},
     {id:'garden', name:'Sunny Patch Garden', emoji:'🌱', keys:['rubloxGarden']},
     {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', keys:['rubloxMeadow']},
     {id:'rides', name:'Rideland Workshop', emoji:'🎢', keys:['rubloxRides']},

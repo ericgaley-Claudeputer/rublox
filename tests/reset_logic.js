@@ -9,6 +9,7 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 describe('Reset a game', () => {
   test('maps every inventoried game save key, including the ones Tessa named', () => {
     const named = {
+      elevator: 'rubloxElevator',
       garden: 'rubloxGarden',
       meadow: 'rubloxMeadow',
       rides: 'rubloxRides',

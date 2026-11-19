@@ -8,9 +8,9 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
 describe('t302 five play modes wiring', () => {
-  test('BUILD is 2026.11.19-5 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.19-5'"));
-    assert.equal(version.build, '2026.11.19-5');
+  test('BUILD is 2026.11.19-7 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.19-7'"));
+    assert.equal(version.build, '2026.11.19-7');
   });
 
   test('all five modes are playable menu games with original names and save keys', () => {
@@ -25,7 +25,7 @@ describe('t302 five play modes wiring', () => {
       assert.ok(html.includes("id:'" + id + "'"), id + ' card');
       bits.forEach(bit => assert.ok(html.includes(bit), id + ' ' + bit));
     }
-    assert.match(html, /'garden', 'meadow', 'rides', 'hive', 'camp'\]\.includes\(m\)/);
+    assert.match(html, /'garden', 'meadow', 'rides', 'hive', 'camp', 'elevator'\]\.includes\(m\)/);
   });
 
   test('update, key, pad, and stop hooks are actually in the game loop', () => {
