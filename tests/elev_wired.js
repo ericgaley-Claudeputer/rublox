@@ -17,9 +17,9 @@ const BANNED = [
 ];
 
 describe('Wobblevator wiring', () => {
-  test('BUILD is 2026.11.19-7 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.19-7'"));
-    assert.equal(version.build, '2026.11.19-7');
+  test('BUILD is 2026.11.19-8 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.19-8'"));
+    assert.equal(version.build, '2026.11.19-8');
   });
 
   test('the mode is a playable menu game with an original name and save key', () => {
@@ -86,4 +86,17 @@ describe('Wobblevator wiring', () => {
     assert.ok(g.keys.includes('rubloxElevator'));
     assert.match(html, /WX_SKIP = \[[^\]]*elevator/);
   });
+
+
+  test('fall-safety net is wired into physics checks and floors register solid plats', () => {
+    assert.ok(html.includes('function elevCatchFall('));
+    assert.ok(html.includes('function elevRoomOf('));
+    assert.ok(html.includes("if (mode === 'elevator'){ if (P.y < -2 && typeof elevCatchFall === 'function') elevCatchFall(); return; }"));
+    assert.ok(html.includes("mode === 'hunt' || mode === 'elevator') && (B.onGround || B.vy <= 0)"));
+    assert.ok(html.includes('elevSpawnOf'));
+    assert.ok(html.includes('b.floorOnly = true'));
+    assert.ok(html.includes('elv.floorStart'));
+    assert.match(html, /elevPlat\(0, top, hz, 6\.4/);
+  });
+
 });

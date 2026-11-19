@@ -90,6 +90,81 @@
   function elevPal(id){ return ELEV_PALS.find(p => p.id === id) || null; }
   function elevClearMode(f){ return (f && f.clear) || 'door'; }
 
+  const ELEV_CAB_Z = -3.2;
+  const ELEV_ROOM_Z = -30;
+  const ELEV_FLOOR_TOP = 0.2;
+  const ELEV_BODY_R = 0.45;
+
+  function elevRoomOf(f){
+    f = typeof f === 'string' ? elevFloor(f) : f;
+    if (!f) return null;
+    const clear = elevClearMode(f);
+    let w = 16, d = 18;
+    if (f.tiles){ w = 14; d = 14; }
+    else if (clear === 'door'){ w = 16; d = (f.kind === 'race' || f.id === 'skyterrace') ? 22 : 28; }
+    else if (clear === 'find'){ w = 18; d = 18; }
+    else if (clear === 'timer'){ w = 16; d = 16; }
+    else if (clear === 'seq' || clear === 'paint'){ w = 16; d = 14; }
+    else if (clear === 'lit'){ w = 16; d = 20; }
+    else if (clear === 'shop' || clear === 'stack' || clear === 'rhythm'){ w = 14; d = 14; }
+    else if (clear === 'quiz' || clear === 'coop'){ w = 16; d = 16; }
+    else if (clear === 'boss'){ w = 18; d = 20; }
+    const z = ELEV_ROOM_Z, top = ELEV_FLOOR_TOP, x = 0;
+    const front = z + d / 2;
+    const hall = (front < ELEV_CAB_Z - 0.05)
+      ? {x:0, z:(front + ELEV_CAB_Z) / 2, w:6.4, d:(ELEV_CAB_Z - front) + 0.6, top}
+      : null;
+    return {w, d, x, z, top, hall, spawn:{x:0, y:top + 0.3, z}};
+  }
+
+  function elevSpawnOf(f){
+    const room = elevRoomOf(f);
+    return room ? {x:room.spawn.x, y:room.spawn.y, z:room.spawn.z, top:room.top} : {x:0, y:0.5, z:ELEV_ROOM_Z, top:ELEV_FLOOR_TOP};
+  }
+
+  function elevBoxHit(x, z, box, r){
+    if (!box) return false;
+    r = r == null ? ELEV_BODY_R : r;
+    return Math.abs(x - (box.x || 0)) < (box.w / 2) + r && Math.abs(z - (box.z || 0)) < (box.d / 2) + r;
+  }
+
+  function elevOnSolid(x, z, room, r){
+    return !!(room && (elevBoxHit(x, z, room, r) || elevBoxHit(x, z, room.hall, r)));
+  }
+
+  // Lightweight stand-in for the live physics step, used by tests to prove every
+  // floor's spawn stays on the slab (and that a fall is scooped back).
+  function elevSimStep(id, seconds, opts){
+    opts = opts || {};
+    const room = elevRoomOf(id);
+    if (!room) return null;
+    const spawn = (opts.x != null || opts.z != null)
+      ? {x: opts.x != null ? opts.x : 0, y: opts.y != null ? opts.y : room.top + 0.3, z: opts.z != null ? opts.z : room.z}
+      : room.spawn;
+    const P = {x:spawn.x, y:spawn.y, z:spawn.z, vx:opts.vx || 0, vy:0, vz:opts.vz || 0, onGround:false};
+    const GRAV = 45, dt = 1 / (opts.fps || 60), top = room.top;
+    let minY = P.y, fell = false, grounded = 0, caught = 0;
+    const useNet = opts.catchFall !== false;
+    for (let t = 0; t < seconds; t += dt){
+      P.vy = Math.max(-40, P.vy - GRAV * dt);
+      P.x += P.vx * dt;
+      P.z += P.vz * dt;
+      P.y += P.vy * dt;
+      if (elevOnSolid(P.x, P.z, room, ELEV_BODY_R) && P.vy <= 0 && P.y <= top + 0.35){
+        P.y = top; P.vy = 0; P.onGround = true; grounded++;
+      } else P.onGround = false;
+      if (P.y < minY) minY = P.y;
+      if (useNet && P.y < -1){
+        P.x = room.spawn.x; P.y = room.spawn.y; P.z = room.spawn.z; P.vx = 0; P.vy = 0; P.vz = 0;
+        caught++;
+        fell = false;
+      } else if (!useNet && P.y < top - 1){
+        fell = true;
+      }
+    }
+    return {x:P.x, y:P.y, z:P.z, onGround:P.onGround, minY, fell, caught, grounded, top, room};
+  }
+
   function elevTimerWins(f){
     if (!f) return false;
     const c = elevClearMode(f);
@@ -622,7 +697,8 @@
 
   const api = {
     ELEV_KEY, ELEV_VER, ELEV_SHOP_EVERY, ELEV_RIDE, ELEV_INTER, ELEV_BAG_KEEP, ELEV_FLOORS, ELEV_PALS, ELEV_HOST, ELEV_QUIZ,
-    elevFloor, elevPal, elevClearMode, elevTimerWins, elevFresh, elevLoad, elevBuddyAllowed, elevNoFight, elevNoGore, elevEveryoneOkay,
+    ELEV_CAB_Z, ELEV_ROOM_Z, ELEV_FLOOR_TOP, ELEV_BODY_R,
+    elevFloor, elevPal, elevClearMode, elevRoomOf, elevSpawnOf, elevBoxHit, elevOnSolid, elevSimStep, elevTimerWins, elevFresh, elevLoad, elevBuddyAllowed, elevNoFight, elevNoGore, elevEveryoneOkay,
     elevSnowOn, elevHostLine, elevPickPal, elevStartRun, elevDueShop, elevPool, elevRebuildBag, elevPickFloor, elevBeginFloor, elevBeginRide,
     elevReward, elevClearFloor, elevFailFloor, elevBuySnack, elevRing, elevPaint, elevPickItem, elevTurnIn,
     elevTouchHazard, elevReachDoor, elevStayLit, elevQuiz, elevStack, elevBeat, elevPadStand, elevBossReady, elevTagBoss,
