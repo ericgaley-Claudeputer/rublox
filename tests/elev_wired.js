@@ -17,9 +17,9 @@ const BANNED = [
 ];
 
 describe('Wobblevator wiring', () => {
-  test('BUILD is 2026.11.19-8 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.19-8'"));
-    assert.equal(version.build, '2026.11.19-8');
+  test('BUILD is 2026.11.19-9 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.19-9'"));
+    assert.equal(version.build, '2026.11.19-9');
   });
 
   test('the mode is a playable menu game with an original name and save key', () => {
@@ -48,11 +48,14 @@ describe('Wobblevator wiring', () => {
     assert.ok(html.includes('id="elevHelp"'));
     assert.ok(html.includes('id="elevIndex"'));
     assert.ok(html.includes("class=\"t297overlay\""));
-    assert.match(html, /elevHelp', 'elevIndex'/);
-    assert.match(html, /mode === 'elevator' \? '🎮 Left stick move · Ⓐ jump · Ⓧ act · Ⓨ floors · Ⓑ close popups · ☰ menu'/);
+    assert.match(html, /elevHelp', 'elevIndex', 'elevShop'/);
+    assert.match(html, /mode === 'elevator' \? '🎮 Left stick move · Ⓐ jump · Ⓧ act \/ shop · Ⓨ floors · Ⓑ close popups · ☰ menu'/);
     assert.ok(html.includes('id="elevAct"'));
     assert.ok(html.includes('id="elevHelpBtn"'));
     assert.ok(html.includes('id="elevIndexBtn"'));
+    assert.ok(html.includes('id="elevShop"'));
+    assert.ok(html.includes('id="elevShopBtn"'));
+    assert.ok(html.includes('id="elevLessBtn"'));
     const runtime = html.slice(html.indexOf('function elevKey'), html.indexOf('function elevKey') + 1200);
     assert.equal(/Digit[0-9]/.test(runtime), false, 'elevator keys must not bind number keys used by emotes');
     const esc = html.indexOf("if (typeof t297OverlayOpen === 'function' && t297OverlayOpen()){ t297OverlayClose();");
@@ -96,7 +99,26 @@ describe('Wobblevator wiring', () => {
     assert.ok(html.includes('elevSpawnOf'));
     assert.ok(html.includes('b.floorOnly = true'));
     assert.ok(html.includes('elv.floorStart'));
-    assert.match(html, /elevPlat\(0, top, hz, 6\.4/);
+    assert.match(html, /elevPlat\(0, top, hz, hw, hd/);
   });
+
+  test('lobby, shop, muzak, less-scary, and a 10-friend cab are wired for solo and multiplayer', () => {
+    assert.ok(html.includes('function elevBeginBoard('));
+    assert.ok(html.includes('const elevMuzak'));
+    assert.ok(html.includes('elevOpenShop'));
+    assert.ok(html.includes('elevTickTalk'));
+    assert.ok(html.includes('elevSpawnPals'));
+    assert.ok(html.includes('elevIsMp()'));
+    assert.ok(html.includes("d.t === 'elev'"));
+    assert.ok(html.includes('elevFromNet'));
+    assert.ok(html.includes('elevFromHost'));
+    assert.ok(html.includes('MP_MAX = 10,'));
+    assert.ok(html.includes('Get back in!'));
+    assert.ok(html.includes('softcloset'));
+    assert.ok(html.includes('#elevShopBtn'));
+    assert.ok(html.includes('#elevLessBtn'));
+    assert.match(html, /ELEV_CAB_W\s*=\s*10/);
+  });
+
 
 });

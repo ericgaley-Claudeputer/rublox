@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refresh already-injected Wobblevator sources and bump BUILD to 2026.11.19-8."""
+"""Refresh already-injected Wobblevator sources and bump BUILD to 2026.11.19-9."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -7,8 +7,8 @@ import json
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-BUILD = "2026.11.19-8"
-OLD_BUILD = "2026.11.19-7"
+BUILD = "2026.11.19-9"
+OLD_BUILD = "2026.11.19-8"
 ELEV = Path(__file__).resolve().parent
 
 
@@ -54,7 +54,7 @@ def patch_html(html: str) -> str:
     html = replace_span(
         html,
         "  /* ---------- Wobblevator ---------- */",
-        "  function stop(){",
+        "  function stop(){\n    if (typeof dhHideTestNote === 'function')",
         runtime + "\n",
         "runtime",
     )
@@ -77,6 +77,10 @@ def patch_html(html: str) -> str:
         "'campCraft', 'campWin', 'elevHelp']",
         "'campCraft', 'campWin', 'elevHelp', 'elevIndex']",
     )
+    html = html.replace(
+        "'campCraft', 'campWin', 'elevHelp', 'elevIndex']",
+        "'campCraft', 'campWin', 'elevHelp', 'elevIndex', 'elevShop']",
+    )
 
     if "id:'elev-seen25'" not in html:
         html = replace_once(
@@ -84,22 +88,28 @@ def patch_html(html: str) -> str:
             "    {id:'elev-find', cat:'collection', emoji:'🧦', name:'Keen Finder', desc:'Return a missing item on a Wobblevator floor.', coins:10, prove:s => !!(s.notes && s.notes['elev-find']) || !!(s.elevator && (s.elevator.found | 0) >= 1)},\n",
             "    {id:'elev-find', cat:'collection', emoji:'🧦', name:'Keen Finder', desc:'Return a missing item on a Wobblevator floor.', coins:10, prove:s => !!(s.notes && s.notes['elev-find']) || !!(s.elevator && (s.elevator.found | 0) >= 1)},\n"
             "    {id:'elev-seen25', cat:'collection', emoji:'📒', name:'Floor Tourist', desc:'See 25 different Wobblevator floors.', coins:15, prove:s => !!(s.notes && s.notes['elev-seen25']) || !!(s.elevator && s.elevator.seen && s.elevator.seen.length >= 25)},\n"
-            "    {id:'elev-seenall', cat:'collection', emoji:'🌟', name:'Shaft Explorer', desc:'See every Wobblevator floor.', coins:25, prove:s => !!(s.notes && s.notes['elev-seenall']) || !!(s.elevator && s.elevator.seen && s.elevator.seen.length >= 49)},\n",
+            "    {id:'elev-seenall', cat:'collection', emoji:'🌟', name:'Shaft Explorer', desc:'See every Wobblevator floor.', coins:25, prove:s => !!(s.notes && s.notes['elev-seenall']) || !!(s.elevator && s.elevator.seen && s.elevator.seen.length >= 57)},\n",
             "seen achievements",
         )
 
     html = html.replace(
         "mode === 'elevator' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act · Ⓑ close popups · ☰ menu'",
+        "mode === 'elevator' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act / shop · Ⓨ floors · Ⓑ close popups · ☰ menu'",
+    )
+    html = html.replace(
         "mode === 'elevator' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act · Ⓨ floors · Ⓑ close popups · ☰ menu'",
+        "mode === 'elevator' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act / shop · Ⓨ floors · Ⓑ close popups · ☰ menu'",
     )
 
-    if "#elevIndexBtn" not in html:
-        html = replace_once(
-            html,
-            "#elevAct, #elevHelpBtn, #elevHelp, #elevBox, #elevMeter,",
-            "#elevAct, #elevHelpBtn, #elevIndexBtn, #elevHelp, #elevIndex, #elevBox, #elevMeter,",
-            "HUD_HIT_SEL",
-        )
+    html = html.replace(
+        "#elevAct, #elevHelpBtn, #elevHelp, #elevBox, #elevMeter,",
+        "#elevAct, #elevHelpBtn, #elevIndexBtn, #elevShopBtn, #elevLessBtn, #elevHelp, #elevIndex, #elevShop, #elevBox, #elevMeter,",
+    )
+    html = html.replace(
+        "#elevAct, #elevHelpBtn, #elevIndexBtn, #elevHelp, #elevIndex, #elevBox, #elevMeter,",
+        "#elevAct, #elevHelpBtn, #elevIndexBtn, #elevShopBtn, #elevLessBtn, #elevHelp, #elevIndex, #elevShop, #elevBox, #elevMeter,",
+    )
+    html = html.replace("s.elevator.seen.length >= 49", "s.elevator.seen.length >= 57")
 
     if "if (mode === 'elevator'){ if (P.y < -2 && typeof elevCatchFall === 'function') elevCatchFall(); return; }" not in html:
         html = replace_once(
@@ -116,6 +126,28 @@ def patch_html(html: str) -> str:
             "mode === 'petshow' || mode === 'hunt' || mode === 'elevator') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62)",
             "elevator walk-up steps",
         )
+
+    if "d.t === 'elev'" not in html:
+        html = replace_once(
+            html,
+            "else if (d.t === 't302'){ try { if (typeof t302FromNet === 'function') t302FromNet(g, d); } catch (e){} }",
+            "else if (d.t === 't302'){ try { if (typeof t302FromNet === 'function') t302FromNet(g, d); } catch (e){} }\n    else if (d.t === 'elev'){ try { if (typeof elevFromNet === 'function') elevFromNet(g, d); } catch (e){} }",
+            "elev from guest",
+        )
+    if "case 'elev'" not in html and "elevFromHost" not in html:
+        html = replace_once(
+            html,
+            "case 't302': try { if (typeof t302FromNet === 'function') t302FromNet(null, d); } catch (e){} break;",
+            "case 't302': try { if (typeof t302FromNet === 'function') t302FromNet(null, d); } catch (e){} break;\n      case 'elev': try { if (typeof elevFromHost === 'function') elevFromHost(d); } catch (e){} break;",
+            "elev from host",
+        )
+    if "MP_MAX = 10" not in html:
+        html = replace_once(
+            html,
+            "MP_MAX = 6,",
+            "MP_MAX = 10,",
+            "MP_MAX for a 10-friend cab",
+        )
     return html
 
 
@@ -126,6 +158,10 @@ def patch_support() -> None:
     ct = ct.replace(
         "'campCraft', 'campWin', 'elevHelp']",
         "'campCraft', 'campWin', 'elevHelp', 'elevIndex']",
+    )
+    ct = ct.replace(
+        "'campCraft', 'campWin', 'elevHelp', 'elevIndex']",
+        "'campCraft', 'campWin', 'elevHelp', 'elevIndex', 'elevShop']",
     )
     cafe.write_text(ct)
     for p in (ROOT / "tests").glob("*.js"):
@@ -149,6 +185,14 @@ def verify(html: str) -> None:
         "catch fall": "function elevCatchFall(",
         "checks catch": "if (mode === 'elevator'){ if (P.y < -2 && typeof elevCatchFall === 'function') elevCatchFall(); return; }",
         "walk up": "mode === 'hunt' || mode === 'elevator')",
+        "shop overlay": 'id="elevShop"',
+        "less btn": 'id="elevLessBtn"',
+        "muzak": "elevMuzak",
+        "begin board": "function elevBeginBoard(",
+        "mp guest": "elevFromNet",
+        "mp host": "elevFromHost",
+        "mp max": "MP_MAX = 10,",
+        "new floor": "softcloset",
     }
     missing = [k for k, v in checks.items() if v not in html]
     if missing:
