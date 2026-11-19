@@ -7,8 +7,8 @@ import json
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-BUILD = "2026.11.19-10"
-OLD_BUILD = "2026.11.19-9"
+BUILD = "2026.11.19-11"
+OLD_BUILD = "2026.11.19-10"
 ELEV = Path(__file__).resolve().parent
 
 

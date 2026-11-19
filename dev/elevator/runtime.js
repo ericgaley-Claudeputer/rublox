@@ -250,8 +250,13 @@
 
   function elevNetSync(){
     if (!elv || elevIsGuest()) return;
+    const snap = (typeof ElevRules !== 'undefined' && ElevRules.elevWire) ? ElevRules.elevWire(elv.run) : null;
+    try {
+      const hook = (typeof window !== 'undefined' && window.__elevOnSync) || (typeof __elevOnSync !== 'undefined' && __elevOnSync);
+      if (typeof hook === 'function' && snap) hook(snap);
+    } catch (e){}
     if (!elevIsMp() || typeof mpSend !== 'function') return;
-    try { mpSend({t:'elev', a:'sync', snap: ElevRules.elevWire(elv.run)}); } catch (e){}
+    try { if (snap) mpSend({t:'elev', a:'sync', snap: snap}); } catch (e){}
   }
 
   function elevFromNet(g, d){
@@ -286,7 +291,11 @@
       if (elv.run.event && elv.run.event.id === 'stuck') elevTone([180, 140], 0.14, 'sine', 0.05);
       elevShowPals();
     }
-    if (before === 'ride' && now === 'floor'){ elevArrive(); elevShowPals(); }
+    if (now === 'floor' && before !== 'floor'){
+      if (before !== 'ride') ElevRules.elevCloseDoors(elv.run, elevInCab());
+      elevArrive();
+      elevShowPals();
+    }
     if (now === 'lobby' || now === 'inter'){ elevMuzak.stop(); elevPaintBoard(); }
     if (now === 'inter') elevReturnToCab(elv.run.quote);
     elevPaintBoard();
@@ -658,9 +667,20 @@
     const dL = elevMesh(new THREE.BoxGeometry(3.4, 3.6, 0.16), '#d4a017', -1.75, 1.9, CZ, false);
     const dR = elevMesh(new THREE.BoxGeometry(3.4, 3.6, 0.16), '#d4a017', 1.75, 1.9, CZ, false);
     elv.doors = [dL, dR];
+    // big glowing doors on the LOBBY face so boarding is obvious
+    const lobbyZ = CD / 2 + 0.12;
+    const gL = elevMesh(new THREE.BoxGeometry(3.5, 3.8, 0.2), '#ffd23f', -1.75, 1.95, lobbyZ, false, {emissive:'#c48a00'});
+    const gR = elevMesh(new THREE.BoxGeometry(3.5, 3.8, 0.2), '#ffd23f', 1.75, 1.95, lobbyZ, false, {emissive:'#c48a00'});
+    elv.lobbyDoors = [gL, gR];
     elevMesh(new THREE.BoxGeometry(1.5, 4.8, 0.2), '#efe6d4', -CW/2 + 0.8, 2.5, CD/2, false);
     elevMesh(new THREE.BoxGeometry(1.5, 4.8, 0.2), '#efe6d4', CW/2 - 0.8, 2.5, CD/2, false);
-    elevLab('🛎️ Board here — room for a whole group!', 0, 3.5, CD/2 - 0.2);
+    elevMesh(new THREE.BoxGeometry(8.2, 0.12, 2.2), '#ffe566', 0, 0.16, CD/2 + 1.3, false, {emissive:'#7a5a00'});
+    elevLab('✨ Step in to ride!', 0, 3.7, lobbyZ + 0.4);
+    elevLab('🛎️ Room for a whole group — walk in and the doors count down!', 0, 2.8, lobbyZ + 0.4);
+    const doorGlow = new THREE.PointLight(0xffe066, 2.0, 18);
+    doorGlow.position.set(0, 2.4, lobbyZ + 1.2);
+    scene.add(doorGlow); elevKeep(doorGlow);
+    elv.doorGlow = doorGlow;
     // floor-number dial
     elv.dial = elevMesh(new THREE.CylinderGeometry(0.7, 0.7, 0.16, 16), '#1d2340', 0, 3.7, CZ + 0.2, false, {emissive:'#1d2340'});
     elv.dialLab = elevLab('🛎️ 0', 0, 4.2, CZ + 0.4);
@@ -676,9 +696,10 @@
     const hallLight = new THREE.PointLight(0xffe8c8, 0.7, 48);
     hallLight.position.set(0, 5, -28);
     scene.add(hallLight); elevKeep(hallLight);
-    elv.lobbySpawn = {x:0, y:0.5, z:16};
-    checkpoints[0] = {idx:0, spawn:{x:0, y:0.5, z:16}, flag:new THREE.Object3D()};
-    if (typeof P !== 'undefined'){ P.x = 0; P.y = 0.5; P.z = 16; P.vx = 0; P.vy = 0; P.vz = 0; P.onGround = false; P.ground = null; }
+    elv.lobbySpawn = {x:0, y:0.5, z:11};
+    checkpoints[0] = {idx:0, spawn:{x:0, y:0.5, z:11}, flag:new THREE.Object3D()};
+    if (typeof P !== 'undefined'){ P.x = 0; P.y = 0.5; P.z = 11; P.vx = 0; P.vy = 0; P.vz = 0; P.onGround = false; P.ground = null; }
+    try { if (typeof cam !== 'undefined' && cam){ cam.yaw = 0; cam.pitch = 0.28; } } catch (e){}
   }
 
   function elevHud(text, act){
@@ -700,14 +721,29 @@
   }
 
   function elevCabHalf(){
-    return ((typeof ElevRules !== 'undefined' && ElevRules.ELEV_CAB_W) || 10) / 2 - 0.4;
+    return ((typeof ElevRules !== 'undefined' && ElevRules.ELEV_CAB_W) || 10) / 2 - 0.2;
   }
-  function elevInCab(){ const h = elevCabHalf(); return Math.abs(P.x) < h && Math.abs(P.z) < h; }
-  function elevSetDoors(open){
-    if (!elv || !elv.doors) return;
+  function elevInCab(){
+    if (typeof P === 'undefined' || !P) return false;
+    const w = elevCabHalf();
+    const d = ((typeof ElevRules !== 'undefined' && ElevRules.ELEV_CAB_D) || 10) / 2;
+    // include the lobby-side doorway lip so "step in" counts
+    return Math.abs(P.x) < w && P.z < (d + 1.5) && P.z > (-d + 0.15);
+  }
+  function elevSlideDoors(pair, open){
+    if (!pair || pair.length < 2) return;
     const closed = 1.75, opened = 3.6;
-    elv.doors[0].position.x += ((open ? -opened : -closed) - elv.doors[0].position.x) * 0.18;
-    elv.doors[1].position.x += ((open ? opened : closed) - elv.doors[1].position.x) * 0.18;
+    const k = 0.22;
+    pair[0].position.x += ((open ? -opened : -closed) - pair[0].position.x) * k;
+    pair[1].position.x += ((open ? opened : closed) - pair[1].position.x) * k;
+  }
+  function elevSetDoors(open){
+    if (!elv) return;
+    elevSlideDoors(elv.doors, open);
+    elevSlideDoors(elv.lobbyDoors, open);
+    if (elv.doorGlow){
+      try { elv.doorGlow.intensity = open ? (1.6 + Math.abs(Math.sin((typeof time === 'number' ? time : 0) * 3)) * 0.8) : 0.25; } catch (e){}
+    }
   }
 
   function elevBindOverlay(id, xId){
@@ -741,12 +777,11 @@
 
   function elevEnter(){
     if (!elv) return;
-    cam.pitch = 0.28; cam.dist = 12;
+    try { if (typeof cam !== 'undefined' && cam){ cam.yaw = 0; cam.pitch = 0.28; cam.dist = 14; } } catch (e){}
     try { if (typeof achNote === 'function') achNote('play:elevator'); } catch (e){}
     elevAch('elev-ride');
-    cam.dist = 14;
-    banner('🛎️ Wobblevator! Sit in the lobby, peek at the shop, then walk into the big lift and press E / Ⓧ. Friends ride together. If a floor gets too wobbly, everyone is okay!');
-    elevHud('Walk into the elevator, then press E / Ⓧ to ride. Shop is by the kiosk. Open Help or Floors anytime.', '🛗 Ride');
+    banner('🛎️ Wobblevator! Walk into the glowing elevator — the doors count down on their own. Or press Ride (E / Ⓧ). If a floor gets too wobbly, everyone is okay!');
+    elevHud('Step in to ride! Walk into the glowing elevator doors.', '🛗 Ride');
     elevBindOverlay('elevHelp', 'elevHelpX');
     elevBindOverlay('elevIndex', 'elevIndexX');
     elevBindOverlay('elevShop', 'elevShopX');
@@ -771,17 +806,24 @@
   function elevGo(fromNet){
     if (!elv) return;
     if (elv.run.phase !== 'lobby' && elv.run.phase !== 'inter') return;
+    try { if (typeof t297OverlayClose === 'function') t297OverlayClose('elevShop'); } catch (e){}
     if (elevIsGuest() && !fromNet){
-      try { if (typeof mpSend === 'function') mpSend({t:'elev', a:'ding'}); } catch (e){}
-      banner('🛎️ Ringing Bingle — get in the cab while the host closes the doors!');
+      if (!elv.dinged){
+        elv.dinged = true;
+        try { if (typeof mpSend === 'function') mpSend({t:'elev', a:'ding'}); } catch (e){}
+        banner('🛎️ Ringing Bingle — get in the cab while the host closes the doors!');
+      }
       return;
     }
-    if (!elevInCab() && !fromNet){ banner('Step all the way into the lift first!'); return; }
+    if (!elevInCab() && !fromNet){ banner('✨ Step in to ride! Walk into the glowing elevator doors.'); return; }
     elv.run.snow = elevSnowNow();
+    const before = elv.run.phase;
     ElevRules.elevBeginBoard(elv.run);
-    elevTone([440, 330, 440], 0.06, 'square', 0.04);
-    banner(elv.run.quote);
-    elevNetSync();
+    if (elv.run.phase === 'board' && before !== 'board'){
+      elevTone([440, 330, 440], 0.06, 'square', 0.04);
+      banner(elv.run.quote);
+      elevNetSync();
+    }
   }
 
   function elevPlacePlayer(s){
@@ -808,7 +850,8 @@
     const spawn = (typeof ElevRules !== 'undefined' && ElevRules.elevSpawnOf) ? ElevRules.elevSpawnOf(id) : {x:0, y:0.5, z:-30, top:0.2};
     elv.floorStart = {x:spawn.x, y:spawn.y, z:spawn.z, top:spawn.top};
     if (elv.run.watching){
-      if (elv.lobbySpawn && typeof checkpoints !== 'undefined' && checkpoints[0]) checkpoints[0].spawn = {x:0, y:0.5, z:0};
+      if (typeof checkpoints !== 'undefined' && checkpoints[0]) checkpoints[0].spawn = {x:0, y:0.5, z:0};
+      elevPlacePlayer({x:0, y:0.5, z:0});
       banner('🛎️ Hang tight in the cab — we will catch the next stop together!');
       elevTone([330], 0.06, 'triangle', 0.04);
       return;
@@ -866,10 +909,16 @@
 
   function elevAct(){
     if (!elv) return false;
-    if (typeof t297OverlayOpen === 'function' && t297OverlayOpen()) return true;
     const run = elv.run;
+    const ov = (typeof t297OverlayOpen === 'function') ? t297OverlayOpen() : null;
+    if (ov && (run.phase === 'lobby' || run.phase === 'inter' || run.phase === 'board') && (elevInCab() || ov === 'elevShop')){
+      try { if (typeof t297OverlayClose === 'function') t297OverlayClose(ov); } catch (e){}
+      if (run.phase !== 'board') elevGo();
+      return true;
+    }
+    if (ov) return true;
     if (run.phase === 'lobby' || run.phase === 'inter' || run.phase === 'board'){
-      if (elevNearShop()){ elevOpenShop(); return true; }
+      if (elevNearShop() && !elevInCab()){ elevOpenShop(); return true; }
       if (run.phase !== 'board') elevGo();
       return true;
     }
@@ -986,7 +1035,11 @@
     if (run.wantClear) elevDoClear();
     else if (run.wantFail) elevDoFail();
 
-    elevSetDoors(run.phase === 'lobby' || run.phase === 'floor' || run.phase === 'inter' || run.phase === 'board');
+    // Auto-start the doors-closing countdown once someone is in the cab.
+    // Host/solo start it; guests ding the host once. Never requires every player to be inside.
+    if ((run.phase === 'lobby' || run.phase === 'inter') && elevInCab()) elevGo();
+    if (run.phase === 'lobby' && elv.dinged && !elevInCab()) elv.dinged = false;
+    elevSetDoors(run.phase === 'lobby' || run.phase === 'floor' || run.phase === 'inter');
     const wob = (run.phase === 'ride' && run.event && run.event.id === 'wobble') ? 16 : (run.phase === 'ride' ? 8 : 6);
     if (elv.host) elv.host.rotation.y = Math.sin(time * 2) * 0.3;
     if (elv.host) elv.host.position.y = 0.2 + Math.sin(time * wob) * (run.phase === 'ride' ? 0.14 : 0.04);
@@ -1076,10 +1129,11 @@
 
     let act = '';
     if (run.phase === 'lobby' || run.phase === 'inter'){
-      if (elevNearShop()) elevHud('E / Ⓧ — open the lobby shop for hats and useful bits.', '🛒 Shop');
-      else elevHud(elevInCab() ? 'E / Ⓧ — ding the lift! Doors will count down so friends can hop in.' : 'Walk the lobby, sit, shop, then board the big golden lift.', elevInCab() ? '🛗 Ride' : '');
+      if (elevNearShop() && !elevInCab()) elevHud('E / Ⓧ — open the lobby shop for hats and useful bits. The glowing elevator is ready when you are.', '🛒 Shop');
+      else if (elevInCab()) elevHud('Step in to ride! Doors are counting down — hang tight.', '🛗 Ride');
+      else elevHud('Step in to ride! Walk into the glowing elevator, or press Ride (E / Ⓧ).', '🛗 Ride');
     } else if (run.phase === 'board'){
-      elevHud('🚪 Doors closing in ' + Math.ceil(run.t) + 's — get back in!', elevInCab() ? '' : '🚪 Get in!');
+      elevHud('🚪 Doors closing in ' + Math.ceil(run.t) + 's — get back in!', elevInCab() ? '🛗 Ride' : '🚪 Get in!');
     } else if (run.phase === 'ride'){
       elevHud(run.quote || 'The lift is wobbling to the next floor…', '');
     } else if (run.phase === 'floor' && f){
@@ -1141,7 +1195,7 @@
 
   if (typeof window !== 'undefined') window.elevDebug = {
     floors(){ return ElevRules.ELEV_FLOORS.map(f => f.id); },
-    cab(){ if (!elv) return; elv.run.watching = false; if (elv.lobbySpawn && checkpoints[0]) checkpoints[0].spawn = {x:elv.lobbySpawn.x, y:elv.lobbySpawn.y, z:elv.lobbySpawn.z}; P.x = 0; P.z = 16; P.y = 0.5; P.vx = 0; P.vy = 0; P.vz = 0; elv.run.phase = 'lobby'; elv.floorStart = null; elevRestoreSky(); elevClearFloorMeshes(); },
+    cab(){ if (!elv) return; elv.run.watching = false; if (elv.lobbySpawn && checkpoints[0]) checkpoints[0].spawn = {x:elv.lobbySpawn.x, y:elv.lobbySpawn.y, z:elv.lobbySpawn.z}; P.x = 0; P.z = (elv.lobbySpawn && elv.lobbySpawn.z) || 11; P.y = 0.5; P.vx = 0; P.vy = 0; P.vz = 0; elv.run.phase = 'lobby'; elv.floorStart = null; elevRestoreSky(); elevClearFloorMeshes(); },
     floor(id){
       if (!elv) return;
       elv.run.watching = false;
@@ -1154,6 +1208,34 @@
     shop(){ elevOpenShop(); },
     talk(){ elv.talkT = 0; elevTickTalk(0.01); },
     board(){ if (elv){ ElevRules.elevBeginBoard(elv.run); elevNetSync(); } },
+    go(fromNet){ elevGo(!!fromNet); },
+    inCab(){ return elevInCab(); },
+    setMp(opts){
+      try {
+        if (typeof mp !== 'undefined' && mp && opts){
+          if (opts.on != null) mp.on = !!opts.on;
+          if (opts.host != null) mp.host = !!opts.host;
+        }
+      } catch (e){}
+      return !!(typeof mp !== 'undefined' && mp && mp.on);
+    },
+    applySync(snap){
+      if (!elv || !snap) return null;
+      const before = elv.run.phase;
+      ElevRules.elevApplyWire(elv.run, snap);
+      elevShowPals();
+      if (elv.run.talk) elevShowTalk(elv.run.talk);
+      if (before !== elv.run.phase) elevOnPhase(before, elv.run.phase);
+      return this.probe();
+    },
+    fromHost(d){ if (d && d.snap) this.applySync(d.snap); else elevFromHost(d); },
+    fromNet(g, d){ elevFromNet(g, d); },
+    step(dt){
+      dt = dt == null ? 1/60 : +dt;
+      try { if (typeof elevUpdate === 'function') elevUpdate(dt); } catch (e){}
+      try { if (typeof obbyDebug !== 'undefined' && obbyDebug.physTick) obbyDebug.physTick(dt); } catch (e){}
+      return this.probe();
+    },
     ride(){
       if (!elv) return;
       elv.run.buddy = true;

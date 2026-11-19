@@ -446,4 +446,25 @@ describe('Wobblevator', () => {
   });
 
 
+  test('a doors-closing countdown starts from the lobby and is not reset if beginBoard is called again', () => {
+    const {run} = E.elevStartRun(E.elevFresh(), 0, false);
+    assert.equal(run.phase, 'lobby');
+    E.elevBeginBoard(run);
+    assert.equal(run.phase, 'board');
+    const left = run.t;
+    assert.ok(left > 1);
+    E.elevTick(run, 1);
+    assert.ok(run.t < left);
+    const mid = run.t;
+    E.elevBeginBoard(run);
+    assert.equal(run.phase, 'board');
+    assert.equal(run.t, mid);
+    E.elevTick(run, mid + 0.05);
+    assert.equal(run.phase, 'ride');
+    E.elevTick(run, E.ELEV_RIDE + 0.05);
+    assert.equal(run.phase, 'floor');
+    assert.ok(E.elevFloor(run.floor));
+  });
+
+
 });

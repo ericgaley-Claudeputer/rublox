@@ -17,9 +17,9 @@ const BANNED = [
 ];
 
 describe('Wobblevator wiring', () => {
-  test('BUILD is 2026.11.19-10 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.19-10'"));
-    assert.equal(version.build, '2026.11.19-10');
+  test('BUILD is 2026.11.19-11 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.19-11'"));
+    assert.equal(version.build, '2026.11.19-11');
   });
 
   test('the mode is a playable menu game with an original name and save key', () => {
@@ -124,6 +124,15 @@ describe('Wobblevator wiring', () => {
     assert.match(html, /ELEV_CAB_W\s*=\s*10/);
     assert.ok(html.includes('elevHostTalk'));
     assert.ok(html.includes('MP_MAX = 10,'));
+  });
+
+
+  test('boarding is obvious: glowing lobby doors, a Ride button, and an auto-start once inside', () => {
+    assert.ok(html.includes('Step in to ride!'));
+    assert.ok(html.includes('elv.lobbyDoors'));
+    assert.ok(html.includes("btn.textContent = act; btn.classList.add('show')"));
+    assert.ok(html.includes('elevInCab()) elevGo()') || html.includes('elevInCab()) elevGo('));
+    assert.match(html, /phase === 'board'\) return run/);
   });
 
 

@@ -299,7 +299,8 @@
 
   function elevBeginBoard(run){
     if (!run) return run;
-    if (run.phase !== 'lobby' && run.phase !== 'inter' && run.phase !== 'board') return run;
+    if (run.phase === 'board') return run; // never reset a countdown that already started
+    if (run.phase !== 'lobby' && run.phase !== 'inter') return run;
     run.phase = 'board';
     run.t = ELEV_BOARD;
     run.quote = '🚪 Doors closing! Get back in!';

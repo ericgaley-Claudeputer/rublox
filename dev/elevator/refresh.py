@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refresh already-injected Wobblevator sources and bump BUILD to 2026.11.19-10."""
+"""Refresh already-injected Wobblevator sources and bump BUILD to 2026.11.19-11."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -7,8 +7,8 @@ import json
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-BUILD = "2026.11.19-10"
-OLD_BUILD = "2026.11.19-9"
+BUILD = "2026.11.19-11"
+OLD_BUILD = "2026.11.19-10"
 ELEV = Path(__file__).resolve().parent
 
 
