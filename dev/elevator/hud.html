@@ -2,17 +2,20 @@
   <button type="button" id="elevAct">✨ Do it</button>
   <button type="button" id="elevHelpBtn">❓ Help</button>
   <button type="button" id="elevIndexBtn">📒 Floors</button>
+  <button type="button" id="elevShopBtn">🛒 Shop</button>
+  <button type="button" id="elevLessBtn" title="Milder hush and softer lamps. Still no gore, and everyone is okay.">😌 Less scary</button>
   <div id="elevMeter"><div id="elevMeterFill"></div><div id="elevMeterLab"></div></div>
   <div id="elevHelp" class="t297overlay" role="dialog" aria-label="Wobblevator help">
     <div class="t297box">
       <button type="button" class="t297x" id="elevHelpX" aria-label="Close">×</button>
       <h3>🛗 Wobblevator</h3>
-      <p>Ride Bingle the Bellhop’s wobbly lift between surprise floors. Clear the mini-event, hop back in, and see how far your streak can go. If a floor gets too wobbly, everyone is okay — you’re back in the lift with a fresh streak.</p>
-      <p>Open <b>Floors</b> to see your collection. Floors don’t repeat until you’ve seen most of them. Snow Festival days unlock cozy holiday stops, and a rare secret floor is hiding in the shaft.</p>
-      <p><b>Keyboard:</b> WASD move · Space jump · E act · I floors · H help · Esc closes popups.</p>
-      <p><b>Mobile:</b> Move with the stick, jump with the button, and tap the yellow action button or Floors.</p>
-      <p><b>Xbox:</b> Left stick move · Ⓐ jump · Ⓧ act · Ⓨ floors · Ⓑ or Esc close popups.</p>
-      <p>In single-player, quirky passengers may ride along. In multiplayer, only real friends share the lift — and some floors let friends light two pads together.</p>
+      <p>Hang out in the lobby, check the streak board, and browse the shop. Then walk into the big glowing elevator doors — they are right in front of you, and the hint says <b>Step in to ride!</b> Once you are inside, the doors-closing countdown starts on its own. You can also press the on-screen <b>Ride</b> button, E, or Xbox Ⓧ. There is room for a whole group of friends (up to about 10). If you miss the doors, you wait in the cab and catch the next stop. Everyone rides to the same floor.</p>
+      <p>Clear the mini-event to grow your coin streak bonus. If a floor gets too wobbly, everyone is okay — you hop back in and the streak resets. Open <b>Floors</b> for your collection. During the ride, listen for original elevator muzak, a ticking floor dial, and the occasional harmless wobble or flicker.</p>
+      <p>Quirky passengers ride along in solo and in the shared multiplayer cab. They chat, react to floors, and sometimes hop off at a shop. The host decides who boards or leaves and what they say, and everyone sees the same riders and the same speech bubbles. Bingle still talks over the intercom too. Passengers are friendly riders — they do not block the way, take a real-player slot, or change the score.</p>
+      <p>Stranger floors can feel a little hush-y. Turn on <b>Less scary</b> anytime for a milder mood. Still no gore, and everyone is okay.</p>
+      <p><b>Keyboard:</b> WASD move · Space jump · E act / shop · I floors · H help · Esc closes popups.</p>
+      <p><b>Mobile:</b> Move with the stick, jump with the button, and tap Ride, Shop, Floors, or Less scary.</p>
+      <p><b>Xbox:</b> Left stick move · Ⓐ jump · Ⓧ act / shop · Ⓨ floors · Ⓑ or Esc close popups.</p>
     </div>
   </div>
   <div id="elevIndex" class="t297overlay" role="dialog" aria-label="Wobblevator floors seen">
@@ -21,5 +24,13 @@
       <h3>📒 Floors Seen</h3>
       <p id="elevIndexSub">Floors seen: 0 / 0</p>
       <div id="elevIndexList"></div>
+    </div>
+  </div>
+  <div id="elevShop" class="t297overlay" role="dialog" aria-label="Wobblevator lobby shop">
+    <div class="t297box elevIdxBox">
+      <button type="button" class="t297x" id="elevShopX" aria-label="Close">×</button>
+      <h3>🛒 Lobby Shop</h3>
+      <p id="elevShopSub">Hats and one-use treats, paid with Rublox Coins.</p>
+      <div id="elevShopList"></div>
     </div>
   </div>

@@ -25,16 +25,17 @@ describe('Wobblevator', () => {
     assert.equal(E.elevEveryoneOkay(), true);
   });
 
-  test('passengers only ride along in single-player', () => {
+  test('chatty passengers ride in solo and in multiplayer, and they are not opponents', () => {
     assert.equal(E.elevBuddyAllowed(false), true);
-    assert.equal(E.elevBuddyAllowed(true), false);
+    assert.equal(E.elevBuddyAllowed(true), true);
     const solo = E.elevStartRun(E.elevFresh(), 0, false).run;
     assert.equal(solo.buddy, true);
     const pal = E.elevPickPal(solo, () => 0);
     assert.ok(pal && pal.id);
     const mp = E.elevStartRun(E.elevFresh(), 0, true).run;
-    assert.equal(mp.buddy, false);
-    assert.equal(E.elevPickPal(mp, () => 0), null);
+    assert.equal(mp.buddy, true);
+    assert.ok(E.elevPickPal(mp, () => 0) && E.elevPickPal(mp, () => 0).id);
+    assert.equal(E.elevNoFight(), true);
   });
 
   test('a run boards, rides to a floor, clears it for coins, and tracks the best streak', () => {
@@ -64,6 +65,8 @@ describe('Wobblevator', () => {
     assert.equal(run.streak, 1);
     const banked = state.coins;
     E.elevTick(run, E.ELEV_INTER + 0.05);
+    assert.equal(run.phase, 'board');
+    E.elevTick(run, E.ELEV_BOARD + 0.05);
     assert.equal(run.phase, 'ride');
     E.elevBeginFloor(run, 'soapsurge');
     E.elevTouchHazard(run);
@@ -265,5 +268,203 @@ describe('Wobblevator', () => {
       assert.ok(E.elevOnSolid(drop.x, drop.z, room, R), f.id + ' catch should land back on the floor');
     });
   });
+
+
+  test('chatty original passengers have running jokes, and Polo hops off shop floors', () => {
+    assert.ok(E.ELEV_PALS.length >= 15);
+    E.ELEV_PALS.forEach(p => {
+      assert.ok(p.id && p.name && p.emoji);
+      assert.ok((p.lines && p.lines.length >= 4) || (p.line && p.jokes), p.id + ' should be chatty');
+    });
+    const blob = JSON.stringify(E.ELEV_PALS) + JSON.stringify(E.ELEV_HOST) + JSON.stringify(E.ELEV_SHOP) + JSON.stringify(E.ELEV_FLOORS);
+    BANNED.forEach(n => assert.equal(blob.toLowerCase().includes(n.toLowerCase()), false, 'must not include ' + n));
+    const {run} = E.elevStartRun(E.elevFresh(), 0, false);
+    run.buddy = true;
+    E.elevBeginFloor(run, 'snackstop');
+    const aboard = E.elevPalsAboard(run, () => 0);
+    assert.equal(aboard.some(p => p.hop === 'shopoff'), false);
+    assert.ok(E.elevTalkLine(E.ELEV_PALS[0], {i:0}));
+    assert.ok(E.elevTalkLine(E.ELEV_PALS[0], {joke:true, i:0}));
+    const ic = E.elevIntercom(run, 'board');
+    assert.match(ic, /Doors closing/);
+    assert.match(E.elevIntercom(run, 'floor'), /snackstop|Snack/i);
+  });
+
+  test('a doors-closing countdown and late riders wait in the cab', () => {
+    const {run} = E.elevStartRun(E.elevFresh(), 0, false);
+    assert.equal(run.phase, 'lobby');
+    E.elevBeginBoard(run);
+    assert.equal(run.phase, 'board');
+    assert.ok(run.t <= E.ELEV_BOARD);
+    assert.match(run.quote, /Get back in/);
+    E.elevTick(run, E.ELEV_BOARD + 0.05);
+    assert.equal(run.phase, 'ride');
+    E.elevCloseDoors(run, false);
+    assert.equal(run.watching, true);
+    E.elevCloseDoors(run, true);
+    assert.equal(run.watching, false);
+    const snap = E.elevWire(run);
+    assert.equal(snap.phase, 'ride');
+    const guest = E.elevStartRun(E.elevFresh(), 0, true).run;
+    E.elevApplyWire(guest, snap);
+    assert.equal(guest.phase, 'ride');
+    assert.equal(guest.floor, run.floor);
+  });
+
+  test('coin streak bonus grows with survives and a charm can keep it once', () => {
+    assert.equal(E.elevStreakBonus(0), 0);
+    assert.equal(E.elevStreakBonus(1), 1);
+    assert.equal(E.elevStreakBonus(15), 15);
+    assert.equal(E.elevStreakBonus(40), 15);
+    let {state, run} = E.elevStartRun(E.elevFresh(), 0, false);
+    E.elevBeginFloor(run, 'pillowpath');
+    let r = E.elevClearFloor(state, run);
+    state = r.state; run = r.run;
+    assert.equal(run.streak, 1);
+    E.elevBeginFloor(run, 'tickletiles');
+    r = E.elevClearFloor(state, run);
+    state = r.state; run = r.run;
+    assert.equal(run.streak, 2);
+    assert.ok(r.pay >= E.elevFloor('tickletiles').coins + E.elevStreakBonus(1));
+    run.charm = true;
+    E.elevBeginFloor(run, 'soapsurge');
+    E.elevTouchHazard(run);
+    const fail = E.elevFailFloor(state, run);
+    assert.equal(fail.run.streak, 2);
+    assert.match(fail.run.quote, /streak charm|kept/i);
+    E.elevBeginFloor(fail.run, 'pillowpath');
+    E.elevTouchHazard(fail.run);
+    const fail2 = E.elevFailFloor(fail.state, fail.run);
+    assert.equal(fail2.run.streak, 0);
+  });
+
+  test('lobby shop sells original hats and one-use items without touching old save keys', () => {
+    assert.ok(E.ELEV_SHOP.length >= 10);
+    const hats = E.elevShopList().filter(i => i.kind === 'hat');
+    const uses = E.elevShopList().filter(i => i.kind === 'use');
+    assert.ok(hats.length >= 6);
+    assert.ok(uses.length >= 5);
+    const old = {rides:2, best:1, seen:['pillowpath']};
+    const loaded = E.elevLoad(old);
+    assert.equal(loaded.rides, 2);
+    assert.deepEqual(loaded.hats, []);
+    assert.equal(loaded.hat, '');
+    assert.equal(typeof loaded.pack, 'object');
+    const no = E.elevBuyItem(loaded, 0, 'dingcap');
+    assert.equal(no.why, 'coins');
+    const yes = E.elevBuyItem(loaded, 80, 'dingcap');
+    assert.equal(yes.ok, true);
+    assert.equal(yes.wallet, 80 - E.elevShopItem('dingcap').cost);
+    assert.ok(yes.state.hats.includes('dingcap'));
+    const wear = E.elevWearHat(yes.state, 'dingcap');
+    assert.equal(wear.state.hat, 'dingcap');
+    let packState = yes.state;
+    let packRun = E.elevStartRun(packState, 0, false).run;
+    const cookie = E.elevBuyItem(packState, 40, 'luckycookie');
+    packState = cookie.state;
+    const applied = E.elevApplyPack(packState, packRun);
+    assert.equal(applied.run.lucky, 4);
+    assert.equal((applied.state.pack.luckycookie | 0), 0);
+  });
+
+  test('less-scary is optional, can inherit from Campfire, and new creepy floors stay kid-safe', () => {
+    const fresh = E.elevFresh();
+    assert.equal(typeof fresh.lessScary, 'boolean');
+    const set = E.elevSetLessScary(fresh, true);
+    assert.equal(set.lessScary, true);
+    const ids = E.ELEV_FLOORS.map(f => f.id);
+    ['softcloset','sparechair','politefog','almostdoors','moonmilk','dustorchestra','smileinventory','clockback'].forEach(id => {
+      assert.ok(ids.includes(id), id);
+      const f = E.elevFloor(id);
+      assert.ok(f && f.name && f.kind);
+    });
+    assert.equal(E.elevNoGore(), true);
+    assert.equal(E.elevEveryoneOkay(), true);
+  });
+
+  test('rides last long enough for muzak, a dial tick, and occasional harmless events', () => {
+    assert.ok(E.ELEV_RIDE >= 4);
+    assert.ok(E.ELEV_RIDE_EVENTS.length >= 4);
+    const ev = E.elevPickRideEvent(() => 0);
+    assert.ok(ev && ev.id && ev.text);
+    const {run} = E.elevStartRun(E.elevFresh(), 0, false);
+    E.elevBeginRide(run, () => 0);
+    assert.ok(run.event === null || (run.event.id && run.event.text));
+  });
+
+
+  test('the host picks passengers, seats, and lines, and every client sees the same cab', () => {
+    const host = E.elevStartRun(E.elevFresh(), 0, true).run;
+    assert.equal(host.buddy, true);
+    E.elevBeginRide(host, () => 0.2);
+    const aboard = E.elevPalsAboard(host, () => 0.2);
+    assert.ok(aboard.length >= 2);
+    assert.ok((host.pals || []).length >= 2);
+    host.pals.forEach(s => {
+      assert.ok(E.elevPal(s.id));
+      assert.ok(Math.abs(s.x) <= 4.4 && Math.abs(s.z) <= 4.4);
+    });
+    const talk = E.elevHostTalk(host, () => 0.9);
+    assert.ok(talk && talk.text && talk.who);
+    assert.ok(talk.seq >= 1);
+    const snap = E.elevWire(host);
+    assert.ok(Array.isArray(snap.pals) && snap.pals.length === host.pals.length);
+    assert.equal(snap.pals[0].id, host.pals[0].id);
+    assert.equal(snap.pals[0].x, host.pals[0].x);
+    assert.equal(snap.pals[0].z, host.pals[0].z);
+    assert.equal(snap.talk.text, talk.text);
+    assert.equal(snap.talk.who, talk.who);
+    const joiner = E.elevStartRun(E.elevFresh(), 0, true).run;
+    joiner.pals = [];
+    joiner.talk = null;
+    E.elevApplyWire(joiner, snap);
+    assert.equal(joiner.phase, host.phase);
+    assert.equal(joiner.floor, host.floor);
+    assert.deepEqual(joiner.pals, host.pals);
+    assert.equal(joiner.talk.text, talk.text);
+    assert.equal(joiner.talk.who, talk.who);
+    assert.equal(joiner.talk.x, talk.x);
+    assert.equal(joiner.talk.z, talk.z);
+  });
+
+  test('solo still boards chatty passengers, and they do not change the score or take player slots', () => {
+    const {state, run} = E.elevStartRun(E.elevFresh(), 0, false);
+    assert.equal(run.buddy, true);
+    E.elevBeginFloor(run, 'pillowpath');
+    const pay = E.elevReward(run);
+    run.pals = E.elevCleanPals([{id:'sock', x:-3, z:-2},{id:'niblet', x:3, z:2},{id:'echo', x:-3, z:2}]);
+    assert.equal(E.elevReward(run), pay);
+    const mid = E.elevClearFloor(state, run);
+    assert.equal(mid.pay, pay);
+    assert.equal(E.ELEV_PAL_MAX < 10, true);
+    E.elevBeginFloor(mid.run, 'snackstop');
+    E.elevSeatPals(mid.run, [E.elevPal('polo'), E.elevPal('marm')]);
+    const after = E.elevPalsHop(mid.run, () => 0);
+    assert.equal(after.some(s => s.id === 'polo'), false);
+    const soloTalk = E.elevHostTalk(mid.run, () => 0);
+    assert.ok(soloTalk && soloTalk.text);
+  });
+
+
+  test('a doors-closing countdown starts from the lobby and is not reset if beginBoard is called again', () => {
+    const {run} = E.elevStartRun(E.elevFresh(), 0, false);
+    assert.equal(run.phase, 'lobby');
+    E.elevBeginBoard(run);
+    assert.equal(run.phase, 'board');
+    const left = run.t;
+    assert.ok(left > 1);
+    E.elevTick(run, 1);
+    assert.ok(run.t < left);
+    const mid = run.t;
+    E.elevBeginBoard(run);
+    assert.equal(run.phase, 'board');
+    assert.equal(run.t, mid);
+    E.elevTick(run, mid + 0.05);
+    assert.equal(run.phase, 'ride');
+    E.elevTick(run, E.ELEV_RIDE + 0.05);
+    assert.equal(run.phase, 'floor');
+    assert.ok(E.elevFloor(run.floor));
+  });
+
 
 });
