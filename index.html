@@ -1490,6 +1490,27 @@ body.lh-muffled #obby{filter:saturate(.85)}
 #t302TutSkip{background:#fff}
 .t302rare{font-weight:900}
 @media (max-width:700px){ #t302Coins{top:104px;font-size:16px;padding:6px 12px} #ridesHelpBtn{bottom:248px} #t302Tut{top:150px} }
+
+#ridesDelBtn,#ridesUndoBtn,#ridesTestBtn{position:absolute;z-index:8;right:16px;padding:10px 14px;font-size:16px;border:3px solid #1d2340;border-radius:16px;background:#fff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+#ridesDelBtn{bottom:280px;background:#ffe4e8}
+#ridesUndoBtn{bottom:336px;background:#fff8e6}
+#ridesTestBtn{bottom:392px;background:#e7ffe9}
+.ridesmode #ridesDelBtn,.ridesmode #ridesUndoBtn,.ridesmode #ridesTestBtn{display:block}
+#ridesDelBtn.on{background:#ff4d5e;color:#fff}
+#campCompass,#campMap{display:none}
+.campmode #campCompass,.campmode #campMap{display:block}
+#campCompass{position:absolute;z-index:8;right:16px;top:112px;width:64px;height:64px;border-radius:50%;background:#fff8e6;border:3px solid #1d2340;box-shadow:3px 3px 0 #1d2340}
+#campCompass b{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:16px}
+#campNeedle{position:absolute;left:50%;top:8px;width:4px;height:22px;margin-left:-2px;background:#c23d4b;border-radius:2px;transform-origin:50% 24px}
+#campMap{position:absolute;z-index:8;right:16px;top:186px;width:128px;height:128px;border:3px solid #1d2340;border-radius:16px;background:#14331c;box-shadow:3px 3px 0 #1d2340;image-rendering:pixelated}
+#t302Scare.strong{background:rgba(20,0,30,.55)}
+@media (max-width:700px){
+  #ridesDelBtn{bottom:304px}
+  #ridesUndoBtn{bottom:360px}
+  #ridesTestBtn{bottom:416px}
+  #campCompass{top:150px;right:12px;width:56px;height:56px}
+  #campMap{top:214px;right:12px;width:110px;height:110px}
+}
 </style>
 
 
@@ -2029,6 +2050,11 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
   <button type="button" id="ridesHelpBtn">❓ Help</button>
   <button type="button" id="hiveQuestBtn">🐝 Quests</button>
   <button type="button" id="campCraftBtn">🧺 Craft</button>
+  <button type="button" id="ridesDelBtn">🗑️ Delete</button>
+  <button type="button" id="ridesUndoBtn">↩️ Undo</button>
+  <button type="button" id="ridesTestBtn">🎠 Test ride</button>
+  <div id="campCompass" aria-hidden="true"><i id="campNeedle"></i><b>🏕️</b></div>
+  <canvas id="campMap" width="160" height="160" aria-label="Map back to camp"></canvas>
   <div id="t302Meter"><div id="t302MeterFill"></div><div id="t302MeterLab"></div></div>
   <div id="gardenShop" class="t297overlay" role="dialog" aria-label="Seed shop">
     <div class="t297box">
@@ -2066,7 +2092,7 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
     <div class="t297box">
       <button type="button" class="t297x" id="campCraftX" aria-label="Close">×</button>
       <h3>🧺 Camp Craft</h3>
-      <p>Craft a cozy blanket or a Glow Lantern from sticks you gathered. A lantern shine scares the Gloam back into the trees.</p>
+      <p>Hunt logs in the forest (pick up fallen ones, chop stumps), carry a few back, and stash them at camp. Craft a cozy blanket or a Glow Lantern. A lantern shine scares the Gloam back into the trees. Survive 5 nights to win.</p>
       <div id="campCraftList"></div>
     </div>
   </div>
@@ -2090,44 +2116,13 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
     <div class="t297box">
       <button type="button" class="t297x" id="campWinX" aria-label="Close">×</button>
       <h3 id="campWinTitle">🌅 Sunrise!</h3>
-      <p id="campWinBody">You kept the grove safe until sunrise.</p>
+      <p id="campWinBody">You kept the grove safe through five spooky nights.</p>
       <div class="t297row" style="justify-content:center;gap:10px">
         <button type="button" id="campWinAgain">🔁 Play again</button>
         <button type="button" id="campWinClose">Close</button>
       </div>
     </div>
   </div>
-
-  <div id="t302Vignette"></div>
-  <div id="t302Scare"></div>
-  <button type="button" id="t302LessBtn">😌 Less scary</button>
-  <div id="campWin" class="t297overlay" role="dialog" aria-label="Camp result">
-    <div class="t297box">
-      <button type="button" class="t297x" id="campWinX" aria-label="Close">×</button>
-      <h3 id="campWinTitle">🌅 Sunrise!</h3>
-      <p id="campWinBody">You kept the grove safe until sunrise.</p>
-      <div class="t297row" style="justify-content:center;gap:10px">
-        <button type="button" id="campWinAgain">🔁 Play again</button>
-        <button type="button" id="campWinClose">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="t302Vignette"></div>
-  <div id="t302Scare"></div>
-  <button type="button" id="t302LessBtn">😌 Less scary</button>
-  <div id="campWin" class="t297overlay" role="dialog" aria-label="Camp result">
-    <div class="t297box">
-      <button type="button" class="t297x" id="campWinX" aria-label="Close">×</button>
-      <h3 id="campWinTitle">🌅 Sunrise!</h3>
-      <p id="campWinBody">You kept the grove safe until sunrise.</p>
-      <div class="t297row" style="justify-content:center;gap:10px">
-        <button type="button" id="campWinAgain">🔁 Play again</button>
-        <button type="button" id="campWinClose">Close</button>
-      </div>
-    </div>
-  </div>
-
   <button type="button" id="cafeBoardBtn">📋 Tickets</button>
   <button type="button" id="cafeDecorBtn">🪴 Decor</button>
   <button type="button" id="fishIndexBtn">📖 Index</button>
@@ -2664,7 +2659,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.19-3';
+const BUILD = '2026.11.19-4';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -4816,6 +4811,8 @@ try { evBootChrome(); } catch (e){}
 
 
 
+
+
 /* Sunny Patch Garden — original seeds, real-time plots, prize stand. Save key rubloxGarden. */
 (function (root) {
   const GARDEN_KEY = 'rubloxGarden';
@@ -5355,8 +5352,11 @@ try { evBootChrome(); } catch (e){}
 (function (root) {
   const RIDES_KEY = 'rubloxRides';
   const RIDES_VER = 1;
-  const RIDES_GRID = 8;
+  const RIDES_GRID = 12;
   const RIDES_CELL = 3;
+  const RIDES_OLD_GRID = 8;
+  const RIDES_ELEV_Y = 1.6;
+  const RIDES_MAX_ELEV = 4;
   const RIDES_KINDS = [
     {id:'carousel', name:'Sunny Spin Carousel', emoji:'🎠', size:2, color:'#ff9f1c'},
     {id:'swings', name:'Sky Swing Circle', emoji:'🎐', size:2, color:'#3a86ff'},
@@ -5380,7 +5380,7 @@ try { evBootChrome(); } catch (e){}
   ];
 
   function ridesFresh(){
-    return {ver: RIDES_VER, pieces:[], placed:0, rides:0, kind:'carousel', rot:0, tutDone:false, tut:null};
+    return {ver: RIDES_VER, lot: RIDES_GRID, pieces:[], placed:0, rides:0, kind:'carousel', rot:0, del:false, undo:null, tutDone:false, tut:null};
   }
 
   function ridesKind(id){ return RIDES_KINDS.find(k => k.id === id) || null; }
@@ -5388,21 +5388,31 @@ try { evBootChrome(); } catch (e){}
   function ridesLoad(raw){
     const d = ridesFresh();
     const o = (raw && typeof raw === 'object') ? raw : {};
+    const shift = ((o.lot | 0) !== RIDES_GRID);
+    let dx = 0, dz = 0;
+    if (shift && Array.isArray(o.pieces) && o.pieces.length){
+      const maxg = o.pieces.reduce((m, p) => Math.max(m, p && p.gx | 0, p && p.gz | 0), 0);
+      if (maxg < RIDES_OLD_GRID){ dx = Math.floor((RIDES_GRID - RIDES_OLD_GRID) / 2); dz = dx; }
+    }
     if (Array.isArray(o.pieces)){
       d.pieces = o.pieces.map((p, i) => {
         const kind = ridesKind(p && p.kind);
         if (!kind) return null;
-        const gx = p.gx | 0, gz = p.gz | 0;
+        const gx = (p.gx | 0) + dx, gz = (p.gz | 0) + dz;
         if (gx < 0 || gz < 0 || gx >= RIDES_GRID || gz >= RIDES_GRID) return null;
         return {
           id: (p.id | 0) || (i + 1),
           kind: kind.id,
           gx, gz,
           rot: ((p.rot | 0) % 4 + 4) % 4,
+          elev: Math.max(0, Math.min(RIDES_MAX_ELEV, p.elev | 0)),
           owner: typeof p.owner === 'string' ? p.owner.slice(0, 24) : ''
         };
-      }).filter(Boolean).slice(0, 64);
+      }).filter(Boolean).slice(0, 128);
     }
+    d.lot = RIDES_GRID;
+    if (o.undo && typeof o.undo === 'object') d.undo = o.undo;
+    d.del = !!o.del;
     d.placed = Math.max(d.pieces.length, o.placed | 0);
     d.rides = Math.max(0, o.rides | 0);
     d.kind = ridesKind(o.kind) ? o.kind : 'carousel';
@@ -5462,18 +5472,136 @@ try { evBootChrome(); } catch (e){}
     return cells.every(c => !used.has(c.gx + ',' + c.gz));
   }
 
-  function ridesPlace(state, kind, gx, gz, rot, owner){
+  // dir 0=+X, 1=+Z, 2=-X, 3=-Z
+  function ridesDirVec(dir){
+    const d = ((dir | 0) % 4 + 4) % 4;
+    return d === 0 ? [1, 0] : d === 1 ? [0, 1] : d === 2 ? [-1, 0] : [0, -1];
+  }
+  function ridesPorts(kind, gx, gz, rot, elev){
+    const k = ridesKind(kind && kind.kind ? kind.kind : kind);
+    if (!k) return [];
+    if (kind && kind.kind){ gx = kind.gx; gz = kind.gz; rot = kind.rot; elev = kind.elev; kind = kind.kind; }
+    gx = gx | 0; gz = gz | 0;
+    rot = ((rot | 0) % 4 + 4) % 4;
+    elev = Math.max(0, Math.min(RIDES_MAX_ELEV, elev | 0));
+    const port = (dx, dz, dir, h) => ({gx, gz, nx: gx + dx, nz: gz + dz, dir: ((dir % 4) + 4) % 4, h, kind: k.id});
+    if (!ridesIsTrack(k.id)) return [];
+    if (k.id === 'curve'){
+      const ends = [[1,0,0],[0,1,1],[-1,0,2],[0,-1,3]];
+      const a = ends[rot], b = ends[(rot + 1) % 4];
+      return [port(a[0], a[1], a[2], elev), port(b[0], b[1], b[2], elev)];
+    }
+    const alongX = (rot % 2 === 0);
+    const flip = (rot === 2 || rot === 3);
+    if (k.id === 'slope'){
+      if (alongX){
+        return [
+          port(-1, 0, 2, flip ? elev + 1 : elev),
+          port( 1, 0, 0, flip ? elev : elev + 1)
+        ];
+      }
+      return [
+        port(0, -1, 3, flip ? elev + 1 : elev),
+        port(0,  1, 1, flip ? elev : elev + 1)
+      ];
+    }
+    // track + loop: both ends same height
+    if (alongX) return [port(-1, 0, 2, elev), port(1, 0, 0, elev)];
+    return [port(0, -1, 3, elev), port(0, 1, 1, elev)];
+  }
+  function ridesPortWorld(port){
+    const c = ridesWorld(port.gx, port.gz);
+    const [dx, dz] = ridesDirVec(port.dir);
+    return {
+      x: c.x + dx * (RIDES_CELL / 2),
+      y: 0.7 + (port.h || 0) * RIDES_ELEV_Y,
+      z: c.z + dz * (RIDES_CELL / 2)
+    };
+  }
+  function ridesPortsMate(a, b){
+    if (!a || !b) return false;
+    return a.nx === b.gx && a.nz === b.gz && b.nx === a.gx && b.nz === a.gz &&
+      ((a.dir + 2) % 4) === b.dir && (a.h | 0) === (b.h | 0);
+  }
+  function ridesAllPorts(state){
+    state = ridesLoad(state);
+    const out = [];
+    state.pieces.forEach(p => {
+      ridesPorts(p).forEach(port => out.push(Object.assign({id: p.id}, port)));
+    });
+    return out;
+  }
+  function ridesOpenPorts(state){
+    const all = ridesAllPorts(state);
+    return all.filter(a => !all.some(b => a.id !== b.id && ridesPortsMate(a, b)));
+  }
+  function ridesLinked(state, aId, bId){
+    const all = ridesAllPorts(state);
+    const a = all.filter(p => p.id === aId);
+    const b = all.filter(p => p.id === bId);
+    return a.some(pa => b.some(pb => ridesPortsMate(pa, pb)));
+  }
+  function ridesSnap(state, kind, hintGx, hintGz, rot, elev){
+    state = ridesLoad(state);
+    const k = ridesKind(kind || state.kind);
+    if (!k) return {ok:false, why:'kind', gx: hintGx|0, gz: hintGz|0, rot: rot|0, elev: elev|0, snapped:false};
+    const preferred = rot == null ? state.rot : ((rot | 0) % 4 + 4) % 4;
+    const hx = hintGx | 0, hz = hintGz | 0;
+    if (!ridesIsTrack(k.id)){
+      const fits = ridesFits(state, k.id, hx, hz, preferred);
+      return {ok:fits, why: fits ? 'grid' : 'fit', gx:hx, gz:hz, rot:preferred, elev:0, snapped:false, fits};
+    }
+    const opens = ridesOpenPorts(state);
+    const rots = [preferred, (preferred+1)%4, (preferred+2)%4, (preferred+3)%4];
+    let best = null;
+    opens.forEach(op => {
+      rots.forEach(r => {
+        const gx = op.nx, gz = op.nz;
+        const el = Math.max(0, Math.min(RIDES_MAX_ELEV, op.h | 0));
+        // try this elev, and elev-1 in case a slope's high/low is the other way
+        [el, Math.max(0, el - 1)].forEach(ev => {
+          if (!ridesFits(state, k.id, gx, gz, r)) return;
+          const ports = ridesPorts(k.id, gx, gz, r, ev);
+          const mates = ports.filter(p => opens.some(o => ridesPortsMate(p, o)));
+          if (!mates.some(p => ridesPortsMate(p, op))) return;
+          // Prefer joining more open ends (closing a loop) over keeping the hinted rotation.
+          const score = Math.hypot(gx - hx, gz - hz) + (r === preferred ? 0 : 0.15) - mates.length * 3;
+          if (!best || score < best.score){
+            best = {ok:true, why:'snap', gx, gz, rot:r, elev:ev, snapped:true, fits:true, mate:op, mates:mates.length, score};
+          }
+        });
+      });
+    });
+    if (best) return best;
+    const ev = Math.max(0, elev | 0);
+    const fits = ridesFits(state, k.id, hx, hz, preferred);
+    return {ok:fits, why: fits ? 'grid' : 'fit', gx:hx, gz:hz, rot:preferred, elev:ev, snapped:false, fits};
+  }
+
+  function ridesPushUndo(state, entry){
+    state.undo = entry ? {op: entry.op, piece: entry.piece ? Object.assign({}, entry.piece) : null, id: entry.id | 0} : null;
+  }
+
+  function ridesPlace(state, kind, gx, gz, rot, owner, opts){
     state = ridesLoad(state);
     const k = ridesKind(kind || state.kind);
     if (!k) return {ok:false, why:'kind', state};
-    const r = rot == null ? state.rot : ((rot | 0) % 4 + 4) % 4;
-    const x = gx | 0, z = gz | 0;
+    let r = rot == null ? state.rot : ((rot | 0) % 4 + 4) % 4;
+    let x = gx | 0, z = gz | 0;
+    let elev = Math.max(0, Math.min(RIDES_MAX_ELEV, (opts && opts.elev) | 0));
+    if (opts && opts.snap){
+      const s = ridesSnap(state, k.id, x, z, r, elev);
+      if (s.ok){ x = s.gx; z = s.gz; r = s.rot; elev = s.elev | 0; }
+      else return {ok:false, why:s.why || 'fit', state, snap:s};
+    }
     if (!ridesFits(state, k.id, x, z, r)) return {ok:false, why:'fit', state};
     const id = 1 + state.pieces.reduce((m, p) => Math.max(m, p.id | 0), 0);
-    const piece = {id, kind:k.id, gx:x, gz:z, rot:r, owner: typeof owner === 'string' ? owner.slice(0, 24) : ''};
+    const piece = {id, kind:k.id, gx:x, gz:z, rot:r, elev, owner: typeof owner === 'string' ? owner.slice(0, 24) : ''};
     state.pieces.push(piece);
     state.placed++;
-    return {ok:true, why:'ok', state, piece};
+    ridesPushUndo(state, {op:'place', id: piece.id, piece});
+    const loop = ridesIsTrack(k.id) ? ridesCoasterLoop(state) : {ok:false};
+    return {ok:true, why:'ok', state, piece, closed: !!loop.ok};
   }
 
   function ridesRemove(state, id, who){
@@ -5483,7 +5611,39 @@ try { evBootChrome(); } catch (e){}
     const p = state.pieces[i];
     if (who && p.owner && p.owner !== who) return {ok:false, why:'owned', state};
     state.pieces.splice(i, 1);
+    ridesPushUndo(state, {op:'remove', id: p.id, piece:p});
     return {ok:true, why:'ok', state, piece:p};
+  }
+
+  function ridesSetDelete(state, on){
+    state = ridesLoad(state);
+    state.del = !!on;
+    return state;
+  }
+
+  function ridesUndo(state, who){
+    state = ridesLoad(state);
+    const u = state.undo;
+    if (!u || !u.op) return {ok:false, why:'empty', state};
+    state.undo = null;
+    if (u.op === 'place'){
+      const r = ridesRemove(state, u.id, who);
+      state = r.state;
+      state.undo = null;
+      return {ok:r.ok, why:r.why, state, undone:'place', piece:r.piece};
+    }
+    if (u.op === 'remove' && u.piece){
+      const p = u.piece;
+      if (!ridesFits(state, p.kind, p.gx, p.gz, p.rot)) return {ok:false, why:'fit', state};
+      state.pieces.push({
+        id: p.id, kind:p.kind, gx:p.gx, gz:p.gz, rot:p.rot,
+        elev: p.elev | 0, owner: p.owner || ''
+      });
+      state.undo = null;
+      const piece = state.pieces[state.pieces.length - 1];
+      return {ok:true, why:'ok', state, undone:'remove', piece};
+    }
+    return {ok:false, why:'empty', state};
   }
 
   function ridesAt(state, gx, gz){
@@ -5514,56 +5674,105 @@ try { evBootChrome(); } catch (e){}
     return {x: (gx|0) * RIDES_CELL - o, z: (gz|0) * RIDES_CELL - o};
   }
 
-  function ridesCoasterLoop(state){
+  function ridesNeighbor(state, piece, fromId){
+    const ports = ridesPorts(piece);
+    const all = ridesAllPorts(state);
+    for (let i = 0; i < ports.length; i++){
+      const mate = all.find(b => b.id !== piece.id && b.id !== fromId && ridesPortsMate(ports[i], b));
+      if (mate) return {piece: state.pieces.find(p => p.id === mate.id), via: ports[i], mate};
+    }
+    // also allow unmatched "from" skip: any mate
+    for (let i = 0; i < ports.length; i++){
+      const mate = all.find(b => b.id !== piece.id && ridesPortsMate(ports[i], b));
+      if (mate && mate.id !== fromId) return {piece: state.pieces.find(p => p.id === mate.id), via: ports[i], mate};
+    }
+    return null;
+  }
+
+  function ridesWalkLoop(state){
     state = ridesLoad(state);
     const tracks = state.pieces.filter(p => ridesIsTrack(p.kind));
-    if (tracks.length < 4) return {ok:false, why:'short', count: tracks.length};
-    const nodes = new Map();
-    function key(x,z){ return x + ',' + z; }
-    function addEdge(a, b){
-      if (!nodes.has(a)) nodes.set(a, new Set());
-      nodes.get(a).add(b);
+    if (tracks.length < 4) return {ok:false, why:'short', count: tracks.length, path:[]};
+    const all = ridesAllPorts(state);
+    function matesOf(id){
+      const mine = all.filter(p => p.id === id);
+      const ids = [];
+      mine.forEach(a => all.forEach(b => { if (b.id !== id && ridesPortsMate(a, b) && ids.indexOf(b.id) < 0) ids.push(b.id); }));
+      return ids;
     }
-    tracks.forEach(p => {
-      const dir = p.rot % 4;
-      if (p.kind === 'track' || p.kind === 'slope' || p.kind === 'loop'){
-        const dx = (dir === 0 || dir === 2) ? 1 : 0;
-        const dz = dx ? 0 : 1;
-        addEdge(key(p.gx, p.gz), key(p.gx + dx, p.gz + dz));
-        addEdge(key(p.gx + dx, p.gz + dz), key(p.gx, p.gz));
-        addEdge(key(p.gx, p.gz), key(p.gx - dx, p.gz - dz));
-        addEdge(key(p.gx - dx, p.gz - dz), key(p.gx, p.gz));
-      } else {
-        // curve links two perpendicular neighbors
-        const ends = [[1,0],[0,1],[-1,0],[0,-1]];
-        const a = ends[dir], b = ends[(dir + 1) % 4];
-        addEdge(key(p.gx, p.gz), key(p.gx + a[0], p.gz + a[1]));
-        addEdge(key(p.gx + a[0], p.gz + a[1]), key(p.gx, p.gz));
-        addEdge(key(p.gx, p.gz), key(p.gx + b[0], p.gz + b[1]));
-        addEdge(key(p.gx + b[0], p.gz + b[1]), key(p.gx, p.gz));
-      }
-    });
-    // A loop exists if some node can return to itself with at least 4 hops of track cells.
-    const trackSet = new Set(tracks.map(p => key(p.gx, p.gz)));
-    let found = false;
-    for (const start of trackSet){
-      const stack = [[start, start, 0, start]];
-      const seen = new Set();
-      while (stack.length){
-        const [cur, prev, dist, origin] = stack.pop();
-        const mark = cur + '>' + prev + ':' + dist;
-        if (seen.has(mark)) continue;
-        seen.add(mark);
-        const nbs = nodes.get(cur) || new Set();
-        nbs.forEach(nb => {
-          if (nb === prev) return;
-          if (nb === origin && dist + 1 >= 4) found = true;
-          else if (trackSet.has(nb) && dist < 16) stack.push([nb, cur, dist + 1, origin]);
-        });
+    let found = null;
+    for (const start of tracks){
+      const firstNext = matesOf(start.id);
+      for (const n0 of firstNext){
+        const ids = [start.id, n0];
+        let prev = start.id, cur = n0, ok = true;
+        while (ids.length < tracks.length + 2){
+          const nxts = matesOf(cur).filter(id => id !== prev);
+          if (!nxts.length){ ok = false; break; }
+          const nxt = nxts[0];
+          if (nxt === start.id && ids.length >= 4){ found = ids; break; }
+          if (ids.indexOf(nxt) >= 0){ ok = false; break; }
+          ids.push(nxt);
+          prev = cur; cur = nxt;
+        }
+        if (found) break;
       }
       if (found) break;
     }
-    return {ok:found, why: found ? 'ok' : 'open', count: tracks.length};
+    if (!found) return {ok:false, why:'open', count: tracks.length, path:[]};
+    const path = found.map(id => state.pieces.find(p => p.id === id)).filter(Boolean);
+    return {ok:true, why:'ok', count: tracks.length, path, ids: found};
+  }
+
+  function ridesPathPoints(state){
+    const loop = ridesWalkLoop(state);
+    if (!loop.ok) return loop;
+    const pts = [];
+    const pieces = loop.path;
+    pieces.forEach((p, i) => {
+      const nxt = pieces[(i + 1) % pieces.length];
+      const ports = ridesPorts(p);
+      const nports = ridesPorts(nxt);
+      let leave = ports[0], arrive = nports[0];
+      ports.forEach(a => nports.forEach(b => { if (ridesPortsMate(a, b)){ leave = a; arrive = b; } }));
+      const enter = ports.find(pr => pr !== leave) || ports[0];
+      const a = ridesPortWorld(enter), b = ridesPortWorld(leave);
+      const c = ridesWorld(p.gx, p.gz);
+      const y0 = 0.7 + (p.elev || 0) * RIDES_ELEV_Y;
+      const steps = p.kind === 'loop' ? 12 : (p.kind === 'curve' ? 8 : 4);
+      for (let s = 0; s < steps; s++){
+        const t = s / steps;
+        let x, y, z;
+        if (p.kind === 'curve'){
+          const ang0 = Math.atan2(a.x - c.x, a.z - c.z);
+          const ang1 = Math.atan2(b.x - c.x, b.z - c.z);
+          let d = ang1 - ang0;
+          while (d > Math.PI) d -= Math.PI * 2;
+          while (d < -Math.PI) d += Math.PI * 2;
+          const ang = ang0 + d * t;
+          const rad = RIDES_CELL / 2;
+          x = c.x + Math.sin(ang) * rad;
+          z = c.z + Math.cos(ang) * rad;
+          y = y0;
+        } else if (p.kind === 'loop'){
+          x = a.x + (b.x - a.x) * t;
+          z = a.z + (b.z - a.z) * t;
+          y = y0 + Math.sin(t * Math.PI * 2) * 0.05 + (1 - Math.cos(t * Math.PI * 2)) * 1.35;
+        } else {
+          x = a.x + (b.x - a.x) * t;
+          z = a.z + (b.z - a.z) * t;
+          y = a.y + (b.y - a.y) * t;
+        }
+        const yaw = Math.atan2(b.x - a.x, b.z - a.z);
+        pts.push({x, y, z, yaw, id:p.id, kind:p.kind, t});
+      }
+    });
+    return {ok:true, why:'ok', count: pieces.length, path: pieces, points: pts};
+  }
+
+  function ridesCoasterLoop(state){
+    const w = ridesWalkLoop(state);
+    return {ok:w.ok, why:w.why, count:w.count, path:w.path || []};
   }
 
   function ridesTutStep(state){
@@ -5621,10 +5830,12 @@ try { evBootChrome(); } catch (e){}
 
 
   const api = {
-    RIDES_KEY, RIDES_VER, RIDES_GRID, RIDES_CELL, RIDES_KINDS, RIDES_TRACKS, RIDES_TUT,
+    RIDES_KEY, RIDES_VER, RIDES_GRID, RIDES_CELL, RIDES_OLD_GRID, RIDES_ELEV_Y, RIDES_MAX_ELEV,
+    RIDES_KINDS, RIDES_TRACKS, RIDES_TUT,
     ridesFresh, ridesLoad, ridesKind, ridesIsTrack, ridesCycleKind, ridesRotate, ridesCells,
-    ridesFits, ridesPlace, ridesRemove, ridesAt, ridesCanBoard, ridesBoard,
-    ridesWorld, ridesCoasterLoop,
+    ridesFits, ridesPlace, ridesRemove, ridesSetDelete, ridesUndo, ridesAt, ridesCanBoard, ridesBoard,
+    ridesWorld, ridesDirVec, ridesPorts, ridesPortWorld, ridesPortsMate, ridesAllPorts, ridesOpenPorts,
+    ridesSnap, ridesLinked, ridesWalkLoop, ridesPathPoints, ridesCoasterLoop,
     ridesTutStep, ridesTutStart, ridesTutSkip, ridesTutClose, ridesTutAdvance, ridesTutNext, ridesTutNote
   };
   root.RidesRules = api;
@@ -5820,22 +6031,60 @@ try { evBootChrome(); } catch (e){}
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
-/* Campfire Grove — kid-friendly spooky camp. Survive until sunrise. Original Gloam creature.
-   Fire and lanterns scare it away. No fighting, no gore. Save key rubloxCamp. */
+/* Campfire Grove — kid-friendly spooky camp. Hunt logs by day, survive 5 nights. Original Gloam.
+   Fire and lanterns scare it away. Caught = everyone is okay, respawn at camp, lose sticks. No fighting, no gore. Save key rubloxCamp. */
 (function (root) {
   const CAMP_KEY = 'rubloxCamp';
-  const CAMP_VER = 2;
-  const CAMP_NIGHT = 90;
+  const CAMP_VER = 3;
+  const CAMP_DAY = 50;
+  const CAMP_NIGHT = 60;
+  const CAMP_WIN_NIGHTS = 5;
   const CAMP_DECAY = 0.012;
+  const CAMP_DAY_DECAY = 0.003;
   const CAMP_STICK = 0.22;
   const CAMP_MIN = 0.15;
   const CAMP_MAX_FIRE = 1;
-  const CAMP_PILES = 8;
-  const CAMP_GLOAM_FAR = 16;
-  const CAMP_GLOAM_IN = 2.6;
+  const CAMP_CARRY = 3;
+  const CAMP_CHOP = 1.1;
+  const CAMP_LOG_REGEN = 40;
+  const CAMP_SIZE = 140;
   const CAMP_CRAFT = [
     {id:'blanket', name:'Cozy Blanket', emoji:'🧺', sticks:3},
     {id:'lantern', name:'Glow Lantern', emoji:'🏮', sticks:4}
+  ];
+  const CAMP_LANDMARKS = [
+    {id:'camp', name:'Camp', emoji:'🔥', x:0, z:0},
+    {id:'cabin', name:'Old Cabin', emoji:'🏚️', x:48, z:-32},
+    {id:'lake', name:'Moon Lake', emoji:'🌊', x:-40, z:36},
+    {id:'clearing', name:'Pine Clearing', emoji:'🌲', x:28, z:40},
+    {id:'deep', name:'Deep Woods', emoji:'🌑', x:52, z:48},
+    {id:'brook', name:'Brook Bend', emoji:'🪙', x:-46, z:-24}
+  ];
+  const CAMP_TRAILS = [
+    {x:0, z:0}, {x:12, z:-8}, {x:24, z:-16}, {x:36, z:-24}, {x:48, z:-32},
+    {x:0, z:0}, {x:-10, z:10}, {x:-22, z:20}, {x:-32, z:28}, {x:-40, z:36},
+    {x:0, z:0}, {x:10, z:12}, {x:20, z:24}, {x:28, z:40}, {x:40, z:44}, {x:52, z:48},
+    {x:0, z:0}, {x:-12, z:-8}, {x:-28, z:-16}, {x:-46, z:-24}
+  ];
+  const CAMP_LOG_SPOTS = [
+    {id:0, x:18, z:-14, kind:'fallen', value:1, zone:'woods'},
+    {id:1, x:-16, z:14, kind:'fallen', value:1, zone:'woods'},
+    {id:2, x:14, z:20, kind:'stump', value:1, zone:'woods'},
+    {id:3, x:-22, z:-12, kind:'stump', value:1, zone:'woods'},
+    {id:4, x:32, z:-8, kind:'fallen', value:1, zone:'woods'},
+    {id:5, x:-8, z:28, kind:'fallen', value:1, zone:'trail'},
+    {id:6, x:26, z:36, kind:'fallen', value:1, zone:'clearing'},
+    {id:7, x:22, z:44, kind:'stump', value:1, zone:'clearing'},
+    {id:8, x:44, z:-24, kind:'fallen', value:1, zone:'cabin'},
+    {id:9, x:54, z:-36, kind:'stump', value:1, zone:'cabin'},
+    {id:10, x:-36, z:24, kind:'fallen', value:1, zone:'woods'},
+    {id:11, x:-48, z:30, kind:'stump', value:1, zone:'woods'},
+    {id:12, x:48, z:42, kind:'fallen', value:2, zone:'deep'},
+    {id:13, x:56, z:52, kind:'stump', value:2, zone:'deep'},
+    {id:14, x:60, z:44, kind:'heart', value:3, zone:'deep'},
+    {id:15, x:50, z:58, kind:'heart', value:3, zone:'deep'},
+    {id:16, x:-50, z:-20, kind:'fallen', value:1, zone:'woods'},
+    {id:17, x:-38, z:-30, kind:'stump', value:1, zone:'woods'}
   ];
 
   function campFresh(){
@@ -5853,6 +6102,7 @@ try { evBootChrome(); } catch (e){}
   }
 
   function campItem(id){ return CAMP_CRAFT.find(c => c.id === id) || null; }
+  function campLandmark(id){ return CAMP_LANDMARKS.find(l => l.id === id) || null; }
 
   function campLoad(raw){
     const d = campFresh();
@@ -5872,16 +6122,55 @@ try { evBootChrome(); } catch (e){}
   function campBuddyAllowed(mp){ return !mp; }
   function campNoFight(){ return true; }
   function campNoGore(){ return true; }
+  function campEveryoneOkay(){ return true; }
 
   function campSetLessScary(state, on){
     state = campLoad(state);
     state.lessScary = !!on;
     return state;
   }
-
   function campHas(state, id){
     state = campLoad(state);
     return state.crafted.indexOf(id) >= 0;
+  }
+
+  function campInDeep(x, z){ return Math.hypot((x || 0) - 52, (z || 0) - 48) < 22; }
+  function campInWater(x, z){ return Math.hypot((x || 0) + 40, (z || 0) - 36) < 9; }
+  function campZone(x, z){
+    x = +x || 0; z = +z || 0;
+    if (Math.hypot(x, z) < 10) return 'camp';
+    if (Math.hypot(x - 48, z + 32) < 10) return 'cabin';
+    if (campInWater(x, z)) return 'water';
+    if (Math.hypot(x + 40, z - 36) < 16) return 'lake';
+    if (campInDeep(x, z)) return 'deep';
+    if (Math.hypot(x - 28, z - 40) < 10) return 'clearing';
+    if (Math.hypot(x + 46, z + 24) < 10) return 'brook';
+    return 'woods';
+  }
+  function campCompass(px, pz){
+    const dx = 0 - (px || 0), dz = 0 - (pz || 0);
+    return {ang: Math.atan2(dx, dz), dist: Math.hypot(dx, dz), x:0, z:0};
+  }
+
+  function campMakeLogs(){
+    return CAMP_LOG_SPOTS.map(s => Object.assign({}, s, {left: 1, regenAt: 0, chop: 0}));
+  }
+  function campLog(run, id){ return ((run && run.logs) || []).find(l => l.id === (id | 0)) || null; }
+
+  function campLightAt(run, x, z, opt){
+    if (!run || run.phase === 'day') return 1;
+    const fire = Math.max(0, run.fire || 0);
+    const fireR = 3.8 + fire * 9;
+    const dFire = Math.hypot(x || 0, z || 0);
+    let lit = Math.max(0, 1 - dFire / fireR) * (0.25 + fire);
+    if (Math.hypot((x || 0) - 48, (z || 0) + 32) < 5) lit = Math.max(lit, 0.28);
+    if ((run.lantern || 0) > 0){
+      const px = (opt && opt.px != null) ? opt.px : x;
+      const pz = (opt && opt.pz != null) ? opt.pz : z;
+      const dL = Math.hypot((x || 0) - px, (z || 0) - pz);
+      lit = Math.max(lit, Math.max(0, 1 - dL / 5.5) * 0.9);
+    }
+    return Math.min(1, lit);
   }
 
   function campGloamTarget(run, lessScary){
@@ -5889,103 +6178,140 @@ try { evBootChrome(); } catch (e){}
     const lantern = Math.max(0, run && run.lantern || 0);
     const lit = fire + Math.min(0.4, lantern * 0.08);
     const k = Math.max(0, Math.min(1, (lit - 0.12) / 0.7));
-    const far = lessScary ? 20 : CAMP_GLOAM_FAR;
-    const near = lessScary ? 7 : (lantern > 0 ? 6 : CAMP_GLOAM_IN);
+    const far = lessScary ? 28 : 18;
+    const near = lessScary ? 9 : (lantern > 0 ? 7 : 2.8);
     return near + (far - near) * k;
   }
 
-  function campStartNight(state, now, mp){
-    state = campLoad(state);
-    state.nights++;
+  function campFreshRun(state, now, mp, phase){
     const less = !!state.lessScary;
     return {
-      ok: true,
-      state,
-      run: {
-        startedAt: +now || 0,
-        t: 0,
-        fire: 0.78,
-        piles: Array.from({length: CAMP_PILES}, (_, i) => ({id:i, left: 2})),
-        won: false,
-        failed: false,
-        buddy: campBuddyAllowed(mp),
-        mp: !!mp,
-        gloam: less ? 20 : CAMP_GLOAM_FAR,
-        threat: 0,
-        scarePop: false,
-        lantern: 0,
-        lanternCd: 0,
-        best: 0.78
-      }
+      startedAt: +now || 0,
+      clock: 0,
+      day: 1,
+      phase: phase || 'day',
+      t: 0,
+      survived: 0,
+      fire: 0.7,
+      logs: campMakeLogs(),
+      carry: 0,
+      won: false,
+      failed: false,
+      buddy: campBuddyAllowed(mp),
+      mp: !!mp,
+      gx: less ? 36 : 28,
+      gz: less ? -30 : -24,
+      gmode: (phase === 'night') ? 'lurk' : 'hidden',
+      gcool: 0,
+      threat: 0,
+      scarePop: false,
+      appearBehind: false,
+      chase: false,
+      lantern: 0,
+      lanternCd: 0,
+      best: 0.7,
+      respawn: false,
+      caught: 0,
+      chopping: null
     };
   }
 
-  function campTick(run, dt, opt){
-    if (!run || run.won || run.failed) return run;
-    const step = Math.max(0, Math.min(0.12, +dt || 0));
-    const less = !!(opt && opt.lessScary);
-    const hasBlanket = !!(opt && opt.blanket);
-    run.t = Math.min(CAMP_NIGHT, (run.t || 0) + step);
-    const decay = CAMP_DECAY * (hasBlanket ? 0.85 : 1) * (less ? 0.85 : 1);
-    run.fire = Math.max(0, (run.fire || 0) - decay * step);
-    if (run.lantern) run.lantern = Math.max(0, run.lantern - step);
-    if (run.lanternCd) run.lanternCd = Math.max(0, run.lanternCd - step);
-    if (run.fire > (run.best || 0)) run.best = run.fire;
-    const target = campGloamTarget(run, less);
-    run.gloam = run.gloam == null ? target : run.gloam;
-    const spd = (target > run.gloam) ? (less ? 5 : 7) : (less ? 2.0 : 3.4);
-    const d = target - run.gloam;
-    run.gloam += Math.sign(d) * Math.min(Math.abs(d), spd * step);
-    const danger = less ? 6.2 : 3.2;
-    if (run.gloam <= danger && run.fire < (less ? 0.16 : 0.2)){
-      run.threat = (run.threat || 0) + step;
-      if (!run.scarePop && run.threat > (less ? 1.2 : 0.35)) run.scarePop = true;
-      if (run.threat > (less ? 4 : 1.6)) run.failed = true;
-    } else {
-      run.threat = Math.max(0, (run.threat || 0) - step * 0.6);
-    }
-    if (run.t >= CAMP_NIGHT){
-      if (run.fire >= CAMP_MIN && !run.failed) run.won = true;
-      else run.failed = true;
-    }
-    return run;
+  function campStartRun(state, now, mp){
+    state = campLoad(state);
+    state.nights++;
+    return {ok:true, state, run: campFreshRun(state, now, mp, 'day')};
+  }
+  function campStartNight(state, now, mp){
+    const started = campStartRun(state, now, mp);
+    started.run.phase = 'night';
+    started.run.gmode = started.state.lessScary ? 'lurk' : 'stalk';
+    started.run.t = 0;
+    return started;
   }
 
-  function campGather(state, run, pileId){
+  function campCanCarry(run, value){
+    return ((run && run.carry) || 0) + (value || 1) <= CAMP_CARRY;
+  }
+
+  function campGrantLog(state, run, log){
+    const n = Math.max(1, log.value | 0);
+    if (!campCanCarry(run, n)) return {ok:false, why:'full', state, run};
+    log.left = 0;
+    log.chop = 0;
+    log.regenAt = (run.clock || 0) + CAMP_LOG_REGEN * (log.zone === 'deep' ? 1.3 : 1);
+    run.carry = (run.carry || 0) + n;
+    state.gathered += n;
+    return {ok:true, why:'ok', state, run, gained:n};
+  }
+
+  function campPickLog(state, run, logId){
     state = campLoad(state);
-    if (!run || run.won || run.failed) return {ok:false, why:'over', state, run};
-    const pile = (run.piles || []).find(p => p.id === (pileId | 0));
-    if (!pile) return {ok:false, why:'pile', state, run};
-    if ((pile.left | 0) <= 0) return {ok:false, why:'empty', state, run};
-    pile.left -= 1;
-    state.sticks += 1;
-    state.gathered += 1;
-    return {ok:true, why:'ok', state, run};
+    if (!run || run.won) return {ok:false, why:'over', state, run};
+    const log = campLog(run, logId);
+    if (!log) return {ok:false, why:'log', state, run};
+    if ((log.left | 0) <= 0) return {ok:false, why:'empty', state, run};
+    if (log.kind === 'stump' || log.kind === 'heart') return {ok:false, why:'chop', state, run};
+    return campGrantLog(state, run, log);
+  }
+  function campGather(state, run, pileId){ return campPickLog(state, run, pileId); }
+
+  function campChopLog(state, run, logId, dt){
+    state = campLoad(state);
+    if (!run || run.won) return {ok:false, why:'over', state, run};
+    const log = campLog(run, logId);
+    if (!log) return {ok:false, why:'log', state, run};
+    if ((log.left | 0) <= 0) return {ok:false, why:'empty', state, run};
+    if (log.kind === 'fallen') return campPickLog(state, run, logId);
+    if (!campCanCarry(run, log.value || 1)) return {ok:false, why:'full', state, run};
+    log.chop = (log.chop || 0) + Math.max(0, +dt || 0);
+    run.chopping = log.id;
+    if (log.chop < CAMP_CHOP) return {ok:true, why:'chopping', state, run, left: CAMP_CHOP - log.chop};
+    run.chopping = null;
+    return campGrantLog(state, run, log);
+  }
+
+  function campStash(state, run){
+    state = campLoad(state);
+    if (!run) return {ok:false, why:'run', state, run};
+    if ((run.carry | 0) <= 0) return {ok:false, why:'empty', state, run};
+    const n = run.carry | 0;
+    state.sticks += n;
+    run.carry = 0;
+    return {ok:true, why:'ok', state, run, stashed:n};
   }
 
   function campAddStick(state, run, fromNet){
     state = campLoad(state);
-    if (!run || run.won || run.failed) return {ok:false, why:'over', state, run};
+    if (!run || run.won) return {ok:false, why:'over', state, run};
     if (!fromNet){
-      if ((state.sticks | 0) <= 0) return {ok:false, why:'sticks', state, run};
+      if ((state.sticks | 0) <= 0){
+        if ((run.carry | 0) > 0){
+          state.sticks += run.carry;
+          run.carry = 0;
+        }
+        if ((state.sticks | 0) <= 0) return {ok:false, why:'sticks', state, run};
+      }
       state.sticks -= 1;
       state.added += 1;
     }
     run.fire = Math.min(CAMP_MAX_FIRE, (run.fire || 0) + CAMP_STICK);
     if (run.fire > (run.best || 0)) run.best = run.fire;
     run.threat = Math.max(0, (run.threat || 0) * 0.3);
+    if (run.gmode === 'chase' || run.gmode === 'stalk') run.gmode = 'retreat';
     return {ok:true, why:'ok', state, run, fire: run.fire};
   }
 
   function campShine(state, run){
     state = campLoad(state);
-    if (!run || run.won || run.failed) return {ok:false, why:'over', state, run};
+    if (!run || run.won) return {ok:false, why:'over', state, run};
     if (!campHas(state, 'lantern')) return {ok:false, why:'lantern', state, run};
     if ((run.lanternCd || 0) > 0) return {ok:false, why:'wait', state, run, left: run.lanternCd};
     run.lantern = 5;
     run.lanternCd = 8;
     run.scarePop = false;
+    run.appearBehind = false;
     run.threat = 0;
+    run.gmode = 'retreat';
     return {ok:true, why:'ok', state, run};
   }
 
@@ -5998,6 +6324,166 @@ try { evBootChrome(); } catch (e){}
     state.sticks -= item.sticks;
     state.crafted.push(item.id);
     return {ok:true, why:'ok', state, item};
+  }
+
+  function campCaught(state, run){
+    state = campLoad(state);
+    if (!run || run.won) return {ok:false, why:'over', state, run};
+    const lostCarry = run.carry | 0;
+    const lostStash = Math.min(2, state.sticks | 0);
+    run.carry = 0;
+    state.sticks -= lostStash;
+    run.caught = (run.caught || 0) + 1;
+    run.respawn = true;
+    run.failed = false;
+    run.scarePop = true;
+    run.appearBehind = false;
+    run.chase = false;
+    run.threat = 0;
+    run.gmode = 'retreat';
+    run.gx = 24; run.gz = -22;
+    return {ok:true, why:'ok', state, run, lostCarry, lostStash, everyoneOkay:true};
+  }
+
+  function campRegenLogs(run){
+    (run.logs || []).forEach(log => {
+      if ((log.left | 0) > 0) return;
+      if ((run.clock || 0) >= (log.regenAt || 0) && log.regenAt > 0){
+        log.left = 1;
+        log.chop = 0;
+        log.regenAt = 0;
+      }
+    });
+  }
+
+  function campStepGloam(run, dt, opt){
+    const less = !!(opt && opt.lessScary);
+    const px = (opt && opt.px) || 0, pz = (opt && opt.pz) || 0;
+    const face = (opt && opt.face) || 0;
+    if (run.phase !== 'night' || run.won){
+      run.gmode = 'hidden';
+      run.chase = false;
+      run.appearBehind = false;
+      return run;
+    }
+    run.gcool = Math.max(0, (run.gcool || 0) - dt);
+    const lit = campLightAt(run, px, pz, {px, pz});
+    const dPlayer = Math.hypot((run.gx || 0) - px, (run.gz || 0) - pz);
+    const dFire = Math.hypot(px, pz);
+    const catchR = less ? 1.05 : 1.7;
+    const chaseNeed = less ? 22 : 13;
+    if (lit < 0.2 && dPlayer < catchR){
+      run.wantCatch = true;
+      return run;
+    }
+    run.wantCatch = false;
+    if (lit < 0.18 && dFire > chaseNeed){
+      run.gmode = 'chase';
+      run.chase = true;
+    } else if (lit > 0.55){
+      run.gmode = 'retreat';
+      run.chase = false;
+    } else if (run.gmode === 'hidden' || run.gmode === 'retreat'){
+      run.gmode = less ? 'lurk' : 'stalk';
+      run.chase = false;
+    }
+
+    if (!less && run.gcool <= 0 && lit < 0.22 && dFire > 8 && Math.random() < (dt * 0.25)){
+      run.gmode = 'behind';
+      run.appearBehind = true;
+      run.scarePop = true;
+      run.gcool = less ? 14 : 7;
+      run.gx = px - Math.sin(face) * 3.2;
+      run.gz = pz - Math.cos(face) * 3.2;
+      return run;
+    }
+
+    let tx = run.gx, tz = run.gz, spd = less ? 2.2 : 3.6;
+    if (run.gmode === 'chase'){
+      tx = px; tz = pz;
+      spd = less ? 3.4 : 6.2;
+    } else if (run.gmode === 'retreat'){
+      const ang = Math.atan2(run.gx || 1, run.gz || 1);
+      tx = Math.sin(ang) * 30; tz = Math.cos(ang) * 30;
+      spd = less ? 5 : 7;
+    } else if (run.gmode === 'dart'){
+      spd = less ? 6 : 11;
+    } else if (run.gmode === 'stalk'){
+      const ang = Math.atan2(px - (run.gx || 0), pz - (run.gz || 0)) + 0.9;
+      tx = px + Math.sin(ang) * 8;
+      tz = pz + Math.cos(ang) * 8;
+      spd = less ? 1.6 : 2.8;
+    } else {
+      const ang = (run.clock || 0) * 0.15;
+      tx = Math.sin(ang) * 22 + 8; tz = Math.cos(ang) * 22 - 4;
+      spd = less ? 1.4 : 2.2;
+    }
+    if (!less && run.gcool <= 0 && run.gmode === 'stalk' && Math.random() < dt * 0.4){
+      run.gmode = 'dart';
+      run.gcool = 1.2;
+      const a = Math.random() * Math.PI * 2;
+      tx = px + Math.sin(a) * 10; tz = pz + Math.cos(a) * 10;
+      spd = 12;
+    }
+    const dx = tx - (run.gx || 0), dz = tz - (run.gz || 0);
+    const dist = Math.hypot(dx, dz) || 1;
+    const step = Math.min(dist, spd * dt);
+    run.gx = (run.gx || 0) + dx / dist * step;
+    run.gz = (run.gz || 0) + dz / dist * step;
+    const far = campGloamTarget(run, less);
+    run.gloam = Math.hypot(run.gx || 0, run.gz || 0);
+    if (run.gmode === 'behind' && run.gcool < 5.5) run.appearBehind = false;
+    if (lit < 0.2 && dPlayer < (less ? 7 : 5)) run.threat = (run.threat || 0) + dt;
+    else run.threat = Math.max(0, (run.threat || 0) - dt * 0.5);
+    if (!run.scarePop && run.threat > (less ? 2.2 : 0.45) && dPlayer < 6) run.scarePop = true;
+    if (run.gloam > far + 8 && run.gmode === 'retreat') run.gmode = 'lurk';
+    return run;
+  }
+
+  function campTick(run, dt, opt){
+    if (!run || run.won) return run;
+    const step = Math.max(0, Math.min(0.12, +dt || 0));
+    const less = !!(opt && opt.lessScary);
+    const hasBlanket = !!(opt && opt.blanket);
+    run.clock = (run.clock || 0) + step;
+    run.t = (run.t || 0) + step;
+    if (run.lantern) run.lantern = Math.max(0, run.lantern - step);
+    if (run.lanternCd) run.lanternCd = Math.max(0, run.lanternCd - step);
+    run.respawn = false;
+    run.wantCatch = false;
+    campRegenLogs(run);
+    const decay = (run.phase === 'day' ? CAMP_DAY_DECAY : CAMP_DECAY) * (hasBlanket ? 0.85 : 1) * (less ? 0.85 : 1);
+    run.fire = Math.max(0, (run.fire || 0) - decay * step);
+    if (run.fire > (run.best || 0)) run.best = run.fire;
+
+    if (run.phase === 'day'){
+      run.gmode = 'hidden';
+      run.chase = false;
+      if (run.t >= CAMP_DAY){
+        run.phase = 'night';
+        run.t = 0;
+        run.gmode = less ? 'lurk' : 'stalk';
+        run.gx = less ? 30 : 22;
+        run.gz = less ? -26 : -18;
+      }
+    } else {
+      campStepGloam(run, step, opt);
+      if (run.t >= CAMP_NIGHT){
+        const kept = (run.fire || 0) >= CAMP_MIN;
+        if (kept) run.survived = (run.survived || 0) + 1;
+        if ((run.survived || 0) >= CAMP_WIN_NIGHTS){
+          run.won = true;
+          run.failed = false;
+        } else {
+          run.phase = 'day';
+          run.t = 0;
+          run.day = (run.day || 1) + 1;
+          run.gmode = 'hidden';
+          run.nightKept = kept;
+        }
+      }
+    }
+    return run;
   }
 
   function campFinish(state, run){
@@ -6013,16 +6499,21 @@ try { evBootChrome(); } catch (e){}
   }
 
   function campReward(run){
-    if (!run || !run.won) return 0;
-    return 20 + Math.round((run.best || 0) * 10);
+    if (!run) return 0;
+    const n = run.survived | 0;
+    if (!run.won && n <= 0) return 0;
+    return (run.won ? 40 : 0) + n * 12 + Math.round((run.best || 0) * 10);
   }
 
   const api = {
-    CAMP_KEY, CAMP_VER, CAMP_NIGHT, CAMP_DECAY, CAMP_STICK, CAMP_MIN, CAMP_MAX_FIRE, CAMP_PILES, CAMP_CRAFT,
-    CAMP_GLOAM_FAR, CAMP_GLOAM_IN,
-    campFresh, campLoad, campItem, campBuddyAllowed, campNoFight, campNoGore,
-    campSetLessScary, campHas, campGloamTarget,
-    campStartNight, campTick, campGather, campAddStick, campShine, campCraft, campFinish, campReward
+    CAMP_KEY, CAMP_VER, CAMP_DAY, CAMP_NIGHT, CAMP_WIN_NIGHTS, CAMP_DECAY, CAMP_DAY_DECAY,
+    CAMP_STICK, CAMP_MIN, CAMP_MAX_FIRE, CAMP_CARRY, CAMP_CHOP, CAMP_LOG_REGEN, CAMP_SIZE,
+    CAMP_CRAFT, CAMP_LANDMARKS, CAMP_TRAILS, CAMP_LOG_SPOTS, CAMP_GLOAM_FAR: 18, CAMP_GLOAM_IN: 2.8,
+    campFresh, campLoad, campItem, campLandmark, campBuddyAllowed, campNoFight, campNoGore, campEveryoneOkay,
+    campSetLessScary, campHas, campInDeep, campInWater, campZone, campCompass, campMakeLogs, campLog,
+    campLightAt, campGloamTarget, campStartRun, campStartNight,
+    campCanCarry, campPickLog, campGather, campChopLog, campStash, campAddStick, campShine, campCraft,
+    campCaught, campTick, campFinish, campReward
   };
   root.CampRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -6106,7 +6597,7 @@ const GAMES = [
   {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', tag:'Charge a snack toss and meet original friendly animals. Friends share the meadow, but nobody takes your pals!', draw: drawMeadow, playable: true, isNew: true},
   {id:'rides', name:'Rideland Workshop', emoji:'🎢', tag:'Place original rides on your lot, hop on, and let friends ride them too!', draw: drawRides, playable: true, isNew: true},
   {id:'hive', name:'Honeyhill Hive', emoji:'🐝', tag:'A gentle bee swarm follows you as you gather pollen, make honey, and help bear neighbors. No fighting!', draw: drawHive, playable: true, isNew: true},
-  {id:'camp', name:'Campfire Grove', emoji:'🔥', tag:'Keep the fire bright until sunrise. Spooky Gloam eyes watch from the dark — scare them back with fire and lanterns!', draw: drawCamp, playable: true, isNew: true},
+  {id:'camp', name:'Campfire Grove', emoji:'🔥', tag:'Hunt logs by day and keep the fire bright through 5 spooky nights. The Gloam stalks the dark — scare it back with fire and lanterns!', draw: drawCamp, playable: true, isNew: true},
   {id:'cafe', name:'Cozy Corner Café', emoji:'☕', tag:'Make drinks and treats, serve ticket orders, and decorate the café!', draw: drawCafe, playable: true, isNew: true},
   {id:'fish', name:'Ripple Lake Fishing', emoji:'🎣', tag:'Cast, time the bite, and fill your fish index — ice fishing during the Snow Festival!', draw: drawFish, playable: true, isNew: true},
   {id:'petshow', name:'Pet Talent Show', emoji:'🎭', tag:'Teach your pets tricks and perform for the judges — friends can score the show!', draw: drawPetShow, playable: true, isNew: true},
@@ -34638,7 +35129,7 @@ function start(m = 'obby', d = null){
       act.addEventListener('pointerup', ev => { ev.preventDefault(); ev.stopPropagation(); t302Pointer(false, ev, true); });
       act.addEventListener('pointercancel', ev => { t302Pointer(false, ev, true); });
     }
-    ['gardenShopBtn','meadowBookBtn','ridesPaletteBtn','ridesHelpBtn','hiveQuestBtn','campCraftBtn','t302LessBtn','campWinAgain','campWinClose','t302TutNext','t302TutSkip'].forEach(id => {
+    ['gardenShopBtn','meadowBookBtn','ridesPaletteBtn','ridesHelpBtn','ridesDelBtn','ridesUndoBtn','ridesTestBtn','hiveQuestBtn','campCraftBtn','t302LessBtn','campWinAgain','campWinClose','t302TutNext','t302TutSkip'].forEach(id => {
       const el = document.getElementById(id);
       if (el && !el.__t302){ el.__t302 = true; el.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); t302Open(id); }; }
     });
@@ -34675,6 +35166,9 @@ function start(m = 'obby', d = null){
   function t302Open(which){
     t302BindOverlays();
     if (which === 't302LessBtn'){ campToggleLess(); return; }
+    if (which === 'ridesDelBtn'){ ridesToggleDel(); return; }
+    if (which === 'ridesUndoBtn'){ ridesUndoNow(); return; }
+    if (which === 'ridesTestBtn'){ ridesTestRide(); return; }
     if (which === 'campWinAgain'){ campRetry(); return; }
     if (which === 'campWinClose'){ if (typeof t297OverlayClose === 'function') t297OverlayClose('campWin'); return; }
     if (which === 'ridesHelpBtn'){ ridesHelp(); return; }
@@ -35121,90 +35615,161 @@ function start(m = 'obby', d = null){
 
   function buildRides(){
     const sv = ridesState();
-    rd = {trash:[], sv, meshes:{}, boarding:null, t:0, near:null, ghost:null};
+    rd = {trash:[], sv, meshes:{}, joints:[], boarding:null, t:0, near:null, ghost:null, ghostPiece:null, path:null, car:null, delTarget:null};
     scene.background = new THREE.Color('#8fd3ff');
-    scene.fog = new THREE.Fog('#8fd3ff', 32, 100);
-    plat(0, 0, 0, 32, 32, '#9aa3ad', 0.2);
-    plat(0, 0.03, 0, 24, 24, '#d9d4c8', 0.03);
-    // visible grid marks
+    scene.fog = new THREE.Fog('#8fd3ff', 40, 130);
+    plat(0, 0, 0, 48, 48, '#5cae4a', 0.2);
+    plat(0, 0.03, 0, 38, 38, '#d9d4c8', 0.03);
+    plat(0, 0.05, 16, 6, 18, '#c8bea8', 0.05);
     for (let i = 0; i < RidesRules.RIDES_GRID; i++) for (let j = 0; j < RidesRules.RIDES_GRID; j++){
       const w = RidesRules.ridesWorld(i, j);
-      t302Mesh(new THREE.BoxGeometry(0.25, 0.02, 0.25), (i + j) % 2 ? '#cfc8ba' : '#e8e2d4', w.x, 0.05, w.z, rd);
+      t302Mesh(new THREE.BoxGeometry(2.7, 0.02, 2.7), (i + j) % 2 ? '#cfc8ba' : '#e8e2d4', w.x, 0.07, w.z, rd);
     }
-    t302Mesh(new THREE.BoxGeometry(3.2, 1.0, 1.8), '#ff9f1c', 0, 0.5, 14, rd);
-    t302Lab('🎟️ Ride Kit', 0, 2.2, 14);
-    rd.kit = {x:0, z:14};
-    t302Lab('🎢 Rideland Workshop', 0, 3.6, -14);
-    [[-14,-14],[14,-14],[-14,10],[14,10]].forEach(p => t302Tree(rd, p[0], p[1], '#2f8f4a', 2.8));
+    const booth = t302Mesh(new THREE.BoxGeometry(4.2, 2.2, 2.4), '#ff9f1c', 0, 1.2, 20, rd);
+    t302Mesh(new THREE.BoxGeometry(4.6, 0.3, 2.8), '#fff8ee', 0, 2.4, 20, rd);
+    t302Lab('🎟️ Ride Kit', 0, 3.2, 20);
+    rd.kit = {x:0, z:20};
+    t302Mesh(new THREE.CylinderGeometry(0.8, 0.9, 1.1, 10), '#ff6fb5', -8, 0.6, 19, rd);
+    t302Lab('🍿 Snacks', -8, 2.2, 19);
+    t302Lab('🎢 Rideland Workshop', 0, 4.2, -20);
+    [[-20,-20],[20,-20],[-20,16],[20,16],[-22,0],[22,2],[-16,-22],[16,22]].forEach(p => t302Tree(rd, p[0], p[1], '#2f8f4a', 3.1));
+    [[-18,10],[18,-12],[12,18]].forEach((p, i) => {
+      const b = t302Mesh(new THREE.SphereGeometry(0.45, 8, 8), i === 1 ? '#ff4d5e' : '#3a86ff', p[0], 3.4, p[1], rd);
+      t302Mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.2, 6), '#fff', p[0], 2.2, p[1], rd);
+    });
+    // little fence posts around the lot
+    for (let i = -19; i <= 19; i += 2){
+      t302Mesh(new THREE.BoxGeometry(0.15, 1.1, 0.15), '#fff', i, 0.55, -19, rd);
+      t302Mesh(new THREE.BoxGeometry(0.15, 1.1, 0.15), '#fff', i, 0.55, 19, rd);
+    }
     sv.pieces.forEach(p => ridesBuildPiece(p));
-    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:12}, flag:new THREE.Object3D()};
+    ridesRefreshJoints();
+    ridesPaintRideBtns();
+    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:16}, flag:new THREE.Object3D()};
+  }
+  function ridesLocalPort(p, port){
+    const w = RidesRules.ridesWorld(p.gx, p.gz);
+    const ww = RidesRules.ridesPortWorld(port);
+    return {x: ww.x - w.x, y: ww.y, z: ww.z - w.z};
+  }
+  function ridesAddRail(g, ax, ay, az, bx, by, bz, col, thick){
+    const dx = bx - ax, dy = by - ay, dz = bz - az;
+    const len = Math.hypot(dx, dy, dz) || 0.2;
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(thick || 0.28, thick || 0.22, len + 0.08), t302Mat(col || '#1d2340'));
+    rail.position.set((ax+bx)/2, (ay+by)/2, (az+bz)/2);
+    rail.lookAt(bx, by, bz);
+    g.add(rail);
+    return rail;
   }
   function ridesBuildPiece(p){
     const k = RidesRules.ridesKind(p.kind);
     const w = RidesRules.ridesWorld(p.gx, p.gz);
     const g = new THREE.Group();
     g.position.set(w.x, 0, w.z);
-    g.rotation.y = (p.rot || 0) * Math.PI / 2;
     const col = k.color;
-    if (p.kind === 'carousel'){
-      const base = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.8, 0.3, 12), t302Mat('#fff8ee')); base.position.y = 0.2; g.add(base);
-      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 3, 8), t302Mat(col)); pole.position.y = 1.7; g.add(pole);
-      const top = new THREE.Mesh(new THREE.ConeGeometry(2, 1, 10), t302Mat('#ff4d5e')); top.position.y = 3.3; g.add(top);
-      for (let i = 0; i < 4; i++){
-        const horse = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.5, 0.7), t302Mat('#fff'));
-        const a = i * Math.PI / 2;
-        horse.position.set(Math.cos(a) * 1.1, 0.9, Math.sin(a) * 1.1);
-        g.add(horse);
+    if (RidesRules.ridesIsTrack(p.kind)){
+      const ports = RidesRules.ridesPorts(p);
+      const a = ridesLocalPort(p, ports[0]), b = ridesLocalPort(p, ports[1]);
+      if (p.kind === 'curve'){
+        const steps = 6;
+        let px = a.x, py = a.y, pz = a.z;
+        for (let s = 1; s <= steps; s++){
+          const t = s / steps;
+          const ang0 = Math.atan2(a.x, a.z), ang1 = Math.atan2(b.x, b.z);
+          let d = ang1 - ang0;
+          while (d > Math.PI) d -= Math.PI * 2;
+          while (d < -Math.PI) d += Math.PI * 2;
+          const ang = ang0 + d * t;
+          const rad = RidesRules.RIDES_CELL / 2;
+          const x = Math.sin(ang) * rad, z = Math.cos(ang) * rad, y = a.y + (b.y - a.y) * t;
+          ridesAddRail(g, px, py, pz, x, y, z, col, 0.32);
+          px = x; py = y; pz = z;
+        }
+      } else if (p.kind === 'loop'){
+        ridesAddRail(g, a.x, a.y, a.z, 0, a.y, 0, col, 0.3);
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.16, 8, 20), t302Mat(col));
+        ring.position.y = a.y + 1.25;
+        const dir = RidesRules.ridesDirVec(p.rot % 2 === 0 ? 0 : 1);
+        ring.rotation.y = (p.rot % 2 === 0) ? Math.PI / 2 : 0;
+        g.add(ring);
+        ridesAddRail(g, 0, b.y, 0, b.x, b.y, b.z, col, 0.3);
+      } else {
+        ridesAddRail(g, a.x, a.y, a.z, b.x, b.y, b.z, col, 0.34);
+        const post = new THREE.Mesh(new THREE.BoxGeometry(0.18, Math.max(0.4, a.y + 0.1), 0.18), t302Mat('#8d5524'));
+        post.position.set(a.x * 0.6, Math.max(0.2, a.y / 2), a.z * 0.6); g.add(post);
       }
-    } else if (p.kind === 'swings'){
-      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 4, 8), t302Mat('#3a86ff')); pole.position.y = 2; g.add(pole);
-      const bar = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.12, 0.12), t302Mat('#1d2340')); bar.position.y = 3.8; g.add(bar);
-      const seat1 = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.12, 0.4), t302Mat('#ffd23f')); seat1.position.set(-1.2, 1.2, 0); seat1.name = 'seat'; g.add(seat1);
-      const seat2 = seat1.clone(); seat2.position.x = 1.2; g.add(seat2);
-    } else if (p.kind === 'drop'){
-      const tower = new THREE.Mesh(new THREE.BoxGeometry(0.8, 6, 0.8), t302Mat('#8b5cf6')); tower.position.y = 3; g.add(tower);
-      const car = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.5, 1.4), t302Mat('#c4b5fd')); car.position.y = 1.2; car.name = 'car'; g.add(car);
-    } else if (p.kind === 'cups'){
-      const base = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.6, 0.25, 12), t302Mat('#fff')); base.position.y = 0.2; g.add(base);
-      for (let i = 0; i < 3; i++){
-        const a = i * Math.PI * 2 / 3;
-        const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.3, 0.5, 10), t302Mat(i === 1 ? '#3a86ff' : col));
-        cup.position.set(Math.cos(a) * 0.9, 0.55, Math.sin(a) * 0.9);
-        g.add(cup);
-      }
-    } else if (p.kind === 'slope'){
-      const rail = new THREE.Mesh(new THREE.BoxGeometry(3.1, 0.22, 0.55), t302Mat('#6b7280'));
-      rail.position.y = 1.0;
-      rail.rotation.z = (p.rot % 2 === 0) ? -0.45 : 0.45;
-      g.add(rail);
-      const post = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.2, 0.2), t302Mat('#8d5524')); post.position.set(1.1, 0.6, 0); g.add(post);
-    } else if (p.kind === 'loop'){
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(1.15, 0.14, 8, 18), t302Mat('#7c3aed'));
-      ring.position.y = 1.4;
-      ring.rotation.y = Math.PI / 2;
-      g.add(ring);
-      const base = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.2, 0.6), t302Mat('#1d2340')); base.position.y = 0.2; g.add(base);
+      g.userData.ends = ports.map(port => {
+        const lp = ridesLocalPort(p, port);
+        const ball = new THREE.Mesh(new THREE.SphereGeometry(0.16, 8, 6), new THREE.MeshBasicMaterial({color:'#ffb703'}));
+        ball.position.set(lp.x, lp.y, lp.z);
+        ball.name = 'joint';
+        g.add(ball);
+        return {ball, port};
+      });
     } else {
-      const rail = new THREE.Mesh(new THREE.BoxGeometry(p.kind === 'curve' ? 2.2 : 3, 0.25, 0.6), t302Mat('#1d2340'));
-      rail.position.y = 0.6;
-      if (p.kind === 'curve') rail.rotation.y = Math.PI / 4;
-      g.add(rail);
-      const tie = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 1.1), t302Mat('#8d5524')); tie.position.y = 0.4; g.add(tie);
+      g.rotation.y = (p.rot || 0) * Math.PI / 2;
+      if (p.kind === 'carousel'){
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.8, 0.3, 12), t302Mat('#fff8ee')); base.position.y = 0.2; g.add(base);
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 3, 8), t302Mat(col)); pole.position.y = 1.7; g.add(pole);
+        const top = new THREE.Mesh(new THREE.ConeGeometry(2, 1, 10), t302Mat('#ff4d5e')); top.position.y = 3.3; g.add(top);
+        for (let i = 0; i < 4; i++){
+          const horse = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.5, 0.7), t302Mat('#fff'));
+          const a = i * Math.PI / 2;
+          horse.position.set(Math.cos(a) * 1.1, 0.9, Math.sin(a) * 1.1);
+          g.add(horse);
+        }
+      } else if (p.kind === 'swings'){
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 4, 8), t302Mat('#3a86ff')); pole.position.y = 2; g.add(pole);
+        const bar = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.12, 0.12), t302Mat('#1d2340')); bar.position.y = 3.8; g.add(bar);
+        const seat1 = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.12, 0.4), t302Mat('#ffd23f')); seat1.position.set(-1.2, 1.2, 0); seat1.name = 'seat'; g.add(seat1);
+        const seat2 = seat1.clone(); seat2.position.x = 1.2; g.add(seat2);
+      } else if (p.kind === 'drop'){
+        const tower = new THREE.Mesh(new THREE.BoxGeometry(0.8, 6, 0.8), t302Mat('#8b5cf6')); tower.position.y = 3; g.add(tower);
+        const car = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.5, 1.4), t302Mat('#c4b5fd')); car.position.y = 1.2; car.name = 'car'; g.add(car);
+      } else if (p.kind === 'cups'){
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.6, 0.25, 12), t302Mat('#fff')); base.position.y = 0.2; g.add(base);
+        for (let i = 0; i < 3; i++){
+          const a = i * Math.PI * 2 / 3;
+          const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.3, 0.5, 10), t302Mat(i === 1 ? '#3a86ff' : col));
+          cup.position.set(Math.cos(a) * 0.9, 0.55, Math.sin(a) * 0.9);
+          g.add(cup);
+        }
+      }
     }
     scene.add(g);
     t302Keep(rd, g);
     rd.meshes[p.id] = g;
     return g;
   }
+  function ridesRefreshJoints(){
+    if (!rd) return;
+    const all = RidesRules.ridesAllPorts(rd.sv);
+    rd.sv.pieces.forEach(p => {
+      const g = rd.meshes[p.id];
+      if (!g || !g.userData.ends) return;
+      g.userData.ends.forEach(end => {
+        const mated = all.some(b => b.id !== p.id && RidesRules.ridesPortsMate(end.port, b));
+        end.ball.material.color.set(mated ? '#2ec27e' : '#ffb703');
+        end.ball.scale.setScalar(mated ? 1.15 : 0.85);
+      });
+    });
+    const loop = RidesRules.ridesCoasterLoop(rd.sv);
+    rd.path = loop.ok ? RidesRules.ridesPathPoints(rd.sv) : null;
+  }
   function ridesEnter(){
     if (!rd) return;
-    cam.pitch = 0.46; cam.dist = 16;
+    cam.pitch = 0.5; cam.dist = 20;
     t302Note('play:rides'); t302Ach('rides-visit');
     t302BindHud();
-    banner('🎢 Rideland Workshop! Cycle pieces with Q or bumpers, E / Ⓧ to place or ride, C to pick up your own ride. Press Help for a step-by-step track tutorial.');
-    t302Hud('Goal: place a ride, then hop on! Q cycles, R rotates, C picks up. H opens Help.', '🧱 Place');
+    banner('🎢 Rideland Workshop! Track snaps to open ends. Q cycles, R rotates, E / Ⓧ places or rides. 🗑️ Delete mode picks up your pieces (C / Delete / Y). Undo and Test ride are on the buttons. Press Help for a tutorial.');
+    t302Hud('Goal: snap a coaster together, then take a test ride! Q cycles, R rotates, 🗑️ deletes.', '🧱 Place');
     if (!rd.sv.tutDone) ridesHelp(true);
     else ridesTutPaint();
+    ridesPaintRideBtns();
+  }
+  function ridesPaintRideBtns(){
+    const del = document.getElementById('ridesDelBtn');
+    if (del){ del.classList.toggle('on', !!(rd && rd.sv && rd.sv.del)); del.textContent = (rd && rd.sv && rd.sv.del) ? '🗑️ Deleting…' : '🗑️ Delete'; }
   }
   function ridesPaintPalette(){
     const box = document.getElementById('ridesPaletteList');
@@ -35213,11 +35778,14 @@ function start(m = 'obby', d = null){
       const on = rd.sv.kind === k.id;
       return `<div class="t297row"><span>${k.emoji} ${k.name}${on ? '  ← selected' : ''}</span><button type="button" data-rk="${k.id}">Pick</button></div>`;
     }).join('');
+    const loop = RidesRules.ridesCoasterLoop(rd.sv);
     const mine = (rd.sv.pieces || []).map(p => {
       const k = RidesRules.ridesKind(p.kind);
       return `<div class="t297row"><span>${k.emoji} ${k.name} at ${p.gx},${p.gz}</span><button type="button" data-rm="${p.id}">Pick up</button></div>`;
     }).join('');
-    box.innerHTML = rows + '<p>Q or bumpers cycle pieces. R / Ⓨ rotates. C picks up a ride you placed. Coaster cars need a closed loop of track.</p>' + (mine || '<p>No rides placed yet — stand on a square and press E / Ⓧ.</p>');
+    box.innerHTML = rows + '<p>Track pieces snap to the last open end. Green joints are connected. Q or bumpers cycle pieces, R / Ⓨ rotates, 🗑️ Delete (C / Delete / Backspace, Xbox Y in delete mode) picks up your own ride, ↩️ Undo, 🎠 Test ride.</p>' +
+      (loop.ok ? '<p>✅ The coaster loop is closed — press Test ride!</p>' : '<p>Connect track, curves, slopes, and loops until the joints glow green all the way around.</p>') +
+      (mine || '<p>No rides placed yet — stand on a square and press E / Ⓧ. The ghost shows where a piece will snap.</p>');
     box.querySelectorAll('[data-rk]').forEach(btn => { btn.onclick = ev => { ev.preventDefault(); rd.sv.kind = btn.getAttribute('data-rk'); ridesPersist(rd.sv); ridesPaintPalette(); banner('Selected ' + RidesRules.ridesKind(rd.sv.kind).name); }; });
     box.querySelectorAll('[data-rm]').forEach(btn => { btn.onclick = ev => { ev.preventDefault(); ridesPickUp(+btn.getAttribute('data-rm')); }; });
   }
@@ -35228,30 +35796,86 @@ function start(m = 'obby', d = null){
     if (gx < 0 || gz < 0 || gx >= RidesRules.RIDES_GRID || gz >= RidesRules.RIDES_GRID) return null;
     return {gx, gz};
   }
+  function ridesClearMesh(id){
+    const g = rd.meshes[id];
+    if (g){ scene.remove(g); delete rd.meshes[id]; }
+  }
   function ridesPickUp(id){
     const r = RidesRules.ridesRemove(rd.sv, id, t302Uid());
     if (!r.ok){ banner(r.why === 'owned' ? "That's a friend's ride — only they can pick it up." : 'Nothing to pick up.'); return false; }
     ridesPersist(r.state);
-    const g = rd.meshes[id];
-    if (g){ scene.remove(g); delete rd.meshes[id]; }
+    ridesClearMesh(id);
     if (rd.boarding && rd.boarding.id === id) rd.boarding = null;
+    ridesRefreshJoints();
+    t302Send({a:'remove', id});
     t302Snd('hit');
-    banner('Picked up your ' + RidesRules.ridesKind(r.piece.kind).name + '.');
+    banner('Picked up your ' + RidesRules.ridesKind(r.piece.kind).name + '. Press ↩️ Undo if that was a mistake.');
     if (document.getElementById('ridesPalette') && document.getElementById('ridesPalette').classList.contains('show')) ridesPaintPalette();
+    return true;
+  }
+  function ridesToggleDel(){
+    if (!rd) return;
+    rd.sv = RidesRules.ridesSetDelete(rd.sv, !rd.sv.del);
+    ridesPersist(rd.sv);
+    ridesPaintRideBtns();
+    banner(rd.sv.del ? '🗑️ Delete mode on. Stand on a piece and press E / Ⓧ / Ⓨ to pick it up. Ⓑ or Delete again cancels.' : 'Delete mode off. You can place and ride again.');
+  }
+  function ridesUndoNow(){
+    if (!rd) return false;
+    const r = RidesRules.ridesUndo(rd.sv, t302Uid());
+    if (!r.ok){ banner('Nothing to undo.'); return false; }
+    ridesPersist(r.state);
+    if (r.undone === 'place' && r.piece){ ridesClearMesh(r.piece.id); t302Send({a:'remove', id:r.piece.id}); }
+    if (r.undone === 'remove' && r.piece){ ridesBuildPiece(r.piece); t302Send({a:'place', piece:r.piece}); }
+    ridesRefreshJoints();
+    t302Snd('cp');
+    banner(r.undone === 'place' ? 'Undid the last placement.' : 'Restored the last piece you picked up.');
+    return true;
+  }
+  function ridesTestRide(){
+    if (!rd) return false;
+    if (rd.boarding){ ridesDismount(); return true; }
+    const path = RidesRules.ridesPathPoints(rd.sv);
+    if (!path.ok){ banner('Connect track into a closed loop first — snapped ends glow green when they meet.'); return false; }
+    const first = path.path[0];
+    const r = RidesRules.ridesBoard(rd.sv, first.id, t302Uid());
+    if (!r.ok){ banner('Cannot start the test ride yet.'); return false; }
+    ridesPersist(r.state);
+    rd.boarding = {id: first.id, t:0, kind: first.kind, test:true};
+    rd.path = path;
+    t302Note('rides-ride'); t302Ach('rides-ride'); t302Board('rides-rides', r.state.rides);
+    t302Send({a:'board', id: first.id});
+    t302Snd('jump');
+    banner('🎠 Test ride! Hold on — E / Ⓧ or Ⓑ to hop off.');
+    ridesTutOn('board', first.kind);
     return true;
   }
   function ridesAct(){
     if (!rd) return false;
     if (rd.boarding){ ridesDismount(); return true; }
-    if (rd.near === 'kit'){ t302Open('ridesPalette'); return true; }
+    if (rd.near === 'kit' && !(rd.sv && rd.sv.del)){ t302Open('ridesPalette'); return true; }
     const cell = ridesCellAt(P.x, P.z);
     if (!cell) return false;
     const piece = RidesRules.ridesAt(rd.sv, cell.gx, cell.gz);
+    if (rd.sv && rd.sv.del){
+      const target = piece || rd.delTarget;
+      if (target) return ridesPickUp(target.id);
+      banner('Stand on one of your pieces to pick it up, or press 🗑️ again to leave Delete mode.');
+      return true;
+    }
     if (piece){
       const r = RidesRules.ridesBoard(rd.sv, piece.id, t302Uid());
-      if (!r.ok){ banner(r.why === 'noloop' ? 'Connect more track into a loop before riding the coaster!' : 'Cannot ride that yet.'); return true; }
+      if (!r.ok){ banner(r.why === 'noloop' ? 'Snap more track together until every joint is green, then ride!' : 'Cannot ride that yet.'); return true; }
       ridesPersist(r.state);
       rd.boarding = {id: piece.id, t:0, kind: piece.kind};
+      rd.path = RidesRules.ridesIsTrack(piece.kind) ? RidesRules.ridesPathPoints(rd.sv) : null;
+      if (rd.path && rd.path.ok && rd.path.path){
+        const idx = rd.path.path.findIndex(p => p.id === piece.id);
+        if (idx >= 0 && rd.path.points){
+          const per = rd.path.points.length / rd.path.path.length;
+          rd.boarding.t = (idx * per) / 6;
+        }
+      }
       t302Note('rides-ride'); t302Ach('rides-ride'); t302Board('rides-rides', r.state.rides);
       t302Send({a:'board', id: piece.id});
       t302Snd('jump');
@@ -35259,14 +35883,16 @@ function start(m = 'obby', d = null){
       ridesTutOn('board', piece.kind);
       return true;
     }
-    const r = RidesRules.ridesPlace(rd.sv, rd.sv.kind, cell.gx, cell.gz, rd.sv.rot, t302Uid());
-    if (!r.ok){ banner('That square is full or the piece does not fit. Try another, or press C to pick up your own ride.'); return true; }
+    const snap = RidesRules.ridesSnap(rd.sv, rd.sv.kind, cell.gx, cell.gz, rd.sv.rot);
+    const r = RidesRules.ridesPlace(rd.sv, rd.sv.kind, snap.gx, snap.gz, snap.rot, t302Uid(), {snap:true, elev:snap.elev});
+    if (!r.ok){ banner('That square is full or the piece does not fit. Try another, or use 🗑️ Delete to pick up your own ride.'); return true; }
     ridesPersist(r.state);
     ridesBuildPiece(r.piece);
+    ridesRefreshJoints();
     t302Note('rides-place'); t302Ach('rides-place'); t302Board('rides-placed', r.state.placed);
     t302Send({a:'place', piece:r.piece});
     t302Snd('boing');
-    banner('Placed a ' + RidesRules.ridesKind(r.piece.kind).name + '!');
+    banner((r.closed ? '✅ Loop closed! ' : (snap.snapped ? 'Snap! ' : '')) + 'Placed a ' + RidesRules.ridesKind(r.piece.kind).name + '.' + (r.closed ? ' Press 🎠 Test ride.' : ''));
     ridesTutOn('place', r.piece.kind);
     return true;
   }
@@ -35290,6 +35916,10 @@ function start(m = 'obby', d = null){
         const car = g.getObjectByName('car');
         if (car) car.position.y = 1.2 + (0.5 + 0.5 * Math.sin(rd.t * 1.4)) * 4.2;
       }
+      if (rd.sv.del){
+        const on = rd.delTarget && rd.delTarget.id === p.id;
+        g.traverse(ch => { if (ch.material && ch.material.emissive) ch.material.emissive.set(on ? '#ff4d5e' : '#000000'); });
+      }
     });
     if (rd.boarding){
       const p = rd.sv.pieces.find(x => x.id === rd.boarding.id);
@@ -35297,17 +35927,19 @@ function start(m = 'obby', d = null){
       if (g){
         rd.boarding.t += dt;
         if (RidesRules.ridesIsTrack(p.kind)){
-          const loop = rd.sv.pieces.filter(x => RidesRules.ridesIsTrack(x.kind));
-          const n = Math.max(1, loop.length);
-          const t = rd.boarding.t * 1.4;
-          const i = Math.floor(t) % n, f = t - Math.floor(t), j = (i + 1) % n;
-          const cur = loop[i], nxt = loop[j];
-          const a = RidesRules.ridesWorld(cur.gx, cur.gz), b = RidesRules.ridesWorld(nxt.gx, nxt.gz);
-          P.x = a.x + (b.x - a.x) * f; P.z = a.z + (b.z - a.z) * f;
-          let y = 1.4;
-          if (cur.kind === 'slope') y = 1.2 + ((cur.rot % 2 === 0) ? 0.3 + f * 1.8 : 2.1 - f * 1.8);
-          if (cur.kind === 'loop') y = 1.3 + Math.sin(f * Math.PI) * 2.4;
-          P.y = y; P.vy = 0;
+          const path = rd.path && rd.path.ok ? rd.path : RidesRules.ridesPathPoints(rd.sv);
+          rd.path = path;
+          const pts = path && path.points;
+          if (pts && pts.length){
+            const speed = 6;
+            const t = (rd.boarding.t * speed) % pts.length;
+            const i = Math.floor(t) % pts.length, f = t - Math.floor(t), j = (i + 1) % pts.length;
+            const a = pts[i], b = pts[j];
+            P.x = a.x + (b.x - a.x) * f;
+            P.z = a.z + (b.z - a.z) * f;
+            P.y = a.y + (b.y - a.y) * f + 0.45;
+            P.vy = 0;
+          }
         } else if (p.kind === 'drop'){
           const car = g.getObjectByName('car');
           P.x = g.position.x; P.z = g.position.z; P.y = (car ? car.position.y : 1.6) + 0.6; P.vy = 0;
@@ -35316,27 +35948,43 @@ function start(m = 'obby', d = null){
         }
       }
     }
-    // ghost preview
+    // ghost preview (snapped pose)
     const cell = !rd.boarding ? ridesCellAt(P.x, P.z) : null;
     const piece = cell ? RidesRules.ridesAt(rd.sv, cell.gx, cell.gz) : null;
+    rd.delTarget = (rd.sv && rd.sv.del) ? piece : null;
     if (rd.ghost){ scene.remove(rd.ghost); rd.ghost = null; }
-    if (cell && !piece && !rd.boarding){
-      const ok = RidesRules.ridesFits(rd.sv, rd.sv.kind, cell.gx, cell.gz, rd.sv.rot);
-      const w = RidesRules.ridesWorld(cell.gx, cell.gz);
-      const gh = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.12, 2.2), new THREE.MeshBasicMaterial({color: ok ? '#2ec27e' : '#ff4d5e', transparent:true, opacity:0.35}));
-      gh.position.set(w.x, 0.12, w.z);
+    if (cell && !piece && !rd.boarding && !(rd.sv && rd.sv.del)){
+      const snap = RidesRules.ridesSnap(rd.sv, rd.sv.kind, cell.gx, cell.gz, rd.sv.rot);
+      const ok = !!snap.ok;
+      const w = RidesRules.ridesWorld(snap.gx, snap.gz);
+      const gh = new THREE.Group();
+      const pad = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.1, 2.6), new THREE.MeshBasicMaterial({color: ok ? '#2ec27e' : '#ff4d5e', transparent:true, opacity:0.35}));
+      pad.position.y = 0.12; gh.add(pad);
+      if (RidesRules.ridesIsTrack(rd.sv.kind) && ok){
+        const fake = {kind: rd.sv.kind, gx:snap.gx, gz:snap.gz, rot:snap.rot, elev:snap.elev|0, id:-1};
+        const ports = RidesRules.ridesPorts(fake);
+        if (ports.length >= 2){
+          const a = RidesRules.ridesPortWorld(ports[0]), b = RidesRules.ridesPortWorld(ports[1]);
+          const rail = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.18, Math.hypot(b.x-a.x, b.z-a.z) + 0.08), new THREE.MeshBasicMaterial({color:'#2ec27e', transparent:true, opacity:0.7}));
+          rail.position.set((a.x+b.x)/2 - w.x, ((a.y+b.y)/2), (a.z+b.z)/2 - w.z);
+          rail.lookAt(b.x - w.x, (a.y+b.y)/2, b.z - w.z);
+          gh.add(rail);
+        }
+      }
+      gh.position.set(w.x, 0, w.z);
       scene.add(gh);
       rd.ghost = gh;
-      t302Keep(rd, gh);
     }
     let near = null;
-    if (t302Near(rd.kit.x, rd.kit.z, 2.4)) near = 'kit';
+    if (t302Near(rd.kit.x, rd.kit.z, 2.6)) near = 'kit';
     rd.near = near;
     const kind = RidesRules.ridesKind(rd.sv.kind);
+    const loop = RidesRules.ridesCoasterLoop(rd.sv);
     if (rd.boarding) t302Hud('Riding! E / Ⓧ or Ⓑ to hop off.', 'Hop off');
+    else if (rd.sv && rd.sv.del) t302Hud('🗑️ Delete mode. Stand on your piece — it glows red — then press E / Ⓧ / Ⓨ to pick it up. Ⓑ cancels.', '🗑️ Pick up');
     else if (near === 'kit') t302Hud('E / Ⓧ — open the ride kit. Q or bumpers also cycle pieces.', '');
-    else if (piece) t302Hud('E / Ⓧ — ride the ' + RidesRules.ridesKind(piece.kind).name + '. C picks it up if it is yours. Friends may ride too!', '🎢 Ride');
-    else t302Hud((kind ? kind.emoji + ' ' + kind.name : 'Piece') + ' ready. E / Ⓧ to place on the green square. Q cycles, R rotates, C picks up.', '🧱 Place');
+    else if (piece) t302Hud('E / Ⓧ — ride the ' + RidesRules.ridesKind(piece.kind).name + '. 🗑️ Delete picks it up if it is yours. Friends may ride too!', '🎢 Ride');
+    else t302Hud((kind ? kind.emoji + ' ' + kind.name : 'Piece') + (loop.ok ? '  ·  ✅ loop closed' : '') + '. Ghost shows the snap. E / Ⓧ to place. Q cycles, R rotates, 🗑️ deletes.', '🧱 Place');
   }
   function ridesHelp(auto){
     if (!rd) return;
@@ -35391,29 +36039,42 @@ function start(m = 'obby', d = null){
     if (e.code === 'KeyH'){ ridesHelp(); return true; }
     if (rd && rd.sv && rd.sv.tut && rd.sv.tut.on){
       if (e.code === 'Enter' || e.code === 'KeyN' || e.code === 'ArrowRight'){ if (!e.repeat) ridesTutGo(); return true; }
-      if (e.code === 'Backspace' || e.code === 'KeyU'){ if (!e.repeat) ridesTutSkipNow(); return true; }
+      if (e.code === 'KeyU' && e.shiftKey){ if (!e.repeat) ridesTutSkipNow(); return true; }
     }
     if (e.code === 'KeyQ'){ const r = RidesRules.ridesCycleKind(rd.sv, e.shiftKey ? -1 : 1); ridesPersist(r.state); banner(r.kind.emoji + ' ' + r.kind.name); t302Snd('jump'); return true; }
-    if (e.code === 'KeyR'){ const r = RidesRules.ridesRotate(rd.sv, 1); ridesPersist(r.state); banner('Rotated.'); return true; }
-    if (e.code === 'KeyC'){
-      const cell = ridesCellAt(P.x, P.z);
-      const piece = cell ? RidesRules.ridesAt(rd.sv, cell.gx, cell.gz) : null;
-      if (piece) ridesPickUp(piece.id);
+    if (e.code === 'KeyR'){ const r = RidesRules.ridesRotate(rd.sv, 1); ridesPersist(r.state); return true; }
+    if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)){ if (!e.repeat) ridesUndoNow(); return true; }
+    if (e.code === 'KeyC' || e.code === 'Delete' || e.code === 'Backspace'){
+      if (!e.repeat){
+        const cell = ridesCellAt(P.x, P.z);
+        const piece = cell ? RidesRules.ridesAt(rd.sv, cell.gx, cell.gz) : null;
+        if (piece && (!rd.sv.del)) ridesPickUp(piece.id);
+        else ridesToggleDel();
+      }
       return true;
     }
     if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ ridesAct(); return true; }
     if (e.code === 'KeyX' && rd.boarding){ ridesDismount(); return true; }
     return false;
   }
-  function ridesPad(jp){
+  function ridesPad(jp, s){
     if (rd && rd.sv && rd.sv.tut && rd.sv.tut.on){
       if (t302Edge('tutNext', jp && jp[15])){ ridesTutGo(); return true; }
       if (t302Edge('tutSkip', jp && jp[8])){ ridesTutSkipNow(); return true; }
     }
-    if (t302Edge('ridesLB', jp && jp[4])){ const r = RidesRules.ridesCycleKind(rd.sv, -1); ridesPersist(r.state); banner(r.kind.emoji + ' ' + r.kind.name); return true; }
+    if (t302Edge('ridesLB', jp && jp[4]) && !(jp && jp[2])){ const r = RidesRules.ridesCycleKind(rd.sv, -1); ridesPersist(r.state); banner(r.kind.emoji + ' ' + r.kind.name); return true; }
     if (t302Edge('ridesRB', jp && jp[5])){ const r = RidesRules.ridesCycleKind(rd.sv, 1); ridesPersist(r.state); banner(r.kind.emoji + ' ' + r.kind.name); return true; }
-    if (t302Edge('ridesY', jp && jp[3])){ const r = RidesRules.ridesRotate(rd.sv, 1); ridesPersist(r.state); return true; }
-    if (t302Edge('ridesAct', jp && (jp[2] || jp[7]))){ if (typeof pad !== 'undefined') pad.jump = false; ridesAct(); return true; }
+    if (t302Edge('ridesDelCombo', jp && jp[4] && jp[2])){ ridesToggleDel(); if (typeof pad !== 'undefined') pad.jump = false; return true; }
+    if (t302Edge('ridesY', jp && jp[3])){
+      if (rd.sv && rd.sv.del){ ridesAct(); return true; }
+      const r = RidesRules.ridesRotate(rd.sv, 1); ridesPersist(r.state); return true;
+    }
+    if (t302Edge('ridesB', jp && jp[1])){
+      if (rd.boarding){ ridesDismount(); return true; }
+      if (rd.sv && rd.sv.del){ ridesToggleDel(); return true; }
+      return false;
+    }
+    if (t302Edge('ridesAct', jp && (jp[2] || jp[7]))){ if (typeof pad !== 'undefined') pad.jump = false; return ridesAct(); }
     return false;
   }
 
@@ -35619,31 +36280,47 @@ function start(m = 'obby', d = null){
 
   function campMakeGloam(st, cartoon){
     const g = new THREE.Group();
-    const col = cartoon ? '#6b4aa0' : '#1a1524';
-    const mat = new THREE.MeshLambertMaterial({color:col, emissive: cartoon ? '#2a1840' : '#0d0814', transparent:true, opacity: cartoon ? 0.92 : 0.9});
-    const body = new THREE.Mesh(new THREE.ConeGeometry(0.85, 2.8, 6), mat);
-    body.position.y = 1.5; g.add(body);
-    const a1 = new THREE.Mesh(new THREE.ConeGeometry(0.16, 1.7, 5), mat);
-    a1.position.set(-0.75, 1.35, 0); a1.rotation.z = 0.55; g.add(a1);
-    const a2 = new THREE.Mesh(new THREE.ConeGeometry(0.16, 1.7, 5), mat);
-    a2.position.set(0.75, 1.35, 0); a2.rotation.z = -0.55; g.add(a2);
-    const eyeCol = cartoon ? '#ffe566' : '#9dff7a';
+    const col = cartoon ? '#6b4aa0' : '#0c0a12';
+    const mat = new THREE.MeshLambertMaterial({color:col, emissive: cartoon ? '#2a1840' : '#140818', transparent:true, opacity: cartoon ? 0.92 : 0.96});
+    const body = new THREE.Mesh(new THREE.ConeGeometry(cartoon ? 0.85 : 1.05, cartoon ? 2.8 : 4.1, cartoon ? 6 : 5), mat);
+    body.position.y = cartoon ? 1.5 : 2.15; g.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(cartoon ? 0.42 : 0.62, 6, 5), mat);
+    head.position.y = cartoon ? 2.6 : 3.7; g.add(head);
+    [[-0.85, 0.55], [0.85, -0.55]].forEach((a, i) => {
+      const arm = new THREE.Mesh(new THREE.ConeGeometry(cartoon ? 0.16 : 0.18, cartoon ? 1.7 : 2.4, 5), mat);
+      arm.position.set(a[0] * (cartoon ? 0.88 : 1.05), cartoon ? 1.35 : 2.1, 0);
+      arm.rotation.z = a[1];
+      g.add(arm);
+    });
+    if (!cartoon){
+      [[-0.35, 4.4], [0.35, 4.4]].forEach(tw => {
+        const t = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.9, 4), mat);
+        t.position.set(tw[0], tw[1], 0); t.rotation.z = tw[0] > 0 ? -0.4 : 0.4; g.add(t);
+      });
+    }
+    const eyeCol = cartoon ? '#ffe566' : '#b6ff6a';
     const eyeM = new THREE.MeshBasicMaterial({color: eyeCol});
-    const haloM = new THREE.MeshBasicMaterial({color: eyeCol, transparent:true, opacity: 0.32});
-    const e1 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), eyeM); e1.position.set(-0.22, 2.15, 0.42); g.add(e1);
-    const e2 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), eyeM); e2.position.set(0.22, 2.15, 0.42); g.add(e2);
-    const h1 = new THREE.Mesh(new THREE.SphereGeometry(0.38, 8, 6), haloM); h1.position.copy(e1.position); g.add(h1);
-    const h2 = new THREE.Mesh(new THREE.SphereGeometry(0.38, 8, 6), haloM); h2.position.copy(e2.position); g.add(h2);
+    const haloM = new THREE.MeshBasicMaterial({color: eyeCol, transparent:true, opacity: cartoon ? 0.32 : 0.55});
+    const e1 = new THREE.Mesh(new THREE.SphereGeometry(cartoon ? 0.2 : 0.28, 8, 6), eyeM);
+    e1.position.set(cartoon ? -0.22 : -0.32, cartoon ? 2.15 : 3.65, cartoon ? 0.42 : 0.52); g.add(e1);
+    const e2 = new THREE.Mesh(new THREE.SphereGeometry(cartoon ? 0.2 : 0.22, 8, 6), eyeM);
+    e2.position.set(cartoon ? 0.22 : 0.34, cartoon ? 2.15 : 3.72, cartoon ? 0.42 : 0.5); g.add(e2);
+    const h1 = new THREE.Mesh(new THREE.SphereGeometry(cartoon ? 0.38 : 0.55, 8, 6), haloM); h1.position.copy(e1.position); g.add(h1);
+    const h2 = new THREE.Mesh(new THREE.SphereGeometry(cartoon ? 0.38 : 0.48, 8, 6), haloM); h2.position.copy(e2.position); g.add(h2);
+    if (!cartoon){
+      const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.06, 0.08), new THREE.MeshBasicMaterial({color:'#050308'}));
+      mouth.position.set(0, 3.25, 0.5); g.add(mouth);
+    }
     g.userData.eyes = [e1, e2];
     scene.add(g);
     t302Keep(st, g);
     return g;
   }
-  function campEyes(st, n){
+  function campEyes(st, n, deep){
     const arr = [];
     for (let i = 0; i < n; i++){
       const ang = (i / n) * Math.PI * 2 + 0.4;
-      const d = 13 + (i % 3) * 1.6;
+      const d = (deep ? 48 : 22) + (i % 5) * 3.2;
       const g = new THREE.Group();
       const m = new THREE.MeshBasicMaterial({color:'#7dff6a'});
       const halo = new THREE.MeshBasicMaterial({color:'#7dff6a', transparent:true, opacity:0.28});
@@ -35657,44 +36334,95 @@ function start(m = 'obby', d = null){
     }
     return arr;
   }
+  function campMakeLogMesh(st, log){
+    const g = new THREE.Group();
+    if (log.kind === 'stump'){
+      const m = t302Mesh(new THREE.CylinderGeometry(0.45, 0.5, 0.7, 8), '#6b3a1d', log.x, 0.35, log.z, st);
+      return m;
+    }
+    if (log.kind === 'heart'){
+      const m = t302Mesh(new THREE.BoxGeometry(1.5, 0.5, 0.5), '#3d2214', log.x, 0.32, log.z, st);
+      t302Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), '#7a2e12', log.x, 0.55, log.z, st);
+      return m;
+    }
+    return t302Mesh(new THREE.BoxGeometry(1.3, 0.28, 0.38), '#8d5524', log.x, 0.2, log.z, st);
+  }
 
   function buildCamp(){
     const sv = campState();
-    const started = CampRules.campStartNight(sv, t302Now(), t302MpOn());
+    const started = CampRules.campStartRun(sv, t302Now(), t302MpOn());
     campPersist(started.state);
     const less = !!started.state.lessScary;
-    cg = {trash:[], sv: started.state, run: started.run, piles:[], buddy:null, light:null, hemi:null, fire:null, gloam:null, eyes:[], near:null, done:false, ambT:0, scareT:0};
-    const bg = less ? '#2a3150' : '#070812';
+    cg = {trash:[], sv: started.state, run: started.run, logs:[], buddy:null, light:null, fire:null, gloam:null, eyes:[], near:null, done:false, ambT:0, scareT:0, holding:false, lastPhase: started.run.phase};
+    const day = started.run.phase === 'day';
+    const bg = day ? '#8fd3ff' : (less ? '#2a3150' : '#070812');
     scene.background = new THREE.Color(bg);
-    scene.fog = new THREE.Fog(bg, less ? 16 : 8, less ? 48 : 28);
-    plat(0, 0, 0, 30, 30, less ? '#243228' : '#121a14', 0.2);
-    plat(0, 0.06, 0, 8, 8, '#1c261c', 0.06);
-    const tent = t302Mesh(new THREE.ConeGeometry(2.2, 2.6, 4), '#2a1c14', -8, 1.3, -4, cg);
+    scene.fog = new THREE.Fog(bg, day ? 40 : (less ? 18 : 10), day ? 140 : (less ? 70 : 48));
+    cg.ground = plat(0, 0, 0, CampRules.CAMP_SIZE, CampRules.CAMP_SIZE, less || day ? '#1d3a24' : '#0e1a12', 0.2);
+    plat(0, 0.06, 0, 12, 12, '#1c261c', 0.06);
+    // trails
+    for (let i = 1; i < CampRules.CAMP_TRAILS.length; i++){
+      const a = CampRules.CAMP_TRAILS[i - 1], b = CampRules.CAMP_TRAILS[i];
+      if (a.x === 0 && a.z === 0 && b.x === 0 && b.z === 0) continue;
+      const mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2;
+      const dx = b.x - a.x, dz = b.z - a.z, len = Math.hypot(dx, dz);
+      if (len < 1) continue;
+      const strip = t302Mesh(new THREE.BoxGeometry(1.6, 0.06, len + 0.4), '#5a4630', mx, 0.08, mz, cg);
+      strip.rotation.y = Math.atan2(dx, dz);
+    }
+    // lake + brook
+    cg.lake = t302Mesh(new THREE.CylinderGeometry(10, 10, 0.16, 16), day ? '#3aa0d8' : '#1a3a58', -40, 0.1, 36, cg);
+    cg.brook = t302Mesh(new THREE.BoxGeometry(6, 0.12, 22), day ? '#3aa0d8' : '#1a3a58', -44, 0.08, 8, cg);
+    t302Lab('🌊 Moon Lake', -40, 2.4, 36);
+    // old cabin
+    t302Mesh(new THREE.BoxGeometry(6.2, 3.2, 5), '#5a3a28', 48, 1.7, -32, cg);
+    const roof = t302Mesh(new THREE.ConeGeometry(4.6, 2.2, 4), '#3d2418', 48, 4.2, -32, cg);
+    roof.rotation.y = Math.PI / 4;
+    t302Mesh(new THREE.BoxGeometry(1.2, 1.8, 0.2), '#2a1a12', 48, 1.1, -29.4, cg);
+    const porch = new THREE.PointLight('#ffcc88', day ? 0.1 : 0.6, 10);
+    porch.position.set(48, 2.4, -28); porch._campSkip = true; scene.add(porch); t302Keep(cg, porch);
+    t302Lab('🏚️ Old Cabin', 48, 5.4, -32);
+    // clearings and deep woods
+    plat(28, 0.05, 40, 16, 16, '#2a4a2a', 0.05);
+    t302Lab('🌲 Pine Clearing', 28, 2.6, 40);
+    plat(52, 0.04, 48, 24, 24, '#0a160e', 0.04);
+    t302Lab('🌑 Deep Woods', 52, 2.8, 48);
+    t302Lab('🪙 Brook Bend', -46, 2.2, -24);
+    const tent = t302Mesh(new THREE.ConeGeometry(2.2, 2.6, 4), '#2a1c14', -6, 1.3, -5, cg);
     tent.rotation.y = Math.PI / 4;
-    t302Lab('⛺ Tent', -8, 2.8, -4);
-    t302Mesh(new THREE.BoxGeometry(2.4, 0.6, 1.2), '#4a2e1a', 8, 0.35, -3, cg);
-    t302Lab('🧺 Craft Bench', 8, 2.2, -3);
-    cg.bench = {x:8, z:-3};
+    t302Lab('⛺ Tent', -6, 2.8, -5);
+    t302Mesh(new THREE.BoxGeometry(2.4, 0.6, 1.2), '#4a2e1a', 7, 0.35, -4, cg);
+    t302Lab('🧺 Craft Bench', 7, 2.2, -4);
+    cg.bench = {x:7, z:-4};
     t302Mesh(new THREE.CylinderGeometry(0.8, 1, 0.3, 8), '#3d2a1a', 0, 0.2, 0, cg);
     const flame = new THREE.Mesh(new THREE.ConeGeometry(0.7, 1.7, 6), new THREE.MeshBasicMaterial({color:'#ff9f1c'}));
     flame.position.set(0, 1.15, 0); scene.add(flame); t302Keep(cg, flame);
     const glow = new THREE.Mesh(new THREE.ConeGeometry(0.38, 1.0, 6), new THREE.MeshBasicMaterial({color:'#ffe566'}));
     glow.position.set(0, 1.25, 0); scene.add(glow); t302Keep(cg, glow);
     cg.fire = {flame, glow};
-    const light = new THREE.PointLight('#ffb347', less ? 1.6 : 2.1, less ? 28 : 20);
+    const light = new THREE.PointLight('#ffb347', day ? 0.4 : (less ? 1.6 : 2.2), day ? 16 : (less ? 28 : 20));
     light.position.set(0, 2.2, 0);
     scene.add(light); t302Keep(cg, light); cg.light = light;
     cg.lanternLt = new THREE.PointLight('#fff2c2', 0, 10);
     cg.lanternLt.position.set(0, 1.6, 0);
     scene.add(cg.lanternLt); t302Keep(cg, cg.lanternLt);
     t302Lab('🔥 Campfire', 0, 2.6, 0);
-    const ring = [[-6,5],[-3,7],[3,7],[6,5],[7,0],[-7,0],[-5,-6],[5,-6]];
-    ring.forEach((pz, i) => {
-      t302Mesh(new THREE.BoxGeometry(0.9, 0.3, 0.4), '#8d5524', pz[0], 0.25, pz[1], cg);
-      t302Mesh(new THREE.BoxGeometry(0.7, 0.25, 0.3), '#6b3a1d', pz[0] + 0.1, 0.4, pz[1], cg);
-      cg.piles.push({id:i, x:pz[0], z:pz[1]});
+    // forest trees (no free stick piles at camp)
+    const treeSpots = [];
+    for (let i = 0; i < 70; i++){
+      const ang = i * 2.4, r = 16 + (i * 7) % 52;
+      let x = Math.sin(ang) * r, z = Math.cos(ang) * r;
+      if (Math.hypot(x, z) < 14) continue;
+      if (CampRules.campInWater(x, z)) continue;
+      if (Math.hypot(x - 48, z + 32) < 8) continue;
+      treeSpots.push([x, z, CampRules.campInDeep(x, z)]);
+    }
+    treeSpots.forEach(p => t302Tree(cg, p[0], p[1], p[2] ? '#0b2412' : '#16351c', p[2] ? 4.2 : 3.2));
+    cg.logs = [];
+    (cg.run.logs || []).forEach(log => {
+      const mesh = campMakeLogMesh(cg, log);
+      cg.logs.push({id:log.id, x:log.x, z:log.z, kind:log.kind, mesh});
     });
-    [[-11,-8],[-12,8],[12,-7],[11,9],[-9,12],[9,-11]].forEach(p => t302Tree(cg, p[0], p[1], '#16351c', 3.1));
     if (cg.run.buddy){
       const body = t302Mesh(new THREE.BoxGeometry(0.6, 1.1, 0.4), '#3a86ff', 2.2, 0.9, 1.6, cg);
       t302Mesh(new THREE.BoxGeometry(0.45, 0.45, 0.45), '#ffd23f', 2.2, 1.65, 1.6, cg);
@@ -35702,21 +36430,21 @@ function start(m = 'obby', d = null){
       cg.buddy = body;
     }
     cg.gloam = campMakeGloam(cg, less);
-    cg.eyes = campEyes(cg, less ? 4 : 7);
+    cg.eyes = campEyes(cg, less ? 4 : 8, false).concat(less ? [] : campEyes(cg, 5, true));
     campPaintLessBtn();
     checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:8}, flag:new THREE.Object3D()};
   }
   function campEnter(){
     if (!cg) return;
-    cam.pitch = 0.28; cam.dist = 12;
+    cam.pitch = 0.28; cam.dist = 14;
     t302Note('play:camp'); t302Ach('camp-visit');
     t302BindHud();
     const less = !!cg.sv.lessScary;
     banner(less
-      ? '🔥 Campfire Grove. Keep the fire bright until sunrise. The Gloam is out there, but Less scary is on — no sudden scares.'
-      : '🔥 Campfire Grove. Keep the fire bright until sunrise. Glowing eyes watch from the dark — the Gloam creeps closer if the fire dies. Shine a lantern or stoke the fire to scare it away. No fighting, no gore.');
-    if (cg.run.buddy) setTimeout(() => { if (cg && !cg.done) banner('🌟 Pip: "I will watch the trees. You keep the fire fed!"'); }, 2200);
-    t302Hud('Goal: survive until sunrise. Gather sticks, feed the fire, craft a lantern. The Gloam hates bright light.', '🔥 Stoke');
+      ? '🔥 Campfire Grove. Day is for gathering logs; night is spooky but Less scary is on. Survive 5 nights. No fighting, no gore.'
+      : '🔥 Campfire Grove. Hunt logs in the forest by day. At night the Gloam stalks the trees — stoke the fire, shine a lantern, and survive 5 nights. If it catches you, everyone is okay.');
+    if (cg.run.buddy) setTimeout(() => { if (cg && !cg.done) banner('🌟 Pip: "I will watch the trees. You fetch the logs. I do not leave camp!"'); }, 2200);
+    t302Hud('Goal: survive 5 nights. Hunt logs in the woods, stash them at camp, keep the fire bright after dark.', '🔥 Stoke');
     const vig = document.getElementById('t302Vignette'); if (vig) vig.classList.add('show');
   }
   function campPaintLessBtn(){
@@ -35728,7 +36456,7 @@ function start(m = 'obby', d = null){
     cg.sv = CampRules.campSetLessScary(cg.sv, !cg.sv.lessScary);
     campPersist(cg.sv);
     campPaintLessBtn();
-    banner(cg.sv.lessScary ? 'Less scary is on. The Gloam stays farther back, and there are no sudden scares.' : 'Spooky mode is on. Keep that fire bright!');
+    banner(cg.sv.lessScary ? 'Less scary is on. The Gloam stays farther back, and scares are softer.' : 'Spooky mode is on. The Gloam hunts harder after dark!');
     t302Snd('cp');
   }
   function campPaintCraft(){
@@ -35737,8 +36465,8 @@ function start(m = 'obby', d = null){
     box.innerHTML = CampRules.CAMP_CRAFT.map(it => {
       const have = cg.sv.crafted.indexOf(it.id) >= 0;
       return `<div class="t297row${have ? ' dim' : ''}"><span>${it.emoji} ${it.name} — ${it.sticks} sticks ${have ? '(packed!)' : ''}</span>${have ? '' : `<button type="button" data-cc="${it.id}">Craft</button>`}</div>`;
-    }).join('') + `<div class="t297row"><span>🪵 Sticks ${cg.sv.sticks}  ·  sunrises ${cg.sv.sunrises}</span></div>` +
-      `<div class="t297row"><span>😌 Less scary: ${cg.sv.lessScary ? 'on' : 'off'} — softer light, no jump-scare-lite, the Gloam stays farther away.</span><button type="button" data-cless="1">Toggle</button></div>` +
+    }).join('') + `<div class="t297row"><span>🪵 Stashed ${cg.sv.sticks}  ·  carrying ${(cg.run && cg.run.carry) || 0}/${CampRules.CAMP_CARRY}  ·  nights ${(cg.run && cg.run.survived) || 0}/${CampRules.CAMP_WIN_NIGHTS}</span></div>` +
+      `<div class="t297row"><span>😌 Less scary: ${cg.sv.lessScary ? 'on' : 'off'} — softer light, milder scares, the Gloam stays farther away.</span><button type="button" data-cless="1">Toggle</button></div>` +
       (CampRules.campHas(cg.sv, 'lantern') ? '<p>Press L or the Lantern action to shine it and push the Gloam back.</p>' : '<p>Craft a Glow Lantern to shine light and scare the Gloam away.</p>');
     box.querySelectorAll('[data-cc]').forEach(btn => { btn.onclick = ev => { ev.preventDefault(); campDoCraft(btn.getAttribute('data-cc')); }; });
     const tb = box.querySelector('[data-cless]');
@@ -35746,7 +36474,7 @@ function start(m = 'obby', d = null){
   }
   function campDoCraft(id){
     const r = CampRules.campCraft(cg.sv, id);
-    if (!r.ok){ banner(r.why === 'sticks' ? 'Need ' + r.need + ' more sticks.' : r.why === 'have' ? 'You already crafted that!' : 'Cannot craft that.'); return; }
+    if (!r.ok){ banner(r.why === 'sticks' ? 'Need ' + r.need + ' more sticks. Hunt logs in the forest and stash them at camp first.' : r.why === 'have' ? 'You already crafted that!' : 'Cannot craft that.'); return; }
     campPersist(r.state);
     t302Ach('camp-craft'); t302Note('camp-craft');
     t302Snd('cp');
@@ -35757,24 +36485,27 @@ function start(m = 'obby', d = null){
     const title = document.getElementById('campWinTitle');
     const body = document.getElementById('campWinBody');
     const pay = win ? CampRules.campReward(cg.run) : 0;
-    if (title) title.textContent = win ? '🌅 Sunrise!' : '👁️ The Gloam came too close';
+    const nights = (cg.run && cg.run.survived) || 0;
+    if (title) title.textContent = win ? '🌅 Five sunrises!' : '🌅 Dawn in the grove';
     if (body) body.textContent = win
-      ? ('You kept the grove safe until sunrise! The Gloam faded with the light. ' + (pay ? ('+' + pay + ' 🪙') : ''))
-      : 'The Gloam reached the fire circle… but everyone is okay. Stoke the fire, shine a lantern, and try another cozy-spooky night!';
+      ? ('You kept the grove safe through five spooky nights! The Gloam faded with the light. ' + (pay ? ('+' + pay + ' 🪙') : ''))
+      : ('You made it through ' + nights + ' night' + (nights === 1 ? '' : 's') + '. Gather more logs and try for five. Everyone is okay!');
     if (win){ t302Pay(pay, '🌅 Sunrise'); t302Snd('win'); try { if (typeof confetti === 'function') confetti(); } catch (e){} }
-    else t302Snd('alarm');
+    else t302Snd('cp');
     t302Open('campWin');
   }
   function campRetry(){
     if (typeof t297OverlayClose === 'function') t297OverlayClose('campWin');
-    const started = CampRules.campStartNight(cg.sv, t302Now(), t302MpOn());
+    const started = CampRules.campStartRun(cg.sv, t302Now(), t302MpOn());
     campPersist(started.state);
     cg.sv = started.state;
     cg.run = started.run;
     cg.done = false;
     cg.scareT = 0;
-    const scare = document.getElementById('t302Scare'); if (scare) scare.classList.remove('show');
-    banner('Another night in the grove. Keep the fire bright!');
+    cg.holding = false;
+    cg.lastPhase = started.run.phase;
+    const scare = document.getElementById('t302Scare'); if (scare) scare.classList.remove('show', 'strong');
+    banner('A new stay in the grove. Hunt logs by day, keep the fire bright for 5 nights!');
   }
   function campShineNow(){
     const r = CampRules.campShine(cg.sv, cg.run);
@@ -35789,20 +36520,48 @@ function start(m = 'obby', d = null){
     banner('🏮 The lantern glows! The Gloam shrinks back into the trees.');
     return true;
   }
+  function campDoCaught(){
+    const r = CampRules.campCaught(cg.sv, cg.run);
+    campPersist(r.state);
+    cg.run = r.run;
+    P.x = 0; P.z = 8; P.y = 0.5; P.vy = 0;
+    const lost = (r.lostCarry || 0) + (r.lostStash || 0);
+    banner('The Gloam got too close… but everyone is okay! You are back at camp' + (lost ? (', and dropped ' + lost + ' log' + (lost === 1 ? '' : 's')) : '') + '.');
+    t302Tone([160, 70, 40], 0.16, 'triangle', 0.09);
+    cg.scareT = 0.45;
+    const el = document.getElementById('t302Scare'); if (el){ el.classList.add('show', 'strong'); }
+    cg.run.respawn = false;
+  }
+  function campHold(on){
+    if (!cg || cg.done) return;
+    cg.holding = !!on;
+    if (!on && cg.run) cg.run.chopping = null;
+  }
   function campAct(){
     if (!cg || cg.done) return false;
     if (cg.near && cg.near.kind === 'bench'){ t302Open('campCraft'); return true; }
-    if (cg.near && cg.near.kind === 'pile'){
-      const r = CampRules.campGather(cg.sv, cg.run, cg.near.id);
-      if (!r.ok){ banner(r.why === 'empty' ? 'That pile is picked clean. Try another!' : 'Cannot gather there.'); return true; }
-      campPersist(r.state); cg.run = r.run;
-      t302Note('camp-stick'); t302Snd('jump');
-      banner('🪵 Picked up a stick. ' + r.state.sticks + ' in your arms.');
+    if (cg.near && cg.near.kind === 'log'){
+      const log = CampRules.campLog(cg.run, cg.near.id);
+      if (log && log.kind === 'fallen'){
+        const r = CampRules.campPickLog(cg.sv, cg.run, log.id);
+        if (!r.ok){ banner(r.why === 'full' ? 'Your arms are full (' + CampRules.CAMP_CARRY + '). Stash logs at the campfire first!' : r.why === 'empty' ? 'That log is gone. Another will grow back soon.' : 'Cannot pick that up.'); return true; }
+        campPersist(r.state); cg.run = r.run;
+        t302Note('camp-stick'); t302Snd('jump');
+        banner('🪵 Picked up a log. Carrying ' + r.run.carry + '/' + CampRules.CAMP_CARRY + '.');
+        campPaintLogMeshes();
+        return true;
+      }
       return true;
     }
     if (cg.near && cg.near.kind === 'fire'){
+      if ((cg.run.carry | 0) > 0 && (cg.sv.sticks | 0) === 0 || (cg.run.carry | 0) > 0 && !(cg.edgeStoke)){
+        if ((cg.run.carry | 0) > 0){
+          const st = CampRules.campStash(cg.sv, cg.run);
+          if (st.ok){ campPersist(st.state); cg.run = st.run; banner('🪵 Stashed ' + st.stashed + ' log' + (st.stashed === 1 ? '' : 's') + ' at camp. ' + st.state.sticks + ' ready for the fire.'); t302Snd('jump'); return true; }
+        }
+      }
       const r = CampRules.campAddStick(cg.sv, cg.run);
-      if (!r.ok){ banner('Gather sticks from the piles first, then feed the fire.'); return true; }
+      if (!r.ok){ banner('Hunt logs in the forest, carry them back, and stash them at camp before you stoke the fire.'); return true; }
       campPersist(r.state); cg.run = r.run;
       t302Send({a:'camp-stick'});
       t302Note('camp-stoke'); t302Snd('boing');
@@ -35812,38 +36571,132 @@ function start(m = 'obby', d = null){
     if (CampRules.campHas(cg.sv, 'lantern')) return campShineNow();
     return false;
   }
+  function campPaintLogMeshes(){
+    if (!cg) return;
+    (cg.logs || []).forEach(row => {
+      const log = CampRules.campLog(cg.run, row.id);
+      const on = !!(log && (log.left | 0) > 0);
+      if (row.mesh) row.mesh.visible = on;
+    });
+  }
+  function campPaintNav(){
+    if (!cg || !P) return;
+    const c = CampRules.campCompass(P.x, P.z);
+    const needle = document.getElementById('campNeedle');
+    if (needle) needle.style.transform = 'rotate(' + (Math.atan2(P.x, P.z) * 180 / Math.PI) + 'deg)';
+    const map = document.getElementById('campMap');
+    if (!map || !map.getContext) return;
+    const ctx = map.getContext('2d');
+    const W = map.width, H = map.height, sc = W / CampRules.CAMP_SIZE;
+    const sx = x => W / 2 + x * sc, sz = z => H / 2 + z * sc;
+    ctx.fillStyle = (cg.run.phase === 'day') ? '#1f5a32' : '#0c1c12';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = (cg.run.phase === 'day') ? '#3aa0d8' : '#1a3a58';
+    ctx.beginPath(); ctx.arc(sx(-40), sz(36), 10 * sc, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#7a6248'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    CampRules.CAMP_TRAILS.forEach((p, i) => { if (i && !(p.x === 0 && p.z === 0 && CampRules.CAMP_TRAILS[i-1].x === 0)) i === 0 || (CampRules.CAMP_TRAILS[i-1].x === 0 && CampRules.CAMP_TRAILS[i-1].z === 0 && p.x === 0) ? ctx.moveTo(sx(p.x), sz(p.z)) : ctx.lineTo(sx(p.x), sz(p.z)); });
+    ctx.stroke();
+    ctx.fillStyle = '#5a3a28'; ctx.fillRect(sx(48) - 3, sz(-32) - 3, 6, 6);
+    ctx.fillStyle = '#0a160e'; ctx.beginPath(); ctx.arc(sx(52), sz(48), 12 * sc, 0, Math.PI * 2); ctx.fill();
+    ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('🔥', sx(0), sz(0) + 4);
+    ctx.fillStyle = '#ffd23f';
+    ctx.beginPath(); ctx.arc(sx(P.x), sz(P.z), 4, 0, Math.PI * 2); ctx.fill();
+    if (cg.run.phase === 'night' && !cg.sv.lessScary && cg.gloam){
+      ctx.fillStyle = '#7dff6a';
+      ctx.beginPath(); ctx.arc(sx(cg.run.gx || 0), sz(cg.run.gz || 0), 3, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  function campWorldLights(day, less, fire){
+    if (!scene || !cg) return;
+    const k = fire || 0;
+    scene.traverse(o => {
+      if (!o || !o.isLight) return;
+      if (o === cg.light || o === cg.lanternLt || o._campSkip) return;
+      if (o._campBase == null) o._campBase = o.intensity;
+      o.intensity = o._campBase * (day ? 1 : (less ? 0.2 + k * 0.16 : 0.05 + k * 0.1));
+      if (o.isHemisphereLight){
+        if (!o._campSky){ o._campSky = o.color.clone(); o._campGround = o.groundColor.clone(); }
+        if (day){ o.color.copy(o._campSky); o.groundColor.copy(o._campGround); }
+        else {
+          o.color.set(less ? '#4a5580' : '#152038');
+          o.groundColor.set(less ? '#1a2030' : '#04060a');
+        }
+      }
+    });
+    if (cg.ground && cg.ground.mesh && cg.ground.mesh.material && cg.ground.mesh.material.color){
+      cg.ground.mesh.material.color.set(day || less ? '#1d3a24' : '#08110c');
+    }
+    if (cg.lake && cg.lake.material && cg.lake.material.color){
+      cg.lake.material.color.set(day ? '#3aa0d8' : (less ? '#243a58' : '#0d2238'));
+    }
+    if (cg.brook && cg.brook.material && cg.brook.material.color){
+      cg.brook.material.color.set(day ? '#3aa0d8' : (less ? '#243a58' : '#0d2238'));
+    }
+  }
+  function campRestoreLights(){
+    if (!scene) return;
+    scene.traverse(o => {
+      if (!o || !o.isLight) return;
+      if (o._campBase != null){ o.intensity = o._campBase; delete o._campBase; }
+      if (o._campSky){ o.color.copy(o._campSky); o.groundColor.copy(o._campGround); delete o._campSky; delete o._campGround; }
+    });
+  }
   function campUpdate(dt){
+
     if (!cg) return;
     dt = t302Dt(dt);
     const less = !!cg.sv.lessScary;
+    const face = (typeof cam !== 'undefined' && cam && cam.yaw) || (P && P.face) || 0;
     if (!cg.done){
-      CampRules.campTick(cg.run, dt, {lessScary:less, blanket: CampRules.campHas(cg.sv, 'blanket')});
+      if (cg.holding && cg.near && cg.near.kind === 'log'){
+        const r = CampRules.campChopLog(cg.sv, cg.run, cg.near.id, dt);
+        if (r.why === 'full'){ banner('Your arms are full. Stash logs at the campfire first!'); cg.holding = false; }
+        else if (r.ok && r.why === 'ok'){
+          campPersist(r.state); cg.run = r.run; cg.holding = false;
+          t302Note('camp-stick'); t302Snd('jump');
+          banner('🪵 Chopped a log. Carrying ' + r.run.carry + '/' + CampRules.CAMP_CARRY + '.');
+          campPaintLogMeshes();
+        }
+      }
+      CampRules.campTick(cg.run, dt, {lessScary:less, blanket: CampRules.campHas(cg.sv, 'blanket'), px: P.x, pz: P.z, face});
+      if (cg.run.wantCatch) campDoCaught();
+      if (cg.run.phase !== cg.lastPhase){
+        cg.lastPhase = cg.run.phase;
+        if (cg.run.phase === 'night') banner('🌙 Night ' + ((cg.run.survived || 0) + 1) + ' of ' + CampRules.CAMP_WIN_NIGHTS + '. The Gloam is out — stay close to the light!');
+        else if (!cg.run.won) banner(cg.run.nightKept ? '🌅 Sunrise! Night kept. Day ' + cg.run.day + ' — hunt more logs before dark.' : '🌅 Dawn, but the fire was too low. Everyone is okay. Day ' + cg.run.day + ' — gather logs and try tonight.');
+      }
       if (cg.run.scarePop && !cg.scareT && !less){
-        cg.scareT = 0.28;
-        const el = document.getElementById('t302Scare'); if (el) el.classList.add('show');
-        t302Tone([180, 90, 220], 0.09, 'triangle', 0.07);
-        banner('👁️ Eyes in the dark! Stoke the fire or shine a lantern!');
+        cg.scareT = cg.run.appearBehind ? 0.42 : 0.28;
+        const el = document.getElementById('t302Scare'); if (el){ el.classList.add('show'); el.classList.toggle('strong', !!cg.run.appearBehind); }
+        t302Tone(cg.run.appearBehind ? [220, 80, 40, 180] : [180, 90, 220], cg.run.appearBehind ? 0.14 : 0.09, 'triangle', cg.run.appearBehind ? 0.12 : 0.08);
+        banner(cg.run.appearBehind ? '👁️ It was right behind you! Run for the fire or shine a lantern!' : '👁️ Eyes in the dark! Stoke the fire or shine a lantern!');
         cg.run.scarePop = false;
+        cg.run.appearBehind = false;
       } else if (cg.run.scarePop && less){
         cg.run.scarePop = false;
+        cg.run.appearBehind = false;
         banner('The Gloam shuffles a little closer. Feed the fire when you can.');
       }
-      if (cg.run.won || cg.run.failed){
+      if (cg.run.won && !cg.done){
         cg.done = true;
         const fin = CampRules.campFinish(cg.sv, cg.run);
         campPersist(fin.state);
-        if (fin.why === 'sunrise'){ t302Note('camp-sunrise'); t302Ach('camp-sunrise'); t302Board('camp-sunrises', fin.state.sunrises); }
-        campShowEnd(fin.why === 'sunrise');
+        t302Note('camp-sunrise'); t302Ach('camp-sunrise'); t302Board('camp-sunrises', fin.state.sunrises);
+        campShowEnd(true);
       }
     }
     if (cg.scareT){
       cg.scareT = Math.max(0, cg.scareT - dt);
-      if (cg.scareT <= 0){ const el = document.getElementById('t302Scare'); if (el) el.classList.remove('show'); }
+      if (cg.scareT <= 0){ const el = document.getElementById('t302Scare'); if (el) el.classList.remove('show', 'strong'); }
     }
     const k = cg.run.fire || 0;
-    if (cg.light){ cg.light.intensity = (less ? 0.55 : 0.25) + k * (less ? 1.4 : 1.7); cg.light.distance = (less ? 20 : 12) + k * 10; }
+    const day = cg.run.phase === 'day';
+    const dawn = (!day && cg.run.t > CampRules.CAMP_NIGHT * 0.78) ? (cg.run.t / CampRules.CAMP_NIGHT - 0.78) / 0.22 : (day && cg.run.t < 8 ? 1 - cg.run.t / 8 : (day ? 1 : 0));
+    if (cg.light){ cg.light.intensity = day ? 0.35 : ((less ? 0.55 : 0.25) + k * (less ? 1.4 : 1.8)); cg.light.distance = day ? 18 : ((less ? 20 : 12) + k * 10); }
     if (cg.lanternLt){
-      cg.lanternLt.intensity = (cg.run.lantern || 0) > 0 ? 1.2 : 0;
+      cg.lanternLt.intensity = (cg.run.lantern || 0) > 0 ? 1.4 : 0;
       if (P) cg.lanternLt.position.set(P.x, 1.7, P.z);
     }
     if (cg.fire){
@@ -35851,61 +36704,72 @@ function start(m = 'obby', d = null){
       cg.fire.flame.scale.set(s, 0.7 + k * 0.9, s);
       cg.fire.glow.scale.set(s * 0.7, 0.6 + k, s * 0.7);
     }
-    const dawn = Math.max(0, (cg.run.t / CampRules.CAMP_NIGHT) - 0.78) / 0.22;
     const night = less ? '#2a3150' : '#070812';
-    const morn = '#f4c084';
-    const bg = new THREE.Color(night).lerp(new THREE.Color(morn), Math.min(1, Math.max(0, dawn)));
+    const morn = '#8fd3ff';
+    const bg = new THREE.Color(night).lerp(new THREE.Color(morn), Math.min(1, Math.max(0, day ? 1 : dawn)));
     scene.background = bg;
     if (scene.fog){
       scene.fog.color.copy(bg);
-      scene.fog.near = less ? 16 - k * 2 : 10 + k * 8;
-      scene.fog.far = less ? 50 : 36 + k * 18;
+      const inDeep = CampRules.campInDeep(P.x, P.z);
+      scene.fog.near = day ? (inDeep ? 18 : 40) : (less ? 16 : (inDeep ? 6 : 10 + k * 6));
+      scene.fog.far = day ? (inDeep ? 60 : 140) : (less ? 70 : (inDeep ? 24 : 40 + k * 16));
     }
+    campWorldLights(day, less, k);
     const vig = document.getElementById('t302Vignette');
     if (vig){
-      const dark = Math.max(0, 1 - k) * (less ? 0.45 : 0.9) * (1 - Math.min(1, dawn));
-      vig.style.opacity = String(0.35 + dark * 0.65);
+      const dark = day ? 0.05 : Math.max(0, 1 - k) * (less ? 0.4 : 0.9) * (1 - Math.min(1, dawn));
+      vig.style.opacity = String(0.2 + dark * 0.75);
       vig.classList.add('show');
     }
-    // Gloam placement: creep around the ring, face the fire
     if (cg.gloam){
-      const ang = Math.atan2(P ? P.x : 0, P ? P.z : 1) + Math.sin(time * 0.35) * 0.25;
-      const d = Math.max(1.6, cg.run.gloam || 16);
-      cg.gloam.position.set(Math.sin(ang) * d, 0, Math.cos(ang) * d);
-      cg.gloam.lookAt(0, 1.2, 0);
-      const scare = d < 5 ? 1.15 : 1;
-      cg.gloam.scale.setScalar(scare);
+      if (cg.run.gmode === 'hidden' || day){
+        cg.gloam.visible = false;
+      } else {
+        cg.gloam.visible = true;
+        const dart = cg.run.gmode === 'dart' || cg.run.gmode === 'behind';
+        cg.gloam.position.set(cg.run.gx || 16, dart ? Math.sin(time * 14) * 0.15 : Math.sin(time * 3) * 0.08, cg.run.gz || -16);
+        if (P) cg.gloam.lookAt(P.x, 1.6, P.z);
+        const close = Math.hypot((cg.run.gx || 0) - P.x, (cg.run.gz || 0) - P.z) < 6;
+        cg.gloam.scale.setScalar((less ? 0.9 : 1) * (close ? 1.18 : 1) * (cg.run.gmode === 'chase' ? 1.12 : 1));
+      }
     }
     (cg.eyes || []).forEach((e, i) => {
       const pulse = 0.7 + Math.sin(time * 3 + i) * 0.3;
-      const hide = (cg.run.gloam || 16) < e.d - 2 ? 0.15 : pulse;
+      const hide = day ? 0 : ((cg.run.gmode === 'hidden') ? 0.05 : pulse);
       e.g.children.forEach(c => { c.scale.setScalar(hide); });
     });
     if (cg.buddy) cg.buddy.position.y = 0.9 + Math.sin(time * 2) * 0.04;
-    // gentle ambient (quiet, not a jump scare)
     cg.ambT = (cg.ambT || 0) - dt;
-    if (cg.ambT <= 0 && !cg.done && !less){
-      cg.ambT = 4.5 + Math.random() * 4;
-      t302Tone([90, 70], 0.18, 'sine', 0.02);
+    if (cg.ambT <= 0 && !cg.done && !day){
+      const close = P && Math.hypot((cg.run.gx || 0) - P.x, (cg.run.gz || 0) - P.z);
+      cg.ambT = less ? (5 + Math.random() * 5) : (2.2 + Math.random() * 3);
+      const vol = less ? 0.02 : (close < 10 ? 0.08 : 0.045);
+      t302Tone(cg.run.gmode === 'chase' ? [70, 50, 90, 40] : [90, 60, 80], close < 8 && !less ? 0.22 : 0.16, 'sine', vol);
     }
-    t302Meter(true, k, 'Fire ' + Math.round(k * 100) + '%  ·  ' + Math.max(0, Math.ceil(CampRules.CAMP_NIGHT - cg.run.t)) + 's to sunrise' + (cg.run.lantern ? '  ·  🏮' : ''));
+    campPaintLogMeshes();
+    campPaintNav();
+    const left = Math.max(0, Math.ceil((day ? CampRules.CAMP_DAY : CampRules.CAMP_NIGHT) - (cg.run.t || 0)));
+    t302Meter(true, k, (day ? '☀️ Day ' : '🌙 Night ') + (cg.run.day || 1) + '  ·  ' + (cg.run.survived || 0) + '/' + CampRules.CAMP_WIN_NIGHTS + ' nights  ·  Fire ' + Math.round(k * 100) + '%  ·  ' + left + 's' + (cg.run.lantern ? '  ·  🏮' : '') + '  ·  🪵 ' + ((cg.run.carry || 0) + '/' + CampRules.CAMP_CARRY));
     let near = null;
-    if (t302Near(0, 0, 2.2)) near = {kind:'fire'};
+    if (t302Near(0, 0, 2.4)) near = {kind:'fire'};
     if (t302Near(cg.bench.x, cg.bench.z, 2)) near = {kind:'bench'};
-    cg.piles.forEach(p => { if (t302Near(p.x, p.z, 1.5)) near = {kind:'pile', id:p.id}; });
+    (cg.run.logs || []).forEach(log => {
+      if ((log.left | 0) > 0 && t302Near(log.x, log.z, 1.7)) near = {kind:'log', id:log.id, chop: log.kind !== 'fallen'};
+    });
     cg.near = near;
-    if (cg.done && cg.run.won) t302Hud('Sunrise reached. The grove is safe.', '');
-    else if (cg.done) t302Hud('The Gloam came close, but everyone is okay. Try again!', '');
-    else if (near && near.kind === 'fire') t302Hud('E / Ⓧ — add a stick and scare the Gloam back.', '🔥 Stoke');
-    else if (near && near.kind === 'pile') t302Hud('E / Ⓧ — gather sticks.', '🪵 Gather');
+    if (cg.done && cg.run.won) t302Hud('Five sunrises! The grove is safe.', '');
+    else if (near && near.kind === 'fire') t302Hud('E / Ⓧ — stash carried logs, then add a stick to scare the Gloam back.', '🔥 Stoke');
+    else if (near && near.kind === 'log' && near.chop) t302Hud('Hold E / Ⓧ to chop this log. Deep-woods logs are worth more, and are more dangerous at night.', '🪓 Chop');
+    else if (near && near.kind === 'log') t302Hud('E / Ⓧ — pick up this fallen log. Carry up to ' + CampRules.CAMP_CARRY + ', then stash them at camp.', '🪵 Pick up');
     else if (near && near.kind === 'bench') t302Hud('E / Ⓧ — craft a blanket or lantern, or change Less scary.', '');
-    else if (CampRules.campHas(cg.sv, 'lantern')) t302Hud('Goal: survive until sunrise. L or the Lantern action shines light at the Gloam.', '🏮 Lantern');
-    else t302Hud('Goal: survive until sunrise. Gather sticks, keep the fire bright, watch the trees.', '');
+    else if (CampRules.campHas(cg.sv, 'lantern')) t302Hud('Goal: survive 5 nights. L or the Lantern action shines light at the Gloam. Follow the compass back to camp.', '🏮 Lantern');
+    else t302Hud('Goal: survive 5 nights. Hunt logs in the woods, stash them at the fire, watch the trees after dark.', '');
   }
 
   /* ---------- shared hooks ---------- */
   function t302Pointer(down, ev, fromBtn){
     if (mode === 'meadow') meadowPointer(down, fromBtn);
+    else if (mode === 'camp'){ if (down && fromBtn) campAct(); campHold(!!down && !!fromBtn); }
     else if (down && fromBtn) t302Act();
   }
   function t302Act(){
@@ -35928,7 +36792,7 @@ function start(m = 'obby', d = null){
   }
   function t302Key(e){
     if (typeof t297EatOverlayKey === 'function' && t297EatOverlayKey(e)) return true;
-    if (e.repeat && mode !== 'meadow') return false;
+    if (e.repeat && mode !== 'meadow' && mode !== 'camp') return false;
     if (mode === 'garden'){
       if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ if (!e.repeat) gardenAct(); return true; }
       return false;
@@ -35949,7 +36813,12 @@ function start(m = 'obby', d = null){
     }
     if (mode === 'camp'){
       if (e.code === 'KeyL'){ if (!e.repeat) campShineNow(); return true; }
-      if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ if (!e.repeat) campAct(); return true; }
+      if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){
+        if (e.type === 'keyup'){ campHold(false); return true; }
+        campHold(true);
+        if (!e.repeat) campAct();
+        return true;
+      }
       return false;
     }
     return false;
@@ -35963,12 +36832,19 @@ function start(m = 'obby', d = null){
       if (t302Edge('mwX', jp && jp[2])){ meadowAct(); return true; }
       return false;
     }
-    if (mode === 'rides') return ridesPad(jp);
+    if (mode === 'rides') return ridesPad(jp, s);
     if (mode === 'camp' && t302Edge('campL', jp && jp[5]) && CampRules.campHas(cg && cg.sv, 'lantern')){ campShineNow(); return true; }
+    if (mode === 'camp'){
+      const hold = !!(s && s.b && (s.b[2] || s.b[0]));
+      campHold(hold);
+      if (t302Edge('actX', jp && (jp[2] || jp[3] || jp[7]))){ if (typeof pad !== 'undefined') pad.jump = false; return t302Act(); }
+      return hold;
+    }
     if (t302Edge('actX', jp && (jp[2] || jp[3] || jp[7]))){ if (typeof pad !== 'undefined') pad.jump = false; return t302Act(); }
     return false;
   }
   function t302Stop(){
+    campRestoreLights();
     [gd, mw, rd, hv, cg].forEach(st => {
       if (!st) return;
       (st.trash || []).forEach(m => { try { scene.remove(m); } catch (e){} });
@@ -36000,9 +36876,13 @@ function start(m = 'obby', d = null){
     if (a === 'place' && rd && d.piece){
       const p = d.piece;
       if (!RidesRules.ridesAt(rd.sv, p.gx, p.gz)){
-        const r = RidesRules.ridesPlace(rd.sv, p.kind, p.gx, p.gz, p.rot, p.owner || (g && g.uid));
-        if (r.ok){ ridesPersist(r.state); ridesBuildPiece(r.piece); }
+        const r = RidesRules.ridesPlace(rd.sv, p.kind, p.gx, p.gz, p.rot, p.owner || (g && g.uid), {elev: p.elev|0});
+        if (r.ok){ ridesPersist(r.state); ridesBuildPiece(r.piece); ridesRefreshJoints(); }
       }
+    }
+    if (a === 'remove' && rd && d.id){
+      const r = RidesRules.ridesRemove(rd.sv, d.id, null);
+      if (r.ok){ ridesPersist(r.state); if (typeof ridesClearMesh === 'function') ridesClearMesh(d.id); ridesRefreshJoints(); }
     }
     if (a === 'toss' && mw) banner('🥣 A friend tossed a snack!');
   }
@@ -36015,7 +36895,9 @@ function start(m = 'obby', d = null){
       startTut(){ if (!rd) return; ridesHelp(); },
       fillHive(){ if (!hv) return; hv.sv.pollen = 20; hv.sv.honey = 3; hivePersist(hv.sv); },
       readyMeadow(){ if (!mw) return; let s = MeadowRules.meadowGrantXp(mw.sv, MeadowRules.meadowXpToReach(10)).state; s.found = ['puddle','clover','berry','moss','starlit','wisp']; s.rebirths = 2; s.badge = MeadowRules.meadowBadge(2).id; meadowPersist(s); },
-      spookyCamp(){ if (!cg) return; cg.run.t = CampRules.CAMP_NIGHT * 0.35; cg.run.fire = 0.38; cg.run.gloam = 7.5; cg.sv.lessScary = false; }
+      spookyCamp(){ if (!cg) return; cg.run.phase = 'night'; cg.run.t = CampRules.CAMP_NIGHT * 0.35; cg.run.fire = 0.42; cg.run.gmode = 'stalk'; cg.run.gx = 6; cg.run.gz = 4; cg.sv.lessScary = false; if (P){ P.x = 0; P.z = 8; } campWorldLights(false, false, cg.run.fire); if (scene){ const c = new THREE.Color('#070812'); scene.background = c; if (scene.fog) scene.fog.color.copy(c); } },
+      dayCamp(){ if (!cg) return; cg.run.phase = 'day'; cg.run.t = 8; cg.run.fire = 0.8; cg.run.gmode = 'hidden'; cg.sv.lessScary = false; if (P){ P.x = -28; P.z = 24; } campWorldLights(true, false, cg.run.fire); if (scene){ const c = new THREE.Color('#8fd3ff'); scene.background = c; if (scene.fog) scene.fog.color.copy(c); } },
+      connectRides(){ if (!rd) return; let s = rd.sv; const spots = [[5,5,0,'curve'],[6,5,0,'curve'],[6,6,0,'curve'],[5,6,0,'curve']]; spots.forEach((q,i) => { const r = RidesRules.ridesPlace(s, q[3], q[0], q[1], q[2], 'me', i ? {snap:true} : {}); if (r.ok){ s = r.state; if (!rd.meshes[r.piece.id]) ridesBuildPiece(r.piece); } }); ridesPersist(s); ridesRefreshJoints(); if (P){ const w = RidesRules.ridesWorld(5,5); P.x = w.x; P.z = w.z + 3; } }
     };
   } catch (e){}
 

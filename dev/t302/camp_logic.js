@@ -1,19 +1,57 @@
-/* Campfire Grove — kid-friendly spooky camp. Survive until sunrise. Original Gloam creature.
-   Fire and lanterns scare it away. No fighting, no gore. Save key rubloxCamp. */
+/* Campfire Grove — kid-friendly spooky camp. Hunt logs by day, survive 5 nights. Original Gloam.
+   Fire and lanterns scare it away. Caught = everyone is okay, respawn at camp, lose sticks. No fighting, no gore. Save key rubloxCamp. */
 (function (root) {
   const CAMP_KEY = 'rubloxCamp';
-  const CAMP_VER = 2;
-  const CAMP_NIGHT = 90;
+  const CAMP_VER = 3;
+  const CAMP_DAY = 50;
+  const CAMP_NIGHT = 60;
+  const CAMP_WIN_NIGHTS = 5;
   const CAMP_DECAY = 0.012;
+  const CAMP_DAY_DECAY = 0.003;
   const CAMP_STICK = 0.22;
   const CAMP_MIN = 0.15;
   const CAMP_MAX_FIRE = 1;
-  const CAMP_PILES = 8;
-  const CAMP_GLOAM_FAR = 16;
-  const CAMP_GLOAM_IN = 2.6;
+  const CAMP_CARRY = 3;
+  const CAMP_CHOP = 1.1;
+  const CAMP_LOG_REGEN = 40;
+  const CAMP_SIZE = 140;
   const CAMP_CRAFT = [
     {id:'blanket', name:'Cozy Blanket', emoji:'🧺', sticks:3},
     {id:'lantern', name:'Glow Lantern', emoji:'🏮', sticks:4}
+  ];
+  const CAMP_LANDMARKS = [
+    {id:'camp', name:'Camp', emoji:'🔥', x:0, z:0},
+    {id:'cabin', name:'Old Cabin', emoji:'🏚️', x:48, z:-32},
+    {id:'lake', name:'Moon Lake', emoji:'🌊', x:-40, z:36},
+    {id:'clearing', name:'Pine Clearing', emoji:'🌲', x:28, z:40},
+    {id:'deep', name:'Deep Woods', emoji:'🌑', x:52, z:48},
+    {id:'brook', name:'Brook Bend', emoji:'🪙', x:-46, z:-24}
+  ];
+  const CAMP_TRAILS = [
+    {x:0, z:0}, {x:12, z:-8}, {x:24, z:-16}, {x:36, z:-24}, {x:48, z:-32},
+    {x:0, z:0}, {x:-10, z:10}, {x:-22, z:20}, {x:-32, z:28}, {x:-40, z:36},
+    {x:0, z:0}, {x:10, z:12}, {x:20, z:24}, {x:28, z:40}, {x:40, z:44}, {x:52, z:48},
+    {x:0, z:0}, {x:-12, z:-8}, {x:-28, z:-16}, {x:-46, z:-24}
+  ];
+  const CAMP_LOG_SPOTS = [
+    {id:0, x:18, z:-14, kind:'fallen', value:1, zone:'woods'},
+    {id:1, x:-16, z:14, kind:'fallen', value:1, zone:'woods'},
+    {id:2, x:14, z:20, kind:'stump', value:1, zone:'woods'},
+    {id:3, x:-22, z:-12, kind:'stump', value:1, zone:'woods'},
+    {id:4, x:32, z:-8, kind:'fallen', value:1, zone:'woods'},
+    {id:5, x:-8, z:28, kind:'fallen', value:1, zone:'trail'},
+    {id:6, x:26, z:36, kind:'fallen', value:1, zone:'clearing'},
+    {id:7, x:22, z:44, kind:'stump', value:1, zone:'clearing'},
+    {id:8, x:44, z:-24, kind:'fallen', value:1, zone:'cabin'},
+    {id:9, x:54, z:-36, kind:'stump', value:1, zone:'cabin'},
+    {id:10, x:-36, z:24, kind:'fallen', value:1, zone:'woods'},
+    {id:11, x:-48, z:30, kind:'stump', value:1, zone:'woods'},
+    {id:12, x:48, z:42, kind:'fallen', value:2, zone:'deep'},
+    {id:13, x:56, z:52, kind:'stump', value:2, zone:'deep'},
+    {id:14, x:60, z:44, kind:'heart', value:3, zone:'deep'},
+    {id:15, x:50, z:58, kind:'heart', value:3, zone:'deep'},
+    {id:16, x:-50, z:-20, kind:'fallen', value:1, zone:'woods'},
+    {id:17, x:-38, z:-30, kind:'stump', value:1, zone:'woods'}
   ];
 
   function campFresh(){
@@ -31,6 +69,7 @@
   }
 
   function campItem(id){ return CAMP_CRAFT.find(c => c.id === id) || null; }
+  function campLandmark(id){ return CAMP_LANDMARKS.find(l => l.id === id) || null; }
 
   function campLoad(raw){
     const d = campFresh();
@@ -50,16 +89,55 @@
   function campBuddyAllowed(mp){ return !mp; }
   function campNoFight(){ return true; }
   function campNoGore(){ return true; }
+  function campEveryoneOkay(){ return true; }
 
   function campSetLessScary(state, on){
     state = campLoad(state);
     state.lessScary = !!on;
     return state;
   }
-
   function campHas(state, id){
     state = campLoad(state);
     return state.crafted.indexOf(id) >= 0;
+  }
+
+  function campInDeep(x, z){ return Math.hypot((x || 0) - 52, (z || 0) - 48) < 22; }
+  function campInWater(x, z){ return Math.hypot((x || 0) + 40, (z || 0) - 36) < 9; }
+  function campZone(x, z){
+    x = +x || 0; z = +z || 0;
+    if (Math.hypot(x, z) < 10) return 'camp';
+    if (Math.hypot(x - 48, z + 32) < 10) return 'cabin';
+    if (campInWater(x, z)) return 'water';
+    if (Math.hypot(x + 40, z - 36) < 16) return 'lake';
+    if (campInDeep(x, z)) return 'deep';
+    if (Math.hypot(x - 28, z - 40) < 10) return 'clearing';
+    if (Math.hypot(x + 46, z + 24) < 10) return 'brook';
+    return 'woods';
+  }
+  function campCompass(px, pz){
+    const dx = 0 - (px || 0), dz = 0 - (pz || 0);
+    return {ang: Math.atan2(dx, dz), dist: Math.hypot(dx, dz), x:0, z:0};
+  }
+
+  function campMakeLogs(){
+    return CAMP_LOG_SPOTS.map(s => Object.assign({}, s, {left: 1, regenAt: 0, chop: 0}));
+  }
+  function campLog(run, id){ return ((run && run.logs) || []).find(l => l.id === (id | 0)) || null; }
+
+  function campLightAt(run, x, z, opt){
+    if (!run || run.phase === 'day') return 1;
+    const fire = Math.max(0, run.fire || 0);
+    const fireR = 3.8 + fire * 9;
+    const dFire = Math.hypot(x || 0, z || 0);
+    let lit = Math.max(0, 1 - dFire / fireR) * (0.25 + fire);
+    if (Math.hypot((x || 0) - 48, (z || 0) + 32) < 5) lit = Math.max(lit, 0.28);
+    if ((run.lantern || 0) > 0){
+      const px = (opt && opt.px != null) ? opt.px : x;
+      const pz = (opt && opt.pz != null) ? opt.pz : z;
+      const dL = Math.hypot((x || 0) - px, (z || 0) - pz);
+      lit = Math.max(lit, Math.max(0, 1 - dL / 5.5) * 0.9);
+    }
+    return Math.min(1, lit);
   }
 
   function campGloamTarget(run, lessScary){
@@ -67,103 +145,140 @@
     const lantern = Math.max(0, run && run.lantern || 0);
     const lit = fire + Math.min(0.4, lantern * 0.08);
     const k = Math.max(0, Math.min(1, (lit - 0.12) / 0.7));
-    const far = lessScary ? 20 : CAMP_GLOAM_FAR;
-    const near = lessScary ? 7 : (lantern > 0 ? 6 : CAMP_GLOAM_IN);
+    const far = lessScary ? 28 : 18;
+    const near = lessScary ? 9 : (lantern > 0 ? 7 : 2.8);
     return near + (far - near) * k;
   }
 
-  function campStartNight(state, now, mp){
-    state = campLoad(state);
-    state.nights++;
+  function campFreshRun(state, now, mp, phase){
     const less = !!state.lessScary;
     return {
-      ok: true,
-      state,
-      run: {
-        startedAt: +now || 0,
-        t: 0,
-        fire: 0.78,
-        piles: Array.from({length: CAMP_PILES}, (_, i) => ({id:i, left: 2})),
-        won: false,
-        failed: false,
-        buddy: campBuddyAllowed(mp),
-        mp: !!mp,
-        gloam: less ? 20 : CAMP_GLOAM_FAR,
-        threat: 0,
-        scarePop: false,
-        lantern: 0,
-        lanternCd: 0,
-        best: 0.78
-      }
+      startedAt: +now || 0,
+      clock: 0,
+      day: 1,
+      phase: phase || 'day',
+      t: 0,
+      survived: 0,
+      fire: 0.7,
+      logs: campMakeLogs(),
+      carry: 0,
+      won: false,
+      failed: false,
+      buddy: campBuddyAllowed(mp),
+      mp: !!mp,
+      gx: less ? 36 : 28,
+      gz: less ? -30 : -24,
+      gmode: (phase === 'night') ? 'lurk' : 'hidden',
+      gcool: 0,
+      threat: 0,
+      scarePop: false,
+      appearBehind: false,
+      chase: false,
+      lantern: 0,
+      lanternCd: 0,
+      best: 0.7,
+      respawn: false,
+      caught: 0,
+      chopping: null
     };
   }
 
-  function campTick(run, dt, opt){
-    if (!run || run.won || run.failed) return run;
-    const step = Math.max(0, Math.min(0.12, +dt || 0));
-    const less = !!(opt && opt.lessScary);
-    const hasBlanket = !!(opt && opt.blanket);
-    run.t = Math.min(CAMP_NIGHT, (run.t || 0) + step);
-    const decay = CAMP_DECAY * (hasBlanket ? 0.85 : 1) * (less ? 0.85 : 1);
-    run.fire = Math.max(0, (run.fire || 0) - decay * step);
-    if (run.lantern) run.lantern = Math.max(0, run.lantern - step);
-    if (run.lanternCd) run.lanternCd = Math.max(0, run.lanternCd - step);
-    if (run.fire > (run.best || 0)) run.best = run.fire;
-    const target = campGloamTarget(run, less);
-    run.gloam = run.gloam == null ? target : run.gloam;
-    const spd = (target > run.gloam) ? (less ? 5 : 7) : (less ? 2.0 : 3.4);
-    const d = target - run.gloam;
-    run.gloam += Math.sign(d) * Math.min(Math.abs(d), spd * step);
-    const danger = less ? 6.2 : 3.2;
-    if (run.gloam <= danger && run.fire < (less ? 0.16 : 0.2)){
-      run.threat = (run.threat || 0) + step;
-      if (!run.scarePop && run.threat > (less ? 1.2 : 0.35)) run.scarePop = true;
-      if (run.threat > (less ? 4 : 1.6)) run.failed = true;
-    } else {
-      run.threat = Math.max(0, (run.threat || 0) - step * 0.6);
-    }
-    if (run.t >= CAMP_NIGHT){
-      if (run.fire >= CAMP_MIN && !run.failed) run.won = true;
-      else run.failed = true;
-    }
-    return run;
+  function campStartRun(state, now, mp){
+    state = campLoad(state);
+    state.nights++;
+    return {ok:true, state, run: campFreshRun(state, now, mp, 'day')};
+  }
+  function campStartNight(state, now, mp){
+    const started = campStartRun(state, now, mp);
+    started.run.phase = 'night';
+    started.run.gmode = started.state.lessScary ? 'lurk' : 'stalk';
+    started.run.t = 0;
+    return started;
   }
 
-  function campGather(state, run, pileId){
+  function campCanCarry(run, value){
+    return ((run && run.carry) || 0) + (value || 1) <= CAMP_CARRY;
+  }
+
+  function campGrantLog(state, run, log){
+    const n = Math.max(1, log.value | 0);
+    if (!campCanCarry(run, n)) return {ok:false, why:'full', state, run};
+    log.left = 0;
+    log.chop = 0;
+    log.regenAt = (run.clock || 0) + CAMP_LOG_REGEN * (log.zone === 'deep' ? 1.3 : 1);
+    run.carry = (run.carry || 0) + n;
+    state.gathered += n;
+    return {ok:true, why:'ok', state, run, gained:n};
+  }
+
+  function campPickLog(state, run, logId){
     state = campLoad(state);
-    if (!run || run.won || run.failed) return {ok:false, why:'over', state, run};
-    const pile = (run.piles || []).find(p => p.id === (pileId | 0));
-    if (!pile) return {ok:false, why:'pile', state, run};
-    if ((pile.left | 0) <= 0) return {ok:false, why:'empty', state, run};
-    pile.left -= 1;
-    state.sticks += 1;
-    state.gathered += 1;
-    return {ok:true, why:'ok', state, run};
+    if (!run || run.won) return {ok:false, why:'over', state, run};
+    const log = campLog(run, logId);
+    if (!log) return {ok:false, why:'log', state, run};
+    if ((log.left | 0) <= 0) return {ok:false, why:'empty', state, run};
+    if (log.kind === 'stump' || log.kind === 'heart') return {ok:false, why:'chop', state, run};
+    return campGrantLog(state, run, log);
+  }
+  function campGather(state, run, pileId){ return campPickLog(state, run, pileId); }
+
+  function campChopLog(state, run, logId, dt){
+    state = campLoad(state);
+    if (!run || run.won) return {ok:false, why:'over', state, run};
+    const log = campLog(run, logId);
+    if (!log) return {ok:false, why:'log', state, run};
+    if ((log.left | 0) <= 0) return {ok:false, why:'empty', state, run};
+    if (log.kind === 'fallen') return campPickLog(state, run, logId);
+    if (!campCanCarry(run, log.value || 1)) return {ok:false, why:'full', state, run};
+    log.chop = (log.chop || 0) + Math.max(0, +dt || 0);
+    run.chopping = log.id;
+    if (log.chop < CAMP_CHOP) return {ok:true, why:'chopping', state, run, left: CAMP_CHOP - log.chop};
+    run.chopping = null;
+    return campGrantLog(state, run, log);
+  }
+
+  function campStash(state, run){
+    state = campLoad(state);
+    if (!run) return {ok:false, why:'run', state, run};
+    if ((run.carry | 0) <= 0) return {ok:false, why:'empty', state, run};
+    const n = run.carry | 0;
+    state.sticks += n;
+    run.carry = 0;
+    return {ok:true, why:'ok', state, run, stashed:n};
   }
 
   function campAddStick(state, run, fromNet){
     state = campLoad(state);
-    if (!run || run.won || run.failed) return {ok:false, why:'over', state, run};
+    if (!run || run.won) return {ok:false, why:'over', state, run};
     if (!fromNet){
-      if ((state.sticks | 0) <= 0) return {ok:false, why:'sticks', state, run};
+      if ((state.sticks | 0) <= 0){
+        if ((run.carry | 0) > 0){
+          state.sticks += run.carry;
+          run.carry = 0;
+        }
+        if ((state.sticks | 0) <= 0) return {ok:false, why:'sticks', state, run};
+      }
       state.sticks -= 1;
       state.added += 1;
     }
     run.fire = Math.min(CAMP_MAX_FIRE, (run.fire || 0) + CAMP_STICK);
     if (run.fire > (run.best || 0)) run.best = run.fire;
     run.threat = Math.max(0, (run.threat || 0) * 0.3);
+    if (run.gmode === 'chase' || run.gmode === 'stalk') run.gmode = 'retreat';
     return {ok:true, why:'ok', state, run, fire: run.fire};
   }
 
   function campShine(state, run){
     state = campLoad(state);
-    if (!run || run.won || run.failed) return {ok:false, why:'over', state, run};
+    if (!run || run.won) return {ok:false, why:'over', state, run};
     if (!campHas(state, 'lantern')) return {ok:false, why:'lantern', state, run};
     if ((run.lanternCd || 0) > 0) return {ok:false, why:'wait', state, run, left: run.lanternCd};
     run.lantern = 5;
     run.lanternCd = 8;
     run.scarePop = false;
+    run.appearBehind = false;
     run.threat = 0;
+    run.gmode = 'retreat';
     return {ok:true, why:'ok', state, run};
   }
 
@@ -176,6 +291,166 @@
     state.sticks -= item.sticks;
     state.crafted.push(item.id);
     return {ok:true, why:'ok', state, item};
+  }
+
+  function campCaught(state, run){
+    state = campLoad(state);
+    if (!run || run.won) return {ok:false, why:'over', state, run};
+    const lostCarry = run.carry | 0;
+    const lostStash = Math.min(2, state.sticks | 0);
+    run.carry = 0;
+    state.sticks -= lostStash;
+    run.caught = (run.caught || 0) + 1;
+    run.respawn = true;
+    run.failed = false;
+    run.scarePop = true;
+    run.appearBehind = false;
+    run.chase = false;
+    run.threat = 0;
+    run.gmode = 'retreat';
+    run.gx = 24; run.gz = -22;
+    return {ok:true, why:'ok', state, run, lostCarry, lostStash, everyoneOkay:true};
+  }
+
+  function campRegenLogs(run){
+    (run.logs || []).forEach(log => {
+      if ((log.left | 0) > 0) return;
+      if ((run.clock || 0) >= (log.regenAt || 0) && log.regenAt > 0){
+        log.left = 1;
+        log.chop = 0;
+        log.regenAt = 0;
+      }
+    });
+  }
+
+  function campStepGloam(run, dt, opt){
+    const less = !!(opt && opt.lessScary);
+    const px = (opt && opt.px) || 0, pz = (opt && opt.pz) || 0;
+    const face = (opt && opt.face) || 0;
+    if (run.phase !== 'night' || run.won){
+      run.gmode = 'hidden';
+      run.chase = false;
+      run.appearBehind = false;
+      return run;
+    }
+    run.gcool = Math.max(0, (run.gcool || 0) - dt);
+    const lit = campLightAt(run, px, pz, {px, pz});
+    const dPlayer = Math.hypot((run.gx || 0) - px, (run.gz || 0) - pz);
+    const dFire = Math.hypot(px, pz);
+    const catchR = less ? 1.05 : 1.7;
+    const chaseNeed = less ? 22 : 13;
+    if (lit < 0.2 && dPlayer < catchR){
+      run.wantCatch = true;
+      return run;
+    }
+    run.wantCatch = false;
+    if (lit < 0.18 && dFire > chaseNeed){
+      run.gmode = 'chase';
+      run.chase = true;
+    } else if (lit > 0.55){
+      run.gmode = 'retreat';
+      run.chase = false;
+    } else if (run.gmode === 'hidden' || run.gmode === 'retreat'){
+      run.gmode = less ? 'lurk' : 'stalk';
+      run.chase = false;
+    }
+
+    if (!less && run.gcool <= 0 && lit < 0.22 && dFire > 8 && Math.random() < (dt * 0.25)){
+      run.gmode = 'behind';
+      run.appearBehind = true;
+      run.scarePop = true;
+      run.gcool = less ? 14 : 7;
+      run.gx = px - Math.sin(face) * 3.2;
+      run.gz = pz - Math.cos(face) * 3.2;
+      return run;
+    }
+
+    let tx = run.gx, tz = run.gz, spd = less ? 2.2 : 3.6;
+    if (run.gmode === 'chase'){
+      tx = px; tz = pz;
+      spd = less ? 3.4 : 6.2;
+    } else if (run.gmode === 'retreat'){
+      const ang = Math.atan2(run.gx || 1, run.gz || 1);
+      tx = Math.sin(ang) * 30; tz = Math.cos(ang) * 30;
+      spd = less ? 5 : 7;
+    } else if (run.gmode === 'dart'){
+      spd = less ? 6 : 11;
+    } else if (run.gmode === 'stalk'){
+      const ang = Math.atan2(px - (run.gx || 0), pz - (run.gz || 0)) + 0.9;
+      tx = px + Math.sin(ang) * 8;
+      tz = pz + Math.cos(ang) * 8;
+      spd = less ? 1.6 : 2.8;
+    } else {
+      const ang = (run.clock || 0) * 0.15;
+      tx = Math.sin(ang) * 22 + 8; tz = Math.cos(ang) * 22 - 4;
+      spd = less ? 1.4 : 2.2;
+    }
+    if (!less && run.gcool <= 0 && run.gmode === 'stalk' && Math.random() < dt * 0.4){
+      run.gmode = 'dart';
+      run.gcool = 1.2;
+      const a = Math.random() * Math.PI * 2;
+      tx = px + Math.sin(a) * 10; tz = pz + Math.cos(a) * 10;
+      spd = 12;
+    }
+    const dx = tx - (run.gx || 0), dz = tz - (run.gz || 0);
+    const dist = Math.hypot(dx, dz) || 1;
+    const step = Math.min(dist, spd * dt);
+    run.gx = (run.gx || 0) + dx / dist * step;
+    run.gz = (run.gz || 0) + dz / dist * step;
+    const far = campGloamTarget(run, less);
+    run.gloam = Math.hypot(run.gx || 0, run.gz || 0);
+    if (run.gmode === 'behind' && run.gcool < 5.5) run.appearBehind = false;
+    if (lit < 0.2 && dPlayer < (less ? 7 : 5)) run.threat = (run.threat || 0) + dt;
+    else run.threat = Math.max(0, (run.threat || 0) - dt * 0.5);
+    if (!run.scarePop && run.threat > (less ? 2.2 : 0.45) && dPlayer < 6) run.scarePop = true;
+    if (run.gloam > far + 8 && run.gmode === 'retreat') run.gmode = 'lurk';
+    return run;
+  }
+
+  function campTick(run, dt, opt){
+    if (!run || run.won) return run;
+    const step = Math.max(0, Math.min(0.12, +dt || 0));
+    const less = !!(opt && opt.lessScary);
+    const hasBlanket = !!(opt && opt.blanket);
+    run.clock = (run.clock || 0) + step;
+    run.t = (run.t || 0) + step;
+    if (run.lantern) run.lantern = Math.max(0, run.lantern - step);
+    if (run.lanternCd) run.lanternCd = Math.max(0, run.lanternCd - step);
+    run.respawn = false;
+    run.wantCatch = false;
+    campRegenLogs(run);
+    const decay = (run.phase === 'day' ? CAMP_DAY_DECAY : CAMP_DECAY) * (hasBlanket ? 0.85 : 1) * (less ? 0.85 : 1);
+    run.fire = Math.max(0, (run.fire || 0) - decay * step);
+    if (run.fire > (run.best || 0)) run.best = run.fire;
+
+    if (run.phase === 'day'){
+      run.gmode = 'hidden';
+      run.chase = false;
+      if (run.t >= CAMP_DAY){
+        run.phase = 'night';
+        run.t = 0;
+        run.gmode = less ? 'lurk' : 'stalk';
+        run.gx = less ? 30 : 22;
+        run.gz = less ? -26 : -18;
+      }
+    } else {
+      campStepGloam(run, step, opt);
+      if (run.t >= CAMP_NIGHT){
+        const kept = (run.fire || 0) >= CAMP_MIN;
+        if (kept) run.survived = (run.survived || 0) + 1;
+        if ((run.survived || 0) >= CAMP_WIN_NIGHTS){
+          run.won = true;
+          run.failed = false;
+        } else {
+          run.phase = 'day';
+          run.t = 0;
+          run.day = (run.day || 1) + 1;
+          run.gmode = 'hidden';
+          run.nightKept = kept;
+        }
+      }
+    }
+    return run;
   }
 
   function campFinish(state, run){
@@ -191,16 +466,21 @@
   }
 
   function campReward(run){
-    if (!run || !run.won) return 0;
-    return 20 + Math.round((run.best || 0) * 10);
+    if (!run) return 0;
+    const n = run.survived | 0;
+    if (!run.won && n <= 0) return 0;
+    return (run.won ? 40 : 0) + n * 12 + Math.round((run.best || 0) * 10);
   }
 
   const api = {
-    CAMP_KEY, CAMP_VER, CAMP_NIGHT, CAMP_DECAY, CAMP_STICK, CAMP_MIN, CAMP_MAX_FIRE, CAMP_PILES, CAMP_CRAFT,
-    CAMP_GLOAM_FAR, CAMP_GLOAM_IN,
-    campFresh, campLoad, campItem, campBuddyAllowed, campNoFight, campNoGore,
-    campSetLessScary, campHas, campGloamTarget,
-    campStartNight, campTick, campGather, campAddStick, campShine, campCraft, campFinish, campReward
+    CAMP_KEY, CAMP_VER, CAMP_DAY, CAMP_NIGHT, CAMP_WIN_NIGHTS, CAMP_DECAY, CAMP_DAY_DECAY,
+    CAMP_STICK, CAMP_MIN, CAMP_MAX_FIRE, CAMP_CARRY, CAMP_CHOP, CAMP_LOG_REGEN, CAMP_SIZE,
+    CAMP_CRAFT, CAMP_LANDMARKS, CAMP_TRAILS, CAMP_LOG_SPOTS, CAMP_GLOAM_FAR: 18, CAMP_GLOAM_IN: 2.8,
+    campFresh, campLoad, campItem, campLandmark, campBuddyAllowed, campNoFight, campNoGore, campEveryoneOkay,
+    campSetLessScary, campHas, campInDeep, campInWater, campZone, campCompass, campMakeLogs, campLog,
+    campLightAt, campGloamTarget, campStartRun, campStartNight,
+    campCanCarry, campPickLog, campGather, campChopLog, campStash, campAddStick, campShine, campCraft,
+    campCaught, campTick, campFinish, campReward
   };
   root.CampRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

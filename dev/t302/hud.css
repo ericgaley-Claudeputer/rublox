@@ -34,4 +34,24 @@
 #t302TutSkip{background:#fff}
 .t302rare{font-weight:900}
 @media (max-width:700px){ #t302Coins{top:104px;font-size:16px;padding:6px 12px} #ridesHelpBtn{bottom:248px} #t302Tut{top:150px} }
-</style>
+
+#ridesDelBtn,#ridesUndoBtn,#ridesTestBtn{position:absolute;z-index:8;right:16px;padding:10px 14px;font-size:16px;border:3px solid #1d2340;border-radius:16px;background:#fff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+#ridesDelBtn{bottom:280px;background:#ffe4e8}
+#ridesUndoBtn{bottom:336px;background:#fff8e6}
+#ridesTestBtn{bottom:392px;background:#e7ffe9}
+.ridesmode #ridesDelBtn,.ridesmode #ridesUndoBtn,.ridesmode #ridesTestBtn{display:block}
+#ridesDelBtn.on{background:#ff4d5e;color:#fff}
+#campCompass,#campMap{display:none}
+.campmode #campCompass,.campmode #campMap{display:block}
+#campCompass{position:absolute;z-index:8;right:16px;top:112px;width:64px;height:64px;border-radius:50%;background:#fff8e6;border:3px solid #1d2340;box-shadow:3px 3px 0 #1d2340}
+#campCompass b{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:16px}
+#campNeedle{position:absolute;left:50%;top:8px;width:4px;height:22px;margin-left:-2px;background:#c23d4b;border-radius:2px;transform-origin:50% 24px}
+#campMap{position:absolute;z-index:8;right:16px;top:186px;width:128px;height:128px;border:3px solid #1d2340;border-radius:16px;background:#14331c;box-shadow:3px 3px 0 #1d2340;image-rendering:pixelated}
+#t302Scare.strong{background:rgba(20,0,30,.55)}
+@media (max-width:700px){
+  #ridesDelBtn{bottom:304px}
+  #ridesUndoBtn{bottom:360px}
+  #ridesTestBtn{bottom:416px}
+  #campCompass{top:150px;right:12px;width:56px;height:56px}
+  #campMap{top:214px;right:12px;width:110px;height:110px}
+}

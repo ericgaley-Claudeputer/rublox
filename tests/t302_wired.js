@@ -8,9 +8,9 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
 describe('t302 five play modes wiring', () => {
-  test('BUILD is 2026.11.19-3 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.19-3'"));
-    assert.equal(version.build, '2026.11.19-3');
+  test('BUILD is 2026.11.19-4 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.19-4'"));
+    assert.equal(version.build, '2026.11.19-4');
   });
 
   test('all five modes are playable menu games with original names and save keys', () => {
@@ -87,7 +87,7 @@ describe('t302 five play modes wiring', () => {
 
   test('Xbox and mobile actions are edge-triggered and garden grants starter seeds', () => {
     assert.match(html, /function t302Edge/);
-    assert.match(html, /if \(e\.repeat && mode !== 'meadow'\) return false;/);
+    assert.match(html, /if \(e\.repeat && mode !== 'meadow' && mode !== 'camp'\) return false;/);
     assert.match(html, /gardenGrantStarter/);
     assert.match(html, /meadowThrowTo/);
     assert.match(html, /document\.pointerLockElement/);
@@ -117,4 +117,18 @@ describe('t302 five play modes wiring', () => {
     assert.match(html, /MEADOW_REBIRTH_LEVEL/);
   });
 
+
+  test('Campfire has a 5-night forest loop and Rideland snaps, deletes, and test-rides', () => {
+    assert.match(html, /campStartRun/);
+    assert.match(html, /CAMP_WIN_NIGHTS/);
+    assert.match(html, /campCaught/);
+    assert.match(html, /id="campMap"/);
+    assert.match(html, /id="campCompass"/);
+    assert.match(html, /ridesSnap/);
+    assert.match(html, /function ridesUndoNow/);
+    assert.match(html, /function ridesToggleDel/);
+    assert.match(html, /function ridesTestRide/);
+    assert.match(html, /id="ridesDelBtn"/);
+    assert.match(html, /a:'remove'/);
+  });
 });

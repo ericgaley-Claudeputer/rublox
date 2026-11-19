@@ -5,8 +5,8 @@ import json
 
 ROOT = Path(__file__).resolve().parents[2]
 T302 = Path(__file__).resolve().parent
-BUILD = "2026.11.19-3"
-OLD = "2026.11.19-2"
+BUILD = "2026.11.19-4"
+OLD = "2026.11.19-3"
 
 
 def read(name: str) -> str:
@@ -70,16 +70,16 @@ def main() -> int:
         block = '<style id="t302Css">\n' + css_body + ("\n" if not css_body.endswith("\n") else "") + "</style>"
     html = html[:css_start] + block + html[css_end + len("</style>"):]
 
-    # Replace only the existing t302 HUD widgets (t302Box through campCraft).
+    # Replace t302 HUD widgets through campWin (and drop any duplicated vignette/win blocks).
     start = html.find('  <div id="t302Box"')
-    end_mark = """      <div id="campCraftList"></div>\n    </div>\n  </div>\n"""
+    end_mark = '  <button type="button" id="cafeBoardBtn">'
     end = html.find(end_mark, start)
     if start < 0 or end < 0:
         raise SystemExit(f"hud html span missing {start} {end}")
     hud = read("hud.html").lstrip("\n")
     if not hud.endswith("\n"):
         hud += "\n"
-    html = html[:start] + hud + html[end + len(end_mark):]
+    html = html[:start] + hud + html[end:]
 
     old_ov = "const T297_OVERLAY_IDS = ['cafeDecor', 'cafeBoard', 'fishIndex', 'huntMap', 'psVoteBox', 'gardenShop', 'meadowBook', 'ridesPalette', 'hiveQuest', 'campCraft'];"
     new_ov = "const T297_OVERLAY_IDS = ['cafeDecor', 'cafeBoard', 'fishIndex', 'huntMap', 'psVoteBox', 'gardenShop', 'meadowBook', 'ridesPalette', 'hiveQuest', 'campCraft', 'campWin'];"
@@ -88,10 +88,15 @@ def main() -> int:
     elif new_ov not in html:
         raise SystemExit("overlay id list not found")
 
-    html = html.replace(
-        "Keep the fire bright until sunrise. Cozy, not scary — and only real friends in multiplayer.",
-        "Keep the fire bright until sunrise. Spooky Gloam eyes watch from the dark — scare them back with fire and lanterns!",
-    )
+    for old_tag, new_tag in [
+        ("Keep the fire bright until sunrise. Cozy, not scary — and only real friends in multiplayer.",
+         "Hunt logs by day and keep the fire bright through 5 spooky nights. The Gloam stalks the dark — scare it back with fire and lanterns!"),
+        ("Keep the fire bright until sunrise. Spooky Gloam eyes watch from the dark — scare them back with fire and lanterns!",
+         "Hunt logs by day and keep the fire bright through 5 spooky nights. The Gloam stalks the dark — scare it back with fire and lanterns!"),
+    ]:
+        if old_tag in html:
+            html = html.replace(old_tag, new_tag)
+
 
     html_path.write_text(html)
 
@@ -146,6 +151,12 @@ def main() -> int:
         "meadowRebirth",
         "hiveBloom",
         "RIDES_TUT",
+        "campStartRun",
+        "CAMP_WIN_NIGHTS",
+        "ridesSnap",
+        "ridesUndo",
+        'id="ridesDelBtn"',
+        'id="campMap"',
         "t302Update(dt)",
         'id="wxSetAuto"',
         'id="hero"',
