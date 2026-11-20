@@ -368,6 +368,15 @@
       else elevNetSync();
       return;
     }
+    if (d.a === 'vote'){
+      if (!elevIsGuest() && elv.run.phase === 'vote'){
+        const uid = d.uid || (g && (g.uid || g.id)) || 'g';
+        ElevRules.elevCastVote(elv.run, uid, d.i);
+        elevPaintVote();
+        elevNetSync();
+      }
+      return;
+    }
     if (d.a !== 'sync' || !d.snap) return;
     if (!elevIsGuest()) return;
     const before = elv.run.phase;
@@ -381,7 +390,9 @@
   function elevOnPhase(before, now){
     if (!elv) return;
     if (now === 'board'){ banner('🚪 Doors closing! Get back in!'); elevTone([440, 330], 0.06, 'square', 0.04); }
+    if (now === 'vote'){ elevOpenVote(); banner(elv.run.quote || '🗳️ Pick the next floor!'); elevTone([660, 880], 0.07, 'sine', 0.05); }
     if (now === 'ride'){
+      try { if (typeof t297OverlayClose === 'function') t297OverlayClose('elevVote'); } catch (e){}
       ElevRules.elevCloseDoors(elv.run, elevInCab());
       const pack = ElevRules.elevApplyPack(elv.sv, elv.run);
       elv.sv = pack.state; elv.run = pack.run; elevPersist(elv.sv);
@@ -1311,12 +1322,13 @@
     dt = Math.max(0, Math.min(0.12, +dt || 0));
     const run = elv.run;
     const before = run.phase;
-    if (!elevIsGuest()) ElevRules.elevTick(run, dt);
+    if (!elevIsGuest()) ElevRules.elevTick(run, dt, {mp: elevIsMp()});
     else run.t = Math.max(0, (run.t || 0) - dt);
     if (before !== run.phase){
       elevOnPhase(before, run.phase);
       if (!elevIsGuest()) elevNetSync();
     }
+    if (run.phase === 'vote') elevPaintVote();
     if (run.phase === 'floor' && P.y < -1 && !run.watching) elevCatchFall();
     if (run.wantClear) elevDoClear();
     else if (run.wantFail) elevDoFail();
@@ -1356,11 +1368,11 @@
     if (run.phase === 'lobby' || run.phase === 'inter') elevPaintBoard();
 
     const f = ElevRules.elevFloor(run.floor);
-    const maxT = run.phase === 'floor' && f ? (f.seconds + 5) : (run.phase === 'ride' ? ElevRules.ELEV_RIDE : (run.phase === 'board' ? ElevRules.ELEV_BOARD : ElevRules.ELEV_INTER));
+    const maxT = run.phase === 'floor' && f ? (f.seconds + 5) : (run.phase === 'vote' ? ElevRules.ELEV_VOTE_T : (run.phase === 'ride' ? ElevRules.ELEV_RIDE : (run.phase === 'board' ? ElevRules.ELEV_BOARD : ElevRules.ELEV_INTER)));
     const seenN = (elv.sv && elv.sv.seen && elv.sv.seen.length) || 0;
     const bonus = ElevRules.elevStreakBonus(run.streak || 0);
-    const lab = '🛗 ' + (run.survived || 0) + ' floors  ·  streak ' + (run.streak || 0) + ' (+' + bonus + '🪙)  ·  best ' + (elv.sv.best || 0) + '  ·  seen ' + seenN + (run.phase === 'floor' && f ? ('  ·  ' + f.emoji + ' ' + f.name + '  ·  ' + Math.ceil(run.t) + 's') : (run.phase === 'ride' ? '  ·  riding…' : (run.phase === 'board' ? ('  ·  doors ' + Math.ceil(run.t) + 's') : '')));
-    elevMeter(true, (run.phase === 'floor' || run.phase === 'ride' || run.phase === 'board') ? run.t : 1, lab, maxT);
+    const lab = '🛗 ' + (run.survived || 0) + ' floors  ·  streak ' + (run.streak || 0) + ' (+' + bonus + '🪙)  ·  best ' + (elv.sv.best || 0) + '  ·  seen ' + seenN + (run.phase === 'floor' && f ? ('  ·  ' + f.emoji + ' ' + f.name + '  ·  ' + Math.ceil(run.t) + 's') : (run.phase === 'vote' ? ('  ·  vote ' + Math.ceil(run.t) + 's') : (run.phase === 'ride' ? '  ·  riding…' : (run.phase === 'board' ? ('  ·  doors ' + Math.ceil(run.t) + 's') : ''))));
+    elevMeter(true, (run.phase === 'floor' || run.phase === 'ride' || run.phase === 'board' || run.phase === 'vote') ? run.t : 1, lab, maxT);
 
     if (run.phase === 'floor'){
       (elv.hazards || []).forEach(h => {
@@ -1447,8 +1459,68 @@
     }
   }
 
+  function elevVoteUid(){
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.on) return elevIsGuest() ? (mp.me || 'g') : 'H';
+    } catch (e){}
+    return 'H';
+  }
+  function elevPaintVote(){
+    const box = document.getElementById('elevVoteList');
+    if (!box || !elv || !elv.run || !elv.run.vote) return;
+    const choices = elv.run.vote.choices || [];
+    const mine = (elv.run.vote.votes || {})[elevVoteUid()];
+    const sel = (elv.voteSel != null) ? elv.voteSel : (mine != null ? mine : 0);
+    elv.voteSel = sel;
+    box.innerHTML = choices.map((c, i) => {
+      const on = (mine === i) || (sel === i && mine == null);
+      const ticket = c.ticket ? '<small>🎫 Ticket floor</small>' : '<small>Choice ' + (i + 1) + '</small>';
+      return '<button type="button" class="elevVoteCard' + (on ? ' sel' : '') + '" data-i="' + i + '"><span class="e">' + (c.emoji || '🛗') + '</span><span>' + (c.name || c.id) + '</span>' + ticket + '</button>';
+    }).join('');
+    box.querySelectorAll('[data-i]').forEach(btn => {
+      btn.addEventListener('click', ev => { ev.preventDefault(); elevCastMyVote(+btn.getAttribute('data-i')); });
+    });
+    const sub = document.getElementById('elevVoteSub');
+    if (sub) sub.textContent = 'Time left: ' + Math.ceil(elv.run.t || 0) + 's  ·  ' + Object.keys(elv.run.vote.votes || {}).length + ' vote(s) in.';
+  }
+  function elevOpenVote(){
+    if (!elv || !elv.run || elv.run.phase !== 'vote') return;
+    elv.voteSel = 0;
+    if (typeof t297OverlayOpen !== 'function' || !t297OverlayOpen('elevVote')){
+      const el = document.getElementById('elevVote');
+      if (el) el.classList.add('show');
+    }
+    elevPaintVote();
+  }
+  function elevCastMyVote(i){
+    if (!elv || elv.run.phase !== 'vote') return false;
+    elv.voteSel = i | 0;
+    if (elevIsGuest()){
+      try { if (typeof mpSend === 'function') mpSend({t:'elev', a:'vote', i: elv.voteSel, uid: elevVoteUid()}); } catch (e){}
+      ElevRules.elevCastVote(elv.run, elevVoteUid(), elv.voteSel);
+      elevPaintVote();
+      return true;
+    }
+    const r = ElevRules.elevCastVote(elv.run, elevVoteUid(), elv.voteSel);
+    if (r && r.ok){ elevPaintVote(); elevNetSync(); banner('🗳️ You voted for ' + (r.pick.emoji || '') + ' ' + r.pick.name); }
+    return !!(r && r.ok);
+  }
+  function elevVoteKey(e){
+    if (!elv || elv.run.phase !== 'vote') return false;
+    const c = e.code || e.key;
+    if (c === 'Digit1' || c === 'Digit2' || c === 'Digit3' || c === 'Numpad1' || c === 'Numpad2' || c === 'Numpad3'){
+      const i = +(String(c).slice(-1)) - 1;
+      return elevCastMyVote(i);
+    }
+    const n = (elv.run.vote && elv.run.vote.choices && elv.run.vote.choices.length) || 3;
+    if (c === 'ArrowLeft' || c === 'ArrowUp'){ elv.voteSel = ((elv.voteSel || 0) - 1 + n) % n; elevPaintVote(); return true; }
+    if (c === 'ArrowRight' || c === 'ArrowDown'){ elv.voteSel = ((elv.voteSel || 0) + 1) % n; elevPaintVote(); return true; }
+    if (c === 'Enter' || c === 'Space'){ return elevCastMyVote(elv.voteSel || 0); }
+    return false;
+  }
   function elevKey(e){
     if (!elv) return false;
+    if (elevVoteKey(e)) return true;
     if (typeof t297EatOverlayKey === 'function' && t297EatOverlayKey(e)) return true;
     if (e.type === 'keyup') return false;
     const c = e.code || e.key;
@@ -1465,6 +1537,15 @@
   function elevPadEdge(jp){
     if (!elv || !jp) return false;
     if (typeof t297EatOverlayPad === 'function' && t297EatOverlayPad(jp)) return true;
+    if (elv.run && elv.run.phase === 'vote'){
+      const n = (elv.run.vote && elv.run.vote.choices && elv.run.vote.choices.length) || 3;
+      if ((jp[14] || jp[12]) && !elv._vd){ elv._vd = true; elv.voteSel = ((elv.voteSel || 0) - 1 + n) % n; elevPaintVote(); return true; }
+      if ((jp[15] || jp[13]) && !elv._vd){ elv._vd = true; elv.voteSel = ((elv.voteSel || 0) + 1) % n; elevPaintVote(); return true; }
+      if (!jp[14] && !jp[15] && !jp[12] && !jp[13]) elv._vd = false;
+      if (!elv._va && jp[0]){ elv._va = true; elevCastMyVote(elv.voteSel || 0); return true; }
+      if (!jp[0]) elv._va = false;
+      return true;
+    }
     if (!elv._x && jp[2]){ elv._x = true; elevAct(); return true; }
     if (!jp[2]) elv._x = false;
     if (!elv._y && jp[3]){ elv._y = true; elevOpenIndex(); return true; }
@@ -1482,7 +1563,7 @@
     elevMeter(false);
     const box = document.getElementById('elevBox'); if (box) box.style.display = 'none';
     try { elevMuzak.stop(); } catch (e){}
-    if (typeof t297OverlayClose === 'function'){ t297OverlayClose('elevHelp'); t297OverlayClose('elevIndex'); t297OverlayClose('elevShop'); }
+    if (typeof t297OverlayClose === 'function'){ t297OverlayClose('elevHelp'); t297OverlayClose('elevIndex'); t297OverlayClose('elevShop'); t297OverlayClose('elevVote'); }
     const ob = document.getElementById('obby');
     if (ob) ob.classList.remove('elevmode');
   }
@@ -1502,6 +1583,16 @@
     shop(){ elevOpenShop(); },
     talk(){ elv.talkT = 0; elevTickTalk(0.01); },
     board(){ if (elv){ ElevRules.elevBeginBoard(elv.run); elevNetSync(); } },
+    vote(floorId){
+      if (!elv) return null;
+      if (floorId) elv.run.queued = floorId;
+      elv.run.survived = Math.max(elv.run.survived | 0, ElevRules.ELEV_VOTE_EVERY);
+      ElevRules.elevBeginVote(elv.run, Math.random);
+      elevOpenVote();
+      return ElevRules.elevWire(elv.run);
+    },
+    cast(i, uid){ if (!elv) return null; return ElevRules.elevCastVote(elv.run, uid || 'H', i); },
+
     go(fromNet){ elevGo(!!fromNet); },
     inCab(){ return elevInCab(); },
     setMp(opts){

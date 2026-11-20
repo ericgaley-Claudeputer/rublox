@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refresh already-injected Wobblevator sources and bump BUILD to 2026.11.20-2."""
+"""Refresh already-injected Wobblevator sources and bump BUILD to 2026.11.20-3."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -7,8 +7,8 @@ import json
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-BUILD = "2026.11.20-2"
-OLD_BUILD = "2026.11.20-1"
+BUILD = "2026.11.20-3"
+OLD_BUILD = "2026.11.20-2"
 ELEV = Path(__file__).resolve().parent
 
 
@@ -235,6 +235,8 @@ def verify(html: str) -> None:
         "elev wall": "function elevWall(",
         "orbit clip": "mode === 'hunt' || mode === 'elevator'){ // pull the camera",
         "camOnly resolve": "if (b && b.camOnly) continue;",
+        "elev vote": "function elevBeginVote(",
+        "elev vote hud": 'id="elevVote"',
     }
     missing = [k for k, v in checks.items() if v not in html]
     if missing:
