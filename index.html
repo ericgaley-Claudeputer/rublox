@@ -1627,6 +1627,39 @@ body.lh-muffled #obby{filter:saturate(.85)}
 #wnAct.show{display:block}
 @media (max-width:700px){ #wnAct{bottom:120px} }
 
+#mmBox{position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center;display:none}
+#mmBox #mmHint{display:inline-block;background:rgba(12,48,64,.84);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:14px}
+.mmode #mmBox{display:block}
+#mmAct{position:absolute;right:16px;bottom:96px;z-index:8;padding:12px 16px;font-size:18px;border:3px solid #0b3b4a;border-radius:16px;background:#7ee0d6;font-weight:800;box-shadow:3px 3px 0 #0b3b4a;display:none}
+#mmAct.show{display:block}
+#mmSwim{position:absolute;right:16px;bottom:170px;z-index:8;display:none;flex-direction:column;gap:8px}
+.mmode #mmSwim{display:flex}
+#mmSwim button{width:56px;height:56px;border:3px solid #0b3b4a;border-radius:16px;background:#c8f4ff;font-size:22px;font-weight:800;box-shadow:3px 3px 0 #0b3b4a}
+@media (max-width:700px){ #mmAct{bottom:120px} #mmSwim{bottom:190px} }
+
+
+.avbooth{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:rgba(10,12,24,.55)}
+.avbooth[hidden]{display:none}
+.avbooth-card{background:#fff8ef;border:3px solid #1d2340;border-radius:18px;padding:12px;max-width:560px;width:94%;max-height:92vh;overflow:auto;box-shadow:4px 4px 0 #1d2340}
+.avbooth-h{font-weight:800;margin-bottom:8px}
+#avBoothCv{display:block;width:100%;max-width:360px;height:auto;margin:0 auto 8px;border-radius:12px;background:#f4efe8}
+.avbooth-row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.avbooth-row button,.avbooth-acts button{border:2px solid #1d2340;border-radius:12px;padding:6px 8px;font-weight:700;cursor:pointer;background:#fff}
+.avbooth-row button.on{background:#ffd23f}
+.avbooth-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.avbooth-gal{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.avbooth-gal img{width:88px;height:88px;object-fit:cover;border-radius:10px;border:2px solid #1d2340}
+#hubBoothBtn{margin-left:8px}
+
+.wnnight #obby canvas{filter:brightness(.92)}
+#wnWrap{position:absolute;inset:0;z-index:12;display:flex;align-items:center;justify-content:center;background:rgba(12,20,40,.45)}
+#wnWrap[hidden]{display:none}
+.wnwrap-card{background:#fff8ef;border:3px solid #1d2340;border-radius:18px;padding:14px 16px;max-width:420px;width:92%;box-shadow:4px 4px 0 #1d2340}
+.wnwrap-h{font-weight:800;margin-bottom:8px}
+.wnwrap-ch{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.wnwrap-ch button{border:2px solid #1d2340;border-radius:12px;padding:8px 10px;font-weight:700;cursor:pointer}
+#wnWrapX{margin-top:6px;font-weight:800;border:2px solid #1d2340;border-radius:12px;padding:6px 12px;background:#ffd23f}
+
 </style>
 <style id="vtCss">
 #vtBox{position:absolute;left:12px;right:12px;top:58px;z-index:6;pointer-events:none;display:none}
@@ -1713,6 +1746,7 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
       <p>Jump, build, and play in a world made of blocks! 🧱✨ Play on your own or together with your family. Make your avatar and jump in!</p>
       <button class="big" data-go="games">🎮 See the Games</button>
       <button class="big green" data-go="avatar" style="margin-left:8px">🧍 Make my Avatar</button>
+      <button class="big" id="hubBoothBtn" type="button" style="margin-left:8px">📸 Photo Booth</button>
       <button class="big" data-go="achievements" style="margin-left:8px">🏆 Achievements</button>
       <button class="big" data-go="quests" style="margin-left:8px">📜 Daily Quests</button>
       <button class="big" data-go="leaderboard" style="margin-left:8px">🏅 Leaderboard</button>
@@ -1773,6 +1807,26 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
         </div>
         <button class="big blue" id="randBtn">🎲 Surprise me!</button>
         <button class="big green" id="saveAv" style="margin-left:8px">💾 Save Avatar</button>
+
+        <button class="big" id="avBoothBtn" type="button" style="margin-left:8px">📸 Photo Booth</button>
+  <div id="avBooth" class="avbooth" hidden>
+    <div class="avbooth-card">
+      <div class="avbooth-h">📸 Photo Booth</div>
+      <canvas id="avBoothCv" width="520" height="600"></canvas>
+      <div class="avbooth-row" id="avBoothPoses"></div>
+      <div class="avbooth-row" id="avBoothBgs"></div>
+      <div class="avbooth-row" id="avBoothFrames"></div>
+      <div class="avbooth-row" id="avBoothStickers"></div>
+      <div class="avbooth-acts">
+        <button type="button" id="avBoothSnap">📸 Take photo</button>
+        <button type="button" id="avBoothDl">⬇️ Download</button>
+        <button type="button" id="avBoothGal">🖼️ Gallery</button>
+        <button type="button" id="avBoothX">Close</button>
+      </div>
+      <div id="avBoothGallery" class="avbooth-gal" hidden></div>
+    </div>
+  </div>
+
       </div>
     </div>
   <div class="stuffwrap">
@@ -2268,8 +2322,18 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
   <button type="button" id="shAct">✨ Do it</button>
   <button type="button" id="shHomeBtn">🏠 Send home</button>
   <button type="button" id="shUpBtn">🏠 Upgrade kennels</button>
-  <div id="wnBox" style="display:none"><span id="wnHint"></span></div>
+<div id="wnBox" style="display:none"><span id="wnHint"></span></div>
   <button type="button" id="wnAct">✨ Do it</button>
+
+  <div id="wnWrap" class="wnwrap" hidden>
+    <div class="wnwrap-card">
+      <div class="wnwrap-h">🎁 Gift Wrap  ·  Judge Ribbon Rue</div>
+      <div id="wnWrapStep" class="wnwrap-s">Pick a paper</div>
+      <div id="wnWrapChoices" class="wnwrap-ch"></div>
+      <div id="wnWrapScore" class="wnwrap-sc"></div>
+      <button type="button" id="wnWrapX">Close</button>
+    </div>
+  </div>
   <div id="vtBox" style="display:none">
     <div id="vtHint"></div>
     <div id="vtChart">
@@ -2282,6 +2346,13 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
     </div>
   </div>
   <button type="button" id="vtAct">🩺 Do it</button>
+  <div id="mmBox" style="display:none"><span id="mmHint"></span></div>
+  <button type="button" id="mmAct">✨ Do it</button>
+  <div id="mmSwim">
+    <button type="button" id="mmUp" aria-label="Swim up">⬆️</button>
+    <button type="button" id="mmDown" aria-label="Swim down">⬇️</button>
+  </div>
+
 
 
 
@@ -2903,7 +2974,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.20-8';
+const BUILD = '2026.11.20-9';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -7331,7 +7402,9 @@ function drawCamp(ctx){
       met: [],
       lobbySecret: false,
       daily: null,
-      dailyClaims: 0
+      dailyClaims: 0,
+      hearts: {},
+      heartRewards: []
     };
   }
 
@@ -7375,6 +7448,8 @@ function drawCamp(ctx){
         tickets: Math.max(0, o.daily.tickets | 0)
       };
     }
+    d.hearts = elevCleanHearts(o.hearts);
+    if (Array.isArray(o.heartRewards)) d.heartRewards = o.heartRewards.filter(x => typeof x === 'string').slice(0, 80);
     d.ver = ELEV_VER;
     return d;
   }
@@ -7398,6 +7473,12 @@ function drawCamp(ctx){
     {id:'soapsocks', kind:'use', name:'Soap-proof Socks', emoji:'🧦', cost:10, desc:'One-use: ignore one slip or dodge hazard.'},
     {id:'streakcharm', kind:'use', name:'Streak Charm', emoji:'🍀', cost:20, desc:'One-use: if you fail, your coin streak is kept once.'},
     {id:'ribbonwrap', kind:'use', name:'Ribbon Wrap', emoji:'🎁', cost:12, desc:'One-use: give this present to a passenger in the cab.'},
+    {id:'cookie', kind:'use', name:'Wobble Cookie', emoji:'🍪', cost:8, desc:'A crumbly cookie to share with a cab pal.'},
+    {id:'shimmerpin', kind:'use', name:'Shimmer Pin', emoji:'✨', cost:10, desc:'A shiny pin found or bought for a friend.'},
+    {id:'cocoa', kind:'use', name:'Thermos Cocoa', emoji:'☕', cost:9, desc:'A warm cup for a chilly ride.'},
+    {id:'comic', kind:'use', name:'Wobbly Comic', emoji:'📘', cost:8, desc:'A tiny comic book of Bingle adventures.'},
+    {id:'yarn', kind:'use', name:'Cozy Yarn', emoji:'🧶', cost:8, desc:'A soft ball of yarn for fidgety paws.'},
+
     {id:'seatcushion', kind:'use', name:'Seat Cushion', emoji:'🪑', cost:9, desc:'One-use: a plusher ride, and +3 seconds on your next floor.'},
     {id:'jumblejam', kind:'use', name:'Jumble Jam', emoji:'🍓', cost:14, desc:'Bazaar-only: +6 bonus coins on your next cleared floor.', floorOnly:'buttonbazaar'},
     {id:'sparklepin', kind:'hat', name:'Sparkle Pin', emoji:'✨', cost:22, desc:'A bazaar-only pin that twinkles when the dial turns.', floorOnly:'buttonbazaar'}
@@ -7483,6 +7564,14 @@ function drawCamp(ctx){
     if (!pal) return '';
     ctx = ctx || {};
     const kind = ctx.kind || ctx.phase || '';
+    const level = ctx.level != null ? (ctx.level | 0) : (ctx.hearts | 0);
+    if (level >= 2){
+      const heart = elevHeartLines(pal, level);
+      if (heart && heart.length){
+        const i = (ctx.i != null) ? (ctx.i | 0) : 0;
+        return heart[((i % heart.length) + heart.length) % heart.length];
+      }
+    }
     if (ctx.joke && pal.jokes && pal.jokes.length) return pal.jokes[Math.floor((ctx.i || 0) % pal.jokes.length)];
     if (pal.react && kind && pal.react[kind]) return pal.react[kind];
     const lines = (pal.lines && pal.lines.length) ? pal.lines : (pal.line ? [pal.line] : []);
@@ -8315,12 +8404,14 @@ function drawCamp(ctx){
       talk: elevCleanTalk(run.talk),
       talkSeq: run.talkSeq | 0,
       queued: run.queued && elevFloor(run.queued) ? run.queued : null,
-      vote: run.vote ? {choices: (run.vote.choices || []).map(c => ({id:c.id, name:c.name, emoji:c.emoji, ticket:!!c.ticket})), votes: Object.assign({}, run.vote.votes || {}), winner: run.vote.winner || null} : null
+      vote: run.vote ? {choices: (run.vote.choices || []).map(c => ({id:c.id, name:c.name, emoji:c.emoji, ticket:!!c.ticket})), votes: Object.assign({}, run.vote.votes || {}), winner: run.vote.winner || null} : null,
+      heartsPub: run.heartsPub ? Object.assign({}, run.heartsPub) : {}
     };
   }
 
   function elevApplyWire(run, snap){
     if (!run || !snap || typeof snap !== 'object') return run;
+    if (snap.heartsPub && typeof snap.heartsPub === 'object') run.heartsPub = Object.assign({}, snap.heartsPub);
     if (snap.phase) run.phase = snap.phase;
     if (snap.floor !== undefined) run.floor = snap.floor;
     if (snap.t != null) run.t = +snap.t;
@@ -8411,22 +8502,162 @@ function drawCamp(ctx){
     return state;
   }
 
-  function elevGiftPal(state, run, palId){
+
+  const ELEV_GIFTS = [
+    {id:'ribbonwrap', name:'Ribbon Wrap', emoji:'🎁', likes:['marm','polo','doodle'], dislikes:['sprocket']},
+    {id:'cookie', name:'Wobble Cookie', emoji:'🍪', likes:['niblet','fizz','doodle'], dislikes:['crisp']},
+    {id:'shimmerpin', name:'Shimmer Pin', emoji:'✨', likes:['lumen','echo','pip'], dislikes:['puddle']},
+    {id:'sparklepin', name:'Sparkle Pin', emoji:'✨', likes:['lumen','echo','pip'], dislikes:['puddle']},
+    {id:'cocoa', name:'Thermos Cocoa', emoji:'☕', likes:['taro','moony','bramble'], dislikes:['fizz']},
+    {id:'comic', name:'Wobbly Comic', emoji:'📘', likes:['sprocket','pip','bingle'], dislikes:['marm']},
+    {id:'yarn', name:'Cozy Yarn', emoji:'🧶', likes:['puddle','sock','polo'], dislikes:['echo']}
+  ];
+  const ELEV_HEART_XP = 8;
+  const ELEV_HEART_MAX = 5;
+
+  function elevGiftItem(id){ return ELEV_GIFTS.find(g => g.id === id) || null; }
+  function elevGiftMood(pal, gift){
+    if (!pal || !gift) return 'ok';
+    if ((gift.likes || []).indexOf(pal.id) >= 0) return 'like';
+    if ((gift.dislikes || []).indexOf(pal.id) >= 0) return 'dislike';
+    return 'ok';
+  }
+  function elevGiftQuote(pal, gift, mood){
+    const name = (pal.emoji || '') + ' ' + pal.name;
+    const item = gift && gift.name ? gift.name : 'present';
+    if (mood === 'like') return name + ': "This ' + item + ' is my favorite! Thank you, friend!"';
+    if (mood === 'dislike') return name + ': "A kind thought! This ' + item + ' is not quite my style, but I still appreciate you."';
+    return name + ': "For me? I will treasure this wobble-present!"';
+  }
+  function elevCleanHearts(raw){
+    const out = {};
+    if (!raw || typeof raw !== 'object') return out;
+    Object.keys(raw).forEach(id => {
+      if (!elevPal(id)) return;
+      const r = raw[id] || {};
+      out[id] = {
+        xp: Math.max(0, r.xp | 0),
+        talks: Math.max(0, r.talks | 0),
+        rides: Math.max(0, r.rides | 0),
+        gifts: Math.max(0, r.gifts | 0)
+      };
+    });
+    return out;
+  }
+  function elevHeartRow(state, palId){
+    state = state || {};
+    if (!state.hearts) state.hearts = {};
+    if (!state.hearts[palId]) state.hearts[palId] = {xp:0, talks:0, rides:0, gifts:0};
+    return state.hearts[palId];
+  }
+  function elevHeartLevel(state, palId){
+    const row = (state && state.hearts && state.hearts[palId]) || {xp:0};
+    return Math.max(0, Math.min(ELEV_HEART_MAX, Math.floor((row.xp | 0) / ELEV_HEART_XP)));
+  }
+  function elevHeartLevels(state){
+    const out = {};
+    state = elevLoad(state);
+    Object.keys(state.hearts || {}).forEach(id => { out[id] = elevHeartLevel(state, id); });
+    return out;
+  }
+  function elevHeartReward(state, palId, level){
+    state = elevLoad(state);
+    const key = palId + ':' + level;
+    if ((state.heartRewards || []).indexOf(key) >= 0) return {state, reward:0, badge:false};
+    let reward = 0, badge = false;
+    if (level >= 3){ reward += 5; badge = true; }
+    if (level >= 5) reward += 8;
+    if (reward || badge){
+      if (!state.heartRewards) state.heartRewards = [];
+      state.heartRewards.push(key);
+    }
+    return {state, reward, badge};
+  }
+  function elevHeartAdd(state, palId, kind, xp){
+    state = elevLoad(state);
+    if (!elevPal(palId)) return {ok:false, state, why:'pal'};
+    const row = elevHeartRow(state, palId);
+    const before = elevHeartLevel(state, palId);
+    row.xp = (row.xp | 0) + Math.max(0, xp | 0);
+    if (kind && row[kind] != null) row[kind] = (row[kind] | 0) + 1;
+    state.hearts[palId] = row;
+    const level = elevHeartLevel(state, palId);
+    let reward = 0, badge = false;
+    if (level > before){
+      const r = elevHeartReward(state, palId, level);
+      state = r.state; reward = r.reward; badge = r.badge;
+      if (reward) state.coins = (state.coins | 0) + reward;
+    }
+    return {ok:true, state, row, level, leveled: level > before, reward, badge};
+  }
+  function elevHeartTalk(state, run, palId){
+    state = elevLoad(state);
+    if (!run) return {ok:false, why:'run', state};
+    if (!elevPalIds(run).includes(palId)) return {ok:false, why:'aboard', state, run};
+    run.heartTalked = run.heartTalked || {};
+    const key = (run.floor || run.phase || 'cab') + ':' + palId;
+    if (run.heartTalked[key]) return {ok:true, why:'already', state, run, level: elevHeartLevel(state, palId), row: elevHeartRow(state, palId)};
+    run.heartTalked[key] = true;
+    const r = elevHeartAdd(state, palId, 'talks', 2);
+    return Object.assign({run}, r);
+  }
+  function elevHeartRide(state, run, palId){
+    state = elevLoad(state);
+    if (!run) return {ok:false, why:'run', state};
+    if (!elevPalIds(run).includes(palId)) return {ok:false, why:'aboard', state, run};
+    run.heartRode = run.heartRode || {};
+    if (run.heartRode[palId]) return {ok:true, why:'already', state, run, level: elevHeartLevel(state, palId)};
+    run.heartRode[palId] = true;
+    const r = elevHeartAdd(state, palId, 'rides', 1);
+    return Object.assign({run}, r);
+  }
+  function elevHeartGift(state, palId, mood){
+    const xp = mood === 'like' ? 6 : mood === 'dislike' ? 1 : 3;
+    return elevHeartAdd(state, palId, 'gifts', xp);
+  }
+  function elevHeartLines(pal, level){
+    if (!pal) return [];
+    if (pal.heartLines && pal.heartLines.length) return pal.heartLines;
+    return [
+      'It is nice to ride with a friend like you.',
+      'You make this wobbly cab feel like home.',
+      'I saved a secret joke just for you!',
+      'Our friendship sparkles brighter than the floor lights.'
+    ];
+  }
+  function elevHeartPub(state, uid){
+    return {uid: String(uid || 'H'), levels: elevHeartLevels(state)};
+  }
+  function elevMergeHeartPub(run, pub){
+    run = run || {};
+    run.heartsPub = run.heartsPub || {};
+    if (pub && pub.uid) run.heartsPub[String(pub.uid)] = pub.levels && typeof pub.levels === 'object' ? pub.levels : {};
+    return run;
+  }
+
+  function elevGiftPal(state, run, palId, giftId){
     state = elevLoad(state);
     if (!run) return {ok:false, why:'run', state, run};
     const pal = elevPal(palId) || (elevPalIds(run)[0] && elevPal(elevPalIds(run)[0]));
     if (!pal) return {ok:false, why:'pal', state, run};
     if (!elevPalIds(run).includes(pal.id)) return {ok:false, why:'aboard', state, run};
-    const have = (state.pack.ribbonwrap | 0) > 0;
+    const gid = giftId || 'ribbonwrap';
+    const gift = elevGiftItem(gid);
+    if (!gift) return {ok:false, why:'gift', state, run};
+    const have = (state.pack[gid] | 0) > 0;
     if (!have) return {ok:false, why:'item', state, run};
-    state.pack.ribbonwrap -= 1;
-    if (!state.pack.ribbonwrap) delete state.pack.ribbonwrap;
+    state.pack[gid] -= 1;
+    if (!state.pack[gid]) delete state.pack[gid];
     state.gifts = (state.gifts | 0) + 1;
     state = elevMeetPals(state, run);
     state = elevDailyProgress(state, 'gift', 1);
-    const line = (pal.emoji || '') + ' ' + pal.name + ': "For me? I will treasure this wobble-present!"';
+    const mood = elevGiftMood(pal, gift);
+    const heart = elevHeartGift(state, pal.id, mood);
+    state = heart.state;
+    const line = elevGiftQuote(pal, gift, mood);
     run.quote = line;
-    return {ok:true, why:'ok', state, run, pal:pal, pay:3, quote:line};
+    const pay = mood === 'like' ? 4 : 3;
+    return {ok:true, why:'ok', state, run, pal:pal, pay:pay, quote:line, gift:gift, mood:mood, hearts:heart.row, level:heart.level, reward:heart.reward, badge:heart.badge};
   }
 
   function elevFindLobbySecret(state){
@@ -8521,7 +8752,8 @@ function drawCamp(ctx){
     {id:'elev-secret', name:'Quiet Finder', emoji:'❔', desc:'Discover a secret floor.'},
     {id:'elev-lobby', name:'Waiting-Room Secret', emoji:'🖼️', desc:'Find the hidden painting in the lobby.'},
     {id:'elev-rare', name:'Lucky Dial', emoji:'🪞', desc:'Ride a rare floor.'},
-    {id:'elev-friends', name:'Cab Full of Pals', emoji:'👋', desc:'Meet eight different passengers.'}
+    {id:'elev-friends', name:'Cab Full of Pals', emoji:'👋', desc:'Meet eight different passengers.'},
+    {id:'elev-hearts', name:'Friendship Hearts', emoji:'💖', desc:'Grow a passenger friendship heart to level 3.'}
   ];
 
   function elevBadgeCatalog(){ return ELEV_BADGE_CATALOG.slice(); }
@@ -8544,6 +8776,7 @@ function drawCamp(ctx){
     if ((state.seen || []).some(id => { const f = elevFloor(id); return f && f.kind === 'boss'; })) b.push('elev-boss');
     if ((state.ticketsUsed | 0) >= 1) b.push('elev-ticket');
     if ((state.gifts | 0) >= 1) b.push('elev-gift');
+    if (Object.keys(state.hearts || {}).some(id => elevHeartLevel(state, id) >= 3)) b.push('elev-hearts');
     if ((state.dailyClaims | 0) >= 1) b.push('elev-daily');
     if ((state.seen || []).some(id => { const f = elevFloor(id); return f && f.secret; })) b.push('elev-secret');
     if (state.lobbySecret) b.push('elev-lobby');
@@ -8561,11 +8794,12 @@ function drawCamp(ctx){
     elevSnowOn, elevHostLine, elevPickPal, elevStartRun, elevDueShop, elevDueSpecial, elevPool, elevRebuildBag, elevPickSpecial, elevPickFloor, elevBeginFloor, elevBeginRide, elevVoteShouldStart, elevVoteChoices, elevBeginVote, elevCastVote, elevTallyVote, elevFinishVote, ELEV_VOTE_T, ELEV_VOTE_EVERY,
     elevReward, elevClearFloor, elevFailFloor, elevBuySnack, elevBuyFloorItem, elevRing, elevPaint, elevPickItem, elevTurnIn,
     elevTouchHazard, elevReachDoor, elevStayLit, elevQuiz, elevStack, elevBeat, elevPadStand, elevBossReady, elevTagBoss,
-    elevTick, elevFloorSpec, elevIndexRows, elevBadges, elevBadgeCatalog, elevMilestonePay, elevMeetPals, elevGiftPal, elevFindLobbySecret, elevQueueNext, elevDayKey, elevEnsureDaily, elevDailyProgress, elevDailyClaim
+    elevTick, elevFloorSpec, elevIndexRows, elevBadges, elevBadgeCatalog, elevMilestonePay, elevMeetPals, elevGiftPal, elevFindLobbySecret, elevQueueNext, elevDayKey, elevEnsureDaily, elevDailyProgress, elevDailyClaim, ELEV_GIFTS, ELEV_HEART_XP, ELEV_HEART_MAX, elevGiftItem, elevGiftMood, elevGiftQuote, elevCleanHearts, elevHeartRow, elevHeartLevel, elevHeartLevels, elevHeartAdd, elevHeartTalk, elevHeartRide, elevHeartGift, elevHeartLines, elevHeartPub, elevMergeHeartPub
   };
   root.ElevRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
+
 
 function drawElevator(ctx){
   if (!ctx) return;
@@ -9600,17 +9834,24 @@ function drawElevator(ctx){
       cocoaServed: 0,
       cocoaBought: 0,
       races: 0,
-      snowballs: 0
+      snowballs: 0,
+      lights: 0,
+      nightShows: 0,
+      wraps: 0,
+      wrapBest: 0,
+      ribbons: []
     };
   }
 
   function wnLoad(raw){
     const o = raw && typeof raw === 'object' ? raw : {};
     const d = wnFresh();
-    ['coinsEarned','sledRuns','snowmen','skateLaps','cocoaServed','cocoaBought','races','snowballs'].forEach(k => {
+    ['coinsEarned','sledRuns','snowmen','skateLaps','cocoaServed','cocoaBought','races','snowballs','lights','nightShows','wraps'].forEach(k => {
       d[k] = Math.max(0, o[k] | 0);
     });
     d.sledBest = Math.max(0, +o.sledBest || 0);
+    d.wrapBest = Math.max(0, Math.min(100, o.wrapBest | 0));
+    d.ribbons = Array.isArray(o.ribbons) ? o.ribbons.filter(id => typeof id === 'string').slice(0, 12) : [];
     return d;
   }
 
@@ -9623,6 +9864,9 @@ function drawElevator(ctx){
         snowman: {parts:[]},
         skate: {on:false, laps:0, t:0, lastAng:0, ang:0},
         cocoa: {warm:0, served:0},
+        night: false,
+        lights: [],
+        wrap: {open:false, step:0, paper:'', ribbon:'', bow:'', tag:'', score:0, coop:false, entries:{}},
         snowball: {cool:0, hits:0},
         t: 0,
         started: now || 0
@@ -9829,6 +10073,149 @@ function drawElevator(ctx){
     return {ok:true, why:'ok', coins, state: st, served: run.cocoa.served, message:'A warm mug for a chilly visitor!'};
   }
 
+
+  const WN_LIGHT_SLOTS = [
+    {id:'cottage-a', kind:'house', name:'Cedar Cottage', x:-16, z:8},
+    {id:'cottage-b', kind:'house', name:'Holly Cottage', x:16, z:8},
+    {id:'cocoa', kind:'house', name:"Mugsy's Cocoa", x:0, z:-10},
+    {id:'tree-a', kind:'tree', name:'Village Fir', x:-8, z:18},
+    {id:'tree-b', kind:'tree', name:'Pond Pine', x:10, z:-22},
+    {id:'tree-c', kind:'tree', name:'Hill Spruce', x:0, z:28},
+    {id:'tree-d', kind:'tree', name:'Lane Larch', x:-22, z:-8},
+    {id:'tree-e', kind:'tree', name:'Square Spruce', x:8, z:2}
+  ];
+  const WN_PAPERS = [
+    {id:'snow', name:'Snowy White', color:'#f6fbff'},
+    {id:'cranberry', name:'Cranberry', color:'#c44536'},
+    {id:'pine', name:'Pine Green', color:'#2d6a4f'},
+    {id:'gold', name:'Candle Gold', color:'#f2c14e'},
+    {id:'sky', name:'Winter Sky', color:'#8ecae6'}
+  ];
+  const WN_RIBBON_COLORS = [
+    {id:'red', name:'Holly Red', color:'#d62828'},
+    {id:'gold', name:'Bell Gold', color:'#f4d35e'},
+    {id:'blue', name:'Ice Blue', color:'#4ea8de'},
+    {id:'pink', name:'Cocoa Pink', color:'#f7a1c4'}
+  ];
+  const WN_BOWS = [
+    {id:'classic', name:'Classic bow'},
+    {id:'puff', name:'Puffy bow'},
+    {id:'star', name:'Star bow'},
+    {id:'tiny', name:'Tiny knot'}
+  ];
+  const WN_TAGS = [
+    {id:'toyou', name:'To You'},
+    {id:'warm', name:'Stay Warm'},
+    {id:'joy', name:'Pinebell Joy'},
+    {id:'pal', name:'For a Pal'}
+  ];
+  const WN_WRAP_STEPS = ['paper','ribbon','bow','tag'];
+  const WN_WRAP_JUDGE = {id:'rue', name:'Ribbon Rue', emoji:'🎀', role:'judge'};
+
+  function wnLightSlot(id){ return WN_LIGHT_SLOTS.find(s => s.id === id) || null; }
+
+  function wnSetNight(run, on){
+    run = run || {};
+    run.night = !!on;
+    return {ok:true, run, night: run.night, message: run.night ? 'Night falls on Pinebell. The lights can sparkle!' : 'Morning comes back to the village.'};
+  }
+
+  function wnPlaceLight(state, run, slotId){
+    state = wnLoad(state);
+    run = run || {};
+    if (!run.lights) run.lights = [];
+    const slot = wnLightSlot(slotId);
+    if (!slot) return {ok:false, why:'slot', state, run, message:'That spot cannot hold lights.'};
+    if (run.lights.indexOf(slotId) >= 0) return {ok:false, why:'has', state, run, message:'Lights already twinkle there!'};
+    run.lights.push(slotId);
+    state.lights = Math.max(state.lights | 0, run.lights.length);
+    return {ok:true, state, run, slot, placed: run.lights.length, message:'Twinkly lights for ' + slot.name + '!'};
+  }
+
+  function wnShowLights(state, run){
+    state = wnLoad(state);
+    run = run || {};
+    if (!(run.lights && run.lights.length)) return {ok:false, why:'none', state, run, message:'Hang some lights first, then switch to night!'};
+    if (!run.night) run.night = true;
+    state.nightShows = (state.nightShows | 0) + 1;
+    return {ok:true, state, run, night:true, message:'The village glows! ' + run.lights.length + ' sparkling spots.'};
+  }
+
+  function wnWrapOpen(run, coop){
+    run = run || {};
+    run.wrap = {open:true, step:0, paper:'', ribbon:'', bow:'', tag:'', score:0, coop:!!coop, entries:{}};
+    return {ok:true, run, message: coop ? 'Wrap together — everyone helps with a step!' : 'Pick paper, ribbon, a bow, and a tag!'};
+  }
+
+  function wnWrapPick(run, part, id, playerId){
+    run = run || {};
+    const w = run.wrap || wnWrapOpen(run).run.wrap;
+    if (!w.open) return {ok:false, why:'closed', run};
+    const lists = {paper:WN_PAPERS, ribbon:WN_RIBBON_COLORS, bow:WN_BOWS, tag:WN_TAGS};
+    const list = lists[part];
+    if (!list || !list.some(it => it.id === id)) return {ok:false, why:'item', run};
+    const stepName = WN_WRAP_STEPS[w.step | 0];
+    if (part !== stepName) return {ok:false, why:'step', run, need: stepName, message:'Next, pick a ' + stepName + '.'};
+    w[part] = id;
+    if (playerId) (w.entries[playerId] = w.entries[playerId] || []).push(part);
+    w.step = (w.step | 0) + 1;
+    run.wrap = w;
+    const done = w.step >= WN_WRAP_STEPS.length;
+    return {ok:true, run, wrap:w, done, message: done ? 'All wrapped! Time for Ribbon Rue to score it.' : ('Nice ' + part + '! Next: ' + WN_WRAP_STEPS[w.step] + '.')};
+  }
+
+  function wnWrapScoreLook(wrap){
+    const w = wrap || {};
+    let score = 40;
+    if (w.paper) score += 12;
+    if (w.ribbon) score += 12;
+    if (w.bow) score += 12;
+    if (w.tag) score += 12;
+    // matching color families feel festive
+    if ((w.paper === 'cranberry' && w.ribbon === 'gold') || (w.paper === 'pine' && w.ribbon === 'red') || (w.paper === 'gold' && w.ribbon === 'gold') || (w.paper === 'snow' && w.ribbon === 'blue')) score += 10;
+    if (w.bow === 'star' && (w.tag === 'joy' || w.paper === 'gold')) score += 6;
+    if (w.tag && w.bow && w.paper && w.ribbon) score += 4;
+    return Math.max(0, Math.min(100, score));
+  }
+
+  function wnWrapJudge(state, run, entries){
+    state = wnLoad(state);
+    run = run || {};
+    const w = run.wrap || {};
+    if (!w.open || w.step < WN_WRAP_STEPS.length) return {ok:false, why:'unfinished', state, run, message:'Finish paper, ribbon, bow, and tag first.'};
+    const score = wnWrapScoreLook(w);
+    w.score = score;
+    w.open = false;
+    run.wrap = w;
+    state.wraps = (state.wraps | 0) + 1;
+    if (score > (state.wrapBest | 0)) state.wrapBest = score;
+    let ribbon = null;
+    if (score >= 95) ribbon = 'star-ribbon';
+    else if (score >= 85) ribbon = 'gold-ribbon';
+    else if (score >= 70) ribbon = 'holly-ribbon';
+    if (ribbon && state.ribbons.indexOf(ribbon) < 0) state.ribbons.push(ribbon);
+    const coins = score >= 95 ? 8 : score >= 85 ? 6 : score >= 70 ? 4 : 2;
+    const judge = WN_WRAP_JUDGE;
+    const vs = wnWrapCompete(entries || w.contest || null, score);
+    return {
+      ok:true, state, run, score, ribbon, coins, judge,
+      message: judge.emoji + ' ' + judge.name + ' scores ' + score + '!' + (ribbon ? ' You earned a ' + ribbon.replace('-', ' ') + '!' : ' A cozy wrap!'),
+      contest: vs
+    };
+  }
+
+  function wnWrapCompete(entries, myScore){
+    // Real players only. entries: [{id, name, score}] 
+    const list = (entries || []).filter(e => e && e.id && !e.npc);
+    if (!list.length) return {mode:'solo', winner:null, scores:[{id:'you', name:'You', score:myScore|0}]};
+    const scores = list.map(e => ({id:e.id, name:e.name || 'Player', score:e.score|0})).sort((a,b) => b.score - a.score);
+    return {mode: list.length > 1 ? 'compete' : 'coop', winner: scores[0], scores};
+  }
+
+  function wnRealPlayersOnly(roster){
+    return (roster || []).filter(p => p && p.id && !p.npc);
+  }
+
   function wnWire(state, run){
     state = wnLoad(state);
     run = run || {};
@@ -9838,7 +10225,12 @@ function drawElevator(ctx){
       area: run.area || 'village',
       sled: run.sled ? {on:!!run.sled.on, x:+run.sled.x||0, z:+run.sled.z||0, yaw:+run.sled.yaw||0, done:!!run.sled.done, time:+run.sled.time||0} : null,
       snowman: run.snowman ? {parts:(run.snowman.parts||[]).slice(), claimed:!!run.snowman.claimed} : null,
-      skate: run.skate ? {on:!!run.skate.on, laps:run.skate.laps|0} : null
+      skate: run.skate ? {on:!!run.skate.on, laps:run.skate.laps|0} : null,
+      night: !!run.night,
+      lights: (run.lights || []).slice(),
+      wrap: run.wrap ? {open:!!run.wrap.open, step:run.wrap.step|0, score:run.wrap.score|0, coop:!!run.wrap.coop} : null,
+      lightsHung: state.lights|0,
+      wrapBest: state.wrapBest|0
     };
   }
 
@@ -9849,9 +10241,12 @@ function drawElevator(ctx){
     wnRealPlayers, wnCanPelt, wnThrowSnowball, wnSnowballTick,
     wnAddSnowmanPart, wnFinishSnowman,
     wnSkateStart, wnSkateTick, wnSkateBank,
-    wnBuyCocoa, wnServeCocoa, wnWire
+    wnBuyCocoa, wnServeCocoa, wnWire,
+    WN_LIGHT_SLOTS, WN_PAPERS, WN_RIBBON_COLORS, WN_BOWS, WN_TAGS, WN_WRAP_STEPS, WN_WRAP_JUDGE,
+    wnLightSlot, wnSetNight, wnPlaceLight, wnShowLights, wnWrapOpen, wnWrapPick, wnWrapScoreLook, wnWrapJudge, wnWrapCompete
   };
 });
+
 /* Pawsley Vet Clinic — original first-person clinic. Real-player co-op only; patient and owner NPCs are customers. */
 (function (root, factory) {
   const api = factory();
@@ -9879,7 +10274,9 @@ function drawElevator(ctx){
     {id:'recovery', name:'Recovery Kennels', x:16, z:8, w:16, d:16, color:'#fde8f0',
       blurb:'Cuddle and feed pals until they feel cozy again.'},
     {id:'bath', name:'Bubbly Bath Corner', x:-16, z:8, w:16, d:16, color:'#d8f4f2',
-      blurb:'A warm wash and a fluff-dry when a coat is muddy.'}
+      blurb:'A warm wash and a fluff-dry when a coat is muddy.'},
+    {id:'bay', name:'Ambulance Bay', x:0, z:22, w:16, d:12, color:'#e8f0d8',
+      blurb:'Hop in the cute pet ambulance and drive out to help pals around town.'}
   ];
 
   const VT_DOORS = [
@@ -9888,7 +10285,8 @@ function drawElevator(ctx){
     {a:'exam', b:'treatment', x:-8, z:-10, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42},
     {a:'exam', b:'surgery', x:0, z:-20, w:VT_DOOR_W, h:VT_DOOR_H, axis:'z', thick:0.42},
     {a:'reception', b:'recovery', x:8, z:8, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42},
-    {a:'reception', b:'bath', x:-8, z:8, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42}
+    {a:'reception', b:'bath', x:-8, z:8, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42},
+    {a:'reception', b:'bay', x:0, z:16, w:VT_DOOR_W, h:VT_DOOR_H, axis:'z', thick:0.42}
   ];
 
   const VT_SPECIES = [
@@ -9930,13 +10328,13 @@ function drawElevator(ctx){
   const VT_KID_SAFE_BANNED = /\b(blood|gore|bleed|gory|wound|hurt badly|die|dies|dead|kill|painful|surgery knife)\b/i;
 
   function vtFresh(){
-    return {v:VT_VER, cases:0, stars:0, coinsEarned:0, bestStreak:0, streak:0};
+    return {v:VT_VER, cases:0, stars:0, coinsEarned:0, bestStreak:0, streak:0, rescues:0, ambulanceTrips:0};
   }
 
   function vtLoad(raw){
     const o = raw && typeof raw === 'object' ? raw : {};
     const d = vtFresh();
-    ['cases','stars','coinsEarned','bestStreak','streak'].forEach(k => {
+    ['cases','stars','coinsEarned','bestStreak','streak','rescues','ambulanceTrips'].forEach(k => {
       d[k] = Math.max(0, o[k] | 0);
     });
     return d;
@@ -9972,7 +10370,7 @@ function drawElevator(ctx){
   }
 
   function vtWalkable(x, z){
-    return !!(vtRoomAt(x, z) || vtInDoorway(x, z, 1.2));
+    return !!(vtRoomAt(x, z) || vtInDoorway(x, z, 1.2) || vtInTownDoor(x, z) || vtInTown(x, z));
   }
 
   function vtConnected(a, b){
@@ -10020,10 +10418,10 @@ function drawElevator(ctx){
     return out;
   }
 
-  function vtForceFirstPerson(mode){ return mode === 'vet'; }
-  function vtMayToggleCamera(mode){ return mode !== 'vet'; }
-  function vtFpOn(mode, fpFlag){ return mode === 'vet' ? true : !!fpFlag; }
-  function vtSetFp(mode, on){ return mode === 'vet' ? true : !!on; }
+  function vtForceFirstPerson(mode, drive){ return mode === 'vet' && !drive; }
+  function vtMayToggleCamera(mode, drive){ return mode !== 'vet' || !!drive; }
+  function vtFpOn(mode, fpFlag, drive){ return (mode === 'vet' && !drive) ? true : !!fpFlag; }
+  function vtSetFp(mode, on, drive){ return (mode === 'vet' && !drive) ? true : !!on; }
 
   function vtRarityOk(rarity, difficulty){
     const i = VT_RARITY_ORDER.indexOf(rarity);
@@ -10120,7 +10518,9 @@ function drawElevator(ctx){
       prompt: 'Take the chart',
       coinsThis: 0,
       starsThis: 0,
-      t: 0
+      t: 0,
+      drive: vtEmptyDrive(),
+      rescuedIds: []
     };
   }
 
@@ -10341,6 +10741,199 @@ function drawElevator(ctx){
     return {ok:true, run, state: st, message: run.lastMessage};
   }
 
+
+  const VT_TOWN = {minX:-36, maxX:36, minZ:28, maxZ:80};
+  const VT_TOWN_DOOR = {id:'bay-town', a:'bay', b:'town', x:0, z:28, w:5.2, h:VT_DOOR_H, axis:'z', thick:0.42};
+  const VT_TOWN_DOORS = [VT_TOWN_DOOR];
+  const VT_AMBULANCE_PARK = {x:0, z:22.5, yaw:0};
+
+  const VT_RESCUES = [
+    {id:'tree', title:'Stuck in a tree', place:'Maple Court', emoji:'🐱', species:'cat', speciesName:'cat',
+      symptom:'got stuck in a high tree and feels a little shaky',
+      tools:['eyes','stethoscope'], treat:'sip', treatRoom:'treatment',
+      note:'A calming sip after a brave tree rescue.', x:-18, z:48, kind:'tree'},
+    {id:'sorepaw', title:'A sore paw in the park', place:'Puddle Park', emoji:'🐶', species:'dog', speciesName:'dog',
+      symptom:'a tender limp after play',
+      tools:['temp','xray'], treat:'bandage', treatRoom:'surgery', xray:'sprain',
+      note:'A soft, colorful bandage for a sprained paw.', x:14, z:58, kind:'park'},
+    {id:'mudpuddle', title:'A muddy coat after puddles', place:'Splash Lane', emoji:'🐰', species:'bunny', speciesName:'bunny',
+      symptom:'a muddy coat after puddles',
+      tools:['eyes'], treat:'bath', treatRoom:'bath',
+      note:'A warm wash and a fluff-dry in the bubbly bath corner.', x:-10, z:68, kind:'puddle'},
+    {id:'picnic', title:'A rumbly picnic tummy', place:'Picnic Green', emoji:'🐹', species:'hamster', speciesName:'hamster',
+      symptom:'a rumbly tummy after playtime',
+      tools:['stethoscope','xray'], treat:'sip', treatRoom:'treatment', xray:'toy',
+      note:'A gentle tummy sip after a swallowed picnic toy is spotted.', x:22, z:44, kind:'picnic'},
+    {id:'splinterwalk', title:'A tiny paw splinter', place:'Boardwalk Path', emoji:'🦊', species:'fox', speciesName:'fox',
+      symptom:'a tiny paw splinter',
+      tools:['eyes'], treat:'splinter', treatRoom:'surgery',
+      note:'A careful splinter lift — no ouchies stay.', x:8, z:72, kind:'path'},
+    {id:'scratch', title:'A scraped knee after a tumble', place:'Hilltop Path', emoji:'🦦', species:'otter', speciesName:'otter',
+      symptom:'a scraped knee',
+      tools:['eyes'], treat:'bubbles', treatRoom:'surgery',
+      note:'A bubbly clean-up that leaves a shiny, happy scrape.', x:-26, z:54, kind:'hill'}
+  ];
+
+  function vtInTown(x, z){
+    const T = VT_TOWN;
+    return x >= T.minX && x <= T.maxX && z >= T.minZ && z <= T.maxZ;
+  }
+
+  function vtInTownDoor(x, z, slim){
+    const s = slim == null ? 1.2 : slim;
+    const d = VT_TOWN_DOOR;
+    if (d.axis === 'z'){
+      if (Math.abs(z - d.z) <= s && Math.abs(x - d.x) <= d.w / 2) return d;
+    } else if (Math.abs(x - d.x) <= s && Math.abs(z - d.z) <= d.w / 2) return d;
+    return null;
+  }
+
+  function vtAreaAt(x, z){
+    const room = vtRoomAt(x, z);
+    if (room) return room;
+    if (vtInTownDoor(x, z) || vtInTown(x, z)) return 'town';
+    return null;
+  }
+
+  function vtRescue(id){ return VT_RESCUES.find(r => r.id === id) || null; }
+
+  function vtRescueAt(x, z, reach){
+    const rch = reach == null ? 3.2 : reach;
+    let best = null, bestD = rch;
+    VT_RESCUES.forEach(r => {
+      const d = Math.hypot((x || 0) - r.x, (z || 0) - r.z);
+      if (d <= bestD){ best = r; bestD = d; }
+    });
+    return best;
+  }
+
+  function vtInBay(x, z){
+    const bay = vtRoom('bay');
+    return !!(bay && vtInBox(x, z, bay));
+  }
+
+  function vtEmptyDrive(){
+    return {on:false, x:VT_AMBULANCE_PARK.x, z:VT_AMBULANCE_PARK.z, y:0.4, yaw:VT_AMBULANCE_PARK.yaw, speed:0, cargo:null, cam:'third'};
+  }
+
+  function vtMountAmbulance(run, x, z){
+    run = run || {};
+    if (!vtInBay(x, z) && Math.hypot((x||0) - VT_AMBULANCE_PARK.x, (z||0) - VT_AMBULANCE_PARK.z) > 3.4){
+      return {ok:false, why:'far', run, message:'Walk up to the ambulance in the bay first.'};
+    }
+    run.drive = Object.assign(vtEmptyDrive(), run.drive || {}, {on:true, x: VT_AMBULANCE_PARK.x, z: VT_AMBULANCE_PARK.z, yaw: 0, speed:0});
+    run.lastMessage = run.drive.cargo
+      ? ('Drive ' + run.drive.cargo.name + ' back to the bay.')
+      : 'Buckle up! Drive around town and look for pals who need a lift.';
+    run.prompt = 'Steer with WASD or the stick. Ⓑ hop out in the bay.';
+    return {ok:true, run, driving:true, message: run.lastMessage};
+  }
+
+  function vtDismountAmbulance(run, force){
+    run = run || {};
+    const d = run.drive || vtEmptyDrive();
+    if (!d.on) return {ok:false, why:'off', run};
+    if (!force && !vtInBay(d.x, d.z)){
+      return {ok:false, why:'bay', run, message:'Park in the ambulance bay to hop out.'};
+    }
+    d.on = false;
+    d.x = VT_AMBULANCE_PARK.x; d.z = VT_AMBULANCE_PARK.z; d.speed = 0;
+    run.drive = d;
+    run.lastMessage = d.cargo ? (d.cargo.name + ' is ready to come inside.') : 'The ambulance is parked in the bay.';
+    return {ok:true, run, driving:false, parked:true, message: run.lastMessage};
+  }
+
+  function vtDriveSteer(run, turn, throttle){
+    run = run || {};
+    if (!run.drive || !run.drive.on) return run.drive;
+    run.drive._turn = Math.max(-1, Math.min(1, +turn || 0));
+    run.drive._throttle = Math.max(-1, Math.min(1, +throttle || 0));
+    return run.drive;
+  }
+
+  function vtDriveTick(run, dt){
+    run = run || {};
+    const d = run.drive;
+    if (!d || !d.on) return d;
+    dt = Math.max(0, Math.min(0.12, +dt || 0));
+    const turn = +d._turn || 0;
+    const thr = +d._throttle || 0;
+    const max = 11;
+    d.speed += (thr * max - d.speed) * Math.min(1, dt * 3.2);
+    if (Math.abs(thr) < 0.05) d.speed *= Math.max(0, 1 - dt * 2.4);
+    d.yaw += turn * dt * 2.1 * (d.speed >= 0 ? 1 : -1);
+    d.x += Math.sin(d.yaw) * d.speed * dt;
+    d.z += -Math.cos(d.yaw) * d.speed * dt;
+    const T = VT_TOWN;
+    const minX = Math.min(-8, T.minX), maxX = Math.max(8, T.maxX);
+    const minZ = 16, maxZ = T.maxZ;
+    d.x = Math.max(minX + 1.2, Math.min(maxX - 1.2, d.x));
+    d.z = Math.max(minZ + 0.6, Math.min(maxZ - 1.2, d.z));
+    return d;
+  }
+
+  function vtRescuePet(run, x, z){
+    run = run || {};
+    const d = run.drive;
+    if (!d || !d.on) return {ok:false, why:'drive', run, message:'Hop in the ambulance first.'};
+    if (d.cargo) return {ok:false, why:'full', run, message: d.cargo.name + ' is already riding. Drive back to the bay!'};
+    const spot = vtRescueAt(x != null ? x : d.x, z != null ? z : d.z, 3.6);
+    if (!spot) return {ok:false, why:'none', run, message:'No pal nearby. Look around the park and trees!'};
+    if (run.rescuedIds && run.rescuedIds.indexOf(spot.id) >= 0){
+      return {ok:false, why:'done', run, message:'That pal was already helped. Look for another friend!'};
+    }
+    d.cargo = {
+      id: spot.id, name: vtRescueName(spot), emoji: spot.emoji, species: spot.species,
+      speciesName: spot.speciesName, caseId: spot.id, symptom: spot.symptom,
+      tools: (spot.tools || []).slice(), treat: spot.treat, treatRoom: spot.treatRoom,
+      note: spot.note, xray: spot.xray || null, title: spot.title, place: spot.place
+    };
+    run.drive = d;
+    run.lastMessage = 'Got ' + d.cargo.name + '! Drive them back to the clinic bay.';
+    return {ok:true, run, cargo:d.cargo, message: run.lastMessage};
+  }
+
+  function vtRescueName(spot){
+    const names = {tree:'Maple', sorepaw:'Pebble', mudpuddle:'Clover', picnic:'Nibble', splinterwalk:'Rush', scratch:'River'};
+    return (spot && names[spot.id]) || (spot && spot.speciesName) || 'Pal';
+  }
+
+  function vtAdmitRescue(run, state){
+    run = run || {};
+    state = vtLoad(state);
+    const d = run.drive || {};
+    const cargo = d.cargo;
+    if (!cargo) return {ok:false, why:'empty', run, state, message:'The ambulance is empty.'};
+    if (d.on) return {ok:false, why:'driving', run, state, message:'Park and hop out first.'};
+    if (!vtInBay(d.x, d.z) && Math.hypot((d.x||0) - VT_AMBULANCE_PARK.x, (d.z||0) - VT_AMBULANCE_PARK.z) > 4){
+      return {ok:false, why:'bay', run, state, message:'Bring them into the ambulance bay.'};
+    }
+    if (run.phase !== 'wait' && run.phase !== 'done' && run.patient){
+      return {ok:false, why:'busy', run, state, message:'Finish helping the pal already in the clinic first.'};
+    }
+    const patient = {
+      name: cargo.name, species: cargo.species, speciesName: cargo.speciesName, emoji: cargo.emoji,
+      rarity: 'common', caseId: cargo.caseId || cargo.id, symptom: cargo.symptom,
+      tools: (cargo.tools || []).slice(), treat: cargo.treat, treatRoom: cargo.treatRoom,
+      note: cargo.note, xray: cargo.xray || null, xrayTarget: cargo.xray ? ((cargo.name.length * 3) % 16) : 0,
+      difficulty: 1, rescue: true, place: cargo.place || ''
+    };
+    const next = vtEmptyRun();
+    next.patient = patient;
+    next.lastMessage = patient.emoji + ' ' + patient.name + ' the ' + patient.speciesName + ' is here with ' + patient.symptom + '.';
+    next.prompt = 'Take the chart';
+    next.drive = vtEmptyDrive();
+    next.rescuedIds = (run.rescuedIds || []).concat([cargo.id]);
+    Object.keys(next).forEach(k => { run[k] = next[k]; });
+    state.rescues = (state.rescues | 0) + 1;
+    state.ambulanceTrips = (state.ambulanceTrips | 0) + 1;
+    return {ok:true, run, state, patient, message: run.lastMessage, everyoneOk: true};
+  }
+
+  function vtClinicFirstPerson(run){
+    return !(run && run.drive && run.drive.on);
+  }
+
   function vtKidCopyOk(text){
     return !VT_KID_SAFE_BANNED.test(String(text || ''));
   }
@@ -10370,7 +10963,10 @@ function drawElevator(ctx){
       cuddle: !!run.cuddle,
       feed: !!run.feed,
       lastMessage: run.lastMessage || '',
-      prompt: run.prompt || ''
+      prompt: run.prompt || '',
+      drive: run.drive ? {on:!!run.drive.on, x:+run.drive.x||0, z:+run.drive.z||0, yaw:+run.drive.yaw||0, cargo: run.drive.cargo ? {id:run.drive.cargo.id, name:run.drive.cargo.name, emoji:run.drive.cargo.emoji} : null} : null,
+      rescues: state.rescues|0,
+      ambulanceTrips: state.ambulanceTrips|0
     };
   }
 
@@ -10388,9 +10984,488 @@ function drawElevator(ctx){
     vtForceFirstPerson, vtMayToggleCamera, vtFpOn, vtSetFp,
     vtDifficulty, vtRollPatient, vtNewShift, vtChart, vtCheckIn, vtUseTool, vtXrayScan, vtExamReady,
     vtTreat, vtCuddle, vtFeed, vtPickup, vtPayout, vtNextPatient, vtKidCopyOk, vtRealPlayersOnly,
-    vtWire, vtApply
+    vtWire, vtApply,
+    VT_TOWN, VT_TOWN_DOOR, VT_TOWN_DOORS, VT_AMBULANCE_PARK, VT_RESCUES,
+    vtInTown, vtInTownDoor, vtAreaAt, vtRescue, vtRescueAt, vtInBay,
+    vtEmptyDrive, vtMountAmbulance, vtDismountAmbulance, vtDriveSteer, vtDriveTick,
+    vtRescuePet, vtRescueName, vtAdmitRescue, vtClinicFirstPerson
   };
 });
+
+/* Glimmergill Cove — original cozy mermaid town. Swim, collect shells,
+   decorate a coral home, befriend sea-pets, and shop with pearls.
+   Save key rubloxMermaid. No scary sea monsters. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.MermaidRules = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const MM_KEY = 'rubloxMermaid';
+  const MM_VER = 1;
+  const MM_DOOR_H = 4.2;
+  const MM_DOOR_W = 3.6;
+  const MM_WALL_H = 6.0;
+  const MM_CEILING_Y = 6.2;
+  const MM_Y_MIN = 0.05;
+  const MM_Y_MAX = 16;
+
+  const MM_TAILS = [
+    {id:'teal', name:'Teal Tide', color:'#2ec4b6'},
+    {id:'pink', name:'Pearl Pink', color:'#ff8fab'},
+    {id:'gold', name:'Sun Gold', color:'#f4d35e'},
+    {id:'violet', name:'Violet Reef', color:'#9b5de5'},
+    {id:'mint', name:'Mint Foam', color:'#80ed99'},
+    {id:'coral', name:'Coral Glow', color:'#ff6b4a'}
+  ];
+
+  const MM_ROOMS = [
+    {id:'plaza', name:'Glimmergill Plaza', x:0, z:0, w:28, d:28, color:'#3d8b9e', blurb:'The heart of the cove. Swim up, down, and all around.'},
+    {id:'home', name:'Coral Home', x:-26, z:0, w:24, d:16, color:'#5b3a6e', blurb:'Your cozy coral house. Place shells and treasures.'},
+    {id:'shop', name:'Pearl Shop', x:26, z:0, w:24, d:16, color:'#3e5d8a', blurb:'Trade pearls for tails, decor, and treats.'},
+    {id:'garden', name:'Shell Garden', x:0, z:-26, w:24, d:24, color:'#2f6f6a', blurb:'Gentle currents and shiny shells to collect.'}
+  ];
+
+  const MM_DOORS = [
+    {id:'plaza-home', a:'plaza', b:'home', x:-14, z:0, w:MM_DOOR_W, h:MM_DOOR_H, axis:'x', thick:0.42},
+    {id:'plaza-shop', a:'plaza', b:'shop', x:14, z:0, w:MM_DOOR_W, h:MM_DOOR_H, axis:'x', thick:0.42},
+    {id:'plaza-garden', a:'plaza', b:'garden', x:0, z:-14, w:MM_DOOR_W, h:MM_DOOR_H, axis:'z', thick:0.42}
+  ];
+
+  const MM_SHELLS = [
+    {id:'swirl', name:'Swirl Shell', emoji:'🐚', pearls:2, x:-6, z:8, y:1.2},
+    {id:'fan', name:'Fan Shell', emoji:'🪷', pearls:3, x:8, z:-6, y:2.4},
+    {id:'moon', name:'Moon Shell', emoji:'🌙', pearls:4, x:-8, z:-22, y:3.1},
+    {id:'spot', name:'Spotty Shell', emoji:'⚪', pearls:2, x:10, z:10, y:0.8},
+    {id:'spiral', name:'Spiral Shell', emoji:'🌀', pearls:5, x:6, z:-30, y:5.2},
+    {id:'tiny', name:'Tiny Shell', emoji:'✨', pearls:1, x:-10, z:-6, y:7.5}
+  ];
+
+  const MM_PETS = [
+    {id:'kelpie', name:'Kelpie', emoji:'🐠', blurb:'A shy kelp-fish who loves to follow bubbles.'},
+    {id:'jellipop', name:'Jellipop', emoji:'🫧', blurb:'A soft, tickly jelly who bounces when you swim up.'},
+    {id:'sandpip', name:'Sandpip', emoji:'⭐', blurb:'A star-shaped seafloor pal who collects pebbles.'}
+  ];
+
+  const MM_DECOR = [
+    {id:'lantern', name:'Sea Lantern', emoji:'🏮', cost:6, slot:'lamp'},
+    {id:'anemone', name:'Anemone Vase', emoji:'🌸', cost:5, slot:'table'},
+    {id:'chest', name:'Pearl Chest', emoji:'📦', cost:8, slot:'corner'},
+    {id:'curtain', name:'Kelp Curtain', emoji:'🌿', cost:5, slot:'window'},
+    {id:'bed', name:'Shell Bed', emoji:'🛏️', cost:10, slot:'bed'}
+  ];
+
+  const MM_CURRENTS = [
+    {id:'garden-lift', x:0, z:-28, r:8, vx:0, vy:1.6, vz:0},
+    {id:'plaza-drift', x:6, z:6, r:6, vx:-0.8, vy:0.2, vz:0.4}
+  ];
+
+  const MM_SHOP = MM_TAILS.map(t => ({id:'tail-'+t.id, kind:'tail', tail:t.id, name:t.name+' Tail', emoji:'🧜', cost: t.id==='teal'?0:12}))
+    .concat(MM_DECOR.map(d => Object.assign({kind:'decor'}, d)))
+    .concat([
+      {id:'treat', kind:'treat', name:'Kelp Treat', emoji:'🍬', cost:4, desc:'A snack a sea-pet will love.'}
+    ]);
+
+  function mmFresh(){
+    return {v:MM_VER, visits:0, shells:0, pearls:0, found:[], tail:'teal', decor:[], pals:[], treats:0};
+  }
+
+  function mmLoad(raw){
+    const o = raw && typeof raw === 'object' ? raw : {};
+    const d = mmFresh();
+    ['visits','shells','pearls','treats'].forEach(k => { d[k] = Math.max(0, o[k] | 0); });
+    const tail = MM_TAILS.find(t => t.id === o.tail);
+    d.tail = tail ? tail.id : 'teal';
+    d.found = Array.isArray(o.found) ? o.found.filter(id => MM_SHELLS.some(s => s.id === id)).slice(0, 12) : [];
+    d.decor = Array.isArray(o.decor) ? o.decor.filter(id => MM_DECOR.some(s => s.id === id)).slice(0, 8) : [];
+    d.pals = Array.isArray(o.pals) ? o.pals.filter(id => MM_PETS.some(s => s.id === id)).slice(0, 6) : [];
+    return d;
+  }
+
+  function mmRoom(id){ return MM_ROOMS.find(r => r.id === id) || null; }
+  function mmTail(id){ return MM_TAILS.find(t => t.id === id) || MM_TAILS[0]; }
+  function mmShopItem(id){ return MM_SHOP.find(s => s.id === id) || null; }
+
+  function mmInBox(x, z, room){
+    const hw = room.w / 2, hd = room.d / 2;
+    return x >= room.x - hw && x <= room.x + hw && z >= room.z - hd && z <= room.z + hd;
+  }
+
+  function mmRoomAt(x, z){
+    for (let i = 0; i < MM_ROOMS.length; i++){
+      if (mmInBox(x, z, MM_ROOMS[i])) return MM_ROOMS[i].id;
+    }
+    return null;
+  }
+
+  function mmInDoorway(x, z, slim){
+    const s = slim == null ? 1.2 : slim;
+    for (let i = 0; i < MM_DOORS.length; i++){
+      const d = MM_DOORS[i];
+      if (d.axis === 'z'){
+        if (Math.abs(z - d.z) <= s && Math.abs(x - d.x) <= d.w / 2) return d;
+      } else if (Math.abs(x - d.x) <= s && Math.abs(z - d.z) <= d.w / 2) return d;
+    }
+    return null;
+  }
+
+  function mmWalkable(x, z){
+    return !!(mmRoomAt(x, z) || mmInDoorway(x, z, 1.2));
+  }
+
+  function mmNewVisit(state){
+    const st = mmLoad(state);
+    st.visits = (st.visits | 0) + 1;
+    return {
+      state: st,
+      run: {
+        area: 'plaza',
+        y: 1.2,
+        vy: 0,
+        shellsLeft: MM_SHELLS.filter(s => st.found.indexOf(s.id) < 0).map(s => s.id),
+        current: null,
+        follow: (st.pals[0] || null)
+      }
+    };
+  }
+
+  function mmCurrentAt(x, y, z){
+    for (let i = 0; i < MM_CURRENTS.length; i++){
+      const c = MM_CURRENTS[i];
+      if (Math.hypot((x||0) - c.x, (z||0) - c.z) <= c.r) return c;
+    }
+    return null;
+  }
+
+  function mmSwimTick(run, input, dt){
+    run = run || {};
+    input = input || {};
+    dt = Math.max(0, Math.min(0.12, +dt || 0));
+    const up = Math.max(0, Math.min(1, +input.up || 0));
+    const down = Math.max(0, Math.min(1, +input.down || 0));
+    const acc = (up - down) * 14;
+    run.vy = (run.vy || 0) + acc * dt;
+    // gentle buoyancy toward mid water
+    const y = run.y != null ? +run.y : 1.2;
+    run.vy += (3.5 - y) * 0.15 * dt;
+    run.vy *= Math.max(0, 1 - dt * 1.8);
+    run.y = Math.max(MM_Y_MIN, Math.min(MM_Y_MAX, y + run.vy * dt));
+    if (run.y === MM_Y_MIN && run.vy < 0) run.vy = 0;
+    if (run.y === MM_Y_MAX && run.vy > 0) run.vy = 0;
+    const cur = mmCurrentAt(input.x, run.y, input.z);
+    run.current = cur ? cur.id : null;
+    const push = cur ? {x: cur.vx * dt, y: cur.vy * dt, z: cur.vz * dt} : {x:0, y:0, z:0};
+    if (push.y){
+      run.y = Math.max(MM_Y_MIN, Math.min(MM_Y_MAX, run.y + push.y));
+    }
+    return {run, push, y: run.y, current: run.current};
+  }
+
+  function mmCollectShell(state, run, shellId){
+    state = mmLoad(state);
+    run = run || {};
+    const sh = MM_SHELLS.find(s => s.id === shellId);
+    if (!sh) return {ok:false, why:'shell', state, run};
+    if ((state.found || []).indexOf(shellId) >= 0) return {ok:false, why:'have', state, run, message:'You already have that shell.'};
+    state.found = (state.found || []).concat([shellId]);
+    state.shells = (state.shells | 0) + 1;
+    state.pearls = (state.pearls | 0) + (sh.pearls | 0);
+    if (run.shellsLeft) run.shellsLeft = run.shellsLeft.filter(id => id !== shellId);
+    return {ok:true, state, run, shell:sh, pearls: sh.pearls|0, message:'You found a ' + sh.name + '! +' + sh.pearls + ' pearls.'};
+  }
+
+  function mmBuy(state, coins, itemId){
+    // pearls are the shop currency (local to this game), coins unused except treats can also use pearls
+    state = mmLoad(state);
+    const item = mmShopItem(itemId);
+    if (!item) return {ok:false, why:'item', state};
+    if ((state.pearls | 0) < (item.cost | 0)) return {ok:false, why:'pearls', state, need: item.cost|0, message:'Need more pearls for that.'};
+    if (item.kind === 'tail'){
+      if (state.tail === item.tail) return {ok:false, why:'have', state, message:'You already wear that tail.'};
+      state.pearls -= item.cost|0;
+      state.tail = item.tail;
+      return {ok:true, state, item, message:'You swish a new ' + item.name + '!'};
+    }
+    if (item.kind === 'decor'){
+      if ((state.decor || []).indexOf(item.id) >= 0) return {ok:false, why:'have', state, message:'That already decorates your coral home.'};
+      state.pearls -= item.cost|0;
+      state.decor = (state.decor || []).concat([item.id]);
+      return {ok:true, state, item, message:'You placed a ' + item.name + ' in your coral home!'};
+    }
+    if (item.kind === 'treat'){
+      state.pearls -= item.cost|0;
+      state.treats = (state.treats | 0) + 1;
+      return {ok:true, state, item, message:'A kelp treat for a sea-pet friend!'};
+    }
+    return {ok:false, why:'item', state};
+  }
+
+  function mmBefriend(state, petId, usedTreat){
+    state = mmLoad(state);
+    const pet = MM_PETS.find(p => p.id === petId);
+    if (!pet) return {ok:false, why:'pet', state};
+    if ((state.pals || []).indexOf(petId) >= 0) return {ok:false, why:'have', state, message: pet.name + ' already swims with you!'};
+    if (!usedTreat){
+      if ((state.treats | 0) < 1) return {ok:false, why:'treat', state, message:'Bring a kelp treat from the pearl shop.'};
+      state.treats -= 1;
+    }
+    state.pals = (state.pals || []).concat([petId]);
+    return {ok:true, state, pet, message: pet.emoji + ' ' + pet.name + ' is your new sea-pet friend!'};
+  }
+
+  function mmPlaceDecor(state, itemId){
+    // buying already places; this is for moving/confirming a slot
+    state = mmLoad(state);
+    if ((state.decor || []).indexOf(itemId) >= 0) return {ok:true, state, already:true};
+    return mmBuy(state, 0, itemId);
+  }
+
+  function mmKidSafe(){ return true; }
+  function mmNoMonsters(){ return true; }
+  function mmRealPlayersOnly(roster){ return (roster || []).filter(p => p && p.id && !p.npc); }
+
+  function mmWire(state, run){
+    state = mmLoad(state);
+    run = run || {};
+    return {
+      visits: state.visits|0,
+      pearls: state.pearls|0,
+      shells: state.shells|0,
+      tail: state.tail,
+      decor: (state.decor||[]).slice(),
+      pals: (state.pals||[]).slice(),
+      area: run.area || 'plaza',
+      y: +run.y || 0,
+      found: (state.found||[]).slice()
+    };
+  }
+
+  return {
+    MM_KEY, MM_VER, MM_DOOR_H, MM_DOOR_W, MM_WALL_H, MM_CEILING_Y, MM_Y_MIN, MM_Y_MAX,
+    MM_TAILS, MM_ROOMS, MM_DOORS, MM_SHELLS, MM_PETS, MM_DECOR, MM_CURRENTS, MM_SHOP,
+    mmFresh, mmLoad, mmRoom, mmTail, mmShopItem, mmRoomAt, mmInDoorway, mmWalkable,
+    mmNewVisit, mmCurrentAt, mmSwimTick, mmCollectShell, mmBuy, mmBefriend, mmPlaceDecor,
+    mmKidSafe, mmNoMonsters, mmRealPlayersOnly, mmWire
+  };
+});
+
+/* Fashion Show rules used by tests and the runtime: solo is a judge panel
+   (no NPC opponents), and you cannot vote for yourself. Save key rubloxFashion
+   keeps existing fields and adds optional judgeShows / lastTheme. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.FashionShowRules = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const FS_KEY = 'rubloxFashion';
+
+  function fsFresh(){
+    return {xp:0, shows:0, wins:0, best:0, vip:false, judgeShows:0, lastTheme:''};
+  }
+
+  function fsLoadProg(raw){
+    const o = raw && typeof raw === 'object' ? raw : {};
+    const d = fsFresh();
+    ['xp','shows','wins','judgeShows'].forEach(k => { d[k] = Math.max(0, o[k] | 0); });
+    d.best = Math.max(0, +o.best || 0);
+    d.vip = !!o.vip;
+    d.lastTheme = typeof o.lastTheme === 'string' ? o.lastTheme.slice(0, 80) : '';
+    return d;
+  }
+
+  function fsSoloWalkers(uid){
+    const me = uid || 'H';
+    return [me];
+  }
+
+  function fsCanRate(voterId, targetId){
+    if (!voterId || !targetId) return false;
+    if (String(voterId) === String(targetId)) return false;
+    return true;
+  }
+
+  function fsCastRate(rates, voterId, targetId, stars){
+    rates = rates && typeof rates === 'object' ? rates : {};
+    const n = stars | 0;
+    if (!fsCanRate(voterId, targetId) || n < 1 || n > 5) return {ok:false, rates, why: !fsCanRate(voterId, targetId) ? 'self' : 'stars'};
+    (rates[voterId] = rates[voterId] || {})[targetId] = n;
+    return {ok:true, rates, stars:n};
+  }
+
+  function fsJudgePanel(){
+    return [
+      {id:'j0', name:'Grandma Rose', emoji:'👵'},
+      {id:'j1', name:'Coach Max', emoji:'🧢'},
+      {id:'j2', name:'Lulu', emoji:'🎀'},
+      {id:'j3', name:'Mr. Pebbles', emoji:'🐧'}
+    ];
+  }
+
+  function fsSoloScore(themeFit, poseBonus, judgeLean){
+    const fit = Math.max(0, Math.min(1, +themeFit || 0));
+    const pose = Math.max(0, Math.min(1, +poseBonus || 0));
+    const lean = Math.max(0, Math.min(1, +judgeLean || 0.7));
+    const avg = 2.2 + fit * 2.0 + pose * 0.6 + lean * 0.4;
+    return Math.max(1, Math.min(5, Math.round(avg * 10) / 10));
+  }
+
+  function fsAfterSoloShow(state, themeName, score){
+    state = fsLoadProg(state);
+    state.shows = (state.shows | 0) + 1;
+    state.judgeShows = (state.judgeShows | 0) + 1;
+    state.lastTheme = String(themeName || '').slice(0, 80);
+    const s = +score || 0;
+    if (s > (state.best || 0)) state.best = s;
+    return state;
+  }
+
+  function fsRealPlayersOnly(roster){
+    return (roster || []).filter(p => p && p.id && !p.npc);
+  }
+
+  return {
+    FS_KEY, fsFresh, fsLoadProg, fsSoloWalkers, fsCanRate, fsCastRate,
+    fsJudgePanel, fsSoloScore, fsAfterSoloShow, fsRealPlayersOnly
+  };
+});
+
+/* Avatar / hub Photo Booth. Reuses the Star Snaps gallery key rubloxPhotos
+   (capped). Canvas snapshots with a 2D fallback when WebGL is missing. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.PhotoBoothRules = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const PB_KEY = 'rubloxPhotos';
+  const PB_MAX = 12;
+
+  const PB_POSES = [
+    {id:'stand', name:'Stand tall', emoji:'🧍'},
+    {id:'wave', name:'Friendly wave', emoji:'👋'},
+    {id:'jump', name:'Happy hop', emoji:'⬆️'},
+    {id:'sit', name:'Cozy sit', emoji:'🪑'},
+    {id:'twirl', name:'Twirl', emoji:'💫'},
+    {id:'heart', name:'Heart hands', emoji:'💖'}
+  ];
+  const PB_BGS = [
+    {id:'studio', name:'Soft Studio', color:'#f4efe8', alt:'#e8dcc8'},
+    {id:'sunset', name:'Sunset Sky', color:'#ffb703', alt:'#fb8500'},
+    {id:'mint', name:'Mint Wall', color:'#b7efc5', alt:'#80ed99'},
+    {id:'stars', name:'Star Drape', color:'#3d348b', alt:'#191970'},
+    {id:'hearts', name:'Heart Paper', color:'#ffc2d1', alt:'#ff8fab'},
+    {id:'hub', name:'Hub Lobby', color:'#8ecae6', alt:'#219ebc'}
+  ];
+  const PB_FRAMES = [
+    {id:'none', name:'No frame', color:null, pad:0},
+    {id:'white', name:'White mat', color:'#ffffff', pad:18},
+    {id:'gold', name:'Gold frame', color:'#f4d35e', pad:16},
+    {id:'pink', name:'Pink frame', color:'#ff8fab', pad:16},
+    {id:'navy', name:'Navy frame', color:'#1d3557', pad:16}
+  ];
+  const PB_STICKERS = [
+    {id:'star', name:'Star', emoji:'⭐', x:0.82, y:0.14},
+    {id:'heart', name:'Heart', emoji:'💕', x:0.16, y:0.16},
+    {id:'sparkle', name:'Sparkle', emoji:'✨', x:0.84, y:0.78},
+    {id:'paw', name:'Paw', emoji:'🐾', x:0.14, y:0.8},
+    {id:'bow', name:'Bow', emoji:'🎀', x:0.5, y:0.1},
+    {id:'sun', name:'Sun', emoji:'🌞', x:0.86, y:0.46}
+  ];
+
+  function pbPose(id){ return PB_POSES.find(p => p.id === id) || PB_POSES[0]; }
+  function pbBg(id){ return PB_BGS.find(p => p.id === id) || PB_BGS[0]; }
+  function pbFrame(id){ return PB_FRAMES.find(p => p.id === id) || PB_FRAMES[0]; }
+  function pbSticker(id){ return PB_STICKERS.find(p => p.id === id) || null; }
+
+  function pbFreshShot(){
+    return {pose:'stand', bg:'studio', frame:'white', stickers:[]};
+  }
+
+  function pbCleanShot(raw){
+    const d = pbFreshShot();
+    const o = raw && typeof raw === 'object' ? raw : {};
+    if (pbPose(o.pose).id === o.pose) d.pose = o.pose;
+    if (pbBg(o.bg).id === o.bg) d.bg = o.bg;
+    if (pbFrame(o.frame).id === o.frame) d.frame = o.frame;
+    const ids = Array.isArray(o.stickers) ? o.stickers : [];
+    d.stickers = [];
+    ids.forEach(id => { if (pbSticker(id) && d.stickers.indexOf(id) < 0) d.stickers.push(id); });
+    d.stickers = d.stickers.slice(0, 4);
+    return d;
+  }
+
+  function pbToggleSticker(shot, id){
+    const s = pbCleanShot(shot);
+    if (!pbSticker(id)) return s;
+    const i = s.stickers.indexOf(id);
+    if (i >= 0) s.stickers.splice(i, 1);
+    else if (s.stickers.length < 4) s.stickers.push(id);
+    return s;
+  }
+
+  function pbNeed2dFallback(hasWebgl){
+    return !hasWebgl;
+  }
+
+  function pbIsPhotoData(d){
+    return typeof d === 'string' && /^data:image\/(jpeg|png);base64,/.test(d) && d.length > 32;
+  }
+
+  function pbGallery(raw){
+    const list = Array.isArray(raw) ? raw : [];
+    return list.filter(p => p && pbIsPhotoData(p.d) && +p.t > 0)
+      .slice(-PB_MAX)
+      .map(p => ({id: String(p.id || p.t).slice(0, 24), t: +p.t, d: p.d, bg: p.bg, pose: p.pose, source: p.source || 'booth'}));
+  }
+
+  function pbStore(gallery, photo){
+    const g = pbGallery(gallery);
+    if (!photo || !pbIsPhotoData(photo.d)) return {ok:false, gallery:g, why:'data'};
+    const item = {
+      id: String(photo.id || photo.t || Date.now()).slice(0, 24),
+      t: +photo.t || Date.now(),
+      d: photo.d,
+      bg: photo.bg,
+      pose: photo.pose,
+      source: photo.source || 'booth'
+    };
+    g.push(item);
+    while (g.length > PB_MAX) g.shift();
+    return {ok:true, gallery:g, count:g.length, item};
+  }
+
+  function pbDelete(gallery, id){
+    const g = pbGallery(gallery).filter(p => p.id !== id);
+    return {ok:true, gallery:g, count:g.length};
+  }
+
+  function pbLayout(shot, w, h){
+    const s = pbCleanShot(shot);
+    const bg = pbBg(s.bg);
+    const fr = pbFrame(s.frame);
+    const pose = pbPose(s.pose);
+    const pad = fr.pad || 0;
+    const poseShift = {
+      stand: {x:0, y:0, scale:1},
+      wave: {x:10, y:0, scale:1},
+      jump: {x:0, y:-28, scale:1.05},
+      sit: {x:0, y:24, scale:0.9},
+      twirl: {x:-8, y:-8, scale:1},
+      heart: {x:0, y:6, scale:1}
+    }[pose.id] || {x:0,y:0,scale:1};
+    return {
+      width: w || 520,
+      height: h || 600,
+      bg, frame: fr, pose, pad, poseShift,
+      stickers: s.stickers.map(id => pbSticker(id)).filter(Boolean)
+    };
+  }
+
+  return {
+    PB_KEY, PB_MAX, PB_POSES, PB_BGS, PB_FRAMES, PB_STICKERS,
+    pbPose, pbBg, pbFrame, pbSticker, pbFreshShot, pbCleanShot, pbToggleSticker,
+    pbNeed2dFallback, pbIsPhotoData, pbGallery, pbStore, pbDelete, pbLayout
+  };
+});
+
 /* New optional avatar looks — Y2K, grunge, cozy, fancy. Ids are additive only. */
 (function (root, factory) {
   const api = factory();
@@ -10702,12 +11777,20 @@ if (typeof globalThis !== 'undefined'){
   return {PREVIEW_MODE_KEY, previewWearable, previewApply, previewSnap, previewSameSave, previewBegin, previewCancel, previewBuy, previewModeNormalize, previewModePick, previewModeToggle, previewModeSelected};
 });
 
+function drawMermaid(ctx){
+  if (typeof sky === 'function') sky(ctx, '#14738a', '#7ee0d6');
+  else { ctx.fillStyle = '#14738a'; ctx.fillRect(0,0,320,200); }
+  ctx.fillStyle = '#1c8ea3'; ctx.fillRect(0, 80, 320, 120);
+  ctx.font = '28px sans-serif'; ctx.fillText('🧜', 150, 130); ctx.fillText('🐚', 80, 110);
+  if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#2ec4b6');
+}
 const GAMES = [
   {id:'elevator', name:'Wobblevator', emoji:'🛗', tag:'Ride Bingle the Bellhop’s wobbly lift to surprise floors. Clear quirky mini-events, keep your streak, and hop back in — if a floor gets too wobbly, everyone is okay!', draw: drawElevator, playable: true, isNew: true},
   {id:'mansion', name:'Mallowmist Manor', emoji:'🕯️', tag:'A cute haunted house with new rooms and a hidden Secret Attic! Solve simple puzzles, follow a clue chain to a special reward, and tip-toe past Nimble. Getting caught means everyone is okay.', draw: drawMansion, playable: true, isNew: true},
   {id:'shelter', name:'Wagwell Shelter', emoji:'🐾', tag:'Rescue town strays, cheer them up in the grooming salon, match them with visiting families, and enter pet contests judged by Judge Bramble!', draw: drawShelter, playable: true, isNew: true},
-  {id:'winter', name:'Pinebell Village', emoji:'🎄', tag:'A cozy original winter village: sled timed runs on Sledwhistle Hill, skate Glassgill Pond, build a snow pal, sip cocoa at Mugsy’s, and toss snowballs with real friends only.', draw: drawWinter, playable: true, isNew: true},
-  {id:'vet', name:'Pawsley Vet Clinic', emoji:'🩺', tag:'Always first-person clinic with many connected rooms. Take a chart, diagnose with tools, treat, then cuddle pals until a happy pickup. Everyone gets better!', draw: drawVet, playable: true, isNew: true},
+  {id:'winter', name:'Pinebell Village', emoji:'🎄', tag:'A cozy original winter village: hang holiday lights, wrap gifts for Ribbon Rue, sled, skate, build a snow pal, sip cocoa, and toss snowballs with real friends only.', draw: drawWinter, playable: true, isNew: true},
+  {id:'vet', name:'Pawsley Vet Clinic', emoji:'🩺', tag:'First-person clinic with many rooms, plus cute ambulance trips around town to rescue pals and bring them in for care. Everyone gets better!', draw: drawVet, playable: true, isNew: true},
+  {id:'mermaid', name:'Glimmergill Cove', emoji:'🧜', tag:'A cozy original undersea town! Pick a merfolk tail, swim up and down, collect shells, decorate a coral home, and make sea-pet friends. No scary monsters.', draw: drawMermaid, playable: true, isNew: true},
   {id:'garden', name:'Sunny Patch Garden', emoji:'🌱', tag:'Buy silly original seeds, plant them, and watch them grow in real time — even while you are away!', draw: drawGarden, playable: true, isNew: true},
   {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', tag:'Charge a snack toss and meet original friendly animals. Friends share the meadow, but nobody takes your pals!', draw: drawMeadow, playable: true, isNew: true},
   {id:'rides', name:'Rideland Workshop', emoji:'🎢', tag:'Place original rides on your lot, hop on, and let friends ride them too!', draw: drawRides, playable: true, isNew: true},
@@ -12606,6 +13689,7 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
     {id:'shelter', name:'Wagwell Shelter', emoji:'🐾', keys:['rubloxShelter']},
     {id:'winter', name:'Pinebell Village', emoji:'🎄', keys:['rubloxWinter']},
     {id:'vet', name:'Pawsley Vet Clinic', emoji:'🩺', keys:['rubloxVet']},
+    {id:'mermaid', name:'Glimmergill Cove', emoji:'🧜', keys:['rubloxMermaid']},
     {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', keys:['rubloxMeadow']},
     {id:'rides', name:'Rideland Workshop', emoji:'🎢', keys:['rubloxRides']},
     {id:'hive', name:'Honeyhill Hive', emoji:'🐝', keys:['rubloxHive']},
@@ -15512,6 +16596,153 @@ setTheme(load('rubloxDark', false));
 try { buildGames(); } catch (err) {}
 try { renderContinue(); } catch (err) {}
 requestAnimationFrame(animateLava);
+
+  /* ---------- Avatar Photo Booth (reuses rubloxPhotos) ---------- */
+  let pb = {shot: null, last: null, webgl: null};
+  function pbHasWebgl(){
+    if (pb.webgl != null) return pb.webgl;
+    try {
+      const c = document.createElement('canvas');
+      pb.webgl = !!(c.getContext('webgl') || c.getContext('webgl2') || c.getContext('experimental-webgl'));
+    } catch (e){ pb.webgl = false; }
+    return pb.webgl;
+  }
+  function pbGalleryStore(){
+    try {
+      if (typeof load === 'function') return PhotoBoothRules.pbGallery(load(PhotoBoothRules.PB_KEY, []));
+    } catch (e){}
+    try { return PhotoBoothRules.pbGallery(JSON.parse(localStorage.getItem(PhotoBoothRules.PB_KEY) || '[]')); } catch (e){ return []; }
+  }
+  function pbPersist(g){
+    try { if (typeof save === 'function') save(PhotoBoothRules.PB_KEY, g); else localStorage.setItem(PhotoBoothRules.PB_KEY, JSON.stringify(g)); } catch (e){}
+  }
+  function pbOpen(){
+    const box = document.getElementById('avBooth');
+    if (!box) return;
+    if (!pb.shot) pb.shot = PhotoBoothRules.pbFreshShot();
+    box.hidden = false;
+    pbPaintChrome();
+    pbPaint();
+  }
+  function pbClose(){ const box = document.getElementById('avBooth'); if (box) box.hidden = true; }
+  function pbPaintChrome(){
+    const R = PhotoBoothRules, s = pb.shot || R.pbFreshShot();
+    function row(id, items, key, labelFn){
+      const el = document.getElementById(id); if (!el) return;
+      el.innerHTML = '';
+      items.forEach(it => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = labelFn(it);
+        if (s[key] === it.id || (key === 'sticker' && (s.stickers||[]).indexOf(it.id)>=0)) b.classList.add('on');
+        b.onclick = () => {
+          if (key === 'sticker') pb.shot = R.pbToggleSticker(s, it.id);
+          else { s[key] = it.id; pb.shot = R.pbCleanShot(s); }
+          pbPaintChrome(); pbPaint();
+        };
+        el.appendChild(b);
+      });
+    }
+    row('avBoothPoses', R.PB_POSES, 'pose', it => it.emoji + ' ' + it.name);
+    row('avBoothBgs', R.PB_BGS, 'bg', it => it.name);
+    row('avBoothFrames', R.PB_FRAMES, 'frame', it => it.name);
+    row('avBoothStickers', R.PB_STICKERS, 'sticker', it => it.emoji + ' ' + it.name);
+  }
+  function pbAv(){
+    try { if (typeof draft !== 'undefined' && draft) return draft; } catch(e){}
+    try { if (typeof avatar !== 'undefined' && avatar) return avatar; } catch(e){}
+    return {};
+  }
+  function pbPaint(){
+    const cv = document.getElementById('avBoothCv'); if (!cv) return;
+    const ctx = cv.getContext('2d');
+    const lay = PhotoBoothRules.pbLayout(pb.shot, cv.width, cv.height);
+    const grd = ctx.createLinearGradient(0,0,0,cv.height);
+    grd.addColorStop(0, lay.bg.color); grd.addColorStop(1, lay.bg.alt || lay.bg.color);
+    ctx.fillStyle = grd; ctx.fillRect(0,0,cv.width,cv.height);
+    const pad = lay.pad || 0;
+    // 2D fallback is always used in the editor booth (works with or without WebGL)
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(pad, pad, cv.width - pad*2, cv.height - pad*2);
+    ctx.clip();
+    ctx.translate(lay.poseShift.x, lay.poseShift.y);
+    if (lay.poseShift.scale && lay.poseShift.scale !== 1){
+      ctx.translate(cv.width/2, cv.height/2);
+      ctx.scale(lay.poseShift.scale, lay.poseShift.scale);
+      ctx.translate(-cv.width/2, -cv.height/2);
+    }
+    try { if (typeof drawAvatar === 'function') drawAvatar(ctx, pbAv(), {}); } catch (e){}
+    ctx.restore();
+    if (lay.frame && lay.frame.color && pad){
+      ctx.strokeStyle = lay.frame.color;
+      ctx.lineWidth = pad;
+      ctx.strokeRect(pad/2, pad/2, cv.width-pad, cv.height-pad);
+    }
+    ctx.font = Math.round(cv.width * 0.08) + 'px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    (lay.stickers||[]).forEach(st => {
+      ctx.fillText(st.emoji, st.x * cv.width, st.y * cv.height);
+    });
+    pb.last = cv;
+    // note fallback: PhotoBoothRules.pbNeed2dFallback(!pbHasWebgl()) is true without WebGL; we already drew 2D
+  }
+  function pbSnap(){
+    const cv = document.getElementById('avBoothCv'); if (!cv) return;
+    pbPaint();
+    let data = '';
+    try { data = cv.toDataURL('image/png'); } catch (e){ data = ''; }
+    if (!PhotoBoothRules.pbIsPhotoData(data)){
+      try { if (typeof toast === 'function') toast('Could not save this photo.'); } catch(e){}
+      return;
+    }
+    const stored = PhotoBoothRules.pbStore(pbGalleryStore(), {
+      t: Date.now(), d: data, bg: pb.shot && pb.shot.bg, pose: pb.shot && pb.shot.pose, source: 'booth', id: String(Date.now())
+    });
+    if (stored.ok) pbPersist(stored.gallery);
+    try {
+      if (typeof banner === 'function') banner('📸 Snap! Saved on this device (' + stored.count + '/' + PhotoBoothRules.PB_MAX + '). Tap 🖼️ to see or download it.');
+      else if (typeof toast === 'function') toast('📸 Saved to your photo gallery!');
+    } catch(e){}
+    pb.lastData = data;
+  }
+  function pbDownload(){
+    const data = pb.lastData || (document.getElementById('avBoothCv') && document.getElementById('avBoothCv').toDataURL('image/png'));
+    if (!data){ pbSnap(); return; }
+    const a = document.createElement('a');
+    a.href = data; a.download = 'rublox-photo.png';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  function pbShowGal(){
+    const box = document.getElementById('avBoothGallery'); if (!box) return;
+    const g = pbGalleryStore();
+    box.hidden = false;
+    box.innerHTML = g.length ? '' : '<div>No photos yet — take a snap!</div>';
+    g.slice().reverse().forEach(p => {
+      const img = document.createElement('img');
+      img.src = p.d; img.alt = 'Saved photo';
+      img.onclick = () => { pb.lastData = p.d; pbDownload(); };
+      box.appendChild(img);
+    });
+  }
+  function pbBind(){
+    const open = document.getElementById('avBoothBtn');
+    const hub = document.getElementById('hubBoothBtn');
+    const close = document.getElementById('avBoothX');
+    const snap = document.getElementById('avBoothSnap');
+    const dl = document.getElementById('avBoothDl');
+    const gal = document.getElementById('avBoothGal');
+    if (open && !open._pb){ open._pb = true; open.addEventListener('click', ev => { ev.preventDefault(); pbOpen(); }); }
+    if (hub && !hub._pb){ hub._pb = true; hub.addEventListener('click', ev => { ev.preventDefault(); pbOpen(); }); }
+    if (close && !close._pb){ close._pb = true; close.addEventListener('click', ev => { ev.preventDefault(); pbClose(); }); }
+    if (snap && !snap._pb){ snap._pb = true; snap.addEventListener('click', ev => { ev.preventDefault(); pbSnap(); }); }
+    if (dl && !dl._pb){ dl._pb = true; dl.addEventListener('click', ev => { ev.preventDefault(); pbDownload(); }); }
+    if (gal && !gal._pb){ gal._pb = true; gal.addEventListener('click', ev => { ev.preventDefault(); pbShowGal(); }); }
+  }
+  if (typeof document !== 'undefined'){
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pbBind);
+    else pbBind();
+  }
 try { buildAvatarEditor(); drawBig(); drawChip(); updateWelcome(); } catch (err) {}
 try { updateCoins(); renderShop(); renderStuff(); } catch (err) {}
 try { if (typeof frInit === 'function') frInit(); } catch (err) {}
@@ -16043,11 +17274,11 @@ const Obby = (() => {
   // first person (remembered per device); while driving in Adopt a Pet the camera goes back to third person on its own
   const fp = {on: !!load('rubloxFP', false), r3: -1e9, wt: 0, unlockT: 0, shown: null, req: false, noLock: false, throwTurn: load('rubloxThrowTurn', true) !== false, turn: null};
   let menuOpen = false;   // multiplayer menu: open over a game that keeps running
-  function fpOn(){ return running && !(pt && pt.drive) && (fp.on || !!(typeof mode !== 'undefined' && ((mode === 'dreamhouse' && typeof dh !== 'undefined' && dh && !dh.intro) || mode === 'vet'))); }
+  function fpOn(){ return running && !(pt && pt.drive) && (fp.on || !!(typeof mode !== 'undefined' && ((mode === 'dreamhouse' && typeof dh !== 'undefined' && dh && !dh.intro) || (mode === 'vet' && !(typeof vtDriving === 'function' && vtDriving()))))); }
   function setFP(on, quiet){
     on = !!on;
     if (!on && typeof mode !== 'undefined' && mode === 'dreamhouse' && typeof dh !== 'undefined' && dh){ on = true; if (fp.on) return; }
-    if (!on && typeof mode !== 'undefined' && mode === 'vet'){ on = true; if (fp.on) return; }
+    if (!on && typeof mode !== 'undefined' && mode === 'vet' && !(typeof vtDriving === 'function' && vtDriving())){ on = true; if (fp.on) return; }
     if (fp.on === on) return; fp.on = on; fp.wt = performance.now(); save('rubloxFP', on);
     if (on) cam.pitch = .08; else { cam.pitch = .42; cam.dist = Math.max(cam.dist, 6); if (document.pointerLockElement) document.exitPointerLock(); }
     const b = document.getElementById('oFP'); if (b){ b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }
@@ -16817,7 +18048,7 @@ const Obby = (() => {
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
     nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; py = null; evg = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
-    if (mode === 'elevator') buildElevator(); else if (mode === 'mansion') buildMansion(); else if (mode === 'shelter') buildShelter(); else if (mode === 'winter') buildWinter(); else if (mode === 'vet') buildVet(); else if (mode === 'garden') buildGarden(); else if (mode === 'meadow') buildMeadow(); else if (mode === 'rides') buildRides(); else if (mode === 'hive') buildHive(); else if (mode === 'camp') buildCamp(); else if (mode === 'cafe') buildCafe(); else if (mode === 'fish') buildFish(); else if (mode === 'petshow') buildPetShow(); else if (mode === 'hunt') buildHunt(); else if (mode === 'snowfest') buildSnowFest(); else if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    if (mode === 'elevator') buildElevator(); else if (mode === 'mansion') buildMansion(); else if (mode === 'shelter') buildShelter(); else if (mode === 'winter') buildWinter(); else if (mode === 'vet') buildVet(); else if (mode === 'mermaid') buildMermaid(); else if (mode === 'garden') buildGarden(); else if (mode === 'meadow') buildMeadow(); else if (mode === 'rides') buildRides(); else if (mode === 'hive') buildHive(); else if (mode === 'camp') buildCamp(); else if (mode === 'cafe') buildCafe(); else if (mode === 'fish') buildFish(); else if (mode === 'petshow') buildPetShow(); else if (mode === 'hunt') buildHunt(); else if (mode === 'snowfest') buildSnowFest(); else if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -17772,7 +19003,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'vet' || mode === 'winter' || mode === 'mansion' || mode === 'shelter' || mode === 'hunt' || mode === 'elevator') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'vet' || mode === 'mermaid' || mode === 'winter' || mode === 'mansion' || mode === 'shelter' || mode === 'hunt' || mode === 'elevator') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
       ejectXZ(axis, B, b);
     }
   }
@@ -17856,7 +19087,7 @@ const Obby = (() => {
       const p = t.mesh.position;
       if (t.active && inp.mag > .1 && Math.abs(P.x - p.x) < t.hw + R + .3 && Math.abs(P.z - p.z) < t.hd + R + .3 && P.y < p.y + t.hh && P.y + H > p.y - t.hh){ P.vy = 7; climbing = true; P.vx *= .25; P.vz *= .25; }
     }
-    if (!climbing) P.vy = Math.max(-40, P.vy - GRAV * dt);
+    if (!climbing && mode !== 'mermaid' && !(typeof vtDriving === 'function' && vtDriving())) P.vy = Math.max(-40, P.vy - GRAV * dt);
     if (typeof tdJumpAssist === 'function' && typeof mode !== 'undefined' && mode === 'tower' && td){ tdJumpAssist(dt, inp); }
     else {
       P.coyote = P.onGround ? .1 : P.coyote - dt;
@@ -17891,6 +19122,7 @@ const Obby = (() => {
     if (mode === 'mansion' || mode === 'shelter'){ if (P.y < -25) respawn(); return; }
     if (mode === 'winter'){ if (P.y < -25) respawn(); return; }
     if (mode === 'vet'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'mermaid'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -21971,8 +23203,8 @@ const Obby = (() => {
   function fsBlankFx(){ return fsCleanFx(null); }
   /* --- fashion level (style stars → title) --- */
   const FS_VIP_COST = 250;   // Rublox coins only — never real money
-  function fsProg(){ const p = load('rubloxFashion', null), o = Object.assign({xp: 0, shows: 0, wins: 0, best: 0, vip: false}, p && typeof p === 'object' ? p : {});
-    o.vip = !!o.vip; o.xp = Math.max(0, o.xp | 0); o.shows = Math.max(0, o.shows | 0); o.wins = Math.max(0, o.wins | 0); o.best = Math.max(0, +o.best || 0); return o; }
+  function fsProg(){ const p = load('rubloxFashion', null), o = Object.assign({xp: 0, shows: 0, wins: 0, best: 0, vip: false, judgeShows: 0, lastTheme: ''}, p && typeof p === 'object' ? p : {});
+    o.vip = !!o.vip; o.xp = Math.max(0, o.xp | 0); o.shows = Math.max(0, o.shows | 0); o.wins = Math.max(0, o.wins | 0); o.best = Math.max(0, +o.best || 0); o.judgeShows = Math.max(0, o.judgeShows | 0); o.lastTheme = typeof o.lastTheme === 'string' ? o.lastTheme.slice(0, 80) : ''; return o; }
   function fsIsVip(){ return !!(fsProg().vip); }
   function fsBuyVip(){
     if (fsIsVip()){ toast('👑 You already have Star VIP!'); return false; }
@@ -22728,7 +23960,7 @@ const Obby = (() => {
     $('#fsLv').innerHTML = fsLvlHtml() + (fsIsVip()
       ? '<div class="fsvipb">👑 Star VIP · exclusive lounge + clothes unlocked</div>'
       : '<div class="fsvipb">👑 Star VIP Lounge · <button class="fsmb" id="fsVipBuyL">Unlock with ' + FS_VIP_COST + ' 🪙</button> <small>(Rublox coins only — never real money)</small></div>');
-    $('#fsPickS').textContent = g ? '⏳ Waiting for the host to start the show...' : mp.on ? 'Everyone gets the same surprise theme, styles a look in the pastel prep room, walks the glam runway and rates each other 1-5 ⭐!' : 'Get a surprise theme, style a look in the pastel prep room, strut the glam runway with a pose, and get rated by the other models and judges! 👑';
+    $('#fsPickS').textContent = g ? '⏳ Waiting for the host to start the show...' : mp.on ? 'Everyone gets the same surprise theme, styles a look in the pastel prep room, walks the glam runway and rates each other 1-5 ⭐!' : 'Get a surprise theme, style a look in the pastel prep room, strut the glam runway with a pose, and get scored by a friendly judge panel! 👑';
     $('#fsGo').style.display = g ? 'none' : ''; $('#fsTimes').style.display = g ? 'none' : '';
     $('#fsTimes').innerHTML = '⏱️ Dress time: ' + FS_TIMES.map(s => `<button class="fstm${fs.dl === s ? ' on' : ''}" data-s="${s}">${s / 60} min</button>`).join('');
     $('#fsTimes').querySelectorAll('.fstm').forEach(b => b.onclick = () => fsSetTime(+b.dataset.s));
@@ -22742,7 +23974,7 @@ const Obby = (() => {
     if (!fs || mpGuest()) return;
     let ord;
     if (mp.on){ ord = fsBodies(); if (ord.length < 2){ toast('👫 The Fashion Show needs 2+ players in the room'); return; } }
-    else ord = ['H', ...FS_NPCS.map(n => n.uid)];
+    else ord = [fsUid()];
     let th; do { th = Math.floor(Math.random() * FS_THEMES.length); } while (th === fs.lastTh);
     if (fs.forceTh != null) th = fs.forceTh;
     fs.lastTh = th; fs.th = th; fs.ord = ord; fs.n++; fs.ph = 'intro'; fs.t = FS_INTRO; fs.wt = 0; fs.gfits = {}; fs.gfx = {}; fs.fits = {}; fs.fxs = {}; fs.rates = {}; fs.tags = {}; fs.myTags = {}; fs.tagFocus = 'colors'; fs.poses = {}; fs.ready = new Set(); fs.res = []; fs.pod = []; fs.done = {};
@@ -22930,7 +24162,7 @@ const Obby = (() => {
     const me = fsUid(), mine = fs.ord.includes(me), place = fs.pod.indexOf(me), row = fs.res.find(r => r[0] === me), avg = row ? row[1] / 10 : 0;
     let lvUp = null;
     if (!fs.paid){ fs.paid = true; fs.lvBonus = 0; fs.xpGain = 0; const n = mine ? FS_JOIN + (place >= 0 ? FS_PRIZE[place] : 0) : 0;
-      if (mine){ const p = fsProg(), L0 = fsLevel(p.xp).lv, gain = 2 + Math.round(avg * 4) + (place >= 0 ? [8, 5, 3][place] : 0); p.xp += gain; p.shows++; if (place === 0) p.wins++; p.best = Math.max(p.best, avg); save('rubloxFashion', p); fs.xpGain = gain;
+      if (mine){ const p = fsProg(), L0 = fsLevel(p.xp).lv, gain = 2 + Math.round(avg * 4) + (place >= 0 ? [8, 5, 3][place] : 0); p.xp += gain; p.shows++; if (!mp.on) p.judgeShows = (p.judgeShows | 0) + 1; if (typeof FS_THEMES !== 'undefined' && FS_THEMES[fs.th]) p.lastTheme = FS_THEMES[fs.th].name; if (place === 0) p.wins++; p.best = Math.max(p.best, avg); save('rubloxFashion', p); fs.xpGain = gain;
         const L1 = fsLevel(p.xp); if (L1.lv > L0){ lvUp = L1; fs.lvBonus = L1.lv * 10; } }
       const tot = n + fs.lvBonus; if (tot){ fs.earned = tot; runCoins = tot; setCoins(coins + tot); SND.coin(); } }
     $('#fsEndE').textContent = place === 0 ? '👑' : place > 0 ? ['', '🥈', '🥉'][place] : '✨';
@@ -34921,7 +36153,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'dreamhouse' ? (typeof dh !== 'undefined' && dh && dh.visiting ? '🎮 Left stick move · Right stick look · Ⓐ jump · Ⓧ like the house · ☰ menu' : '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · Ⓨ invite friends · ⓁⓇ job · ✚▼ show spots · ☰ menu') : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'elevator' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act / shop · Ⓨ floors · Ⓑ close popups · ☰ menu' : mode === 'mansion' ? '🎮 Left stick move · Ⓐ jump · Ⓧ read / flip / unlock · Ⓨ Less scary · ☰ menu' : mode === 'shelter' ? '🎮 Left stick move · Ⓐ jump · Ⓧ rescue / care / desk · Ⓨ send home · ☰ menu' : mode === 'winter' ? '🎮 Left stick move / steer · Ⓐ jump · Ⓧ act · Ⓑ hop off or cash laps · ☰ menu' : mode === 'vet' ? '🎮 Left stick move · right stick look · Ⓐ interact · Ⓧ interact · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'pethotel' ? '🎮 Left stick move · Ⓐ jump · Ⓧ check in / care / check out · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'dreamhouse' ? (typeof dh !== 'undefined' && dh && dh.visiting ? '🎮 Left stick move · Right stick look · Ⓐ jump · Ⓧ like the house · ☰ menu' : '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · Ⓨ invite friends · ⓁⓇ job · ✚▼ show spots · ☰ menu') : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'elevator' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act / shop · Ⓨ floors · Ⓑ close popups · ☰ menu' : mode === 'mansion' ? '🎮 Left stick move · Ⓐ jump · Ⓧ read / flip / unlock · Ⓨ Less scary · ☰ menu' : mode === 'shelter' ? '🎮 Left stick move · Ⓐ jump · Ⓧ rescue / care / desk · Ⓨ send home · ☰ menu' : mode === 'winter' ? '🎮 Left stick move / steer · Ⓐ jump · Ⓧ act · Ⓑ hop off or cash laps · ☰ menu' : mode === 'vet' ? '🎮 Left stick move · right stick look · Ⓐ interact · Ⓧ interact · ☰ menu' : mode === 'mermaid' ? '🎮 Left stick move · Ⓐ jump / swim up · LT/LB swim down · RT/RB swim up · Ⓧ act · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'pethotel' ? '🎮 Left stick move · Ⓐ jump · Ⓧ check in / care / check out · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · View emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -35023,6 +36255,7 @@ const Obby = (() => {
     if (mode === 'shelter' && typeof shPad === 'function' && shPad(jp)) return;
     if (mode === 'winter' && typeof wnPad === 'function' && wnPad(jp, s)) return;
     if (mode === 'vet' && typeof vtPad === 'function' && vtPad(jp, s)) return;
+    if (mode === 'mermaid' && typeof mmPad === 'function' && mmPad(jp, s)) return;
     if (mode === 'snowfest' && typeof evg !== 'undefined' && evg && typeof snowfestPad === 'function' && snowfestPad(jp)) return;
     if (mode === 'party' && typeof py !== 'undefined' && py && typeof partyPad === 'function' && partyPad(jp)) return;
     if (jp[3]) behind();
@@ -35572,7 +36805,7 @@ function dhLayoutHud(){
       if (ic) iceCreamUpdate(dt);
       if (ph) petHotelUpdate(dt);
       if (sb) stableUpdate(dt);
-      if (evg) snowfestUpdate(dt); if (py) partyUpdate(dt); if (lh) lanternUpdate(dt); if (typeof t297Update === 'function') t297Update(dt); if (typeof t302Update === 'function') t302Update(dt); if (typeof elevUpdate === 'function') elevUpdate(dt); if (typeof mnUpdate === 'function' && mode === 'mansion') mnUpdate(dt); if (typeof shUpdate === 'function' && mode === 'shelter') shUpdate(dt); if (typeof wnUpdate === 'function' && mode === 'winter') wnUpdate(dt); if (typeof vtUpdate === 'function' && mode === 'vet') vtUpdate(dt);
+      if (evg) snowfestUpdate(dt); if (py) partyUpdate(dt); if (lh) lanternUpdate(dt); if (typeof t297Update === 'function') t297Update(dt); if (typeof t302Update === 'function') t302Update(dt); if (typeof elevUpdate === 'function') elevUpdate(dt); if (typeof mnUpdate === 'function' && mode === 'mansion') mnUpdate(dt); if (typeof shUpdate === 'function' && mode === 'shelter') shUpdate(dt); if (typeof wnUpdate === 'function' && mode === 'winter') wnUpdate(dt); if (typeof vtUpdate === 'function' && mode === 'vet') vtUpdate(dt); if (typeof mmUpdate === 'function' && mode === 'mermaid') mmUpdate(dt);
       if (hm) hauntUpdate(dt);
       if (db) danceUpdate(dt);
       if (dh) dreamhouseUpdate(dt);
@@ -35756,6 +36989,7 @@ function dhLayoutHud(){
       if (mode === 'shelter' && typeof shKey === 'function' && shKey(e)) return;
       if (mode === 'winter' && typeof wnKey === 'function' && wnKey(e)) return;
       if (mode === 'vet' && typeof vtKey === 'function' && vtKey(e)) return;
+      if (mode === 'mermaid' && typeof mmKey === 'function' && mmKey(e)) return;
       if (mode === 'snowfest' && typeof evg !== 'undefined' && evg && typeof snowfestKey === 'function' && snowfestKey(e)) return;
       if (mode === 'party' && typeof py !== 'undefined' && py && typeof partyKey === 'function' && partyKey(e)) return;
       const em = (typeof EmoRules !== 'undefined' && EmoRules.emoByCode) ? EmoRules.emoByCode(e.code, EMOTES) : Object.keys(EMOTES).find(k => { const key = EMOTES[k].key; return key != null && key !== '' && ('Digit' + key === e.code || 'Numpad' + key === e.code); });
@@ -35786,7 +37020,8 @@ function dhLayoutHud(){
       if (mode === 'mansion' && typeof mnKey === 'function' && mnKey(e)) return;
       if (mode === 'shelter' && typeof shKey === 'function' && shKey(e)) return;
       if (mode === 'winter' && typeof wnKey === 'function' && wnKey(e)) return;
-      if (mode === 'vet' && typeof vtKey === 'function' && vtKey(e)) return; });
+      if (mode === 'vet' && typeof vtKey === 'function' && vtKey(e)) return;
+      if (mode === 'mermaid' && typeof mmKey === 'function' && mmKey(e)) return; });
     const clearHeldKeys = () => {
       for (const k in keys) keys[k] = false;
       if (typeof joy !== 'undefined' && joy){ joy.x = joy.y = 0; joy.jump = false; }
@@ -36170,7 +37405,7 @@ function dhLayoutHud(){
   }
 
 function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party', 'snowfest', 'cafe', 'fish', 'petshow', 'hunt', 'garden', 'meadow', 'rides', 'hive', 'camp', 'elevator', 'mansion', 'shelter', 'winter', 'vet'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt' || mode === 'garden' || mode === 'meadow' || mode === 'rides' || mode === 'hive' || mode === 'camp' || mode === 'elevator' || mode === 'mansion' || mode === 'shelter' || mode === 'winter' || mode === 'vet' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party', 'snowfest', 'cafe', 'fish', 'petshow', 'hunt', 'garden', 'meadow', 'rides', 'hive', 'camp', 'elevator', 'mansion', 'shelter', 'winter', 'vet', 'mermaid'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt' || mode === 'garden' || mode === 'meadow' || mode === 'rides' || mode === 'hive' || mode === 'camp' || mode === 'elevator' || mode === 'mansion' || mode === 'shelter' || mode === 'winter' || mode === 'vet' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     recordRecentGame(mode);
@@ -36229,6 +37464,7 @@ function start(m = 'obby', d = null){
     else if (mode === 'shelter') banner('🐾 Welcome to Wagwell Shelter! Rescue strays, cheer them up, and match them with visiting families.');
     else if (mode === 'winter') banner('🎄 Welcome to Pinebell Village! Sled, skate, build a snow pal, and sip cocoa.');
     else if (mode === 'vet') banner('🩺 Welcome to Pawsley Vet Clinic! First-person only — walk the rooms, check the chart, and help every pal feel better.');
+    else if (mode === 'mermaid') banner('🧜 Welcome to Glimmergill Cove! Swim up and down, collect shells, and decorate your coral home.');
     else if (diff) begin(diff);
     $('#obby').classList.toggle('rmode', mode === 'race'); ['#rcLapBox', '#rcPosBox', '#rcItem'].forEach(id => $(id).style.display = mode === 'race' ? '' : 'none'); ['#rcPick', '#rcFin'].forEach(id => $(id).classList.remove('show'));
     if (mode === 'race'){ if (!window.__rcBound){ window.__rcBound = true;
@@ -36287,7 +37523,7 @@ function start(m = 'obby', d = null){
     if (mode === 'camp') campEnter();
     if (mode === 'elevator') elevEnter();
     { const _elev = document.getElementById('elevBox'); if (_elev) _elev.style.display = mode === 'elevator' ? '' : 'none'; } { const _mn = document.getElementById('mnBox'); if (_mn) _mn.style.display = mode === 'mansion' ? '' : 'none'; } { const _sh = document.getElementById('shBox'); if (_sh) _sh.style.display = mode === 'shelter' ? '' : 'none'; }
-    $('#obby').classList.toggle('elevmode', mode === 'elevator'); $('#obby').classList.toggle('mnmode', mode === 'mansion'); $('#obby').classList.toggle('shmode', mode === 'shelter'); $('#obby').classList.toggle('wnmode', mode === 'winter'); $('#obby').classList.toggle('vtmode', mode === 'vet');
+    $('#obby').classList.toggle('elevmode', mode === 'elevator'); $('#obby').classList.toggle('mnmode', mode === 'mansion'); $('#obby').classList.toggle('shmode', mode === 'shelter'); $('#obby').classList.toggle('wnmode', mode === 'winter'); $('#obby').classList.toggle('vtmode', mode === 'vet'); $('#obby').classList.toggle('mmode', mode === 'mermaid');
     { const _t302 = document.getElementById('t302Box'); if (_t302) _t302.style.display = ['garden','meadow','rides','hive','camp'].includes(mode) ? '' : 'none'; }
     $('#obby').classList.toggle('gardenmode', mode === 'garden');
     $('#obby').classList.toggle('meadowmode', mode === 'meadow');
@@ -42476,17 +43712,57 @@ function start(m = 'obby', d = null){
     return elv.pals.find(p => elevNear(p.x, p.z, 1.7)) || null;
   }
 
+  function elevOwnedGifts(){
+    const pack = (elv && elv.sv && elv.sv.pack) || {};
+    const list = (typeof ElevRules !== 'undefined' && ElevRules.ELEV_GIFTS) ? ElevRules.ELEV_GIFTS : [{id:'ribbonwrap'}];
+    return list.filter(g => (pack[g.id] | 0) > 0);
+  }
+  function elevHeartLabel(palId){
+    if (!elv || !elv.sv || typeof ElevRules === 'undefined' || !ElevRules.elevHeartLevel) return '';
+    const lv = ElevRules.elevHeartLevel(elv.sv, palId);
+    let s = '💖 ';
+    for (let i = 1; i <= 5; i++) s += i <= lv ? '❤️' : '🤍';
+    return s + '  Lv ' + lv;
+  }
+  function elevApplyHeart(r){
+    if (!r || !r.ok) return r;
+    if (r.state){ elv.sv = r.state; elevPersist(r.state); }
+    if (r.reward) elevPay(r.reward);
+    if (r.badge) try { ElevRules.elevBadges(elv.sv, elv.run).forEach(id => elevAch(id)); } catch (e){}
+    try {
+      const uid = (typeof mp !== 'undefined' && mp && mp.me) ? mp.me : 'H';
+      ElevRules.elevMergeHeartPub(elv.run, ElevRules.elevHeartPub(elv.sv, uid));
+    } catch (e){}
+    return r;
+  }
+  function elevTryTalk(){
+    if (!elv || elevIsGuest()) return false;
+    const seat = elevNearPal();
+    if (!seat || typeof ElevRules === 'undefined' || !ElevRules.elevHeartTalk) return false;
+    const r = ElevRules.elevHeartTalk(elv.sv, elv.run, seat.id);
+    if (!r.ok) return false;
+    elevApplyHeart(r);
+    const pal = ElevRules.elevPal(seat.id);
+    const line = ElevRules.elevTalkLine(pal, {level: r.level, i: (r.row && r.row.talks) || 0});
+    if (line){
+      elv.run.quote = (pal.emoji || '') + ' ' + pal.name + ': "' + line + '"';
+      banner(elv.run.quote);
+    } else banner('You chat with ' + (pal && pal.name || 'a pal') + '! ' + elevHeartLabel(seat.id));
+    elevNetSync();
+    return true;
+  }
   function elevTryGift(){
     if (!elv || elevIsGuest()) return false;
     const seat = elevNearPal();
     if (!seat) return false;
-    if (!((elv.sv.pack && elv.sv.pack.ribbonwrap) | 0)) return false;
-    const r = ElevRules.elevGiftPal(elv.sv, elv.run, seat.id);
+    const owned = elevOwnedGifts();
+    if (!owned.length) return elevTryTalk();
+    const r = ElevRules.elevGiftPal(elv.sv, elv.run, seat.id, owned[0].id);
     if (!r.ok) return false;
-    elv.sv = r.state; elevPersist(r.state);
+    elevApplyHeart(r);
     if (r.pay) elevPay(r.pay);
     ElevRules.elevBadges(elv.sv, elv.run).forEach(id => elevAch(id));
-    banner(r.quote || 'Gift given!');
+    banner((r.quote || 'Gift given!') + '  ' + elevHeartLabel(seat.id));
     elevTone([700, 880], 0.07, 'sine', 0.05);
     elevNetSync();
     return true;
@@ -42890,18 +44166,23 @@ function start(m = 'obby', d = null){
 
     let act = '';
     if (run.phase === 'lobby' || run.phase === 'inter'){
-      const canGift = !!(elevNearPal() && elv.sv && elv.sv.pack && elv.sv.pack.ribbonwrap);
+      const nearPal = elevNearPal();
+      const canGift = !!(nearPal && elevOwnedGifts().length);
+      const canTalk = !!nearPal;
       if (!elevInCab() && elv.secretAt && elevNear(elv.secretAt.x, elv.secretAt.z, 2.2)) elevHud('A shy painting is hiding here. Press E / Ⓧ to peek.', '🖼️ Peek');
       else if (!elevInCab() && elv.dailyAt && elevNear(elv.dailyAt.x, elv.dailyAt.z, 2.2)) elevHud('E / Ⓧ — check today’s challenge.', '📅 Today');
-      else if (canGift) elevHud('E / Ⓧ — give a Ribbon Wrap to this passenger.', '🎁 Give');
+      else if (canGift) elevHud('E / Ⓧ — give a present to ' + nearPal.name + '. ' + elevHeartLabel(nearPal.id), '🎁 Give');
+      else if (canTalk) elevHud('E / Ⓧ — chat with ' + nearPal.name + '. ' + elevHeartLabel(nearPal.id), '💬 Chat');
       else if (elevNearShop() && !elevInCab()) elevHud('E / Ⓧ — open the lobby shop for hats and useful bits. The glowing elevator is ready when you are.', '🛒 Shop');
       else if (elevInCab()) elevHud('Step in to ride! Doors are counting down — hang tight.', '🛗 Ride');
       else elevHud('Step in to ride! Walk into the glowing elevator, or press Ride (E / Ⓧ).', '🛗 Ride');
     } else if (run.phase === 'board'){
       elevHud('🚪 Doors closing in ' + Math.ceil(run.t) + 's — get back in!', elevInCab() ? '🛗 Ride' : '🚪 Get in!');
     } else if (run.phase === 'ride'){
-      const canGift = !!(elevNearPal() && elv.sv && elv.sv.pack && elv.sv.pack.ribbonwrap);
-      elevHud(run.quote || 'The lift is wobbling to the next floor…', canGift ? '🎁 Give' : '');
+      const nearPal = elevNearPal();
+      const canGift = !!(nearPal && elevOwnedGifts().length);
+      const hearts = nearPal ? ('  ' + elevHeartLabel(nearPal.id)) : '';
+      elevHud((run.quote || 'The lift is wobbling to the next floor…') + hearts, canGift ? '🎁 Give' : (nearPal ? '💬 Chat' : ''));
     } else if (run.phase === 'floor' && f){
       if (elv.bells && elv.bells.some(o => elevNear(o.x, o.z, 1.6))) act = '🔔 Ring';
       else if (elv.paints && elv.paints.some(o => !o.done && elevNear(o.x, o.z, 1.7))) act = (f.id === 'honkfloor' ? '📯 Honk' : '🎨 Paint');
@@ -43033,6 +44314,21 @@ function start(m = 'obby', d = null){
 
   if (typeof window !== 'undefined') window.elevDebug = {
     floors(){ return ElevRules.ELEV_FLOORS.map(f => f.id); },
+    hearts(){ if (!elv || !ElevRules) return null;
+      let st = elv.sv || ElevRules.elevFresh();
+      ["niblet","pip","lumen"].forEach(id => { const r = ElevRules.elevHeartAdd(st, id, "talks", 24); st = r.state; });
+      elv.sv = st; if (typeof elevPersist === "function") elevPersist(st);
+      try { if (elv.run) ElevRules.elevSeatPals(elv.run, [ElevRules.elevPal("niblet"), ElevRules.elevPal("pip")]); } catch (e){}
+      if (elv.run){
+        ElevRules.elevMergeHeartPub(elv.run, ElevRules.elevHeartPub(st, "H"));
+        elv.run.phase = 'lobby'; elv.run.t = 30; elv.run.watching = false;
+      }
+      P.x = 0; P.y = 0.5; P.z = 14; P.vx = 0; P.vz = 0;
+      if (typeof cam !== "undefined"){ cam.yaw = 0; cam.pitch = 0.32; cam.dist = 16; }
+      if (typeof elevHud === "function") elevHud("💖 Niblet ❤️❤️🤍🤍🤍  Lv 2 — talk, ride, and give gifts to grow friendship hearts!", "💬 Chat");
+      if (typeof updateCamera === "function") updateCamera();
+      return {level: ElevRules.elevHeartLevel(st, "niblet")};
+    },
     cab(){ if (!elv) return; elv.run.watching = false; if (elv.lobbySpawn && checkpoints[0]) checkpoints[0].spawn = {x:elv.lobbySpawn.x, y:elv.lobbySpawn.y, z:elv.lobbySpawn.z}; P.x = 0; P.z = (elv.lobbySpawn && elv.lobbySpawn.z) || 11; P.y = 0.5; P.vx = 0; P.vy = 0; P.vz = 0; elv.run.phase = 'lobby'; elv.floorStart = null; elevRestoreSky(); elevClearFloorMeshes(); },
     floor(id){
       if (!elv) return;
@@ -43088,6 +44384,7 @@ function start(m = 'obby', d = null){
       if (!elv) return;
       elv.run.buddy = true;
       ElevRules.elevBeginRide(elv.run, Math.random);
+      try { (ElevRules.elevPalIds(elv.run)||[]).forEach(id => { const hr = ElevRules.elevHeartRide(elv.sv, elv.run, id); if (hr && hr.ok) elevApplyHeart(hr); }); } catch (e){}
       elevOnPhase('board', 'ride');
       elevSpawnPals(elv.run);
       elv.talkT = 0; elevTickTalk(0.01);
@@ -43141,703 +44438,8 @@ function start(m = 'obby', d = null){
     }
   };
 
-  /* ---------- Mallowmist Manor ---------- */
-  let mn = null;
-  function mnKeep(m){ if (m && mn && mn.trash) mn.trash.push(m); return m; }
-  function mnMat(c, o){ return new THREE.MeshLambertMaterial(Object.assign({color:c, side:THREE.DoubleSide}, o||{})); }
-  function mnMesh(geo, c, x, y, z, o){
-    const m = new THREE.Mesh(geo, mnMat(c, o)); m.position.set(x,y,z); scene.add(m); return mnKeep(m);
-  }
-  function mnWall(x, y, z, w, h, d, c){
-    const b = plat(x, y + h/2, z, w, d, c, h);
-    if (b && b.mesh){ b.mesh.material = mnMat(c); mnKeep(b.mesh); }
-    if (b && mn) mn.solids.push(b);
-    return b;
-  }
-  function mnState(){ return MansionRules.mnLoad(typeof load === 'function' ? load(MansionRules.MN_KEY, null) : null); }
-  function mnSave(s){ if (typeof save === 'function') save(MansionRules.MN_KEY, s); if (mn) mn.sv = s; }
-  function mnLess(){ return !!(mn && mn.run && mn.run.lessScary); }
-  function drawMansion(ctx){
-    const skyTop = '#2a2458', skyBot = '#6b5b9a';
-    if (typeof sky === 'function') sky(ctx, skyTop, skyBot);
-    else { ctx.fillStyle = skyTop; ctx.fillRect(0,0,320,200); }
-    ctx.fillStyle = '#3d3358'; ctx.fillRect(40, 50, 240, 120);
-    ctx.fillStyle = '#2a2140'; ctx.beginPath(); ctx.moveTo(30,50); ctx.lineTo(160,10); ctx.lineTo(290,50); ctx.fill();
-    ctx.fillStyle = '#ffd23f'; ctx.fillRect(70, 80, 36, 36); ctx.fillRect(214, 80, 36, 36);
-    ctx.fillStyle = '#c4a574'; ctx.fillRect(140, 110, 40, 60);
-    ctx.font = '28px sans-serif'; ctx.fillText('🕯️', 148, 80); ctx.fillText('👻', 250, 48);
-    if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#c9b6ff');
-  }
-  function mnSky(){
-    const less = mnLess();
-    const bg = less ? '#3a3458' : '#1c1633';
-    scene.background = new THREE.Color(bg);
-    if (scene.fog){ scene.fog.color.set(bg); scene.fog.near = less ? 16 : 8; scene.fog.far = less ? 56 : 36; }
-  }
-  function mnLab(text, x, y, z){
-    try {
-      if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m) return mnKeep(m); }
-    } catch (e){}
-    return mnMesh(new THREE.BoxGeometry(0.2,0.2,0.2), '#fff', x, y, z);
-  }
-  function buildMansion(){
-    const sv = mnState();
-    if (sv.lessScary == null) sv.lessScary = !!(typeof CampRules !== 'undefined' && CampRules.campLoad && CampRules.campLoad(typeof load==='function'?load('rubloxCamp',null):null).lessScary);
-    const started = MansionRules.mnNewRun(sv, Date.now());
-    mn = {trash:[], solids:[], sv: started.state, run: started.run, props:[], ghost:null, door:null};
-    mnSky();
-    const wall = mnLess() ? '#6b6088' : '#3f3558';
-    const floor = mnLess() ? '#c4b8a0' : '#5a4a6a';
-    plat(0, 0, -36, 22, 110, floor, 0.3);
-    plat(20, 0, -20, 18, 18, mnLess() ? '#d4e8c8' : '#3e4a48', 0.3);
-    plat(20, 0, -40, 18, 18, mnLess() ? '#c8b8a0' : '#3a3040', 0.3);
-    plat(-20, 0, -58, 18, 18, mnLess() ? '#e8d8c0' : '#3a3458', 0.3);
-    plat(20, 0, -80, 18, 18, mnLess() ? '#e8e0ff' : '#2c2448', 0.3);
-    // outer shell with side-door gaps
-    mnWall(0, 4, 16, 22, 8, 0.5, wall);
-    mnWall(0, 4, -88, 22, 8, 0.5, wall);
-    mnWall(-11, 4, -19, 0.5, 8, 74, wall);
-    mnWall(-11, 4, -74, 0.5, 8, 28, wall);
-    mnWall(11, 4, 0, 0.5, 8, 32, wall);
-    mnWall(11, 4, -30, 0.5, 8, 16, wall);
-    mnWall(11, 4, -59, 0.5, 8, 34, wall);
-    mnWall(11, 4, -84, 0.5, 8, 8, wall);
-    mnWall(0, 8.2, -36, 22, 0.4, 110, mnLess() ? '#efe6d8' : '#2a2438');
-    // room dividers with door gaps at x=0
-    ;[-10, -30, -50, -70].forEach(z => {
-      mnWall(-7, 3, z, 8, 6, 0.4, wall);
-      mnWall(7, 3, z, 8, 6, 0.4, wall);
-      mnWall(0, 5.4, z, 6, 1.2, 0.4, wall);
-    });
-    // foyer props
-    plat(-4, 0.8, 6, 2.2, 1.4, '#8b5a2b', 0.8);
-    mn.props.push({id:'note1', x:-4, z:6, kind:'note', n:1, label: mnLab('📝 Note', -4, 2.0, 6)});
-    plat(4, 1.1, 4, 0.6, 0.6, '#d4a017', 1.1);
-    mn.props.push({id:'lever', x:4, z:4, kind:'lever', label: mnLab('🎚️ Lever', 4, 2.4, 4)});
-    mnLab('🕯️ Foyer', 0, 3.2, 10);
-    // parlor portraits
-    [[-6,-20,0],[-2,-20,1],[2,-20,2],[6,-20,3]].forEach(([x,z,i]) => {
-      const cols = ['#c45c7a','#5c8bc4','#d4a017','#6bbf8a'];
-      plat(x, 1.6, z, 1.6, 0.3, cols[i], 1.6);
-      mn.props.push({id:'pic'+i, x, z, kind:'pic', slot:i, label: mnLab('🖼️ ' + (i+1), x, 3.1, z)});
-    });
-    mnLab('🖼️ Parlor', 0, 3.2, -14);
-    // kitchen
-    plat(3, 0.9, -40, 2.4, 1.6, '#d9c4a0', 0.9);
-    mn.props.push({id:'key', x:3, z:-40, kind:'key', label: mnLab('🔑 Cupboard', 3, 2.2, -40)});
-    mnLab('🍪 Kitchen', 0, 3.2, -34);
-    // library
-    plat(-3, 1.0, -60, 2.2, 1.4, '#6b4a2b', 1.0);
-    mn.props.push({id:'note2', x:-3, z:-60, kind:'note', n:2, label: mnLab('📝 Hidden note', -3, 2.3, -60)});
-    mnLab('📚 Library', 0, 3.2, -54);
-    // foyer clock / pull-string
-    plat(-6, 1.6, 10, 0.8, 0.8, '#6b4a2b', 3.2);
-    mn.props.push({id:'clock', x:-6, z:10, kind:'clock', label: mnLab('🕰️ Clock', -6, 3.6, 10)});
-    // Moonfern Conservatory
-    mnWall(28, 4, -20, 0.5, 8, 18, mnLess() ? '#b8d8c8' : '#355048');
-    mnWall(20, 4, -12, 16, 8, 0.5, mnLess() ? '#b8d8c8' : '#355048');
-    mnWall(20, 4, -28, 16, 8, 0.5, mnLess() ? '#b8d8c8' : '#355048');
-    mnLab('🌿 Conservatory', 20, 3.2, -14);
-    [[16,-18,0],[24,-18,1],[16,-22,2],[24,-22,3]].forEach(([x,z,i]) => {
-      plat(x, 0.4, z, 1.2, 1.2, '#3d8a5a', 0.8);
-      mn.props.push({id:'fern'+i, x, z, kind:'fern', slot:i, label: mnLab('🌿 ' + (i+1), x, 2.0, z)});
-    });
-    // Jam Cellar
-    mnWall(28, 4, -40, 0.5, 8, 18, mnLess() ? '#8a6a48' : '#3a2a28');
-    mnWall(20, 4, -32, 16, 8, 0.5, mnLess() ? '#8a6a48' : '#3a2a28');
-    mnWall(20, 4, -48, 16, 8, 0.5, mnLess() ? '#8a6a48' : '#3a2a28');
-    plat(18, 0.8, -38, 1.4, 1.0, '#c45c1a', 1.2);
-    mn.props.push({id:'crank', x:18, z:-38, kind:'crank', label: mnLab('⚙️ Crank', 18, 2.2, -38)});
-    plat(24, 0.7, -42, 1.2, 1.0, '#d9c4a0', 0.9);
-    mn.props.push({id:'scrap', x:24, z:-42, kind:'scrap', label: mnLab('📄 Scrap', 24, 2.0, -42)});
-    mnLab('🫙 Jam Cellar', 20, 3.2, -34);
-    // Chime Nook
-    mnWall(-28, 4, -58, 0.5, 8, 18, mnLess() ? '#d8c8a8' : '#322a48');
-    mnWall(-20, 4, -50, 16, 8, 0.5, mnLess() ? '#d8c8a8' : '#322a48');
-    mnWall(-20, 4, -66, 16, 8, 0.5, mnLess() ? '#d8c8a8' : '#322a48');
-    mnLab('🔔 Chime Nook', -20, 3.2, -52);
-    [[-16,-56,0],[-24,-56,1],[-16,-60,2],[-24,-60,3]].forEach(([x,z,i]) => {
-      plat(x, 1.4, z, 0.6, 0.6, '#d4a017', 1.4);
-      mn.props.push({id:'chime'+i, x, z, kind:'chime', bell:i, label: mnLab('🔔 ' + (i+1), x, 3.0, z)});
-    });
-    // Secret Attic
-    mnWall(28, 4, -80, 0.5, 8, 18, mnLess() ? '#d8c8ff' : '#2a2048');
-    mnWall(20, 4, -72, 16, 8, 0.5, mnLess() ? '#d8c8ff' : '#2a2048');
-    mnWall(20, 4, -88, 16, 8, 0.5, mnLess() ? '#d8c8ff' : '#2a2048');
-    mnLab('⭐ Secret Attic', 20, 3.2, -74);
-    [[16,-78,0],[24,-78,1],[16,-82,2],[24,-82,3]].forEach(([x,z,i]) => {
-      plat(x, 1.1, z, 1.0, 1.0, '#8b5cf6', 0.9);
-      mn.props.push({id:'star'+i, x, z, kind:'star', slot:i, label: mnLab('⭐ ' + (i+1), x, 2.3, z)});
-    });
-    plat(20, 1.0, -85, 1.4, 1.2, '#ffd23f', 1.2);
-    mn.props.push({id:'lantern', x:20, z:-85, kind:'lantern', label: mnLab('🌙 Moon lantern', 20, 2.6, -85)});
-    const moth = new THREE.Group();
-    const mw = new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 8), mnMat(mnLess() ? '#fff4d6' : '#e8d0ff', {emissive: mnLess() ? '#ffe9a0' : '#4a3080'}));
-    mw.position.y = 1.3; moth.add(mw);
-    moth.position.set(20, 0, -80); scene.add(moth); mnKeep(moth); mn.moth = moth;
-    mnLab('🦋 Dustmoth', 22, 2.4, -80);
-    // attic / Nimble / door
-    plat(0, 2.4, -86, 3.6, 0.6, '#c45c1a', 2.4);
-    mn.door = {x:0, z:-86};
-    mnLab('🚪 Front door', 0, 4.2, -86);
-    mnLab('🫥 Attic Hall', 0, 3.2, -74);
-    const ghost = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.SphereGeometry(0.7, 12, 10), mnMat(mnLess() ? '#f4e8ff' : '#d8d0f0', {emissive: mnLess() ? '#b8a0e0' : '#3a3060'}));
-    body.position.y = 1.2; ghost.add(body);
-    const cap = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.5, 10), mnMat('#8b5cf6'));
-    cap.position.y = 1.9; ghost.add(cap);
-    ghost.position.set(4, 0, -78); scene.add(ghost); mnKeep(ghost); mn.ghost = ghost;
-    mnLab('👻 Nimble', 4, 2.8, -78);
-    const lamp = new THREE.PointLight(mnLess() ? 0xfff0c8 : 0xc8b0ff, mnLess() ? 1.1 : 0.55, 40);
-    lamp.position.set(0, 5, -36); scene.add(lamp); mnKeep(lamp);
-    const amb = new THREE.AmbientLight(mnLess() ? 0xfff4e8 : 0x8890c0, mnLess() ? 0.7 : 0.35);
-    scene.add(amb); mnKeep(amb);
-    Object.assign(P, {x:0, y:0.5, z:8, vx:0, vy:0, vz:0});
-    if (typeof cam !== 'undefined' && cam){ cam.yaw = Math.PI; cam.pitch = 0.32; cam.dist = 11; }
-    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:8}, flag:new THREE.Object3D()};
-    mnBind();
-    mnHud();
-    banner(mnLess() ? '😌 Mallowmist Manor feels milder. Look for notes, and say hi to sleepy Nimble.' : '🕯️ Welcome to Mallowmist Manor. Find notes, solve the parlor pictures, and tip-toe past Nimble.');
-  }
-  function mnNear(x, z, r){ return Math.hypot((P.x - x), (P.z - z)) < (r || 2.1); }
-  function mnCurrentRoom(){
-    const x = P.x, z = P.z;
-    if (x > 12.2){
-      if (z > -30) return 'conservatory';
-      if (z > -52) return 'cellar';
-      return 'secret';
-    }
-    if (x < -12.2) return 'chime';
-    if (z > -10) return 'foyer';
-    if (z > -30) return 'parlor';
-    if (z > -50) return 'kitchen';
-    if (z > -70) return 'library';
-    return 'attic';
-  }
-  function mnPrompt(){
-    if (!mn || mn.run.escaped) return null;
-    const hit = mn.props.find(p => mnNear(p.x, p.z, 2.2));
-    if (hit){
-      if (hit.kind === 'note') return {act:() => mnDo('note', hit), lab: 'Read note (E / Ⓧ)'};
-      if (hit.kind === 'lever') return {act:() => mnDo('lever'), lab: 'Flip lever (E / Ⓧ)'};
-      if (hit.kind === 'pic') return {act:() => mnDo('pic', hit), lab: 'Place portrait ' + (hit.slot+1) + ' (E / Ⓧ)'};
-      if (hit.kind === 'key') return {act:() => mnDo('key'), lab: 'Search cupboard (E / Ⓧ)'};
-      if (hit.kind === 'fern') return {act:() => mnDo('fern', hit), lab: 'Water moonfern ' + (hit.slot+1) + ' (E / Ⓧ)'};
-      if (hit.kind === 'crank') return {act:() => mnDo('crank'), lab: 'Turn the crank (E / Ⓧ)'};
-      if (hit.kind === 'scrap') return {act:() => mnDo('scrap'), lab: 'Read the dusty scrap (E / Ⓧ)'};
-      if (hit.kind === 'clock') return {act:() => mnDo('clock'), lab: 'Pull the hidden string (E / Ⓧ)'};
-      if (hit.kind === 'chime') return {act:() => mnDo('chime', hit), lab: 'Ring chime ' + (hit.bell+1) + ' (E / Ⓧ)'};
-      if (hit.kind === 'star') return {act:() => mnDo('star', hit), lab: 'Place star charm ' + (hit.slot+1) + ' (E / Ⓧ)'};
-      if (hit.kind === 'lantern') return {act:() => mnDo('lantern'), lab: 'Take the moon lantern (E / Ⓧ)'};
-    }
-    if (mn.door && mnNear(mn.door.x, mn.door.z, 2.4) && mn.run.key) return {act:() => mnDo('door'), lab: 'Unlock the door (E / Ⓧ)'};
-    return null;
-  }
-  function mnDo(kind, prop){
-    if (!mn || mn.run.escaped) return;
-    const run = mn.run;
-    let r = null;
-    if (kind === 'note') r = MansionRules.mnReadNote(run, prop.n);
-    else if (kind === 'lever') r = MansionRules.mnFlipLever(run);
-    else if (kind === 'pic'){
-      const used = (run.pictures || []).indexOf(prop.slot);
-      r = MansionRules.mnPlacePicture(run, prop.slot, prop.slot);
-      if (used >= 0 && r && r.ok && !r.done){ /* placed this tile in this slot */ }
-    }
-    else if (kind === 'key') r = MansionRules.mnTakeKey(run);
-    else if (kind === 'fern') r = MansionRules.mnWaterFern(run, prop.slot);
-    else if (kind === 'crank') r = MansionRules.mnTurnCrank(run);
-    else if (kind === 'scrap') r = MansionRules.mnReadScrap(run);
-    else if (kind === 'clock') r = MansionRules.mnPullString(run);
-    else if (kind === 'chime') r = MansionRules.mnPlayChime(run, prop.bell);
-    else if (kind === 'star') r = MansionRules.mnPlaceStar(run, prop.slot, prop.slot);
-    else if (kind === 'lantern') r = MansionRules.mnClaimSecret(run, mn.sv);
-    else if (kind === 'door') r = MansionRules.mnEscape(run, mn.sv, Date.now());
-    if (!r || !r.ok){
-      const why = r && r.why;
-      banner(why === 'note' ? 'Read the foyer note first.' : why === 'key' ? 'You still need the brass key.' : why === 'locked' ? 'That room is still closed.' : why === 'scrap' ? 'Turn the cellar crank first.' : why === 'crank' ? 'Turn the rusty crank first.' : why === 'puzzle' ? 'Set the star charms first.' : 'Not yet!');
-      return;
-    }
-    if (kind === 'note') banner('📝 ' + r.text);
-    if (kind === 'lever') banner('🎚️ The parlor doors creak open. A side hall leads to the Moonfern Conservatory.');
-    if (kind === 'pic') banner(r.done ? '🖼️ The portraits click into place! The kitchen is open.' : '🖼️ You hung a portrait.');
-    if (kind === 'key') banner('🔑 You found the brass key! Side rooms in the cellar and chime nook are unlocked.');
-    if (r.text && kind !== 'note') banner((kind === 'lantern' ? '🌙 ' : '✨ ') + r.text);
-    if (kind === 'lantern' && r.ok && r.coins){
-      mn.sv = r.state; mnSave(mn.sv);
-      try { if (typeof pay === 'function') pay(r.coins); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); } } catch (e){}
-      banner('🌙 ' + r.message + ' +' + r.coins + ' 🪙');
-    }
-    if (kind === 'door' && r.ok){
-      mn.sv = r.state; mnSave(mn.sv);
-      try { if (typeof pay === 'function') pay(r.coins); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); } } catch (e){}
-      banner('🌙 ' + r.message + ' +' + r.coins + ' 🪙');
-      try {
-        const em = document.getElementById('oWinEmoji'), title = document.getElementById('oWinTitle');
-        if (em) em.textContent = '🕯️'; if (title) title.textContent = 'You escaped Mallowmist Manor!';
-        const st = document.getElementById('oWinStats'); if (st) st.innerHTML = '👻 Nimble went back to the closet.<br>🎁 +' + r.coins + ' Rublox Coins';
-        const w = document.getElementById('oWin'); if (w) w.classList.add('show');
-      } catch (e){}
-    }
-    mnHud(); mnNet();
-  }
-  function mnCaught(){
-    const r = MansionRules.mnCatch(mn.run, mn.sv);
-    if (!r.ok) return;
-    mn.sv = r.state; mnSave(mn.sv);
-    if (r.spawn && typeof P !== 'undefined'){ P.x = r.spawn.x; P.y = r.spawn.y; P.z = r.spawn.z; P.vx = P.vz = 0; }
-    checkpoints[0].spawn = r.spawn;
-    banner('😌 ' + r.message);
-    mnHud(); mnNet();
-  }
-  function mnHud(){
-    const hint = document.getElementById('mnHint');
-    const run = mn && mn.run;
-    if (hint && run){
-      const room = MansionRules.mnRoom(mnCurrentRoom());
-      hint.textContent = (room.emoji || '') + ' ' + room.name + (run.key ? '  ·  🔑' : '') + (run.pictureDone ? '  ·  portraits set' : '') + (mnLess() ? '  ·  😌 milder' : '');
-    }
-    const btn = document.getElementById('mnAct');
-    const p = mnPrompt();
-    if (btn){ if (p){ btn.textContent = p.lab; btn.classList.add('show'); } else btn.classList.remove('show'); }
-    const less = document.getElementById('mnLessBtn');
-    if (less) less.classList.toggle('on', mnLess());
-  }
-  function mnToggleLess(){
-    if (!mn) return;
-    mn.sv = MansionRules.mnSetLessScary(mn.sv, !mn.sv.lessScary);
-    mn.run.lessScary = !!mn.sv.lessScary;
-    mnSave(mn.sv);
-    mnSky();
-    banner(mnLess() ? '😌 Less scary is on. Nimble is slower and the lights are warmer.' : '🕯️ Less scary is off. Still no gore, and everyone is okay.');
-    mnHud();
-  }
-  function mnAct(){ const p = mnPrompt(); if (p) p.act(); }
-  function mnKey(e){
-    if (!mn) return false;
-    if (e.type === 'keyup') return false;
-    const c = e.code || e.key;
-    if (c === 'KeyE' || c === 'KeyF'){ mnAct(); return true; }
-    if (c === 'KeyL'){ mnToggleLess(); return true; }
-    return false;
-  }
-  function mnPad(jp){
-    if (!mn || !jp) return false;
-    if (!mn._x && jp[2]){ mn._x = true; mnAct(); return true; }
-    if (!jp[2]) mn._x = false;
-    if (!mn._y && jp[3]){ mn._y = true; mnToggleLess(); return true; }
-    if (!jp[3]) mn._y = false;
-    return false;
-  }
-  function mnUpdate(dt){
-    if (!mn || mn.run.escaped) { mnHud(); return; }
-    dt = Math.max(0, Math.min(0.12, +dt || 0));
-    const room = mnCurrentRoom();
-    if (room !== mn.run.room){
-      if (MansionRules.mnCanEnter(mn.run, room)) MansionRules.mnSetRoom(mn.run, room);
-      else if (room !== 'foyer'){
-        // bump back through a locked divider
-        if (room === 'parlor' && P.z < -10) P.z = -9.6;
-        if (room === 'kitchen' && P.z < -30) P.z = -29.6;
-        if (room === 'library' && P.z < -50) P.z = -49.6;
-        if (room === 'attic' && P.z < -70) P.z = -69.6;
-        if (room === 'conservatory' && P.x > 11) P.x = 10.6;
-        if (room === 'cellar' && P.x > 11) P.x = 10.6;
-        if (room === 'chime' && P.x < -11) P.x = -10.6;
-        if (room === 'secret' && P.x > 11) P.x = 10.6;
-        if (room === 'secret' && P.z < -52 && P.x > 12 && !MansionRules.mnCanEnter(mn.run, 'secret')) P.z = -51.4;
-      }
-    }
-    if (!mnIsGuest()){
-      MansionRules.mnNimbleTick(mn.run, dt);
-      MansionRules.mnMothTick(mn.run, dt);
-      if (MansionRules.mnSeenByNimble(mn.run, P.x, P.z) || MansionRules.mnSeenByMoth(mn.run, P.x, P.z)) mnCaught();
-    }
-    if (mn.ghost && mn.run.nimble){
-      mn.ghost.position.x = mn.run.nimble.x;
-      mn.ghost.position.z = mn.run.nimble.z;
-      mn.ghost.rotation.y = mn.run.nimble.dir > 0 ? Math.PI/2 : -Math.PI/2;
-    }
-    if (mn.moth && mn.run.moth){
-      mn.moth.position.x = mn.run.moth.x;
-      mn.moth.position.z = mn.run.moth.z;
-    }
-    mnHud();
-    if (!mnIsGuest()) mnNet();
-  }
-  function mnIsGuest(){ try { return !!(typeof mp !== 'undefined' && mp && mp.on && !mp.host); } catch (e){ return false; } }
-  function mnWire(){ return mn && MansionRules.mnWire(mn.run); }
-  function mnApply(snap){ if (mn && snap){ MansionRules.mnApplyWire(mn.run, snap); mnHud(); } }
-  function mnNet(){
-    if (mnIsGuest() || !mn || typeof mp === 'undefined' || !mp || !mp.on || typeof mpSend !== 'function') return;
-    try { mpSend({t:'mn', snap: mnWire()}); } catch (e){}
-  }
-  function mnFromNet(g, d){ if (d && d.snap) mnApply(d.snap); }
-  function mnFromHost(d){ mnFromNet(null, d); }
-  function mnBind(){
-    const a = document.getElementById('mnAct');
-    if (a && !a.__mn){ a.__mn = true; a.addEventListener('click', ev => { ev.preventDefault(); mnAct(); }); }
-    const l = document.getElementById('mnLessBtn');
-    if (l && !l.__mn){ l.__mn = true; l.addEventListener('click', ev => { ev.preventDefault(); mnToggleLess(); }); }
-  }
-  function mansionStop(){
-    if (!mn) return;
-    (mn.solids || []).forEach(b => { try { b.active = false; if (typeof solids !== 'undefined'){ const i = solids.indexOf(b); if (i>=0) solids.splice(i,1);} } catch(e){} });
-    (mn.trash || []).forEach(m => { try { scene.remove(m); } catch(e){} });
-    mn = null;
-    const box = document.getElementById('mnBox'); if (box) box.style.display = 'none';
-    const b = document.getElementById('mnAct'); if (b) b.classList.remove('show');
-  }
-  if (typeof window !== 'undefined') window.mnDebug = {
-    less(on){ if (!mn) return; if (on != null) mn.sv.lessScary = !on ? false : true; mn.run.lessScary = !!mn.sv.lessScary; mnSave(mn.sv); mnSky(); mnHud(); return mnLess(); },
-    room(id){ if (mn){ MansionRules.mnSetRoom(mn.run, id); const s = MansionRules.mnRoom(id).spawn; P.x=s.x; P.y=s.y; P.z=s.z; } },
-    solve(){ if (!mn) return; const r=mn.run; r.note1=true; r.lever=true; r.parlorOpen=true; r.pictureDone=true; r.kitchenOpen=true; r.key=true; r.note2=true; r.atticOpen=true; r.fernsDone=true; r.conservatoryOpen=true; r.crank=true; r.scrap=true; r.cellarOpen=true; r.chimeOpen=true; r.melodyDone=true; r.clockString=true; r.secretOpen=true; r.starDone=true; mnHud(); },
-    probe(){ return mn && mn.run ? {room:mn.run.room, key:!!mn.run.key, less:mnLess(), escaped:!!mn.run.escaped, secret:!!mn.run.secretOpen, ferns:!!mn.run.fernsDone} : null; }
-  };
-  /* ---------- Wagwell Shelter ---------- */
-  let sh = null;
-  function shKeep(m){ if (m && sh && sh.trash) sh.trash.push(m); return m; }
-  function shMat(c,o){ return new THREE.MeshLambertMaterial(Object.assign({color:c}, o||{})); }
-  function shMesh(geo,c,x,y,z){ const m=new THREE.Mesh(geo, shMat(c)); m.position.set(x,y,z); scene.add(m); return shKeep(m); }
-  function shState(){ return ShelterRules.shLoad(typeof load === 'function' ? load(ShelterRules.SH_KEY, null) : null); }
-  function shSave(s){ if (typeof save === 'function') save(ShelterRules.SH_KEY, s); if (sh) sh.sv = s; }
-  function shCoins(){ try { return (typeof coins === 'number') ? coins : +(typeof load==='function' && load('rubloxCoins', 0)) || 0; } catch(e){ return 0; } }
-  function shPay(n){
-    try {
-      if (typeof pay === 'function'){ pay(n); return; }
-      if (typeof coins === 'number'){ coins += n; if (typeof save === 'function') save('rubloxCoins', coins); }
-    } catch (e){}
-  }
-  function shSpend(n){
-    try {
-      if (typeof coins === 'number'){
-        if (coins < n) return false;
-        coins -= n; if (typeof save === 'function') save('rubloxCoins', coins); return true;
-      }
-    } catch (e){}
-    return shCoins() >= n;
-  }
-  function drawShelter(ctx){
-    if (typeof sky === 'function') sky(ctx, '#b8e8ff', '#fff4d6');
-    ctx.fillStyle = '#8fd39a'; ctx.fillRect(0, 150, 320, 50);
-    ctx.fillStyle = '#f4d7a8'; ctx.fillRect(30, 80, 110, 80);
-    ctx.fillStyle = '#c45c1a'; ctx.beginPath(); ctx.moveTo(20,80); ctx.lineTo(85,40); ctx.lineTo(150,80); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.fillRect(180, 110, 90, 50);
-    ctx.font = '24px sans-serif'; ctx.fillText('🐾', 60, 130); ctx.fillText('🐱', 210, 140); ctx.fillText('🐶', 250, 140);
-    if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#3a86ff');
-  }
-  function shPetMesh(kind, color){
-    const cols = ['#f29a3c','#3d4256','#ece6dd'];
-    const c = cols[color|0] || cols[0];
-    const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 8), shMat(c));
-    body.position.y = 0.4; g.add(body);
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8), shMat(c));
-    head.position.set(0, 0.7, 0.18); g.add(head);
-    return g;
-  }
-  function buildShelter(){
-    const sv = shState();
-    sh = {trash:[], solids:[], sv, strays:[], family: ShelterRules.shVisitFamily(Math.random), petMeshes:[], strayMeshes:[], curs:null};
-    scene.background = new THREE.Color('#b8e8ff');
-    if (scene.fog){ scene.fog.color.set('#cfefff'); scene.fog.near = 24; scene.fog.far = 90; }
-    plat(0, 0, 8, 48, 48, '#8fd39a', 0.25);
-    plat(0, 0, -10, 18, 16, '#f4e4c4', 0.3); // shelter floor
-    // shelter building
-    const wall = '#f4d7a8';
-    function wallb(x,y,z,w,h,d,c){ const b=plat(x,y+h/2,z,w,d,c,h); if(b&&b.mesh) shKeep(b.mesh); if(b) sh.solids.push(b); return b; }
-    wallb(0, 3, -18, 18, 6, 0.4, wall);
-    wallb(-9, 3, -10, 0.4, 6, 16, wall);
-    wallb(9, 3, -10, 0.4, 6, 16, wall);
-    wallb(0, 6.2, -10, 18, 0.35, 16, '#fff4e0');
-    wallb(-5.4, 3, -2, 7.2, 6, 0.4, wall);
-    wallb(5.4, 3, -2, 7.2, 6, 0.4, wall);
-    shMesh(new THREE.BoxGeometry(2.4, 0.2, 1.6), '#c45c1a', 0, 0.9, -8);
-    sh.desk = {x:0, z:-8};
-    // town street / park / alley
-    plat(14, 0, 16, 10, 14, '#d9e8a8', 0.2);
-    plat(-14, 0, 18, 8, 12, '#c8bea8', 0.2);
-    shLab('🏡 Wagwell Shelter', 0, 3.4, -3);
-    shLab('🌳 Park', 14, 2.2, 16);
-    shLab('🪵 Alley', -14, 2.2, 18);
-    shLab('🛎️ Front desk', 0, 2.2, -8);
-    // Grooming salon
-    plat(22, 0, -2, 14, 16, '#f8d0e8', 0.28);
-    function wallb2(x,y,z,w,h,d,c){ const b=plat(x,y+h/2,z,w,d,c,h); if(b&&b.mesh) shKeep(b.mesh); if(b) sh.solids.push(b); return b; }
-    wallb2(22, 3, -10, 14, 6, 0.4, '#ffd0ea');
-    wallb2(15, 3, -2, 0.4, 6, 16, '#ffd0ea');
-    wallb2(29, 3, -2, 0.4, 6, 16, '#ffd0ea');
-    wallb2(22, 6.2, -2, 14, 0.35, 16, '#fff0f8');
-    wallb2(17.6, 3, 6, 5.2, 6, 0.4, '#ffd0ea');
-    wallb2(26.4, 3, 6, 5.2, 6, 0.4, '#ffd0ea');
-    sh.salon = {x:22, z:-2};
-    sh.stations = [
-      {id:'wash', x:18, z:0, act:'wash', lab:'Wash'},
-      {id:'brush', x:26, z:0, act:'brush', lab:'Brush'},
-      {id:'trim', x:18, z:-4, act:'trim', lab:'Trim'},
-      {id:'bow', x:26, z:-4, act:'bow', lab:'Bow'},
-      {id:'dye', x:22, z:-6, act:'dye', lab:'Color'}
-    ];
-    sh.stations.forEach(s => {
-      shMesh(new THREE.CylinderGeometry(0.7, 0.8, 0.6, 10), '#fff', s.x, 0.4, s.z);
-      shLab('✂️ ' + s.lab, s.x, 1.6, s.z);
-    });
-    shLab('💇 Grooming Salon', 22, 3.2, 4);
-    // Contest lawn and judge
-    plat(-20, 0, -6, 14, 16, '#c8e8a8', 0.22);
-    shMesh(new THREE.BoxGeometry(5, 0.3, 3.2), '#f4e8a8', -20, 0.4, -8);
-    sh.stage = {x:-20, z:-8};
-    const judge = shPetMesh('cat', 1);
-    judge.position.set(-20, 0, -12); scene.add(judge); shKeep(judge);
-    shLab('🏅 Judge Bramble', -20, 2.0, -12);
-    shLab('🎀 Contest Lawn', -20, 3.0, -2);
-    const amb = new THREE.AmbientLight(0xfff6e8, 0.75); scene.add(amb); shKeep(amb);
-    const sun = new THREE.DirectionalLight(0xfff0c8, 0.6); sun.position.set(8, 14, 10); scene.add(sun); shKeep(sun);
-    Object.assign(P, {x:0, y:0.5, z:6, vx:0, vy:0, vz:0});
-    if (typeof cam !== 'undefined' && cam){ cam.yaw = 0; cam.pitch = 0.36; cam.dist = 13; }
-    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:6}, flag:new THREE.Object3D()};
-    shSpawnStrays();
-    shShowPets();
-    shBind();
-    shHud();
-    banner('🐾 Wagwell Shelter! Rescue strays around town, cheer them up, and match them with visiting families.');
-  }
-  function shLab(text,x,y,z){
-    try { if (typeof t297Lab === 'function'){ const m=t297Lab(text,x,y,z); if(m) return shKeep(m); } } catch(e){}
-    return shMesh(new THREE.BoxGeometry(0.2,0.2,0.2),'#fff',x,y,z);
-  }
-  function shSpawnStrays(){
-    (sh.strayMeshes||[]).forEach(m => { try{ scene.remove(m); }catch(e){} });
-    sh.strayMeshes = [];
-    sh.strays = [];
-    const n = 3;
-    for (let i=0;i<n;i++){
-      const s = ShelterRules.shRollStray(Math.random, Date.now()+i);
-      s.x = (i-1)*8 + (Math.random()*3-1);
-      s.z = 14 + Math.random()*8;
-      sh.strays.push(s);
-      const m = shPetMesh(s.kind, s.color);
-      m.position.set(s.x, 0, s.z); scene.add(m); shKeep(m); sh.strayMeshes.push(m);
-      shLab((ShelterRules.shKind(s.kind).emoji||'') + ' ' + s.name, s.x, 1.6, s.z);
-    }
-  }
-  function shShowPets(){
-    (sh.petMeshes||[]).forEach(m => { try{ scene.remove(m); }catch(e){} });
-    sh.petMeshes = [];
-    (sh.sv.pets||[]).forEach((p,i) => {
-      const m = shPetMesh(p.kind, p.color);
-      const x = -4 + (i%3)*4, z = -12 - Math.floor(i/3)*3;
-      m.position.set(x, 0, z); scene.add(m); shKeep(m); sh.petMeshes.push(m);
-      p._x=x; p._z=z;
-      shLab((ShelterRules.shKind(p.kind).emoji||'')+' '+p.name, x, 1.6, z);
-    });
-  }
-  function shNear(x,z,r){ return Math.hypot(P.x-x, P.z-z) < (r||2.2); }
-  function shPrompt(){
-    if (!sh) return null;
-    const stray = sh.strays.find(s => shNear(s.x, s.z, 2.3));
-    if (stray) return {lab:'Rescue ' + stray.name + ' (E / Ⓧ)', act:() => shRescue(stray)};
-    const pet = (sh.sv.pets||[]).find(p => p._x != null && shNear(p._x, p._z, 2.2));
-    if (pet){
-      return {lab:'Care for ' + pet.name + ' (E feed · tap again)', act:() => shCareMenu(pet)};
-    }
-    if (sh.desk && shNear(sh.desk.x, sh.desk.z, 2.4)){
-      return {lab:'Front desk: match or upgrades (E / Ⓧ)', act:() => shOpenDesk()};
-    }
-    const st = (sh.stations||[]).find(s => shNear(s.x, s.z, 2.1));
-    if (st){
-      const pet = shSalonPet();
-      return {lab: pet ? (st.lab + ' ' + pet.name + ' (E / Ⓧ)') : 'Bring a pal to the salon (E / Ⓧ)', act:() => shSalonDo(st)};
-    }
-    if (sh.stage && shNear(sh.stage.x, sh.stage.z, 3)){
-      const show = sh.show;
-      if (show && show.open && !show.judged) return {lab:'Enter the ' + show.name + ' show (E / Ⓧ)', act:() => shEnter()};
-      if (show && !show.judged && show.entries && show.entries.length) return {lab:'Ask Judge Bramble to score (E / Ⓧ)', act:() => shJudge()};
-      return {lab:'Start a pet contest (E / Ⓧ)', act:() => shBeginShow()};
-    }
-    return null;
-  }
-  function shSalonPet(){
-    if (!sh) return null;
-    if (sh.curs) return (sh.sv.pets||[]).find(p => p.id === sh.curs) || (sh.sv.pets||[])[0];
-    return (sh.sv.pets||[])[0] || null;
-  }
-  const SH_SALON_CHOICE = {
-    trim: ['neat','fluffy','swirl'],
-    bow: ['red','blue','gold'],
-    dye: ['peach','mint','lilac','butter'],
-    trick: ['sit','spin','bow','wave']
-  };
-  function shSalonDo(st){
-    const pet = shSalonPet();
-    if (!pet){ banner('Rescue a pal first, then walk them into the salon!'); return; }
-    sh.curs = pet.id;
-    let choice = undefined;
-    if (SH_SALON_CHOICE[st.act]){
-      sh.choiceI = ((sh.choiceI|0)+1) % SH_SALON_CHOICE[st.act].length;
-      choice = SH_SALON_CHOICE[st.act][sh.choiceI];
-    }
-    const r = ShelterRules.shGroom(sh.sv, pet.id, st.act, choice);
-    if (!r.ok){ banner('The salon is busy — try another station.'); return; }
-    sh.sv = r.state; shSave(sh.sv);
-    banner('💇 ' + pet.name + ' got a ' + st.lab.toLowerCase() + (choice ? (' (' + choice + ')') : '') + '! Happiness ' + ShelterRules.shHappiness(r.pet) + (r.well ? ' — looking show-ready!' : ''));
-    shHud(); shNet();
-  }
-  function shBeginShow(){
-    const ids = ShelterRules.SH_CONTESTS;
-    sh.showI = ((sh.showI|0)+1) % ids.length;
-    const mode = (typeof mp !== 'undefined' && mp && mp.on) ? 'versus' : 'solo';
-    sh.show = ShelterRules.shNewShow(ids[sh.showI].id, Date.now(), mode);
-    banner(ids[sh.showI].emoji + ' Judge Bramble opened the ' + ids[sh.showI].name + ' contest! ' + (mode === 'versus' ? 'Friends can enter too — no NPC rivals.' : 'Enter your pal for a ribbon.'));
-    shHud(); shNet();
-  }
-  function shEnter(){
-    const pet = shSalonPet();
-    if (!pet){ banner('Cheer a pal up or groom them, then enter!'); return; }
-    const me = {id: (typeof mp !== 'undefined' && mp && mp.me) ? mp.me : 'me', name: (typeof player !== 'undefined' && player && player.name) || 'You'};
-    const r = ShelterRules.shEnterShow(sh.show, pet, me);
-    banner(r.ok ? ('🎀 ' + pet.name + ' entered the ' + sh.show.name + ' show!') : (r.why === 'npc' ? 'Only real players can enter.' : r.why === 'in' ? 'That pal is already in.' : 'The show is not open.'));
-    shHud(); shNet();
-  }
-  function shJudge(){
-    if (!sh.show) return;
-    const r = ShelterRules.shJudgeShow(sh.sv, sh.show);
-    if (!r.ok){ banner(r.why === 'empty' ? 'Someone needs to enter first.' : 'Judge Bramble is waiting.'); return; }
-    sh.sv = r.state; shSave(sh.sv); sh.show = r.show;
-    if (r.coins) shPay(r.coins);
-    const top = (r.show.entries || [])[0];
-    banner('🏅 ' + r.message + (top ? (' ' + top.petName + ' got a ' + top.ribbon + ' ribbon!') : '') + ' +' + r.coins + ' 🪙');
-    shHud(); shNet();
-  }
-
-  function shRescue(stray){
-    const r = ShelterRules.shRescue(sh.sv, stray);
-    if (!r.ok){ banner(r.why === 'full' ? 'The kennels are full — upgrade for more beds!' : 'Cannot rescue that pal right now.'); return; }
-    sh.sv = r.state; shSave(sh.sv);
-    sh.strays = sh.strays.filter(s => s !== stray);
-    shSpawnStrays = shSpawnStrays;
-    // remove that mesh later by rebuild
-    banner('🐾 ' + r.pet.name + ' is safe at the shelter! Cheer them up before a family visit.');
-    shShowPets();
-    shHud(); shNet();
-  }
-  function shCareMenu(pet){
-    sh.curs = pet.id;
-    const order = ['fed','clean','play'];
-    sh.careI = ((sh.careI|0)+1) % 3;
-    const act = order[sh.careI];
-    const r = ShelterRules.shCare(sh.sv, pet.id, act);
-    if (!r.ok){ banner('That pal is already busy.'); return; }
-    sh.sv = r.state; shSave(sh.sv);
-    const words = {fed:'had a snack', clean:'got a bath', play:'played a game'};
-    banner((r.ready ? '😊 ' : '🐾 ') + pet.name + ' ' + words[act] + '! Happiness ' + ShelterRules.shHappiness(r.pet) + (r.ready ? ' — ready for a home!' : ''));
-    shHud(); shNet();
-  }
-  function shOpenDesk(){
-    const fam = sh.family || ShelterRules.shVisitFamily(Math.random);
-    sh.family = fam;
-    const ready = (sh.sv.pets||[]).filter(p => ShelterRules.shReady(p));
-    const wish = fam.emoji + ' ' + fam.name + ': "' + fam.line + '"';
-    if (ready.length){
-      const pet = ready.find(p => p.kind === fam.wishKind && p.trait === fam.wishTrait) || ready[0];
-      const m = ShelterRules.shMatch(sh.sv, pet.id, fam.id);
-      if (m.ok){
-        sh.sv = m.state; shSave(sh.sv); shPay(m.coins);
-        sh.family = ShelterRules.shVisitFamily(Math.random, []);
-        banner('🏡 ' + m.message + ' +' + m.coins + ' 🪙');
-        shShowPets(); shHud(); shNet(); return;
-      }
-    }
-    banner(wish + (ready.length ? ' None of the ready pals match yet.' : ' Cheer a pal up, then come back!'));
-    shHud();
-  }
-  function shSend(petId){
-    let petsSave = null;
-    try { petsSave = (typeof load === 'function') ? load('rubloxPets', {v:2, pets:[]}) : {v:2, pets:[]}; } catch(e){ petsSave = {v:2, pets:[]}; }
-    const r = ShelterRules.shSendHome(sh.sv, petId, petsSave);
-    if (!r.ok){ banner(r.why === 'full' ? 'Your pet collection is full (6 pals).' : r.why === 'happy' ? 'Cheer them up a bit more first.' : 'Not now.'); return; }
-    sh.sv = r.state; shSave(sh.sv);
-    try { if (typeof save === 'function') save('rubloxPets', r.pets); } catch(e){}
-    banner('🏠 ' + (r.pet.n || 'Your pal') + ' went to your pet collection!');
-    shShowPets(); shHud(); shNet();
-  }
-  function shBuy(id){
-    const r = ShelterRules.shBuyUpgrade(sh.sv, id, shCoins());
-    if (!r.ok){ banner(r.why === 'coins' ? 'Need more coins for that upgrade.' : r.why === 'have' ? 'You already have that!' : 'Not now.'); return; }
-    if (!shSpend(r.cost)){ banner('Need more coins for that upgrade.'); return; }
-    sh.sv = r.state; shSave(sh.sv);
-    banner('✨ New shelter upgrade!');
-    shHud(); shNet();
-  }
-  function shHud(){
-    const hint = document.getElementById('shHint');
-    if (hint && sh){
-      const fam = sh.family;
-      const show = sh.show;
-      hint.textContent = '🐾 ' + (sh.sv.pets||[]).length + '/' + (sh.sv.ups.kennels?6:sh.sv.kennels||2) + ' pals  ·  rescued ' + (sh.sv.rescued||0) + '  ·  homes ' + (sh.sv.matched||0) + (sh.sv.trophies ? ('  ·  🏆 ' + sh.sv.trophies) : '') + (show ? ('  ·  ' + (show.emoji||'🎀') + ' ' + show.name) : '') + (fam ? ('  ·  ' + fam.name + ' want a ' + fam.wishTrait + ' ' + fam.wishKind) : '');
-    }
-    const btn = document.getElementById('shAct');
-    const p = shPrompt();
-    if (btn){ if (p){ btn.textContent = p.lab; btn.classList.add('show'); } else btn.classList.remove('show'); }
-    const home = document.getElementById('shHomeBtn');
-    const ready = sh && (sh.sv.pets||[]).find(p => ShelterRules.shReady(p));
-    if (home){ if (ready){ home.classList.add('show'); home.textContent = '🏠 Send ' + ready.name + ' home'; } else home.classList.remove('show'); }
-  }
-  function shAct(){ const p = shPrompt(); if (p) p.act(); }
-  function shKey(e){
-    if (!sh) return false;
-    if (e.type === 'keyup') return false;
-    const c = e.code || e.key;
-    if (c === 'KeyE' || c === 'KeyF'){ shAct(); return true; }
-    if (c === 'KeyH'){ const ready=(sh.sv.pets||[]).find(p => ShelterRules.shReady(p)); if (ready) shSend(ready.id); return true; }
-    if (c === 'KeyU'){ shBuy('kennels'); return true; }
-    return false;
-  }
-  function shPad(jp){
-    if (!sh || !jp) return false;
-    if (!sh._x && jp[2]){ sh._x = true; shAct(); return true; }
-    if (!jp[2]) sh._x = false;
-    if (!sh._y && jp[3]){ sh._y = true; const ready=(sh.sv.pets||[]).find(p => ShelterRules.shReady(p)); if (ready) shSend(ready.id); return true; }
-    if (!jp[3]) sh._y = false;
-    return false;
-  }
-  function shUpdate(){ if (sh) shHud(); }
-  function shIsGuest(){ try { return !!(typeof mp !== 'undefined' && mp && mp.on && !mp.host); } catch(e){ return false; } }
-  function shWire(){ return sh ? ShelterRules.shWire(sh.sv, {family: sh.family, strays: sh.strays, show: sh.show}) : null; }
-  function shApply(snap){
-    if (!sh || !snap) return;
-    if (Array.isArray(snap.pets)) sh.sv.pets = snap.pets;
-    if (snap.family) sh.family = snap.family;
-    if (snap.show) sh.show = snap.show;
-    shHud();
-  }
-  function shNet(){
-    if (shIsGuest() || !sh || typeof mp === 'undefined' || !mp || !mp.on || typeof mpSend !== 'function') return;
-    try { mpSend({t:'sh', snap: shWire()}); } catch(e){}
-  }
-  function shFromNet(g, d){ if (d && d.snap) shApply(d.snap); }
-  function shFromHost(d){ shFromNet(null, d); }
-  function shBind(){
-    const a=document.getElementById('shAct'); if(a && !a.__sh){ a.__sh=true; a.addEventListener('click', ev => { ev.preventDefault(); shAct(); }); }
-    const h=document.getElementById('shHomeBtn'); if(h && !h.__sh){ h.__sh=true; h.addEventListener('click', ev => { ev.preventDefault(); const ready=(sh.sv.pets||[]).find(p => ShelterRules.shReady(p)); if (ready) shSend(ready.id); }); }
-    const u=document.getElementById('shUpBtn'); if(u && !u.__sh){ u.__sh=true; u.addEventListener('click', ev => { ev.preventDefault(); shBuy('kennels'); }); }
-  }
-  function shelterStop(){
-    if (!sh) return;
-    (sh.solids||[]).forEach(b => { try{ b.active=false; if (typeof solids!=='undefined'){ const i=solids.indexOf(b); if(i>=0) solids.splice(i,1);} }catch(e){} });
-    (sh.trash||[]).forEach(m => { try{ scene.remove(m);}catch(e){} });
-    sh=null;
-    const box=document.getElementById('shBox'); if(box) box.style.display='none';
-    ['shAct','shHomeBtn','shUpBtn'].forEach(id => { const b=document.getElementById(id); if(b) b.classList.remove('show'); });
-  }
-  if (typeof window !== 'undefined') window.shDebug = {
-    spawn(){ if (sh) shSpawnStrays(); },
-    fill(){ if (!sh) return; (sh.sv.pets||[]).forEach(p => { p.fed=p.clean=p.play=90; p.happy=90; }); shSave(sh.sv); shHud(); },
-    salon(){ if (!sh) return; P.x=22; P.y=0.5; P.z=-2; },
-    contest(){ if (!sh) return; P.x=-20; P.y=0.5; P.z=-8; if (!sh.show) shBeginShow(); },
-    probe(){ return sh ? {pets:(sh.sv.pets||[]).length, family: sh.family && sh.family.id, strays:(sh.strays||[]).length, show: sh.show && sh.show.id, salon:!!sh.salon} : null; }
-  };
   /* ---------- Pinebell Village ---------- */
+
   let wn = null;
   function wnKeep(m){ if (m && wn && wn.trash) wn.trash.push(m); return m; }
   function wnMat(c,o){ return new THREE.MeshLambertMaterial(Object.assign({color:c}, o||{})); }
@@ -43915,7 +44517,7 @@ function start(m = 'obby', d = null){
   }
   function buildWinter(){
     const started = WinterRules.wnNewVisit(wnState(), Date.now());
-    wn = {trash:[], solids:[], sv: started.state, run: started.run, sledMesh:null, snowmanMesh:null};
+    wn = {trash:[], solids:[], sv: started.state, run: started.run, sledMesh:null, snowmanMesh:null, lights:[], lamp:null};
     scene.background = new THREE.Color('#9fd4ff');
     if (scene.fog){ scene.fog.color.set('#dcefff'); scene.fog.near = 22; scene.fog.far = 110; }
     plat(0, 0, 10, 90, 170, '#f4fbff', 0.28);
@@ -43964,10 +44566,134 @@ function start(m = 'obby', d = null){
     if (typeof cam !== 'undefined' && cam){ cam.yaw = 0; cam.pitch = 0.38; cam.dist = 14; }
     checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:8}, flag:new THREE.Object3D()};
     wnPaintSnowman();
+    wnBuildFestive();
     wnBind();
     wnHud();
     banner('🎄 Welcome to Pinebell Village! Sled, skate, build a snow pal, sip cocoa, and toss practice snowballs. Races and snowball fights are for real friends only.');
   }
+
+  function wnBuildFestive(){
+    if (!wn || typeof WinterRules === 'undefined') return;
+    wn.lights = [];
+    (WinterRules.WN_LIGHT_SLOTS || []).forEach(s => {
+      if (s.kind === 'tree'){
+        wnMesh(new THREE.CylinderGeometry(0.22, 0.28, 1.4, 8), '#6b3f1a', s.x, 0.7, s.z);
+        wnMesh(new THREE.ConeGeometry(1.1, 2.2, 8), '#1a6b44', s.x, 2.2, s.z);
+      }
+      wnLab(s.kind === 'tree' ? '🎄 ' + s.name : '🏠 ' + s.name, s.x, s.kind==='tree'?3.5:3.2, s.z);
+      const g = new THREE.Group();
+      const cols = ['#ff6b6b','#ffd23f','#7ec8f0','#b388ff','#80ed99'];
+      for (let i=0;i<8;i++){
+        const m = new THREE.Mesh(new THREE.SphereGeometry(0.09, 6, 6), new THREE.MeshBasicMaterial({color: cols[i%cols.length]}));
+        const a = (i / 8) * Math.PI * 2;
+        m.position.set(Math.cos(a)*0.7, 1.2 + (i%3)*0.35, Math.sin(a)*0.7);
+        g.add(m);
+      }
+      g.position.set(s.x, 0, s.z); g.visible = false; scene.add(g); wnKeep(g);
+      wn.lights.push({id:s.id, mesh:g});
+    });
+    wn.lamp = {x:0, z:6};
+    wnMesh(new THREE.CylinderGeometry(0.12, 0.16, 3.2, 8), '#1d2340', 0, 1.6, 6);
+    const bulb = wnMesh(new THREE.SphereGeometry(0.28, 8, 8), '#fff3bf', 0, 3.4, 6);
+    wn.lamp.bulb = bulb;
+    wnLab('🌙 Night lamp', 0, 4.0, 6);
+    wn.wrapAt = {x:4, z:8};
+    wnMesh(new THREE.BoxGeometry(1.4, 0.7, 1.4), '#c44536', 4, 0.4, 8);
+    wnLab('🎁 Wrap table', 4, 1.6, 8);
+    const xbtn = document.getElementById('wnWrapX');
+    if (xbtn && !xbtn._wn){ xbtn._wn = true; xbtn.addEventListener('click', () => wnCloseWrap()); }
+    wnPaintLights();
+  }
+  function wnPaintLights(){
+    if (!wn) return;
+    const hung = (wn.run && wn.run.lights) || [];
+    const night = !!(wn.run && wn.run.night);
+    (wn.lights||[]).forEach(L => { if (L.mesh) L.mesh.visible = hung.indexOf(L.id) >= 0; });
+    try {
+      document.body.classList.toggle('wnnight', night);
+      if (scene.background) scene.background.set(night ? '#14213d' : '#9fd4ff');
+      if (scene.fog) scene.fog.color.set(night ? '#1b2a4a' : '#dcefff');
+    } catch (e){}
+  }
+  function wnHang(id){
+    if (!wn) return;
+    const r = WinterRules.wnPlaceLight(wn.sv, wn.run, id);
+    if (r.state){ wn.sv = r.state; wnSave(wn.sv); }
+    wnPaintLights();
+    banner(r.message || 'Lights!');
+    wnHud();
+  }
+  function wnToggleNight(){
+    if (!wn) return;
+    if (!wn.run.night && (wn.run.lights||[]).length){
+      const r = WinterRules.wnShowLights(wn.sv, wn.run);
+      if (r.state){ wn.sv = r.state; wnSave(wn.sv); }
+      banner(r.message);
+    } else {
+      const r = WinterRules.wnSetNight(wn.run, !wn.run.night);
+      banner(r.message);
+    }
+    wnPaintLights();
+    wnHud();
+  }
+  function wnOpenWrap(){
+    if (!wn) return;
+    WinterRules.wnWrapOpen(wn.run, !!(typeof mp !== 'undefined' && mp && mp.on));
+    const box = document.getElementById('wnWrap');
+    if (box) box.hidden = false;
+    wnPaintWrap();
+  }
+  function wnCloseWrap(){
+    const box = document.getElementById('wnWrap');
+    if (box) box.hidden = true;
+  }
+  function wnPaintWrap(){
+    if (!wn || !wn.run || !wn.run.wrap) return;
+    const w = wn.run.wrap;
+    const stepEl = document.getElementById('wnWrapStep');
+    const ch = document.getElementById('wnWrapChoices');
+    const sc = document.getElementById('wnWrapScore');
+    if (!ch) return;
+    const steps = WinterRules.WN_WRAP_STEPS;
+    if (!w.open){
+      if (stepEl) stepEl.textContent = 'Ribbon Rue scored this wrap!';
+      ch.innerHTML = '';
+      if (sc) sc.textContent = (w.score ? ('Score: ' + w.score) : '');
+      return;
+    }
+    const part = steps[w.step|0];
+    if (stepEl) stepEl.textContent = 'Step ' + ((w.step|0)+1) + ' of 4 — pick a ' + part;
+    const lists = {paper:WinterRules.WN_PAPERS, ribbon:WinterRules.WN_RIBBON_COLORS, bow:WinterRules.WN_BOWS, tag:WinterRules.WN_TAGS};
+    const list = lists[part] || [];
+    ch.innerHTML = '';
+    list.forEach(it => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = (it.emoji || '') + ' ' + it.name;
+      if (it.color) b.style.background = it.color;
+      b.onclick = () => wnPickWrap(part, it.id);
+      ch.appendChild(b);
+    });
+    if (sc) sc.textContent = '';
+  }
+  function wnPickWrap(part, id){
+    if (!wn) return;
+    const r = WinterRules.wnWrapPick(wn.run, part, id, (typeof mp !== 'undefined' && mp && mp.me) || 'H');
+    if (!r.ok){ banner(r.message || 'Pick the next step!'); wnPaintWrap(); return; }
+    if (r.done){
+      const roster = (typeof mp !== 'undefined' && mp && mp.on && typeof mpRoster === 'function') ? (mpRoster()||[]).filter(p=>p&&!p.npc) : [];
+      const judged = WinterRules.wnWrapJudge(wn.sv, wn.run, roster.length ? roster.map(p => ({id:p.id, name:p.name, score:r.wrap.score})) : null);
+      if (judged.state){ wn.sv = judged.state; wnSave(wn.sv); }
+      if (judged.coins) wnPay(judged.coins);
+      banner(judged.message + (judged.coins ? (' +' + judged.coins + ' 🪙') : ''));
+      wnPaintWrap();
+      wnHud();
+      return;
+    }
+    banner(r.message);
+    wnPaintWrap();
+  }
+
   function wnPaintSnowman(){
     if (wn.snowmanMesh){ try{ scene.remove(wn.snowmanMesh);}catch(e){} }
     const parts = (wn.run && wn.run.snowman && wn.run.snowman.parts) || [];
@@ -43996,6 +44722,10 @@ function start(m = 'obby', d = null){
     if (wn.yard && wnNear(wn.yard.x, wn.yard.z, 3.2)) return {lab:'Build the snow pal (E / Ⓧ)', act:() => wnBuild()};
     const post = (wn.posts||[]).find(p => wnNear(p.x, p.z, 2.2));
     if (post) return {lab:'Practice snowball (E / Ⓧ)', act:() => wnToss('practice')};
+    const slot = (WinterRules.WN_LIGHT_SLOTS||[]).find(s => wnNear(s.x, s.z, 2.6));
+    if (slot) return {lab:'Hang twinkly lights on ' + slot.name + ' (E / Ⓧ)', act:() => wnHang(slot.id)};
+    if (wn.lamp && wnNear(wn.lamp.x, wn.lamp.z, 2.4)) return {lab:(wn.run.night ? 'Switch back to morning' : 'Night mode — show off the lights') + ' (E / Ⓧ)', act:() => wnToggleNight()};
+    if (wn.wrapAt && wnNear(wn.wrapAt.x, wn.wrapAt.z, 2.6)) return {lab:'Open the gift-wrapping contest (E / Ⓧ)', act:() => wnOpenWrap()};
     return null;
   }
   function wnStartSled(){
@@ -44071,7 +44801,7 @@ function start(m = 'obby', d = null){
     if (hint && wn){
       const s = wn.sv, run = wn.run;
       const sled = run.sled && run.sled.on ? ('  ·  🛷 ' + (run.sled.t||0).toFixed(1) + 's') : (s.sledBest ? ('  ·  best ' + Number(s.sledBest).toFixed(1) + 's') : '');
-      hint.textContent = '🎄 Pinebell  ·  🪙 ' + (s.coinsEarned||0) + ' earned  ·  ☃️ ' + (s.snowmen||0) + '  ·  ⛸️ ' + (s.skateLaps||0) + sled;
+      hint.textContent = '🎄 Pinebell  ·  🪙 ' + (s.coinsEarned||0) + ' earned  ·  💡 ' + (s.lights||0) + '  ·  🎁 best ' + (s.wrapBest||0) + sled;
     }
     const btn = document.getElementById('wnAct');
     const p = wnPrompt();
@@ -44108,6 +44838,7 @@ function start(m = 'obby', d = null){
     if (!wn) return;
     dt = Math.max(0, Math.min(0.12, +dt || 0));
     WinterRules.wnSnowballTick(wn.run, dt);
+    if (wn.run && wn.run.night && wn.lights){ const tnow = (wn.run.t = (wn.run.t||0)+dt); wn.lights.forEach((L,i)=>{ if (!L.mesh||!L.mesh.visible) return; L.mesh.children.forEach((c,j)=>{ if (c.material) c.material.opacity = 0.65 + 0.35*Math.sin(tnow*4 + i + j); c.material.transparent = true; }); }); }
     (wn.flakes||[]).forEach(f => {
       if (!f.m) return;
       f.m.position.y -= (f.s||1) * dt;
@@ -44148,10 +44879,13 @@ function start(m = 'obby', d = null){
   }
   if (typeof window !== 'undefined') window.wnDebug = {
     village(){ if (!wn) return; P.x=0; P.y=0.5; P.z=8; if (cam){ cam.yaw=0; cam.pitch=0.4; cam.dist=16; } },
+    lights(){ if (!wn) return; (WinterRules.WN_LIGHT_SLOTS||[]).forEach(s => WinterRules.wnPlaceLight(wn.sv, wn.run, s.id)); WinterRules.wnShowLights(wn.sv, wn.run); wnPaintLights(); P.x=0; P.y=0.5; P.z=10; if (cam){ cam.yaw=0; cam.pitch=0.35; cam.dist=14; } },
+    wrap(){ if (!wn) return; P.x=4; P.y=0.5; P.z=10; wnOpenWrap(); if (cam){ cam.yaw=0; cam.pitch=0.4; cam.dist=10; } },
     sled(){ if (!wn) return; wnStartSled(); for (let i=0;i<20;i++) WinterRules.wnSledTick(wn.run, 0.08); P.x=wn.run.sled.x; P.y=wn.run.sled.y; P.z=wn.run.sled.z; if (cam){ cam.yaw=Math.PI; cam.pitch=0.28; cam.dist=12; } },
     pond(){ if (!wn) return; P.x=16; P.y=0.5; P.z=-2; },
     probe(){ return wn ? {area:wn.run.area, sled:!!(wn.run.sled&&wn.run.sled.on), snowman:(wn.run.snowman.parts||[]).length} : null; }
   };
+
   /* ---------- Pawsley Vet Clinic ---------- */
   let vt = null;
   function vtKeep(m){ if (m && vt && vt.trash) vt.trash.push(m); return m; }
@@ -44188,7 +44922,8 @@ function start(m = 'obby', d = null){
   function vtSave(s){ if (typeof save === 'function') save(VetRules.VT_KEY, s); if (vt) vt.sv = s; }
   function vtHideFpToggle(){
     const b = document.getElementById('oFP');
-    if (b) b.style.display = mode === 'vet' ? 'none' : '';
+    const driving = !!(vt && vt.run && vt.run.drive && vt.run.drive.on);
+    if (b) b.style.display = (mode === 'vet' && !driving) ? 'none' : '';
   }
   function drawVet(ctx){
     if (typeof sky === 'function') sky(ctx, '#b8e4f2', '#f7f1de');
@@ -44249,9 +44984,112 @@ function start(m = 'obby', d = null){
     const sun = new THREE.DirectionalLight(0xfff2cc, 0.75);
     sun.position.set(8, 18, 6); scene.add(sun); vtKeep(sun);
   }
+
+  function vtBuildTown(){
+    if (!vt || typeof VetRules === 'undefined') return;
+    const T = VetRules.VT_TOWN;
+    const midZ = (T.minZ + T.maxZ) / 2, midX = (T.minX + T.maxX) / 2;
+    const fl = plat(midX, 0, midZ, T.maxX - T.minX, T.maxZ - T.minZ, '#8fbc6a', 0.3);
+    if (fl && fl.mesh) vtKeep(fl.mesh);
+    // roads
+    const road = plat(0, 0.02, midZ, 6, T.maxZ - T.minZ, '#c9c2b0', 0.08);
+    if (road && road.mesh) vtKeep(road.mesh);
+    const cross = plat(0, 0.03, 44, T.maxX - T.minX - 4, 5, '#c9c2b0', 0.08);
+    if (cross && cross.mesh) vtKeep(cross.mesh);
+    // park
+    const park = plat(14, 0.04, 58, 16, 14, '#7cb342', 0.06);
+    if (park && park.mesh) vtKeep(park.mesh);
+    vtLab('Puddle Park', 14, 2.2, 52);
+    // cute trees (non-blocking trunks kept short)
+    function tree(x,z,h){
+      const trunk = vtMesh(new THREE.CylinderGeometry(0.28, 0.36, h*0.45, 8), '#8b5a2b', x, h*0.22, z);
+      const leaf = vtMesh(new THREE.ConeGeometry(1.4, h*0.7, 8), '#2e7d32', x, h*0.55, z);
+      return {x,z};
+    }
+    tree(-18, 48, 5.5); tree(-22, 52, 4.8); tree(-14, 52, 5.2);
+    tree(10, 70, 5); tree(-8, 74, 4.6); tree(22, 40, 5.4); tree(-28, 60, 5);
+    // houses (solid but no tight doors — porches only)
+    function house(x,z,c){
+      vtWall(x, 0, z, 6, 4.6, 5, c || '#f6e1c3');
+      const roof = vtMesh(new THREE.ConeGeometry(4.2, 2.2, 4), '#c44536', x, 5.6, z);
+      if (roof) roof.rotation.y = Math.PI/4;
+    }
+    house(-22, 38, '#fde2c8'); house(24, 38, '#f8d4e0');
+    vtLab('Maple Court', -18, 2.4, 44);
+    vtLab('Picnic Green', 22, 1.8, 48);
+    // parked ambulance + rescue pals
+    vt.ambulance = vtAmbulanceMesh(VetRules.VT_AMBULANCE_PARK.x, 0, VetRules.VT_AMBULANCE_PARK.z);
+    vt.props.push({id:'ambulance', kind:'ambulance', x:VetRules.VT_AMBULANCE_PARK.x, z:VetRules.VT_AMBULANCE_PARK.z, label: vtLab('🚑 Pet ambulance', 0, 2.6, 22.5)});
+    vt.townPets = [];
+    (VetRules.VT_RESCUES || []).forEach(r => {
+      const m = vtPetMesh(r.species, r.x, 0, r.z);
+      const lab = vtLab(r.emoji + ' ' + r.title, r.x, 2.1, r.z);
+      vt.townPets.push({id:r.id, mesh:m, label:lab, x:r.x, z:r.z});
+    });
+  }
+  function vtAmbulanceMesh(x,y,z){
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.2, 3.6), vtMat('#f7f7f7'));
+    body.position.y = 0.9; g.add(body);
+    const cab = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.0, 1.2), vtMat('#e8f6ff'));
+    cab.position.set(0, 1.4, -1.4); g.add(cab);
+    const stripe = new THREE.Mesh(new THREE.BoxGeometry(2.24, 0.28, 3.62), vtMat('#e53935'));
+    stripe.position.y = 1.05; g.add(stripe);
+    const light = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 0.7), vtMat('#5b8def'));
+    light.position.set(0, 1.95, 0.2); g.add(light);
+    const paw = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8), vtMat('#ffd54a'));
+    paw.position.set(0, 1.15, -2.0); g.add(paw);
+    [[-0.8,0.28,-1.2],[0.8,0.28,-1.2],[-0.8,0.28,1.2],[0.8,0.28,1.2]].forEach(p => {
+      const w = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.28, 10), vtMat('#333'));
+      w.rotation.z = Math.PI/2; w.position.set(p[0], p[1], p[2]); g.add(w);
+    });
+    g.position.set(x,y,z); scene.add(g); vtKeep(g);
+    return g;
+  }
+  function vtDriving(){ return !!(vt && vt.run && vt.run.drive && vt.run.drive.on); }
+  function vtDriveInput(){
+    if (!vtDriving()) return;
+    let thr = 0, turn = 0;
+    try {
+      if (typeof keys !== 'undefined'){
+        if (keys.KeyW || keys.ArrowUp) thr += 1;
+        if (keys.KeyS || keys.ArrowDown) thr -= 1;
+        if (keys.KeyA || keys.ArrowLeft) turn -= 1;
+        if (keys.KeyD || keys.ArrowRight) turn += 1;
+      }
+      if (typeof joy !== 'undefined' && joy){ if (Math.abs(joy.y) > 0.12) thr -= joy.y; if (Math.abs(joy.x) > 0.12) turn += joy.x; }
+      if (typeof pad !== 'undefined' && pad){ if (Math.abs(pad.y) > 0.12) thr -= pad.y; if (Math.abs(pad.x) > 0.12) turn += pad.x; }
+    } catch (e){}
+    VetRules.vtDriveSteer(vt.run, turn, thr);
+  }
+  function vtPlaceAmbulance(){
+    if (!vt || !vt.ambulance || !vt.run) return;
+    const d = vt.run.drive || VetRules.vtEmptyDrive();
+    vt.ambulance.position.set(d.x, 0, d.z);
+    vt.ambulance.rotation.y = d.yaw || 0;
+    (vt.townPets || []).forEach(p => {
+      const taken = d.cargo && d.cargo.id === p.id;
+      const done = vt.run.rescuedIds && vt.run.rescuedIds.indexOf(p.id) >= 0;
+      if (p.mesh) p.mesh.visible = !taken && !done;
+      if (p.label) p.label.visible = !taken && !done;
+    });
+  }
+  function vtDriveCam(){
+    if (!vtDriving() || typeof cam === 'undefined' || typeof camera === 'undefined') return;
+    const d = vt.run.drive;
+    const back = 8, height = 4.2;
+    const x = d.x - Math.sin(d.yaw) * back;
+    const z = d.z + Math.cos(d.yaw) * back;
+    camera.position.set(x, height, z);
+    camera.lookAt(d.x, 1.2, d.z);
+    cam.yaw = d.yaw;
+    cam.pitch = 0.22;
+    cam.dist = back;
+  }
+
   function buildVet(){
     const started = VetRules.vtNewShift(vtState(), Date.now());
-    vt = {trash:[], solids:[], props:[], targets:[], sv: started.state, run: started.run, pet:null, owner:null, prompt:null, netT:0, pitchSet:false};
+    vt = {trash:[], solids:[], props:[], targets:[], sv: started.state, run: started.run, pet:null, owner:null, prompt:null, netT:0, pitchSet:false, ambulance:null, townPets:[], driveCam:false};
     try { checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:11.2}, flag:new THREE.Object3D()}; } catch (e){}
     vtSky();
     const wall = '#e8d5b5';
@@ -44266,7 +45104,7 @@ function start(m = 'obby', d = null){
       lamp.position.set(r.x, 5.2, r.z); scene.add(lamp); vtKeep(lamp);
     });
     // outer walls
-    vtSplitWall('x', -24, 24, 16, [], wall);
+    vtSplitWall('x', -24, 24, 16, [{c:0, w:(VetRules.VT_DOOR_W||3.6)}], wall);
     vtSplitWall('x', -8, 8, -40, [], wall);
     vtSplitWall('x', -24, -8, -20, [], wall);
     vtSplitWall('x', 8, 24, -20, [], wall);
@@ -44274,6 +45112,11 @@ function start(m = 'obby', d = null){
     vtSplitWall('z', -20, 16, 24, [], wall);
     vtSplitWall('z', -40, -20, -8, [], wall);
     vtSplitWall('z', -40, -20, 8, [], wall);
+    // ambulance bay walls + wide town opening
+    vtSplitWall('z', 16, 28, -8, [], wall);
+    vtSplitWall('z', 16, 28, 8, [], wall);
+    vtSplitWall('x', -8, 8, 28, [{c:0, w:((VetRules.VT_TOWN_DOOR && VetRules.VT_TOWN_DOOR.w) || 5.2)}], wall);
+    vtBuildTown();
     // interior walls with doorways
     vtSplitWall('x', -8, 8, 0, [{c:0, w:(VetRules.VT_DOOR_W||3.6)}], trim);
     vtSplitWall('x', -8, 8, -20, [{c:0, w:(VetRules.VT_DOOR_W||3.6)}], trim);
@@ -44471,6 +45314,24 @@ function start(m = 'obby', d = null){
     if (phase === 'done' && room === 'reception' && vtNear(find('chart'), 2.6)){
       return {id:'next', label:'E / tap / Ⓐ  Next pal', btn:'🐾 Next pal', go:() => vtDoNext()};
     }
+    const driving = vtDriving();
+    if (!driving && vtNear(find('ambulance'), 3.2)){
+      if (vt.run.drive && vt.run.drive.cargo && !vt.run.drive.on){
+        return {id:'admit', label:'E / tap / Ⓐ  Bring this pal inside', btn:'🐾 Check in rescue', go:() => vtDoAdmit()};
+      }
+      return {id:'mount', label:'E / tap / Ⓐ  Drive the pet ambulance', btn:'🚑 Hop in', go:() => vtDoMount()};
+    }
+    if (driving){
+      const cargo = vt.run.drive && vt.run.drive.cargo;
+      const near = VetRules.vtRescueAt(vt.run.drive.x, vt.run.drive.z, 3.6);
+      if (!cargo && near && !(vt.run.rescuedIds || []).includes(near.id)){
+        return {id:'rescue', label:'E / tap / Ⓐ  Rescue ' + near.title, btn:'🐾 Rescue', go:() => vtDoRescue()};
+      }
+      if (VetRules.vtInBay(vt.run.drive.x, vt.run.drive.z)){
+        return {id:'park', label:'E / Ⓑ  Park and hop out', btn:'🅿️ Park', go:() => vtDoDismount()};
+      }
+      return {id:'drive', label: cargo ? ('Drive ' + cargo.name + ' back to the bay') : 'Steer with WASD or the stick · look for pals!', btn:'🚑 Driving'};
+    }
     return null;
   }
   function vtToast(msg){
@@ -44511,6 +45372,38 @@ function start(m = 'obby', d = null){
     vtToast(res.message);
     vtNet();
   }
+  function vtDoMount(){
+    if (!vt) return;
+    const res = VetRules.vtMountAmbulance(vt.run, typeof P !== 'undefined' ? P.x : 0, typeof P !== 'undefined' ? P.z : 0);
+    if (!res.ok){ vtToast(res.message); return; }
+    if (typeof P !== 'undefined'){ P.x = vt.run.drive.x; P.z = vt.run.drive.z; P.vx = P.vz = 0; }
+    vtHideFpToggle();
+    vtPlaceAmbulance();
+    vtToast(res.message);
+  }
+  function vtDoDismount(){
+    if (!vt) return;
+    const res = VetRules.vtDismountAmbulance(vt.run);
+    if (!res.ok){ vtToast(res.message); return; }
+    if (typeof P !== 'undefined'){ P.x = 0; P.y = 0; P.z = 22; P.vx = P.vz = 0; }
+    vtHideFpToggle();
+    vtPlaceAmbulance();
+    vtToast(res.message);
+  }
+  function vtDoRescue(){
+    if (!vt) return;
+    const res = VetRules.vtRescuePet(vt.run);
+    vtPlaceAmbulance();
+    vtToast(res.message);
+  }
+  function vtDoAdmit(){
+    if (!vt) return;
+    const res = VetRules.vtAdmitRescue(vt.run, vt.sv);
+    if (res.state) vt.sv = res.state;
+    vtPlaceActors();
+    vtPlaceAmbulance();
+    vtAfter(res);
+  }
   function vtAct(){
     if (!vt || !vt.run) return false;
     if (typeof paused !== 'undefined' && paused) return false;
@@ -44521,11 +45414,19 @@ function start(m = 'obby', d = null){
   }
   function vtUpdate(dt){
     if (!vt || !vt.run || typeof mode === 'undefined' || mode !== 'vet') return;
-    if (!vt.pitchSet && typeof cam !== 'undefined'){ cam.pitch = 0.08; cam.yaw = 0; vt.pitchSet = true; }
+    if (!vt.pitchSet && typeof cam !== 'undefined' && !vtDriving()){ cam.pitch = 0.08; cam.yaw = 0; vt.pitchSet = true; }
     vt.run.t = (vt.run.t || 0) + (dt || 0);
     if (vt.pet) vt.pet.rotation.y += (dt || 0) * 0.4;
+    if (vtDriving()){
+      vtDriveInput();
+      VetRules.vtDriveTick(vt.run, dt);
+      if (typeof P !== 'undefined'){ P.x = vt.run.drive.x; P.y = 0.45; P.z = vt.run.drive.z; P.vx = P.vz = 0; P.vy = 0; }
+      vtPlaceAmbulance();
+    } else {
+      vtPlaceAmbulance();
+    }
     if (typeof P !== 'undefined'){
-      const room = VetRules.vtRoomAt(P.x, P.z);
+      const room = VetRules.vtAreaAt ? VetRules.vtAreaAt(P.x, P.z) : VetRules.vtRoomAt(P.x, P.z);
       if (room) vt.run.room = room;
     }
     const next = vtFindPrompt();
@@ -44549,7 +45450,8 @@ function start(m = 'obby', d = null){
   }
   function vtPad(jp, s){
     if (!vt || !jp) return false;
-    if (jp[0] && vt.prompt){
+    if (jp[1] && vtDriving()){ vtDoDismount(); return true; }
+    if (jp[0] && vt.prompt && vt.prompt.go){
       vtAct();
       if (typeof pad !== 'undefined') pad.jump = false;
       return true;
@@ -44656,12 +45558,306 @@ function start(m = 'obby', d = null){
         room: vt && vt.run ? vt.run.room : null,
         phase: vt && vt.run ? vt.run.phase : null,
         p: typeof P === 'undefined' ? null : {x:P.x,y:P.y,z:P.z},
-        cam: typeof cam === 'undefined' ? null : {yaw:cam.yaw, pitch:cam.pitch}
+        cam: typeof cam === 'undefined' ? null : {yaw:cam.yaw, pitch:cam.pitch},
+        drive: vt && vt.run && vt.run.drive ? {on:!!vt.run.drive.on, x:vt.run.drive.x, z:vt.run.drive.z, cargo:!!vt.run.drive.cargo} : null
       };
+    },
+    town(){
+      if (typeof P !== 'undefined'){ P.x = 0; P.y = 0.5; P.z = 50; }
+      if (typeof cam !== 'undefined'){ cam.yaw = 0; cam.pitch = 0.35; cam.dist = 16; }
+      if (vt && vt.run && vt.run.drive){ vt.run.drive.on = false; }
+      vtHideFpToggle();
+      return typeof P === 'undefined' ? null : {x:P.x,z:P.z};
+    },
+    driveTo(id){
+      const r = VetRules.vtRescue(id) || VetRules.VT_RESCUES[0];
+      if (!vt || !r) return null;
+      if (!vt.run.drive) vt.run.drive = VetRules.vtEmptyDrive();
+      vt.run.drive.on = true; vt.run.drive.x = r.x - 2; vt.run.drive.z = r.z + 4; vt.run.drive.yaw = 0.4;
+      if (typeof P !== 'undefined'){ P.x = vt.run.drive.x; P.y = 0.45; P.z = vt.run.drive.z; }
+      vtHideFpToggle(); vtPlaceAmbulance();
+      return {id:r.id, x:r.x, z:r.z};
     }
   };
 
+  /* ---------- Glimmergill Cove ---------- */
+  let mm = null;
+  function mmKeep(m){ if (m && mm && mm.trash) mm.trash.push(m); return m; }
+  function mmMat(c,o){ return new THREE.MeshLambertMaterial(Object.assign({color:c, side:THREE.DoubleSide}, o||{})); }
+  function mmMesh(geo,c,x,y,z,o){ const m=new THREE.Mesh(geo, mmMat(c,o)); m.position.set(x,y,z); scene.add(m); return mmKeep(m); }
+  function mmState(){ return MermaidRules.mmLoad(typeof load === 'function' ? load(MermaidRules.MM_KEY, null) : null); }
+  function mmSave(s){ if (typeof save === 'function') save(MermaidRules.MM_KEY, s); if (mm) mm.sv = s; }
+  function mmLab(text,x,y,z){
+    try { if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m) return mmKeep(m); } } catch(e){}
+    return mmMesh(new THREE.BoxGeometry(0.2,0.2,0.2), '#fff', x,y,z);
+  }
+  function mmWall(x,y,z,w,h,d,c){
+    const b = plat(x, y + h, z, w, d, c, h);
+    if (b && b.mesh){ b.mesh.material = mmMat(c); mmKeep(b.mesh); }
+    if (b && mm) mm.solids.push(b);
+    return b;
+  }
+  function mmSplitWall(along, a0, a1, fixed, gaps, color){
+    const h = (typeof MermaidRules !== 'undefined' && MermaidRules.MM_WALL_H) || 6.0;
+    const doorH = (typeof MermaidRules !== 'undefined' && MermaidRules.MM_DOOR_H) || 4.2;
+    const th = 0.42;
+    const opens = (gaps || []).map(g => ({a:g.c - g.w/2, b:g.c + g.w/2})).sort((p,q) => p.a - q.a);
+    let cursor = a0;
+    function seg(lo, hi, y, hh){
+      if (hi - lo < 0.15) return;
+      const mid = (lo + hi) / 2, len = hi - lo;
+      if (along === 'x') mmWall(mid, y, fixed, len, hh, th, color);
+      else mmWall(fixed, y, mid, th, hh, len, color);
+    }
+    opens.forEach(op => { seg(cursor, op.a, 0, h); seg(op.a, op.b, doorH, h - doorH); cursor = op.b; });
+    seg(cursor, a1, 0, h);
+  }
+  function drawMermaid(ctx){
+    if (typeof sky === 'function') sky(ctx, '#14738a', '#7ee0d6');
+    else { ctx.fillStyle = '#14738a'; ctx.fillRect(0,0,320,200); }
+    ctx.fillStyle = '#1c8ea3'; ctx.fillRect(0, 80, 320, 120);
+    ctx.fillStyle = '#2a9d8f'; ctx.fillRect(40, 120, 80, 50);
+    ctx.fillStyle = '#e9c46a'; ctx.beginPath(); ctx.arc(220, 70, 28, 0, 6.3); ctx.fill();
+    ctx.font = '28px sans-serif'; ctx.fillText('🧜', 150, 130); ctx.fillText('🐚', 80, 110); ctx.fillText('🫧', 240, 140);
+    if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#2ec4b6');
+  }
+  function mmTailMesh(color){
+    const g = new THREE.Group();
+    const hip = new THREE.Mesh(new THREE.SphereGeometry(0.28, 10, 8), mmMat(color));
+    hip.position.y = 0.55; g.add(hip);
+    const mid = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.08, 1.1, 10), mmMat(color));
+    mid.position.y = 0.05; mid.rotation.x = 0.35; g.add(mid);
+    const fin = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.6, 6), mmMat(color));
+    fin.position.set(0, -0.55, 0.15); fin.rotation.x = Math.PI; g.add(fin);
+    return g;
+  }
+  function mmPetMesh(id, x, y, z){
+    const cols = {kelpie:'#3d8bfd', jellipop:'#ff8fab', sandpip:'#f4d35e'};
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(id==='jellipop'?0.32:0.24, 10, 8), mmMat(cols[id]||'#3d8bfd'));
+    body.position.y = 0.3; g.add(body);
+    g.position.set(x,y,z); scene.add(g); mmKeep(g);
+    return g;
+  }
+  function buildMermaid(){
+    const started = MermaidRules.mmNewVisit(mmState());
+    mm = {trash:[], solids:[], sv: started.state, run: started.run, shells:[], pets:[], up:0, down:0, tail:null};
+    mmSave(started.state);
+    try { checkpoints[0] = {idx:0, spawn:{x:0,y:1.2,z:6}, flag:new THREE.Object3D()}; } catch(e){}
+    scene.background = new THREE.Color('#14738a');
+    if (scene.fog){ scene.fog.color.set('#1a6f82'); scene.fog.near = 18; scene.fog.far = 70; }
+    const hemi = new THREE.HemisphereLight(0xb8f1ff, 0x0b3b4a, 0.85); scene.add(hemi); mmKeep(hemi);
+    const sun = new THREE.DirectionalLight(0x9fe7ff, 0.5); sun.position.set(6, 20, 8); scene.add(sun); mmKeep(sun);
+    const wall = '#2a6f7c', trim = '#1f5660';
+    MermaidRules.MM_ROOMS.forEach(r => {
+      const fl = plat(r.x, 0, r.z, r.w, r.d, r.color, 0.3);
+      if (fl && fl.mesh) mmKeep(fl.mesh);
+      // no tight ceilings over the plaza so players can swim up
+      if (r.id === 'home' || r.id === 'shop'){
+        const ceil = mmMesh(new THREE.BoxGeometry(r.w+0.2, 0.22, r.d+0.2), '#6bb7c4', r.x, MermaidRules.MM_CEILING_Y, r.z);
+      }
+    });
+    const dw = MermaidRules.MM_DOOR_W, dh = MermaidRules.MM_DOOR_H;
+    // plaza walls with doors to home/shop/garden; plaza stays open upward and south
+    mmSplitWall('z', -14, 14, -14, [{c:0, w:dw}], wall); // west to home
+    mmSplitWall('z', -14, 14, 14, [{c:0, w:dw}], wall);  // east to shop
+    mmSplitWall('x', -14, 14, -14, [{c:0, w:dw}], wall); // north to garden
+    mmSplitWall('x', -14, 14, 14, [], wall); // south closed gently — wait, plaza should feel open south? leave a wide open south for swimming out? Brief is a town. Keep south open (no wall) so it doesn't feel boxed. Actually no wall south = player could fall off floor. Floor is 28 deep z -14..14. Open south edge is ok if walkable only in rooms.
+    // home walls (meets plaza at x=-14)
+    mmSplitWall('z', -8, 8, -38, [], trim);
+    mmSplitWall('z', -8, 8, -14, [{c:0, w:dw}], trim);
+    mmSplitWall('x', -38, -14, -8, [], trim);
+    mmSplitWall('x', -38, -14, 8, [], trim);
+    // shop walls (meets plaza at x=14)
+    mmSplitWall('z', -8, 8, 14, [{c:0, w:dw}], trim);
+    mmSplitWall('z', -8, 8, 38, [], trim);
+    mmSplitWall('x', 14, 38, -8, [], trim);
+    mmSplitWall('x', 14, 38, 8, [], trim);
+    // garden walls (meets plaza at z=-14)
+    mmSplitWall('x', -12, 12, -38, [], '#2f6f6a');
+    mmSplitWall('x', -12, 12, -14, [{c:0, w:dw}], '#2f6f6a');
+    mmSplitWall('z', -38, -14, -12, [], '#2f6f6a');
+    mmSplitWall('z', -38, -14, 12, [], '#2f6f6a');
+    mmLab('Glimmergill Plaza', 0, 3.2, 8);
+    mmLab('Coral Home', -28, 3.2, 0);
+    mmLab('Pearl Shop', 28, 3.2, 0);
+    mmLab('Shell Garden', 0, 3.2, -28);
+    // coral / decor already owned
+    (mm.sv.decor||[]).forEach((id,i) => {
+      const item = MermaidRules.MM_DECOR.find(d => d.id === id);
+      if (!item) return;
+      mmMesh(new THREE.SphereGeometry(0.35, 8, 8), '#ff8fab', -28 + (i-1)*1.4, 0.6, -2);
+      mmLab(item.emoji + ' ' + item.name, -28 + (i-1)*1.4, 1.5, -2);
+    });
+    mm.shopAt = {x:28, z:0};
+    mmMesh(new THREE.CylinderGeometry(0.5, 0.6, 1.0, 10), '#e9c46a', 28, 0.6, 2);
+    mmLab('🛍️ Pearl shop', 28, 2.2, 2);
+    // shells
+    mm.shells = [];
+    MermaidRules.MM_SHELLS.forEach(s => {
+      const have = (mm.sv.found||[]).indexOf(s.id) >= 0;
+      const m = mmMesh(new THREE.SphereGeometry(0.22, 8, 8), '#f6e7c1', s.x, s.y, s.z);
+      const lab = mmLab(s.emoji + ' ' + s.name, s.x, s.y+0.8, s.z);
+      if (m) m.visible = !have;
+      if (lab) lab.visible = !have;
+      mm.shells.push({id:s.id, mesh:m, label:lab, x:s.x, y:s.y, z:s.z});
+    });
+    // sea pets
+    mm.pets = [];
+    MermaidRules.MM_PETS.forEach((p,i) => {
+      const m = mmPetMesh(p.id, 4 + i*2.2, 1.2, 6);
+      mm.pets.push({id:p.id, mesh:m, x:4+i*2.2, z:6});
+      mmLab(p.emoji + ' ' + p.name, 4+i*2.2, 2.2, 6);
+    });
+    // bubbles
+    mm.bubbles = [];
+    for (let i=0;i<24;i++){
+      const b = mmMesh(new THREE.SphereGeometry(0.08+Math.random()*0.08, 6, 6), '#d6f6ff', (Math.random()-0.5)*40, Math.random()*12, (Math.random()-0.5)*40);
+      if (b && b.material){ b.material.transparent = true; b.material.opacity = 0.45; }
+      mm.bubbles.push({m:b, s: 0.4+Math.random()});
+    }
+    if (typeof P !== 'undefined'){ P.x=0; P.y=1.2; P.z=6; P.vy=0; }
+    if (typeof cam !== 'undefined'){ cam.yaw = 0; cam.pitch = 0.25; cam.dist = 10; }
+    mmBind();
+    mmHud();
+    banner('🧜 Welcome to Glimmergill Cove! Pick a merfolk tail, swim up and down, collect shells, and decorate your coral home. No scary monsters here — just friends.');
+  }
+  function mmBind(){
+    const up = document.getElementById('mmUp'), down = document.getElementById('mmDown'), act = document.getElementById('mmAct');
+    function hold(el, key){
+      if (!el || el._mm) return;
+      el._mm = true;
+      const on = ev => { ev.preventDefault(); if (mm) mm[key] = 1; };
+      const off = ev => { ev.preventDefault(); if (mm) mm[key] = 0; };
+      el.addEventListener('pointerdown', on);
+      el.addEventListener('pointerup', off);
+      el.addEventListener('pointerleave', off);
+      el.addEventListener('pointercancel', off);
+    }
+    hold(up, 'up'); hold(down, 'down');
+    if (act && !act._mm){ act._mm = true; act.addEventListener('pointerdown', ev => { ev.preventDefault(); mmAct(); }); }
+    const box = document.getElementById('mmBox');
+    if (box) box.style.display = '';
+  }
+  function mmNear(x,z,r){ return typeof P !== 'undefined' && Math.hypot(P.x-x, P.z-z) < (r||2.4); }
+  function mmPrompt(){
+    if (!mm) return null;
+    const sh = (mm.shells||[]).find(s => s.mesh && s.mesh.visible && Math.hypot((P.x-s.x), (P.y-(s.y||1)), (P.z-s.z)) < 2.4);
+    if (sh) return {lab:'Collect the ' + sh.id + ' shell (E / Ⓧ)', act:() => mmDoShell(sh.id)};
+    if (mm.shopAt && mmNear(mm.shopAt.x, mm.shopAt.z, 2.6)) return {lab:'Browse the pearl shop (E / Ⓧ)', act:() => mmDoShop()};
+    const pet = (mm.pets||[]).find(p => mmNear(p.x, p.z, 2.2) && !(mm.sv.pals||[]).includes(p.id));
+    if (pet) return {lab:'Befriend ' + pet.id + ' with a kelp treat (E / Ⓧ)', act:() => mmDoPet(pet.id)};
+    if (MermaidRules.mmRoomAt(P.x,P.z)==='home') return {lab:'This is your coral home. Buy decor at the pearl shop!', act:null};
+    return null;
+  }
+  function mmHud(){
+    const hint = document.getElementById('mmHint');
+    if (hint && mm){
+      const s = mm.sv || {}, tail = MermaidRules.mmTail(s.tail);
+      hint.textContent = '🧜 Glimmergill  ·  🐚 ' + (s.shells||0) + '  ·  ⚪ ' + (s.pearls||0) + ' pearls  ·  tail ' + tail.name;
+    }
+    const btn = document.getElementById('mmAct');
+    const p = mmPrompt();
+    if (btn){ if (p && p.act){ btn.textContent = p.lab; btn.classList.add('show'); } else btn.classList.remove('show'); }
+  }
+  function mmAct(){ const p = mmPrompt(); if (p && p.act) p.act(); }
+  function mmDoShell(id){
+    const r = MermaidRules.mmCollectShell(mm.sv, mm.run, id);
+    if (!r.ok){ banner(r.message || 'Already collected!'); return; }
+    mm.sv = r.state; mmSave(mm.sv);
+    const sh = (mm.shells||[]).find(s => s.id === id);
+    if (sh){ if (sh.mesh) sh.mesh.visible = false; if (sh.label) sh.label.visible = false; }
+    banner(r.message);
+    mmHud();
+  }
+  function mmDoShop(){
+    if (!mm) return;
+    // buy next affordable unowned thing, cycling tails first
+    const list = MermaidRules.MM_SHOP || [];
+    let bought = null;
+    for (let i=0;i<list.length;i++){
+      const it = list[i];
+      const r = MermaidRules.mmBuy(mm.sv, 0, it.id);
+      if (r.ok){ bought = r; break; }
+    }
+    if (!bought){ banner('Swim around for more shells and pearls, then come back!'); return; }
+    mm.sv = bought.state; mmSave(mm.sv);
+    banner(bought.message);
+    mmHud();
+  }
+  function mmDoPet(id){
+    const r = MermaidRules.mmBefriend(mm.sv, id);
+    if (!r.ok){ banner(r.message || 'Visit the pearl shop for a kelp treat first.'); return; }
+    mm.sv = r.state; mmSave(mm.sv);
+    banner(r.message);
+    mmHud();
+  }
+  function mmSwimInput(){
+    let up = (mm && mm.up) ? 1 : 0, down = (mm && mm.down) ? 1 : 0;
+    try {
+      if (typeof keys !== 'undefined'){
+        if (keys.Space || keys.KeyR || keys.ArrowUp) up = 1;
+        if (keys.ShiftLeft || keys.ShiftRight || keys.KeyF || keys.ArrowDown) down = 1;
+      }
+      const gps = (typeof navigator !== 'undefined' && navigator.getGamepads) ? navigator.getGamepads() : [];
+      const g = gps && (gps[0] || gps[1]);
+      if (g && g.buttons){
+        if ((g.buttons[7] && g.buttons[7].pressed) || (g.buttons[5] && g.buttons[5].pressed)) up = 1;
+        if ((g.buttons[6] && g.buttons[6].pressed) || (g.buttons[4] && g.buttons[4].pressed)) down = 1;
+      }
+    } catch(e){}
+    return {up, down, x: typeof P!=='undefined'?P.x:0, z: typeof P!=='undefined'?P.z:0};
+  }
+  function mmUpdate(dt){
+    if (!mm || typeof mode === 'undefined' || mode !== 'mermaid') return;
+    dt = Math.max(0, Math.min(0.12, +dt || 0));
+    const ins = mmSwimInput();
+    const r = MermaidRules.mmSwimTick(mm.run, ins, dt);
+    if (typeof P !== 'undefined'){
+      P.y = r.y;
+      if (r.push){ P.x += r.push.x; P.z += r.push.z; }
+      if (!MermaidRules.mmWalkable(P.x, P.z)){
+        // soft clamp back
+        P.x -= (r.push && r.push.x) || 0;
+        P.z -= (r.push && r.push.z) || 0;
+      }
+    }
+    (mm.bubbles||[]).forEach(b => {
+      if (!b.m) return;
+      b.m.position.y += b.s * dt * 1.6;
+      if (b.m.position.y > 16){ b.m.position.y = 0.3; b.m.position.x = (Math.random()-0.5)*40; b.m.position.z = (Math.random()-0.5)*40; }
+    });
+    const p = mmPrompt();
+    if (!mm._same || (p && p.lab) !== mm._same){ mm._same = p && p.lab; mmHud(); }
+  }
+  function mmKey(e){
+    if (!mm || !e) return false;
+    const c = e.code || e.key;
+    if (c === 'KeyE'){ mmAct(); return true; }
+    if (c === 'Space' || c === 'KeyR' || c === 'KeyF' || c === 'ShiftLeft') return true;
+    return false;
+  }
+  function mmPad(jp, s){
+    if (!mm || !jp) return false;
+    if (jp[2] || (jp[0] && mmPrompt() && mmPrompt().act)){ mmAct(); if (typeof pad !== 'undefined') pad.jump = false; return true; }
+    return false;
+  }
+  function mermaidStop(){
+    if (!mm) return;
+    (mm.solids||[]).forEach(b => { try{ b.active=false; if (typeof solids!=='undefined'){ const i=solids.indexOf(b); if(i>=0) solids.splice(i,1);} }catch(e){} });
+    (mm.trash||[]).forEach(m => { try{ scene.remove(m);}catch(e){} });
+    mm=null;
+    const box=document.getElementById('mmBox'); if(box) box.style.display='none';
+    const b=document.getElementById('mmAct'); if(b) b.classList.remove('show');
+  }
+  if (typeof window !== 'undefined') window.mmDebug = {
+    plaza(){ if (!mm) return; P.x=0; P.y=2; P.z=6; if (cam){ cam.yaw=0; cam.pitch=0.28; cam.dist=12; } },
+    garden(){ if (!mm) return; P.x=0; P.y=3; P.z=-28; if (cam){ cam.yaw=0; cam.pitch=0.3; cam.dist=12; } },
+    home(){ if (!mm) return; P.x=-28; P.y=1.2; P.z=0; if (cam){ cam.yaw=Math.PI/2; cam.pitch=0.3; cam.dist=10; } }
+  };
+
   function stop(){
+
     if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}
     if (typeof dhCloseReset === 'function') dhCloseReset();
     try { if (typeof wxStop === 'function') wxStop(); } catch (e){}

@@ -41,6 +41,7 @@
     {id:'shelter', name:'Wagwell Shelter', emoji:'🐾', keys:['rubloxShelter']},
     {id:'winter', name:'Pinebell Village', emoji:'🎄', keys:['rubloxWinter']},
     {id:'vet', name:'Pawsley Vet Clinic', emoji:'🩺', keys:['rubloxVet']},
+    {id:'mermaid', name:'Glimmergill Cove', emoji:'🧜', keys:['rubloxMermaid']},
     {id:'garden', name:'Sunny Patch Garden', emoji:'🌱', keys:['rubloxGarden']},
     {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', keys:['rubloxMeadow']},
     {id:'rides', name:'Rideland Workshop', emoji:'🎢', keys:['rubloxRides']},

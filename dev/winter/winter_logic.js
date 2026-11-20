@@ -31,17 +31,24 @@
       cocoaServed: 0,
       cocoaBought: 0,
       races: 0,
-      snowballs: 0
+      snowballs: 0,
+      lights: 0,
+      nightShows: 0,
+      wraps: 0,
+      wrapBest: 0,
+      ribbons: []
     };
   }
 
   function wnLoad(raw){
     const o = raw && typeof raw === 'object' ? raw : {};
     const d = wnFresh();
-    ['coinsEarned','sledRuns','snowmen','skateLaps','cocoaServed','cocoaBought','races','snowballs'].forEach(k => {
+    ['coinsEarned','sledRuns','snowmen','skateLaps','cocoaServed','cocoaBought','races','snowballs','lights','nightShows','wraps'].forEach(k => {
       d[k] = Math.max(0, o[k] | 0);
     });
     d.sledBest = Math.max(0, +o.sledBest || 0);
+    d.wrapBest = Math.max(0, Math.min(100, o.wrapBest | 0));
+    d.ribbons = Array.isArray(o.ribbons) ? o.ribbons.filter(id => typeof id === 'string').slice(0, 12) : [];
     return d;
   }
 
@@ -54,6 +61,9 @@
         snowman: {parts:[]},
         skate: {on:false, laps:0, t:0, lastAng:0, ang:0},
         cocoa: {warm:0, served:0},
+        night: false,
+        lights: [],
+        wrap: {open:false, step:0, paper:'', ribbon:'', bow:'', tag:'', score:0, coop:false, entries:{}},
         snowball: {cool:0, hits:0},
         t: 0,
         started: now || 0
@@ -260,6 +270,149 @@
     return {ok:true, why:'ok', coins, state: st, served: run.cocoa.served, message:'A warm mug for a chilly visitor!'};
   }
 
+
+  const WN_LIGHT_SLOTS = [
+    {id:'cottage-a', kind:'house', name:'Cedar Cottage', x:-16, z:8},
+    {id:'cottage-b', kind:'house', name:'Holly Cottage', x:16, z:8},
+    {id:'cocoa', kind:'house', name:"Mugsy's Cocoa", x:0, z:-10},
+    {id:'tree-a', kind:'tree', name:'Village Fir', x:-8, z:18},
+    {id:'tree-b', kind:'tree', name:'Pond Pine', x:10, z:-22},
+    {id:'tree-c', kind:'tree', name:'Hill Spruce', x:0, z:28},
+    {id:'tree-d', kind:'tree', name:'Lane Larch', x:-22, z:-8},
+    {id:'tree-e', kind:'tree', name:'Square Spruce', x:8, z:2}
+  ];
+  const WN_PAPERS = [
+    {id:'snow', name:'Snowy White', color:'#f6fbff'},
+    {id:'cranberry', name:'Cranberry', color:'#c44536'},
+    {id:'pine', name:'Pine Green', color:'#2d6a4f'},
+    {id:'gold', name:'Candle Gold', color:'#f2c14e'},
+    {id:'sky', name:'Winter Sky', color:'#8ecae6'}
+  ];
+  const WN_RIBBON_COLORS = [
+    {id:'red', name:'Holly Red', color:'#d62828'},
+    {id:'gold', name:'Bell Gold', color:'#f4d35e'},
+    {id:'blue', name:'Ice Blue', color:'#4ea8de'},
+    {id:'pink', name:'Cocoa Pink', color:'#f7a1c4'}
+  ];
+  const WN_BOWS = [
+    {id:'classic', name:'Classic bow'},
+    {id:'puff', name:'Puffy bow'},
+    {id:'star', name:'Star bow'},
+    {id:'tiny', name:'Tiny knot'}
+  ];
+  const WN_TAGS = [
+    {id:'toyou', name:'To You'},
+    {id:'warm', name:'Stay Warm'},
+    {id:'joy', name:'Pinebell Joy'},
+    {id:'pal', name:'For a Pal'}
+  ];
+  const WN_WRAP_STEPS = ['paper','ribbon','bow','tag'];
+  const WN_WRAP_JUDGE = {id:'rue', name:'Ribbon Rue', emoji:'🎀', role:'judge'};
+
+  function wnLightSlot(id){ return WN_LIGHT_SLOTS.find(s => s.id === id) || null; }
+
+  function wnSetNight(run, on){
+    run = run || {};
+    run.night = !!on;
+    return {ok:true, run, night: run.night, message: run.night ? 'Night falls on Pinebell. The lights can sparkle!' : 'Morning comes back to the village.'};
+  }
+
+  function wnPlaceLight(state, run, slotId){
+    state = wnLoad(state);
+    run = run || {};
+    if (!run.lights) run.lights = [];
+    const slot = wnLightSlot(slotId);
+    if (!slot) return {ok:false, why:'slot', state, run, message:'That spot cannot hold lights.'};
+    if (run.lights.indexOf(slotId) >= 0) return {ok:false, why:'has', state, run, message:'Lights already twinkle there!'};
+    run.lights.push(slotId);
+    state.lights = Math.max(state.lights | 0, run.lights.length);
+    return {ok:true, state, run, slot, placed: run.lights.length, message:'Twinkly lights for ' + slot.name + '!'};
+  }
+
+  function wnShowLights(state, run){
+    state = wnLoad(state);
+    run = run || {};
+    if (!(run.lights && run.lights.length)) return {ok:false, why:'none', state, run, message:'Hang some lights first, then switch to night!'};
+    if (!run.night) run.night = true;
+    state.nightShows = (state.nightShows | 0) + 1;
+    return {ok:true, state, run, night:true, message:'The village glows! ' + run.lights.length + ' sparkling spots.'};
+  }
+
+  function wnWrapOpen(run, coop){
+    run = run || {};
+    run.wrap = {open:true, step:0, paper:'', ribbon:'', bow:'', tag:'', score:0, coop:!!coop, entries:{}};
+    return {ok:true, run, message: coop ? 'Wrap together — everyone helps with a step!' : 'Pick paper, ribbon, a bow, and a tag!'};
+  }
+
+  function wnWrapPick(run, part, id, playerId){
+    run = run || {};
+    const w = run.wrap || wnWrapOpen(run).run.wrap;
+    if (!w.open) return {ok:false, why:'closed', run};
+    const lists = {paper:WN_PAPERS, ribbon:WN_RIBBON_COLORS, bow:WN_BOWS, tag:WN_TAGS};
+    const list = lists[part];
+    if (!list || !list.some(it => it.id === id)) return {ok:false, why:'item', run};
+    const stepName = WN_WRAP_STEPS[w.step | 0];
+    if (part !== stepName) return {ok:false, why:'step', run, need: stepName, message:'Next, pick a ' + stepName + '.'};
+    w[part] = id;
+    if (playerId) (w.entries[playerId] = w.entries[playerId] || []).push(part);
+    w.step = (w.step | 0) + 1;
+    run.wrap = w;
+    const done = w.step >= WN_WRAP_STEPS.length;
+    return {ok:true, run, wrap:w, done, message: done ? 'All wrapped! Time for Ribbon Rue to score it.' : ('Nice ' + part + '! Next: ' + WN_WRAP_STEPS[w.step] + '.')};
+  }
+
+  function wnWrapScoreLook(wrap){
+    const w = wrap || {};
+    let score = 40;
+    if (w.paper) score += 12;
+    if (w.ribbon) score += 12;
+    if (w.bow) score += 12;
+    if (w.tag) score += 12;
+    // matching color families feel festive
+    if ((w.paper === 'cranberry' && w.ribbon === 'gold') || (w.paper === 'pine' && w.ribbon === 'red') || (w.paper === 'gold' && w.ribbon === 'gold') || (w.paper === 'snow' && w.ribbon === 'blue')) score += 10;
+    if (w.bow === 'star' && (w.tag === 'joy' || w.paper === 'gold')) score += 6;
+    if (w.tag && w.bow && w.paper && w.ribbon) score += 4;
+    return Math.max(0, Math.min(100, score));
+  }
+
+  function wnWrapJudge(state, run, entries){
+    state = wnLoad(state);
+    run = run || {};
+    const w = run.wrap || {};
+    if (!w.open || w.step < WN_WRAP_STEPS.length) return {ok:false, why:'unfinished', state, run, message:'Finish paper, ribbon, bow, and tag first.'};
+    const score = wnWrapScoreLook(w);
+    w.score = score;
+    w.open = false;
+    run.wrap = w;
+    state.wraps = (state.wraps | 0) + 1;
+    if (score > (state.wrapBest | 0)) state.wrapBest = score;
+    let ribbon = null;
+    if (score >= 95) ribbon = 'star-ribbon';
+    else if (score >= 85) ribbon = 'gold-ribbon';
+    else if (score >= 70) ribbon = 'holly-ribbon';
+    if (ribbon && state.ribbons.indexOf(ribbon) < 0) state.ribbons.push(ribbon);
+    const coins = score >= 95 ? 8 : score >= 85 ? 6 : score >= 70 ? 4 : 2;
+    const judge = WN_WRAP_JUDGE;
+    const vs = wnWrapCompete(entries || w.contest || null, score);
+    return {
+      ok:true, state, run, score, ribbon, coins, judge,
+      message: judge.emoji + ' ' + judge.name + ' scores ' + score + '!' + (ribbon ? ' You earned a ' + ribbon.replace('-', ' ') + '!' : ' A cozy wrap!'),
+      contest: vs
+    };
+  }
+
+  function wnWrapCompete(entries, myScore){
+    // Real players only. entries: [{id, name, score}] 
+    const list = (entries || []).filter(e => e && e.id && !e.npc);
+    if (!list.length) return {mode:'solo', winner:null, scores:[{id:'you', name:'You', score:myScore|0}]};
+    const scores = list.map(e => ({id:e.id, name:e.name || 'Player', score:e.score|0})).sort((a,b) => b.score - a.score);
+    return {mode: list.length > 1 ? 'compete' : 'coop', winner: scores[0], scores};
+  }
+
+  function wnRealPlayersOnly(roster){
+    return (roster || []).filter(p => p && p.id && !p.npc);
+  }
+
   function wnWire(state, run){
     state = wnLoad(state);
     run = run || {};
@@ -269,7 +422,12 @@
       area: run.area || 'village',
       sled: run.sled ? {on:!!run.sled.on, x:+run.sled.x||0, z:+run.sled.z||0, yaw:+run.sled.yaw||0, done:!!run.sled.done, time:+run.sled.time||0} : null,
       snowman: run.snowman ? {parts:(run.snowman.parts||[]).slice(), claimed:!!run.snowman.claimed} : null,
-      skate: run.skate ? {on:!!run.skate.on, laps:run.skate.laps|0} : null
+      skate: run.skate ? {on:!!run.skate.on, laps:run.skate.laps|0} : null,
+      night: !!run.night,
+      lights: (run.lights || []).slice(),
+      wrap: run.wrap ? {open:!!run.wrap.open, step:run.wrap.step|0, score:run.wrap.score|0, coop:!!run.wrap.coop} : null,
+      lightsHung: state.lights|0,
+      wrapBest: state.wrapBest|0
     };
   }
 
@@ -280,6 +438,8 @@
     wnRealPlayers, wnCanPelt, wnThrowSnowball, wnSnowballTick,
     wnAddSnowmanPart, wnFinishSnowman,
     wnSkateStart, wnSkateTick, wnSkateBank,
-    wnBuyCocoa, wnServeCocoa, wnWire
+    wnBuyCocoa, wnServeCocoa, wnWire,
+    WN_LIGHT_SLOTS, WN_PAPERS, WN_RIBBON_COLORS, WN_BOWS, WN_TAGS, WN_WRAP_STEPS, WN_WRAP_JUDGE,
+    wnLightSlot, wnSetNight, wnPlaceLight, wnShowLights, wnWrapOpen, wnWrapPick, wnWrapScoreLook, wnWrapJudge, wnWrapCompete
   };
 });

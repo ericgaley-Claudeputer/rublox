@@ -34,7 +34,8 @@
   function vtSave(s){ if (typeof save === 'function') save(VetRules.VT_KEY, s); if (vt) vt.sv = s; }
   function vtHideFpToggle(){
     const b = document.getElementById('oFP');
-    if (b) b.style.display = mode === 'vet' ? 'none' : '';
+    const driving = !!(vt && vt.run && vt.run.drive && vt.run.drive.on);
+    if (b) b.style.display = (mode === 'vet' && !driving) ? 'none' : '';
   }
   function drawVet(ctx){
     if (typeof sky === 'function') sky(ctx, '#b8e4f2', '#f7f1de');
@@ -95,9 +96,112 @@
     const sun = new THREE.DirectionalLight(0xfff2cc, 0.75);
     sun.position.set(8, 18, 6); scene.add(sun); vtKeep(sun);
   }
+
+  function vtBuildTown(){
+    if (!vt || typeof VetRules === 'undefined') return;
+    const T = VetRules.VT_TOWN;
+    const midZ = (T.minZ + T.maxZ) / 2, midX = (T.minX + T.maxX) / 2;
+    const fl = plat(midX, 0, midZ, T.maxX - T.minX, T.maxZ - T.minZ, '#8fbc6a', 0.3);
+    if (fl && fl.mesh) vtKeep(fl.mesh);
+    // roads
+    const road = plat(0, 0.02, midZ, 6, T.maxZ - T.minZ, '#c9c2b0', 0.08);
+    if (road && road.mesh) vtKeep(road.mesh);
+    const cross = plat(0, 0.03, 44, T.maxX - T.minX - 4, 5, '#c9c2b0', 0.08);
+    if (cross && cross.mesh) vtKeep(cross.mesh);
+    // park
+    const park = plat(14, 0.04, 58, 16, 14, '#7cb342', 0.06);
+    if (park && park.mesh) vtKeep(park.mesh);
+    vtLab('Puddle Park', 14, 2.2, 52);
+    // cute trees (non-blocking trunks kept short)
+    function tree(x,z,h){
+      const trunk = vtMesh(new THREE.CylinderGeometry(0.28, 0.36, h*0.45, 8), '#8b5a2b', x, h*0.22, z);
+      const leaf = vtMesh(new THREE.ConeGeometry(1.4, h*0.7, 8), '#2e7d32', x, h*0.55, z);
+      return {x,z};
+    }
+    tree(-18, 48, 5.5); tree(-22, 52, 4.8); tree(-14, 52, 5.2);
+    tree(10, 70, 5); tree(-8, 74, 4.6); tree(22, 40, 5.4); tree(-28, 60, 5);
+    // houses (solid but no tight doors — porches only)
+    function house(x,z,c){
+      vtWall(x, 0, z, 6, 4.6, 5, c || '#f6e1c3');
+      const roof = vtMesh(new THREE.ConeGeometry(4.2, 2.2, 4), '#c44536', x, 5.6, z);
+      if (roof) roof.rotation.y = Math.PI/4;
+    }
+    house(-22, 38, '#fde2c8'); house(24, 38, '#f8d4e0');
+    vtLab('Maple Court', -18, 2.4, 44);
+    vtLab('Picnic Green', 22, 1.8, 48);
+    // parked ambulance + rescue pals
+    vt.ambulance = vtAmbulanceMesh(VetRules.VT_AMBULANCE_PARK.x, 0, VetRules.VT_AMBULANCE_PARK.z);
+    vt.props.push({id:'ambulance', kind:'ambulance', x:VetRules.VT_AMBULANCE_PARK.x, z:VetRules.VT_AMBULANCE_PARK.z, label: vtLab('🚑 Pet ambulance', 0, 2.6, 22.5)});
+    vt.townPets = [];
+    (VetRules.VT_RESCUES || []).forEach(r => {
+      const m = vtPetMesh(r.species, r.x, 0, r.z);
+      const lab = vtLab(r.emoji + ' ' + r.title, r.x, 2.1, r.z);
+      vt.townPets.push({id:r.id, mesh:m, label:lab, x:r.x, z:r.z});
+    });
+  }
+  function vtAmbulanceMesh(x,y,z){
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.2, 3.6), vtMat('#f7f7f7'));
+    body.position.y = 0.9; g.add(body);
+    const cab = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.0, 1.2), vtMat('#e8f6ff'));
+    cab.position.set(0, 1.4, -1.4); g.add(cab);
+    const stripe = new THREE.Mesh(new THREE.BoxGeometry(2.24, 0.28, 3.62), vtMat('#e53935'));
+    stripe.position.y = 1.05; g.add(stripe);
+    const light = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 0.7), vtMat('#5b8def'));
+    light.position.set(0, 1.95, 0.2); g.add(light);
+    const paw = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8), vtMat('#ffd54a'));
+    paw.position.set(0, 1.15, -2.0); g.add(paw);
+    [[-0.8,0.28,-1.2],[0.8,0.28,-1.2],[-0.8,0.28,1.2],[0.8,0.28,1.2]].forEach(p => {
+      const w = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.28, 10), vtMat('#333'));
+      w.rotation.z = Math.PI/2; w.position.set(p[0], p[1], p[2]); g.add(w);
+    });
+    g.position.set(x,y,z); scene.add(g); vtKeep(g);
+    return g;
+  }
+  function vtDriving(){ return !!(vt && vt.run && vt.run.drive && vt.run.drive.on); }
+  function vtDriveInput(){
+    if (!vtDriving()) return;
+    let thr = 0, turn = 0;
+    try {
+      if (typeof keys !== 'undefined'){
+        if (keys.KeyW || keys.ArrowUp) thr += 1;
+        if (keys.KeyS || keys.ArrowDown) thr -= 1;
+        if (keys.KeyA || keys.ArrowLeft) turn -= 1;
+        if (keys.KeyD || keys.ArrowRight) turn += 1;
+      }
+      if (typeof joy !== 'undefined' && joy){ if (Math.abs(joy.y) > 0.12) thr -= joy.y; if (Math.abs(joy.x) > 0.12) turn += joy.x; }
+      if (typeof pad !== 'undefined' && pad){ if (Math.abs(pad.y) > 0.12) thr -= pad.y; if (Math.abs(pad.x) > 0.12) turn += pad.x; }
+    } catch (e){}
+    VetRules.vtDriveSteer(vt.run, turn, thr);
+  }
+  function vtPlaceAmbulance(){
+    if (!vt || !vt.ambulance || !vt.run) return;
+    const d = vt.run.drive || VetRules.vtEmptyDrive();
+    vt.ambulance.position.set(d.x, 0, d.z);
+    vt.ambulance.rotation.y = d.yaw || 0;
+    (vt.townPets || []).forEach(p => {
+      const taken = d.cargo && d.cargo.id === p.id;
+      const done = vt.run.rescuedIds && vt.run.rescuedIds.indexOf(p.id) >= 0;
+      if (p.mesh) p.mesh.visible = !taken && !done;
+      if (p.label) p.label.visible = !taken && !done;
+    });
+  }
+  function vtDriveCam(){
+    if (!vtDriving() || typeof cam === 'undefined' || typeof camera === 'undefined') return;
+    const d = vt.run.drive;
+    const back = 8, height = 4.2;
+    const x = d.x - Math.sin(d.yaw) * back;
+    const z = d.z + Math.cos(d.yaw) * back;
+    camera.position.set(x, height, z);
+    camera.lookAt(d.x, 1.2, d.z);
+    cam.yaw = d.yaw;
+    cam.pitch = 0.22;
+    cam.dist = back;
+  }
+
   function buildVet(){
     const started = VetRules.vtNewShift(vtState(), Date.now());
-    vt = {trash:[], solids:[], props:[], targets:[], sv: started.state, run: started.run, pet:null, owner:null, prompt:null, netT:0, pitchSet:false};
+    vt = {trash:[], solids:[], props:[], targets:[], sv: started.state, run: started.run, pet:null, owner:null, prompt:null, netT:0, pitchSet:false, ambulance:null, townPets:[], driveCam:false};
     try { checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:11.2}, flag:new THREE.Object3D()}; } catch (e){}
     vtSky();
     const wall = '#e8d5b5';
@@ -112,7 +216,7 @@
       lamp.position.set(r.x, 5.2, r.z); scene.add(lamp); vtKeep(lamp);
     });
     // outer walls
-    vtSplitWall('x', -24, 24, 16, [], wall);
+    vtSplitWall('x', -24, 24, 16, [{c:0, w:(VetRules.VT_DOOR_W||3.6)}], wall);
     vtSplitWall('x', -8, 8, -40, [], wall);
     vtSplitWall('x', -24, -8, -20, [], wall);
     vtSplitWall('x', 8, 24, -20, [], wall);
@@ -120,6 +224,11 @@
     vtSplitWall('z', -20, 16, 24, [], wall);
     vtSplitWall('z', -40, -20, -8, [], wall);
     vtSplitWall('z', -40, -20, 8, [], wall);
+    // ambulance bay walls + wide town opening
+    vtSplitWall('z', 16, 28, -8, [], wall);
+    vtSplitWall('z', 16, 28, 8, [], wall);
+    vtSplitWall('x', -8, 8, 28, [{c:0, w:((VetRules.VT_TOWN_DOOR && VetRules.VT_TOWN_DOOR.w) || 5.2)}], wall);
+    vtBuildTown();
     // interior walls with doorways
     vtSplitWall('x', -8, 8, 0, [{c:0, w:(VetRules.VT_DOOR_W||3.6)}], trim);
     vtSplitWall('x', -8, 8, -20, [{c:0, w:(VetRules.VT_DOOR_W||3.6)}], trim);
@@ -317,6 +426,24 @@
     if (phase === 'done' && room === 'reception' && vtNear(find('chart'), 2.6)){
       return {id:'next', label:'E / tap / Ⓐ  Next pal', btn:'🐾 Next pal', go:() => vtDoNext()};
     }
+    const driving = vtDriving();
+    if (!driving && vtNear(find('ambulance'), 3.2)){
+      if (vt.run.drive && vt.run.drive.cargo && !vt.run.drive.on){
+        return {id:'admit', label:'E / tap / Ⓐ  Bring this pal inside', btn:'🐾 Check in rescue', go:() => vtDoAdmit()};
+      }
+      return {id:'mount', label:'E / tap / Ⓐ  Drive the pet ambulance', btn:'🚑 Hop in', go:() => vtDoMount()};
+    }
+    if (driving){
+      const cargo = vt.run.drive && vt.run.drive.cargo;
+      const near = VetRules.vtRescueAt(vt.run.drive.x, vt.run.drive.z, 3.6);
+      if (!cargo && near && !(vt.run.rescuedIds || []).includes(near.id)){
+        return {id:'rescue', label:'E / tap / Ⓐ  Rescue ' + near.title, btn:'🐾 Rescue', go:() => vtDoRescue()};
+      }
+      if (VetRules.vtInBay(vt.run.drive.x, vt.run.drive.z)){
+        return {id:'park', label:'E / Ⓑ  Park and hop out', btn:'🅿️ Park', go:() => vtDoDismount()};
+      }
+      return {id:'drive', label: cargo ? ('Drive ' + cargo.name + ' back to the bay') : 'Steer with WASD or the stick · look for pals!', btn:'🚑 Driving'};
+    }
     return null;
   }
   function vtToast(msg){
@@ -357,6 +484,38 @@
     vtToast(res.message);
     vtNet();
   }
+  function vtDoMount(){
+    if (!vt) return;
+    const res = VetRules.vtMountAmbulance(vt.run, typeof P !== 'undefined' ? P.x : 0, typeof P !== 'undefined' ? P.z : 0);
+    if (!res.ok){ vtToast(res.message); return; }
+    if (typeof P !== 'undefined'){ P.x = vt.run.drive.x; P.z = vt.run.drive.z; P.vx = P.vz = 0; }
+    vtHideFpToggle();
+    vtPlaceAmbulance();
+    vtToast(res.message);
+  }
+  function vtDoDismount(){
+    if (!vt) return;
+    const res = VetRules.vtDismountAmbulance(vt.run);
+    if (!res.ok){ vtToast(res.message); return; }
+    if (typeof P !== 'undefined'){ P.x = 0; P.y = 0; P.z = 22; P.vx = P.vz = 0; }
+    vtHideFpToggle();
+    vtPlaceAmbulance();
+    vtToast(res.message);
+  }
+  function vtDoRescue(){
+    if (!vt) return;
+    const res = VetRules.vtRescuePet(vt.run);
+    vtPlaceAmbulance();
+    vtToast(res.message);
+  }
+  function vtDoAdmit(){
+    if (!vt) return;
+    const res = VetRules.vtAdmitRescue(vt.run, vt.sv);
+    if (res.state) vt.sv = res.state;
+    vtPlaceActors();
+    vtPlaceAmbulance();
+    vtAfter(res);
+  }
   function vtAct(){
     if (!vt || !vt.run) return false;
     if (typeof paused !== 'undefined' && paused) return false;
@@ -367,11 +526,19 @@
   }
   function vtUpdate(dt){
     if (!vt || !vt.run || typeof mode === 'undefined' || mode !== 'vet') return;
-    if (!vt.pitchSet && typeof cam !== 'undefined'){ cam.pitch = 0.08; cam.yaw = 0; vt.pitchSet = true; }
+    if (!vt.pitchSet && typeof cam !== 'undefined' && !vtDriving()){ cam.pitch = 0.08; cam.yaw = 0; vt.pitchSet = true; }
     vt.run.t = (vt.run.t || 0) + (dt || 0);
     if (vt.pet) vt.pet.rotation.y += (dt || 0) * 0.4;
+    if (vtDriving()){
+      vtDriveInput();
+      VetRules.vtDriveTick(vt.run, dt);
+      if (typeof P !== 'undefined'){ P.x = vt.run.drive.x; P.y = 0.45; P.z = vt.run.drive.z; P.vx = P.vz = 0; P.vy = 0; }
+      vtPlaceAmbulance();
+    } else {
+      vtPlaceAmbulance();
+    }
     if (typeof P !== 'undefined'){
-      const room = VetRules.vtRoomAt(P.x, P.z);
+      const room = VetRules.vtAreaAt ? VetRules.vtAreaAt(P.x, P.z) : VetRules.vtRoomAt(P.x, P.z);
       if (room) vt.run.room = room;
     }
     const next = vtFindPrompt();
@@ -395,7 +562,8 @@
   }
   function vtPad(jp, s){
     if (!vt || !jp) return false;
-    if (jp[0] && vt.prompt){
+    if (jp[1] && vtDriving()){ vtDoDismount(); return true; }
+    if (jp[0] && vt.prompt && vt.prompt.go){
       vtAct();
       if (typeof pad !== 'undefined') pad.jump = false;
       return true;
@@ -502,7 +670,24 @@
         room: vt && vt.run ? vt.run.room : null,
         phase: vt && vt.run ? vt.run.phase : null,
         p: typeof P === 'undefined' ? null : {x:P.x,y:P.y,z:P.z},
-        cam: typeof cam === 'undefined' ? null : {yaw:cam.yaw, pitch:cam.pitch}
+        cam: typeof cam === 'undefined' ? null : {yaw:cam.yaw, pitch:cam.pitch},
+        drive: vt && vt.run && vt.run.drive ? {on:!!vt.run.drive.on, x:vt.run.drive.x, z:vt.run.drive.z, cargo:!!vt.run.drive.cargo} : null
       };
+    },
+    town(){
+      if (typeof P !== 'undefined'){ P.x = 0; P.y = 0.5; P.z = 50; }
+      if (typeof cam !== 'undefined'){ cam.yaw = 0; cam.pitch = 0.35; cam.dist = 16; }
+      if (vt && vt.run && vt.run.drive){ vt.run.drive.on = false; }
+      vtHideFpToggle();
+      return typeof P === 'undefined' ? null : {x:P.x,z:P.z};
+    },
+    driveTo(id){
+      const r = VetRules.vtRescue(id) || VetRules.VT_RESCUES[0];
+      if (!vt || !r) return null;
+      if (!vt.run.drive) vt.run.drive = VetRules.vtEmptyDrive();
+      vt.run.drive.on = true; vt.run.drive.x = r.x - 2; vt.run.drive.z = r.z + 4; vt.run.drive.yaw = 0.4;
+      if (typeof P !== 'undefined'){ P.x = vt.run.drive.x; P.y = 0.45; P.z = vt.run.drive.z; }
+      vtHideFpToggle(); vtPlaceAmbulance();
+      return {id:r.id, x:r.x, z:r.z};
     }
   };

@@ -25,7 +25,9 @@
     {id:'recovery', name:'Recovery Kennels', x:16, z:8, w:16, d:16, color:'#fde8f0',
       blurb:'Cuddle and feed pals until they feel cozy again.'},
     {id:'bath', name:'Bubbly Bath Corner', x:-16, z:8, w:16, d:16, color:'#d8f4f2',
-      blurb:'A warm wash and a fluff-dry when a coat is muddy.'}
+      blurb:'A warm wash and a fluff-dry when a coat is muddy.'},
+    {id:'bay', name:'Ambulance Bay', x:0, z:22, w:16, d:12, color:'#e8f0d8',
+      blurb:'Hop in the cute pet ambulance and drive out to help pals around town.'}
   ];
 
   const VT_DOORS = [
@@ -34,7 +36,8 @@
     {a:'exam', b:'treatment', x:-8, z:-10, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42},
     {a:'exam', b:'surgery', x:0, z:-20, w:VT_DOOR_W, h:VT_DOOR_H, axis:'z', thick:0.42},
     {a:'reception', b:'recovery', x:8, z:8, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42},
-    {a:'reception', b:'bath', x:-8, z:8, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42}
+    {a:'reception', b:'bath', x:-8, z:8, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42},
+    {a:'reception', b:'bay', x:0, z:16, w:VT_DOOR_W, h:VT_DOOR_H, axis:'z', thick:0.42}
   ];
 
   const VT_SPECIES = [
@@ -76,13 +79,13 @@
   const VT_KID_SAFE_BANNED = /\b(blood|gore|bleed|gory|wound|hurt badly|die|dies|dead|kill|painful|surgery knife)\b/i;
 
   function vtFresh(){
-    return {v:VT_VER, cases:0, stars:0, coinsEarned:0, bestStreak:0, streak:0};
+    return {v:VT_VER, cases:0, stars:0, coinsEarned:0, bestStreak:0, streak:0, rescues:0, ambulanceTrips:0};
   }
 
   function vtLoad(raw){
     const o = raw && typeof raw === 'object' ? raw : {};
     const d = vtFresh();
-    ['cases','stars','coinsEarned','bestStreak','streak'].forEach(k => {
+    ['cases','stars','coinsEarned','bestStreak','streak','rescues','ambulanceTrips'].forEach(k => {
       d[k] = Math.max(0, o[k] | 0);
     });
     return d;
@@ -118,7 +121,7 @@
   }
 
   function vtWalkable(x, z){
-    return !!(vtRoomAt(x, z) || vtInDoorway(x, z, 1.2));
+    return !!(vtRoomAt(x, z) || vtInDoorway(x, z, 1.2) || vtInTownDoor(x, z) || vtInTown(x, z));
   }
 
   function vtConnected(a, b){
@@ -166,10 +169,10 @@
     return out;
   }
 
-  function vtForceFirstPerson(mode){ return mode === 'vet'; }
-  function vtMayToggleCamera(mode){ return mode !== 'vet'; }
-  function vtFpOn(mode, fpFlag){ return mode === 'vet' ? true : !!fpFlag; }
-  function vtSetFp(mode, on){ return mode === 'vet' ? true : !!on; }
+  function vtForceFirstPerson(mode, drive){ return mode === 'vet' && !drive; }
+  function vtMayToggleCamera(mode, drive){ return mode !== 'vet' || !!drive; }
+  function vtFpOn(mode, fpFlag, drive){ return (mode === 'vet' && !drive) ? true : !!fpFlag; }
+  function vtSetFp(mode, on, drive){ return (mode === 'vet' && !drive) ? true : !!on; }
 
   function vtRarityOk(rarity, difficulty){
     const i = VT_RARITY_ORDER.indexOf(rarity);
@@ -266,7 +269,9 @@
       prompt: 'Take the chart',
       coinsThis: 0,
       starsThis: 0,
-      t: 0
+      t: 0,
+      drive: vtEmptyDrive(),
+      rescuedIds: []
     };
   }
 
@@ -487,6 +492,199 @@
     return {ok:true, run, state: st, message: run.lastMessage};
   }
 
+
+  const VT_TOWN = {minX:-36, maxX:36, minZ:28, maxZ:80};
+  const VT_TOWN_DOOR = {id:'bay-town', a:'bay', b:'town', x:0, z:28, w:5.2, h:VT_DOOR_H, axis:'z', thick:0.42};
+  const VT_TOWN_DOORS = [VT_TOWN_DOOR];
+  const VT_AMBULANCE_PARK = {x:0, z:22.5, yaw:0};
+
+  const VT_RESCUES = [
+    {id:'tree', title:'Stuck in a tree', place:'Maple Court', emoji:'🐱', species:'cat', speciesName:'cat',
+      symptom:'got stuck in a high tree and feels a little shaky',
+      tools:['eyes','stethoscope'], treat:'sip', treatRoom:'treatment',
+      note:'A calming sip after a brave tree rescue.', x:-18, z:48, kind:'tree'},
+    {id:'sorepaw', title:'A sore paw in the park', place:'Puddle Park', emoji:'🐶', species:'dog', speciesName:'dog',
+      symptom:'a tender limp after play',
+      tools:['temp','xray'], treat:'bandage', treatRoom:'surgery', xray:'sprain',
+      note:'A soft, colorful bandage for a sprained paw.', x:14, z:58, kind:'park'},
+    {id:'mudpuddle', title:'A muddy coat after puddles', place:'Splash Lane', emoji:'🐰', species:'bunny', speciesName:'bunny',
+      symptom:'a muddy coat after puddles',
+      tools:['eyes'], treat:'bath', treatRoom:'bath',
+      note:'A warm wash and a fluff-dry in the bubbly bath corner.', x:-10, z:68, kind:'puddle'},
+    {id:'picnic', title:'A rumbly picnic tummy', place:'Picnic Green', emoji:'🐹', species:'hamster', speciesName:'hamster',
+      symptom:'a rumbly tummy after playtime',
+      tools:['stethoscope','xray'], treat:'sip', treatRoom:'treatment', xray:'toy',
+      note:'A gentle tummy sip after a swallowed picnic toy is spotted.', x:22, z:44, kind:'picnic'},
+    {id:'splinterwalk', title:'A tiny paw splinter', place:'Boardwalk Path', emoji:'🦊', species:'fox', speciesName:'fox',
+      symptom:'a tiny paw splinter',
+      tools:['eyes'], treat:'splinter', treatRoom:'surgery',
+      note:'A careful splinter lift — no ouchies stay.', x:8, z:72, kind:'path'},
+    {id:'scratch', title:'A scraped knee after a tumble', place:'Hilltop Path', emoji:'🦦', species:'otter', speciesName:'otter',
+      symptom:'a scraped knee',
+      tools:['eyes'], treat:'bubbles', treatRoom:'surgery',
+      note:'A bubbly clean-up that leaves a shiny, happy scrape.', x:-26, z:54, kind:'hill'}
+  ];
+
+  function vtInTown(x, z){
+    const T = VT_TOWN;
+    return x >= T.minX && x <= T.maxX && z >= T.minZ && z <= T.maxZ;
+  }
+
+  function vtInTownDoor(x, z, slim){
+    const s = slim == null ? 1.2 : slim;
+    const d = VT_TOWN_DOOR;
+    if (d.axis === 'z'){
+      if (Math.abs(z - d.z) <= s && Math.abs(x - d.x) <= d.w / 2) return d;
+    } else if (Math.abs(x - d.x) <= s && Math.abs(z - d.z) <= d.w / 2) return d;
+    return null;
+  }
+
+  function vtAreaAt(x, z){
+    const room = vtRoomAt(x, z);
+    if (room) return room;
+    if (vtInTownDoor(x, z) || vtInTown(x, z)) return 'town';
+    return null;
+  }
+
+  function vtRescue(id){ return VT_RESCUES.find(r => r.id === id) || null; }
+
+  function vtRescueAt(x, z, reach){
+    const rch = reach == null ? 3.2 : reach;
+    let best = null, bestD = rch;
+    VT_RESCUES.forEach(r => {
+      const d = Math.hypot((x || 0) - r.x, (z || 0) - r.z);
+      if (d <= bestD){ best = r; bestD = d; }
+    });
+    return best;
+  }
+
+  function vtInBay(x, z){
+    const bay = vtRoom('bay');
+    return !!(bay && vtInBox(x, z, bay));
+  }
+
+  function vtEmptyDrive(){
+    return {on:false, x:VT_AMBULANCE_PARK.x, z:VT_AMBULANCE_PARK.z, y:0.4, yaw:VT_AMBULANCE_PARK.yaw, speed:0, cargo:null, cam:'third'};
+  }
+
+  function vtMountAmbulance(run, x, z){
+    run = run || {};
+    if (!vtInBay(x, z) && Math.hypot((x||0) - VT_AMBULANCE_PARK.x, (z||0) - VT_AMBULANCE_PARK.z) > 3.4){
+      return {ok:false, why:'far', run, message:'Walk up to the ambulance in the bay first.'};
+    }
+    run.drive = Object.assign(vtEmptyDrive(), run.drive || {}, {on:true, x: VT_AMBULANCE_PARK.x, z: VT_AMBULANCE_PARK.z, yaw: 0, speed:0});
+    run.lastMessage = run.drive.cargo
+      ? ('Drive ' + run.drive.cargo.name + ' back to the bay.')
+      : 'Buckle up! Drive around town and look for pals who need a lift.';
+    run.prompt = 'Steer with WASD or the stick. Ⓑ hop out in the bay.';
+    return {ok:true, run, driving:true, message: run.lastMessage};
+  }
+
+  function vtDismountAmbulance(run, force){
+    run = run || {};
+    const d = run.drive || vtEmptyDrive();
+    if (!d.on) return {ok:false, why:'off', run};
+    if (!force && !vtInBay(d.x, d.z)){
+      return {ok:false, why:'bay', run, message:'Park in the ambulance bay to hop out.'};
+    }
+    d.on = false;
+    d.x = VT_AMBULANCE_PARK.x; d.z = VT_AMBULANCE_PARK.z; d.speed = 0;
+    run.drive = d;
+    run.lastMessage = d.cargo ? (d.cargo.name + ' is ready to come inside.') : 'The ambulance is parked in the bay.';
+    return {ok:true, run, driving:false, parked:true, message: run.lastMessage};
+  }
+
+  function vtDriveSteer(run, turn, throttle){
+    run = run || {};
+    if (!run.drive || !run.drive.on) return run.drive;
+    run.drive._turn = Math.max(-1, Math.min(1, +turn || 0));
+    run.drive._throttle = Math.max(-1, Math.min(1, +throttle || 0));
+    return run.drive;
+  }
+
+  function vtDriveTick(run, dt){
+    run = run || {};
+    const d = run.drive;
+    if (!d || !d.on) return d;
+    dt = Math.max(0, Math.min(0.12, +dt || 0));
+    const turn = +d._turn || 0;
+    const thr = +d._throttle || 0;
+    const max = 11;
+    d.speed += (thr * max - d.speed) * Math.min(1, dt * 3.2);
+    if (Math.abs(thr) < 0.05) d.speed *= Math.max(0, 1 - dt * 2.4);
+    d.yaw += turn * dt * 2.1 * (d.speed >= 0 ? 1 : -1);
+    d.x += Math.sin(d.yaw) * d.speed * dt;
+    d.z += -Math.cos(d.yaw) * d.speed * dt;
+    const T = VT_TOWN;
+    const minX = Math.min(-8, T.minX), maxX = Math.max(8, T.maxX);
+    const minZ = 16, maxZ = T.maxZ;
+    d.x = Math.max(minX + 1.2, Math.min(maxX - 1.2, d.x));
+    d.z = Math.max(minZ + 0.6, Math.min(maxZ - 1.2, d.z));
+    return d;
+  }
+
+  function vtRescuePet(run, x, z){
+    run = run || {};
+    const d = run.drive;
+    if (!d || !d.on) return {ok:false, why:'drive', run, message:'Hop in the ambulance first.'};
+    if (d.cargo) return {ok:false, why:'full', run, message: d.cargo.name + ' is already riding. Drive back to the bay!'};
+    const spot = vtRescueAt(x != null ? x : d.x, z != null ? z : d.z, 3.6);
+    if (!spot) return {ok:false, why:'none', run, message:'No pal nearby. Look around the park and trees!'};
+    if (run.rescuedIds && run.rescuedIds.indexOf(spot.id) >= 0){
+      return {ok:false, why:'done', run, message:'That pal was already helped. Look for another friend!'};
+    }
+    d.cargo = {
+      id: spot.id, name: vtRescueName(spot), emoji: spot.emoji, species: spot.species,
+      speciesName: spot.speciesName, caseId: spot.id, symptom: spot.symptom,
+      tools: (spot.tools || []).slice(), treat: spot.treat, treatRoom: spot.treatRoom,
+      note: spot.note, xray: spot.xray || null, title: spot.title, place: spot.place
+    };
+    run.drive = d;
+    run.lastMessage = 'Got ' + d.cargo.name + '! Drive them back to the clinic bay.';
+    return {ok:true, run, cargo:d.cargo, message: run.lastMessage};
+  }
+
+  function vtRescueName(spot){
+    const names = {tree:'Maple', sorepaw:'Pebble', mudpuddle:'Clover', picnic:'Nibble', splinterwalk:'Rush', scratch:'River'};
+    return (spot && names[spot.id]) || (spot && spot.speciesName) || 'Pal';
+  }
+
+  function vtAdmitRescue(run, state){
+    run = run || {};
+    state = vtLoad(state);
+    const d = run.drive || {};
+    const cargo = d.cargo;
+    if (!cargo) return {ok:false, why:'empty', run, state, message:'The ambulance is empty.'};
+    if (d.on) return {ok:false, why:'driving', run, state, message:'Park and hop out first.'};
+    if (!vtInBay(d.x, d.z) && Math.hypot((d.x||0) - VT_AMBULANCE_PARK.x, (d.z||0) - VT_AMBULANCE_PARK.z) > 4){
+      return {ok:false, why:'bay', run, state, message:'Bring them into the ambulance bay.'};
+    }
+    if (run.phase !== 'wait' && run.phase !== 'done' && run.patient){
+      return {ok:false, why:'busy', run, state, message:'Finish helping the pal already in the clinic first.'};
+    }
+    const patient = {
+      name: cargo.name, species: cargo.species, speciesName: cargo.speciesName, emoji: cargo.emoji,
+      rarity: 'common', caseId: cargo.caseId || cargo.id, symptom: cargo.symptom,
+      tools: (cargo.tools || []).slice(), treat: cargo.treat, treatRoom: cargo.treatRoom,
+      note: cargo.note, xray: cargo.xray || null, xrayTarget: cargo.xray ? ((cargo.name.length * 3) % 16) : 0,
+      difficulty: 1, rescue: true, place: cargo.place || ''
+    };
+    const next = vtEmptyRun();
+    next.patient = patient;
+    next.lastMessage = patient.emoji + ' ' + patient.name + ' the ' + patient.speciesName + ' is here with ' + patient.symptom + '.';
+    next.prompt = 'Take the chart';
+    next.drive = vtEmptyDrive();
+    next.rescuedIds = (run.rescuedIds || []).concat([cargo.id]);
+    Object.keys(next).forEach(k => { run[k] = next[k]; });
+    state.rescues = (state.rescues | 0) + 1;
+    state.ambulanceTrips = (state.ambulanceTrips | 0) + 1;
+    return {ok:true, run, state, patient, message: run.lastMessage, everyoneOk: true};
+  }
+
+  function vtClinicFirstPerson(run){
+    return !(run && run.drive && run.drive.on);
+  }
+
   function vtKidCopyOk(text){
     return !VT_KID_SAFE_BANNED.test(String(text || ''));
   }
@@ -516,7 +714,10 @@
       cuddle: !!run.cuddle,
       feed: !!run.feed,
       lastMessage: run.lastMessage || '',
-      prompt: run.prompt || ''
+      prompt: run.prompt || '',
+      drive: run.drive ? {on:!!run.drive.on, x:+run.drive.x||0, z:+run.drive.z||0, yaw:+run.drive.yaw||0, cargo: run.drive.cargo ? {id:run.drive.cargo.id, name:run.drive.cargo.name, emoji:run.drive.cargo.emoji} : null} : null,
+      rescues: state.rescues|0,
+      ambulanceTrips: state.ambulanceTrips|0
     };
   }
 
@@ -534,6 +735,10 @@
     vtForceFirstPerson, vtMayToggleCamera, vtFpOn, vtSetFp,
     vtDifficulty, vtRollPatient, vtNewShift, vtChart, vtCheckIn, vtUseTool, vtXrayScan, vtExamReady,
     vtTreat, vtCuddle, vtFeed, vtPickup, vtPayout, vtNextPatient, vtKidCopyOk, vtRealPlayersOnly,
-    vtWire, vtApply
+    vtWire, vtApply,
+    VT_TOWN, VT_TOWN_DOOR, VT_TOWN_DOORS, VT_AMBULANCE_PARK, VT_RESCUES,
+    vtInTown, vtInTownDoor, vtAreaAt, vtRescue, vtRescueAt, vtInBay,
+    vtEmptyDrive, vtMountAmbulance, vtDismountAmbulance, vtDriveSteer, vtDriveTick,
+    vtRescuePet, vtRescueName, vtAdmitRescue, vtClinicFirstPerson
   };
 });

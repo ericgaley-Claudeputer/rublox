@@ -76,7 +76,7 @@
   }
   function buildWinter(){
     const started = WinterRules.wnNewVisit(wnState(), Date.now());
-    wn = {trash:[], solids:[], sv: started.state, run: started.run, sledMesh:null, snowmanMesh:null};
+    wn = {trash:[], solids:[], sv: started.state, run: started.run, sledMesh:null, snowmanMesh:null, lights:[], lamp:null};
     scene.background = new THREE.Color('#9fd4ff');
     if (scene.fog){ scene.fog.color.set('#dcefff'); scene.fog.near = 22; scene.fog.far = 110; }
     plat(0, 0, 10, 90, 170, '#f4fbff', 0.28);
@@ -125,10 +125,134 @@
     if (typeof cam !== 'undefined' && cam){ cam.yaw = 0; cam.pitch = 0.38; cam.dist = 14; }
     checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:8}, flag:new THREE.Object3D()};
     wnPaintSnowman();
+    wnBuildFestive();
     wnBind();
     wnHud();
     banner('🎄 Welcome to Pinebell Village! Sled, skate, build a snow pal, sip cocoa, and toss practice snowballs. Races and snowball fights are for real friends only.');
   }
+
+  function wnBuildFestive(){
+    if (!wn || typeof WinterRules === 'undefined') return;
+    wn.lights = [];
+    (WinterRules.WN_LIGHT_SLOTS || []).forEach(s => {
+      if (s.kind === 'tree'){
+        wnMesh(new THREE.CylinderGeometry(0.22, 0.28, 1.4, 8), '#6b3f1a', s.x, 0.7, s.z);
+        wnMesh(new THREE.ConeGeometry(1.1, 2.2, 8), '#1a6b44', s.x, 2.2, s.z);
+      }
+      wnLab(s.kind === 'tree' ? '🎄 ' + s.name : '🏠 ' + s.name, s.x, s.kind==='tree'?3.5:3.2, s.z);
+      const g = new THREE.Group();
+      const cols = ['#ff6b6b','#ffd23f','#7ec8f0','#b388ff','#80ed99'];
+      for (let i=0;i<8;i++){
+        const m = new THREE.Mesh(new THREE.SphereGeometry(0.09, 6, 6), new THREE.MeshBasicMaterial({color: cols[i%cols.length]}));
+        const a = (i / 8) * Math.PI * 2;
+        m.position.set(Math.cos(a)*0.7, 1.2 + (i%3)*0.35, Math.sin(a)*0.7);
+        g.add(m);
+      }
+      g.position.set(s.x, 0, s.z); g.visible = false; scene.add(g); wnKeep(g);
+      wn.lights.push({id:s.id, mesh:g});
+    });
+    wn.lamp = {x:0, z:6};
+    wnMesh(new THREE.CylinderGeometry(0.12, 0.16, 3.2, 8), '#1d2340', 0, 1.6, 6);
+    const bulb = wnMesh(new THREE.SphereGeometry(0.28, 8, 8), '#fff3bf', 0, 3.4, 6);
+    wn.lamp.bulb = bulb;
+    wnLab('🌙 Night lamp', 0, 4.0, 6);
+    wn.wrapAt = {x:4, z:8};
+    wnMesh(new THREE.BoxGeometry(1.4, 0.7, 1.4), '#c44536', 4, 0.4, 8);
+    wnLab('🎁 Wrap table', 4, 1.6, 8);
+    const xbtn = document.getElementById('wnWrapX');
+    if (xbtn && !xbtn._wn){ xbtn._wn = true; xbtn.addEventListener('click', () => wnCloseWrap()); }
+    wnPaintLights();
+  }
+  function wnPaintLights(){
+    if (!wn) return;
+    const hung = (wn.run && wn.run.lights) || [];
+    const night = !!(wn.run && wn.run.night);
+    (wn.lights||[]).forEach(L => { if (L.mesh) L.mesh.visible = hung.indexOf(L.id) >= 0; });
+    try {
+      document.body.classList.toggle('wnnight', night);
+      if (scene.background) scene.background.set(night ? '#14213d' : '#9fd4ff');
+      if (scene.fog) scene.fog.color.set(night ? '#1b2a4a' : '#dcefff');
+    } catch (e){}
+  }
+  function wnHang(id){
+    if (!wn) return;
+    const r = WinterRules.wnPlaceLight(wn.sv, wn.run, id);
+    if (r.state){ wn.sv = r.state; wnSave(wn.sv); }
+    wnPaintLights();
+    banner(r.message || 'Lights!');
+    wnHud();
+  }
+  function wnToggleNight(){
+    if (!wn) return;
+    if (!wn.run.night && (wn.run.lights||[]).length){
+      const r = WinterRules.wnShowLights(wn.sv, wn.run);
+      if (r.state){ wn.sv = r.state; wnSave(wn.sv); }
+      banner(r.message);
+    } else {
+      const r = WinterRules.wnSetNight(wn.run, !wn.run.night);
+      banner(r.message);
+    }
+    wnPaintLights();
+    wnHud();
+  }
+  function wnOpenWrap(){
+    if (!wn) return;
+    WinterRules.wnWrapOpen(wn.run, !!(typeof mp !== 'undefined' && mp && mp.on));
+    const box = document.getElementById('wnWrap');
+    if (box) box.hidden = false;
+    wnPaintWrap();
+  }
+  function wnCloseWrap(){
+    const box = document.getElementById('wnWrap');
+    if (box) box.hidden = true;
+  }
+  function wnPaintWrap(){
+    if (!wn || !wn.run || !wn.run.wrap) return;
+    const w = wn.run.wrap;
+    const stepEl = document.getElementById('wnWrapStep');
+    const ch = document.getElementById('wnWrapChoices');
+    const sc = document.getElementById('wnWrapScore');
+    if (!ch) return;
+    const steps = WinterRules.WN_WRAP_STEPS;
+    if (!w.open){
+      if (stepEl) stepEl.textContent = 'Ribbon Rue scored this wrap!';
+      ch.innerHTML = '';
+      if (sc) sc.textContent = (w.score ? ('Score: ' + w.score) : '');
+      return;
+    }
+    const part = steps[w.step|0];
+    if (stepEl) stepEl.textContent = 'Step ' + ((w.step|0)+1) + ' of 4 — pick a ' + part;
+    const lists = {paper:WinterRules.WN_PAPERS, ribbon:WinterRules.WN_RIBBON_COLORS, bow:WinterRules.WN_BOWS, tag:WinterRules.WN_TAGS};
+    const list = lists[part] || [];
+    ch.innerHTML = '';
+    list.forEach(it => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = (it.emoji || '') + ' ' + it.name;
+      if (it.color) b.style.background = it.color;
+      b.onclick = () => wnPickWrap(part, it.id);
+      ch.appendChild(b);
+    });
+    if (sc) sc.textContent = '';
+  }
+  function wnPickWrap(part, id){
+    if (!wn) return;
+    const r = WinterRules.wnWrapPick(wn.run, part, id, (typeof mp !== 'undefined' && mp && mp.me) || 'H');
+    if (!r.ok){ banner(r.message || 'Pick the next step!'); wnPaintWrap(); return; }
+    if (r.done){
+      const roster = (typeof mp !== 'undefined' && mp && mp.on && typeof mpRoster === 'function') ? (mpRoster()||[]).filter(p=>p&&!p.npc) : [];
+      const judged = WinterRules.wnWrapJudge(wn.sv, wn.run, roster.length ? roster.map(p => ({id:p.id, name:p.name, score:r.wrap.score})) : null);
+      if (judged.state){ wn.sv = judged.state; wnSave(wn.sv); }
+      if (judged.coins) wnPay(judged.coins);
+      banner(judged.message + (judged.coins ? (' +' + judged.coins + ' 🪙') : ''));
+      wnPaintWrap();
+      wnHud();
+      return;
+    }
+    banner(r.message);
+    wnPaintWrap();
+  }
+
   function wnPaintSnowman(){
     if (wn.snowmanMesh){ try{ scene.remove(wn.snowmanMesh);}catch(e){} }
     const parts = (wn.run && wn.run.snowman && wn.run.snowman.parts) || [];
@@ -157,6 +281,10 @@
     if (wn.yard && wnNear(wn.yard.x, wn.yard.z, 3.2)) return {lab:'Build the snow pal (E / Ⓧ)', act:() => wnBuild()};
     const post = (wn.posts||[]).find(p => wnNear(p.x, p.z, 2.2));
     if (post) return {lab:'Practice snowball (E / Ⓧ)', act:() => wnToss('practice')};
+    const slot = (WinterRules.WN_LIGHT_SLOTS||[]).find(s => wnNear(s.x, s.z, 2.6));
+    if (slot) return {lab:'Hang twinkly lights on ' + slot.name + ' (E / Ⓧ)', act:() => wnHang(slot.id)};
+    if (wn.lamp && wnNear(wn.lamp.x, wn.lamp.z, 2.4)) return {lab:(wn.run.night ? 'Switch back to morning' : 'Night mode — show off the lights') + ' (E / Ⓧ)', act:() => wnToggleNight()};
+    if (wn.wrapAt && wnNear(wn.wrapAt.x, wn.wrapAt.z, 2.6)) return {lab:'Open the gift-wrapping contest (E / Ⓧ)', act:() => wnOpenWrap()};
     return null;
   }
   function wnStartSled(){
@@ -232,7 +360,7 @@
     if (hint && wn){
       const s = wn.sv, run = wn.run;
       const sled = run.sled && run.sled.on ? ('  ·  🛷 ' + (run.sled.t||0).toFixed(1) + 's') : (s.sledBest ? ('  ·  best ' + Number(s.sledBest).toFixed(1) + 's') : '');
-      hint.textContent = '🎄 Pinebell  ·  🪙 ' + (s.coinsEarned||0) + ' earned  ·  ☃️ ' + (s.snowmen||0) + '  ·  ⛸️ ' + (s.skateLaps||0) + sled;
+      hint.textContent = '🎄 Pinebell  ·  🪙 ' + (s.coinsEarned||0) + ' earned  ·  💡 ' + (s.lights||0) + '  ·  🎁 best ' + (s.wrapBest||0) + sled;
     }
     const btn = document.getElementById('wnAct');
     const p = wnPrompt();
@@ -269,6 +397,7 @@
     if (!wn) return;
     dt = Math.max(0, Math.min(0.12, +dt || 0));
     WinterRules.wnSnowballTick(wn.run, dt);
+    if (wn.run && wn.run.night && wn.lights){ const tnow = (wn.run.t = (wn.run.t||0)+dt); wn.lights.forEach((L,i)=>{ if (!L.mesh||!L.mesh.visible) return; L.mesh.children.forEach((c,j)=>{ if (c.material) c.material.opacity = 0.65 + 0.35*Math.sin(tnow*4 + i + j); c.material.transparent = true; }); }); }
     (wn.flakes||[]).forEach(f => {
       if (!f.m) return;
       f.m.position.y -= (f.s||1) * dt;
@@ -309,6 +438,8 @@
   }
   if (typeof window !== 'undefined') window.wnDebug = {
     village(){ if (!wn) return; P.x=0; P.y=0.5; P.z=8; if (cam){ cam.yaw=0; cam.pitch=0.4; cam.dist=16; } },
+    lights(){ if (!wn) return; (WinterRules.WN_LIGHT_SLOTS||[]).forEach(s => WinterRules.wnPlaceLight(wn.sv, wn.run, s.id)); WinterRules.wnShowLights(wn.sv, wn.run); wnPaintLights(); P.x=0; P.y=0.5; P.z=10; if (cam){ cam.yaw=0; cam.pitch=0.35; cam.dist=14; } },
+    wrap(){ if (!wn) return; P.x=4; P.y=0.5; P.z=10; wnOpenWrap(); if (cam){ cam.yaw=0; cam.pitch=0.4; cam.dist=10; } },
     sled(){ if (!wn) return; wnStartSled(); for (let i=0;i<20;i++) WinterRules.wnSledTick(wn.run, 0.08); P.x=wn.run.sled.x; P.y=wn.run.sled.y; P.z=wn.run.sled.z; if (cam){ cam.yaw=Math.PI; cam.pitch=0.28; cam.dist=12; } },
     pond(){ if (!wn) return; P.x=16; P.y=0.5; P.z=-2; },
     probe(){ return wn ? {area:wn.run.area, sled:!!(wn.run.sled&&wn.run.sled.on), snowman:(wn.run.snowman.parts||[]).length} : null; }
