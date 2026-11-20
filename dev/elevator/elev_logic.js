@@ -135,6 +135,64 @@
   const ELEV_FLOOR_TOP = 0.2;
   const ELEV_BODY_R = 0.45;
   const ELEV_BOARD = 5;
+  const ELEV_BUILDING = {
+    minX: -18, maxX: 18,
+    minZ: -8, maxZ: 26,
+    minY: 0, maxY: 8.4,
+    shaftTop: 16,
+    doorOpenW: 7,
+    doorOpenH: 4.2
+  };
+
+  function elevCabInsideBuilding(){
+    const hw = ELEV_CAB_W / 2, hd = ELEV_CAB_D / 2;
+    const B = ELEV_BUILDING;
+    return -hw >= B.minX && hw <= B.maxX && -hd >= B.minZ && hd <= B.maxZ && 5 <= B.shaftTop;
+  }
+
+  function elevAabbHit(x, y, z, box, pad){
+    pad = pad == null ? 0.25 : pad;
+    if (!box) return false;
+    return Math.abs(x - box.x) < box.hw + pad && Math.abs(y - box.y) < box.hh + pad && Math.abs(z - box.z) < box.hd + pad;
+  }
+
+  // Sphere-style orbit clip: walk the look-segment and pull the camera in
+  // front of the first wall, ceiling, or cab wall it would pass through.
+  function elevClipOrbit(tx, ty, tz, yaw, pitch, want, minDist, boxes){
+    minDist = minDist == null ? 1.2 : minDist;
+    want = want == null ? 14 : want;
+    const cp = Math.cos(pitch), sp = Math.sin(pitch);
+    const sx = Math.sin(yaw), cz = Math.cos(yaw);
+    const hits = (x, y, z) => (boxes || []).some(b => elevAabbHit(x, y, z, b, 0.25));
+    const segmentHits = (x1, y1, z1) => {
+      const n = 10;
+      for (let i = 1; i <= n; i++){
+        const t = i / n;
+        if (hits(tx + (x1 - tx) * t, ty + (y1 - ty) * t, tz + (z1 - tz) * t)) return true;
+      }
+      return false;
+    };
+    let dist = want;
+    const step = 0.25;
+    for (let s = minDist; s <= want + 1e-6; s += step){
+      const x = tx + sx * cp * s, y = ty + sp * s, z = tz + cz * cp * s;
+      if (hits(x, y, z) || segmentHits(x, y, z)){ dist = Math.max(minDist, s - step); break; }
+    }
+    const blockedAt = (s) => {
+      const x = tx + sx * cp * s, y = ty + sp * s, z = tz + cz * cp * s;
+      return hits(x, y, z) || segmentHits(x, y, z);
+    };
+    if (blockedAt(dist)){
+      let lo = 0.2, hi = dist, best = 0.2;
+      for (let i = 0; i < 12; i++){
+        const mid = (lo + hi) / 2;
+        if (blockedAt(mid)) hi = mid;
+        else { best = mid; lo = mid; }
+      }
+      dist = best;
+    }
+    return dist;
+  }
 
   function elevRoomOf(f){
     f = typeof f === 'string' ? elevFloor(f) : f;
@@ -1359,7 +1417,8 @@
 
   const api = {
     ELEV_KEY, ELEV_VER, ELEV_SHOP_EVERY, ELEV_SPECIAL_EVERY, ELEV_EVENT_EVERY, ELEV_MILESTONES, ELEV_RIDE, ELEV_INTER, ELEV_BOARD, ELEV_BAG_KEEP, ELEV_FLOORS, ELEV_PALS, ELEV_HOST, ELEV_QUIZ, ELEV_SHOP, ELEV_RIDE_EVENTS, ELEV_PAL_SPOTS, ELEV_PAL_MAX, ELEV_DAILIES, ELEV_BADGE_CATALOG,
-    ELEV_CAB_W, ELEV_CAB_D, ELEV_CAB_Z, ELEV_HALL_W, ELEV_ROOM_Z, ELEV_FLOOR_TOP, ELEV_BODY_R,
+    ELEV_CAB_W, ELEV_CAB_D, ELEV_CAB_Z, ELEV_HALL_W, ELEV_ROOM_Z, ELEV_FLOOR_TOP, ELEV_BODY_R, ELEV_BUILDING,
+    elevCabInsideBuilding, elevAabbHit, elevClipOrbit,
     elevFloor, elevPal, elevClearMode, elevRoomOf, elevSpawnOf, elevBoxHit, elevOnSolid, elevSimStep, elevTimerWins, elevFresh, elevLoad, elevBuddyAllowed, elevNoFight, elevNoGore, elevEveryoneOkay,
     elevShopItem, elevShopList, elevInheritLessScary, elevSetLessScary, elevStreakBonus, elevBeginBoard, elevCloseDoors, elevDueEvent, elevPickRideEvent, elevTalkLine, elevIntercom, elevPalSpots, elevPalMayRide, elevSeatPals, elevCleanPals, elevPalIds, elevPalsAboard, elevPalsHop, elevHostTalk, elevCleanTalk, elevBuyItem, elevWearHat, elevApplyPack, elevWire, elevApplyWire,
     elevSnowOn, elevHostLine, elevPickPal, elevStartRun, elevDueShop, elevDueSpecial, elevPool, elevRebuildBag, elevPickSpecial, elevPickFloor, elevBeginFloor, elevBeginRide,
