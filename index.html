@@ -1619,6 +1619,35 @@ body.lh-muffled #obby{filter:saturate(.85)}
 .shmode #shUpBtn{display:block}
 @media (max-width:700px){ #shAct{bottom:120px} #shHomeBtn{bottom:184px} #shUpBtn{bottom:184px} }
 </style>
+<style id="wnCss">
+#wnBox{position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center;display:none}
+#wnBox #wnHint{display:inline-block;background:rgba(29,35,64,.82);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:14px}
+.wnmode #wnBox{display:block}
+#wnAct{position:absolute;right:16px;bottom:96px;z-index:8;padding:12px 16px;font-size:18px;border:3px solid #1d2340;border-radius:16px;background:#9fd4ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+#wnAct.show{display:block}
+@media (max-width:700px){ #wnAct{bottom:120px} }
+
+</style>
+<style id="vtCss">
+#vtBox{position:absolute;left:12px;right:12px;top:58px;z-index:6;pointer-events:none;display:none}
+.vtmode #vtBox{display:block}
+#vtHint{display:inline-block;background:rgba(36,64,72,.86);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:14px;margin-bottom:8px}
+#vtChart{width:min(320px,92vw);background:rgba(255,249,235,.94);color:#1d2340;border:3px solid #1d2340;border-radius:16px;padding:10px 12px;box-shadow:3px 3px 0 #1d2340;pointer-events:none}
+#vtChartTitle{font-weight:800;margin-bottom:4px}
+#vtChartBody{font-size:13px;line-height:1.45;font-weight:650}
+#vtChartBody .vt-check{margin:2px 0}
+#vtXray{margin-top:8px;width:min(260px,80vw);background:rgba(40,44,70,.92);color:#fff;border-radius:14px;padding:8px;pointer-events:auto}
+#vtXrayTitle{font-weight:800;font-size:13px;margin-bottom:6px}
+#vtXrayGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+#vtXrayGrid button{height:36px;border:2px solid #1d2340;border-radius:8px;background:#c9d6ff;font-weight:800;cursor:pointer}
+#vtXrayGrid button.miss{background:#8aa0c8}
+#vtXrayGrid button.hit{background:#9dffc0}
+#vtAct{position:absolute;right:16px;bottom:96px;z-index:8;padding:12px 16px;font-size:18px;border:3px solid #1d2340;border-radius:16px;background:#9dffc8;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+#vtAct.show{display:block}
+.vtmode #oFP{display:none!important}
+@media (max-width:700px){ #vtAct{bottom:120px} }
+
+</style>
 
 <style id="evLbCss">
 html.snowfest-on body, body.snowfest-on{ background-image: none; }
@@ -2239,6 +2268,22 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
   <button type="button" id="shAct">✨ Do it</button>
   <button type="button" id="shHomeBtn">🏠 Send home</button>
   <button type="button" id="shUpBtn">🏠 Upgrade kennels</button>
+  <div id="wnBox" style="display:none"><span id="wnHint"></span></div>
+  <button type="button" id="wnAct">✨ Do it</button>
+  <div id="vtBox" style="display:none">
+    <div id="vtHint"></div>
+    <div id="vtChart">
+      <div id="vtChartTitle">📋 Chart</div>
+      <div id="vtChartBody"></div>
+    </div>
+    <div id="vtXray" hidden>
+      <div id="vtXrayTitle">📸 Cute scanner</div>
+      <div id="vtXrayGrid"></div>
+    </div>
+  </div>
+  <button type="button" id="vtAct">🩺 Do it</button>
+
+
 
   <div id="t302Box" style="display:none"><span id="t302Hint"></span></div>
   <div id="t302Coins">🪙 Your coins: 0</div>
@@ -2858,7 +2903,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.20-5';
+const BUILD = '2026.11.20-8';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -8552,6 +8597,100 @@ function drawElevator(ctx){
   ctx.fillText('🛗', 152, 120);
 }
 
+/* Shared doorway clearance: collision uses the body only. Hats, hair, wings, and horns are visual and do not change collider size. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.DoorRules = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const DOOR_BODY_H = 2.8;
+  const DOOR_BODY_R = 0.45;
+  const DOOR_EYE_H = 2.45;
+  const DOOR_CAM_CLEAR = 0.55;
+  const DOOR_MIN_H = DOOR_BODY_H * 1.4;
+  const DOOR_MIN_W = (DOOR_BODY_R * 2) * 2.5;
+  const DOOR_CLEAR_H = 4.2;
+  const DOOR_CLEAR_W = 3.6;
+
+  function doorMaxPlayer(){
+    return {h: DOOR_BODY_H, r: DOOR_BODY_R, eye: DOOR_EYE_H, cosmetics: false};
+  }
+
+  function doorFits(openH, openW){
+    return (openH >= DOOR_MIN_H - 1e-9) && (openW >= DOOR_MIN_W - 1e-9);
+  }
+
+  function doorCameraClears(lintelBottom, eye, clear){
+    const ey = eye == null ? DOOR_EYE_H : +eye;
+    const cl = clear == null ? DOOR_CAM_CLEAR : +clear;
+    return (lintelBottom >= ey + cl - 1e-9);
+  }
+
+  function doorBlockedAt(px, py, pz, player, door){
+    if (!door || !player) return 'no';
+    const r = +player.r || DOOR_BODY_R;
+    const h = +player.h || DOOR_BODY_H;
+    const top = py + h;
+    const thick = door.thick == null ? 0.45 : +door.thick;
+    const hw = (door.w || 0) / 2;
+    const axis = door.axis === 'x' ? 'x' : 'z';
+    const cx = +door.x || 0, cz = +door.z || 0;
+    const openH = +door.h || 0;
+    if (axis === 'z'){
+      const overlapWall = Math.abs(pz - cz) <= thick / 2 + r;
+      if (!overlapWall) return null;
+      const inOpening = (px + r > cx - hw) && (px - r < cx + hw);
+      if (!inOpening) return 'jamb';
+      if (top > openH + 1e-9) return 'lintel';
+      return null;
+    }
+    const overlapWall = Math.abs(px - cx) <= thick / 2 + r;
+    if (!overlapWall) return null;
+    const inOpening = (pz + r > cz - hw) && (pz - r < cz + hw);
+    if (!inOpening) return 'jamb';
+    if (top > openH + 1e-9) return 'lintel';
+    return null;
+  }
+
+  function doorWalk(door, player, dist){
+    player = player || doorMaxPlayer();
+    const span = dist == null ? 2.4 : +dist;
+    const axis = door && door.axis === 'x' ? 'x' : 'z';
+    const steps = 28;
+    const start = axis === 'z'
+      ? {x: door.x, z: door.z - span}
+      : {x: door.x - span, z: door.z};
+    const end = axis === 'z'
+      ? {x: door.x, z: door.z + span}
+      : {x: door.x + span, z: door.z};
+    const floor = door.floor == null ? 0 : +door.floor;
+    for (let i = 0; i <= steps; i++){
+      const t = i / steps;
+      const px = start.x + (end.x - start.x) * t;
+      const pz = start.z + (end.z - start.z) * t;
+      const hit = doorBlockedAt(px, floor, pz, player, door);
+      if (hit) return {ok:false, hit, t, x:px, z:pz, door: door.id || door.a + '-' + door.b};
+    }
+    const tall = doorFits(door.h, door.w);
+    const cam = doorCameraClears(door.h, player.eye);
+    if (!tall) return {ok:false, hit:'small', door: door.id || (door.a + '-' + door.b)};
+    if (!cam) return {ok:false, hit:'camera', door: door.id || (door.a + '-' + door.b)};
+    return {ok:true, door: door.id || (door.a + '-' + door.b)};
+  }
+
+  function doorWalkAll(doors, player){
+    const out = [];
+    (doors || []).forEach(d => out.push(doorWalk(d, player)));
+    return {ok: out.every(r => r.ok), results: out};
+  }
+
+  return {
+    DOOR_BODY_H, DOOR_BODY_R, DOOR_EYE_H, DOOR_CAM_CLEAR,
+    DOOR_MIN_H, DOOR_MIN_W, DOOR_CLEAR_H, DOOR_CLEAR_W,
+    doorMaxPlayer, doorFits, doorCameraClears, doorBlockedAt, doorWalk, doorWalkAll
+  };
+});
+
 /* Mallowmist Manor — original kid-scary escape. No gore. Getting caught means everyone is okay. */
 (function (root, factory) {
   const api = factory();
@@ -8566,10 +8705,32 @@ function drawElevator(ctx){
     {id:'parlor', name:'Parlor', emoji:'🖼️', hint:'Line the portraits up in the right order.', spawn:{x:0,y:0.5,z:-18}},
     {id:'kitchen', name:'Kitchen', emoji:'🔑', hint:'Find the brass key in the snack cupboard.', spawn:{x:0,y:0.5,z:-38}},
     {id:'library', name:'Library', emoji:'📝', hint:'A tucked-away note tells you how to open the attic stair.', spawn:{x:0,y:0.5,z:-58}},
-    {id:'attic', name:'Attic Hall', emoji:'🚪', hint:'Tip-toe past Nimble the Nook-Ghost and unlock the front door.', spawn:{x:0,y:0.5,z:-78}}
+    {id:'attic', name:'Attic Hall', emoji:'🚪', hint:'Tip-toe past Nimble the Nook-Ghost and unlock the front door.', spawn:{x:0,y:0.5,z:-78}},
+    {id:'conservatory', name:'Moonfern Conservatory', emoji:'🌿', hint:'Water the moonferns in the glowing order.', spawn:{x:20,y:0.5,z:-20}},
+    {id:'cellar', name:'Jam Cellar', emoji:'🫙', hint:'Turn the rusty crank, then read the dusty scrap.', spawn:{x:20,y:0.5,z:-40}},
+    {id:'chime', name:'Chime Nook', emoji:'🔔', hint:'Play the bells in the secret melody.', spawn:{x:-20,y:0.5,z:-58}},
+    {id:'secret', name:'Secret Attic', emoji:'⭐', hint:'A hidden star nook with a bonus puzzle and a special reward.', spawn:{x:20,y:0.5,z:-80}}
   ];
   const MN_PICTURE = [2, 0, 3, 1];
+  const MN_FERNS = [1, 3, 0, 2];
+  const MN_MELODY = [2, 2, 0, 3];
+  const MN_STARS = [2, 0, 1, 3];
   const MN_UPGRADES = [];
+  const MN_SECRET_REWARD = 16;
+  const MN_DOOR_H = 4.8;
+  const MN_SIDE_DOOR_H = 8;
+  const MN_DOOR_W = 6;
+  const MN_SIDE_DOOR_W = 4;
+  const MN_DOORS = [
+    {id:'foyer-parlor', a:'foyer', b:'parlor', x:0, z:-10, w:MN_DOOR_W, h:MN_DOOR_H, axis:'z', thick:0.4},
+    {id:'parlor-kitchen', a:'parlor', b:'kitchen', x:0, z:-30, w:MN_DOOR_W, h:MN_DOOR_H, axis:'z', thick:0.4},
+    {id:'kitchen-library', a:'kitchen', b:'library', x:0, z:-50, w:MN_DOOR_W, h:MN_DOOR_H, axis:'z', thick:0.4},
+    {id:'library-attic', a:'library', b:'attic', x:0, z:-70, w:MN_DOOR_W, h:MN_DOOR_H, axis:'z', thick:0.4},
+    {id:'hall-conservatory', a:'parlor', b:'conservatory', x:11, z:-19, w:MN_DOOR_W, h:MN_SIDE_DOOR_H, axis:'x', thick:0.5},
+    {id:'hall-cellar', a:'kitchen', b:'cellar', x:11, z:-40, w:MN_SIDE_DOOR_W, h:MN_SIDE_DOOR_H, axis:'x', thick:0.5},
+    {id:'attic-secret', a:'attic', b:'secret', x:11, z:-78, w:MN_SIDE_DOOR_W, h:MN_SIDE_DOOR_H, axis:'x', thick:0.5},
+    {id:'library-chime', a:'library', b:'chime', x:-11, z:-58, w:MN_SIDE_DOOR_W, h:MN_SIDE_DOOR_H, axis:'x', thick:0.5}
+  ];
 
   function mnRoom(id){ return MN_ROOMS.find(r => r.id === id) || MN_ROOMS[0]; }
 
@@ -8590,6 +8751,9 @@ function drawElevator(ctx){
     d.escapes = Math.max(0, o.escapes | 0);
     d.best = Math.max(0, o.best | 0);
     d.caught = Math.max(0, o.caught | 0);
+    if (o.secretAttic != null) d.secretAttic = Math.max(0, o.secretAttic | 0);
+    if (o.starCharm != null) d.starCharm = !!o.starCharm;
+    if (o.moonLantern != null) d.moonLantern = !!o.moonLantern;
     return d;
   }
 
@@ -8631,13 +8795,30 @@ function drawElevator(ctx){
         nimble: {x: 4, z: -78, dir: -1, look: 0, busy: 0},
         lessScary: !!st.lessScary,
         t: 0,
-        started: now || 0
+        started: now || 0,
+        ferns: [null, null, null, null],
+        fernsDone: false,
+        conservatoryOpen: false,
+        crank: false,
+        scrap: false,
+        cellarOpen: false,
+        chimes: [],
+        melodyDone: false,
+        chimeOpen: false,
+        clockString: false,
+        secretOpen: false,
+        stars: [null, null, null, null],
+        starDone: false,
+        secretReward: false,
+        moth: {x: 20, z: -80, dir: 1, look: 0, busy: 0}
       }
     };
   }
 
   function mnNimbleSpeed(less){ return less ? 1.4 : 2.6; }
   function mnNimbleSee(less){ return less ? 3.2 : 5.4; }
+  function mnMothSpeed(less){ return less ? 0.7 : 1.3; }
+  function mnMothSee(less){ return less ? 2.2 : 3.6; }
 
   function mnCanEnter(run, roomId){
     if (!run) return false;
@@ -8646,7 +8827,20 @@ function drawElevator(ctx){
     if (roomId === 'kitchen') return !!run.pictureDone;
     if (roomId === 'library') return !!run.key;
     if (roomId === 'attic') return !!run.atticOpen || !!run.note2;
+    if (roomId === 'conservatory') return !!run.parlorOpen || !!run.lever;
+    if (roomId === 'cellar') return !!run.key;
+    if (roomId === 'chime') return !!run.key;
+    if (roomId === 'secret') return !!run.secretOpen;
     return false;
+  }
+
+  function mnTryOpenSecret(run){
+    if (!run) return false;
+    if (run.clockString && run.melodyDone){
+      run.secretOpen = true;
+      return true;
+    }
+    return !!run.secretOpen;
   }
 
   function mnReadNote(run, which){
@@ -8670,6 +8864,7 @@ function drawElevator(ctx){
     if (!run.note1) return {ok:false, why:'note'};
     run.lever = true;
     run.parlorOpen = true;
+    run.conservatoryOpen = true;
     return {ok:true, why:'ok'};
   }
 
@@ -8694,7 +8889,103 @@ function drawElevator(ctx){
     if (!run || run.escaped) return {ok:false, why:'done'};
     if (!run.pictureDone) return {ok:false, why:'locked'};
     run.key = true;
+    run.cellarOpen = true;
+    run.chimeOpen = true;
     return {ok:true, why:'ok'};
+  }
+
+  function mnWaterFern(run, slot){
+    if (!run || run.escaped) return {ok:false, why:'done'};
+    if (!mnCanEnter(run, 'conservatory')) return {ok:false, why:'locked'};
+    const i = slot | 0;
+    if (i < 0 || i > 3) return {ok:false, why:'range'};
+    const need = MN_FERNS[run.ferns.filter(v => v != null).length] ;
+    run.ferns = (run.ferns || [null, null, null, null]).slice();
+    if (i !== need && run.ferns[i] == null){
+      run.ferns = [null, null, null, null];
+      return {ok:true, why:'reset', done:false, ferns: run.ferns.slice(), text:'The moonferns shimmer and reset. Try the glowing order.'};
+    }
+    run.ferns[i] = i;
+    const done = MN_FERNS.every((needIdx, step) => run.ferns[needIdx] != null || run.ferns.filter(v => v != null).length < 4)
+      && MN_FERNS.every((needIdx, step) => {
+        const order = run.ferns.map((v, idx) => v == null ? -1 : idx).filter(x => x >= 0);
+        // simpler: all four watered and last watering followed sequence
+        return true;
+      }) && run.ferns.filter(v => v != null).length === 4;
+    // Verify order: we require watering in MN_FERNS sequence; reset on wrong one above.
+    const ordered = done && MN_FERNS.every((needIdx, step) => {
+      // After success all are set; the path to fill them was the sequence because wrong ones reset.
+      return run.ferns[needIdx] != null;
+    });
+    if (ordered){
+      run.fernsDone = true;
+    }
+    return {ok:true, why: ordered ? 'open' : 'water', done: !!ordered, ferns: run.ferns.slice(), text: ordered ? 'The moonferns glow as one! A distant hatch clicks.' : 'A moonfern sips the water.'};
+  }
+
+  function mnTurnCrank(run){
+    if (!run || run.escaped) return {ok:false, why:'done'};
+    if (!run.key) return {ok:false, why:'key'};
+    run.crank = true;
+    return {ok:true, why:'ok', text:'The rusty crank clunks. A dusty scrap peeks out of a jar.'};
+  }
+
+  function mnReadScrap(run){
+    if (!run || run.escaped) return {ok:false, why:'done'};
+    if (!run.crank) return {ok:false, why:'crank'};
+    run.scrap = true;
+    return {ok:true, why:'ok', text:'The scrap says: “The tallest clock hides a pull-string.”'};
+  }
+
+  function mnPullString(run){
+    if (!run || run.escaped) return {ok:false, why:'done'};
+    if (!run.scrap) return {ok:false, why:'scrap'};
+    run.clockString = true;
+    mnTryOpenSecret(run);
+    return {ok:true, why:'ok', secret: !!run.secretOpen, text:'The pull-string rings a tiny bell. A whisper says: “Two high chimes, a low one, then the last.”'};
+  }
+
+  function mnPlayChime(run, bell){
+    if (!run || run.escaped) return {ok:false, why:'done'};
+    if (!run.key) return {ok:false, why:'key'};
+    const v = bell | 0;
+    if (v < 0 || v > 3) return {ok:false, why:'range'};
+    run.chimes = (run.chimes || []).slice();
+    run.chimes.push(v);
+    if (run.chimes.length > MN_MELODY.length) run.chimes = run.chimes.slice(-MN_MELODY.length);
+    const done = run.chimes.length === MN_MELODY.length && MN_MELODY.every((need, i) => run.chimes[i] === need);
+    if (done){
+      run.melodyDone = true;
+      mnTryOpenSecret(run);
+    }
+    return {ok:true, why: done ? 'open' : 'tone', done: !!done, secret: !!run.secretOpen, chimes: run.chimes.slice(), text: done ? (run.secretOpen ? 'The last chime echoes upward. A hidden attic hatch swings open!' : 'The melody is right! Find the foyer clock’s pull-string to finish the chain.') : 'A chime rings out.'};
+  }
+
+  function mnPlaceStar(run, slot, tile){
+    if (!run || run.escaped) return {ok:false, why:'done'};
+    if (!run.secretOpen) return {ok:false, why:'locked'};
+    const i = slot | 0, v = tile | 0;
+    if (i < 0 || i > 3 || v < 0 || v > 3) return {ok:false, why:'range'};
+    run.stars = (run.stars || [null, null, null, null]).slice();
+    const already = run.stars.indexOf(v);
+    if (already >= 0) run.stars[already] = null;
+    run.stars[i] = v;
+    const done = MN_STARS.every((need, idx) => run.stars[idx] === need);
+    if (done) run.starDone = true;
+    return {ok:true, why: done ? 'open' : 'place', done: !!done, stars: run.stars.slice(), text: done ? 'The star charms click and a moon lantern blooms!' : 'You set a star charm.'};
+  }
+
+  function mnClaimSecret(run, state){
+    if (!run) return {ok:false, why:'no'};
+    if (!run.secretOpen) return {ok:false, why:'locked'};
+    if (!run.starDone) return {ok:false, why:'puzzle'};
+    if (run.secretReward) return {ok:true, why:'have', coins:0, state: mnLoad(state), message:'You already claimed the moon lantern.'};
+    run.secretReward = true;
+    const st = mnLoad(state);
+    st.secretAttic = (st.secretAttic | 0) + 1;
+    st.starCharm = true;
+    st.moonLantern = true;
+    return {ok:true, why:'ok', coins: MN_SECRET_REWARD, state: st, message:'You found the Secret Attic moon lantern! Everyone is okay, and the stars feel friendlier.'};
   }
 
   function mnSetRoom(run, roomId){
@@ -8720,6 +9011,19 @@ function drawElevator(ctx){
     return run;
   }
 
+  function mnMothTick(run, dt){
+    if (!run || run.escaped || run.room !== 'secret') return run;
+    const less = !!run.lessScary;
+    const n = run.moth || (run.moth = {x:20, z:-80, dir:1, look:0, busy:0});
+    n.busy = Math.max(0, (n.busy || 0) - dt);
+    if (n.busy > 0){ n.look = 0; return run; }
+    n.z += n.dir * mnMothSpeed(less) * dt;
+    if (n.z > -74){ n.z = -74; n.dir = -1; n.busy = less ? 1.8 : 0.9; }
+    if (n.z < -86){ n.z = -86; n.dir = 1; n.busy = less ? 1.8 : 0.9; }
+    n.look = n.busy > 0 ? 0 : 1;
+    return run;
+  }
+
   function mnSeenByNimble(run, px, pz){
     if (!run || run.room !== 'attic' || run.escaped) return false;
     const n = run.nimble;
@@ -8728,9 +9032,20 @@ function drawElevator(ctx){
     const dx = px - n.x, dz = pz - n.z;
     const dist = Math.hypot(dx, dz);
     if (dist > mnNimbleSee(less)) return false;
-    // Nimble only "sees" in the direction it is walking
     if (n.dir > 0 && dx < -0.4) return false;
     if (n.dir < 0 && dx > 0.4) return false;
+    return true;
+  }
+
+  function mnSeenByMoth(run, px, pz){
+    if (!run || run.room !== 'secret' || run.escaped) return false;
+    const n = run.moth;
+    if (!n || !n.look) return false;
+    const less = !!run.lessScary;
+    const dx = px - n.x, dz = pz - n.z;
+    if (Math.hypot(dx, dz) > mnMothSee(less)) return false;
+    if (n.dir > 0 && dz < -0.4) return false;
+    if (n.dir < 0 && dz > 0.4) return false;
     return true;
   }
 
@@ -8742,6 +9057,7 @@ function drawElevator(ctx){
     const room = mnRoom(run.checkpoint || 'foyer');
     run.room = room.id;
     run.nimble = {x: 4, z: -78, dir: -1, look: 0, busy: run.lessScary ? 1.6 : 0.8};
+    run.moth = {x: 20, z: -80, dir: 1, look: 0, busy: run.lessScary ? 2 : 1};
     return {ok:true, why:'ok', message: MN_CATCH_OK, spawn: room.spawn, state: st};
   }
 
@@ -8761,7 +9077,7 @@ function drawElevator(ctx){
     st.escapes = (st.escapes | 0) + 1;
     const elapsed = Math.max(0, ((now || 0) - (run.started || 0)) / 1000);
     if (!st.best || elapsed < st.best) st.best = elapsed || st.best;
-    const coins = 20 + (run.lessScary ? 0 : 8);
+    const coins = 20 + (run.lessScary ? 0 : 8) + (run.secretReward ? 6 : 0);
     return {ok:true, why:'ok', coins: coins, state: st, message:'You slipped out of Mallowmist Manor! Everyone is okay.'};
   }
 
@@ -8782,19 +9098,37 @@ function drawElevator(ctx){
       atticOpen: !!run.atticOpen,
       escaped: !!run.escaped,
       lessScary: !!run.lessScary,
-      nimble: run.nimble ? {x:+run.nimble.x, z:+run.nimble.z, dir:run.nimble.dir, look:run.nimble.look, busy:+run.nimble.busy} : null
+      nimble: run.nimble ? {x:+run.nimble.x, z:+run.nimble.z, dir:run.nimble.dir, look:run.nimble.look, busy:+run.nimble.busy} : null,
+      ferns: (run.ferns || []).slice(),
+      fernsDone: !!run.fernsDone,
+      crank: !!run.crank,
+      scrap: !!run.scrap,
+      chimes: (run.chimes || []).slice(),
+      melodyDone: !!run.melodyDone,
+      clockString: !!run.clockString,
+      secretOpen: !!run.secretOpen,
+      stars: (run.stars || []).slice(),
+      starDone: !!run.starDone,
+      secretReward: !!run.secretReward,
+      moth: run.moth ? {x:+run.moth.x, z:+run.moth.z, dir:run.moth.dir, look:run.moth.look, busy:+run.moth.busy} : null
     };
   }
 
   function mnApplyWire(run, snap){
     if (!run || !snap || typeof snap !== 'object') return run;
     ['phase','room','checkpoint'].forEach(k => { if (snap[k] != null) run[k] = snap[k]; });
-    ['note1','lever','parlorOpen','pictureDone','kitchenOpen','key','note2','atticOpen','escaped','lessScary'].forEach(k => {
+    ['note1','lever','parlorOpen','pictureDone','kitchenOpen','key','note2','atticOpen','escaped','lessScary','fernsDone','crank','scrap','melodyDone','clockString','secretOpen','starDone','secretReward'].forEach(k => {
       if (snap[k] != null) run[k] = !!snap[k];
     });
     if (Array.isArray(snap.pictures)) run.pictures = snap.pictures.slice(0, 4);
+    if (Array.isArray(snap.ferns)) run.ferns = snap.ferns.slice(0, 4);
+    if (Array.isArray(snap.chimes)) run.chimes = snap.chimes.slice(0, 8);
+    if (Array.isArray(snap.stars)) run.stars = snap.stars.slice(0, 4);
     if (snap.nimble && typeof snap.nimble === 'object') run.nimble = {
       x:+snap.nimble.x, z:+snap.nimble.z, dir:snap.nimble.dir, look:snap.nimble.look, busy:+snap.nimble.busy
+    };
+    if (snap.moth && typeof snap.moth === 'object') run.moth = {
+      x:+snap.moth.x, z:+snap.moth.z, dir:snap.moth.dir, look:snap.moth.look, busy:+snap.moth.busy
     };
     return run;
   }
@@ -8803,14 +9137,14 @@ function drawElevator(ctx){
   function mnNoGore(){ return true; }
 
   return {
-    MN_KEY, MN_VER, MN_CATCH_OK, MN_ROOMS, MN_PICTURE,
+    MN_KEY, MN_VER, MN_CATCH_OK, MN_ROOMS, MN_DOORS, MN_DOOR_H, MN_DOOR_W, MN_SIDE_DOOR_H, MN_SIDE_DOOR_W, MN_PICTURE, MN_FERNS, MN_MELODY, MN_STARS, MN_SECRET_REWARD,
     mnRoom, mnFresh, mnLoad, mnSetLessScary, mnInheritLessScary, mnNewRun,
-    mnNimbleSpeed, mnNimbleSee, mnCanEnter, mnReadNote, mnFlipLever, mnPlacePicture,
-    mnTakeKey, mnSetRoom, mnNimbleTick, mnSeenByNimble, mnCatch, mnUnlockDoor, mnEscape,
+    mnNimbleSpeed, mnNimbleSee, mnMothSpeed, mnMothSee, mnCanEnter, mnTryOpenSecret, mnReadNote, mnFlipLever, mnPlacePicture,
+    mnTakeKey, mnWaterFern, mnTurnCrank, mnReadScrap, mnPullString, mnPlayChime, mnPlaceStar, mnClaimSecret,
+    mnSetRoom, mnNimbleTick, mnMothTick, mnSeenByNimble, mnSeenByMoth, mnCatch, mnUnlockDoor, mnEscape,
     mnWire, mnApplyWire, mnEveryoneOkay, mnNoGore
   };
 });
-
 /* Wagwell Shelter — original co-op pet shelter town. Customers are townsfolk, not opponents. */
 (function (root, factory) {
   const api = factory();
@@ -8820,6 +9154,12 @@ function drawElevator(ctx){
   const SH_KEY = 'rubloxShelter';
   const SH_VER = 1;
   const SH_PET_MAX = 6;
+  const SH_DOOR_H = 6;
+  const SH_DOOR_W = 3.6;
+  const SH_DOORS = [
+    {id:'shelter-front', a:'yard', b:'shelter', x:0, z:-2, w:SH_DOOR_W, h:SH_DOOR_H, axis:'z', thick:0.4},
+    {id:'salon-front', a:'yard', b:'salon', x:22, z:6, w:SH_DOOR_W, h:SH_DOOR_H, axis:'z', thick:0.4}
+  ];
   const SH_KINDS = [
     {id:'cat', name:'Cat', emoji:'🐱', trait:'calm'},
     {id:'dog', name:'Dog', emoji:'🐶', trait:'playful'},
@@ -8859,7 +9199,11 @@ function drawElevator(ctx){
       kennels: 2,
       ups: {},
       pets: [],
-      nextId: 1
+      nextId: 1,
+      groomed: 0,
+      ribbons: {},
+      trophies: 0,
+      shows: 0
     };
   }
 
@@ -8875,7 +9219,12 @@ function drawElevator(ctx){
       fed: Math.max(0, Math.min(100, +p.fed || 50)),
       clean: Math.max(0, Math.min(100, +p.clean || 50)),
       play: Math.max(0, Math.min(100, +p.play || 50)),
-      color: Math.max(0, Math.min(2, p.color | 0))
+      color: Math.max(0, Math.min(2, p.color | 0)),
+      style: ['natural','neat','fluffy','swirl'].indexOf(p.style) >= 0 ? p.style : 'natural',
+      bow: ['none','red','blue','gold'].indexOf(p.bow) >= 0 ? p.bow : 'none',
+      dye: ['none','peach','mint','lilac','butter'].indexOf(p.dye) >= 0 ? p.dye : 'none',
+      groomed: Math.max(0, Math.min(100, p.groomed | 0)),
+      trick: ['sit','spin','bow','wave'].indexOf(p.trick) >= 0 ? p.trick : 'sit'
     };
   }
 
@@ -8893,6 +9242,10 @@ function drawElevator(ctx){
     if (d.ups.kennels) d.kennels = Math.max(d.kennels, 4);
     d.pets = (Array.isArray(o.pets) ? o.pets : []).map(shCleanPet).filter(Boolean).slice(0, d.kennels);
     d.nextId = Math.max(1, o.nextId | 0);
+    if (o.groomed != null) d.groomed = Math.max(0, o.groomed | 0);
+    if (o.trophies != null) d.trophies = Math.max(0, o.trophies | 0);
+    if (o.shows != null) d.shows = Math.max(0, o.shows | 0);
+    if (o.ribbons && typeof o.ribbons === 'object') d.ribbons = Object.assign({}, o.ribbons);
     return d;
   }
 
@@ -8909,13 +9262,23 @@ function drawElevator(ctx){
     return 18;
   }
 
+  function shGroomedWell(pet){
+    pet = shCleanPet(pet);
+    return !!(pet && (pet.groomed | 0) >= 70);
+  }
+
   function shHappiness(pet){
     pet = shCleanPet(pet);
     if (!pet) return 0;
-    return Math.round((pet.fed + pet.clean + pet.play) / 3);
+    const base = Math.round((pet.fed + pet.clean + pet.play) / 3);
+    const bonus = shGroomedWell(pet) ? 12 : ((pet.groomed | 0) >= 40 ? 6 : 0);
+    return Math.min(100, base + bonus);
   }
 
-  function shReady(pet){ return shHappiness(pet) >= 70; }
+  function shReady(pet){
+    const h = shHappiness(pet);
+    return h >= (shGroomedWell(pet) ? 55 : 70);
+  }
 
   function shRollStray(rand, id){
     const r = typeof rand === 'function' ? rand : Math.random;
@@ -8986,7 +9349,7 @@ function drawElevator(ctx){
     state.pets = state.pets.filter(p => p.id !== petId);
     state.matched += 1;
     state.adopted += 1;
-    const coins = 18 + (traitOk && kindOk ? 8 : 0);
+    const coins = 18 + (traitOk && kindOk ? 8 : 0) + (shGroomedWell(pet) ? 6 : 0);
     state.coinsEarned += coins;
     return {ok:true, why:'ok', coins, state, message: fam.name + ' went home with ' + pet.name + '!'};
   }
@@ -9046,6 +9409,140 @@ function drawElevator(ctx){
     return src === 'shelter' ? 'shelter' : undefined;
   }
 
+  const SH_STYLES = ['natural','neat','fluffy','swirl'];
+  const SH_BOWS = ['none','red','blue','gold'];
+  const SH_DYES = ['none','peach','mint','lilac','butter'];
+  const SH_TRICKS = ['sit','spin','bow','wave'];
+  const SH_CONTESTS = [
+    {id:'groomed', name:'Best Groomed', emoji:'✨', hint:'Wash, brush, trim, and add a bow.'},
+    {id:'trick', name:'Cutest Trick', emoji:'🎩', hint:'Teach a sit, spin, bow, or wave.'},
+    {id:'fluff', name:'Fluffiest', emoji:'☁️', hint:'A fluffy trim plus a good brush wins hearts.'}
+  ];
+
+  function shContest(id){ return SH_CONTESTS.find(c => c.id === id) || null; }
+
+  function shGroom(state, petId, act, choice){
+    state = shLoad(state);
+    const pet = state.pets.find(p => p.id === petId);
+    if (!pet) return {ok:false, why:'missing', state};
+    if (act === 'wash'){
+      pet.clean = Math.min(100, (pet.clean || 0) + 22);
+      pet.groomed = Math.min(100, (pet.groomed || 0) + 22);
+    } else if (act === 'brush'){
+      pet.play = Math.min(100, (pet.play || 0) + 8);
+      pet.groomed = Math.min(100, (pet.groomed || 0) + 18);
+    } else if (act === 'trim'){
+      if (SH_STYLES.indexOf(choice) < 0) return {ok:false, why:'style', state};
+      pet.style = choice;
+      pet.groomed = Math.min(100, (pet.groomed || 0) + (choice === 'natural' ? 6 : 16));
+    } else if (act === 'bow'){
+      if (SH_BOWS.indexOf(choice) < 0) return {ok:false, why:'bow', state};
+      pet.bow = choice;
+      pet.groomed = Math.min(100, (pet.groomed || 0) + (choice === 'none' ? 0 : 10));
+    } else if (act === 'dye'){
+      if (SH_DYES.indexOf(choice) < 0) return {ok:false, why:'dye', state};
+      pet.dye = choice;
+      pet.groomed = Math.min(100, (pet.groomed || 0) + (choice === 'none' ? 0 : 8));
+    } else if (act === 'trick'){
+      if (SH_TRICKS.indexOf(choice) < 0) return {ok:false, why:'trick', state};
+      pet.trick = choice;
+      pet.groomed = Math.min(100, (pet.groomed || 0) + 6);
+    } else {
+      return {ok:false, why:'act', state};
+    }
+    pet.happy = shHappiness(pet);
+    state.groomed = (state.groomed | 0) + 1;
+    return {ok:true, why:'ok', pet, state, ready: shReady(pet), well: shGroomedWell(pet)};
+  }
+
+  function shScorePet(pet, contestId){
+    pet = shCleanPet(pet);
+    if (!pet) return 0;
+    let n = 40 + Math.round(shHappiness(pet) * 0.3);
+    if (contestId === 'groomed'){
+      n = 20 + (pet.groomed | 0) * 0.55 + (pet.clean | 0) * 0.15;
+      if (pet.bow && pet.bow !== 'none') n += 8;
+      if (pet.style && pet.style !== 'natural') n += 6;
+      if (pet.dye && pet.dye !== 'none') n += 4;
+    } else if (contestId === 'trick'){
+      n = 36 + (pet.play | 0) * 0.35 + (pet.trick && pet.trick !== 'sit' ? 16 : 8);
+      if (pet.groomed >= 40) n += 8;
+    } else if (contestId === 'fluff'){
+      n = 28 + (pet.groomed | 0) * 0.3;
+      if (pet.style === 'fluffy') n += 22;
+      else if (pet.style === 'swirl') n += 10;
+      n += (pet.clean | 0) * 0.15;
+    }
+    return Math.max(0, Math.min(100, Math.round(n)));
+  }
+
+  function shRibbonFor(score){
+    if (score >= 90) return 'gold';
+    if (score >= 75) return 'silver';
+    if (score >= 60) return 'bronze';
+    return 'participant';
+  }
+
+  function shNewShow(contestId, now, mode){
+    const c = shContest(contestId) || SH_CONTESTS[0];
+    const m = mode === 'versus' || mode === 'coop' ? mode : 'solo';
+    return {id: c.id, name: c.name, emoji: c.emoji, mode: m, open: true, entries: [], judged: false, t: now || 0};
+  }
+
+  function shEnterShow(show, pet, player){
+    if (!show || !show.open || show.judged) return {ok:false, why:'closed', show};
+    const clean = shCleanPet(pet);
+    if (!clean) return {ok:false, why:'pet', show};
+    const pid = String((player && (player.id || player.uid)) || (player || 'me'));
+    if (pid && (pid === 'npc' || String(pid).indexOf('npc-') === 0 || (player && player.npc))) return {ok:false, why:'npc', show};
+    if ((show.entries || []).some(e => e.petId === clean.id && e.player === pid)) return {ok:false, why:'in', show};
+    show.entries = (show.entries || []).concat([{
+      player: pid,
+      name: String((player && player.name) || 'You').slice(0, 16),
+      petId: clean.id,
+      petName: clean.name,
+      kind: clean.kind,
+      score: 0,
+      ribbon: null
+    }]);
+    return {ok:true, why:'ok', show};
+  }
+
+  function shJudgeShow(state, show){
+    state = shLoad(state);
+    if (!show || !show.entries || !show.entries.length) return {ok:false, why:'empty', state, show};
+    show.entries.forEach(e => {
+      const pet = state.pets.find(p => p.id === e.petId) || {id:e.petId, kind:e.kind, name:e.petName, fed:70, clean:70, play:70, groomed:40, style:'natural', bow:'none', dye:'none', trick:'sit'};
+      e.score = shScorePet(pet, show.id);
+    });
+    const mode = show.mode || 'solo';
+    if (mode === 'versus' && show.entries.length > 1){
+      const top = Math.max.apply(null, show.entries.map(e => e.score));
+      show.entries.forEach(e => { e.ribbon = e.score === top ? 'gold' : shRibbonFor(e.score); if (e.score === top) e.winner = true; });
+    } else if (mode === 'coop'){
+      const avg = show.entries.reduce((s, e) => s + e.score, 0) / show.entries.length;
+      const team = avg >= 80 ? 'gold' : shRibbonFor(avg);
+      show.entries.forEach(e => { e.ribbon = team; e.coop = true; e.winner = team === 'gold'; });
+    } else {
+      show.entries.forEach(e => { e.ribbon = shRibbonFor(e.score); e.winner = e.ribbon === 'gold' || e.ribbon === 'silver'; });
+    }
+    show.judged = true;
+    show.open = false;
+    show.entries.forEach(e => {
+      const key = show.id + ':' + (e.ribbon || 'participant');
+      state.ribbons[key] = (state.ribbons[key] | 0) + 1;
+      if (e.ribbon === 'gold') state.trophies = (state.trophies | 0) + 1;
+    });
+    state.shows = (state.shows | 0) + 1;
+    const coins = show.entries.reduce((s, e) => s + (e.ribbon === 'gold' ? 14 : e.ribbon === 'silver' ? 9 : e.ribbon === 'bronze' ? 5 : 2), 0);
+    state.coinsEarned += coins;
+    return {ok:true, why:'ok', state, show, coins, message:'Judge Bramble scored the ' + show.name + ' show!'};
+  }
+
+  function shRealPlayersOnly(roster){
+    return (roster || []).filter(p => p && (p.id || p.uid) && !p.npc && String(p.id || '').indexOf('npc-') !== 0);
+  }
+
   function shWire(state, extras){
     state = shLoad(state);
     extras = extras || {};
@@ -9056,18 +9553,844 @@ function drawElevator(ctx){
       rescued: state.rescued,
       matched: state.matched,
       family: extras.family ? {id: extras.family.id, name: extras.family.name, wishKind: extras.family.wishKind, wishTrait: extras.family.wishTrait, line: extras.family.line, emoji: extras.family.emoji} : null,
-      strays: (extras.strays || []).map(s => ({id:s.id, kind:s.kind, name:s.name, trait:s.trait, x:+s.x||0, z:+s.z||0, color:s.color|0}))
+      strays: (extras.strays || []).map(s => ({id:s.id, kind:s.kind, name:s.name, trait:s.trait, x:+s.x||0, z:+s.z||0, color:s.color|0})),
+      show: extras.show ? {id:extras.show.id, name:extras.show.name, emoji:extras.show.emoji, mode:extras.show.mode, open:!!extras.show.open, judged:!!extras.show.judged, entries:(extras.show.entries||[]).map(e => ({player:e.player, name:e.name, petId:e.petId, petName:e.petName, kind:e.kind, score:e.score|0, ribbon:e.ribbon, winner:!!e.winner}))} : null
     };
   }
 
   return {
-    SH_KEY, SH_VER, SH_PET_MAX, SH_KINDS, SH_TRAITS, SH_FAMILIES, SH_UPGRADES,
+    SH_KEY, SH_VER, SH_PET_MAX, SH_DOOR_H, SH_DOOR_W, SH_DOORS, SH_KINDS, SH_TRAITS, SH_FAMILIES, SH_UPGRADES,
     shKind, shFamily, shUpgrade, shFresh, shLoad, shCleanPet, shKennelCap, shBoost,
     shHappiness, shReady, shRollStray, shRescue, shCare, shVisitFamily, shMatch,
-    shBuyUpgrade, shToCollectionPet, shCanSendHome, shSendHome, shKeepPetField, shWire
+    shBuyUpgrade, shToCollectionPet, shCanSendHome, shSendHome, shKeepPetField, shWire,
+    SH_STYLES, SH_BOWS, SH_DYES, SH_TRICKS, SH_CONTESTS,
+    shGroomedWell, shGroom, shScorePet, shRibbonFor, shContest, shNewShow, shEnterShow, shJudgeShow, shRealPlayersOnly
   };
 });
+/* Pinebell Village — original cozy winter village. Real-player races and snowball fights only. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.WinterRules = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const WN_KEY = 'rubloxWinter';
+  const WN_VER = 1;
+  const WN_COCOA_COST = 5;
+  const WN_SNOWMAN = ['base','mid','head','hat','buttons','scarf'];
+  const WN_DOOR_H = 4.2;
+  const WN_DOOR_W = 3.6;
+  const WN_WALL_H = 5.2;
+  const WN_COTTAGES = [
+    {id:'cocoa', name:"Mugsy’s Cocoa", x:-16, z:8, w:7, d:5.5},
+    {id:'blue', name:'Blue cottage', x:16, z:12, w:6, d:5},
+    {id:'green', name:'Green cottage', x:-6, z:22, w:6, d:5}
+  ];
+  const WN_DOORS = WN_COTTAGES.map(c => ({
+    id:c.id, a:'outside', b:c.id, x:c.x, z:c.z + c.d/2, w:WN_DOOR_W, h:WN_DOOR_H, axis:'z', thick:0.42
+  }));
 
+  function wnFresh(){
+    return {
+      v: WN_VER,
+      coinsEarned: 0,
+      sledBest: 0,
+      sledRuns: 0,
+      snowmen: 0,
+      skateLaps: 0,
+      cocoaServed: 0,
+      cocoaBought: 0,
+      races: 0,
+      snowballs: 0
+    };
+  }
+
+  function wnLoad(raw){
+    const o = raw && typeof raw === 'object' ? raw : {};
+    const d = wnFresh();
+    ['coinsEarned','sledRuns','snowmen','skateLaps','cocoaServed','cocoaBought','races','snowballs'].forEach(k => {
+      d[k] = Math.max(0, o[k] | 0);
+    });
+    d.sledBest = Math.max(0, +o.sledBest || 0);
+    return d;
+  }
+
+  function wnNewVisit(state, now){
+    return {
+      state: wnLoad(state),
+      run: {
+        area: 'village',
+        sled: {on:false, x:0, y:0, z:0, vx:0, vz:0, yaw:0, air:0, t:0, started:0, jumps:0, done:false, time:0},
+        snowman: {parts:[]},
+        skate: {on:false, laps:0, t:0, lastAng:0, ang:0},
+        cocoa: {warm:0, served:0},
+        snowball: {cool:0, hits:0},
+        t: 0,
+        started: now || 0
+      }
+    };
+  }
+
+  function wnGo(run, area){
+    const ok = ['village','hill','pond','cocoa','yard'].indexOf(area) >= 0;
+    if (!run || !ok) return {ok:false, why:'area'};
+    run.area = area;
+    if (area !== 'hill') run.sled.on = false;
+    if (area !== 'pond') run.skate.on = false;
+    return {ok:true, area};
+  }
+
+  function wnSledStart(run, now){
+    if (!run) return {ok:false, why:'no'};
+    run.area = 'hill';
+    run.sled = {on:true, x:0, y:1.2, z:-70, vx:0, vz:10, yaw:0, air:0, t:0, started: now || 0, jumps:0, done:false, time:0};
+    return {ok:true, why:'ok'};
+  }
+
+  function wnSledSteer(run, ax, dt){
+    if (!run || !run.sled || !run.sled.on || run.sled.done) return run;
+    const a = Math.max(-1, Math.min(1, +ax || 0));
+    dt = Math.max(0, Math.min(0.12, +dt || 0));
+    run.sled.yaw = Math.max(-0.7, Math.min(0.7, (run.sled.yaw || 0) + a * 1.8 * dt));
+    return run;
+  }
+
+  function wnSledJump(run){
+    if (!run || !run.sled || !run.sled.on || run.sled.done) return {ok:false, why:'sled'};
+    if ((run.sled.air || 0) > 0) return {ok:false, why:'air'};
+    run.sled.air = 0.7;
+    run.sled.jumps = (run.sled.jumps | 0) + 1;
+    return {ok:true, why:'ok'};
+  }
+
+  function wnSledTick(run, dt){
+    if (!run || !run.sled || !run.sled.on || run.sled.done) return run;
+    dt = Math.max(0, Math.min(0.12, +dt || 0));
+    const s = run.sled;
+    s.t = (s.t || 0) + dt;
+    s.air = Math.max(0, (s.air || 0) - dt);
+    const speed = 14 + (s.air > 0 ? 3 : 0);
+    s.vz = speed;
+    s.vx = Math.sin(s.yaw || 0) * 9;
+    s.x = Math.max(-8, Math.min(8, (s.x || 0) + s.vx * dt));
+    s.z = (s.z || 0) + s.vz * dt;
+    s.y = s.air > 0 ? 1.2 + Math.sin((0.7 - s.air) / 0.7 * Math.PI) * 1.6 : 1.2;
+    // bumps / jump ramps near z=-30 and z=10
+    if (s.air <= 0 && (Math.abs(s.z + 30) < 1.2 || Math.abs(s.z - 10) < 1.2)){
+      s.air = 0.55;
+      s.jumps = (s.jumps | 0) + 1;
+    }
+    if (s.x <= -8 || s.x >= 8) s.yaw = (s.yaw || 0) * 0.4;
+    if (s.z >= 48){
+      s.z = 48;
+      s.on = false;
+      s.done = true;
+      s.time = Math.max(0.1, (s.t || 0));
+    }
+    return run;
+  }
+
+  function wnSledFinish(run, state){
+    if (!run || !run.sled || !run.sled.done || !run.sled.time) return {ok:false, why:'race'};
+    const time = +run.sled.time;
+    const jumps = run.sled.jumps | 0;
+    const st = wnLoad(state);
+    st.sledRuns = (st.sledRuns | 0) + 1;
+    if (!st.sledBest || time < st.sledBest) st.sledBest = time;
+    const coins = 6 + (time < 8 ? 8 : time < 10 ? 5 : 2) + Math.min(4, jumps);
+    st.coinsEarned += coins;
+    return {ok:true, why:'ok', time, jumps, coins, best: st.sledBest, state: st, message:'You zoomed down Sledwhistle Hill!'};
+  }
+
+  function wnRealPlayers(roster){
+    return (roster || []).filter(p => p && (p.id || p.uid) && !p.npc && String(p.id || p.uid).indexOf('npc-') !== 0 && p.bot !== true);
+  }
+
+  function wnSledRace(entries, roster){
+    const realIds = new Set(wnRealPlayers(roster).map(p => String(p.id || p.uid)));
+    const rows = (entries || []).filter(e => e && e.id && (realIds.size ? realIds.has(String(e.id)) : String(e.id).indexOf('npc-') !== 0 && !e.npc));
+    if (rows.some(e => e.npc)) return {ok:false, why:'npc'};
+    if (!rows.length) return {ok:false, why:'empty'};
+    const ranked = rows.slice().sort((a, b) => (+a.time || 99) - (+b.time || 99));
+    return {ok:true, why:'ok', ranked, winner: ranked[0]};
+  }
+
+  function wnCanPelt(fromId, toId, roster){
+    if (!fromId || !toId || String(fromId) === String(toId)) return false;
+    if (String(toId).indexOf('npc') === 0 || String(toId) === 'npc') return false;
+    const real = wnRealPlayers(roster);
+    const ids = real.map(p => String(p.id || p.uid));
+    return ids.indexOf(String(fromId)) >= 0 && ids.indexOf(String(toId)) >= 0;
+  }
+
+  function wnThrowSnowball(run, state, fromId, toId, roster){
+    if (!run) return {ok:false, why:'no'};
+    if ((run.snowball && run.snowball.cool || 0) > 0) return {ok:false, why:'cool'};
+    const vsPlayer = wnCanPelt(fromId, toId, roster);
+    const practice = !toId || toId === 'practice' || toId === 'post';
+    if (!vsPlayer && !practice) return {ok:false, why:'npc'};
+    run.snowball = run.snowball || {cool:0, hits:0};
+    run.snowball.cool = 0.45;
+    const st = wnLoad(state);
+    st.snowballs = (st.snowballs | 0) + 1;
+    let coins = 0;
+    if (vsPlayer){
+      run.snowball.hits = (run.snowball.hits | 0) + 1;
+      coins = 2;
+      st.coinsEarned += coins;
+    } else if (practice){
+      coins = 1;
+      st.coinsEarned += coins;
+    }
+    return {ok:true, why: vsPlayer ? 'hit' : 'practice', coins, state: st, fight: !!vsPlayer};
+  }
+
+  function wnSnowballTick(run, dt){
+    if (!run || !run.snowball) return run;
+    run.snowball.cool = Math.max(0, (run.snowball.cool || 0) - dt);
+    return run;
+  }
+
+  function wnAddSnowmanPart(run, part){
+    if (!run) return {ok:false, why:'no'};
+    const need = WN_SNOWMAN[(run.snowman.parts || []).length];
+    if (!need) return {ok:false, why:'done'};
+    if (part && part !== need) return {ok:false, why:'order', need};
+    run.snowman.parts = (run.snowman.parts || []).concat([need]);
+    const done = run.snowman.parts.length === WN_SNOWMAN.length;
+    return {ok:true, why: done ? 'done' : 'part', done, parts: run.snowman.parts.slice(), need: done ? null : WN_SNOWMAN[run.snowman.parts.length]};
+  }
+
+  function wnFinishSnowman(run, state){
+    if (!run || !run.snowman || (run.snowman.parts || []).length < WN_SNOWMAN.length) return {ok:false, why:'parts'};
+    if (run.snowman.claimed) return {ok:true, why:'have', coins:0, state: wnLoad(state)};
+    run.snowman.claimed = true;
+    const st = wnLoad(state);
+    st.snowmen = (st.snowmen | 0) + 1;
+    const coins = 10;
+    st.coinsEarned += coins;
+    return {ok:true, why:'ok', coins, state: st, message:'Your Pinebell snow pal is complete!'};
+  }
+
+  function wnSkateStart(run){
+    if (!run) return {ok:false, why:'no'};
+    run.area = 'pond';
+    run.skate = {on:true, laps:0, t:0, lastAng:0, ang:0, crossed:true};
+    return {ok:true, why:'ok'};
+  }
+
+  function wnSkateTick(run, ax, az, dt){
+    if (!run || !run.skate || !run.skate.on) return run;
+    dt = Math.max(0, Math.min(0.12, +dt || 0));
+    const s = run.skate;
+    s.t = (s.t || 0) + dt;
+    const ang = Math.atan2(az || 0, ax || 0);
+    if (isFinite(ang)){
+      let d = ang - (s.lastAng || 0);
+      while (d > Math.PI) d -= Math.PI * 2;
+      while (d < -Math.PI) d += Math.PI * 2;
+      s.ang = (s.ang || 0) + d;
+      s.lastAng = ang;
+      if (Math.abs(s.ang) >= Math.PI * 2){
+        s.ang = 0;
+        s.laps = (s.laps | 0) + 1;
+      }
+    }
+    return run;
+  }
+
+  function wnSkateBank(run, state){
+    if (!run || !run.skate) return {ok:false, why:'no'};
+    const laps = run.skate.laps | 0;
+    if (!laps || run.skate.banked === laps) return {ok:false, why:'laps'};
+    const add = laps - (run.skate.banked | 0);
+    run.skate.banked = laps;
+    const st = wnLoad(state);
+    st.skateLaps = (st.skateLaps | 0) + add;
+    const coins = add * 3;
+    st.coinsEarned += coins;
+    return {ok:true, why:'ok', laps: add, coins, state: st};
+  }
+
+  function wnBuyCocoa(state, coins){
+    const st = wnLoad(state);
+    if ((coins | 0) < WN_COCOA_COST) return {ok:false, why:'coins', state: st, coins: coins | 0};
+    st.cocoaBought = (st.cocoaBought | 0) + 1;
+    return {ok:true, why:'ok', state: st, coins: (coins | 0) - WN_COCOA_COST, cost: WN_COCOA_COST, warm: 20};
+  }
+
+  function wnServeCocoa(run, state){
+    if (!run) return {ok:false, why:'no'};
+    run.cocoa = run.cocoa || {warm:0, served:0};
+    run.cocoa.served = (run.cocoa.served | 0) + 1;
+    const st = wnLoad(state);
+    st.cocoaServed = (st.cocoaServed | 0) + 1;
+    const coins = 4;
+    st.coinsEarned += coins;
+    return {ok:true, why:'ok', coins, state: st, served: run.cocoa.served, message:'A warm mug for a chilly visitor!'};
+  }
+
+  function wnWire(state, run){
+    state = wnLoad(state);
+    run = run || {};
+    return {
+      coinsEarned: state.coinsEarned,
+      sledBest: state.sledBest,
+      area: run.area || 'village',
+      sled: run.sled ? {on:!!run.sled.on, x:+run.sled.x||0, z:+run.sled.z||0, yaw:+run.sled.yaw||0, done:!!run.sled.done, time:+run.sled.time||0} : null,
+      snowman: run.snowman ? {parts:(run.snowman.parts||[]).slice(), claimed:!!run.snowman.claimed} : null,
+      skate: run.skate ? {on:!!run.skate.on, laps:run.skate.laps|0} : null
+    };
+  }
+
+  return {
+    WN_KEY, WN_VER, WN_COCOA_COST, WN_SNOWMAN, WN_DOOR_H, WN_DOOR_W, WN_WALL_H, WN_COTTAGES, WN_DOORS,
+    wnFresh, wnLoad, wnNewVisit, wnGo,
+    wnSledStart, wnSledSteer, wnSledJump, wnSledTick, wnSledFinish, wnSledRace,
+    wnRealPlayers, wnCanPelt, wnThrowSnowball, wnSnowballTick,
+    wnAddSnowmanPart, wnFinishSnowman,
+    wnSkateStart, wnSkateTick, wnSkateBank,
+    wnBuyCocoa, wnServeCocoa, wnWire
+  };
+});
+/* Pawsley Vet Clinic — original first-person clinic. Real-player co-op only; patient and owner NPCs are customers. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.VetRules = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const VT_KEY = 'rubloxVet';
+  const VT_VER = 1;
+  const VT_DOOR_H = 4.2;
+  const VT_DOOR_W = 3.6;
+  const VT_WALL_H = 6.0;
+  const VT_CEILING_Y = 6.2;
+
+  const VT_ROOMS = [
+    {id:'reception', name:'Reception', x:0, z:8, w:16, d:16, color:'#f3e6c8',
+      blurb:'Pets check in here. Take their chart from the front desk.'},
+    {id:'exam', name:'Exam Room', x:0, z:-10, w:16, d:20, color:'#d9eef6',
+      blurb:'Listen with a stethoscope, check ears and eyes, and take a temperature.'},
+    {id:'xray', name:'X-ray Room', x:16, z:-10, w:16, d:20, color:'#e8e4f8',
+      blurb:'A cute, simple scan to find a swallowed toy or a sprained paw.'},
+    {id:'treatment', name:'Treatment Pharmacy', x:-16, z:-10, w:16, d:20, color:'#e4f3df',
+      blurb:'Pick the right labeled medicine or bandage from the pharmacy shelf.'},
+    {id:'surgery', name:'Gentle Care Room', x:0, z:-30, w:16, d:20, color:'#f8ead8',
+      blurb:'Kid-friendly care: a bandage, a cast, a splinter, or a bubble-wash for a scrape.'},
+    {id:'recovery', name:'Recovery Kennels', x:16, z:8, w:16, d:16, color:'#fde8f0',
+      blurb:'Cuddle and feed pals until they feel cozy again.'},
+    {id:'bath', name:'Bubbly Bath Corner', x:-16, z:8, w:16, d:16, color:'#d8f4f2',
+      blurb:'A warm wash and a fluff-dry when a coat is muddy.'}
+  ];
+
+  const VT_DOORS = [
+    {a:'reception', b:'exam', x:0, z:0, w:VT_DOOR_W, h:VT_DOOR_H, axis:'z', thick:0.42},
+    {a:'exam', b:'xray', x:8, z:-10, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42},
+    {a:'exam', b:'treatment', x:-8, z:-10, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42},
+    {a:'exam', b:'surgery', x:0, z:-20, w:VT_DOOR_W, h:VT_DOOR_H, axis:'z', thick:0.42},
+    {a:'reception', b:'recovery', x:8, z:8, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42},
+    {a:'reception', b:'bath', x:-8, z:8, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42}
+  ];
+
+  const VT_SPECIES = [
+    {id:'cat', name:'Cat', emoji:'🐱', rarity:'common'},
+    {id:'dog', name:'Dog', emoji:'🐶', rarity:'common'},
+    {id:'bunny', name:'Bunny', emoji:'🐰', rarity:'common'},
+    {id:'hamster', name:'Hamster', emoji:'🐹', rarity:'uncommon'},
+    {id:'bird', name:'Bird', emoji:'🐦', rarity:'uncommon'},
+    {id:'fox', name:'Fox kit', emoji:'🦊', rarity:'rare'},
+    {id:'otter', name:'Otter pup', emoji:'🦦', rarity:'rare'},
+    {id:'star', name:'Star pup', emoji:'✨', rarity:'star'}
+  ];
+
+  const VT_NAMES = ['Poppy','Biscuit','Mochi','Sprout','Puddle','Noodle','Maple','Pip','Buttercup','Waffles','Clover','Pebble'];
+
+  const VT_CASES = [
+    {id:'cough', symptom:'a tickly cough', tools:['stethoscope','temp'], treat:'syrup', room:'treatment',
+      note:'A cozy cough sip from a clearly labeled pharmacy bottle.'},
+    {id:'ears', symptom:'itchy ears', tools:['ears'], treat:'ear-drops', room:'treatment',
+      note:'Gentle ear drops from the labeled pharmacy shelf.'},
+    {id:'eyes', symptom:'a watery eye', tools:['eyes'], treat:'eye-drops', room:'treatment',
+      note:'Soothing eye drops, labeled just like at a careful pharmacy.'},
+    {id:'limp', symptom:'a tender limp after play', tools:['temp','xray'], treat:'bandage', room:'surgery', xray:'sprain',
+      note:'A soft, colorful bandage for a sprained paw.'},
+    {id:'toy', symptom:'a rumbly tummy after playtime', tools:['stethoscope','xray'], treat:'sip', room:'treatment', xray:'toy',
+      note:'A gentle tummy sip from the pharmacy cabinet after the toy is spotted.'},
+    {id:'splinter', symptom:'a tiny paw splinter', tools:['eyes'], treat:'splinter', room:'surgery',
+      note:'A careful splinter lift — no ouchies stay.'},
+    {id:'scrape', symptom:'a scraped knee', tools:['eyes'], treat:'bubbles', room:'surgery',
+      note:'A bubbly clean-up that leaves a shiny, happy scrape.'},
+    {id:'muddy', symptom:'a muddy coat after puddles', tools:['eyes'], treat:'bath', room:'bath',
+      note:'A warm wash and a fluff-dry in the bubbly bath corner.'}
+  ];
+
+  const VT_TREATS = ['syrup','ear-drops','eye-drops','sip','bandage','cast','splinter','bubbles','bath'];
+  const VT_TOOLS = ['stethoscope','ears','eyes','temp','xray'];
+  const VT_RARITY_ORDER = ['common','uncommon','rare','star'];
+
+  const VT_KID_SAFE_BANNED = /\b(blood|gore|bleed|gory|wound|hurt badly|die|dies|dead|kill|painful|surgery knife)\b/i;
+
+  function vtFresh(){
+    return {v:VT_VER, cases:0, stars:0, coinsEarned:0, bestStreak:0, streak:0};
+  }
+
+  function vtLoad(raw){
+    const o = raw && typeof raw === 'object' ? raw : {};
+    const d = vtFresh();
+    ['cases','stars','coinsEarned','bestStreak','streak'].forEach(k => {
+      d[k] = Math.max(0, o[k] | 0);
+    });
+    return d;
+  }
+
+  function vtRoom(id){
+    return VT_ROOMS.find(r => r.id === id) || null;
+  }
+
+  function vtInBox(x, z, room){
+    const hw = room.w / 2, hd = room.d / 2;
+    return x >= room.x - hw && x <= room.x + hw && z >= room.z - hd && z <= room.z + hd;
+  }
+
+  function vtRoomAt(x, z){
+    for (let i = 0; i < VT_ROOMS.length; i++){
+      if (vtInBox(x, z, VT_ROOMS[i])) return VT_ROOMS[i].id;
+    }
+    return null;
+  }
+
+  function vtInDoorway(x, z, slim){
+    const s = slim == null ? 1.1 : slim;
+    for (let i = 0; i < VT_DOORS.length; i++){
+      const d = VT_DOORS[i];
+      if (d.axis === 'z'){
+        if (Math.abs(z - d.z) <= s && Math.abs(x - d.x) <= d.w / 2) return d;
+      } else {
+        if (Math.abs(x - d.x) <= s && Math.abs(z - d.z) <= d.w / 2) return d;
+      }
+    }
+    return null;
+  }
+
+  function vtWalkable(x, z){
+    return !!(vtRoomAt(x, z) || vtInDoorway(x, z, 1.2));
+  }
+
+  function vtConnected(a, b){
+    if (!a || !b) return false;
+    if (a === b) return true;
+    return VT_DOORS.some(d => (d.a === a && d.b === b) || (d.a === b && d.b === a));
+  }
+
+  function vtNeighbors(id){
+    const out = [];
+    VT_DOORS.forEach(d => {
+      if (d.a === id) out.push(d.b);
+      else if (d.b === id) out.push(d.a);
+    });
+    return out;
+  }
+
+  function vtPath(from, to){
+    if (!vtRoom(from) || !vtRoom(to)) return null;
+    if (from === to) return [from];
+    const q = [from], seen = {[from]: null};
+    while (q.length){
+      const cur = q.shift();
+      const nbs = vtNeighbors(cur);
+      for (let i = 0; i < nbs.length; i++){
+        const n = nbs[i];
+        if (seen[n] !== undefined) continue;
+        seen[n] = cur;
+        if (n === to){
+          const path = [to];
+          let p = cur;
+          while (p){ path.unshift(p); p = seen[p]; }
+          return path;
+        }
+        q.push(n);
+      }
+    }
+    return null;
+  }
+
+  function vtReachable(from){
+    from = from || 'reception';
+    const out = {};
+    VT_ROOMS.forEach(r => { out[r.id] = !!vtPath(from, r.id); });
+    return out;
+  }
+
+  function vtForceFirstPerson(mode){ return mode === 'vet'; }
+  function vtMayToggleCamera(mode){ return mode !== 'vet'; }
+  function vtFpOn(mode, fpFlag){ return mode === 'vet' ? true : !!fpFlag; }
+  function vtSetFp(mode, on){ return mode === 'vet' ? true : !!on; }
+
+  function vtRarityOk(rarity, difficulty){
+    const i = VT_RARITY_ORDER.indexOf(rarity);
+    if (i < 0) return false;
+    if (difficulty < 2) return i <= 0;
+    if (difficulty < 5) return i <= 1;
+    if (difficulty < 9) return i <= 2;
+    return true;
+  }
+
+  function vtCaseOk(cs, difficulty){
+    const tools = (cs.tools || []).length;
+    if (difficulty < 2) return tools <= 1 && !cs.xray;
+    if (difficulty < 5) return tools <= 2;
+    return true;
+  }
+
+  function vtPick(list, rand){
+    if (!list.length) return null;
+    const i = Math.floor((rand()) * list.length) % list.length;
+    return list[i];
+  }
+
+  function vtRng(seed){
+    let s = (seed >>> 0) || 1;
+    return function (){
+      s = (s * 1664525 + 1013904223) >>> 0;
+      return s / 4294967296;
+    };
+  }
+
+  function vtDifficulty(state){
+    return Math.min(12, (vtLoad(state).cases | 0));
+  }
+
+  function vtRollPatient(state, seed){
+    const difficulty = vtDifficulty(state);
+    const rand = typeof seed === 'function' ? seed : vtRng((seed | 0) || (Date.now() & 0x7fffffff) || 1);
+    const speciesPool = VT_SPECIES.filter(s => vtRarityOk(s.rarity, difficulty));
+    const casePool = VT_CASES.filter(c => vtCaseOk(c, difficulty));
+    function pickRamp(pool, fallback){
+      const list = pool.length ? pool : fallback;
+      if (!list.length) return null;
+      const maxI = Math.max.apply(null, list.map(s => {
+        const r = s.rarity || (s.xray ? 'rare' : (s.tools && s.tools.length > 1 ? 'uncommon' : 'common'));
+        const idx = VT_RARITY_ORDER.indexOf(r);
+        return idx < 0 ? 0 : idx;
+      }));
+      const bias = Math.min(0.75, 0.2 + difficulty * 0.06);
+      let use = list;
+      if (rand() < bias){
+        const top = list.filter(s => {
+          const r = s.rarity || (s.xray ? 'rare' : (s.tools && s.tools.length > 1 ? 'uncommon' : 'common'));
+          const idx = VT_RARITY_ORDER.indexOf(r);
+          return (idx < 0 ? 0 : idx) === maxI;
+        });
+        if (top.length) use = top;
+      }
+      return vtPick(use, rand);
+    }
+    const species = pickRamp(speciesPool, VT_SPECIES.slice(0, 3));
+    const cs = pickRamp(casePool, VT_CASES.filter(c => !c.xray && c.tools.length <= 1));
+    const name = vtPick(VT_NAMES, rand);
+    const xrayTarget = cs.xray ? (Math.floor(rand() * 16) | 0) : -1;
+    return {
+      name,
+      species: species.id,
+      speciesName: species.name,
+      emoji: species.emoji,
+      rarity: species.rarity,
+      caseId: cs.id,
+      symptom: cs.symptom,
+      tools: cs.tools.slice(),
+      treat: cs.treat,
+      treatRoom: cs.room,
+      note: cs.note,
+      xray: cs.xray || null,
+      xrayTarget,
+      difficulty
+    };
+  }
+
+  function vtEmptyRun(){
+    return {
+      room: 'reception',
+      phase: 'wait',
+      patient: null,
+      checked: [],
+      xrayFound: false,
+      xrayGuesses: [],
+      cuddle: false,
+      feed: false,
+      lastMessage: 'A pal is waiting at the front desk.',
+      prompt: 'Take the chart',
+      coinsThis: 0,
+      starsThis: 0,
+      t: 0
+    };
+  }
+
+  function vtNewShift(state, seed){
+    const st = vtLoad(state);
+    const run = vtEmptyRun();
+    run.patient = vtRollPatient(st, seed);
+    run.lastMessage = run.patient.emoji + ' ' + run.patient.name + ' the ' + run.patient.speciesName + ' is here with ' + run.patient.symptom + '.';
+    run.prompt = 'Take the chart';
+    return {state: st, run};
+  }
+
+  function vtNeedTools(run){
+    return (run && run.patient && run.patient.tools) ? run.patient.tools.slice() : [];
+  }
+
+  function vtChart(run){
+    if (!run || !run.patient) return {open:false, lines:[], checks:[], phase: run ? run.phase : 'wait'};
+    const p = run.patient;
+    const need = vtNeedTools(run);
+    const checks = need.map(tool => ({tool, done: (run.checked || []).indexOf(tool) >= 0}));
+    if (p.xray) checks.push({tool:'xray-find', done: !!run.xrayFound});
+    const treated = ['recover','pickup','done'].indexOf(run.phase) >= 0;
+    const recovered = ['pickup','done'].indexOf(run.phase) >= 0;
+    return {
+      open: true,
+      name: p.name,
+      species: p.speciesName,
+      emoji: p.emoji,
+      rarity: p.rarity,
+      symptom: p.symptom,
+      note: p.note,
+      treat: p.treat,
+      treatRoom: p.treatRoom,
+      phase: run.phase,
+      checks,
+      treated,
+      cuddle: !!run.cuddle,
+      feed: !!run.feed,
+      recovered,
+      lines: [
+        p.emoji + ' ' + p.name + ' · ' + p.speciesName + ' (' + p.rarity + ')',
+        'Symptom: ' + p.symptom,
+        p.note
+      ]
+    };
+  }
+
+  function vtCheckIn(run){
+    if (!run || !run.patient) return {ok:false, why:'no'};
+    if (run.phase !== 'wait') return {ok:false, why:'phase', message: run.lastMessage};
+    run.phase = 'exam';
+    run.checked = [];
+    run.lastMessage = 'Chart in hand! Walk to the exam room and check every tool on the list.';
+    run.prompt = 'Examine with a tool';
+    return {ok:true, why:'ok', chart: vtChart(run), message: run.lastMessage};
+  }
+
+  function vtExamReady(run){
+    if (!run || !run.patient) return false;
+    const need = vtNeedTools(run);
+    if (need.some(t => (run.checked || []).indexOf(t) < 0)) return false;
+    if (run.patient.xray && !run.xrayFound) return false;
+    return true;
+  }
+
+  function vtUseTool(run, tool, room){
+    if (!run || !run.patient) return {ok:false, why:'no'};
+    if (run.phase !== 'exam' && run.phase !== 'scan') return {ok:false, why:'phase', message:'Take the chart at reception first.'};
+    if (VT_TOOLS.indexOf(tool) < 0) return {ok:false, why:'tool'};
+    const here = room || run.room;
+    if (tool === 'xray'){
+      if (here !== 'xray') return {ok:false, why:'room', message:'The scanner is in the X-ray Room.'};
+      if (!run.patient.xray) return {ok:false, why:'need', message:'This pal does not need a scan. Check the chart!'};
+      run.phase = 'scan';
+      run.lastMessage = run.patient.xray === 'toy'
+        ? 'Sweep the cute scanner to find the swallowed toy.'
+        : 'Sweep the cute scanner to find the tender, sprained paw.';
+      run.prompt = 'Scan a square';
+      return {ok:true, why:'ok', scan:true, message: run.lastMessage, chart: vtChart(run)};
+    }
+    if (here !== 'exam') return {ok:false, why:'room', message:'Use exam tools in the Exam Room.'};
+    const need = vtNeedTools(run);
+    if (need.indexOf(tool) < 0){
+      run.lastMessage = 'That tool is not on this chart — everyone is still okay. Try the listed check.';
+      return {ok:false, why:'need', message: run.lastMessage, chart: vtChart(run)};
+    }
+    if ((run.checked || []).indexOf(tool) < 0) run.checked.push(tool);
+    if (vtExamReady(run)){
+      run.phase = 'treat';
+      run.lastMessage = 'Checks are done! Go to the ' + (vtRoom(run.patient.treatRoom) || {name:'treatment room'}).name + ' and pick the matching care.';
+      run.prompt = 'Treat';
+    } else {
+      run.lastMessage = 'Nice check! Keep going down the chart.';
+      run.prompt = 'Examine with a tool';
+    }
+    return {ok:true, why:'ok', checked: run.checked.slice(), ready: run.phase === 'treat', message: run.lastMessage, chart: vtChart(run)};
+  }
+
+  function vtXrayScan(run, cell){
+    if (!run || !run.patient) return {ok:false, why:'no'};
+    if (!run.patient.xray) return {ok:false, why:'need'};
+    if (run.phase !== 'exam' && run.phase !== 'scan') return {ok:false, why:'phase'};
+    run.phase = 'scan';
+    cell = cell | 0;
+    if (cell < 0 || cell > 15) return {ok:false, why:'cell'};
+    if ((run.xrayGuesses || []).indexOf(cell) < 0) run.xrayGuesses.push(cell);
+    if (cell === (run.patient.xrayTarget | 0)){
+      run.xrayFound = true;
+      if ((run.checked || []).indexOf('xray') < 0) run.checked.push('xray');
+      if (vtExamReady(run)){
+        run.phase = 'treat';
+        run.lastMessage = run.patient.xray === 'toy'
+          ? 'There it is — a sparkly toy! Now a gentle tummy sip from the pharmacy.'
+          : 'There it is — a tender, sprained paw! A soft bandage will help.';
+        run.prompt = 'Treat';
+      } else {
+        run.phase = 'exam';
+        run.lastMessage = 'Scan complete! Finish the remaining exam checks.';
+        run.prompt = 'Examine with a tool';
+      }
+      return {ok:true, why:'ok', found:true, cell, message: run.lastMessage, chart: vtChart(run)};
+    }
+    run.lastMessage = 'Not this square — keep scanning. The pal is perfectly okay.';
+    return {ok:true, why:'ok', found:false, cell, message: run.lastMessage, chart: vtChart(run)};
+  }
+
+  function vtTreat(run, item, room){
+    if (!run || !run.patient) return {ok:false, why:'no'};
+    if (run.phase !== 'treat') return {ok:false, why:'phase', message: vtExamReady(run) ? 'Pick a treatment.' : 'Finish the exam checklist first.'};
+    if (VT_TREATS.indexOf(item) < 0) return {ok:false, why:'item'};
+    const here = room || run.room;
+    const needRoom = run.patient.treatRoom;
+    if (here !== needRoom){
+      return {ok:false, why:'room', message:'That care happens in the ' + (vtRoom(needRoom) || {name:needRoom}).name + '.'};
+    }
+    if (item !== run.patient.treat){
+      run.lastMessage = 'That is not the matching labeled care — check the chart and try again. The pal is still okay.';
+      return {ok:false, why:'wrong', message: run.lastMessage, chart: vtChart(run)};
+    }
+    run.phase = 'recover';
+    run.cuddle = false;
+    run.feed = false;
+    run.lastMessage = 'All better already! Take ' + run.patient.name + ' to the Recovery Kennels for a cuddle and a snack.';
+    run.prompt = 'Cuddle and feed';
+    return {ok:true, why:'ok', message: run.lastMessage, chart: vtChart(run)};
+  }
+
+  function vtCuddle(run, room){
+    if (!run || !run.patient) return {ok:false, why:'no'};
+    if (run.phase !== 'recover') return {ok:false, why:'phase'};
+    const here = room || run.room;
+    if (here !== 'recovery') return {ok:false, why:'room', message:'Cuddles happen in the Recovery Kennels.'};
+    run.cuddle = true;
+    if (run.cuddle && run.feed){
+      run.phase = 'pickup';
+      run.lastMessage = run.patient.name + ' feels cozy and ready. Their person is waiting in Reception for a happy pickup!';
+      run.prompt = 'Happy pickup';
+    } else {
+      run.lastMessage = 'What a cozy cuddle. A snack will finish the recovery.';
+      run.prompt = 'Feed';
+    }
+    return {ok:true, why:'ok', message: run.lastMessage, chart: vtChart(run)};
+  }
+
+  function vtFeed(run, room){
+    if (!run || !run.patient) return {ok:false, why:'no'};
+    if (run.phase !== 'recover') return {ok:false, why:'phase'};
+    const here = room || run.room;
+    if (here !== 'recovery') return {ok:false, why:'room', message:'Snacks are in the Recovery Kennels.'};
+    run.feed = true;
+    if (run.cuddle && run.feed){
+      run.phase = 'pickup';
+      run.lastMessage = run.patient.name + ' feels cozy and ready. Their person is waiting in Reception for a happy pickup!';
+      run.prompt = 'Happy pickup';
+    } else {
+      run.lastMessage = 'Yum! A cuddle will finish the recovery.';
+      run.prompt = 'Cuddle';
+    }
+    return {ok:true, why:'ok', message: run.lastMessage, chart: vtChart(run)};
+  }
+
+  function vtPayout(patient){
+    const rarityBonus = {common:0, uncommon:4, rare:8, star:14};
+    const diff = patient && patient.difficulty ? patient.difficulty : 0;
+    const coins = 8 + (rarityBonus[patient && patient.rarity] || 0) + Math.min(8, diff);
+    const stars = patient && patient.rarity === 'star' ? 3 : (patient && patient.rarity === 'rare' ? 2 : 1);
+    return {coins, stars};
+  }
+
+  function vtPickup(run, state, room){
+    if (!run || !run.patient) return {ok:false, why:'no'};
+    if (run.phase !== 'pickup') return {ok:false, why:'phase', message:'Finish cuddles and a snack first.'};
+    const here = room || run.room;
+    if (here !== 'reception') return {ok:false, why:'room', message:'The happy pickup is at the Reception desk.'};
+    const pay = vtPayout(run.patient);
+    const st = vtLoad(state);
+    st.cases = (st.cases | 0) + 1;
+    st.stars = (st.stars | 0) + pay.stars;
+    st.coinsEarned = (st.coinsEarned | 0) + pay.coins;
+    st.streak = (st.streak | 0) + 1;
+    if (st.streak > (st.bestStreak | 0)) st.bestStreak = st.streak;
+    run.phase = 'done';
+    run.coinsThis = pay.coins;
+    run.starsThis = pay.stars;
+    run.lastMessage = 'Happy pickup! ' + run.patient.name + ' is all better. +' + pay.coins + ' coins and ' + pay.stars + ' star' + (pay.stars === 1 ? '' : 's') + '!';
+    run.prompt = 'Next pal';
+    return {ok:true, why:'ok', coins: pay.coins, stars: pay.stars, state: st, message: run.lastMessage, everyoneOk: true, chart: vtChart(run)};
+  }
+
+  function vtNextPatient(run, state, seed){
+    const st = vtLoad(state);
+    const next = vtEmptyRun();
+    next.patient = vtRollPatient(st, seed);
+    next.lastMessage = next.patient.emoji + ' ' + next.patient.name + ' the ' + next.patient.speciesName + ' is here with ' + next.patient.symptom + '.';
+    next.prompt = 'Take the chart';
+    Object.keys(next).forEach(k => { run[k] = next[k]; });
+    return {ok:true, run, state: st, message: run.lastMessage};
+  }
+
+  function vtKidCopyOk(text){
+    return !VT_KID_SAFE_BANNED.test(String(text || ''));
+  }
+
+  function vtRealPlayersOnly(roster){
+    return (roster || []).filter(p => p && p.id && !p.npc);
+  }
+
+  function vtWire(state, run){
+    state = vtLoad(state);
+    run = run || {};
+    const p = run.patient || null;
+    return {
+      cases: state.cases,
+      stars: state.stars,
+      coinsEarned: state.coinsEarned,
+      streak: state.streak,
+      room: run.room || 'reception',
+      phase: run.phase || 'wait',
+      patient: p ? {
+        name: p.name, species: p.species, speciesName: p.speciesName, emoji: p.emoji, rarity: p.rarity,
+        caseId: p.caseId, symptom: p.symptom, tools: (p.tools || []).slice(), treat: p.treat,
+        treatRoom: p.treatRoom, note: p.note, xray: p.xray || null, xrayTarget: p.xrayTarget|0, difficulty: p.difficulty|0
+      } : null,
+      checked: (run.checked || []).slice(),
+      xrayFound: !!run.xrayFound,
+      cuddle: !!run.cuddle,
+      feed: !!run.feed,
+      lastMessage: run.lastMessage || '',
+      prompt: run.prompt || ''
+    };
+  }
+
+  function vtApply(run, data){
+    if (!run || !data) return run;
+    ['room','phase','checked','xrayFound','cuddle','feed','lastMessage','prompt','patient','xrayGuesses','coinsThis','starsThis'].forEach(k => {
+      if (data[k] !== undefined) run[k] = data[k];
+    });
+    return run;
+  }
+
+  return {
+    VT_KEY, VT_VER, VT_DOOR_H, VT_DOOR_W, VT_WALL_H, VT_CEILING_Y, VT_ROOMS, VT_DOORS, VT_SPECIES, VT_NAMES, VT_CASES, VT_TREATS, VT_TOOLS, VT_RARITY_ORDER,
+    vtFresh, vtLoad, vtRoom, vtRoomAt, vtInDoorway, vtWalkable, vtConnected, vtNeighbors, vtPath, vtReachable,
+    vtForceFirstPerson, vtMayToggleCamera, vtFpOn, vtSetFp,
+    vtDifficulty, vtRollPatient, vtNewShift, vtChart, vtCheckIn, vtUseTool, vtXrayScan, vtExamReady,
+    vtTreat, vtCuddle, vtFeed, vtPickup, vtPayout, vtNextPatient, vtKidCopyOk, vtRealPlayersOnly,
+    vtWire, vtApply
+  };
+});
 /* New optional avatar looks — Y2K, grunge, cozy, fancy. Ids are additive only. */
 (function (root, factory) {
   const api = factory();
@@ -9381,8 +10704,10 @@ if (typeof globalThis !== 'undefined'){
 
 const GAMES = [
   {id:'elevator', name:'Wobblevator', emoji:'🛗', tag:'Ride Bingle the Bellhop’s wobbly lift to surprise floors. Clear quirky mini-events, keep your streak, and hop back in — if a floor gets too wobbly, everyone is okay!', draw: drawElevator, playable: true, isNew: true},
-  {id:'mansion', name:'Mallowmist Manor', emoji:'🕯️', tag:'A cute haunted house! Solve notes, levers, and a picture puzzle, then tip-toe past Nimble the Nook-Ghost. Getting caught means everyone is okay. Flip on Less scary for a milder mood.', draw: drawMansion, playable: true, isNew: true},
-  {id:'shelter', name:'Wagwell Shelter', emoji:'🐾', tag:'Rescue town strays, cheer them up, and match them with visiting families — or send a pal to your own pet collection!', draw: drawShelter, playable: true, isNew: true},
+  {id:'mansion', name:'Mallowmist Manor', emoji:'🕯️', tag:'A cute haunted house with new rooms and a hidden Secret Attic! Solve simple puzzles, follow a clue chain to a special reward, and tip-toe past Nimble. Getting caught means everyone is okay.', draw: drawMansion, playable: true, isNew: true},
+  {id:'shelter', name:'Wagwell Shelter', emoji:'🐾', tag:'Rescue town strays, cheer them up in the grooming salon, match them with visiting families, and enter pet contests judged by Judge Bramble!', draw: drawShelter, playable: true, isNew: true},
+  {id:'winter', name:'Pinebell Village', emoji:'🎄', tag:'A cozy original winter village: sled timed runs on Sledwhistle Hill, skate Glassgill Pond, build a snow pal, sip cocoa at Mugsy’s, and toss snowballs with real friends only.', draw: drawWinter, playable: true, isNew: true},
+  {id:'vet', name:'Pawsley Vet Clinic', emoji:'🩺', tag:'Always first-person clinic with many connected rooms. Take a chart, diagnose with tools, treat, then cuddle pals until a happy pickup. Everyone gets better!', draw: drawVet, playable: true, isNew: true},
   {id:'garden', name:'Sunny Patch Garden', emoji:'🌱', tag:'Buy silly original seeds, plant them, and watch them grow in real time — even while you are away!', draw: drawGarden, playable: true, isNew: true},
   {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', tag:'Charge a snack toss and meet original friendly animals. Friends share the meadow, but nobody takes your pals!', draw: drawMeadow, playable: true, isNew: true},
   {id:'rides', name:'Rideland Workshop', emoji:'🎢', tag:'Place original rides on your lot, hop on, and let friends ride them too!', draw: drawRides, playable: true, isNew: true},
@@ -9644,6 +10969,24 @@ function drawShelter(ctx){
   ctx.fillStyle = '#fff'; ctx.fillRect(180, 110, 90, 50);
   ctx.font = '24px sans-serif'; ctx.fillText('🐾', 60, 130); ctx.fillText('🐱', 210, 140); ctx.fillText('🐶', 250, 140);
   if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#3a86ff');
+}
+function drawWinter(ctx){
+  if (typeof sky === 'function') sky(ctx, '#9fd4ff', '#fff8ee');
+  ctx.fillStyle = '#f4fbff'; ctx.fillRect(0, 130, 320, 70);
+  ctx.fillStyle = '#c45c1a'; ctx.fillRect(40, 90, 80, 50);
+  ctx.fillStyle = '#8b2e1a'; ctx.beginPath(); ctx.moveTo(30,90); ctx.lineTo(80,50); ctx.lineTo(130,90); ctx.fill();
+  ctx.fillStyle = '#8fd3ff'; ctx.beginPath(); ctx.ellipse(240, 170, 40, 14, 0, 0, Math.PI*2); ctx.fill();
+  ctx.font = '24px sans-serif'; ctx.fillText('🎄', 70, 80); ctx.fillText('🛷', 210, 90); ctx.fillText('☕', 100, 120);
+  if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#3a86ff');
+}
+function drawVet(ctx){
+  if (typeof sky === 'function') sky(ctx, '#b8e4f2', '#f7f1de');
+  ctx.fillStyle = '#f3e6c8'; ctx.fillRect(40, 70, 240, 110);
+  ctx.fillStyle = '#d9eef6'; ctx.fillRect(70, 90, 70, 70);
+  ctx.fillStyle = '#e4f3df'; ctx.fillRect(160, 90, 50, 70);
+  ctx.fillStyle = '#8b5a2b'; ctx.fillRect(148, 130, 36, 30);
+  ctx.font = '26px sans-serif'; ctx.fillText('🩺', 84, 86); ctx.fillText('🐾', 200, 86); ctx.fillText('📋', 155, 120);
+  if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#6ec6ff');
 }
 function drawHaunt(ctx){
   sky(ctx, '#2a2450', '#5b4d7a');
@@ -11261,6 +12604,8 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
     {id:'elevator', name:'Wobblevator', emoji:'🛗', keys:['rubloxElevator']},
     {id:'mansion', name:'Mallowmist Manor', emoji:'🕯️', keys:['rubloxMansion']},
     {id:'shelter', name:'Wagwell Shelter', emoji:'🐾', keys:['rubloxShelter']},
+    {id:'winter', name:'Pinebell Village', emoji:'🎄', keys:['rubloxWinter']},
+    {id:'vet', name:'Pawsley Vet Clinic', emoji:'🩺', keys:['rubloxVet']},
     {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', keys:['rubloxMeadow']},
     {id:'rides', name:'Rideland Workshop', emoji:'🎢', keys:['rubloxRides']},
     {id:'hive', name:'Honeyhill Hive', emoji:'🐝', keys:['rubloxHive']},
@@ -14698,10 +16043,11 @@ const Obby = (() => {
   // first person (remembered per device); while driving in Adopt a Pet the camera goes back to third person on its own
   const fp = {on: !!load('rubloxFP', false), r3: -1e9, wt: 0, unlockT: 0, shown: null, req: false, noLock: false, throwTurn: load('rubloxThrowTurn', true) !== false, turn: null};
   let menuOpen = false;   // multiplayer menu: open over a game that keeps running
-  function fpOn(){ return running && !(pt && pt.drive) && (fp.on || !!(typeof mode !== 'undefined' && mode === 'dreamhouse' && typeof dh !== 'undefined' && dh && !dh.intro)); }
+  function fpOn(){ return running && !(pt && pt.drive) && (fp.on || !!(typeof mode !== 'undefined' && ((mode === 'dreamhouse' && typeof dh !== 'undefined' && dh && !dh.intro) || mode === 'vet'))); }
   function setFP(on, quiet){
     on = !!on;
     if (!on && typeof mode !== 'undefined' && mode === 'dreamhouse' && typeof dh !== 'undefined' && dh){ on = true; if (fp.on) return; }
+    if (!on && typeof mode !== 'undefined' && mode === 'vet'){ on = true; if (fp.on) return; }
     if (fp.on === on) return; fp.on = on; fp.wt = performance.now(); save('rubloxFP', on);
     if (on) cam.pitch = .08; else { cam.pitch = .42; cam.dist = Math.max(cam.dist, 6); if (document.pointerLockElement) document.exitPointerLock(); }
     const b = document.getElementById('oFP'); if (b){ b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }
@@ -15471,7 +16817,7 @@ const Obby = (() => {
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
     nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; py = null; evg = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
-    if (mode === 'elevator') buildElevator(); else if (mode === 'mansion') buildMansion(); else if (mode === 'shelter') buildShelter(); else if (mode === 'garden') buildGarden(); else if (mode === 'meadow') buildMeadow(); else if (mode === 'rides') buildRides(); else if (mode === 'hive') buildHive(); else if (mode === 'camp') buildCamp(); else if (mode === 'cafe') buildCafe(); else if (mode === 'fish') buildFish(); else if (mode === 'petshow') buildPetShow(); else if (mode === 'hunt') buildHunt(); else if (mode === 'snowfest') buildSnowFest(); else if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    if (mode === 'elevator') buildElevator(); else if (mode === 'mansion') buildMansion(); else if (mode === 'shelter') buildShelter(); else if (mode === 'winter') buildWinter(); else if (mode === 'vet') buildVet(); else if (mode === 'garden') buildGarden(); else if (mode === 'meadow') buildMeadow(); else if (mode === 'rides') buildRides(); else if (mode === 'hive') buildHive(); else if (mode === 'camp') buildCamp(); else if (mode === 'cafe') buildCafe(); else if (mode === 'fish') buildFish(); else if (mode === 'petshow') buildPetShow(); else if (mode === 'hunt') buildHunt(); else if (mode === 'snowfest') buildSnowFest(); else if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -16426,7 +17772,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'mansion' || mode === 'shelter' || mode === 'hunt' || mode === 'elevator') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'vet' || mode === 'winter' || mode === 'mansion' || mode === 'shelter' || mode === 'hunt' || mode === 'elevator') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
       ejectXZ(axis, B, b);
     }
   }
@@ -16543,6 +17889,8 @@ const Obby = (() => {
     if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ if (P.y < -25) respawn(); return; }
     if (mode === 'elevator'){ if (P.y < -2 && typeof elevCatchFall === 'function') elevCatchFall(); return; }
     if (mode === 'mansion' || mode === 'shelter'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'winter'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'vet'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -17248,6 +18596,8 @@ const Obby = (() => {
     else if (d.t === 'elev'){ try { if (typeof elevFromNet === 'function') elevFromNet(g, d); } catch (e){} }
     else if (d.t === 'mn'){ try { if (typeof mnFromNet === 'function') mnFromNet(g, d); } catch (e){} }
     else if (d.t === 'sh'){ try { if (typeof shFromNet === 'function') shFromNet(g, d); } catch (e){} }
+    else if (d.t === 'wn'){ try { if (typeof wnFromNet === 'function') wnFromNet(g, d); } catch (e){} }
+    else if (d.t === 'vt'){ try { if (typeof vtFromNet === 'function') vtFromNet(g, d); } catch (e){} }
   }
   function mpTagReq(g, d){
     const T = tg;
@@ -17306,6 +18656,8 @@ const Obby = (() => {
       case 'elev': try { if (typeof elevFromHost === 'function') elevFromHost(d); } catch (e){} break;
       case 'mn': try { if (typeof mnFromHost === 'function') mnFromHost(d); } catch (e){} break;
       case 'sh': try { if (typeof shFromHost === 'function') shFromHost(d); } catch (e){} break;
+      case 'wn': try { if (typeof wnFromHost === 'function') wnFromHost(d); } catch (e){} break;
+      case 'vt': try { if (typeof vtFromHost === 'function') vtFromHost(d); } catch (e){} break;
       case 'lb': try { if (typeof lbFromHost === 'function') lbFromHost(d); } catch (e){} break;
     }
   }
@@ -33569,7 +34921,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'dreamhouse' ? (typeof dh !== 'undefined' && dh && dh.visiting ? '🎮 Left stick move · Right stick look · Ⓐ jump · Ⓧ like the house · ☰ menu' : '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · Ⓨ invite friends · ⓁⓇ job · ✚▼ show spots · ☰ menu') : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'elevator' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act / shop · Ⓨ floors · Ⓑ close popups · ☰ menu' : mode === 'mansion' ? '🎮 Left stick move · Ⓐ jump · Ⓧ read / flip / unlock · Ⓨ Less scary · ☰ menu' : mode === 'shelter' ? '🎮 Left stick move · Ⓐ jump · Ⓧ rescue / care / desk · Ⓨ send home · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'pethotel' ? '🎮 Left stick move · Ⓐ jump · Ⓧ check in / care / check out · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'dreamhouse' ? (typeof dh !== 'undefined' && dh && dh.visiting ? '🎮 Left stick move · Right stick look · Ⓐ jump · Ⓧ like the house · ☰ menu' : '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · Ⓨ invite friends · ⓁⓇ job · ✚▼ show spots · ☰ menu') : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'elevator' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act / shop · Ⓨ floors · Ⓑ close popups · ☰ menu' : mode === 'mansion' ? '🎮 Left stick move · Ⓐ jump · Ⓧ read / flip / unlock · Ⓨ Less scary · ☰ menu' : mode === 'shelter' ? '🎮 Left stick move · Ⓐ jump · Ⓧ rescue / care / desk · Ⓨ send home · ☰ menu' : mode === 'winter' ? '🎮 Left stick move / steer · Ⓐ jump · Ⓧ act · Ⓑ hop off or cash laps · ☰ menu' : mode === 'vet' ? '🎮 Left stick move · right stick look · Ⓐ interact · Ⓧ interact · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'pethotel' ? '🎮 Left stick move · Ⓐ jump · Ⓧ check in / care / check out · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · View emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -33669,6 +35021,8 @@ const Obby = (() => {
     if (mode === 'elevator' && typeof elevPadEdge === 'function' && elevPadEdge(jp)) return;
     if (mode === 'mansion' && typeof mnPad === 'function' && mnPad(jp)) return;
     if (mode === 'shelter' && typeof shPad === 'function' && shPad(jp)) return;
+    if (mode === 'winter' && typeof wnPad === 'function' && wnPad(jp, s)) return;
+    if (mode === 'vet' && typeof vtPad === 'function' && vtPad(jp, s)) return;
     if (mode === 'snowfest' && typeof evg !== 'undefined' && evg && typeof snowfestPad === 'function' && snowfestPad(jp)) return;
     if (mode === 'party' && typeof py !== 'undefined' && py && typeof partyPad === 'function' && partyPad(jp)) return;
     if (jp[3]) behind();
@@ -34010,7 +35364,7 @@ function dhLayoutHud(){
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'mansion' || mode === 'shelter' || mode === 'hunt' || mode === 'elevator'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'winter' || mode === 'mansion' || mode === 'shelter' || mode === 'hunt' || mode === 'elevator'){ // pull the camera in front of walls so buildings don't block the view
       dist = clipOrbitCam(tx, ty, tz, cam.dist, mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2);
     }
     camera.position.set(tx + Math.sin(cam.yaw) * cp * dist, ty + Math.sin(cam.pitch) * dist, tz + Math.cos(cam.yaw) * cp * dist);
@@ -34218,7 +35572,7 @@ function dhLayoutHud(){
       if (ic) iceCreamUpdate(dt);
       if (ph) petHotelUpdate(dt);
       if (sb) stableUpdate(dt);
-      if (evg) snowfestUpdate(dt); if (py) partyUpdate(dt); if (lh) lanternUpdate(dt); if (typeof t297Update === 'function') t297Update(dt); if (typeof t302Update === 'function') t302Update(dt); if (typeof elevUpdate === 'function') elevUpdate(dt);
+      if (evg) snowfestUpdate(dt); if (py) partyUpdate(dt); if (lh) lanternUpdate(dt); if (typeof t297Update === 'function') t297Update(dt); if (typeof t302Update === 'function') t302Update(dt); if (typeof elevUpdate === 'function') elevUpdate(dt); if (typeof mnUpdate === 'function' && mode === 'mansion') mnUpdate(dt); if (typeof shUpdate === 'function' && mode === 'shelter') shUpdate(dt); if (typeof wnUpdate === 'function' && mode === 'winter') wnUpdate(dt); if (typeof vtUpdate === 'function' && mode === 'vet') vtUpdate(dt);
       if (hm) hauntUpdate(dt);
       if (db) danceUpdate(dt);
       if (dh) dreamhouseUpdate(dt);
@@ -34400,6 +35754,8 @@ function dhLayoutHud(){
       if (mode === 'elevator' && typeof elevKey === 'function' && elevKey(e)) return;
       if (mode === 'mansion' && typeof mnKey === 'function' && mnKey(e)) return;
       if (mode === 'shelter' && typeof shKey === 'function' && shKey(e)) return;
+      if (mode === 'winter' && typeof wnKey === 'function' && wnKey(e)) return;
+      if (mode === 'vet' && typeof vtKey === 'function' && vtKey(e)) return;
       if (mode === 'snowfest' && typeof evg !== 'undefined' && evg && typeof snowfestKey === 'function' && snowfestKey(e)) return;
       if (mode === 'party' && typeof py !== 'undefined' && py && typeof partyKey === 'function' && partyKey(e)) return;
       const em = (typeof EmoRules !== 'undefined' && EmoRules.emoByCode) ? EmoRules.emoByCode(e.code, EMOTES) : Object.keys(EMOTES).find(k => { const key = EMOTES[k].key; return key != null && key !== '' && ('Digit' + key === e.code || 'Numpad' + key === e.code); });
@@ -34428,7 +35784,9 @@ function dhLayoutHud(){
     });
     addEventListener('keyup', e => { if (typeof dhNoteLookKey === 'function') dhNoteLookKey(e, false); keys[e.code] = false; if (e.key) keys[e.key] = false; if (['garden','meadow','rides','hive','camp'].includes(mode) && typeof t302Key === 'function' && t302Key(e)) return; if (mode === 'elevator' && typeof elevKey === 'function' && elevKey(e)) return;
       if (mode === 'mansion' && typeof mnKey === 'function' && mnKey(e)) return;
-      if (mode === 'shelter' && typeof shKey === 'function' && shKey(e)) return; });
+      if (mode === 'shelter' && typeof shKey === 'function' && shKey(e)) return;
+      if (mode === 'winter' && typeof wnKey === 'function' && wnKey(e)) return;
+      if (mode === 'vet' && typeof vtKey === 'function' && vtKey(e)) return; });
     const clearHeldKeys = () => {
       for (const k in keys) keys[k] = false;
       if (typeof joy !== 'undefined' && joy){ joy.x = joy.y = 0; joy.jump = false; }
@@ -34812,7 +36170,7 @@ function dhLayoutHud(){
   }
 
 function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party', 'snowfest', 'cafe', 'fish', 'petshow', 'hunt', 'garden', 'meadow', 'rides', 'hive', 'camp', 'elevator', 'mansion', 'shelter'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt' || mode === 'garden' || mode === 'meadow' || mode === 'rides' || mode === 'hive' || mode === 'camp' || mode === 'elevator' || mode === 'mansion' || mode === 'shelter' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party', 'snowfest', 'cafe', 'fish', 'petshow', 'hunt', 'garden', 'meadow', 'rides', 'hive', 'camp', 'elevator', 'mansion', 'shelter', 'winter', 'vet'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt' || mode === 'garden' || mode === 'meadow' || mode === 'rides' || mode === 'hive' || mode === 'camp' || mode === 'elevator' || mode === 'mansion' || mode === 'shelter' || mode === 'winter' || mode === 'vet' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     recordRecentGame(mode);
@@ -34869,6 +36227,8 @@ function start(m = 'obby', d = null){
     else if (mode === 'pets') banner(pt && pt.s.pets.length ? '🐾 Welcome back, ' + pt.s.pets[pt.s.a].n + '!' : '🐾 Adopt a Pet! Drive to the Pet Shelter');
     else if (mode === 'mansion') banner(typeof mnLess === 'function' && mnLess() ? '😌 Mallowmist Manor feels milder tonight.' : '🕯️ Welcome to Mallowmist Manor — find notes, solve the parlor pictures, and tip-toe past Nimble.');
     else if (mode === 'shelter') banner('🐾 Welcome to Wagwell Shelter! Rescue strays, cheer them up, and match them with visiting families.');
+    else if (mode === 'winter') banner('🎄 Welcome to Pinebell Village! Sled, skate, build a snow pal, and sip cocoa.');
+    else if (mode === 'vet') banner('🩺 Welcome to Pawsley Vet Clinic! First-person only — walk the rooms, check the chart, and help every pal feel better.');
     else if (diff) begin(diff);
     $('#obby').classList.toggle('rmode', mode === 'race'); ['#rcLapBox', '#rcPosBox', '#rcItem'].forEach(id => $(id).style.display = mode === 'race' ? '' : 'none'); ['#rcPick', '#rcFin'].forEach(id => $(id).classList.remove('show'));
     if (mode === 'race'){ if (!window.__rcBound){ window.__rcBound = true;
@@ -34927,7 +36287,7 @@ function start(m = 'obby', d = null){
     if (mode === 'camp') campEnter();
     if (mode === 'elevator') elevEnter();
     { const _elev = document.getElementById('elevBox'); if (_elev) _elev.style.display = mode === 'elevator' ? '' : 'none'; } { const _mn = document.getElementById('mnBox'); if (_mn) _mn.style.display = mode === 'mansion' ? '' : 'none'; } { const _sh = document.getElementById('shBox'); if (_sh) _sh.style.display = mode === 'shelter' ? '' : 'none'; }
-    $('#obby').classList.toggle('elevmode', mode === 'elevator'); $('#obby').classList.toggle('mnmode', mode === 'mansion'); $('#obby').classList.toggle('shmode', mode === 'shelter');
+    $('#obby').classList.toggle('elevmode', mode === 'elevator'); $('#obby').classList.toggle('mnmode', mode === 'mansion'); $('#obby').classList.toggle('shmode', mode === 'shelter'); $('#obby').classList.toggle('wnmode', mode === 'winter'); $('#obby').classList.toggle('vtmode', mode === 'vet');
     { const _t302 = document.getElementById('t302Box'); if (_t302) _t302.style.display = ['garden','meadow','rides','hive','camp'].includes(mode) ? '' : 'none'; }
     $('#obby').classList.toggle('gardenmode', mode === 'garden');
     $('#obby').classList.toggle('meadowmode', mode === 'meadow');
@@ -41829,11 +43189,19 @@ function start(m = 'obby', d = null){
     const wall = mnLess() ? '#6b6088' : '#3f3558';
     const floor = mnLess() ? '#c4b8a0' : '#5a4a6a';
     plat(0, 0, -36, 22, 110, floor, 0.3);
-    // outer shell
+    plat(20, 0, -20, 18, 18, mnLess() ? '#d4e8c8' : '#3e4a48', 0.3);
+    plat(20, 0, -40, 18, 18, mnLess() ? '#c8b8a0' : '#3a3040', 0.3);
+    plat(-20, 0, -58, 18, 18, mnLess() ? '#e8d8c0' : '#3a3458', 0.3);
+    plat(20, 0, -80, 18, 18, mnLess() ? '#e8e0ff' : '#2c2448', 0.3);
+    // outer shell with side-door gaps
     mnWall(0, 4, 16, 22, 8, 0.5, wall);
     mnWall(0, 4, -88, 22, 8, 0.5, wall);
-    mnWall(-11, 4, -36, 0.5, 8, 110, wall);
-    mnWall(11, 4, -36, 0.5, 8, 110, wall);
+    mnWall(-11, 4, -19, 0.5, 8, 74, wall);
+    mnWall(-11, 4, -74, 0.5, 8, 28, wall);
+    mnWall(11, 4, 0, 0.5, 8, 32, wall);
+    mnWall(11, 4, -30, 0.5, 8, 16, wall);
+    mnWall(11, 4, -59, 0.5, 8, 34, wall);
+    mnWall(11, 4, -84, 0.5, 8, 8, wall);
     mnWall(0, 8.2, -36, 22, 0.4, 110, mnLess() ? '#efe6d8' : '#2a2438');
     // room dividers with door gaps at x=0
     ;[-10, -30, -50, -70].forEach(z => {
@@ -41862,6 +43230,52 @@ function start(m = 'obby', d = null){
     plat(-3, 1.0, -60, 2.2, 1.4, '#6b4a2b', 1.0);
     mn.props.push({id:'note2', x:-3, z:-60, kind:'note', n:2, label: mnLab('📝 Hidden note', -3, 2.3, -60)});
     mnLab('📚 Library', 0, 3.2, -54);
+    // foyer clock / pull-string
+    plat(-6, 1.6, 10, 0.8, 0.8, '#6b4a2b', 3.2);
+    mn.props.push({id:'clock', x:-6, z:10, kind:'clock', label: mnLab('🕰️ Clock', -6, 3.6, 10)});
+    // Moonfern Conservatory
+    mnWall(28, 4, -20, 0.5, 8, 18, mnLess() ? '#b8d8c8' : '#355048');
+    mnWall(20, 4, -12, 16, 8, 0.5, mnLess() ? '#b8d8c8' : '#355048');
+    mnWall(20, 4, -28, 16, 8, 0.5, mnLess() ? '#b8d8c8' : '#355048');
+    mnLab('🌿 Conservatory', 20, 3.2, -14);
+    [[16,-18,0],[24,-18,1],[16,-22,2],[24,-22,3]].forEach(([x,z,i]) => {
+      plat(x, 0.4, z, 1.2, 1.2, '#3d8a5a', 0.8);
+      mn.props.push({id:'fern'+i, x, z, kind:'fern', slot:i, label: mnLab('🌿 ' + (i+1), x, 2.0, z)});
+    });
+    // Jam Cellar
+    mnWall(28, 4, -40, 0.5, 8, 18, mnLess() ? '#8a6a48' : '#3a2a28');
+    mnWall(20, 4, -32, 16, 8, 0.5, mnLess() ? '#8a6a48' : '#3a2a28');
+    mnWall(20, 4, -48, 16, 8, 0.5, mnLess() ? '#8a6a48' : '#3a2a28');
+    plat(18, 0.8, -38, 1.4, 1.0, '#c45c1a', 1.2);
+    mn.props.push({id:'crank', x:18, z:-38, kind:'crank', label: mnLab('⚙️ Crank', 18, 2.2, -38)});
+    plat(24, 0.7, -42, 1.2, 1.0, '#d9c4a0', 0.9);
+    mn.props.push({id:'scrap', x:24, z:-42, kind:'scrap', label: mnLab('📄 Scrap', 24, 2.0, -42)});
+    mnLab('🫙 Jam Cellar', 20, 3.2, -34);
+    // Chime Nook
+    mnWall(-28, 4, -58, 0.5, 8, 18, mnLess() ? '#d8c8a8' : '#322a48');
+    mnWall(-20, 4, -50, 16, 8, 0.5, mnLess() ? '#d8c8a8' : '#322a48');
+    mnWall(-20, 4, -66, 16, 8, 0.5, mnLess() ? '#d8c8a8' : '#322a48');
+    mnLab('🔔 Chime Nook', -20, 3.2, -52);
+    [[-16,-56,0],[-24,-56,1],[-16,-60,2],[-24,-60,3]].forEach(([x,z,i]) => {
+      plat(x, 1.4, z, 0.6, 0.6, '#d4a017', 1.4);
+      mn.props.push({id:'chime'+i, x, z, kind:'chime', bell:i, label: mnLab('🔔 ' + (i+1), x, 3.0, z)});
+    });
+    // Secret Attic
+    mnWall(28, 4, -80, 0.5, 8, 18, mnLess() ? '#d8c8ff' : '#2a2048');
+    mnWall(20, 4, -72, 16, 8, 0.5, mnLess() ? '#d8c8ff' : '#2a2048');
+    mnWall(20, 4, -88, 16, 8, 0.5, mnLess() ? '#d8c8ff' : '#2a2048');
+    mnLab('⭐ Secret Attic', 20, 3.2, -74);
+    [[16,-78,0],[24,-78,1],[16,-82,2],[24,-82,3]].forEach(([x,z,i]) => {
+      plat(x, 1.1, z, 1.0, 1.0, '#8b5cf6', 0.9);
+      mn.props.push({id:'star'+i, x, z, kind:'star', slot:i, label: mnLab('⭐ ' + (i+1), x, 2.3, z)});
+    });
+    plat(20, 1.0, -85, 1.4, 1.2, '#ffd23f', 1.2);
+    mn.props.push({id:'lantern', x:20, z:-85, kind:'lantern', label: mnLab('🌙 Moon lantern', 20, 2.6, -85)});
+    const moth = new THREE.Group();
+    const mw = new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 8), mnMat(mnLess() ? '#fff4d6' : '#e8d0ff', {emissive: mnLess() ? '#ffe9a0' : '#4a3080'}));
+    mw.position.y = 1.3; moth.add(mw);
+    moth.position.set(20, 0, -80); scene.add(moth); mnKeep(moth); mn.moth = moth;
+    mnLab('🦋 Dustmoth', 22, 2.4, -80);
     // attic / Nimble / door
     plat(0, 2.4, -86, 3.6, 0.6, '#c45c1a', 2.4);
     mn.door = {x:0, z:-86};
@@ -41887,7 +43301,13 @@ function start(m = 'obby', d = null){
   }
   function mnNear(x, z, r){ return Math.hypot((P.x - x), (P.z - z)) < (r || 2.1); }
   function mnCurrentRoom(){
-    const z = P.z;
+    const x = P.x, z = P.z;
+    if (x > 12.2){
+      if (z > -30) return 'conservatory';
+      if (z > -52) return 'cellar';
+      return 'secret';
+    }
+    if (x < -12.2) return 'chime';
     if (z > -10) return 'foyer';
     if (z > -30) return 'parlor';
     if (z > -50) return 'kitchen';
@@ -41902,6 +43322,13 @@ function start(m = 'obby', d = null){
       if (hit.kind === 'lever') return {act:() => mnDo('lever'), lab: 'Flip lever (E / Ⓧ)'};
       if (hit.kind === 'pic') return {act:() => mnDo('pic', hit), lab: 'Place portrait ' + (hit.slot+1) + ' (E / Ⓧ)'};
       if (hit.kind === 'key') return {act:() => mnDo('key'), lab: 'Search cupboard (E / Ⓧ)'};
+      if (hit.kind === 'fern') return {act:() => mnDo('fern', hit), lab: 'Water moonfern ' + (hit.slot+1) + ' (E / Ⓧ)'};
+      if (hit.kind === 'crank') return {act:() => mnDo('crank'), lab: 'Turn the crank (E / Ⓧ)'};
+      if (hit.kind === 'scrap') return {act:() => mnDo('scrap'), lab: 'Read the dusty scrap (E / Ⓧ)'};
+      if (hit.kind === 'clock') return {act:() => mnDo('clock'), lab: 'Pull the hidden string (E / Ⓧ)'};
+      if (hit.kind === 'chime') return {act:() => mnDo('chime', hit), lab: 'Ring chime ' + (hit.bell+1) + ' (E / Ⓧ)'};
+      if (hit.kind === 'star') return {act:() => mnDo('star', hit), lab: 'Place star charm ' + (hit.slot+1) + ' (E / Ⓧ)'};
+      if (hit.kind === 'lantern') return {act:() => mnDo('lantern'), lab: 'Take the moon lantern (E / Ⓧ)'};
     }
     if (mn.door && mnNear(mn.door.x, mn.door.z, 2.4) && mn.run.key) return {act:() => mnDo('door'), lab: 'Unlock the door (E / Ⓧ)'};
     return null;
@@ -41918,16 +43345,29 @@ function start(m = 'obby', d = null){
       if (used >= 0 && r && r.ok && !r.done){ /* placed this tile in this slot */ }
     }
     else if (kind === 'key') r = MansionRules.mnTakeKey(run);
+    else if (kind === 'fern') r = MansionRules.mnWaterFern(run, prop.slot);
+    else if (kind === 'crank') r = MansionRules.mnTurnCrank(run);
+    else if (kind === 'scrap') r = MansionRules.mnReadScrap(run);
+    else if (kind === 'clock') r = MansionRules.mnPullString(run);
+    else if (kind === 'chime') r = MansionRules.mnPlayChime(run, prop.bell);
+    else if (kind === 'star') r = MansionRules.mnPlaceStar(run, prop.slot, prop.slot);
+    else if (kind === 'lantern') r = MansionRules.mnClaimSecret(run, mn.sv);
     else if (kind === 'door') r = MansionRules.mnEscape(run, mn.sv, Date.now());
     if (!r || !r.ok){
       const why = r && r.why;
-      banner(why === 'note' ? 'Read the foyer note first.' : why === 'key' ? 'You still need the brass key.' : why === 'locked' ? 'That room is still closed.' : 'Not yet!');
+      banner(why === 'note' ? 'Read the foyer note first.' : why === 'key' ? 'You still need the brass key.' : why === 'locked' ? 'That room is still closed.' : why === 'scrap' ? 'Turn the cellar crank first.' : why === 'crank' ? 'Turn the rusty crank first.' : why === 'puzzle' ? 'Set the star charms first.' : 'Not yet!');
       return;
     }
     if (kind === 'note') banner('📝 ' + r.text);
-    if (kind === 'lever') banner('🎚️ The parlor doors creak open.');
+    if (kind === 'lever') banner('🎚️ The parlor doors creak open. A side hall leads to the Moonfern Conservatory.');
     if (kind === 'pic') banner(r.done ? '🖼️ The portraits click into place! The kitchen is open.' : '🖼️ You hung a portrait.');
-    if (kind === 'key') banner('🔑 You found the brass key!');
+    if (kind === 'key') banner('🔑 You found the brass key! Side rooms in the cellar and chime nook are unlocked.');
+    if (r.text && kind !== 'note') banner((kind === 'lantern' ? '🌙 ' : '✨ ') + r.text);
+    if (kind === 'lantern' && r.ok && r.coins){
+      mn.sv = r.state; mnSave(mn.sv);
+      try { if (typeof pay === 'function') pay(r.coins); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); } } catch (e){}
+      banner('🌙 ' + r.message + ' +' + r.coins + ' 🪙');
+    }
     if (kind === 'door' && r.ok){
       mn.sv = r.state; mnSave(mn.sv);
       try { if (typeof pay === 'function') pay(r.coins); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); } } catch (e){}
@@ -42001,16 +43441,26 @@ function start(m = 'obby', d = null){
         if (room === 'kitchen' && P.z < -30) P.z = -29.6;
         if (room === 'library' && P.z < -50) P.z = -49.6;
         if (room === 'attic' && P.z < -70) P.z = -69.6;
+        if (room === 'conservatory' && P.x > 11) P.x = 10.6;
+        if (room === 'cellar' && P.x > 11) P.x = 10.6;
+        if (room === 'chime' && P.x < -11) P.x = -10.6;
+        if (room === 'secret' && P.x > 11) P.x = 10.6;
+        if (room === 'secret' && P.z < -52 && P.x > 12 && !MansionRules.mnCanEnter(mn.run, 'secret')) P.z = -51.4;
       }
     }
     if (!mnIsGuest()){
       MansionRules.mnNimbleTick(mn.run, dt);
-      if (MansionRules.mnSeenByNimble(mn.run, P.x, P.z)) mnCaught();
+      MansionRules.mnMothTick(mn.run, dt);
+      if (MansionRules.mnSeenByNimble(mn.run, P.x, P.z) || MansionRules.mnSeenByMoth(mn.run, P.x, P.z)) mnCaught();
     }
     if (mn.ghost && mn.run.nimble){
       mn.ghost.position.x = mn.run.nimble.x;
       mn.ghost.position.z = mn.run.nimble.z;
       mn.ghost.rotation.y = mn.run.nimble.dir > 0 ? Math.PI/2 : -Math.PI/2;
+    }
+    if (mn.moth && mn.run.moth){
+      mn.moth.position.x = mn.run.moth.x;
+      mn.moth.position.z = mn.run.moth.z;
     }
     mnHud();
     if (!mnIsGuest()) mnNet();
@@ -42041,10 +43491,9 @@ function start(m = 'obby', d = null){
   if (typeof window !== 'undefined') window.mnDebug = {
     less(on){ if (!mn) return; if (on != null) mn.sv.lessScary = !on ? false : true; mn.run.lessScary = !!mn.sv.lessScary; mnSave(mn.sv); mnSky(); mnHud(); return mnLess(); },
     room(id){ if (mn){ MansionRules.mnSetRoom(mn.run, id); const s = MansionRules.mnRoom(id).spawn; P.x=s.x; P.y=s.y; P.z=s.z; } },
-    solve(){ if (!mn) return; const r=mn.run; r.note1=true; r.lever=true; r.parlorOpen=true; r.pictureDone=true; r.kitchenOpen=true; r.key=true; r.note2=true; r.atticOpen=true; mnHud(); },
-    probe(){ return mn && mn.run ? {room:mn.run.room, key:!!mn.run.key, less:mnLess(), escaped:!!mn.run.escaped} : null; }
+    solve(){ if (!mn) return; const r=mn.run; r.note1=true; r.lever=true; r.parlorOpen=true; r.pictureDone=true; r.kitchenOpen=true; r.key=true; r.note2=true; r.atticOpen=true; r.fernsDone=true; r.conservatoryOpen=true; r.crank=true; r.scrap=true; r.cellarOpen=true; r.chimeOpen=true; r.melodyDone=true; r.clockString=true; r.secretOpen=true; r.starDone=true; mnHud(); },
+    probe(){ return mn && mn.run ? {room:mn.run.room, key:!!mn.run.key, less:mnLess(), escaped:!!mn.run.escaped, secret:!!mn.run.secretOpen, ferns:!!mn.run.fernsDone} : null; }
   };
-
   /* ---------- Wagwell Shelter ---------- */
   let sh = null;
   function shKeep(m){ if (m && sh && sh.trash) sh.trash.push(m); return m; }
@@ -42101,8 +43550,8 @@ function start(m = 'obby', d = null){
     wallb(-9, 3, -10, 0.4, 6, 16, wall);
     wallb(9, 3, -10, 0.4, 6, 16, wall);
     wallb(0, 6.2, -10, 18, 0.35, 16, '#fff4e0');
-    wallb(-5, 3, -2, 8, 6, 0.4, wall);
-    wallb(5, 3, -2, 8, 6, 0.4, wall);
+    wallb(-5.4, 3, -2, 7.2, 6, 0.4, wall);
+    wallb(5.4, 3, -2, 7.2, 6, 0.4, wall);
     shMesh(new THREE.BoxGeometry(2.4, 0.2, 1.6), '#c45c1a', 0, 0.9, -8);
     sh.desk = {x:0, z:-8};
     // town street / park / alley
@@ -42112,6 +43561,36 @@ function start(m = 'obby', d = null){
     shLab('🌳 Park', 14, 2.2, 16);
     shLab('🪵 Alley', -14, 2.2, 18);
     shLab('🛎️ Front desk', 0, 2.2, -8);
+    // Grooming salon
+    plat(22, 0, -2, 14, 16, '#f8d0e8', 0.28);
+    function wallb2(x,y,z,w,h,d,c){ const b=plat(x,y+h/2,z,w,d,c,h); if(b&&b.mesh) shKeep(b.mesh); if(b) sh.solids.push(b); return b; }
+    wallb2(22, 3, -10, 14, 6, 0.4, '#ffd0ea');
+    wallb2(15, 3, -2, 0.4, 6, 16, '#ffd0ea');
+    wallb2(29, 3, -2, 0.4, 6, 16, '#ffd0ea');
+    wallb2(22, 6.2, -2, 14, 0.35, 16, '#fff0f8');
+    wallb2(17.6, 3, 6, 5.2, 6, 0.4, '#ffd0ea');
+    wallb2(26.4, 3, 6, 5.2, 6, 0.4, '#ffd0ea');
+    sh.salon = {x:22, z:-2};
+    sh.stations = [
+      {id:'wash', x:18, z:0, act:'wash', lab:'Wash'},
+      {id:'brush', x:26, z:0, act:'brush', lab:'Brush'},
+      {id:'trim', x:18, z:-4, act:'trim', lab:'Trim'},
+      {id:'bow', x:26, z:-4, act:'bow', lab:'Bow'},
+      {id:'dye', x:22, z:-6, act:'dye', lab:'Color'}
+    ];
+    sh.stations.forEach(s => {
+      shMesh(new THREE.CylinderGeometry(0.7, 0.8, 0.6, 10), '#fff', s.x, 0.4, s.z);
+      shLab('✂️ ' + s.lab, s.x, 1.6, s.z);
+    });
+    shLab('💇 Grooming Salon', 22, 3.2, 4);
+    // Contest lawn and judge
+    plat(-20, 0, -6, 14, 16, '#c8e8a8', 0.22);
+    shMesh(new THREE.BoxGeometry(5, 0.3, 3.2), '#f4e8a8', -20, 0.4, -8);
+    sh.stage = {x:-20, z:-8};
+    const judge = shPetMesh('cat', 1);
+    judge.position.set(-20, 0, -12); scene.add(judge); shKeep(judge);
+    shLab('🏅 Judge Bramble', -20, 2.0, -12);
+    shLab('🎀 Contest Lawn', -20, 3.0, -2);
     const amb = new THREE.AmbientLight(0xfff6e8, 0.75); scene.add(amb); shKeep(amb);
     const sun = new THREE.DirectionalLight(0xfff0c8, 0.6); sun.position.set(8, 14, 10); scene.add(sun); shKeep(sun);
     Object.assign(P, {x:0, y:0.5, z:6, vx:0, vy:0, vz:0});
@@ -42165,8 +43644,72 @@ function start(m = 'obby', d = null){
     if (sh.desk && shNear(sh.desk.x, sh.desk.z, 2.4)){
       return {lab:'Front desk: match or upgrades (E / Ⓧ)', act:() => shOpenDesk()};
     }
+    const st = (sh.stations||[]).find(s => shNear(s.x, s.z, 2.1));
+    if (st){
+      const pet = shSalonPet();
+      return {lab: pet ? (st.lab + ' ' + pet.name + ' (E / Ⓧ)') : 'Bring a pal to the salon (E / Ⓧ)', act:() => shSalonDo(st)};
+    }
+    if (sh.stage && shNear(sh.stage.x, sh.stage.z, 3)){
+      const show = sh.show;
+      if (show && show.open && !show.judged) return {lab:'Enter the ' + show.name + ' show (E / Ⓧ)', act:() => shEnter()};
+      if (show && !show.judged && show.entries && show.entries.length) return {lab:'Ask Judge Bramble to score (E / Ⓧ)', act:() => shJudge()};
+      return {lab:'Start a pet contest (E / Ⓧ)', act:() => shBeginShow()};
+    }
     return null;
   }
+  function shSalonPet(){
+    if (!sh) return null;
+    if (sh.curs) return (sh.sv.pets||[]).find(p => p.id === sh.curs) || (sh.sv.pets||[])[0];
+    return (sh.sv.pets||[])[0] || null;
+  }
+  const SH_SALON_CHOICE = {
+    trim: ['neat','fluffy','swirl'],
+    bow: ['red','blue','gold'],
+    dye: ['peach','mint','lilac','butter'],
+    trick: ['sit','spin','bow','wave']
+  };
+  function shSalonDo(st){
+    const pet = shSalonPet();
+    if (!pet){ banner('Rescue a pal first, then walk them into the salon!'); return; }
+    sh.curs = pet.id;
+    let choice = undefined;
+    if (SH_SALON_CHOICE[st.act]){
+      sh.choiceI = ((sh.choiceI|0)+1) % SH_SALON_CHOICE[st.act].length;
+      choice = SH_SALON_CHOICE[st.act][sh.choiceI];
+    }
+    const r = ShelterRules.shGroom(sh.sv, pet.id, st.act, choice);
+    if (!r.ok){ banner('The salon is busy — try another station.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    banner('💇 ' + pet.name + ' got a ' + st.lab.toLowerCase() + (choice ? (' (' + choice + ')') : '') + '! Happiness ' + ShelterRules.shHappiness(r.pet) + (r.well ? ' — looking show-ready!' : ''));
+    shHud(); shNet();
+  }
+  function shBeginShow(){
+    const ids = ShelterRules.SH_CONTESTS;
+    sh.showI = ((sh.showI|0)+1) % ids.length;
+    const mode = (typeof mp !== 'undefined' && mp && mp.on) ? 'versus' : 'solo';
+    sh.show = ShelterRules.shNewShow(ids[sh.showI].id, Date.now(), mode);
+    banner(ids[sh.showI].emoji + ' Judge Bramble opened the ' + ids[sh.showI].name + ' contest! ' + (mode === 'versus' ? 'Friends can enter too — no NPC rivals.' : 'Enter your pal for a ribbon.'));
+    shHud(); shNet();
+  }
+  function shEnter(){
+    const pet = shSalonPet();
+    if (!pet){ banner('Cheer a pal up or groom them, then enter!'); return; }
+    const me = {id: (typeof mp !== 'undefined' && mp && mp.me) ? mp.me : 'me', name: (typeof player !== 'undefined' && player && player.name) || 'You'};
+    const r = ShelterRules.shEnterShow(sh.show, pet, me);
+    banner(r.ok ? ('🎀 ' + pet.name + ' entered the ' + sh.show.name + ' show!') : (r.why === 'npc' ? 'Only real players can enter.' : r.why === 'in' ? 'That pal is already in.' : 'The show is not open.'));
+    shHud(); shNet();
+  }
+  function shJudge(){
+    if (!sh.show) return;
+    const r = ShelterRules.shJudgeShow(sh.sv, sh.show);
+    if (!r.ok){ banner(r.why === 'empty' ? 'Someone needs to enter first.' : 'Judge Bramble is waiting.'); return; }
+    sh.sv = r.state; shSave(sh.sv); sh.show = r.show;
+    if (r.coins) shPay(r.coins);
+    const top = (r.show.entries || [])[0];
+    banner('🏅 ' + r.message + (top ? (' ' + top.petName + ' got a ' + top.ribbon + ' ribbon!') : '') + ' +' + r.coins + ' 🪙');
+    shHud(); shNet();
+  }
+
   function shRescue(stray){
     const r = ShelterRules.shRescue(sh.sv, stray);
     if (!r.ok){ banner(r.why === 'full' ? 'The kennels are full — upgrade for more beds!' : 'Cannot rescue that pal right now.'); return; }
@@ -42230,7 +43773,8 @@ function start(m = 'obby', d = null){
     const hint = document.getElementById('shHint');
     if (hint && sh){
       const fam = sh.family;
-      hint.textContent = '🐾 ' + (sh.sv.pets||[]).length + '/' + (sh.sv.ups.kennels?6:sh.sv.kennels||2) + ' pals  ·  rescued ' + (sh.sv.rescued||0) + '  ·  homes ' + (sh.sv.matched||0) + (fam ? ('  ·  ' + fam.name + ' want a ' + fam.wishTrait + ' ' + fam.wishKind) : '');
+      const show = sh.show;
+      hint.textContent = '🐾 ' + (sh.sv.pets||[]).length + '/' + (sh.sv.ups.kennels?6:sh.sv.kennels||2) + ' pals  ·  rescued ' + (sh.sv.rescued||0) + '  ·  homes ' + (sh.sv.matched||0) + (sh.sv.trophies ? ('  ·  🏆 ' + sh.sv.trophies) : '') + (show ? ('  ·  ' + (show.emoji||'🎀') + ' ' + show.name) : '') + (fam ? ('  ·  ' + fam.name + ' want a ' + fam.wishTrait + ' ' + fam.wishKind) : '');
     }
     const btn = document.getElementById('shAct');
     const p = shPrompt();
@@ -42259,11 +43803,12 @@ function start(m = 'obby', d = null){
   }
   function shUpdate(){ if (sh) shHud(); }
   function shIsGuest(){ try { return !!(typeof mp !== 'undefined' && mp && mp.on && !mp.host); } catch(e){ return false; } }
-  function shWire(){ return sh ? ShelterRules.shWire(sh.sv, {family: sh.family, strays: sh.strays}) : null; }
+  function shWire(){ return sh ? ShelterRules.shWire(sh.sv, {family: sh.family, strays: sh.strays, show: sh.show}) : null; }
   function shApply(snap){
     if (!sh || !snap) return;
     if (Array.isArray(snap.pets)) sh.sv.pets = snap.pets;
     if (snap.family) sh.family = snap.family;
+    if (snap.show) sh.show = snap.show;
     shHud();
   }
   function shNet(){
@@ -42288,7 +43833,832 @@ function start(m = 'obby', d = null){
   if (typeof window !== 'undefined') window.shDebug = {
     spawn(){ if (sh) shSpawnStrays(); },
     fill(){ if (!sh) return; (sh.sv.pets||[]).forEach(p => { p.fed=p.clean=p.play=90; p.happy=90; }); shSave(sh.sv); shHud(); },
-    probe(){ return sh ? {pets:(sh.sv.pets||[]).length, family: sh.family && sh.family.id, strays:(sh.strays||[]).length} : null; }
+    salon(){ if (!sh) return; P.x=22; P.y=0.5; P.z=-2; },
+    contest(){ if (!sh) return; P.x=-20; P.y=0.5; P.z=-8; if (!sh.show) shBeginShow(); },
+    probe(){ return sh ? {pets:(sh.sv.pets||[]).length, family: sh.family && sh.family.id, strays:(sh.strays||[]).length, show: sh.show && sh.show.id, salon:!!sh.salon} : null; }
+  };
+  /* ---------- Pinebell Village ---------- */
+  let wn = null;
+  function wnKeep(m){ if (m && wn && wn.trash) wn.trash.push(m); return m; }
+  function wnMat(c,o){ return new THREE.MeshLambertMaterial(Object.assign({color:c}, o||{})); }
+  function wnMesh(geo,c,x,y,z){ const m=new THREE.Mesh(geo, wnMat(c)); m.position.set(x,y,z); scene.add(m); return wnKeep(m); }
+  function wnState(){ return WinterRules.wnLoad(typeof load === 'function' ? load(WinterRules.WN_KEY, null) : null); }
+  function wnSave(s){ if (typeof save === 'function') save(WinterRules.WN_KEY, s); if (wn) wn.sv = s; }
+  function wnPay(n){
+    try {
+      if (typeof pay === 'function'){ pay(n); return; }
+      if (typeof coins === 'number'){ coins += n; if (typeof save === 'function') save('rubloxCoins', coins); }
+    } catch (e){}
+  }
+  function wnSpend(n){
+    try {
+      if (typeof coins === 'number'){
+        if (coins < n) return false;
+        coins -= n; if (typeof save === 'function') save('rubloxCoins', coins); return true;
+      }
+    } catch (e){}
+    return false;
+  }
+  function wnCoins(){ try { return (typeof coins === 'number') ? coins : 0; } catch(e){ return 0; } }
+  function drawWinter(ctx){
+    if (typeof sky === 'function') sky(ctx, '#9fd4ff', '#fff8ee');
+    else { ctx.fillStyle = '#9fd4ff'; ctx.fillRect(0,0,320,200); }
+    ctx.fillStyle = '#f4fbff'; ctx.fillRect(0, 130, 320, 70);
+    ctx.fillStyle = '#c45c1a'; ctx.fillRect(40, 90, 80, 50);
+    ctx.fillStyle = '#8b2e1a'; ctx.beginPath(); ctx.moveTo(30,90); ctx.lineTo(80,50); ctx.lineTo(130,90); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.fillRect(200, 100, 90, 40);
+    ctx.fillStyle = '#8fd3ff'; ctx.beginPath(); ctx.ellipse(240, 170, 40, 14, 0, 0, Math.PI*2); ctx.fill();
+    ctx.font = '24px sans-serif'; ctx.fillText('🎄', 70, 80); ctx.fillText('🛷', 210, 90); ctx.fillText('☕', 100, 120);
+    if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#3a86ff');
+  }
+  function wnLab(text,x,y,z){
+    try { if (typeof t297Lab === 'function'){ const m=t297Lab(text,x,y,z); if(m) return wnKeep(m); } } catch(e){}
+    return wnMesh(new THREE.BoxGeometry(0.2,0.2,0.2),'#fff',x,y,z);
+  }
+  function wnWall(x,y,z,w,h,d,c){
+    const b = plat(x, y+h/2, z, w, d, c, h);
+    if (b && b.mesh){ b.mesh.material = wnMat(c); wnKeep(b.mesh); }
+    if (b && wn) wn.solids.push(b);
+    return b;
+  }
+  function wnSplitWall(along, a0, a1, fixed, gaps, color){
+    const h = (typeof WinterRules !== 'undefined' && WinterRules.WN_WALL_H) || 5.2;
+    const doorH = (typeof WinterRules !== 'undefined' && WinterRules.WN_DOOR_H) || 4.2;
+    const th = 0.42;
+    const opens = (gaps || []).map(g => ({a:g.c - g.w/2, b:g.c + g.w/2})).sort((p,q) => p.a - q.a);
+    let cursor = a0;
+    function seg(lo, hi, y, hh){
+      if (hi - lo < 0.15) return;
+      const mid = (lo + hi) / 2, len = hi - lo;
+      if (along === 'x') wnWall(mid, y + hh/2, fixed, len, hh, th, color);
+      else wnWall(fixed, y + hh/2, mid, th, hh, len, color);
+    }
+    opens.forEach(op => {
+      seg(cursor, op.a, 0, h);
+      seg(op.a, op.b, doorH, h - doorH);
+      cursor = op.b;
+    });
+    seg(cursor, a1, 0, h);
+  }
+  function wnCottage(x,z,c,roof, opts){
+    const w = (opts && opts.w) || 6, d = (opts && opts.d) || 5;
+    const doorW = (typeof WinterRules !== 'undefined' && WinterRules.WN_DOOR_W) || 3.6;
+    const wallH = (typeof WinterRules !== 'undefined' && WinterRules.WN_WALL_H) || 5.2;
+    const x0 = x - w/2, x1 = x + w/2, z0 = z - d/2, z1 = z + d/2;
+    wnSplitWall('x', x0, x1, z0, [], c);
+    wnSplitWall('z', z0, z1, x0, [], c);
+    wnSplitWall('z', z0, z1, x1, [], c);
+    wnSplitWall('x', x0, x1, z1, [{c:x, w:doorW}], c);
+    const r = new THREE.Mesh(new THREE.ConeGeometry(Math.max(w, d) * 0.72, 2.2, 4), wnMat(roof));
+    r.position.set(x, wallH + 0.9, z); r.rotation.y = Math.PI/4; scene.add(r); wnKeep(r);
+    wnMesh(new THREE.BoxGeometry(0.8, 0.8, 0.1), '#ffd23f', x-1.4, 2.4, z1 + 0.06);
+  }
+  function buildWinter(){
+    const started = WinterRules.wnNewVisit(wnState(), Date.now());
+    wn = {trash:[], solids:[], sv: started.state, run: started.run, sledMesh:null, snowmanMesh:null};
+    scene.background = new THREE.Color('#9fd4ff');
+    if (scene.fog){ scene.fog.color.set('#dcefff'); scene.fog.near = 22; scene.fog.far = 110; }
+    plat(0, 0, 10, 90, 170, '#f4fbff', 0.28);
+    // Sledwhistle Hill
+    for (let i = 0; i < 10; i++){
+      const z = -70 + i * 12, y = 14 - i * 1.4;
+      plat(0, y, z, 18, 12, i % 2 ? '#eef8ff' : '#e4f2ff', 1.2);
+    }
+    plat(0, 0.2, 48, 20, 16, '#eef8ff', 0.4);
+    wnLab('🛷 Sledwhistle Hill', 0, 16, -70);
+    wnLab('🏁 Finish', 0, 2.2, 48);
+    wn.lift = {x:0, z:-70};
+    wn.finish = {x:0, z:48};
+    // Village
+    wnCottage(-16, 8, '#c45c1a', '#8b2e1a', {w:7, d:5.5});
+    wnCottage(16, 12, '#3a86ff', '#1d4a8a');
+    wnCottage(-6, 22, '#2ec27e', '#1a6b44');
+    wnLab('🎄 Pinebell Village', 0, 3.6, 4);
+    // Cocoa shop lives in the red cottage; the mug sits just inside the doorway
+    wnMesh(new THREE.CylinderGeometry(0.5, 0.6, 0.8, 10), '#5a2a12', -16, 1.1, 10.2);
+    wn.cocoa = {x:-16, z:10.75};
+    wnLab('☕ Mugsy’s Cocoa', -16, 3.6, 11.2);
+    // Skating pond
+    const pond = new THREE.Mesh(new THREE.CircleGeometry(7.5, 24), wnMat('#b8e8ff'));
+    pond.rotation.x = -Math.PI/2; pond.position.set(16, 0.32, -2); scene.add(pond); wnKeep(pond);
+    wn.pond = {x:16, z:-2};
+    wnLab('⛸️ Glassgill Pond', 16, 2.4, 6);
+    // Snowman yard + practice posts
+    wn.yard = {x:6, z:22};
+    wnLab('☃️ Snow pal yard', 6, 2.2, 26);
+    wn.posts = [{x:-8,z:22},{x:-12,z:20},{x:-6,z:18}];
+    wn.posts.forEach((p,i) => {
+      wnMesh(new THREE.CylinderGeometry(0.25, 0.3, 1.4, 8), '#c45c1a', p.x, 0.7, p.z);
+      wnLab('🎯 Post ' + (i+1), p.x, 2.0, p.z);
+    });
+    wnLab('❄️ Practice tosses', -8, 2.6, 26);
+    const amb = new THREE.AmbientLight(0xf4fbff, 0.8); scene.add(amb); wnKeep(amb);
+    const sun = new THREE.DirectionalLight(0xfff4e0, 0.55); sun.position.set(10, 18, 8); scene.add(sun); wnKeep(sun);
+    // gentle snow flakes
+    wn.flakes = [];
+    for (let i=0;i<40;i++){
+      const f = wnMesh(new THREE.SphereGeometry(0.08, 5, 5), '#ffffff', (Math.random()-0.5)*70, 4+Math.random()*12, (Math.random()-0.5)*120);
+      wn.flakes.push({m:f, s: 0.8+Math.random()*1.4});
+    }
+    Object.assign(P, {x:0, y:0.5, z:8, vx:0, vy:0, vz:0});
+    if (typeof cam !== 'undefined' && cam){ cam.yaw = 0; cam.pitch = 0.38; cam.dist = 14; }
+    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:8}, flag:new THREE.Object3D()};
+    wnPaintSnowman();
+    wnBind();
+    wnHud();
+    banner('🎄 Welcome to Pinebell Village! Sled, skate, build a snow pal, sip cocoa, and toss practice snowballs. Races and snowball fights are for real friends only.');
+  }
+  function wnPaintSnowman(){
+    if (wn.snowmanMesh){ try{ scene.remove(wn.snowmanMesh);}catch(e){} }
+    const parts = (wn.run && wn.run.snowman && wn.run.snowman.parts) || [];
+    if (!parts.length){ wn.snowmanMesh = null; return; }
+    const g = new THREE.Group();
+    const add = (y,r) => { const m=new THREE.Mesh(new THREE.SphereGeometry(r,10,8), wnMat('#f8fbff')); m.position.y=y; g.add(m); };
+    if (parts.indexOf('base')>=0) add(0.7, 0.7);
+    if (parts.indexOf('mid')>=0) add(1.6, 0.5);
+    if (parts.indexOf('head')>=0) add(2.3, 0.35);
+    if (parts.indexOf('hat')>=0){ const h=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.22,0.28,8), wnMat('#1d2340')); h.position.y=2.7; g.add(h); }
+    if (parts.indexOf('buttons')>=0){ [1.45,1.7,1.95].forEach(y => { const b=new THREE.Mesh(new THREE.SphereGeometry(0.06,6,6), wnMat('#1d2340')); b.position.set(0,y,0.48); g.add(b); }); }
+    if (parts.indexOf('scarf')>=0){ const s=new THREE.Mesh(new THREE.TorusGeometry(0.32,0.07,6,10), wnMat('#ff6fb5')); s.position.y=2.05; s.rotation.x=Math.PI/2; g.add(s); }
+    g.position.set(6, 0, 22); scene.add(g); wnKeep(g); wn.snowmanMesh = g;
+  }
+  function wnNear(x,z,r){ return Math.hypot(P.x-x, P.z-z) < (r||2.4); }
+  function wnPrompt(){
+    if (!wn) return null;
+    if (wn.run.sled && wn.run.sled.on && !wn.run.sled.done) return {lab:'Steer with the stick · Ⓐ jump · Ⓑ hop off', act:() => wnHopOff()};
+    if (wn.lift && wnNear(wn.lift.x, wn.lift.z, 4)) return {lab:'Start a timed sled run (E / Ⓧ)', act:() => wnStartSled()};
+    if (wn.finish && wnNear(wn.finish.x, wn.finish.z, 4) && wn.run.sled && wn.run.sled.done) return {lab:'Collect your sled coins (E / Ⓧ)', act:() => wnCashSled()};
+    if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)) return {lab:'☕ Buy cocoa (E) or serve a mug (F / hold Ⓧ)', act:() => wnCocoa(false)};
+    if (wn.pond && wnNear(wn.pond.x, wn.pond.z, 8)){
+      if (wn.run.skate && wn.run.skate.on) return {lab:'Skate a loop · Ⓑ cash laps', act:() => wnCashSkate()};
+      return {lab:'Start skating (E / Ⓧ)', act:() => wnStartSkate()};
+    }
+    if (wn.yard && wnNear(wn.yard.x, wn.yard.z, 3.2)) return {lab:'Build the snow pal (E / Ⓧ)', act:() => wnBuild()};
+    const post = (wn.posts||[]).find(p => wnNear(p.x, p.z, 2.2));
+    if (post) return {lab:'Practice snowball (E / Ⓧ)', act:() => wnToss('practice')};
+    return null;
+  }
+  function wnStartSled(){
+    WinterRules.wnSledStart(wn.run, Date.now());
+    P.x = wn.run.sled.x; P.y = wn.run.sled.y; P.z = wn.run.sled.z;
+    banner('🛷 Whoosh! Steer with A/D or the left stick, jump the bumps, and beat the clock.');
+    wnHud();
+  }
+  function wnHopOff(){
+    if (wn.run.sled){ wn.run.sled.on = false; }
+    banner('You hopped off the sled.');
+    wnHud();
+  }
+  function wnCashSled(){
+    const r = WinterRules.wnSledFinish(wn.run, wn.sv);
+    if (!r.ok){ banner('Finish a run first!'); return; }
+    wn.sv = r.state; wnSave(wn.sv); wnPay(r.coins);
+    banner('🏁 ' + r.message + ' ' + r.time.toFixed(1) + 's, ' + r.jumps + ' jumps. +' + r.coins + ' 🪙');
+    wnHud(); wnNet();
+  }
+  function wnStartSkate(){
+    WinterRules.wnSkateStart(wn.run);
+    banner('⛸️ Skate a loop around Glassgill Pond! Cash in laps when you are done.');
+    wnHud();
+  }
+  function wnCashSkate(){
+    const r = WinterRules.wnSkateBank(wn.run, wn.sv);
+    if (!r.ok){ banner('Complete a full loop first!'); return; }
+    wn.sv = r.state; wnSave(wn.sv); wnPay(r.coins);
+    wn.run.skate.on = false;
+    banner('⛸️ ' + r.laps + ' loop' + (r.laps>1?'s':'') + '! +' + r.coins + ' 🪙');
+    wnHud(); wnNet();
+  }
+  function wnBuild(){
+    const r = WinterRules.wnAddSnowmanPart(wn.run);
+    if (!r.ok && r.why === 'done'){
+      const fin = WinterRules.wnFinishSnowman(wn.run, wn.sv);
+      if (fin.ok && fin.coins){ wn.sv = fin.state; wnSave(wn.sv); wnPay(fin.coins); banner('☃️ ' + fin.message + ' +' + fin.coins + ' 🪙'); }
+      else banner('Your snow pal is already complete!');
+      wnPaintSnowman(); wnHud(); wnNet(); return;
+    }
+    if (!r.ok){ banner(r.need ? ('Next, add the ' + r.need + '.') : 'Try the snow yard!'); return; }
+    wnPaintSnowman();
+    banner(r.done ? '☃️ The snow pal is ready — tap again to celebrate!' : ('☃️ Added the ' + r.parts[r.parts.length-1] + '.' + (r.need ? ' Next: ' + r.need + '.' : '')));
+    if (r.done){ /* wait for second tap to claim */ }
+    wnHud();
+  }
+  function wnCocoa(serve){
+    if (serve){
+      const r = WinterRules.wnServeCocoa(wn.run, wn.sv);
+      if (r.ok){ wn.sv = r.state; wnSave(wn.sv); wnPay(r.coins); banner('☕ ' + r.message + ' +' + r.coins + ' 🪙'); }
+      wnHud(); wnNet(); return;
+    }
+    const r = WinterRules.wnBuyCocoa(wn.sv, wnCoins());
+    if (!r.ok){ banner('Need 5 coins for a mug — or press F to serve one.'); return; }
+    if (!wnSpend(r.cost)){ banner('Need 5 coins for a mug.'); return; }
+    wn.sv = r.state; wnSave(wn.sv);
+    wn.run.cocoa.warm = r.warm;
+    banner('☕ Mugsy hands you a toasty cocoa! Sled runs feel braver.');
+    wnHud(); wnNet();
+  }
+  function wnToss(toId){
+    const me = (typeof mp !== 'undefined' && mp && mp.me) ? mp.me : 'me';
+    const roster = (typeof mp !== 'undefined' && mp && mp.on && typeof mpRoster === 'function') ? (mpRoster() || []) : [];
+    const r = WinterRules.wnThrowSnowball(wn.run, wn.sv, me, toId, roster);
+    if (!r.ok){ banner(r.why === 'npc' ? 'Snowball fights are for real friends only. Try a practice post!' : 'Wait a tiny second…'); return; }
+    wn.sv = r.state; wnSave(wn.sv); if (r.coins) wnPay(r.coins);
+    banner(r.fight ? ('❄️ Hit! +' + r.coins + ' 🪙') : ('❄️ Practice toss! +' + r.coins + ' 🪙'));
+    wnHud(); wnNet();
+  }
+  function wnHud(){
+    const hint = document.getElementById('wnHint');
+    if (hint && wn){
+      const s = wn.sv, run = wn.run;
+      const sled = run.sled && run.sled.on ? ('  ·  🛷 ' + (run.sled.t||0).toFixed(1) + 's') : (s.sledBest ? ('  ·  best ' + Number(s.sledBest).toFixed(1) + 's') : '');
+      hint.textContent = '🎄 Pinebell  ·  🪙 ' + (s.coinsEarned||0) + ' earned  ·  ☃️ ' + (s.snowmen||0) + '  ·  ⛸️ ' + (s.skateLaps||0) + sled;
+    }
+    const btn = document.getElementById('wnAct');
+    const p = wnPrompt();
+    if (btn){ if (p){ btn.textContent = p.lab; btn.classList.add('show'); } else btn.classList.remove('show'); }
+  }
+  function wnAct(){ const p = wnPrompt(); if (p) p.act(); }
+  function wnKey(e){
+    if (!wn) return false;
+    if (e.type === 'keyup') return false;
+    const c = e.code || e.key;
+    if (c === 'KeyE'){ wnAct(); return true; }
+    if (c === 'KeyF'){ if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)){ wnCocoa(true); return true; } wnAct(); return true; }
+    if (c === 'Space' && wn.run.sled && wn.run.sled.on){ WinterRules.wnSledJump(wn.run); return true; }
+    if ((c === 'KeyA' || c === 'ArrowLeft') && wn.run.sled && wn.run.sled.on){ WinterRules.wnSledSteer(wn.run, -1, 0.08); return true; }
+    if ((c === 'KeyD' || c === 'ArrowRight') && wn.run.sled && wn.run.sled.on){ WinterRules.wnSledSteer(wn.run, 1, 0.08); return true; }
+    return false;
+  }
+  function wnPad(jp, s){
+    if (!wn) return false;
+    if (wn.run.sled && wn.run.sled.on && s){
+      WinterRules.wnSledSteer(wn.run, s.lx || 0, 0.05);
+      if (!wn._a && jp && jp[0]){ wn._a = true; WinterRules.wnSledJump(wn.run); }
+      if (jp && !jp[0]) wn._a = false;
+      if (!wn._b && jp && jp[1]){ wn._b = true; wnHopOff(); return true; }
+      if (jp && !jp[1]) wn._b = false;
+    }
+    if (!wn._x && jp && jp[2]){ wn._x = true; if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6) && wn._holdF) wnCocoa(true); else wnAct(); return true; }
+    if (jp && !jp[2]) wn._x = false;
+    if (!wn._b && jp && jp[1] && wn.run.skate && wn.run.skate.on){ wn._b = true; wnCashSkate(); return true; }
+    if (jp && !jp[1]) wn._b = false;
+    return false;
+  }
+  function wnUpdate(dt){
+    if (!wn) return;
+    dt = Math.max(0, Math.min(0.12, +dt || 0));
+    WinterRules.wnSnowballTick(wn.run, dt);
+    (wn.flakes||[]).forEach(f => {
+      if (!f.m) return;
+      f.m.position.y -= (f.s||1) * dt;
+      if (f.m.position.y < 0.4){ f.m.position.y = 12; f.m.position.x = (Math.random()-0.5)*70; f.m.position.z = (Math.random()-0.5)*120; }
+    });
+    if (wn.run.sled && wn.run.sled.on && !wn.run.sled.done){
+      WinterRules.wnSledTick(wn.run, dt);
+      P.x = wn.run.sled.x; P.y = wn.run.sled.y; P.z = wn.run.sled.z; P.vx = P.vz = 0;
+      if (wn.run.sled.done) banner('🏁 You reached the finish! Collect your coins.');
+    }
+    if (wn.run.skate && wn.run.skate.on){
+      const ax = P.x - (wn.pond.x||16), az = P.z - (wn.pond.z|| -2);
+      WinterRules.wnSkateTick(wn.run, ax, az, dt);
+    }
+    wnHud();
+    if (!wnIsGuest()) wnNet();
+  }
+  function wnIsGuest(){ try { return !!(typeof mp !== 'undefined' && mp && mp.on && !mp.host); } catch(e){ return false; } }
+  function wnWire(){ return wn ? WinterRules.wnWire(wn.sv, wn.run) : null; }
+  function wnApply(snap){ if (wn && snap){ if (snap.sledBest) wn.sv.sledBest = snap.sledBest; wnHud(); } }
+  function wnNet(){
+    if (wnIsGuest() || !wn || typeof mp === 'undefined' || !mp || !mp.on || typeof mpSend !== 'function') return;
+    try { mpSend({t:'wn', snap: wnWire()}); } catch (e){}
+  }
+  function wnFromNet(g, d){ if (d && d.snap) wnApply(d.snap); }
+  function wnFromHost(d){ wnFromNet(null, d); }
+  function wnBind(){
+    const a=document.getElementById('wnAct');
+    if (a && !a.__wn){ a.__wn=true; a.addEventListener('click', ev => { ev.preventDefault(); wnAct(); }); }
+  }
+  function winterStop(){
+    if (!wn) return;
+    (wn.solids||[]).forEach(b => { try{ b.active=false; if (typeof solids!=='undefined'){ const i=solids.indexOf(b); if(i>=0) solids.splice(i,1);} }catch(e){} });
+    (wn.trash||[]).forEach(m => { try{ scene.remove(m);}catch(e){} });
+    wn=null;
+    const box=document.getElementById('wnBox'); if(box) box.style.display='none';
+    const b=document.getElementById('wnAct'); if(b) b.classList.remove('show');
+  }
+  if (typeof window !== 'undefined') window.wnDebug = {
+    village(){ if (!wn) return; P.x=0; P.y=0.5; P.z=8; if (cam){ cam.yaw=0; cam.pitch=0.4; cam.dist=16; } },
+    sled(){ if (!wn) return; wnStartSled(); for (let i=0;i<20;i++) WinterRules.wnSledTick(wn.run, 0.08); P.x=wn.run.sled.x; P.y=wn.run.sled.y; P.z=wn.run.sled.z; if (cam){ cam.yaw=Math.PI; cam.pitch=0.28; cam.dist=12; } },
+    pond(){ if (!wn) return; P.x=16; P.y=0.5; P.z=-2; },
+    probe(){ return wn ? {area:wn.run.area, sled:!!(wn.run.sled&&wn.run.sled.on), snowman:(wn.run.snowman.parts||[]).length} : null; }
+  };
+  /* ---------- Pawsley Vet Clinic ---------- */
+  let vt = null;
+  function vtKeep(m){ if (m && vt && vt.trash) vt.trash.push(m); return m; }
+  function vtMat(c, o){ return new THREE.MeshLambertMaterial(Object.assign({color:c, side:THREE.DoubleSide}, o||{})); }
+  function vtMesh(geo, c, x, y, z, o){
+    const m = new THREE.Mesh(geo, vtMat(c, o)); m.position.set(x,y,z); scene.add(m); return vtKeep(m);
+  }
+  function vtWall(x, y, z, w, h, d, c){
+    const b = plat(x, y + h, z, w, d, c, h);
+    if (b && b.mesh){ b.mesh.material = vtMat(c); vtKeep(b.mesh); }
+    if (b && vt) vt.solids.push(b);
+    return b;
+  }
+  function vtSplitWall(along, a0, a1, fixed, gaps, color){
+    const h = (typeof VetRules !== 'undefined' && VetRules.VT_WALL_H) || 6.0;
+    const doorH = (typeof VetRules !== 'undefined' && VetRules.VT_DOOR_H) || 4.2;
+    const th = 0.42;
+    const opens = (gaps || []).map(g => ({a:g.c - g.w/2, b:g.c + g.w/2})).sort((p,q) => p.a - q.a);
+    let cursor = a0;
+    function seg(lo, hi, y, hh){
+      if (hi - lo < 0.15) return;
+      const mid = (lo + hi) / 2, len = hi - lo;
+      if (along === 'x') vtWall(mid, y, fixed, len, hh, th, color);
+      else vtWall(fixed, y, mid, th, hh, len, color);
+    }
+    opens.forEach(op => {
+      seg(cursor, op.a, 0, h);
+      seg(op.a, op.b, doorH, h - doorH);
+      cursor = op.b;
+    });
+    seg(cursor, a1, 0, h);
+  }
+  function vtState(){ return VetRules.vtLoad(typeof load === 'function' ? load(VetRules.VT_KEY, null) : null); }
+  function vtSave(s){ if (typeof save === 'function') save(VetRules.VT_KEY, s); if (vt) vt.sv = s; }
+  function vtHideFpToggle(){
+    const b = document.getElementById('oFP');
+    if (b) b.style.display = mode === 'vet' ? 'none' : '';
+  }
+  function drawVet(ctx){
+    if (typeof sky === 'function') sky(ctx, '#b8e4f2', '#f7f1de');
+    else { ctx.fillStyle = '#b8e4f2'; ctx.fillRect(0,0,320,200); }
+    ctx.fillStyle = '#f3e6c8'; ctx.fillRect(40, 70, 240, 110);
+    ctx.fillStyle = '#d9eef6'; ctx.fillRect(70, 90, 70, 70);
+    ctx.fillStyle = '#e4f3df'; ctx.fillRect(160, 90, 50, 70);
+    ctx.fillStyle = '#8b5a2b'; ctx.fillRect(148, 130, 36, 30);
+    ctx.fillStyle = '#6aa84f'; ctx.fillRect(30, 180, 260, 20);
+    ctx.font = '26px sans-serif'; ctx.fillText('🩺', 84, 86); ctx.fillText('🐾', 200, 86); ctx.fillText('📋', 155, 120);
+    if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#6ec6ff');
+  }
+  function vtLab(text, x, y, z){
+    try {
+      if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m) return vtKeep(m); }
+    } catch (e){}
+    return vtMesh(new THREE.BoxGeometry(0.2,0.2,0.2), '#fff', x, y, z);
+  }
+  function vtPetMesh(species, x, y, z){
+    const cols = {cat:'#f0c27a', dog:'#c9965a', bunny:'#f4efe8', hamster:'#e0a060', bird:'#7ec8f0', fox:'#e07a3a', otter:'#8b6a4a', star:'#f6d45a'};
+    const c = cols[species] || '#f0c27a';
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.38, 12, 10), vtMat(c));
+    body.position.y = 0.38; g.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 12, 10), vtMat(c));
+    head.position.set(0, 0.78, 0.12); g.add(head);
+    const earL = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 6), vtMat(c));
+    earL.position.set(-0.14, 0.98, 0.04); g.add(earL);
+    const earR = earL.clone(); earR.position.x = 0.14; g.add(earR);
+    const nose = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), vtMat('#f7c6c6'));
+    nose.position.set(0, 0.76, 0.36); g.add(nose);
+    g.position.set(x, y, z); scene.add(g); vtKeep(g);
+    return g;
+  }
+  function vtPersonMesh(x, y, z, color){
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.24, 0.9, 10), vtMat(color || '#7eb6ff'));
+    body.position.y = 0.7; g.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 8), vtMat('#f2d2b0'));
+    head.position.y = 1.45; g.add(head);
+    g.position.set(x, y, z); scene.add(g); vtKeep(g);
+    return g;
+  }
+  function vtProp(id, kind, x, z, label, color, h){
+    const hh = h || 0.7;
+    plat(x, hh, z, 0.7, 0.7, color || '#8ec6ff', hh);
+    const lab = vtLab(label, x, hh + 0.55, z);
+    const p = {id, kind, x, z, label: lab};
+    if (vt) vt.props.push(p);
+    return p;
+  }
+  function vtSky(){
+    const bg = '#bfe8f2';
+    scene.background = new THREE.Color(bg);
+    if (scene.fog){ scene.fog.color.set(bg); scene.fog.near = 22; scene.fog.far = 70; }
+    const hemi = new THREE.HemisphereLight(0xfff4dc, 0x7a9a88, 0.7);
+    scene.add(hemi); vtKeep(hemi);
+    const sun = new THREE.DirectionalLight(0xfff2cc, 0.75);
+    sun.position.set(8, 18, 6); scene.add(sun); vtKeep(sun);
+  }
+  function buildVet(){
+    const started = VetRules.vtNewShift(vtState(), Date.now());
+    vt = {trash:[], solids:[], props:[], targets:[], sv: started.state, run: started.run, pet:null, owner:null, prompt:null, netT:0, pitchSet:false};
+    try { checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:11.2}, flag:new THREE.Object3D()}; } catch (e){}
+    vtSky();
+    const wall = '#e8d5b5';
+    const trim = '#c9b089';
+    VetRules.VT_ROOMS.forEach(r => {
+      const fl = plat(r.x, 0, r.z, r.w, r.d, r.color, 0.3);
+      if (fl && fl.mesh) vtKeep(fl.mesh);
+      const ceilY = (typeof VetRules !== 'undefined' && VetRules.VT_CEILING_Y) || 6.2;
+      const ceil = vtMesh(new THREE.BoxGeometry(r.w + 0.2, 0.22, r.d + 0.2), '#fff6e8', r.x, ceilY, r.z);
+      if (ceil) ceil.material = vtMat('#fff1dc');
+      const lamp = new THREE.PointLight(0xfff3d0, 0.55, 18);
+      lamp.position.set(r.x, 5.2, r.z); scene.add(lamp); vtKeep(lamp);
+    });
+    // outer walls
+    vtSplitWall('x', -24, 24, 16, [], wall);
+    vtSplitWall('x', -8, 8, -40, [], wall);
+    vtSplitWall('x', -24, -8, -20, [], wall);
+    vtSplitWall('x', 8, 24, -20, [], wall);
+    vtSplitWall('z', -20, 16, -24, [], wall);
+    vtSplitWall('z', -20, 16, 24, [], wall);
+    vtSplitWall('z', -40, -20, -8, [], wall);
+    vtSplitWall('z', -40, -20, 8, [], wall);
+    // interior walls with doorways
+    vtSplitWall('x', -8, 8, 0, [{c:0, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    vtSplitWall('x', -8, 8, -20, [{c:0, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    vtSplitWall('z', -20, 0, 8, [{c:-10, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    vtSplitWall('z', -20, 0, -8, [{c:-10, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    vtSplitWall('z', 0, 16, 8, [{c:8, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    vtSplitWall('z', 0, 16, -8, [{c:8, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    // room name plaques on the far (-Z) wall, kept small
+    const plaques = {reception:[0,3.2,0.6], exam:[0,3.2,-19.4], xray:[16,3.2,-19.4], treatment:[-16,3.2,-19.4], surgery:[0,3.2,-39.4], recovery:[16,3.2,0.6], bath:[-16,3.2,0.6]};
+    VetRules.VT_ROOMS.forEach(r => {
+      const pos = plaques[r.id];
+      if (!pos) return;
+      plat(pos[0], 3.15, pos[2], 2.4, 0.12, '#5c4a32', 0.35);
+      vtLab(r.name, pos[0], pos[1], pos[2]);
+    });
+    // reception desk + waiting
+    plat(0, 0.85, 4.2, 3.2, 1.2, '#8b5a2b', 0.85);
+    vt.props.push({id:'chart', kind:'chart', x:0, z:4.2, label: vtLab('📋 Take chart', 0, 1.9, 4.2)});
+    vt.props.push({id:'pickup', kind:'pickup', x:2.2, z:5.2, label: vtLab('💛 Happy pickup', 2.2, 1.8, 5.2)});
+    plat(-4.5, 0.45, 11, 1.4, 1.1, '#d9b48a', 0.45);
+    plat(4.5, 0.45, 11, 1.4, 1.1, '#d9b48a', 0.45);
+    // exam tools
+    plat(0, 0.8, -9.5, 2.4, 1.2, '#f7fbff', 0.8);
+    vtProp('stethoscope', 'tool', -3.2, -8.2, '🩺 Stethoscope', '#3aa0c8', 0.55);
+    vtProp('ears', 'tool', 3.2, -8.2, '👂 Ear check', '#f0c27a', 0.55);
+    vtProp('eyes', 'tool', -3.2, -12.4, '👀 Eye check', '#9ad0ff', 0.55);
+    vtProp('temp', 'tool', 3.2, -12.4, '🌡️ Temperature', '#ffb3c6', 0.55);
+    // x-ray scanner
+    plat(16, 1.0, -10, 2.6, 2.6, '#5a6490', 1.0);
+    vt.props.push({id:'xray', kind:'xray', x:16, z:-10, label: vtLab('📸 Cute scanner', 16, 2.3, -10)});
+    // pharmacy shelf
+    plat(-16, 1.2, -8, 3.4, 0.6, '#c9a36b', 1.2);
+    [['syrup','🧴 Syrup', -18.2, -8],['ear-drops','💧 Ear drops', -16.6, -8],['eye-drops','👁️ Eye drops', -15, -8],['sip','🍵 Tummy sip', -13.6, -8]].forEach(([id, lab, x, z]) => {
+      vtProp(id, 'treat', x, z, lab, '#8fd19e', 0.45);
+    });
+    vtLab('Pharmacy shelf', -16, 3.15, -7.2);
+    // gentle care
+    plat(0, 0.8, -30, 2.2, 1.2, '#fff', 0.8);
+    vtProp('bandage', 'treat', -3, -29, '🩹 Bandage', '#ffd1dc', 0.5);
+    vtProp('cast', 'treat', 3, -29, '🦴 Soft cast', '#e8f0ff', 0.5);
+    vtProp('splinter', 'treat', -3, -32, '✨ Splinter lift', '#ffe9a8', 0.5);
+    vtProp('bubbles', 'treat', 3, -32, '🫧 Bubble clean', '#c8f4ff', 0.5);
+    // recovery
+    plat(14, 0.4, 6, 2.2, 1.6, '#f7c6d8', 0.4);
+    plat(18.5, 0.4, 6, 2.2, 1.6, '#f7c6d8', 0.4);
+    vt.props.push({id:'cuddle', kind:'cuddle', x:14, z:6, label: vtLab('🤗 Cuddle', 14, 1.6, 6)});
+    vt.props.push({id:'feed', kind:'feed', x:18.5, z:6, label: vtLab('🍪 Snack', 18.5, 1.6, 6)});
+    // bath
+    plat(-16, 0.45, 8, 2.6, 1.8, '#8fd4e8', 0.45);
+    vtProp('bath', 'treat', -16, 8, '🛁 Warm bath', '#8fd4e8', 0.35);
+    vt.owner = vtPersonMesh(3.4, 0, 6.2, '#7eb6ff');
+    vt.pet = vtPetMesh((vt.run.patient && vt.run.patient.species) || 'cat', 0, 0, 6.4);
+    if (typeof P !== 'undefined'){ P.x = 0; P.y = 0; P.z = 11; P.vy = 0; }
+    if (typeof cam !== 'undefined'){ cam.yaw = Math.PI; cam.pitch = 0.08; }
+    vtPlaceActors();
+    vtPaintHud();
+    vtHideFpToggle();
+    const act = document.getElementById('vtAct');
+    if (act && !act._vtBound){
+      act._vtBound = true;
+      act.addEventListener('pointerdown', function (e){ e.preventDefault(); vtAct(); });
+    }
+    const grid = document.getElementById('vtXrayGrid');
+    if (grid && !grid._vtBound){
+      grid._vtBound = true;
+      grid.addEventListener('pointerdown', function (e){
+        const b = e.target && e.target.closest ? e.target.closest('button[data-cell]') : null;
+        if (!b || !vt) return;
+        vtDoXray(+b.getAttribute('data-cell'));
+      });
+    }
+  }
+  function vtPlaceActors(){
+    if (!vt || !vt.run) return;
+    const p = vt.run.patient;
+    const phase = vt.run.phase;
+    let room = 'reception';
+    if (phase === 'exam') room = 'exam';
+    else if (phase === 'scan') room = 'xray';
+    else if (phase === 'treat' && p) room = p.treatRoom;
+    else if (phase === 'recover') room = 'recovery';
+    const r = VetRules.vtRoom(room);
+    if (vt.pet && r){
+      const species = (p && p.species) || 'cat';
+      if (vt.pet._species !== species){
+        try { scene.remove(vt.pet); } catch (e){}
+        vt.pet = vtPetMesh(species, r.x, 0, r.z);
+        vt.pet._species = species;
+      }
+      vt.pet.position.set(r.x, 0, r.z + (room === 'reception' ? -2 : 1.6));
+      vt.pet.visible = phase !== 'done';
+    }
+    if (vt.owner){
+      vt.owner.visible = phase === 'wait' || phase === 'pickup' || phase === 'done';
+      vt.owner.position.set(3.4, 0, 6.2);
+    }
+  }
+  function vtPaintHud(){
+    if (!vt || !vt.run) return;
+    const hint = document.getElementById('vtHint');
+    const body = document.getElementById('vtChartBody');
+    const box = document.getElementById('vtBox');
+    const xray = document.getElementById('vtXray');
+    const act = document.getElementById('vtAct');
+    if (box) box.style.display = '';
+    const chart = VetRules.vtChart(vt.run);
+    if (hint) hint.textContent = (vt.prompt && vt.prompt.label) ? vt.prompt.label : (vt.run.lastMessage || 'Pawsley Vet Clinic');
+    if (body){
+      const lines = (chart.lines || []).slice();
+      (chart.checks || []).forEach(c => {
+        lines.push((c.done ? '☑ ' : '☐ ') + c.tool);
+      });
+      if (chart.phase === 'recover' || chart.phase === 'pickup' || chart.phase === 'done'){
+        lines.push((chart.cuddle ? '☑ ' : '☐ ') + 'cuddle');
+        lines.push((chart.feed ? '☑ ' : '☐ ') + 'feed');
+      }
+      if (vt.sv) lines.push('Cases ' + (vt.sv.cases|0) + ' · Stars ' + (vt.sv.stars|0));
+      body.textContent = '';
+      lines.forEach(t => {
+        const d = document.createElement('div');
+        d.className = 'vt-check';
+        d.textContent = t;
+        body.appendChild(d);
+      });
+    }
+    if (xray){
+      const show = vt.run.phase === 'scan' && vt.run.patient && vt.run.patient.xray && !vt.run.xrayFound;
+      xray.hidden = !show;
+      if (show){
+        const grid = document.getElementById('vtXrayGrid');
+        if (grid && !grid.childElementCount){
+          for (let i = 0; i < 16; i++){
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.setAttribute('data-cell', String(i));
+            b.textContent = '·';
+            grid.appendChild(b);
+          }
+        }
+        if (grid){
+          [...grid.querySelectorAll('button')].forEach((b, i) => {
+            const guesses = vt.run.xrayGuesses || [];
+            b.className = '';
+            if (guesses.indexOf(i) >= 0) b.className = (vt.run.xrayFound && i === (vt.run.patient.xrayTarget|0)) ? 'hit' : 'miss';
+          });
+        }
+      }
+    }
+    if (act){
+      if (vt.prompt){ act.classList.add('show'); act.textContent = vt.prompt.btn || '🩺 Do it'; }
+      else act.classList.remove('show');
+    }
+  }
+  function vtNear(prop, dist){
+    if (!prop || typeof P === 'undefined') return false;
+    const dx = P.x - prop.x, dz = P.z - prop.z;
+    return (dx*dx + dz*dz) <= (dist || 2.3) * (dist || 2.3);
+  }
+  function vtCurrentRoom(){
+    if (typeof P === 'undefined') return 'reception';
+    return VetRules.vtRoomAt(P.x, P.z) || (vt && vt.run && vt.run.room) || 'reception';
+  }
+  function vtFindPrompt(){
+    if (!vt || !vt.run) return null;
+    const room = vtCurrentRoom();
+    vt.run.room = room;
+    const phase = vt.run.phase;
+    const props = vt.props || [];
+    const find = (id) => props.find(p => p.id === id);
+    if (phase === 'wait' && room === 'reception' && vtNear(find('chart'), 2.6)) return {id:'chart', label:'E / tap / Ⓐ  Take the chart', btn:'📋 Take chart', go:() => vtDoCheckIn()};
+    if ((phase === 'exam' || phase === 'scan') && room === 'exam'){
+      const tools = ['stethoscope','ears','eyes','temp'];
+      for (let i = 0; i < tools.length; i++){
+        const p = find(tools[i]);
+        if (p && vtNear(p, 2.2)) return {id:p.id, label:'E / tap / Ⓐ  Use ' + p.id, btn:'🩺 Use', go:() => vtDoTool(p.id)};
+      }
+    }
+    if ((phase === 'exam' || phase === 'scan') && room === 'xray' && vtNear(find('xray'), 2.6)){
+      return {id:'xray', label:'E / tap / Ⓐ  Start the cute scan', btn:'📸 Scan', go:() => vtDoTool('xray')};
+    }
+    if (phase === 'treat'){
+      const need = vt.run.patient && vt.run.patient.treat;
+      const p = find(need) || props.find(q => q.kind === 'treat' && vtNear(q, 2.2));
+      if (p && vtNear(p, 2.4) && room === (vt.run.patient && vt.run.patient.treatRoom)){
+        return {id:p.id, label:'E / tap / Ⓐ  Give ' + p.id, btn:'💊 Treat', go:() => vtDoTreat(p.id)};
+      }
+    }
+    if (phase === 'recover' && room === 'recovery'){
+      if (!vt.run.cuddle && vtNear(find('cuddle'), 2.4)) return {id:'cuddle', label:'E / tap / Ⓐ  Cuddle', btn:'🤗 Cuddle', go:() => vtDoCuddle()};
+      if (!vt.run.feed && vtNear(find('feed'), 2.4)) return {id:'feed', label:'E / tap / Ⓐ  Give a snack', btn:'🍪 Snack', go:() => vtDoFeed()};
+    }
+    if (phase === 'pickup' && room === 'reception' && vtNear(find('pickup'), 2.8)){
+      return {id:'pickup', label:'E / tap / Ⓐ  Happy pickup', btn:'💛 Pickup', go:() => vtDoPickup()};
+    }
+    if (phase === 'done' && room === 'reception' && vtNear(find('chart'), 2.6)){
+      return {id:'next', label:'E / tap / Ⓐ  Next pal', btn:'🐾 Next pal', go:() => vtDoNext()};
+    }
+    return null;
+  }
+  function vtToast(msg){
+    if (vt && vt.run && msg) vt.run.lastMessage = msg;
+    if (typeof banner === 'function' && msg) banner(msg);
+    vtPaintHud();
+  }
+  function vtAfter(res){
+    if (!res) return;
+    if (res.state) vtSave(res.state);
+    if (res.coins && typeof coins !== 'undefined'){
+      try { coins += res.coins; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof paintCoins === 'function') paintCoins(); } catch (e){}
+    }
+    vtPlaceActors();
+    vtToast(res.message);
+    vtNet();
+  }
+  function vtDoCheckIn(){ if (!vt) return; vtAfter(VetRules.vtCheckIn(vt.run)); }
+  function vtDoTool(tool){ if (!vt) return; vtAfter(VetRules.vtUseTool(vt.run, tool, vtCurrentRoom())); }
+  function vtDoXray(cell){
+    if (!vt) return;
+    const res = VetRules.vtXrayScan(vt.run, cell);
+    const grid = document.getElementById('vtXrayGrid');
+    if (grid){
+      const b = grid.querySelector('button[data-cell="'+cell+'"]');
+      if (b) b.className = res && res.found ? 'hit' : 'miss';
+    }
+    vtAfter(res);
+  }
+  function vtDoTreat(item){ if (!vt) return; vtAfter(VetRules.vtTreat(vt.run, item, vtCurrentRoom())); }
+  function vtDoCuddle(){ if (!vt) return; vtAfter(VetRules.vtCuddle(vt.run, vtCurrentRoom())); }
+  function vtDoFeed(){ if (!vt) return; vtAfter(VetRules.vtFeed(vt.run, vtCurrentRoom())); }
+  function vtDoPickup(){ if (!vt) return; vtAfter(VetRules.vtPickup(vt.run, vt.sv, vtCurrentRoom())); }
+  function vtDoNext(){
+    if (!vt) return;
+    const res = VetRules.vtNextPatient(vt.run, vt.sv, Date.now());
+    vtPlaceActors();
+    vtToast(res.message);
+    vtNet();
+  }
+  function vtAct(){
+    if (!vt || !vt.run) return false;
+    if (typeof paused !== 'undefined' && paused) return false;
+    const p = vt.prompt || vtFindPrompt();
+    if (!p || !p.go) return false;
+    p.go();
+    return true;
+  }
+  function vtUpdate(dt){
+    if (!vt || !vt.run || typeof mode === 'undefined' || mode !== 'vet') return;
+    if (!vt.pitchSet && typeof cam !== 'undefined'){ cam.pitch = 0.08; cam.yaw = 0; vt.pitchSet = true; }
+    vt.run.t = (vt.run.t || 0) + (dt || 0);
+    if (vt.pet) vt.pet.rotation.y += (dt || 0) * 0.4;
+    if (typeof P !== 'undefined'){
+      const room = VetRules.vtRoomAt(P.x, P.z);
+      if (room) vt.run.room = room;
+    }
+    const next = vtFindPrompt();
+    const same = next && vt.prompt && next.id === vt.prompt.id;
+    vt.prompt = next;
+    if (!same) vtPaintHud();
+    else {
+      const hint = document.getElementById('vtHint');
+      if (hint && vt.run.lastMessage && !next) hint.textContent = vt.run.lastMessage;
+    }
+    if (mp && mp.on && mp.host){
+      vt.netT = (vt.netT || 0) + (dt || 0);
+      if (vt.netT > 0.4){ vt.netT = 0; vtNet(); }
+    }
+  }
+  function vtKey(e){
+    if (!vt || !e) return false;
+    if (e.code === 'KeyE' || e.code === 'Space'){ vtAct(); return e.code === 'KeyE'; }
+    if (e.code === 'KeyV'){ return true; }
+    return false;
+  }
+  function vtPad(jp, s){
+    if (!vt || !jp) return false;
+    if (jp[0] && vt.prompt){
+      vtAct();
+      if (typeof pad !== 'undefined') pad.jump = false;
+      return true;
+    }
+    if (jp[2]){ vtAct(); return true; }
+    return false;
+  }
+  function vtNet(){
+    if (!vt || !mp || !mp.on || !mp.host || typeof sendAll !== 'function') return;
+    try { sendAll({t:'vt', w: VetRules.vtWire(vt.sv, vt.run)}); } catch (e){}
+  }
+  function vtFromNet(g, d){
+    if (!d || !d.w || !vt) return;
+    VetRules.vtApply(vt.run, d.w);
+    if (d.w.cases != null){ vt.sv = VetRules.vtLoad(Object.assign({}, vt.sv, d.w)); }
+    vtPlaceActors();
+    vtPaintHud();
+  }
+  function vtFromHost(d){ vtFromNet(null, d); }
+  function vetStop(){
+    if (!vt) return;
+    (vt.trash || []).forEach(m => { try { scene.remove(m); } catch (e){} });
+    const act = document.getElementById('vtAct'); if (act) act.classList.remove('show');
+    const box = document.getElementById('vtBox'); if (box) box.style.display = 'none';
+    const xray = document.getElementById('vtXray'); if (xray) xray.hidden = true;
+    vtHideFpToggle();
+    vt = null;
+  }
+  window.vtDebug = {
+    to(x,y,z){ if (typeof P === "undefined") return null; P.x=+x; P.y=+y||0; P.z=+z; P.vx=0; P.vy=0; P.vz=0; return this.probe(); },
+    room(id){
+      const r = VetRules.vtRoom(id);
+      if (!r || typeof P === 'undefined') return null;
+      const spots = {
+        reception:{x:0, z:11.2, yaw:0, pitch:0.08},
+        exam:{x:0, z:-6.0, yaw:0, pitch:0.16},
+        xray:{x:16, z:-6.0, yaw:0, pitch:0.18},
+        treatment:{x:-16, z:-3.2, yaw:0, pitch:0.12},
+        surgery:{x:0, z:-25.2, yaw:0, pitch:0.08},
+        recovery:{x:16, z:12.0, yaw:0, pitch:0.08},
+        bath:{x:-16, z:12.0, yaw:0, pitch:0.08}
+      };
+      const s = spots[id] || {x:r.x, z:r.z + 3.2, yaw:0, pitch:0.08};
+      P.x = s.x; P.y = 0; P.z = s.z; P.vy = 0; P.vx = 0; P.vz = 0;
+      if (typeof cam !== 'undefined'){ cam.yaw = s.yaw; cam.pitch = s.pitch; }
+      if (vt && vt.run) vt.run.room = id;
+      return {x:P.x, z:P.z, room:id, yaw:s.yaw};
+    },
+    stage(id){
+      if (!vt || !vt.run) return null;
+      const run = vt.run;
+      if (id === 'reception'){
+        if (run.phase === 'done' || !run.patient){
+          VetRules.vtNextPatient(run, vt.sv, Date.now());
+        }
+        run.phase = 'wait';
+      } else if (id === 'exam'){
+        if (run.phase === 'wait') VetRules.vtCheckIn(run);
+        run.phase = 'exam';
+      } else if (id === 'xray'){
+        if (run.phase === 'wait') VetRules.vtCheckIn(run);
+        run.patient.xray = 'toy';
+        run.patient.xrayTarget = 6;
+        run.patient.tools = run.patient.tools && run.patient.tools.indexOf('xray') >= 0 ? run.patient.tools : (run.patient.tools || []).concat(['xray']);
+        run.phase = 'scan';
+        run.xrayFound = false;
+        run.lastMessage = 'Sweep the cute scanner to find the swallowed toy.';
+      } else if (id === 'treatment'){
+        if (run.phase === 'wait') VetRules.vtCheckIn(run);
+        run.patient.treat = 'syrup';
+        run.patient.treatRoom = 'treatment';
+        run.phase = 'treat';
+        run.lastMessage = 'Pick the matching labeled bottle from the pharmacy shelf.';
+      }
+      vtPlaceActors();
+      vtPaintHud();
+      return this.pose(id);
+    },
+    look(yaw, pitch){
+      if (typeof cam !== 'undefined'){ if (yaw != null) cam.yaw = yaw; if (pitch != null) cam.pitch = pitch; }
+    },
+    start(){ if (typeof start === 'function') start('vet'); },
+    pose(id){
+      this.room(id);
+      this.look(0, 0.08);
+      return this.probe();
+    },
+    solve(){
+      if (!vt) return null;
+      VetRules.vtCheckIn(vt.run);
+      (vt.run.patient.tools || []).forEach(t => { if (t !== 'xray') VetRules.vtUseTool(vt.run, t, 'exam'); });
+      if (vt.run.patient.xray){ VetRules.vtUseTool(vt.run, 'xray', 'xray'); VetRules.vtXrayScan(vt.run, vt.run.patient.xrayTarget); }
+      VetRules.vtTreat(vt.run, vt.run.patient.treat, vt.run.patient.treatRoom);
+      VetRules.vtCuddle(vt.run, 'recovery');
+      VetRules.vtFeed(vt.run, 'recovery');
+      vtPlaceActors(); vtPaintHud();
+      return vt.run.phase;
+    },
+    probe(){
+      return {
+        mode: typeof mode === 'undefined' ? null : mode,
+        fpOn: typeof fpOn === 'function' ? fpOn() : null,
+        fp: typeof fp !== 'undefined' ? !!fp.on : null,
+        room: vt && vt.run ? vt.run.room : null,
+        phase: vt && vt.run ? vt.run.phase : null,
+        p: typeof P === 'undefined' ? null : {x:P.x,y:P.y,z:P.z},
+        cam: typeof cam === 'undefined' ? null : {yaw:cam.yaw, pitch:cam.pitch}
+      };
+    }
   };
 
   function stop(){

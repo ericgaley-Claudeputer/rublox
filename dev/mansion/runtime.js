@@ -46,11 +46,19 @@
     const wall = mnLess() ? '#6b6088' : '#3f3558';
     const floor = mnLess() ? '#c4b8a0' : '#5a4a6a';
     plat(0, 0, -36, 22, 110, floor, 0.3);
-    // outer shell
+    plat(20, 0, -20, 18, 18, mnLess() ? '#d4e8c8' : '#3e4a48', 0.3);
+    plat(20, 0, -40, 18, 18, mnLess() ? '#c8b8a0' : '#3a3040', 0.3);
+    plat(-20, 0, -58, 18, 18, mnLess() ? '#e8d8c0' : '#3a3458', 0.3);
+    plat(20, 0, -80, 18, 18, mnLess() ? '#e8e0ff' : '#2c2448', 0.3);
+    // outer shell with side-door gaps
     mnWall(0, 4, 16, 22, 8, 0.5, wall);
     mnWall(0, 4, -88, 22, 8, 0.5, wall);
-    mnWall(-11, 4, -36, 0.5, 8, 110, wall);
-    mnWall(11, 4, -36, 0.5, 8, 110, wall);
+    mnWall(-11, 4, -19, 0.5, 8, 74, wall);
+    mnWall(-11, 4, -74, 0.5, 8, 28, wall);
+    mnWall(11, 4, 0, 0.5, 8, 32, wall);
+    mnWall(11, 4, -30, 0.5, 8, 16, wall);
+    mnWall(11, 4, -59, 0.5, 8, 34, wall);
+    mnWall(11, 4, -84, 0.5, 8, 8, wall);
     mnWall(0, 8.2, -36, 22, 0.4, 110, mnLess() ? '#efe6d8' : '#2a2438');
     // room dividers with door gaps at x=0
     ;[-10, -30, -50, -70].forEach(z => {
@@ -79,6 +87,52 @@
     plat(-3, 1.0, -60, 2.2, 1.4, '#6b4a2b', 1.0);
     mn.props.push({id:'note2', x:-3, z:-60, kind:'note', n:2, label: mnLab('📝 Hidden note', -3, 2.3, -60)});
     mnLab('📚 Library', 0, 3.2, -54);
+    // foyer clock / pull-string
+    plat(-6, 1.6, 10, 0.8, 0.8, '#6b4a2b', 3.2);
+    mn.props.push({id:'clock', x:-6, z:10, kind:'clock', label: mnLab('🕰️ Clock', -6, 3.6, 10)});
+    // Moonfern Conservatory
+    mnWall(28, 4, -20, 0.5, 8, 18, mnLess() ? '#b8d8c8' : '#355048');
+    mnWall(20, 4, -12, 16, 8, 0.5, mnLess() ? '#b8d8c8' : '#355048');
+    mnWall(20, 4, -28, 16, 8, 0.5, mnLess() ? '#b8d8c8' : '#355048');
+    mnLab('🌿 Conservatory', 20, 3.2, -14);
+    [[16,-18,0],[24,-18,1],[16,-22,2],[24,-22,3]].forEach(([x,z,i]) => {
+      plat(x, 0.4, z, 1.2, 1.2, '#3d8a5a', 0.8);
+      mn.props.push({id:'fern'+i, x, z, kind:'fern', slot:i, label: mnLab('🌿 ' + (i+1), x, 2.0, z)});
+    });
+    // Jam Cellar
+    mnWall(28, 4, -40, 0.5, 8, 18, mnLess() ? '#8a6a48' : '#3a2a28');
+    mnWall(20, 4, -32, 16, 8, 0.5, mnLess() ? '#8a6a48' : '#3a2a28');
+    mnWall(20, 4, -48, 16, 8, 0.5, mnLess() ? '#8a6a48' : '#3a2a28');
+    plat(18, 0.8, -38, 1.4, 1.0, '#c45c1a', 1.2);
+    mn.props.push({id:'crank', x:18, z:-38, kind:'crank', label: mnLab('⚙️ Crank', 18, 2.2, -38)});
+    plat(24, 0.7, -42, 1.2, 1.0, '#d9c4a0', 0.9);
+    mn.props.push({id:'scrap', x:24, z:-42, kind:'scrap', label: mnLab('📄 Scrap', 24, 2.0, -42)});
+    mnLab('🫙 Jam Cellar', 20, 3.2, -34);
+    // Chime Nook
+    mnWall(-28, 4, -58, 0.5, 8, 18, mnLess() ? '#d8c8a8' : '#322a48');
+    mnWall(-20, 4, -50, 16, 8, 0.5, mnLess() ? '#d8c8a8' : '#322a48');
+    mnWall(-20, 4, -66, 16, 8, 0.5, mnLess() ? '#d8c8a8' : '#322a48');
+    mnLab('🔔 Chime Nook', -20, 3.2, -52);
+    [[-16,-56,0],[-24,-56,1],[-16,-60,2],[-24,-60,3]].forEach(([x,z,i]) => {
+      plat(x, 1.4, z, 0.6, 0.6, '#d4a017', 1.4);
+      mn.props.push({id:'chime'+i, x, z, kind:'chime', bell:i, label: mnLab('🔔 ' + (i+1), x, 3.0, z)});
+    });
+    // Secret Attic
+    mnWall(28, 4, -80, 0.5, 8, 18, mnLess() ? '#d8c8ff' : '#2a2048');
+    mnWall(20, 4, -72, 16, 8, 0.5, mnLess() ? '#d8c8ff' : '#2a2048');
+    mnWall(20, 4, -88, 16, 8, 0.5, mnLess() ? '#d8c8ff' : '#2a2048');
+    mnLab('⭐ Secret Attic', 20, 3.2, -74);
+    [[16,-78,0],[24,-78,1],[16,-82,2],[24,-82,3]].forEach(([x,z,i]) => {
+      plat(x, 1.1, z, 1.0, 1.0, '#8b5cf6', 0.9);
+      mn.props.push({id:'star'+i, x, z, kind:'star', slot:i, label: mnLab('⭐ ' + (i+1), x, 2.3, z)});
+    });
+    plat(20, 1.0, -85, 1.4, 1.2, '#ffd23f', 1.2);
+    mn.props.push({id:'lantern', x:20, z:-85, kind:'lantern', label: mnLab('🌙 Moon lantern', 20, 2.6, -85)});
+    const moth = new THREE.Group();
+    const mw = new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 8), mnMat(mnLess() ? '#fff4d6' : '#e8d0ff', {emissive: mnLess() ? '#ffe9a0' : '#4a3080'}));
+    mw.position.y = 1.3; moth.add(mw);
+    moth.position.set(20, 0, -80); scene.add(moth); mnKeep(moth); mn.moth = moth;
+    mnLab('🦋 Dustmoth', 22, 2.4, -80);
     // attic / Nimble / door
     plat(0, 2.4, -86, 3.6, 0.6, '#c45c1a', 2.4);
     mn.door = {x:0, z:-86};
@@ -104,7 +158,13 @@
   }
   function mnNear(x, z, r){ return Math.hypot((P.x - x), (P.z - z)) < (r || 2.1); }
   function mnCurrentRoom(){
-    const z = P.z;
+    const x = P.x, z = P.z;
+    if (x > 12.2){
+      if (z > -30) return 'conservatory';
+      if (z > -52) return 'cellar';
+      return 'secret';
+    }
+    if (x < -12.2) return 'chime';
     if (z > -10) return 'foyer';
     if (z > -30) return 'parlor';
     if (z > -50) return 'kitchen';
@@ -119,6 +179,13 @@
       if (hit.kind === 'lever') return {act:() => mnDo('lever'), lab: 'Flip lever (E / Ⓧ)'};
       if (hit.kind === 'pic') return {act:() => mnDo('pic', hit), lab: 'Place portrait ' + (hit.slot+1) + ' (E / Ⓧ)'};
       if (hit.kind === 'key') return {act:() => mnDo('key'), lab: 'Search cupboard (E / Ⓧ)'};
+      if (hit.kind === 'fern') return {act:() => mnDo('fern', hit), lab: 'Water moonfern ' + (hit.slot+1) + ' (E / Ⓧ)'};
+      if (hit.kind === 'crank') return {act:() => mnDo('crank'), lab: 'Turn the crank (E / Ⓧ)'};
+      if (hit.kind === 'scrap') return {act:() => mnDo('scrap'), lab: 'Read the dusty scrap (E / Ⓧ)'};
+      if (hit.kind === 'clock') return {act:() => mnDo('clock'), lab: 'Pull the hidden string (E / Ⓧ)'};
+      if (hit.kind === 'chime') return {act:() => mnDo('chime', hit), lab: 'Ring chime ' + (hit.bell+1) + ' (E / Ⓧ)'};
+      if (hit.kind === 'star') return {act:() => mnDo('star', hit), lab: 'Place star charm ' + (hit.slot+1) + ' (E / Ⓧ)'};
+      if (hit.kind === 'lantern') return {act:() => mnDo('lantern'), lab: 'Take the moon lantern (E / Ⓧ)'};
     }
     if (mn.door && mnNear(mn.door.x, mn.door.z, 2.4) && mn.run.key) return {act:() => mnDo('door'), lab: 'Unlock the door (E / Ⓧ)'};
     return null;
@@ -135,16 +202,29 @@
       if (used >= 0 && r && r.ok && !r.done){ /* placed this tile in this slot */ }
     }
     else if (kind === 'key') r = MansionRules.mnTakeKey(run);
+    else if (kind === 'fern') r = MansionRules.mnWaterFern(run, prop.slot);
+    else if (kind === 'crank') r = MansionRules.mnTurnCrank(run);
+    else if (kind === 'scrap') r = MansionRules.mnReadScrap(run);
+    else if (kind === 'clock') r = MansionRules.mnPullString(run);
+    else if (kind === 'chime') r = MansionRules.mnPlayChime(run, prop.bell);
+    else if (kind === 'star') r = MansionRules.mnPlaceStar(run, prop.slot, prop.slot);
+    else if (kind === 'lantern') r = MansionRules.mnClaimSecret(run, mn.sv);
     else if (kind === 'door') r = MansionRules.mnEscape(run, mn.sv, Date.now());
     if (!r || !r.ok){
       const why = r && r.why;
-      banner(why === 'note' ? 'Read the foyer note first.' : why === 'key' ? 'You still need the brass key.' : why === 'locked' ? 'That room is still closed.' : 'Not yet!');
+      banner(why === 'note' ? 'Read the foyer note first.' : why === 'key' ? 'You still need the brass key.' : why === 'locked' ? 'That room is still closed.' : why === 'scrap' ? 'Turn the cellar crank first.' : why === 'crank' ? 'Turn the rusty crank first.' : why === 'puzzle' ? 'Set the star charms first.' : 'Not yet!');
       return;
     }
     if (kind === 'note') banner('📝 ' + r.text);
-    if (kind === 'lever') banner('🎚️ The parlor doors creak open.');
+    if (kind === 'lever') banner('🎚️ The parlor doors creak open. A side hall leads to the Moonfern Conservatory.');
     if (kind === 'pic') banner(r.done ? '🖼️ The portraits click into place! The kitchen is open.' : '🖼️ You hung a portrait.');
-    if (kind === 'key') banner('🔑 You found the brass key!');
+    if (kind === 'key') banner('🔑 You found the brass key! Side rooms in the cellar and chime nook are unlocked.');
+    if (r.text && kind !== 'note') banner((kind === 'lantern' ? '🌙 ' : '✨ ') + r.text);
+    if (kind === 'lantern' && r.ok && r.coins){
+      mn.sv = r.state; mnSave(mn.sv);
+      try { if (typeof pay === 'function') pay(r.coins); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); } } catch (e){}
+      banner('🌙 ' + r.message + ' +' + r.coins + ' 🪙');
+    }
     if (kind === 'door' && r.ok){
       mn.sv = r.state; mnSave(mn.sv);
       try { if (typeof pay === 'function') pay(r.coins); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); } } catch (e){}
@@ -218,16 +298,26 @@
         if (room === 'kitchen' && P.z < -30) P.z = -29.6;
         if (room === 'library' && P.z < -50) P.z = -49.6;
         if (room === 'attic' && P.z < -70) P.z = -69.6;
+        if (room === 'conservatory' && P.x > 11) P.x = 10.6;
+        if (room === 'cellar' && P.x > 11) P.x = 10.6;
+        if (room === 'chime' && P.x < -11) P.x = -10.6;
+        if (room === 'secret' && P.x > 11) P.x = 10.6;
+        if (room === 'secret' && P.z < -52 && P.x > 12 && !MansionRules.mnCanEnter(mn.run, 'secret')) P.z = -51.4;
       }
     }
     if (!mnIsGuest()){
       MansionRules.mnNimbleTick(mn.run, dt);
-      if (MansionRules.mnSeenByNimble(mn.run, P.x, P.z)) mnCaught();
+      MansionRules.mnMothTick(mn.run, dt);
+      if (MansionRules.mnSeenByNimble(mn.run, P.x, P.z) || MansionRules.mnSeenByMoth(mn.run, P.x, P.z)) mnCaught();
     }
     if (mn.ghost && mn.run.nimble){
       mn.ghost.position.x = mn.run.nimble.x;
       mn.ghost.position.z = mn.run.nimble.z;
       mn.ghost.rotation.y = mn.run.nimble.dir > 0 ? Math.PI/2 : -Math.PI/2;
+    }
+    if (mn.moth && mn.run.moth){
+      mn.moth.position.x = mn.run.moth.x;
+      mn.moth.position.z = mn.run.moth.z;
     }
     mnHud();
     if (!mnIsGuest()) mnNet();
@@ -258,6 +348,6 @@
   if (typeof window !== 'undefined') window.mnDebug = {
     less(on){ if (!mn) return; if (on != null) mn.sv.lessScary = !on ? false : true; mn.run.lessScary = !!mn.sv.lessScary; mnSave(mn.sv); mnSky(); mnHud(); return mnLess(); },
     room(id){ if (mn){ MansionRules.mnSetRoom(mn.run, id); const s = MansionRules.mnRoom(id).spawn; P.x=s.x; P.y=s.y; P.z=s.z; } },
-    solve(){ if (!mn) return; const r=mn.run; r.note1=true; r.lever=true; r.parlorOpen=true; r.pictureDone=true; r.kitchenOpen=true; r.key=true; r.note2=true; r.atticOpen=true; mnHud(); },
-    probe(){ return mn && mn.run ? {room:mn.run.room, key:!!mn.run.key, less:mnLess(), escaped:!!mn.run.escaped} : null; }
+    solve(){ if (!mn) return; const r=mn.run; r.note1=true; r.lever=true; r.parlorOpen=true; r.pictureDone=true; r.kitchenOpen=true; r.key=true; r.note2=true; r.atticOpen=true; r.fernsDone=true; r.conservatoryOpen=true; r.crank=true; r.scrap=true; r.cellarOpen=true; r.chimeOpen=true; r.melodyDone=true; r.clockString=true; r.secretOpen=true; r.starDone=true; mnHud(); },
+    probe(){ return mn && mn.run ? {room:mn.run.room, key:!!mn.run.key, less:mnLess(), escaped:!!mn.run.escaped, secret:!!mn.run.secretOpen, ferns:!!mn.run.fernsDone} : null; }
   };

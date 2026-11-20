@@ -7,6 +7,12 @@
   const SH_KEY = 'rubloxShelter';
   const SH_VER = 1;
   const SH_PET_MAX = 6;
+  const SH_DOOR_H = 6;
+  const SH_DOOR_W = 3.6;
+  const SH_DOORS = [
+    {id:'shelter-front', a:'yard', b:'shelter', x:0, z:-2, w:SH_DOOR_W, h:SH_DOOR_H, axis:'z', thick:0.4},
+    {id:'salon-front', a:'yard', b:'salon', x:22, z:6, w:SH_DOOR_W, h:SH_DOOR_H, axis:'z', thick:0.4}
+  ];
   const SH_KINDS = [
     {id:'cat', name:'Cat', emoji:'🐱', trait:'calm'},
     {id:'dog', name:'Dog', emoji:'🐶', trait:'playful'},
@@ -46,7 +52,11 @@
       kennels: 2,
       ups: {},
       pets: [],
-      nextId: 1
+      nextId: 1,
+      groomed: 0,
+      ribbons: {},
+      trophies: 0,
+      shows: 0
     };
   }
 
@@ -62,7 +72,12 @@
       fed: Math.max(0, Math.min(100, +p.fed || 50)),
       clean: Math.max(0, Math.min(100, +p.clean || 50)),
       play: Math.max(0, Math.min(100, +p.play || 50)),
-      color: Math.max(0, Math.min(2, p.color | 0))
+      color: Math.max(0, Math.min(2, p.color | 0)),
+      style: ['natural','neat','fluffy','swirl'].indexOf(p.style) >= 0 ? p.style : 'natural',
+      bow: ['none','red','blue','gold'].indexOf(p.bow) >= 0 ? p.bow : 'none',
+      dye: ['none','peach','mint','lilac','butter'].indexOf(p.dye) >= 0 ? p.dye : 'none',
+      groomed: Math.max(0, Math.min(100, p.groomed | 0)),
+      trick: ['sit','spin','bow','wave'].indexOf(p.trick) >= 0 ? p.trick : 'sit'
     };
   }
 
@@ -80,6 +95,10 @@
     if (d.ups.kennels) d.kennels = Math.max(d.kennels, 4);
     d.pets = (Array.isArray(o.pets) ? o.pets : []).map(shCleanPet).filter(Boolean).slice(0, d.kennels);
     d.nextId = Math.max(1, o.nextId | 0);
+    if (o.groomed != null) d.groomed = Math.max(0, o.groomed | 0);
+    if (o.trophies != null) d.trophies = Math.max(0, o.trophies | 0);
+    if (o.shows != null) d.shows = Math.max(0, o.shows | 0);
+    if (o.ribbons && typeof o.ribbons === 'object') d.ribbons = Object.assign({}, o.ribbons);
     return d;
   }
 
@@ -96,13 +115,23 @@
     return 18;
   }
 
+  function shGroomedWell(pet){
+    pet = shCleanPet(pet);
+    return !!(pet && (pet.groomed | 0) >= 70);
+  }
+
   function shHappiness(pet){
     pet = shCleanPet(pet);
     if (!pet) return 0;
-    return Math.round((pet.fed + pet.clean + pet.play) / 3);
+    const base = Math.round((pet.fed + pet.clean + pet.play) / 3);
+    const bonus = shGroomedWell(pet) ? 12 : ((pet.groomed | 0) >= 40 ? 6 : 0);
+    return Math.min(100, base + bonus);
   }
 
-  function shReady(pet){ return shHappiness(pet) >= 70; }
+  function shReady(pet){
+    const h = shHappiness(pet);
+    return h >= (shGroomedWell(pet) ? 55 : 70);
+  }
 
   function shRollStray(rand, id){
     const r = typeof rand === 'function' ? rand : Math.random;
@@ -173,7 +202,7 @@
     state.pets = state.pets.filter(p => p.id !== petId);
     state.matched += 1;
     state.adopted += 1;
-    const coins = 18 + (traitOk && kindOk ? 8 : 0);
+    const coins = 18 + (traitOk && kindOk ? 8 : 0) + (shGroomedWell(pet) ? 6 : 0);
     state.coinsEarned += coins;
     return {ok:true, why:'ok', coins, state, message: fam.name + ' went home with ' + pet.name + '!'};
   }
@@ -233,6 +262,140 @@
     return src === 'shelter' ? 'shelter' : undefined;
   }
 
+  const SH_STYLES = ['natural','neat','fluffy','swirl'];
+  const SH_BOWS = ['none','red','blue','gold'];
+  const SH_DYES = ['none','peach','mint','lilac','butter'];
+  const SH_TRICKS = ['sit','spin','bow','wave'];
+  const SH_CONTESTS = [
+    {id:'groomed', name:'Best Groomed', emoji:'✨', hint:'Wash, brush, trim, and add a bow.'},
+    {id:'trick', name:'Cutest Trick', emoji:'🎩', hint:'Teach a sit, spin, bow, or wave.'},
+    {id:'fluff', name:'Fluffiest', emoji:'☁️', hint:'A fluffy trim plus a good brush wins hearts.'}
+  ];
+
+  function shContest(id){ return SH_CONTESTS.find(c => c.id === id) || null; }
+
+  function shGroom(state, petId, act, choice){
+    state = shLoad(state);
+    const pet = state.pets.find(p => p.id === petId);
+    if (!pet) return {ok:false, why:'missing', state};
+    if (act === 'wash'){
+      pet.clean = Math.min(100, (pet.clean || 0) + 22);
+      pet.groomed = Math.min(100, (pet.groomed || 0) + 22);
+    } else if (act === 'brush'){
+      pet.play = Math.min(100, (pet.play || 0) + 8);
+      pet.groomed = Math.min(100, (pet.groomed || 0) + 18);
+    } else if (act === 'trim'){
+      if (SH_STYLES.indexOf(choice) < 0) return {ok:false, why:'style', state};
+      pet.style = choice;
+      pet.groomed = Math.min(100, (pet.groomed || 0) + (choice === 'natural' ? 6 : 16));
+    } else if (act === 'bow'){
+      if (SH_BOWS.indexOf(choice) < 0) return {ok:false, why:'bow', state};
+      pet.bow = choice;
+      pet.groomed = Math.min(100, (pet.groomed || 0) + (choice === 'none' ? 0 : 10));
+    } else if (act === 'dye'){
+      if (SH_DYES.indexOf(choice) < 0) return {ok:false, why:'dye', state};
+      pet.dye = choice;
+      pet.groomed = Math.min(100, (pet.groomed || 0) + (choice === 'none' ? 0 : 8));
+    } else if (act === 'trick'){
+      if (SH_TRICKS.indexOf(choice) < 0) return {ok:false, why:'trick', state};
+      pet.trick = choice;
+      pet.groomed = Math.min(100, (pet.groomed || 0) + 6);
+    } else {
+      return {ok:false, why:'act', state};
+    }
+    pet.happy = shHappiness(pet);
+    state.groomed = (state.groomed | 0) + 1;
+    return {ok:true, why:'ok', pet, state, ready: shReady(pet), well: shGroomedWell(pet)};
+  }
+
+  function shScorePet(pet, contestId){
+    pet = shCleanPet(pet);
+    if (!pet) return 0;
+    let n = 40 + Math.round(shHappiness(pet) * 0.3);
+    if (contestId === 'groomed'){
+      n = 20 + (pet.groomed | 0) * 0.55 + (pet.clean | 0) * 0.15;
+      if (pet.bow && pet.bow !== 'none') n += 8;
+      if (pet.style && pet.style !== 'natural') n += 6;
+      if (pet.dye && pet.dye !== 'none') n += 4;
+    } else if (contestId === 'trick'){
+      n = 36 + (pet.play | 0) * 0.35 + (pet.trick && pet.trick !== 'sit' ? 16 : 8);
+      if (pet.groomed >= 40) n += 8;
+    } else if (contestId === 'fluff'){
+      n = 28 + (pet.groomed | 0) * 0.3;
+      if (pet.style === 'fluffy') n += 22;
+      else if (pet.style === 'swirl') n += 10;
+      n += (pet.clean | 0) * 0.15;
+    }
+    return Math.max(0, Math.min(100, Math.round(n)));
+  }
+
+  function shRibbonFor(score){
+    if (score >= 90) return 'gold';
+    if (score >= 75) return 'silver';
+    if (score >= 60) return 'bronze';
+    return 'participant';
+  }
+
+  function shNewShow(contestId, now, mode){
+    const c = shContest(contestId) || SH_CONTESTS[0];
+    const m = mode === 'versus' || mode === 'coop' ? mode : 'solo';
+    return {id: c.id, name: c.name, emoji: c.emoji, mode: m, open: true, entries: [], judged: false, t: now || 0};
+  }
+
+  function shEnterShow(show, pet, player){
+    if (!show || !show.open || show.judged) return {ok:false, why:'closed', show};
+    const clean = shCleanPet(pet);
+    if (!clean) return {ok:false, why:'pet', show};
+    const pid = String((player && (player.id || player.uid)) || (player || 'me'));
+    if (pid && (pid === 'npc' || String(pid).indexOf('npc-') === 0 || (player && player.npc))) return {ok:false, why:'npc', show};
+    if ((show.entries || []).some(e => e.petId === clean.id && e.player === pid)) return {ok:false, why:'in', show};
+    show.entries = (show.entries || []).concat([{
+      player: pid,
+      name: String((player && player.name) || 'You').slice(0, 16),
+      petId: clean.id,
+      petName: clean.name,
+      kind: clean.kind,
+      score: 0,
+      ribbon: null
+    }]);
+    return {ok:true, why:'ok', show};
+  }
+
+  function shJudgeShow(state, show){
+    state = shLoad(state);
+    if (!show || !show.entries || !show.entries.length) return {ok:false, why:'empty', state, show};
+    show.entries.forEach(e => {
+      const pet = state.pets.find(p => p.id === e.petId) || {id:e.petId, kind:e.kind, name:e.petName, fed:70, clean:70, play:70, groomed:40, style:'natural', bow:'none', dye:'none', trick:'sit'};
+      e.score = shScorePet(pet, show.id);
+    });
+    const mode = show.mode || 'solo';
+    if (mode === 'versus' && show.entries.length > 1){
+      const top = Math.max.apply(null, show.entries.map(e => e.score));
+      show.entries.forEach(e => { e.ribbon = e.score === top ? 'gold' : shRibbonFor(e.score); if (e.score === top) e.winner = true; });
+    } else if (mode === 'coop'){
+      const avg = show.entries.reduce((s, e) => s + e.score, 0) / show.entries.length;
+      const team = avg >= 80 ? 'gold' : shRibbonFor(avg);
+      show.entries.forEach(e => { e.ribbon = team; e.coop = true; e.winner = team === 'gold'; });
+    } else {
+      show.entries.forEach(e => { e.ribbon = shRibbonFor(e.score); e.winner = e.ribbon === 'gold' || e.ribbon === 'silver'; });
+    }
+    show.judged = true;
+    show.open = false;
+    show.entries.forEach(e => {
+      const key = show.id + ':' + (e.ribbon || 'participant');
+      state.ribbons[key] = (state.ribbons[key] | 0) + 1;
+      if (e.ribbon === 'gold') state.trophies = (state.trophies | 0) + 1;
+    });
+    state.shows = (state.shows | 0) + 1;
+    const coins = show.entries.reduce((s, e) => s + (e.ribbon === 'gold' ? 14 : e.ribbon === 'silver' ? 9 : e.ribbon === 'bronze' ? 5 : 2), 0);
+    state.coinsEarned += coins;
+    return {ok:true, why:'ok', state, show, coins, message:'Judge Bramble scored the ' + show.name + ' show!'};
+  }
+
+  function shRealPlayersOnly(roster){
+    return (roster || []).filter(p => p && (p.id || p.uid) && !p.npc && String(p.id || '').indexOf('npc-') !== 0);
+  }
+
   function shWire(state, extras){
     state = shLoad(state);
     extras = extras || {};
@@ -243,14 +406,17 @@
       rescued: state.rescued,
       matched: state.matched,
       family: extras.family ? {id: extras.family.id, name: extras.family.name, wishKind: extras.family.wishKind, wishTrait: extras.family.wishTrait, line: extras.family.line, emoji: extras.family.emoji} : null,
-      strays: (extras.strays || []).map(s => ({id:s.id, kind:s.kind, name:s.name, trait:s.trait, x:+s.x||0, z:+s.z||0, color:s.color|0}))
+      strays: (extras.strays || []).map(s => ({id:s.id, kind:s.kind, name:s.name, trait:s.trait, x:+s.x||0, z:+s.z||0, color:s.color|0})),
+      show: extras.show ? {id:extras.show.id, name:extras.show.name, emoji:extras.show.emoji, mode:extras.show.mode, open:!!extras.show.open, judged:!!extras.show.judged, entries:(extras.show.entries||[]).map(e => ({player:e.player, name:e.name, petId:e.petId, petName:e.petName, kind:e.kind, score:e.score|0, ribbon:e.ribbon, winner:!!e.winner}))} : null
     };
   }
 
   return {
-    SH_KEY, SH_VER, SH_PET_MAX, SH_KINDS, SH_TRAITS, SH_FAMILIES, SH_UPGRADES,
+    SH_KEY, SH_VER, SH_PET_MAX, SH_DOOR_H, SH_DOOR_W, SH_DOORS, SH_KINDS, SH_TRAITS, SH_FAMILIES, SH_UPGRADES,
     shKind, shFamily, shUpgrade, shFresh, shLoad, shCleanPet, shKennelCap, shBoost,
     shHappiness, shReady, shRollStray, shRescue, shCare, shVisitFamily, shMatch,
-    shBuyUpgrade, shToCollectionPet, shCanSendHome, shSendHome, shKeepPetField, shWire
+    shBuyUpgrade, shToCollectionPet, shCanSendHome, shSendHome, shKeepPetField, shWire,
+    SH_STYLES, SH_BOWS, SH_DYES, SH_TRICKS, SH_CONTESTS,
+    shGroomedWell, shGroom, shScorePet, shRibbonFor, shContest, shNewShow, shEnterShow, shJudgeShow, shRealPlayersOnly
   };
 });

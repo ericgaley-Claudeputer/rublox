@@ -54,8 +54,8 @@
     wallb(-9, 3, -10, 0.4, 6, 16, wall);
     wallb(9, 3, -10, 0.4, 6, 16, wall);
     wallb(0, 6.2, -10, 18, 0.35, 16, '#fff4e0');
-    wallb(-5, 3, -2, 8, 6, 0.4, wall);
-    wallb(5, 3, -2, 8, 6, 0.4, wall);
+    wallb(-5.4, 3, -2, 7.2, 6, 0.4, wall);
+    wallb(5.4, 3, -2, 7.2, 6, 0.4, wall);
     shMesh(new THREE.BoxGeometry(2.4, 0.2, 1.6), '#c45c1a', 0, 0.9, -8);
     sh.desk = {x:0, z:-8};
     // town street / park / alley
@@ -65,6 +65,36 @@
     shLab('🌳 Park', 14, 2.2, 16);
     shLab('🪵 Alley', -14, 2.2, 18);
     shLab('🛎️ Front desk', 0, 2.2, -8);
+    // Grooming salon
+    plat(22, 0, -2, 14, 16, '#f8d0e8', 0.28);
+    function wallb2(x,y,z,w,h,d,c){ const b=plat(x,y+h/2,z,w,d,c,h); if(b&&b.mesh) shKeep(b.mesh); if(b) sh.solids.push(b); return b; }
+    wallb2(22, 3, -10, 14, 6, 0.4, '#ffd0ea');
+    wallb2(15, 3, -2, 0.4, 6, 16, '#ffd0ea');
+    wallb2(29, 3, -2, 0.4, 6, 16, '#ffd0ea');
+    wallb2(22, 6.2, -2, 14, 0.35, 16, '#fff0f8');
+    wallb2(17.6, 3, 6, 5.2, 6, 0.4, '#ffd0ea');
+    wallb2(26.4, 3, 6, 5.2, 6, 0.4, '#ffd0ea');
+    sh.salon = {x:22, z:-2};
+    sh.stations = [
+      {id:'wash', x:18, z:0, act:'wash', lab:'Wash'},
+      {id:'brush', x:26, z:0, act:'brush', lab:'Brush'},
+      {id:'trim', x:18, z:-4, act:'trim', lab:'Trim'},
+      {id:'bow', x:26, z:-4, act:'bow', lab:'Bow'},
+      {id:'dye', x:22, z:-6, act:'dye', lab:'Color'}
+    ];
+    sh.stations.forEach(s => {
+      shMesh(new THREE.CylinderGeometry(0.7, 0.8, 0.6, 10), '#fff', s.x, 0.4, s.z);
+      shLab('✂️ ' + s.lab, s.x, 1.6, s.z);
+    });
+    shLab('💇 Grooming Salon', 22, 3.2, 4);
+    // Contest lawn and judge
+    plat(-20, 0, -6, 14, 16, '#c8e8a8', 0.22);
+    shMesh(new THREE.BoxGeometry(5, 0.3, 3.2), '#f4e8a8', -20, 0.4, -8);
+    sh.stage = {x:-20, z:-8};
+    const judge = shPetMesh('cat', 1);
+    judge.position.set(-20, 0, -12); scene.add(judge); shKeep(judge);
+    shLab('🏅 Judge Bramble', -20, 2.0, -12);
+    shLab('🎀 Contest Lawn', -20, 3.0, -2);
     const amb = new THREE.AmbientLight(0xfff6e8, 0.75); scene.add(amb); shKeep(amb);
     const sun = new THREE.DirectionalLight(0xfff0c8, 0.6); sun.position.set(8, 14, 10); scene.add(sun); shKeep(sun);
     Object.assign(P, {x:0, y:0.5, z:6, vx:0, vy:0, vz:0});
@@ -118,8 +148,72 @@
     if (sh.desk && shNear(sh.desk.x, sh.desk.z, 2.4)){
       return {lab:'Front desk: match or upgrades (E / Ⓧ)', act:() => shOpenDesk()};
     }
+    const st = (sh.stations||[]).find(s => shNear(s.x, s.z, 2.1));
+    if (st){
+      const pet = shSalonPet();
+      return {lab: pet ? (st.lab + ' ' + pet.name + ' (E / Ⓧ)') : 'Bring a pal to the salon (E / Ⓧ)', act:() => shSalonDo(st)};
+    }
+    if (sh.stage && shNear(sh.stage.x, sh.stage.z, 3)){
+      const show = sh.show;
+      if (show && show.open && !show.judged) return {lab:'Enter the ' + show.name + ' show (E / Ⓧ)', act:() => shEnter()};
+      if (show && !show.judged && show.entries && show.entries.length) return {lab:'Ask Judge Bramble to score (E / Ⓧ)', act:() => shJudge()};
+      return {lab:'Start a pet contest (E / Ⓧ)', act:() => shBeginShow()};
+    }
     return null;
   }
+  function shSalonPet(){
+    if (!sh) return null;
+    if (sh.curs) return (sh.sv.pets||[]).find(p => p.id === sh.curs) || (sh.sv.pets||[])[0];
+    return (sh.sv.pets||[])[0] || null;
+  }
+  const SH_SALON_CHOICE = {
+    trim: ['neat','fluffy','swirl'],
+    bow: ['red','blue','gold'],
+    dye: ['peach','mint','lilac','butter'],
+    trick: ['sit','spin','bow','wave']
+  };
+  function shSalonDo(st){
+    const pet = shSalonPet();
+    if (!pet){ banner('Rescue a pal first, then walk them into the salon!'); return; }
+    sh.curs = pet.id;
+    let choice = undefined;
+    if (SH_SALON_CHOICE[st.act]){
+      sh.choiceI = ((sh.choiceI|0)+1) % SH_SALON_CHOICE[st.act].length;
+      choice = SH_SALON_CHOICE[st.act][sh.choiceI];
+    }
+    const r = ShelterRules.shGroom(sh.sv, pet.id, st.act, choice);
+    if (!r.ok){ banner('The salon is busy — try another station.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    banner('💇 ' + pet.name + ' got a ' + st.lab.toLowerCase() + (choice ? (' (' + choice + ')') : '') + '! Happiness ' + ShelterRules.shHappiness(r.pet) + (r.well ? ' — looking show-ready!' : ''));
+    shHud(); shNet();
+  }
+  function shBeginShow(){
+    const ids = ShelterRules.SH_CONTESTS;
+    sh.showI = ((sh.showI|0)+1) % ids.length;
+    const mode = (typeof mp !== 'undefined' && mp && mp.on) ? 'versus' : 'solo';
+    sh.show = ShelterRules.shNewShow(ids[sh.showI].id, Date.now(), mode);
+    banner(ids[sh.showI].emoji + ' Judge Bramble opened the ' + ids[sh.showI].name + ' contest! ' + (mode === 'versus' ? 'Friends can enter too — no NPC rivals.' : 'Enter your pal for a ribbon.'));
+    shHud(); shNet();
+  }
+  function shEnter(){
+    const pet = shSalonPet();
+    if (!pet){ banner('Cheer a pal up or groom them, then enter!'); return; }
+    const me = {id: (typeof mp !== 'undefined' && mp && mp.me) ? mp.me : 'me', name: (typeof player !== 'undefined' && player && player.name) || 'You'};
+    const r = ShelterRules.shEnterShow(sh.show, pet, me);
+    banner(r.ok ? ('🎀 ' + pet.name + ' entered the ' + sh.show.name + ' show!') : (r.why === 'npc' ? 'Only real players can enter.' : r.why === 'in' ? 'That pal is already in.' : 'The show is not open.'));
+    shHud(); shNet();
+  }
+  function shJudge(){
+    if (!sh.show) return;
+    const r = ShelterRules.shJudgeShow(sh.sv, sh.show);
+    if (!r.ok){ banner(r.why === 'empty' ? 'Someone needs to enter first.' : 'Judge Bramble is waiting.'); return; }
+    sh.sv = r.state; shSave(sh.sv); sh.show = r.show;
+    if (r.coins) shPay(r.coins);
+    const top = (r.show.entries || [])[0];
+    banner('🏅 ' + r.message + (top ? (' ' + top.petName + ' got a ' + top.ribbon + ' ribbon!') : '') + ' +' + r.coins + ' 🪙');
+    shHud(); shNet();
+  }
+
   function shRescue(stray){
     const r = ShelterRules.shRescue(sh.sv, stray);
     if (!r.ok){ banner(r.why === 'full' ? 'The kennels are full — upgrade for more beds!' : 'Cannot rescue that pal right now.'); return; }
@@ -183,7 +277,8 @@
     const hint = document.getElementById('shHint');
     if (hint && sh){
       const fam = sh.family;
-      hint.textContent = '🐾 ' + (sh.sv.pets||[]).length + '/' + (sh.sv.ups.kennels?6:sh.sv.kennels||2) + ' pals  ·  rescued ' + (sh.sv.rescued||0) + '  ·  homes ' + (sh.sv.matched||0) + (fam ? ('  ·  ' + fam.name + ' want a ' + fam.wishTrait + ' ' + fam.wishKind) : '');
+      const show = sh.show;
+      hint.textContent = '🐾 ' + (sh.sv.pets||[]).length + '/' + (sh.sv.ups.kennels?6:sh.sv.kennels||2) + ' pals  ·  rescued ' + (sh.sv.rescued||0) + '  ·  homes ' + (sh.sv.matched||0) + (sh.sv.trophies ? ('  ·  🏆 ' + sh.sv.trophies) : '') + (show ? ('  ·  ' + (show.emoji||'🎀') + ' ' + show.name) : '') + (fam ? ('  ·  ' + fam.name + ' want a ' + fam.wishTrait + ' ' + fam.wishKind) : '');
     }
     const btn = document.getElementById('shAct');
     const p = shPrompt();
@@ -212,11 +307,12 @@
   }
   function shUpdate(){ if (sh) shHud(); }
   function shIsGuest(){ try { return !!(typeof mp !== 'undefined' && mp && mp.on && !mp.host); } catch(e){ return false; } }
-  function shWire(){ return sh ? ShelterRules.shWire(sh.sv, {family: sh.family, strays: sh.strays}) : null; }
+  function shWire(){ return sh ? ShelterRules.shWire(sh.sv, {family: sh.family, strays: sh.strays, show: sh.show}) : null; }
   function shApply(snap){
     if (!sh || !snap) return;
     if (Array.isArray(snap.pets)) sh.sv.pets = snap.pets;
     if (snap.family) sh.family = snap.family;
+    if (snap.show) sh.show = snap.show;
     shHud();
   }
   function shNet(){
@@ -241,5 +337,7 @@
   if (typeof window !== 'undefined') window.shDebug = {
     spawn(){ if (sh) shSpawnStrays(); },
     fill(){ if (!sh) return; (sh.sv.pets||[]).forEach(p => { p.fed=p.clean=p.play=90; p.happy=90; }); shSave(sh.sv); shHud(); },
-    probe(){ return sh ? {pets:(sh.sv.pets||[]).length, family: sh.family && sh.family.id, strays:(sh.strays||[]).length} : null; }
+    salon(){ if (!sh) return; P.x=22; P.y=0.5; P.z=-2; },
+    contest(){ if (!sh) return; P.x=-20; P.y=0.5; P.z=-8; if (!sh.show) shBeginShow(); },
+    probe(){ return sh ? {pets:(sh.sv.pets||[]).length, family: sh.family && sh.family.id, strays:(sh.strays||[]).length, show: sh.show && sh.show.id, salon:!!sh.salon} : null; }
   };
