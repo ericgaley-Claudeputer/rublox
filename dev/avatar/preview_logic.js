@@ -4,6 +4,8 @@
   if (typeof module === 'object' && module.exports) module.exports = api;
   if (root) root.PreviewRules = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const PREVIEW_MODE_KEY = 'rubloxPreviewMode';
+
   function previewWearable(it){
     if (!it || typeof it !== 'object') return false;
     if (it.emote && !it.slot && !it.set && !it.look) return false;
@@ -118,5 +120,29 @@
     };
   }
 
-  return {previewWearable, previewApply, previewSnap, previewSameSave, previewBegin, previewCancel, previewBuy};
+  function previewModeNormalize(val){
+    const s = (val == null ? '' : String(val)).toLowerCase().trim();
+    if (s === '2d' || s === '2' || s === 'flat' || s === 'card') return '2d';
+    if (s === '3d' || s === '3' || s === 'spin' || s === 'model') return '3d';
+    return '';
+  }
+
+  function previewModePick(stored, webglOk){
+    const m = previewModeNormalize(stored);
+    if (m === '2d') return '2d';
+    if (!webglOk) return '2d';
+    return '3d';
+  }
+
+  function previewModeToggle(current, webglOk){
+    const cur = previewModeNormalize(current) || previewModePick(current, webglOk);
+    if (cur === '3d') return '2d';
+    return webglOk ? '3d' : '2d';
+  }
+
+  function previewModeSelected(shown, btn){
+    return previewModeNormalize(shown) === previewModeNormalize(btn);
+  }
+
+  return {PREVIEW_MODE_KEY, previewWearable, previewApply, previewSnap, previewSameSave, previewBegin, previewCancel, previewBuy, previewModeNormalize, previewModePick, previewModeToggle, previewModeSelected};
 });

@@ -103,3 +103,52 @@ test('preview UI is wired in the shop and works with mouse, touch, and Xbox', ()
   assert.match(html, /avPrevCancel/);
   assert.ok(html.includes('function previewWearable') || html.includes('PreviewRules'));
 });
+
+test('preview mode defaults to 3D and falls back to 2D when WebGL is off', () => {
+  assert.equal(P.PREVIEW_MODE_KEY, 'rubloxPreviewMode');
+  assert.equal(P.previewModeNormalize('3D'), '3d');
+  assert.equal(P.previewModeNormalize('2d'), '2d');
+  assert.equal(P.previewModeNormalize('flat'), '2d');
+  assert.equal(P.previewModeNormalize('nope'), '');
+  assert.equal(P.previewModePick('', true), '3d');
+  assert.equal(P.previewModePick(null, false), '2d');
+  assert.equal(P.previewModePick('3d', true), '3d');
+  assert.equal(P.previewModePick('3d', false), '2d');
+  assert.equal(P.previewModePick('2d', true), '2d');
+  assert.equal(P.previewModePick('2d', false), '2d');
+  assert.equal(P.previewModeSelected('3d', '3d'), true);
+  assert.equal(P.previewModeSelected('3d', '2d'), false);
+  assert.equal(P.previewModeSelected('2d', '2d'), true);
+});
+
+test('toggling 2D/3D and remembering the choice does not change the outfit, coins, or owned list', () => {
+  const state = JSON.parse(JSON.stringify(base));
+  const before = P.previewSnap(state);
+  const ses = P.previewBegin(state, hat);
+  assert.equal(P.previewModeToggle('3d', true), '2d');
+  assert.equal(P.previewModeToggle('2d', true), '3d');
+  assert.equal(P.previewModeToggle('2d', false), '2d');
+  assert.equal(P.previewModeToggle('3d', false), '2d');
+  assert.equal(ses.look.hat, 'tophat');
+  assert.equal(state.avatar.hat, 'none');
+  assert.equal(state.coins, 500);
+  assert.deepEqual(state.owned, ['hair-short']);
+  assert.equal(P.previewSameSave(before, P.previewSnap(state)), true);
+});
+
+test('preview panel has highlighted 2D and 3D buttons and Xbox 2D/3D controls', () => {
+  assert.match(html, /id="avPrev2dBtn"/);
+  assert.match(html, /id="avPrev3dBtn"/);
+  assert.match(html, /id="avPrevModes"/);
+  assert.match(html, /data-avprev-mode="2d"/);
+  assert.match(html, /data-avprev-mode="3d"/);
+  assert.match(html, /avprevmode\.on|\.avprevmode\.on/);
+  assert.match(html, /rubloxPreviewMode/);
+  assert.match(html, /function avPrevSetMode/);
+  assert.match(html, /function avPrevToggleMode/);
+  assert.match(html, /function avPrevStick/);
+  assert.match(html, /avPrevToggleMode/);
+  assert.match(html, /s\.jp\[2\][\s\S]{0,120}s\.jp\[4\][\s\S]{0,80}s\.jp\[5\][\s\S]{0,200}avPrevToggleMode|s\.jp\[4\][\s\S]{0,80}s\.jp\[5\][\s\S]{0,80}s\.jp\[2\][\s\S]{0,200}avPrevToggleMode/);
+  assert.match(html, /avPrevStick\(s\.rx/);
+  assert.doesNotMatch(html, /rubloxAvatar\s*=/);
+});

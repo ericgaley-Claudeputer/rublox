@@ -31,7 +31,7 @@ describe('new avatar looks', () => {
     assert.equal(old.hat, 'cap');
     assert.equal(L.lookFixAv({body:'galaxy'}).body, 'classic');
     assert.equal(L.lookFixAv({body:'boy'}).body, 'boy');
-    if (html.includes("const BUILD = '2026.11.20-4'") || html.includes("id:'body-boy'")){
+    if (html.includes("const BUILD = '2026.11.20-5'") || html.includes("id:'body-boy'")){
       L.lookIds().forEach(id => {
         assert.ok(html.includes("id:'" + id + "'") || html.includes('id:"' + id + '"'), 'shop missing ' + id);
       });
