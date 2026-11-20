@@ -4,10 +4,13 @@
 (function (root) {
   const ELEV_KEY = 'rubloxElevator';
   const ELEV_VER = 2;
-  const ELEV_SHOP_EVERY = 8;
+  const ELEV_SHOP_EVERY = 15;
+  const ELEV_SPECIAL_EVERY = 25;
+  const ELEV_EVENT_EVERY = 8;
   const ELEV_RIDE = 4.6;
   const ELEV_INTER = 2.2;
   const ELEV_BAG_KEEP = 0.3;
+  const ELEV_MILESTONES = [10, 25, 50, 100];
 
   function F(o){ return o; }
 
@@ -70,18 +73,28 @@
     F({id:'moonmilk', name:'Moonmilk Kitchen', emoji:'🥛', kind:'creepy', seconds:22, coins:8, hint:'Find the midnight spoon and set it on the saucer. The cups hum softly.', clear:'find', sky:'#161a28', floor:'#1c2230', wall:'#262c3c', accent:'#e8f0ff', item:'spoon'}),
     F({id:'dustorchestra', name:'Dust Orchestra', emoji:'🎻', kind:'creepy', seconds:20, coins:9, hint:'The instruments hum by themselves. Reach the door and do not stand in a bow-beam.', clear:'door', sky:'#1a1218', floor:'#241820', wall:'#2e2028', accent:'#e8c878', haz:'wink'}),
     F({id:'smileinventory', name:'Smile Inventory', emoji:'🙂', kind:'creepy', seconds:20, coins:8, hint:'Give every watching smile a sleepy one, so they can rest.', clear:'paint', sky:'#1c1824', floor:'#262030', wall:'#32283c', accent:'#ffd6a0', paints:3}),
-    F({id:'clockback', name:'Backward Clockroom', emoji:'🕰️', kind:'creepy', seconds:18, coins:8, hint:'Wait for the clock to ding backward. Stay off the hush-tiles until then.', clear:'timer', sky:'#141820', floor:'#1c222c', wall:'#283038', accent:'#9ad0c8', tiles:true})
+    F({id:'clockback', name:'Backward Clockroom', emoji:'🕰️', kind:'creepy', seconds:18, coins:8, hint:'Wait for the clock to ding backward. Stay off the hush-tiles until then.', clear:'timer', sky:'#141820', floor:'#1c222c', wall:'#283038', accent:'#9ad0c8', tiles:true}),
+    F({id:'cloudnook', name:'Cloud Nook', emoji:'☁️', kind:'chill', seconds:16, coins:5, hint:'A soft hangout in the clouds. Sit tight and enjoy the view until the ding.', clear:'timer', sky:'#d8efff', floor:'#f4fbff', wall:'#e8f6ff', accent:'#7ec8ff'}),
+    F({id:'porchswing', name:'Porch Swing', emoji:'🪵', kind:'chill', seconds:16, coins:5, hint:'A breezy porch with a creaky swing. No rush — just wait for the ding.', clear:'timer', sky:'#ffe9cc', floor:'#f0d0a8', wall:'#ffe9cc', accent:'#c45c1a'}),
+    F({id:'buttonbazaar', name:'Button Bazaar', emoji:'🔘', kind:'shop', seconds:16, coins:5, hint:'A clicky little market. Buy a floor-only trinket, or ride on.', clear:'shop', sky:'#ffe8f0', floor:'#ffe8f0', wall:'#fff4f8', accent:'#ff6fb5', shopItems:['jumblejam','sparklepin']}),
+    F({id:'mirrorattic', name:'Mirror Attic', emoji:'🪞', kind:'special', seconds:22, coins:14, hint:'A rare attic of polite mirrors. Walk to the sparkling door. They only wave if you wave first.', clear:'door', sky:'#e8e4ff', floor:'#d8d0f0', wall:'#f4f0ff', accent:'#8b5cf6', rare:true}),
+    F({id:'starwell', name:'Star Well', emoji:'🌟', kind:'special', seconds:22, coins:13, hint:'A rare well of shy stars. Stroll to the glowing door and make a quiet wish.', clear:'door', sky:'#141028', floor:'#1a1630', wall:'#2a2448', accent:'#ffe566'}),
+    F({id:'stubdesk', name:'Stub Desk', emoji:'🎫', kind:'find', seconds:22, coins:7, hint:'Pip dropped a ride stub. Find it and drop it in the tray to keep a ticket.', clear:'find', sky:'#fff4c8', floor:'#fff4c8', wall:'#fffbe8', accent:'#f0c44c', item:'ridestub', ticket:1}),
+    F({id:'pillowfort', name:'Pillow Fort', emoji:'🏰', kind:'obby', seconds:26, coins:8, hint:'Climb the blanket walls and sofa cushions to the glowing door.', clear:'door', sky:'#f7d6ea', floor:'#f3d6ea', wall:'#f8eaf2', accent:'#ffd0e8'}),
+    F({id:'hushlibrary', name:'The Hush Library', emoji:'📖', kind:'secret', seconds:24, coins:14, hint:'A hush of a reading room. Find the quiet-card and slip it back on the shelf.', clear:'find', sky:'#1a1428', floor:'#22182e', wall:'#2c2038', accent:'#c9b6ff', item:'quietcard', secret:true}),
+    F({id:'windchimes', name:'Wind Chimes', emoji:'🎐', kind:'puzzle', seconds:22, coins:8, hint:'Tap the chimes in the breeze-order Bingle hummed.', clear:'seq', sky:'#dff6ff', floor:'#dff6ff', wall:'#eefaff', accent:'#3a86ff', seq:3}),
+    F({id:'gigglecarousel', name:'Giggle Carousel', emoji:'🎠', kind:'funny', seconds:16, coins:6, hint:'The wooden ponies trot in a circle. Stay off their path until the ding!', clear:'timer', sky:'#ffe8f4', floor:'#ffe8f4', wall:'#fff4fa', accent:'#ff6fb5', haz:'balloon'})
   ];
 
   const ELEV_PALS = [
-    {id:'sock', name:'Captain Sock', emoji:'🧦', col:'#3a86ff', line:'I packed two socks and only found one. Typical!', pal:'niblet', hop:'stay', lines:['I packed two socks and only found one. Typical!','A sock is a shoe that believes in you.','If I find the other one, I am naming it First Mate.'], react:{creepy:'I do not like how quiet this hallway is looking at my ankles.', shop:'Do they sell spare socks in pairs, or is that too optimistic?', funny:'This floor is sillier than my leftover sock.', ride:'The cab is wobbling. That is just how I walk, honestly.'}, jokes:['Niblet, if you packed my sock in that lunchbox I will be very polite about it.']},
+    {id:'sock', name:'Captain Sock', emoji:'🧦', col:'#3a86ff', line:'I packed two socks and only found one. Typical!', pal:'niblet', hop:'stay', home:'sockhunt', lines:['I packed two socks and only found one. Typical!','A sock is a shoe that believes in you.','If I find the other one, I am naming it First Mate.'], react:{creepy:'I do not like how quiet this hallway is looking at my ankles.', shop:'Do they sell spare socks in pairs, or is that too optimistic?', funny:'This floor is sillier than my leftover sock.', ride:'The cab is wobbling. That is just how I walk, honestly.'}, jokes:['Niblet, if you packed my sock in that lunchbox I will be very polite about it.']},
     {id:'niblet', name:'Niblet', emoji:'🐥', col:'#ffd23f', line:'If anyone sees a lunchbox, it is probably mine.', pal:'sock', hop:'stay', lines:['If anyone sees a lunchbox, it is probably mine.','I packed a crumb for later. Then I packed a second crumb for the first crumb.','Peep! That means I am ready, or maybe hungry. Both.'], react:{creepy:'I will hide behind Captain Sock. Socks are brave.', shop:'Is the lucky cookie lunch? I can share a crumb.', funny:'Hee! My feathers are doing a little dance.', ride:'If the lift sneezes, I brought a napkin.'}, jokes:['Captain Sock, I did not pack your sock. I packed three sandwiches and a rumor.']},
     {id:'marm', name:'Marm', emoji:'🧶', col:'#ff6fb5', line:'I brought extra yarn in case the lift gets drafty.', pal:'polo', hop:'stay', lines:['I brought extra yarn in case the lift gets drafty.','Does anyone want a tiny scarf? I already made four.','Knit one, wobble two.'], react:{creepy:'I am knitting a very brave hat for the dark.', shop:'I could knit this shop a cozy. Would it like a cozy?', funny:'A giggle is just a stitch that got excited.', ride:'Hold this yarn, dear. It likes to watch the numbers tick.'}, jokes:['Polo, if you get off to check the coat rack, I will keep your seat warm with a scarf.']},
     {id:'taro', name:'Taro', emoji:'📷', col:'#8b5cf6', line:'Hold still — this wobble makes a great photo!', pal:'doodle', hop:'stay', lines:['Hold still — this wobble makes a great photo!','Say ding! No, ding-ding! Yes, that is the one.','I am taking a picture of the picture of the lift. It is very meta, and also cute.'], react:{creepy:'Low light! Everyone look mysterious, but friendly.', shop:'I would like a photo of the cookie before anyone eats it.', funny:'This is going in the silly album.', ride:'The floor numbers are ticking. I will catch the blur.'}, jokes:['Doodle, get in the frame! The wobble counts as motion art.']},
     {id:'sprocket', name:'Sprocket', emoji:'🔧', col:'#2ec27e', line:'I tightened every bolt. The wobble is a feature.', pal:'fizz', hop:'stay', lines:['I tightened every bolt. The wobble is a feature.','If it hums, it is working. If it hums sideways, it is working with style.','I brought a spare bell, just in case Bingle rings too proudly.'], react:{creepy:'The lamps are flickering on purpose. I respect the drama.', shop:'I do not need a hat. I need a tiny wrench pin. Close enough.', funny:'That honk was not in the manual, and I love it.', ride:'A stuck moment? I will count to three and pat the wall.'}, jokes:['Fizz, if you sneeze bubbles in the gearbox I will still like you.']},
     {id:'puddle', name:'Puddle', emoji:'☔', col:'#4aa3ff', line:'I only dripped a little. The cab can take it.', pal:'moony', hop:'stay', lines:['I only dripped a little. The cab can take it.','I am not a spill. I am a visiting weather.','If anyone has a towel, I will be very grateful and also slightly shinier.'], react:{creepy:'Dark puddles are still puddles. We are cousins.', shop:'Do they sell little umbrellas for people who are already the rain?', funny:'A giggle just made a ripple in me!', ride:'The cab shook and I made a tiny sea. Sorry! It is a cute sea.'}, jokes:['Moony, you can see yourself in me, but only the friendly stars.']},
     {id:'lumen', name:'Lumen', emoji:'💡', col:'#ffe566', line:'I am a night-light with feelings, and they are mostly brave.', pal:'pip', hop:'creepy', lines:['I am a night-light with feelings, and they are mostly brave.','If it gets dim, I can glow. If it gets dimmer, I can glow politely louder.','Please do not put a lampshade on my feelings.'], react:{creepy:'I can do this. I can do this. I am doing a glow.', shop:'A soft lamp! That is like meeting a cousin.', funny:'Even I am smiling, and I do not have a mouth, technically.', ride:'The lights flickered and I flickered back. Teamwork.'}, jokes:['Pip, I will light your ticket so you can read the number this time.']},
-    {id:'pip', name:'Pip', emoji:'🎫', col:'#f4d35e', line:'I had a ticket. Then I had a maybe. Now I have a story.', pal:'lumen', hop:'stay', lines:['I had a ticket. Then I had a maybe. Now I have a story.','Is this our floor? It might be someone else’s floor wearing our number.','I wrote the number on my sleeve and then I wore a different sleeve.'], react:{creepy:'If the hallway whispers a number, I will not listen unless it is polite.', shop:'Can I buy a better memory? Or just a pencil.', funny:'This is not my floor and I am delighted.', ride:'The dial is ticking and I still cannot decide if I like even numbers.'}, jokes:['Lumen, shine on the dial, I am squinting with my whole heart.']},
+    {id:'pip', name:'Pip', emoji:'🎫', col:'#f4d35e', line:'I had a ticket. Then I had a maybe. Now I have a story.', pal:'lumen', hop:'stay', home:'stubdesk', lines:['I had a ticket. Then I had a maybe. Now I have a story.','Is this our floor? It might be someone else’s floor wearing our number.','I wrote the number on my sleeve and then I wore a different sleeve.'], react:{creepy:'If the hallway whispers a number, I will not listen unless it is polite.', shop:'Can I buy a better memory? Or just a pencil.', funny:'This is not my floor and I am delighted.', ride:'The dial is ticking and I still cannot decide if I like even numbers.'}, jokes:['Lumen, shine on the dial, I am squinting with my whole heart.']},
     {id:'fizz', name:'Fizz', emoji:'🫧', col:'#7fe3ff', line:'I brought sparkles. They might be bubbles. Same family.', pal:'sprocket', hop:'stay', lines:['I brought sparkles. They might be bubbles. Same family.','If I sneeze, it is festive. I brought a tiny apology as well.','Carbonation is just a hug for water.'], react:{creepy:'I will sneeze very quietly. Like a polite bubble.', shop:'A lucky cookie and a fizzy sip would be a parade.', funny:'Honk! That almost made me giggle-fizz.', ride:'Ah—choo! Those were happy bubbles. The cab is fine.'}, jokes:['Sprocket, I promise the bubbles are off-duty during a stuck moment.']},
     {id:'doodle', name:'Doodle', emoji:'✏️', col:'#5c4a3a', line:'I am a walking sketch. Please do not erase my hat.', pal:'taro', hop:'stay', lines:['I am a walking sketch. Please do not erase my hat.','If the walls get too blank I might doodle a window.','My lines are wobbly on purpose. It is called style, and also the lift.'], react:{creepy:'I will draw a little night-light, just in case Lumen is shy.', shop:'Hats! I have been drawing hats all morning.', funny:'I sketched a mustache on the air. It floated away politely.', ride:'The cab shook and my eyebrows went on an adventure.'}, jokes:['Taro, if you photograph me, tell the camera I am a limited edition.']},
     {id:'polo', name:'Polo', emoji:'🧥', col:'#c45c1a', line:'I am only checking the coat rack. I will be right back.', pal:'marm', hop:'shopoff', lines:['I am only checking the coat rack. I will be right back.','A good coat should nod when you hang it up.','Did someone say closet? I have professional opinions.'], react:{creepy:'A soft closet! I will be brave, and also very tidy.', shop:'This is my stop. I just want to say hello to the hangers.', funny:'I once wore a joke coat. It still tells the joke.', ride:'If the doors close, my sleeves will make it. They are long on purpose.'}, jokes:['Marm, save me a seat. I am conducting a very short coat inspection.']},
@@ -215,7 +228,14 @@
       hats: [],
       hat: '',
       pack: {},
-      lessScary: false
+      lessScary: false,
+      tickets: 0,
+      ticketsUsed: 0,
+      gifts: 0,
+      met: [],
+      lobbySecret: false,
+      daily: null,
+      dailyClaims: 0
     };
   }
 
@@ -240,6 +260,25 @@
     }
     if (o.lessScary != null) d.lessScary = !!o.lessScary;
     else d.lessScary = elevInheritLessScary();
+    d.tickets = Math.max(0, o.tickets | 0);
+    d.ticketsUsed = Math.max(0, o.ticketsUsed | 0);
+    d.gifts = Math.max(0, o.gifts | 0);
+    d.dailyClaims = Math.max(0, o.dailyClaims | 0);
+    d.lobbySecret = !!o.lobbySecret;
+    if (Array.isArray(o.met)) d.met = o.met.filter(id => elevPal(id));
+    if (o.daily && typeof o.daily === 'object'){
+      d.daily = {
+        day: String(o.daily.day || ''),
+        id: String(o.daily.id || ''),
+        goal: Math.max(1, o.daily.goal | 0),
+        progress: Math.max(0, o.daily.progress | 0),
+        claimed: !!o.daily.claimed,
+        kind: String(o.daily.kind || ''),
+        name: String(o.daily.name || '').slice(0, 80),
+        reward: Math.max(0, o.daily.reward | 0),
+        tickets: Math.max(0, o.daily.tickets | 0)
+      };
+    }
     d.ver = ELEV_VER;
     return d;
   }
@@ -261,7 +300,11 @@
     {id:'timesip', kind:'use', name:'Extra Sip', emoji:'🧃', cost:10, desc:'One-use: +5 seconds on your next floor.'},
     {id:'softlamp', kind:'use', name:'Soft Lamp', emoji:'🔦', cost:12, desc:'One-use: a friendlier glow on the next dim floor.'},
     {id:'soapsocks', kind:'use', name:'Soap-proof Socks', emoji:'🧦', cost:10, desc:'One-use: ignore one slip or dodge hazard.'},
-    {id:'streakcharm', kind:'use', name:'Streak Charm', emoji:'🍀', cost:20, desc:'One-use: if you fail, your coin streak is kept once.'}
+    {id:'streakcharm', kind:'use', name:'Streak Charm', emoji:'🍀', cost:20, desc:'One-use: if you fail, your coin streak is kept once.'},
+    {id:'ribbonwrap', kind:'use', name:'Ribbon Wrap', emoji:'🎁', cost:12, desc:'One-use: give this present to a passenger in the cab.'},
+    {id:'seatcushion', kind:'use', name:'Seat Cushion', emoji:'🪑', cost:9, desc:'One-use: a plusher ride, and +3 seconds on your next floor.'},
+    {id:'jumblejam', kind:'use', name:'Jumble Jam', emoji:'🍓', cost:14, desc:'Bazaar-only: +6 bonus coins on your next cleared floor.', floorOnly:'buttonbazaar'},
+    {id:'sparklepin', kind:'hat', name:'Sparkle Pin', emoji:'✨', cost:22, desc:'A bazaar-only pin that twinkles when the dial turns.', floorOnly:'buttonbazaar'}
   ];
 
   const ELEV_RIDE_EVENTS = [
@@ -269,11 +312,25 @@
     {id:'stuck', text:'A tiny stuck moment. Bingle hums patiently.', intercom:'Counting to three… and we are rolling again.'},
     {id:'sneeze', text:'Someone sneezes. Bubbles, probably.', intercom:'Bless you! The cab has been professionally giggled.'},
     {id:'wobble', text:'The cab wiggles like jelly.', intercom:'Wobble feature engaged. Hold your hats and socks!'},
-    {id:'hum', text:'The cables hum a secret tune.', intercom:'That hum is the shaft singing along with our music.'}
+    {id:'hum', text:'The cables hum a secret tune.', intercom:'That hum is the shaft singing along with our music.'},
+    {id:'confetti', text:'A soft burst of paper stars sprinkles the cab.', intercom:'Party in the shaft! Nobody has to sweep. Everyone is okay!'},
+    {id:'coincrain', text:'A few coins tinkle down from the light.', intercom:'Lucky drip! Pocket what you like.'},
+    {id:'ice', text:'The floor goes pleasantly slippery, like a rink.', intercom:'Icy toes! Take little steps. Everyone is okay!'},
+    {id:'knock', text:'Four polite knocks tap the door from nowhere.', intercom:'If it is a floor, it will introduce itself properly.'},
+    {id:'portraits', text:'The cab portraits flip to a new silly face.', intercom:'New neighbors on the wall. Wave if you want.'},
+    {id:'paldrop', text:'A passenger drops in from the light, very carefully.', intercom:'Make a little room — a friend just hopped in!'},
+    {id:'coinfall', text:'The ceiling light jingles and drops a shiny coin.', intercom:'Finders keepers, gently.'}
   ];
 
   function elevShopItem(id){ return ELEV_SHOP.find(it => it.id === id) || null; }
-  function elevShopList(){ return ELEV_SHOP.slice(); }
+  function elevShopList(opts){
+    opts = opts || {};
+    return ELEV_SHOP.filter(it => {
+      if (opts.floor) return it.floorOnly === opts.floor;
+      if (opts.all) return true;
+      return !it.floorOnly;
+    });
+  }
 
   function elevInheritLessScary(){
     try {
@@ -314,9 +371,15 @@
     return run;
   }
 
-  function elevPickRideEvent(rand){
+  function elevDueEvent(run){
+    const n = (run && (run.survived | 0)) + 1;
+    return n > 0 && n % ELEV_EVENT_EVERY === 0;
+  }
+
+  function elevPickRideEvent(rand, run){
     const r = typeof rand === 'function' ? rand : Math.random;
-    if (r() > 0.62) return null;
+    const forced = elevDueEvent(run);
+    if (!forced && r() > 0.62) return null;
     return ELEV_RIDE_EVENTS[Math.floor(r() * ELEV_RIDE_EVENTS.length)] || null;
   }
 
@@ -357,6 +420,7 @@
     const phase = (run && run.phase) || '';
     if (pal.hop === 'creepy') return kind === 'creepy' || phase === 'lobby' || phase === 'board' || phase === 'ride';
     if (pal.hop === 'shopoff' && kind === 'shop' && (phase === 'floor' || phase === 'inter')) return false;
+    if (pal.stop && run && run.floor === pal.stop && (phase === 'floor' || phase === 'inter')) return false;
     return true;
   }
 
@@ -451,6 +515,15 @@
         if (p){ used[p.id] = true; stay.push(p); }
       }
     }
+    const home = pool.filter(p => p.home && run && p.home === run.floor);
+    if (home.length && stay.length < ELEV_PAL_MAX && r() < 0.85){
+      const p = home[Math.floor(r() * home.length)];
+      if (p && !used[p.id]){ used[p.id] = true; stay.push(p); }
+    }
+    if (run && run.event && run.event.id === 'paldrop' && stay.length < ELEV_PAL_MAX && pool.length){
+      const p = pool[Math.floor(r() * pool.length)];
+      if (p && !used[p.id]){ used[p.id] = true; stay.push(p); }
+    }
     return elevSeatPals(run, stay);
   }
 
@@ -493,6 +566,7 @@
     const item = elevShopItem(itemId);
     const coins = Math.max(0, wallet | 0);
     if (!item) return {ok:false, why:'item', state, wallet:coins};
+    if (item.floorOnly) return {ok:false, why:'floor', state, wallet:coins};
     if (coins < item.cost) return {ok:false, why:'coins', state, wallet:coins, need: item.cost - coins};
     if (item.kind === 'hat'){
       if (state.hats.indexOf(item.id) >= 0) return {ok:false, why:'have', state, wallet:coins};
@@ -517,7 +591,9 @@
     if (!run) return {state, run};
     const take = id => { if ((state.pack[id] | 0) > 0){ state.pack[id] -= 1; if (!state.pack[id]) delete state.pack[id]; return true; } return false; };
     if (take('luckycookie')) run.lucky = (run.lucky | 0) + 4;
-    if (take('timesip')) run.bonusTime = 5;
+    if (take('jumblejam')) run.lucky = (run.lucky | 0) + 6;
+    if (take('timesip')) run.bonusTime = (run.bonusTime | 0) + 5;
+    if (take('seatcushion')) run.bonusTime = (run.bonusTime | 0) + 3;
     if (take('softlamp')) run.softLamp = true;
     if (take('soapsocks')) run.guard = true;
     if (take('streakcharm')) run.charm = true;
@@ -589,7 +665,8 @@
       softLamp: false,
       bonusTime: 0,
       charm: false,
-      lessScary: !!state.lessScary
+      lessScary: !!state.lessScary,
+      queued: null
     };
   }
 
@@ -603,6 +680,12 @@
     if (!run) return false;
     const n = (run.survived | 0) + 1;
     return n > 0 && n % ELEV_SHOP_EVERY === 0;
+  }
+
+  function elevDueSpecial(run){
+    if (!run) return false;
+    const n = (run.survived | 0) + 1;
+    return n > 0 && n % ELEV_SPECIAL_EVERY === 0;
   }
 
   function elevShuffle(ids, rand){
@@ -620,6 +703,7 @@
     const snow = elevSnowOn(opts.snow != null ? opts.snow : run && run.snow);
     return ELEV_FLOORS.filter(f => {
       if (f.kind === 'shop') return false;
+      if (f.kind === 'special') return false;
       if (f.secret) return false;
       if (f.holiday && !snow) return false;
       return true;
@@ -642,9 +726,22 @@
     return (pool[Math.floor(r() * pool.length)] || shops[0] || elevFloor('snackstop'));
   }
 
+  function elevPickSpecial(run, rand){
+    const r = typeof rand === 'function' ? rand : Math.random;
+    const list = ELEV_FLOORS.filter(f => (f.kind === 'special' || f.kind === 'boss' || f.rare) && f.id !== (run && run.last));
+    return (list[Math.floor(r() * list.length)] || ELEV_FLOORS.find(f => f.kind === 'special') || elevFloor('starwell'));
+  }
+
   function elevPickFloor(run, rand, opts){
     opts = opts || {};
     const r = typeof rand === 'function' ? rand : Math.random;
+    if (run && run.queued && elevFloor(run.queued)){
+      const picked = elevFloor(run.queued);
+      run.queued = null;
+      return picked;
+    }
+    if (elevDueShop(run) && !elevDueSpecial(run)) return elevPickShop(run, rand);
+    if (elevDueSpecial(run)) return elevPickSpecial(run, rand);
     if (elevDueShop(run)) return elevPickShop(run, rand);
     if (opts.want === 'secret' || (r() < 0.03 && (run.survived | 0) >= 8)){
       const secret = ELEV_FLOORS.filter(f => f.secret && f.id !== run.last);
@@ -733,10 +830,14 @@
     run.wantClear = false;
     run.wantFail = false;
     run.hostLine = elevHostLine((run.survived | 0) + 1, rand);
-    run.event = elevPickRideEvent(rand);
+    run.event = elevPickRideEvent(rand, run);
     run.quote = '🛎️ ' + ELEV_HOST.name + ': "' + run.hostLine + '"';
     if (run.event) run.quote += '  ' + run.event.text;
-    if (run.buddy) elevPalsAboard(run, rand);
+    if (run.buddy){
+      if (run.pals && run.pals.length) elevPalsHop(run, rand);
+      else elevPalsAboard(run, rand);
+      if (run.event && run.event.id === 'paldrop') elevPalsHop(run, rand);
+    }
     return run;
   }
 
@@ -766,26 +867,40 @@
     if (!run || run.cleared) return {ok:false, why:'done', state, run};
     const f = elevFloor(run.floor);
     if (!f) return {ok:false, why:'floor', state, run};
-    const pay = elevReward(run, f);
+    let pay = elevReward(run, f);
     run.cleared = true;
     run.failed = false;
     run.wantClear = false;
     run.lucky = 0;
     run.streak = (run.streak | 0) + 1;
     run.survived = (run.survived | 0) + 1;
+    const mile = elevMilestonePay(run.survived);
+    if (mile) pay += mile;
+    let tickets = 0;
+    if ((f.ticket | 0) > 0 || run.holding === 'ridestub') tickets += Math.max(1, f.ticket | 0);
+    if (tickets){ state.tickets = (state.tickets | 0) + tickets; }
     run.coins = (run.coins | 0) + pay;
     state.cleared += 1;
     state.coins += pay;
     if (run.streak > state.best) state.best = run.streak;
     elevMarkSeen(state, f.id);
     elevSyncBag(state, run);
+    state = elevMeetPals(state, run);
     if (f.kind === 'find' || f.secret) state.found += 1;
     if (f.kind === 'creepy') state.creepy += 1;
     if (f.kind === 'shop') state.shopped += 1;
+    let dailyKind = 'survive';
+    if (f.kind === 'shop') dailyKind = 'shop';
+    else if (f.kind === 'creepy') dailyKind = 'creepy';
+    else if (tickets) dailyKind = 'ticket';
+    state = elevDailyProgress(state, dailyKind, 1);
+    if (dailyKind !== 'survive') state = elevDailyProgress(state, 'survive', 1);
     run.phase = 'inter';
     run.t = ELEV_INTER;
     run.quote = '✨ Floor cleared! +' + pay + ' 🪙  ·  Streak ' + run.streak + '  ·  bonus +' + elevStreakBonus(Math.max(0, (run.streak | 0) - 1));
-    return {ok:true, why:'ok', state, run, pay, floor:f};
+    if (mile) run.quote += '  ·  Milestone +' + mile + ' 🪙';
+    if (tickets) run.quote += '  ·  +' + tickets + ' 🎫';
+    return {ok:true, why:'ok', state, run, pay, floor:f, tickets:tickets, milestone:mile};
   }
 
   function elevFailFloor(state, run){
@@ -825,7 +940,28 @@
     run.shopDone = true;
     run.lucky = 4;
     state.shopped += 1;
+    state = elevDailyProgress(state, 'shop', 1);
     return {ok:true, why:'ok', state, run, wallet: coins - cost, spent:cost};
+  }
+
+  function elevBuyFloorItem(state, wallet, run, itemId){
+    state = elevLoad(state);
+    const f = run && elevFloor(run.floor);
+    if (!run || !f || f.kind !== 'shop') return {ok:false, why:'shop', state, run, wallet};
+    const item = elevShopItem(itemId);
+    if (!item || item.floorOnly !== f.id) return {ok:false, why:'item', state, run, wallet};
+    const coins = Math.max(0, wallet | 0);
+    if (coins < item.cost) return {ok:false, why:'coins', state, run, wallet:coins, need: item.cost - coins};
+    if (item.kind === 'hat'){
+      if (state.hats.indexOf(item.id) >= 0) return {ok:false, why:'have', state, run, wallet:coins};
+      state.hats.push(item.id);
+      state.hat = item.id;
+    } else {
+      state.pack[item.id] = (state.pack[item.id] | 0) + 1;
+    }
+    state.shopped += 1;
+    state = elevDailyProgress(state, 'shop', 1);
+    return {ok:true, why:'ok', state, run, wallet: coins - item.cost, spent:item.cost, item:item};
   }
 
   function elevRing(run, bell){
@@ -990,7 +1126,8 @@
       buddy: !!run.buddy,
       pals: elevCleanPals(run.pals),
       talk: elevCleanTalk(run.talk),
-      talkSeq: run.talkSeq | 0
+      talkSeq: run.talkSeq | 0,
+      queued: run.queued && elevFloor(run.queued) ? run.queued : null
     };
   }
 
@@ -1012,6 +1149,7 @@
     if (Array.isArray(snap.pals)) run.pals = elevCleanPals(snap.pals);
     if (snap.talk) run.talk = elevCleanTalk(snap.talk);
     if (snap.talkSeq != null) run.talkSeq = snap.talkSeq | 0;
+    if (snap.queued !== undefined) run.queued = snap.queued && elevFloor(snap.queued) ? snap.queued : null;
     return run;
   }
 
@@ -1064,28 +1202,170 @@
     });
   }
 
+  function elevMilestonePay(survived){
+    const n = survived | 0;
+    return ELEV_MILESTONES.indexOf(n) >= 0 ? n : 0;
+  }
+
+  function elevMeetPals(state, run){
+    state = elevLoad(state);
+    if (!state.met) state.met = [];
+    elevPalIds(run).forEach(id => {
+      if (id && state.met.indexOf(id) < 0) state.met.push(id);
+    });
+    return state;
+  }
+
+  function elevGiftPal(state, run, palId){
+    state = elevLoad(state);
+    if (!run) return {ok:false, why:'run', state, run};
+    const pal = elevPal(palId) || (elevPalIds(run)[0] && elevPal(elevPalIds(run)[0]));
+    if (!pal) return {ok:false, why:'pal', state, run};
+    if (!elevPalIds(run).includes(pal.id)) return {ok:false, why:'aboard', state, run};
+    const have = (state.pack.ribbonwrap | 0) > 0;
+    if (!have) return {ok:false, why:'item', state, run};
+    state.pack.ribbonwrap -= 1;
+    if (!state.pack.ribbonwrap) delete state.pack.ribbonwrap;
+    state.gifts = (state.gifts | 0) + 1;
+    state = elevMeetPals(state, run);
+    state = elevDailyProgress(state, 'gift', 1);
+    const line = (pal.emoji || '') + ' ' + pal.name + ': "For me? I will treasure this wobble-present!"';
+    run.quote = line;
+    return {ok:true, why:'ok', state, run, pal:pal, pay:3, quote:line};
+  }
+
+  function elevFindLobbySecret(state){
+    state = elevLoad(state);
+    if (state.lobbySecret) return {ok:false, why:'have', state, pay:0};
+    state.lobbySecret = true;
+    return {ok:true, why:'ok', state, pay:5};
+  }
+
+  function elevQueueNext(state, run, floorId){
+    state = elevLoad(state);
+    if (!run) return {ok:false, why:'run', state, run};
+    const f = elevFloor(floorId);
+    if (!f) return {ok:false, why:'floor', state, run};
+    if (f.secret && (state.seen || []).indexOf(f.id) < 0) return {ok:false, why:'secret', state, run};
+    if ((state.tickets | 0) < 1) return {ok:false, why:'tickets', state, run};
+    state.tickets -= 1;
+    state.ticketsUsed = (state.ticketsUsed | 0) + 1;
+    run.queued = f.id;
+    return {ok:true, why:'ok', state, run, floor:f, left: state.tickets};
+  }
+
+  const ELEV_DAILIES = [
+    {id:'survive3', kind:'survive', goal:3, name:'Clear 3 floors today', reward:8, tickets:1},
+    {id:'shop1', kind:'shop', goal:1, name:'Visit a snack floor today', reward:6, tickets:0},
+    {id:'gift1', kind:'gift', goal:1, name:'Give a present to a passenger', reward:10, tickets:1},
+    {id:'creepy1', kind:'creepy', goal:1, name:'Finish a hush-y floor today', reward:8, tickets:0},
+    {id:'ticket1', kind:'ticket', goal:1, name:'Find a ride ticket today', reward:5, tickets:0}
+  ];
+
+  function elevDayKey(now){
+    const d = new Date(now || Date.now());
+    const m = (d.getMonth() + 1);
+    const day = d.getDate();
+    return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+  }
+
+  function elevPickDaily(day){
+    let h = 0;
+    const s = String(day || '');
+    for (let i = 0; i < s.length; i++) h = (h + s.charCodeAt(i) * (i + 3)) % 997;
+    return ELEV_DAILIES[h % ELEV_DAILIES.length];
+  }
+
+  function elevEnsureDaily(state, now){
+    state = elevLoad(state);
+    const day = elevDayKey(now);
+    if (!state.daily || state.daily.day !== day){
+      const spec = elevPickDaily(day);
+      state.daily = {day, id:spec.id, kind:spec.kind, goal:spec.goal, progress:0, claimed:false, name:spec.name, reward:spec.reward, tickets:spec.tickets};
+    }
+    return state;
+  }
+
+  function elevDailyProgress(state, kind, n){
+    state = elevEnsureDaily(state);
+    if (!state.daily || state.daily.claimed) return state;
+    if (state.daily.kind !== kind) return state;
+    state.daily.progress = Math.min(state.daily.goal, (state.daily.progress | 0) + (n == null ? 1 : (n | 0)));
+    return state;
+  }
+
+  function elevDailyClaim(state, now){
+    state = elevEnsureDaily(state, now);
+    const d = state.daily;
+    if (!d) return {ok:false, why:'none', state};
+    if (d.claimed) return {ok:false, why:'have', state};
+    if ((d.progress | 0) < (d.goal | 0)) return {ok:false, why:'short', state, need: (d.goal | 0) - (d.progress | 0)};
+    d.claimed = true;
+    state.dailyClaims = (state.dailyClaims | 0) + 1;
+    if (d.tickets) state.tickets = (state.tickets | 0) + (d.tickets | 0);
+    return {ok:true, why:'ok', state, pay: d.reward | 0, tickets: d.tickets | 0, daily:d};
+  }
+
+  const ELEV_BADGE_CATALOG = [
+    {id:'elev-ride', name:'First Ride', emoji:'🛎️', desc:'Step into Wobblevator for the first time.'},
+    {id:'elev-five', name:'Five in a Row', emoji:'5️⃣', desc:'Clear five floors in one streak.'},
+    {id:'elev-twelve', name:'Twelve in a Row', emoji:'✨', desc:'Clear twelve floors in one streak.'},
+    {id:'elev-ten', name:'Ten Floors', emoji:'🔟', desc:'Clear ten floors in all, ever.'},
+    {id:'elev-fifty', name:'Fifty Floors', emoji:'🏅', desc:'Clear fifty floors in all, ever.'},
+    {id:'elev-hundred', name:'Hundred Floors', emoji:'💯', desc:'Clear one hundred floors in all, ever.'},
+    {id:'elev-creepy', name:'Brave Glow', emoji:'🕯️', desc:'Finish a hush-y floor.'},
+    {id:'elev-find', name:'Finder', emoji:'🔍', desc:'Find a missing thing and bring it back.'},
+    {id:'elev-seen25', name:'Twenty-Five Stops', emoji:'📒', desc:'See twenty-five different floors.'},
+    {id:'elev-seenall', name:'Every Stop', emoji:'🗺️', desc:'See every floor in the collection.'},
+    {id:'elev-shopper', name:'Snack Regular', emoji:'🍪', desc:'Shop three times in the lift world.'},
+    {id:'elev-special', name:'Rare Stop', emoji:'🌟', desc:'Visit a special or rare floor.'},
+    {id:'elev-boss', name:'Pillow Champion', emoji:'🛡️', desc:'Finish a wobbly boss floor.'},
+    {id:'elev-ticket', name:'Stub Collector', emoji:'🎫', desc:'Spend a ride ticket to pick a floor.'},
+    {id:'elev-gift', name:'Thoughtful Rider', emoji:'🎁', desc:'Give a present to a passenger.'},
+    {id:'elev-daily', name:'Today’s Rider', emoji:'📅', desc:'Finish a daily challenge.'},
+    {id:'elev-secret', name:'Quiet Finder', emoji:'❔', desc:'Discover a secret floor.'},
+    {id:'elev-lobby', name:'Waiting-Room Secret', emoji:'🖼️', desc:'Find the hidden painting in the lobby.'},
+    {id:'elev-rare', name:'Lucky Dial', emoji:'🪞', desc:'Ride a rare floor.'},
+    {id:'elev-friends', name:'Cab Full of Pals', emoji:'👋', desc:'Meet eight different passengers.'}
+  ];
+
+  function elevBadgeCatalog(){ return ELEV_BADGE_CATALOG.slice(); }
+
   function elevBadges(state, run){
     state = elevLoad(state);
     const b = [];
     if ((state.rides | 0) >= 1) b.push('elev-ride');
     if ((run && (run.streak | 0) >= 5) || state.best >= 5) b.push('elev-five');
     if ((run && (run.streak | 0) >= 12) || state.best >= 12) b.push('elev-twelve');
+    if ((state.cleared | 0) >= 10) b.push('elev-ten');
+    if ((state.cleared | 0) >= 50) b.push('elev-fifty');
+    if ((state.cleared | 0) >= 100) b.push('elev-hundred');
     if ((state.creepy | 0) >= 1) b.push('elev-creepy');
     if ((state.found | 0) >= 1) b.push('elev-find');
     if ((state.seen || []).length >= 25) b.push('elev-seen25');
     if ((state.seen || []).length >= ELEV_FLOORS.length) b.push('elev-seenall');
+    if ((state.shopped | 0) >= 3) b.push('elev-shopper');
+    if ((state.seen || []).some(id => { const f = elevFloor(id); return f && (f.kind === 'special' || f.rare); })) b.push('elev-special');
+    if ((state.seen || []).some(id => { const f = elevFloor(id); return f && f.kind === 'boss'; })) b.push('elev-boss');
+    if ((state.ticketsUsed | 0) >= 1) b.push('elev-ticket');
+    if ((state.gifts | 0) >= 1) b.push('elev-gift');
+    if ((state.dailyClaims | 0) >= 1) b.push('elev-daily');
+    if ((state.seen || []).some(id => { const f = elevFloor(id); return f && f.secret; })) b.push('elev-secret');
+    if (state.lobbySecret) b.push('elev-lobby');
+    if ((state.seen || []).some(id => { const f = elevFloor(id); return f && f.rare; })) b.push('elev-rare');
+    if ((state.met || []).length >= 8) b.push('elev-friends');
     return b;
   }
 
   const api = {
-    ELEV_KEY, ELEV_VER, ELEV_SHOP_EVERY, ELEV_RIDE, ELEV_INTER, ELEV_BOARD, ELEV_BAG_KEEP, ELEV_FLOORS, ELEV_PALS, ELEV_HOST, ELEV_QUIZ, ELEV_SHOP, ELEV_RIDE_EVENTS, ELEV_PAL_SPOTS, ELEV_PAL_MAX,
+    ELEV_KEY, ELEV_VER, ELEV_SHOP_EVERY, ELEV_SPECIAL_EVERY, ELEV_EVENT_EVERY, ELEV_MILESTONES, ELEV_RIDE, ELEV_INTER, ELEV_BOARD, ELEV_BAG_KEEP, ELEV_FLOORS, ELEV_PALS, ELEV_HOST, ELEV_QUIZ, ELEV_SHOP, ELEV_RIDE_EVENTS, ELEV_PAL_SPOTS, ELEV_PAL_MAX, ELEV_DAILIES, ELEV_BADGE_CATALOG,
     ELEV_CAB_W, ELEV_CAB_D, ELEV_CAB_Z, ELEV_HALL_W, ELEV_ROOM_Z, ELEV_FLOOR_TOP, ELEV_BODY_R,
     elevFloor, elevPal, elevClearMode, elevRoomOf, elevSpawnOf, elevBoxHit, elevOnSolid, elevSimStep, elevTimerWins, elevFresh, elevLoad, elevBuddyAllowed, elevNoFight, elevNoGore, elevEveryoneOkay,
-    elevShopItem, elevShopList, elevInheritLessScary, elevSetLessScary, elevStreakBonus, elevBeginBoard, elevCloseDoors, elevPickRideEvent, elevTalkLine, elevIntercom, elevPalSpots, elevPalMayRide, elevSeatPals, elevCleanPals, elevPalIds, elevPalsAboard, elevPalsHop, elevHostTalk, elevCleanTalk, elevBuyItem, elevWearHat, elevApplyPack, elevWire, elevApplyWire,
-    elevSnowOn, elevHostLine, elevPickPal, elevStartRun, elevDueShop, elevPool, elevRebuildBag, elevPickFloor, elevBeginFloor, elevBeginRide,
-    elevReward, elevClearFloor, elevFailFloor, elevBuySnack, elevRing, elevPaint, elevPickItem, elevTurnIn,
+    elevShopItem, elevShopList, elevInheritLessScary, elevSetLessScary, elevStreakBonus, elevBeginBoard, elevCloseDoors, elevDueEvent, elevPickRideEvent, elevTalkLine, elevIntercom, elevPalSpots, elevPalMayRide, elevSeatPals, elevCleanPals, elevPalIds, elevPalsAboard, elevPalsHop, elevHostTalk, elevCleanTalk, elevBuyItem, elevWearHat, elevApplyPack, elevWire, elevApplyWire,
+    elevSnowOn, elevHostLine, elevPickPal, elevStartRun, elevDueShop, elevDueSpecial, elevPool, elevRebuildBag, elevPickSpecial, elevPickFloor, elevBeginFloor, elevBeginRide,
+    elevReward, elevClearFloor, elevFailFloor, elevBuySnack, elevBuyFloorItem, elevRing, elevPaint, elevPickItem, elevTurnIn,
     elevTouchHazard, elevReachDoor, elevStayLit, elevQuiz, elevStack, elevBeat, elevPadStand, elevBossReady, elevTagBoss,
-    elevTick, elevFloorSpec, elevIndexRows, elevBadges
+    elevTick, elevFloorSpec, elevIndexRows, elevBadges, elevBadgeCatalog, elevMilestonePay, elevMeetPals, elevGiftPal, elevFindLobbySecret, elevQueueNext, elevDayKey, elevEnsureDaily, elevDailyProgress, elevDailyClaim
   };
   root.ElevRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
