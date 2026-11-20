@@ -304,6 +304,29 @@ body.dark .item canvas{background:linear-gradient(#34427e,#26306a)}
 .item h4{margin:0 0 6px;font-size:16px}
 .item .price{display:flex;align-items:center;gap:5px;font-weight:900;color:var(--muted);font-size:14px;margin-bottom:8px}
 .item .row{display:flex;gap:6px}
+
+.sbtn.prev{background:var(--purple);box-shadow:0 4px 0 #6d3cc9}
+#avPrevModal .mbox{max-width:min(520px,calc(100vw - 24px));padding:22px 20px 18px}
+.avprevmodes{display:flex;gap:8px;justify-content:center;margin:2px 0 8px}
+.avprevmode{border:0;font-weight:900;font-size:15px;padding:8px 18px;border-radius:12px;color:#3b4660;background:#e8eef8;box-shadow:0 3px 0 #c5cedd;cursor:pointer}
+.avprevmode:hover{transform:translateY(-1px)}
+.avprevmode.on{color:#fff;background:var(--purple);box-shadow:0 3px 0 #6d3cc9}
+.avprevmode:disabled{opacity:.45;cursor:not-allowed;transform:none}
+#avPrevStage{display:grid;place-items:center;background:linear-gradient(#bfe0ff,#e7f3ff);border-radius:20px;margin:8px 0 14px;min-height:280px;position:relative;overflow:hidden}
+body.dark #avPrevStage{background:linear-gradient(#3b4a8a,#2a3570)}
+#avPrev2,#avPrev3{display:none}
+#avPrevStage.avprev-2d #avPrev2{display:block}
+#avPrevStage.avprev-3d #avPrev3{display:block}
+#avPrev2{width:220px;height:260px}
+#avPrev3{width:280px;height:300px;touch-action:none;cursor:grab}
+#avPrev3:active{cursor:grabbing}
+#avPrevHint{font-weight:700;color:var(--muted);font-size:14px;margin:0 0 12px}
+#avPrevPad{font-weight:800;font-size:13px;color:var(--muted);margin:0 0 12px}
+#avPrevModal .avprevbtns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.sitem{position:relative}
+.sitem .sprev{position:absolute;top:6px;right:6px;border:0;background:var(--purple);color:#fff;font-weight:900;font-size:13px;border-radius:10px;padding:4px 7px;z-index:2;box-shadow:0 3px 0 #6d3cc9}
+.sitem .sprev:hover{transform:translateY(-1px)}
+
 .sbtn{flex:1;border:0;font-weight:900;font-size:14px;padding:8px 6px;border-radius:12px;color:#fff;background:var(--green);box-shadow:0 4px 0 #1f9460;transition:transform .15s}
 .sbtn:hover{transform:translateY(-2px)} .sbtn:active{transform:translateY(3px);box-shadow:0 1px 0 #1f9460}
 .sbtn.buy{background:var(--orange);box-shadow:0 4px 0 #c97700}
@@ -1565,7 +1588,38 @@ body.lh-muffled #obby{filter:saturate(.85)}
   #elevBadgeBtn{bottom:312px}
   #elevMeter{bottom:164px}
 }
+#elevVoteList{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:12px}
+.elevVoteCard{display:flex;flex-direction:column;gap:4px;background:#fff8e0;border:3px solid #1d2340;border-radius:16px;padding:12px 10px;min-height:110px;font:inherit;cursor:pointer;font-weight:800;text-align:center}
+.elevVoteCard.sel{background:#d8f8e0;box-shadow:0 0 0 4px #2ec27e}
+.elevVoteCard .e{font-size:32px;line-height:1}
+.elevVoteCard small{color:#5a6478;font-weight:700}
+#elevVoteHint{font-weight:700;color:#5a6478}
+
+<style id="mnCss">
+#mnBox{position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center;display:none}
+#mnBox #mnHint{display:inline-block;background:rgba(29,35,64,.82);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:14px}
+.mnmode #mnBox{display:block}
+#mnAct{position:absolute;right:16px;bottom:96px;z-index:8;padding:12px 16px;font-size:18px;border:3px solid #1d2340;border-radius:16px;background:#ffd23f;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+#mnAct.show{display:block}
+#mnLessBtn{position:absolute;z-index:8;left:16px;bottom:160px;padding:10px 14px;font-size:16px;border:3px solid #1d2340;border-radius:16px;background:#efe7ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+#mnLessBtn.on{background:#d8f8e0}
+.mnmode #mnLessBtn{display:block}
+@media (max-width:700px){ #mnAct{bottom:120px} #mnLessBtn{bottom:184px} }
 </style>
+
+<style id="shCss">
+#shBox{position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center;display:none}
+#shBox #shHint{display:inline-block;background:rgba(29,35,64,.82);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:14px}
+.shmode #shBox{display:block}
+#shAct,#shHomeBtn,#shUpBtn{position:absolute;z-index:8;padding:12px 16px;font-size:16px;border:3px solid #1d2340;border-radius:16px;background:#ffd23f;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+#shAct{right:16px;bottom:96px}
+#shAct.show,#shHomeBtn.show,#shUpBtn.show{display:block}
+#shHomeBtn{right:16px;bottom:160px;background:#d8f8e0}
+#shUpBtn{left:16px;bottom:160px;background:#ffe0b0}
+.shmode #shUpBtn{display:block}
+@media (max-width:700px){ #shAct{bottom:120px} #shHomeBtn{bottom:184px} #shUpBtn{bottom:184px} }
+</style>
+
 <style id="evLbCss">
 html.snowfest-on body, body.snowfest-on{ background-image: none; }
 #evSnowLayer{display:none;pointer-events:none;position:fixed;inset:0;z-index:40;overflow:hidden}
@@ -1716,13 +1770,14 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
       <button class="tab" data-cat="burger">🍔 Burger Family</button>
       <button class="tab" data-cat="town">📺 Cartoon Town</button>
       <button class="tab" data-cat="holiday">🎃 Holiday 🎄</button>
+      <button class="tab" data-cat="looks">✨ Looks</button>
     </div>
     <div class="hairrow" id="hairRow">🎨 Hair color (free!): <div class="swatches" id="shopHairSw"></div></div>
     <div class="animnote" id="animNote">🕺 Animation packs change how you walk, jump and climb in every game (pick one). 🎉 Emotes are yours forever: press <b>1–8</b> in a game, or tap the <b>😀</b> button on a phone.</div>
     <div class="animnote" id="burgerNote" style="display:none">🍔 Meet the Sizzle family from the Sizzle Shack diner! Grab a whole family outfit, or mix single pieces with your other stuff. ⭐ Star move: <b>Dina's Flail Run</b>. Emotes: <b>5</b> 🍳 Burger Flip, <b>6</b> 😩 Awkward Groan.</div>
     <div class="animnote" id="townNote" style="display:none">📺 Say hi to the Bumbles of Wobbleton, the goofiest family on TV! Grab a whole family outfit, or mix single pieces with your other stuff. ⭐ Star move: <b>Belly Waddle</b>. Emotes: <b>7</b> 🤦 Big Facepalm, <b>8</b> 🛹 Skate Trick.</div>
     <div class="animnote" id="holNote" style="display:none">🎃 Spooky and 🎄 cozy holiday gear, in the shop all year! Antlers sit on your forehead, so they stack with any hat.</div>
-    <div class="animnote" id="styleNote" style="display:none">👗 All free! Pick a <b>body type</b> (Classic or Girl), add lashes, and try a skirt, a dress or long hair. Works with every color, hat, outfit, animation and game.</div>
+    <div class="animnote" id="styleNote" style="display:none">👗 All free! Pick a <b>body type</b> (Classic, Girl, or Boy), add lashes, and try a skirt, a dress or long hair. The Looks tab has Y2K, grunge, cozy and fancy hats, hair and outfits. Works with every color, hat, outfit, animation and game.</div>
     <div class="wornbar" id="wornBar" aria-label="What you're wearing"></div>
     <div class="items" id="items"></div>
 </section>
@@ -1892,6 +1947,25 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
   </div>
 </div>
 <!-- coming soon modal -->
+<div class="modal" id="avPrevModal" role="dialog" aria-labelledby="avPrevTitle" aria-modal="true" aria-hidden="true">
+  <div class="mbox">
+    <h2 id="avPrevTitle">👀 Try it on!</h2>
+    <div id="avPrevModes" class="avprevmodes" role="group" aria-label="Preview view">
+      <button type="button" id="avPrev2dBtn" class="avprevmode" data-avprev-mode="2d" aria-pressed="false">2D</button>
+      <button type="button" id="avPrev3dBtn" class="avprevmode on" data-avprev-mode="3d" aria-pressed="true">3D</button>
+    </div>
+    <div id="avPrevStage" class="avprev-3d">
+      <canvas id="avPrev2" width="440" height="520" aria-label="Flat 2D try-on preview"></canvas>
+      <canvas id="avPrev3" width="560" height="600" aria-label="Spinning 3D try-on preview"></canvas>
+    </div>
+    <p id="avPrevSub">Just a try-on — your real outfit, coins, and saves stay put until you buy.</p>
+    <p id="avPrevPad">🎮 Ⓧ or LB/RB 2D/3D · Right stick spin · Ⓐ Buy or Wear · Ⓑ Cancel</p>
+    <div class="avprevbtns">
+      <button class="big" id="avPrevBuyBtn" type="button">🛒 Buy</button>
+      <button class="big gray" id="avPrevCancelBtn" type="button">↩️ Cancel</button>
+    </div>
+  </div>
+</div>
 <div class="modal" id="soonModal">
   <div class="mbox">
     <span class="emoji" id="soonEmoji">🚧</span>
@@ -2106,7 +2180,7 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
       <button type="button" class="t297x" id="elevHelpX" aria-label="Close">×</button>
       <h3>🛗 Wobblevator</h3>
       <p>Hang out in the lobby, check the streak board, and browse the shop. Then walk into the big glowing elevator doors — they are right in front of you, and the hint says <b>Step in to ride!</b> Once you are inside, the doors-closing countdown starts on its own. You can also press the on-screen <b>Ride</b> button, E, or Xbox Ⓧ. There is room for a whole group of friends (up to about 10). If you miss the doors, you wait in the cab and catch the next stop. Everyone rides to the same floor.</p>
-      <p>Clear the mini-event to grow your coin streak bonus. Shop floors show up every 15 clears, and a special floor every 25. If a floor gets too wobbly, everyone is okay — you hop back in and the streak resets. Open <b>Floors</b> for your collection. Find ride tickets on some floors and spend one to pick the next stop. During the ride, listen for original elevator muzak, a ticking floor dial, and the occasional harmless wobble, confetti, or lucky coin drip.</p>
+      <p>Clear the mini-event to grow your coin streak bonus. Shop floors show up every 15 clears, and a special floor every 25. If a floor gets too wobbly, everyone is okay — you hop back in and the streak resets. Open <b>Floors</b> for your collection. Find ride tickets on some floors and spend one to pick the next stop. In a friend room, every few floors — and whenever someone uses a ticket — everyone votes on 2 or 3 floor choices. Tap a card, press 1–3, or use the Xbox D-pad and Ⓐ. Ties are a surprise pick, and a ticket is only used if its floor wins. During the ride, listen for original elevator muzak, a ticking floor dial, and the occasional harmless wobble, confetti, or lucky coin drip.</p>
       <p>Quirky passengers ride along in solo and in the shared multiplayer cab. They chat, react to floors, hop on at their favorite stops, and sometimes hop off at a shop. Give a Ribbon Wrap to a passenger with E / Ⓧ. The host decides who boards or leaves and what they say, and everyone sees the same riders and the same speech bubbles. Bingle still talks over the intercom too. Passengers are friendly riders — they do not block the way, take a real-player slot, or change the score.</p>
       <p>Check <b>Today</b> for a daily challenge (coins or a ticket, no extra purchase needed). Open <b>Badges</b> for your collection. There is a tiny secret in the lobby if you look behind the streak board.</p>
       <p>Stranger floors can feel a little hush-y. Turn on <b>Less scary</b> anytime for a milder mood. Still no gore, and everyone is okay.</p>
@@ -2148,6 +2222,23 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
       <div id="elevDailyBody"></div>
     </div>
   </div>
+  <div id="elevVote" class="t297overlay" role="dialog" aria-label="Pick the next floor">
+    <div class="t297box elevIdxBox">
+      <h3>🗳️ Pick the next floor!</h3>
+      <p id="elevVoteSub">Everyone gets a vote. Ties are a surprise pick. Tickets stay safe if their floor does not win.</p>
+      <div id="elevVoteList"></div>
+      <p id="elevVoteHint">Tap a card, press 1–3, or use the D-pad and Ⓐ.</p>
+    </div>
+  </div>
+
+  <div id="mnBox" style="display:none"><span id="mnHint"></span></div>
+  <button type="button" id="mnAct">✨ Do it</button>
+  <button type="button" id="mnLessBtn" title="Warmer lights and a sleepier Nimble. Still no gore, and everyone is okay.">😌 Less scary</button>
+
+  <div id="shBox" style="display:none"><span id="shHint"></span></div>
+  <button type="button" id="shAct">✨ Do it</button>
+  <button type="button" id="shHomeBtn">🏠 Send home</button>
+  <button type="button" id="shUpBtn">🏠 Upgrade kennels</button>
 
   <div id="t302Box" style="display:none"><span id="t302Hint"></span></div>
   <div id="t302Coins">🪙 Your coins: 0</div>
@@ -2767,7 +2858,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.20-2';
+const BUILD = '2026.11.20-5';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -2788,7 +2879,7 @@ const HAIRCOLORS = ['#6b3e1f','#2b1d14','#f2c14e','#d9601f','#ff6fb5','#3a86ff',
 function load(k, d){ try{ const v = JSON.parse(localStorage.getItem(k)); return v ?? d; }catch(e){ return d; } }
 function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){}
   if (k && k !== 'rubloxAchievements' && typeof achSweep === 'function' && !(typeof ach !== 'undefined' && ach && ach._paying)){
-    if (!/Graphics|ShowFps|Dark|Invert|Mute|Music|Spotify|FP|Throw|PadSens|MouseSens|ReloadTo|Bonus/.test(String(k))){
+    if (!/Graphics|ShowFps|Dark|Invert|Mute|Music|Spotify|FP|Throw|PadSens|MouseSens|ReloadTo|Bonus|PreviewMode/.test(String(k))){
       try { achSweep({silent:true, source:'save'}); } catch (e){}
     }
   }
@@ -2962,6 +3053,7 @@ function hairFront(ctx, av){
     rrect(ctx, 64, 56, 22, 46, 11, hc); rrect(ctx, 174, 56, 22, 46, 11, hc);
     rrect(ctx, 80, 58, 10, 10, 3, '#ff6fb5'); rrect(ctx, 170, 58, 10, 10, 3, '#ff6fb5');
   }
+  if (typeof drawLookHair === 'function') drawLookHair(ctx, av);
 }
 function drawShirt(ctx, av){
   const c = av.shirt, p = av.shirtPat;
@@ -2982,6 +3074,7 @@ function drawShirt(ctx, av){
     circ(ctx, 122, 146, 7, '#e63946'); circ(ctx, 130, 150, 4, '#e63946'); circ(ctx, 117, 154, 3, '#e63946'); circ(ctx, 142, 140, 5, '#ffcc1a'); ctx.fillStyle = '#ffcc1a'; ctx.fillRect(140, 140, 4, 12);
   }
   if (p === 'burger') drawBurgerIcon(ctx, 130, 162, 1.25);
+  if (typeof drawLookShirt === 'function') drawLookShirt(ctx, av);
   if (p === 'bowling'){ // two-tone bowling shirt with a pin on the pocket
     const pan = light(c) ? '#1d2340' : '#fff4d6'; clipRects(ctx, all, () => { ctx.fillStyle = pan; ctx.fillRect(98, 116, 14, 88); ctx.fillRect(148, 116, 14, 88); ctx.fillRect(50, 186, 34, 12); ctx.fillRect(176, 186, 34, 12); });
     poly(ctx, [[112,116],[130,130],[124,116]], pan); poly(ctx, [[148,116],[130,130],[136,116]], pan);
@@ -3062,6 +3155,7 @@ function drawPants(ctx, av){
     const pts = [[100,210],[118,228],[104,252],[120,270],[140,214],[158,232],[146,256],[160,274],[112,242],[152,246]];
     pts.forEach(([x,y], i) => { ctx.fillStyle = i % 2 ? '#ffffff' : '#ffd23f'; starPath(ctx, x, y, 6, 2); ctx.fill(); });
   });
+  if (typeof drawLookPants === 'function') drawLookPants(ctx, av);
 }
 // draws a character in a 260x310 design space (scales to any canvas size)
 function drawAvatar(ctx, av, opts = {}){
@@ -3084,9 +3178,10 @@ function drawAvatar(ctx, av, opts = {}){
     hairBack(ctx, av);
   }
   if (opts.layer === 'back'){ ctx.restore(); return; }
-  const girl = av.body === 'girl', sxk = k => { ctx.translate(130, 0); ctx.scale(k, 1); ctx.translate(-130, 0); };
-  ctx.save(); if (girl) sxk(.9); drawPants(ctx, av); ctx.restore();
+  const girl = av.body === 'girl', boy = av.body === 'boy', sxk = k => { ctx.translate(130, 0); ctx.scale(k, 1); ctx.translate(-130, 0); };
+  ctx.save(); if (girl) sxk(.9); else if (boy) sxk(1.08); drawPants(ctx, av); ctx.restore();
   ctx.save();
+  if (boy) sxk(1.1);
   if (girl){ sxk(.86); ctx.save(); ctx.beginPath(); ctx.rect(40, 100, 46, 120); ctx.rect(174, 100, 46, 120);
     ctx.moveTo(86, 100); ctx.lineTo(174, 100); ctx.lineTo(174, 146); ctx.lineTo(165, 180); ctx.lineTo(171, 208); ctx.lineTo(89, 208); ctx.lineTo(95, 180); ctx.lineTo(86, 146); ctx.closePath(); ctx.clip(); }
   drawShirt(ctx, av);
@@ -3150,7 +3245,7 @@ function drawAvatar(ctx, av, opts = {}){
     ctx.beginPath(); ctx.moveTo(100, 46); ctx.lineTo(130, -2); ctx.lineTo(160, 46); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#ffd23f'; ctx.fillRect(112, 28, 36, 6); ctx.fillStyle = '#2ec27e'; ctx.fillRect(120, 14, 20, 5);
     ctx.fillStyle = '#ff6fb5'; ctx.beginPath(); ctx.arc(130, 0, 8, 0, Math.PI*2); ctx.fill();
-  }
+  } else if (typeof drawLookHat === 'function') drawLookHat(ctx, av);
   ctx.restore();
 }
 /* ---------- faces ---------- */
@@ -4478,7 +4573,7 @@ try { evBootChrome(); } catch (e){}
   }
 
 
-  const T297_OVERLAY_IDS = ['cafeDecor', 'cafeBoard', 'fishIndex', 'huntMap', 'psVoteBox', 'gardenShop', 'meadowBook', 'ridesPalette', 'hiveQuest', 'campCraft', 'campWin', 'elevHelp', 'elevIndex', 'elevShop', 'elevBadges', 'elevDaily'];
+  const T297_OVERLAY_IDS = ['cafeDecor', 'cafeBoard', 'fishIndex', 'huntMap', 'psVoteBox', 'gardenShop', 'meadowBook', 'ridesPalette', 'hiveQuest', 'campCraft', 'campWin', 'elevHelp', 'elevIndex', 'elevShop', 'elevBadges', 'elevDaily', 'elevVote'];
   const T297_WALK_AWAY = 4.5;
   const T297_REOPEN_MS = 700;
   function t297OverlayIds(){ return T297_OVERLAY_IDS.slice(); }
@@ -7031,6 +7126,8 @@ function drawCamp(ctx){
   const ELEV_FLOOR_TOP = 0.2;
   const ELEV_BODY_R = 0.45;
   const ELEV_BOARD = 5;
+  const ELEV_VOTE_T = 8;
+  const ELEV_VOTE_EVERY = 5;
   const ELEV_BUILDING = {
     minX: -18, maxX: 18,
     minZ: -8, maxZ: 26,
@@ -7771,9 +7868,95 @@ function drawCamp(ctx){
     return run;
   }
 
+  function elevVoteShouldStart(run, isMp){
+    if (!run || !isMp) return false;
+    if (run.queued && elevFloor(run.queued)) return true;
+    const n = run.survived | 0;
+    return n > 0 && n % ELEV_VOTE_EVERY === 0;
+  }
+
+  function elevVoteChoices(run, rand, count){
+    const r = typeof rand === 'function' ? rand : Math.random;
+    const n = Math.max(2, Math.min(3, count || 3));
+    const out = [];
+    const seen = {};
+    const add = (f, ticket) => {
+      if (!f || seen[f.id] || out.length >= n) return;
+      seen[f.id] = true;
+      out.push({id: f.id, name: f.name, emoji: f.emoji, kind: f.kind || 'odd', ticket: !!ticket});
+    };
+    if (run && run.queued && elevFloor(run.queued)) add(elevFloor(run.queued), true);
+    const pool = (elevPool(run, {}) || []).filter(f => f && f.id !== (run && run.last));
+    const bag = pool.slice();
+    for (let i = bag.length - 1; i > 0; i--){
+      const j = Math.floor(r() * (i + 1));
+      const tmp = bag[i]; bag[i] = bag[j]; bag[j] = tmp;
+    }
+    bag.forEach(f => add(f, false));
+    if (out.length < 2){
+      ELEV_FLOORS.forEach(f => { if (!f.secret) add(f, false); });
+    }
+    return out.slice(0, n);
+  }
+
+  function elevBeginVote(run, rand){
+    if (!run) return run;
+    const choices = elevVoteChoices(run, rand, 3);
+    run.phase = 'vote';
+    run.t = ELEV_VOTE_T;
+    run.vote = {choices: choices, votes: {}, holdQueued: run.queued && elevFloor(run.queued) ? run.queued : null};
+    run.quote = '🗳️ Pick the next floor! Tap a card, press 1-3, or use the D-pad and A.';
+    return run;
+  }
+
+  function elevCastVote(run, uid, index){
+    if (!run || run.phase !== 'vote' || !run.vote) return {ok:false, why:'closed'};
+    const choices = run.vote.choices || [];
+    const i = index | 0;
+    if (i < 0 || i >= choices.length) return {ok:false, why:'range'};
+    const who = String(uid == null ? 'H' : uid).slice(0, 16);
+    run.vote.votes = run.vote.votes || {};
+    run.vote.votes[who] = i;
+    return {ok:true, who: who, index: i, pick: choices[i]};
+  }
+
+  function elevTallyVote(run, rand){
+    const r = typeof rand === 'function' ? rand : Math.random;
+    const choices = (run && run.vote && run.vote.choices) || [];
+    if (!choices.length) return null;
+    const votes = (run.vote && run.vote.votes) || {};
+    const counts = choices.map(() => 0);
+    Object.keys(votes).forEach(k => {
+      const i = votes[k] | 0;
+      if (i >= 0 && i < counts.length) counts[i] += 1;
+    });
+    let best = 0;
+    counts.forEach(c => { if (c > best) best = c; });
+    const tied = [];
+    counts.forEach((c, i) => { if (c === best) tied.push(i); });
+    const win = tied.length ? tied[Math.floor(r() * tied.length)] : 0;
+    return Object.assign({}, choices[win], {index: win, counts: counts.slice(), voters: Object.keys(votes).length});
+  }
+
+  function elevFinishVote(run, rand){
+    if (!run) return run;
+    const win = elevTallyVote(run, rand) || (run.vote && run.vote.choices && run.vote.choices[0]);
+    const id = win && win.id;
+    run.vote = run.vote || {};
+    run.vote.winner = id || null;
+    return elevBeginRide(run, rand, id ? {floorId: id} : {});
+  }
+
   function elevBeginRide(run, rand, opts){
     if (!run) return run;
-    const f = elevPickFloor(run, rand, opts);
+    opts = opts || {};
+    let f = null;
+    if (opts.floorId && elevFloor(opts.floorId)){
+      f = elevFloor(opts.floorId);
+      if (run.queued === opts.floorId) run.queued = null;
+    } else {
+      f = elevPickFloor(run, rand, opts);
+    }
     const pal = elevPickPal(run, rand);
     if (pal) run.palId = pal.id;
     run.phase = 'ride';
@@ -8035,15 +8218,20 @@ function drawCamp(ctx){
     return {ok:true, why:'ok'};
   }
 
-  function elevTick(run, dt){
+  function elevTick(run, dt, opt){
     if (!run) return run;
+    opt = opt || {};
     let left = Math.max(0, +dt || 0);
     while (left > 0){
       const step = Math.min(0.2, left);
       left -= step;
       run.t = Math.max(0, (run.t || 0) - step);
       if (run.phase === 'board' && run.t <= 0){
-        elevBeginRide(run);
+        const mpOn = (opt && opt.mp != null) ? !!opt.mp : !!run.mp;
+        if (elevVoteShouldStart(run, mpOn)) elevBeginVote(run, opt && opt.rand);
+        else elevBeginRide(run, opt && opt.rand);
+      } else if (run.phase === 'vote' && run.t <= 0){
+        elevFinishVote(run, opt && opt.rand);
       } else if (run.phase === 'ride' && run.t <= 0){
         elevBeginFloor(run, run.floor);
       } else if (run.phase === 'floor' && run.t <= 0 && !run.cleared && !run.failed){
@@ -8081,7 +8269,8 @@ function drawCamp(ctx){
       pals: elevCleanPals(run.pals),
       talk: elevCleanTalk(run.talk),
       talkSeq: run.talkSeq | 0,
-      queued: run.queued && elevFloor(run.queued) ? run.queued : null
+      queued: run.queued && elevFloor(run.queued) ? run.queued : null,
+      vote: run.vote ? {choices: (run.vote.choices || []).map(c => ({id:c.id, name:c.name, emoji:c.emoji, ticket:!!c.ticket})), votes: Object.assign({}, run.vote.votes || {}), winner: run.vote.winner || null} : null
     };
   }
 
@@ -8104,6 +8293,13 @@ function drawCamp(ctx){
     if (snap.talk) run.talk = elevCleanTalk(snap.talk);
     if (snap.talkSeq != null) run.talkSeq = snap.talkSeq | 0;
     if (snap.queued !== undefined) run.queued = snap.queued && elevFloor(snap.queued) ? snap.queued : null;
+    if (snap.vote && typeof snap.vote === 'object'){
+      run.vote = {
+        choices: (snap.vote.choices || []).map(c => c && c.id ? {id:c.id, name:c.name, emoji:c.emoji, ticket:!!c.ticket} : null).filter(Boolean),
+        votes: Object.assign({}, snap.vote.votes || {}),
+        winner: snap.vote.winner || null
+      };
+    } else if (snap.vote === null) run.vote = null;
     return run;
   }
 
@@ -8317,7 +8513,7 @@ function drawCamp(ctx){
     elevCabInsideBuilding, elevAabbHit, elevClipOrbit,
     elevFloor, elevPal, elevClearMode, elevRoomOf, elevSpawnOf, elevBoxHit, elevOnSolid, elevSimStep, elevTimerWins, elevFresh, elevLoad, elevBuddyAllowed, elevNoFight, elevNoGore, elevEveryoneOkay,
     elevShopItem, elevShopList, elevInheritLessScary, elevSetLessScary, elevStreakBonus, elevBeginBoard, elevCloseDoors, elevDueEvent, elevPickRideEvent, elevTalkLine, elevIntercom, elevPalSpots, elevPalMayRide, elevSeatPals, elevCleanPals, elevPalIds, elevPalsAboard, elevPalsHop, elevHostTalk, elevCleanTalk, elevBuyItem, elevWearHat, elevApplyPack, elevWire, elevApplyWire,
-    elevSnowOn, elevHostLine, elevPickPal, elevStartRun, elevDueShop, elevDueSpecial, elevPool, elevRebuildBag, elevPickSpecial, elevPickFloor, elevBeginFloor, elevBeginRide,
+    elevSnowOn, elevHostLine, elevPickPal, elevStartRun, elevDueShop, elevDueSpecial, elevPool, elevRebuildBag, elevPickSpecial, elevPickFloor, elevBeginFloor, elevBeginRide, elevVoteShouldStart, elevVoteChoices, elevBeginVote, elevCastVote, elevTallyVote, elevFinishVote, ELEV_VOTE_T, ELEV_VOTE_EVERY,
     elevReward, elevClearFloor, elevFailFloor, elevBuySnack, elevBuyFloorItem, elevRing, elevPaint, elevPickItem, elevTurnIn,
     elevTouchHazard, elevReachDoor, elevStayLit, elevQuiz, elevStack, elevBeat, elevPadStand, elevBossReady, elevTagBoss,
     elevTick, elevFloorSpec, elevIndexRows, elevBadges, elevBadgeCatalog, elevMilestonePay, elevMeetPals, elevGiftPal, elevFindLobbySecret, elevQueueNext, elevDayKey, elevEnsureDaily, elevDailyProgress, elevDailyClaim
@@ -8356,8 +8552,837 @@ function drawElevator(ctx){
   ctx.fillText('🛗', 152, 120);
 }
 
+/* Mallowmist Manor — original kid-scary escape. No gore. Getting caught means everyone is okay. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.MansionRules = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const MN_KEY = 'rubloxMansion';
+  const MN_VER = 1;
+  const MN_CATCH_OK = 'Everyone is okay! You popped back to the last safe room.';
+  const MN_ROOMS = [
+    {id:'foyer', name:'Foyer', emoji:'🕯️', hint:'A hidden note and a squeaky lever live here.', spawn:{x:0,y:0.5,z:8}},
+    {id:'parlor', name:'Parlor', emoji:'🖼️', hint:'Line the portraits up in the right order.', spawn:{x:0,y:0.5,z:-18}},
+    {id:'kitchen', name:'Kitchen', emoji:'🔑', hint:'Find the brass key in the snack cupboard.', spawn:{x:0,y:0.5,z:-38}},
+    {id:'library', name:'Library', emoji:'📝', hint:'A tucked-away note tells you how to open the attic stair.', spawn:{x:0,y:0.5,z:-58}},
+    {id:'attic', name:'Attic Hall', emoji:'🚪', hint:'Tip-toe past Nimble the Nook-Ghost and unlock the front door.', spawn:{x:0,y:0.5,z:-78}}
+  ];
+  const MN_PICTURE = [2, 0, 3, 1];
+  const MN_UPGRADES = [];
+
+  function mnRoom(id){ return MN_ROOMS.find(r => r.id === id) || MN_ROOMS[0]; }
+
+  function mnFresh(){
+    return {
+      v: MN_VER,
+      lessScary: false,
+      escapes: 0,
+      best: 0,
+      caught: 0
+    };
+  }
+
+  function mnLoad(raw){
+    const o = raw && typeof raw === 'object' ? raw : {};
+    const d = mnFresh();
+    d.lessScary = !!o.lessScary;
+    d.escapes = Math.max(0, o.escapes | 0);
+    d.best = Math.max(0, o.best | 0);
+    d.caught = Math.max(0, o.caught | 0);
+    return d;
+  }
+
+  function mnSetLessScary(state, on){
+    state = mnLoad(state);
+    state.lessScary = !!on;
+    return state;
+  }
+
+  function mnInheritLessScary(loaders){
+    try {
+      if (loaders && typeof loaders.camp === 'function'){
+        const c = loaders.camp();
+        if (c && c.lessScary != null) return !!c.lessScary;
+      }
+    } catch (e){}
+    return false;
+  }
+
+  function mnNewRun(state, now){
+    const st = mnLoad(state);
+    return {
+      state: st,
+      run: {
+        phase: 'play',
+        room: 'foyer',
+        checkpoint: 'foyer',
+        note1: false,
+        lever: false,
+        parlorOpen: false,
+        pictures: [null, null, null, null],
+        pictureDone: false,
+        kitchenOpen: false,
+        key: false,
+        note2: false,
+        atticOpen: false,
+        escaped: false,
+        caught: 0,
+        nimble: {x: 4, z: -78, dir: -1, look: 0, busy: 0},
+        lessScary: !!st.lessScary,
+        t: 0,
+        started: now || 0
+      }
+    };
+  }
+
+  function mnNimbleSpeed(less){ return less ? 1.4 : 2.6; }
+  function mnNimbleSee(less){ return less ? 3.2 : 5.4; }
+
+  function mnCanEnter(run, roomId){
+    if (!run) return false;
+    if (roomId === 'foyer') return true;
+    if (roomId === 'parlor') return !!run.parlorOpen || !!run.lever;
+    if (roomId === 'kitchen') return !!run.pictureDone;
+    if (roomId === 'library') return !!run.key;
+    if (roomId === 'attic') return !!run.atticOpen || !!run.note2;
+    return false;
+  }
+
+  function mnReadNote(run, which){
+    if (!run || run.escaped) return {ok:false, why:'done'};
+    if (which === 1){
+      if (run.room !== 'foyer' && run.checkpoint !== 'foyer') return {ok:false, why:'room'};
+      run.note1 = true;
+      return {ok:true, text:'The squeaky lever by the stairs opens the parlor.'};
+    }
+    if (which === 2){
+      if (!run.key) return {ok:false, why:'key'};
+      run.note2 = true;
+      run.atticOpen = true;
+      return {ok:true, text:'The attic stair is open. Tip-toe past Nimble to the front door.'};
+    }
+    return {ok:false, why:'which'};
+  }
+
+  function mnFlipLever(run){
+    if (!run || run.escaped) return {ok:false, why:'done'};
+    if (!run.note1) return {ok:false, why:'note'};
+    run.lever = true;
+    run.parlorOpen = true;
+    return {ok:true, why:'ok'};
+  }
+
+  function mnPlacePicture(run, slot, tile){
+    if (!run || run.escaped) return {ok:false, why:'done'};
+    if (!run.parlorOpen) return {ok:false, why:'locked'};
+    const i = slot | 0, v = tile | 0;
+    if (i < 0 || i > 3 || v < 0 || v > 3) return {ok:false, why:'range'};
+    run.pictures = (run.pictures || [null, null, null, null]).slice();
+    const already = run.pictures.indexOf(v);
+    if (already >= 0) run.pictures[already] = null;
+    run.pictures[i] = v;
+    const done = MN_PICTURE.every((need, idx) => run.pictures[idx] === need);
+    if (done){
+      run.pictureDone = true;
+      run.kitchenOpen = true;
+    }
+    return {ok:true, why: done ? 'open' : 'place', pictures: run.pictures.slice(), done: !!done};
+  }
+
+  function mnTakeKey(run){
+    if (!run || run.escaped) return {ok:false, why:'done'};
+    if (!run.pictureDone) return {ok:false, why:'locked'};
+    run.key = true;
+    return {ok:true, why:'ok'};
+  }
+
+  function mnSetRoom(run, roomId){
+    if (!run || !mnCanEnter(run, roomId)) return {ok:false, why:'locked'};
+    run.room = roomId;
+    run.checkpoint = roomId;
+    return {ok:true, room: roomId, spawn: mnRoom(roomId).spawn};
+  }
+
+  function mnNimbleTick(run, dt){
+    if (!run || run.escaped || run.room !== 'attic') return run;
+    const less = !!run.lessScary;
+    const n = run.nimble || (run.nimble = {x:4, z:-78, dir:-1, look:0, busy:0});
+    n.busy = Math.max(0, (n.busy || 0) - dt);
+    if (n.busy > 0){
+      n.look = 0;
+      return run;
+    }
+    n.x += n.dir * mnNimbleSpeed(less) * dt;
+    if (n.x > 6){ n.x = 6; n.dir = -1; n.busy = less ? 1.4 : 0.6; }
+    if (n.x < -6){ n.x = -6; n.dir = 1; n.busy = less ? 1.4 : 0.6; }
+    n.look = n.busy > 0 ? 0 : 1;
+    return run;
+  }
+
+  function mnSeenByNimble(run, px, pz){
+    if (!run || run.room !== 'attic' || run.escaped) return false;
+    const n = run.nimble;
+    if (!n || !n.look) return false;
+    const less = !!run.lessScary;
+    const dx = px - n.x, dz = pz - n.z;
+    const dist = Math.hypot(dx, dz);
+    if (dist > mnNimbleSee(less)) return false;
+    // Nimble only "sees" in the direction it is walking
+    if (n.dir > 0 && dx < -0.4) return false;
+    if (n.dir < 0 && dx > 0.4) return false;
+    return true;
+  }
+
+  function mnCatch(run, state){
+    if (!run || run.escaped) return {ok:false, why:'done'};
+    run.caught = (run.caught | 0) + 1;
+    const st = mnLoad(state);
+    st.caught = (st.caught | 0) + 1;
+    const room = mnRoom(run.checkpoint || 'foyer');
+    run.room = room.id;
+    run.nimble = {x: 4, z: -78, dir: -1, look: 0, busy: run.lessScary ? 1.6 : 0.8};
+    return {ok:true, why:'ok', message: MN_CATCH_OK, spawn: room.spawn, state: st};
+  }
+
+  function mnUnlockDoor(run){
+    if (!run) return {ok:false, why:'no'};
+    if (!run.key) return {ok:false, why:'key'};
+    if (run.room !== 'attic') return {ok:false, why:'room'};
+    run.escaped = true;
+    run.phase = 'win';
+    return {ok:true, why:'ok'};
+  }
+
+  function mnEscape(run, state, now){
+    const unlocked = mnUnlockDoor(run);
+    if (!unlocked.ok) return unlocked;
+    const st = mnLoad(state);
+    st.escapes = (st.escapes | 0) + 1;
+    const elapsed = Math.max(0, ((now || 0) - (run.started || 0)) / 1000);
+    if (!st.best || elapsed < st.best) st.best = elapsed || st.best;
+    const coins = 20 + (run.lessScary ? 0 : 8);
+    return {ok:true, why:'ok', coins: coins, state: st, message:'You slipped out of Mallowmist Manor! Everyone is okay.'};
+  }
+
+  function mnWire(run){
+    if (!run) return null;
+    return {
+      phase: run.phase,
+      room: run.room,
+      checkpoint: run.checkpoint,
+      note1: !!run.note1,
+      lever: !!run.lever,
+      parlorOpen: !!run.parlorOpen,
+      pictures: (run.pictures || []).slice(),
+      pictureDone: !!run.pictureDone,
+      kitchenOpen: !!run.kitchenOpen,
+      key: !!run.key,
+      note2: !!run.note2,
+      atticOpen: !!run.atticOpen,
+      escaped: !!run.escaped,
+      lessScary: !!run.lessScary,
+      nimble: run.nimble ? {x:+run.nimble.x, z:+run.nimble.z, dir:run.nimble.dir, look:run.nimble.look, busy:+run.nimble.busy} : null
+    };
+  }
+
+  function mnApplyWire(run, snap){
+    if (!run || !snap || typeof snap !== 'object') return run;
+    ['phase','room','checkpoint'].forEach(k => { if (snap[k] != null) run[k] = snap[k]; });
+    ['note1','lever','parlorOpen','pictureDone','kitchenOpen','key','note2','atticOpen','escaped','lessScary'].forEach(k => {
+      if (snap[k] != null) run[k] = !!snap[k];
+    });
+    if (Array.isArray(snap.pictures)) run.pictures = snap.pictures.slice(0, 4);
+    if (snap.nimble && typeof snap.nimble === 'object') run.nimble = {
+      x:+snap.nimble.x, z:+snap.nimble.z, dir:snap.nimble.dir, look:snap.nimble.look, busy:+snap.nimble.busy
+    };
+    return run;
+  }
+
+  function mnEveryoneOkay(){ return MN_CATCH_OK; }
+  function mnNoGore(){ return true; }
+
+  return {
+    MN_KEY, MN_VER, MN_CATCH_OK, MN_ROOMS, MN_PICTURE,
+    mnRoom, mnFresh, mnLoad, mnSetLessScary, mnInheritLessScary, mnNewRun,
+    mnNimbleSpeed, mnNimbleSee, mnCanEnter, mnReadNote, mnFlipLever, mnPlacePicture,
+    mnTakeKey, mnSetRoom, mnNimbleTick, mnSeenByNimble, mnCatch, mnUnlockDoor, mnEscape,
+    mnWire, mnApplyWire, mnEveryoneOkay, mnNoGore
+  };
+});
+
+/* Wagwell Shelter — original co-op pet shelter town. Customers are townsfolk, not opponents. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.ShelterRules = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const SH_KEY = 'rubloxShelter';
+  const SH_VER = 1;
+  const SH_PET_MAX = 6;
+  const SH_KINDS = [
+    {id:'cat', name:'Cat', emoji:'🐱', trait:'calm'},
+    {id:'dog', name:'Dog', emoji:'🐶', trait:'playful'},
+    {id:'bunny', name:'Bunny', emoji:'🐰', trait:'cuddly'},
+    {id:'hamster', name:'Hamster', emoji:'🐹', trait:'calm'},
+    {id:'mouse', name:'Mouse', emoji:'🐭', trait:'playful'}
+  ];
+  const SH_TRAITS = ['calm', 'playful', 'cuddly'];
+  const SH_FAMILIES = [
+    {id:'bramble', name:'The Brambles', emoji:'🏡', wishKind:'cat', wishTrait:'calm', line:'We would love a calm cat.'},
+    {id:'puddle', name:'The Puddles', emoji:'🌧️', wishKind:'dog', wishTrait:'playful', line:'We want a playful dog to splash with.'},
+    {id:'quilt', name:'The Quilts', emoji:'🧵', wishKind:'bunny', wishTrait:'cuddly', line:'A cuddly bunny would be perfect.'},
+    {id:'nibble', name:'The Nibbles', emoji:'🍪', wishKind:'hamster', wishTrait:'calm', line:'A calm hamster for cozy evenings, please.'},
+    {id:'spark', name:'The Sparks', emoji:'⭐', wishKind:'mouse', wishTrait:'playful', line:'We hope for a playful mouse friend.'},
+    {id:'maple', name:'The Maples', emoji:'🍁', wishKind:'dog', wishTrait:'cuddly', line:'A cuddly dog to share the couch.'},
+    {id:'cloud', name:'The Clouds', emoji:'☁️', wishKind:'cat', wishTrait:'cuddly', line:'A cuddly cat is on our wish list.'}
+  ];
+  const SH_UPGRADES = [
+    {id:'kennels', name:'Extra Kennels', emoji:'🏠', cost:40, desc:'Two more cozy beds at the shelter.'},
+    {id:'food', name:'Fancy Food', emoji:'🥣', cost:35, desc:'Meals boost happiness a little more.'},
+    {id:'yard', name:'Play Yard', emoji:'🌳', cost:45, desc:'Playtime makes tails wag faster.'},
+    {id:'beds', name:'Snug Beds', emoji:'🛏️', cost:30, desc:'Baths leave pets extra relaxed.'}
+  ];
+
+  function shKind(id){ return SH_KINDS.find(k => k.id === id) || SH_KINDS[0]; }
+  function shFamily(id){ return SH_FAMILIES.find(f => f.id === id) || null; }
+  function shUpgrade(id){ return SH_UPGRADES.find(u => u.id === id) || null; }
+
+  function shFresh(){
+    return {
+      v: SH_VER,
+      coinsEarned: 0,
+      adopted: 0,
+      rescued: 0,
+      matched: 0,
+      sentHome: 0,
+      kennels: 2,
+      ups: {},
+      pets: [],
+      nextId: 1
+    };
+  }
+
+  function shCleanPet(p){
+    if (!p || !shKind(p.kind)) return null;
+    const trait = SH_TRAITS.indexOf(p.trait) >= 0 ? p.trait : shKind(p.kind).trait;
+    return {
+      id: String(p.id || ''),
+      kind: p.kind,
+      name: String(p.name || shKind(p.kind).name).slice(0, 16),
+      trait: trait,
+      happy: Math.max(0, Math.min(100, +p.happy || 0)),
+      fed: Math.max(0, Math.min(100, +p.fed || 50)),
+      clean: Math.max(0, Math.min(100, +p.clean || 50)),
+      play: Math.max(0, Math.min(100, +p.play || 50)),
+      color: Math.max(0, Math.min(2, p.color | 0))
+    };
+  }
+
+  function shLoad(raw){
+    const o = raw && typeof raw === 'object' ? raw : {};
+    const d = shFresh();
+    d.coinsEarned = Math.max(0, o.coinsEarned | 0);
+    d.adopted = Math.max(0, o.adopted | 0);
+    d.rescued = Math.max(0, o.rescued | 0);
+    d.matched = Math.max(0, o.matched | 0);
+    d.sentHome = Math.max(0, o.sentHome | 0);
+    d.kennels = Math.max(2, Math.min(6, (o.kennels | 0) || 2));
+    d.ups = {};
+    SH_UPGRADES.forEach(u => { if (o.ups && o.ups[u.id]) d.ups[u.id] = 1; });
+    if (d.ups.kennels) d.kennels = Math.max(d.kennels, 4);
+    d.pets = (Array.isArray(o.pets) ? o.pets : []).map(shCleanPet).filter(Boolean).slice(0, d.kennels);
+    d.nextId = Math.max(1, o.nextId | 0);
+    return d;
+  }
+
+  function shKennelCap(state){
+    state = shLoad(state);
+    return state.ups.kennels ? 6 : 4 <= (state.kennels | 0) ? state.kennels : 2;
+  }
+
+  function shBoost(state, kind){
+    state = shLoad(state);
+    if (kind === 'fed') return state.ups.food ? 28 : 18;
+    if (kind === 'play') return state.ups.yard ? 28 : 18;
+    if (kind === 'clean') return state.ups.beds ? 28 : 18;
+    return 18;
+  }
+
+  function shHappiness(pet){
+    pet = shCleanPet(pet);
+    if (!pet) return 0;
+    return Math.round((pet.fed + pet.clean + pet.play) / 3);
+  }
+
+  function shReady(pet){ return shHappiness(pet) >= 70; }
+
+  function shRollStray(rand, id){
+    const r = typeof rand === 'function' ? rand : Math.random;
+    const kind = SH_KINDS[Math.floor(r() * SH_KINDS.length)];
+    const trait = SH_TRAITS[Math.floor(r() * SH_TRAITS.length)];
+    const names = {
+      cat:['Miso','Pebble','Noodle'], dog:['Biscuit','Waffles','Scout'], bunny:['Cloud','Pip','Button'],
+      hamster:['Peanut','Cinnamon','Dot'], mouse:['Squeak','Crumbs','Twig']
+    };
+    const list = names[kind.id] || ['Pal'];
+    return {
+      id: 's' + String(id || Math.floor(r() * 9999)),
+      kind: kind.id,
+      name: list[Math.floor(r() * list.length)],
+      trait: trait,
+      happy: 20,
+      fed: 25,
+      clean: 20,
+      play: 20,
+      color: Math.floor(r() * 3),
+      x: (r() * 16) - 8,
+      z: 12 + r() * 16
+    };
+  }
+
+  function shRescue(state, stray){
+    state = shLoad(state);
+    const cap = state.ups.kennels ? 6 : (state.kennels | 0) || 2;
+    if (state.pets.length >= cap) return {ok:false, why:'full', state};
+    const pet = shCleanPet(stray);
+    if (!pet) return {ok:false, why:'pet', state};
+    pet.id = 'p' + (state.nextId++);
+    pet.happy = shHappiness(pet);
+    state.pets.push(pet);
+    state.rescued += 1;
+    return {ok:true, why:'ok', pet, state};
+  }
+
+  function shCare(state, petId, act){
+    state = shLoad(state);
+    const pet = state.pets.find(p => p.id === petId);
+    if (!pet) return {ok:false, why:'missing', state};
+    if (act !== 'fed' && act !== 'clean' && act !== 'play') return {ok:false, why:'act', state};
+    const add = shBoost(state, act);
+    pet[act] = Math.min(100, (pet[act] || 0) + add);
+    pet.happy = shHappiness(pet);
+    return {ok:true, why:'ok', pet, state, ready: shReady(pet)};
+  }
+
+  function shVisitFamily(rand, taken){
+    const r = typeof rand === 'function' ? rand : Math.random;
+    const used = taken || [];
+    const pool = SH_FAMILIES.filter(f => used.indexOf(f.id) < 0);
+    const list = pool.length ? pool : SH_FAMILIES;
+    return list[Math.floor(r() * list.length)];
+  }
+
+  function shMatch(state, petId, familyId){
+    state = shLoad(state);
+    const pet = state.pets.find(p => p.id === petId);
+    const fam = shFamily(familyId);
+    if (!pet) return {ok:false, why:'missing', state};
+    if (!fam) return {ok:false, why:'family', state};
+    if (!shReady(pet)) return {ok:false, why:'happy', state};
+    const kindOk = pet.kind === fam.wishKind;
+    const traitOk = pet.trait === fam.wishTrait;
+    if (!kindOk || !traitOk) return {ok:false, why:'wish', kindOk, traitOk, wish: fam.line, state};
+    state.pets = state.pets.filter(p => p.id !== petId);
+    state.matched += 1;
+    state.adopted += 1;
+    const coins = 18 + (traitOk && kindOk ? 8 : 0);
+    state.coinsEarned += coins;
+    return {ok:true, why:'ok', coins, state, message: fam.name + ' went home with ' + pet.name + '!'};
+  }
+
+  function shBuyUpgrade(state, id, coins){
+    state = shLoad(state);
+    const u = shUpgrade(id);
+    if (!u) return {ok:false, why:'item', state, coins};
+    if (state.ups[id]) return {ok:false, why:'have', state, coins};
+    if ((coins | 0) < u.cost) return {ok:false, why:'coins', state, coins};
+    state.ups[id] = 1;
+    if (id === 'kennels') state.kennels = 6;
+    return {ok:true, why:'ok', state, coins: (coins | 0) - u.cost, cost: u.cost};
+  }
+
+  function shToCollectionPet(shelterPet){
+    const pet = shCleanPet(shelterPet);
+    if (!pet) return null;
+    return {
+      k: pet.kind,
+      c: pet.color | 0,
+      n: pet.name,
+      xp: 0,
+      f: 80, u: 80, e: 80,
+      b: Date.now(),
+      acc: {},
+      tr: {},
+      g: 'g',
+      src: 'shelter'
+    };
+  }
+
+  function shCanSendHome(petsSave, shelterPet){
+    const ready = shReady(shelterPet);
+    const p = shToCollectionPet(shelterPet);
+    if (!ready || !p) return {ok:false, why: ready ? 'pet' : 'happy'};
+    const have = petsSave && Array.isArray(petsSave.pets) ? petsSave.pets : [];
+    if (have.length >= SH_PET_MAX) return {ok:false, why:'full'};
+    return {ok:true, pet: p};
+  }
+
+  function shSendHome(state, petId, petsSave){
+    state = shLoad(state);
+    const pet = state.pets.find(p => p.id === petId);
+    if (!pet) return {ok:false, why:'missing', state, pets: petsSave};
+    const gate = shCanSendHome(petsSave, pet);
+    if (!gate.ok) return {ok:false, why: gate.why, state, pets: petsSave};
+    const next = petsSave && typeof petsSave === 'object' ? Object.assign({}, petsSave) : {v:2, pets:[]};
+    next.pets = (Array.isArray(next.pets) ? next.pets.slice() : []).concat([gate.pet]);
+    state.pets = state.pets.filter(p => p.id !== petId);
+    state.sentHome += 1;
+    state.adopted += 1;
+    return {ok:true, why:'ok', state, pets: next, pet: gate.pet};
+  }
+
+  function shKeepPetField(src){
+    return src === 'shelter' ? 'shelter' : undefined;
+  }
+
+  function shWire(state, extras){
+    state = shLoad(state);
+    extras = extras || {};
+    return {
+      pets: state.pets.map(shCleanPet),
+      ups: Object.assign({}, state.ups),
+      kennels: state.kennels,
+      rescued: state.rescued,
+      matched: state.matched,
+      family: extras.family ? {id: extras.family.id, name: extras.family.name, wishKind: extras.family.wishKind, wishTrait: extras.family.wishTrait, line: extras.family.line, emoji: extras.family.emoji} : null,
+      strays: (extras.strays || []).map(s => ({id:s.id, kind:s.kind, name:s.name, trait:s.trait, x:+s.x||0, z:+s.z||0, color:s.color|0}))
+    };
+  }
+
+  return {
+    SH_KEY, SH_VER, SH_PET_MAX, SH_KINDS, SH_TRAITS, SH_FAMILIES, SH_UPGRADES,
+    shKind, shFamily, shUpgrade, shFresh, shLoad, shCleanPet, shKennelCap, shBoost,
+    shHappiness, shReady, shRollStray, shRescue, shCare, shVisitFamily, shMatch,
+    shBuyUpgrade, shToCollectionPet, shCanSendHome, shSendHome, shKeepPetField, shWire
+  };
+});
+
+/* New optional avatar looks — Y2K, grunge, cozy, fancy. Ids are additive only. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.LookRules = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const LOOK_ITEMS = [
+    {id:'body-boy', cat:'style', also:'looks', emoji:'🧍‍♂️', name:'Boy Body', price:0, slot:'body', val:'boy', desc:'Broader shoulders, a bit squarer than Classic'},
+    {id:'hat-beanie', cat:'looks', emoji:'🧶', name:'Cozy Beanie', price:120, slot:'hat', val:'beanie', vibe:'cozy'},
+    {id:'hat-bucket', cat:'looks', emoji:'🧢', name:'Y2K Bucket Hat', price:140, slot:'hat', val:'bucket', vibe:'y2k'},
+    {id:'hat-visor', cat:'looks', emoji:'😎', name:'Sun Visor', price:110, slot:'hat', val:'visor', vibe:'y2k'},
+    {id:'hat-beret', cat:'looks', emoji:'🎨', name:'Fancy Beret', price:160, slot:'hat', val:'beret', vibe:'fancy'},
+    {id:'hat-tophat', cat:'looks', emoji:'🎩', name:'Tiny Top Hat', price:200, slot:'hat', val:'tophat', vibe:'fancy'},
+    {id:'hat-slouch', cat:'looks', emoji:'🖤', name:'Slouch Beanie', price:130, slot:'hat', val:'slouch', vibe:'grunge'},
+    {id:'hat-earmuffs', cat:'looks', emoji:'🎧', name:'Fuzzy Earmuffs', price:130, slot:'hat', val:'earmuffs', vibe:'cozy'},
+    {id:'hat-newsboy', cat:'looks', emoji:'📰', name:'Newsboy Cap', price:140, slot:'hat', val:'newsboy', vibe:'grunge'},
+    {id:'hat-flower', cat:'looks', emoji:'🌸', name:'Flower Crown', price:180, slot:'hat', val:'flower', vibe:'fancy'},
+    {id:'hair-wolf', cat:'looks', also:'hair', emoji:'💇', name:'Wolf Cut', price:175, slot:'hair', val:'wolf', vibe:'grunge'},
+    {id:'hair-shag', cat:'looks', also:'hair', emoji:'💇', name:'Messy Shag', price:150, slot:'hair', val:'shag', vibe:'grunge'},
+    {id:'hair-curtains', cat:'looks', also:'hair', emoji:'💇', name:'Curtain Bangs', price:160, slot:'hair', val:'curtains', vibe:'y2k'},
+    {id:'hair-crimped', cat:'looks', also:'hair', emoji:'💇', name:'Crimped Hair', price:160, slot:'hair', val:'crimped', vibe:'y2k'},
+    {id:'hair-waves', cat:'looks', also:'hair', emoji:'💇', name:'Soft Waves', price:150, slot:'hair', val:'waves', vibe:'cozy'},
+    {id:'hair-updo', cat:'looks', also:'hair', emoji:'💇', name:'Fancy Updo', price:180, slot:'hair', val:'updo', vibe:'fancy'},
+    {id:'hair-slickbob', cat:'looks', also:'hair', emoji:'💇', name:'Sleek Bob', price:150, slot:'hair', val:'slickbob', vibe:'fancy'},
+    {id:'hair-undercut', cat:'looks', also:'hair', emoji:'💇', name:'Undercut', price:140, slot:'hair', val:'undercut', vibe:'grunge'},
+    {id:'hair-milkmaid', cat:'looks', also:'hair', emoji:'💇', name:'Milkmaid Braids', price:170, slot:'hair', val:'milkmaid', vibe:'cozy'},
+    {id:'hair-mullet', cat:'looks', also:'hair', emoji:'💇', name:'Star Mullet', price:160, slot:'hair', val:'mullet', vibe:'y2k'},
+    {id:'shirt-babyt', cat:'looks', also:'shirt', emoji:'👕', name:'Y2K Baby Tee', price:140, slot:'shirtPat', val:'babyt', vibe:'y2k'},
+    {id:'shirt-flannel', cat:'looks', also:'shirt', emoji:'👕', name:'Grunge Flannel', price:160, slot:'shirtPat', val:'flannel', vibe:'grunge'},
+    {id:'shirt-sweater', cat:'looks', also:'shirt', emoji:'👕', name:'Cozy Sweater', price:160, slot:'shirtPat', val:'sweater', vibe:'cozy'},
+    {id:'shirt-blouse', cat:'looks', also:'shirt', emoji:'👕', name:'Fancy Blouse', price:170, slot:'shirtPat', val:'blouse', vibe:'fancy'},
+    {id:'shirt-tux', cat:'looks', also:'shirt', emoji:'👔', name:'Tuxedo Shirt', price:200, slot:'shirtPat', val:'tux', vibe:'fancy'},
+    {id:'shirt-cardigan', cat:'looks', also:'shirt', emoji:'🧥', name:'Soft Cardigan', price:160, slot:'shirtPat', val:'cardigan', vibe:'cozy'},
+    {id:'pants-cargo', cat:'looks', also:'pants', emoji:'👖', name:'Y2K Cargos', price:150, slot:'pantsPat', val:'cargo', vibe:'y2k'},
+    {id:'pants-ripped', cat:'looks', also:'pants', emoji:'👖', name:'Ripped Jeans', price:150, slot:'pantsPat', val:'ripped', vibe:'grunge'},
+    {id:'pants-joggers', cat:'looks', also:'pants', emoji:'👖', name:'Cozy Joggers', price:130, slot:'pantsPat', val:'joggers', vibe:'cozy'},
+    {id:'pants-dressy', cat:'looks', also:'pants', emoji:'👖', name:'Dress Pants', price:160, slot:'pantsPat', val:'dressy', vibe:'fancy'},
+    {id:'pants-baggy', cat:'looks', also:'pants', emoji:'👖', name:'Baggy Pants', price:150, slot:'pantsPat', val:'baggy', vibe:'y2k'},
+    {id:'pants-gown', cat:'looks', also:'style', emoji:'👗', name:'Fancy Gown', price:0, slot:'pantsPat', val:'gown', vibe:'fancy', desc:'A long dress that matches your shirt color'},
+    {id:'pants-sundress', cat:'looks', also:'style', emoji:'👗', name:'Cozy Sundress', price:0, slot:'pantsPat', val:'sundress', vibe:'cozy'}
+  ];
+
+  const OLD_IDS = [
+    'hair-short','hair-long','hair-ponytail','hair-pigtails','hair-curly','hair-spiky','hair-bun',
+    'hair-beehive','hair-braid','hair-bowl','hair-spacebuns','hair-combover','hair-sidepony','hair-twinbraids','hair-curl',
+    'hat-toque','hat-burger','hat-backcap','hat-propeller','hat-pumpkin','hat-witch','hat-santa','hat-turkey',
+    'body-classic','body-girl','pants-dress','pants-skirt','lash-on'
+  ];
+
+  function lookItem(id){ return LOOK_ITEMS.find(it => it.id === id) || null; }
+  function lookIds(){ return LOOK_ITEMS.map(it => it.id); }
+  function lookIsNew(id){ return lookIds().indexOf(id) >= 0 && OLD_IDS.indexOf(id) < 0; }
+  function lookVibes(){ return ['y2k','grunge','cozy','fancy']; }
+
+  function lookFixAv(a){
+    if (!a || typeof a !== 'object') return a;
+    const next = Object.assign({}, a);
+    if (next.body !== 'girl' && next.body !== 'boy' && next.body !== 'classic') next.body = 'classic';
+    return next;
+  }
+
+  function lookWearSafe(owned, itemId){
+    const it = lookItem(itemId);
+    if (!it) return {ok:false, why:'missing'};
+    if (it.price > 0 && owned && !owned.has && !owned[it.id] && !(owned instanceof Set && owned.has(it.id))){
+      if (Array.isArray(owned) && owned.indexOf(it.id) < 0) return {ok:false, why:'owned'};
+      if (!Array.isArray(owned) && !(owned instanceof Set) && !owned[it.id]) return {ok:false, why:'owned'};
+    }
+    return {ok:true, item: it};
+  }
+
+  return {LOOK_ITEMS, OLD_IDS, lookItem, lookIds, lookIsNew, lookVibes, lookFixAv, lookWearSafe};
+});
+
+/* 2D + 3D drawing for new optional looks. Relies on page helpers: block, circ, rrect, poly, shade. */
+function drawLookHat(ctx, av){
+  const h = av && av.hat;
+  if (!h) return;
+  if (h === 'beanie'){ rrect(ctx, 84, 20, 92, 42, 16, '#3a86ff'); rrect(ctx, 84, 50, 92, 10, 4, '#ffd23f'); circ(ctx, 130, 18, 8, '#ff6fb5'); }
+  else if (h === 'bucket'){ rrect(ctx, 86, 28, 88, 28, 10, '#2ec27e'); ctx.fillStyle = '#1f9460'; ctx.beginPath(); ctx.ellipse(130, 58, 70, 10, 0, 0, Math.PI*2); ctx.fill(); }
+  else if (h === 'visor'){ rrect(ctx, 88, 48, 84, 10, 4, '#8b5cf6'); ctx.fillStyle = '#ff9f1c'; ctx.beginPath(); ctx.ellipse(130, 62, 54, 8, 0, 0, Math.PI); ctx.fill(); }
+  else if (h === 'beret'){ circ(ctx, 128, 36, 36, '#1d2340'); circ(ctx, 150, 22, 8, '#1d2340'); ctx.fillStyle = '#ffd23f'; ctx.fillRect(122, 32, 16, 4); }
+  else if (h === 'tophat'){ rrect(ctx, 108, 4, 44, 40, 2, '#1d1d1d'); rrect(ctx, 92, 40, 76, 10, 4, '#1d1d1d'); rrect(ctx, 108, 32, 44, 6, 2, '#ffd23f'); }
+  else if (h === 'slouch'){ rrect(ctx, 80, 16, 100, 44, 18, '#4a3b32'); rrect(ctx, 150, 20, 28, 22, 10, '#4a3b32'); }
+  else if (h === 'earmuffs'){ circ(ctx, 86, 56, 16, '#ff6fb5'); circ(ctx, 174, 56, 16, '#ff6fb5'); ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(130, 50, 48, Math.PI, 0); ctx.stroke(); }
+  else if (h === 'newsboy'){ rrect(ctx, 90, 28, 80, 24, 10, '#6b3e1f'); ctx.fillStyle = '#4a2c14'; ctx.beginPath(); ctx.ellipse(130, 54, 56, 8, 0, 0, Math.PI); ctx.fill(); }
+  else if (h === 'flower'){ ['#ff6fb5','#ffd23f','#8b5cf6','#2ec27e','#ff9f1c'].forEach((c, i) => { const a = i * 1.26; circ(ctx, 130 + Math.cos(a)*28, 36 + Math.sin(a)*10, 8, c); }); circ(ctx, 130, 36, 7, '#ffd23f'); }
+}
+
+function drawLookHair(ctx, av){
+  const h = av && av.hair, hc = av && av.hairColor;
+  if (!h || !hc) return;
+  const dk = typeof shade === 'function' ? shade(hc, -30) : hc;
+  if (h === 'wolf'){ block(ctx, 84, 30, 92, 22, hc); block(ctx, 80, 40, 14, 70, hc); block(ctx, 166, 40, 14, 70, hc); poly(ctx, [[86,34],[96,8],[110,34],[124,4],[140,34],[156,10],[174,36]], hc); }
+  else if (h === 'shag'){ block(ctx, 86, 32, 88, 20, hc); for (let i = 0; i < 6; i++) block(ctx, 86 + i*14, 48, 10, 18 + (i%2)*10, i%2 ? dk : hc); }
+  else if (h === 'curtains'){ block(ctx, 86, 32, 88, 18, hc); block(ctx, 94, 50, 22, 28, hc); block(ctx, 144, 50, 22, 28, hc); }
+  else if (h === 'crimped'){ block(ctx, 86, 30, 88, 20, hc); for (let y = 50; y < 110; y += 8){ block(ctx, 82, y, 16, 5, (y/8)%2 ? dk : hc); block(ctx, 162, y, 16, 5, (y/8)%2 ? dk : hc); } }
+  else if (h === 'waves'){ block(ctx, 86, 32, 88, 18, hc); block(ctx, 80, 48, 16, 80, hc); block(ctx, 164, 48, 16, 80, hc); ctx.fillStyle = dk; ctx.fillRect(84, 70, 6, 40); ctx.fillRect(170, 70, 6, 40); }
+  else if (h === 'updo'){ circ(ctx, 130, 22, 28, hc); block(ctx, 94, 40, 72, 16, hc); rrect(ctx, 118, 8, 24, 8, 3, '#ffd23f'); }
+  else if (h === 'slickbob'){ rrect(ctx, 86, 32, 88, 48, 20, hc); ctx.fillStyle = dk; ctx.fillRect(96, 58, 68, 4); }
+  else if (h === 'undercut'){ block(ctx, 100, 28, 70, 22, hc); poly(ctx, [[100,30],[130,8],[170,32]], hc); block(ctx, 86, 48, 10, 20, dk); block(ctx, 164, 48, 10, 20, dk); }
+  else if (h === 'milkmaid'){ block(ctx, 86, 36, 88, 16, hc); circ(ctx, 104, 32, 14, hc); circ(ctx, 156, 32, 14, hc); block(ctx, 86, 48, 10, 28, hc); block(ctx, 164, 48, 10, 28, hc); }
+  else if (h === 'mullet'){ block(ctx, 86, 32, 88, 20, hc); block(ctx, 88, 50, 12, 24, hc); block(ctx, 160, 50, 12, 24, hc); block(ctx, 100, 70, 60, 50, hc); }
+}
+
+function drawLookShirt(ctx, av){
+  const p = av && av.shirtPat, c = av && av.shirt;
+  if (!p || !c) return;
+  if (p === 'babyt'){ block(ctx, 96, 116, 68, 70, c); ctx.fillStyle = '#ff6fb5'; ctx.fillRect(118, 140, 24, 8); }
+  else if (p === 'flannel'){ const ink = 'rgba(29,35,64,.28)'; for (let y = 120; y < 200; y += 14){ ctx.fillStyle = ink; ctx.fillRect(50, y, 160, 4); } for (let x = 60; x < 200; x += 16){ ctx.fillStyle = ink; ctx.fillRect(x, 116, 4, 88); } }
+  else if (p === 'sweater'){ rrect(ctx, 82, 112, 96, 96, 8, c); ctx.fillStyle = typeof shade === 'function' ? shade(c, 30) : '#fff'; ctx.fillRect(100, 130, 60, 8); }
+  else if (p === 'blouse'){ block(ctx, 86, 116, 88, 88, c); circ(ctx, 130, 128, 8, '#ffffff'); ctx.fillStyle = '#ffd23f'; ctx.fillRect(126, 140, 8, 24); }
+  else if (p === 'tux'){ block(ctx, 104, 120, 52, 80, '#ffffff'); block(ctx, 122, 120, 16, 70, c); circ(ctx, 130, 150, 4, '#1d1d1d'); circ(ctx, 130, 164, 4, '#1d1d1d'); }
+  else if (p === 'cardigan'){ block(ctx, 86, 116, 88, 92, c); block(ctx, 118, 124, 24, 70, '#fff4d6'); rrect(ctx, 124, 150, 12, 10, 3, '#ffd23f'); }
+}
+
+function drawLookPants(ctx, av){
+  const p = av && av.pantsPat, col = av && av.pants;
+  if (!p) return;
+  if (p === 'cargo'){ block(ctx, 88, 210, 20, 16, typeof shade === 'function' ? shade(col, -20) : col); block(ctx, 152, 210, 20, 16, typeof shade === 'function' ? shade(col, -20) : col); }
+  else if (p === 'ripped'){ block(ctx, 98, 230, 20, 8, av.head); block(ctx, 140, 248, 16, 7, av.head); }
+  else if (p === 'joggers'){ rrect(ctx, 92, 250, 36, 16, 8, typeof shade === 'function' ? shade(col, -25) : col); rrect(ctx, 132, 250, 36, 16, 8, typeof shade === 'function' ? shade(col, -25) : col); }
+  else if (p === 'dressy'){ ctx.fillStyle = typeof shade === 'function' ? shade(col, 25) : '#fff'; ctx.fillRect(108, 200, 6, 80); ctx.fillRect(146, 200, 6, 80); }
+  else if (p === 'baggy'){ block(ctx, 86, 200, 44, 90, col); block(ctx, 130, 200, 44, 90, col); }
+  else if (p === 'gown'){ poly(ctx, [[90,200],[170,200],[200,300],[60,300]], col); rrect(ctx, 118, 210, 24, 8, 3, '#ffd23f'); }
+  else if (p === 'sundress'){ poly(ctx, [[96,198],[164,198],[188,280],[72,280]], col); circ(ctx, 118, 230, 6, '#ffd23f'); circ(ctx, 142, 242, 6, '#ff6fb5'); }
+}
+
+function drawLook3D(av, g, bx, mat, hc){
+  if (!av || typeof bx !== 'function') return;
+  const hat = av.hat, hair = av.hair, sp = av.shirtPat, pp = av.pantsPat, shirt = av.shirt || '#3a86ff', pants = av.pants || '#1d2340', hairC = hc || av.hairColor || '#6b3e1f';
+  if (hat === 'beanie'){ bx(.92, .32, .92, '#3a86ff', 0, 3.02, 0); bx(.2, .12, .2, '#ff6fb5', 0, 3.22, 0); }
+  else if (hat === 'bucket'){ bx(.9, .22, .9, '#2ec27e', 0, 2.98, 0); bx(1.3, .06, 1.3, '#1f9460', 0, 2.86, 0); }
+  else if (hat === 'visor'){ bx(.86, .08, .86, '#8b5cf6', 0, 2.92, 0); bx(.7, .04, .5, '#ff9f1c', 0, 2.86, .4); }
+  else if (hat === 'beret'){ bx(.9, .16, .9, '#1d2340', 0, 3.04, 0); bx(.16, .1, .16, '#1d2340', .35, 3.16, 0); }
+  else if (hat === 'tophat'){ bx(.7, .5, .7, '#1d1d1d', 0, 3.28, 0); bx(1.05, .08, 1.05, '#1d1d1d', 0, 2.98, 0); bx(.72, .08, .72, '#ffd23f', 0, 3.08, 0); }
+  else if (hat === 'slouch'){ bx(1.0, .36, 1.0, '#4a3b32', 0, 3.06, 0); bx(.4, .22, .4, '#4a3b32', .28, 3.16, 0); }
+  else if (hat === 'earmuffs'){ bx(.22, .22, .22, '#ff6fb5', -.52, 2.7, 0); bx(.22, .22, .22, '#ff6fb5', .52, 2.7, 0); bx(.9, .06, .08, '#ffd23f', 0, 3.0, 0); }
+  else if (hat === 'newsboy'){ bx(.9, .22, .9, '#6b3e1f', 0, 3.0, 0); bx(.7, .06, .45, '#4a2c14', 0, 2.88, .4); }
+  else if (hat === 'flower'){ ['#ff6fb5','#ffd23f','#8b5cf6','#2ec27e'].forEach((c, i) => { const a = i * 1.57; bx(.16, .1, .16, c, Math.cos(a)*.35, 3.08, Math.sin(a)*.35); }); }
+
+  if (hair === 'wolf' || hair === 'shag' || hair === 'mullet' || hair === 'waves'){ bx(.9, 1.1, .2, hairC, 0, 2.15, -.5); bx(.16, .85, .3, hairC, -.46, 2.2, -.2); bx(.16, .85, .3, hairC, .46, 2.2, -.2); }
+  else if (hair === 'curtains' || hair === 'slickbob'){ bx(.26, .45, .2, hairC, -.22, 2.55, .42); bx(.26, .45, .2, hairC, .22, 2.55, .42); }
+  else if (hair === 'updo' || hair === 'milkmaid'){ bx(.55, .4, .55, hairC, 0, 3.2, 0); }
+  else if (hair === 'crimped'){ for (let i = -2; i <= 2; i++) bx(.12, .5 + (i%2)*.1, .12, hairC, i*.16, 2.5, -.46); }
+  else if (hair === 'undercut'){ bx(.7, .25, .7, hairC, 0, 3.02, 0); }
+  if (sp === 'tux'){ bx(.3, .7, .05, '#ffffff', 0, 1.7, .32); bx(.28, .08, .06, '#1d1d1d', 0, 1.95, .34); }
+  else if (sp === 'babyt'){ bx(.7, .08, .08, '#ff6fb5', 0, 1.55, .32); }
+  else if (sp === 'flannel'){ bx(.9, .08, .08, 'rgba(29,35,64,.35)', 0, 1.7, .3); }
+  if (pp === 'gown'){ bx(1.2, 1.4, .6, pants, 0, 1.05, 0); }
+  else if (pp === 'sundress'){ bx(1.1, 1.1, .55, shirt, 0, 1.15, 0); }
+  else if (pp === 'baggy' || pp === 'cargo'){ bx(.55, 1.0, .4, pants, -.22, .85, 0); bx(.55, 1.0, .4, pants, .22, .85, 0); }
+}
+
+if (typeof globalThis !== 'undefined'){
+  globalThis.drawLookHat = drawLookHat;
+  globalThis.drawLookHair = drawLookHair;
+  globalThis.drawLookShirt = drawLookShirt;
+  globalThis.drawLookPants = drawLookPants;
+  globalThis.drawLook3D = drawLook3D;
+}
+
+/* Shop / editor try-on preview. Never writes saves or spends coins on its own. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.PreviewRules = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const PREVIEW_MODE_KEY = 'rubloxPreviewMode';
+
+  function previewWearable(it){
+    if (!it || typeof it !== 'object') return false;
+    if (it.emote && !it.slot && !it.set && !it.look) return false;
+    return !!(it.slot || it.set || it.look || it.val);
+  }
+
+  function previewApply(base, it, byId){
+    const a = Object.assign({}, base || {});
+    if (!previewWearable(it)) return a;
+    const parts = [];
+    if (it.set && Array.isArray(it.set)){
+      it.set.forEach(id => {
+        const x = typeof byId === 'function' ? byId(id) : (id && id.slot ? id : null);
+        if (x) parts.push(x);
+      });
+    } else {
+      parts.push(it);
+    }
+    parts.forEach(x => { if (x && x.slot) a[x.slot] = x.val; });
+    if (it.look) Object.assign(a, it.look);
+    return a;
+  }
+
+  function previewSnap(state){
+    const owned = state && state.owned;
+    return {
+      avatar: JSON.parse(JSON.stringify((state && state.avatar) || {})),
+      draft: state && state.draft ? JSON.parse(JSON.stringify(state.draft)) : null,
+      coins: (state && state.coins) | 0,
+      owned: Array.isArray(owned) ? owned.slice() : (owned && typeof owned[Symbol.iterator] === 'function' ? [...owned] : [])
+    };
+  }
+
+  function previewSameSave(before, after){
+    if (!before || !after) return false;
+    if ((before.coins | 0) !== (after.coins | 0)) return false;
+    const bo = (before.owned || []).slice().sort();
+    const ao = (after.owned || []).slice().sort();
+    if (bo.length !== ao.length || bo.some((id, i) => id !== ao[i])) return false;
+    return JSON.stringify(before.avatar || {}) === JSON.stringify(after.avatar || {});
+  }
+
+  function previewBegin(state, it){
+    if (!previewWearable(it)) return {ok:false, why:'item'};
+    const before = previewSnap(state);
+    return {
+      ok: true,
+      open: true,
+      itemId: it.id,
+      item: it,
+      look: previewApply(before.avatar, it, state && state.byId),
+      before
+    };
+  }
+
+  function previewCancel(session){
+    if (!session || !session.before) return {ok:false, why:'session', open:false};
+    return {
+      ok: true,
+      open: false,
+      saved: false,
+      spent: false,
+      avatar: JSON.parse(JSON.stringify(session.before.avatar)),
+      draft: session.before.draft ? JSON.parse(JSON.stringify(session.before.draft)) : null,
+      coins: session.before.coins,
+      owned: session.before.owned.slice()
+    };
+  }
+
+  function previewBuy(session, item, now){
+    now = now || {};
+    const before = session && session.before ? session.before : previewSnap(now);
+    const price = (item && item.price) | 0;
+    const owned = Array.isArray(now.owned) ? now.owned.slice() : (now.owned && typeof now.owned[Symbol.iterator] === 'function' ? [...now.owned] : before.owned.slice());
+    const already = !!(item && (owned.indexOf(item.id) >= 0 || price === 0));
+    if (already){
+      return {
+        ok: true,
+        open: false,
+        saved: true,
+        spent: false,
+        already: true,
+        coins: now.coins != null ? (now.coins | 0) : before.coins,
+        owned,
+        avatar: previewApply(before.avatar, item, now.byId)
+      };
+    }
+    const coins = now.coins != null ? (now.coins | 0) : before.coins;
+    if (coins < price){
+      return {
+        ok: false,
+        why: 'coins',
+        open: true,
+        saved: false,
+        spent: false,
+        coins,
+        owned,
+        avatar: JSON.parse(JSON.stringify(before.avatar))
+      };
+    }
+    const nextOwned = owned.slice();
+    if (item && item.id && nextOwned.indexOf(item.id) < 0) nextOwned.push(item.id);
+    if (item && item.set) item.set.forEach(id => { const k = typeof id === 'string' ? id : (id && id.id); if (k && nextOwned.indexOf(k) < 0) nextOwned.push(k); });
+    return {
+      ok: true,
+      open: false,
+      saved: true,
+      spent: true,
+      coins: coins - price,
+      owned: nextOwned,
+      avatar: previewApply(before.avatar, item, now.byId)
+    };
+  }
+
+  function previewModeNormalize(val){
+    const s = (val == null ? '' : String(val)).toLowerCase().trim();
+    if (s === '2d' || s === '2' || s === 'flat' || s === 'card') return '2d';
+    if (s === '3d' || s === '3' || s === 'spin' || s === 'model') return '3d';
+    return '';
+  }
+
+  function previewModePick(stored, webglOk){
+    const m = previewModeNormalize(stored);
+    if (m === '2d') return '2d';
+    if (!webglOk) return '2d';
+    return '3d';
+  }
+
+  function previewModeToggle(current, webglOk){
+    const cur = previewModeNormalize(current) || previewModePick(current, webglOk);
+    if (cur === '3d') return '2d';
+    return webglOk ? '3d' : '2d';
+  }
+
+  function previewModeSelected(shown, btn){
+    return previewModeNormalize(shown) === previewModeNormalize(btn);
+  }
+
+  return {PREVIEW_MODE_KEY, previewWearable, previewApply, previewSnap, previewSameSave, previewBegin, previewCancel, previewBuy, previewModeNormalize, previewModePick, previewModeToggle, previewModeSelected};
+});
+
 const GAMES = [
   {id:'elevator', name:'Wobblevator', emoji:'🛗', tag:'Ride Bingle the Bellhop’s wobbly lift to surprise floors. Clear quirky mini-events, keep your streak, and hop back in — if a floor gets too wobbly, everyone is okay!', draw: drawElevator, playable: true, isNew: true},
+  {id:'mansion', name:'Mallowmist Manor', emoji:'🕯️', tag:'A cute haunted house! Solve notes, levers, and a picture puzzle, then tip-toe past Nimble the Nook-Ghost. Getting caught means everyone is okay. Flip on Less scary for a milder mood.', draw: drawMansion, playable: true, isNew: true},
+  {id:'shelter', name:'Wagwell Shelter', emoji:'🐾', tag:'Rescue town strays, cheer them up, and match them with visiting families — or send a pal to your own pet collection!', draw: drawShelter, playable: true, isNew: true},
   {id:'garden', name:'Sunny Patch Garden', emoji:'🌱', tag:'Buy silly original seeds, plant them, and watch them grow in real time — even while you are away!', draw: drawGarden, playable: true, isNew: true},
   {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', tag:'Charge a snack toss and meet original friendly animals. Friends share the meadow, but nobody takes your pals!', draw: drawMeadow, playable: true, isNew: true},
   {id:'rides', name:'Rideland Workshop', emoji:'🎢', tag:'Place original rides on your lot, hop on, and let friends ride them too!', draw: drawRides, playable: true, isNew: true},
@@ -8602,6 +9627,24 @@ function drawLantern(ctx){
 
 
 
+function drawMansion(ctx){
+  if (typeof sky === 'function') sky(ctx, '#2a2458', '#6b5b9a');
+  ctx.fillStyle = '#3d3358'; ctx.fillRect(40, 50, 240, 120);
+  ctx.fillStyle = '#2a2140'; ctx.beginPath(); ctx.moveTo(30,50); ctx.lineTo(160,10); ctx.lineTo(290,50); ctx.fill();
+  ctx.fillStyle = '#ffd23f'; ctx.fillRect(70, 80, 36, 36); ctx.fillRect(214, 80, 36, 36);
+  ctx.fillStyle = '#c4a574'; ctx.fillRect(140, 110, 40, 60);
+  ctx.font = '28px sans-serif'; ctx.fillText('🕯️', 148, 80); ctx.fillText('👻', 250, 48);
+  if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#c9b6ff');
+}
+function drawShelter(ctx){
+  if (typeof sky === 'function') sky(ctx, '#b8e8ff', '#fff4d6');
+  ctx.fillStyle = '#8fd39a'; ctx.fillRect(0, 150, 320, 50);
+  ctx.fillStyle = '#f4d7a8'; ctx.fillRect(30, 80, 110, 80);
+  ctx.fillStyle = '#c45c1a'; ctx.beginPath(); ctx.moveTo(20,80); ctx.lineTo(85,40); ctx.lineTo(150,80); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.fillRect(180, 110, 90, 50);
+  ctx.font = '24px sans-serif'; ctx.fillText('🐾', 60, 130); ctx.fillText('🐱', 210, 140); ctx.fillText('🐶', 250, 140);
+  if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#3a86ff');
+}
 function drawHaunt(ctx){
   sky(ctx, '#2a2450', '#5b4d7a');
   ctx.fillStyle = '#4a3f6b'; ctx.fillRect(0, 140, 320, 60);
@@ -9000,6 +10043,10 @@ ITEMS.push(   // 🎃🎄 Holiday (t160u), sold all year
   {id:'brow-antlers', cat:'holiday', emoji:'🦌', name:'Reindeer Antlers', price:250, slot:'brow', val:'antlers', desc:'Stacks with any hat!'},
   {id:'back-cane',    cat:'holiday', emoji:'🍭', name:'Candy-Cane Back', price:250, slot:'back', val:'cane'},
 );
+if (typeof LookRules !== 'undefined' && Array.isArray(LookRules.LOOK_ITEMS)){
+  ITEMS.push(...LookRules.LOOK_ITEMS);
+}
+
 const SLOT_DEF = {face:'smile', anim:'default', hat:'none', body:'classic'};
 const byId = id => ITEMS.find(x => x.id === id);
 let coins = load('rubloxCoins', 500);
@@ -9049,17 +10096,17 @@ function buy(it){
   try { if (typeof achSweep === 'function') achSweep({source:'shop'}); } catch (e){}
   save('rubloxOwned', [...owned]);
   if (it.emote) refreshLook(); else wear(it, true);
-  function emoLabelFor(id){
-    const E = EMOTES[id];
-    if (!E) return '';
-    if (typeof EmoRules !== 'undefined' && EmoRules.emoKeyLabel) return EmoRules.emoKeyLabel(E);
-    return (E.key || E.key === 0) ? String(E.key) : '';
-  }
-  function emoHowTo(id){
-    const k = emoLabelFor(id);
-    return k ? ('Press ' + k + ' or tap 😀') : 'Tap 😀 and pick it in the emote wheel';
-  }
-    toast(it.emote ? `You got the ${it.name}! ${emoHowTo(it.emote)} 🎉` : 'You got the ' + it.name + '! 🎉'); confetti();
+  toast(it.emote ? `You got the ${it.name}! ${emoHowTo(it.emote)} 🎉` : 'You got the ' + it.name + '! 🎉'); confetti();
+}
+function emoLabelFor(id){
+  const E = EMOTES[id];
+  if (!E) return '';
+  if (typeof EmoRules !== 'undefined' && EmoRules.emoKeyLabel) return EmoRules.emoKeyLabel(E);
+  return (E.key || E.key === 0) ? String(E.key) : '';
+}
+function emoHowTo(id){
+  const k = emoLabelFor(id);
+  return k ? ('Press ' + k + ' or tap 😀') : 'Tap 😀 and pick it in the emote wheel';
 }
 function thumb(canvas, it){
   if (it.cat === 'anim'){
@@ -9100,12 +10147,12 @@ function renderShop(){
       ${on && !it.emote ? `<span class="tagl wear">${it.slot === 'anim' ? 'Equipped' : 'Wearing'}</span>` : ''}
       <div class="in"><h4>${it.emoji} ${it.name}</h4>${!it.set && !it.emote && SLOTS.find(x => x[0] === it.slot) ? (([, e, n]) => `<span class="slotl" data-slot="${it.slot}">${e} ${n}</span>`)(SLOTS.find(x => x[0] === it.slot)) : ''}${it.desc ? `<div class="desc">${it.desc}</div>` : ''}
       <div class="price"><span class="coin sm"></span>${own ? (it.price === 0 ? 'Free' : 'Owned') : it.price}</div>
-      <div class="row">${it.emote && own ? `<button class="sbtn" disabled data-act="none">${emoLabelFor(it.emote) ? ("🎮 Key " + emoLabelFor(it.emote)) : "😀 Wheel"}</button>`
+      <div class="row">${(typeof PreviewRules !== 'undefined' && PreviewRules.previewWearable(it)) ? `<button class="sbtn prev" data-act="preview">👀 Preview</button>` : ''}${it.emote && own ? `<button class="sbtn" disabled data-act="none">${emoLabelFor(it.emote) ? ("🎮 Key " + emoLabelFor(it.emote)) : "😀 Wheel"}</button>`
         : own ? (on && it.def ? `<button class="sbtn" disabled data-act="none">✅ ${it.slot === 'anim' ? 'Equipped' : 'Wearing'}</button>`
           : `<button class="sbtn ${on ? 'off' : ''}" data-act="equip">${on ? (it.slot === 'anim' ? '↩️ Unequip' : '🙅 Take off') : it.slot === 'anim' ? '🕺 Equip' : !it.set && slotVal(it.slot) && it.slot !== 'face' && it.slot !== 'hair' ? '🔄 Swap' : it.slot === 'face' ? '😀 Wear' : '👕 Wear'}</button>`)
         : `<button class="sbtn buy" data-act="buy">🛒 Buy</button>`}</div></div>`;
     thumb(d.querySelector('canvas'), it);
-    d.querySelector('[data-act]').onclick = e => { e.stopPropagation(); if (e.currentTarget.dataset.act === 'none') return; own ? wear(it, !on) : buy(it); };
+    d.querySelectorAll('[data-act]').forEach(btn => { btn.onclick = e => { e.stopPropagation(); const act = e.currentTarget.dataset.act; if (act === 'none') return; if (act === 'preview'){ avPrevOpen(it); return; } own ? wear(it, !on) : buy(it); }; });
     box.appendChild(d);
   });
 }
@@ -9116,14 +10163,220 @@ function renderStuff(){
   mine.forEach(it => {
     const b = document.createElement('button'); const on = isOn(it);
     b.className = 'sitem' + (on ? ' on' : ''); b.dataset.item = it.id; b.title = on ? 'Take off' : 'Wear';
-    b.innerHTML = `<canvas width="144" height="144"></canvas><span>${it.emoji} ${it.name}</span><span>${it.emote ? (emoLabelFor(it.emote) ? '🎮 Key ' + emoLabelFor(it.emote) : '😀 Wheel') : on ? (it.slot === 'anim' ? '✅ Equipped' : '✅ Wearing') : it.slot === 'anim' ? '➕ Equip' : '➕ Wear'}</span>`;
+    b.innerHTML = `<canvas width="144" height="144"></canvas><span>${it.emoji} ${it.name}</span><span>${it.emote ? (emoLabelFor(it.emote) ? '🎮 Key ' + emoLabelFor(it.emote) : '😀 Wheel') : on ? (it.slot === 'anim' ? '✅ Equipped' : '✅ Wearing') : it.slot === 'anim' ? '➕ Equip' : '➕ Wear'}</span>${(!it.emote && typeof PreviewRules !== 'undefined' && PreviewRules.previewWearable(it)) ? '<button type="button" class="sprev" data-act="preview" title="Preview">👀</button>' : ''}`;
     thumb(b.querySelector('canvas'), it);
+    const prevBtn = b.querySelector('[data-act="preview"]');
+    if (prevBtn) prevBtn.onclick = e => { e.stopPropagation(); avPrevOpen(it); };
     b.onclick = () => { if (it.emote){ toast(`${emoHowTo(it.emote)} to ${it.emote}! ${EMOTES[it.emote].emoji}`); return; } if (on && it.def) return; wear(it, !on); };
     box.appendChild(b);
   });
 }
 $$('.tab').forEach(t => t.onclick = () => { shopCat = t.dataset.cat; renderShop(); });
 makeSwatches($('#shopHairSw'), avatar.hairColor, c => { avatar.hairColor = draft.hairColor = c; save('rubloxAvatar', avatar); buildAvatarEditor(); refreshLook(); }, HAIRCOLORS);
+/* Shop try-on preview — live 2D/3D view, Buy + Cancel, no save or spend until Buy. */
+let avPrev = null, avPrev3 = null, avPrevMode = '3d';
+function avPrevIsOpen(){ return !!(avPrev && avPrev.open); }
+function avPrevState(){
+  const ownedList = (typeof owned !== 'undefined' && owned && owned.size != null) ? [...owned] : (typeof owned !== 'undefined' && Array.isArray(owned) ? owned.slice() : []);
+  return {avatar: typeof avatar !== 'undefined' ? avatar : {}, draft: typeof draft !== 'undefined' ? draft : null, coins: typeof coins !== 'undefined' ? coins : 0, owned: ownedList, byId: typeof byId === 'function' ? byId : null};
+}
+function avPrevWebglOk(){
+  try {
+    if (typeof THREE === 'undefined') return false;
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl2') || c.getContext('webgl') || c.getContext('experimental-webgl'));
+  } catch (e){ return false; }
+}
+function avPrevReadStoredMode(){
+  let v = '';
+  try {
+    if (typeof load === 'function') v = load('rubloxPreviewMode', '');
+    else if (typeof localStorage !== 'undefined') v = JSON.parse(localStorage.getItem('rubloxPreviewMode'));
+  } catch (e){ v = ''; }
+  return v;
+}
+function avPrevWriteStoredMode(mode){
+  const m = (typeof PreviewRules !== 'undefined' && PreviewRules.previewModeNormalize) ? PreviewRules.previewModeNormalize(mode) : mode;
+  if (m !== '2d' && m !== '3d') return;
+  try {
+    if (typeof save === 'function') save('rubloxPreviewMode', m);
+    else if (typeof localStorage !== 'undefined') localStorage.setItem('rubloxPreviewMode', JSON.stringify(m));
+  } catch (e){}
+}
+function avPrevShownMode(){
+  const webgl = avPrevWebglOk();
+  if (typeof PreviewRules !== 'undefined' && PreviewRules.previewModePick) return PreviewRules.previewModePick(avPrevMode, webgl);
+  return webgl ? (avPrevMode || '3d') : '2d';
+}
+function avPrevSyncModeBtns(){
+  const shown = avPrevShownMode();
+  const webgl = avPrevWebglOk();
+  const b2 = document.getElementById('avPrev2dBtn');
+  const b3 = document.getElementById('avPrev3dBtn');
+  const stage = document.getElementById('avPrevStage');
+  if (b2){
+    const on = shown === '2d';
+    b2.classList.toggle('on', on);
+    b2.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  if (b3){
+    const on = shown === '3d';
+    b3.classList.toggle('on', on);
+    b3.setAttribute('aria-pressed', on ? 'true' : 'false');
+    b3.disabled = !webgl;
+    if (!webgl) b3.title = '3D needs WebGL on this device';
+    else b3.removeAttribute('title');
+  }
+  if (stage){
+    stage.classList.toggle('avprev-2d', shown === '2d');
+    stage.classList.toggle('avprev-3d', shown === '3d');
+  }
+}
+function avPrevSetMode(mode, persist){
+  const want = (typeof PreviewRules !== 'undefined' && PreviewRules.previewModeNormalize) ? PreviewRules.previewModeNormalize(mode) : String(mode || '').toLowerCase();
+  if (want === '2d' || want === '3d') avPrevMode = want;
+  if (persist !== false) avPrevWriteStoredMode(avPrevMode);
+  avPrevSyncModeBtns();
+  if (avPrevIsOpen()) avPrevPaint();
+  return avPrevShownMode();
+}
+function avPrevToggleMode(){
+  const next = (typeof PreviewRules !== 'undefined' && PreviewRules.previewModeToggle)
+    ? PreviewRules.previewModeToggle(avPrevShownMode(), avPrevWebglOk())
+    : (avPrevShownMode() === '3d' ? '2d' : '3d');
+  return avPrevSetMode(next, true);
+}
+function avPrevStick(rx, ry){
+  try { if (window.__avPrev3 && typeof window.__avPrev3.stick === 'function') window.__avPrev3.stick(rx, ry); } catch (e){}
+}
+function avPrevOpen(it){
+  if (typeof PreviewRules === 'undefined' || !PreviewRules.previewWearable(it)) return false;
+  const ses = PreviewRules.previewBegin(avPrevState(), it);
+  if (!ses.ok) return false;
+  avPrev = ses;
+  const stored = PreviewRules.previewModeNormalize(avPrevReadStoredMode());
+  if (stored) avPrevMode = stored;
+  const modal = document.getElementById('avPrevModal');
+  const title = document.getElementById('avPrevTitle');
+  const sub = document.getElementById('avPrevSub');
+  const buy = document.getElementById('avPrevBuyBtn');
+  const cancel = document.getElementById('avPrevCancelBtn');
+  const own = typeof isOwned === 'function' && isOwned(it);
+  if (title) title.textContent = '👀 Try on ' + (it.emoji ? it.emoji + ' ' : '') + (it.name || 'this look');
+  if (sub) sub.textContent = 'Just a try-on — your real outfit, coins, and saves stay put until you buy.';
+  if (buy){
+    buy.style.display = '';
+    if (own){
+      const on = typeof isOn === 'function' && isOn(it);
+      buy.textContent = on ? '✅ Already wearing' : (it.slot === 'anim' ? '🕺 Wear this' : '👕 Wear this');
+      buy.className = 'big green';
+      buy.disabled = !!on;
+    } else {
+      buy.textContent = '🛒 Buy' + (it.price ? (' · ' + it.price + ' coins') : ' (free)');
+      buy.className = 'big';
+      buy.disabled = false;
+    }
+  }
+  if (cancel) cancel.textContent = '↩️ Cancel';
+  if (modal){ modal.classList.add('show'); modal.setAttribute('aria-hidden', 'false'); }
+  avPrevSyncModeBtns();
+  avPrevPaint();
+  return true;
+}
+function avPrevPaint(){
+  if (!avPrev || !avPrev.look) return;
+  const shown = avPrevShownMode();
+  avPrevSyncModeBtns();
+  const c2 = document.getElementById('avPrev2');
+  const host = document.getElementById('avPrev3');
+  if (c2 && typeof drawAvatar === 'function'){
+    try { drawAvatar(c2.getContext('2d'), avPrev.look); } catch (e){}
+  }
+  if (shown === '3d' && typeof avMountPreview3D === 'function'){
+    if (c2) c2.style.display = 'none';
+    if (host) host.style.display = 'block';
+    let ok = false;
+    try { ok = !!avMountPreview3D(host, avPrev.look); } catch (e){ ok = false; }
+    if (!ok){
+      if (typeof avUnmountPreview3D === 'function') avUnmountPreview3D();
+      if (host) host.style.display = 'none';
+      if (c2) c2.style.display = 'block';
+      const stage = document.getElementById('avPrevStage');
+      if (stage){ stage.classList.remove('avprev-3d'); stage.classList.add('avprev-2d'); }
+      const b2 = document.getElementById('avPrev2dBtn');
+      const b3 = document.getElementById('avPrev3dBtn');
+      if (b2){ b2.classList.add('on'); b2.setAttribute('aria-pressed', 'true'); }
+      if (b3){ b3.classList.remove('on'); b3.setAttribute('aria-pressed', 'false'); }
+    }
+  } else {
+    if (typeof avUnmountPreview3D === 'function') avUnmountPreview3D();
+    if (host) host.style.display = 'none';
+    if (c2) c2.style.display = 'block';
+  }
+}
+function avPrevCloseUi(){
+  const modal = document.getElementById('avPrevModal');
+  if (modal){ modal.classList.remove('show'); modal.setAttribute('aria-hidden', 'true'); }
+  if (typeof avUnmountPreview3D === 'function') avUnmountPreview3D();
+}
+function avPrevCancel(){
+  if (!avPrev){ avPrevCloseUi(); return false; }
+  const out = PreviewRules.previewCancel(avPrev);
+  avPrev = null;
+  avPrevCloseUi();
+  if (typeof refreshLook === 'function') refreshLook();
+  else if (typeof drawBig === 'function') drawBig();
+  return out;
+}
+function avPrevBuy(){
+  if (!avPrev || !avPrev.item) return false;
+  const it = avPrev.item;
+  const own = typeof isOwned === 'function' && isOwned(it);
+  if (own){
+    if (typeof wear === 'function' && !(typeof isOn === 'function' && isOn(it))) wear(it, true);
+    avPrev = null;
+    avPrevCloseUi();
+    return true;
+  }
+  const before = PreviewRules.previewSnap(avPrevState());
+  if (typeof buy === 'function') buy(it);
+  const after = PreviewRules.previewSnap(avPrevState());
+  const bought = !PreviewRules.previewSameSave(before, after) || (typeof isOwned === 'function' && isOwned(it));
+  if (bought){
+    avPrev = null;
+    avPrevCloseUi();
+    if (typeof refreshLook === 'function') refreshLook();
+    return true;
+  }
+  avPrevPaint();
+  return false;
+}
+function avPrevBind(){
+  if (window.__avPrevBound) return;
+  window.__avPrevBound = true;
+  const stored = (typeof PreviewRules !== 'undefined' && PreviewRules.previewModeNormalize) ? PreviewRules.previewModeNormalize(avPrevReadStoredMode()) : '';
+  if (stored) avPrevMode = stored;
+  const buy = document.getElementById('avPrevBuyBtn');
+  const cancel = document.getElementById('avPrevCancelBtn');
+  const modal = document.getElementById('avPrevModal');
+  const b2 = document.getElementById('avPrev2dBtn');
+  const b3 = document.getElementById('avPrev3dBtn');
+  if (buy) buy.onclick = () => avPrevBuy();
+  if (cancel) cancel.onclick = () => avPrevCancel();
+  if (b2) b2.onclick = () => avPrevSetMode('2d', true);
+  if (b3) b3.onclick = () => avPrevSetMode('3d', true);
+  if (modal) modal.addEventListener('click', e => { if (e.target === modal) avPrevCancel(); });
+  document.addEventListener('keydown', e => {
+    if (!avPrevIsOpen()) return;
+    if (e.code === 'Escape' || e.key === 'Escape'){ avPrevCancel(); e.preventDefault(); e.stopPropagation(); }
+  }, true);
+  avPrevSyncModeBtns();
+}
+if (typeof document !== 'undefined'){
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', avPrevBind);
+  else avPrevBind();
+}
+
 function showMsg(emoji, title, text){
   $('#soonEmoji').textContent = emoji; $('#soonTitle').textContent = title; $('#soonText').textContent = text;
   $('#soonModal').classList.add('show');
@@ -10005,6 +11258,9 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
   // Inventory of every game-progress save key found in the code (load/save and KEY constants).
   const RESET_GAMES = [
     {id:'garden', name:'Sunny Patch Garden', emoji:'🌱', keys:['rubloxGarden']},
+    {id:'elevator', name:'Wobblevator', emoji:'🛗', keys:['rubloxElevator']},
+    {id:'mansion', name:'Mallowmist Manor', emoji:'🕯️', keys:['rubloxMansion']},
+    {id:'shelter', name:'Wagwell Shelter', emoji:'🐾', keys:['rubloxShelter']},
     {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', keys:['rubloxMeadow']},
     {id:'rides', name:'Rideland Workshop', emoji:'🎢', keys:['rubloxRides']},
     {id:'hive', name:'Honeyhill Hive', emoji:'🐝', keys:['rubloxHive']},
@@ -14185,6 +15441,7 @@ const Obby = (() => {
     if (av.hat === 'toque'){ const b = new THREE.Mesh(new THREE.CylinderGeometry(.42, .42, .26, 12), mat('#f4f5fa')); b.position.y = 2.96; g.add(b);
       const t = new THREE.Mesh(new THREE.SphereGeometry(.5, 14, 10), mat('#ffffff')); t.scale.set(1, .75, 1); t.position.y = 3.35; g.add(t); }
     if (av.hat === 'backcap'){ bx(.9, .25, .9, '#2ec27e', 0, 2.95, 0); bx(.9, .06, .45, '#1f9460', 0, 2.84, -.6); bx(.2, .1, .02, '#ffffff', 0, 2.88, .46); }
+    if (typeof drawLook3D === 'function') drawLook3D(av, g, bx, mat, hc);
     if (av.hat === 'propeller'){ const b = new THREE.Mesh(new THREE.SphereGeometry(.45, 14, 8, 0, Math.PI*2, 0, Math.PI/2), mat('#3a86ff')); b.position.y = 2.82; g.add(b);
       bx(.05, .2, .05, '#8b5cf6', 0, 3.35, 0); const pr = bx(.9, .03, .12, '#ff6fb5', 0, 3.46, 0); pr.rotation.y = .5; }
     if (av.hat === 'burger'){ [[.44, .14, '#e8953a', 2.94], [.5, .05, '#5ec04a', 3.03], [.46, .12, '#6b3a1f', 3.1], [.47, .03, '#ffcc1a', 3.17]].forEach(([r, h, c, y]) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 14), mat(c)); m.position.y = y; g.add(m); });
@@ -14214,7 +15471,7 @@ const Obby = (() => {
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
     nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; py = null; evg = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
-    if (mode === 'elevator') buildElevator(); else if (mode === 'garden') buildGarden(); else if (mode === 'meadow') buildMeadow(); else if (mode === 'rides') buildRides(); else if (mode === 'hive') buildHive(); else if (mode === 'camp') buildCamp(); else if (mode === 'cafe') buildCafe(); else if (mode === 'fish') buildFish(); else if (mode === 'petshow') buildPetShow(); else if (mode === 'hunt') buildHunt(); else if (mode === 'snowfest') buildSnowFest(); else if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    if (mode === 'elevator') buildElevator(); else if (mode === 'mansion') buildMansion(); else if (mode === 'shelter') buildShelter(); else if (mode === 'garden') buildGarden(); else if (mode === 'meadow') buildMeadow(); else if (mode === 'rides') buildRides(); else if (mode === 'hive') buildHive(); else if (mode === 'camp') buildCamp(); else if (mode === 'cafe') buildCafe(); else if (mode === 'fish') buildFish(); else if (mode === 'petshow') buildPetShow(); else if (mode === 'hunt') buildHunt(); else if (mode === 'snowfest') buildSnowFest(); else if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -15169,7 +16426,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt' || mode === 'elevator') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'mansion' || mode === 'shelter' || mode === 'hunt' || mode === 'elevator') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
       ejectXZ(axis, B, b);
     }
   }
@@ -15285,6 +16542,7 @@ const Obby = (() => {
     if (mode === 'tower'){ if (P.y < -25) respawn(); collectCoins(); if (typeof towerChecks === 'function') towerChecks(); return; }
     if (mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse'){ if (P.y < -25) respawn(); return; }
     if (mode === 'elevator'){ if (P.y < -2 && typeof elevCatchFall === 'function') elevCatchFall(); return; }
+    if (mode === 'mansion' || mode === 'shelter'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -15988,6 +17246,8 @@ const Obby = (() => {
     else if (d.t === 'ps'){ try { if (typeof psFromNet === 'function') psFromNet(g, d); } catch (e){} }
     else if (d.t === 't302'){ try { if (typeof t302FromNet === 'function') t302FromNet(g, d); } catch (e){} }
     else if (d.t === 'elev'){ try { if (typeof elevFromNet === 'function') elevFromNet(g, d); } catch (e){} }
+    else if (d.t === 'mn'){ try { if (typeof mnFromNet === 'function') mnFromNet(g, d); } catch (e){} }
+    else if (d.t === 'sh'){ try { if (typeof shFromNet === 'function') shFromNet(g, d); } catch (e){} }
   }
   function mpTagReq(g, d){
     const T = tg;
@@ -16043,6 +17303,9 @@ const Obby = (() => {
       case 'tr': try { if (typeof trFromHost === 'function') trFromHost(d); } catch (e){} break;
       case 'py': try { if (typeof partyFromHost === 'function') partyFromHost(d); } catch (e){} break;
       case 't302': try { if (typeof t302FromNet === 'function') t302FromNet(null, d); } catch (e){} break;
+      case 'elev': try { if (typeof elevFromHost === 'function') elevFromHost(d); } catch (e){} break;
+      case 'mn': try { if (typeof mnFromHost === 'function') mnFromHost(d); } catch (e){} break;
+      case 'sh': try { if (typeof shFromHost === 'function') shFromHost(d); } catch (e){} break;
       case 'lb': try { if (typeof lbFromHost === 'function') lbFromHost(d); } catch (e){} break;
     }
   }
@@ -16502,7 +17765,7 @@ const Obby = (() => {
     const r = load(PET_KEY, null), o = r && typeof r === 'object' ? r : {};
     const pets = (Array.isArray(o.pets) ? o.pets : []).slice(0, PET_MAX).filter(p => p && PET_KINDS[p.k]).map(p => ({
       k: p.k, c: clamp(p.c | 0, 0, 2), n: petNameClean(p.n) && !petNameBad(p.n) ? petNameClean(p.n) : 'Buddy', xp: clamp(+p.xp || 0, 0, 1e6),
-      f: clamp(isFinite(+p.f) ? +p.f : 80, 0, 100), u: clamp(isFinite(+p.u) ? +p.u : 80, 0, 100), e: clamp(isFinite(+p.e) ? +p.e : 80, 0, 100), b: +p.b || Date.now(), acc: accClean(p.acc), tr: trClean(p.tr), g: p.g === 'b' || p.g === 'g' ? p.g : (Math.random() < .5 ? 'b' : 'g')}));   // older pets get a gender once (saved below)
+      f: clamp(isFinite(+p.f) ? +p.f : 80, 0, 100), u: clamp(isFinite(+p.u) ? +p.u : 80, 0, 100), e: clamp(isFinite(+p.e) ? +p.e : 80, 0, 100), b: +p.b || Date.now(), acc: accClean(p.acc), tr: trClean(p.tr), g: p.g === 'b' || p.g === 'g' ? p.g : (Math.random() < .5 ? 'b' : 'g'), src: p.src === 'shelter' ? 'shelter' : undefined}));   // older pets get a gender once (saved below)
     const s = {v: 1, pets, a: clamp(o.a | 0, 0, Math.max(0, pets.length - 1)), flow: ['shelter', 'choose', 'home'].includes(o.flow) ? o.flow : null,
       pend: petNameClean(o.pend), pendG: o.pendG === 'b' || o.pendG === 'g' ? o.pendG : '', inv: invClean(o.inv), tut: clamp(o.tut | 0, 0, 3), t: +o.t || Date.now()};
     // Pet Index (v2): seen = met at the shelter, own = adopted, done = row prize paid
@@ -19433,7 +20696,7 @@ const Obby = (() => {
     M._fsShine = true;
   }
   function fsDecorate(M, av, fx){
-    const G = av.body === 'girl', TW = G ? .82 : .96, TD = G ? .44 : .5, LW = G ? .38 : .44, AW = G ? .34 : .4;
+    const G = av.body === 'girl', B = av.body === 'boy', TW = G ? .82 : B ? 1.08 : .96, TD = G ? .44 : B ? .54 : .5, LW = G ? .38 : B ? .48 : .44, AW = G ? .34 : B ? .44 : .4;
     const body = M.pivot.children[0], head = M.head, legs = M.legs, arms = M.arms;
     const add = (par, geo, m, x, y, z) => { const o = new THREE.Mesh(geo, typeof m === 'string' ? mat(m) : m); o.position.set(x, y, z); par.add(o); return o; };
     const box = (par, w, h, d, m, x, y, z) => add(par, new THREE.BoxGeometry(w, h, d), m, x, y, z);
@@ -32306,7 +33569,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'dreamhouse' ? (typeof dh !== 'undefined' && dh && dh.visiting ? '🎮 Left stick move · Right stick look · Ⓐ jump · Ⓧ like the house · ☰ menu' : '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · Ⓨ invite friends · ⓁⓇ job · ✚▼ show spots · ☰ menu') : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'elevator' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act / shop · Ⓨ floors · Ⓑ close popups · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'pethotel' ? '🎮 Left stick move · Ⓐ jump · Ⓧ check in / care / check out · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'dreamhouse' ? (typeof dh !== 'undefined' && dh && dh.visiting ? '🎮 Left stick move · Right stick look · Ⓐ jump · Ⓧ like the house · ☰ menu' : '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · Ⓨ invite friends · ⓁⓇ job · ✚▼ show spots · ☰ menu') : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'elevator' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act / shop · Ⓨ floors · Ⓑ close popups · ☰ menu' : mode === 'mansion' ? '🎮 Left stick move · Ⓐ jump · Ⓧ read / flip / unlock · Ⓨ Less scary · ☰ menu' : mode === 'shelter' ? '🎮 Left stick move · Ⓐ jump · Ⓧ rescue / care / desk · Ⓨ send home · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'pethotel' ? '🎮 Left stick move · Ⓐ jump · Ⓧ check in / care / check out · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · View emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -32404,6 +33667,8 @@ const Obby = (() => {
     if (['cafe','fish','petshow','hunt'].includes(mode) && typeof t297Pad === 'function' && t297Pad(jp)) return;
     if (['garden','meadow','rides','hive','camp'].includes(mode) && typeof t302Pad === 'function' && t302Pad(jp, s)) return;
     if (mode === 'elevator' && typeof elevPadEdge === 'function' && elevPadEdge(jp)) return;
+    if (mode === 'mansion' && typeof mnPad === 'function' && mnPad(jp)) return;
+    if (mode === 'shelter' && typeof shPad === 'function' && shPad(jp)) return;
     if (mode === 'snowfest' && typeof evg !== 'undefined' && evg && typeof snowfestPad === 'function' && snowfestPad(jp)) return;
     if (mode === 'party' && typeof py !== 'undefined' && py && typeof partyPad === 'function' && partyPad(jp)) return;
     if (jp[3]) behind();
@@ -32745,7 +34010,7 @@ function dhLayoutHud(){
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt' || mode === 'elevator'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'mansion' || mode === 'shelter' || mode === 'hunt' || mode === 'elevator'){ // pull the camera in front of walls so buildings don't block the view
       dist = clipOrbitCam(tx, ty, tz, cam.dist, mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2);
     }
     camera.position.set(tx + Math.sin(cam.yaw) * cp * dist, ty + Math.sin(cam.pitch) * dist, tz + Math.cos(cam.yaw) * cp * dist);
@@ -33133,6 +34398,8 @@ function dhLayoutHud(){
       if (['cafe','fish','petshow','hunt'].includes(mode) && typeof t297Key === 'function' && t297Key(e)) return;
       if (['garden','meadow','rides','hive','camp'].includes(mode) && typeof t302Key === 'function' && t302Key(e)) return;
       if (mode === 'elevator' && typeof elevKey === 'function' && elevKey(e)) return;
+      if (mode === 'mansion' && typeof mnKey === 'function' && mnKey(e)) return;
+      if (mode === 'shelter' && typeof shKey === 'function' && shKey(e)) return;
       if (mode === 'snowfest' && typeof evg !== 'undefined' && evg && typeof snowfestKey === 'function' && snowfestKey(e)) return;
       if (mode === 'party' && typeof py !== 'undefined' && py && typeof partyKey === 'function' && partyKey(e)) return;
       const em = (typeof EmoRules !== 'undefined' && EmoRules.emoByCode) ? EmoRules.emoByCode(e.code, EMOTES) : Object.keys(EMOTES).find(k => { const key = EMOTES[k].key; return key != null && key !== '' && ('Digit' + key === e.code || 'Numpad' + key === e.code); });
@@ -33159,7 +34426,9 @@ function dhLayoutHud(){
       }
       keys[e.code] = true;
     });
-    addEventListener('keyup', e => { if (typeof dhNoteLookKey === 'function') dhNoteLookKey(e, false); keys[e.code] = false; if (e.key) keys[e.key] = false; if (['garden','meadow','rides','hive','camp'].includes(mode) && typeof t302Key === 'function' && t302Key(e)) return; if (mode === 'elevator' && typeof elevKey === 'function' && elevKey(e)) return; });
+    addEventListener('keyup', e => { if (typeof dhNoteLookKey === 'function') dhNoteLookKey(e, false); keys[e.code] = false; if (e.key) keys[e.key] = false; if (['garden','meadow','rides','hive','camp'].includes(mode) && typeof t302Key === 'function' && t302Key(e)) return; if (mode === 'elevator' && typeof elevKey === 'function' && elevKey(e)) return;
+      if (mode === 'mansion' && typeof mnKey === 'function' && mnKey(e)) return;
+      if (mode === 'shelter' && typeof shKey === 'function' && shKey(e)) return; });
     const clearHeldKeys = () => {
       for (const k in keys) keys[k] = false;
       if (typeof joy !== 'undefined' && joy){ joy.x = joy.y = 0; joy.jump = false; }
@@ -33543,7 +34812,7 @@ function dhLayoutHud(){
   }
 
 function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party', 'snowfest', 'cafe', 'fish', 'petshow', 'hunt', 'garden', 'meadow', 'rides', 'hive', 'camp', 'elevator'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt' || mode === 'garden' || mode === 'meadow' || mode === 'rides' || mode === 'hive' || mode === 'camp' || mode === 'elevator' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party', 'snowfest', 'cafe', 'fish', 'petshow', 'hunt', 'garden', 'meadow', 'rides', 'hive', 'camp', 'elevator', 'mansion', 'shelter'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt' || mode === 'garden' || mode === 'meadow' || mode === 'rides' || mode === 'hive' || mode === 'camp' || mode === 'elevator' || mode === 'mansion' || mode === 'shelter' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     recordRecentGame(mode);
@@ -33598,6 +34867,8 @@ function start(m = 'obby', d = null){
     else if (mode === 'bakery') banner(mp.on ? '🧁 Welcome to the Sweet Team Bakery! Bake together!' : '🧁 Welcome to the Sweet Team Bakery! Customers are coming!');
     else if (mode === 'petisland') banner('🏝️ Welcome to Pet Adventure Island! Ask your pet to sniff for treasure 👃');
     else if (mode === 'pets') banner(pt && pt.s.pets.length ? '🐾 Welcome back, ' + pt.s.pets[pt.s.a].n + '!' : '🐾 Adopt a Pet! Drive to the Pet Shelter');
+    else if (mode === 'mansion') banner(typeof mnLess === 'function' && mnLess() ? '😌 Mallowmist Manor feels milder tonight.' : '🕯️ Welcome to Mallowmist Manor — find notes, solve the parlor pictures, and tip-toe past Nimble.');
+    else if (mode === 'shelter') banner('🐾 Welcome to Wagwell Shelter! Rescue strays, cheer them up, and match them with visiting families.');
     else if (diff) begin(diff);
     $('#obby').classList.toggle('rmode', mode === 'race'); ['#rcLapBox', '#rcPosBox', '#rcItem'].forEach(id => $(id).style.display = mode === 'race' ? '' : 'none'); ['#rcPick', '#rcFin'].forEach(id => $(id).classList.remove('show'));
     if (mode === 'race'){ if (!window.__rcBound){ window.__rcBound = true;
@@ -33605,7 +34876,7 @@ function start(m = 'obby', d = null){
         $('#rcBack').onclick = () => rc && rcPickOpen(1); $('#rcHome').onclick = $('#rcFinHome').onclick = stop; $('#rcAgain').onclick = () => rc && rcAgain();
         $('#rcItem').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (rc) rc.tapItem = true; }); }
       raceEnter(); }
-    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') && touchUI && tipTimer > 4) tipTimer = 4;
+    if (mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'mansion' || mode === 'shelter') $('#oTime').parentElement.style.display = 'none'; if ((mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse') && touchUI && tipTimer > 4) tipTimer = 4;
     $('#obby').classList.toggle('smode', mode === 'splash'); ['#spLvBox', '#spRoundBox', '#spPeb', '#spShove'].forEach(id => $(id).style.display = mode === 'splash' ? '' : 'none'); if (mode !== 'splash') ['#spAliveBox', '#spPull'].forEach(id => $(id).style.display = 'none');
     ['#spPick', '#spEnd', '#spCode'].forEach(id => $(id).classList.remove('show')); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on');
     if (mode === 'splash'){ if (!window.__spBound){ window.__spBound = true;
@@ -33655,8 +34926,8 @@ function start(m = 'obby', d = null){
     if (mode === 'hive') hiveEnter();
     if (mode === 'camp') campEnter();
     if (mode === 'elevator') elevEnter();
-    { const _elev = document.getElementById('elevBox'); if (_elev) _elev.style.display = mode === 'elevator' ? '' : 'none'; }
-    $('#obby').classList.toggle('elevmode', mode === 'elevator');
+    { const _elev = document.getElementById('elevBox'); if (_elev) _elev.style.display = mode === 'elevator' ? '' : 'none'; } { const _mn = document.getElementById('mnBox'); if (_mn) _mn.style.display = mode === 'mansion' ? '' : 'none'; } { const _sh = document.getElementById('shBox'); if (_sh) _sh.style.display = mode === 'shelter' ? '' : 'none'; }
+    $('#obby').classList.toggle('elevmode', mode === 'elevator'); $('#obby').classList.toggle('mnmode', mode === 'mansion'); $('#obby').classList.toggle('shmode', mode === 'shelter');
     { const _t302 = document.getElementById('t302Box'); if (_t302) _t302.style.display = ['garden','meadow','rides','hive','camp'].includes(mode) ? '' : 'none'; }
     $('#obby').classList.toggle('gardenmode', mode === 'garden');
     $('#obby').classList.toggle('meadowmode', mode === 'meadow');
@@ -39200,6 +40471,15 @@ function start(m = 'obby', d = null){
       else elevNetSync();
       return;
     }
+    if (d.a === 'vote'){
+      if (!elevIsGuest() && elv.run.phase === 'vote'){
+        const uid = d.uid || (g && (g.uid || g.id)) || 'g';
+        ElevRules.elevCastVote(elv.run, uid, d.i);
+        elevPaintVote();
+        elevNetSync();
+      }
+      return;
+    }
     if (d.a !== 'sync' || !d.snap) return;
     if (!elevIsGuest()) return;
     const before = elv.run.phase;
@@ -39213,7 +40493,9 @@ function start(m = 'obby', d = null){
   function elevOnPhase(before, now){
     if (!elv) return;
     if (now === 'board'){ banner('🚪 Doors closing! Get back in!'); elevTone([440, 330], 0.06, 'square', 0.04); }
+    if (now === 'vote'){ elevOpenVote(); banner(elv.run.quote || '🗳️ Pick the next floor!'); elevTone([660, 880], 0.07, 'sine', 0.05); }
     if (now === 'ride'){
+      try { if (typeof t297OverlayClose === 'function') t297OverlayClose('elevVote'); } catch (e){}
       ElevRules.elevCloseDoors(elv.run, elevInCab());
       const pack = ElevRules.elevApplyPack(elv.sv, elv.run);
       elv.sv = pack.state; elv.run = pack.run; elevPersist(elv.sv);
@@ -40143,12 +41425,13 @@ function start(m = 'obby', d = null){
     dt = Math.max(0, Math.min(0.12, +dt || 0));
     const run = elv.run;
     const before = run.phase;
-    if (!elevIsGuest()) ElevRules.elevTick(run, dt);
+    if (!elevIsGuest()) ElevRules.elevTick(run, dt, {mp: elevIsMp()});
     else run.t = Math.max(0, (run.t || 0) - dt);
     if (before !== run.phase){
       elevOnPhase(before, run.phase);
       if (!elevIsGuest()) elevNetSync();
     }
+    if (run.phase === 'vote') elevPaintVote();
     if (run.phase === 'floor' && P.y < -1 && !run.watching) elevCatchFall();
     if (run.wantClear) elevDoClear();
     else if (run.wantFail) elevDoFail();
@@ -40188,11 +41471,11 @@ function start(m = 'obby', d = null){
     if (run.phase === 'lobby' || run.phase === 'inter') elevPaintBoard();
 
     const f = ElevRules.elevFloor(run.floor);
-    const maxT = run.phase === 'floor' && f ? (f.seconds + 5) : (run.phase === 'ride' ? ElevRules.ELEV_RIDE : (run.phase === 'board' ? ElevRules.ELEV_BOARD : ElevRules.ELEV_INTER));
+    const maxT = run.phase === 'floor' && f ? (f.seconds + 5) : (run.phase === 'vote' ? ElevRules.ELEV_VOTE_T : (run.phase === 'ride' ? ElevRules.ELEV_RIDE : (run.phase === 'board' ? ElevRules.ELEV_BOARD : ElevRules.ELEV_INTER)));
     const seenN = (elv.sv && elv.sv.seen && elv.sv.seen.length) || 0;
     const bonus = ElevRules.elevStreakBonus(run.streak || 0);
-    const lab = '🛗 ' + (run.survived || 0) + ' floors  ·  streak ' + (run.streak || 0) + ' (+' + bonus + '🪙)  ·  best ' + (elv.sv.best || 0) + '  ·  seen ' + seenN + (run.phase === 'floor' && f ? ('  ·  ' + f.emoji + ' ' + f.name + '  ·  ' + Math.ceil(run.t) + 's') : (run.phase === 'ride' ? '  ·  riding…' : (run.phase === 'board' ? ('  ·  doors ' + Math.ceil(run.t) + 's') : '')));
-    elevMeter(true, (run.phase === 'floor' || run.phase === 'ride' || run.phase === 'board') ? run.t : 1, lab, maxT);
+    const lab = '🛗 ' + (run.survived || 0) + ' floors  ·  streak ' + (run.streak || 0) + ' (+' + bonus + '🪙)  ·  best ' + (elv.sv.best || 0) + '  ·  seen ' + seenN + (run.phase === 'floor' && f ? ('  ·  ' + f.emoji + ' ' + f.name + '  ·  ' + Math.ceil(run.t) + 's') : (run.phase === 'vote' ? ('  ·  vote ' + Math.ceil(run.t) + 's') : (run.phase === 'ride' ? '  ·  riding…' : (run.phase === 'board' ? ('  ·  doors ' + Math.ceil(run.t) + 's') : ''))));
+    elevMeter(true, (run.phase === 'floor' || run.phase === 'ride' || run.phase === 'board' || run.phase === 'vote') ? run.t : 1, lab, maxT);
 
     if (run.phase === 'floor'){
       (elv.hazards || []).forEach(h => {
@@ -40279,8 +41562,68 @@ function start(m = 'obby', d = null){
     }
   }
 
+  function elevVoteUid(){
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.on) return elevIsGuest() ? (mp.me || 'g') : 'H';
+    } catch (e){}
+    return 'H';
+  }
+  function elevPaintVote(){
+    const box = document.getElementById('elevVoteList');
+    if (!box || !elv || !elv.run || !elv.run.vote) return;
+    const choices = elv.run.vote.choices || [];
+    const mine = (elv.run.vote.votes || {})[elevVoteUid()];
+    const sel = (elv.voteSel != null) ? elv.voteSel : (mine != null ? mine : 0);
+    elv.voteSel = sel;
+    box.innerHTML = choices.map((c, i) => {
+      const on = (mine === i) || (sel === i && mine == null);
+      const ticket = c.ticket ? '<small>🎫 Ticket floor</small>' : '<small>Choice ' + (i + 1) + '</small>';
+      return '<button type="button" class="elevVoteCard' + (on ? ' sel' : '') + '" data-i="' + i + '"><span class="e">' + (c.emoji || '🛗') + '</span><span>' + (c.name || c.id) + '</span>' + ticket + '</button>';
+    }).join('');
+    box.querySelectorAll('[data-i]').forEach(btn => {
+      btn.addEventListener('click', ev => { ev.preventDefault(); elevCastMyVote(+btn.getAttribute('data-i')); });
+    });
+    const sub = document.getElementById('elevVoteSub');
+    if (sub) sub.textContent = 'Time left: ' + Math.ceil(elv.run.t || 0) + 's  ·  ' + Object.keys(elv.run.vote.votes || {}).length + ' vote(s) in.';
+  }
+  function elevOpenVote(){
+    if (!elv || !elv.run || elv.run.phase !== 'vote') return;
+    elv.voteSel = 0;
+    if (typeof t297OverlayOpen !== 'function' || !t297OverlayOpen('elevVote')){
+      const el = document.getElementById('elevVote');
+      if (el) el.classList.add('show');
+    }
+    elevPaintVote();
+  }
+  function elevCastMyVote(i){
+    if (!elv || elv.run.phase !== 'vote') return false;
+    elv.voteSel = i | 0;
+    if (elevIsGuest()){
+      try { if (typeof mpSend === 'function') mpSend({t:'elev', a:'vote', i: elv.voteSel, uid: elevVoteUid()}); } catch (e){}
+      ElevRules.elevCastVote(elv.run, elevVoteUid(), elv.voteSel);
+      elevPaintVote();
+      return true;
+    }
+    const r = ElevRules.elevCastVote(elv.run, elevVoteUid(), elv.voteSel);
+    if (r && r.ok){ elevPaintVote(); elevNetSync(); banner('🗳️ You voted for ' + (r.pick.emoji || '') + ' ' + r.pick.name); }
+    return !!(r && r.ok);
+  }
+  function elevVoteKey(e){
+    if (!elv || elv.run.phase !== 'vote') return false;
+    const c = e.code || e.key;
+    if (c === 'Digit1' || c === 'Digit2' || c === 'Digit3' || c === 'Numpad1' || c === 'Numpad2' || c === 'Numpad3'){
+      const i = +(String(c).slice(-1)) - 1;
+      return elevCastMyVote(i);
+    }
+    const n = (elv.run.vote && elv.run.vote.choices && elv.run.vote.choices.length) || 3;
+    if (c === 'ArrowLeft' || c === 'ArrowUp'){ elv.voteSel = ((elv.voteSel || 0) - 1 + n) % n; elevPaintVote(); return true; }
+    if (c === 'ArrowRight' || c === 'ArrowDown'){ elv.voteSel = ((elv.voteSel || 0) + 1) % n; elevPaintVote(); return true; }
+    if (c === 'Enter' || c === 'Space'){ return elevCastMyVote(elv.voteSel || 0); }
+    return false;
+  }
   function elevKey(e){
     if (!elv) return false;
+    if (elevVoteKey(e)) return true;
     if (typeof t297EatOverlayKey === 'function' && t297EatOverlayKey(e)) return true;
     if (e.type === 'keyup') return false;
     const c = e.code || e.key;
@@ -40297,6 +41640,15 @@ function start(m = 'obby', d = null){
   function elevPadEdge(jp){
     if (!elv || !jp) return false;
     if (typeof t297EatOverlayPad === 'function' && t297EatOverlayPad(jp)) return true;
+    if (elv.run && elv.run.phase === 'vote'){
+      const n = (elv.run.vote && elv.run.vote.choices && elv.run.vote.choices.length) || 3;
+      if ((jp[14] || jp[12]) && !elv._vd){ elv._vd = true; elv.voteSel = ((elv.voteSel || 0) - 1 + n) % n; elevPaintVote(); return true; }
+      if ((jp[15] || jp[13]) && !elv._vd){ elv._vd = true; elv.voteSel = ((elv.voteSel || 0) + 1) % n; elevPaintVote(); return true; }
+      if (!jp[14] && !jp[15] && !jp[12] && !jp[13]) elv._vd = false;
+      if (!elv._va && jp[0]){ elv._va = true; elevCastMyVote(elv.voteSel || 0); return true; }
+      if (!jp[0]) elv._va = false;
+      return true;
+    }
     if (!elv._x && jp[2]){ elv._x = true; elevAct(); return true; }
     if (!jp[2]) elv._x = false;
     if (!elv._y && jp[3]){ elv._y = true; elevOpenIndex(); return true; }
@@ -40314,7 +41666,7 @@ function start(m = 'obby', d = null){
     elevMeter(false);
     const box = document.getElementById('elevBox'); if (box) box.style.display = 'none';
     try { elevMuzak.stop(); } catch (e){}
-    if (typeof t297OverlayClose === 'function'){ t297OverlayClose('elevHelp'); t297OverlayClose('elevIndex'); t297OverlayClose('elevShop'); }
+    if (typeof t297OverlayClose === 'function'){ t297OverlayClose('elevHelp'); t297OverlayClose('elevIndex'); t297OverlayClose('elevShop'); t297OverlayClose('elevVote'); }
     const ob = document.getElementById('obby');
     if (ob) ob.classList.remove('elevmode');
   }
@@ -40334,6 +41686,16 @@ function start(m = 'obby', d = null){
     shop(){ elevOpenShop(); },
     talk(){ elv.talkT = 0; elevTickTalk(0.01); },
     board(){ if (elv){ ElevRules.elevBeginBoard(elv.run); elevNetSync(); } },
+    vote(floorId){
+      if (!elv) return null;
+      if (floorId) elv.run.queued = floorId;
+      elv.run.survived = Math.max(elv.run.survived | 0, ElevRules.ELEV_VOTE_EVERY);
+      ElevRules.elevBeginVote(elv.run, Math.random);
+      elevOpenVote();
+      return ElevRules.elevWire(elv.run);
+    },
+    cast(i, uid){ if (!elv) return null; return ElevRules.elevCastVote(elv.run, uid || 'H', i); },
+
     go(fromNet){ elevGo(!!fromNet); },
     inCab(){ return elevInCab(); },
     setMp(opts){
@@ -40419,6 +41781,516 @@ function start(m = 'obby', d = null){
     }
   };
 
+  /* ---------- Mallowmist Manor ---------- */
+  let mn = null;
+  function mnKeep(m){ if (m && mn && mn.trash) mn.trash.push(m); return m; }
+  function mnMat(c, o){ return new THREE.MeshLambertMaterial(Object.assign({color:c, side:THREE.DoubleSide}, o||{})); }
+  function mnMesh(geo, c, x, y, z, o){
+    const m = new THREE.Mesh(geo, mnMat(c, o)); m.position.set(x,y,z); scene.add(m); return mnKeep(m);
+  }
+  function mnWall(x, y, z, w, h, d, c){
+    const b = plat(x, y + h/2, z, w, d, c, h);
+    if (b && b.mesh){ b.mesh.material = mnMat(c); mnKeep(b.mesh); }
+    if (b && mn) mn.solids.push(b);
+    return b;
+  }
+  function mnState(){ return MansionRules.mnLoad(typeof load === 'function' ? load(MansionRules.MN_KEY, null) : null); }
+  function mnSave(s){ if (typeof save === 'function') save(MansionRules.MN_KEY, s); if (mn) mn.sv = s; }
+  function mnLess(){ return !!(mn && mn.run && mn.run.lessScary); }
+  function drawMansion(ctx){
+    const skyTop = '#2a2458', skyBot = '#6b5b9a';
+    if (typeof sky === 'function') sky(ctx, skyTop, skyBot);
+    else { ctx.fillStyle = skyTop; ctx.fillRect(0,0,320,200); }
+    ctx.fillStyle = '#3d3358'; ctx.fillRect(40, 50, 240, 120);
+    ctx.fillStyle = '#2a2140'; ctx.beginPath(); ctx.moveTo(30,50); ctx.lineTo(160,10); ctx.lineTo(290,50); ctx.fill();
+    ctx.fillStyle = '#ffd23f'; ctx.fillRect(70, 80, 36, 36); ctx.fillRect(214, 80, 36, 36);
+    ctx.fillStyle = '#c4a574'; ctx.fillRect(140, 110, 40, 60);
+    ctx.font = '28px sans-serif'; ctx.fillText('🕯️', 148, 80); ctx.fillText('👻', 250, 48);
+    if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#c9b6ff');
+  }
+  function mnSky(){
+    const less = mnLess();
+    const bg = less ? '#3a3458' : '#1c1633';
+    scene.background = new THREE.Color(bg);
+    if (scene.fog){ scene.fog.color.set(bg); scene.fog.near = less ? 16 : 8; scene.fog.far = less ? 56 : 36; }
+  }
+  function mnLab(text, x, y, z){
+    try {
+      if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m) return mnKeep(m); }
+    } catch (e){}
+    return mnMesh(new THREE.BoxGeometry(0.2,0.2,0.2), '#fff', x, y, z);
+  }
+  function buildMansion(){
+    const sv = mnState();
+    if (sv.lessScary == null) sv.lessScary = !!(typeof CampRules !== 'undefined' && CampRules.campLoad && CampRules.campLoad(typeof load==='function'?load('rubloxCamp',null):null).lessScary);
+    const started = MansionRules.mnNewRun(sv, Date.now());
+    mn = {trash:[], solids:[], sv: started.state, run: started.run, props:[], ghost:null, door:null};
+    mnSky();
+    const wall = mnLess() ? '#6b6088' : '#3f3558';
+    const floor = mnLess() ? '#c4b8a0' : '#5a4a6a';
+    plat(0, 0, -36, 22, 110, floor, 0.3);
+    // outer shell
+    mnWall(0, 4, 16, 22, 8, 0.5, wall);
+    mnWall(0, 4, -88, 22, 8, 0.5, wall);
+    mnWall(-11, 4, -36, 0.5, 8, 110, wall);
+    mnWall(11, 4, -36, 0.5, 8, 110, wall);
+    mnWall(0, 8.2, -36, 22, 0.4, 110, mnLess() ? '#efe6d8' : '#2a2438');
+    // room dividers with door gaps at x=0
+    ;[-10, -30, -50, -70].forEach(z => {
+      mnWall(-7, 3, z, 8, 6, 0.4, wall);
+      mnWall(7, 3, z, 8, 6, 0.4, wall);
+      mnWall(0, 5.4, z, 6, 1.2, 0.4, wall);
+    });
+    // foyer props
+    plat(-4, 0.8, 6, 2.2, 1.4, '#8b5a2b', 0.8);
+    mn.props.push({id:'note1', x:-4, z:6, kind:'note', n:1, label: mnLab('📝 Note', -4, 2.0, 6)});
+    plat(4, 1.1, 4, 0.6, 0.6, '#d4a017', 1.1);
+    mn.props.push({id:'lever', x:4, z:4, kind:'lever', label: mnLab('🎚️ Lever', 4, 2.4, 4)});
+    mnLab('🕯️ Foyer', 0, 3.2, 10);
+    // parlor portraits
+    [[-6,-20,0],[-2,-20,1],[2,-20,2],[6,-20,3]].forEach(([x,z,i]) => {
+      const cols = ['#c45c7a','#5c8bc4','#d4a017','#6bbf8a'];
+      plat(x, 1.6, z, 1.6, 0.3, cols[i], 1.6);
+      mn.props.push({id:'pic'+i, x, z, kind:'pic', slot:i, label: mnLab('🖼️ ' + (i+1), x, 3.1, z)});
+    });
+    mnLab('🖼️ Parlor', 0, 3.2, -14);
+    // kitchen
+    plat(3, 0.9, -40, 2.4, 1.6, '#d9c4a0', 0.9);
+    mn.props.push({id:'key', x:3, z:-40, kind:'key', label: mnLab('🔑 Cupboard', 3, 2.2, -40)});
+    mnLab('🍪 Kitchen', 0, 3.2, -34);
+    // library
+    plat(-3, 1.0, -60, 2.2, 1.4, '#6b4a2b', 1.0);
+    mn.props.push({id:'note2', x:-3, z:-60, kind:'note', n:2, label: mnLab('📝 Hidden note', -3, 2.3, -60)});
+    mnLab('📚 Library', 0, 3.2, -54);
+    // attic / Nimble / door
+    plat(0, 2.4, -86, 3.6, 0.6, '#c45c1a', 2.4);
+    mn.door = {x:0, z:-86};
+    mnLab('🚪 Front door', 0, 4.2, -86);
+    mnLab('🫥 Attic Hall', 0, 3.2, -74);
+    const ghost = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.7, 12, 10), mnMat(mnLess() ? '#f4e8ff' : '#d8d0f0', {emissive: mnLess() ? '#b8a0e0' : '#3a3060'}));
+    body.position.y = 1.2; ghost.add(body);
+    const cap = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.5, 10), mnMat('#8b5cf6'));
+    cap.position.y = 1.9; ghost.add(cap);
+    ghost.position.set(4, 0, -78); scene.add(ghost); mnKeep(ghost); mn.ghost = ghost;
+    mnLab('👻 Nimble', 4, 2.8, -78);
+    const lamp = new THREE.PointLight(mnLess() ? 0xfff0c8 : 0xc8b0ff, mnLess() ? 1.1 : 0.55, 40);
+    lamp.position.set(0, 5, -36); scene.add(lamp); mnKeep(lamp);
+    const amb = new THREE.AmbientLight(mnLess() ? 0xfff4e8 : 0x8890c0, mnLess() ? 0.7 : 0.35);
+    scene.add(amb); mnKeep(amb);
+    Object.assign(P, {x:0, y:0.5, z:8, vx:0, vy:0, vz:0});
+    if (typeof cam !== 'undefined' && cam){ cam.yaw = Math.PI; cam.pitch = 0.32; cam.dist = 11; }
+    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:8}, flag:new THREE.Object3D()};
+    mnBind();
+    mnHud();
+    banner(mnLess() ? '😌 Mallowmist Manor feels milder. Look for notes, and say hi to sleepy Nimble.' : '🕯️ Welcome to Mallowmist Manor. Find notes, solve the parlor pictures, and tip-toe past Nimble.');
+  }
+  function mnNear(x, z, r){ return Math.hypot((P.x - x), (P.z - z)) < (r || 2.1); }
+  function mnCurrentRoom(){
+    const z = P.z;
+    if (z > -10) return 'foyer';
+    if (z > -30) return 'parlor';
+    if (z > -50) return 'kitchen';
+    if (z > -70) return 'library';
+    return 'attic';
+  }
+  function mnPrompt(){
+    if (!mn || mn.run.escaped) return null;
+    const hit = mn.props.find(p => mnNear(p.x, p.z, 2.2));
+    if (hit){
+      if (hit.kind === 'note') return {act:() => mnDo('note', hit), lab: 'Read note (E / Ⓧ)'};
+      if (hit.kind === 'lever') return {act:() => mnDo('lever'), lab: 'Flip lever (E / Ⓧ)'};
+      if (hit.kind === 'pic') return {act:() => mnDo('pic', hit), lab: 'Place portrait ' + (hit.slot+1) + ' (E / Ⓧ)'};
+      if (hit.kind === 'key') return {act:() => mnDo('key'), lab: 'Search cupboard (E / Ⓧ)'};
+    }
+    if (mn.door && mnNear(mn.door.x, mn.door.z, 2.4) && mn.run.key) return {act:() => mnDo('door'), lab: 'Unlock the door (E / Ⓧ)'};
+    return null;
+  }
+  function mnDo(kind, prop){
+    if (!mn || mn.run.escaped) return;
+    const run = mn.run;
+    let r = null;
+    if (kind === 'note') r = MansionRules.mnReadNote(run, prop.n);
+    else if (kind === 'lever') r = MansionRules.mnFlipLever(run);
+    else if (kind === 'pic'){
+      const used = (run.pictures || []).indexOf(prop.slot);
+      r = MansionRules.mnPlacePicture(run, prop.slot, prop.slot);
+      if (used >= 0 && r && r.ok && !r.done){ /* placed this tile in this slot */ }
+    }
+    else if (kind === 'key') r = MansionRules.mnTakeKey(run);
+    else if (kind === 'door') r = MansionRules.mnEscape(run, mn.sv, Date.now());
+    if (!r || !r.ok){
+      const why = r && r.why;
+      banner(why === 'note' ? 'Read the foyer note first.' : why === 'key' ? 'You still need the brass key.' : why === 'locked' ? 'That room is still closed.' : 'Not yet!');
+      return;
+    }
+    if (kind === 'note') banner('📝 ' + r.text);
+    if (kind === 'lever') banner('🎚️ The parlor doors creak open.');
+    if (kind === 'pic') banner(r.done ? '🖼️ The portraits click into place! The kitchen is open.' : '🖼️ You hung a portrait.');
+    if (kind === 'key') banner('🔑 You found the brass key!');
+    if (kind === 'door' && r.ok){
+      mn.sv = r.state; mnSave(mn.sv);
+      try { if (typeof pay === 'function') pay(r.coins); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); } } catch (e){}
+      banner('🌙 ' + r.message + ' +' + r.coins + ' 🪙');
+      try {
+        const em = document.getElementById('oWinEmoji'), title = document.getElementById('oWinTitle');
+        if (em) em.textContent = '🕯️'; if (title) title.textContent = 'You escaped Mallowmist Manor!';
+        const st = document.getElementById('oWinStats'); if (st) st.innerHTML = '👻 Nimble went back to the closet.<br>🎁 +' + r.coins + ' Rublox Coins';
+        const w = document.getElementById('oWin'); if (w) w.classList.add('show');
+      } catch (e){}
+    }
+    mnHud(); mnNet();
+  }
+  function mnCaught(){
+    const r = MansionRules.mnCatch(mn.run, mn.sv);
+    if (!r.ok) return;
+    mn.sv = r.state; mnSave(mn.sv);
+    if (r.spawn && typeof P !== 'undefined'){ P.x = r.spawn.x; P.y = r.spawn.y; P.z = r.spawn.z; P.vx = P.vz = 0; }
+    checkpoints[0].spawn = r.spawn;
+    banner('😌 ' + r.message);
+    mnHud(); mnNet();
+  }
+  function mnHud(){
+    const hint = document.getElementById('mnHint');
+    const run = mn && mn.run;
+    if (hint && run){
+      const room = MansionRules.mnRoom(mnCurrentRoom());
+      hint.textContent = (room.emoji || '') + ' ' + room.name + (run.key ? '  ·  🔑' : '') + (run.pictureDone ? '  ·  portraits set' : '') + (mnLess() ? '  ·  😌 milder' : '');
+    }
+    const btn = document.getElementById('mnAct');
+    const p = mnPrompt();
+    if (btn){ if (p){ btn.textContent = p.lab; btn.classList.add('show'); } else btn.classList.remove('show'); }
+    const less = document.getElementById('mnLessBtn');
+    if (less) less.classList.toggle('on', mnLess());
+  }
+  function mnToggleLess(){
+    if (!mn) return;
+    mn.sv = MansionRules.mnSetLessScary(mn.sv, !mn.sv.lessScary);
+    mn.run.lessScary = !!mn.sv.lessScary;
+    mnSave(mn.sv);
+    mnSky();
+    banner(mnLess() ? '😌 Less scary is on. Nimble is slower and the lights are warmer.' : '🕯️ Less scary is off. Still no gore, and everyone is okay.');
+    mnHud();
+  }
+  function mnAct(){ const p = mnPrompt(); if (p) p.act(); }
+  function mnKey(e){
+    if (!mn) return false;
+    if (e.type === 'keyup') return false;
+    const c = e.code || e.key;
+    if (c === 'KeyE' || c === 'KeyF'){ mnAct(); return true; }
+    if (c === 'KeyL'){ mnToggleLess(); return true; }
+    return false;
+  }
+  function mnPad(jp){
+    if (!mn || !jp) return false;
+    if (!mn._x && jp[2]){ mn._x = true; mnAct(); return true; }
+    if (!jp[2]) mn._x = false;
+    if (!mn._y && jp[3]){ mn._y = true; mnToggleLess(); return true; }
+    if (!jp[3]) mn._y = false;
+    return false;
+  }
+  function mnUpdate(dt){
+    if (!mn || mn.run.escaped) { mnHud(); return; }
+    dt = Math.max(0, Math.min(0.12, +dt || 0));
+    const room = mnCurrentRoom();
+    if (room !== mn.run.room){
+      if (MansionRules.mnCanEnter(mn.run, room)) MansionRules.mnSetRoom(mn.run, room);
+      else if (room !== 'foyer'){
+        // bump back through a locked divider
+        if (room === 'parlor' && P.z < -10) P.z = -9.6;
+        if (room === 'kitchen' && P.z < -30) P.z = -29.6;
+        if (room === 'library' && P.z < -50) P.z = -49.6;
+        if (room === 'attic' && P.z < -70) P.z = -69.6;
+      }
+    }
+    if (!mnIsGuest()){
+      MansionRules.mnNimbleTick(mn.run, dt);
+      if (MansionRules.mnSeenByNimble(mn.run, P.x, P.z)) mnCaught();
+    }
+    if (mn.ghost && mn.run.nimble){
+      mn.ghost.position.x = mn.run.nimble.x;
+      mn.ghost.position.z = mn.run.nimble.z;
+      mn.ghost.rotation.y = mn.run.nimble.dir > 0 ? Math.PI/2 : -Math.PI/2;
+    }
+    mnHud();
+    if (!mnIsGuest()) mnNet();
+  }
+  function mnIsGuest(){ try { return !!(typeof mp !== 'undefined' && mp && mp.on && !mp.host); } catch (e){ return false; } }
+  function mnWire(){ return mn && MansionRules.mnWire(mn.run); }
+  function mnApply(snap){ if (mn && snap){ MansionRules.mnApplyWire(mn.run, snap); mnHud(); } }
+  function mnNet(){
+    if (mnIsGuest() || !mn || typeof mp === 'undefined' || !mp || !mp.on || typeof mpSend !== 'function') return;
+    try { mpSend({t:'mn', snap: mnWire()}); } catch (e){}
+  }
+  function mnFromNet(g, d){ if (d && d.snap) mnApply(d.snap); }
+  function mnFromHost(d){ mnFromNet(null, d); }
+  function mnBind(){
+    const a = document.getElementById('mnAct');
+    if (a && !a.__mn){ a.__mn = true; a.addEventListener('click', ev => { ev.preventDefault(); mnAct(); }); }
+    const l = document.getElementById('mnLessBtn');
+    if (l && !l.__mn){ l.__mn = true; l.addEventListener('click', ev => { ev.preventDefault(); mnToggleLess(); }); }
+  }
+  function mansionStop(){
+    if (!mn) return;
+    (mn.solids || []).forEach(b => { try { b.active = false; if (typeof solids !== 'undefined'){ const i = solids.indexOf(b); if (i>=0) solids.splice(i,1);} } catch(e){} });
+    (mn.trash || []).forEach(m => { try { scene.remove(m); } catch(e){} });
+    mn = null;
+    const box = document.getElementById('mnBox'); if (box) box.style.display = 'none';
+    const b = document.getElementById('mnAct'); if (b) b.classList.remove('show');
+  }
+  if (typeof window !== 'undefined') window.mnDebug = {
+    less(on){ if (!mn) return; if (on != null) mn.sv.lessScary = !on ? false : true; mn.run.lessScary = !!mn.sv.lessScary; mnSave(mn.sv); mnSky(); mnHud(); return mnLess(); },
+    room(id){ if (mn){ MansionRules.mnSetRoom(mn.run, id); const s = MansionRules.mnRoom(id).spawn; P.x=s.x; P.y=s.y; P.z=s.z; } },
+    solve(){ if (!mn) return; const r=mn.run; r.note1=true; r.lever=true; r.parlorOpen=true; r.pictureDone=true; r.kitchenOpen=true; r.key=true; r.note2=true; r.atticOpen=true; mnHud(); },
+    probe(){ return mn && mn.run ? {room:mn.run.room, key:!!mn.run.key, less:mnLess(), escaped:!!mn.run.escaped} : null; }
+  };
+
+  /* ---------- Wagwell Shelter ---------- */
+  let sh = null;
+  function shKeep(m){ if (m && sh && sh.trash) sh.trash.push(m); return m; }
+  function shMat(c,o){ return new THREE.MeshLambertMaterial(Object.assign({color:c}, o||{})); }
+  function shMesh(geo,c,x,y,z){ const m=new THREE.Mesh(geo, shMat(c)); m.position.set(x,y,z); scene.add(m); return shKeep(m); }
+  function shState(){ return ShelterRules.shLoad(typeof load === 'function' ? load(ShelterRules.SH_KEY, null) : null); }
+  function shSave(s){ if (typeof save === 'function') save(ShelterRules.SH_KEY, s); if (sh) sh.sv = s; }
+  function shCoins(){ try { return (typeof coins === 'number') ? coins : +(typeof load==='function' && load('rubloxCoins', 0)) || 0; } catch(e){ return 0; } }
+  function shPay(n){
+    try {
+      if (typeof pay === 'function'){ pay(n); return; }
+      if (typeof coins === 'number'){ coins += n; if (typeof save === 'function') save('rubloxCoins', coins); }
+    } catch (e){}
+  }
+  function shSpend(n){
+    try {
+      if (typeof coins === 'number'){
+        if (coins < n) return false;
+        coins -= n; if (typeof save === 'function') save('rubloxCoins', coins); return true;
+      }
+    } catch (e){}
+    return shCoins() >= n;
+  }
+  function drawShelter(ctx){
+    if (typeof sky === 'function') sky(ctx, '#b8e8ff', '#fff4d6');
+    ctx.fillStyle = '#8fd39a'; ctx.fillRect(0, 150, 320, 50);
+    ctx.fillStyle = '#f4d7a8'; ctx.fillRect(30, 80, 110, 80);
+    ctx.fillStyle = '#c45c1a'; ctx.beginPath(); ctx.moveTo(20,80); ctx.lineTo(85,40); ctx.lineTo(150,80); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.fillRect(180, 110, 90, 50);
+    ctx.font = '24px sans-serif'; ctx.fillText('🐾', 60, 130); ctx.fillText('🐱', 210, 140); ctx.fillText('🐶', 250, 140);
+    if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#3a86ff');
+  }
+  function shPetMesh(kind, color){
+    const cols = ['#f29a3c','#3d4256','#ece6dd'];
+    const c = cols[color|0] || cols[0];
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 8), shMat(c));
+    body.position.y = 0.4; g.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8), shMat(c));
+    head.position.set(0, 0.7, 0.18); g.add(head);
+    return g;
+  }
+  function buildShelter(){
+    const sv = shState();
+    sh = {trash:[], solids:[], sv, strays:[], family: ShelterRules.shVisitFamily(Math.random), petMeshes:[], strayMeshes:[], curs:null};
+    scene.background = new THREE.Color('#b8e8ff');
+    if (scene.fog){ scene.fog.color.set('#cfefff'); scene.fog.near = 24; scene.fog.far = 90; }
+    plat(0, 0, 8, 48, 48, '#8fd39a', 0.25);
+    plat(0, 0, -10, 18, 16, '#f4e4c4', 0.3); // shelter floor
+    // shelter building
+    const wall = '#f4d7a8';
+    function wallb(x,y,z,w,h,d,c){ const b=plat(x,y+h/2,z,w,d,c,h); if(b&&b.mesh) shKeep(b.mesh); if(b) sh.solids.push(b); return b; }
+    wallb(0, 3, -18, 18, 6, 0.4, wall);
+    wallb(-9, 3, -10, 0.4, 6, 16, wall);
+    wallb(9, 3, -10, 0.4, 6, 16, wall);
+    wallb(0, 6.2, -10, 18, 0.35, 16, '#fff4e0');
+    wallb(-5, 3, -2, 8, 6, 0.4, wall);
+    wallb(5, 3, -2, 8, 6, 0.4, wall);
+    shMesh(new THREE.BoxGeometry(2.4, 0.2, 1.6), '#c45c1a', 0, 0.9, -8);
+    sh.desk = {x:0, z:-8};
+    // town street / park / alley
+    plat(14, 0, 16, 10, 14, '#d9e8a8', 0.2);
+    plat(-14, 0, 18, 8, 12, '#c8bea8', 0.2);
+    shLab('🏡 Wagwell Shelter', 0, 3.4, -3);
+    shLab('🌳 Park', 14, 2.2, 16);
+    shLab('🪵 Alley', -14, 2.2, 18);
+    shLab('🛎️ Front desk', 0, 2.2, -8);
+    const amb = new THREE.AmbientLight(0xfff6e8, 0.75); scene.add(amb); shKeep(amb);
+    const sun = new THREE.DirectionalLight(0xfff0c8, 0.6); sun.position.set(8, 14, 10); scene.add(sun); shKeep(sun);
+    Object.assign(P, {x:0, y:0.5, z:6, vx:0, vy:0, vz:0});
+    if (typeof cam !== 'undefined' && cam){ cam.yaw = 0; cam.pitch = 0.36; cam.dist = 13; }
+    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:6}, flag:new THREE.Object3D()};
+    shSpawnStrays();
+    shShowPets();
+    shBind();
+    shHud();
+    banner('🐾 Wagwell Shelter! Rescue strays around town, cheer them up, and match them with visiting families.');
+  }
+  function shLab(text,x,y,z){
+    try { if (typeof t297Lab === 'function'){ const m=t297Lab(text,x,y,z); if(m) return shKeep(m); } } catch(e){}
+    return shMesh(new THREE.BoxGeometry(0.2,0.2,0.2),'#fff',x,y,z);
+  }
+  function shSpawnStrays(){
+    (sh.strayMeshes||[]).forEach(m => { try{ scene.remove(m); }catch(e){} });
+    sh.strayMeshes = [];
+    sh.strays = [];
+    const n = 3;
+    for (let i=0;i<n;i++){
+      const s = ShelterRules.shRollStray(Math.random, Date.now()+i);
+      s.x = (i-1)*8 + (Math.random()*3-1);
+      s.z = 14 + Math.random()*8;
+      sh.strays.push(s);
+      const m = shPetMesh(s.kind, s.color);
+      m.position.set(s.x, 0, s.z); scene.add(m); shKeep(m); sh.strayMeshes.push(m);
+      shLab((ShelterRules.shKind(s.kind).emoji||'') + ' ' + s.name, s.x, 1.6, s.z);
+    }
+  }
+  function shShowPets(){
+    (sh.petMeshes||[]).forEach(m => { try{ scene.remove(m); }catch(e){} });
+    sh.petMeshes = [];
+    (sh.sv.pets||[]).forEach((p,i) => {
+      const m = shPetMesh(p.kind, p.color);
+      const x = -4 + (i%3)*4, z = -12 - Math.floor(i/3)*3;
+      m.position.set(x, 0, z); scene.add(m); shKeep(m); sh.petMeshes.push(m);
+      p._x=x; p._z=z;
+      shLab((ShelterRules.shKind(p.kind).emoji||'')+' '+p.name, x, 1.6, z);
+    });
+  }
+  function shNear(x,z,r){ return Math.hypot(P.x-x, P.z-z) < (r||2.2); }
+  function shPrompt(){
+    if (!sh) return null;
+    const stray = sh.strays.find(s => shNear(s.x, s.z, 2.3));
+    if (stray) return {lab:'Rescue ' + stray.name + ' (E / Ⓧ)', act:() => shRescue(stray)};
+    const pet = (sh.sv.pets||[]).find(p => p._x != null && shNear(p._x, p._z, 2.2));
+    if (pet){
+      return {lab:'Care for ' + pet.name + ' (E feed · tap again)', act:() => shCareMenu(pet)};
+    }
+    if (sh.desk && shNear(sh.desk.x, sh.desk.z, 2.4)){
+      return {lab:'Front desk: match or upgrades (E / Ⓧ)', act:() => shOpenDesk()};
+    }
+    return null;
+  }
+  function shRescue(stray){
+    const r = ShelterRules.shRescue(sh.sv, stray);
+    if (!r.ok){ banner(r.why === 'full' ? 'The kennels are full — upgrade for more beds!' : 'Cannot rescue that pal right now.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    sh.strays = sh.strays.filter(s => s !== stray);
+    shSpawnStrays = shSpawnStrays;
+    // remove that mesh later by rebuild
+    banner('🐾 ' + r.pet.name + ' is safe at the shelter! Cheer them up before a family visit.');
+    shShowPets();
+    shHud(); shNet();
+  }
+  function shCareMenu(pet){
+    sh.curs = pet.id;
+    const order = ['fed','clean','play'];
+    sh.careI = ((sh.careI|0)+1) % 3;
+    const act = order[sh.careI];
+    const r = ShelterRules.shCare(sh.sv, pet.id, act);
+    if (!r.ok){ banner('That pal is already busy.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    const words = {fed:'had a snack', clean:'got a bath', play:'played a game'};
+    banner((r.ready ? '😊 ' : '🐾 ') + pet.name + ' ' + words[act] + '! Happiness ' + ShelterRules.shHappiness(r.pet) + (r.ready ? ' — ready for a home!' : ''));
+    shHud(); shNet();
+  }
+  function shOpenDesk(){
+    const fam = sh.family || ShelterRules.shVisitFamily(Math.random);
+    sh.family = fam;
+    const ready = (sh.sv.pets||[]).filter(p => ShelterRules.shReady(p));
+    const wish = fam.emoji + ' ' + fam.name + ': "' + fam.line + '"';
+    if (ready.length){
+      const pet = ready.find(p => p.kind === fam.wishKind && p.trait === fam.wishTrait) || ready[0];
+      const m = ShelterRules.shMatch(sh.sv, pet.id, fam.id);
+      if (m.ok){
+        sh.sv = m.state; shSave(sh.sv); shPay(m.coins);
+        sh.family = ShelterRules.shVisitFamily(Math.random, []);
+        banner('🏡 ' + m.message + ' +' + m.coins + ' 🪙');
+        shShowPets(); shHud(); shNet(); return;
+      }
+    }
+    banner(wish + (ready.length ? ' None of the ready pals match yet.' : ' Cheer a pal up, then come back!'));
+    shHud();
+  }
+  function shSend(petId){
+    let petsSave = null;
+    try { petsSave = (typeof load === 'function') ? load('rubloxPets', {v:2, pets:[]}) : {v:2, pets:[]}; } catch(e){ petsSave = {v:2, pets:[]}; }
+    const r = ShelterRules.shSendHome(sh.sv, petId, petsSave);
+    if (!r.ok){ banner(r.why === 'full' ? 'Your pet collection is full (6 pals).' : r.why === 'happy' ? 'Cheer them up a bit more first.' : 'Not now.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    try { if (typeof save === 'function') save('rubloxPets', r.pets); } catch(e){}
+    banner('🏠 ' + (r.pet.n || 'Your pal') + ' went to your pet collection!');
+    shShowPets(); shHud(); shNet();
+  }
+  function shBuy(id){
+    const r = ShelterRules.shBuyUpgrade(sh.sv, id, shCoins());
+    if (!r.ok){ banner(r.why === 'coins' ? 'Need more coins for that upgrade.' : r.why === 'have' ? 'You already have that!' : 'Not now.'); return; }
+    if (!shSpend(r.cost)){ banner('Need more coins for that upgrade.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    banner('✨ New shelter upgrade!');
+    shHud(); shNet();
+  }
+  function shHud(){
+    const hint = document.getElementById('shHint');
+    if (hint && sh){
+      const fam = sh.family;
+      hint.textContent = '🐾 ' + (sh.sv.pets||[]).length + '/' + (sh.sv.ups.kennels?6:sh.sv.kennels||2) + ' pals  ·  rescued ' + (sh.sv.rescued||0) + '  ·  homes ' + (sh.sv.matched||0) + (fam ? ('  ·  ' + fam.name + ' want a ' + fam.wishTrait + ' ' + fam.wishKind) : '');
+    }
+    const btn = document.getElementById('shAct');
+    const p = shPrompt();
+    if (btn){ if (p){ btn.textContent = p.lab; btn.classList.add('show'); } else btn.classList.remove('show'); }
+    const home = document.getElementById('shHomeBtn');
+    const ready = sh && (sh.sv.pets||[]).find(p => ShelterRules.shReady(p));
+    if (home){ if (ready){ home.classList.add('show'); home.textContent = '🏠 Send ' + ready.name + ' home'; } else home.classList.remove('show'); }
+  }
+  function shAct(){ const p = shPrompt(); if (p) p.act(); }
+  function shKey(e){
+    if (!sh) return false;
+    if (e.type === 'keyup') return false;
+    const c = e.code || e.key;
+    if (c === 'KeyE' || c === 'KeyF'){ shAct(); return true; }
+    if (c === 'KeyH'){ const ready=(sh.sv.pets||[]).find(p => ShelterRules.shReady(p)); if (ready) shSend(ready.id); return true; }
+    if (c === 'KeyU'){ shBuy('kennels'); return true; }
+    return false;
+  }
+  function shPad(jp){
+    if (!sh || !jp) return false;
+    if (!sh._x && jp[2]){ sh._x = true; shAct(); return true; }
+    if (!jp[2]) sh._x = false;
+    if (!sh._y && jp[3]){ sh._y = true; const ready=(sh.sv.pets||[]).find(p => ShelterRules.shReady(p)); if (ready) shSend(ready.id); return true; }
+    if (!jp[3]) sh._y = false;
+    return false;
+  }
+  function shUpdate(){ if (sh) shHud(); }
+  function shIsGuest(){ try { return !!(typeof mp !== 'undefined' && mp && mp.on && !mp.host); } catch(e){ return false; } }
+  function shWire(){ return sh ? ShelterRules.shWire(sh.sv, {family: sh.family, strays: sh.strays}) : null; }
+  function shApply(snap){
+    if (!sh || !snap) return;
+    if (Array.isArray(snap.pets)) sh.sv.pets = snap.pets;
+    if (snap.family) sh.family = snap.family;
+    shHud();
+  }
+  function shNet(){
+    if (shIsGuest() || !sh || typeof mp === 'undefined' || !mp || !mp.on || typeof mpSend !== 'function') return;
+    try { mpSend({t:'sh', snap: shWire()}); } catch(e){}
+  }
+  function shFromNet(g, d){ if (d && d.snap) shApply(d.snap); }
+  function shFromHost(d){ shFromNet(null, d); }
+  function shBind(){
+    const a=document.getElementById('shAct'); if(a && !a.__sh){ a.__sh=true; a.addEventListener('click', ev => { ev.preventDefault(); shAct(); }); }
+    const h=document.getElementById('shHomeBtn'); if(h && !h.__sh){ h.__sh=true; h.addEventListener('click', ev => { ev.preventDefault(); const ready=(sh.sv.pets||[]).find(p => ShelterRules.shReady(p)); if (ready) shSend(ready.id); }); }
+    const u=document.getElementById('shUpBtn'); if(u && !u.__sh){ u.__sh=true; u.addEventListener('click', ev => { ev.preventDefault(); shBuy('kennels'); }); }
+  }
+  function shelterStop(){
+    if (!sh) return;
+    (sh.solids||[]).forEach(b => { try{ b.active=false; if (typeof solids!=='undefined'){ const i=solids.indexOf(b); if(i>=0) solids.splice(i,1);} }catch(e){} });
+    (sh.trash||[]).forEach(m => { try{ scene.remove(m);}catch(e){} });
+    sh=null;
+    const box=document.getElementById('shBox'); if(box) box.style.display='none';
+    ['shAct','shHomeBtn','shUpBtn'].forEach(id => { const b=document.getElementById(id); if(b) b.classList.remove('show'); });
+  }
+  if (typeof window !== 'undefined') window.shDebug = {
+    spawn(){ if (sh) shSpawnStrays(); },
+    fill(){ if (!sh) return; (sh.sv.pets||[]).forEach(p => { p.fed=p.clean=p.play=90; p.happy=90; }); shSave(sh.sv); shHud(); },
+    probe(){ return sh ? {pets:(sh.sv.pets||[]).length, family: sh.family && sh.family.id, strays:(sh.strays||[]).length} : null; }
+  };
+
   function stop(){
     if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}
     if (typeof dhCloseReset === 'function') dhCloseReset();
@@ -40430,7 +42302,7 @@ function start(m = 'obby', d = null){
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame'); setHomeInert(false);
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (evg) snowfestStop(); if (typeof t297Stop === 'function') t297Stop(); if (typeof t302Stop === 'function') t302Stop(); if (typeof elevStop === 'function') elevStop(); if (py) partyStop(); if (lh) lanternStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (evg) snowfestStop(); if (typeof t297Stop === 'function') t297Stop(); if (typeof t302Stop === 'function') t302Stop(); if (typeof elevStop === 'function') elevStop(); if (typeof mansionStop === 'function') mansionStop(); if (typeof shelterStop === 'function') shelterStop(); if (py) partyStop(); if (lh) lanternStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
     try { if (typeof lbOnLeave === 'function') lbOnLeave('host'); } catch (e){}
@@ -40978,8 +42850,104 @@ function start(m = 'obby', d = null){
     }
   } catch (e){}
 
+    function avUnmountPreview3D(){
+    try {
+      if (window.__avPrev3 && window.__avPrev3.raf) cancelAnimationFrame(window.__avPrev3.raf);
+      if (window.__avPrev3 && typeof window.__avPrev3.unbind === 'function') window.__avPrev3.unbind();
+      if (window.__avPrev3 && window.__avPrev3.renderer){ window.__avPrev3.renderer.dispose(); }
+    } catch (e){}
+    window.__avPrev3 = null;
+  }
+  function avMountPreview3D(host, av){
+    avUnmountPreview3D();
+    if (!host || typeof THREE === 'undefined') return false;
+    try {
+      host.style.display = 'block';
+      const cssW = Math.max(160, host.clientWidth || parseFloat(getComputedStyle(host).width) || 280);
+      const cssH = Math.max(180, host.clientHeight || parseFloat(getComputedStyle(host).height) || 300);
+      const dpr = Math.min(2, (typeof window !== 'undefined' && window.devicePixelRatio) || 1);
+      const w = Math.round(cssW * dpr), hh = Math.round(cssH * dpr);
+      host.width = w; host.height = hh;
+      const renderer = new THREE.WebGLRenderer({canvas: host, antialias: true, alpha: true});
+      renderer.setPixelRatio(1);
+      renderer.setSize(w, hh, false);
+      renderer.setClearColor(0x000000, 0);
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(32, cssW / cssH, 0.1, 40);
+      const aim = new THREE.Vector3(0, 1.25, 0);
+      let yaw = 0.45, pitch = 0.12, dist = 6.1, dragging = false, lastX = 0, lastY = 0, lastUser = 0;
+      const placeCam = () => {
+        const cp = Math.cos(pitch), sp = Math.sin(pitch);
+        camera.position.set(Math.sin(yaw) * dist * cp, aim.y + dist * sp, Math.cos(yaw) * dist * cp);
+        camera.lookAt(aim);
+      };
+      placeCam();
+      scene.add(new THREE.AmbientLight(0xffffff, 1.05));
+      const sun = new THREE.DirectionalLight(0xfff4e0, 0.9); sun.position.set(3, 6, 4); scene.add(sun);
+      const fill = new THREE.DirectionalLight(0xcfe8ff, 0.4); fill.position.set(-4, 2, -2); scene.add(fill);
+      const model = buildPlayer(Object.assign({}, typeof DEF !== 'undefined' ? DEF : {}, av || {}));
+      const root = model && (model.g || model);
+      if (!root) return false;
+      scene.add(root);
+      const floor = new THREE.Mesh(new THREE.CircleGeometry(1.15, 32), new THREE.MeshLambertMaterial({color: 0xffffff, transparent: true, opacity: 0.38}));
+      floor.rotation.x = -Math.PI / 2;
+      scene.add(floor);
+      const ptrDown = ev => {
+        dragging = true; lastX = ev.clientX; lastY = ev.clientY; lastUser = performance.now();
+        try { host.setPointerCapture(ev.pointerId); } catch (err){}
+        ev.preventDefault();
+      };
+      const ptrMove = ev => {
+        if (!dragging) return;
+        yaw += (ev.clientX - lastX) * 0.01;
+        pitch = Math.max(-0.35, Math.min(0.55, pitch + (ev.clientY - lastY) * 0.008));
+        lastX = ev.clientX; lastY = ev.clientY; lastUser = performance.now();
+        ev.preventDefault();
+      };
+      const ptrUp = ev => {
+        dragging = false;
+        try { host.releasePointerCapture(ev.pointerId); } catch (err){}
+      };
+      host.style.touchAction = 'none';
+      host.addEventListener('pointerdown', ptrDown);
+      host.addEventListener('pointermove', ptrMove);
+      host.addEventListener('pointerup', ptrUp);
+      host.addEventListener('pointercancel', ptrUp);
+      const unbind = () => {
+        host.removeEventListener('pointerdown', ptrDown);
+        host.removeEventListener('pointermove', ptrMove);
+        host.removeEventListener('pointerup', ptrUp);
+        host.removeEventListener('pointercancel', ptrUp);
+      };
+      const tick = () => {
+        const st = window.__avPrev3;
+        if (!st || !st.live) return;
+        if (!dragging && performance.now() - lastUser > 450) yaw += 0.008;
+        placeCam();
+        renderer.render(scene, camera);
+        st.raf = requestAnimationFrame(tick);
+      };
+      window.__avPrev3 = {
+        renderer, scene, camera, root, live: true, raf: 0, unbind,
+        stick(rx, ry){
+          const dx = +rx || 0, dy = +ry || 0;
+          if (Math.abs(dx) < 0.12 && Math.abs(dy) < 0.12) return;
+          yaw += dx * 0.06;
+          pitch = Math.max(-0.35, Math.min(0.55, pitch - dy * 0.04));
+          lastUser = performance.now();
+        }
+      };
+      tick();
+      return true;
+    } catch (e){ avUnmountPreview3D(); return false; }
+  }
+  try { if (typeof window !== 'undefined'){ window.avMountPreview3D = avMountPreview3D; window.avUnmountPreview3D = avUnmountPreview3D; } } catch (e){}
+
+
+
   return {start, stop, play, levels: openLevels, pad: padInput, get running(){ return running; }, get loopId(){ return loopId; }, get raf(){ return raf; }, get mp(){ return mp; }, get P(){ return P; }, get camera(){ return camera; }, get mode(){ return mode; }, mpSend, mpBroadcast, myLook, mpLook, mpRoster, armGameLoop, applyQuality: applyObbyQuality};
 })();
+
 try { if (typeof window !== 'undefined') window.Obby = Obby; } catch (e){}
 </script>
 <script id="gamepad">
@@ -41183,7 +43151,23 @@ try { if (typeof window !== 'undefined') window.Obby = Obby; } catch (e){}
       else if (!el.matches('input[type=range]')) el.click();
       return;
     }
-    if (s.jp[1]) return back(c);
+    if (s.jp[1]){
+      if (typeof avPrevIsOpen === 'function' && avPrevIsOpen()){ if (typeof avPrevCancel === 'function') avPrevCancel(); return; }
+      return back(c);
+    }
+    if (typeof avPrevIsOpen === 'function' && avPrevIsOpen()){
+      if (typeof avPrevStick === 'function' && (Math.abs(s.rx) > 0.12 || Math.abs(s.ry) > 0.12)) avPrevStick(s.rx, s.ry);
+      if (s.jp[2] || s.jp[4] || s.jp[5]){
+        if (typeof avPrevToggleMode === 'function') avPrevToggleMode();
+        return;
+      }
+    }
+    if (s.jp[3] && c.kind !== 'game'){
+      if (typeof avPrevIsOpen === 'function' && avPrevIsOpen()) return;
+      const root = focus && focus.closest && (focus.closest('.item') || focus.closest('.sitem'));
+      const btn = root && root.querySelector('[data-act="preview"]');
+      if (btn){ btn.click(); return; }
+    }
     if (s.jp[2] && c.kind === 'emotes') return back(c);
     if (s.jp[2] && c.root && c.root.id === 'fsWard') return back(c);   // Ⓧ toggles the Fashion Show wardrobe
     if (s.jp[9]){

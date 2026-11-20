@@ -37,4 +37,10 @@
   #elevBadgeBtn{bottom:312px}
   #elevMeter{bottom:164px}
 }
-</style>
+#elevVoteList{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:12px}
+.elevVoteCard{display:flex;flex-direction:column;gap:4px;background:#fff8e0;border:3px solid #1d2340;border-radius:16px;padding:12px 10px;min-height:110px;font:inherit;cursor:pointer;font-weight:800;text-align:center}
+.elevVoteCard.sel{background:#d8f8e0;box-shadow:0 0 0 4px #2ec27e}
+.elevVoteCard .e{font-size:32px;line-height:1}
+.elevVoteCard small{color:#5a6478;font-weight:700}
+#elevVoteHint{font-weight:700;color:#5a6478}
+

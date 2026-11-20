@@ -1,0 +1,11 @@
+<style id="mnCss">
+#mnBox{position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center;display:none}
+#mnBox #mnHint{display:inline-block;background:rgba(29,35,64,.82);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:14px}
+.mnmode #mnBox{display:block}
+#mnAct{position:absolute;right:16px;bottom:96px;z-index:8;padding:12px 16px;font-size:18px;border:3px solid #1d2340;border-radius:16px;background:#ffd23f;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+#mnAct.show{display:block}
+#mnLessBtn{position:absolute;z-index:8;left:16px;bottom:160px;padding:10px 14px;font-size:16px;border:3px solid #1d2340;border-radius:16px;background:#efe7ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+#mnLessBtn.on{background:#d8f8e0}
+.mnmode #mnLessBtn{display:block}
+@media (max-width:700px){ #mnAct{bottom:120px} #mnLessBtn{bottom:184px} }
+</style>

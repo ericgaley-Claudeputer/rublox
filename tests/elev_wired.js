@@ -17,9 +17,9 @@ const BANNED = [
 ];
 
 describe('Wobblevator wiring', () => {
-  test('BUILD is 2026.11.20-2 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.20-2'"));
-    assert.equal(version.build, '2026.11.20-2');
+  test('BUILD is 2026.11.20-5 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.20-5'"));
+    assert.equal(version.build, '2026.11.20-5');
   });
 
   test('the mode is a playable menu game with an original name and save key', () => {
@@ -29,7 +29,7 @@ describe('Wobblevator wiring', () => {
     assert.ok(html.includes('function drawElevator('));
     assert.ok(html.includes('function buildElevator('));
     assert.ok(html.includes("if (mode === 'elevator') elevEnter();"));
-    assert.match(html, /'camp', 'elevator'\]\.includes\(m\)/);
+    assert.match(html, /'camp', 'elevator'(?:, '[^']+')*\]\.includes\(m\)/);
     assert.match(html, /classList\.toggle\('elevmode', mode === 'elevator'\)/);
   });
 
@@ -57,7 +57,13 @@ describe('Wobblevator wiring', () => {
     assert.ok(html.includes('id="elevShopBtn"'));
     assert.ok(html.includes('id="elevLessBtn"'));
     const runtime = html.slice(html.indexOf('function elevKey'), html.indexOf('function elevKey') + 1200);
-    assert.equal(/Digit[0-9]/.test(runtime), false, 'elevator keys must not bind number keys used by emotes');
+    assert.equal(/Digit[0-9]/.test(runtime), false, 'elevKey itself must not bind number keys used by emotes');
+    const voteKey = html.slice(html.indexOf('function elevVoteKey'), html.indexOf('function elevVoteKey') + 800);
+    assert.match(voteKey, /elv\.run\.phase !== 'vote'/);
+    assert.match(voteKey, /Digit1/);
+    assert.match(voteKey, /Digit2/);
+    assert.match(voteKey, /Digit3/);
+    assert.ok(html.includes('id="elevVote"'));
     const esc = html.indexOf("if (typeof t297OverlayOpen === 'function' && t297OverlayOpen()){ t297OverlayClose();");
     const pause = html.indexOf("if (e.code === 'Escape' || e.code === 'KeyP'){ if (!won && !over && !choosing) setPause");
     assert.ok(esc > 0 && pause > esc, 'Escape must close popups before it pauses');

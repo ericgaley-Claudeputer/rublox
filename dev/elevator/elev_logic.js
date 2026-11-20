@@ -135,6 +135,8 @@
   const ELEV_FLOOR_TOP = 0.2;
   const ELEV_BODY_R = 0.45;
   const ELEV_BOARD = 5;
+  const ELEV_VOTE_T = 8;
+  const ELEV_VOTE_EVERY = 5;
   const ELEV_BUILDING = {
     minX: -18, maxX: 18,
     minZ: -8, maxZ: 26,
@@ -875,9 +877,95 @@
     return run;
   }
 
+  function elevVoteShouldStart(run, isMp){
+    if (!run || !isMp) return false;
+    if (run.queued && elevFloor(run.queued)) return true;
+    const n = run.survived | 0;
+    return n > 0 && n % ELEV_VOTE_EVERY === 0;
+  }
+
+  function elevVoteChoices(run, rand, count){
+    const r = typeof rand === 'function' ? rand : Math.random;
+    const n = Math.max(2, Math.min(3, count || 3));
+    const out = [];
+    const seen = {};
+    const add = (f, ticket) => {
+      if (!f || seen[f.id] || out.length >= n) return;
+      seen[f.id] = true;
+      out.push({id: f.id, name: f.name, emoji: f.emoji, kind: f.kind || 'odd', ticket: !!ticket});
+    };
+    if (run && run.queued && elevFloor(run.queued)) add(elevFloor(run.queued), true);
+    const pool = (elevPool(run, {}) || []).filter(f => f && f.id !== (run && run.last));
+    const bag = pool.slice();
+    for (let i = bag.length - 1; i > 0; i--){
+      const j = Math.floor(r() * (i + 1));
+      const tmp = bag[i]; bag[i] = bag[j]; bag[j] = tmp;
+    }
+    bag.forEach(f => add(f, false));
+    if (out.length < 2){
+      ELEV_FLOORS.forEach(f => { if (!f.secret) add(f, false); });
+    }
+    return out.slice(0, n);
+  }
+
+  function elevBeginVote(run, rand){
+    if (!run) return run;
+    const choices = elevVoteChoices(run, rand, 3);
+    run.phase = 'vote';
+    run.t = ELEV_VOTE_T;
+    run.vote = {choices: choices, votes: {}, holdQueued: run.queued && elevFloor(run.queued) ? run.queued : null};
+    run.quote = '🗳️ Pick the next floor! Tap a card, press 1-3, or use the D-pad and A.';
+    return run;
+  }
+
+  function elevCastVote(run, uid, index){
+    if (!run || run.phase !== 'vote' || !run.vote) return {ok:false, why:'closed'};
+    const choices = run.vote.choices || [];
+    const i = index | 0;
+    if (i < 0 || i >= choices.length) return {ok:false, why:'range'};
+    const who = String(uid == null ? 'H' : uid).slice(0, 16);
+    run.vote.votes = run.vote.votes || {};
+    run.vote.votes[who] = i;
+    return {ok:true, who: who, index: i, pick: choices[i]};
+  }
+
+  function elevTallyVote(run, rand){
+    const r = typeof rand === 'function' ? rand : Math.random;
+    const choices = (run && run.vote && run.vote.choices) || [];
+    if (!choices.length) return null;
+    const votes = (run.vote && run.vote.votes) || {};
+    const counts = choices.map(() => 0);
+    Object.keys(votes).forEach(k => {
+      const i = votes[k] | 0;
+      if (i >= 0 && i < counts.length) counts[i] += 1;
+    });
+    let best = 0;
+    counts.forEach(c => { if (c > best) best = c; });
+    const tied = [];
+    counts.forEach((c, i) => { if (c === best) tied.push(i); });
+    const win = tied.length ? tied[Math.floor(r() * tied.length)] : 0;
+    return Object.assign({}, choices[win], {index: win, counts: counts.slice(), voters: Object.keys(votes).length});
+  }
+
+  function elevFinishVote(run, rand){
+    if (!run) return run;
+    const win = elevTallyVote(run, rand) || (run.vote && run.vote.choices && run.vote.choices[0]);
+    const id = win && win.id;
+    run.vote = run.vote || {};
+    run.vote.winner = id || null;
+    return elevBeginRide(run, rand, id ? {floorId: id} : {});
+  }
+
   function elevBeginRide(run, rand, opts){
     if (!run) return run;
-    const f = elevPickFloor(run, rand, opts);
+    opts = opts || {};
+    let f = null;
+    if (opts.floorId && elevFloor(opts.floorId)){
+      f = elevFloor(opts.floorId);
+      if (run.queued === opts.floorId) run.queued = null;
+    } else {
+      f = elevPickFloor(run, rand, opts);
+    }
     const pal = elevPickPal(run, rand);
     if (pal) run.palId = pal.id;
     run.phase = 'ride';
@@ -1139,15 +1227,20 @@
     return {ok:true, why:'ok'};
   }
 
-  function elevTick(run, dt){
+  function elevTick(run, dt, opt){
     if (!run) return run;
+    opt = opt || {};
     let left = Math.max(0, +dt || 0);
     while (left > 0){
       const step = Math.min(0.2, left);
       left -= step;
       run.t = Math.max(0, (run.t || 0) - step);
       if (run.phase === 'board' && run.t <= 0){
-        elevBeginRide(run);
+        const mpOn = (opt && opt.mp != null) ? !!opt.mp : !!run.mp;
+        if (elevVoteShouldStart(run, mpOn)) elevBeginVote(run, opt && opt.rand);
+        else elevBeginRide(run, opt && opt.rand);
+      } else if (run.phase === 'vote' && run.t <= 0){
+        elevFinishVote(run, opt && opt.rand);
       } else if (run.phase === 'ride' && run.t <= 0){
         elevBeginFloor(run, run.floor);
       } else if (run.phase === 'floor' && run.t <= 0 && !run.cleared && !run.failed){
@@ -1185,7 +1278,8 @@
       pals: elevCleanPals(run.pals),
       talk: elevCleanTalk(run.talk),
       talkSeq: run.talkSeq | 0,
-      queued: run.queued && elevFloor(run.queued) ? run.queued : null
+      queued: run.queued && elevFloor(run.queued) ? run.queued : null,
+      vote: run.vote ? {choices: (run.vote.choices || []).map(c => ({id:c.id, name:c.name, emoji:c.emoji, ticket:!!c.ticket})), votes: Object.assign({}, run.vote.votes || {}), winner: run.vote.winner || null} : null
     };
   }
 
@@ -1208,6 +1302,13 @@
     if (snap.talk) run.talk = elevCleanTalk(snap.talk);
     if (snap.talkSeq != null) run.talkSeq = snap.talkSeq | 0;
     if (snap.queued !== undefined) run.queued = snap.queued && elevFloor(snap.queued) ? snap.queued : null;
+    if (snap.vote && typeof snap.vote === 'object'){
+      run.vote = {
+        choices: (snap.vote.choices || []).map(c => c && c.id ? {id:c.id, name:c.name, emoji:c.emoji, ticket:!!c.ticket} : null).filter(Boolean),
+        votes: Object.assign({}, snap.vote.votes || {}),
+        winner: snap.vote.winner || null
+      };
+    } else if (snap.vote === null) run.vote = null;
     return run;
   }
 
@@ -1421,7 +1522,7 @@
     elevCabInsideBuilding, elevAabbHit, elevClipOrbit,
     elevFloor, elevPal, elevClearMode, elevRoomOf, elevSpawnOf, elevBoxHit, elevOnSolid, elevSimStep, elevTimerWins, elevFresh, elevLoad, elevBuddyAllowed, elevNoFight, elevNoGore, elevEveryoneOkay,
     elevShopItem, elevShopList, elevInheritLessScary, elevSetLessScary, elevStreakBonus, elevBeginBoard, elevCloseDoors, elevDueEvent, elevPickRideEvent, elevTalkLine, elevIntercom, elevPalSpots, elevPalMayRide, elevSeatPals, elevCleanPals, elevPalIds, elevPalsAboard, elevPalsHop, elevHostTalk, elevCleanTalk, elevBuyItem, elevWearHat, elevApplyPack, elevWire, elevApplyWire,
-    elevSnowOn, elevHostLine, elevPickPal, elevStartRun, elevDueShop, elevDueSpecial, elevPool, elevRebuildBag, elevPickSpecial, elevPickFloor, elevBeginFloor, elevBeginRide,
+    elevSnowOn, elevHostLine, elevPickPal, elevStartRun, elevDueShop, elevDueSpecial, elevPool, elevRebuildBag, elevPickSpecial, elevPickFloor, elevBeginFloor, elevBeginRide, elevVoteShouldStart, elevVoteChoices, elevBeginVote, elevCastVote, elevTallyVote, elevFinishVote, ELEV_VOTE_T, ELEV_VOTE_EVERY,
     elevReward, elevClearFloor, elevFailFloor, elevBuySnack, elevBuyFloorItem, elevRing, elevPaint, elevPickItem, elevTurnIn,
     elevTouchHazard, elevReachDoor, elevStayLit, elevQuiz, elevStack, elevBeat, elevPadStand, elevBossReady, elevTagBoss,
     elevTick, elevFloorSpec, elevIndexRows, elevBadges, elevBadgeCatalog, elevMilestonePay, elevMeetPals, elevGiftPal, elevFindLobbySecret, elevQueueNext, elevDayKey, elevEnsureDaily, elevDailyProgress, elevDailyClaim
