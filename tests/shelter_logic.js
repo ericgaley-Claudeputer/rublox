@@ -81,3 +81,60 @@ describe('Wagwell Shelter', () => {
     assert.equal(blocked.why, 'full');
   });
 });
+
+  test('grooming uses optional fields, boosts happiness, and helps a pet get adopted sooner', () => {
+    let state = S.shFresh();
+    const stray = S.shRollStray(() => 0, 1);
+    state = S.shRescue(state, stray).state;
+    const id = state.pets[0].id;
+    const before = S.shHappiness(state.pets[0]);
+    assert.equal(state.pets[0].style, 'natural');
+    assert.equal(state.pets[0].bow, 'none');
+    ['wash','brush'].forEach(act => { state = S.shGroom(state, id, act).state; });
+    state = S.shGroom(state, id, 'trim', 'fluffy').state;
+    state = S.shGroom(state, id, 'bow', 'gold').state;
+    state = S.shGroom(state, id, 'dye', 'lilac').state;
+    const pet = state.pets[0];
+    assert.ok(S.shHappiness(pet) > before);
+    assert.equal(pet.style, 'fluffy');
+    assert.equal(pet.bow, 'gold');
+    assert.ok(pet.groomed >= 70);
+    // old saves without groom fields still load
+    const old = S.shLoad({rescued:1, pets:[{id:'p9', kind:'cat', name:'Miso', trait:'calm', fed:40, clean:40, play:40}]});
+    assert.equal(old.pets[0].name, 'Miso');
+    assert.equal(old.pets[0].style, 'natural');
+    // a groomed pal is ready sooner than an ungroomed pal with the same care
+    const mid = S.shCleanPet({id:'a', kind:'dog', name:'Scout', trait:'playful', fed:60, clean:60, play:60, groomed:80, style:'fluffy', bow:'red'});
+    const plain = S.shCleanPet({id:'b', kind:'dog', name:'Biscuit', trait:'playful', fed:60, clean:60, play:60});
+    assert.equal(S.shReady(plain), false);
+    assert.equal(S.shReady(mid), true);
+  });
+
+  test('contest judges score player pets, refuse NPC rivals, and award ribbons', () => {
+    let state = S.shFresh();
+    const stray = S.shRollStray(() => 0, 1);
+    stray.kind = 'dog'; stray.trait = 'playful';
+    state = S.shRescue(state, stray).state;
+    const pet = state.pets[0];
+    state = S.shGroom(state, pet.id, 'wash').state;
+    state = S.shGroom(state, pet.id, 'trim', 'fluffy').state;
+    state = S.shGroom(state, pet.id, 'bow', 'gold').state;
+    let show = S.shNewShow('fluff', 10, 'solo');
+    assert.equal(S.shEnterShow(show, pet, {id:'npc-judge', npc:true, name:'Fake'}).ok, false);
+    assert.equal(S.shEnterShow(show, pet, {id:'p1', name:'Tessa'}).ok, true);
+    const judged = S.shJudgeShow(state, show);
+    assert.equal(judged.ok, true);
+    assert.ok(judged.coins > 0);
+    assert.ok(judged.show.entries[0].score > 0);
+    assert.ok(judged.show.entries[0].ribbon);
+    assert.equal(judged.state.shows, 1);
+    const versus = S.shNewShow('groomed', 11, 'versus');
+    const p2 = S.shCleanPet({id:'p-other', kind:'cat', name:'Pip', trait:'calm', fed:90, clean:90, play:90, groomed:40, style:'neat'});
+    S.shEnterShow(versus, pet, {id:'p1', name:'Tessa'});
+    S.shEnterShow(versus, p2, {id:'p2', name:'Rio'});
+    const vs = S.shJudgeShow(state, versus);
+    assert.equal(vs.ok, true);
+    assert.equal(vs.show.entries.length, 2);
+    assert.ok(vs.show.entries.some(e => e.winner));
+    assert.equal(S.shRealPlayersOnly([{id:'p1'}, {id:'npc-1', npc:true}, {id:'npc-host'}]).every(p => !p.npc), true);
+  });

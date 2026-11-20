@@ -39,6 +39,7 @@
     {id:'elevator', name:'Wobblevator', emoji:'🛗', keys:['rubloxElevator']},
     {id:'mansion', name:'Mallowmist Manor', emoji:'🕯️', keys:['rubloxMansion']},
     {id:'shelter', name:'Wagwell Shelter', emoji:'🐾', keys:['rubloxShelter']},
+    {id:'winter', name:'Pinebell Village', emoji:'🎄', keys:['rubloxWinter']},
     {id:'garden', name:'Sunny Patch Garden', emoji:'🌱', keys:['rubloxGarden']},
     {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', keys:['rubloxMeadow']},
     {id:'rides', name:'Rideland Workshop', emoji:'🎢', keys:['rubloxRides']},
