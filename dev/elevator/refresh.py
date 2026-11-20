@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refresh already-injected Wobblevator sources and bump BUILD to 2026.11.20-1."""
+"""Refresh already-injected Wobblevator sources and bump BUILD to 2026.11.20-2."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -7,8 +7,8 @@ import json
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-BUILD = "2026.11.20-1"
-OLD_BUILD = "2026.11.19-11"
+BUILD = "2026.11.20-2"
+OLD_BUILD = "2026.11.20-1"
 ELEV = Path(__file__).resolve().parent
 
 
@@ -152,6 +152,35 @@ def patch_html(html: str) -> str:
             "MP_MAX = 10,",
             "MP_MAX for a 10-friend cab",
         )
+
+    if "mode === 'hunt' || mode === 'elevator'){ // pull the camera" not in html:
+        html = replace_once(
+            html,
+            "mode === 'petshow' || mode === 'hunt'){ // pull the camera in front of walls so buildings don't block the view",
+            "mode === 'petshow' || mode === 'hunt' || mode === 'elevator'){ // pull the camera in front of walls so buildings don't block the view",
+            "elevator orbit camera clip",
+        )
+    if "if (b && b.camOnly) continue;" not in html:
+        html = replace_once(
+            html,
+            "if (b && b.floorOnly && axis !== 'y') continue; // plot pad / curbs / grass are floors, not invisible walls",
+            "if (b && b.camOnly) continue;\n      if (b && b.floorOnly && axis !== 'y') continue; // plot pad / curbs / grass are floors, not invisible walls",
+            "camOnly solids skip player resolve",
+        )
+    if "b.floorOnly || b.camOnly || !b.mesh" not in html:
+        html = replace_once(
+            html,
+            "if (!b || !b.active || b.floorOnly || !b.mesh) continue;\n        if (typeof overlaps === 'function' && !overlaps(b, .001, P)) continue;",
+            "if (!b || !b.active || b.floorOnly || b.camOnly || !b.mesh) continue;\n        if (typeof overlaps === 'function' && !overlaps(b, .001, P)) continue;",
+            "camOnly skip in recoverFpPlayer",
+        )
+    if "if (!b || !b.active || b.camOnly || !b.mesh) continue;" not in html:
+        html = replace_once(
+            html,
+            "function recoverFpPlayer(){\n    if (!P || typeof solids === 'undefined' || !solids) return false;\n    let moved = false;\n    const tallestUnder = () => {\n      let top = -1e9;\n      for (let k = 0; k < solids.length; k++){\n        const b = solids[k];\n        if (!b || !b.active || !b.mesh) continue;",
+            "function recoverFpPlayer(){\n    if (!P || typeof solids === 'undefined' || !solids) return false;\n    let moved = false;\n    const tallestUnder = () => {\n      let top = -1e9;\n      for (let k = 0; k < solids.length; k++){\n        const b = solids[k];\n        if (!b || !b.active || b.camOnly || !b.mesh) continue;",
+            "camOnly skip in tallestUnder",
+        )
     return html
 
 
@@ -202,6 +231,10 @@ def verify(html: str) -> None:
         "badge overlay": 'id="elevBadges"',
         "daily overlay": 'id="elevDaily"',
         "queue next": "function elevQueueNext(",
+        "building shell": "function elevBuildShell(",
+        "elev wall": "function elevWall(",
+        "orbit clip": "mode === 'hunt' || mode === 'elevator'){ // pull the camera",
+        "camOnly resolve": "if (b && b.camOnly) continue;",
     }
     missing = [k for k, v in checks.items() if v not in html]
     if missing:
