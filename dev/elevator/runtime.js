@@ -289,6 +289,11 @@
       if (elv.run.watching) banner('🛎️ Hang tight in the cab — we will catch the next stop!');
       if (elv.run.event && elv.run.event.id === 'sneeze') elevTone([880, 660, 520], 0.09, 'triangle', 0.05);
       if (elv.run.event && elv.run.event.id === 'stuck') elevTone([180, 140], 0.14, 'sine', 0.05);
+      if (elv.run.event && (elv.run.event.id === 'coincrain' || elv.run.event.id === 'coinfall') && !elevIsGuest()){
+        elevPay(elv.run.event.id === 'coincrain' ? 2 : 1);
+      }
+      if (elv.run.event && elv.run.event.id === 'confetti') elevTone([920, 1100, 1320], 0.06, 'triangle', 0.04);
+      if (elv.run.event && elv.run.event.id === 'knock') elevTone([220, 180, 220, 180], 0.07, 'square', 0.04);
       elevShowPals();
     }
     if (now === 'floor' && before !== 'floor'){
@@ -532,12 +537,31 @@
     elevDoorPad(0, -38);
   }
 
+  function elevBuildChill(f){
+    elevBuildRoom(f.floor || '#f4fbff', 16, 16, f.wall);
+    elevMesh(new THREE.BoxGeometry(3.6, 0.4, 1.4), f.accent || '#7ec8ff', -3, 0.45, -28, true);
+    elevMesh(new THREE.BoxGeometry(3.6, 0.4, 1.4), f.accent || '#7ec8ff', 3, 0.45, -32, true);
+    elevLab(f.emoji + ' Hang out until the ding!', 0, 2.2, -30, true);
+  }
+
   function elevBuildShop(f){
     elevBuildRoom(f.floor || '#ffe8cc', 14, 14, f.wall);
     elevMesh(new THREE.BoxGeometry(4.2, 1.4, 1.4), f.accent || '#c45c1a', 0, 0.8, -32, true);
     elevMesh(new THREE.CylinderGeometry(0.3, 0.3, 0.2, 10), f.accent || '#c45c1a', 0, 1.6, -32, true);
     elv.turnIn = {x:0, z:-32, shop:true};
-    elevLab(f.id === 'cocoanook' ? '☕ Lucky cocoa — 8 🪙' : '🍪 Lucky cookie — 8 🪙', 0, 2.4, -32, true);
+    elv.floorShop = [];
+    const specials = (f.shopItems || []).map(id => ElevRules.elevShopItem(id)).filter(Boolean);
+    if (specials.length){
+      specials.forEach((it, i) => {
+        const x = -3 + i * 6;
+        elevMesh(new THREE.BoxGeometry(2.4, 1.1, 1.2), f.accent || '#ff6fb5', x, 0.7, -28, true);
+        elevLab((it.emoji || '') + ' ' + it.name + ' — ' + it.cost + ' 🪙', x, 2.1, -28, true);
+        elv.floorShop.push({id: it.id, x, z:-28, item:it});
+      });
+      elevLab('🛒 Floor-only bits!', 0, 2.4, -32, true);
+    } else {
+      elevLab(f.id === 'cocoanook' ? '☕ Lucky cocoa — 8 🪙' : '🍪 Lucky cookie — 8 🪙', 0, 2.4, -32, true);
+    }
     elevDoorPad(0, -38);
   }
 
@@ -599,6 +623,7 @@
     if (f.tiles) elevBuildTiles(f);
     else if (clear === 'door') elevBuildObby(f);
     else if (clear === 'find') elevBuildFind(f);
+    else if (clear === 'timer' && (f.kind === 'chill' || !f.haz)) elevBuildChill(f);
     else if (clear === 'timer') elevBuildHazards(f);
     else if (clear === 'seq') elevBuildSeq(f);
     else if (clear === 'paint') elevBuildPaint(f);
@@ -657,6 +682,15 @@
     elevMesh(new THREE.CylinderGeometry(0.4, 0.4, 0.2, 10), '#ffd23f', 10, 2.5, 16, false, {emissive:'#7a5a00'});
     elevLab('🛒 Lobby Shop', 10, 3.1, 16);
     elv.shopAt = {x:10, z:16};
+    // daily-challenge kiosk
+    plat(-10, 0.9, 16, 3.0, 2.0, '#8b5cf6', 0.9);
+    elevMesh(new THREE.BoxGeometry(3.0, 1.5, 2.0), '#c4b5fd', -10, 1.6, 16, false);
+    elevLab('📅 Today', -10, 3.1, 16);
+    elv.dailyAt = {x:-10, z:16};
+    // hidden painting just beside the streak board
+    elevMesh(new THREE.BoxGeometry(1.6, 1.8, 0.12), '#3a2a18', -6.2, 2.4, 23.9, false);
+    elevMesh(new THREE.BoxGeometry(1.2, 1.3, 0.08), '#c9b6ff', -6.2, 2.4, 23.78, false);
+    elv.secretAt = {x:-6.2, z:23.6};
     elevLab('🛗 Wobblevator Lobby', 0, 3.4, 22);
     // big shared cab
     plat(0, 0.05, 0, CW, CD, '#c9a24a', 0.08);
@@ -759,14 +793,123 @@
     const list = document.getElementById('elevIndexList');
     const sub = document.getElementById('elevIndexSub');
     if (!list) return;
-    const rows = ElevRules.elevIndexRows(elv ? elv.sv : elevState(), {snow: elevSnowNow()});
+    const state = elv ? elv.sv : elevState();
+    const rows = ElevRules.elevIndexRows(state, {snow: elevSnowNow()});
     const seen = rows.filter(r => r.seen).length;
+    const tickets = (state && state.tickets) || 0;
     if (sub) sub.textContent = 'Floors seen: ' + seen + ' / ' + rows.length;
+    const tsub = document.getElementById('elevTicketSub');
+    if (tsub) tsub.textContent = 'Ride tickets: ' + tickets + ' 🎫 — spend one on a seen floor to ride there next.';
     list.innerHTML = rows.map(r => {
       const cls = r.seen ? 'seen' : (r.locked ? 'locked' : 'new');
       const tag = r.seen ? 'Seen' : (r.locked ? 'Snow Festival' : (r.secret ? 'Secret' : 'Not yet'));
-      return '<div class="elevIdx ' + cls + '"><span class="elevIdxE">' + r.emoji + '</span><span class="elevIdxN">' + r.name + '</span><small>' + tag + '</small></div>';
+      const can = r.seen && tickets > 0 && !r.locked;
+      return '<button type="button" class="elevIdx ' + cls + '" data-id="' + r.id + '"' + (can ? ' data-queue="1"' : '') + '><span class="elevIdxE">' + r.emoji + '</span><span class="elevIdxN">' + r.name + '</span><small>' + tag + (can ? ' · Ride next (1 🎫)' : '') + '</small></button>';
     }).join('');
+    list.querySelectorAll('[data-queue]').forEach(btn => {
+      btn.addEventListener('click', ev => { ev.preventDefault(); elevQueueFloor(btn.getAttribute('data-id')); });
+    });
+  }
+
+  function elevQueueFloor(id){
+    if (!elv || elevIsGuest()){ banner('Only the host can spend a ticket to pick the next floor.'); return; }
+    const r = ElevRules.elevQueueNext(elv.sv, elv.run, id);
+    if (!r.ok){
+      banner(r.why === 'tickets' ? 'You need a ride ticket first — find one at Stub Desk!' : (r.why === 'secret' ? 'Find that secret floor first.' : 'Not now.'));
+      return;
+    }
+    elv.sv = r.state; elevPersist(r.state);
+    banner('🎫 Next stop queued: ' + r.floor.emoji + ' ' + r.floor.name + '  ·  ' + r.left + ' tickets left');
+    elevTone([520, 780], 0.07, 'sine', 0.05);
+    ElevRules.elevBadges(elv.sv, elv.run).forEach(id => elevAch(id));
+    elevPaintIndex();
+    elevNetSync();
+  }
+
+  function elevPaintBadges(){
+    const list = document.getElementById('elevBadgeList');
+    const sub = document.getElementById('elevBadgeSub');
+    if (!list) return;
+    const have = ElevRules.elevBadges(elv ? elv.sv : elevState(), elv && elv.run);
+    const all = ElevRules.elevBadgeCatalog();
+    if (sub) sub.textContent = 'Badges: ' + have.length + ' / ' + all.length;
+    list.innerHTML = all.map(b => {
+      const on = have.indexOf(b.id) >= 0;
+      return '<div class="elevIdx ' + (on ? 'seen' : 'locked') + '"><span class="elevIdxE">' + b.emoji + '</span><span class="elevIdxN">' + (on ? b.name : '???') + '</span><small>' + (on ? b.desc : 'Locked') + '</small></div>';
+    }).join('');
+  }
+
+  function elevOpenBadges(){
+    elevPaintBadges();
+    if (typeof t297OverlayShow === 'function') t297OverlayShow('elevBadges', true);
+  }
+
+  function elevPaintDaily(){
+    const body = document.getElementById('elevDailyBody');
+    const sub = document.getElementById('elevDailySub');
+    if (!body || !elv) return;
+    elv.sv = ElevRules.elevEnsureDaily(elv.sv);
+    elevPersist(elv.sv);
+    const d = elv.sv.daily;
+    if (sub) sub.textContent = 'Today is ' + (d && d.day ? d.day : 'a new day') + '. No purchases needed.';
+    if (!d){ body.innerHTML = '<p>No challenge right now.</p>'; return; }
+    const ready = !d.claimed && (d.progress | 0) >= (d.goal | 0);
+    body.innerHTML = '<p><b>' + d.name + '</b></p><p>Progress: ' + (d.progress | 0) + ' / ' + d.goal + (d.claimed ? '  ·  claimed!' : '') + '</p><p>Reward: ' + (d.reward | 0) + ' 🪙' + (d.tickets ? (' + ' + d.tickets + ' 🎫') : '') + '</p>' + (ready ? '<button type="button" class="elevShopIt" id="elevDailyClaim">Claim reward</button>' : (d.claimed ? '<p>Nice work — come back tomorrow!</p>' : '<p>Keep riding! You can claim once it is done.</p>'));
+    const btn = document.getElementById('elevDailyClaim');
+    if (btn) btn.addEventListener('click', ev => { ev.preventDefault(); elevClaimDaily(); });
+  }
+
+  function elevOpenDaily(){
+    elevPaintDaily();
+    if (typeof t297OverlayShow === 'function') t297OverlayShow('elevDaily', true);
+  }
+
+  function elevClaimDaily(){
+    if (!elv) return;
+    const r = ElevRules.elevDailyClaim(elv.sv);
+    if (!r.ok){
+      banner(r.why === 'short' ? ('Need ' + r.need + ' more to finish today’s challenge.') : (r.why === 'have' ? 'Already claimed today!' : 'Not yet.'));
+      return;
+    }
+    elv.sv = r.state; elevPersist(r.state);
+    if (r.pay) elevPay(r.pay);
+    ElevRules.elevBadges(elv.sv, elv.run).forEach(id => elevAch(id));
+    banner('📅 Challenge complete! +' + r.pay + ' 🪙' + (r.tickets ? (' + ' + r.tickets + ' 🎫') : ''));
+    elevTone([660, 880, 1040], 0.08, 'sine', 0.05);
+    elevPaintDaily();
+  }
+
+  function elevTrySecret(){
+    if (!elv || !elv.secretAt || !elevNear(elv.secretAt.x, elv.secretAt.z, 2.2)) return false;
+    const r = ElevRules.elevFindLobbySecret(elv.sv);
+    if (!r.ok){ banner('You already found the waiting-room painting.'); return true; }
+    elv.sv = r.state; elevPersist(r.state);
+    if (r.pay) elevPay(r.pay);
+    ElevRules.elevBadges(elv.sv, elv.run).forEach(id => elevAch(id));
+    banner('🖼️ A shy painting winks and leaves you 5 🪙. Everyone is okay!');
+    elevTone([480, 720], 0.08, 'triangle', 0.05);
+    return true;
+  }
+
+  function elevNearPal(){
+    if (!elv || !elv.pals) return null;
+    return elv.pals.find(p => elevNear(p.x, p.z, 1.7)) || null;
+  }
+
+  function elevTryGift(){
+    if (!elv || elevIsGuest()) return false;
+    const seat = elevNearPal();
+    if (!seat) return false;
+    if (!((elv.sv.pack && elv.sv.pack.ribbonwrap) | 0)) return false;
+    const r = ElevRules.elevGiftPal(elv.sv, elv.run, seat.id);
+    if (!r.ok) return false;
+    elv.sv = r.state; elevPersist(r.state);
+    if (r.pay) elevPay(r.pay);
+    ElevRules.elevBadges(elv.sv, elv.run).forEach(id => elevAch(id));
+    banner(r.quote || 'Gift given!');
+    elevTone([700, 880], 0.07, 'sine', 0.05);
+    elevNetSync();
+    return true;
   }
 
   function elevOpenHelp(){ if (typeof t297OverlayShow === 'function') t297OverlayShow('elevHelp', true); }
@@ -785,7 +928,11 @@
     elevBindOverlay('elevHelp', 'elevHelpX');
     elevBindOverlay('elevIndex', 'elevIndexX');
     elevBindOverlay('elevShop', 'elevShopX');
+    elevBindOverlay('elevBadges', 'elevBadgesX');
+    elevBindOverlay('elevDaily', 'elevDailyX');
     elevSyncLessBtn();
+    elv.sv = ElevRules.elevEnsureDaily(elv.sv);
+    elevPersist(elv.sv);
     elevPaintBoard();
     try { if (elevIsGuest() && typeof mpSend === 'function') mpSend({t:'elev', a:'hello'}); } catch (e){}
     const sb = document.getElementById('elevShopBtn');
@@ -796,6 +943,10 @@
     if (hb && !hb.__elev){ hb.__elev = true; hb.addEventListener('click', ev => { ev.preventDefault(); elevOpenHelp(); }); }
     const ib = document.getElementById('elevIndexBtn');
     if (ib && !ib.__elev){ ib.__elev = true; ib.addEventListener('click', ev => { ev.preventDefault(); elevOpenIndex(); }); }
+    const bb = document.getElementById('elevBadgeBtn');
+    if (bb && !bb.__elev){ bb.__elev = true; bb.addEventListener('click', ev => { ev.preventDefault(); elevOpenBadges(); }); }
+    const db = document.getElementById('elevDailyBtn');
+    if (db && !db.__elev){ db.__elev = true; db.addEventListener('click', ev => { ev.preventDefault(); elevOpenDaily(); }); }
     const ab = document.getElementById('elevAct');
     if (ab && !ab.__elev){ ab.__elev = true; ab.addEventListener('click', ev => { ev.preventDefault(); elevAct(); }); }
     if (typeof t297BindOverlays === 'function'){
@@ -806,7 +957,14 @@
   function elevGo(fromNet){
     if (!elv) return;
     if (elv.run.phase !== 'lobby' && elv.run.phase !== 'inter') return;
-    try { if (typeof t297OverlayClose === 'function') t297OverlayClose('elevShop'); } catch (e){}
+    try {
+      if (typeof t297OverlayClose === 'function'){
+        t297OverlayClose('elevShop');
+        t297OverlayClose('elevBadges');
+        t297OverlayClose('elevDaily');
+        t297OverlayClose('elevIndex');
+      }
+    } catch (e){}
     if (elevIsGuest() && !fromNet){
       if (!elv.dinged){
         elv.dinged = true;
@@ -918,9 +1076,16 @@
     }
     if (ov) return true;
     if (run.phase === 'lobby' || run.phase === 'inter' || run.phase === 'board'){
+      if (!elevInCab() && elevTrySecret()) return true;
+      if (!elevInCab() && elv.dailyAt && elevNear(elv.dailyAt.x, elv.dailyAt.z, 2.2)){ elevOpenDaily(); return true; }
+      if (elevTryGift()) return true;
       if (elevNearShop() && !elevInCab()){ elevOpenShop(); return true; }
       if (run.phase !== 'board') elevGo();
       return true;
+    }
+    if (run.phase === 'ride'){
+      if (elevTryGift()) return true;
+      return false;
     }
     if (run.phase !== 'floor') return false;
     if (elv.bells && elv.bells.length){
@@ -963,6 +1128,21 @@
           banner('Got it! Take it to the drop-off.');
           elevTone([640], 0.06, 'sine', 0.05);
         } else banner('That is not the right one!');
+        return true;
+      }
+    }
+    if (elv.floorShop && elv.floorShop.length){
+      const stall = elv.floorShop.find(o => elevNear(o.x, o.z, 1.7));
+      if (stall){
+        const wallet = (typeof coins === 'number') ? coins : 0;
+        const r = ElevRules.elevBuyFloorItem(elv.sv, wallet, run, stall.id);
+        if (r.ok){
+          elevPersist(r.state);
+          try { setCoins(r.wallet); } catch (e){}
+          banner('Bought ' + stall.item.emoji + ' ' + stall.item.name + '!');
+          elevTone([700, 880], 0.08, 'sine', 0.05);
+        } else if (r.why === 'coins') banner('Need ' + r.need + ' more coins for that.');
+        else if (r.why === 'have') banner('You already have that!');
         return true;
       }
     }
@@ -1040,7 +1220,7 @@
     if ((run.phase === 'lobby' || run.phase === 'inter') && elevInCab()) elevGo();
     if (run.phase === 'lobby' && elv.dinged && !elevInCab()) elv.dinged = false;
     elevSetDoors(run.phase === 'lobby' || run.phase === 'floor' || run.phase === 'inter');
-    const wob = (run.phase === 'ride' && run.event && run.event.id === 'wobble') ? 16 : (run.phase === 'ride' ? 8 : 6);
+    const wob = (run.phase === 'ride' && run.event && (run.event.id === 'wobble' || run.event.id === 'ice')) ? 16 : (run.phase === 'ride' ? 8 : 6);
     if (elv.host) elv.host.rotation.y = Math.sin(time * 2) * 0.3;
     if (elv.host) elv.host.position.y = 0.2 + Math.sin(time * wob) * (run.phase === 'ride' ? 0.14 : 0.04);
     const stuck = !!(run.phase === 'ride' && run.event && run.event.id === 'stuck' && (ElevRules.ELEV_RIDE - (run.t || 0)) < 1.25);
@@ -1129,18 +1309,24 @@
 
     let act = '';
     if (run.phase === 'lobby' || run.phase === 'inter'){
-      if (elevNearShop() && !elevInCab()) elevHud('E / Ⓧ — open the lobby shop for hats and useful bits. The glowing elevator is ready when you are.', '🛒 Shop');
+      const canGift = !!(elevNearPal() && elv.sv && elv.sv.pack && elv.sv.pack.ribbonwrap);
+      if (!elevInCab() && elv.secretAt && elevNear(elv.secretAt.x, elv.secretAt.z, 2.2)) elevHud('A shy painting is hiding here. Press E / Ⓧ to peek.', '🖼️ Peek');
+      else if (!elevInCab() && elv.dailyAt && elevNear(elv.dailyAt.x, elv.dailyAt.z, 2.2)) elevHud('E / Ⓧ — check today’s challenge.', '📅 Today');
+      else if (canGift) elevHud('E / Ⓧ — give a Ribbon Wrap to this passenger.', '🎁 Give');
+      else if (elevNearShop() && !elevInCab()) elevHud('E / Ⓧ — open the lobby shop for hats and useful bits. The glowing elevator is ready when you are.', '🛒 Shop');
       else if (elevInCab()) elevHud('Step in to ride! Doors are counting down — hang tight.', '🛗 Ride');
       else elevHud('Step in to ride! Walk into the glowing elevator, or press Ride (E / Ⓧ).', '🛗 Ride');
     } else if (run.phase === 'board'){
       elevHud('🚪 Doors closing in ' + Math.ceil(run.t) + 's — get back in!', elevInCab() ? '🛗 Ride' : '🚪 Get in!');
     } else if (run.phase === 'ride'){
-      elevHud(run.quote || 'The lift is wobbling to the next floor…', '');
+      const canGift = !!(elevNearPal() && elv.sv && elv.sv.pack && elv.sv.pack.ribbonwrap);
+      elevHud(run.quote || 'The lift is wobbling to the next floor…', canGift ? '🎁 Give' : '');
     } else if (run.phase === 'floor' && f){
       if (elv.bells && elv.bells.some(o => elevNear(o.x, o.z, 1.6))) act = '🔔 Ring';
       else if (elv.paints && elv.paints.some(o => !o.done && elevNear(o.x, o.z, 1.7))) act = (f.id === 'honkfloor' ? '📯 Honk' : '🎨 Paint');
       else if (elv.quiz && elv.quiz.some(o => elevNear(o.x, o.z, 1.8))) act = '❓ Answer';
       else if (elv.pickups && elv.pickups.some(o => !o.got && elevNear(o.x, o.z, 1.5))) act = '🤲 Pick up';
+      else if (elv.floorShop && elv.floorShop.some(o => elevNear(o.x, o.z, 1.7))) act = '🛒 Buy';
       else if (elv.turnIn && elevNear(elv.turnIn.x, elv.turnIn.z, 1.8)) act = elv.turnIn.shop ? '🛒 Buy' : elv.turnIn.stack ? '🧱 Stack' : elv.turnIn.rhythm ? '🥁 Tap' : '🧺 Drop off';
       else if (elv.pads && elv.pads.some(o => elevNear(o.x, o.z, 1.6))) act = '⭐ Pad';
       else if (elv.bossBell && run.bossTag && elevNear(elv.bossBell.x, elv.bossBell.z, 2.2)) act = '🛎️ Bell';

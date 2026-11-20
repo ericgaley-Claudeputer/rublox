@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refresh already-injected Wobblevator sources and bump BUILD to 2026.11.19-11."""
+"""Refresh already-injected Wobblevator sources and bump BUILD to 2026.11.20-1."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -7,8 +7,8 @@ import json
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-BUILD = "2026.11.19-11"
-OLD_BUILD = "2026.11.19-10"
+BUILD = "2026.11.20-1"
+OLD_BUILD = "2026.11.19-11"
 ELEV = Path(__file__).resolve().parent
 
 
@@ -81,6 +81,10 @@ def patch_html(html: str) -> str:
         "'campCraft', 'campWin', 'elevHelp', 'elevIndex']",
         "'campCraft', 'campWin', 'elevHelp', 'elevIndex', 'elevShop']",
     )
+    html = html.replace(
+        "'campCraft', 'campWin', 'elevHelp', 'elevIndex', 'elevShop']",
+        "'campCraft', 'campWin', 'elevHelp', 'elevIndex', 'elevShop', 'elevBadges', 'elevDaily']",
+    )
 
     if "id:'elev-seen25'" not in html:
         html = replace_once(
@@ -88,7 +92,7 @@ def patch_html(html: str) -> str:
             "    {id:'elev-find', cat:'collection', emoji:'🧦', name:'Keen Finder', desc:'Return a missing item on a Wobblevator floor.', coins:10, prove:s => !!(s.notes && s.notes['elev-find']) || !!(s.elevator && (s.elevator.found | 0) >= 1)},\n",
             "    {id:'elev-find', cat:'collection', emoji:'🧦', name:'Keen Finder', desc:'Return a missing item on a Wobblevator floor.', coins:10, prove:s => !!(s.notes && s.notes['elev-find']) || !!(s.elevator && (s.elevator.found | 0) >= 1)},\n"
             "    {id:'elev-seen25', cat:'collection', emoji:'📒', name:'Floor Tourist', desc:'See 25 different Wobblevator floors.', coins:15, prove:s => !!(s.notes && s.notes['elev-seen25']) || !!(s.elevator && s.elevator.seen && s.elevator.seen.length >= 25)},\n"
-            "    {id:'elev-seenall', cat:'collection', emoji:'🌟', name:'Shaft Explorer', desc:'See every Wobblevator floor.', coins:25, prove:s => !!(s.notes && s.notes['elev-seenall']) || !!(s.elevator && s.elevator.seen && s.elevator.seen.length >= 57)},\n",
+            "    {id:'elev-seenall', cat:'collection', emoji:'🌟', name:'Shaft Explorer', desc:'See every Wobblevator floor.', coins:25, prove:s => !!(s.notes && s.notes['elev-seenall']) || !!(s.elevator && s.elevator.seen && s.elevator.seen.length >= 67)},\n",
             "seen achievements",
         )
 
@@ -103,13 +107,13 @@ def patch_html(html: str) -> str:
 
     html = html.replace(
         "#elevAct, #elevHelpBtn, #elevHelp, #elevBox, #elevMeter,",
-        "#elevAct, #elevHelpBtn, #elevIndexBtn, #elevShopBtn, #elevLessBtn, #elevHelp, #elevIndex, #elevShop, #elevBox, #elevMeter,",
+        "#elevAct, #elevHelpBtn, #elevIndexBtn, #elevShopBtn, #elevLessBtn, #elevBadgeBtn, #elevDailyBtn, #elevHelp, #elevIndex, #elevShop, #elevBadges, #elevDaily, #elevBox, #elevMeter,",
     )
     html = html.replace(
         "#elevAct, #elevHelpBtn, #elevIndexBtn, #elevHelp, #elevIndex, #elevBox, #elevMeter,",
-        "#elevAct, #elevHelpBtn, #elevIndexBtn, #elevShopBtn, #elevLessBtn, #elevHelp, #elevIndex, #elevShop, #elevBox, #elevMeter,",
+        "#elevAct, #elevHelpBtn, #elevIndexBtn, #elevShopBtn, #elevLessBtn, #elevBadgeBtn, #elevDailyBtn, #elevHelp, #elevIndex, #elevShop, #elevBadges, #elevDaily, #elevBox, #elevMeter,",
     )
-    html = html.replace("s.elevator.seen.length >= 49", "s.elevator.seen.length >= 57")
+    html = html.replace("s.elevator.seen.length >= 49", "s.elevator.seen.length >= 67")
 
     if "if (mode === 'elevator'){ if (P.y < -2 && typeof elevCatchFall === 'function') elevCatchFall(); return; }" not in html:
         html = replace_once(
@@ -161,7 +165,7 @@ def patch_support() -> None:
     )
     ct = ct.replace(
         "'campCraft', 'campWin', 'elevHelp', 'elevIndex']",
-        "'campCraft', 'campWin', 'elevHelp', 'elevIndex', 'elevShop']",
+        "'campCraft', 'campWin', 'elevHelp', 'elevIndex', 'elevShop', 'elevBadges', 'elevDaily']",
     )
     cafe.write_text(ct)
     for p in (ROOT / "tests").glob("*.js"):
@@ -193,6 +197,11 @@ def verify(html: str) -> None:
         "mp host": "elevFromHost",
         "mp max": "MP_MAX = 10,",
         "new floor": "softcloset",
+        "chill floor": "cloudnook",
+        "ticket floor": "stubdesk",
+        "badge overlay": 'id="elevBadges"',
+        "daily overlay": 'id="elevDaily"',
+        "queue next": "function elevQueueNext(",
     }
     missing = [k for k, v in checks.items() if v not in html]
     if missing:

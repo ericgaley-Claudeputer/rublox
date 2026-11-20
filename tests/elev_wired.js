@@ -17,9 +17,9 @@ const BANNED = [
 ];
 
 describe('Wobblevator wiring', () => {
-  test('BUILD is 2026.11.19-11 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.19-11'"));
-    assert.equal(version.build, '2026.11.19-11');
+  test('BUILD is 2026.11.20-1 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.20-1'"));
+    assert.equal(version.build, '2026.11.20-1');
   });
 
   test('the mode is a playable menu game with an original name and save key', () => {
@@ -48,7 +48,7 @@ describe('Wobblevator wiring', () => {
     assert.ok(html.includes('id="elevHelp"'));
     assert.ok(html.includes('id="elevIndex"'));
     assert.ok(html.includes("class=\"t297overlay\""));
-    assert.match(html, /elevHelp', 'elevIndex', 'elevShop'/);
+    assert.match(html, /elevHelp', 'elevIndex', 'elevShop', 'elevBadges', 'elevDaily'/);
     assert.match(html, /mode === 'elevator' \? '🎮 Left stick move · Ⓐ jump · Ⓧ act \/ shop · Ⓨ floors · Ⓑ close popups · ☰ menu'/);
     assert.ok(html.includes('id="elevAct"'));
     assert.ok(html.includes('id="elevHelpBtn"'));

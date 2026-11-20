@@ -15,7 +15,7 @@ describe('Wobblevator', () => {
     const ids = E.ELEV_FLOORS.map(f => f.id);
     assert.equal(new Set(ids).size, ids.length);
     const kinds = new Set(E.ELEV_FLOORS.map(f => f.kind));
-    ['obby', 'find', 'dodge', 'puzzle', 'creepy', 'funny', 'survive', 'shop', 'special', 'coop', 'quiz', 'memory', 'race', 'stack', 'rhythm', 'secret', 'holiday', 'boss'].forEach(k => assert.ok(kinds.has(k), k));
+    ['obby', 'find', 'dodge', 'puzzle', 'creepy', 'funny', 'survive', 'shop', 'special', 'coop', 'quiz', 'memory', 'race', 'stack', 'rhythm', 'secret', 'holiday', 'boss', 'chill'].forEach(k => assert.ok(kinds.has(k), k));
     const blob = JSON.stringify(E.ELEV_FLOORS) + JSON.stringify(E.ELEV_PALS) + JSON.stringify(E.ELEV_HOST);
     BANNED.forEach(n => assert.equal(blob.toLowerCase().includes(n.toLowerCase()), false, 'must not include ' + n));
     assert.equal(E.ELEV_HOST.name, 'Bingle the Bellhop');
@@ -102,9 +102,9 @@ describe('Wobblevator', () => {
     assert.equal(run.wantClear, true);
   });
 
-  test('a shop floor is due every 8 clears, and a lucky cookie spends coins from the wallet only', () => {
+  test('a shop floor is due every 15 clears, and a lucky cookie spends coins from the wallet only', () => {
     const {run} = E.elevStartRun(E.elevFresh(), 0, false);
-    run.survived = 7;
+    run.survived = 14;
     assert.equal(E.elevDueShop(run), true);
     assert.equal(E.elevPickFloor(run, () => 0.9).kind, 'shop');
     E.elevBeginFloor(run, 'snackstop');
