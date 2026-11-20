@@ -8,6 +8,17 @@
   const WN_VER = 1;
   const WN_COCOA_COST = 5;
   const WN_SNOWMAN = ['base','mid','head','hat','buttons','scarf'];
+  const WN_DOOR_H = 4.2;
+  const WN_DOOR_W = 3.6;
+  const WN_WALL_H = 5.2;
+  const WN_COTTAGES = [
+    {id:'cocoa', name:"Mugsy’s Cocoa", x:-16, z:8, w:7, d:5.5},
+    {id:'blue', name:'Blue cottage', x:16, z:12, w:6, d:5},
+    {id:'green', name:'Green cottage', x:-6, z:22, w:6, d:5}
+  ];
+  const WN_DOORS = WN_COTTAGES.map(c => ({
+    id:c.id, a:'outside', b:c.id, x:c.x, z:c.z + c.d/2, w:WN_DOOR_W, h:WN_DOOR_H, axis:'z', thick:0.42
+  }));
 
   function wnFresh(){
     return {
@@ -263,7 +274,7 @@
   }
 
   return {
-    WN_KEY, WN_VER, WN_COCOA_COST, WN_SNOWMAN,
+    WN_KEY, WN_VER, WN_COCOA_COST, WN_SNOWMAN, WN_DOOR_H, WN_DOOR_W, WN_WALL_H, WN_COTTAGES, WN_DOORS,
     wnFresh, wnLoad, wnNewVisit, wnGo,
     wnSledStart, wnSledSteer, wnSledJump, wnSledTick, wnSledFinish, wnSledRace,
     wnRealPlayers, wnCanPelt, wnThrowSnowball, wnSnowballTick,

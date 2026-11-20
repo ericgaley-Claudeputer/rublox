@@ -42,12 +42,37 @@
     if (b && wn) wn.solids.push(b);
     return b;
   }
-  function wnCottage(x,z,c,roof){
-    wnWall(x, 1.6, z, 6, 3.2, 5, c);
-    const r = new THREE.Mesh(new THREE.ConeGeometry(4.2, 2.2, 4), wnMat(roof));
-    r.position.set(x, 4.2, z); r.rotation.y = Math.PI/4; scene.add(r); wnKeep(r);
-    wnMesh(new THREE.BoxGeometry(0.8, 0.8, 0.1), '#ffd23f', x-1.4, 2.2, z+2.56);
-    wnMesh(new THREE.BoxGeometry(0.9, 1.6, 0.1), '#6b3a1f', x+1.2, 1.4, z+2.56);
+  function wnSplitWall(along, a0, a1, fixed, gaps, color){
+    const h = (typeof WinterRules !== 'undefined' && WinterRules.WN_WALL_H) || 5.2;
+    const doorH = (typeof WinterRules !== 'undefined' && WinterRules.WN_DOOR_H) || 4.2;
+    const th = 0.42;
+    const opens = (gaps || []).map(g => ({a:g.c - g.w/2, b:g.c + g.w/2})).sort((p,q) => p.a - q.a);
+    let cursor = a0;
+    function seg(lo, hi, y, hh){
+      if (hi - lo < 0.15) return;
+      const mid = (lo + hi) / 2, len = hi - lo;
+      if (along === 'x') wnWall(mid, y + hh/2, fixed, len, hh, th, color);
+      else wnWall(fixed, y + hh/2, mid, th, hh, len, color);
+    }
+    opens.forEach(op => {
+      seg(cursor, op.a, 0, h);
+      seg(op.a, op.b, doorH, h - doorH);
+      cursor = op.b;
+    });
+    seg(cursor, a1, 0, h);
+  }
+  function wnCottage(x,z,c,roof, opts){
+    const w = (opts && opts.w) || 6, d = (opts && opts.d) || 5;
+    const doorW = (typeof WinterRules !== 'undefined' && WinterRules.WN_DOOR_W) || 3.6;
+    const wallH = (typeof WinterRules !== 'undefined' && WinterRules.WN_WALL_H) || 5.2;
+    const x0 = x - w/2, x1 = x + w/2, z0 = z - d/2, z1 = z + d/2;
+    wnSplitWall('x', x0, x1, z0, [], c);
+    wnSplitWall('z', z0, z1, x0, [], c);
+    wnSplitWall('z', z0, z1, x1, [], c);
+    wnSplitWall('x', x0, x1, z1, [{c:x, w:doorW}], c);
+    const r = new THREE.Mesh(new THREE.ConeGeometry(Math.max(w, d) * 0.72, 2.2, 4), wnMat(roof));
+    r.position.set(x, wallH + 0.9, z); r.rotation.y = Math.PI/4; scene.add(r); wnKeep(r);
+    wnMesh(new THREE.BoxGeometry(0.8, 0.8, 0.1), '#ffd23f', x-1.4, 2.4, z1 + 0.06);
   }
   function buildWinter(){
     const started = WinterRules.wnNewVisit(wnState(), Date.now());
@@ -66,15 +91,14 @@
     wn.lift = {x:0, z:-70};
     wn.finish = {x:0, z:48};
     // Village
-    wnCottage(-16, 8, '#c45c1a', '#8b2e1a');
+    wnCottage(-16, 8, '#c45c1a', '#8b2e1a', {w:7, d:5.5});
     wnCottage(16, 12, '#3a86ff', '#1d4a8a');
     wnCottage(-6, 22, '#2ec27e', '#1a6b44');
     wnLab('🎄 Pinebell Village', 0, 3.6, 4);
-    // Cocoa shop
-    wnWall(-16, 1.4, 8, 7, 2.8, 5.5, '#8b3a1f');
-    wnMesh(new THREE.CylinderGeometry(0.5, 0.6, 0.8, 10), '#5a2a12', -16, 1.1, 11);
-    wn.cocoa = {x:-16, z:11};
-    wnLab('☕ Mugsy’s Cocoa', -16, 3.4, 12);
+    // Cocoa shop lives in the red cottage; the mug sits just inside the doorway
+    wnMesh(new THREE.CylinderGeometry(0.5, 0.6, 0.8, 10), '#5a2a12', -16, 1.1, 10.2);
+    wn.cocoa = {x:-16, z:10.75};
+    wnLab('☕ Mugsy’s Cocoa', -16, 3.6, 11.2);
     // Skating pond
     const pond = new THREE.Mesh(new THREE.CircleGeometry(7.5, 24), wnMat('#b8e8ff'));
     pond.rotation.x = -Math.PI/2; pond.position.set(16, 0.32, -2); scene.add(pond); wnKeep(pond);

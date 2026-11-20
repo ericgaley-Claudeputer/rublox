@@ -12,7 +12,9 @@
     return b;
   }
   function vtSplitWall(along, a0, a1, fixed, gaps, color){
-    const h = 4.6, th = 0.42, doorH = 2.75;
+    const h = (typeof VetRules !== 'undefined' && VetRules.VT_WALL_H) || 6.0;
+    const doorH = (typeof VetRules !== 'undefined' && VetRules.VT_DOOR_H) || 4.2;
+    const th = 0.42;
     const opens = (gaps || []).map(g => ({a:g.c - g.w/2, b:g.c + g.w/2})).sort((p,q) => p.a - q.a);
     let cursor = a0;
     function seg(lo, hi, y, hh){
@@ -103,10 +105,11 @@
     VetRules.VT_ROOMS.forEach(r => {
       const fl = plat(r.x, 0, r.z, r.w, r.d, r.color, 0.3);
       if (fl && fl.mesh) vtKeep(fl.mesh);
-      const ceil = vtMesh(new THREE.BoxGeometry(r.w + 0.2, 0.22, r.d + 0.2), '#fff6e8', r.x, 4.68, r.z);
+      const ceilY = (typeof VetRules !== 'undefined' && VetRules.VT_CEILING_Y) || 6.2;
+      const ceil = vtMesh(new THREE.BoxGeometry(r.w + 0.2, 0.22, r.d + 0.2), '#fff6e8', r.x, ceilY, r.z);
       if (ceil) ceil.material = vtMat('#fff1dc');
       const lamp = new THREE.PointLight(0xfff3d0, 0.55, 18);
-      lamp.position.set(r.x, 3.8, r.z); scene.add(lamp); vtKeep(lamp);
+      lamp.position.set(r.x, 5.2, r.z); scene.add(lamp); vtKeep(lamp);
     });
     // outer walls
     vtSplitWall('x', -24, 24, 16, [], wall);
@@ -118,12 +121,12 @@
     vtSplitWall('z', -40, -20, -8, [], wall);
     vtSplitWall('z', -40, -20, 8, [], wall);
     // interior walls with doorways
-    vtSplitWall('x', -8, 8, 0, [{c:0, w:3.2}], trim);
-    vtSplitWall('x', -8, 8, -20, [{c:0, w:3.2}], trim);
-    vtSplitWall('z', -20, 0, 8, [{c:-10, w:3.2}], trim);
-    vtSplitWall('z', -20, 0, -8, [{c:-10, w:3.2}], trim);
-    vtSplitWall('z', 0, 16, 8, [{c:8, w:3.2}], trim);
-    vtSplitWall('z', 0, 16, -8, [{c:8, w:3.2}], trim);
+    vtSplitWall('x', -8, 8, 0, [{c:0, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    vtSplitWall('x', -8, 8, -20, [{c:0, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    vtSplitWall('z', -20, 0, 8, [{c:-10, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    vtSplitWall('z', -20, 0, -8, [{c:-10, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    vtSplitWall('z', 0, 16, 8, [{c:8, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    vtSplitWall('z', 0, 16, -8, [{c:8, w:(VetRules.VT_DOOR_W||3.6)}], trim);
     // room name plaques on the far (-Z) wall, kept small
     const plaques = {reception:[0,3.2,0.6], exam:[0,3.2,-19.4], xray:[16,3.2,-19.4], treatment:[-16,3.2,-19.4], surgery:[0,3.2,-39.4], recovery:[16,3.2,0.6], bath:[-16,3.2,0.6]};
     VetRules.VT_ROOMS.forEach(r => {
@@ -422,6 +425,7 @@
     vt = null;
   }
   window.vtDebug = {
+    to(x,y,z){ if (typeof P === "undefined") return null; P.x=+x; P.y=+y||0; P.z=+z; P.vx=0; P.vy=0; P.vz=0; return this.probe(); },
     room(id){
       const r = VetRules.vtRoom(id);
       if (!r || typeof P === 'undefined') return null;

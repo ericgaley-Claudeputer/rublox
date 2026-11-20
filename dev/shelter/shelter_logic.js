@@ -7,6 +7,12 @@
   const SH_KEY = 'rubloxShelter';
   const SH_VER = 1;
   const SH_PET_MAX = 6;
+  const SH_DOOR_H = 6;
+  const SH_DOOR_W = 3.6;
+  const SH_DOORS = [
+    {id:'shelter-front', a:'yard', b:'shelter', x:0, z:-2, w:SH_DOOR_W, h:SH_DOOR_H, axis:'z', thick:0.4},
+    {id:'salon-front', a:'yard', b:'salon', x:22, z:6, w:SH_DOOR_W, h:SH_DOOR_H, axis:'z', thick:0.4}
+  ];
   const SH_KINDS = [
     {id:'cat', name:'Cat', emoji:'🐱', trait:'calm'},
     {id:'dog', name:'Dog', emoji:'🐶', trait:'playful'},
@@ -406,7 +412,7 @@
   }
 
   return {
-    SH_KEY, SH_VER, SH_PET_MAX, SH_KINDS, SH_TRAITS, SH_FAMILIES, SH_UPGRADES,
+    SH_KEY, SH_VER, SH_PET_MAX, SH_DOOR_H, SH_DOOR_W, SH_DOORS, SH_KINDS, SH_TRAITS, SH_FAMILIES, SH_UPGRADES,
     shKind, shFamily, shUpgrade, shFresh, shLoad, shCleanPet, shKennelCap, shBoost,
     shHappiness, shReady, shRollStray, shRescue, shCare, shVisitFamily, shMatch,
     shBuyUpgrade, shToCollectionPet, shCanSendHome, shSendHome, shKeepPetField, shWire,

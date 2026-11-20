@@ -53,7 +53,7 @@
     // outer shell with side-door gaps
     mnWall(0, 4, 16, 22, 8, 0.5, wall);
     mnWall(0, 4, -88, 22, 8, 0.5, wall);
-    mnWall(-11, 4, -20, 0.5, 8, 76, wall);
+    mnWall(-11, 4, -19, 0.5, 8, 74, wall);
     mnWall(-11, 4, -74, 0.5, 8, 28, wall);
     mnWall(11, 4, 0, 0.5, 8, 32, wall);
     mnWall(11, 4, -30, 0.5, 8, 16, wall);

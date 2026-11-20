@@ -6,6 +6,10 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const VT_KEY = 'rubloxVet';
   const VT_VER = 1;
+  const VT_DOOR_H = 4.2;
+  const VT_DOOR_W = 3.6;
+  const VT_WALL_H = 6.0;
+  const VT_CEILING_Y = 6.2;
 
   const VT_ROOMS = [
     {id:'reception', name:'Reception', x:0, z:8, w:16, d:16, color:'#f3e6c8',
@@ -25,12 +29,12 @@
   ];
 
   const VT_DOORS = [
-    {a:'reception', b:'exam', x:0, z:0, w:3.2, axis:'z'},
-    {a:'exam', b:'xray', x:8, z:-10, w:3.2, axis:'x'},
-    {a:'exam', b:'treatment', x:-8, z:-10, w:3.2, axis:'x'},
-    {a:'exam', b:'surgery', x:0, z:-20, w:3.2, axis:'z'},
-    {a:'reception', b:'recovery', x:8, z:8, w:3.2, axis:'x'},
-    {a:'reception', b:'bath', x:-8, z:8, w:3.2, axis:'x'}
+    {a:'reception', b:'exam', x:0, z:0, w:VT_DOOR_W, h:VT_DOOR_H, axis:'z', thick:0.42},
+    {a:'exam', b:'xray', x:8, z:-10, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42},
+    {a:'exam', b:'treatment', x:-8, z:-10, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42},
+    {a:'exam', b:'surgery', x:0, z:-20, w:VT_DOOR_W, h:VT_DOOR_H, axis:'z', thick:0.42},
+    {a:'reception', b:'recovery', x:8, z:8, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42},
+    {a:'reception', b:'bath', x:-8, z:8, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42}
   ];
 
   const VT_SPECIES = [
@@ -525,7 +529,7 @@
   }
 
   return {
-    VT_KEY, VT_VER, VT_ROOMS, VT_DOORS, VT_SPECIES, VT_NAMES, VT_CASES, VT_TREATS, VT_TOOLS, VT_RARITY_ORDER,
+    VT_KEY, VT_VER, VT_DOOR_H, VT_DOOR_W, VT_WALL_H, VT_CEILING_Y, VT_ROOMS, VT_DOORS, VT_SPECIES, VT_NAMES, VT_CASES, VT_TREATS, VT_TOOLS, VT_RARITY_ORDER,
     vtFresh, vtLoad, vtRoom, vtRoomAt, vtInDoorway, vtWalkable, vtConnected, vtNeighbors, vtPath, vtReachable,
     vtForceFirstPerson, vtMayToggleCamera, vtFpOn, vtSetFp,
     vtDifficulty, vtRollPatient, vtNewShift, vtChart, vtCheckIn, vtUseTool, vtXrayScan, vtExamReady,

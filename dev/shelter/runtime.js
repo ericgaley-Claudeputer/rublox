@@ -54,8 +54,8 @@
     wallb(-9, 3, -10, 0.4, 6, 16, wall);
     wallb(9, 3, -10, 0.4, 6, 16, wall);
     wallb(0, 6.2, -10, 18, 0.35, 16, '#fff4e0');
-    wallb(-5, 3, -2, 8, 6, 0.4, wall);
-    wallb(5, 3, -2, 8, 6, 0.4, wall);
+    wallb(-5.4, 3, -2, 7.2, 6, 0.4, wall);
+    wallb(5.4, 3, -2, 7.2, 6, 0.4, wall);
     shMesh(new THREE.BoxGeometry(2.4, 0.2, 1.6), '#c45c1a', 0, 0.9, -8);
     sh.desk = {x:0, z:-8};
     // town street / park / alley
@@ -72,8 +72,8 @@
     wallb2(15, 3, -2, 0.4, 6, 16, '#ffd0ea');
     wallb2(29, 3, -2, 0.4, 6, 16, '#ffd0ea');
     wallb2(22, 6.2, -2, 14, 0.35, 16, '#fff0f8');
-    wallb2(18, 3, 6, 6, 6, 0.4, '#ffd0ea');
-    wallb2(26, 3, 6, 6, 6, 0.4, '#ffd0ea');
+    wallb2(17.6, 3, 6, 5.2, 6, 0.4, '#ffd0ea');
+    wallb2(26.4, 3, 6, 5.2, 6, 0.4, '#ffd0ea');
     sh.salon = {x:22, z:-2};
     sh.stations = [
       {id:'wash', x:18, z:0, act:'wash', lab:'Wash'},

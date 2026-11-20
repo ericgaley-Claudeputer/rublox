@@ -2903,7 +2903,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.20-7';
+const BUILD = '2026.11.20-8';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -8597,6 +8597,100 @@ function drawElevator(ctx){
   ctx.fillText('🛗', 152, 120);
 }
 
+/* Shared doorway clearance: collision uses the body only. Hats, hair, wings, and horns are visual and do not change collider size. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.DoorRules = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const DOOR_BODY_H = 2.8;
+  const DOOR_BODY_R = 0.45;
+  const DOOR_EYE_H = 2.45;
+  const DOOR_CAM_CLEAR = 0.55;
+  const DOOR_MIN_H = DOOR_BODY_H * 1.4;
+  const DOOR_MIN_W = (DOOR_BODY_R * 2) * 2.5;
+  const DOOR_CLEAR_H = 4.2;
+  const DOOR_CLEAR_W = 3.6;
+
+  function doorMaxPlayer(){
+    return {h: DOOR_BODY_H, r: DOOR_BODY_R, eye: DOOR_EYE_H, cosmetics: false};
+  }
+
+  function doorFits(openH, openW){
+    return (openH >= DOOR_MIN_H - 1e-9) && (openW >= DOOR_MIN_W - 1e-9);
+  }
+
+  function doorCameraClears(lintelBottom, eye, clear){
+    const ey = eye == null ? DOOR_EYE_H : +eye;
+    const cl = clear == null ? DOOR_CAM_CLEAR : +clear;
+    return (lintelBottom >= ey + cl - 1e-9);
+  }
+
+  function doorBlockedAt(px, py, pz, player, door){
+    if (!door || !player) return 'no';
+    const r = +player.r || DOOR_BODY_R;
+    const h = +player.h || DOOR_BODY_H;
+    const top = py + h;
+    const thick = door.thick == null ? 0.45 : +door.thick;
+    const hw = (door.w || 0) / 2;
+    const axis = door.axis === 'x' ? 'x' : 'z';
+    const cx = +door.x || 0, cz = +door.z || 0;
+    const openH = +door.h || 0;
+    if (axis === 'z'){
+      const overlapWall = Math.abs(pz - cz) <= thick / 2 + r;
+      if (!overlapWall) return null;
+      const inOpening = (px + r > cx - hw) && (px - r < cx + hw);
+      if (!inOpening) return 'jamb';
+      if (top > openH + 1e-9) return 'lintel';
+      return null;
+    }
+    const overlapWall = Math.abs(px - cx) <= thick / 2 + r;
+    if (!overlapWall) return null;
+    const inOpening = (pz + r > cz - hw) && (pz - r < cz + hw);
+    if (!inOpening) return 'jamb';
+    if (top > openH + 1e-9) return 'lintel';
+    return null;
+  }
+
+  function doorWalk(door, player, dist){
+    player = player || doorMaxPlayer();
+    const span = dist == null ? 2.4 : +dist;
+    const axis = door && door.axis === 'x' ? 'x' : 'z';
+    const steps = 28;
+    const start = axis === 'z'
+      ? {x: door.x, z: door.z - span}
+      : {x: door.x - span, z: door.z};
+    const end = axis === 'z'
+      ? {x: door.x, z: door.z + span}
+      : {x: door.x + span, z: door.z};
+    const floor = door.floor == null ? 0 : +door.floor;
+    for (let i = 0; i <= steps; i++){
+      const t = i / steps;
+      const px = start.x + (end.x - start.x) * t;
+      const pz = start.z + (end.z - start.z) * t;
+      const hit = doorBlockedAt(px, floor, pz, player, door);
+      if (hit) return {ok:false, hit, t, x:px, z:pz, door: door.id || door.a + '-' + door.b};
+    }
+    const tall = doorFits(door.h, door.w);
+    const cam = doorCameraClears(door.h, player.eye);
+    if (!tall) return {ok:false, hit:'small', door: door.id || (door.a + '-' + door.b)};
+    if (!cam) return {ok:false, hit:'camera', door: door.id || (door.a + '-' + door.b)};
+    return {ok:true, door: door.id || (door.a + '-' + door.b)};
+  }
+
+  function doorWalkAll(doors, player){
+    const out = [];
+    (doors || []).forEach(d => out.push(doorWalk(d, player)));
+    return {ok: out.every(r => r.ok), results: out};
+  }
+
+  return {
+    DOOR_BODY_H, DOOR_BODY_R, DOOR_EYE_H, DOOR_CAM_CLEAR,
+    DOOR_MIN_H, DOOR_MIN_W, DOOR_CLEAR_H, DOOR_CLEAR_W,
+    doorMaxPlayer, doorFits, doorCameraClears, doorBlockedAt, doorWalk, doorWalkAll
+  };
+});
+
 /* Mallowmist Manor — original kid-scary escape. No gore. Getting caught means everyone is okay. */
 (function (root, factory) {
   const api = factory();
@@ -8623,6 +8717,20 @@ function drawElevator(ctx){
   const MN_STARS = [2, 0, 1, 3];
   const MN_UPGRADES = [];
   const MN_SECRET_REWARD = 16;
+  const MN_DOOR_H = 4.8;
+  const MN_SIDE_DOOR_H = 8;
+  const MN_DOOR_W = 6;
+  const MN_SIDE_DOOR_W = 4;
+  const MN_DOORS = [
+    {id:'foyer-parlor', a:'foyer', b:'parlor', x:0, z:-10, w:MN_DOOR_W, h:MN_DOOR_H, axis:'z', thick:0.4},
+    {id:'parlor-kitchen', a:'parlor', b:'kitchen', x:0, z:-30, w:MN_DOOR_W, h:MN_DOOR_H, axis:'z', thick:0.4},
+    {id:'kitchen-library', a:'kitchen', b:'library', x:0, z:-50, w:MN_DOOR_W, h:MN_DOOR_H, axis:'z', thick:0.4},
+    {id:'library-attic', a:'library', b:'attic', x:0, z:-70, w:MN_DOOR_W, h:MN_DOOR_H, axis:'z', thick:0.4},
+    {id:'hall-conservatory', a:'parlor', b:'conservatory', x:11, z:-19, w:MN_DOOR_W, h:MN_SIDE_DOOR_H, axis:'x', thick:0.5},
+    {id:'hall-cellar', a:'kitchen', b:'cellar', x:11, z:-40, w:MN_SIDE_DOOR_W, h:MN_SIDE_DOOR_H, axis:'x', thick:0.5},
+    {id:'attic-secret', a:'attic', b:'secret', x:11, z:-78, w:MN_SIDE_DOOR_W, h:MN_SIDE_DOOR_H, axis:'x', thick:0.5},
+    {id:'library-chime', a:'library', b:'chime', x:-11, z:-58, w:MN_SIDE_DOOR_W, h:MN_SIDE_DOOR_H, axis:'x', thick:0.5}
+  ];
 
   function mnRoom(id){ return MN_ROOMS.find(r => r.id === id) || MN_ROOMS[0]; }
 
@@ -9029,7 +9137,7 @@ function drawElevator(ctx){
   function mnNoGore(){ return true; }
 
   return {
-    MN_KEY, MN_VER, MN_CATCH_OK, MN_ROOMS, MN_PICTURE, MN_FERNS, MN_MELODY, MN_STARS, MN_SECRET_REWARD,
+    MN_KEY, MN_VER, MN_CATCH_OK, MN_ROOMS, MN_DOORS, MN_DOOR_H, MN_DOOR_W, MN_SIDE_DOOR_H, MN_SIDE_DOOR_W, MN_PICTURE, MN_FERNS, MN_MELODY, MN_STARS, MN_SECRET_REWARD,
     mnRoom, mnFresh, mnLoad, mnSetLessScary, mnInheritLessScary, mnNewRun,
     mnNimbleSpeed, mnNimbleSee, mnMothSpeed, mnMothSee, mnCanEnter, mnTryOpenSecret, mnReadNote, mnFlipLever, mnPlacePicture,
     mnTakeKey, mnWaterFern, mnTurnCrank, mnReadScrap, mnPullString, mnPlayChime, mnPlaceStar, mnClaimSecret,
@@ -9037,7 +9145,6 @@ function drawElevator(ctx){
     mnWire, mnApplyWire, mnEveryoneOkay, mnNoGore
   };
 });
-
 /* Wagwell Shelter — original co-op pet shelter town. Customers are townsfolk, not opponents. */
 (function (root, factory) {
   const api = factory();
@@ -9047,6 +9154,12 @@ function drawElevator(ctx){
   const SH_KEY = 'rubloxShelter';
   const SH_VER = 1;
   const SH_PET_MAX = 6;
+  const SH_DOOR_H = 6;
+  const SH_DOOR_W = 3.6;
+  const SH_DOORS = [
+    {id:'shelter-front', a:'yard', b:'shelter', x:0, z:-2, w:SH_DOOR_W, h:SH_DOOR_H, axis:'z', thick:0.4},
+    {id:'salon-front', a:'yard', b:'salon', x:22, z:6, w:SH_DOOR_W, h:SH_DOOR_H, axis:'z', thick:0.4}
+  ];
   const SH_KINDS = [
     {id:'cat', name:'Cat', emoji:'🐱', trait:'calm'},
     {id:'dog', name:'Dog', emoji:'🐶', trait:'playful'},
@@ -9446,7 +9559,7 @@ function drawElevator(ctx){
   }
 
   return {
-    SH_KEY, SH_VER, SH_PET_MAX, SH_KINDS, SH_TRAITS, SH_FAMILIES, SH_UPGRADES,
+    SH_KEY, SH_VER, SH_PET_MAX, SH_DOOR_H, SH_DOOR_W, SH_DOORS, SH_KINDS, SH_TRAITS, SH_FAMILIES, SH_UPGRADES,
     shKind, shFamily, shUpgrade, shFresh, shLoad, shCleanPet, shKennelCap, shBoost,
     shHappiness, shReady, shRollStray, shRescue, shCare, shVisitFamily, shMatch,
     shBuyUpgrade, shToCollectionPet, shCanSendHome, shSendHome, shKeepPetField, shWire,
@@ -9454,7 +9567,6 @@ function drawElevator(ctx){
     shGroomedWell, shGroom, shScorePet, shRibbonFor, shContest, shNewShow, shEnterShow, shJudgeShow, shRealPlayersOnly
   };
 });
-
 /* Pinebell Village — original cozy winter village. Real-player races and snowball fights only. */
 (function (root, factory) {
   const api = factory();
@@ -9465,6 +9577,17 @@ function drawElevator(ctx){
   const WN_VER = 1;
   const WN_COCOA_COST = 5;
   const WN_SNOWMAN = ['base','mid','head','hat','buttons','scarf'];
+  const WN_DOOR_H = 4.2;
+  const WN_DOOR_W = 3.6;
+  const WN_WALL_H = 5.2;
+  const WN_COTTAGES = [
+    {id:'cocoa', name:"Mugsy’s Cocoa", x:-16, z:8, w:7, d:5.5},
+    {id:'blue', name:'Blue cottage', x:16, z:12, w:6, d:5},
+    {id:'green', name:'Green cottage', x:-6, z:22, w:6, d:5}
+  ];
+  const WN_DOORS = WN_COTTAGES.map(c => ({
+    id:c.id, a:'outside', b:c.id, x:c.x, z:c.z + c.d/2, w:WN_DOOR_W, h:WN_DOOR_H, axis:'z', thick:0.42
+  }));
 
   function wnFresh(){
     return {
@@ -9720,7 +9843,7 @@ function drawElevator(ctx){
   }
 
   return {
-    WN_KEY, WN_VER, WN_COCOA_COST, WN_SNOWMAN,
+    WN_KEY, WN_VER, WN_COCOA_COST, WN_SNOWMAN, WN_DOOR_H, WN_DOOR_W, WN_WALL_H, WN_COTTAGES, WN_DOORS,
     wnFresh, wnLoad, wnNewVisit, wnGo,
     wnSledStart, wnSledSteer, wnSledJump, wnSledTick, wnSledFinish, wnSledRace,
     wnRealPlayers, wnCanPelt, wnThrowSnowball, wnSnowballTick,
@@ -9729,7 +9852,6 @@ function drawElevator(ctx){
     wnBuyCocoa, wnServeCocoa, wnWire
   };
 });
-
 /* Pawsley Vet Clinic — original first-person clinic. Real-player co-op only; patient and owner NPCs are customers. */
 (function (root, factory) {
   const api = factory();
@@ -9738,6 +9860,10 @@ function drawElevator(ctx){
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const VT_KEY = 'rubloxVet';
   const VT_VER = 1;
+  const VT_DOOR_H = 4.2;
+  const VT_DOOR_W = 3.6;
+  const VT_WALL_H = 6.0;
+  const VT_CEILING_Y = 6.2;
 
   const VT_ROOMS = [
     {id:'reception', name:'Reception', x:0, z:8, w:16, d:16, color:'#f3e6c8',
@@ -9757,12 +9883,12 @@ function drawElevator(ctx){
   ];
 
   const VT_DOORS = [
-    {a:'reception', b:'exam', x:0, z:0, w:3.2, axis:'z'},
-    {a:'exam', b:'xray', x:8, z:-10, w:3.2, axis:'x'},
-    {a:'exam', b:'treatment', x:-8, z:-10, w:3.2, axis:'x'},
-    {a:'exam', b:'surgery', x:0, z:-20, w:3.2, axis:'z'},
-    {a:'reception', b:'recovery', x:8, z:8, w:3.2, axis:'x'},
-    {a:'reception', b:'bath', x:-8, z:8, w:3.2, axis:'x'}
+    {a:'reception', b:'exam', x:0, z:0, w:VT_DOOR_W, h:VT_DOOR_H, axis:'z', thick:0.42},
+    {a:'exam', b:'xray', x:8, z:-10, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42},
+    {a:'exam', b:'treatment', x:-8, z:-10, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42},
+    {a:'exam', b:'surgery', x:0, z:-20, w:VT_DOOR_W, h:VT_DOOR_H, axis:'z', thick:0.42},
+    {a:'reception', b:'recovery', x:8, z:8, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42},
+    {a:'reception', b:'bath', x:-8, z:8, w:VT_DOOR_W, h:VT_DOOR_H, axis:'x', thick:0.42}
   ];
 
   const VT_SPECIES = [
@@ -10257,7 +10383,7 @@ function drawElevator(ctx){
   }
 
   return {
-    VT_KEY, VT_VER, VT_ROOMS, VT_DOORS, VT_SPECIES, VT_NAMES, VT_CASES, VT_TREATS, VT_TOOLS, VT_RARITY_ORDER,
+    VT_KEY, VT_VER, VT_DOOR_H, VT_DOOR_W, VT_WALL_H, VT_CEILING_Y, VT_ROOMS, VT_DOORS, VT_SPECIES, VT_NAMES, VT_CASES, VT_TREATS, VT_TOOLS, VT_RARITY_ORDER,
     vtFresh, vtLoad, vtRoom, vtRoomAt, vtInDoorway, vtWalkable, vtConnected, vtNeighbors, vtPath, vtReachable,
     vtForceFirstPerson, vtMayToggleCamera, vtFpOn, vtSetFp,
     vtDifficulty, vtRollPatient, vtNewShift, vtChart, vtCheckIn, vtUseTool, vtXrayScan, vtExamReady,
@@ -10265,7 +10391,6 @@ function drawElevator(ctx){
     vtWire, vtApply
   };
 });
-
 /* New optional avatar looks — Y2K, grunge, cozy, fancy. Ids are additive only. */
 (function (root, factory) {
   const api = factory();
@@ -43071,7 +43196,7 @@ function start(m = 'obby', d = null){
     // outer shell with side-door gaps
     mnWall(0, 4, 16, 22, 8, 0.5, wall);
     mnWall(0, 4, -88, 22, 8, 0.5, wall);
-    mnWall(-11, 4, -20, 0.5, 8, 76, wall);
+    mnWall(-11, 4, -19, 0.5, 8, 74, wall);
     mnWall(-11, 4, -74, 0.5, 8, 28, wall);
     mnWall(11, 4, 0, 0.5, 8, 32, wall);
     mnWall(11, 4, -30, 0.5, 8, 16, wall);
@@ -43425,8 +43550,8 @@ function start(m = 'obby', d = null){
     wallb(-9, 3, -10, 0.4, 6, 16, wall);
     wallb(9, 3, -10, 0.4, 6, 16, wall);
     wallb(0, 6.2, -10, 18, 0.35, 16, '#fff4e0');
-    wallb(-5, 3, -2, 8, 6, 0.4, wall);
-    wallb(5, 3, -2, 8, 6, 0.4, wall);
+    wallb(-5.4, 3, -2, 7.2, 6, 0.4, wall);
+    wallb(5.4, 3, -2, 7.2, 6, 0.4, wall);
     shMesh(new THREE.BoxGeometry(2.4, 0.2, 1.6), '#c45c1a', 0, 0.9, -8);
     sh.desk = {x:0, z:-8};
     // town street / park / alley
@@ -43443,8 +43568,8 @@ function start(m = 'obby', d = null){
     wallb2(15, 3, -2, 0.4, 6, 16, '#ffd0ea');
     wallb2(29, 3, -2, 0.4, 6, 16, '#ffd0ea');
     wallb2(22, 6.2, -2, 14, 0.35, 16, '#fff0f8');
-    wallb2(18, 3, 6, 6, 6, 0.4, '#ffd0ea');
-    wallb2(26, 3, 6, 6, 6, 0.4, '#ffd0ea');
+    wallb2(17.6, 3, 6, 5.2, 6, 0.4, '#ffd0ea');
+    wallb2(26.4, 3, 6, 5.2, 6, 0.4, '#ffd0ea');
     sh.salon = {x:22, z:-2};
     sh.stations = [
       {id:'wash', x:18, z:0, act:'wash', lab:'Wash'},
@@ -43756,12 +43881,37 @@ function start(m = 'obby', d = null){
     if (b && wn) wn.solids.push(b);
     return b;
   }
-  function wnCottage(x,z,c,roof){
-    wnWall(x, 1.6, z, 6, 3.2, 5, c);
-    const r = new THREE.Mesh(new THREE.ConeGeometry(4.2, 2.2, 4), wnMat(roof));
-    r.position.set(x, 4.2, z); r.rotation.y = Math.PI/4; scene.add(r); wnKeep(r);
-    wnMesh(new THREE.BoxGeometry(0.8, 0.8, 0.1), '#ffd23f', x-1.4, 2.2, z+2.56);
-    wnMesh(new THREE.BoxGeometry(0.9, 1.6, 0.1), '#6b3a1f', x+1.2, 1.4, z+2.56);
+  function wnSplitWall(along, a0, a1, fixed, gaps, color){
+    const h = (typeof WinterRules !== 'undefined' && WinterRules.WN_WALL_H) || 5.2;
+    const doorH = (typeof WinterRules !== 'undefined' && WinterRules.WN_DOOR_H) || 4.2;
+    const th = 0.42;
+    const opens = (gaps || []).map(g => ({a:g.c - g.w/2, b:g.c + g.w/2})).sort((p,q) => p.a - q.a);
+    let cursor = a0;
+    function seg(lo, hi, y, hh){
+      if (hi - lo < 0.15) return;
+      const mid = (lo + hi) / 2, len = hi - lo;
+      if (along === 'x') wnWall(mid, y + hh/2, fixed, len, hh, th, color);
+      else wnWall(fixed, y + hh/2, mid, th, hh, len, color);
+    }
+    opens.forEach(op => {
+      seg(cursor, op.a, 0, h);
+      seg(op.a, op.b, doorH, h - doorH);
+      cursor = op.b;
+    });
+    seg(cursor, a1, 0, h);
+  }
+  function wnCottage(x,z,c,roof, opts){
+    const w = (opts && opts.w) || 6, d = (opts && opts.d) || 5;
+    const doorW = (typeof WinterRules !== 'undefined' && WinterRules.WN_DOOR_W) || 3.6;
+    const wallH = (typeof WinterRules !== 'undefined' && WinterRules.WN_WALL_H) || 5.2;
+    const x0 = x - w/2, x1 = x + w/2, z0 = z - d/2, z1 = z + d/2;
+    wnSplitWall('x', x0, x1, z0, [], c);
+    wnSplitWall('z', z0, z1, x0, [], c);
+    wnSplitWall('z', z0, z1, x1, [], c);
+    wnSplitWall('x', x0, x1, z1, [{c:x, w:doorW}], c);
+    const r = new THREE.Mesh(new THREE.ConeGeometry(Math.max(w, d) * 0.72, 2.2, 4), wnMat(roof));
+    r.position.set(x, wallH + 0.9, z); r.rotation.y = Math.PI/4; scene.add(r); wnKeep(r);
+    wnMesh(new THREE.BoxGeometry(0.8, 0.8, 0.1), '#ffd23f', x-1.4, 2.4, z1 + 0.06);
   }
   function buildWinter(){
     const started = WinterRules.wnNewVisit(wnState(), Date.now());
@@ -43780,15 +43930,14 @@ function start(m = 'obby', d = null){
     wn.lift = {x:0, z:-70};
     wn.finish = {x:0, z:48};
     // Village
-    wnCottage(-16, 8, '#c45c1a', '#8b2e1a');
+    wnCottage(-16, 8, '#c45c1a', '#8b2e1a', {w:7, d:5.5});
     wnCottage(16, 12, '#3a86ff', '#1d4a8a');
     wnCottage(-6, 22, '#2ec27e', '#1a6b44');
     wnLab('🎄 Pinebell Village', 0, 3.6, 4);
-    // Cocoa shop
-    wnWall(-16, 1.4, 8, 7, 2.8, 5.5, '#8b3a1f');
-    wnMesh(new THREE.CylinderGeometry(0.5, 0.6, 0.8, 10), '#5a2a12', -16, 1.1, 11);
-    wn.cocoa = {x:-16, z:11};
-    wnLab('☕ Mugsy’s Cocoa', -16, 3.4, 12);
+    // Cocoa shop lives in the red cottage; the mug sits just inside the doorway
+    wnMesh(new THREE.CylinderGeometry(0.5, 0.6, 0.8, 10), '#5a2a12', -16, 1.1, 10.2);
+    wn.cocoa = {x:-16, z:10.75};
+    wnLab('☕ Mugsy’s Cocoa', -16, 3.6, 11.2);
     // Skating pond
     const pond = new THREE.Mesh(new THREE.CircleGeometry(7.5, 24), wnMat('#b8e8ff'));
     pond.rotation.x = -Math.PI/2; pond.position.set(16, 0.32, -2); scene.add(pond); wnKeep(pond);
@@ -44017,7 +44166,9 @@ function start(m = 'obby', d = null){
     return b;
   }
   function vtSplitWall(along, a0, a1, fixed, gaps, color){
-    const h = 4.6, th = 0.42, doorH = 2.75;
+    const h = (typeof VetRules !== 'undefined' && VetRules.VT_WALL_H) || 6.0;
+    const doorH = (typeof VetRules !== 'undefined' && VetRules.VT_DOOR_H) || 4.2;
+    const th = 0.42;
     const opens = (gaps || []).map(g => ({a:g.c - g.w/2, b:g.c + g.w/2})).sort((p,q) => p.a - q.a);
     let cursor = a0;
     function seg(lo, hi, y, hh){
@@ -44108,10 +44259,11 @@ function start(m = 'obby', d = null){
     VetRules.VT_ROOMS.forEach(r => {
       const fl = plat(r.x, 0, r.z, r.w, r.d, r.color, 0.3);
       if (fl && fl.mesh) vtKeep(fl.mesh);
-      const ceil = vtMesh(new THREE.BoxGeometry(r.w + 0.2, 0.22, r.d + 0.2), '#fff6e8', r.x, 4.68, r.z);
+      const ceilY = (typeof VetRules !== 'undefined' && VetRules.VT_CEILING_Y) || 6.2;
+      const ceil = vtMesh(new THREE.BoxGeometry(r.w + 0.2, 0.22, r.d + 0.2), '#fff6e8', r.x, ceilY, r.z);
       if (ceil) ceil.material = vtMat('#fff1dc');
       const lamp = new THREE.PointLight(0xfff3d0, 0.55, 18);
-      lamp.position.set(r.x, 3.8, r.z); scene.add(lamp); vtKeep(lamp);
+      lamp.position.set(r.x, 5.2, r.z); scene.add(lamp); vtKeep(lamp);
     });
     // outer walls
     vtSplitWall('x', -24, 24, 16, [], wall);
@@ -44123,12 +44275,12 @@ function start(m = 'obby', d = null){
     vtSplitWall('z', -40, -20, -8, [], wall);
     vtSplitWall('z', -40, -20, 8, [], wall);
     // interior walls with doorways
-    vtSplitWall('x', -8, 8, 0, [{c:0, w:3.2}], trim);
-    vtSplitWall('x', -8, 8, -20, [{c:0, w:3.2}], trim);
-    vtSplitWall('z', -20, 0, 8, [{c:-10, w:3.2}], trim);
-    vtSplitWall('z', -20, 0, -8, [{c:-10, w:3.2}], trim);
-    vtSplitWall('z', 0, 16, 8, [{c:8, w:3.2}], trim);
-    vtSplitWall('z', 0, 16, -8, [{c:8, w:3.2}], trim);
+    vtSplitWall('x', -8, 8, 0, [{c:0, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    vtSplitWall('x', -8, 8, -20, [{c:0, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    vtSplitWall('z', -20, 0, 8, [{c:-10, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    vtSplitWall('z', -20, 0, -8, [{c:-10, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    vtSplitWall('z', 0, 16, 8, [{c:8, w:(VetRules.VT_DOOR_W||3.6)}], trim);
+    vtSplitWall('z', 0, 16, -8, [{c:8, w:(VetRules.VT_DOOR_W||3.6)}], trim);
     // room name plaques on the far (-Z) wall, kept small
     const plaques = {reception:[0,3.2,0.6], exam:[0,3.2,-19.4], xray:[16,3.2,-19.4], treatment:[-16,3.2,-19.4], surgery:[0,3.2,-39.4], recovery:[16,3.2,0.6], bath:[-16,3.2,0.6]};
     VetRules.VT_ROOMS.forEach(r => {
@@ -44427,6 +44579,7 @@ function start(m = 'obby', d = null){
     vt = null;
   }
   window.vtDebug = {
+    to(x,y,z){ if (typeof P === "undefined") return null; P.x=+x; P.y=+y||0; P.z=+z; P.vx=0; P.vy=0; P.vz=0; return this.probe(); },
     room(id){
       const r = VetRules.vtRoom(id);
       if (!r || typeof P === 'undefined') return null;

@@ -24,6 +24,20 @@
   const MN_STARS = [2, 0, 1, 3];
   const MN_UPGRADES = [];
   const MN_SECRET_REWARD = 16;
+  const MN_DOOR_H = 4.8;
+  const MN_SIDE_DOOR_H = 8;
+  const MN_DOOR_W = 6;
+  const MN_SIDE_DOOR_W = 4;
+  const MN_DOORS = [
+    {id:'foyer-parlor', a:'foyer', b:'parlor', x:0, z:-10, w:MN_DOOR_W, h:MN_DOOR_H, axis:'z', thick:0.4},
+    {id:'parlor-kitchen', a:'parlor', b:'kitchen', x:0, z:-30, w:MN_DOOR_W, h:MN_DOOR_H, axis:'z', thick:0.4},
+    {id:'kitchen-library', a:'kitchen', b:'library', x:0, z:-50, w:MN_DOOR_W, h:MN_DOOR_H, axis:'z', thick:0.4},
+    {id:'library-attic', a:'library', b:'attic', x:0, z:-70, w:MN_DOOR_W, h:MN_DOOR_H, axis:'z', thick:0.4},
+    {id:'hall-conservatory', a:'parlor', b:'conservatory', x:11, z:-19, w:MN_DOOR_W, h:MN_SIDE_DOOR_H, axis:'x', thick:0.5},
+    {id:'hall-cellar', a:'kitchen', b:'cellar', x:11, z:-40, w:MN_SIDE_DOOR_W, h:MN_SIDE_DOOR_H, axis:'x', thick:0.5},
+    {id:'attic-secret', a:'attic', b:'secret', x:11, z:-78, w:MN_SIDE_DOOR_W, h:MN_SIDE_DOOR_H, axis:'x', thick:0.5},
+    {id:'library-chime', a:'library', b:'chime', x:-11, z:-58, w:MN_SIDE_DOOR_W, h:MN_SIDE_DOOR_H, axis:'x', thick:0.5}
+  ];
 
   function mnRoom(id){ return MN_ROOMS.find(r => r.id === id) || MN_ROOMS[0]; }
 
@@ -430,7 +444,7 @@
   function mnNoGore(){ return true; }
 
   return {
-    MN_KEY, MN_VER, MN_CATCH_OK, MN_ROOMS, MN_PICTURE, MN_FERNS, MN_MELODY, MN_STARS, MN_SECRET_REWARD,
+    MN_KEY, MN_VER, MN_CATCH_OK, MN_ROOMS, MN_DOORS, MN_DOOR_H, MN_DOOR_W, MN_SIDE_DOOR_H, MN_SIDE_DOOR_W, MN_PICTURE, MN_FERNS, MN_MELODY, MN_STARS, MN_SECRET_REWARD,
     mnRoom, mnFresh, mnLoad, mnSetLessScary, mnInheritLessScary, mnNewRun,
     mnNimbleSpeed, mnNimbleSee, mnMothSpeed, mnMothSee, mnCanEnter, mnTryOpenSecret, mnReadNote, mnFlipLever, mnPlacePicture,
     mnTakeKey, mnWaterFern, mnTurnCrank, mnReadScrap, mnPullString, mnPlayChime, mnPlaceStar, mnClaimSecret,
