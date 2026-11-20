@@ -304,6 +304,20 @@ body.dark .item canvas{background:linear-gradient(#34427e,#26306a)}
 .item h4{margin:0 0 6px;font-size:16px}
 .item .price{display:flex;align-items:center;gap:5px;font-weight:900;color:var(--muted);font-size:14px;margin-bottom:8px}
 .item .row{display:flex;gap:6px}
+
+.sbtn.prev{background:var(--purple);box-shadow:0 4px 0 #6d3cc9}
+#avPrevModal .mbox{max-width:min(520px,calc(100vw - 24px));padding:22px 20px 18px}
+#avPrevStage{display:grid;place-items:center;background:linear-gradient(#bfe0ff,#e7f3ff);border-radius:20px;margin:8px 0 14px;min-height:280px;position:relative}
+body.dark #avPrevStage{background:linear-gradient(#3b4a8a,#2a3570)}
+#avPrev2{width:220px;height:260px}
+#avPrev3{width:260px;height:280px;display:none}
+#avPrevHint{font-weight:700;color:var(--muted);font-size:14px;margin:0 0 12px}
+#avPrevPad{font-weight:800;font-size:13px;color:var(--muted);margin:0 0 12px}
+#avPrevModal .avprevbtns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.sitem{position:relative}
+.sitem .sprev{position:absolute;top:6px;right:6px;border:0;background:var(--purple);color:#fff;font-weight:900;font-size:13px;border-radius:10px;padding:4px 7px;z-index:2;box-shadow:0 3px 0 #6d3cc9}
+.sitem .sprev:hover{transform:translateY(-1px)}
+
 .sbtn{flex:1;border:0;font-weight:900;font-size:14px;padding:8px 6px;border-radius:12px;color:#fff;background:var(--green);box-shadow:0 4px 0 #1f9460;transition:transform .15s}
 .sbtn:hover{transform:translateY(-2px)} .sbtn:active{transform:translateY(3px);box-shadow:0 1px 0 #1f9460}
 .sbtn.buy{background:var(--orange);box-shadow:0 4px 0 #c97700}
@@ -1924,6 +1938,21 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
   </div>
 </div>
 <!-- coming soon modal -->
+<div class="modal" id="avPrevModal" role="dialog" aria-labelledby="avPrevTitle" aria-modal="true" aria-hidden="true">
+  <div class="mbox">
+    <h2 id="avPrevTitle">👀 Try it on!</h2>
+    <div id="avPrevStage">
+      <canvas id="avPrev2" width="440" height="520" aria-label="Avatar try-on preview"></canvas>
+      <canvas id="avPrev3" width="520" height="560" aria-label="Spinning 3D try-on preview"></canvas>
+    </div>
+    <p id="avPrevSub">Just a try-on — your real outfit, coins, and saves stay put until you buy.</p>
+    <p id="avPrevPad">🎮 Ⓨ Preview · Ⓐ Buy or Wear · Ⓑ Cancel</p>
+    <div class="avprevbtns">
+      <button class="big" id="avPrevBuyBtn" type="button">🛒 Buy</button>
+      <button class="big gray" id="avPrevCancelBtn" type="button">↩️ Cancel</button>
+    </div>
+  </div>
+</div>
 <div class="modal" id="soonModal">
   <div class="mbox">
     <span class="emoji" id="soonEmoji">🚧</span>
@@ -2816,7 +2845,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.20-3';
+const BUILD = '2026.11.20-4';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -9188,6 +9217,129 @@ if (typeof globalThis !== 'undefined'){
   globalThis.drawLook3D = drawLook3D;
 }
 
+/* Shop / editor try-on preview. Never writes saves or spends coins on its own. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.PreviewRules = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  function previewWearable(it){
+    if (!it || typeof it !== 'object') return false;
+    if (it.emote && !it.slot && !it.set && !it.look) return false;
+    return !!(it.slot || it.set || it.look || it.val);
+  }
+
+  function previewApply(base, it, byId){
+    const a = Object.assign({}, base || {});
+    if (!previewWearable(it)) return a;
+    const parts = [];
+    if (it.set && Array.isArray(it.set)){
+      it.set.forEach(id => {
+        const x = typeof byId === 'function' ? byId(id) : (id && id.slot ? id : null);
+        if (x) parts.push(x);
+      });
+    } else {
+      parts.push(it);
+    }
+    parts.forEach(x => { if (x && x.slot) a[x.slot] = x.val; });
+    if (it.look) Object.assign(a, it.look);
+    return a;
+  }
+
+  function previewSnap(state){
+    const owned = state && state.owned;
+    return {
+      avatar: JSON.parse(JSON.stringify((state && state.avatar) || {})),
+      draft: state && state.draft ? JSON.parse(JSON.stringify(state.draft)) : null,
+      coins: (state && state.coins) | 0,
+      owned: Array.isArray(owned) ? owned.slice() : (owned && typeof owned[Symbol.iterator] === 'function' ? [...owned] : [])
+    };
+  }
+
+  function previewSameSave(before, after){
+    if (!before || !after) return false;
+    if ((before.coins | 0) !== (after.coins | 0)) return false;
+    const bo = (before.owned || []).slice().sort();
+    const ao = (after.owned || []).slice().sort();
+    if (bo.length !== ao.length || bo.some((id, i) => id !== ao[i])) return false;
+    return JSON.stringify(before.avatar || {}) === JSON.stringify(after.avatar || {});
+  }
+
+  function previewBegin(state, it){
+    if (!previewWearable(it)) return {ok:false, why:'item'};
+    const before = previewSnap(state);
+    return {
+      ok: true,
+      open: true,
+      itemId: it.id,
+      item: it,
+      look: previewApply(before.avatar, it, state && state.byId),
+      before
+    };
+  }
+
+  function previewCancel(session){
+    if (!session || !session.before) return {ok:false, why:'session', open:false};
+    return {
+      ok: true,
+      open: false,
+      saved: false,
+      spent: false,
+      avatar: JSON.parse(JSON.stringify(session.before.avatar)),
+      draft: session.before.draft ? JSON.parse(JSON.stringify(session.before.draft)) : null,
+      coins: session.before.coins,
+      owned: session.before.owned.slice()
+    };
+  }
+
+  function previewBuy(session, item, now){
+    now = now || {};
+    const before = session && session.before ? session.before : previewSnap(now);
+    const price = (item && item.price) | 0;
+    const owned = Array.isArray(now.owned) ? now.owned.slice() : (now.owned && typeof now.owned[Symbol.iterator] === 'function' ? [...now.owned] : before.owned.slice());
+    const already = !!(item && (owned.indexOf(item.id) >= 0 || price === 0));
+    if (already){
+      return {
+        ok: true,
+        open: false,
+        saved: true,
+        spent: false,
+        already: true,
+        coins: now.coins != null ? (now.coins | 0) : before.coins,
+        owned,
+        avatar: previewApply(before.avatar, item, now.byId)
+      };
+    }
+    const coins = now.coins != null ? (now.coins | 0) : before.coins;
+    if (coins < price){
+      return {
+        ok: false,
+        why: 'coins',
+        open: true,
+        saved: false,
+        spent: false,
+        coins,
+        owned,
+        avatar: JSON.parse(JSON.stringify(before.avatar))
+      };
+    }
+    const nextOwned = owned.slice();
+    if (item && item.id && nextOwned.indexOf(item.id) < 0) nextOwned.push(item.id);
+    if (item && item.set) item.set.forEach(id => { const k = typeof id === 'string' ? id : (id && id.id); if (k && nextOwned.indexOf(k) < 0) nextOwned.push(k); });
+    return {
+      ok: true,
+      open: false,
+      saved: true,
+      spent: true,
+      coins: coins - price,
+      owned: nextOwned,
+      avatar: previewApply(before.avatar, item, now.byId)
+    };
+  }
+
+  return {previewWearable, previewApply, previewSnap, previewSameSave, previewBegin, previewCancel, previewBuy};
+});
+
 const GAMES = [
   {id:'elevator', name:'Wobblevator', emoji:'🛗', tag:'Ride Bingle the Bellhop’s wobbly lift to surprise floors. Clear quirky mini-events, keep your streak, and hop back in — if a floor gets too wobbly, everyone is okay!', draw: drawElevator, playable: true, isNew: true},
   {id:'mansion', name:'Mallowmist Manor', emoji:'🕯️', tag:'A cute haunted house! Solve notes, levers, and a picture puzzle, then tip-toe past Nimble the Nook-Ghost. Getting caught means everyone is okay. Flip on Less scary for a milder mood.', draw: drawMansion, playable: true, isNew: true},
@@ -9905,17 +10057,17 @@ function buy(it){
   try { if (typeof achSweep === 'function') achSweep({source:'shop'}); } catch (e){}
   save('rubloxOwned', [...owned]);
   if (it.emote) refreshLook(); else wear(it, true);
-  function emoLabelFor(id){
-    const E = EMOTES[id];
-    if (!E) return '';
-    if (typeof EmoRules !== 'undefined' && EmoRules.emoKeyLabel) return EmoRules.emoKeyLabel(E);
-    return (E.key || E.key === 0) ? String(E.key) : '';
-  }
-  function emoHowTo(id){
-    const k = emoLabelFor(id);
-    return k ? ('Press ' + k + ' or tap 😀') : 'Tap 😀 and pick it in the emote wheel';
-  }
-    toast(it.emote ? `You got the ${it.name}! ${emoHowTo(it.emote)} 🎉` : 'You got the ' + it.name + '! 🎉'); confetti();
+  toast(it.emote ? `You got the ${it.name}! ${emoHowTo(it.emote)} 🎉` : 'You got the ' + it.name + '! 🎉'); confetti();
+}
+function emoLabelFor(id){
+  const E = EMOTES[id];
+  if (!E) return '';
+  if (typeof EmoRules !== 'undefined' && EmoRules.emoKeyLabel) return EmoRules.emoKeyLabel(E);
+  return (E.key || E.key === 0) ? String(E.key) : '';
+}
+function emoHowTo(id){
+  const k = emoLabelFor(id);
+  return k ? ('Press ' + k + ' or tap 😀') : 'Tap 😀 and pick it in the emote wheel';
 }
 function thumb(canvas, it){
   if (it.cat === 'anim'){
@@ -9956,12 +10108,12 @@ function renderShop(){
       ${on && !it.emote ? `<span class="tagl wear">${it.slot === 'anim' ? 'Equipped' : 'Wearing'}</span>` : ''}
       <div class="in"><h4>${it.emoji} ${it.name}</h4>${!it.set && !it.emote && SLOTS.find(x => x[0] === it.slot) ? (([, e, n]) => `<span class="slotl" data-slot="${it.slot}">${e} ${n}</span>`)(SLOTS.find(x => x[0] === it.slot)) : ''}${it.desc ? `<div class="desc">${it.desc}</div>` : ''}
       <div class="price"><span class="coin sm"></span>${own ? (it.price === 0 ? 'Free' : 'Owned') : it.price}</div>
-      <div class="row">${it.emote && own ? `<button class="sbtn" disabled data-act="none">${emoLabelFor(it.emote) ? ("🎮 Key " + emoLabelFor(it.emote)) : "😀 Wheel"}</button>`
+      <div class="row">${(typeof PreviewRules !== 'undefined' && PreviewRules.previewWearable(it)) ? `<button class="sbtn prev" data-act="preview">👀 Preview</button>` : ''}${it.emote && own ? `<button class="sbtn" disabled data-act="none">${emoLabelFor(it.emote) ? ("🎮 Key " + emoLabelFor(it.emote)) : "😀 Wheel"}</button>`
         : own ? (on && it.def ? `<button class="sbtn" disabled data-act="none">✅ ${it.slot === 'anim' ? 'Equipped' : 'Wearing'}</button>`
           : `<button class="sbtn ${on ? 'off' : ''}" data-act="equip">${on ? (it.slot === 'anim' ? '↩️ Unequip' : '🙅 Take off') : it.slot === 'anim' ? '🕺 Equip' : !it.set && slotVal(it.slot) && it.slot !== 'face' && it.slot !== 'hair' ? '🔄 Swap' : it.slot === 'face' ? '😀 Wear' : '👕 Wear'}</button>`)
         : `<button class="sbtn buy" data-act="buy">🛒 Buy</button>`}</div></div>`;
     thumb(d.querySelector('canvas'), it);
-    d.querySelector('[data-act]').onclick = e => { e.stopPropagation(); if (e.currentTarget.dataset.act === 'none') return; own ? wear(it, !on) : buy(it); };
+    d.querySelectorAll('[data-act]').forEach(btn => { btn.onclick = e => { e.stopPropagation(); const act = e.currentTarget.dataset.act; if (act === 'none') return; if (act === 'preview'){ avPrevOpen(it); return; } own ? wear(it, !on) : buy(it); }; });
     box.appendChild(d);
   });
 }
@@ -9972,14 +10124,124 @@ function renderStuff(){
   mine.forEach(it => {
     const b = document.createElement('button'); const on = isOn(it);
     b.className = 'sitem' + (on ? ' on' : ''); b.dataset.item = it.id; b.title = on ? 'Take off' : 'Wear';
-    b.innerHTML = `<canvas width="144" height="144"></canvas><span>${it.emoji} ${it.name}</span><span>${it.emote ? (emoLabelFor(it.emote) ? '🎮 Key ' + emoLabelFor(it.emote) : '😀 Wheel') : on ? (it.slot === 'anim' ? '✅ Equipped' : '✅ Wearing') : it.slot === 'anim' ? '➕ Equip' : '➕ Wear'}</span>`;
+    b.innerHTML = `<canvas width="144" height="144"></canvas><span>${it.emoji} ${it.name}</span><span>${it.emote ? (emoLabelFor(it.emote) ? '🎮 Key ' + emoLabelFor(it.emote) : '😀 Wheel') : on ? (it.slot === 'anim' ? '✅ Equipped' : '✅ Wearing') : it.slot === 'anim' ? '➕ Equip' : '➕ Wear'}</span>${(!it.emote && typeof PreviewRules !== 'undefined' && PreviewRules.previewWearable(it)) ? '<button type="button" class="sprev" data-act="preview" title="Preview">👀</button>' : ''}`;
     thumb(b.querySelector('canvas'), it);
+    const prevBtn = b.querySelector('[data-act="preview"]');
+    if (prevBtn) prevBtn.onclick = e => { e.stopPropagation(); avPrevOpen(it); };
     b.onclick = () => { if (it.emote){ toast(`${emoHowTo(it.emote)} to ${it.emote}! ${EMOTES[it.emote].emoji}`); return; } if (on && it.def) return; wear(it, !on); };
     box.appendChild(b);
   });
 }
 $$('.tab').forEach(t => t.onclick = () => { shopCat = t.dataset.cat; renderShop(); });
 makeSwatches($('#shopHairSw'), avatar.hairColor, c => { avatar.hairColor = draft.hairColor = c; save('rubloxAvatar', avatar); buildAvatarEditor(); refreshLook(); }, HAIRCOLORS);
+/* Shop try-on preview — live view, Buy + Cancel, no save or spend until Buy. */
+let avPrev = null, avPrev3 = null;
+function avPrevIsOpen(){ return !!(avPrev && avPrev.open); }
+function avPrevState(){
+  const ownedList = (typeof owned !== 'undefined' && owned && owned.size != null) ? [...owned] : (typeof owned !== 'undefined' && Array.isArray(owned) ? owned.slice() : []);
+  return {avatar: typeof avatar !== 'undefined' ? avatar : {}, draft: typeof draft !== 'undefined' ? draft : null, coins: typeof coins !== 'undefined' ? coins : 0, owned: ownedList, byId: typeof byId === 'function' ? byId : null};
+}
+function avPrevOpen(it){
+  if (typeof PreviewRules === 'undefined' || !PreviewRules.previewWearable(it)) return false;
+  const ses = PreviewRules.previewBegin(avPrevState(), it);
+  if (!ses.ok) return false;
+  avPrev = ses;
+  const modal = document.getElementById('avPrevModal');
+  const title = document.getElementById('avPrevTitle');
+  const sub = document.getElementById('avPrevSub');
+  const buy = document.getElementById('avPrevBuyBtn');
+  const cancel = document.getElementById('avPrevCancelBtn');
+  const own = typeof isOwned === 'function' && isOwned(it);
+  if (title) title.textContent = '👀 Try on ' + (it.emoji ? it.emoji + ' ' : '') + (it.name || 'this look');
+  if (sub) sub.textContent = 'Just a try-on — your real outfit, coins, and saves stay put until you buy.';
+  if (buy){
+    buy.style.display = '';
+    if (own){
+      const on = typeof isOn === 'function' && isOn(it);
+      buy.textContent = on ? '✅ Already wearing' : (it.slot === 'anim' ? '🕺 Wear this' : '👕 Wear this');
+      buy.className = 'big green';
+      buy.disabled = !!on;
+    } else {
+      buy.textContent = '🛒 Buy' + (it.price ? (' · ' + it.price + ' coins') : ' (free)');
+      buy.className = 'big';
+      buy.disabled = false;
+    }
+  }
+  if (cancel) cancel.textContent = '↩️ Cancel';
+  if (modal){ modal.classList.add('show'); modal.setAttribute('aria-hidden', 'false'); }
+  avPrevPaint();
+  return true;
+}
+function avPrevPaint(){
+  if (!avPrev || !avPrev.look) return;
+  const c2 = document.getElementById('avPrev2');
+  if (c2 && typeof drawAvatar === 'function'){
+    try { drawAvatar(c2.getContext('2d'), avPrev.look); } catch (e){}
+  }
+  if (c2) c2.style.display = '';
+  if (typeof avMountPreview3D === 'function'){
+    const host = document.getElementById('avPrev3');
+    let ok = false;
+    try { ok = !!avMountPreview3D(host, avPrev.look); } catch (e){ ok = false; }
+    if (host) host.style.display = 'none';
+  }
+}
+function avPrevCloseUi(){
+  const modal = document.getElementById('avPrevModal');
+  if (modal){ modal.classList.remove('show'); modal.setAttribute('aria-hidden', 'true'); }
+  if (typeof avUnmountPreview3D === 'function') avUnmountPreview3D();
+}
+function avPrevCancel(){
+  if (!avPrev){ avPrevCloseUi(); return false; }
+  const out = PreviewRules.previewCancel(avPrev);
+  avPrev = null;
+  avPrevCloseUi();
+  if (typeof refreshLook === 'function') refreshLook();
+  else if (typeof drawBig === 'function') drawBig();
+  return out;
+}
+function avPrevBuy(){
+  if (!avPrev || !avPrev.item) return false;
+  const it = avPrev.item;
+  const own = typeof isOwned === 'function' && isOwned(it);
+  if (own){
+    if (typeof wear === 'function' && !(typeof isOn === 'function' && isOn(it))) wear(it, true);
+    avPrev = null;
+    avPrevCloseUi();
+    return true;
+  }
+  const before = PreviewRules.previewSnap(avPrevState());
+  if (typeof buy === 'function') buy(it);
+  const after = PreviewRules.previewSnap(avPrevState());
+  const bought = !PreviewRules.previewSameSave(before, after) || (typeof isOwned === 'function' && isOwned(it));
+  if (bought){
+    avPrev = null;
+    avPrevCloseUi();
+    if (typeof refreshLook === 'function') refreshLook();
+    return true;
+  }
+  avPrevPaint();
+  return false;
+}
+function avPrevBind(){
+  if (window.__avPrevBound) return;
+  window.__avPrevBound = true;
+  const buy = document.getElementById('avPrevBuyBtn');
+  const cancel = document.getElementById('avPrevCancelBtn');
+  const modal = document.getElementById('avPrevModal');
+  if (buy) buy.onclick = () => avPrevBuy();
+  if (cancel) cancel.onclick = () => avPrevCancel();
+  if (modal) modal.addEventListener('click', e => { if (e.target === modal) avPrevCancel(); });
+  document.addEventListener('keydown', e => {
+    if (!avPrevIsOpen()) return;
+    if (e.code === 'Escape' || e.key === 'Escape'){ avPrevCancel(); e.preventDefault(); e.stopPropagation(); }
+  }, true);
+}
+if (typeof document !== 'undefined'){
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', avPrevBind);
+  else avPrevBind();
+}
+
 function showMsg(emoji, title, text){
   $('#soonEmoji').textContent = emoji; $('#soonTitle').textContent = title; $('#soonText').textContent = text;
   $('#soonModal').classList.add('show');
@@ -42453,8 +42715,49 @@ function start(m = 'obby', d = null){
     }
   } catch (e){}
 
+    function avUnmountPreview3D(){
+    try {
+      if (window.__avPrev3 && window.__avPrev3.raf) cancelAnimationFrame(window.__avPrev3.raf);
+      if (window.__avPrev3 && window.__avPrev3.renderer){ window.__avPrev3.renderer.dispose(); }
+    } catch (e){}
+    window.__avPrev3 = null;
+  }
+  function avMountPreview3D(host, av){
+    avUnmountPreview3D();
+    if (!host || typeof THREE === 'undefined') return false;
+    try {
+      const w = host.width || 520, h = host.height || 560;
+      const renderer = new THREE.WebGLRenderer({canvas: host, antialias: true, alpha: true});
+      renderer.setSize(w, h, false);
+      renderer.setClearColor(0x000000, 0);
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(32, w / h, 0.1, 40);
+      camera.position.set(0, 2.4, 6.2); camera.lookAt(0, 1.4, 0);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+      const sun = new THREE.DirectionalLight(0xfff4e0, 0.7); sun.position.set(3, 6, 4); scene.add(sun);
+      const model = buildPlayer(Object.assign({}, typeof DEF !== 'undefined' ? DEF : {}, av || {}));
+      const root = model && (model.g || model);
+      if (!root) return false;
+      scene.add(root);
+      const tick = () => {
+        const st = window.__avPrev3;
+        if (!st || !st.live) return;
+        if (root.rotation) root.rotation.y += 0.018;
+        renderer.render(scene, camera);
+        st.raf = requestAnimationFrame(tick);
+      };
+      window.__avPrev3 = {renderer, scene, camera, root, live: true, raf: 0};
+      tick();
+      return true;
+    } catch (e){ avUnmountPreview3D(); return false; }
+  }
+  try { if (typeof window !== 'undefined'){ window.avMountPreview3D = avMountPreview3D; window.avUnmountPreview3D = avUnmountPreview3D; } } catch (e){}
+
+
+
   return {start, stop, play, levels: openLevels, pad: padInput, get running(){ return running; }, get loopId(){ return loopId; }, get raf(){ return raf; }, get mp(){ return mp; }, get P(){ return P; }, get camera(){ return camera; }, get mode(){ return mode; }, mpSend, mpBroadcast, myLook, mpLook, mpRoster, armGameLoop, applyQuality: applyObbyQuality};
 })();
+
 try { if (typeof window !== 'undefined') window.Obby = Obby; } catch (e){}
 </script>
 <script id="gamepad">
@@ -42658,7 +42961,16 @@ try { if (typeof window !== 'undefined') window.Obby = Obby; } catch (e){}
       else if (!el.matches('input[type=range]')) el.click();
       return;
     }
-    if (s.jp[1]) return back(c);
+    if (s.jp[1]){
+      if (typeof avPrevIsOpen === 'function' && avPrevIsOpen()){ if (typeof avPrevCancel === 'function') avPrevCancel(); return; }
+      return back(c);
+    }
+    if (s.jp[3] && c.kind !== 'game'){
+      if (typeof avPrevIsOpen === 'function' && avPrevIsOpen()) return;
+      const root = focus && focus.closest && (focus.closest('.item') || focus.closest('.sitem'));
+      const btn = root && root.querySelector('[data-act="preview"]');
+      if (btn){ btn.click(); return; }
+    }
     if (s.jp[2] && c.kind === 'emotes') return back(c);
     if (s.jp[2] && c.root && c.root.id === 'fsWard') return back(c);   // Ⓧ toggles the Fashion Show wardrobe
     if (s.jp[9]){
