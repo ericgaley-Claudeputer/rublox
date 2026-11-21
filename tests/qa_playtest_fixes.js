@@ -100,6 +100,13 @@ describe('labels', () => {
     assert.match(html, /4\+i\*2\.2, 2\.2 \+ \(i % 2\) \* 0\.7, 6\)/);
     assert.match(html, /1\.5 \+ \(i % 3\) \* 0\.6, -2\)/);
   });
+  test('Pet Talent Show mat and stage signs stay out of the starting camera', () => {
+    assert.ok(html.includes("t297Lab('🎭 Stage — start a show here', 0, 3.4, -7)"));
+    assert.match(html, /t297Lab\(t\.emoji \+ ' ' \+ t\.name, x, 1\.5 \+ \(i % 2\) \* 0\.55, z\); if \(ml\) ml\.scale\.multiplyScalar\(0\.6\)/);
+  });
+  test('the controls tip moves above the run-energy bar', () => {
+    assert.ok(html.includes('#obby:not(.touchui):has(#oStam:not([style*="none"])) .otip{bottom:56px}'));
+  });
   test('Bingle is not named twice in a speech bubble', () => {
     const src = fnSource('elevSay');
     const out = [];

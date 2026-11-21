@@ -675,6 +675,8 @@ body.reset-open #resetModal, body.reset-open #resetModal .mbox, body.reset-open 
 .pdrive #oJump,.pdrive #oEmoBtn,.pdrive #oRun,.pdrive #oFP{display:none!important}
 .rmode #oEmoBtn,.rmode #oRun,.rmode #oStam{display:none!important}
 .smode #oStam{display:none!important}
+/* QA t330u: the controls tip sat on top of the run-energy bar in Tag / Hide and Seek. */
+#obby:not(.touchui):has(#oStam:not([style*="none"])) .otip{bottom:56px}
 .tdBox b{color:#8b5cf6}
 .dhnear{background:#2ec27e;box-shadow:0 4px 0 #1f9460}.dhnear small{color:#2ec27e}
 .dhbar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:40;width:min(96vw,820px);background:rgba(255,255,255,.94);border:3px solid #ffd23f;border-radius:16px;padding:6px 8px 8px;box-shadow:0 4px 0 rgba(0,0,0,.12);pointer-events:auto}
@@ -41070,7 +41072,7 @@ function start(m = 'obby', d = null){
     // stage
     plat(0, 0.7, -8, 12, 8, '#f4e27a', 0.7);
     plat(0, 0.2, -2.2, 10, 2.2, '#6b4aa0', 0.2);
-    t297Keep(psg, t297Lab('🎭 Stage — start a show here', 0, 3.4, -5));
+    t297Keep(psg, t297Lab('🎭 Stage — start a show here', 0, 3.4, -7)); // QA t330u: was at z -5, right on top of the starting camera
     // judges as fixtures
     [[-3, -11.2], [0, -11.2], [3, -11.2]].forEach(([x,z], i) => {
       plat(x, 1.0, z, 1.4, 1.0, '#3d2a62', 1.0);
@@ -41083,7 +41085,9 @@ function start(m = 'obby', d = null){
     psg.mats = (PsRules ? PsRules.PS_TRICKS : []).map((t, i) => {
       const x = -8 + i * 4, z = 8;
       plat(x, 0.12, z, 2.2, 2.2, i % 2 ? '#ffd6ea' : '#d6f0ff', 0.12);
-      t297Keep(psg, t297Lab(t.emoji + ' ' + t.name, x, 2.2, z));
+      // QA t330u: these filled the screen right under the camera. Smaller, lower and staggered so neighbours don't overlap.
+      const ml = t297Lab(t.emoji + ' ' + t.name, x, 1.5 + (i % 2) * 0.55, z); if (ml) ml.scale.multiplyScalar(0.6);
+      t297Keep(psg, ml);
       return {id:t.id, x, z, name:t.name, emoji:t.emoji};
     });
     // seats
