@@ -48,7 +48,12 @@ test('mild and spooky produce increasing decal counts in Campfire Grove only', (
   assert.equal(G.goreDecalsFor('vet', 'spooky').length, 0);
   assert.equal(G.goreDecalsFor('elevator', 'mild').length, 0);
   assert.equal(G.goreAllowedIn('camp'), true);
+  assert.equal(G.goreAllowedIn('school'), true);
   assert.equal(G.goreAllowedIn('winter'), false);
+  const sm = G.goreDecalsFor('school', 'mild').length;
+  const ss = G.goreDecalsFor('school', 'spooky').length;
+  assert.ok(sm > 0 && ss > sm, 'school gore counts should increase');
+  assert.equal(G.goreDecalsFor('school', 'off').length, 0);
   const banned = /wound|guts|body ?part|limb|injury|gore fest|dismember/i;
   JSON.stringify(G.CAMP_GORE_DECALS).search(banned) === -1 || assert.fail('decal table looks graphic');
   G.GORE_KINDS.forEach(k => assert.ok(['splat', 'scratch', 'stain', 'handprint'].includes(k)));
@@ -78,7 +83,7 @@ test('gore settings are wired in the page and kept as a global option', () => {
   assert.match(HTML, /function goreSyncUi/);
   assert.match(HTML, /function campRebuildGore/);
   assert.match(HTML, /rubloxGore/);
-  assert.match(HTML, /const BUILD = '2026\.11\.20-12'/);
+  assert.match(HTML, /const BUILD = '2026\.11\.20-13'/);
   assert.equal(Reset.RESET_KEEP_ON_ALL.includes('rubloxGore'), true);
   assert.match(HTML, /'rubloxGore'/);
   assert.match(HTML, /no wounds or body parts/i);

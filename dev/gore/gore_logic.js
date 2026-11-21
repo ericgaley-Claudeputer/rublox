@@ -28,7 +28,7 @@
   };
   const GORE_ORDER = ['off', 'mild', 'spooky'];
   const GORE_CAP_LESS = 'mild';
-  const GORE_GAMES = ['camp'];
+  const GORE_GAMES = ['camp', 'school'];
   const GORE_KINDS = ['splat', 'scratch', 'stain', 'handprint'];
 
   // Environmental decals for Campfire Grove only. No body parts, wounds, or injury poses.
@@ -95,12 +95,22 @@
     return GORE_GAMES.indexOf(modeId) >= 0;
   }
 
+  function goreTable(modeId){
+    if (modeId === 'camp') return CAMP_GORE_DECALS;
+    if (modeId === 'school'){
+      try {
+        const S = (typeof SchoolRules !== 'undefined' && SchoolRules) || (typeof require === 'function' ? require(require('path').join(__dirname, '../school/school_logic.js')) : null);
+        return (S && S.SC_GORE) || [];
+      } catch (e){ return []; }
+    }
+    return [];
+  }
   function goreDecalsFor(modeId, raw, opt){
     if (!goreAllowedIn(modeId)) return [];
     const id = goreEffective(raw, opt);
     const rank = goreRank(id);
     if (rank <= 0) return [];
-    return CAMP_GORE_DECALS.filter(d => goreRank(d.min) <= rank && GORE_KINDS.indexOf(d.kind) >= 0);
+    return goreTable(modeId).filter(d => goreRank(d.min) <= rank && GORE_KINDS.indexOf(d.kind) >= 0);
   }
 
   function goreCampDecals(raw, opt){ return goreDecalsFor('camp', raw, opt); }
@@ -110,7 +120,7 @@
   const api = {
     GORE_KEY, GORE_VER, GORE_LEVELS, GORE_ORDER, GORE_CAP_LESS, GORE_GAMES, GORE_KINDS, CAMP_GORE_DECALS,
     goreDefault, goreLevelId, goreNormalize, goreLoadState, goreLevel, goreRank,
-    goreEffective, goreCapped, goreCapNote, goreAllowedIn, goreDecalsFor, goreCampDecals, goreCampCount
+    goreEffective, goreCapped, goreCapNote, goreAllowedIn, goreTable, goreDecalsFor, goreCampDecals, goreCampCount
   };
   root.GoreRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

@@ -65,7 +65,9 @@
       sunrises: 0,
       bestFire: 0,
       nights: 0,
-      lessScary: false
+      lessScary: false,
+      clues: [],
+      camperFound: false
     };
   }
 
@@ -83,8 +85,95 @@
     d.bestFire = Math.max(0, Math.min(1, +o.bestFire || 0));
     d.nights = Math.max(0, o.nights | 0);
     d.lessScary = !!o.lessScary;
+    d.clues = Array.isArray(o.clues) ? o.clues.filter((id, i, a) => campClue(id) && a.indexOf(id) === i) : [];
+    d.camperFound = !!o.camperFound;
     d.ver = CAMP_VER;
     return d;
+  }
+
+
+  const CAMP_CAMPER = {id:'wren', name:'Maple Wren', emoji:'🧣'};
+  const CAMP_STORY_REWARD = 24;
+  const CAMP_CLUES = [
+    {id:'map', name:'Torn map', emoji:'🗺️', x:28, z:38, r:2.2,
+      blurb:'A torn camp map. Someone circled Moon Lake, then the Old Cabin.',
+      soft:'A gently torn map with a doodle of Moon Lake and a little cabin.'},
+    {id:'light', name:'Flashlight', emoji:'🔦', x:-18, z:18, r:2.2,
+      blurb:'A scratched flashlight, still warm, pointing toward the lake path.',
+      soft:'A friendly little flashlight, still glowing, left on the lake path.'},
+    {id:'prints', name:'Footprints', emoji:'🐾', x:-30, z:34, r:2.4,
+      blurb:'Small boot prints along the shore, turning toward the Old Cabin.',
+      soft:'A trail of little boot prints along the shore, heading to the cabin.'},
+    {id:'journal', name:'Journal page', emoji:'📝', x:46, z:-28, r:2.2,
+      blurb:'A journal page: "I wanted to see the fireflies in the Deep Woods. I will be back before dark."',
+      soft:'A journal page: "Going to watch fireflies in the Deep Woods! Back soon. — Wren"'},
+    {id:'radio', name:'Radio message', emoji:'📻', x:50, z:46, r:2.4,
+      blurb:'A crackly radio: "...I am okay... just a little lost... by the hollow tree..."',
+      soft:'A cheerful radio chirp: "I am okay! I found a hollow tree and I can see fireflies!"'}
+  ];
+  const CAMP_HOLLOW = {x:62, z:54, r:2.6};
+  function campClue(id){ return CAMP_CLUES.find(c => c.id === id) || null; }
+  function campClueText(id, lessScary){
+    const c = campClue(id);
+    if (!c) return '';
+    return (lessScary && c.soft) ? c.soft : c.blurb;
+  }
+  function campHasClue(state, id){
+    state = campLoad(state);
+    return (state.clues || []).indexOf(id) >= 0;
+  }
+  function campFindClue(state, id){
+    state = campLoad(state);
+    if (!campClue(id)) return {ok:false, why:'unknown', state};
+    if (campHasClue(state, id)) return {ok:false, why:'have', state};
+    state.clues = (state.clues || []).concat([id]);
+    return {ok:true, why:'found', state, clue: campClue(id), left: CAMP_CLUES.length - state.clues.length};
+  }
+  function campCluesLeft(state){
+    state = campLoad(state);
+    return CAMP_CLUES.filter(c => (state.clues || []).indexOf(c.id) < 0);
+  }
+  function campAllClues(state){
+    state = campLoad(state);
+    return CAMP_CLUES.every(c => (state.clues || []).indexOf(c.id) >= 0);
+  }
+  function campCanFindCamper(state){ return campAllClues(state) && !campLoad(state).camperFound; }
+  function campFindCamper(state){
+    state = campLoad(state);
+    if (state.camperFound) return {ok:false, why:'have', state, reward:0};
+    if (!campAllClues(state)) return {ok:false, why:'clues', state, reward:0};
+    state.camperFound = true;
+    return {ok:true, why:'safe', state, name: CAMP_CAMPER.name, reward: CAMP_STORY_REWARD};
+  }
+  function campJournalLines(state, lessScary){
+    state = campLoad(state);
+    const lines = CAMP_CLUES.map(c => {
+      const have = (state.clues || []).indexOf(c.id) >= 0;
+      return {id:c.id, name:c.name, emoji:c.emoji, have, text: have ? campClueText(c.id, lessScary) : 'Not found yet.'};
+    });
+    return {
+      title: state.camperFound ? (CAMP_CAMPER.name + ' is safe!') : ('Looking for ' + CAMP_CAMPER.name),
+      intro: lessScary
+        ? (CAMP_CAMPER.name + ' wandered off to see fireflies. Find the clues, then the hollow tree. Everyone will be okay.')
+        : (CAMP_CAMPER.name + ' is missing from camp. Follow the clues. The woods are spooky, but everyone will be okay.'),
+      found: (state.clues || []).length,
+      total: CAMP_CLUES.length,
+      done: !!state.camperFound,
+      ready: campAllClues(state),
+      hollow: CAMP_HOLLOW,
+      lines
+    };
+  }
+  function campNearClue(x, z, state){
+    state = campLoad(state);
+    for (let i = 0; i < CAMP_CLUES.length; i++){
+      const c = CAMP_CLUES[i];
+      if (Math.hypot((x||0) - c.x, (z||0) - c.z) <= (c.r || 2.2) && !campHasClue(state, c.id)) return c;
+    }
+    if (campCanFindCamper(state) && Math.hypot((x||0) - CAMP_HOLLOW.x, (z||0) - CAMP_HOLLOW.z) <= CAMP_HOLLOW.r){
+      return {id:'wren', name:CAMP_CAMPER.name, emoji:CAMP_CAMPER.emoji, final:true};
+    }
+    return null;
   }
 
   function campBuddyAllowed(mp){ return !mp; }
@@ -869,6 +958,9 @@
     campLightAt, campGloamTarget, campStartRun, campStartNight,
     campCanCarry, campPickLog, campGather, campChopLog, campStash, campAddStick, campShine, campCraft,
     campCaught, campTick, campFinish, campReward,
+    CAMP_CAMPER, CAMP_STORY_REWARD, CAMP_CLUES, CAMP_HOLLOW,
+    campClue, campClueText, campHasClue, campFindClue, campCluesLeft, campAllClues,
+    campCanFindCamper, campFindCamper, campJournalLines, campNearClue,
     CAMP_WATCH_KINDS_SCARY, CAMP_WATCH_KINDS_SOFT, campWatchRules, campWatchCollides,
     campWatchPlayers, campWatchDist, campWatchMinDist, campWatchFacing, campWatchSpotOk,
     campWatchCabinSpot, campWatchLakeSpot, campPickWatchSpot, campPlaceWatch, campTickWatchers

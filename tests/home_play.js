@@ -63,9 +63,9 @@ function makeEl(id){
   return el;
 }
 
-test('BUILD is 2026.11.20-12 and matches version.json', () => {
-  assert.ok(src.includes("const BUILD = '2026.11.20-12'"));
-  assert.strictEqual(version.build, '2026.11.20-12');
+test('BUILD is 2026.11.20-13 and matches version.json', () => {
+  assert.ok(src.includes("const BUILD = '2026.11.20-13'"));
+  assert.strictEqual(version.build, '2026.11.20-13');
 });
 
 

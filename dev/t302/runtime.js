@@ -1,5 +1,5 @@
   const T302_MODES = ['garden','meadow','rides','hive','camp'];
-  const T302_OVERLAY_IDS = ['gardenShop','meadowBook','ridesPalette','hiveQuest','campCraft','campWin'];
+  const T302_OVERLAY_IDS = ['gardenShop','meadowBook','ridesPalette','hiveQuest','campCraft','campWin','campJournal'];
   let gd = null, mw = null, rd = null, hv = null, cg = null;
   const t302Btn = {};
 
@@ -73,7 +73,7 @@
       act.addEventListener('pointerup', ev => { ev.preventDefault(); ev.stopPropagation(); t302Pointer(false, ev, true); });
       act.addEventListener('pointercancel', ev => { t302Pointer(false, ev, true); });
     }
-    ['gardenShopBtn','meadowBookBtn','ridesPaletteBtn','ridesHelpBtn','ridesDelBtn','ridesUndoBtn','ridesTestBtn','hiveQuestBtn','campCraftBtn','t302LessBtn','campWinAgain','campWinClose','t302TutNext','t302TutSkip'].forEach(id => {
+    ['gardenShopBtn','meadowBookBtn','ridesPaletteBtn','ridesHelpBtn','ridesDelBtn','ridesUndoBtn','ridesTestBtn','hiveQuestBtn','campCraftBtn','t302JournalBtn','t302LessBtn','campWinAgain','campWinClose','campJournalX','t302TutNext','t302TutSkip'].forEach(id => {
       const el = document.getElementById(id);
       if (el && !el.__t302){ el.__t302 = true; el.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); t302Open(id); }; }
     });
@@ -110,6 +110,7 @@
   function t302Open(which){
     t302BindOverlays();
     if (which === 't302LessBtn'){ campToggleLess(); return; }
+    if (which === 't302JournalBtn' || which === 'campJournal'){ campOpenJournal(); return; }
     if (which === 'ridesDelBtn'){ ridesToggleDel(); return; }
     if (which === 'ridesUndoBtn'){ ridesUndoNow(); return; }
     if (which === 'ridesTestBtn'){ ridesTestRide(); return; }
@@ -118,13 +119,14 @@
     if (which === 'ridesHelpBtn'){ ridesHelp(); return; }
     if (which === 't302TutNext'){ ridesTutGo(); return; }
     if (which === 't302TutSkip'){ ridesTutSkipNow(); return; }
-    const map = {gardenShopBtn:'gardenShop', meadowBookBtn:'meadowBook', ridesPaletteBtn:'ridesPalette', hiveQuestBtn:'hiveQuest', campCraftBtn:'campCraft'};
+    const map = {gardenShopBtn:'gardenShop', meadowBookBtn:'meadowBook', ridesPaletteBtn:'ridesPalette', hiveQuestBtn:'hiveQuest', campCraftBtn:'campCraft', t302JournalBtn:'campJournal'};
     const id = map[which] || which;
     if (id === 'gardenShop') gardenPaintShop();
     if (id === 'meadowBook') meadowPaintBook();
     if (id === 'ridesPalette') ridesPaintPalette();
     if (id === 'hiveQuest') hivePaintQuest();
     if (id === 'campCraft') campPaintCraft();
+    if (id === 'campJournal' || which === 't302JournalBtn') campPaintJournal();
     if (typeof t297OverlayShow === 'function') t297OverlayShow(id, true);
   }
   function t302Box(on){
@@ -1489,6 +1491,27 @@
     cg.run.watchEvents = [];
   }
 
+
+  function campPoseStory(){
+    if (!cg) return;
+    cg.shotLock = true;
+    cg.sv.lessScary = false;
+    // show several unfound clues around the lake path plus the journal
+    if (P){ P.x = -20; P.z = 22; P.face = Math.atan2(-10, 14); if (typeof cam !== 'undefined' && cam){ cam.yaw = P.face; cam.pitch = 0.08; cam.dist = 12; } }
+    try { if (typeof body !== 'undefined' && body) body.visible = false; } catch(e){}
+    cg.run.phase = 'night'; cg.run.gmode = 'hidden'; cg.run.fire = 0.5;
+    if (cg.gloam) cg.gloam.visible = false;
+    campWorldLights(false, true, 0.5, 0);
+    if (scene){
+      const c = new THREE.Color('#0b1020');
+      scene.background = c;
+      if (scene.fog){ scene.fog.color.copy(c); scene.fog.near = 14; scene.fog.far = 70; }
+    }
+    campPaintClues();
+    campOpenJournal();
+    try { window.__campStoryShot = {clues: (cg.sv.clues||[]).length, journal: true}; } catch(e){}
+  }
+
   function campPoseGore(level){
     if (!cg) return;
     cg.shotLock = true;
@@ -1673,6 +1696,7 @@
     campRebuildGloam();
     campPaintLessBtn();
     campRebuildGore();
+    campBuildStory();
     checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:8}, flag:new THREE.Object3D()};
   }
   function campEnter(){
@@ -1898,8 +1922,81 @@
     cg.holding = !!on;
     if (!on && cg.run) cg.run.chopping = null;
   }
+
+
+  function campBuildStory(){
+    if (!cg) return;
+    cg.clueMeshes = {};
+    (CampRules.CAMP_CLUES || []).forEach(c => {
+      const col = c.id === 'light' ? '#ffe566' : (c.id === 'radio' ? '#8ad0ff' : '#d9b48f');
+      const m = t302Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.5), col, c.x, 0.35, c.z, cg);
+      t302Lab((c.emoji || '🔍') + ' ' + c.name, c.x, 1.6, c.z);
+      cg.clueMeshes[c.id] = m;
+    });
+    const h = CampRules.CAMP_HOLLOW;
+    const trunk = t302Mesh(new THREE.CylinderGeometry(0.7, 0.9, 3.2, 8), '#5a3a22', h.x, 1.6, h.z, cg);
+    const wren = t302Mesh(new THREE.BoxGeometry(0.6, 1.1, 0.4), '#3a86ff', h.x + 1.2, 0.9, h.z, cg);
+    t302Mesh(new THREE.BoxGeometry(0.45, 0.45, 0.45), '#ffd23f', h.x + 1.2, 1.65, h.z, cg);
+    t302Lab('🧣 Maple Wren', h.x + 1.2, 2.6, h.z);
+    t302Lab('🌳 Hollow Tree', h.x, 3.4, h.z);
+    cg.wrenMesh = wren;
+    campPaintClues();
+  }
+
+  function campPaintJournal(){
+    const box = document.getElementById('campJournalList');
+    const title = document.getElementById('campJournalTitle');
+    if (!box || !cg) return;
+    const j = CampRules.campJournalLines(cg.sv, !!(cg.sv && cg.sv.lessScary));
+    if (title) title.textContent = j.title;
+    box.innerHTML = '<p class="campStoryIntro">' + j.intro + '</p>' +
+      j.lines.map(l => '<div class="t297row' + (l.have ? '' : ' dim') + '"><span>' + l.emoji + ' ' + l.name + ' — ' + l.text + '</span></div>').join('') +
+      '<div class="t297row"><span>' + (j.done ? '🧣 Maple Wren is safe by the hollow tree. Everyone is okay!' : (j.ready ? 'All clues are in! Follow them to the hollow tree in the Deep Woods.' : ('Clues ' + j.found + '/' + j.total + '.'))) + '</span></div>';
+  }
+  function campOpenJournal(){
+    campPaintJournal();
+    if (typeof t297OverlayShow === 'function') t297OverlayShow('campJournal', true);
+    else { const el = document.getElementById('campJournal'); if (el) el.classList.add('show'); }
+    return true;
+  }
+  function campPickStory(){
+    if (!cg) return false;
+    const hit = CampRules.campNearClue(P.x, P.z, cg.sv);
+    if (!hit) return false;
+    if (hit.final){
+      const r = CampRules.campFindCamper(cg.sv);
+      if (!r.ok){ banner('Keep looking — there are still clues to find.'); return true; }
+      campPersist(r.state); cg.sv = r.state;
+      t302Pay(r.reward, '🧣 Wren is safe'); t302Snd('win'); t302Ach('camp-wren'); t302Note('camp-wren');
+      try { if (typeof confetti === 'function') confetti(); } catch(e){}
+      banner('🧣 You found Maple Wren! They were watching fireflies and lost the path. Everyone is okay!' + (r.reward ? (' +' + r.reward + ' 🪙') : ''));
+      campPaintClues(); campPaintJournal();
+      return true;
+    }
+    const r = CampRules.campFindClue(cg.sv, hit.id);
+    if (!r.ok) return false;
+    campPersist(r.state); cg.sv = r.state;
+    t302Snd('cp'); t302Note('camp-clue');
+    const less = !!(cg.sv && cg.sv.lessScary);
+    banner(hit.emoji + ' ' + CampRules.campClueText(hit.id, less) + (r.left ? ('  (' + (CampRules.CAMP_CLUES.length - r.left) + '/' + CampRules.CAMP_CLUES.length + ')') : '  All clues found! Check the Deep Woods.'));
+    campPaintClues(); campPaintJournal();
+    return true;
+  }
+  function campPaintClues(){
+    if (!cg) return;
+    cg.clues = cg.clues || [];
+    (cg.clues || []).forEach(m => { try { m.visible = true; } catch(e){} });
+    (CampRules.CAMP_CLUES || []).forEach(c => {
+      const have = CampRules.campHasClue(cg.sv, c.id);
+      const mesh = (cg.clueMeshes || {})[c.id];
+      if (mesh) mesh.visible = !have;
+    });
+    if (cg.wrenMesh) cg.wrenMesh.visible = CampRules.campCanFindCamper(cg.sv) || !!(cg.sv && cg.sv.camperFound);
+  }
+
   function campAct(){
     if (!cg || cg.done) return false;
+    if (campPickStory()) return true;
     if (cg.near && cg.near.kind === 'bench'){ t302Open('campCraft'); return true; }
     if (cg.near && cg.near.kind === 'log'){
       const log = CampRules.campLog(cg.run, cg.near.id);
@@ -2182,6 +2279,8 @@
     let near = null;
     if (t302Near(0, 0, 2.4)) near = {kind:'fire'};
     if (t302Near(cg.bench.x, cg.bench.z, 2)) near = {kind:'bench'};
+    const storyHit = CampRules.campNearClue(P.x, P.z, cg.sv);
+    if (storyHit) near = {kind: storyHit.final ? 'wren' : 'clue', id: storyHit.id, name: storyHit.name, emoji: storyHit.emoji};
     (cg.run.logs || []).forEach(log => {
       if ((log.left | 0) > 0 && t302Near(log.x, log.z, 1.7)) near = {kind:'log', id:log.id, chop: log.kind !== 'fallen'};
     });
@@ -2192,7 +2291,10 @@
     else if (near && near.kind === 'log') t302Hud('E / Ⓧ — pick up this fallen log. Carry up to ' + CampRules.CAMP_CARRY + ', then stash them at camp.', '🪵 Pick up');
     else if (near && near.kind === 'bench') t302Hud('E / Ⓧ — craft a blanket or lantern, or change Less scary.', '');
     else if (CampRules.campHas(cg.sv, 'lantern')) t302Hud('Goal: survive 5 nights. L or the Lantern action shines light at the Gloam. Follow the compass back to camp.', '🏮 Lantern');
-    else t302Hud('Goal: survive 5 nights. Hunt logs in the woods, stash them at the fire, watch the trees after dark.', '');
+    else if (near && near.kind === 'clue') t302Hud((near.emoji || '🔍') + ' A clue! E / Ⓧ — pick it up and add it to your journal.', '🔍 Clue');
+    else if (near && near.kind === 'wren') t302Hud('🧣 Maple Wren is here, and they are okay! E / Ⓧ — say hello.', '🧣 Wren');
+    else t302Hud('Goal: survive 5 nights, and help find Maple Wren. Hunt logs, follow clues, keep the fire bright after dark.', '');
+
   }
 
   /* ---------- shared hooks ---------- */
@@ -2241,6 +2343,7 @@
       return false;
     }
     if (mode === 'camp'){
+      if (e.code === 'KeyJ'){ if (!e.repeat) campOpenJournal(); return true; }
       if (e.code === 'KeyL'){ if (!e.repeat) campShineNow(); return true; }
       if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){
         if (e.type === 'keyup'){ campHold(false); return true; }
@@ -2333,6 +2436,7 @@
       watchersLess(){ campPoseWatchers(true); },
       goreMild(){ campPoseGore('mild'); },
       goreSpooky(){ campPoseGore('spooky'); },
+      camperClues(){ campPoseStory(); },
       connectRides(){ if (!rd) return; let s = rd.sv; const spots = [[5,5,0,'curve'],[6,5,0,'curve'],[6,6,0,'curve'],[5,6,0,'curve']]; spots.forEach((q,i) => { const r = RidesRules.ridesPlace(s, q[3], q[0], q[1], q[2], 'me', i ? {snap:true} : {}); if (r.ok){ s = r.state; if (!rd.meshes[r.piece.id]) ridesBuildPiece(r.piece); } }); ridesPersist(s); ridesRefreshJoints(); if (P){ const w = RidesRules.ridesWorld(5,5); P.x = w.x; P.z = w.z + 3; } }
     };
   } catch (e){}
