@@ -8,6 +8,7 @@ const M = require('../dev/mansion/mansion_logic.js');
 const S = require('../dev/shelter/shelter_logic.js');
 const W = require('../dev/winter/winter_logic.js');
 const E = require('../dev/elevator/elev_logic.js');
+const R = require('../dev/mermaid/mermaid_logic.js');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
 function walk(list, label){
@@ -38,7 +39,7 @@ describe('doorway clearance for a max-height player', () => {
 
   test('a max-height player can walk through every Pawsley Vet Clinic doorway, and the first-person camera clears every lintel', () => {
     const doors = V.VT_DOORS.map(d => Object.assign({h: V.VT_DOOR_H, w: d.w, thick: d.thick || 0.42}, d));
-    assert.equal(doors.length, 6);
+    assert.equal(doors.length, 7);
     assert.ok(V.VT_DOOR_H >= D.DOOR_MIN_H);
     assert.ok(V.VT_DOOR_W >= D.DOOR_MIN_W);
     assert.ok(V.VT_WALL_H > V.VT_DOOR_H);
@@ -78,5 +79,30 @@ describe('doorway clearance for a max-height player', () => {
     assert.ok(B.doorOpenH >= D.DOOR_MIN_H);
     assert.ok(B.doorOpenW >= D.DOOR_MIN_W);
     walk(doors, 'elevator');
+  });
+
+  test('a max-height player can walk through the Pawsley ambulance bay and town opening', () => {
+    const doors = (V.VT_TOWN_DOORS || []).map(d => Object.assign({h: d.h || V.VT_DOOR_H, w: d.w, thick: d.thick || 0.42}, d));
+    assert.ok(doors.length >= 1);
+    doors.forEach(d => {
+      assert.ok(d.h >= D.DOOR_MIN_H, d.id + ' height');
+      assert.ok(d.w >= D.DOOR_MIN_W, d.id + ' width');
+      assert.equal(D.doorCameraClears(d.h, D.DOOR_EYE_H, D.DOOR_CAM_CLEAR), true, 'camera blocked in ' + d.id);
+    });
+    walk(doors, 'vet-town');
+    const bay = V.VT_DOORS.find(d => d.a === 'reception' && d.b === 'bay');
+    assert.ok(bay);
+    assert.ok(bay.h >= D.DOOR_MIN_H);
+    assert.ok(bay.w >= D.DOOR_MIN_W);
+  });
+
+  test('a max-height player can walk through every Glimmergill Cove doorway', () => {
+    assert.ok(R.MM_DOOR_H >= D.DOOR_MIN_H);
+    assert.ok(R.MM_DOOR_W >= D.DOOR_MIN_W);
+    assert.ok(R.MM_WALL_H > R.MM_DOOR_H);
+    walk(R.MM_DOORS, 'mermaid');
+    R.MM_DOORS.forEach(d => {
+      assert.equal(D.doorCameraClears(d.h, D.DOOR_EYE_H, D.DOOR_CAM_CLEAR), true, 'camera blocked in ' + d.id);
+    });
   });
 });

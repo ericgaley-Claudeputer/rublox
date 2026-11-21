@@ -107,8 +107,8 @@
   function fsBlankFx(){ return fsCleanFx(null); }
   /* --- fashion level (style stars → title) --- */
   const FS_VIP_COST = 250;   // Rublox coins only — never real money
-  function fsProg(){ const p = load('rubloxFashion', null), o = Object.assign({xp: 0, shows: 0, wins: 0, best: 0, vip: false}, p && typeof p === 'object' ? p : {});
-    o.vip = !!o.vip; o.xp = Math.max(0, o.xp | 0); o.shows = Math.max(0, o.shows | 0); o.wins = Math.max(0, o.wins | 0); o.best = Math.max(0, +o.best || 0); return o; }
+  function fsProg(){ const p = load('rubloxFashion', null), o = Object.assign({xp: 0, shows: 0, wins: 0, best: 0, vip: false, judgeShows: 0, lastTheme: ''}, p && typeof p === 'object' ? p : {});
+    o.vip = !!o.vip; o.xp = Math.max(0, o.xp | 0); o.shows = Math.max(0, o.shows | 0); o.wins = Math.max(0, o.wins | 0); o.best = Math.max(0, +o.best || 0); o.judgeShows = Math.max(0, o.judgeShows | 0); o.lastTheme = typeof o.lastTheme === 'string' ? o.lastTheme.slice(0, 80) : ''; return o; }
   function fsIsVip(){ return !!(fsProg().vip); }
   function fsBuyVip(){
     if (fsIsVip()){ toast('👑 You already have Star VIP!'); return false; }
@@ -864,7 +864,7 @@
     $('#fsLv').innerHTML = fsLvlHtml() + (fsIsVip()
       ? '<div class="fsvipb">👑 Star VIP · exclusive lounge + clothes unlocked</div>'
       : '<div class="fsvipb">👑 Star VIP Lounge · <button class="fsmb" id="fsVipBuyL">Unlock with ' + FS_VIP_COST + ' 🪙</button> <small>(Rublox coins only — never real money)</small></div>');
-    $('#fsPickS').textContent = g ? '⏳ Waiting for the host to start the show...' : mp.on ? 'Everyone gets the same surprise theme, styles a look in the pastel prep room, walks the glam runway and rates each other 1-5 ⭐!' : 'Get a surprise theme, style a look in the pastel prep room, strut the glam runway with a pose, and get rated by the other models and judges! 👑';
+    $('#fsPickS').textContent = g ? '⏳ Waiting for the host to start the show...' : mp.on ? 'Everyone gets the same surprise theme, styles a look in the pastel prep room, walks the glam runway and rates each other 1-5 ⭐!' : 'Get a surprise theme, style a look in the pastel prep room, strut the glam runway with a pose, and get scored by a friendly judge panel! 👑';
     $('#fsGo').style.display = g ? 'none' : ''; $('#fsTimes').style.display = g ? 'none' : '';
     $('#fsTimes').innerHTML = '⏱️ Dress time: ' + FS_TIMES.map(s => `<button class="fstm${fs.dl === s ? ' on' : ''}" data-s="${s}">${s / 60} min</button>`).join('');
     $('#fsTimes').querySelectorAll('.fstm').forEach(b => b.onclick = () => fsSetTime(+b.dataset.s));
@@ -878,7 +878,7 @@
     if (!fs || mpGuest()) return;
     let ord;
     if (mp.on){ ord = fsBodies(); if (ord.length < 2){ toast('👫 The Fashion Show needs 2+ players in the room'); return; } }
-    else ord = ['H', ...FS_NPCS.map(n => n.uid)];
+    else ord = [fsUid()];
     let th; do { th = Math.floor(Math.random() * FS_THEMES.length); } while (th === fs.lastTh);
     if (fs.forceTh != null) th = fs.forceTh;
     fs.lastTh = th; fs.th = th; fs.ord = ord; fs.n++; fs.ph = 'intro'; fs.t = FS_INTRO; fs.wt = 0; fs.gfits = {}; fs.gfx = {}; fs.fits = {}; fs.fxs = {}; fs.rates = {}; fs.tags = {}; fs.myTags = {}; fs.tagFocus = 'colors'; fs.poses = {}; fs.ready = new Set(); fs.res = []; fs.pod = []; fs.done = {};
@@ -1066,7 +1066,7 @@
     const me = fsUid(), mine = fs.ord.includes(me), place = fs.pod.indexOf(me), row = fs.res.find(r => r[0] === me), avg = row ? row[1] / 10 : 0;
     let lvUp = null;
     if (!fs.paid){ fs.paid = true; fs.lvBonus = 0; fs.xpGain = 0; const n = mine ? FS_JOIN + (place >= 0 ? FS_PRIZE[place] : 0) : 0;
-      if (mine){ const p = fsProg(), L0 = fsLevel(p.xp).lv, gain = 2 + Math.round(avg * 4) + (place >= 0 ? [8, 5, 3][place] : 0); p.xp += gain; p.shows++; if (place === 0) p.wins++; p.best = Math.max(p.best, avg); save('rubloxFashion', p); fs.xpGain = gain;
+      if (mine){ const p = fsProg(), L0 = fsLevel(p.xp).lv, gain = 2 + Math.round(avg * 4) + (place >= 0 ? [8, 5, 3][place] : 0); p.xp += gain; p.shows++; if (!mp.on) p.judgeShows = (p.judgeShows | 0) + 1; if (typeof FS_THEMES !== 'undefined' && FS_THEMES[fs.th]) p.lastTheme = FS_THEMES[fs.th].name; if (place === 0) p.wins++; p.best = Math.max(p.best, avg); save('rubloxFashion', p); fs.xpGain = gain;
         const L1 = fsLevel(p.xp); if (L1.lv > L0){ lvUp = L1; fs.lvBonus = L1.lv * 10; } }
       const tot = n + fs.lvBonus; if (tot){ fs.earned = tot; runCoins = tot; setCoins(coins + tot); SND.coin(); } }
     $('#fsEndE').textContent = place === 0 ? '👑' : place > 0 ? ['', '🥈', '🥉'][place] : '✨';

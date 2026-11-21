@@ -19,7 +19,7 @@ describe('Pawsley Vet Clinic', () => {
     assert.equal(V.vtSetFp('vet', true), true);
     assert.equal(V.vtSetFp('obby', false), false);
     assert.match(html, /function fpOn\(\)\{[^;]*mode === 'vet'/);
-    assert.match(html, /mode === 'vet'\)\{ on = true; if \(fp\.on\) return; \}/);
+    assert.match(html, /mode === 'vet' && !\(typeof vtDriving === 'function' && vtDriving\(\)\)\)\{ on = true; if \(fp\.on\) return; \}/);
     assert.match(html, /\.vtmode #oFP\{display:none/);
     assert.match(html, /toggle\('vtmode', mode === 'vet'\)/);
     assert.match(html, /clipFpCamera\(\)/);
@@ -157,7 +157,7 @@ describe('Pawsley Vet Clinic', () => {
     assert.equal(R.RESET_KEEP_ON_ALL.includes('rubloxVet'), false);
     assert.ok(html.includes("keys:['rubloxVet']") || html.includes('keys:["rubloxVet"]') || html.includes("keys:['rubloxVet']"));
     assert.match(html, /Pawsley Vet Clinic/);
-    assert.match(html, /BUILD = '2026\.11\.20-8'/);
+    assert.match(html, /BUILD = '2026\.11\.20-9'/);
     assert.equal(V.vtKidCopyOk('blood and gore'), false);
   });
 });

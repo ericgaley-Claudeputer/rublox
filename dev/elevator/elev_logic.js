@@ -295,7 +295,9 @@
       met: [],
       lobbySecret: false,
       daily: null,
-      dailyClaims: 0
+      dailyClaims: 0,
+      hearts: {},
+      heartRewards: []
     };
   }
 
@@ -339,6 +341,8 @@
         tickets: Math.max(0, o.daily.tickets | 0)
       };
     }
+    d.hearts = elevCleanHearts(o.hearts);
+    if (Array.isArray(o.heartRewards)) d.heartRewards = o.heartRewards.filter(x => typeof x === 'string').slice(0, 80);
     d.ver = ELEV_VER;
     return d;
   }
@@ -362,6 +366,12 @@
     {id:'soapsocks', kind:'use', name:'Soap-proof Socks', emoji:'🧦', cost:10, desc:'One-use: ignore one slip or dodge hazard.'},
     {id:'streakcharm', kind:'use', name:'Streak Charm', emoji:'🍀', cost:20, desc:'One-use: if you fail, your coin streak is kept once.'},
     {id:'ribbonwrap', kind:'use', name:'Ribbon Wrap', emoji:'🎁', cost:12, desc:'One-use: give this present to a passenger in the cab.'},
+    {id:'cookie', kind:'use', name:'Wobble Cookie', emoji:'🍪', cost:8, desc:'A crumbly cookie to share with a cab pal.'},
+    {id:'shimmerpin', kind:'use', name:'Shimmer Pin', emoji:'✨', cost:10, desc:'A shiny pin found or bought for a friend.'},
+    {id:'cocoa', kind:'use', name:'Thermos Cocoa', emoji:'☕', cost:9, desc:'A warm cup for a chilly ride.'},
+    {id:'comic', kind:'use', name:'Wobbly Comic', emoji:'📘', cost:8, desc:'A tiny comic book of Bingle adventures.'},
+    {id:'yarn', kind:'use', name:'Cozy Yarn', emoji:'🧶', cost:8, desc:'A soft ball of yarn for fidgety paws.'},
+
     {id:'seatcushion', kind:'use', name:'Seat Cushion', emoji:'🪑', cost:9, desc:'One-use: a plusher ride, and +3 seconds on your next floor.'},
     {id:'jumblejam', kind:'use', name:'Jumble Jam', emoji:'🍓', cost:14, desc:'Bazaar-only: +6 bonus coins on your next cleared floor.', floorOnly:'buttonbazaar'},
     {id:'sparklepin', kind:'hat', name:'Sparkle Pin', emoji:'✨', cost:22, desc:'A bazaar-only pin that twinkles when the dial turns.', floorOnly:'buttonbazaar'}
@@ -447,6 +457,14 @@
     if (!pal) return '';
     ctx = ctx || {};
     const kind = ctx.kind || ctx.phase || '';
+    const level = ctx.level != null ? (ctx.level | 0) : (ctx.hearts | 0);
+    if (level >= 2){
+      const heart = elevHeartLines(pal, level);
+      if (heart && heart.length){
+        const i = (ctx.i != null) ? (ctx.i | 0) : 0;
+        return heart[((i % heart.length) + heart.length) % heart.length];
+      }
+    }
     if (ctx.joke && pal.jokes && pal.jokes.length) return pal.jokes[Math.floor((ctx.i || 0) % pal.jokes.length)];
     if (pal.react && kind && pal.react[kind]) return pal.react[kind];
     const lines = (pal.lines && pal.lines.length) ? pal.lines : (pal.line ? [pal.line] : []);
@@ -1279,12 +1297,14 @@
       talk: elevCleanTalk(run.talk),
       talkSeq: run.talkSeq | 0,
       queued: run.queued && elevFloor(run.queued) ? run.queued : null,
-      vote: run.vote ? {choices: (run.vote.choices || []).map(c => ({id:c.id, name:c.name, emoji:c.emoji, ticket:!!c.ticket})), votes: Object.assign({}, run.vote.votes || {}), winner: run.vote.winner || null} : null
+      vote: run.vote ? {choices: (run.vote.choices || []).map(c => ({id:c.id, name:c.name, emoji:c.emoji, ticket:!!c.ticket})), votes: Object.assign({}, run.vote.votes || {}), winner: run.vote.winner || null} : null,
+      heartsPub: run.heartsPub ? Object.assign({}, run.heartsPub) : {}
     };
   }
 
   function elevApplyWire(run, snap){
     if (!run || !snap || typeof snap !== 'object') return run;
+    if (snap.heartsPub && typeof snap.heartsPub === 'object') run.heartsPub = Object.assign({}, snap.heartsPub);
     if (snap.phase) run.phase = snap.phase;
     if (snap.floor !== undefined) run.floor = snap.floor;
     if (snap.t != null) run.t = +snap.t;
@@ -1375,22 +1395,162 @@
     return state;
   }
 
-  function elevGiftPal(state, run, palId){
+
+  const ELEV_GIFTS = [
+    {id:'ribbonwrap', name:'Ribbon Wrap', emoji:'🎁', likes:['marm','polo','doodle'], dislikes:['sprocket']},
+    {id:'cookie', name:'Wobble Cookie', emoji:'🍪', likes:['niblet','fizz','doodle'], dislikes:['crisp']},
+    {id:'shimmerpin', name:'Shimmer Pin', emoji:'✨', likes:['lumen','echo','pip'], dislikes:['puddle']},
+    {id:'sparklepin', name:'Sparkle Pin', emoji:'✨', likes:['lumen','echo','pip'], dislikes:['puddle']},
+    {id:'cocoa', name:'Thermos Cocoa', emoji:'☕', likes:['taro','moony','bramble'], dislikes:['fizz']},
+    {id:'comic', name:'Wobbly Comic', emoji:'📘', likes:['sprocket','pip','bingle'], dislikes:['marm']},
+    {id:'yarn', name:'Cozy Yarn', emoji:'🧶', likes:['puddle','sock','polo'], dislikes:['echo']}
+  ];
+  const ELEV_HEART_XP = 8;
+  const ELEV_HEART_MAX = 5;
+
+  function elevGiftItem(id){ return ELEV_GIFTS.find(g => g.id === id) || null; }
+  function elevGiftMood(pal, gift){
+    if (!pal || !gift) return 'ok';
+    if ((gift.likes || []).indexOf(pal.id) >= 0) return 'like';
+    if ((gift.dislikes || []).indexOf(pal.id) >= 0) return 'dislike';
+    return 'ok';
+  }
+  function elevGiftQuote(pal, gift, mood){
+    const name = (pal.emoji || '') + ' ' + pal.name;
+    const item = gift && gift.name ? gift.name : 'present';
+    if (mood === 'like') return name + ': "This ' + item + ' is my favorite! Thank you, friend!"';
+    if (mood === 'dislike') return name + ': "A kind thought! This ' + item + ' is not quite my style, but I still appreciate you."';
+    return name + ': "For me? I will treasure this wobble-present!"';
+  }
+  function elevCleanHearts(raw){
+    const out = {};
+    if (!raw || typeof raw !== 'object') return out;
+    Object.keys(raw).forEach(id => {
+      if (!elevPal(id)) return;
+      const r = raw[id] || {};
+      out[id] = {
+        xp: Math.max(0, r.xp | 0),
+        talks: Math.max(0, r.talks | 0),
+        rides: Math.max(0, r.rides | 0),
+        gifts: Math.max(0, r.gifts | 0)
+      };
+    });
+    return out;
+  }
+  function elevHeartRow(state, palId){
+    state = state || {};
+    if (!state.hearts) state.hearts = {};
+    if (!state.hearts[palId]) state.hearts[palId] = {xp:0, talks:0, rides:0, gifts:0};
+    return state.hearts[palId];
+  }
+  function elevHeartLevel(state, palId){
+    const row = (state && state.hearts && state.hearts[palId]) || {xp:0};
+    return Math.max(0, Math.min(ELEV_HEART_MAX, Math.floor((row.xp | 0) / ELEV_HEART_XP)));
+  }
+  function elevHeartLevels(state){
+    const out = {};
+    state = elevLoad(state);
+    Object.keys(state.hearts || {}).forEach(id => { out[id] = elevHeartLevel(state, id); });
+    return out;
+  }
+  function elevHeartReward(state, palId, level){
+    state = elevLoad(state);
+    const key = palId + ':' + level;
+    if ((state.heartRewards || []).indexOf(key) >= 0) return {state, reward:0, badge:false};
+    let reward = 0, badge = false;
+    if (level >= 3){ reward += 5; badge = true; }
+    if (level >= 5) reward += 8;
+    if (reward || badge){
+      if (!state.heartRewards) state.heartRewards = [];
+      state.heartRewards.push(key);
+    }
+    return {state, reward, badge};
+  }
+  function elevHeartAdd(state, palId, kind, xp){
+    state = elevLoad(state);
+    if (!elevPal(palId)) return {ok:false, state, why:'pal'};
+    const row = elevHeartRow(state, palId);
+    const before = elevHeartLevel(state, palId);
+    row.xp = (row.xp | 0) + Math.max(0, xp | 0);
+    if (kind && row[kind] != null) row[kind] = (row[kind] | 0) + 1;
+    state.hearts[palId] = row;
+    const level = elevHeartLevel(state, palId);
+    let reward = 0, badge = false;
+    if (level > before){
+      const r = elevHeartReward(state, palId, level);
+      state = r.state; reward = r.reward; badge = r.badge;
+      if (reward) state.coins = (state.coins | 0) + reward;
+    }
+    return {ok:true, state, row, level, leveled: level > before, reward, badge};
+  }
+  function elevHeartTalk(state, run, palId){
+    state = elevLoad(state);
+    if (!run) return {ok:false, why:'run', state};
+    if (!elevPalIds(run).includes(palId)) return {ok:false, why:'aboard', state, run};
+    run.heartTalked = run.heartTalked || {};
+    const key = (run.floor || run.phase || 'cab') + ':' + palId;
+    if (run.heartTalked[key]) return {ok:true, why:'already', state, run, level: elevHeartLevel(state, palId), row: elevHeartRow(state, palId)};
+    run.heartTalked[key] = true;
+    const r = elevHeartAdd(state, palId, 'talks', 2);
+    return Object.assign({run}, r);
+  }
+  function elevHeartRide(state, run, palId){
+    state = elevLoad(state);
+    if (!run) return {ok:false, why:'run', state};
+    if (!elevPalIds(run).includes(palId)) return {ok:false, why:'aboard', state, run};
+    run.heartRode = run.heartRode || {};
+    if (run.heartRode[palId]) return {ok:true, why:'already', state, run, level: elevHeartLevel(state, palId)};
+    run.heartRode[palId] = true;
+    const r = elevHeartAdd(state, palId, 'rides', 1);
+    return Object.assign({run}, r);
+  }
+  function elevHeartGift(state, palId, mood){
+    const xp = mood === 'like' ? 6 : mood === 'dislike' ? 1 : 3;
+    return elevHeartAdd(state, palId, 'gifts', xp);
+  }
+  function elevHeartLines(pal, level){
+    if (!pal) return [];
+    if (pal.heartLines && pal.heartLines.length) return pal.heartLines;
+    return [
+      'It is nice to ride with a friend like you.',
+      'You make this wobbly cab feel like home.',
+      'I saved a secret joke just for you!',
+      'Our friendship sparkles brighter than the floor lights.'
+    ];
+  }
+  function elevHeartPub(state, uid){
+    return {uid: String(uid || 'H'), levels: elevHeartLevels(state)};
+  }
+  function elevMergeHeartPub(run, pub){
+    run = run || {};
+    run.heartsPub = run.heartsPub || {};
+    if (pub && pub.uid) run.heartsPub[String(pub.uid)] = pub.levels && typeof pub.levels === 'object' ? pub.levels : {};
+    return run;
+  }
+
+  function elevGiftPal(state, run, palId, giftId){
     state = elevLoad(state);
     if (!run) return {ok:false, why:'run', state, run};
     const pal = elevPal(palId) || (elevPalIds(run)[0] && elevPal(elevPalIds(run)[0]));
     if (!pal) return {ok:false, why:'pal', state, run};
     if (!elevPalIds(run).includes(pal.id)) return {ok:false, why:'aboard', state, run};
-    const have = (state.pack.ribbonwrap | 0) > 0;
+    const gid = giftId || 'ribbonwrap';
+    const gift = elevGiftItem(gid);
+    if (!gift) return {ok:false, why:'gift', state, run};
+    const have = (state.pack[gid] | 0) > 0;
     if (!have) return {ok:false, why:'item', state, run};
-    state.pack.ribbonwrap -= 1;
-    if (!state.pack.ribbonwrap) delete state.pack.ribbonwrap;
+    state.pack[gid] -= 1;
+    if (!state.pack[gid]) delete state.pack[gid];
     state.gifts = (state.gifts | 0) + 1;
     state = elevMeetPals(state, run);
     state = elevDailyProgress(state, 'gift', 1);
-    const line = (pal.emoji || '') + ' ' + pal.name + ': "For me? I will treasure this wobble-present!"';
+    const mood = elevGiftMood(pal, gift);
+    const heart = elevHeartGift(state, pal.id, mood);
+    state = heart.state;
+    const line = elevGiftQuote(pal, gift, mood);
     run.quote = line;
-    return {ok:true, why:'ok', state, run, pal:pal, pay:3, quote:line};
+    const pay = mood === 'like' ? 4 : 3;
+    return {ok:true, why:'ok', state, run, pal:pal, pay:pay, quote:line, gift:gift, mood:mood, hearts:heart.row, level:heart.level, reward:heart.reward, badge:heart.badge};
   }
 
   function elevFindLobbySecret(state){
@@ -1485,7 +1645,8 @@
     {id:'elev-secret', name:'Quiet Finder', emoji:'❔', desc:'Discover a secret floor.'},
     {id:'elev-lobby', name:'Waiting-Room Secret', emoji:'🖼️', desc:'Find the hidden painting in the lobby.'},
     {id:'elev-rare', name:'Lucky Dial', emoji:'🪞', desc:'Ride a rare floor.'},
-    {id:'elev-friends', name:'Cab Full of Pals', emoji:'👋', desc:'Meet eight different passengers.'}
+    {id:'elev-friends', name:'Cab Full of Pals', emoji:'👋', desc:'Meet eight different passengers.'},
+    {id:'elev-hearts', name:'Friendship Hearts', emoji:'💖', desc:'Grow a passenger friendship heart to level 3.'}
   ];
 
   function elevBadgeCatalog(){ return ELEV_BADGE_CATALOG.slice(); }
@@ -1508,6 +1669,7 @@
     if ((state.seen || []).some(id => { const f = elevFloor(id); return f && f.kind === 'boss'; })) b.push('elev-boss');
     if ((state.ticketsUsed | 0) >= 1) b.push('elev-ticket');
     if ((state.gifts | 0) >= 1) b.push('elev-gift');
+    if (Object.keys(state.hearts || {}).some(id => elevHeartLevel(state, id) >= 3)) b.push('elev-hearts');
     if ((state.dailyClaims | 0) >= 1) b.push('elev-daily');
     if ((state.seen || []).some(id => { const f = elevFloor(id); return f && f.secret; })) b.push('elev-secret');
     if (state.lobbySecret) b.push('elev-lobby');
@@ -1525,7 +1687,7 @@
     elevSnowOn, elevHostLine, elevPickPal, elevStartRun, elevDueShop, elevDueSpecial, elevPool, elevRebuildBag, elevPickSpecial, elevPickFloor, elevBeginFloor, elevBeginRide, elevVoteShouldStart, elevVoteChoices, elevBeginVote, elevCastVote, elevTallyVote, elevFinishVote, ELEV_VOTE_T, ELEV_VOTE_EVERY,
     elevReward, elevClearFloor, elevFailFloor, elevBuySnack, elevBuyFloorItem, elevRing, elevPaint, elevPickItem, elevTurnIn,
     elevTouchHazard, elevReachDoor, elevStayLit, elevQuiz, elevStack, elevBeat, elevPadStand, elevBossReady, elevTagBoss,
-    elevTick, elevFloorSpec, elevIndexRows, elevBadges, elevBadgeCatalog, elevMilestonePay, elevMeetPals, elevGiftPal, elevFindLobbySecret, elevQueueNext, elevDayKey, elevEnsureDaily, elevDailyProgress, elevDailyClaim
+    elevTick, elevFloorSpec, elevIndexRows, elevBadges, elevBadgeCatalog, elevMilestonePay, elevMeetPals, elevGiftPal, elevFindLobbySecret, elevQueueNext, elevDayKey, elevEnsureDaily, elevDailyProgress, elevDailyClaim, ELEV_GIFTS, ELEV_HEART_XP, ELEV_HEART_MAX, elevGiftItem, elevGiftMood, elevGiftQuote, elevCleanHearts, elevHeartRow, elevHeartLevel, elevHeartLevels, elevHeartAdd, elevHeartTalk, elevHeartRide, elevHeartGift, elevHeartLines, elevHeartPub, elevMergeHeartPub
   };
   root.ElevRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

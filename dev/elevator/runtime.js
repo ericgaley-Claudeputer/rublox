@@ -1013,17 +1013,57 @@
     return elv.pals.find(p => elevNear(p.x, p.z, 1.7)) || null;
   }
 
+  function elevOwnedGifts(){
+    const pack = (elv && elv.sv && elv.sv.pack) || {};
+    const list = (typeof ElevRules !== 'undefined' && ElevRules.ELEV_GIFTS) ? ElevRules.ELEV_GIFTS : [{id:'ribbonwrap'}];
+    return list.filter(g => (pack[g.id] | 0) > 0);
+  }
+  function elevHeartLabel(palId){
+    if (!elv || !elv.sv || typeof ElevRules === 'undefined' || !ElevRules.elevHeartLevel) return '';
+    const lv = ElevRules.elevHeartLevel(elv.sv, palId);
+    let s = '💖 ';
+    for (let i = 1; i <= 5; i++) s += i <= lv ? '❤️' : '🤍';
+    return s + '  Lv ' + lv;
+  }
+  function elevApplyHeart(r){
+    if (!r || !r.ok) return r;
+    if (r.state){ elv.sv = r.state; elevPersist(r.state); }
+    if (r.reward) elevPay(r.reward);
+    if (r.badge) try { ElevRules.elevBadges(elv.sv, elv.run).forEach(id => elevAch(id)); } catch (e){}
+    try {
+      const uid = (typeof mp !== 'undefined' && mp && mp.me) ? mp.me : 'H';
+      ElevRules.elevMergeHeartPub(elv.run, ElevRules.elevHeartPub(elv.sv, uid));
+    } catch (e){}
+    return r;
+  }
+  function elevTryTalk(){
+    if (!elv || elevIsGuest()) return false;
+    const seat = elevNearPal();
+    if (!seat || typeof ElevRules === 'undefined' || !ElevRules.elevHeartTalk) return false;
+    const r = ElevRules.elevHeartTalk(elv.sv, elv.run, seat.id);
+    if (!r.ok) return false;
+    elevApplyHeart(r);
+    const pal = ElevRules.elevPal(seat.id);
+    const line = ElevRules.elevTalkLine(pal, {level: r.level, i: (r.row && r.row.talks) || 0});
+    if (line){
+      elv.run.quote = (pal.emoji || '') + ' ' + pal.name + ': "' + line + '"';
+      banner(elv.run.quote);
+    } else banner('You chat with ' + (pal && pal.name || 'a pal') + '! ' + elevHeartLabel(seat.id));
+    elevNetSync();
+    return true;
+  }
   function elevTryGift(){
     if (!elv || elevIsGuest()) return false;
     const seat = elevNearPal();
     if (!seat) return false;
-    if (!((elv.sv.pack && elv.sv.pack.ribbonwrap) | 0)) return false;
-    const r = ElevRules.elevGiftPal(elv.sv, elv.run, seat.id);
+    const owned = elevOwnedGifts();
+    if (!owned.length) return elevTryTalk();
+    const r = ElevRules.elevGiftPal(elv.sv, elv.run, seat.id, owned[0].id);
     if (!r.ok) return false;
-    elv.sv = r.state; elevPersist(r.state);
+    elevApplyHeart(r);
     if (r.pay) elevPay(r.pay);
     ElevRules.elevBadges(elv.sv, elv.run).forEach(id => elevAch(id));
-    banner(r.quote || 'Gift given!');
+    banner((r.quote || 'Gift given!') + '  ' + elevHeartLabel(seat.id));
     elevTone([700, 880], 0.07, 'sine', 0.05);
     elevNetSync();
     return true;
@@ -1427,18 +1467,23 @@
 
     let act = '';
     if (run.phase === 'lobby' || run.phase === 'inter'){
-      const canGift = !!(elevNearPal() && elv.sv && elv.sv.pack && elv.sv.pack.ribbonwrap);
+      const nearPal = elevNearPal();
+      const canGift = !!(nearPal && elevOwnedGifts().length);
+      const canTalk = !!nearPal;
       if (!elevInCab() && elv.secretAt && elevNear(elv.secretAt.x, elv.secretAt.z, 2.2)) elevHud('A shy painting is hiding here. Press E / Ⓧ to peek.', '🖼️ Peek');
       else if (!elevInCab() && elv.dailyAt && elevNear(elv.dailyAt.x, elv.dailyAt.z, 2.2)) elevHud('E / Ⓧ — check today’s challenge.', '📅 Today');
-      else if (canGift) elevHud('E / Ⓧ — give a Ribbon Wrap to this passenger.', '🎁 Give');
+      else if (canGift) elevHud('E / Ⓧ — give a present to ' + nearPal.name + '. ' + elevHeartLabel(nearPal.id), '🎁 Give');
+      else if (canTalk) elevHud('E / Ⓧ — chat with ' + nearPal.name + '. ' + elevHeartLabel(nearPal.id), '💬 Chat');
       else if (elevNearShop() && !elevInCab()) elevHud('E / Ⓧ — open the lobby shop for hats and useful bits. The glowing elevator is ready when you are.', '🛒 Shop');
       else if (elevInCab()) elevHud('Step in to ride! Doors are counting down — hang tight.', '🛗 Ride');
       else elevHud('Step in to ride! Walk into the glowing elevator, or press Ride (E / Ⓧ).', '🛗 Ride');
     } else if (run.phase === 'board'){
       elevHud('🚪 Doors closing in ' + Math.ceil(run.t) + 's — get back in!', elevInCab() ? '🛗 Ride' : '🚪 Get in!');
     } else if (run.phase === 'ride'){
-      const canGift = !!(elevNearPal() && elv.sv && elv.sv.pack && elv.sv.pack.ribbonwrap);
-      elevHud(run.quote || 'The lift is wobbling to the next floor…', canGift ? '🎁 Give' : '');
+      const nearPal = elevNearPal();
+      const canGift = !!(nearPal && elevOwnedGifts().length);
+      const hearts = nearPal ? ('  ' + elevHeartLabel(nearPal.id)) : '';
+      elevHud((run.quote || 'The lift is wobbling to the next floor…') + hearts, canGift ? '🎁 Give' : (nearPal ? '💬 Chat' : ''));
     } else if (run.phase === 'floor' && f){
       if (elv.bells && elv.bells.some(o => elevNear(o.x, o.z, 1.6))) act = '🔔 Ring';
       else if (elv.paints && elv.paints.some(o => !o.done && elevNear(o.x, o.z, 1.7))) act = (f.id === 'honkfloor' ? '📯 Honk' : '🎨 Paint');
@@ -1570,6 +1615,21 @@
 
   if (typeof window !== 'undefined') window.elevDebug = {
     floors(){ return ElevRules.ELEV_FLOORS.map(f => f.id); },
+    hearts(){ if (!elv || !ElevRules) return null;
+      let st = elv.sv || ElevRules.elevFresh();
+      ["niblet","pip","lumen"].forEach(id => { const r = ElevRules.elevHeartAdd(st, id, "talks", 24); st = r.state; });
+      elv.sv = st; if (typeof elevPersist === "function") elevPersist(st);
+      try { if (elv.run) ElevRules.elevSeatPals(elv.run, [ElevRules.elevPal("niblet"), ElevRules.elevPal("pip")]); } catch (e){}
+      if (elv.run){
+        ElevRules.elevMergeHeartPub(elv.run, ElevRules.elevHeartPub(st, "H"));
+        elv.run.phase = 'lobby'; elv.run.t = 30; elv.run.watching = false;
+      }
+      P.x = 0; P.y = 0.5; P.z = 14; P.vx = 0; P.vz = 0;
+      if (typeof cam !== "undefined"){ cam.yaw = 0; cam.pitch = 0.32; cam.dist = 16; }
+      if (typeof elevHud === "function") elevHud("💖 Niblet ❤️❤️🤍🤍🤍  Lv 2 — talk, ride, and give gifts to grow friendship hearts!", "💬 Chat");
+      if (typeof updateCamera === "function") updateCamera();
+      return {level: ElevRules.elevHeartLevel(st, "niblet")};
+    },
     cab(){ if (!elv) return; elv.run.watching = false; if (elv.lobbySpawn && checkpoints[0]) checkpoints[0].spawn = {x:elv.lobbySpawn.x, y:elv.lobbySpawn.y, z:elv.lobbySpawn.z}; P.x = 0; P.z = (elv.lobbySpawn && elv.lobbySpawn.z) || 11; P.y = 0.5; P.vx = 0; P.vy = 0; P.vz = 0; elv.run.phase = 'lobby'; elv.floorStart = null; elevRestoreSky(); elevClearFloorMeshes(); },
     floor(id){
       if (!elv) return;
@@ -1625,6 +1685,7 @@
       if (!elv) return;
       elv.run.buddy = true;
       ElevRules.elevBeginRide(elv.run, Math.random);
+      try { (ElevRules.elevPalIds(elv.run)||[]).forEach(id => { const hr = ElevRules.elevHeartRide(elv.sv, elv.run, id); if (hr && hr.ok) elevApplyHeart(hr); }); } catch (e){}
       elevOnPhase('board', 'ride');
       elevSpawnPals(elv.run);
       elv.talkT = 0; elevTickTalk(0.01);

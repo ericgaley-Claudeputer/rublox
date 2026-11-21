@@ -1,0 +1,13 @@
+
+.avbooth{position:fixed;inset:0;z-index:10070;display:flex;align-items:center;justify-content:center;background:rgba(10,12,24,.55);pointer-events:auto;isolation:isolate}
+.avbooth[hidden]{display:none !important;pointer-events:none}
+.avbooth-card{background:#fff8ef;border:3px solid #1d2340;border-radius:18px;padding:12px;max-width:560px;width:94%;max-height:92vh;overflow:auto;box-shadow:4px 4px 0 #1d2340;position:relative;z-index:1;pointer-events:auto}
+.avbooth-h{font-weight:800;margin-bottom:8px}
+#avBoothCv{display:block;width:100%;max-width:360px;height:auto;margin:0 auto 8px;border-radius:12px;background:#f4efe8;position:relative;pointer-events:none}
+.avbooth-row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;position:relative;z-index:2;pointer-events:auto}
+.avbooth-row button,.avbooth-acts button{border:2px solid #1d2340;border-radius:12px;padding:6px 8px;font-weight:700;cursor:pointer;background:#fff;position:relative;z-index:2;pointer-events:auto;touch-action:manipulation}
+.avbooth-row button.on{background:#ffd23f}
+.avbooth-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;position:relative;z-index:2;pointer-events:auto}
+.avbooth-gal{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;position:relative;z-index:2;pointer-events:auto}
+.avbooth-gal img{width:88px;height:88px;object-fit:cover;border-radius:10px;border:2px solid #1d2340;pointer-events:auto;cursor:pointer}
+#hubBoothBtn,#avBoothBtn{margin-left:8px;position:relative;z-index:2;pointer-events:auto;touch-action:manipulation}

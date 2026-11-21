@@ -1,0 +1,10 @@
+
+#mmBox{position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center;display:none}
+#mmBox #mmHint{display:inline-block;background:rgba(12,48,64,.84);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:14px}
+.mmode #mmBox{display:block}
+#mmAct{position:absolute;right:16px;bottom:96px;z-index:8;padding:12px 16px;font-size:18px;border:3px solid #0b3b4a;border-radius:16px;background:#7ee0d6;font-weight:800;box-shadow:3px 3px 0 #0b3b4a;display:none}
+#mmAct.show{display:block}
+#mmSwim{position:absolute;right:16px;bottom:170px;z-index:8;display:none;flex-direction:column;gap:8px}
+.mmode #mmSwim{display:flex}
+#mmSwim button{width:56px;height:56px;border:3px solid #0b3b4a;border-radius:16px;background:#c8f4ff;font-size:22px;font-weight:800;box-shadow:3px 3px 0 #0b3b4a}
+@media (max-width:700px){ #mmAct{bottom:120px} #mmSwim{bottom:190px} }
