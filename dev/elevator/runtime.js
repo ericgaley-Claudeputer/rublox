@@ -159,7 +159,10 @@
 
   function elevSay(who, text, x, y, z, sec){
     if (!elv) return;
-    const label = (who ? who + ': ' : '') + '"' + text + '"';
+    // QA t330u: intercom lines already carry their speaker ("🛎️ Bingle: \"...\""), so don't say the name twice.
+    const raw = String(text == null ? '' : text), bare = String(who || '').replace(/^[^A-Za-z0-9]+/, '').trim();
+    const spoke = bare && raw.replace(/^[^A-Za-z0-9"]+/, '').startsWith(bare + ':');
+    const label = spoke ? raw : (who ? who + ': ' : '') + '"' + raw + '"';
     const m = elevLab(label, x, y, z);
     if (!m) { banner(label); return; }
     elv.bubbles = (elv.bubbles || []).filter(b => { try { scene.remove(b.mesh); } catch (e){} return false; });

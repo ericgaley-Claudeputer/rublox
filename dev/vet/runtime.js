@@ -50,7 +50,8 @@
   }
   function vtLab(text, x, y, z){
     try {
-      if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m) return vtKeep(m); }
+      // QA t330u: indoors and in first person, labels drew through every wall and piled up. Let walls hide them and make them smaller.
+      if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m){ if (m.material) m.material.depthTest = true; m.scale.multiplyScalar(0.62); return vtKeep(m); } }
     } catch (e){}
     return vtMesh(new THREE.BoxGeometry(0.2,0.2,0.2), '#fff', x, y, z);
   }
@@ -530,6 +531,8 @@
     if (!vt || !vt.run || typeof mode === 'undefined' || mode !== 'vet') return;
     if (!vt.pitchSet && typeof cam !== 'undefined' && !vtDriving()){ cam.pitch = 0.08; cam.yaw = 0; vt.pitchSet = true; }
     vt.run.t = (vt.run.t || 0) + (dt || 0);
+    // QA t330u: in first person a prop label filled the whole screen when you walked up to it; the action button already says it.
+    (vt.props || []).forEach(pr => { if (pr && pr.label && pr.x != null) pr.label.visible = Math.hypot(P.x - pr.x, P.z - pr.z) > 1.9; });
     if (vt.pet) vt.pet.rotation.y += (dt || 0) * 0.4;
     if (vtDriving()){
       vtDriveInput();

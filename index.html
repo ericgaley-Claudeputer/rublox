@@ -1430,6 +1430,14 @@ body.lh-muffled #obby{filter:saturate(.85)}
 .qbox,.trbox{position:relative;max-width:560px;width:100%;max-height:90vh;overflow:auto;background:#fff6e8;border:4px solid #1d2340;border-radius:20px;padding:16px 16px 18px;box-shadow:6px 6px 0 #1d2340}
 .qclose,#trClose{position:absolute;top:8px;right:10px;border:0;background:transparent;font-size:22px;cursor:pointer}
 #oQuestBtn,#oTradeBtn{font-size:22px;margin-left:4px}
+/* QA t330u: 📜 and 🤝 sat exactly on top of the 😀 emote button, so it could not be clicked. Line them up side by side. */
+#obby:not(.touchui) #oQuestBtn{right:calc(max(20px,env(safe-area-inset-right)) + 66px)}
+#obby:not(.touchui) #oTradeBtn{right:calc(max(20px,env(safe-area-inset-right)) + 132px)}
+/* Build World's block bar and Lantern Big Top's purple settings stack sit at the bottom right too: lift the round buttons above them. */
+#obby.bmode:not(.touchui) .oemo{bottom:calc(max(20px,env(safe-area-inset-bottom)) + 62px)}
+#obby.lhmode:not(.touchui) .oemo{bottom:calc(max(20px,env(safe-area-inset-bottom)) + 186px)}
+/* Clover Meadow adopt panel: wrap the pony cards so none hide behind the Later button. */
+#sbPickList{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:min(560px,92vw);max-height:min(56vh,420px);overflow-y:auto}
 .trcols{display:flex;gap:12px;flex-wrap:wrap}
 .trcols>div{flex:1;min-width:200px}
 .trit{display:flex;align-items:center;gap:8px;width:100%;margin:4px 0;padding:8px 10px;border:2px solid #1d2340;border-radius:12px;background:#fff;cursor:pointer;text-align:left}
@@ -19722,8 +19730,24 @@ const Obby = (() => {
     checks();
     if (mode === 'tag') tagKeepInArena(P, true);
   }
+  // QA t330u: in the cozy lot games, walking off the edge used to drop you into the void for seconds and count a "death".
+  // Remember the last solid spot and put you back a little toward the start instead.
+  const QA_EDGE_MODES = ['garden', 'meadow', 'rides', 'hive', 'camp', 'cafe', 'fish', 'petshow', 'hunt'];
+  let qaSafe = null;
+  function qaEdgeCatch(){
+    if (!QA_EDGE_MODES.includes(mode)) return false;
+    if (P.onGround && P.y > -1.5){ qaSafe = {mode, x: P.x, y: P.y, z: P.z}; return false; }
+    if (!qaSafe || qaSafe.mode !== mode || P.y > qaSafe.y - 5) return false;
+    const sp = (checkpoints[0] && checkpoints[0].spawn) || {x: 0, z: 0};
+    const dx = sp.x - qaSafe.x, dz = sp.z - qaSafe.z, d = Math.hypot(dx, dz) || 1, k = Math.min(2.5, d) / d;
+    Object.assign(P, {x: qaSafe.x + dx * k, y: qaSafe.y + 0.6, z: qaSafe.z + dz * k, vx: 0, vy: 0, vz: 0, onGround: false, ground: null});
+    if (typeof banner === 'function') banner('🧭 Whoops, that’s the edge of the map! Back you go.');
+    return true;
+  }
+  if (typeof window !== 'undefined') window.__qaEdge = () => ({modes: QA_EDGE_MODES.slice(), safe: qaSafe && Object.assign({}, qaSafe)});
   function checks(){
     if (SIM) return;
+    if (qaEdgeCatch()) return;
     if (mode === 'lava') return lavaChecks();
     if (mode === 'splash') return splashChecks();
     if (mode === 'nds') return ndsChecks();
@@ -37038,6 +37062,33 @@ function dhLayoutHud(){
         : '⌨️ WASD / Arrows to move · Space to jump · Shift to run · Drag the mouse to look · V first person · 1–8 emotes · Esc to pause') + "<br>🏷️ Don't be IT! Touch someone to pass it on. Least IT time after 90s wins! +5 🪙 per tag, +30 to win";
       return;
     }
+    // QA t330u: the newer games fell through to the Obby text ("grab the coins, dodge the red lava"). Give each its own keys + goal.
+    const NEWTIP = {
+      elevator: ['E act / shop · I floors · H help', '🛗 Ride the Wobblevator, clear each surprise floor, then hop back in before the doors close!'],
+      mansion: ['E read / flip / unlock · L Less scary', '🕯️ Find the notes, solve the parlor pictures, follow the clues to the Secret Attic, and tip-toe past Nimble.'],
+      shelter: ['E rescue / care / desk · H send a happy pal home · U bigger kennels', '🐾 Rescue strays, cheer them up in the salon, then match them with visiting families.'],
+      winter: ['E act · F cocoa · on a sled: A/D steer, Space hop', '🎄 Hang lights, wrap gifts for Ribbon Rue, sled, skate, and build a snow pal.'],
+      vet: ['E or Space help · drag or click to look', '🩺 Read the chart, walk to the right room, treat your patient, and give cuddles until the owner picks them up.'],
+      mermaid: ['Space / R swim up · Shift / F swim down · E act', '🧜 Swim around Glimmergill Cove, collect shells, and decorate your coral home.'],
+      garden: ['E plant / harvest / shop', '🌱 Plant seeds, wait for them to grow, harvest, then sell them or show a prize.'],
+      meadow: ['hold E to charge, let go to toss', '🥣 Toss a snack near a pal to add them to your book.'],
+      rides: ['E place · Q / R turn and rotate · Z undo', '🎢 Build a ride on your lot, then hop on and test it!'],
+      hive: ['E talk / gather / make honey', '🐝 Gather pollen with your bee swarm, make honey, and help the bear neighbors.'],
+      camp: ['E pick up / add logs · L shine your light', '🔥 Hunt logs by day, keep the fire bright, and stay in the light at night.'],
+      cafe: ['E make / serve · B decorate', '☕ Read each ticket, make the drink or treat, and serve it to the right table.'],
+      fish: ['E cast / reel · I fish index', '🎣 Cast your line, wait for the bite, then reel at the right time to fill your fish index.'],
+      petshow: ['E teach / perform', '🎭 Teach your pet tricks on the practice pads, then perform for the judges.'],
+      hunt: ['E dig · M map', '🗺️ Follow today’s clues on the map and dig up the treasure chests.'],
+      party: ['E dance / sit / use', '🎉 Hang out! Dance, sit, snap a photo, or kick the ball.'],
+      snowfest: ['E play a booth', '❄️ Try the snowball toss, the sled hill, the snowman yard, and the ice rink.'],
+    };
+    if (NEWTIP[mode]){
+      const nt = NEWTIP[mode];
+      $('#oTip').innerHTML = (on
+        ? (mode === 'vet' ? '🕹️ Left thumb to move · swipe to look · tap the big buttons to help' : mode === 'mermaid' ? '🕹️ Left thumb to swim · ⬆️ ⬇️ swim up and down · tap the big buttons to act' : '🕹️ Left thumb to move · ⬆️ jump · tap the big buttons to act')
+        : '⌨️ WASD move · ' + (mode === 'mermaid' ? '' : 'Space jump · ') + nt[0] + ' · Esc pause') + '<br>' + nt[1];
+      return;
+    }
     const goal = mode === 'nds' ? 'Survive each disaster for 30 seconds! Hide inside, climb up high, stay out of the water. +20 🪙 per round!' : mode === 'lava' ? 'Climb the tower to the 🚁 before the lava gets you!'
       : 'Level ' + level + ': grab the coins, dodge the red lava, and reach the 🏆!' + (INTRO[level] ? '<br>🆕 ' + INTRO[level][1] : '');
     $('#oTip').innerHTML = (on
@@ -41206,7 +41257,7 @@ function start(m = 'obby', d = null){
     huntPaintMap();
     const step = huntg.map && huntg.map.steps[huntg.sv.step];
     banner(step ? ('🗺️ Today\'s first clue: ' + step.clue) : '🗺️ You already finished today\'s map — come back tomorrow!');
-    t297Hud(step ? step.clue : 'Today\'s map is done. Wander or come back tomorrow!', '🗺️ Map');
+    t297Hud(step ? step.clue : 'Today\'s map is done. Wander or come back tomorrow!', null);   // QA t330u: the 🗺️ Map button is already on screen
   }
   function huntStop(){
     if (!huntg) return;
@@ -41265,8 +41316,8 @@ function start(m = 'obby', d = null){
     const s = huntSpotNear();
     const cur = huntg.map && huntg.map.steps[huntg.sv.step];
     if (s) t297Hud('Dig at the ' + s.name + '?', '⛏️ Dig');
-    else if (cur) t297Hud(cur.clue, '🗺️ Map');
-    else t297Hud('Today\'s map is complete!', '🗺️ Map');
+    else if (cur) t297Hud(cur.clue, null);   // QA t330u: no second "🗺️ Map" button next to the real one
+    else t297Hud('Today\'s map is complete!', null);
   }
   function huntKey(e){
     if (!huntg || e.repeat) return false;
@@ -43813,7 +43864,10 @@ function start(m = 'obby', d = null){
 
   function elevSay(who, text, x, y, z, sec){
     if (!elv) return;
-    const label = (who ? who + ': ' : '') + '"' + text + '"';
+    // QA t330u: intercom lines already carry their speaker ("🛎️ Bingle: \"...\""), so don't say the name twice.
+    const raw = String(text == null ? '' : text), bare = String(who || '').replace(/^[^A-Za-z0-9]+/, '').trim();
+    const spoke = bare && raw.replace(/^[^A-Za-z0-9"]+/, '').startsWith(bare + ':');
+    const label = spoke ? raw : (who ? who + ': ' : '') + '"' + raw + '"';
     const m = elevLab(label, x, y, z);
     if (!m) { banner(label); return; }
     elv.bubbles = (elv.bubbles || []).filter(b => { try { scene.remove(b.mesh); } catch (e){} return false; });
@@ -45393,6 +45447,703 @@ function start(m = 'obby', d = null){
     }
   };
 
+  /* ---------- Mallowmist Manor ---------- */
+  let mn = null;
+  function mnKeep(m){ if (m && mn && mn.trash) mn.trash.push(m); return m; }
+  function mnMat(c, o){ return new THREE.MeshLambertMaterial(Object.assign({color:c, side:THREE.DoubleSide}, o||{})); }
+  function mnMesh(geo, c, x, y, z, o){
+    const m = new THREE.Mesh(geo, mnMat(c, o)); m.position.set(x,y,z); scene.add(m); return mnKeep(m);
+  }
+  function mnWall(x, y, z, w, h, d, c){
+    const b = plat(x, y + h/2, z, w, d, c, h);
+    if (b && b.mesh){ b.mesh.material = mnMat(c); mnKeep(b.mesh); }
+    if (b && mn) mn.solids.push(b);
+    return b;
+  }
+  function mnState(){ return MansionRules.mnLoad(typeof load === 'function' ? load(MansionRules.MN_KEY, null) : null); }
+  function mnSave(s){ if (typeof save === 'function') save(MansionRules.MN_KEY, s); if (mn) mn.sv = s; }
+  function mnLess(){ return !!(mn && mn.run && mn.run.lessScary); }
+  function drawMansion(ctx){
+    const skyTop = '#2a2458', skyBot = '#6b5b9a';
+    if (typeof sky === 'function') sky(ctx, skyTop, skyBot);
+    else { ctx.fillStyle = skyTop; ctx.fillRect(0,0,320,200); }
+    ctx.fillStyle = '#3d3358'; ctx.fillRect(40, 50, 240, 120);
+    ctx.fillStyle = '#2a2140'; ctx.beginPath(); ctx.moveTo(30,50); ctx.lineTo(160,10); ctx.lineTo(290,50); ctx.fill();
+    ctx.fillStyle = '#ffd23f'; ctx.fillRect(70, 80, 36, 36); ctx.fillRect(214, 80, 36, 36);
+    ctx.fillStyle = '#c4a574'; ctx.fillRect(140, 110, 40, 60);
+    ctx.font = '28px sans-serif'; ctx.fillText('🕯️', 148, 80); ctx.fillText('👻', 250, 48);
+    if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#c9b6ff');
+  }
+  function mnSky(){
+    const less = mnLess();
+    const bg = less ? '#3a3458' : '#1c1633';
+    scene.background = new THREE.Color(bg);
+    if (scene.fog){ scene.fog.color.set(bg); scene.fog.near = less ? 16 : 8; scene.fog.far = less ? 56 : 36; }
+  }
+  function mnLab(text, x, y, z){
+    try {
+      // QA t330u: room and prop labels drew through the manor walls; let walls hide them.
+      if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m){ if (m.material) m.material.depthTest = true; m.scale.multiplyScalar(0.8); return mnKeep(m); } }
+    } catch (e){}
+    return mnMesh(new THREE.BoxGeometry(0.2,0.2,0.2), '#fff', x, y, z);
+  }
+  function buildMansion(){
+    const sv = mnState();
+    if (sv.lessScary == null) sv.lessScary = !!(typeof CampRules !== 'undefined' && CampRules.campLoad && CampRules.campLoad(typeof load==='function'?load('rubloxCamp',null):null).lessScary);
+    const started = MansionRules.mnNewRun(sv, Date.now());
+    mn = {trash:[], solids:[], sv: started.state, run: started.run, props:[], ghost:null, door:null};
+    mnSky();
+    const wall = mnLess() ? '#6b6088' : '#3f3558';
+    const floor = mnLess() ? '#c4b8a0' : '#5a4a6a';
+    plat(0, 0, -36, 22, 110, floor, 0.3);
+    plat(20, 0, -20, 18, 18, mnLess() ? '#d4e8c8' : '#3e4a48', 0.3);
+    plat(20, 0, -40, 18, 18, mnLess() ? '#c8b8a0' : '#3a3040', 0.3);
+    plat(-20, 0, -58, 18, 18, mnLess() ? '#e8d8c0' : '#3a3458', 0.3);
+    plat(20, 0, -80, 18, 18, mnLess() ? '#e8e0ff' : '#2c2448', 0.3);
+    // outer shell with side-door gaps
+    mnWall(0, 4, 16, 22, 8, 0.5, wall);
+    mnWall(0, 4, -88, 22, 8, 0.5, wall);
+    mnWall(-11, 4, -19, 0.5, 8, 74, wall);
+    mnWall(-11, 4, -74, 0.5, 8, 28, wall);
+    mnWall(11, 4, 0, 0.5, 8, 32, wall);
+    mnWall(11, 4, -30, 0.5, 8, 16, wall);
+    mnWall(11, 4, -59, 0.5, 8, 34, wall);
+    mnWall(11, 4, -84, 0.5, 8, 8, wall);
+    mnWall(0, 8.2, -36, 22, 0.4, 110, mnLess() ? '#efe6d8' : '#2a2438');
+    // room dividers with door gaps at x=0
+    ;[-10, -30, -50, -70].forEach(z => {
+      mnWall(-7, 3, z, 8, 6, 0.4, wall);
+      mnWall(7, 3, z, 8, 6, 0.4, wall);
+      mnWall(0, 5.4, z, 6, 1.2, 0.4, wall);
+    });
+    // foyer props
+    plat(-4, 0.8, 6, 2.2, 1.4, '#8b5a2b', 0.8);
+    mn.props.push({id:'note1', x:-4, z:6, kind:'note', n:1, label: mnLab('📝 Note', -4, 2.0, 6)});
+    plat(4, 1.1, 4, 0.6, 0.6, '#d4a017', 1.1);
+    mn.props.push({id:'lever', x:4, z:4, kind:'lever', label: mnLab('🎚️ Lever', 4, 2.4, 4)});
+    mnLab('🕯️ Foyer', 0, 3.2, 10);
+    // parlor portraits
+    [[-6,-20,0],[-2,-20,1],[2,-20,2],[6,-20,3]].forEach(([x,z,i]) => {
+      const cols = ['#c45c7a','#5c8bc4','#d4a017','#6bbf8a'];
+      plat(x, 1.6, z, 1.6, 0.3, cols[i], 1.6);
+      mn.props.push({id:'pic'+i, x, z, kind:'pic', slot:i, label: mnLab('🖼️ ' + (i+1), x, 3.1, z)});
+    });
+    mnLab('🖼️ Parlor', 0, 3.2, -14);
+    // kitchen
+    plat(3, 0.9, -40, 2.4, 1.6, '#d9c4a0', 0.9);
+    mn.props.push({id:'key', x:3, z:-40, kind:'key', label: mnLab('🔑 Cupboard', 3, 2.2, -40)});
+    mnLab('🍪 Kitchen', 0, 3.2, -34);
+    // library
+    plat(-3, 1.0, -60, 2.2, 1.4, '#6b4a2b', 1.0);
+    mn.props.push({id:'note2', x:-3, z:-60, kind:'note', n:2, label: mnLab('📝 Hidden note', -3, 2.3, -60)});
+    mnLab('📚 Library', 0, 3.2, -54);
+    // foyer clock / pull-string
+    plat(-6, 1.6, 10, 0.8, 0.8, '#6b4a2b', 3.2);
+    mn.props.push({id:'clock', x:-6, z:10, kind:'clock', label: mnLab('🕰️ Clock', -6, 3.6, 10)});
+    // Moonfern Conservatory
+    mnWall(28, 4, -20, 0.5, 8, 18, mnLess() ? '#b8d8c8' : '#355048');
+    mnWall(20, 4, -12, 16, 8, 0.5, mnLess() ? '#b8d8c8' : '#355048');
+    mnWall(20, 4, -28, 16, 8, 0.5, mnLess() ? '#b8d8c8' : '#355048');
+    mnLab('🌿 Conservatory', 20, 3.2, -14);
+    [[16,-18,0],[24,-18,1],[16,-22,2],[24,-22,3]].forEach(([x,z,i]) => {
+      plat(x, 0.4, z, 1.2, 1.2, '#3d8a5a', 0.8);
+      mn.props.push({id:'fern'+i, x, z, kind:'fern', slot:i, label: mnLab('🌿 ' + (i+1), x, 2.0, z)});
+    });
+    // Jam Cellar
+    mnWall(28, 4, -40, 0.5, 8, 18, mnLess() ? '#8a6a48' : '#3a2a28');
+    mnWall(20, 4, -32, 16, 8, 0.5, mnLess() ? '#8a6a48' : '#3a2a28');
+    mnWall(20, 4, -48, 16, 8, 0.5, mnLess() ? '#8a6a48' : '#3a2a28');
+    plat(18, 0.8, -38, 1.4, 1.0, '#c45c1a', 1.2);
+    mn.props.push({id:'crank', x:18, z:-38, kind:'crank', label: mnLab('⚙️ Crank', 18, 2.2, -38)});
+    plat(24, 0.7, -42, 1.2, 1.0, '#d9c4a0', 0.9);
+    mn.props.push({id:'scrap', x:24, z:-42, kind:'scrap', label: mnLab('📄 Scrap', 24, 2.0, -42)});
+    mnLab('🫙 Jam Cellar', 20, 3.2, -34);
+    // Chime Nook
+    mnWall(-28, 4, -58, 0.5, 8, 18, mnLess() ? '#d8c8a8' : '#322a48');
+    mnWall(-20, 4, -50, 16, 8, 0.5, mnLess() ? '#d8c8a8' : '#322a48');
+    mnWall(-20, 4, -66, 16, 8, 0.5, mnLess() ? '#d8c8a8' : '#322a48');
+    mnLab('🔔 Chime Nook', -20, 3.2, -52);
+    [[-16,-56,0],[-24,-56,1],[-16,-60,2],[-24,-60,3]].forEach(([x,z,i]) => {
+      plat(x, 1.4, z, 0.6, 0.6, '#d4a017', 1.4);
+      mn.props.push({id:'chime'+i, x, z, kind:'chime', bell:i, label: mnLab('🔔 ' + (i+1), x, 3.0, z)});
+    });
+    // Secret Attic
+    mnWall(28, 4, -80, 0.5, 8, 18, mnLess() ? '#d8c8ff' : '#2a2048');
+    mnWall(20, 4, -72, 16, 8, 0.5, mnLess() ? '#d8c8ff' : '#2a2048');
+    mnWall(20, 4, -88, 16, 8, 0.5, mnLess() ? '#d8c8ff' : '#2a2048');
+    mnLab('⭐ Secret Attic', 20, 3.2, -74);
+    [[16,-78,0],[24,-78,1],[16,-82,2],[24,-82,3]].forEach(([x,z,i]) => {
+      plat(x, 1.1, z, 1.0, 1.0, '#8b5cf6', 0.9);
+      mn.props.push({id:'star'+i, x, z, kind:'star', slot:i, label: mnLab('⭐ ' + (i+1), x, 2.3, z)});
+    });
+    plat(20, 1.0, -85, 1.4, 1.2, '#ffd23f', 1.2);
+    mn.props.push({id:'lantern', x:20, z:-85, kind:'lantern', label: mnLab('🌙 Moon lantern', 20, 2.6, -85)});
+    const moth = new THREE.Group();
+    const mw = new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 8), mnMat(mnLess() ? '#fff4d6' : '#e8d0ff', {emissive: mnLess() ? '#ffe9a0' : '#4a3080'}));
+    mw.position.y = 1.3; moth.add(mw);
+    moth.position.set(20, 0, -80); scene.add(moth); mnKeep(moth); mn.moth = moth;
+    mnLab('🦋 Dustmoth', 22, 2.4, -80);
+    // attic / Nimble / door
+    plat(0, 2.4, -86, 3.6, 0.6, '#c45c1a', 2.4);
+    mn.door = {x:0, z:-86};
+    mnLab('🚪 Front door', 0, 4.2, -86);
+    mnLab('🫥 Attic Hall', 0, 3.2, -74);
+    const ghost = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.7, 12, 10), mnMat(mnLess() ? '#f4e8ff' : '#d8d0f0', {emissive: mnLess() ? '#b8a0e0' : '#3a3060'}));
+    body.position.y = 1.2; ghost.add(body);
+    const cap = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.5, 10), mnMat('#8b5cf6'));
+    cap.position.y = 1.9; ghost.add(cap);
+    ghost.position.set(4, 0, -78); scene.add(ghost); mnKeep(ghost); mn.ghost = ghost;
+    mnLab('👻 Nimble', 4, 2.8, -78);
+    const lamp = new THREE.PointLight(mnLess() ? 0xfff0c8 : 0xc8b0ff, mnLess() ? 1.1 : 0.55, 40);
+    lamp.position.set(0, 5, -36); scene.add(lamp); mnKeep(lamp);
+    const amb = new THREE.AmbientLight(mnLess() ? 0xfff4e8 : 0x8890c0, mnLess() ? 0.7 : 0.35);
+    scene.add(amb); mnKeep(amb);
+    Object.assign(P, {x:0, y:0.5, z:8, vx:0, vy:0, vz:0});
+    if (typeof cam !== 'undefined' && cam){ cam.yaw = Math.PI; cam.pitch = 0.32; cam.dist = 11; }
+    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:8}, flag:new THREE.Object3D()};
+    mnBind();
+    mnHud();
+    banner(mnLess() ? '😌 Mallowmist Manor feels milder. Look for notes, and say hi to sleepy Nimble.' : '🕯️ Welcome to Mallowmist Manor. Find notes, solve the parlor pictures, and tip-toe past Nimble.');
+  }
+  function mnNear(x, z, r){ return Math.hypot((P.x - x), (P.z - z)) < (r || 2.1); }
+  function mnCurrentRoom(){
+    const x = P.x, z = P.z;
+    if (x > 12.2){
+      if (z > -30) return 'conservatory';
+      if (z > -52) return 'cellar';
+      return 'secret';
+    }
+    if (x < -12.2) return 'chime';
+    if (z > -10) return 'foyer';
+    if (z > -30) return 'parlor';
+    if (z > -50) return 'kitchen';
+    if (z > -70) return 'library';
+    return 'attic';
+  }
+  function mnPrompt(){
+    if (!mn || mn.run.escaped) return null;
+    const hit = mn.props.find(p => mnNear(p.x, p.z, 2.2));
+    if (hit){
+      if (hit.kind === 'note') return {act:() => mnDo('note', hit), lab: 'Read note (E / Ⓧ)'};
+      if (hit.kind === 'lever') return {act:() => mnDo('lever'), lab: 'Flip lever (E / Ⓧ)'};
+      if (hit.kind === 'pic') return {act:() => mnDo('pic', hit), lab: 'Place portrait ' + (hit.slot+1) + ' (E / Ⓧ)'};
+      if (hit.kind === 'key') return {act:() => mnDo('key'), lab: 'Search cupboard (E / Ⓧ)'};
+      if (hit.kind === 'fern') return {act:() => mnDo('fern', hit), lab: 'Water moonfern ' + (hit.slot+1) + ' (E / Ⓧ)'};
+      if (hit.kind === 'crank') return {act:() => mnDo('crank'), lab: 'Turn the crank (E / Ⓧ)'};
+      if (hit.kind === 'scrap') return {act:() => mnDo('scrap'), lab: 'Read the dusty scrap (E / Ⓧ)'};
+      if (hit.kind === 'clock') return {act:() => mnDo('clock'), lab: 'Pull the hidden string (E / Ⓧ)'};
+      if (hit.kind === 'chime') return {act:() => mnDo('chime', hit), lab: 'Ring chime ' + (hit.bell+1) + ' (E / Ⓧ)'};
+      if (hit.kind === 'star') return {act:() => mnDo('star', hit), lab: 'Place star charm ' + (hit.slot+1) + ' (E / Ⓧ)'};
+      if (hit.kind === 'lantern') return {act:() => mnDo('lantern'), lab: 'Take the moon lantern (E / Ⓧ)'};
+    }
+    if (mn.door && mnNear(mn.door.x, mn.door.z, 2.4) && mn.run.key) return {act:() => mnDo('door'), lab: 'Unlock the door (E / Ⓧ)'};
+    return null;
+  }
+  function mnDo(kind, prop){
+    if (!mn || mn.run.escaped) return;
+    const run = mn.run;
+    let r = null;
+    if (kind === 'note') r = MansionRules.mnReadNote(run, prop.n);
+    else if (kind === 'lever') r = MansionRules.mnFlipLever(run);
+    else if (kind === 'pic'){
+      const used = (run.pictures || []).indexOf(prop.slot);
+      r = MansionRules.mnPlacePicture(run, prop.slot, prop.slot);
+      if (used >= 0 && r && r.ok && !r.done){ /* placed this tile in this slot */ }
+    }
+    else if (kind === 'key') r = MansionRules.mnTakeKey(run);
+    else if (kind === 'fern') r = MansionRules.mnWaterFern(run, prop.slot);
+    else if (kind === 'crank') r = MansionRules.mnTurnCrank(run);
+    else if (kind === 'scrap') r = MansionRules.mnReadScrap(run);
+    else if (kind === 'clock') r = MansionRules.mnPullString(run);
+    else if (kind === 'chime') r = MansionRules.mnPlayChime(run, prop.bell);
+    else if (kind === 'star') r = MansionRules.mnPlaceStar(run, prop.slot, prop.slot);
+    else if (kind === 'lantern') r = MansionRules.mnClaimSecret(run, mn.sv);
+    else if (kind === 'door') r = MansionRules.mnEscape(run, mn.sv, Date.now());
+    if (!r || !r.ok){
+      const why = r && r.why;
+      banner(why === 'note' ? 'Read the foyer note first.' : why === 'key' ? 'You still need the brass key.' : why === 'locked' ? 'That room is still closed.' : why === 'scrap' ? 'Turn the cellar crank first.' : why === 'crank' ? 'Turn the rusty crank first.' : why === 'puzzle' ? 'Set the star charms first.' : 'Not yet!');
+      return;
+    }
+    if (kind === 'note') banner('📝 ' + r.text);
+    if (kind === 'lever') banner('🎚️ The parlor doors creak open. A side hall leads to the Moonfern Conservatory.');
+    if (kind === 'pic') banner(r.done ? '🖼️ The portraits click into place! The kitchen is open.' : '🖼️ You hung a portrait.');
+    if (kind === 'key') banner('🔑 You found the brass key! Side rooms in the cellar and chime nook are unlocked.');
+    if (r.text && kind !== 'note') banner((kind === 'lantern' ? '🌙 ' : '✨ ') + r.text);
+    if (kind === 'lantern' && r.ok && r.coins){
+      mn.sv = r.state; mnSave(mn.sv);
+      try { if (typeof pay === 'function') pay(r.coins); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); } } catch (e){}
+      banner('🌙 ' + r.message + ' +' + r.coins + ' 🪙');
+    }
+    if (kind === 'door' && r.ok){
+      mn.sv = r.state; mnSave(mn.sv);
+      try { if (typeof pay === 'function') pay(r.coins); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); } } catch (e){}
+      banner('🌙 ' + r.message + ' +' + r.coins + ' 🪙');
+      try {
+        const em = document.getElementById('oWinEmoji'), title = document.getElementById('oWinTitle');
+        if (em) em.textContent = '🕯️'; if (title) title.textContent = 'You escaped Mallowmist Manor!';
+        const st = document.getElementById('oWinStats'); if (st) st.innerHTML = '👻 Nimble went back to the closet.<br>🎁 +' + r.coins + ' Rublox Coins';
+        const w = document.getElementById('oWin'); if (w) w.classList.add('show');
+      } catch (e){}
+    }
+    mnHud(); mnNet();
+  }
+  function mnCaught(){
+    const r = MansionRules.mnCatch(mn.run, mn.sv);
+    if (!r.ok) return;
+    mn.sv = r.state; mnSave(mn.sv);
+    if (r.spawn && typeof P !== 'undefined'){ P.x = r.spawn.x; P.y = r.spawn.y; P.z = r.spawn.z; P.vx = P.vz = 0; }
+    checkpoints[0].spawn = r.spawn;
+    banner('😌 ' + r.message);
+    mnHud(); mnNet();
+  }
+  function mnHud(){
+    const hint = document.getElementById('mnHint');
+    const run = mn && mn.run;
+    if (hint && run){
+      const room = MansionRules.mnRoom(mnCurrentRoom());
+      hint.textContent = (room.emoji || '') + ' ' + room.name + (run.key ? '  ·  🔑' : '') + (run.pictureDone ? '  ·  portraits set' : '') + (mnLess() ? '  ·  😌 milder' : '');
+    }
+    const btn = document.getElementById('mnAct');
+    const p = mnPrompt();
+    if (btn){ if (p){ btn.textContent = p.lab; btn.classList.add('show'); } else btn.classList.remove('show'); }
+    const less = document.getElementById('mnLessBtn');
+    if (less) less.classList.toggle('on', mnLess());
+  }
+  function mnToggleLess(){
+    if (!mn) return;
+    mn.sv = MansionRules.mnSetLessScary(mn.sv, !mn.sv.lessScary);
+    mn.run.lessScary = !!mn.sv.lessScary;
+    mnSave(mn.sv);
+    mnSky();
+    banner(mnLess() ? '😌 Less scary is on. Nimble is slower and the lights are warmer.' : '🕯️ Less scary is off. Still no gore, and everyone is okay.');
+    mnHud();
+  }
+  function mnAct(){ const p = mnPrompt(); if (p) p.act(); }
+  function mnKey(e){
+    if (!mn) return false;
+    if (e.type === 'keyup') return false;
+    const c = e.code || e.key;
+    if (c === 'KeyE' || c === 'KeyF'){ mnAct(); return true; }
+    if (c === 'KeyL'){ mnToggleLess(); return true; }
+    return false;
+  }
+  function mnPad(jp){
+    if (!mn || !jp) return false;
+    if (!mn._x && jp[2]){ mn._x = true; mnAct(); return true; }
+    if (!jp[2]) mn._x = false;
+    if (!mn._y && jp[3]){ mn._y = true; mnToggleLess(); return true; }
+    if (!jp[3]) mn._y = false;
+    return false;
+  }
+  function mnUpdate(dt){
+    if (!mn || mn.run.escaped) { mnHud(); return; }
+    dt = Math.max(0, Math.min(0.12, +dt || 0));
+    const room = mnCurrentRoom();
+    if (room !== mn.run.room){
+      if (MansionRules.mnCanEnter(mn.run, room)) MansionRules.mnSetRoom(mn.run, room);
+      else if (room !== 'foyer'){
+        // bump back through a locked divider
+        if (room === 'parlor' && P.z < -10) P.z = -9.6;
+        if (room === 'kitchen' && P.z < -30) P.z = -29.6;
+        if (room === 'library' && P.z < -50) P.z = -49.6;
+        if (room === 'attic' && P.z < -70) P.z = -69.6;
+        if (room === 'conservatory' && P.x > 11) P.x = 10.6;
+        if (room === 'cellar' && P.x > 11) P.x = 10.6;
+        if (room === 'chime' && P.x < -11) P.x = -10.6;
+        if (room === 'secret' && P.x > 11) P.x = 10.6;
+        if (room === 'secret' && P.z < -52 && P.x > 12 && !MansionRules.mnCanEnter(mn.run, 'secret')) P.z = -51.4;
+      }
+    }
+    if (!mnIsGuest()){
+      MansionRules.mnNimbleTick(mn.run, dt);
+      MansionRules.mnMothTick(mn.run, dt);
+      if (MansionRules.mnSeenByNimble(mn.run, P.x, P.z) || MansionRules.mnSeenByMoth(mn.run, P.x, P.z)) mnCaught();
+    }
+    if (mn.ghost && mn.run.nimble){
+      mn.ghost.position.x = mn.run.nimble.x;
+      mn.ghost.position.z = mn.run.nimble.z;
+      mn.ghost.rotation.y = mn.run.nimble.dir > 0 ? Math.PI/2 : -Math.PI/2;
+    }
+    if (mn.moth && mn.run.moth){
+      mn.moth.position.x = mn.run.moth.x;
+      mn.moth.position.z = mn.run.moth.z;
+    }
+    mnHud();
+    if (!mnIsGuest()) mnNet();
+  }
+  function mnIsGuest(){ try { return !!(typeof mp !== 'undefined' && mp && mp.on && !mp.host); } catch (e){ return false; } }
+  function mnWire(){ return mn && MansionRules.mnWire(mn.run); }
+  function mnApply(snap){ if (mn && snap){ MansionRules.mnApplyWire(mn.run, snap); mnHud(); } }
+  function mnNet(){
+    if (mnIsGuest() || !mn || typeof mp === 'undefined' || !mp || !mp.on || typeof mpSend !== 'function') return;
+    try { mpSend({t:'mn', snap: mnWire()}); } catch (e){}
+  }
+  function mnFromNet(g, d){ if (d && d.snap) mnApply(d.snap); }
+  function mnFromHost(d){ mnFromNet(null, d); }
+  function mnBind(){
+    const a = document.getElementById('mnAct');
+    if (a && !a.__mn){ a.__mn = true; a.addEventListener('click', ev => { ev.preventDefault(); mnAct(); }); }
+    const l = document.getElementById('mnLessBtn');
+    if (l && !l.__mn){ l.__mn = true; l.addEventListener('click', ev => { ev.preventDefault(); mnToggleLess(); }); }
+  }
+  function mansionStop(){
+    if (!mn) return;
+    (mn.solids || []).forEach(b => { try { b.active = false; if (typeof solids !== 'undefined'){ const i = solids.indexOf(b); if (i>=0) solids.splice(i,1);} } catch(e){} });
+    (mn.trash || []).forEach(m => { try { scene.remove(m); } catch(e){} });
+    mn = null;
+    const box = document.getElementById('mnBox'); if (box) box.style.display = 'none';
+    const b = document.getElementById('mnAct'); if (b) b.classList.remove('show');
+  }
+  if (typeof window !== 'undefined') window.mnDebug = {
+    less(on){ if (!mn) return; if (on != null) mn.sv.lessScary = !on ? false : true; mn.run.lessScary = !!mn.sv.lessScary; mnSave(mn.sv); mnSky(); mnHud(); return mnLess(); },
+    room(id){ if (mn){ MansionRules.mnSetRoom(mn.run, id); const s = MansionRules.mnRoom(id).spawn; P.x=s.x; P.y=s.y; P.z=s.z; } },
+    solve(){ if (!mn) return; const r=mn.run; r.note1=true; r.lever=true; r.parlorOpen=true; r.pictureDone=true; r.kitchenOpen=true; r.key=true; r.note2=true; r.atticOpen=true; r.fernsDone=true; r.conservatoryOpen=true; r.crank=true; r.scrap=true; r.cellarOpen=true; r.chimeOpen=true; r.melodyDone=true; r.clockString=true; r.secretOpen=true; r.starDone=true; mnHud(); },
+    probe(){ return mn && mn.run ? {room:mn.run.room, key:!!mn.run.key, less:mnLess(), escaped:!!mn.run.escaped, secret:!!mn.run.secretOpen, ferns:!!mn.run.fernsDone} : null; }
+  };
+  /* ---------- Wagwell Shelter ---------- */
+  let sh = null;
+  function shKeep(m){ if (m && sh && sh.trash) sh.trash.push(m); return m; }
+  function shMat(c,o){ return new THREE.MeshLambertMaterial(Object.assign({color:c}, o||{})); }
+  function shMesh(geo,c,x,y,z){ const m=new THREE.Mesh(geo, shMat(c)); m.position.set(x,y,z); scene.add(m); return shKeep(m); }
+  function shState(){ return ShelterRules.shLoad(typeof load === 'function' ? load(ShelterRules.SH_KEY, null) : null); }
+  function shSave(s){ if (typeof save === 'function') save(ShelterRules.SH_KEY, s); if (sh) sh.sv = s; }
+  function shCoins(){ try { return (typeof coins === 'number') ? coins : +(typeof load==='function' && load('rubloxCoins', 0)) || 0; } catch(e){ return 0; } }
+  function shPay(n){
+    try {
+      if (typeof pay === 'function'){ pay(n); return; }
+      if (typeof coins === 'number'){ coins += n; if (typeof save === 'function') save('rubloxCoins', coins); }
+    } catch (e){}
+  }
+  function shSpend(n){
+    try {
+      if (typeof coins === 'number'){
+        if (coins < n) return false;
+        coins -= n; if (typeof save === 'function') save('rubloxCoins', coins); return true;
+      }
+    } catch (e){}
+    return shCoins() >= n;
+  }
+  function drawShelter(ctx){
+    if (typeof sky === 'function') sky(ctx, '#b8e8ff', '#fff4d6');
+    ctx.fillStyle = '#8fd39a'; ctx.fillRect(0, 150, 320, 50);
+    ctx.fillStyle = '#f4d7a8'; ctx.fillRect(30, 80, 110, 80);
+    ctx.fillStyle = '#c45c1a'; ctx.beginPath(); ctx.moveTo(20,80); ctx.lineTo(85,40); ctx.lineTo(150,80); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.fillRect(180, 110, 90, 50);
+    ctx.font = '24px sans-serif'; ctx.fillText('🐾', 60, 130); ctx.fillText('🐱', 210, 140); ctx.fillText('🐶', 250, 140);
+    if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#3a86ff');
+  }
+  function shPetMesh(kind, color){
+    const cols = ['#f29a3c','#3d4256','#ece6dd'];
+    const c = cols[color|0] || cols[0];
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 8), shMat(c));
+    body.position.y = 0.4; g.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8), shMat(c));
+    head.position.set(0, 0.7, 0.18); g.add(head);
+    return g;
+  }
+  function buildShelter(){
+    const sv = shState();
+    sh = {trash:[], solids:[], sv, strays:[], family: ShelterRules.shVisitFamily(Math.random), petMeshes:[], strayMeshes:[], curs:null};
+    scene.background = new THREE.Color('#b8e8ff');
+    if (scene.fog){ scene.fog.color.set('#cfefff'); scene.fog.near = 24; scene.fog.far = 90; }
+    plat(0, 0, 8, 48, 48, '#8fd39a', 0.25);
+    plat(0, 0, -10, 18, 16, '#f4e4c4', 0.3); // shelter floor
+    // shelter building
+    const wall = '#f4d7a8';
+    function wallb(x,y,z,w,h,d,c){ const b=plat(x,y+h/2,z,w,d,c,h); if(b&&b.mesh) shKeep(b.mesh); if(b) sh.solids.push(b); return b; }
+    wallb(0, 3, -18, 18, 6, 0.4, wall);
+    wallb(-9, 3, -10, 0.4, 6, 16, wall);
+    wallb(9, 3, -10, 0.4, 6, 16, wall);
+    wallb(0, 6.2, -10, 18, 0.35, 16, '#fff4e0');
+    wallb(-5.4, 3, -2, 7.2, 6, 0.4, wall);
+    wallb(5.4, 3, -2, 7.2, 6, 0.4, wall);
+    shMesh(new THREE.BoxGeometry(2.4, 0.2, 1.6), '#c45c1a', 0, 0.9, -8);
+    sh.desk = {x:0, z:-8};
+    // town street / park / alley
+    plat(14, 0, 16, 10, 14, '#d9e8a8', 0.2);
+    plat(-14, 0, 18, 8, 12, '#c8bea8', 0.2);
+    shLab('🏡 Wagwell Shelter', 0, 3.4, -3);
+    shLab('🌳 Park', 14, 2.2, 16);
+    shLab('🪵 Alley', -14, 2.2, 18);
+    shLab('🛎️ Front desk', 0, 2.2, -8);
+    // Grooming salon
+    plat(22, 0, -2, 14, 16, '#f8d0e8', 0.28);
+    function wallb2(x,y,z,w,h,d,c){ const b=plat(x,y+h/2,z,w,d,c,h); if(b&&b.mesh) shKeep(b.mesh); if(b) sh.solids.push(b); return b; }
+    wallb2(22, 3, -10, 14, 6, 0.4, '#ffd0ea');
+    wallb2(15, 3, -2, 0.4, 6, 16, '#ffd0ea');
+    wallb2(29, 3, -2, 0.4, 6, 16, '#ffd0ea');
+    wallb2(22, 6.2, -2, 14, 0.35, 16, '#fff0f8');
+    wallb2(17.6, 3, 6, 5.2, 6, 0.4, '#ffd0ea');
+    wallb2(26.4, 3, 6, 5.2, 6, 0.4, '#ffd0ea');
+    sh.salon = {x:22, z:-2};
+    sh.stations = [
+      {id:'wash', x:18, z:0, act:'wash', lab:'Wash'},
+      {id:'brush', x:26, z:0, act:'brush', lab:'Brush'},
+      {id:'trim', x:18, z:-4, act:'trim', lab:'Trim'},
+      {id:'bow', x:26, z:-4, act:'bow', lab:'Bow'},
+      {id:'dye', x:22, z:-6, act:'dye', lab:'Color'}
+    ];
+    sh.stations.forEach(s => {
+      shMesh(new THREE.CylinderGeometry(0.7, 0.8, 0.6, 10), '#fff', s.x, 0.4, s.z);
+      shLab('✂️ ' + s.lab, s.x, 1.6, s.z);
+    });
+    shLab('💇 Grooming Salon', 22, 3.2, 4);
+    // Contest lawn and judge
+    plat(-20, 0, -6, 14, 16, '#c8e8a8', 0.22);
+    shMesh(new THREE.BoxGeometry(5, 0.3, 3.2), '#f4e8a8', -20, 0.4, -8);
+    sh.stage = {x:-20, z:-8};
+    const judge = shPetMesh('cat', 1);
+    judge.position.set(-20, 0, -12); scene.add(judge); shKeep(judge);
+    shLab('🏅 Judge Bramble', -20, 2.0, -12);
+    shLab('🎀 Contest Lawn', -20, 3.0, -2);
+    const amb = new THREE.AmbientLight(0xfff6e8, 0.75); scene.add(amb); shKeep(amb);
+    const sun = new THREE.DirectionalLight(0xfff0c8, 0.6); sun.position.set(8, 14, 10); scene.add(sun); shKeep(sun);
+    Object.assign(P, {x:0, y:0.5, z:6, vx:0, vy:0, vz:0});
+    if (typeof cam !== 'undefined' && cam){ cam.yaw = 0; cam.pitch = 0.36; cam.dist = 13; }
+    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:6}, flag:new THREE.Object3D()};
+    shSpawnStrays();
+    shShowPets();
+    shBind();
+    shHud();
+    banner('🐾 Wagwell Shelter! Rescue strays around town, cheer them up, and match them with visiting families.');
+  }
+  function shLab(text,x,y,z){
+    try { if (typeof t297Lab === 'function'){ const m=t297Lab(text,x,y,z); if(m) return shKeep(m); } } catch(e){}
+    return shMesh(new THREE.BoxGeometry(0.2,0.2,0.2),'#fff',x,y,z);
+  }
+  function shSpawnStrays(){
+    (sh.strayMeshes||[]).forEach(m => { try{ scene.remove(m); }catch(e){} });
+    sh.strayMeshes = [];
+    sh.strays = [];
+    const n = 3;
+    for (let i=0;i<n;i++){
+      const s = ShelterRules.shRollStray(Math.random, Date.now()+i);
+      s.x = (i-1)*8 + (Math.random()*3-1);
+      s.z = 14 + Math.random()*8;
+      sh.strays.push(s);
+      const m = shPetMesh(s.kind, s.color);
+      m.position.set(s.x, 0, s.z); scene.add(m); shKeep(m); sh.strayMeshes.push(m);
+      shLab((ShelterRules.shKind(s.kind).emoji||'') + ' ' + s.name, s.x, 1.6, s.z);
+    }
+  }
+  function shShowPets(){
+    (sh.petMeshes||[]).forEach(m => { try{ scene.remove(m); }catch(e){} });
+    sh.petMeshes = [];
+    (sh.sv.pets||[]).forEach((p,i) => {
+      const m = shPetMesh(p.kind, p.color);
+      const x = -4 + (i%3)*4, z = -12 - Math.floor(i/3)*3;
+      m.position.set(x, 0, z); scene.add(m); shKeep(m); sh.petMeshes.push(m);
+      p._x=x; p._z=z;
+      shLab((ShelterRules.shKind(p.kind).emoji||'')+' '+p.name, x, 1.6, z);
+    });
+  }
+  function shNear(x,z,r){ return Math.hypot(P.x-x, P.z-z) < (r||2.2); }
+  function shPrompt(){
+    if (!sh) return null;
+    const stray = sh.strays.find(s => shNear(s.x, s.z, 2.3));
+    if (stray) return {lab:'Rescue ' + stray.name + ' (E / Ⓧ)', act:() => shRescue(stray)};
+    const pet = (sh.sv.pets||[]).find(p => p._x != null && shNear(p._x, p._z, 2.2));
+    if (pet){
+      return {lab:'Care for ' + pet.name + ' (E feed · tap again)', act:() => shCareMenu(pet)};
+    }
+    if (sh.desk && shNear(sh.desk.x, sh.desk.z, 2.4)){
+      return {lab:'Front desk: match or upgrades (E / Ⓧ)', act:() => shOpenDesk()};
+    }
+    const st = (sh.stations||[]).find(s => shNear(s.x, s.z, 2.1));
+    if (st){
+      const pet = shSalonPet();
+      return {lab: pet ? (st.lab + ' ' + pet.name + ' (E / Ⓧ)') : 'Bring a pal to the salon (E / Ⓧ)', act:() => shSalonDo(st)};
+    }
+    if (sh.stage && shNear(sh.stage.x, sh.stage.z, 3)){
+      const show = sh.show;
+      if (show && show.open && !show.judged) return {lab:'Enter the ' + show.name + ' show (E / Ⓧ)', act:() => shEnter()};
+      if (show && !show.judged && show.entries && show.entries.length) return {lab:'Ask Judge Bramble to score (E / Ⓧ)', act:() => shJudge()};
+      return {lab:'Start a pet contest (E / Ⓧ)', act:() => shBeginShow()};
+    }
+    return null;
+  }
+  function shSalonPet(){
+    if (!sh) return null;
+    if (sh.curs) return (sh.sv.pets||[]).find(p => p.id === sh.curs) || (sh.sv.pets||[])[0];
+    return (sh.sv.pets||[])[0] || null;
+  }
+  const SH_SALON_CHOICE = {
+    trim: ['neat','fluffy','swirl'],
+    bow: ['red','blue','gold'],
+    dye: ['peach','mint','lilac','butter'],
+    trick: ['sit','spin','bow','wave']
+  };
+  function shSalonDo(st){
+    const pet = shSalonPet();
+    if (!pet){ banner('Rescue a pal first, then walk them into the salon!'); return; }
+    sh.curs = pet.id;
+    let choice = undefined;
+    if (SH_SALON_CHOICE[st.act]){
+      sh.choiceI = ((sh.choiceI|0)+1) % SH_SALON_CHOICE[st.act].length;
+      choice = SH_SALON_CHOICE[st.act][sh.choiceI];
+    }
+    const r = ShelterRules.shGroom(sh.sv, pet.id, st.act, choice);
+    if (!r.ok){ banner('The salon is busy — try another station.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    banner('💇 ' + pet.name + ' got a ' + st.lab.toLowerCase() + (choice ? (' (' + choice + ')') : '') + '! Happiness ' + ShelterRules.shHappiness(r.pet) + (r.well ? ' — looking show-ready!' : ''));
+    shHud(); shNet();
+  }
+  function shBeginShow(){
+    const ids = ShelterRules.SH_CONTESTS;
+    sh.showI = ((sh.showI|0)+1) % ids.length;
+    const mode = (typeof mp !== 'undefined' && mp && mp.on) ? 'versus' : 'solo';
+    sh.show = ShelterRules.shNewShow(ids[sh.showI].id, Date.now(), mode);
+    banner(ids[sh.showI].emoji + ' Judge Bramble opened the ' + ids[sh.showI].name + ' contest! ' + (mode === 'versus' ? 'Friends can enter too — no NPC rivals.' : 'Enter your pal for a ribbon.'));
+    shHud(); shNet();
+  }
+  function shEnter(){
+    const pet = shSalonPet();
+    if (!pet){ banner('Cheer a pal up or groom them, then enter!'); return; }
+    const me = {id: (typeof mp !== 'undefined' && mp && mp.me) ? mp.me : 'me', name: (typeof player !== 'undefined' && player && player.name) || 'You'};
+    const r = ShelterRules.shEnterShow(sh.show, pet, me);
+    banner(r.ok ? ('🎀 ' + pet.name + ' entered the ' + sh.show.name + ' show!') : (r.why === 'npc' ? 'Only real players can enter.' : r.why === 'in' ? 'That pal is already in.' : 'The show is not open.'));
+    shHud(); shNet();
+  }
+  function shJudge(){
+    if (!sh.show) return;
+    const r = ShelterRules.shJudgeShow(sh.sv, sh.show);
+    if (!r.ok){ banner(r.why === 'empty' ? 'Someone needs to enter first.' : 'Judge Bramble is waiting.'); return; }
+    sh.sv = r.state; shSave(sh.sv); sh.show = r.show;
+    if (r.coins) shPay(r.coins);
+    const top = (r.show.entries || [])[0];
+    banner('🏅 ' + r.message + (top ? (' ' + top.petName + ' got a ' + top.ribbon + ' ribbon!') : '') + ' +' + r.coins + ' 🪙');
+    shHud(); shNet();
+  }
+
+  function shRescue(stray){
+    const r = ShelterRules.shRescue(sh.sv, stray);
+    if (!r.ok){ banner(r.why === 'full' ? 'The kennels are full — upgrade for more beds!' : 'Cannot rescue that pal right now.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    sh.strays = sh.strays.filter(s => s !== stray);
+    shSpawnStrays = shSpawnStrays;
+    // remove that mesh later by rebuild
+    banner('🐾 ' + r.pet.name + ' is safe at the shelter! Cheer them up before a family visit.');
+    shShowPets();
+    shHud(); shNet();
+  }
+  function shCareMenu(pet){
+    sh.curs = pet.id;
+    const order = ['fed','clean','play'];
+    sh.careI = ((sh.careI|0)+1) % 3;
+    const act = order[sh.careI];
+    const r = ShelterRules.shCare(sh.sv, pet.id, act);
+    if (!r.ok){ banner('That pal is already busy.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    const words = {fed:'had a snack', clean:'got a bath', play:'played a game'};
+    banner((r.ready ? '😊 ' : '🐾 ') + pet.name + ' ' + words[act] + '! Happiness ' + ShelterRules.shHappiness(r.pet) + (r.ready ? ' — ready for a home!' : ''));
+    shHud(); shNet();
+  }
+  function shOpenDesk(){
+    const fam = sh.family || ShelterRules.shVisitFamily(Math.random);
+    sh.family = fam;
+    const ready = (sh.sv.pets||[]).filter(p => ShelterRules.shReady(p));
+    const wish = fam.emoji + ' ' + fam.name + ': "' + fam.line + '"';
+    if (ready.length){
+      const pet = ready.find(p => p.kind === fam.wishKind && p.trait === fam.wishTrait) || ready[0];
+      const m = ShelterRules.shMatch(sh.sv, pet.id, fam.id);
+      if (m.ok){
+        sh.sv = m.state; shSave(sh.sv); shPay(m.coins);
+        sh.family = ShelterRules.shVisitFamily(Math.random, []);
+        banner('🏡 ' + m.message + ' +' + m.coins + ' 🪙');
+        shShowPets(); shHud(); shNet(); return;
+      }
+    }
+    banner(wish + (ready.length ? ' None of the ready pals match yet.' : ' Cheer a pal up, then come back!'));
+    shHud();
+  }
+  function shSend(petId){
+    let petsSave = null;
+    try { petsSave = (typeof load === 'function') ? load('rubloxPets', {v:2, pets:[]}) : {v:2, pets:[]}; } catch(e){ petsSave = {v:2, pets:[]}; }
+    const r = ShelterRules.shSendHome(sh.sv, petId, petsSave);
+    if (!r.ok){ banner(r.why === 'full' ? 'Your pet collection is full (6 pals).' : r.why === 'happy' ? 'Cheer them up a bit more first.' : 'Not now.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    try { if (typeof save === 'function') save('rubloxPets', r.pets); } catch(e){}
+    banner('🏠 ' + (r.pet.n || 'Your pal') + ' went to your pet collection!');
+    shShowPets(); shHud(); shNet();
+  }
+  function shBuy(id){
+    const r = ShelterRules.shBuyUpgrade(sh.sv, id, shCoins());
+    if (!r.ok){ banner(r.why === 'coins' ? 'Need more coins for that upgrade.' : r.why === 'have' ? 'You already have that!' : 'Not now.'); return; }
+    if (!shSpend(r.cost)){ banner('Need more coins for that upgrade.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    banner('✨ New shelter upgrade!');
+    shHud(); shNet();
+  }
+  function shHud(){
+    const hint = document.getElementById('shHint');
+    if (hint && sh){
+      const fam = sh.family;
+      const show = sh.show;
+      hint.textContent = '🐾 ' + (sh.sv.pets||[]).length + '/' + (sh.sv.ups.kennels?6:sh.sv.kennels||2) + ' pals  ·  rescued ' + (sh.sv.rescued||0) + '  ·  homes ' + (sh.sv.matched||0) + (sh.sv.trophies ? ('  ·  🏆 ' + sh.sv.trophies) : '') + (show ? ('  ·  ' + (show.emoji||'🎀') + ' ' + show.name) : '') + (fam ? ('  ·  ' + fam.name + ' want a ' + fam.wishTrait + ' ' + fam.wishKind) : '');
+    }
+    const btn = document.getElementById('shAct');
+    const p = shPrompt();
+    if (btn){ if (p){ btn.textContent = p.lab; btn.classList.add('show'); } else btn.classList.remove('show'); }
+    const home = document.getElementById('shHomeBtn');
+    const ready = sh && (sh.sv.pets||[]).find(p => ShelterRules.shReady(p));
+    if (home){ if (ready){ home.classList.add('show'); home.textContent = '🏠 Send ' + ready.name + ' home'; } else home.classList.remove('show'); }
+  }
+  function shAct(){ const p = shPrompt(); if (p) p.act(); }
+  function shKey(e){
+    if (!sh) return false;
+    if (e.type === 'keyup') return false;
+    const c = e.code || e.key;
+    if (c === 'KeyE' || c === 'KeyF'){ shAct(); return true; }
+    if (c === 'KeyH'){ const ready=(sh.sv.pets||[]).find(p => ShelterRules.shReady(p)); if (ready) shSend(ready.id); return true; }
+    if (c === 'KeyU'){ shBuy('kennels'); return true; }
+    return false;
+  }
+  function shPad(jp){
+    if (!sh || !jp) return false;
+    if (!sh._x && jp[2]){ sh._x = true; shAct(); return true; }
+    if (!jp[2]) sh._x = false;
+    if (!sh._y && jp[3]){ sh._y = true; const ready=(sh.sv.pets||[]).find(p => ShelterRules.shReady(p)); if (ready) shSend(ready.id); return true; }
+    if (!jp[3]) sh._y = false;
+    return false;
+  }
+  function shUpdate(){ if (sh) shHud(); }
+  function shIsGuest(){ try { return !!(typeof mp !== 'undefined' && mp && mp.on && !mp.host); } catch(e){ return false; } }
+  function shWire(){ return sh ? ShelterRules.shWire(sh.sv, {family: sh.family, strays: sh.strays, show: sh.show}) : null; }
+  function shApply(snap){
+    if (!sh || !snap) return;
+    if (Array.isArray(snap.pets)) sh.sv.pets = snap.pets;
+    if (snap.family) sh.family = snap.family;
+    if (snap.show) sh.show = snap.show;
+    shHud();
+  }
+  function shNet(){
+    if (shIsGuest() || !sh || typeof mp === 'undefined' || !mp || !mp.on || typeof mpSend !== 'function') return;
+    try { mpSend({t:'sh', snap: shWire()}); } catch(e){}
+  }
+  function shFromNet(g, d){ if (d && d.snap) shApply(d.snap); }
+  function shFromHost(d){ shFromNet(null, d); }
+  function shBind(){
+    const a=document.getElementById('shAct'); if(a && !a.__sh){ a.__sh=true; a.addEventListener('click', ev => { ev.preventDefault(); shAct(); }); }
+    const h=document.getElementById('shHomeBtn'); if(h && !h.__sh){ h.__sh=true; h.addEventListener('click', ev => { ev.preventDefault(); const ready=(sh.sv.pets||[]).find(p => ShelterRules.shReady(p)); if (ready) shSend(ready.id); }); }
+    const u=document.getElementById('shUpBtn'); if(u && !u.__sh){ u.__sh=true; u.addEventListener('click', ev => { ev.preventDefault(); shBuy('kennels'); }); }
+  }
+  function shelterStop(){
+    if (!sh) return;
+    (sh.solids||[]).forEach(b => { try{ b.active=false; if (typeof solids!=='undefined'){ const i=solids.indexOf(b); if(i>=0) solids.splice(i,1);} }catch(e){} });
+    (sh.trash||[]).forEach(m => { try{ scene.remove(m);}catch(e){} });
+    sh=null;
+    const box=document.getElementById('shBox'); if(box) box.style.display='none';
+    ['shAct','shHomeBtn','shUpBtn'].forEach(id => { const b=document.getElementById(id); if(b) b.classList.remove('show'); });
+  }
+  if (typeof window !== 'undefined') window.shDebug = {
+    spawn(){ if (sh) shSpawnStrays(); },
+    fill(){ if (!sh) return; (sh.sv.pets||[]).forEach(p => { p.fed=p.clean=p.play=90; p.happy=90; }); shSave(sh.sv); shHud(); },
+    salon(){ if (!sh) return; P.x=22; P.y=0.5; P.z=-2; },
+    contest(){ if (!sh) return; P.x=-20; P.y=0.5; P.z=-8; if (!sh.show) shBeginShow(); },
+    probe(){ return sh ? {pets:(sh.sv.pets||[]).length, family: sh.family && sh.family.id, strays:(sh.strays||[]).length, show: sh.show && sh.show.id, salon:!!sh.salon} : null; }
+  };
   /* ---------- Pinebell Village ---------- */
   let wn = null;
   function wnKeep(m){ if (m && wn && wn.trash) wn.trash.push(m); return m; }
@@ -45902,7 +46653,8 @@ function start(m = 'obby', d = null){
   }
   function vtLab(text, x, y, z){
     try {
-      if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m) return vtKeep(m); }
+      // QA t330u: indoors and in first person, labels drew through every wall and piled up. Let walls hide them and make them smaller.
+      if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m){ if (m.material) m.material.depthTest = true; m.scale.multiplyScalar(0.62); return vtKeep(m); } }
     } catch (e){}
     return vtMesh(new THREE.BoxGeometry(0.2,0.2,0.2), '#fff', x, y, z);
   }
@@ -46382,6 +47134,8 @@ function start(m = 'obby', d = null){
     if (!vt || !vt.run || typeof mode === 'undefined' || mode !== 'vet') return;
     if (!vt.pitchSet && typeof cam !== 'undefined' && !vtDriving()){ cam.pitch = 0.08; cam.yaw = 0; vt.pitchSet = true; }
     vt.run.t = (vt.run.t || 0) + (dt || 0);
+    // QA t330u: in first person a prop label filled the whole screen when you walked up to it; the action button already says it.
+    (vt.props || []).forEach(pr => { if (pr && pr.label && pr.x != null) pr.label.visible = Math.hypot(P.x - pr.x, P.z - pr.z) > 1.9; });
     if (vt.pet) vt.pet.rotation.y += (dt || 0) * 0.4;
     if (vtDriving()){
       vtDriveInput();
