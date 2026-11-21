@@ -252,6 +252,7 @@
   function mmKey(e){
     if (!mm || !e) return false;
     const c = e.code || e.key;
+    if (e.type === 'keyup' || e.repeat) return e.type !== 'keyup' && c === 'KeyE'; // QA t332u: keyup also routes here; act once per press
     if (c === 'KeyE'){ mmAct(); return true; }
     if (c === 'Space' || c === 'KeyR' || c === 'KeyF' || c === 'ShiftLeft') return true;
     return false;

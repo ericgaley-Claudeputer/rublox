@@ -1572,6 +1572,7 @@
     if (typeof t297EatOverlayKey === 'function' && t297EatOverlayKey(e)) return true;
     if (e.type === 'keyup') return false;
     const c = e.code || e.key;
+    if (e.repeat && (c === 'KeyE' || c === 'KeyF')) return true; // QA t332u: a held key must not ride, then leave, then ride again
     if (c === 'KeyE' || c === 'KeyF'){ elevAct(); return true; }
     if (c === 'KeyH'){ elevOpenHelp(); return true; }
     if (c === 'KeyI'){ elevOpenIndex(); return true; }
