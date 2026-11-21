@@ -37,6 +37,30 @@ async function coveredButtons(page){
     return out;
   });
 }
+// HUD pieces that overlap each other (ignores full-screen panels and the 3D canvas)
+async function hudOverlaps(page){
+  return page.evaluate(() => {
+    const els = [...document.querySelectorAll('#obby *')].filter(e => {
+      if (e.closest('.opanel, .modal, canvas, #oEmos, #oPausePanel')) return false;
+      const s = getComputedStyle(e); if (!(s.position === 'absolute' || s.position === 'fixed')) return false;
+      if (s.display === 'none' || s.visibility === 'hidden' || +s.opacity < .05) return false;
+      let q = e.parentElement; while (q && q !== document.body){ const qs = getComputedStyle(q); if (qs.display === 'none' || qs.visibility === 'hidden' || +qs.opacity < .05) return false; q = q.parentElement; }
+      const r = e.getBoundingClientRect(); if (r.width < 8 || r.height < 8 || r.width > innerWidth * .9 || r.height > innerHeight * .6) return false;
+      if (r.right < 0 || r.bottom < 0 || r.left > innerWidth || r.top > innerHeight) return false;
+      return (e.textContent || '').trim().length > 0;
+    });
+    const top = els.filter(e => !els.some(o => o !== e && o.contains(e)));
+    const out = [];
+    for (let i = 0; i < top.length; i++) for (let j = i + 1; j < top.length; j++){
+      const a = top[i].getBoundingClientRect(), b = top[j].getBoundingClientRect();
+      const w = Math.min(a.right, b.right) - Math.max(a.left, b.left), h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+      if (w <= 2 || h <= 2) continue;
+      const k = (w * h) / Math.min(a.width * a.height, b.width * b.height);
+      if (k > .25) out.push([top[i], top[j]].map(e => (e.id ? '#' + e.id : e.tagName + '.' + String(e.className).split(' ')[0]) + ' "' + e.textContent.trim().slice(0, 24) + '"').join(' X ') + ' ' + Math.round(k * 100) + '%');
+    }
+    return out;
+  });
+}
 async function state(page){
   return page.evaluate(() => { const O = window.Obby; if (!O) return null; const P = O.P; return { running: O.running, mode: O.mode, x: +P.x.toFixed(2), y: +P.y.toFixed(2), z: +P.z.toFixed(2), ground: !!P.onGround,
     obbyShown: document.getElementById('obby').classList.contains('show') }; });
@@ -76,11 +100,15 @@ async function playOne(browser, url, id){
     } else if (MOBILE){
       // drag on the left half like a joystick
       const cdp = await ctx.newCDPSession(page);
-      const x0 = 80, y0 = vw.height - 180;
-      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: x0, y: y0 }] });
-      for (let i = 1; i <= 10; i++){ await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x0, y: y0 - i * 6 }] }); await page.waitForTimeout(40); }
-      await page.waitForTimeout(SECS * 600);
-      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      const joy = await page.evaluate(() => { const j = document.getElementById('oJoyZone') || document.getElementById('oJoy'); if (!j) return null; const r = j.getBoundingClientRect(); return r.width > 10 ? [r.left + r.width / 2, r.top + r.height / 2] : null; });
+      const x0 = joy ? joy[0] : 80, y0 = joy ? joy[1] : vw.height - 180;
+      // twice: on a portrait phone the first touch can just dismiss the "turn your phone sideways" hint
+      for (let rep = 0; rep < 2; rep++){
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: x0, y: y0 }] });
+        for (let i = 1; i <= 10; i++){ await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x0, y: y0 - i * 6 }] }); await page.waitForTimeout(40); }
+        await page.waitForTimeout(SECS * 400);
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); await page.waitForTimeout(150);
+      }
     } else {
       await page.mouse.click(vw.width / 2, vw.height / 2);
       await page.keyboard.press('Space');
@@ -90,11 +118,12 @@ async function playOne(browser, url, id){
       await hold(page, 'ArrowUp', SECS * 300);
       await page.keyboard.press('Space');
     }
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(1200);
     const s1 = await state(page); rep.after = s1;
     if (s0 && s1){ rep.moved = +Math.hypot(s1.x - s0.x, s1.z - s0.z).toFixed(2); if (s1.y < -15) rep.notes.push('fell below world y=' + s1.y); }
     await page.screenshot({ path: path.join(OUT, tag + '-2-play.png') });
     rep.coveredPlay = await coveredButtons(page);
+    rep.overlaps = await hudOverlaps(page);
     // exit back to the hub via the visible exit button or pause menu
     // a real player presses Esc to get the mouse back from pointer lock first
     await page.evaluate(() => { try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e){} });
@@ -120,7 +149,7 @@ async function playOne(browser, url, id){
   modes = modes ? String(modes).split(',') : all;
   const results = [];
   for (const id of modes){ const r = await playOne(browser, url, id); results.push(r);
-    const bad = r.errors.length || r.notes.length; console.log((bad ? '✗ ' : '✓ ') + r.tag + ' moved=' + r.moved + ' errs=' + r.errors.length + (r.notes.length ? ' notes=' + r.notes.join('; ') : '') + (r.coveredPlay && r.coveredPlay.length ? ' covered=' + r.coveredPlay.length : ''));
+    const bad = r.errors.length || r.notes.length; console.log((bad ? '✗ ' : '✓ ') + r.tag + ' moved=' + r.moved + ' errs=' + r.errors.length + (r.notes.length ? ' notes=' + r.notes.join('; ') : '') + (r.coveredPlay && r.coveredPlay.length ? ' covered=' + r.coveredPlay.length : '') + (r.overlaps && r.overlaps.length ? ' overlaps=' + r.overlaps.length : ''));
     r.errors.slice(0, 3).forEach(e => console.log('    ' + e.kind + ': ' + e.text.split('\n').slice(0, 2).join(' | ')));
   }
   fs.writeFileSync(path.join(OUT, 'report-' + (MOBILE ? 'mobile' : PAD ? 'pad' : 'desktop') + '.json'), JSON.stringify(results, null, 1));

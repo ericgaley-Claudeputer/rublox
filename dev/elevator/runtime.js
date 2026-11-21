@@ -810,7 +810,7 @@
     elevMesh(new THREE.BoxGeometry(1.6, 1.8, 0.12), '#3a2a18', -6.2, 2.4, 23.9, false);
     elevMesh(new THREE.BoxGeometry(1.2, 1.3, 0.08), '#c9b6ff', -6.2, 2.4, 23.78, false);
     elv.secretAt = {x:-6.2, z:23.6};
-    elevLab('🛗 Wobblevator Lobby', 0, 3.4, 22);
+    elevLab('🛗 Wobblevator Lobby', 0, 5.6, 4.5);   // QA t330u: was at z=22, right in front of the camera, covering the HUD
     // big shared cab inside the lobby building / shaft
     const cabFloor = plat(0, 0.05, 0, CW, CD, '#c9a24a', 0.08);
     if (cabFloor) cabFloor.floorOnly = true;

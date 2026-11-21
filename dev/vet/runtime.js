@@ -192,9 +192,18 @@
   function vtDriveCam(){
     if (!vtDriving() || typeof cam === 'undefined' || typeof camera === 'undefined') return;
     const d = vt.run.drive;
-    const back = 8, height = 4.2;
-    const x = d.x - Math.sin(d.yaw) * back;
-    const z = d.z + Math.cos(d.yaw) * back;
+    // QA t330u: the chase camera went inside houses and walls when you drove next to them. Pull it in until the view is clear.
+    const sin = Math.sin(d.yaw), cos = Math.cos(d.yaw);
+    const blocked = (px, py, pz) => (typeof solids !== 'undefined' ? solids : []).some(s => s && s.mesh && s.active !== false && s.hh > 0.6
+      && Math.abs(px - s.mesh.position.x) < s.hw + 0.35 && Math.abs(pz - s.mesh.position.z) < s.hd + 0.35 && Math.abs(py - s.mesh.position.y) < s.hh + 0.35);
+    let back = 8;
+    for (; back > 2.5; back -= 0.5){
+      const h = 1.6 + 2.6 * (back / 8);
+      if (![0.35, 0.6, 0.85, 1].some(t => blocked(d.x - sin * back * t, 1.2 + (h - 1.2) * t, d.z + cos * back * t))) break;
+    }
+    const height = 1.6 + 2.6 * (back / 8);
+    const x = d.x - sin * back;
+    const z = d.z + cos * back;
     camera.position.set(x, height, z);
     camera.lookAt(d.x, 1.2, d.z);
     cam.yaw = d.yaw;
