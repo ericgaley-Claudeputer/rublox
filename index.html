@@ -3099,7 +3099,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.20-15';
+const BUILD = '2026.11.20-16';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -4007,7 +4007,12 @@ $('#saveAv').onclick = () => {
     {id:'woods-stain-3', min:'spooky', kind:'stain', at:'deep-woods', x:48.2, y:0.05, z:43.1, yaw:0.9, sx:0.9, sy:0.03, sz:0.7},
     {id:'tree-scratch-3', min:'spooky', kind:'scratch', at:'tree', x:49.95, y:1.6, z:44.95, yaw:0.2, sx:0.04, sy:0.85, sz:0.26},
     {id:'tree-scratch-4', min:'spooky', kind:'scratch', at:'tree', x:48.1, y:1.45, z:32.79, yaw:-0.7, sx:0.04, sy:0.72, sz:0.22},
-    {id:'cabin-handprint', min:'spooky', kind:'handprint', at:'cabin-window', x:51.22, y:2.28, z:-30.6, yaw:Math.PI/2, sx:0.36, sy:0.4, sz:0.03}
+    {id:'cabin-handprint', min:'spooky', kind:'handprint', at:'cabin-window', x:51.22, y:2.28, z:-30.6, yaw:Math.PI/2, sx:0.36, sy:0.4, sz:0.03},
+    {id:'hollow-splat-1', min:'spooky', kind:'splat', at:'hollow-tree', x:61.15, y:0.05, z:53.2, yaw:0.4, sx:0.7, sy:0.04, sz:0.5},
+    {id:'hollow-splat-2', min:'spooky', kind:'splat', at:'hollow-tree', x:63.05, y:0.05, z:54.7, yaw:-0.5, sx:0.55, sy:0.04, sz:0.42},
+    {id:'hollow-stain', min:'spooky', kind:'stain', at:'hollow-tree', x:61.7, y:0.05, z:55.15, yaw:0.8, sx:0.95, sy:0.03, sz:0.7},
+    {id:'hollow-scratch-1', min:'spooky', kind:'scratch', at:'hollow-tree', x:62.0, y:1.25, z:53.22, yaw:0, sx:0.04, sy:0.7, sz:0.22},
+    {id:'hollow-scratch-2', min:'spooky', kind:'scratch', at:'hollow-tree', x:61.28, y:1.5, z:54.35, yaw:1.2, sx:0.04, sy:0.62, sz:0.2}
   ];
 
   function goreDefault(){ return 'off'; }
@@ -6805,6 +6810,26 @@ try { evBootChrome(); } catch (e){}
     state.camperFound = true;
     return {ok:true, why:'safe', state, name: CAMP_CAMPER.name, reward: CAMP_STORY_REWARD};
   }
+  // Spooky rescue look: only when Gore is Spooky and Less scary is off.
+  // Mild, Off, or Less scary keep the regular safe scene. Wren is still okay.
+  function campGoreModule(){
+    if (typeof GoreRules !== 'undefined' && GoreRules) return GoreRules;
+    try {
+      if (typeof require === 'function' && typeof module !== 'undefined'){
+        return require(require('path').join(__dirname, '../gore/gore_logic.js'));
+      }
+    } catch (e){}
+    return null;
+  }
+  function campWrenSpooky(rawGore, lessScary){
+    if (lessScary) return false;
+    const G = campGoreModule();
+    if (!G || typeof G.goreEffective !== 'function') return false;
+    return G.goreEffective(rawGore, {lessScary: false}) === 'spooky';
+  }
+  function campWrenEnding(){
+    return 'You found Maple Wren! They were watching fireflies and lost the path. Everyone is okay!';
+  }
   function campJournalLines(state, lessScary){
     state = campLoad(state);
     const lines = CAMP_CLUES.map(c => {
@@ -7620,7 +7645,7 @@ try { evBootChrome(); } catch (e){}
     campCaught, campTick, campFinish, campReward,
     CAMP_CAMPER, CAMP_STORY_REWARD, CAMP_CLUES, CAMP_HOLLOW,
     campClue, campClueText, campHasClue, campFindClue, campCluesLeft, campAllClues,
-    campCanFindCamper, campFindCamper, campJournalLines, campNearClue,
+    campCanFindCamper, campFindCamper, campWrenSpooky, campWrenEnding, campJournalLines, campNearClue,
     CAMP_WATCH_KINDS_SCARY, CAMP_WATCH_KINDS_SOFT, campWatchRules, campWatchCollides,
     campWatchPlayers, campWatchDist, campWatchMinDist, campWatchFacing, campWatchSpotOk,
     campWatchCabinSpot, campWatchLakeSpot, campPickWatchSpot, campPlaceWatch, campTickWatchers
@@ -43533,6 +43558,57 @@ function start(m = 'obby', d = null){
   }
 
 
+  function campPoseWrenSpooky(){
+    if (!cg) return;
+    cg.shotLock = true;
+    cg.sv.lessScary = false;
+    let s = cg.sv;
+    (CampRules.CAMP_CLUES || []).forEach(c => {
+      const r = CampRules.campFindClue(s, c.id);
+      if (r.ok) s = r.state;
+    });
+    const end = CampRules.campFindCamper(s);
+    if (end.ok) s = end.state;
+    campPersist(s); cg.sv = s;
+    try { if (typeof goreSetLevel === 'function') goreSetLevel('spooky'); } catch (e){}
+    cg.run.phase = 'night';
+    cg.run.t = CampRules.CAMP_NIGHT * 0.45;
+    cg.run.fire = 0.55;
+    cg.run.gmode = 'hidden';
+    cg.run.flicker = 0;
+    campRebuildGore();
+    campRebuildWren();
+    if (cg.gloam) cg.gloam.visible = false;
+    const h = CampRules.CAMP_HOLLOW;
+    if (P){ P.x = h.x - 22; P.y = 0; P.z = h.z - 22; }
+    try { if (typeof body !== 'undefined' && body) body.visible = false; } catch (e){}
+    try { if (typeof model !== 'undefined' && model){ if (model.g) model.g.visible = false; else if (model.visible != null) model.visible = false; } } catch (e){}
+    try { if (typeof blob !== 'undefined' && blob) blob.visible = false; } catch (e){}
+    campWorldLights(false, true, 0.55, 0);
+    if (scene){
+      const c = new THREE.Color('#141018');
+      scene.background = c;
+      if (scene.fog){ scene.fog.color.copy(c); scene.fog.near = 12; scene.fog.far = 64; }
+    }
+    if (!cg.moonLt){
+      cg.moonLt = new THREE.DirectionalLight('#d8c8b8', 0.7);
+      cg.moonLt.position.set(20, 24, 8);
+      cg.moonLt._campSkip = true;
+      scene.add(cg.moonLt); t302Keep(cg, cg.moonLt);
+    }
+    cg.moonLt.intensity = 0.85;
+    cg.moonLt.visible = true;
+    if (cg.wrenMesh){ cg.wrenMesh.rotation.z = 0.16; cg.wrenMesh.visible = true; }
+    campPaintClues();
+    const from = {x:h.x + 4.5, y:2.4, z:h.z + 3.6}, at = {x:h.x + 1.15, y:1.15, z:h.z};
+    if (typeof cam !== 'undefined' && cam){ cam.yaw = Math.atan2(from.x - at.x, from.z - at.z); cam.pitch = 0.14; cam.dist = 9; }
+    try { if (obbyDebug && obbyDebug.camLook) obbyDebug.camLook(from, at); } catch (e){}
+    try {
+      const b = document.getElementById('oBanner');
+      if (b){ b.textContent = ''; b.classList.remove('go'); }
+    } catch (e){}
+    try { window.__campWrenShot = {spooky: true, bandage: true, from: from, at: at}; } catch (e){}
+  }
   function campPoseStory(){
     if (!cg) return;
     cg.shotLock = true;
@@ -43847,6 +43923,7 @@ function start(m = 'obby', d = null){
       t302Keep(cg, m);
       cg.gore.push(m);
     });
+    campRebuildWren();
   }
 
   function campPaintLessBtn(){
@@ -43965,6 +44042,58 @@ function start(m = 'obby', d = null){
   }
 
 
+  function campWrenSpookyNow(){
+    if (!cg) return false;
+    let raw = 'off';
+    try { raw = (typeof goreSetting === 'function') ? goreSetting() : ((typeof load === 'function' && typeof GoreRules !== 'undefined') ? load(GoreRules.GORE_KEY, 'off') : 'off'); } catch (e){}
+    return !!(CampRules && CampRules.campWrenSpooky && CampRules.campWrenSpooky(raw, !!(cg.sv && cg.sv.lessScary)));
+  }
+  function campMakeWren(){
+    const h = CampRules.CAMP_HOLLOW;
+    const spooky = campWrenSpookyNow();
+    const g = new THREE.Group();
+    g.position.set(h.x + 1.2, 0, h.z);
+    g.userData.spooky = !!spooky;
+    g.userData.shiver = !!spooky;
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.1, 0.4), t302Mat('#3a86ff'));
+    body.position.y = 0.9;
+    g.add(body);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.45, 0.45), t302Mat('#ffd23f'));
+    head.position.y = 1.65;
+    g.add(head);
+    const scarf = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.16, 0.54), t302Mat('#c23d4b'));
+    scarf.position.y = 1.42;
+    g.add(scarf);
+    if (spooky){
+      // Scared, wide eyes only. Wren has no red marks.
+      const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.15, 0.04), new THREE.MeshBasicMaterial({color:'#fff8ee'}));
+      eyeL.position.set(-0.1, 1.7, 0.23); g.add(eyeL);
+      const eyeR = eyeL.clone(); eyeR.position.x = 0.1; g.add(eyeR);
+      const pupL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.03), new THREE.MeshBasicMaterial({color:'#1d2340'}));
+      pupL.position.set(-0.1, 1.67, 0.25); g.add(pupL);
+      const pupR = pupL.clone(); pupR.position.x = 0.1; g.add(pupR);
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.5, 0.16), t302Mat('#3a86ff'));
+      arm.position.set(0.42, 0.95, 0); g.add(arm);
+      // A clean white bandage wrapped on one arm.
+      const bandage = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.2, 0.22), t302Mat('#f4f4f0'));
+      bandage.position.set(0.42, 1.08, 0);
+      bandage.userData.bandage = true;
+      g.add(bandage);
+      g.rotation.z = 0.1;
+    }
+    scene.add(g);
+    if (cg) t302Keep(cg, g);
+    return g;
+  }
+  function campRebuildWren(){
+    if (!cg) return;
+    if (cg.wrenMesh){
+      try { if (cg.wrenMesh.parent) cg.wrenMesh.parent.remove(cg.wrenMesh); } catch (e){}
+      try { scene.remove(cg.wrenMesh); } catch (e){}
+    }
+    cg.wrenMesh = campMakeWren();
+    campPaintClues();
+  }
   function campBuildStory(){
     if (!cg) return;
     cg.clueMeshes = {};
@@ -43975,12 +44104,10 @@ function start(m = 'obby', d = null){
       cg.clueMeshes[c.id] = m;
     });
     const h = CampRules.CAMP_HOLLOW;
-    const trunk = t302Mesh(new THREE.CylinderGeometry(0.7, 0.9, 3.2, 8), '#5a3a22', h.x, 1.6, h.z, cg);
-    const wren = t302Mesh(new THREE.BoxGeometry(0.6, 1.1, 0.4), '#3a86ff', h.x + 1.2, 0.9, h.z, cg);
-    t302Mesh(new THREE.BoxGeometry(0.45, 0.45, 0.45), '#ffd23f', h.x + 1.2, 1.65, h.z, cg);
+    t302Mesh(new THREE.CylinderGeometry(0.7, 0.9, 3.2, 8), '#5a3a22', h.x, 1.6, h.z, cg);
     t302Lab('🧣 Maple Wren', h.x + 1.2, 2.6, h.z);
     t302Lab('🌳 Hollow Tree', h.x, 3.4, h.z);
-    cg.wrenMesh = wren;
+    campRebuildWren();
     campPaintClues();
   }
 
@@ -44010,7 +44137,7 @@ function start(m = 'obby', d = null){
       campPersist(r.state); cg.sv = r.state;
       t302Pay(r.reward, '🧣 Wren is safe'); t302Snd('win'); t302Ach('camp-wren'); t302Note('camp-wren');
       try { if (typeof confetti === 'function') confetti(); } catch(e){}
-      banner('🧣 You found Maple Wren! They were watching fireflies and lost the path. Everyone is okay!' + (r.reward ? (' +' + r.reward + ' 🪙') : ''));
+      banner('🧣 ' + ((CampRules.campWrenEnding && CampRules.campWrenEnding()) || 'You found Maple Wren! They were watching fireflies and lost the path. Everyone is okay!') + (r.reward ? (' +' + r.reward + ' 🪙') : ''));
       campPaintClues(); campPaintJournal();
       return true;
     }
@@ -44335,6 +44462,12 @@ function start(m = 'obby', d = null){
     else if (near && near.kind === 'clue') t302Hud((near.emoji || '🔍') + ' A clue! E / Ⓧ — pick it up and add it to your journal.', '🔍 Clue');
     else if (near && near.kind === 'wren') t302Hud('🧣 Maple Wren is here, and they are okay! E / Ⓧ — say hello.', '🧣 Wren');
     else t302Hud('Goal: survive 5 nights, and help find Maple Wren. Hunt logs, follow clues, keep the fire bright after dark.', '');
+    if (cg.wrenMesh && cg.wrenMesh.userData && cg.wrenMesh.userData.shiver && cg.wrenMesh.visible){
+      const tNow = (typeof worldT === 'number') ? worldT : 0;
+      const h = CampRules.CAMP_HOLLOW;
+      cg.wrenMesh.rotation.z = 0.1 + Math.sin(tNow * 14) * 0.07;
+      cg.wrenMesh.position.x = h.x + 1.2 + Math.sin(tNow * 16) * 0.03;
+    }
 
   }
 
@@ -44482,6 +44615,7 @@ function start(m = 'obby', d = null){
       goreMild(){ campPoseGore('mild'); },
       goreSpooky(){ campPoseGore('spooky'); },
       camperClues(){ campPoseStory(); },
+      wrenSpooky(){ campPoseWrenSpooky(); },
       connectRides(){ if (!rd) return; let s = rd.sv; const spots = [[5,5,0,'curve'],[6,5,0,'curve'],[6,6,0,'curve'],[5,6,0,'curve']]; spots.forEach((q,i) => { const r = RidesRules.ridesPlace(s, q[3], q[0], q[1], q[2], 'me', i ? {snap:true} : {}); if (r.ok){ s = r.state; if (!rd.meshes[r.piece.id]) ridesBuildPiece(r.piece); } }); ridesPersist(s); ridesRefreshJoints(); if (P){ const w = RidesRules.ridesWorld(5,5); P.x = w.x; P.z = w.z + 3; } }
     };
   } catch (e){}

@@ -43,7 +43,12 @@
     {id:'woods-stain-3', min:'spooky', kind:'stain', at:'deep-woods', x:48.2, y:0.05, z:43.1, yaw:0.9, sx:0.9, sy:0.03, sz:0.7},
     {id:'tree-scratch-3', min:'spooky', kind:'scratch', at:'tree', x:49.95, y:1.6, z:44.95, yaw:0.2, sx:0.04, sy:0.85, sz:0.26},
     {id:'tree-scratch-4', min:'spooky', kind:'scratch', at:'tree', x:48.1, y:1.45, z:32.79, yaw:-0.7, sx:0.04, sy:0.72, sz:0.22},
-    {id:'cabin-handprint', min:'spooky', kind:'handprint', at:'cabin-window', x:51.22, y:2.28, z:-30.6, yaw:Math.PI/2, sx:0.36, sy:0.4, sz:0.03}
+    {id:'cabin-handprint', min:'spooky', kind:'handprint', at:'cabin-window', x:51.22, y:2.28, z:-30.6, yaw:Math.PI/2, sx:0.36, sy:0.4, sz:0.03},
+    {id:'hollow-splat-1', min:'spooky', kind:'splat', at:'hollow-tree', x:61.15, y:0.05, z:53.2, yaw:0.4, sx:0.7, sy:0.04, sz:0.5},
+    {id:'hollow-splat-2', min:'spooky', kind:'splat', at:'hollow-tree', x:63.05, y:0.05, z:54.7, yaw:-0.5, sx:0.55, sy:0.04, sz:0.42},
+    {id:'hollow-stain', min:'spooky', kind:'stain', at:'hollow-tree', x:61.7, y:0.05, z:55.15, yaw:0.8, sx:0.95, sy:0.03, sz:0.7},
+    {id:'hollow-scratch-1', min:'spooky', kind:'scratch', at:'hollow-tree', x:62.0, y:1.25, z:53.22, yaw:0, sx:0.04, sy:0.7, sz:0.22},
+    {id:'hollow-scratch-2', min:'spooky', kind:'scratch', at:'hollow-tree', x:61.28, y:1.5, z:54.35, yaw:1.2, sx:0.04, sy:0.62, sz:0.2}
   ];
 
   function goreDefault(){ return 'off'; }

@@ -83,7 +83,7 @@ test('gore settings are wired in the page and kept as a global option', () => {
   assert.match(HTML, /function goreSyncUi/);
   assert.match(HTML, /function campRebuildGore/);
   assert.match(HTML, /rubloxGore/);
-  assert.match(HTML, /const BUILD = '2026\.11\.20-15'/);
+  assert.match(HTML, /const BUILD = '2026\.11\.20-16'/);
   assert.equal(Reset.RESET_KEEP_ON_ALL.includes('rubloxGore'), true);
   assert.match(HTML, /'rubloxGore'/);
   assert.match(HTML, /no wounds or body parts/i);

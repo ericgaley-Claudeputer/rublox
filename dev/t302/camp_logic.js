@@ -145,6 +145,26 @@
     state.camperFound = true;
     return {ok:true, why:'safe', state, name: CAMP_CAMPER.name, reward: CAMP_STORY_REWARD};
   }
+  // Spooky rescue look: only when Gore is Spooky and Less scary is off.
+  // Mild, Off, or Less scary keep the regular safe scene. Wren is still okay.
+  function campGoreModule(){
+    if (typeof GoreRules !== 'undefined' && GoreRules) return GoreRules;
+    try {
+      if (typeof require === 'function' && typeof module !== 'undefined'){
+        return require(require('path').join(__dirname, '../gore/gore_logic.js'));
+      }
+    } catch (e){}
+    return null;
+  }
+  function campWrenSpooky(rawGore, lessScary){
+    if (lessScary) return false;
+    const G = campGoreModule();
+    if (!G || typeof G.goreEffective !== 'function') return false;
+    return G.goreEffective(rawGore, {lessScary: false}) === 'spooky';
+  }
+  function campWrenEnding(){
+    return 'You found Maple Wren! They were watching fireflies and lost the path. Everyone is okay!';
+  }
   function campJournalLines(state, lessScary){
     state = campLoad(state);
     const lines = CAMP_CLUES.map(c => {
@@ -960,7 +980,7 @@
     campCaught, campTick, campFinish, campReward,
     CAMP_CAMPER, CAMP_STORY_REWARD, CAMP_CLUES, CAMP_HOLLOW,
     campClue, campClueText, campHasClue, campFindClue, campCluesLeft, campAllClues,
-    campCanFindCamper, campFindCamper, campJournalLines, campNearClue,
+    campCanFindCamper, campFindCamper, campWrenSpooky, campWrenEnding, campJournalLines, campNearClue,
     CAMP_WATCH_KINDS_SCARY, CAMP_WATCH_KINDS_SOFT, campWatchRules, campWatchCollides,
     campWatchPlayers, campWatchDist, campWatchMinDist, campWatchFacing, campWatchSpotOk,
     campWatchCabinSpot, campWatchLakeSpot, campPickWatchSpot, campPlaceWatch, campTickWatchers
