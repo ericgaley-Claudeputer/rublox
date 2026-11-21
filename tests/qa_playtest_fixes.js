@@ -107,6 +107,12 @@ describe('labels', () => {
   test('the controls tip moves above the run-energy bar', () => {
     assert.ok(html.includes('#obby:not(.touchui):has(#oStam:not([style*="none"])) .otip{bottom:56px}'));
   });
+  test('Dream House fits a portrait phone: one-row toolbar, current step, goal beside the steps, no desktop look hint', () => {
+    assert.ok(html.includes('#obby.touchui .dhlookhint{display:none!important}'));
+    assert.ok(html.includes('#obby.touchui.dhmode .dhstep:not(.on){display:none}'));
+    assert.match(html, /#obby\.touchui\.dhmode \.dhtools:not\(\.dhvisitbar\),#obby\.touchui\.dhmode \.dinv\{flex-wrap:nowrap/);
+    assert.match(html, /#obby\.touchui\.dhmode \.dhgoal\{top:calc\(var\(--hudb, 56px\) \+ 6px\);left:auto/);
+  });
   test('Bingle is not named twice in a speech bubble', () => {
     const src = fnSource('elevSay');
     const out = [];

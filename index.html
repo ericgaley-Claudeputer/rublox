@@ -771,6 +771,22 @@ body.dhreset-open #dhCut, body.dhreset-open #dhSkip, body.dhreset-open .dhbubble
 .dhresetbox .mbox{max-width:420px;text-align:center}
 .obby.dhouse.fpv .ocross{display:block!important}
 .obby.dhouse.fpv .odot{display:none!important}
+/* QA t330u: Dream House on a portrait phone stacked the goal under the top buttons, the steps over the coins,
+   a desktop "Click the view" hint over the E prompt, and a 300px toolbar. One-row scrolling toolbar, current step only,
+   goal + guide in the right column under the HUD row. */
+@media (max-width:560px){
+  #obby.touchui.dhmode .dhtools:not(.dhvisitbar),#obby.touchui.dhmode .dinv{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  #obby.touchui.dhmode .dhtools .dhb,#obby.touchui.dhmode .dinv .dhi{flex:0 0 auto}
+  #obby.touchui.dhmode .dhbar{bottom:max(134px,calc(env(safe-area-inset-bottom) + 112px))}
+  #obby.touchui.dhmode .dhstack{top:calc(var(--hudb, 56px) + 6px);max-width:44vw}
+  #obby.touchui.dhmode .dhstep:not(.on){display:none}
+  #obby.touchui.dhmode .dhsteps{width:100%;top:auto}
+  #obby.touchui.dhmode .dhgoal{top:calc(var(--hudb, 56px) + 6px);left:auto;right:max(8px,env(safe-area-inset-right));transform:none;max-width:50vw;font-size:13px;padding:7px 10px;border-radius:14px}
+  #obby.touchui.dhmode .dhguide{top:calc(var(--hudb, 56px) + 104px);left:auto;right:max(8px,env(safe-area-inset-right));transform:none;max-width:50vw;white-space:normal;font-size:13px;padding:7px 10px}
+  #obby.touchui.dhmode #dhAct,#obby.touchui.dhmode #dhAct.dhnear{font-size:15px;max-width:calc(100vw - 196px);padding:8px 12px}
+  #obby.touchui.dhmode .dhhand{width:84px;min-height:84px;right:max(8px,env(safe-area-inset-right));padding:4px;font-size:12px}
+}
+#obby.touchui .dhlookhint{display:none!important}
 @media (max-width:700px){.dhgoal{font-size:17px;padding:8px 12px}.dhsteps{width:min(56vw,220px);font-size:12px;top:max(72px,calc(env(safe-area-inset-top) + 64px))}.dhstep{font-size:12px}}
 
 .dhgarrow{display:inline-block;font-size:26px;color:#ffd23f;transform-origin:center center;line-height:1}
