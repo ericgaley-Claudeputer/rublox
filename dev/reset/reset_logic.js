@@ -28,6 +28,7 @@
     'rubloxMusic',
     'rubloxMute',
     'rubloxWeather',
+    'rubloxGore',
     'rubloxThrowTurn',
     'rubloxSpotify',
     'rubloxSpotifyPkce',

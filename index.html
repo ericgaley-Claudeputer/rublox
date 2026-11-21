@@ -1497,6 +1497,10 @@ body.lh-muffled #obby{filter:saturate(.85)}
 #t302LessBtn{position:absolute;z-index:8;left:16px;bottom:96px;padding:8px 12px;font-size:14px;border:3px solid #1d2340;border-radius:16px;background:#efe7ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
 .campmode #t302LessBtn{display:block}
 @media (max-width:700px){ #t302LessBtn{bottom:120px;left:12px} }
+#goreSetNote{font-weight:700;color:var(--muted);font-size:13px;margin:4px 0 8px;line-height:1.35;text-align:left}
+#t302GoreNote{position:absolute;z-index:8;left:16px;bottom:148px;max-width:230px;padding:6px 10px;font-size:12px;font-weight:800;line-height:1.3;border:2px solid #1d2340;border-radius:12px;background:#efe7ff;color:#1d2340;display:none}
+.campmode #t302GoreNote.show{display:block}
+@media (max-width:700px){ #t302GoreNote{bottom:172px;left:12px} }
 
 #t302Coins{display:none;position:absolute;left:12px;top:112px;z-index:8;background:#fff8e6;color:#1d2340;border:3px solid #1d2340;border-radius:16px;padding:8px 14px;font-weight:900;font-size:18px;box-shadow:3px 3px 0 #1d2340;pointer-events:none}
 .gardenmode #t302Coins{display:block}
@@ -2085,6 +2089,13 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
       <label class="invrow"><input type="radio" name="wxSetMode" id="wxSetDay" value="day"><span>Always day<small>Keep bright daylight in games that use this.</small></span></label>
       <label class="invrow"><input type="radio" name="wxSetMode" id="wxSetOff" value="off"><span>Off<small>Leave each game's own sky and lighting alone.</small></span></label>
     </div>
+    <div class="goreset" id="goreSet">
+      <div style="color:var(--muted);font-weight:700;margin-top:12px">🩸 Gore</div>
+      <label class="invrow"><input type="radio" name="goreSetMode" id="goreSetOff" value="off" checked><span>Off<small>No blood anywhere. This is the default for every save.</small></span></label>
+      <label class="invrow"><input type="radio" name="goreSetMode" id="goreSetMild" value="mild"><span>Mild<small>A few cartoon red splats and scratch marks.</small></span></label>
+      <label class="invrow"><input type="radio" name="goreSetMode" id="goreSetSpooky" value="spooky"><span>Spooky<small>More splats and creepy stains.</small></span></label>
+      <p id="goreSetNote">Used in Campfire Grove only. Cartoon marks, no wounds or body parts. When 😌 Less scary is on there, Gore stays at Mild.</p>
+    </div>
     <div class="evset" id="evSet">
       <div style="color:var(--muted);font-weight:700;margin-top:12px">❄️ Seasonal events</div>
       <label class="invrow"><input type="checkbox" id="evForceSnow"><span>Preview the Snow Festival<small>Turn the winter fair on before December 1. It stays on this device until you uncheck this, or you can also use #snowfest=1 in the page address.</small></span></label>
@@ -2410,6 +2421,7 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
   <div id="t302Vignette"></div>
   <div id="t302Scare" aria-hidden="true"><div class="t302ScareFace"><i class="t302ScareEye l"></i><i class="t302ScareEye r"></i><b class="t302ScareGrin"></b></div></div>
   <button type="button" id="t302LessBtn" title="Less scary uses the milder Gloam from before. Off is the really scary default.">😌 Less scary</button>
+  <div id="t302GoreNote" hidden></div>
   <div id="campWin" class="t297overlay" role="dialog" aria-label="Camp result">
     <div class="t297box">
       <button type="button" class="t297x" id="campWinX" aria-label="Close">×</button>
@@ -2957,7 +2969,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.20-9';
+const BUILD = '2026.11.20-11';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3820,6 +3832,124 @@ $('#saveAv').onclick = () => {
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
+/* Rublox global Gore setting — optional, off by default, cartoon marks only. */
+(function (root) {
+  const GORE_KEY = 'rubloxGore';
+  const GORE_VER = 1;
+  // Single config table so more levels can be added later without rewriting callers.
+  const GORE_LEVELS = {
+    off: {
+      id: 'off',
+      name: 'Off',
+      emoji: '🚫',
+      rank: 0,
+      help: 'No blood anywhere. This is the default for every save.'
+    },
+    mild: {
+      id: 'mild',
+      name: 'Mild',
+      emoji: '💧',
+      rank: 1,
+      help: 'A few cartoon red splats and scratch marks.'
+    },
+    spooky: {
+      id: 'spooky',
+      name: 'Spooky',
+      emoji: '🩸',
+      rank: 2,
+      help: 'More splats and creepy stains.'
+    }
+  };
+  const GORE_ORDER = ['off', 'mild', 'spooky'];
+  const GORE_CAP_LESS = 'mild';
+  const GORE_GAMES = ['camp'];
+  const GORE_KINDS = ['splat', 'scratch', 'stain', 'handprint'];
+
+  // Environmental decals for Campfire Grove only. No body parts, wounds, or injury poses.
+  const CAMP_GORE_DECALS = [
+    {id:'cabin-door', min:'mild', kind:'splat', at:'cabin-door', x:48.0, y:0.9, z:-29.28, yaw:0, sx:0.55, sy:0.42, sz:0.04},
+    {id:'cabin-steps', min:'mild', kind:'splat', at:'cabin-steps', x:47.35, y:0.05, z:-28.15, yaw:0.3, sx:0.7, sy:0.04, sz:0.5},
+    {id:'woods-stain-1', min:'mild', kind:'stain', at:'deep-woods', x:50.6, y:0.05, z:46.4, yaw:0.5, sx:1.1, sy:0.03, sz:0.8},
+    {id:'tree-scratch-1', min:'mild', kind:'scratch', at:'tree', x:39.15, y:1.35, z:-36.04, yaw:1.1, sx:0.04, sy:0.7, sz:0.22},
+    {id:'tree-scratch-2', min:'mild', kind:'scratch', at:'tree', x:45.4, y:1.5, z:-18.96, yaw:-0.4, sx:0.04, sy:0.62, sz:0.2},
+    {id:'cabin-wall', min:'spooky', kind:'splat', at:'cabin-wall', x:45.0, y:1.15, z:-32.0, yaw:Math.PI/2, sx:0.62, sy:0.5, sz:0.04},
+    {id:'woods-stain-2', min:'spooky', kind:'stain', at:'deep-woods', x:54.8, y:0.05, z:50.2, yaw:-0.4, sx:1.4, sy:0.03, sz:1.0},
+    {id:'woods-stain-3', min:'spooky', kind:'stain', at:'deep-woods', x:48.2, y:0.05, z:43.1, yaw:0.9, sx:0.9, sy:0.03, sz:0.7},
+    {id:'tree-scratch-3', min:'spooky', kind:'scratch', at:'tree', x:49.95, y:1.6, z:44.95, yaw:0.2, sx:0.04, sy:0.85, sz:0.26},
+    {id:'tree-scratch-4', min:'spooky', kind:'scratch', at:'tree', x:48.1, y:1.45, z:32.79, yaw:-0.7, sx:0.04, sy:0.72, sz:0.22},
+    {id:'cabin-handprint', min:'spooky', kind:'handprint', at:'cabin-window', x:51.22, y:2.28, z:-30.6, yaw:Math.PI/2, sx:0.36, sy:0.4, sz:0.03}
+  ];
+
+  function goreDefault(){ return 'off'; }
+
+  function goreLevelId(raw){
+    if (raw == null || raw === '') return goreDefault();
+    if (typeof raw === 'string'){
+      const s = raw.trim().toLowerCase();
+      return GORE_LEVELS[s] ? s : goreDefault();
+    }
+    if (typeof raw === 'object'){
+      const v = raw.level || raw.value || raw.gore || raw.mode;
+      if (typeof v === 'string' && GORE_LEVELS[v]) return v;
+    }
+    return goreDefault();
+  }
+
+  function goreNormalize(raw){ return goreLevelId(raw); }
+
+  function goreLoadState(raw){
+    if (typeof raw === 'string' && raw.charAt(0) === '{'){
+      try { raw = JSON.parse(raw); } catch (e){ raw = null; }
+    }
+    return goreNormalize(raw);
+  }
+
+  function goreLevel(id){ return GORE_LEVELS[goreNormalize(id)] || GORE_LEVELS.off; }
+
+  function goreRank(id){ return goreLevel(id).rank; }
+
+  function goreEffective(raw, opt){
+    let id = goreNormalize(raw);
+    if (opt && opt.lessScary && goreRank(id) > goreRank(GORE_CAP_LESS)) id = GORE_CAP_LESS;
+    return id;
+  }
+
+  function goreCapped(raw, lessScary){
+    const want = goreNormalize(raw);
+    const got = goreEffective(want, {lessScary: !!lessScary});
+    return want !== got;
+  }
+
+  function goreCapNote(raw, lessScary){
+    if (goreCapped(raw, lessScary)) return 'Gore stays at Mild while Less scary is on.';
+    return '';
+  }
+
+  function goreAllowedIn(modeId){
+    return GORE_GAMES.indexOf(modeId) >= 0;
+  }
+
+  function goreDecalsFor(modeId, raw, opt){
+    if (!goreAllowedIn(modeId)) return [];
+    const id = goreEffective(raw, opt);
+    const rank = goreRank(id);
+    if (rank <= 0) return [];
+    return CAMP_GORE_DECALS.filter(d => goreRank(d.min) <= rank && GORE_KINDS.indexOf(d.kind) >= 0);
+  }
+
+  function goreCampDecals(raw, opt){ return goreDecalsFor('camp', raw, opt); }
+
+  function goreCampCount(raw, opt){ return goreCampDecals(raw, opt).length; }
+
+  const api = {
+    GORE_KEY, GORE_VER, GORE_LEVELS, GORE_ORDER, GORE_CAP_LESS, GORE_GAMES, GORE_KINDS, CAMP_GORE_DECALS,
+    goreDefault, goreLevelId, goreNormalize, goreLoadState, goreLevel, goreRank,
+    goreEffective, goreCapped, goreCapNote, goreAllowedIn, goreDecalsFor, goreCampDecals, goreCampCount
+  };
+  root.GoreRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
 /* ---------- rublox weather ---------- */
 const WX_RULES = (typeof WXRules !== 'undefined' && WXRules) ? WXRules : (typeof window !== 'undefined' && window.WXRules) || {};
 const WX_KEY = WX_RULES.WX_KEY || 'rubloxWeather';
@@ -4026,6 +4156,54 @@ try {
   }
 } catch (e){}
 /* ---------- end rublox weather ---------- */
+
+/* ---------- rublox gore ---------- */
+const GORE_RULES = (typeof GoreRules !== 'undefined' && GoreRules) ? GoreRules : (typeof window !== 'undefined' && window.GoreRules) || {};
+const GORE_KEY = GORE_RULES.GORE_KEY || 'rubloxGore';
+let goreSet = null;
+
+function goreLoad(){
+  let raw = null;
+  try { raw = (typeof load === 'function') ? load(GORE_KEY, null) : (typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem(GORE_KEY) || 'null') : null); } catch (e){}
+  return GORE_RULES.goreLoadState ? GORE_RULES.goreLoadState(raw) : (raw || 'off');
+}
+function goreSave(level){
+  const id = GORE_RULES.goreNormalize ? GORE_RULES.goreNormalize(level) : (level || 'off');
+  goreSet = id;
+  try {
+    if (typeof save === 'function') save(GORE_KEY, id);
+    else if (typeof localStorage !== 'undefined') localStorage.setItem(GORE_KEY, JSON.stringify(id));
+  } catch (e){}
+}
+function goreSetting(){ return goreSet != null ? goreSet : goreLoad(); }
+function goreSetLevel(level){
+  const id = GORE_RULES.goreNormalize ? GORE_RULES.goreNormalize(level) : (level || 'off');
+  goreSave(id);
+  goreSyncUi();
+  try { if (typeof campRebuildGore === 'function') campRebuildGore(); } catch (e){}
+  return id;
+}
+function goreSyncUi(){
+  try {
+    const st = goreSetting();
+    ['off','mild','spooky'].forEach(m => {
+      const n = document.getElementById('goreSet' + m.charAt(0).toUpperCase() + m.slice(1));
+      if (n) n.checked = st === m;
+    });
+    const note = document.getElementById('goreSetNote');
+    if (note) note.textContent = 'Used in Campfire Grove only. Cartoon marks, no wounds or body parts. When \u263A Less scary is on there, Gore stays at Mild.'.replace('\u263A', '😌');
+  } catch (e){}
+}
+try {
+  if (typeof window !== 'undefined'){
+    window.goreSetting = goreSetting;
+    window.goreSetLevel = goreSetLevel;
+    window.goreSyncUi = goreSyncUi;
+    window.goreLoad = goreLoad;
+  }
+} catch (e){}
+/* ---------- end rublox gore ---------- */
+
 
 /* Equipped Adopt-a-Pet follower across Rublox modes. Optional hide toggle. */
 (function (root) {
@@ -6543,7 +6721,11 @@ try { evBootChrome(); } catch (e){}
       best: 0.7,
       respawn: false,
       caught: 0,
-      chopping: null
+      chopping: null,
+      watchers: [],
+      watchEvents: [],
+      watchCd: 1.5,
+      watchSeq: 0
     };
   }
 
@@ -6933,6 +7115,202 @@ try { evBootChrome(); } catch (e){}
     return campStepGloamScary(run, dt, opt);
   }
 
+  const CAMP_WATCH_KINDS_SCARY = ['thin', 'pale', 'lake', 'cabin'];
+  const CAMP_WATCH_KINDS_SOFT = ['owl', 'glow'];
+  function campWatchRules(lessScary){
+    if (lessScary){
+      return {
+        lessScary: true, max: 2, spawnMin: 50, spawnMax: 85, despawn: 26,
+        lookTime: 3.2, kinds: CAMP_WATCH_KINDS_SOFT.slice(), behind: false,
+        glowEyes: false, collide: false, respawn: 8
+      };
+    }
+    return {
+      lessScary: false, max: 4, spawnMin: 35, spawnMax: 70, despawn: 20,
+      lookTime: 2.2, kinds: CAMP_WATCH_KINDS_SCARY.slice(), behind: true,
+      glowEyes: true, collide: false, respawn: 4
+    };
+  }
+  function campWatchCollides(){ return false; }
+  function campWatchPlayers(opt){
+    if (opt && Array.isArray(opt.players) && opt.players.length){
+      return opt.players.map(p => ({x: +p.x || 0, z: +p.z || 0}));
+    }
+    return [{x: (opt && opt.px != null) ? +opt.px : 0, z: (opt && opt.pz != null) ? +opt.pz : 0}];
+  }
+  function campWatchDist(w, px, pz){
+    return Math.hypot((w && w.x || 0) - (px || 0), (w && w.z || 0) - (pz || 0));
+  }
+  function campWatchMinDist(w, players){
+    let best = Infinity;
+    (players || []).forEach(p => {
+      const d = campWatchDist(w, p.x, p.z);
+      if (d < best) best = d;
+    });
+    return best;
+  }
+  function campWatchFacing(w, px, pz, face){
+    const d = campWatchDist(w, px, pz);
+    if (d < 0.4) return false;
+    const lx = Math.sin(face || 0), lz = Math.cos(face || 0);
+    const tx = ((w.x || 0) - (px || 0)) / d, tz = ((w.z || 0) - (pz || 0)) / d;
+    return (lx * tx + lz * tz) > 0.72;
+  }
+  function campWatchInBounds(x, z){
+    return Math.abs(x) < 72 && Math.abs(z) < 72 && !campInWater(x, z) && Math.hypot(x, z) > 12;
+  }
+  function campWatchSpotOk(x, z, players, rules, kind){
+    if (kind !== 'cabin' && !campWatchInBounds(x, z)) return false;
+    if (kind === 'cabin' && (Math.abs(x) > 80 || Math.abs(z) > 80)) return false;
+    const minD = campWatchMinDist({x, z}, players);
+    if (minD < rules.spawnMin || minD > rules.spawnMax) return false;
+    return true;
+  }
+  function campWatchCabinSpot(){ return {x: 51.15, z: -30.6}; }
+  function campWatchLakeSpot(players){
+    const lx = -40, lz = 36;
+    const p = (players && players[0]) || {x:0, z:0};
+    const dx = p.x - lx, dz = p.z - lz;
+    const d = Math.hypot(dx, dz) || 1;
+    return {x: lx - dx / d * 11.6, z: lz - dz / d * 11.6};
+  }
+  function campPickWatchSpot(run, opt, rules, kind, behind){
+    const players = campWatchPlayers(opt);
+    const rnd = campRng(opt);
+    const tries = [];
+    if (kind === 'cabin') tries.push(campWatchCabinSpot());
+    if (kind === 'lake') tries.push(campWatchLakeSpot(players));
+    if (behind && players[0]){
+      const face = (opt && opt.face) || 0;
+      const p = players[0];
+      const r = rules.spawnMin + 6 + rnd() * 8;
+      tries.push({x: p.x - Math.sin(face) * r, z: p.z - Math.cos(face) * r, behind: true});
+    }
+    if (kind === 'pale' || kind === 'thin' || kind === 'owl' || kind === 'glow'){
+      const deep = campLandmark('deep') || {x:52, z:48};
+      tries.push({x: deep.x - 10, z: deep.z - 8});
+    }
+    for (let i = 0; i < 16; i++){
+      const ang = rnd() * Math.PI * 2;
+      const r = rules.spawnMin + rnd() * (rules.spawnMax - rules.spawnMin);
+      const p = players[0] || {x:0, z:0};
+      tries.push({x: p.x + Math.sin(ang) * r, z: p.z + Math.cos(ang) * r});
+    }
+    for (let i = 0; i < tries.length; i++){
+      const s = tries[i];
+      if (run.phase === 'day' && !campInDeep(s.x, s.z)) continue;
+      if (campWatchSpotOk(s.x, s.z, players, rules, kind)) return s;
+    }
+    return null;
+  }
+  function campPlaceWatch(run, spec, opt){
+    if (!run) return null;
+    const rules = campWatchRules(opt && opt.lessScary);
+    const players = campWatchPlayers(opt);
+    run.watchers = run.watchers || [];
+    if (run.watchers.length >= rules.max && !(spec && spec.force)) return null;
+    const kind = (spec && spec.kind) || rules.kinds[Math.floor(campRng(opt)() * rules.kinds.length)] || rules.kinds[0];
+    if (rules.kinds.indexOf(kind) < 0 && !(spec && spec.force)) return null;
+    let x, z, behind = false;
+    if (spec && spec.x != null && spec.z != null){
+      x = +spec.x; z = +spec.z;
+      if (!spec.force && !campWatchSpotOk(x, z, players, rules, kind)) return null;
+    } else {
+      const spot = campPickWatchSpot(run, opt, rules, kind, !!(spec && spec.behind));
+      if (!spot) return null;
+      x = spot.x; z = spot.z; behind = !!spot.behind;
+    }
+    const p = players[0] || {x:0, z:0};
+    const w = {
+      id: (run.watchSeq = (run.watchSeq | 0) + 1),
+      kind, x, z,
+      yaw: Math.atan2(p.x - x, p.z - z),
+      look: 0,
+      collide: false,
+      glow: !!rules.glowEyes && (kind === 'pale' || kind === 'thin' || kind === 'cabin'),
+      soft: kind === 'owl' || kind === 'glow',
+      behind: !!behind
+    };
+    run.watchers.push(w);
+    return w;
+  }
+  function campTickWatchers(run, dt, opt){
+    if (!run) return run;
+    const step = Math.max(0, Math.min(0.12, +dt || 0));
+    const rules = campWatchRules(opt && opt.lessScary);
+    const players = campWatchPlayers(opt);
+    const rnd = campRng(opt);
+    const face = (opt && opt.face) || 0;
+    run.watchers = Array.isArray(run.watchers) ? run.watchers : [];
+    run.watchEvents = [];
+    if (run.watchCd == null) run.watchCd = 1.2;
+    run.watchCd = Math.max(0, (run.watchCd || 0) - step);
+
+    // Detect a big turn so a distant watcher can appear behind you (scary mode only).
+    let turned = false;
+    if (run._watchFace != null){
+      let d = face - run._watchFace;
+      while (d > Math.PI) d -= Math.PI * 2;
+      while (d < -Math.PI) d += Math.PI * 2;
+      turned = Math.abs(d) > 2.0;
+    }
+    run._watchFace = face;
+
+    const kept = [];
+    run.watchers.forEach(w => {
+      // Never walk. At most slowly turn to face the nearest player.
+      let near = players[0] || {x:0, z:0}, nearD = campWatchMinDist(w, players);
+      players.forEach(p => {
+        const d = campWatchDist(w, p.x, p.z);
+        if (d <= nearD){ near = p; nearD = d; }
+      });
+      const want = Math.atan2(near.x - w.x, near.z - w.z);
+      let dy = want - (w.yaw || 0);
+      while (dy > Math.PI) dy -= Math.PI * 2;
+      while (dy < -Math.PI) dy += Math.PI * 2;
+      w.yaw = (w.yaw || 0) + dy * Math.min(1, step * 1.6);
+      w.collide = false;
+
+      const looking = campWatchFacing(w, near.x, near.z, face);
+      w.look = looking ? (w.look || 0) + step : Math.max(0, (w.look || 0) - step * 0.8);
+      let reason = null;
+      if (nearD < rules.despawn) reason = 'close';
+      else if (w.look >= rules.lookTime) reason = 'look';
+      if (reason){
+        run.watchEvents.push({type:'vanish', id:w.id, kind:w.kind, x:w.x, z:w.z, reason, whisper: true});
+        run.watchCd = Math.max(run.watchCd || 0, rules.respawn * (0.6 + rnd() * 0.6));
+      } else kept.push(w);
+    });
+    run.watchers = kept;
+
+    // Drop extras if the less-scary cap is lower than the current list.
+    if (run.watchers.length > rules.max){
+      run.watchers.splice(rules.max).forEach(w => {
+        run.watchEvents.push({type:'vanish', id:w.id, kind:w.kind, x:w.x, z:w.z, reason:'cap', whisper: false});
+      });
+    }
+
+    const day = run.phase === 'day';
+    const mayDay = day && (players.some(p => campInDeep(p.x, p.z)) || rnd() < 0.35);
+    const force = !!(opt && opt.forceSpawn);
+    const wantSpawn = run.watchers.length < rules.max && (force || (run.watchCd <= 0 && (!day || mayDay)));
+    const rate = day ? 0.18 : (rules.lessScary ? 0.35 : 0.55);
+    if (wantSpawn && (force || rnd() < step * rate || (turned && rules.behind))){
+      const kinds = rules.kinds;
+      let kind = kinds[Math.floor(rnd() * kinds.length)] || kinds[0];
+      if (!day && !rules.lessScary && rnd() < 0.22) kind = (rnd() < 0.5 ? 'lake' : 'cabin');
+      if (day) kind = rules.lessScary ? 'glow' : (kinds.indexOf('pale') >= 0 ? 'pale' : kinds[0]);
+      const placed = campPlaceWatch(run, {kind, behind: turned && rules.behind}, opt);
+      if (placed){
+        run.watchEvents.push({type:'spawn', id:placed.id, kind:placed.kind, x:placed.x, z:placed.z, behind: !!placed.behind});
+        run.watchCd = rules.respawn * (0.5 + rnd() * 0.8);
+      } else {
+        run.watchCd = 1.2;
+      }
+    }
+    return run;
+  }
+
   function campTick(run, dt, opt){
     if (!run || run.won) return run;
     const step = Math.max(0, Math.min(0.12, +dt || 0));
@@ -6977,6 +7355,7 @@ try { evBootChrome(); } catch (e){}
         }
       }
     }
+    campTickWatchers(run, step, opt);
     return run;
   }
 
@@ -7008,7 +7387,10 @@ try { evBootChrome(); } catch (e){}
     campHas, campInDeep, campInWater, campZone, campCompass, campMakeLogs, campLog,
     campLightAt, campGloamTarget, campStartRun, campStartNight,
     campCanCarry, campPickLog, campGather, campChopLog, campStash, campAddStick, campShine, campCraft,
-    campCaught, campTick, campFinish, campReward
+    campCaught, campTick, campFinish, campReward,
+    CAMP_WATCH_KINDS_SCARY, CAMP_WATCH_KINDS_SOFT, campWatchRules, campWatchCollides,
+    campWatchPlayers, campWatchDist, campWatchMinDist, campWatchFacing, campWatchSpotOk,
+    campWatchCabinSpot, campWatchLakeSpot, campPickWatchSpot, campPlaceWatch, campTickWatchers
   };
   root.CampRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -13775,8 +14157,9 @@ if (setShowFps) setShowFps.addEventListener('change', () => {
   save('rubloxShowFps', window.gfx.showFps);
   syncGfxUi();
 });
-$('#setBtn').onclick = () => { syncInvert(); syncGfxUi(); if (typeof chSyncSettings === 'function') chSyncSettings(); if (typeof wxSyncUi === 'function') wxSyncUi(); if (typeof pfSyncUi === 'function') pfSyncUi(); $('#setModal').classList.add('show'); };
+$('#setBtn').onclick = () => { syncInvert(); syncGfxUi(); if (typeof chSyncSettings === 'function') chSyncSettings(); if (typeof wxSyncUi === 'function') wxSyncUi(); if (typeof pfSyncUi === 'function') pfSyncUi(); if (typeof goreSyncUi === 'function') goreSyncUi(); $('#setModal').classList.add('show'); };
 ['wxSetAuto','wxSetDay','wxSetOff'].forEach(id => { const n = document.getElementById(id); if (n) n.addEventListener('change', () => { if (n.checked && typeof wxSetMode === 'function') wxSetMode(n.value); }); });
+['goreSetOff','goreSetMild','goreSetSpooky'].forEach(id => { const n = document.getElementById(id); if (n) n.addEventListener('change', () => { if (n.checked && typeof goreSetLevel === 'function') goreSetLevel(n.value); }); });
 if (typeof wxSyncUi === 'function') try { wxSyncUi(); } catch (e){}
 if (typeof pfSyncUi === 'function') try { pfSyncUi(); } catch (e){}
 const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEventListener('change', () => { if (typeof pfSetHide === 'function') pfSetHide(!!pfHide.checked); });
@@ -13813,6 +14196,7 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
     'rubloxMusic',
     'rubloxMute',
     'rubloxWeather',
+    'rubloxGore',
     'rubloxThrowTurn',
     'rubloxSpotify',
     'rubloxSpotifyPkce',
@@ -42279,12 +42663,253 @@ function start(m = 'obby', d = null){
     return t302Mesh(new THREE.BoxGeometry(1.3, 0.28, 0.38), '#8d5524', log.x, 0.2, log.z, st);
   }
 
+
+  function campWatchMat(color, opacity){
+    return new THREE.MeshBasicMaterial({color: color, transparent: true, opacity: opacity == null ? 1 : opacity, depthWrite: false});
+  }
+  function campMakeWatcherMesh(kind){
+    const g = new THREE.Group();
+    g.userData.kind = kind;
+    g.userData.mats = [];
+    const add = (mesh) => { g.add(mesh); if (mesh.material) g.userData.mats.push(mesh.material); mesh.castShadow = mesh.receiveShadow = false; mesh.raycast = function(){}; return mesh; };
+    if (kind === 'glow'){
+      for (let i = 0; i < 6; i++){
+        const s = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6, 5), campWatchMat('#e8ff8a', 0.88));
+        const a = i * 1.05;
+        s.position.set(Math.sin(a) * 0.5, 1.15 + (i % 3) * 0.38, Math.cos(a) * 0.5);
+        s.userData.bob = i;
+        add(s);
+      }
+    } else if (kind === 'owl'){
+      const disc = new THREE.Mesh(new THREE.SphereGeometry(0.38, 8, 6), campWatchMat('#1a140c', 0.92));
+      disc.position.set(-0.36, 2.4, 0); add(disc);
+      const disc2 = new THREE.Mesh(new THREE.SphereGeometry(0.38, 8, 6), campWatchMat('#1a140c', 0.92));
+      disc2.position.set(0.36, 2.4, 0); add(disc2);
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), campWatchMat('#ffe29a', 0.98));
+      eye.position.set(-0.36, 2.4, 0.16); add(eye);
+      const eye2 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), campWatchMat('#ffe29a', 0.98));
+      eye2.position.set(0.36, 2.4, 0.16); add(eye2);
+      g.userData.eyes = [eye, eye2];
+    } else if (kind === 'cabin'){
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 6, 5), campWatchMat('#1c1612', 0.95));
+      head.position.set(0, 0.12, 0); add(head);
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.055, 6, 5), campWatchMat('#dcecff', 1));
+      eye.position.set(-0.07, 0.16, 0.16); add(eye);
+      const eye2 = new THREE.Mesh(new THREE.SphereGeometry(0.055, 6, 5), campWatchMat('#dcecff', 1));
+      eye2.position.set(0.07, 0.16, 0.16); add(eye2);
+      g.userData.eyes = [eye, eye2];
+    } else {
+      const tall = kind === 'thin';
+      const h = tall ? 5.4 : (kind === 'lake' ? 3.4 : 3.2);
+      const w = tall ? 0.28 : 0.46;
+      const col = kind === 'pale' ? '#c5d0da' : (kind === 'lake' ? '#1a1e28' : '#16141c');
+      const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, w * 0.82), campWatchMat(col, kind === 'pale' ? 0.9 : 0.96));
+      body.position.y = h * 0.5; add(body);
+      if (tall){
+        const neck = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.9, 0.16), campWatchMat(col, 0.96));
+        neck.position.y = h + 0.3; add(neck);
+      }
+      const eyeCol = kind === 'pale' ? '#f3fbff' : '#d7eeff';
+      const ey = tall ? h + 0.55 : h * 0.8;
+      const er = kind === 'pale' ? 0.14 : 0.1;
+      const halo = new THREE.Mesh(new THREE.SphereGeometry(er * 2.1, 6, 5), campWatchMat(eyeCol, 0.35));
+      halo.position.set(-0.1, ey, w * 0.55); add(halo);
+      const halo2 = new THREE.Mesh(new THREE.SphereGeometry(er * 2.1, 6, 5), campWatchMat(eyeCol, 0.35));
+      halo2.position.set(0.1, ey, w * 0.55); add(halo2);
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(er, 6, 5), campWatchMat(eyeCol, 1));
+      eye.position.set(-0.1, ey, w * 0.62); add(eye);
+      const eye2 = new THREE.Mesh(new THREE.SphereGeometry(er, 6, 5), campWatchMat(eyeCol, 1));
+      eye2.position.set(0.1, ey, w * 0.62); add(eye2);
+      g.userData.eyes = [eye, eye2, halo, halo2];
+    }
+    g.userData.baseY = kind === 'cabin' ? 2.35 : 0;
+    g.visible = false;
+    g.frustumCulled = false;
+    g.raycast = function(){};
+    return g;
+  }
+  function campWatchSetOpacity(g, a){
+    (g.userData.mats || []).forEach(m => { if (m) m.opacity = Math.max(0, Math.min(1, a)); });
+  }
+  function campWatchPoolGet(kind){
+    if (!cg) return null;
+    cg.watchPool = cg.watchPool || [];
+    let slot = cg.watchPool.find(s => !s.used && s.kind === kind);
+    if (!slot){
+      const mesh = campMakeWatcherMesh(kind);
+      scene.add(mesh);
+      t302Keep(cg, mesh);
+      slot = {kind, mesh, used: false, id: 0, fade: 1};
+      cg.watchPool.push(slot);
+    }
+    slot.used = true;
+    slot.mesh.visible = true;
+    campWatchSetOpacity(slot.mesh, 1);
+    return slot;
+  }
+  function campSyncWatchers(dt){
+    if (!cg || !cg.run) return;
+    const list = Array.isArray(cg.run.watchers) ? cg.run.watchers : [];
+    const events = Array.isArray(cg.run.watchEvents) ? cg.run.watchEvents : [];
+    const less = !!(cg.sv && cg.sv.lessScary);
+    cg.watchPool = cg.watchPool || [];
+    events.forEach(ev => {
+      if (ev.type !== 'vanish') return;
+      const slot = cg.watchPool.find(s => s.id === ev.id);
+      if (slot){ slot.used = false; slot.fade = 1; slot.fading = true; slot.id = 0; }
+      if (ev.whisper && !cg.shotLock){
+        if (less) t302Tone([240, 180, 120], 0.14, 'sine', 0.03);
+        else t302Tone([170, 120, 80, 60], 0.18, 'triangle', 0.04);
+      }
+    });
+    const live = {};
+    list.forEach(w => { live[w.id] = w; });
+    cg.watchPool.forEach(slot => {
+      if (slot.used && slot.id && !live[slot.id]){
+        slot.used = false; slot.fading = true; slot.fade = slot.fade == null ? 1 : slot.fade; slot.id = 0;
+      }
+    });
+    list.forEach(w => {
+      let slot = cg.watchPool.find(s => s.id === w.id);
+      if (!slot || slot.kind !== w.kind){
+        if (slot){ slot.used = false; slot.id = 0; slot.mesh.visible = false; }
+        slot = campWatchPoolGet(w.kind);
+        slot.id = w.id;
+        slot.fading = false;
+        slot.fade = 1;
+      }
+      const y = (slot.mesh.userData.baseY || 0);
+      const bob = (w.kind === 'glow') ? Math.sin((typeof time === 'number' ? time : 0) * 2.4) * 0.12 : 0;
+      slot.mesh.position.set(w.x, y + bob, w.z);
+      slot.mesh.rotation.y = w.yaw || 0;
+      slot.mesh.visible = true;
+      const glow = !!w.glow && !less;
+      (slot.mesh.userData.eyes || []).forEach((eye, i) => {
+        if (!eye) return;
+        const pulse = glow ? (0.75 + 0.25 * Math.abs(Math.sin((typeof time === 'number' ? time : 0) * (7 + i) + i))) : 1;
+        eye.scale.setScalar(w.kind === 'owl' || w.kind === 'glow' ? 1 : pulse);
+        if (eye.material) eye.material.opacity = (w.kind === 'owl') ? 0.9 : (glow ? 0.65 + 0.35 * pulse : 0.8);
+      });
+    });
+    cg.watchPool.forEach(slot => {
+      if (slot.used) return;
+      if (slot.fading){
+        slot.fade = (slot.fade == null ? 1 : slot.fade) - (dt || 0.08) * (less ? 2.4 : 3.6);
+        const flick = less ? 1 : (0.35 + 0.65 * Math.abs(Math.sin((typeof time === 'number' ? time : 0) * 28)));
+        campWatchSetOpacity(slot.mesh, Math.max(0, slot.fade) * flick);
+        if (slot.fade <= 0){ slot.fading = false; slot.mesh.visible = false; campWatchSetOpacity(slot.mesh, 1); }
+      } else {
+        slot.mesh.visible = false;
+      }
+    });
+    cg.run.watchEvents = [];
+  }
+
+  function campPoseGore(level){
+    if (!cg) return;
+    cg.shotLock = true;
+    cg.sv.lessScary = false;
+    campPersist(cg.sv);
+    campRebuildGloam();
+    campPaintLessBtn();
+    if (typeof goreSetLevel === 'function') goreSetLevel(level);
+    else campRebuildGore();
+    cg.run.phase = 'night';
+    cg.run.t = CampRules.CAMP_NIGHT * 0.45;
+    cg.run.fire = 0.6;
+    cg.run.gmode = 'hidden';
+    cg.run.flicker = 0;
+    if (cg.gloam) cg.gloam.visible = false;
+    (cg.eyes || []).forEach(e => { if (e && e.g) e.g.visible = false; });
+    if (P){ P.x = 36; P.z = -20; P.face = Math.atan2(12, -12); if (typeof cam !== 'undefined' && cam){ cam.yaw = P.face; cam.pitch = 0.08; cam.dist = 11; } }
+    try { if (typeof body !== 'undefined' && body) body.visible = false; } catch (e){}
+    campWorldLights(false, true, cg.run.fire, 0);
+    if (scene){
+      const c = new THREE.Color('#141018');
+      scene.background = c;
+      if (scene.fog){ scene.fog.color.copy(c); scene.fog.near = 14; scene.fog.far = 70; }
+      scene.traverse(o => { if (o && (o.isSprite || (o.userData && o.userData.lab))) o.visible = false; });
+    }
+    if (!cg.moonLt){
+      cg.moonLt = new THREE.DirectionalLight('#d8c8b8', 0.7);
+      cg.moonLt.position.set(20, 24, 8);
+      cg.moonLt._campSkip = true;
+      scene.add(cg.moonLt); t302Keep(cg, cg.moonLt);
+    }
+    cg.moonLt.intensity = 0.75;
+    cg.moonLt.visible = true;
+    campRebuildGore();
+    try { window.__campGoreShot = {level: campGoreWanted(), n: (cg.gore || []).length, kinds: (cg.gore || []).map(m => m.userData && m.userData.kind)}; } catch (e){ window.__campGoreShot = String(e); }
+  }
+
+  function campPoseWatchers(less){
+    if (!cg) return;
+    cg.shotLock = true;
+    cg.sv.lessScary = !!less;
+    campPersist(cg.sv);
+    campRebuildGloam();
+    campPaintLessBtn();
+    cg.run.phase = 'night';
+    cg.run.t = CampRules.CAMP_NIGHT * 0.4;
+    cg.run.fire = 0.55;
+    cg.run.gmode = 'hidden';
+    cg.run.flicker = 0;
+    cg.run.heart = 0;
+    cg.run.frozen = false;
+    if (cg.gloam) cg.gloam.visible = false;
+    (cg.eyes || []).forEach(e => { if (e && e.g) e.g.visible = false; });
+    (cg.watchPool || []).forEach(s => {
+      if (!s || !s.mesh) return;
+      s.used = false; s.fading = false; s.id = 0; s.fade = 1;
+      s.mesh.visible = false;
+    });
+    // Stand the player behind the camera so the avatar does not fill the frame.
+    if (P){ P.x = 6; P.z = 4; P.face = Math.atan2(-30, 28); if (typeof cam !== 'undefined' && cam){ cam.yaw = P.face; cam.pitch = 0.04; cam.dist = 12; } }
+    try { if (typeof body !== 'undefined' && body) body.visible = false; } catch (e){}
+    const night = less ? '#101526' : '#0b1020';
+    campWorldLights(false, true, cg.run.fire, 0);
+    if (scene){
+      const c = new THREE.Color(night);
+      scene.background = c;
+      if (scene.fog){ scene.fog.color.copy(c); scene.fog.near = less ? 22 : 16; scene.fog.far = less ? 90 : 80; }
+      scene.traverse(o => {
+        if (o && (o.isSprite || (o.userData && o.userData.lab))) o.visible = false;
+      });
+    }
+    if (!cg.moonLt){
+      cg.moonLt = new THREE.DirectionalLight('#c7d8ff', 0.55);
+      cg.moonLt.position.set(-8, 28, 18);
+      cg.moonLt._campSkip = true;
+      scene.add(cg.moonLt); t302Keep(cg, cg.moonLt);
+    }
+    cg.moonLt.intensity = less ? 0.7 : 0.5;
+    cg.moonLt.visible = true;
+    const faceTo = (x, z) => Math.atan2(6 - x, 4 - z);
+    if (less){
+      cg.run.watchers = [
+        {id: 101, kind: 'owl', x: -28, z: 34, yaw: faceTo(-28, 34), look: 0, collide: false, glow: false, soft: true},
+        {id: 102, kind: 'glow', x: -18, z: 30, yaw: faceTo(-18, 30), look: 0, collide: false, glow: false, soft: true}
+      ];
+    } else {
+      cg.run.watchers = [
+        {id: 201, kind: 'thin', x: -22, z: 28, yaw: faceTo(-22, 28), look: 0, collide: false, glow: true, soft: false},
+        {id: 202, kind: 'pale', x: -14, z: 36, yaw: faceTo(-14, 36), look: 0, collide: false, glow: true, soft: false},
+        {id: 203, kind: 'lake', x: -50, z: 44, yaw: faceTo(-50, 44), look: 0, collide: false, glow: true, soft: false}
+      ];
+    }
+    cg.run.watchEvents = [];
+    campSyncWatchers(0);
+    try {
+      window.__campWatchShot = {less: !!less, n: cg.run.watchers.length, kinds: cg.run.watchers.map(w => w.kind), vis: (cg.watchPool || []).filter(s => s.mesh && s.mesh.visible).length};
+    } catch (e) { window.__campWatchShot = String(e); }
+  }
+
   function buildCamp(){
     const sv = campState();
     const started = CampRules.campStartRun(sv, t302Now(), t302MpOn());
     campPersist(started.state);
     const less = !!started.state.lessScary;
-    cg = {trash:[], sv: started.state, run: started.run, logs:[], buddy:null, light:null, fire:null, gloam:null, eyes:[], near:null, done:false, ambT:0, scareT:0, holding:false, lastPhase: started.run.phase};
+    cg = {trash:[], sv: started.state, run: started.run, logs:[], buddy:null, light:null, fire:null, gloam:null, eyes:[], watchPool:[], gore:[], near:null, done:false, ambT:0, scareT:0, holding:false, lastPhase: started.run.phase};
     const day = started.run.phase === 'day';
     const bg = day ? '#8fd3ff' : (less ? '#2a3150' : '#070812');
     scene.background = new THREE.Color(bg);
@@ -42310,6 +42935,7 @@ function start(m = 'obby', d = null){
     const roof = t302Mesh(new THREE.ConeGeometry(4.6, 2.2, 4), '#3d2418', 48, 4.2, -32, cg);
     roof.rotation.y = Math.PI / 4;
     t302Mesh(new THREE.BoxGeometry(1.2, 1.8, 0.2), '#2a1a12', 48, 1.1, -29.4, cg);
+    t302Mesh(new THREE.BoxGeometry(0.08, 1.15, 1.15), '#120c08', 51.14, 2.35, -30.6, cg);
     const porch = new THREE.PointLight('#ffcc88', day ? 0.1 : 0.6, 10);
     porch.position.set(48, 2.4, -28); porch._campSkip = true; scene.add(porch); t302Keep(cg, porch);
     t302Lab('🏚️ Old Cabin', 48, 5.4, -32);
@@ -42362,6 +42988,7 @@ function start(m = 'obby', d = null){
     }
     campRebuildGloam();
     campPaintLessBtn();
+    campRebuildGore();
     checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:8}, flag:new THREE.Object3D()};
   }
   function campEnter(){
@@ -42377,12 +43004,108 @@ function start(m = 'obby', d = null){
     t302Hud('Goal: survive 5 nights. Hunt logs in the woods, stash them at camp, keep the fire bright after dark.', '🔥 Stoke');
     const vig = document.getElementById('t302Vignette'); if (vig) vig.classList.add('show');
   }
+
+  function campGoreWanted(){
+    const rules = (typeof GoreRules !== 'undefined' && GoreRules) ? GoreRules : null;
+    if (!rules) return 'off';
+    let raw = 'off';
+    try { raw = (typeof goreSetting === 'function') ? goreSetting() : ((typeof load === 'function') ? load(rules.GORE_KEY, 'off') : 'off'); } catch (e){}
+    return rules.goreEffective(raw, {lessScary: !!(cg && cg.sv && cg.sv.lessScary)});
+  }
+  function campGoreNoteText(){
+    const rules = (typeof GoreRules !== 'undefined' && GoreRules) ? GoreRules : null;
+    if (!rules || !cg) return '';
+    let raw = 'off';
+    try { raw = (typeof goreSetting === 'function') ? goreSetting() : ((typeof load === 'function') ? load(rules.GORE_KEY, 'off') : 'off'); } catch (e){}
+    return rules.goreCapNote(raw, !!(cg.sv && cg.sv.lessScary)) || '';
+  }
+  function campPaintGoreNote(){
+    const n = document.getElementById('t302GoreNote');
+    if (!n) return;
+    const text = campGoreNoteText();
+    if (text){ n.textContent = text; n.classList.add('show'); n.hidden = false; }
+    else { n.textContent = ''; n.classList.remove('show'); n.hidden = true; }
+  }
+  function campClearGore(){
+    if (!cg) return;
+    (cg.gore || []).forEach(m => {
+      try { if (m && m.parent) m.parent.remove(m); } catch (e){}
+      try { scene.remove(m); } catch (e){}
+    });
+    cg.gore = [];
+  }
+  function campGoreMat(color, opacity){
+    return new THREE.MeshBasicMaterial({color: color, transparent: true, opacity: opacity == null ? 0.88 : opacity, depthWrite: false, side: THREE.DoubleSide});
+  }
+  function campMakeGoreMesh(d){
+    const g = new THREE.Group();
+    g.userData.gore = true;
+    g.userData.kind = d.kind;
+    g.userData.id = d.id;
+    g.position.set(d.x, d.y, d.z);
+    g.rotation.y = d.yaw || 0;
+    const add = (mesh, ox, oy, oz) => {
+      mesh.position.set(ox || 0, oy || 0, oz || 0);
+      mesh.castShadow = mesh.receiveShadow = false;
+      mesh.raycast = function(){};
+      g.add(mesh);
+      return mesh;
+    };
+    if (d.kind === 'scratch'){
+      const a = new THREE.Mesh(new THREE.BoxGeometry(d.sx || 0.04, d.sy || 0.7, d.sz || 0.2), campGoreMat('#6a1018', 0.9));
+      add(a);
+      const b = new THREE.Mesh(new THREE.BoxGeometry((d.sx || 0.04) * 0.8, (d.sy || 0.7) * 0.7, (d.sz || 0.2) * 0.45), campGoreMat('#4a0c12', 0.85));
+      add(b, 0.06, -0.08, 0.02);
+      const c = new THREE.Mesh(new THREE.BoxGeometry((d.sx || 0.04) * 0.7, (d.sy || 0.7) * 0.55, (d.sz || 0.2) * 0.35), campGoreMat('#7a1820', 0.8));
+      add(c, -0.05, 0.1, -0.01);
+    } else if (d.kind === 'stain'){
+      const puddle = new THREE.Mesh(new THREE.CylinderGeometry((d.sx || 1) * 0.5, (d.sz || 0.8) * 0.45, d.sy || 0.03, 8), campGoreMat('#5a1218', 0.72));
+      add(puddle);
+      const spot = new THREE.Mesh(new THREE.CylinderGeometry((d.sx || 1) * 0.22, (d.sx || 1) * 0.18, (d.sy || 0.03) + 0.01, 6), campGoreMat('#7a1a22', 0.7));
+      add(spot, (d.sx || 1) * 0.18, 0.01, (d.sz || 0.8) * -0.12);
+    } else if (d.kind === 'handprint'){
+      const palm = new THREE.Mesh(new THREE.SphereGeometry(0.11, 8, 6), campGoreMat('#8a1c24', 0.82));
+      palm.scale.set(1, 1.15, 0.35);
+      add(palm, 0, -0.02, 0);
+      [-0.12, -0.05, 0.03, 0.1, 0.14].forEach((x, i) => {
+        const f = new THREE.Mesh(new THREE.SphereGeometry(i === 0 ? 0.04 : 0.035, 6, 5), campGoreMat('#7a1820', 0.84));
+        f.scale.set(0.7, i === 0 ? 0.9 : 1.35, 0.35);
+        add(f, x, 0.12 + (i === 0 ? -0.04 : 0.02 * (i % 2)), 0);
+      });
+    } else {
+      const blob = new THREE.Mesh(new THREE.SphereGeometry(0.28, 8, 6), campGoreMat('#9a1e28', 0.86));
+      blob.scale.set(d.sx || 0.55, d.sy || 0.42, (d.sz || 0.04) * 4);
+      add(blob);
+      const drip = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 5), campGoreMat('#7a1620', 0.8));
+      drip.scale.set(0.55, 1.1, 0.35);
+      add(drip, 0.08, -0.18, 0);
+    }
+    g.raycast = function(){};
+    return g;
+  }
+  function campRebuildGore(){
+    if (!cg || typeof THREE === 'undefined') return;
+    campClearGore();
+    campPaintGoreNote();
+    const rules = (typeof GoreRules !== 'undefined' && GoreRules) ? GoreRules : null;
+    if (!rules) return;
+    let raw = 'off';
+    try { raw = (typeof goreSetting === 'function') ? goreSetting() : ((typeof load === 'function') ? load(rules.GORE_KEY, 'off') : 'off'); } catch (e){}
+    const list = rules.goreCampDecals(raw, {lessScary: !!(cg.sv && cg.sv.lessScary)});
+    list.forEach(d => {
+      const m = campMakeGoreMesh(d);
+      scene.add(m);
+      t302Keep(cg, m);
+      cg.gore.push(m);
+    });
+  }
+
   function campPaintLessBtn(){
     const b = document.getElementById('t302LessBtn');
     if (!b || !cg) return;
     if (cg.sv.lessScary){
       b.textContent = '😈 Really scary';
-      b.setAttribute('aria-label', 'Switch to the really scary default Gloam. Still no gore, and everyone is okay if it catches you.');
+      b.setAttribute('aria-label', 'Switch to the really scary default Gloam. Everyone is okay if it catches you.');
       b.title = 'Really scary default: creepier Gloam, jumpscares, heartbeat, harder nights 4–5. Light still keeps you safe.';
     } else {
       b.textContent = '😌 Less scary';
@@ -42396,6 +43119,7 @@ function start(m = 'obby', d = null){
     campPersist(cg.sv);
     campRebuildGloam();
     campPaintLessBtn();
+    campRebuildGore();
     banner(cg.sv.lessScary
       ? 'Less scary is on. This is the milder Gloam from before — same hunt, looks, and sounds. Getting caught still means everyone is okay.'
       : 'Really scary is on. The Gloam is taller and sneakier, with jumpscares and a heartbeat. Light still pushes it back, and everyone is okay if it catches you.');
@@ -42408,7 +43132,7 @@ function start(m = 'obby', d = null){
       const have = cg.sv.crafted.indexOf(it.id) >= 0;
       return `<div class="t297row${have ? ' dim' : ''}"><span>${it.emoji} ${it.name} — ${it.sticks} sticks ${have ? '(packed!)' : ''}</span>${have ? '' : `<button type="button" data-cc="${it.id}">Craft</button>`}</div>`;
     }).join('') + `<div class="t297row"><span>🪵 Stashed ${cg.sv.sticks}  ·  carrying ${(cg.run && cg.run.carry) || 0}/${CampRules.CAMP_CARRY}  ·  nights ${(cg.run && cg.run.survived) || 0}/${CampRules.CAMP_WIN_NIGHTS}</span></div>` +
-      `<div class="t297row"><span>😌 Less scary: ${cg.sv.lessScary ? 'on' : 'off'}. ${cg.sv.lessScary ? 'On uses the milder Gloam from before (same look, hunt, and sounds).' : 'Off is the really scary default — a creepier Gloam, jumpscares, heartbeat, and harder nights 4–5. Light still keeps you safe, and getting caught still means everyone is okay.'}</span><button type="button" data-cless="1">Toggle</button></div>` +
+      `<div class="t297row"><span>😌 Less scary: ${cg.sv.lessScary ? 'on' : 'off'}. ${cg.sv.lessScary ? 'On uses the milder Gloam from before (same look, hunt, and sounds).' : 'Off is the really scary default — a creepier Gloam, jumpscares, heartbeat, and harder nights 4–5. Light still keeps you safe, and getting caught still means everyone is okay.'}${campGoreNoteText() ? ' ' + campGoreNoteText() : ''}</span><button type="button" data-cless="1">Toggle</button></div>` +
       (CampRules.campHas(cg.sv, 'lantern') ? '<p>Press L or the Lantern action to shine it and push the Gloam back.</p>' : '<p>Craft a Glow Lantern to shine light and scare the Gloam away.</p>');
     box.querySelectorAll('[data-cc]').forEach(btn => { btn.onclick = ev => { ev.preventDefault(); campDoCraft(btn.getAttribute('data-cc')); }; });
     const tb = box.querySelector('[data-cless]');
@@ -42728,6 +43452,7 @@ function start(m = 'obby', d = null){
       e.g.children.forEach(c => { c.scale.setScalar(spook); });
     });
     if (cg.buddy) cg.buddy.position.y = 0.9 + Math.sin(time * 2) * 0.04;
+    campSyncWatchers(dt);
     cg.ambT = (cg.ambT || 0) - dt;
     if (cg.ambT <= 0 && !cg.done && !day){
       const close = closeDist;
@@ -42920,10 +43645,13 @@ function start(m = 'obby', d = null){
       lessCamp(){ if (!cg) return; cg.shotLock = true; cg.sv.lessScary = true; campPersist(cg.sv); campRebuildGloam(); campPaintLessBtn(); cg.run.phase = 'night'; cg.run.t = CampRules.CAMP_NIGHT * 0.35; cg.run.fire = 0.42; cg.run.gmode = 'stalk'; cg.run.gx = 6; cg.run.gz = 4; cg.run.flicker = 0; cg.run.heart = 0; cg.run.frozen = false; if (P){ P.x = 0; P.z = 8; } campWorldLights(false, true, cg.run.fire, 0); if (scene){ const c = new THREE.Color('#070812'); scene.background = c; if (scene.fog){ scene.fog.color.copy(c); scene.fog.near = 12; scene.fog.far = 46; } } if (cg.gloam){ cg.gloam.visible = true; cg.gloam.position.set(6, 0, 4); if (P) cg.gloam.lookAt(P.x, 1.6, P.z); if (cg.gloam.userData.face) cg.gloam.userData.face.visible = false; } },
       scareCamp(){ if (!cg) return; t302Debug.spookyCamp(); cg.scareT = 0.9; const el = document.getElementById('t302Scare'); if (el){ el.classList.add('show', 'strong', 'jump'); } },
       dayCamp(){ if (!cg) return; cg.shotLock = false; cg.run.phase = 'day'; cg.run.t = 8; cg.run.fire = 0.8; cg.run.gmode = 'hidden'; if (P){ P.x = -28; P.z = 24; } campWorldLights(true, !!(cg.sv && cg.sv.lessScary), cg.run.fire, 0); if (scene){ const c = new THREE.Color('#8fd3ff'); scene.background = c; if (scene.fog) scene.fog.color.copy(c); } },
+      watchersNight(){ campPoseWatchers(false); },
+      watchersLess(){ campPoseWatchers(true); },
+      goreMild(){ campPoseGore('mild'); },
+      goreSpooky(){ campPoseGore('spooky'); },
       connectRides(){ if (!rd) return; let s = rd.sv; const spots = [[5,5,0,'curve'],[6,5,0,'curve'],[6,6,0,'curve'],[5,6,0,'curve']]; spots.forEach((q,i) => { const r = RidesRules.ridesPlace(s, q[3], q[0], q[1], q[2], 'me', i ? {snap:true} : {}); if (r.ok){ s = r.state; if (!rd.meshes[r.piece.id]) ridesBuildPiece(r.piece); } }); ridesPersist(s); ridesRefreshJoints(); if (P){ const w = RidesRules.ridesWorld(5,5); P.x = w.x; P.z = w.z + 3; } }
     };
   } catch (e){}
-
   /* ---------- Wobblevator ---------- */
   let elv = null;
 

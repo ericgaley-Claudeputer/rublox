@@ -202,7 +202,11 @@
       best: 0.7,
       respawn: false,
       caught: 0,
-      chopping: null
+      chopping: null,
+      watchers: [],
+      watchEvents: [],
+      watchCd: 1.5,
+      watchSeq: 0
     };
   }
 
@@ -592,6 +596,202 @@
     return campStepGloamScary(run, dt, opt);
   }
 
+  const CAMP_WATCH_KINDS_SCARY = ['thin', 'pale', 'lake', 'cabin'];
+  const CAMP_WATCH_KINDS_SOFT = ['owl', 'glow'];
+  function campWatchRules(lessScary){
+    if (lessScary){
+      return {
+        lessScary: true, max: 2, spawnMin: 50, spawnMax: 85, despawn: 26,
+        lookTime: 3.2, kinds: CAMP_WATCH_KINDS_SOFT.slice(), behind: false,
+        glowEyes: false, collide: false, respawn: 8
+      };
+    }
+    return {
+      lessScary: false, max: 4, spawnMin: 35, spawnMax: 70, despawn: 20,
+      lookTime: 2.2, kinds: CAMP_WATCH_KINDS_SCARY.slice(), behind: true,
+      glowEyes: true, collide: false, respawn: 4
+    };
+  }
+  function campWatchCollides(){ return false; }
+  function campWatchPlayers(opt){
+    if (opt && Array.isArray(opt.players) && opt.players.length){
+      return opt.players.map(p => ({x: +p.x || 0, z: +p.z || 0}));
+    }
+    return [{x: (opt && opt.px != null) ? +opt.px : 0, z: (opt && opt.pz != null) ? +opt.pz : 0}];
+  }
+  function campWatchDist(w, px, pz){
+    return Math.hypot((w && w.x || 0) - (px || 0), (w && w.z || 0) - (pz || 0));
+  }
+  function campWatchMinDist(w, players){
+    let best = Infinity;
+    (players || []).forEach(p => {
+      const d = campWatchDist(w, p.x, p.z);
+      if (d < best) best = d;
+    });
+    return best;
+  }
+  function campWatchFacing(w, px, pz, face){
+    const d = campWatchDist(w, px, pz);
+    if (d < 0.4) return false;
+    const lx = Math.sin(face || 0), lz = Math.cos(face || 0);
+    const tx = ((w.x || 0) - (px || 0)) / d, tz = ((w.z || 0) - (pz || 0)) / d;
+    return (lx * tx + lz * tz) > 0.72;
+  }
+  function campWatchInBounds(x, z){
+    return Math.abs(x) < 72 && Math.abs(z) < 72 && !campInWater(x, z) && Math.hypot(x, z) > 12;
+  }
+  function campWatchSpotOk(x, z, players, rules, kind){
+    if (kind !== 'cabin' && !campWatchInBounds(x, z)) return false;
+    if (kind === 'cabin' && (Math.abs(x) > 80 || Math.abs(z) > 80)) return false;
+    const minD = campWatchMinDist({x, z}, players);
+    if (minD < rules.spawnMin || minD > rules.spawnMax) return false;
+    return true;
+  }
+  function campWatchCabinSpot(){ return {x: 51.15, z: -30.6}; }
+  function campWatchLakeSpot(players){
+    const lx = -40, lz = 36;
+    const p = (players && players[0]) || {x:0, z:0};
+    const dx = p.x - lx, dz = p.z - lz;
+    const d = Math.hypot(dx, dz) || 1;
+    return {x: lx - dx / d * 11.6, z: lz - dz / d * 11.6};
+  }
+  function campPickWatchSpot(run, opt, rules, kind, behind){
+    const players = campWatchPlayers(opt);
+    const rnd = campRng(opt);
+    const tries = [];
+    if (kind === 'cabin') tries.push(campWatchCabinSpot());
+    if (kind === 'lake') tries.push(campWatchLakeSpot(players));
+    if (behind && players[0]){
+      const face = (opt && opt.face) || 0;
+      const p = players[0];
+      const r = rules.spawnMin + 6 + rnd() * 8;
+      tries.push({x: p.x - Math.sin(face) * r, z: p.z - Math.cos(face) * r, behind: true});
+    }
+    if (kind === 'pale' || kind === 'thin' || kind === 'owl' || kind === 'glow'){
+      const deep = campLandmark('deep') || {x:52, z:48};
+      tries.push({x: deep.x - 10, z: deep.z - 8});
+    }
+    for (let i = 0; i < 16; i++){
+      const ang = rnd() * Math.PI * 2;
+      const r = rules.spawnMin + rnd() * (rules.spawnMax - rules.spawnMin);
+      const p = players[0] || {x:0, z:0};
+      tries.push({x: p.x + Math.sin(ang) * r, z: p.z + Math.cos(ang) * r});
+    }
+    for (let i = 0; i < tries.length; i++){
+      const s = tries[i];
+      if (run.phase === 'day' && !campInDeep(s.x, s.z)) continue;
+      if (campWatchSpotOk(s.x, s.z, players, rules, kind)) return s;
+    }
+    return null;
+  }
+  function campPlaceWatch(run, spec, opt){
+    if (!run) return null;
+    const rules = campWatchRules(opt && opt.lessScary);
+    const players = campWatchPlayers(opt);
+    run.watchers = run.watchers || [];
+    if (run.watchers.length >= rules.max && !(spec && spec.force)) return null;
+    const kind = (spec && spec.kind) || rules.kinds[Math.floor(campRng(opt)() * rules.kinds.length)] || rules.kinds[0];
+    if (rules.kinds.indexOf(kind) < 0 && !(spec && spec.force)) return null;
+    let x, z, behind = false;
+    if (spec && spec.x != null && spec.z != null){
+      x = +spec.x; z = +spec.z;
+      if (!spec.force && !campWatchSpotOk(x, z, players, rules, kind)) return null;
+    } else {
+      const spot = campPickWatchSpot(run, opt, rules, kind, !!(spec && spec.behind));
+      if (!spot) return null;
+      x = spot.x; z = spot.z; behind = !!spot.behind;
+    }
+    const p = players[0] || {x:0, z:0};
+    const w = {
+      id: (run.watchSeq = (run.watchSeq | 0) + 1),
+      kind, x, z,
+      yaw: Math.atan2(p.x - x, p.z - z),
+      look: 0,
+      collide: false,
+      glow: !!rules.glowEyes && (kind === 'pale' || kind === 'thin' || kind === 'cabin'),
+      soft: kind === 'owl' || kind === 'glow',
+      behind: !!behind
+    };
+    run.watchers.push(w);
+    return w;
+  }
+  function campTickWatchers(run, dt, opt){
+    if (!run) return run;
+    const step = Math.max(0, Math.min(0.12, +dt || 0));
+    const rules = campWatchRules(opt && opt.lessScary);
+    const players = campWatchPlayers(opt);
+    const rnd = campRng(opt);
+    const face = (opt && opt.face) || 0;
+    run.watchers = Array.isArray(run.watchers) ? run.watchers : [];
+    run.watchEvents = [];
+    if (run.watchCd == null) run.watchCd = 1.2;
+    run.watchCd = Math.max(0, (run.watchCd || 0) - step);
+
+    // Detect a big turn so a distant watcher can appear behind you (scary mode only).
+    let turned = false;
+    if (run._watchFace != null){
+      let d = face - run._watchFace;
+      while (d > Math.PI) d -= Math.PI * 2;
+      while (d < -Math.PI) d += Math.PI * 2;
+      turned = Math.abs(d) > 2.0;
+    }
+    run._watchFace = face;
+
+    const kept = [];
+    run.watchers.forEach(w => {
+      // Never walk. At most slowly turn to face the nearest player.
+      let near = players[0] || {x:0, z:0}, nearD = campWatchMinDist(w, players);
+      players.forEach(p => {
+        const d = campWatchDist(w, p.x, p.z);
+        if (d <= nearD){ near = p; nearD = d; }
+      });
+      const want = Math.atan2(near.x - w.x, near.z - w.z);
+      let dy = want - (w.yaw || 0);
+      while (dy > Math.PI) dy -= Math.PI * 2;
+      while (dy < -Math.PI) dy += Math.PI * 2;
+      w.yaw = (w.yaw || 0) + dy * Math.min(1, step * 1.6);
+      w.collide = false;
+
+      const looking = campWatchFacing(w, near.x, near.z, face);
+      w.look = looking ? (w.look || 0) + step : Math.max(0, (w.look || 0) - step * 0.8);
+      let reason = null;
+      if (nearD < rules.despawn) reason = 'close';
+      else if (w.look >= rules.lookTime) reason = 'look';
+      if (reason){
+        run.watchEvents.push({type:'vanish', id:w.id, kind:w.kind, x:w.x, z:w.z, reason, whisper: true});
+        run.watchCd = Math.max(run.watchCd || 0, rules.respawn * (0.6 + rnd() * 0.6));
+      } else kept.push(w);
+    });
+    run.watchers = kept;
+
+    // Drop extras if the less-scary cap is lower than the current list.
+    if (run.watchers.length > rules.max){
+      run.watchers.splice(rules.max).forEach(w => {
+        run.watchEvents.push({type:'vanish', id:w.id, kind:w.kind, x:w.x, z:w.z, reason:'cap', whisper: false});
+      });
+    }
+
+    const day = run.phase === 'day';
+    const mayDay = day && (players.some(p => campInDeep(p.x, p.z)) || rnd() < 0.35);
+    const force = !!(opt && opt.forceSpawn);
+    const wantSpawn = run.watchers.length < rules.max && (force || (run.watchCd <= 0 && (!day || mayDay)));
+    const rate = day ? 0.18 : (rules.lessScary ? 0.35 : 0.55);
+    if (wantSpawn && (force || rnd() < step * rate || (turned && rules.behind))){
+      const kinds = rules.kinds;
+      let kind = kinds[Math.floor(rnd() * kinds.length)] || kinds[0];
+      if (!day && !rules.lessScary && rnd() < 0.22) kind = (rnd() < 0.5 ? 'lake' : 'cabin');
+      if (day) kind = rules.lessScary ? 'glow' : (kinds.indexOf('pale') >= 0 ? 'pale' : kinds[0]);
+      const placed = campPlaceWatch(run, {kind, behind: turned && rules.behind}, opt);
+      if (placed){
+        run.watchEvents.push({type:'spawn', id:placed.id, kind:placed.kind, x:placed.x, z:placed.z, behind: !!placed.behind});
+        run.watchCd = rules.respawn * (0.5 + rnd() * 0.8);
+      } else {
+        run.watchCd = 1.2;
+      }
+    }
+    return run;
+  }
+
   function campTick(run, dt, opt){
     if (!run || run.won) return run;
     const step = Math.max(0, Math.min(0.12, +dt || 0));
@@ -636,6 +836,7 @@
         }
       }
     }
+    campTickWatchers(run, step, opt);
     return run;
   }
 
@@ -667,7 +868,10 @@
     campHas, campInDeep, campInWater, campZone, campCompass, campMakeLogs, campLog,
     campLightAt, campGloamTarget, campStartRun, campStartNight,
     campCanCarry, campPickLog, campGather, campChopLog, campStash, campAddStick, campShine, campCraft,
-    campCaught, campTick, campFinish, campReward
+    campCaught, campTick, campFinish, campReward,
+    CAMP_WATCH_KINDS_SCARY, CAMP_WATCH_KINDS_SOFT, campWatchRules, campWatchCollides,
+    campWatchPlayers, campWatchDist, campWatchMinDist, campWatchFacing, campWatchSpotOk,
+    campWatchCabinSpot, campWatchLakeSpot, campPickWatchSpot, campPlaceWatch, campTickWatchers
   };
   root.CampRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
