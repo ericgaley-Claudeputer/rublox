@@ -2343,10 +2343,14 @@
       return false;
     }
     if (mode === 'camp'){
+      // QA t332u: keyup also routes here. E/F keyup only releases a hold; J/L/act run on a fresh keydown.
+      if (e.type === 'keyup'){
+        if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ campHold(false); return true; }
+        return false;
+      }
       if (e.code === 'KeyJ'){ if (!e.repeat) campOpenJournal(); return true; }
       if (e.code === 'KeyL'){ if (!e.repeat) campShineNow(); return true; }
       if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){
-        if (e.type === 'keyup'){ campHold(false); return true; }
         campHold(true);
         if (!e.repeat) campAct();
         return true;

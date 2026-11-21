@@ -212,7 +212,10 @@
   function thKey(e){
     if (!th || !e) return false;
     if (typeof t297EatOverlayKey === 'function' && t297EatOverlayKey(e)) return true;
+    // QA t332u: the global keyup handler also routes here. Act once per fresh keydown.
+    if (e.type === 'keyup') return false;
     const c = e.code || e.key;
+    if (e.repeat && (c === 'KeyE' || c === 'KeyG' || c === 'KeyU' || c === 'KeyR' || c === 'KeyQ' || c === 'KeyF' || c === 'KeyC' || c === 'KeyX' || c === 'BracketLeft' || c === 'BracketRight' || c === 'Comma' || c === 'Period')) return true;
     if (c === 'KeyE' || c === 'KeyG'){ if(!e.repeat) thAct(); return true; }
     if (c === 'KeyU'){ if(!e.repeat) thDoUndo(); return true; }
     if (c === 'KeyR'){ if(!e.repeat){ th.sv = TreehouseRules.thRotate(th.sv, 1); thSave(th.sv); thPaintPalette(); } return true; }

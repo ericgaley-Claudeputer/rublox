@@ -270,7 +270,10 @@
   function scKey(e){
     if (!sc || !e) return false;
     if (typeof t297EatOverlayKey === 'function' && t297EatOverlayKey(e)) return true;
+    // QA t332u: the global keyup handler also routes here. Act once per fresh keydown.
+    if (e.type === 'keyup') return false;
     const c = e.code || e.key;
+    if (e.repeat && (c === 'KeyE' || c === 'KeyF' || c === 'KeyL' || c === 'KeyY' || c === 'Enter')) return true;
     if (c === 'KeyE' || c === 'KeyF'){ if(!e.repeat) scAct(); return true; }
     if (c === 'KeyL' || c === 'KeyY'){ if(!e.repeat) scToggleLess(); return true; }
     if (c === 'Enter' && document.getElementById('scLocker') && document.getElementById('scLocker').classList.contains('show')){ scTryLocker(); return true; }

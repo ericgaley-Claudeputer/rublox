@@ -3099,7 +3099,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.20-13';
+const BUILD = '2026.11.20-15';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -44384,10 +44384,14 @@ function start(m = 'obby', d = null){
       return false;
     }
     if (mode === 'camp'){
+      // QA t332u: keyup also routes here. E/F keyup only releases a hold; J/L/act run on a fresh keydown.
+      if (e.type === 'keyup'){
+        if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ campHold(false); return true; }
+        return false;
+      }
       if (e.code === 'KeyJ'){ if (!e.repeat) campOpenJournal(); return true; }
       if (e.code === 'KeyL'){ if (!e.repeat) campShineNow(); return true; }
       if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){
-        if (e.type === 'keyup'){ campHold(false); return true; }
         campHold(true);
         if (!e.repeat) campAct();
         return true;
@@ -46055,6 +46059,7 @@ function start(m = 'obby', d = null){
     if (typeof t297EatOverlayKey === 'function' && t297EatOverlayKey(e)) return true;
     if (e.type === 'keyup') return false;
     const c = e.code || e.key;
+    if (e.repeat && (c === 'KeyE' || c === 'KeyF')) return true; // QA t332u: a held key must not ride, then leave, then ride again
     if (c === 'KeyE' || c === 'KeyF'){ elevAct(); return true; }
     if (c === 'KeyH'){ elevOpenHelp(); return true; }
     if (c === 'KeyI'){ elevOpenIndex(); return true; }
@@ -47303,6 +47308,7 @@ function start(m = 'obby', d = null){
     if (!wn) return false;
     if (e.type === 'keyup') return false;
     const c = e.code || e.key;
+    if (e.repeat && (c === 'KeyE' || c === 'KeyF')) return true; // QA t332u: holding E on a sled used to hop straight back off
     if (c === 'KeyE'){ wnAct(); return true; }
     if (c === 'KeyF'){ if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)){ wnCocoa(true); return true; } wnAct(); return true; }
     if (c === 'Space' && wn.run.sled && wn.run.sled.on){ WinterRules.wnSledJump(wn.run); return true; }
@@ -47840,7 +47846,7 @@ function start(m = 'obby', d = null){
       if (VetRules.vtInBay(vt.run.drive.x, vt.run.drive.z)){
         return {id:'park', label:'E / Ⓑ  Park and hop out', btn:'🅿️ Park', go:() => vtDoDismount()};
       }
-      return {id:'drive', label: cargo ? ('Drive ' + cargo.name + ' back to the bay') : 'Steer with WASD or the stick · look for pals!', btn:'🚑 Driving'};
+      return {id:'drive', label: cargo ? ('Drive ' + cargo.name + ' back to the bay') : 'Steer with WASD or the stick · look for pals! Drive back to the 🅿️ bay to hop out.', btn:'🚑 Driving'};
     }
     return null;
   }
@@ -47882,19 +47888,24 @@ function start(m = 'obby', d = null){
     vtToast(res.message);
     vtNet();
   }
+  // QA t332u: hopping in or out ignores a second toggle for a moment, so one press (key, tap or Ⓐ) can't undo itself.
+  const VT_TOGGLE_MS = 500;
+  function vtToggleReady(){ return !(vt.toggleAt && Date.now() - vt.toggleAt < VT_TOGGLE_MS); }
   function vtDoMount(){
-    if (!vt) return;
+    if (!vt || !vtToggleReady()) return;
     const res = VetRules.vtMountAmbulance(vt.run, typeof P !== 'undefined' ? P.x : 0, typeof P !== 'undefined' ? P.z : 0);
     if (!res.ok){ vtToast(res.message); return; }
+    vt.toggleAt = Date.now();
     if (typeof P !== 'undefined'){ P.x = vt.run.drive.x; P.z = vt.run.drive.z; P.vx = P.vz = 0; }
     vtHideFpToggle();
     vtPlaceAmbulance();
     vtToast(res.message);
   }
   function vtDoDismount(){
-    if (!vt) return;
+    if (!vt || !vtToggleReady()) return;
     const res = VetRules.vtDismountAmbulance(vt.run);
     if (!res.ok){ vtToast(res.message); return; }
+    vt.toggleAt = Date.now();
     if (typeof P !== 'undefined'){ P.x = 0; P.y = 0; P.z = 22; P.vx = P.vz = 0; }
     vtHideFpToggle();
     vtPlaceAmbulance();
@@ -47956,6 +47967,9 @@ function start(m = 'obby', d = null){
   }
   function vtKey(e){
     if (!vt || !e) return false;
+    // QA t332u: the global keyup handler also routes here. One E press used to hop in on keydown and straight
+    // back out on keyup (and a held key auto-repeated the toggle). Only a fresh keydown acts.
+    if (e.type === 'keyup' || e.repeat) return e.type !== 'keyup' && e.code === 'KeyE';
     if (e.code === 'KeyE' || e.code === 'Space'){ vtAct(); return e.code === 'KeyE'; }
     if (e.code === 'KeyV'){ return true; }
     return false;
@@ -48346,6 +48360,7 @@ function start(m = 'obby', d = null){
   function mmKey(e){
     if (!mm || !e) return false;
     const c = e.code || e.key;
+    if (e.type === 'keyup' || e.repeat) return e.type !== 'keyup' && c === 'KeyE'; // QA t332u: keyup also routes here; act once per press
     if (c === 'KeyE'){ mmAct(); return true; }
     if (c === 'Space' || c === 'KeyR' || c === 'KeyF' || c === 'ShiftLeft') return true;
     return false;
@@ -48583,7 +48598,10 @@ function start(m = 'obby', d = null){
   function thKey(e){
     if (!th || !e) return false;
     if (typeof t297EatOverlayKey === 'function' && t297EatOverlayKey(e)) return true;
+    // QA t332u: the global keyup handler also routes here. Act once per fresh keydown.
+    if (e.type === 'keyup') return false;
     const c = e.code || e.key;
+    if (e.repeat && (c === 'KeyE' || c === 'KeyG' || c === 'KeyU' || c === 'KeyR' || c === 'KeyQ' || c === 'KeyF' || c === 'KeyC' || c === 'KeyX' || c === 'BracketLeft' || c === 'BracketRight' || c === 'Comma' || c === 'Period')) return true;
     if (c === 'KeyE' || c === 'KeyG'){ if(!e.repeat) thAct(); return true; }
     if (c === 'KeyU'){ if(!e.repeat) thDoUndo(); return true; }
     if (c === 'KeyR'){ if(!e.repeat){ th.sv = TreehouseRules.thRotate(th.sv, 1); thSave(th.sv); thPaintPalette(); } return true; }
@@ -48905,7 +48923,10 @@ function start(m = 'obby', d = null){
   function scKey(e){
     if (!sc || !e) return false;
     if (typeof t297EatOverlayKey === 'function' && t297EatOverlayKey(e)) return true;
+    // QA t332u: the global keyup handler also routes here. Act once per fresh keydown.
+    if (e.type === 'keyup') return false;
     const c = e.code || e.key;
+    if (e.repeat && (c === 'KeyE' || c === 'KeyF' || c === 'KeyL' || c === 'KeyY' || c === 'Enter')) return true;
     if (c === 'KeyE' || c === 'KeyF'){ if(!e.repeat) scAct(); return true; }
     if (c === 'KeyL' || c === 'KeyY'){ if(!e.repeat) scToggleLess(); return true; }
     if (c === 'Enter' && document.getElementById('scLocker') && document.getElementById('scLocker').classList.contains('show')){ scTryLocker(); return true; }

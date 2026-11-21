@@ -459,7 +459,7 @@
       if (VetRules.vtInBay(vt.run.drive.x, vt.run.drive.z)){
         return {id:'park', label:'E / Ⓑ  Park and hop out', btn:'🅿️ Park', go:() => vtDoDismount()};
       }
-      return {id:'drive', label: cargo ? ('Drive ' + cargo.name + ' back to the bay') : 'Steer with WASD or the stick · look for pals!', btn:'🚑 Driving'};
+      return {id:'drive', label: cargo ? ('Drive ' + cargo.name + ' back to the bay') : 'Steer with WASD or the stick · look for pals! Drive back to the 🅿️ bay to hop out.', btn:'🚑 Driving'};
     }
     return null;
   }
@@ -501,19 +501,24 @@
     vtToast(res.message);
     vtNet();
   }
+  // QA t332u: hopping in or out ignores a second toggle for a moment, so one press (key, tap or Ⓐ) can't undo itself.
+  const VT_TOGGLE_MS = 500;
+  function vtToggleReady(){ return !(vt.toggleAt && Date.now() - vt.toggleAt < VT_TOGGLE_MS); }
   function vtDoMount(){
-    if (!vt) return;
+    if (!vt || !vtToggleReady()) return;
     const res = VetRules.vtMountAmbulance(vt.run, typeof P !== 'undefined' ? P.x : 0, typeof P !== 'undefined' ? P.z : 0);
     if (!res.ok){ vtToast(res.message); return; }
+    vt.toggleAt = Date.now();
     if (typeof P !== 'undefined'){ P.x = vt.run.drive.x; P.z = vt.run.drive.z; P.vx = P.vz = 0; }
     vtHideFpToggle();
     vtPlaceAmbulance();
     vtToast(res.message);
   }
   function vtDoDismount(){
-    if (!vt) return;
+    if (!vt || !vtToggleReady()) return;
     const res = VetRules.vtDismountAmbulance(vt.run);
     if (!res.ok){ vtToast(res.message); return; }
+    vt.toggleAt = Date.now();
     if (typeof P !== 'undefined'){ P.x = 0; P.y = 0; P.z = 22; P.vx = P.vz = 0; }
     vtHideFpToggle();
     vtPlaceAmbulance();
@@ -575,6 +580,9 @@
   }
   function vtKey(e){
     if (!vt || !e) return false;
+    // QA t332u: the global keyup handler also routes here. One E press used to hop in on keydown and straight
+    // back out on keyup (and a held key auto-repeated the toggle). Only a fresh keydown acts.
+    if (e.type === 'keyup' || e.repeat) return e.type !== 'keyup' && e.code === 'KeyE';
     if (e.code === 'KeyE' || e.code === 'Space'){ vtAct(); return e.code === 'KeyE'; }
     if (e.code === 'KeyV'){ return true; }
     return false;
