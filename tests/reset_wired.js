@@ -7,9 +7,9 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'version.json'), 'utf8'));
 
 describe('Reset a game is wired into Settings', () => {
-  test('BUILD is 2026.11.20-9 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.20-9'"));
-    assert.equal(version.build, '2026.11.20-9');
+  test('BUILD is 2026.11.20-10 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.20-10'"));
+    assert.equal(version.build, '2026.11.20-10');
   });
 
   test('Settings has a Reset a game list, confirm dialog, and Reset ALL', () => {
