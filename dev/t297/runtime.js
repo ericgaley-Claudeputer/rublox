@@ -460,7 +460,7 @@
     // stage
     plat(0, 0.7, -8, 12, 8, '#f4e27a', 0.7);
     plat(0, 0.2, -2.2, 10, 2.2, '#6b4aa0', 0.2);
-    t297Keep(psg, t297Lab('🎭 Stage — start a show here', 0, 3.4, -5));
+    t297Keep(psg, t297Lab('🎭 Stage — start a show here', 0, 3.4, -7)); // QA t330u: was at z -5, right on top of the starting camera
     // judges as fixtures
     [[-3, -11.2], [0, -11.2], [3, -11.2]].forEach(([x,z], i) => {
       plat(x, 1.0, z, 1.4, 1.0, '#3d2a62', 1.0);
@@ -473,7 +473,9 @@
     psg.mats = (PsRules ? PsRules.PS_TRICKS : []).map((t, i) => {
       const x = -8 + i * 4, z = 8;
       plat(x, 0.12, z, 2.2, 2.2, i % 2 ? '#ffd6ea' : '#d6f0ff', 0.12);
-      t297Keep(psg, t297Lab(t.emoji + ' ' + t.name, x, 2.2, z));
+      // QA t330u: these filled the screen right under the camera. Smaller, lower and staggered so neighbours don't overlap.
+      const ml = t297Lab(t.emoji + ' ' + t.name, x, 1.5 + (i % 2) * 0.55, z); if (ml) ml.scale.multiplyScalar(0.6);
+      t297Keep(psg, ml);
       return {id:t.id, x, z, name:t.name, emoji:t.emoji};
     });
     // seats
