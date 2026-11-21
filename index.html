@@ -1018,6 +1018,10 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 @media (max-width:760px),(max-height:520px){.splevels{grid-template-columns:repeat(4,minmax(90px,1fr));gap:6px;max-height:44vh}.spdf{padding:3px 8px}.spdf small{display:none}.spkeys{grid-template-columns:repeat(3,60px)}.spkeys button{height:40px;font-size:20px}.spcoded{font-size:30px}#spCode .emoji{display:none}.splv .re{font-size:26px}.splv small{display:none}.splv{padding:5px 4px}.sphelp{display:none}
  #spPick .emoji,#spEnd .emoji{display:none}#spPick h2,#spEnd h2{font-size:20px;margin:0 0 2px}#spPick .mbox,#spEnd .mbox{padding-top:10px;padding-bottom:10px}#spPick .big,#spEnd .big{padding-top:6px;padding-bottom:6px}.spwarn{font-size:14px;top:24%}.spmeter{bottom:30%}}
 .rcbox{max-width:760px}
+/* QA t330u: on phones the HUD button rows were drawn over the top of game pickers (Splash, Race, Hide and Seek...). Start the picker under them. */
+#obby.touchui .opanel{padding-top:calc(var(--hudb, 56px) + 6px);place-items:start center}
+/* QA t330u: on a portrait phone four level cards ran off the right edge of the Don't Splash picker. */
+@media (max-width:560px){.splevels{grid-template-columns:repeat(3,minmax(0,1fr))}.splv{min-width:0}.spdiffs{flex-wrap:wrap}}
 .rcmodes[hidden],.rcrides[hidden],#rcPick [hidden]{display:none!important}
 .rcmodes{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:6px 0 10px}
 .rcmode{width:250px;padding:14px 12px;border-radius:18px;border:3px solid #d9dcea;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font:inherit;color:#1d2340}

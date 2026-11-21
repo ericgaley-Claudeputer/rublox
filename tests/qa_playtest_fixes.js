@@ -113,6 +113,10 @@ describe('labels', () => {
     assert.match(html, /#obby\.touchui\.dhmode \.dhtools:not\(\.dhvisitbar\),#obby\.touchui\.dhmode \.dinv\{flex-wrap:nowrap/);
     assert.match(html, /#obby\.touchui\.dhmode \.dhgoal\{top:calc\(var\(--hudb, 56px\) \+ 6px\);left:auto/);
   });
+  test('phone pickers start under the HUD rows and Splash levels fit the width', () => {
+    assert.ok(html.includes('#obby.touchui .opanel{padding-top:calc(var(--hudb, 56px) + 6px);place-items:start center}'));
+    assert.ok(html.includes('@media (max-width:560px){.splevels{grid-template-columns:repeat(3,minmax(0,1fr))}'));
+  });
   test('Bingle is not named twice in a speech bubble', () => {
     const src = fnSource('elevSay');
     const out = [];
