@@ -1763,6 +1763,8 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
 .evmode #evgShopBtn{display:block}
 #evNextNote{margin:8px 16px;font-weight:700;color:#445}
 @media (max-width:700px){ #evgAct{bottom:120px} #evgShopBtn{bottom:184px} }
+/* QA t330u: on a portrait phone the third column of Pet Kart rides ran off the right edge. */
+@media (max-width:560px){#rcPick .rcrides{grid-template-columns:repeat(2,minmax(0,1fr))}#rcPick .rcride{min-width:0}}
 </style>
 <nav>
     <button data-go="home" class="active"><i>🏠</i><span>Home</span></button>
