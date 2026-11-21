@@ -80,3 +80,25 @@ describe('Pawsley ambulance trips', () => {
     assert.equal(V.vtTreat(run, 'sip', 'treatment').ok, true);
   });
 });
+
+describe('Pawsley ambulance town houses', () => {
+  test('the ambulance cannot drive through town houses', () => {
+    assert.ok(V.VT_TOWN_HOUSES.length >= 2);
+    const house = V.VT_TOWN_HOUSES[0];
+    assert.ok(V.vtHitHouse(house.x, house.z, 1.6));
+    assert.equal(V.vtHitHouse(0, 50, 1.6), null);
+    const started = V.vtNewShift(null, 3);
+    const run = started.run;
+    const mount = V.vtMountAmbulance(run, 0, 22);
+    assert.equal(mount.ok, true);
+    run.drive.x = house.x;
+    run.drive.z = house.z - house.d/2 - 2.2;
+    run.drive.yaw = 0; // move in -Z? yaw 0 is -cos => -z wait: z += -cos(yaw)*speed. yaw=0 goes -z (north).
+    // Point at the house (south of house we need to go +z). yaw = Math.PI faces +z.
+    run.drive.yaw = Math.PI;
+    V.vtDriveSteer(run, 0, 1);
+    for (let i = 0; i < 80; i++) V.vtDriveTick(run, 0.1);
+    assert.equal(V.vtHitHouse(run.drive.x, run.drive.z, 0.2), null);
+    assert.ok(run.drive.z <= house.z - house.d/2 - 1.4, 'ambulance stayed outside, z=' + run.drive.z);
+  });
+});

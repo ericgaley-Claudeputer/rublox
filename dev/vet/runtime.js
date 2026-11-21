@@ -121,12 +121,14 @@
     tree(-18, 48, 5.5); tree(-22, 52, 4.8); tree(-14, 52, 5.2);
     tree(10, 70, 5); tree(-8, 74, 4.6); tree(22, 40, 5.4); tree(-28, 60, 5);
     // houses (solid but no tight doors — porches only)
-    function house(x,z,c){
-      vtWall(x, 0, z, 6, 4.6, 5, c || '#f6e1c3');
-      const roof = vtMesh(new THREE.ConeGeometry(4.2, 2.2, 4), '#c44536', x, 5.6, z);
+    function house(x,z,c,w,d){
+      vtWall(x, 0, z, w||6, 4.6, d||5, c || '#f6e1c3');
+      const roof = vtMesh(new THREE.ConeGeometry(Math.max(w||6, d||5) * 0.72, 2.2, 4), '#c44536', x, 5.6, z);
       if (roof) roof.rotation.y = Math.PI/4;
     }
-    house(-22, 38, '#fde2c8'); house(24, 38, '#f8d4e0');
+    (VetRules.VT_TOWN_HOUSES || [{x:-22,z:38,color:'#fde2c8',w:6,d:5},{x:24,z:38,color:'#f8d4e0',w:6,d:5}]).forEach(h => {
+      house(h.x, h.z, h.color, h.w, h.d);
+    });
     vtLab('Maple Court', -18, 2.4, 44);
     vtLab('Picnic Green', 22, 1.8, 48);
     // parked ambulance + rescue pals

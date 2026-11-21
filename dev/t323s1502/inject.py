@@ -68,6 +68,7 @@ def main() -> int:
     wn_hud = (ROOT / "dev/winter/hud.html").read_text()
     mm_hud = (ROOT / "dev/mermaid/hud.html").read_text()
     pb_hud = (ROOT / "dev/photobooth/hud.html").read_text()
+    pb_modal = (ROOT / "dev/photobooth/modal.html").read_text()
 
     html = html.replace(f"const BUILD = '{OLD_BUILD}';", f"const BUILD = '{BUILD}';", 1)
     if f"const BUILD = '{BUILD}';" not in html:
@@ -77,7 +78,7 @@ def main() -> int:
     html = replace_block(
         html,
         "/* Pinebell Village — original cozy winter village",
-        "    wnBuyCocoa, wnServeCocoa, wnWire\n  };\n});",
+        "    wnLightSlot, wnSetNight, wnPlaceLight, wnShowLights, wnWrapOpen, wnWrapPick, wnWrapScoreLook, wnWrapJudge, wnWrapCompete\n  };\n});",
         wn_logic,
         "winter logic",
     )

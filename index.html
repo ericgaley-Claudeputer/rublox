@@ -1638,21 +1638,21 @@ body.lh-muffled #obby{filter:saturate(.85)}
 @media (max-width:700px){ #mmAct{bottom:120px} #mmSwim{bottom:190px} }
 
 
-.avbooth{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:rgba(10,12,24,.55)}
-.avbooth[hidden]{display:none}
-.avbooth-card{background:#fff8ef;border:3px solid #1d2340;border-radius:18px;padding:12px;max-width:560px;width:94%;max-height:92vh;overflow:auto;box-shadow:4px 4px 0 #1d2340}
+.avbooth{position:fixed;inset:0;z-index:10070;display:flex;align-items:center;justify-content:center;background:rgba(10,12,24,.55);pointer-events:auto;isolation:isolate}
+.avbooth[hidden]{display:none !important;pointer-events:none}
+.avbooth-card{background:#fff8ef;border:3px solid #1d2340;border-radius:18px;padding:12px;max-width:560px;width:94%;max-height:92vh;overflow:auto;box-shadow:4px 4px 0 #1d2340;position:relative;z-index:1;pointer-events:auto}
 .avbooth-h{font-weight:800;margin-bottom:8px}
-#avBoothCv{display:block;width:100%;max-width:360px;height:auto;margin:0 auto 8px;border-radius:12px;background:#f4efe8}
-.avbooth-row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
-.avbooth-row button,.avbooth-acts button{border:2px solid #1d2340;border-radius:12px;padding:6px 8px;font-weight:700;cursor:pointer;background:#fff}
+#avBoothCv{display:block;width:100%;max-width:360px;height:auto;margin:0 auto 8px;border-radius:12px;background:#f4efe8;position:relative;pointer-events:none}
+.avbooth-row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;position:relative;z-index:2;pointer-events:auto}
+.avbooth-row button,.avbooth-acts button{border:2px solid #1d2340;border-radius:12px;padding:6px 8px;font-weight:700;cursor:pointer;background:#fff;position:relative;z-index:2;pointer-events:auto;touch-action:manipulation}
 .avbooth-row button.on{background:#ffd23f}
-.avbooth-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.avbooth-gal{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.avbooth-gal img{width:88px;height:88px;object-fit:cover;border-radius:10px;border:2px solid #1d2340}
-#hubBoothBtn{margin-left:8px}
+.avbooth-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;position:relative;z-index:2;pointer-events:auto}
+.avbooth-gal{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;position:relative;z-index:2;pointer-events:auto}
+.avbooth-gal img{width:88px;height:88px;object-fit:cover;border-radius:10px;border:2px solid #1d2340;pointer-events:auto;cursor:pointer}
+#hubBoothBtn,#avBoothBtn{margin-left:8px;position:relative;z-index:2;pointer-events:auto;touch-action:manipulation}
 
 .wnnight #obby canvas{filter:brightness(.92)}
-#wnWrap{position:absolute;inset:0;z-index:12;display:flex;align-items:center;justify-content:center;background:rgba(12,20,40,.45)}
+#wnWrap{position:absolute;inset:0;z-index:260;pointer-events:auto;display:flex;align-items:center;justify-content:center;background:rgba(12,20,40,.45)}
 #wnWrap[hidden]{display:none}
 .wnwrap-card{background:#fff8ef;border:3px solid #1d2340;border-radius:18px;padding:14px 16px;max-width:420px;width:92%;box-shadow:4px 4px 0 #1d2340}
 .wnwrap-h{font-weight:800;margin-bottom:8px}
@@ -1809,23 +1809,6 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
         <button class="big green" id="saveAv" style="margin-left:8px">💾 Save Avatar</button>
 
         <button class="big" id="avBoothBtn" type="button" style="margin-left:8px">📸 Photo Booth</button>
-  <div id="avBooth" class="avbooth" hidden>
-    <div class="avbooth-card">
-      <div class="avbooth-h">📸 Photo Booth</div>
-      <canvas id="avBoothCv" width="520" height="600"></canvas>
-      <div class="avbooth-row" id="avBoothPoses"></div>
-      <div class="avbooth-row" id="avBoothBgs"></div>
-      <div class="avbooth-row" id="avBoothFrames"></div>
-      <div class="avbooth-row" id="avBoothStickers"></div>
-      <div class="avbooth-acts">
-        <button type="button" id="avBoothSnap">📸 Take photo</button>
-        <button type="button" id="avBoothDl">⬇️ Download</button>
-        <button type="button" id="avBoothGal">🖼️ Gallery</button>
-        <button type="button" id="avBoothX">Close</button>
-      </div>
-      <div id="avBoothGallery" class="avbooth-gal" hidden></div>
-    </div>
-  </div>
 
       </div>
     </div>
@@ -9815,13 +9798,99 @@ function drawElevator(ctx){
   const WN_DOOR_W = 3.6;
   const WN_WALL_H = 5.2;
   const WN_COTTAGES = [
-    {id:'cocoa', name:"Mugsy’s Cocoa", x:-16, z:8, w:7, d:5.5},
-    {id:'blue', name:'Blue cottage', x:16, z:12, w:6, d:5},
-    {id:'green', name:'Green cottage', x:-6, z:22, w:6, d:5}
+    {id:'cocoa', name:"Mugsy's Cocoa", color:'#c45c1a', roof:'#8b2e1a', x:-22, z:10, w:7, d:5.5},
+    {id:'blue', name:'Holly Cottage', color:'#3a86ff', roof:'#1d4a8a', x:22, z:22, w:6, d:5},
+    {id:'green', name:'Cedar Cottage', color:'#2ec27e', roof:'#1a6b44', x:-22, z:28, w:6, d:5}
   ];
   const WN_DOORS = WN_COTTAGES.map(c => ({
     id:c.id, a:'outside', b:c.id, x:c.x, z:c.z + c.d/2, w:WN_DOOR_W, h:WN_DOOR_H, axis:'z', thick:0.42
   }));
+  const WN_HILL = {x:0, w:18, startZ:-82, finishZ:-16, finishW:20, finishD:12, steps:8, stepD:8, startY:13, stepDrop:1.5, platH:1.2, bumpZs:[-58, -36]};
+  const WN_POND = {id:'pond', name:'Glassgill Pond', x:20, z:4, r:7.5, w:15, d:15};
+  const WN_YARD = {id:'yard', name:'Snow pal yard', x:2, z:30, w:4, d:4};
+  const WN_POSTS = [
+    {id:'post-1', name:'Post 1', x:4, z:22, w:1.2, d:1.2},
+    {id:'post-2', name:'Post 2', x:0, z:22, w:1.2, d:1.2},
+    {id:'post-3', name:'Post 3', x:-4, z:24, w:1.2, d:1.2}
+  ];
+  const WN_LAMP = {id:'lamp', name:'Night lamp', x:0, z:6, w:1.2, d:1.2};
+  const WN_WRAP = {id:'wrap', name:'Wrap table', x:6, z:10, w:1.8, d:1.8};
+  const WN_SPAWN = {x:0, z:8};
+
+  function wnBox(o){
+    const w = Math.max(0.2, +o.w || (o.r ? o.r * 2 : 1));
+    const d = Math.max(0.2, +o.d || (o.r ? o.r * 2 : w));
+    return {
+      id: o.id, name: o.name, kind: o.kind, x:+o.x||0, z:+o.z||0, w:w, d:d, y:+o.y||0,
+      minX: (+o.x||0) - w/2, maxX: (+o.x||0) + w/2,
+      minZ: (+o.z||0) - d/2, maxZ: (+o.z||0) + d/2
+    };
+  }
+  function wnHillPlats(){
+    const H = WN_HILL, out = [];
+    for (let i = 0; i < H.steps; i++){
+      out.push(wnBox({id:'hill-'+i, name:'Sledwhistle Hill', kind:'hill', x:H.x, z:H.startZ + i * H.stepD, w:H.w, d:H.stepD, y:H.startY - i * H.stepDrop}));
+    }
+    out.push(wnBox({id:'hill-finish', name:'Finish', kind:'hill', x:H.x, z:H.finishZ, w:H.finishW, d:H.finishD, y:0.2}));
+    return out;
+  }
+  function wnCottage(id){ return WN_COTTAGES.find(c => c.id === id) || null; }
+  function wnLayoutBoxes(){
+    const boxes = [];
+    wnHillPlats().forEach(b => boxes.push(b));
+    WN_COTTAGES.forEach(c => boxes.push(wnBox(Object.assign({kind:'house'}, c))));
+    boxes.push(wnBox(Object.assign({kind:'pond'}, WN_POND)));
+    boxes.push(wnBox(Object.assign({kind:'yard'}, WN_YARD)));
+    WN_POSTS.forEach(p => boxes.push(wnBox(Object.assign({kind:'post'}, p))));
+    boxes.push(wnBox(Object.assign({kind:'lamp'}, WN_LAMP)));
+    boxes.push(wnBox(Object.assign({kind:'wrap'}, WN_WRAP)));
+    (WN_LIGHT_SLOTS || []).forEach(s => {
+      if (s.kind === 'tree') boxes.push(wnBox(Object.assign({kind:'tree', w:s.w||2.8, d:s.d||2.8}, s)));
+    });
+    return boxes;
+  }
+  function wnBoxesOverlap(a, b, gap){
+    const g = gap || 0;
+    return a.maxX > b.minX + g && a.minX < b.maxX - g && a.maxZ > b.minZ + g && a.minZ < b.maxZ - g;
+  }
+  function wnLayoutOverlaps(gap){
+    const boxes = wnLayoutBoxes();
+    const hits = [];
+    for (let i = 0; i < boxes.length; i++){
+      for (let j = i + 1; j < boxes.length; j++){
+        const a = boxes[i], b = boxes[j];
+        // hill steps and the finish pad are allowed to touch each other
+        if (a.kind === 'hill' && b.kind === 'hill') continue;
+        if (wnBoxesOverlap(a, b, gap == null ? 0.8 : gap)) hits.push({a:a.id, b:b.id, nameA:a.name, nameB:b.name});
+      }
+    }
+    return hits;
+  }
+  function wnInDoorway(x, z, slim){
+    const s = slim == null ? 1.2 : slim;
+    for (let i = 0; i < WN_DOORS.length; i++){
+      const d = WN_DOORS[i];
+      if (d.axis === 'z'){
+        if (Math.abs(z - d.z) <= s && Math.abs(x - d.x) <= d.w / 2) return d;
+      } else if (Math.abs(x - d.x) <= s && Math.abs(z - d.z) <= d.w / 2) return d;
+    }
+    return null;
+  }
+  function wnHitWall(x, z){
+    const thick = 0.42, doorW = WN_DOOR_W;
+    for (let i = 0; i < WN_COTTAGES.length; i++){
+      const c = WN_COTTAGES[i];
+      const x0 = c.x - c.w/2, x1 = c.x + c.w/2, z0 = c.z - c.d/2, z1 = c.z + c.d/2;
+      if (x < x0 - thick || x > x1 + thick || z < z0 - thick || z > z1 + thick) continue;
+      const onXWall = (Math.abs(x - x0) <= thick || Math.abs(x - x1) <= thick) && z >= z0 && z <= z1;
+      const onZBack = Math.abs(z - z0) <= thick && x >= x0 && x <= x1;
+      const onZFront = Math.abs(z - z1) <= thick && x >= x0 && x <= x1;
+      if (onZFront && Math.abs(x - c.x) <= doorW / 2) continue;
+      if (onXWall || onZBack || onZFront) return c;
+    }
+    return null;
+  }
+  function wnWalkableAt(x, z){ return !wnHitWall(x, z); }
 
   function wnFresh(){
     return {
@@ -9886,7 +9955,7 @@ function drawElevator(ctx){
   function wnSledStart(run, now){
     if (!run) return {ok:false, why:'no'};
     run.area = 'hill';
-    run.sled = {on:true, x:0, y:1.2, z:-70, vx:0, vz:10, yaw:0, air:0, t:0, started: now || 0, jumps:0, done:false, time:0};
+    run.sled = {on:true, x:0, y:1.2, z:WN_HILL.startZ, vx:0, vz:10, yaw:0, air:0, t:0, started: now || 0, jumps:0, done:false, time:0};
     return {ok:true, why:'ok'};
   }
 
@@ -9918,14 +9987,15 @@ function drawElevator(ctx){
     s.x = Math.max(-8, Math.min(8, (s.x || 0) + s.vx * dt));
     s.z = (s.z || 0) + s.vz * dt;
     s.y = s.air > 0 ? 1.2 + Math.sin((0.7 - s.air) / 0.7 * Math.PI) * 1.6 : 1.2;
-    // bumps / jump ramps near z=-30 and z=10
-    if (s.air <= 0 && (Math.abs(s.z + 30) < 1.2 || Math.abs(s.z - 10) < 1.2)){
+    // bumps / jump ramps along the hill (not in the village)
+    const bumps = WN_HILL.bumpZs || [];
+    if (s.air <= 0 && bumps.some(bz => Math.abs(s.z - bz) < 1.2)){
       s.air = 0.55;
       s.jumps = (s.jumps | 0) + 1;
     }
     if (s.x <= -8 || s.x >= 8) s.yaw = (s.yaw || 0) * 0.4;
-    if (s.z >= 48){
-      s.z = 48;
+    if (s.z >= WN_HILL.finishZ){
+      s.z = WN_HILL.finishZ;
       s.on = false;
       s.done = true;
       s.time = Math.max(0.1, (s.t || 0));
@@ -10075,15 +10145,52 @@ function drawElevator(ctx){
 
 
   const WN_LIGHT_SLOTS = [
-    {id:'cottage-a', kind:'house', name:'Cedar Cottage', x:-16, z:8},
-    {id:'cottage-b', kind:'house', name:'Holly Cottage', x:16, z:8},
-    {id:'cocoa', kind:'house', name:"Mugsy's Cocoa", x:0, z:-10},
-    {id:'tree-a', kind:'tree', name:'Village Fir', x:-8, z:18},
-    {id:'tree-b', kind:'tree', name:'Pond Pine', x:10, z:-22},
-    {id:'tree-c', kind:'tree', name:'Hill Spruce', x:0, z:28},
-    {id:'tree-d', kind:'tree', name:'Lane Larch', x:-22, z:-8},
-    {id:'tree-e', kind:'tree', name:'Square Spruce', x:8, z:2}
+    {id:'cottage-a', kind:'house', name:'Cedar Cottage', x:-22, z:28},
+    {id:'cottage-b', kind:'house', name:'Holly Cottage', x:22, z:22},
+    {id:'cocoa', kind:'house', name:"Mugsy's Cocoa", x:-22, z:10},
+    {id:'tree-a', kind:'tree', name:'Village Fir', x:-10, z:16, w:2.8, d:2.8},
+    {id:'tree-b', kind:'tree', name:'Pond Pine', x:28, z:-12, w:2.8, d:2.8},
+    {id:'tree-c', kind:'tree', name:'Hill Spruce', x:14, z:-40, w:2.8, d:2.8},
+    {id:'tree-d', kind:'tree', name:'Lane Larch', x:-16, z:-20, w:2.8, d:2.8},
+    {id:'tree-e', kind:'tree', name:'Square Spruce', x:8, z:0, w:2.8, d:2.8}
   ];
+  function wnPlaceLabels(){
+    const labs = [];
+    function add(id, name, x, z, y, anchor){
+      if (labs.some(l => l.name === name || l.id === id)) return;
+      labs.push({id:id, name:name, x:x, z:z, y:y == null ? 3.2 : y, anchor:anchor || id});
+    }
+    add('hill', 'Sledwhistle Hill', WN_HILL.x, WN_HILL.startZ, WN_HILL.startY + 2, 'hill-0');
+    add('finish', 'Finish', WN_HILL.x, WN_HILL.finishZ, 2.2, 'hill-finish');
+    add('village', 'Pinebell Village', 0, -2, 3.6, 'plaza');
+    WN_COTTAGES.forEach(c => add(c.id, c.name, c.x, c.z + c.d/2 + 0.8, 3.4, c.id));
+    add('pond', WN_POND.name, WN_POND.x, WN_POND.z - 4.2, 2.4, 'pond');
+    add('yard', WN_YARD.name, WN_YARD.x, WN_YARD.z + 2.2, 2.2, 'yard');
+    WN_POSTS.forEach(p => add(p.id, p.name, p.x, p.z, 2.0, p.id));
+    add('tosses', 'Practice tosses', -2, 26, 2.6, 'posts');
+    add('lamp', WN_LAMP.name, WN_LAMP.x, WN_LAMP.z, 4.0, 'lamp');
+    add('wrap', WN_WRAP.name, WN_WRAP.x, WN_WRAP.z, 1.8, 'wrap');
+    WN_LIGHT_SLOTS.forEach(s => {
+      if (s.kind === 'tree') add(s.id, s.name, s.x, s.z, 3.5, s.id);
+    });
+    return labs;
+  }
+  function wnVisibleLabels(px, pz, maxN, maxDist){
+    const all = wnPlaceLabels();
+    const n = maxN == null ? 6 : maxN;
+    const far = maxDist == null ? 32 : maxDist;
+    const ranked = all.map(l => Object.assign({}, l, {dist: Math.hypot((px||0) - l.x, (pz||0) - l.z)}))
+      .filter(l => l.dist <= far)
+      .sort((a, b) => a.dist - b.dist);
+    const out = [];
+    ranked.forEach(l => {
+      if (out.length >= n && l.dist > 10) return;
+      const pile = out.some(o => Math.hypot(o.x - l.x, o.z - l.z) < 4);
+      if (pile && l.dist > 8) return;
+      if (out.length < n || l.dist <= 10) out.push(l);
+    });
+    return out.slice(0, Math.max(n, out.filter(l => l.dist <= 10).length));
+  }
   const WN_PAPERS = [
     {id:'snow', name:'Snowy White', color:'#f6fbff'},
     {id:'cranberry', name:'Cranberry', color:'#c44536'},
@@ -10243,6 +10350,9 @@ function drawElevator(ctx){
     wnSkateStart, wnSkateTick, wnSkateBank,
     wnBuyCocoa, wnServeCocoa, wnWire,
     WN_LIGHT_SLOTS, WN_PAPERS, WN_RIBBON_COLORS, WN_BOWS, WN_TAGS, WN_WRAP_STEPS, WN_WRAP_JUDGE,
+    WN_HILL, WN_POND, WN_YARD, WN_POSTS, WN_LAMP, WN_WRAP, WN_SPAWN,
+    wnBox, wnHillPlats, wnCottage, wnLayoutBoxes, wnBoxesOverlap, wnLayoutOverlaps,
+    wnInDoorway, wnHitWall, wnWalkableAt, wnPlaceLabels, wnVisibleLabels,
     wnLightSlot, wnSetNight, wnPlaceLight, wnShowLights, wnWrapOpen, wnWrapPick, wnWrapScoreLook, wnWrapJudge, wnWrapCompete
   };
 });
@@ -10746,6 +10856,18 @@ function drawElevator(ctx){
   const VT_TOWN_DOOR = {id:'bay-town', a:'bay', b:'town', x:0, z:28, w:5.2, h:VT_DOOR_H, axis:'z', thick:0.42};
   const VT_TOWN_DOORS = [VT_TOWN_DOOR];
   const VT_AMBULANCE_PARK = {x:0, z:22.5, yaw:0};
+  const VT_TOWN_HOUSES = [
+    {id:'maple-house', name:'Maple Court house', x:-22, z:38, w:6, d:5, color:'#fde2c8'},
+    {id:'picnic-house', name:'Picnic Green house', x:24, z:38, w:6, d:5, color:'#f8d4e0'}
+  ];
+  function vtHitHouse(x, z, rad){
+    const r = rad == null ? 1.6 : rad;
+    for (let i = 0; i < VT_TOWN_HOUSES.length; i++){
+      const h = VT_TOWN_HOUSES[i];
+      if (x + r > h.x - h.w/2 && x - r < h.x + h.w/2 && z + r > h.z - h.d/2 && z - r < h.z + h.d/2) return h;
+    }
+    return null;
+  }
 
   const VT_RESCUES = [
     {id:'tree', title:'Stuck in a tree', place:'Maple Court', emoji:'🐱', species:'cat', speciesName:'cat',
@@ -10862,13 +10984,28 @@ function drawElevator(ctx){
     d.speed += (thr * max - d.speed) * Math.min(1, dt * 3.2);
     if (Math.abs(thr) < 0.05) d.speed *= Math.max(0, 1 - dt * 2.4);
     d.yaw += turn * dt * 2.1 * (d.speed >= 0 ? 1 : -1);
-    d.x += Math.sin(d.yaw) * d.speed * dt;
-    d.z += -Math.cos(d.yaw) * d.speed * dt;
+    const ox = d.x, oz = d.z;
+    const nx = d.x + Math.sin(d.yaw) * d.speed * dt;
+    const nz = d.z + -Math.cos(d.yaw) * d.speed * dt;
     const T = VT_TOWN;
     const minX = Math.min(-8, T.minX), maxX = Math.max(8, T.maxX);
     const minZ = 16, maxZ = T.maxZ;
-    d.x = Math.max(minX + 1.2, Math.min(maxX - 1.2, d.x));
-    d.z = Math.max(minZ + 0.6, Math.min(maxZ - 1.2, d.z));
+    function clamp(x, z){
+      return {
+        x: Math.max(minX + 1.2, Math.min(maxX - 1.2, x)),
+        z: Math.max(minZ + 0.6, Math.min(maxZ - 1.2, z))
+      };
+    }
+    let next = clamp(nx, nz);
+    if (vtHitHouse(next.x, next.z, 1.6)){
+      const alongX = clamp(nx, oz);
+      const alongZ = clamp(ox, nz);
+      if (!vtHitHouse(alongX.x, alongX.z, 1.6)) next = alongX;
+      else if (!vtHitHouse(alongZ.x, alongZ.z, 1.6)) next = alongZ;
+      else next = clamp(ox, oz);
+      d.speed *= 0.35;
+    }
+    d.x = next.x; d.z = next.z;
     return d;
   }
 
@@ -10985,7 +11122,8 @@ function drawElevator(ctx){
     vtDifficulty, vtRollPatient, vtNewShift, vtChart, vtCheckIn, vtUseTool, vtXrayScan, vtExamReady,
     vtTreat, vtCuddle, vtFeed, vtPickup, vtPayout, vtNextPatient, vtKidCopyOk, vtRealPlayersOnly,
     vtWire, vtApply,
-    VT_TOWN, VT_TOWN_DOOR, VT_TOWN_DOORS, VT_AMBULANCE_PARK, VT_RESCUES,
+    VT_TOWN, VT_TOWN_DOOR, VT_TOWN_DOORS, VT_AMBULANCE_PARK, VT_TOWN_HOUSES, VT_RESCUES,
+    vtHitHouse,
     vtInTown, vtInTownDoor, vtAreaAt, vtRescue, vtRescueAt, vtInBay,
     vtEmptyDrive, vtMountAmbulance, vtDismountAmbulance, vtDriveSteer, vtDriveTick,
     vtRescuePet, vtRescueName, vtAdmitRescue, vtClinicFirstPerson
@@ -16597,8 +16735,16 @@ try { buildGames(); } catch (err) {}
 try { renderContinue(); } catch (err) {}
 requestAnimationFrame(animateLava);
 
+
   /* ---------- Avatar Photo Booth (reuses rubloxPhotos) ---------- */
-  let pb = {shot: null, last: null, webgl: null};
+  let pb = {shot: null, last: null, lastData: null, webgl: null, focus: 0, _keys: false};
+  function pbBox(){ return document.getElementById('avBooth'); }
+  function pbIsOpen(){ const box = pbBox(); return !!(box && !box.hidden); }
+  function pbMount(){
+    const box = pbBox();
+    if (box && document.body && box.parentElement !== document.body) document.body.appendChild(box);
+    return box;
+  }
   function pbHasWebgl(){
     if (pb.webgl != null) return pb.webgl;
     try {
@@ -16616,15 +16762,37 @@ requestAnimationFrame(animateLava);
   function pbPersist(g){
     try { if (typeof save === 'function') save(PhotoBoothRules.PB_KEY, g); else localStorage.setItem(PhotoBoothRules.PB_KEY, JSON.stringify(g)); } catch (e){}
   }
+  function pbButtons(){
+    const box = pbBox(); if (!box || box.hidden) return [];
+    return Array.prototype.slice.call(box.querySelectorAll('button')).filter(b => b && !b.disabled && !b.hidden);
+  }
+  function pbFocusAt(i){
+    const list = pbButtons(); if (!list.length) return;
+    pb.focus = ((i % list.length) + list.length) % list.length;
+    try { list[pb.focus].focus({preventScroll: true}); } catch (e){ try { list[pb.focus].focus(); } catch (e2){} }
+    try { list[pb.focus].scrollIntoView({block: 'nearest', inline: 'nearest'}); } catch (e){}
+  }
   function pbOpen(){
-    const box = document.getElementById('avBooth');
+    const box = pbMount();
     if (!box) return;
     if (!pb.shot) pb.shot = PhotoBoothRules.pbFreshShot();
     box.hidden = false;
+    try { box.removeAttribute('hidden'); } catch (e){}
+    pbBind();
     pbPaintChrome();
     pbPaint();
+    pbFocusAt(0);
   }
-  function pbClose(){ const box = document.getElementById('avBooth'); if (box) box.hidden = true; }
+  function pbClose(){
+    const box = pbBox();
+    if (box){ box.hidden = true; try { box.setAttribute('hidden', ''); } catch (e){} }
+  }
+  function pbOnChrome(key, id){
+    const R = PhotoBoothRules, s = pb.shot || R.pbFreshShot();
+    if (key === 'sticker') pb.shot = R.pbToggleSticker(s, id);
+    else { s[key] = id; pb.shot = R.pbCleanShot(s); }
+    pbPaintChrome(); pbPaint();
+  }
   function pbPaintChrome(){
     const R = PhotoBoothRules, s = pb.shot || R.pbFreshShot();
     function row(id, items, key, labelFn){
@@ -16633,13 +16801,10 @@ requestAnimationFrame(animateLava);
       items.forEach(it => {
         const b = document.createElement('button');
         b.type = 'button';
+        b.setAttribute('data-pb-key', key);
+        b.setAttribute('data-pb-id', it.id);
         b.textContent = labelFn(it);
         if (s[key] === it.id || (key === 'sticker' && (s.stickers||[]).indexOf(it.id)>=0)) b.classList.add('on');
-        b.onclick = () => {
-          if (key === 'sticker') pb.shot = R.pbToggleSticker(s, it.id);
-          else { s[key] = it.id; pb.shot = R.pbCleanShot(s); }
-          pbPaintChrome(); pbPaint();
-        };
         el.appendChild(b);
       });
     }
@@ -16656,12 +16821,12 @@ requestAnimationFrame(animateLava);
   function pbPaint(){
     const cv = document.getElementById('avBoothCv'); if (!cv) return;
     const ctx = cv.getContext('2d');
+    if (!ctx) return;
     const lay = PhotoBoothRules.pbLayout(pb.shot, cv.width, cv.height);
     const grd = ctx.createLinearGradient(0,0,0,cv.height);
     grd.addColorStop(0, lay.bg.color); grd.addColorStop(1, lay.bg.alt || lay.bg.color);
     ctx.fillStyle = grd; ctx.fillRect(0,0,cv.width,cv.height);
     const pad = lay.pad || 0;
-    // 2D fallback is always used in the editor booth (works with or without WebGL)
     ctx.save();
     ctx.beginPath();
     ctx.rect(pad, pad, cv.width - pad*2, cv.height - pad*2);
@@ -16685,7 +16850,6 @@ requestAnimationFrame(animateLava);
       ctx.fillText(st.emoji, st.x * cv.width, st.y * cv.height);
     });
     pb.last = cv;
-    // note fallback: PhotoBoothRules.pbNeed2dFallback(!pbHasWebgl()) is true without WebGL; we already drew 2D
   }
   function pbSnap(){
     const cv = document.getElementById('avBoothCv'); if (!cv) return;
@@ -16708,7 +16872,7 @@ requestAnimationFrame(animateLava);
   }
   function pbDownload(){
     const data = pb.lastData || (document.getElementById('avBoothCv') && document.getElementById('avBoothCv').toDataURL('image/png'));
-    if (!data){ pbSnap(); return; }
+    if (!data || !PhotoBoothRules.pbIsPhotoData(data)){ pbSnap(); return; }
     const a = document.createElement('a');
     a.href = data; a.download = 'rublox-photo.png';
     document.body.appendChild(a); a.click(); a.remove();
@@ -16717,32 +16881,95 @@ requestAnimationFrame(animateLava);
     const box = document.getElementById('avBoothGallery'); if (!box) return;
     const g = pbGalleryStore();
     box.hidden = false;
+    try { box.removeAttribute('hidden'); } catch (e){}
     box.innerHTML = g.length ? '' : '<div>No photos yet — take a snap!</div>';
     g.slice().reverse().forEach(p => {
       const img = document.createElement('img');
       img.src = p.d; img.alt = 'Saved photo';
-      img.onclick = () => { pb.lastData = p.d; pbDownload(); };
+      img.setAttribute('data-pb', 'dl-saved');
+      img.setAttribute('data-pb-data', p.d);
       box.appendChild(img);
     });
   }
+  function pbHandleClick(ev){
+    const raw = ev && ev.target;
+    const t = raw && raw.closest ? (raw.closest('button, [data-pb-key], [data-pb], img') || raw) : raw;
+    if (!t) return false;
+    const openBtn = (t.id === 'avBoothBtn' || t.id === 'hubBoothBtn') ? t : (t.closest && (t.closest('#avBoothBtn, #hubBoothBtn')));
+    if (openBtn){
+      if (ev){ try { ev.preventDefault(); ev.stopPropagation(); if (ev.stopImmediatePropagation) ev.stopImmediatePropagation(); } catch (e){} }
+      pbOpen();
+      return true;
+    }
+    const box = pbBox();
+    if (!box || box.hidden || (box.contains && !box.contains(t))) return false;
+    if (ev){ try { ev.preventDefault(); ev.stopPropagation(); if (ev.stopImmediatePropagation) ev.stopImmediatePropagation(); } catch (e){} }
+    const key = t.getAttribute && t.getAttribute('data-pb-key');
+    if (key){ pbOnChrome(key, t.getAttribute('data-pb-id')); return true; }
+    if (t.id === 'avBoothX'){ pbClose(); return true; }
+    if (t.id === 'avBoothSnap'){ pbSnap(); return true; }
+    if (t.id === 'avBoothDl'){ pbDownload(); return true; }
+    if (t.id === 'avBoothGal'){ pbShowGal(); return true; }
+    if (t.getAttribute && t.getAttribute('data-pb') === 'dl-saved'){
+      pb.lastData = t.getAttribute('data-pb-data') || t.src;
+      pbDownload();
+      return true;
+    }
+    return false;
+  }
+  function pbKey(ev){
+    if (!pbIsOpen() || !ev) return false;
+    const c = ev.code || ev.key;
+    if (c === 'Escape' || c === 'Esc' || c === 'KeyB'){
+      if (ev.preventDefault) ev.preventDefault();
+      if (ev.stopPropagation) ev.stopPropagation();
+      pbClose(); return true;
+    }
+    const list = pbButtons();
+    if (!list.length) return false;
+    const cur = (typeof document !== 'undefined' && document.activeElement && list.indexOf(document.activeElement) >= 0)
+      ? list.indexOf(document.activeElement) : (pb.focus | 0);
+    if (c === 'ArrowRight' || c === 'ArrowDown'){
+      if (ev.preventDefault) ev.preventDefault();
+      if (ev.stopPropagation) ev.stopPropagation();
+      pbFocusAt(cur + 1); return true;
+    }
+    if (c === 'ArrowLeft' || c === 'ArrowUp'){
+      if (ev.preventDefault) ev.preventDefault();
+      if (ev.stopPropagation) ev.stopPropagation();
+      pbFocusAt(cur - 1); return true;
+    }
+    if (c === 'Enter' || c === 'Space' || c === ' ' || c === 'NumpadEnter' || c === 'KeyA'){
+      if (ev.preventDefault) ev.preventDefault();
+      if (ev.stopPropagation) ev.stopPropagation();
+      const b = list[cur] || list[0];
+      if (b && b.click) b.click();
+      return true;
+    }
+    return false;
+  }
+  function pbPad(jp){
+    if (!pbIsOpen() || !jp) return false;
+    if (jp[1] || jp.b){ pbClose(); return true; }
+    const list = pbButtons(); if (!list.length) return true;
+    if (jp[15] || jp[13] || jp.right || jp.down){ pbFocusAt((pb.focus|0) + 1); return true; }
+    if (jp[14] || jp[12] || jp.left || jp.up){ pbFocusAt((pb.focus|0) - 1); return true; }
+    if (jp[0] || jp.a){ const b = list[pb.focus|0] || list[0]; if (b && b.click) b.click(); return true; }
+    return true;
+  }
   function pbBind(){
-    const open = document.getElementById('avBoothBtn');
-    const hub = document.getElementById('hubBoothBtn');
-    const close = document.getElementById('avBoothX');
-    const snap = document.getElementById('avBoothSnap');
-    const dl = document.getElementById('avBoothDl');
-    const gal = document.getElementById('avBoothGal');
-    if (open && !open._pb){ open._pb = true; open.addEventListener('click', ev => { ev.preventDefault(); pbOpen(); }); }
-    if (hub && !hub._pb){ hub._pb = true; hub.addEventListener('click', ev => { ev.preventDefault(); pbOpen(); }); }
-    if (close && !close._pb){ close._pb = true; close.addEventListener('click', ev => { ev.preventDefault(); pbClose(); }); }
-    if (snap && !snap._pb){ snap._pb = true; snap.addEventListener('click', ev => { ev.preventDefault(); pbSnap(); }); }
-    if (dl && !dl._pb){ dl._pb = true; dl.addEventListener('click', ev => { ev.preventDefault(); pbDownload(); }); }
-    if (gal && !gal._pb){ gal._pb = true; gal.addEventListener('click', ev => { ev.preventDefault(); pbShowGal(); }); }
+    if (typeof document === 'undefined') return;
+    pbMount();
+    if (document._pbDoc) return;
+    document._pbDoc = true;
+    document.addEventListener('click', pbHandleClick, true);
+    document.addEventListener('keydown', ev => { pbKey(ev); }, true);
   }
   if (typeof document !== 'undefined'){
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pbBind);
     else pbBind();
   }
+  if (typeof window !== 'undefined'){ window.pb = pb; window.pbOpen = pbOpen; window.pbClose = pbClose; window.pbIsOpen = pbIsOpen; window.pbPad = pbPad; window.pbKey = pbKey; window.pbBind = pbBind; window.pbHandleClick = pbHandleClick; }
 try { buildAvatarEditor(); drawBig(); drawChip(); updateWelcome(); } catch (err) {}
 try { updateCoins(); renderShop(); renderStuff(); } catch (err) {}
 try { if (typeof frInit === 'function') frInit(); } catch (err) {}
@@ -36928,7 +37155,7 @@ function dhLayoutHud(){
       if (typeof dhCutPlaying !== 'function' || !dhCutPlaying()) return;
       if (paused || menuOpen) return;
       const t = e.target || e.srcElement;
-      if (t && t.closest && t.closest('#oPausePanel, #setModal, #dhResetModal, dialog.modal, .modal.show')) return;
+      if (t && t.closest && t.closest('#oPausePanel, #setModal, #dhResetModal, dialog.modal, .modal.show, #avBooth, .avbooth, #wnWrap')) return;
       if (e.preventDefault) e.preventDefault();
       if (e.stopPropagation) e.stopPropagation();
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
@@ -44439,7 +44666,6 @@ function start(m = 'obby', d = null){
   };
 
   /* ---------- Pinebell Village ---------- */
-
   let wn = null;
   function wnKeep(m){ if (m && wn && wn.trash) wn.trash.push(m); return m; }
   function wnMat(c,o){ return new THREE.MeshLambertMaterial(Object.assign({color:c}, o||{})); }
@@ -44515,45 +44741,50 @@ function start(m = 'obby', d = null){
     r.position.set(x, wallH + 0.9, z); r.rotation.y = Math.PI/4; scene.add(r); wnKeep(r);
     wnMesh(new THREE.BoxGeometry(0.8, 0.8, 0.1), '#ffd23f', x-1.4, 2.4, z1 + 0.06);
   }
+  function wnPlaceName(lab){
+    if (!lab) return null;
+    const prefix = ({hill:'🛷 ', finish:'🏁 ', village:'🎄 ', cocoa:'☕ ', pond:'⛸️ ', yard:'☃️ ', lamp:'🌙 ', wrap:'🎁 '}[lab.id] || (String(lab.id||'').indexOf('post')===0 ? '🎯 ' : (String(lab.id||'').indexOf('tree')===0 ? '🎄 ' : (lab.anchor && String(lab.anchor).indexOf('house')>=0 || ['cocoa','blue','green'].indexOf(lab.id)>=0 ? '🏠 ' : ''))));
+    const m = wnLab((prefix || '') + lab.name, lab.x, lab.y, lab.z);
+    if (m){ m.userData = m.userData || {}; m.userData.wnLabId = lab.id; }
+    return m;
+  }
+  function wnPaintLabels(){
+    if (!wn || typeof WinterRules === 'undefined') return;
+    const vis = WinterRules.wnVisibleLabels((typeof P !== 'undefined' && P) ? P.x : 0, (typeof P !== 'undefined' && P) ? P.z : 8);
+    const show = {};
+    vis.forEach(l => { show[l.id] = true; });
+    (wn.labels || []).forEach(m => {
+      const id = m && m.userData && m.userData.wnLabId;
+      if (m) m.visible = !!show[id];
+    });
+  }
   function buildWinter(){
     const started = WinterRules.wnNewVisit(wnState(), Date.now());
-    wn = {trash:[], solids:[], sv: started.state, run: started.run, sledMesh:null, snowmanMesh:null, lights:[], lamp:null};
+    wn = {trash:[], solids:[], labels:[], sv: started.state, run: started.run, sledMesh:null, snowmanMesh:null, lights:[], lamp:null};
     scene.background = new THREE.Color('#9fd4ff');
     if (scene.fog){ scene.fog.color.set('#dcefff'); scene.fog.near = 22; scene.fog.far = 110; }
     plat(0, 0, 10, 90, 170, '#f4fbff', 0.28);
-    // Sledwhistle Hill
-    for (let i = 0; i < 10; i++){
-      const z = -70 + i * 12, y = 14 - i * 1.4;
-      plat(0, y, z, 18, 12, i % 2 ? '#eef8ff' : '#e4f2ff', 1.2);
-    }
-    plat(0, 0.2, 48, 20, 16, '#eef8ff', 0.4);
-    wnLab('🛷 Sledwhistle Hill', 0, 16, -70);
-    wnLab('🏁 Finish', 0, 2.2, 48);
-    wn.lift = {x:0, z:-70};
-    wn.finish = {x:0, z:48};
-    // Village
-    wnCottage(-16, 8, '#c45c1a', '#8b2e1a', {w:7, d:5.5});
-    wnCottage(16, 12, '#3a86ff', '#1d4a8a');
-    wnCottage(-6, 22, '#2ec27e', '#1a6b44');
-    wnLab('🎄 Pinebell Village', 0, 3.6, 4);
-    // Cocoa shop lives in the red cottage; the mug sits just inside the doorway
-    wnMesh(new THREE.CylinderGeometry(0.5, 0.6, 0.8, 10), '#5a2a12', -16, 1.1, 10.2);
-    wn.cocoa = {x:-16, z:10.75};
-    wnLab('☕ Mugsy’s Cocoa', -16, 3.6, 11.2);
-    // Skating pond
-    const pond = new THREE.Mesh(new THREE.CircleGeometry(7.5, 24), wnMat('#b8e8ff'));
-    pond.rotation.x = -Math.PI/2; pond.position.set(16, 0.32, -2); scene.add(pond); wnKeep(pond);
-    wn.pond = {x:16, z:-2};
-    wnLab('⛸️ Glassgill Pond', 16, 2.4, 6);
-    // Snowman yard + practice posts
-    wn.yard = {x:6, z:22};
-    wnLab('☃️ Snow pal yard', 6, 2.2, 26);
-    wn.posts = [{x:-8,z:22},{x:-12,z:20},{x:-6,z:18}];
-    wn.posts.forEach((p,i) => {
-      wnMesh(new THREE.CylinderGeometry(0.25, 0.3, 1.4, 8), '#c45c1a', p.x, 0.7, p.z);
-      wnLab('🎯 Post ' + (i+1), p.x, 2.0, p.z);
+    const H = WinterRules.WN_HILL;
+    (WinterRules.wnHillPlats() || []).forEach((b, i) => {
+      plat(b.x, b.y || 0.2, b.z, b.w, b.d, i % 2 ? '#eef8ff' : '#e4f2ff', b.id === 'hill-finish' ? 0.4 : (H.platH || 1.2));
     });
-    wnLab('❄️ Practice tosses', -8, 2.6, 26);
+    wn.lift = {x:H.x, z:H.startZ};
+    wn.finish = {x:H.x, z:H.finishZ};
+    (WinterRules.WN_COTTAGES || []).forEach(c => {
+      wnCottage(c.x, c.z, c.color, c.roof, {w:c.w, d:c.d});
+    });
+    const cocoa = WinterRules.wnCottage('cocoa') || WinterRules.WN_COTTAGES[0];
+    wnMesh(new THREE.CylinderGeometry(0.5, 0.6, 0.8, 10), '#5a2a12', cocoa.x, 1.1, cocoa.z + cocoa.d/2 - 0.55);
+    wn.cocoa = {x:cocoa.x, z:cocoa.z + cocoa.d/2 - 0.3};
+    const pondDef = WinterRules.WN_POND;
+    const pond = new THREE.Mesh(new THREE.CircleGeometry(pondDef.r || 7.5, 24), wnMat('#b8e8ff'));
+    pond.rotation.x = -Math.PI/2; pond.position.set(pondDef.x, 0.32, pondDef.z); scene.add(pond); wnKeep(pond);
+    wn.pond = {x:pondDef.x, z:pondDef.z};
+    wn.yard = {x:WinterRules.WN_YARD.x, z:WinterRules.WN_YARD.z};
+    wn.posts = (WinterRules.WN_POSTS || []).map(p => ({id:p.id, x:p.x, z:p.z}));
+    wn.posts.forEach(p => {
+      wnMesh(new THREE.CylinderGeometry(0.25, 0.3, 1.4, 8), '#c45c1a', p.x, 0.7, p.z);
+    });
     const amb = new THREE.AmbientLight(0xf4fbff, 0.8); scene.add(amb); wnKeep(amb);
     const sun = new THREE.DirectionalLight(0xfff4e0, 0.55); sun.position.set(10, 18, 8); scene.add(sun); wnKeep(sun);
     // gentle snow flakes
@@ -44562,9 +44793,10 @@ function start(m = 'obby', d = null){
       const f = wnMesh(new THREE.SphereGeometry(0.08, 5, 5), '#ffffff', (Math.random()-0.5)*70, 4+Math.random()*12, (Math.random()-0.5)*120);
       wn.flakes.push({m:f, s: 0.8+Math.random()*1.4});
     }
-    Object.assign(P, {x:0, y:0.5, z:8, vx:0, vy:0, vz:0});
+    const spawn = WinterRules.WN_SPAWN || {x:0, z:8};
+    Object.assign(P, {x:spawn.x, y:0.5, z:spawn.z, vx:0, vy:0, vz:0});
     if (typeof cam !== 'undefined' && cam){ cam.yaw = 0; cam.pitch = 0.38; cam.dist = 14; }
-    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:8}, flag:new THREE.Object3D()};
+    checkpoints[0] = {idx:0, spawn:{x:spawn.x,y:0.5,z:spawn.z}, flag:new THREE.Object3D()};
     wnPaintSnowman();
     wnBuildFestive();
     wnBind();
@@ -44580,28 +44812,30 @@ function start(m = 'obby', d = null){
         wnMesh(new THREE.CylinderGeometry(0.22, 0.28, 1.4, 8), '#6b3f1a', s.x, 0.7, s.z);
         wnMesh(new THREE.ConeGeometry(1.1, 2.2, 8), '#1a6b44', s.x, 2.2, s.z);
       }
-      wnLab(s.kind === 'tree' ? '🎄 ' + s.name : '🏠 ' + s.name, s.x, s.kind==='tree'?3.5:3.2, s.z);
       const g = new THREE.Group();
       const cols = ['#ff6b6b','#ffd23f','#7ec8f0','#b388ff','#80ed99'];
       for (let i=0;i<8;i++){
         const m = new THREE.Mesh(new THREE.SphereGeometry(0.09, 6, 6), new THREE.MeshBasicMaterial({color: cols[i%cols.length]}));
         const a = (i / 8) * Math.PI * 2;
-        m.position.set(Math.cos(a)*0.7, 1.2 + (i%3)*0.35, Math.sin(a)*0.7);
+        const rad = s.kind === 'house' ? 1.6 : 0.7;
+        m.position.set(Math.cos(a)*rad, (s.kind === 'house' ? 2.4 : 1.2) + (i%3)*0.35, Math.sin(a)*rad);
         g.add(m);
       }
       g.position.set(s.x, 0, s.z); g.visible = false; scene.add(g); wnKeep(g);
       wn.lights.push({id:s.id, mesh:g});
     });
-    wn.lamp = {x:0, z:6};
-    wnMesh(new THREE.CylinderGeometry(0.12, 0.16, 3.2, 8), '#1d2340', 0, 1.6, 6);
-    const bulb = wnMesh(new THREE.SphereGeometry(0.28, 8, 8), '#fff3bf', 0, 3.4, 6);
+    const lamp = WinterRules.WN_LAMP;
+    wn.lamp = {x:lamp.x, z:lamp.z};
+    wnMesh(new THREE.CylinderGeometry(0.12, 0.16, 3.2, 8), '#1d2340', lamp.x, 1.6, lamp.z);
+    const bulb = wnMesh(new THREE.SphereGeometry(0.28, 8, 8), '#fff3bf', lamp.x, 3.4, lamp.z);
     wn.lamp.bulb = bulb;
-    wnLab('🌙 Night lamp', 0, 4.0, 6);
-    wn.wrapAt = {x:4, z:8};
-    wnMesh(new THREE.BoxGeometry(1.4, 0.7, 1.4), '#c44536', 4, 0.4, 8);
-    wnLab('🎁 Wrap table', 4, 1.6, 8);
+    const wrap = WinterRules.WN_WRAP;
+    wn.wrapAt = {x:wrap.x, z:wrap.z};
+    wnMesh(new THREE.BoxGeometry(1.4, 0.7, 1.4), '#c44536', wrap.x, 0.4, wrap.z);
+    wn.labels = (WinterRules.wnPlaceLabels() || []).map(lab => wnPlaceName(lab)).filter(Boolean);
+    wnPaintLabels();
     const xbtn = document.getElementById('wnWrapX');
-    if (xbtn && !xbtn._wn){ xbtn._wn = true; xbtn.addEventListener('click', () => wnCloseWrap()); }
+    if (xbtn && !xbtn._wn){ xbtn._wn = true; xbtn.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); wnCloseWrap(); }); }
     wnPaintLights();
   }
   function wnPaintLights(){
@@ -44850,9 +45084,10 @@ function start(m = 'obby', d = null){
       if (wn.run.sled.done) banner('🏁 You reached the finish! Collect your coins.');
     }
     if (wn.run.skate && wn.run.skate.on){
-      const ax = P.x - (wn.pond.x||16), az = P.z - (wn.pond.z|| -2);
+      const ax = P.x - (wn.pond.x||20), az = P.z - (wn.pond.z|| 4);
       WinterRules.wnSkateTick(wn.run, ax, az, dt);
     }
+    wnPaintLabels();
     wnHud();
     if (!wnIsGuest()) wnNet();
   }
@@ -44878,12 +45113,13 @@ function start(m = 'obby', d = null){
     const b=document.getElementById('wnAct'); if(b) b.classList.remove('show');
   }
   if (typeof window !== 'undefined') window.wnDebug = {
-    village(){ if (!wn) return; P.x=0; P.y=0.5; P.z=8; if (cam){ cam.yaw=0; cam.pitch=0.4; cam.dist=16; } },
-    lights(){ if (!wn) return; (WinterRules.WN_LIGHT_SLOTS||[]).forEach(s => WinterRules.wnPlaceLight(wn.sv, wn.run, s.id)); WinterRules.wnShowLights(wn.sv, wn.run); wnPaintLights(); P.x=0; P.y=0.5; P.z=10; if (cam){ cam.yaw=0; cam.pitch=0.35; cam.dist=14; } },
-    wrap(){ if (!wn) return; P.x=4; P.y=0.5; P.z=10; wnOpenWrap(); if (cam){ cam.yaw=0; cam.pitch=0.4; cam.dist=10; } },
+    village(){ if (!wn) return; const s=WinterRules.WN_SPAWN||{x:0,z:8}; P.x=s.x; P.y=0.5; P.z=s.z; if (cam){ cam.yaw=0.15; cam.pitch=0.42; cam.dist=28; } wnPaintLabels(); },
+    layout(){ if (!wn) return; P.x=0; P.y=0.5; P.z=42; if (cam){ cam.yaw=0; cam.pitch=0.52; cam.dist=42; } (wn.labels||[]).forEach(lab => { if (lab) lab.visible = true; }); },
+    lights(){ if (!wn) return; (WinterRules.WN_LIGHT_SLOTS||[]).forEach(s => WinterRules.wnPlaceLight(wn.sv, wn.run, s.id)); WinterRules.wnShowLights(wn.sv, wn.run); wnPaintLights(); const s=WinterRules.WN_SPAWN||{x:0,z:8}; P.x=s.x; P.y=0.5; P.z=s.z+2; if (cam){ cam.yaw=0.2; cam.pitch=0.4; cam.dist=30; } wnPaintLabels(); },
+    wrap(){ if (!wn) return; const w=WinterRules.WN_WRAP; P.x=w.x; P.y=0.5; P.z=w.z+2; wnOpenWrap(); if (cam){ cam.yaw=0; cam.pitch=0.4; cam.dist=10; } },
     sled(){ if (!wn) return; wnStartSled(); for (let i=0;i<20;i++) WinterRules.wnSledTick(wn.run, 0.08); P.x=wn.run.sled.x; P.y=wn.run.sled.y; P.z=wn.run.sled.z; if (cam){ cam.yaw=Math.PI; cam.pitch=0.28; cam.dist=12; } },
-    pond(){ if (!wn) return; P.x=16; P.y=0.5; P.z=-2; },
-    probe(){ return wn ? {area:wn.run.area, sled:!!(wn.run.sled&&wn.run.sled.on), snowman:(wn.run.snowman.parts||[]).length} : null; }
+    pond(){ if (!wn) return; const p=WinterRules.WN_POND; P.x=p.x; P.y=0.5; P.z=p.z; },
+    probe(){ return wn ? {area:wn.run.area, sled:!!(wn.run.sled&&wn.run.sled.on), snowman:(wn.run.snowman.parts||[]).length, labels:(wn.labels||[]).length} : null; }
   };
 
   /* ---------- Pawsley Vet Clinic ---------- */
@@ -45009,12 +45245,14 @@ function start(m = 'obby', d = null){
     tree(-18, 48, 5.5); tree(-22, 52, 4.8); tree(-14, 52, 5.2);
     tree(10, 70, 5); tree(-8, 74, 4.6); tree(22, 40, 5.4); tree(-28, 60, 5);
     // houses (solid but no tight doors — porches only)
-    function house(x,z,c){
-      vtWall(x, 0, z, 6, 4.6, 5, c || '#f6e1c3');
-      const roof = vtMesh(new THREE.ConeGeometry(4.2, 2.2, 4), '#c44536', x, 5.6, z);
+    function house(x,z,c,w,d){
+      vtWall(x, 0, z, w||6, 4.6, d||5, c || '#f6e1c3');
+      const roof = vtMesh(new THREE.ConeGeometry(Math.max(w||6, d||5) * 0.72, 2.2, 4), '#c44536', x, 5.6, z);
       if (roof) roof.rotation.y = Math.PI/4;
     }
-    house(-22, 38, '#fde2c8'); house(24, 38, '#f8d4e0');
+    (VetRules.VT_TOWN_HOUSES || [{x:-22,z:38,color:'#fde2c8',w:6,d:5},{x:24,z:38,color:'#f8d4e0',w:6,d:5}]).forEach(h => {
+      house(h.x, h.z, h.color, h.w, h.d);
+    });
     vtLab('Maple Court', -18, 2.4, 44);
     vtLab('Picnic Green', 22, 1.8, 48);
     // parked ambulance + rescue pals
@@ -46580,6 +46818,10 @@ try { if (typeof window !== 'undefined') window.Obby = Obby; } catch (e){}
   /* ----- where are we? (topmost open thing wins) ----- */
   const shown = el => !!el && el.isConnected && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
   function context(){
+    const booth = document.getElementById('avBooth');
+    if (booth && !booth.hidden && shown(booth)) return {kind: 'modal', root: booth};
+    const wrap = document.getElementById('wnWrap');
+    if (wrap && !wrap.hidden && shown(wrap)) return {kind: 'panel', root: wrap};
     const ms = [...document.querySelectorAll('.modal.show')].filter(shown);
     if (ms.length) return {kind: 'modal', root: ms[ms.length - 1]};
     const chp0 = document.getElementById('chPanel'); if (chp0 && chp0.classList.contains('show')) return {kind: 'panel', root: chp0};
@@ -46653,7 +46895,7 @@ try { if (typeof window !== 'undefined') window.Obby = Obby; } catch (e){}
   }
   function closeOf(c){
     const id = c.root.id;
-    const map = {lvlModal: '#lvClose', setModal: '#setOk', resetModal: '#resetCancel', soonModal: '#soonOk', oPausePanel: '#oResume', dhResetModal: '#dhResetNo', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', fsPick: '#fsExplore', fsEnd: '#fsHome2', fsWard: '#fsWardClose', piPanel: '#piClose', bkPanel: '#bkClose', wpPanel: '#wpClose', psGal: '#psGalClose', icPanel: '#icClose', sbPick: '#sbPickClose', bShare: '#bShareClose', bTestEnd: '#bTestBack', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pTrickPanel: '#pTrickClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
+    const map = {avBooth: '#avBoothX', wnWrap: '#wnWrapX', lvlModal: '#lvClose', setModal: '#setOk', resetModal: '#resetCancel', soonModal: '#soonOk', oPausePanel: '#oResume', dhResetModal: '#dhResetNo', oSlots: '#oSlotsClose', oDiff: '#oExit3', oWin: '#oHome', oLose: '#oHome2', oTagEnd: '#oTagHome', rcPick: '#rcHome', rcFin: '#rcFinHome', spPick: '#spHome', hsPick: '#hsHome', hsEnd: '#hsHome2', fsPick: '#fsExplore', fsEnd: '#fsHome2', fsWard: '#fsWardClose', piPanel: '#piClose', bkPanel: '#bkClose', wpPanel: '#wpClose', psGal: '#psGalClose', icPanel: '#icClose', sbPick: '#sbPickClose', bShare: '#bShareClose', bTestEnd: '#bTestBack', spEnd: '#spHome2', spCode: '#spCodeX', pNamePanel: '#pNameX', pShopPanel: '#pShopClose', pWardPanel: '#pWardClose', pTrickPanel: '#pTrickClose', pAdoptPanel: '#pAdoptBack', pPetsPanel: '#pPetsClose', pIndexPanel: '#pIndexClose', pReturnPanel: '#pRetNo'};
     if (id === 'rcPick'){ const b = document.querySelector('#rcBack'); if (b && !b.hidden) return b; }   // B in the ride list = back to the modes
     if (map[id]) return document.querySelector(map[id]);
     return null;
@@ -46818,5 +47060,22 @@ try { if (typeof window !== 'undefined') window.Obby = Obby; } catch (e){}
     get mode(){ return padMode; }, get connected(){ return connected; }, get pad(){ return Object.assign({}, padInfo); }, get looping(){ return loopOn && performance.now() - lastPoll < 1500; }, get editing(){ return !!edit; }};
 })();
 </script>
+<div id="avBooth" class="avbooth" hidden>
+    <div class="avbooth-card">
+      <div class="avbooth-h">📸 Photo Booth</div>
+      <canvas id="avBoothCv" width="520" height="600"></canvas>
+      <div class="avbooth-row" id="avBoothPoses"></div>
+      <div class="avbooth-row" id="avBoothBgs"></div>
+      <div class="avbooth-row" id="avBoothFrames"></div>
+      <div class="avbooth-row" id="avBoothStickers"></div>
+      <div class="avbooth-acts">
+        <button type="button" id="avBoothSnap">📸 Take photo</button>
+        <button type="button" id="avBoothDl">⬇️ Download</button>
+        <button type="button" id="avBoothGal">🖼️ Gallery</button>
+        <button type="button" id="avBoothX">Close</button>
+      </div>
+      <div id="avBoothGallery" class="avbooth-gal" hidden></div>
+    </div>
+  </div>
 </body>
 </html>

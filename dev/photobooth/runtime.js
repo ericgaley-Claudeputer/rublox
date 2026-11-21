@@ -1,6 +1,13 @@
 
   /* ---------- Avatar Photo Booth (reuses rubloxPhotos) ---------- */
-  let pb = {shot: null, last: null, webgl: null};
+  let pb = {shot: null, last: null, lastData: null, webgl: null, focus: 0, _keys: false};
+  function pbBox(){ return document.getElementById('avBooth'); }
+  function pbIsOpen(){ const box = pbBox(); return !!(box && !box.hidden); }
+  function pbMount(){
+    const box = pbBox();
+    if (box && document.body && box.parentElement !== document.body) document.body.appendChild(box);
+    return box;
+  }
   function pbHasWebgl(){
     if (pb.webgl != null) return pb.webgl;
     try {
@@ -18,15 +25,37 @@
   function pbPersist(g){
     try { if (typeof save === 'function') save(PhotoBoothRules.PB_KEY, g); else localStorage.setItem(PhotoBoothRules.PB_KEY, JSON.stringify(g)); } catch (e){}
   }
+  function pbButtons(){
+    const box = pbBox(); if (!box || box.hidden) return [];
+    return Array.prototype.slice.call(box.querySelectorAll('button')).filter(b => b && !b.disabled && !b.hidden);
+  }
+  function pbFocusAt(i){
+    const list = pbButtons(); if (!list.length) return;
+    pb.focus = ((i % list.length) + list.length) % list.length;
+    try { list[pb.focus].focus({preventScroll: true}); } catch (e){ try { list[pb.focus].focus(); } catch (e2){} }
+    try { list[pb.focus].scrollIntoView({block: 'nearest', inline: 'nearest'}); } catch (e){}
+  }
   function pbOpen(){
-    const box = document.getElementById('avBooth');
+    const box = pbMount();
     if (!box) return;
     if (!pb.shot) pb.shot = PhotoBoothRules.pbFreshShot();
     box.hidden = false;
+    try { box.removeAttribute('hidden'); } catch (e){}
+    pbBind();
     pbPaintChrome();
     pbPaint();
+    pbFocusAt(0);
   }
-  function pbClose(){ const box = document.getElementById('avBooth'); if (box) box.hidden = true; }
+  function pbClose(){
+    const box = pbBox();
+    if (box){ box.hidden = true; try { box.setAttribute('hidden', ''); } catch (e){} }
+  }
+  function pbOnChrome(key, id){
+    const R = PhotoBoothRules, s = pb.shot || R.pbFreshShot();
+    if (key === 'sticker') pb.shot = R.pbToggleSticker(s, id);
+    else { s[key] = id; pb.shot = R.pbCleanShot(s); }
+    pbPaintChrome(); pbPaint();
+  }
   function pbPaintChrome(){
     const R = PhotoBoothRules, s = pb.shot || R.pbFreshShot();
     function row(id, items, key, labelFn){
@@ -35,13 +64,10 @@
       items.forEach(it => {
         const b = document.createElement('button');
         b.type = 'button';
+        b.setAttribute('data-pb-key', key);
+        b.setAttribute('data-pb-id', it.id);
         b.textContent = labelFn(it);
         if (s[key] === it.id || (key === 'sticker' && (s.stickers||[]).indexOf(it.id)>=0)) b.classList.add('on');
-        b.onclick = () => {
-          if (key === 'sticker') pb.shot = R.pbToggleSticker(s, it.id);
-          else { s[key] = it.id; pb.shot = R.pbCleanShot(s); }
-          pbPaintChrome(); pbPaint();
-        };
         el.appendChild(b);
       });
     }
@@ -58,12 +84,12 @@
   function pbPaint(){
     const cv = document.getElementById('avBoothCv'); if (!cv) return;
     const ctx = cv.getContext('2d');
+    if (!ctx) return;
     const lay = PhotoBoothRules.pbLayout(pb.shot, cv.width, cv.height);
     const grd = ctx.createLinearGradient(0,0,0,cv.height);
     grd.addColorStop(0, lay.bg.color); grd.addColorStop(1, lay.bg.alt || lay.bg.color);
     ctx.fillStyle = grd; ctx.fillRect(0,0,cv.width,cv.height);
     const pad = lay.pad || 0;
-    // 2D fallback is always used in the editor booth (works with or without WebGL)
     ctx.save();
     ctx.beginPath();
     ctx.rect(pad, pad, cv.width - pad*2, cv.height - pad*2);
@@ -87,7 +113,6 @@
       ctx.fillText(st.emoji, st.x * cv.width, st.y * cv.height);
     });
     pb.last = cv;
-    // note fallback: PhotoBoothRules.pbNeed2dFallback(!pbHasWebgl()) is true without WebGL; we already drew 2D
   }
   function pbSnap(){
     const cv = document.getElementById('avBoothCv'); if (!cv) return;
@@ -110,7 +135,7 @@
   }
   function pbDownload(){
     const data = pb.lastData || (document.getElementById('avBoothCv') && document.getElementById('avBoothCv').toDataURL('image/png'));
-    if (!data){ pbSnap(); return; }
+    if (!data || !PhotoBoothRules.pbIsPhotoData(data)){ pbSnap(); return; }
     const a = document.createElement('a');
     a.href = data; a.download = 'rublox-photo.png';
     document.body.appendChild(a); a.click(); a.remove();
@@ -119,29 +144,92 @@
     const box = document.getElementById('avBoothGallery'); if (!box) return;
     const g = pbGalleryStore();
     box.hidden = false;
+    try { box.removeAttribute('hidden'); } catch (e){}
     box.innerHTML = g.length ? '' : '<div>No photos yet — take a snap!</div>';
     g.slice().reverse().forEach(p => {
       const img = document.createElement('img');
       img.src = p.d; img.alt = 'Saved photo';
-      img.onclick = () => { pb.lastData = p.d; pbDownload(); };
+      img.setAttribute('data-pb', 'dl-saved');
+      img.setAttribute('data-pb-data', p.d);
       box.appendChild(img);
     });
   }
+  function pbHandleClick(ev){
+    const raw = ev && ev.target;
+    const t = raw && raw.closest ? (raw.closest('button, [data-pb-key], [data-pb], img') || raw) : raw;
+    if (!t) return false;
+    const openBtn = (t.id === 'avBoothBtn' || t.id === 'hubBoothBtn') ? t : (t.closest && (t.closest('#avBoothBtn, #hubBoothBtn')));
+    if (openBtn){
+      if (ev){ try { ev.preventDefault(); ev.stopPropagation(); if (ev.stopImmediatePropagation) ev.stopImmediatePropagation(); } catch (e){} }
+      pbOpen();
+      return true;
+    }
+    const box = pbBox();
+    if (!box || box.hidden || (box.contains && !box.contains(t))) return false;
+    if (ev){ try { ev.preventDefault(); ev.stopPropagation(); if (ev.stopImmediatePropagation) ev.stopImmediatePropagation(); } catch (e){} }
+    const key = t.getAttribute && t.getAttribute('data-pb-key');
+    if (key){ pbOnChrome(key, t.getAttribute('data-pb-id')); return true; }
+    if (t.id === 'avBoothX'){ pbClose(); return true; }
+    if (t.id === 'avBoothSnap'){ pbSnap(); return true; }
+    if (t.id === 'avBoothDl'){ pbDownload(); return true; }
+    if (t.id === 'avBoothGal'){ pbShowGal(); return true; }
+    if (t.getAttribute && t.getAttribute('data-pb') === 'dl-saved'){
+      pb.lastData = t.getAttribute('data-pb-data') || t.src;
+      pbDownload();
+      return true;
+    }
+    return false;
+  }
+  function pbKey(ev){
+    if (!pbIsOpen() || !ev) return false;
+    const c = ev.code || ev.key;
+    if (c === 'Escape' || c === 'Esc' || c === 'KeyB'){
+      if (ev.preventDefault) ev.preventDefault();
+      if (ev.stopPropagation) ev.stopPropagation();
+      pbClose(); return true;
+    }
+    const list = pbButtons();
+    if (!list.length) return false;
+    const cur = (typeof document !== 'undefined' && document.activeElement && list.indexOf(document.activeElement) >= 0)
+      ? list.indexOf(document.activeElement) : (pb.focus | 0);
+    if (c === 'ArrowRight' || c === 'ArrowDown'){
+      if (ev.preventDefault) ev.preventDefault();
+      if (ev.stopPropagation) ev.stopPropagation();
+      pbFocusAt(cur + 1); return true;
+    }
+    if (c === 'ArrowLeft' || c === 'ArrowUp'){
+      if (ev.preventDefault) ev.preventDefault();
+      if (ev.stopPropagation) ev.stopPropagation();
+      pbFocusAt(cur - 1); return true;
+    }
+    if (c === 'Enter' || c === 'Space' || c === ' ' || c === 'NumpadEnter' || c === 'KeyA'){
+      if (ev.preventDefault) ev.preventDefault();
+      if (ev.stopPropagation) ev.stopPropagation();
+      const b = list[cur] || list[0];
+      if (b && b.click) b.click();
+      return true;
+    }
+    return false;
+  }
+  function pbPad(jp){
+    if (!pbIsOpen() || !jp) return false;
+    if (jp[1] || jp.b){ pbClose(); return true; }
+    const list = pbButtons(); if (!list.length) return true;
+    if (jp[15] || jp[13] || jp.right || jp.down){ pbFocusAt((pb.focus|0) + 1); return true; }
+    if (jp[14] || jp[12] || jp.left || jp.up){ pbFocusAt((pb.focus|0) - 1); return true; }
+    if (jp[0] || jp.a){ const b = list[pb.focus|0] || list[0]; if (b && b.click) b.click(); return true; }
+    return true;
+  }
   function pbBind(){
-    const open = document.getElementById('avBoothBtn');
-    const hub = document.getElementById('hubBoothBtn');
-    const close = document.getElementById('avBoothX');
-    const snap = document.getElementById('avBoothSnap');
-    const dl = document.getElementById('avBoothDl');
-    const gal = document.getElementById('avBoothGal');
-    if (open && !open._pb){ open._pb = true; open.addEventListener('click', ev => { ev.preventDefault(); pbOpen(); }); }
-    if (hub && !hub._pb){ hub._pb = true; hub.addEventListener('click', ev => { ev.preventDefault(); pbOpen(); }); }
-    if (close && !close._pb){ close._pb = true; close.addEventListener('click', ev => { ev.preventDefault(); pbClose(); }); }
-    if (snap && !snap._pb){ snap._pb = true; snap.addEventListener('click', ev => { ev.preventDefault(); pbSnap(); }); }
-    if (dl && !dl._pb){ dl._pb = true; dl.addEventListener('click', ev => { ev.preventDefault(); pbDownload(); }); }
-    if (gal && !gal._pb){ gal._pb = true; gal.addEventListener('click', ev => { ev.preventDefault(); pbShowGal(); }); }
+    if (typeof document === 'undefined') return;
+    pbMount();
+    if (document._pbDoc) return;
+    document._pbDoc = true;
+    document.addEventListener('click', pbHandleClick, true);
+    document.addEventListener('keydown', ev => { pbKey(ev); }, true);
   }
   if (typeof document !== 'undefined'){
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pbBind);
     else pbBind();
   }
+  if (typeof window !== 'undefined'){ window.pb = pb; window.pbOpen = pbOpen; window.pbClose = pbClose; window.pbIsOpen = pbIsOpen; window.pbPad = pbPad; window.pbKey = pbKey; window.pbBind = pbBind; window.pbHandleClick = pbHandleClick; }

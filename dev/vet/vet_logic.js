@@ -497,6 +497,18 @@
   const VT_TOWN_DOOR = {id:'bay-town', a:'bay', b:'town', x:0, z:28, w:5.2, h:VT_DOOR_H, axis:'z', thick:0.42};
   const VT_TOWN_DOORS = [VT_TOWN_DOOR];
   const VT_AMBULANCE_PARK = {x:0, z:22.5, yaw:0};
+  const VT_TOWN_HOUSES = [
+    {id:'maple-house', name:'Maple Court house', x:-22, z:38, w:6, d:5, color:'#fde2c8'},
+    {id:'picnic-house', name:'Picnic Green house', x:24, z:38, w:6, d:5, color:'#f8d4e0'}
+  ];
+  function vtHitHouse(x, z, rad){
+    const r = rad == null ? 1.6 : rad;
+    for (let i = 0; i < VT_TOWN_HOUSES.length; i++){
+      const h = VT_TOWN_HOUSES[i];
+      if (x + r > h.x - h.w/2 && x - r < h.x + h.w/2 && z + r > h.z - h.d/2 && z - r < h.z + h.d/2) return h;
+    }
+    return null;
+  }
 
   const VT_RESCUES = [
     {id:'tree', title:'Stuck in a tree', place:'Maple Court', emoji:'🐱', species:'cat', speciesName:'cat',
@@ -613,13 +625,28 @@
     d.speed += (thr * max - d.speed) * Math.min(1, dt * 3.2);
     if (Math.abs(thr) < 0.05) d.speed *= Math.max(0, 1 - dt * 2.4);
     d.yaw += turn * dt * 2.1 * (d.speed >= 0 ? 1 : -1);
-    d.x += Math.sin(d.yaw) * d.speed * dt;
-    d.z += -Math.cos(d.yaw) * d.speed * dt;
+    const ox = d.x, oz = d.z;
+    const nx = d.x + Math.sin(d.yaw) * d.speed * dt;
+    const nz = d.z + -Math.cos(d.yaw) * d.speed * dt;
     const T = VT_TOWN;
     const minX = Math.min(-8, T.minX), maxX = Math.max(8, T.maxX);
     const minZ = 16, maxZ = T.maxZ;
-    d.x = Math.max(minX + 1.2, Math.min(maxX - 1.2, d.x));
-    d.z = Math.max(minZ + 0.6, Math.min(maxZ - 1.2, d.z));
+    function clamp(x, z){
+      return {
+        x: Math.max(minX + 1.2, Math.min(maxX - 1.2, x)),
+        z: Math.max(minZ + 0.6, Math.min(maxZ - 1.2, z))
+      };
+    }
+    let next = clamp(nx, nz);
+    if (vtHitHouse(next.x, next.z, 1.6)){
+      const alongX = clamp(nx, oz);
+      const alongZ = clamp(ox, nz);
+      if (!vtHitHouse(alongX.x, alongX.z, 1.6)) next = alongX;
+      else if (!vtHitHouse(alongZ.x, alongZ.z, 1.6)) next = alongZ;
+      else next = clamp(ox, oz);
+      d.speed *= 0.35;
+    }
+    d.x = next.x; d.z = next.z;
     return d;
   }
 
@@ -736,7 +763,8 @@
     vtDifficulty, vtRollPatient, vtNewShift, vtChart, vtCheckIn, vtUseTool, vtXrayScan, vtExamReady,
     vtTreat, vtCuddle, vtFeed, vtPickup, vtPayout, vtNextPatient, vtKidCopyOk, vtRealPlayersOnly,
     vtWire, vtApply,
-    VT_TOWN, VT_TOWN_DOOR, VT_TOWN_DOORS, VT_AMBULANCE_PARK, VT_RESCUES,
+    VT_TOWN, VT_TOWN_DOOR, VT_TOWN_DOORS, VT_AMBULANCE_PARK, VT_TOWN_HOUSES, VT_RESCUES,
+    vtHitHouse,
     vtInTown, vtInTownDoor, vtAreaAt, vtRescue, vtRescueAt, vtInBay,
     vtEmptyDrive, vtMountAmbulance, vtDismountAmbulance, vtDriveSteer, vtDriveTick,
     vtRescuePet, vtRescueName, vtAdmitRescue, vtClinicFirstPerson
