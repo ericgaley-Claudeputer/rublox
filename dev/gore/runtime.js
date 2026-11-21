@@ -22,6 +22,7 @@ function goreSetLevel(level){
   goreSave(id);
   goreSyncUi();
   try { if (typeof campRebuildGore === 'function') campRebuildGore(); } catch (e){}
+  try { if (typeof scRebuildGore === 'function') scRebuildGore(); } catch (e){}
   return id;
 }
 function goreSyncUi(){

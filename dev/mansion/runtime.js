@@ -33,7 +33,8 @@
   }
   function mnLab(text, x, y, z){
     try {
-      if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m) return mnKeep(m); }
+      // QA t330u: room and prop labels drew through the manor walls; let walls hide them.
+      if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m){ if (m.material) m.material.depthTest = true; m.scale.multiplyScalar(0.8); return mnKeep(m); } }
     } catch (e){}
     return mnMesh(new THREE.BoxGeometry(0.2,0.2,0.2), '#fff', x, y, z);
   }

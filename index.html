@@ -372,6 +372,8 @@ body.dark .sitem canvas{background:linear-gradient(#34427e,#26306a)}
 }
 .ostats>span,.obtns button{pointer-events:auto;position:relative;z-index:121;background:rgba(255,255,255,.92);color:#1d2340;font-weight:900;font-size:17px;padding:8px 14px;border-radius:14px;box-shadow:0 4px 0 rgba(0,0,0,.18);display:flex;align-items:center;gap:6px}
 .obtns{display:flex;gap:8px;position:relative;z-index:120;pointer-events:none}
+/* QA t330u: a tall two-line stats box on the left stretched the 🔊 ⚙️ ⏸️ Exit buttons into tall bars. */
+.ohud > .obtns{align-self:flex-start;align-items:flex-start}
 .obtns button{border:0;font-family:inherit;cursor:pointer;transition:transform .15s}
 .obtns button:hover{transform:translateY(-2px)}
 .otip{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);background:rgba(29,35,64,.85);color:#fff;font-weight:800;font-size:17px;padding:12px 20px;border-radius:16px;text-align:center;transition:opacity .6s;max-width:92vw}
@@ -673,6 +675,8 @@ body.reset-open #resetModal, body.reset-open #resetModal .mbox, body.reset-open 
 .pdrive #oJump,.pdrive #oEmoBtn,.pdrive #oRun,.pdrive #oFP{display:none!important}
 .rmode #oEmoBtn,.rmode #oRun,.rmode #oStam{display:none!important}
 .smode #oStam{display:none!important}
+/* QA t330u: the controls tip sat on top of the run-energy bar in Tag / Hide and Seek. */
+#obby:not(.touchui):has(#oStam:not([style*="none"])) .otip{bottom:56px}
 .tdBox b{color:#8b5cf6}
 .dhnear{background:#2ec27e;box-shadow:0 4px 0 #1f9460}.dhnear small{color:#2ec27e}
 .dhbar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:40;width:min(96vw,820px);background:rgba(255,255,255,.94);border:3px solid #ffd23f;border-radius:16px;padding:6px 8px 8px;box-shadow:0 4px 0 rgba(0,0,0,.12);pointer-events:auto}
@@ -767,6 +771,22 @@ body.dhreset-open #dhCut, body.dhreset-open #dhSkip, body.dhreset-open .dhbubble
 .dhresetbox .mbox{max-width:420px;text-align:center}
 .obby.dhouse.fpv .ocross{display:block!important}
 .obby.dhouse.fpv .odot{display:none!important}
+/* QA t330u: Dream House on a portrait phone stacked the goal under the top buttons, the steps over the coins,
+   a desktop "Click the view" hint over the E prompt, and a 300px toolbar. One-row scrolling toolbar, current step only,
+   goal + guide in the right column under the HUD row. */
+@media (max-width:560px){
+  #obby.touchui.dhmode .dhtools:not(.dhvisitbar),#obby.touchui.dhmode .dinv{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  #obby.touchui.dhmode .dhtools .dhb,#obby.touchui.dhmode .dinv .dhi{flex:0 0 auto}
+  #obby.touchui.dhmode .dhbar{bottom:max(134px,calc(env(safe-area-inset-bottom) + 112px))}
+  #obby.touchui.dhmode .dhstack{top:calc(var(--hudb, 56px) + 6px);max-width:44vw}
+  #obby.touchui.dhmode .dhstep:not(.on){display:none}
+  #obby.touchui.dhmode .dhsteps{width:100%;top:auto}
+  #obby.touchui.dhmode .dhgoal{top:calc(var(--hudb, 56px) + 6px);left:auto;right:max(8px,env(safe-area-inset-right));transform:none;max-width:50vw;font-size:13px;padding:7px 10px;border-radius:14px}
+  #obby.touchui.dhmode .dhguide{top:calc(var(--hudb, 56px) + 104px);left:auto;right:max(8px,env(safe-area-inset-right));transform:none;max-width:50vw;white-space:normal;font-size:13px;padding:7px 10px}
+  #obby.touchui.dhmode #dhAct,#obby.touchui.dhmode #dhAct.dhnear{font-size:15px;max-width:calc(100vw - 196px);padding:8px 12px}
+  #obby.touchui.dhmode .dhhand{width:84px;min-height:84px;right:max(8px,env(safe-area-inset-right));padding:4px;font-size:12px}
+}
+#obby.touchui .dhlookhint{display:none!important}
 @media (max-width:700px){.dhgoal{font-size:17px;padding:8px 12px}.dhsteps{width:min(56vw,220px);font-size:12px;top:max(72px,calc(env(safe-area-inset-top) + 64px))}.dhstep{font-size:12px}}
 
 .dhgarrow{display:inline-block;font-size:26px;color:#ffd23f;transform-origin:center center;line-height:1}
@@ -998,6 +1018,10 @@ body.fsward-dock #fsWard .fsfoot .big{font-size:14px;padding:8px 10px}}
 @media (max-width:760px),(max-height:520px){.splevels{grid-template-columns:repeat(4,minmax(90px,1fr));gap:6px;max-height:44vh}.spdf{padding:3px 8px}.spdf small{display:none}.spkeys{grid-template-columns:repeat(3,60px)}.spkeys button{height:40px;font-size:20px}.spcoded{font-size:30px}#spCode .emoji{display:none}.splv .re{font-size:26px}.splv small{display:none}.splv{padding:5px 4px}.sphelp{display:none}
  #spPick .emoji,#spEnd .emoji{display:none}#spPick h2,#spEnd h2{font-size:20px;margin:0 0 2px}#spPick .mbox,#spEnd .mbox{padding-top:10px;padding-bottom:10px}#spPick .big,#spEnd .big{padding-top:6px;padding-bottom:6px}.spwarn{font-size:14px;top:24%}.spmeter{bottom:30%}}
 .rcbox{max-width:760px}
+/* QA t330u: on phones the HUD button rows were drawn over the top of game pickers (Splash, Race, Hide and Seek...). Start the picker under them. */
+#obby.touchui .opanel{padding-top:calc(var(--hudb, 56px) + 6px);place-items:start center}
+/* QA t330u: on a portrait phone four level cards ran off the right edge of the Don't Splash picker. */
+@media (max-width:560px){.splevels{grid-template-columns:repeat(3,minmax(0,1fr))}.splv{min-width:0}.spdiffs{flex-wrap:wrap}}
 .rcmodes[hidden],.rcrides[hidden],#rcPick [hidden]{display:none!important}
 .rcmodes{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:6px 0 10px}
 .rcmode{width:250px;padding:14px 12px;border-radius:18px;border:3px solid #d9dcea;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font:inherit;color:#1d2340}
@@ -1430,6 +1454,14 @@ body.lh-muffled #obby{filter:saturate(.85)}
 .qbox,.trbox{position:relative;max-width:560px;width:100%;max-height:90vh;overflow:auto;background:#fff6e8;border:4px solid #1d2340;border-radius:20px;padding:16px 16px 18px;box-shadow:6px 6px 0 #1d2340}
 .qclose,#trClose{position:absolute;top:8px;right:10px;border:0;background:transparent;font-size:22px;cursor:pointer}
 #oQuestBtn,#oTradeBtn{font-size:22px;margin-left:4px}
+/* QA t330u: 📜 and 🤝 sat exactly on top of the 😀 emote button, so it could not be clicked. Line them up side by side. */
+#obby:not(.touchui) #oQuestBtn{right:calc(max(20px,env(safe-area-inset-right)) + 66px)}
+#obby:not(.touchui) #oTradeBtn{right:calc(max(20px,env(safe-area-inset-right)) + 132px)}
+/* Build World's block bar and Lantern Big Top's purple settings stack sit at the bottom right too: lift the round buttons above them. */
+#obby.bmode:not(.touchui) .oemo{bottom:calc(max(20px,env(safe-area-inset-bottom)) + 62px)}
+#obby.lhmode:not(.touchui) .oemo{bottom:calc(max(20px,env(safe-area-inset-bottom)) + 186px)}
+/* Clover Meadow adopt panel: wrap the pony cards so none hide behind the Later button. */
+#sbPickList{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:min(560px,92vw);max-height:min(56vh,420px);overflow-y:auto}
 .trcols{display:flex;gap:12px;flex-wrap:wrap}
 .trcols>div{flex:1;min-width:200px}
 .trit{display:flex;align-items:center;gap:8px;width:100%;margin:4px 0;padding:8px 10px;border:2px solid #1d2340;border-radius:12px;background:#fff;cursor:pointer;text-align:left}
@@ -1629,6 +1661,8 @@ body.lh-muffled #obby{filter:saturate(.85)}
 .wnmode #wnBox{display:block}
 #wnAct{position:absolute;right:16px;bottom:96px;z-index:8;padding:12px 16px;font-size:18px;border:3px solid #1d2340;border-radius:16px;background:#9fd4ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
 #wnAct.show{display:block}
+/* QA t330u: long action labels stretched left over the thumb stick on phones; wrap them instead. */
+#pyAct,#t297Act,#t302Act,#elevAct,#mnAct,#shAct,#wnAct,#mmAct,#vtAct{max-width:min(320px,calc(100vw - 200px));white-space:normal;text-align:center;line-height:1.2}
 @media (max-width:700px){ #wnAct{bottom:120px} }
 
 #mmBox{position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center;display:none}
@@ -1638,6 +1672,44 @@ body.lh-muffled #obby{filter:saturate(.85)}
 #mmAct.show{display:block}
 #mmSwim{position:absolute;right:16px;bottom:170px;z-index:8;display:none;flex-direction:column;gap:8px}
 .mmode #mmSwim{display:flex}
+#thBox{display:none;position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center;max-width:none;padding:0;border:0;background:transparent;box-shadow:none;font-weight:800}
+.thmode #thBox{display:block}
+#thBox #thHint{display:inline-block;max-width:min(520px,80vw);padding:8px 12px;border:3px solid #1d2340;border-radius:16px;background:#e8f8e8;box-shadow:3px 3px 0 #1d2340;pointer-events:none}
+#thAct,#thPaletteBtn,#thUndoBtn,#thDelBtn{position:absolute;z-index:8;padding:8px 12px;font-size:14px;border:3px solid #1d2340;border-radius:16px;background:#e8f8e8;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+.thmode #thAct,.thmode #thPaletteBtn,.thmode #thUndoBtn,.thmode #thDelBtn{display:block}
+#thAct{right:16px;bottom:96px}
+#thPaletteBtn{right:16px;bottom:148px}
+#thUndoBtn{right:16px;bottom:200px}
+#thDelBtn{right:16px;bottom:252px}
+#thDelBtn.on{background:#ffd0d4}
+.thmode #oEmoBtn,.thmode #oQuestBtn,.thmode #oTradeBtn,.thmode #oTip,.thmode .otip{display:none!important}
+@media (max-width:700px){
+  #thAct{right:12px;bottom:160px}
+  #thPaletteBtn{right:12px;bottom:212px}
+  #thUndoBtn{right:12px;bottom:264px}
+  #thDelBtn{right:12px;bottom:316px}
+}
+.thHelp{font-weight:700;color:#5d6788}
+
+#scBox{display:none;position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center;max-width:none;padding:0;border:0;background:transparent;box-shadow:none;font-weight:800}
+.scmode #scBox{display:block}
+#scBox #scHint{display:inline-block;max-width:min(520px,80vw);padding:8px 12px;border:3px solid #1d2340;border-radius:16px;background:#efe7ff;box-shadow:3px 3px 0 #1d2340;pointer-events:none}
+#scAct,#scLessBtn{position:absolute;z-index:8;padding:8px 12px;font-size:14px;border:3px solid #1d2340;border-radius:16px;background:#efe7ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+.scmode #scLessBtn{display:block}
+.scmode #scAct.show,#scAct.show{display:block}
+#scAct{right:16px;bottom:96px}
+#scLessBtn{left:16px;bottom:96px}
+#scGoreNote{position:absolute;z-index:8;left:16px;bottom:148px;max-width:230px;padding:6px 10px;font-size:12px;font-weight:800;line-height:1.3;border:2px solid #1d2340;border-radius:12px;background:#efe7ff;color:#1d2340;display:none}
+.scmode #scGoreNote.show{display:block}
+#scLockerIn{font:inherit;font-weight:900;font-size:22px;letter-spacing:.2em;text-align:center;width:8em;padding:8px;border-radius:12px;border:3px solid #1d2340;margin:8px 0}
+.scmode #oEmoBtn,.scmode #oQuestBtn,.scmode #oTradeBtn,.scmode #oTip,.scmode .otip{display:none!important}
+@media (max-width:700px){ #scAct{right:12px;bottom:160px} #scLessBtn{left:12px;bottom:160px} #scGoreNote{bottom:214px;left:12px} }
+
+#t302JournalBtn{position:absolute;z-index:8;left:16px;bottom:200px;padding:8px 12px;font-size:14px;border:3px solid #1d2340;border-radius:16px;background:#efe7ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+.campmode #t302JournalBtn{display:block}
+@media (max-width:700px){ #t302JournalBtn{bottom:224px;left:12px} }
+.campStoryIntro{font-weight:700;color:#5d6788;margin:0 0 8px}
+
 #mmSwim button{width:56px;height:56px;border:3px solid #0b3b4a;border-radius:16px;background:#c8f4ff;font-size:22px;font-weight:800;box-shadow:3px 3px 0 #0b3b4a}
 @media (max-width:700px){ #mmAct{bottom:120px} #mmSwim{bottom:190px} }
 
@@ -1667,6 +1739,11 @@ body.lh-muffled #obby{filter:saturate(.85)}
 </style>
 <style id="vtCss">
 #vtBox{position:absolute;left:12px;right:12px;top:58px;z-index:6;pointer-events:none;display:none}
+/* QA t330u: on phones the top buttons wrap to a second row and sat on top of each game's goal pill and the coins box. Start them below the real HUD height. */
+.touchui #t297Box,.touchui #t302Box,.touchui #elevBox,.touchui #mnBox,.touchui #shBox,.touchui #wnBox,.touchui #mmBox,.touchui #vtBox{top:calc(var(--hudb, 56px) + 6px)}
+.touchui #t302Coins{top:calc(var(--hudb, 56px) + 84px)}
+/* The controls tip shows for a few seconds; keep it readable on top of the goal pill instead of mixed through it. */
+.touchui .otip{z-index:9}
 .vtmode #vtBox{display:block}
 #vtHint{display:inline-block;background:rgba(36,64,72,.86);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:14px;margin-bottom:8px}
 #vtChart{width:min(320px,92vw);background:rgba(255,249,235,.94);color:#1d2340;border:3px solid #1d2340;border-radius:16px;padding:10px 12px;box-shadow:3px 3px 0 #1d2340;pointer-events:none}
@@ -1724,6 +1801,8 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
 .evmode #evgShopBtn{display:block}
 #evNextNote{margin:8px 16px;font-weight:700;color:#445}
 @media (max-width:700px){ #evgAct{bottom:120px} #evgShopBtn{bottom:184px} }
+/* QA t330u: on a portrait phone the third column of Pet Kart rides ran off the right edge. */
+@media (max-width:560px){#rcPick .rcrides{grid-template-columns:repeat(2,minmax(0,1fr))}#rcPick .rcride{min-width:0}}
 </style>
 <nav>
     <button data-go="home" class="active"><i>🏠</i><span>Home</span></button>
@@ -2347,6 +2426,49 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
     <button type="button" id="mmDown" aria-label="Swim down">⬇️</button>
   </div>
 
+  <div id="thBox" style="display:none"><span id="thHint"></span></div>
+  <button type="button" id="thAct">✨ Place</button>
+  <button type="button" id="thPaletteBtn">🧰 Pieces</button>
+  <button type="button" id="thUndoBtn">↩ Undo</button>
+  <button type="button" id="thDelBtn">🗑️ Delete</button>
+  <div id="thPalette" class="t297overlay" role="dialog" aria-label="Treehouse pieces">
+    <div class="t297box">
+      <button type="button" class="t297x" id="thPaletteX" aria-label="Close">×</button>
+      <h3>Oakheart pieces</h3>
+      <div id="thPaletteList"></div>
+      <p class="thHelp">Snap pieces onto the great oak. Climb ladders, ride the slide and zipline, and hang out with real friends.</p>
+    </div>
+  </div>
+  <div id="scBox" style="display:none"><span id="scHint"></span></div>
+  <button type="button" id="scAct">✨ Do it</button>
+  <button type="button" id="scLessBtn">😌 Less scary</button>
+  <div id="scGoreNote" hidden></div>
+  <div id="scLocker" class="t297overlay" role="dialog" aria-label="Locker">
+    <div class="t297box">
+      <button type="button" class="t297x" id="scLockerX" aria-label="Close">×</button>
+      <h3>Locker</h3>
+      <p id="scLockerBody">Enter the three-digit code.</p>
+      <input id="scLockerIn" type="text" inputmode="numeric" maxlength="3" aria-label="Locker code">
+      <button type="button" id="scLockerGo">Open</button>
+    </div>
+  </div>
+  <div id="scBoard" class="t297overlay" role="dialog" aria-label="Chalkboard riddle">
+    <div class="t297box">
+      <button type="button" class="t297x" id="scBoardX" aria-label="Close">×</button>
+      <h3>Chalkboard</h3>
+      <p id="scBoardQ"></p>
+      <div id="scBoardChoices"></div>
+    </div>
+  </div>
+  <div id="scWin" class="t297overlay" role="dialog" aria-label="You made it out">
+    <div class="t297box">
+      <button type="button" class="t297x" id="scWinX" aria-label="Close">×</button>
+      <h3>🌙 You made it out!</h3>
+      <p id="scWinBody">The front doors open. Everyone is okay!</p>
+      <button type="button" id="scWinClose">Close</button>
+    </div>
+  </div>
+
 
 
 
@@ -2421,6 +2543,14 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
   <div id="t302Vignette"></div>
   <div id="t302Scare" aria-hidden="true"><div class="t302ScareFace"><i class="t302ScareEye l"></i><i class="t302ScareEye r"></i><b class="t302ScareGrin"></b></div></div>
   <button type="button" id="t302LessBtn" title="Less scary uses the milder Gloam from before. Off is the really scary default.">😌 Less scary</button>
+  <button type="button" id="t302JournalBtn" title="Open Maple Wren's clue journal">📓 Journal</button>
+  <div id="campJournal" class="t297overlay" role="dialog" aria-label="Clue journal">
+    <div class="t297box">
+      <button type="button" class="t297x" id="campJournalX" aria-label="Close">×</button>
+      <h3 id="campJournalTitle">Looking for Maple Wren</h3>
+      <div id="campJournalList"></div>
+    </div>
+  </div>
   <div id="t302GoreNote" hidden></div>
   <div id="campWin" class="t297overlay" role="dialog" aria-label="Camp result">
     <div class="t297box">
@@ -2969,7 +3099,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.20-11';
+const BUILD = '2026.11.20-16';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3711,7 +3841,7 @@ $('#saveAv').onclick = () => {
     day: 'day',
     off: 'off'
   };
-  const WX_SKIP = ['splash', 'waterpark', 'race', 'photostudio', 'dance', 'bakery', 'icecream', 'tower', 'fashion', 'cafe', 'petshow', 'camp', 'elevator'];
+  const WX_SKIP = ['splash', 'waterpark', 'race', 'photostudio', 'dance', 'bakery', 'icecream', 'tower', 'fashion', 'cafe', 'petshow', 'camp', 'elevator', 'treehouse', 'school'];
   const WX_SNOW = ['obby', 'build', 'hide', 'stable', 'tag', 'party', 'snowfest', 'pets', 'autumn', 'pethotel', 'fish', 'hunt', 'garden', 'meadow', 'rides', 'hive'];
   const WX_FOG = ['haunt', 'lantern', 'hide', 'petisland', 'obby', 'build', 'hunt'];
   const WX_RAIN = ['obby', 'build', 'lantern', 'hide', 'autumn', 'stable', 'petisland', 'pets', 'tag', 'dreamhouse', 'pethotel', 'haunt', 'fish', 'hunt', 'garden', 'meadow', 'rides', 'hive'];
@@ -3862,7 +3992,7 @@ $('#saveAv').onclick = () => {
   };
   const GORE_ORDER = ['off', 'mild', 'spooky'];
   const GORE_CAP_LESS = 'mild';
-  const GORE_GAMES = ['camp'];
+  const GORE_GAMES = ['camp', 'school'];
   const GORE_KINDS = ['splat', 'scratch', 'stain', 'handprint'];
 
   // Environmental decals for Campfire Grove only. No body parts, wounds, or injury poses.
@@ -3877,7 +4007,12 @@ $('#saveAv').onclick = () => {
     {id:'woods-stain-3', min:'spooky', kind:'stain', at:'deep-woods', x:48.2, y:0.05, z:43.1, yaw:0.9, sx:0.9, sy:0.03, sz:0.7},
     {id:'tree-scratch-3', min:'spooky', kind:'scratch', at:'tree', x:49.95, y:1.6, z:44.95, yaw:0.2, sx:0.04, sy:0.85, sz:0.26},
     {id:'tree-scratch-4', min:'spooky', kind:'scratch', at:'tree', x:48.1, y:1.45, z:32.79, yaw:-0.7, sx:0.04, sy:0.72, sz:0.22},
-    {id:'cabin-handprint', min:'spooky', kind:'handprint', at:'cabin-window', x:51.22, y:2.28, z:-30.6, yaw:Math.PI/2, sx:0.36, sy:0.4, sz:0.03}
+    {id:'cabin-handprint', min:'spooky', kind:'handprint', at:'cabin-window', x:51.22, y:2.28, z:-30.6, yaw:Math.PI/2, sx:0.36, sy:0.4, sz:0.03},
+    {id:'hollow-splat-1', min:'spooky', kind:'splat', at:'hollow-tree', x:61.15, y:0.05, z:53.2, yaw:0.4, sx:0.7, sy:0.04, sz:0.5},
+    {id:'hollow-splat-2', min:'spooky', kind:'splat', at:'hollow-tree', x:63.05, y:0.05, z:54.7, yaw:-0.5, sx:0.55, sy:0.04, sz:0.42},
+    {id:'hollow-stain', min:'spooky', kind:'stain', at:'hollow-tree', x:61.7, y:0.05, z:55.15, yaw:0.8, sx:0.95, sy:0.03, sz:0.7},
+    {id:'hollow-scratch-1', min:'spooky', kind:'scratch', at:'hollow-tree', x:62.0, y:1.25, z:53.22, yaw:0, sx:0.04, sy:0.7, sz:0.22},
+    {id:'hollow-scratch-2', min:'spooky', kind:'scratch', at:'hollow-tree', x:61.28, y:1.5, z:54.35, yaw:1.2, sx:0.04, sy:0.62, sz:0.2}
   ];
 
   function goreDefault(){ return 'off'; }
@@ -3929,12 +4064,22 @@ $('#saveAv').onclick = () => {
     return GORE_GAMES.indexOf(modeId) >= 0;
   }
 
+  function goreTable(modeId){
+    if (modeId === 'camp') return CAMP_GORE_DECALS;
+    if (modeId === 'school'){
+      try {
+        const S = (typeof SchoolRules !== 'undefined' && SchoolRules) || (typeof require === 'function' ? require(require('path').join(__dirname, '../school/school_logic.js')) : null);
+        return (S && S.SC_GORE) || [];
+      } catch (e){ return []; }
+    }
+    return [];
+  }
   function goreDecalsFor(modeId, raw, opt){
     if (!goreAllowedIn(modeId)) return [];
     const id = goreEffective(raw, opt);
     const rank = goreRank(id);
     if (rank <= 0) return [];
-    return CAMP_GORE_DECALS.filter(d => goreRank(d.min) <= rank && GORE_KINDS.indexOf(d.kind) >= 0);
+    return goreTable(modeId).filter(d => goreRank(d.min) <= rank && GORE_KINDS.indexOf(d.kind) >= 0);
   }
 
   function goreCampDecals(raw, opt){ return goreDecalsFor('camp', raw, opt); }
@@ -3944,7 +4089,7 @@ $('#saveAv').onclick = () => {
   const api = {
     GORE_KEY, GORE_VER, GORE_LEVELS, GORE_ORDER, GORE_CAP_LESS, GORE_GAMES, GORE_KINDS, CAMP_GORE_DECALS,
     goreDefault, goreLevelId, goreNormalize, goreLoadState, goreLevel, goreRank,
-    goreEffective, goreCapped, goreCapNote, goreAllowedIn, goreDecalsFor, goreCampDecals, goreCampCount
+    goreEffective, goreCapped, goreCapNote, goreAllowedIn, goreTable, goreDecalsFor, goreCampDecals, goreCampCount
   };
   root.GoreRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -4181,6 +4326,7 @@ function goreSetLevel(level){
   goreSave(id);
   goreSyncUi();
   try { if (typeof campRebuildGore === 'function') campRebuildGore(); } catch (e){}
+  try { if (typeof scRebuildGore === 'function') scRebuildGore(); } catch (e){}
   return id;
 }
 function goreSyncUi(){
@@ -4850,7 +4996,7 @@ try { evBootChrome(); } catch (e){}
   }
 
 
-  const T297_OVERLAY_IDS = ['cafeDecor', 'cafeBoard', 'fishIndex', 'huntMap', 'psVoteBox', 'gardenShop', 'meadowBook', 'ridesPalette', 'hiveQuest', 'campCraft', 'campWin', 'elevHelp', 'elevIndex', 'elevShop', 'elevBadges', 'elevDaily', 'elevVote'];
+  const T297_OVERLAY_IDS = ['cafeDecor', 'cafeBoard', 'fishIndex', 'huntMap', 'psVoteBox', 'gardenShop', 'meadowBook', 'ridesPalette', 'hiveQuest', 'campCraft', 'campWin', 'campJournal', 'elevHelp', 'elevIndex', 'elevShop', 'elevBadges', 'elevDaily', 'elevVote', 'thPalette', 'scLocker', 'scBoard', 'scWin'];
   const T297_WALK_AWAY = 4.5;
   const T297_REOPEN_MS = 700;
   function t297OverlayIds(){ return T297_OVERLAY_IDS.slice(); }
@@ -6584,7 +6730,9 @@ try { evBootChrome(); } catch (e){}
       sunrises: 0,
       bestFire: 0,
       nights: 0,
-      lessScary: false
+      lessScary: false,
+      clues: [],
+      camperFound: false
     };
   }
 
@@ -6602,8 +6750,115 @@ try { evBootChrome(); } catch (e){}
     d.bestFire = Math.max(0, Math.min(1, +o.bestFire || 0));
     d.nights = Math.max(0, o.nights | 0);
     d.lessScary = !!o.lessScary;
+    d.clues = Array.isArray(o.clues) ? o.clues.filter((id, i, a) => campClue(id) && a.indexOf(id) === i) : [];
+    d.camperFound = !!o.camperFound;
     d.ver = CAMP_VER;
     return d;
+  }
+
+
+  const CAMP_CAMPER = {id:'wren', name:'Maple Wren', emoji:'🧣'};
+  const CAMP_STORY_REWARD = 24;
+  const CAMP_CLUES = [
+    {id:'map', name:'Torn map', emoji:'🗺️', x:28, z:38, r:2.2,
+      blurb:'A torn camp map. Someone circled Moon Lake, then the Old Cabin.',
+      soft:'A gently torn map with a doodle of Moon Lake and a little cabin.'},
+    {id:'light', name:'Flashlight', emoji:'🔦', x:-18, z:18, r:2.2,
+      blurb:'A scratched flashlight, still warm, pointing toward the lake path.',
+      soft:'A friendly little flashlight, still glowing, left on the lake path.'},
+    {id:'prints', name:'Footprints', emoji:'🐾', x:-30, z:34, r:2.4,
+      blurb:'Small boot prints along the shore, turning toward the Old Cabin.',
+      soft:'A trail of little boot prints along the shore, heading to the cabin.'},
+    {id:'journal', name:'Journal page', emoji:'📝', x:46, z:-28, r:2.2,
+      blurb:'A journal page: "I wanted to see the fireflies in the Deep Woods. I will be back before dark."',
+      soft:'A journal page: "Going to watch fireflies in the Deep Woods! Back soon. — Wren"'},
+    {id:'radio', name:'Radio message', emoji:'📻', x:50, z:46, r:2.4,
+      blurb:'A crackly radio: "...I am okay... just a little lost... by the hollow tree..."',
+      soft:'A cheerful radio chirp: "I am okay! I found a hollow tree and I can see fireflies!"'}
+  ];
+  const CAMP_HOLLOW = {x:62, z:54, r:2.6};
+  function campClue(id){ return CAMP_CLUES.find(c => c.id === id) || null; }
+  function campClueText(id, lessScary){
+    const c = campClue(id);
+    if (!c) return '';
+    return (lessScary && c.soft) ? c.soft : c.blurb;
+  }
+  function campHasClue(state, id){
+    state = campLoad(state);
+    return (state.clues || []).indexOf(id) >= 0;
+  }
+  function campFindClue(state, id){
+    state = campLoad(state);
+    if (!campClue(id)) return {ok:false, why:'unknown', state};
+    if (campHasClue(state, id)) return {ok:false, why:'have', state};
+    state.clues = (state.clues || []).concat([id]);
+    return {ok:true, why:'found', state, clue: campClue(id), left: CAMP_CLUES.length - state.clues.length};
+  }
+  function campCluesLeft(state){
+    state = campLoad(state);
+    return CAMP_CLUES.filter(c => (state.clues || []).indexOf(c.id) < 0);
+  }
+  function campAllClues(state){
+    state = campLoad(state);
+    return CAMP_CLUES.every(c => (state.clues || []).indexOf(c.id) >= 0);
+  }
+  function campCanFindCamper(state){ return campAllClues(state) && !campLoad(state).camperFound; }
+  function campFindCamper(state){
+    state = campLoad(state);
+    if (state.camperFound) return {ok:false, why:'have', state, reward:0};
+    if (!campAllClues(state)) return {ok:false, why:'clues', state, reward:0};
+    state.camperFound = true;
+    return {ok:true, why:'safe', state, name: CAMP_CAMPER.name, reward: CAMP_STORY_REWARD};
+  }
+  // Spooky rescue look: only when Gore is Spooky and Less scary is off.
+  // Mild, Off, or Less scary keep the regular safe scene. Wren is still okay.
+  function campGoreModule(){
+    if (typeof GoreRules !== 'undefined' && GoreRules) return GoreRules;
+    try {
+      if (typeof require === 'function' && typeof module !== 'undefined'){
+        return require(require('path').join(__dirname, '../gore/gore_logic.js'));
+      }
+    } catch (e){}
+    return null;
+  }
+  function campWrenSpooky(rawGore, lessScary){
+    if (lessScary) return false;
+    const G = campGoreModule();
+    if (!G || typeof G.goreEffective !== 'function') return false;
+    return G.goreEffective(rawGore, {lessScary: false}) === 'spooky';
+  }
+  function campWrenEnding(){
+    return 'You found Maple Wren! They were watching fireflies and lost the path. Everyone is okay!';
+  }
+  function campJournalLines(state, lessScary){
+    state = campLoad(state);
+    const lines = CAMP_CLUES.map(c => {
+      const have = (state.clues || []).indexOf(c.id) >= 0;
+      return {id:c.id, name:c.name, emoji:c.emoji, have, text: have ? campClueText(c.id, lessScary) : 'Not found yet.'};
+    });
+    return {
+      title: state.camperFound ? (CAMP_CAMPER.name + ' is safe!') : ('Looking for ' + CAMP_CAMPER.name),
+      intro: lessScary
+        ? (CAMP_CAMPER.name + ' wandered off to see fireflies. Find the clues, then the hollow tree. Everyone will be okay.')
+        : (CAMP_CAMPER.name + ' is missing from camp. Follow the clues. The woods are spooky, but everyone will be okay.'),
+      found: (state.clues || []).length,
+      total: CAMP_CLUES.length,
+      done: !!state.camperFound,
+      ready: campAllClues(state),
+      hollow: CAMP_HOLLOW,
+      lines
+    };
+  }
+  function campNearClue(x, z, state){
+    state = campLoad(state);
+    for (let i = 0; i < CAMP_CLUES.length; i++){
+      const c = CAMP_CLUES[i];
+      if (Math.hypot((x||0) - c.x, (z||0) - c.z) <= (c.r || 2.2) && !campHasClue(state, c.id)) return c;
+    }
+    if (campCanFindCamper(state) && Math.hypot((x||0) - CAMP_HOLLOW.x, (z||0) - CAMP_HOLLOW.z) <= CAMP_HOLLOW.r){
+      return {id:'wren', name:CAMP_CAMPER.name, emoji:CAMP_CAMPER.emoji, final:true};
+    }
+    return null;
   }
 
   function campBuddyAllowed(mp){ return !mp; }
@@ -7388,6 +7643,9 @@ try { evBootChrome(); } catch (e){}
     campLightAt, campGloamTarget, campStartRun, campStartNight,
     campCanCarry, campPickLog, campGather, campChopLog, campStash, campAddStick, campShine, campCraft,
     campCaught, campTick, campFinish, campReward,
+    CAMP_CAMPER, CAMP_STORY_REWARD, CAMP_CLUES, CAMP_HOLLOW,
+    campClue, campClueText, campHasClue, campFindClue, campCluesLeft, campAllClues,
+    campCanFindCamper, campFindCamper, campWrenSpooky, campWrenEnding, campJournalLines, campNearClue,
     CAMP_WATCH_KINDS_SCARY, CAMP_WATCH_KINDS_SOFT, campWatchRules, campWatchCollides,
     campWatchPlayers, campWatchDist, campWatchMinDist, campWatchFacing, campWatchSpotOk,
     campWatchCabinSpot, campWatchLakeSpot, campPickWatchSpot, campPlaceWatch, campTickWatchers
@@ -12304,7 +12562,27 @@ function drawMermaid(ctx){
   ctx.font = '28px sans-serif'; ctx.fillText('🧜', 150, 130); ctx.fillText('🐚', 80, 110);
   if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#2ec4b6');
 }
+
+function drawTreehouse(ctx){
+  if (typeof sky === 'function') sky(ctx, '#8fd3ff', '#d8ffe0');
+  else { ctx.fillStyle='#8fd3ff'; ctx.fillRect(0,0,320,200); }
+  ctx.fillStyle='#2f8f4a'; ctx.fillRect(0,140,320,60);
+  ctx.fillStyle='#6b3a1d'; ctx.fillRect(140,60,40,90);
+  ctx.fillStyle='#2f8f4a'; ctx.beginPath(); ctx.arc(160,70,70,0,6.3); ctx.fill();
+  ctx.font='22px sans-serif'; ctx.fillText('🏠', 186, 98);
+  if (typeof guy === 'function') guy(ctx, 110, 176, 12, '#3a86ff');
+}
+function drawSchool(ctx){
+  if (typeof sky === 'function') sky(ctx, '#141018', '#2a2038');
+  else { ctx.fillStyle='#141018'; ctx.fillRect(0,0,320,200); }
+  ctx.fillStyle='#2a2438'; ctx.fillRect(40,70,240,90);
+  ctx.fillStyle='#ffe566'; ctx.fillRect(150,110,20,50);
+  ctx.font='22px sans-serif'; ctx.fillText('🏫', 148, 70);
+  if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#8b5cf6');
+}
 const GAMES = [
+  {id:'treehouse', name:'Oakheart Treehouse', emoji:'🌳', tag:'Build a cozy original treehouse in a great oak: platforms, ladders, a slide, a zipline, rooms, and hang out with real friends.', draw: drawTreehouse, playable: true, isNew: true},
+  {id:'school', name:'Afterbell School', emoji:'🏫', tag:'Locked in an original school after dark. Solve a locker code, a chalkboard riddle, and a hall pass, and slip past the Hush Warden. If it finds you, everyone is okay!', draw: drawSchool, playable: true, isNew: true},
   {id:'elevator', name:'Wobblevator', emoji:'🛗', tag:'Ride Bingle the Bellhop’s wobbly lift to surprise floors. Clear quirky mini-events, keep your streak, and hop back in — if a floor gets too wobbly, everyone is okay!', draw: drawElevator, playable: true, isNew: true},
   {id:'mansion', name:'Mallowmist Manor', emoji:'🕯️', tag:'A cute haunted house with new rooms and a hidden Secret Attic! Solve simple puzzles, follow a clue chain to a special reward, and tip-toe past Nimble. Getting caught means everyone is okay.', draw: drawMansion, playable: true, isNew: true},
   {id:'shelter', name:'Wagwell Shelter', emoji:'🐾', tag:'Rescue town strays, cheer them up in the grooming salon, match them with visiting families, and enter pet contests judged by Judge Bramble!', draw: drawShelter, playable: true, isNew: true},
@@ -14212,6 +14490,8 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
     {id:'winter', name:'Pinebell Village', emoji:'🎄', keys:['rubloxWinter']},
     {id:'vet', name:'Pawsley Vet Clinic', emoji:'🩺', keys:['rubloxVet']},
     {id:'mermaid', name:'Glimmergill Cove', emoji:'🧜', keys:['rubloxMermaid']},
+    {id:'treehouse', name:'Oakheart Treehouse', emoji:'🌳', keys:['rubloxTreehouse']},
+    {id:'school', name:'Afterbell School', emoji:'🏫', keys:['rubloxSchool']},
     {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', keys:['rubloxMeadow']},
     {id:'rides', name:'Rideland Workshop', emoji:'🎢', keys:['rubloxRides']},
     {id:'hive', name:'Honeyhill Hive', emoji:'🐝', keys:['rubloxHive']},
@@ -14311,6 +14591,406 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
   root.ResetRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
+
+/* Oakheart Treehouse — original cozy builder. Snap platforms, ladders, rooms,
+   a slide and a zipline onto a great oak. Hang out with real friends only.
+   Save key rubloxTreehouse. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.TreehouseRules = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const TH_KEY = 'rubloxTreehouse';
+  const TH_VER = 1;
+  const TH_CELL = 2.6;
+  const TH_LEVEL = 3.6;
+  const TH_MAX_LEVEL = 4;
+  const TH_GRID = 9;
+  const TH_DOOR_H = 4.2;
+  const TH_DOOR_W = 3.6;
+  const TH_MAX_PIECES = 48;
+  const TH_TRUNK_R = 2.2;
+
+  const TH_KINDS = [
+    {id:'platform', name:'Platform', emoji:'🟩', snap:'floor', walk:true},
+    {id:'room', name:'Room', emoji:'🏠', snap:'floor', walk:true, room:true},
+    {id:'ladder', name:'Ladder', emoji:'🪜', snap:'climb'},
+    {id:'rope', name:'Rope climb', emoji:'🪢', snap:'climb'},
+    {id:'slide', name:'Slide', emoji:'🛝', snap:'ride'},
+    {id:'zip', name:'Zipline post', emoji:'➡️', snap:'ride'},
+    {id:'rail', name:'Railing', emoji:'🪵', snap:'trim'},
+    {id:'roof', name:'Roof', emoji:'🔺', snap:'trim'},
+    {id:'lamp', name:'Lantern', emoji:'🏮', snap:'decor'},
+    {id:'flag', name:'Pennant', emoji:'🚩', snap:'decor'},
+    {id:'chair', name:'Chair', emoji:'🪑', snap:'furn'},
+    {id:'table', name:'Table', emoji:'🪑', snap:'furn'},
+    {id:'hammock', name:'Hammock', emoji:'🛏️', snap:'furn'},
+    {id:'planter', name:'Flower box', emoji:'🌸', snap:'decor'}
+  ];
+
+  function thFresh(){
+    return {v:TH_VER, visits:0, pieces:[], undo:[], kind:'platform', rot:0, level:1, del:false};
+  }
+  function thKind(id){ return TH_KINDS.find(k => k.id === id) || null; }
+  function thLoad(raw){
+    const d = thFresh();
+    const o = (raw && typeof raw === 'object') ? raw : {};
+    d.visits = Math.max(0, o.visits | 0);
+    d.kind = thKind(o.kind) ? o.kind : 'platform';
+    d.rot = ((o.rot | 0) % 4 + 4) % 4;
+    d.level = Math.max(0, Math.min(TH_MAX_LEVEL, o.level | 0));
+    d.del = !!o.del;
+    if (Array.isArray(o.pieces)){
+      d.pieces = o.pieces.map(thNormPiece).filter(Boolean).slice(0, TH_MAX_PIECES);
+    }
+    d.undo = Array.isArray(o.undo) ? o.undo.slice(-20) : [];
+    d.v = TH_VER;
+    return d;
+  }
+  function thNormPiece(p){
+    if (!p || !thKind(p.kind)) return null;
+    const gx = p.gx | 0, gz = p.gz | 0, level = Math.max(0, Math.min(TH_MAX_LEVEL, p.level | 0));
+    if (Math.abs(gx) > TH_GRID || Math.abs(gz) > TH_GRID) return null;
+    if (gx === 0 && gz === 0) return null; // reserved for the great oak
+    return {id: String(p.id || ('p'+gx+','+gz+','+level+p.kind)), kind:p.kind, gx, gz, level, rot:((p.rot|0)%4+4)%4, owner: p.owner || 'me'};
+  }
+  function thWorld(gx, gz, level){
+    return {x: gx * TH_CELL, y: (level || 0) * TH_LEVEL, z: gz * TH_CELL};
+  }
+  function thAt(state, gx, gz, level){
+    state = thLoad(state);
+    return state.pieces.find(p => p.gx === gx && p.gz === gz && p.level === (level|0)) || null;
+  }
+  function thFits(state, kind, gx, gz, level, ignoreId){
+    if (!thKind(kind)) return false;
+    if (gx === 0 && gz === 0) return false;
+    if (Math.abs(gx) > TH_GRID || Math.abs(gz) > TH_GRID) return false;
+    if (level < 0 || level > TH_MAX_LEVEL) return false;
+    const hit = thAt(state, gx, gz, level);
+    if (hit && hit.id !== ignoreId) return false;
+    return true;
+  }
+  function thNeighbors(state, gx, gz, level){
+    state = thLoad(state);
+    const dirs = [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+    return dirs.map(d => thAt(state, gx+d[0], gz+d[1], level+d[2])).filter(Boolean);
+  }
+  function thSnap(state, kind, hintGx, hintGz, level, rot){
+    state = thLoad(state);
+    const tries = [];
+    const hg = hintGx|0, hz = hintGz|0, lv = level|0;
+    tries.push([hg, hz, lv]);
+    [[1,0],[0,1],[-1,0],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]].forEach(d => tries.push([hg+d[0], hz+d[1], lv]));
+    if (lv > 0) tries.push([hg, hz, lv-1]);
+    if (lv < TH_MAX_LEVEL) tries.push([hg, hz, lv+1]);
+    for (let i = 0; i < tries.length; i++){
+      const t = tries[i];
+      if (!thFits(state, kind, t[0], t[1], t[2])) continue;
+      const near = thNeighbors(state, t[0], t[1], t[2]);
+      const grounded = t[2] === 0 || near.length > 0 || thAt(state, t[0], t[1], t[2]-1);
+      if (t[2] > 0 && !grounded && !thKind(kind).snap) continue;
+      if (t[2] > 0 && !grounded && thKind(kind).snap === 'decor') continue;
+      if (t[2] > 0 && !thAt(state, t[0], t[1], t[2]-1) && !near.length && thKind(kind).walk) continue;
+      return {ok:true, gx:t[0], gz:t[1], level:t[2], rot:((rot|0)%4+4)%4};
+    }
+    return {ok:false};
+  }
+  function thPushUndo(state, entry){
+    state = thLoad(state);
+    state.undo = (state.undo || []).concat([entry]).slice(-20);
+    return state;
+  }
+  function thPlace(state, kind, gx, gz, level, rot, owner, opts){
+    state = thLoad(state);
+    opts = opts || {};
+    if (state.pieces.length >= TH_MAX_PIECES) return {ok:false, why:'full', state};
+    let spot = {gx:gx|0, gz:gz|0, level:level|0, rot:((rot|0)%4+4)%4};
+    if (opts.snap){
+      const s = thSnap(state, kind, spot.gx, spot.gz, spot.level, spot.rot);
+      if (!s.ok) return {ok:false, why:'snap', state};
+      spot = s;
+    } else if (!thFits(state, kind, spot.gx, spot.gz, spot.level)){
+      return {ok:false, why:'block', state};
+    }
+    const piece = thNormPiece({id:'p'+Date.now().toString(36)+Math.floor(Math.random()*999), kind, gx:spot.gx, gz:spot.gz, level:spot.level, rot:spot.rot, owner: owner || 'me'});
+    state.pieces.push(piece);
+    state = thPushUndo(state, {act:'place', id:piece.id});
+    state.del = false;
+    return {ok:true, state, piece};
+  }
+  function thRemove(state, id){
+    state = thLoad(state);
+    const i = state.pieces.findIndex(p => p.id === id);
+    if (i < 0) return {ok:false, why:'missing', state};
+    const piece = state.pieces[i];
+    state.pieces.splice(i, 1);
+    state = thPushUndo(state, {act:'remove', piece});
+    return {ok:true, state, piece};
+  }
+  function thUndo(state){
+    state = thLoad(state);
+    const last = (state.undo || []).pop();
+    if (!last) return {ok:false, why:'empty', state};
+    if (last.act === 'place'){
+      state.pieces = state.pieces.filter(p => p.id !== last.id);
+    } else if (last.act === 'remove' && last.piece && !state.pieces.some(p => p.id === last.piece.id)){
+      const p = thNormPiece(last.piece);
+      if (p) state.pieces.push(p);
+    }
+    return {ok:true, state};
+  }
+  function thSetDelete(state, on){ state = thLoad(state); state.del = !!on; return state; }
+  function thCycleKind(state, dir){
+    state = thLoad(state);
+    const i = Math.max(0, TH_KINDS.findIndex(k => k.id === state.kind));
+    const j = (i + (dir < 0 ? -1 : 1) + TH_KINDS.length) % TH_KINDS.length;
+    state.kind = TH_KINDS[j].id;
+    return state;
+  }
+  function thRotate(state, dir){
+    state = thLoad(state);
+    state.rot = ((state.rot + (dir < 0 ? -1 : 1)) % 4 + 4) % 4;
+    return state;
+  }
+  function thSetLevel(state, level){
+    state = thLoad(state);
+    state.level = Math.max(0, Math.min(TH_MAX_LEVEL, level|0));
+    return state;
+  }
+  function thDoorsFor(piece){
+    if (!piece || piece.kind !== 'room') return [];
+    return [{id: piece.id + '-door', h: TH_DOOR_H, w: TH_DOOR_W, thick: 0.4, gx: piece.gx, gz: piece.gz, level: piece.level, rot: piece.rot}];
+  }
+  function thAllDoors(state){
+    state = thLoad(state);
+    return state.pieces.flatMap(thDoorsFor);
+  }
+  function thClimbAt(state, x, z, y){
+    state = thLoad(state);
+    for (let i = 0; i < state.pieces.length; i++){
+      const p = state.pieces[i];
+      const k = thKind(p.kind);
+      if (!k || k.snap !== 'climb') continue;
+      const w = thWorld(p.gx, p.gz, p.level);
+      if (Math.hypot(x - w.x, z - w.z) <= 1.3 && y >= w.y - 0.4 && y <= w.y + TH_LEVEL + 0.6) return p;
+    }
+    return null;
+  }
+  function thRideAt(state, x, z, y){
+    state = thLoad(state);
+    for (let i = 0; i < state.pieces.length; i++){
+      const p = state.pieces[i];
+      const k = thKind(p.kind);
+      if (!k || k.snap !== 'ride') continue;
+      const w = thWorld(p.gx, p.gz, p.level);
+      if (Math.hypot(x - w.x, z - w.z) <= 1.6 && Math.abs(y - (w.y + 0.6)) < 1.8) return p;
+    }
+    return null;
+  }
+  function thNewVisit(raw){
+    const state = thLoad(raw);
+    state.visits = (state.visits | 0) + 1;
+    return {state, run:{phase:'build'}};
+  }
+  function thFriendsOnly(){ return true; }
+
+  return {
+    TH_KEY, TH_VER, TH_CELL, TH_LEVEL, TH_MAX_LEVEL, TH_GRID, TH_DOOR_H, TH_DOOR_W, TH_MAX_PIECES, TH_TRUNK_R, TH_KINDS,
+    thFresh, thKind, thLoad, thWorld, thAt, thFits, thNeighbors, thSnap, thPlace, thRemove, thUndo,
+    thSetDelete, thCycleKind, thRotate, thSetLevel, thDoorsFor, thAllDoors, thClimbAt, thRideAt, thNewVisit, thFriendsOnly
+  };
+});
+
+/* Afterbell School — original kid-scary school after dark. Explore, solve
+   three puzzles, and slip past the Hush Warden. Getting caught means everyone
+   is okay and you return to a checkpoint. Save key rubloxSchool. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.SchoolRules = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const SC_KEY = 'rubloxSchool';
+  const SC_VER = 1;
+  const SC_DOOR_H = 4.2;
+  const SC_DOOR_W = 3.6;
+  const SC_WALL_H = 6.0;
+  const SC_CATCH = 2.4;
+  const SC_CATCH_SOFT = 1.7;
+  const SC_LOCKER_CODE = '418';
+  const SC_RIDDLE = {prompt:'I have a spine but I am not a person. I have pages but I am not a king. What am I?', answer:'book', choices:['bell','book','broom']};
+
+  const SC_ROOMS = [
+    {id:'lobby', name:'Front Lobby', x:0, z:22, w:22, d:16, color:'#3a3348', spawn:true},
+    {id:'hall', name:'Main Hall', x:0, z:0, w:16, d:28, color:'#2a2438'},
+    {id:'class', name:'Classroom', x:-22, z:0, w:28, d:18, color:'#3b2f2a'},
+    {id:'library', name:'Library', x:22, z:0, w:28, d:18, color:'#2a3340'},
+    {id:'gym', name:'Gym', x:-22.5, z:-26, w:29, d:24, color:'#2e3a2e'},
+    {id:'cafe', name:'Cafeteria', x:22.5, z:-26, w:29, d:24, color:'#3a3228'}
+  ];
+  const SC_DOORS = [
+    {id:'lobby-hall', a:'lobby', b:'hall', x:0, z:14, w:SC_DOOR_W, h:SC_DOOR_H, axis:'z', thick:0.42},
+    {id:'hall-class', a:'hall', b:'class', x:-8, z:0, w:SC_DOOR_W, h:SC_DOOR_H, axis:'x', thick:0.42},
+    {id:'hall-library', a:'hall', b:'library', x:8, z:0, w:SC_DOOR_W, h:SC_DOOR_H, axis:'x', thick:0.42},
+    {id:'hall-gym', a:'hall', b:'gym', x:-8, z:-14, w:SC_DOOR_W, h:SC_DOOR_H, axis:'x', thick:0.42},
+    {id:'hall-cafe', a:'hall', b:'cafe', x:8, z:-14, w:SC_DOOR_W, h:SC_DOOR_H, axis:'x', thick:0.42}
+  ];
+  const SC_LOCKER = {x:0, z:-6, r:1.8};
+  const SC_BOARD = {x:-26, z:4, r:2.0};
+  const SC_PASS_SPOT = {x:26, z:-2, r:1.8};
+  const SC_EXIT = {x:0, z:29, r:2.0};
+  const SC_DIGITS = [
+    {id:'four', n:'4', where:'cafeteria menu', x:26, z:-30, r:1.8},
+    {id:'one', n:'1', where:'gym scoreboard', x:-26, z:-30, r:1.8},
+    {id:'eight', n:'8', where:'classroom clock', x:-30, z:0, r:1.8}
+  ];
+  const SC_CHECKPOINTS = [
+    {id:'lobby', x:0, y:0.5, z:24},
+    {id:'class', x:-26, y:0.5, z:4},
+    {id:'library', x:26, y:0.5, z:4},
+    {id:'hall', x:0, y:0.5, z:6}
+  ];
+  const SC_PATROL = [
+    {x:0, z:10}, {x:0, z:0}, {x:0, z:-10}, {x:0, z:0}
+  ];
+  const SC_HIDES = [
+    {id:'class-desk', x:-30, z:-4, r:1.6, room:'class'},
+    {id:'lib-shelf', x:30, z:4, r:1.6, room:'library'},
+    {id:'cafe-table', x:30, z:-24, r:1.6, room:'cafe'}
+  ];
+
+  const SC_WARDEN = {id:'hush', name:'the Hush Warden', emoji:'🕯️'};
+
+  function scFresh(){
+    return {v:SC_VER, visits:0, lessScary:false, escaped:0, digits:[], riddle:false, locker:false, pass:false, won:false};
+  }
+  function scLoad(raw){
+    const d = scFresh();
+    const o = (raw && typeof raw === 'object') ? raw : {};
+    d.visits = Math.max(0, o.visits | 0);
+    d.lessScary = !!o.lessScary;
+    d.escaped = Math.max(0, o.escaped | 0);
+    d.digits = Array.isArray(o.digits) ? o.digits.filter((id,i,a) => SC_DIGITS.some(g => g.id===id) && a.indexOf(id)===i) : [];
+    d.riddle = !!o.riddle;
+    d.locker = !!o.locker;
+    d.pass = !!o.pass;
+    d.won = !!o.won;
+    d.v = SC_VER;
+    return d;
+  }
+  function scSetLessScary(state, on){ state = scLoad(state); state.lessScary = !!on; return state; }
+  function scRoomAt(x, z){
+    return SC_ROOMS.find(r => Math.abs(x - r.x) <= r.w/2 && Math.abs(z - r.z) <= r.d/2) || null;
+  }
+  function scCatchRadius(lessScary){ return lessScary ? SC_CATCH_SOFT : SC_CATCH; }
+  function scWardenSpeed(lessScary){ return lessScary ? 2.4 : 4.2; }
+  function scFreshRun(state){
+    state = scLoad(state);
+    return {
+      wx: 0, wz: 10, wt: 0, wi: 0, mode: 'patrol',
+      caught: false, okay: true, checkpoint: 'lobby',
+      warn: 0, scare: false
+    };
+  }
+  function scNewVisit(raw){
+    const state = scLoad(raw);
+    state.visits = (state.visits | 0) + 1;
+    return {state, run: scFreshRun(state)};
+  }
+  function scFindDigit(state, id){
+    state = scLoad(state);
+    if (!SC_DIGITS.some(d => d.id === id)) return {ok:false, why:'unknown', state};
+    if (state.digits.indexOf(id) >= 0) return {ok:false, why:'have', state};
+    state.digits = state.digits.concat([id]);
+    return {ok:true, why:'found', state, n: SC_DIGITS.find(d => d.id===id).n, left: 3 - state.digits.length};
+  }
+  function scKnownCode(state){
+    state = scLoad(state);
+    if (state.digits.length < 3 && !state.riddle) return '';
+    return SC_LOCKER_CODE;
+  }
+  function scSolveRiddle(state, answer){
+    state = scLoad(state);
+    const a = String(answer || '').trim().toLowerCase();
+    if (a !== SC_RIDDLE.answer) return {ok:false, why:'wrong', state};
+    state.riddle = true;
+    return {ok:true, why:'solved', state, code: SC_LOCKER_CODE};
+  }
+  function scOpenLocker(state, code){
+    state = scLoad(state);
+    if (String(code || '') !== SC_LOCKER_CODE) return {ok:false, why:'code', state};
+    if (!state.riddle && state.digits.length < 3) return {ok:false, why:'early', state};
+    state.locker = true;
+    state.pass = true;
+    return {ok:true, why:'open', state};
+  }
+  function scCanExit(state){ state = scLoad(state); return !!state.pass; }
+  function scEscape(state){
+    state = scLoad(state);
+    if (!state.pass) return {ok:false, why:'pass', state};
+    if (!state.won){ state.won = true; state.escaped = (state.escaped | 0) + 1; }
+    return {ok:true, why:'out', state, reward: 30};
+  }
+  function scCheckpointOf(id){ return SC_CHECKPOINTS.find(c => c.id === id) || SC_CHECKPOINTS[0]; }
+  function scSetCheckpoint(run, id){
+    if (!run) return run;
+    if (SC_CHECKPOINTS.some(c => c.id === id)) run.checkpoint = id;
+    return run;
+  }
+  function scNearHide(x, z){
+    return SC_HIDES.find(h => Math.hypot(x - h.x, z - h.z) <= h.r) || null;
+  }
+  function scTickWarden(run, dt, opt){
+    if (!run) return run;
+    const step = Math.max(0, Math.min(0.12, +dt || 0));
+    const less = !!(opt && opt.lessScary);
+    const px = (opt && opt.px) || 0, pz = (opt && opt.pz) || 0;
+    const hidden = !!(opt && opt.hidden);
+    run.scare = false;
+    run.caught = false;
+    const speed = scWardenSpeed(less);
+    const pts = SC_PATROL;
+    const goal = pts[run.wi | 0] || pts[0];
+    const dx = goal.x - (run.wx || 0), dz = goal.z - (run.wz || 0);
+    const d = Math.hypot(dx, dz) || 1;
+    if (d < 0.6){ run.wi = ((run.wi | 0) + 1) % pts.length; }
+    else {
+      run.wx = (run.wx || 0) + dx / d * speed * step;
+      run.wz = (run.wz || 0) + dz / d * speed * step;
+    }
+    const dist = Math.hypot((run.wx || 0) - px, (run.wz || 0) - pz);
+    const room = scRoomAt(px, pz);
+    const inHall = !room || room.id === 'hall' || room.id === 'lobby';
+    run.warn = dist < (less ? 10 : 7) && inHall && !hidden ? Math.max(0, 1 - dist / 10) : 0;
+    const catchR = scCatchRadius(less);
+    if (!hidden && inHall && dist < catchR){
+      run.caught = true;
+      run.okay = true;
+      run.scare = !less;
+      const cp = scCheckpointOf(run.checkpoint);
+      run.wx = 0; run.wz = 10; run.wi = 0;
+      run.respawn = {x:cp.x, y:cp.y, z:cp.z};
+    }
+    return run;
+  }
+  function scEveryoneOkay(){ return true; }
+  function scFriendsOnly(){ return true; }
+  function scNoFight(){ return true; }
+
+  const SC_GORE = [
+    {id:'cafe-stain', min:'mild', kind:'stain', x:24, y:0.05, z:-26, yaw:0.3, sx:1.0, sy:0.03, sz:0.7},
+    {id:'locker-scratch', min:'mild', kind:'scratch', x:0.4, y:1.4, z:-6, yaw:0, sx:0.04, sy:0.7, sz:0.2},
+    {id:'hall-stain', min:'spooky', kind:'stain', x:-2, y:0.05, z:2, yaw:-0.4, sx:1.1, sy:0.03, sz:0.8},
+    {id:'class-scratch', min:'spooky', kind:'scratch', x:-24, y:1.5, z:8.9, yaw:0, sx:0.04, sy:0.6, sz:0.2}
+  ];
+
+  return {
+    SC_KEY, SC_VER, SC_DOOR_H, SC_DOOR_W, SC_WALL_H, SC_CATCH, SC_CATCH_SOFT, SC_LOCKER_CODE, SC_RIDDLE,
+    SC_ROOMS, SC_DOORS, SC_LOCKER, SC_BOARD, SC_PASS_SPOT, SC_EXIT, SC_DIGITS, SC_CHECKPOINTS, SC_PATROL, SC_HIDES, SC_WARDEN, SC_GORE,
+    scFresh, scLoad, scSetLessScary, scRoomAt, scCatchRadius, scWardenSpeed, scFreshRun, scNewVisit,
+    scFindDigit, scKnownCode, scSolveRiddle, scOpenLocker, scCanExit, scEscape,
+    scCheckpointOf, scSetCheckpoint, scNearHide, scTickWarden, scEveryoneOkay, scFriendsOnly, scNoFight
+  };
+});
 
 /* Reset a game — Settings wiring (local saves only; never broadcasts in multiplayer). */
 (function () {
@@ -17173,9 +17853,12 @@ requestAnimationFrame(animateLava);
   }
   function pbOnChrome(key, id){
     const R = PhotoBoothRules, s = pb.shot || R.pbFreshShot();
+    const full = key === 'sticker' && (s.stickers || []).length >= 4 && (s.stickers || []).indexOf(id) < 0;
     if (key === 'sticker') pb.shot = R.pbToggleSticker(s, id);
     else { s[key] = id; pb.shot = R.pbCleanShot(s); }
     pbPaintChrome(); pbPaint();
+    // QA t330u: the 5th sticker used to do nothing at all. Say why.
+    if (full){ const h = document.querySelector('#avBooth .avbooth-h'); if (h){ h.textContent = '📸 Up to 4 stickers! Tap a lit one to take it off.'; clearTimeout(pb.hintT); pb.hintT = setTimeout(() => { h.textContent = '📸 Photo Booth'; }, 2600); } }
   }
   function pbPaintChrome(){
     const R = PhotoBoothRules, s = pb.shot || R.pbFreshShot();
@@ -18659,7 +19342,7 @@ const Obby = (() => {
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
     nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; py = null; evg = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
-    if (mode === 'elevator') buildElevator(); else if (mode === 'mansion') buildMansion(); else if (mode === 'shelter') buildShelter(); else if (mode === 'winter') buildWinter(); else if (mode === 'vet') buildVet(); else if (mode === 'mermaid') buildMermaid(); else if (mode === 'garden') buildGarden(); else if (mode === 'meadow') buildMeadow(); else if (mode === 'rides') buildRides(); else if (mode === 'hive') buildHive(); else if (mode === 'camp') buildCamp(); else if (mode === 'cafe') buildCafe(); else if (mode === 'fish') buildFish(); else if (mode === 'petshow') buildPetShow(); else if (mode === 'hunt') buildHunt(); else if (mode === 'snowfest') buildSnowFest(); else if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    if (mode === 'elevator') buildElevator(); else if (mode === 'mansion') buildMansion(); else if (mode === 'shelter') buildShelter(); else if (mode === 'winter') buildWinter(); else if (mode === 'vet') buildVet(); else if (mode === 'mermaid') buildMermaid(); else if (mode === 'treehouse') buildTreehouse(); else if (mode === 'school') buildSchool(); else if (mode === 'garden') buildGarden(); else if (mode === 'meadow') buildMeadow(); else if (mode === 'rides') buildRides(); else if (mode === 'hive') buildHive(); else if (mode === 'camp') buildCamp(); else if (mode === 'cafe') buildCafe(); else if (mode === 'fish') buildFish(); else if (mode === 'petshow') buildPetShow(); else if (mode === 'hunt') buildHunt(); else if (mode === 'snowfest') buildSnowFest(); else if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -19614,7 +20297,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'vet' || mode === 'mermaid' || mode === 'winter' || mode === 'mansion' || mode === 'shelter' || mode === 'hunt' || mode === 'elevator') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'vet' || mode === 'mermaid' || mode === 'winter' || mode === 'treehouse' || mode === 'school' || mode === 'mansion' || mode === 'shelter' || mode === 'hunt' || mode === 'elevator') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
       ejectXZ(axis, B, b);
     }
   }
@@ -19722,8 +20405,24 @@ const Obby = (() => {
     checks();
     if (mode === 'tag') tagKeepInArena(P, true);
   }
+  // QA t330u: in the cozy lot games, walking off the edge used to drop you into the void for seconds and count a "death".
+  // Remember the last solid spot and put you back a little toward the start instead.
+  const QA_EDGE_MODES = ['garden', 'meadow', 'rides', 'hive', 'camp', 'cafe', 'fish', 'petshow', 'hunt', 'treehouse', 'school'];
+  let qaSafe = null;
+  function qaEdgeCatch(){
+    if (!QA_EDGE_MODES.includes(mode)) return false;
+    if (P.onGround && P.y > -1.5){ qaSafe = {mode, x: P.x, y: P.y, z: P.z}; return false; }
+    if (!qaSafe || qaSafe.mode !== mode || P.y > qaSafe.y - 5) return false;
+    const sp = (checkpoints[0] && checkpoints[0].spawn) || {x: 0, z: 0};
+    const dx = sp.x - qaSafe.x, dz = sp.z - qaSafe.z, d = Math.hypot(dx, dz) || 1, k = Math.min(2.5, d) / d;
+    Object.assign(P, {x: qaSafe.x + dx * k, y: qaSafe.y + 0.6, z: qaSafe.z + dz * k, vx: 0, vy: 0, vz: 0, onGround: false, ground: null});
+    if (typeof banner === 'function') banner('🧭 Whoops, that’s the edge of the map! Back you go.');
+    return true;
+  }
+  if (typeof window !== 'undefined') window.__qaEdge = () => ({modes: QA_EDGE_MODES.slice(), safe: qaSafe && Object.assign({}, qaSafe)});
   function checks(){
     if (SIM) return;
+    if (qaEdgeCatch()) return;
     if (mode === 'lava') return lavaChecks();
     if (mode === 'splash') return splashChecks();
     if (mode === 'nds') return ndsChecks();
@@ -19734,6 +20433,7 @@ const Obby = (() => {
     if (mode === 'winter'){ if (P.y < -25) respawn(); return; }
     if (mode === 'vet'){ if (P.y < -25) respawn(); return; }
     if (mode === 'mermaid'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'treehouse' || mode === 'school'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -36764,7 +37464,11 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'dreamhouse' ? (typeof dh !== 'undefined' && dh && dh.visiting ? '🎮 Left stick move · Right stick look · Ⓐ jump · Ⓧ like the house · ☰ menu' : '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · Ⓨ invite friends · ⓁⓇ job · ✚▼ show spots · ☰ menu') : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'elevator' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act / shop · Ⓨ floors · Ⓑ close popups · ☰ menu' : mode === 'mansion' ? '🎮 Left stick move · Ⓐ jump · Ⓧ read / flip / unlock · Ⓨ Less scary · ☰ menu' : mode === 'shelter' ? '🎮 Left stick move · Ⓐ jump · Ⓧ rescue / care / desk · Ⓨ send home · ☰ menu' : mode === 'winter' ? '🎮 Left stick move / steer · Ⓐ jump · Ⓧ act · Ⓑ hop off or cash laps · ☰ menu' : mode === 'vet' ? '🎮 Left stick move · right stick look · Ⓐ interact · Ⓧ interact · ☰ menu' : mode === 'mermaid' ? '🎮 Left stick move · Ⓐ jump / swim up · LT/LB swim down · RT/RB swim up · Ⓧ act · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'pethotel' ? '🎮 Left stick move · Ⓐ jump · Ⓧ check in / care / check out · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'dreamhouse' ? (typeof dh !== 'undefined' && dh && dh.visiting ? '🎮 Left stick move · Right stick look · Ⓐ jump · Ⓧ like the house · ☰ menu' : '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · Ⓨ invite friends · ⓁⓇ job · ✚▼ show spots · ☰ menu') : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'elevator' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act / shop · Ⓨ floors · Ⓑ close popups · ☰ menu' : mode === 'mansion' ? '🎮 Left stick move · Ⓐ jump · Ⓧ read / flip / unlock · Ⓨ Less scary · ☰ menu' : mode === 'shelter' ? '🎮 Left stick move · Ⓐ jump · Ⓧ rescue / care / desk · Ⓨ send home · ☰ menu' : mode === 'winter' ? '🎮 Left stick move / steer · Ⓐ jump · Ⓧ act · Ⓑ hop off or cash laps · ☰ menu' : mode === 'vet' ? '🎮 Left stick move · right stick look · Ⓐ interact · Ⓧ interact · ☰ menu' : mode === 'mermaid' ? '🎮 Left stick move · Ⓐ jump / swim up · LT/LB swim down · RT/RB swim up · Ⓧ act · ☰ menu' : mode === 'treehouse' ? '🎮 Left stick move · Ⓐ jump · Ⓧ place / ride · Ⓨ pieces · LB delete · RB undo · ☰ menu' : mode === 'school' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act · Ⓨ Less scary · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'pethotel' ? '🎮 Left stick move · Ⓐ jump · Ⓧ check in / care / check out · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+      : mode === 'meadow' ? '🎮 Left stick move · hold RT to charge, let go to toss · Ⓧ act · ☰ menu'
+      : mode === 'camp' ? '🎮 Left stick move · hold Ⓧ to pick up / add logs · RB shine your light · ☰ menu'
+      : mode === 'rides' ? '🎮 Left stick move · Ⓧ place · LB/RB pick a ride · Ⓨ rotate · Ⓑ hop off · ☰ menu'
+      : ['garden', 'hive', 'cafe', 'fish', 'petshow', 'hunt', 'party', 'snowfest'].includes(mode) ? '🎮 Left stick move · Ⓐ jump · Ⓧ act · Right stick look · ☰ menu'   // QA t330u: these showed the Obby pad line
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · View emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -36867,6 +37571,8 @@ const Obby = (() => {
     if (mode === 'winter' && typeof wnPad === 'function' && wnPad(jp, s)) return;
     if (mode === 'vet' && typeof vtPad === 'function' && vtPad(jp, s)) return;
     if (mode === 'mermaid' && typeof mmPad === 'function' && mmPad(jp, s)) return;
+    if (mode === 'treehouse' && typeof thPad === 'function' && thPad(jp, s)) return;
+    if (mode === 'school' && typeof scPad === 'function' && scPad(jp, s)) return;
     if (mode === 'snowfest' && typeof evg !== 'undefined' && evg && typeof snowfestPad === 'function' && snowfestPad(jp)) return;
     if (mode === 'party' && typeof py !== 'undefined' && py && typeof partyPad === 'function' && partyPad(jp)) return;
     if (jp[3]) behind();
@@ -37036,6 +37742,33 @@ function dhLayoutHud(){
     if (mode === 'tag'){
       $('#oTip').innerHTML = (on ? '🕹️ Left thumb to move · ⬆️ to jump · 🏃 to run · Swipe the right side to look · 👁️ first person · 😀 emotes'
         : '⌨️ WASD / Arrows to move · Space to jump · Shift to run · Drag the mouse to look · V first person · 1–8 emotes · Esc to pause') + "<br>🏷️ Don't be IT! Touch someone to pass it on. Least IT time after 90s wins! +5 🪙 per tag, +30 to win";
+      return;
+    }
+    // QA t330u: the newer games fell through to the Obby text ("grab the coins, dodge the red lava"). Give each its own keys + goal.
+    const NEWTIP = {
+      elevator: ['E act / shop · I floors · H help', '🛗 Ride the Wobblevator, clear each surprise floor, then hop back in before the doors close!'],
+      mansion: ['E read / flip / unlock · L Less scary', '🕯️ Find the notes, solve the parlor pictures, follow the clues to the Secret Attic, and tip-toe past Nimble.'],
+      shelter: ['E rescue / care / desk · H send a happy pal home · U bigger kennels', '🐾 Rescue strays, cheer them up in the salon, then match them with visiting families.'],
+      winter: ['E act · F cocoa · on a sled: A/D steer, Space hop', '🎄 Hang lights, wrap gifts for Ribbon Rue, sled, skate, and build a snow pal.'],
+      vet: ['E or Space help · drag or click to look', '🩺 Read the chart, walk to the right room, treat your patient, and give cuddles until the owner picks them up.'],
+      mermaid: ['Space / R swim up · Shift / F swim down · E act', '🧜 Swim around Glimmergill Cove, collect shells, and decorate your coral home.'],
+      garden: ['E plant / harvest / shop', '🌱 Plant seeds, wait for them to grow, harvest, then sell them or show a prize.'],
+      meadow: ['hold E to charge, let go to toss', '🥣 Toss a snack near a pal to add them to your book.'],
+      rides: ['E place · Q / R turn and rotate · Z undo', '🎢 Build a ride on your lot, then hop on and test it!'],
+      hive: ['E talk / gather / make honey', '🐝 Gather pollen with your bee swarm, make honey, and help the bear neighbors.'],
+      camp: ['E pick up / add logs · L shine your light', '🔥 Hunt logs by day, keep the fire bright, and stay in the light at night.'],
+      cafe: ['E make / serve · B decorate', '☕ Read each ticket, make the drink or treat, and serve it to the right table.'],
+      fish: ['E cast / reel · I fish index', '🎣 Cast your line, wait for the bite, then reel at the right time to fill your fish index.'],
+      petshow: ['E teach / perform', '🎭 Teach your pet tricks on the practice pads, then perform for the judges.'],
+      hunt: ['E dig · M map', '🗺️ Follow today’s clues on the map and dig up the treasure chests.'],
+      party: ['E dance / sit / use', '🎉 Hang out! Dance, sit, snap a photo, or kick the ball.'],
+      snowfest: ['E play a booth', '❄️ Try the snowball toss, the sled hill, the snowman yard, and the ice rink.'],
+    };
+    if (NEWTIP[mode]){
+      const nt = NEWTIP[mode];
+      $('#oTip').innerHTML = (on
+        ? (mode === 'vet' ? '🕹️ Left thumb to move · swipe to look · tap the big buttons to help' : mode === 'mermaid' ? '🕹️ Left thumb to swim · ⬆️ ⬇️ swim up and down · tap the big buttons to act' : mode === 'treehouse' ? '🕹️ Left thumb to move · tap Place, Pieces, Undo, or Delete' : mode === 'school' ? '🕹️ Left thumb to move · tap the big buttons to act or change Less scary' : '🕹️ Left thumb to move · ⬆️ jump · tap the big buttons to act')
+        : '⌨️ WASD move · ' + (mode === 'mermaid' ? '' : 'Space jump · ') + nt[0] + ' · Esc pause') + '<br>' + nt[1];
       return;
     }
     const goal = mode === 'nds' ? 'Survive each disaster for 30 seconds! Hide inside, climb up high, stay out of the water. +20 🪙 per round!' : mode === 'lava' ? 'Climb the tower to the 🚁 before the lava gets you!'
@@ -37416,7 +38149,7 @@ function dhLayoutHud(){
       if (ic) iceCreamUpdate(dt);
       if (ph) petHotelUpdate(dt);
       if (sb) stableUpdate(dt);
-      if (evg) snowfestUpdate(dt); if (py) partyUpdate(dt); if (lh) lanternUpdate(dt); if (typeof t297Update === 'function') t297Update(dt); if (typeof t302Update === 'function') t302Update(dt); if (typeof elevUpdate === 'function') elevUpdate(dt); if (typeof mnUpdate === 'function' && mode === 'mansion') mnUpdate(dt); if (typeof shUpdate === 'function' && mode === 'shelter') shUpdate(dt); if (typeof wnUpdate === 'function' && mode === 'winter') wnUpdate(dt); if (typeof vtUpdate === 'function' && mode === 'vet') vtUpdate(dt); if (typeof mmUpdate === 'function' && mode === 'mermaid') mmUpdate(dt);
+      if (evg) snowfestUpdate(dt); if (py) partyUpdate(dt); if (lh) lanternUpdate(dt); if (typeof t297Update === 'function') t297Update(dt); if (typeof t302Update === 'function') t302Update(dt); if (typeof elevUpdate === 'function') elevUpdate(dt); if (typeof mnUpdate === 'function' && mode === 'mansion') mnUpdate(dt); if (typeof shUpdate === 'function' && mode === 'shelter') shUpdate(dt); if (typeof wnUpdate === 'function' && mode === 'winter') wnUpdate(dt); if (typeof vtUpdate === 'function' && mode === 'vet') vtUpdate(dt); if (typeof mmUpdate === 'function' && mode === 'mermaid') mmUpdate(dt); if (typeof thUpdate === 'function' && mode === 'treehouse') thUpdate(dt); if (typeof scUpdate === 'function' && mode === 'school') scUpdate(dt);
       if (hm) hauntUpdate(dt);
       if (db) danceUpdate(dt);
       if (dh) dreamhouseUpdate(dt);
@@ -37578,6 +38311,13 @@ function dhLayoutHud(){
       if (mode === 'photostudio' && psx && (psx.cam || psx.gal) && e.code === 'Escape' && !e.repeat && psKey(e)) return;
       if (mode === 'dreamhouse' && dh && (dh.shopOpen || dh.yardOpen || dh.upOpen) && (e.code === 'Escape' || e.code === 'KeyB') && !e.repeat){ dhKey(e); return; }
       if (e.code === 'Escape' && typeof dhOnResetKey === 'function' && dhOnResetKey(e)) return;
+      // QA t330u: Escape used to pause behind the gift-wrap modal instead of closing it.
+      const wrapModal = document.getElementById('wnWrap');
+      if (mode === 'winter' && wrapModal && !wrapModal.hidden){
+        if (e.code === 'Escape'){ if (typeof wnCloseWrap === 'function') wnCloseWrap(); e.preventDefault(); return; }
+        // Keep movement keys from steering the character behind the wrapping contest.
+        if (/^(Key[WASDEF]|Arrow|Space)/.test(e.code)) return;
+      }
       if (e.code === 'Escape'){
         if (typeof resetModalIsOpen === 'function' && resetModalIsOpen()){ if (typeof resetClose === 'function') resetClose(); if (e.preventDefault) e.preventDefault(); return; }
         const sm = document.getElementById('setModal');
@@ -37601,6 +38341,8 @@ function dhLayoutHud(){
       if (mode === 'winter' && typeof wnKey === 'function' && wnKey(e)) return;
       if (mode === 'vet' && typeof vtKey === 'function' && vtKey(e)) return;
       if (mode === 'mermaid' && typeof mmKey === 'function' && mmKey(e)) return;
+      if (mode === 'treehouse' && typeof thKey === 'function' && thKey(e)) return;
+      if (mode === 'school' && typeof scKey === 'function' && scKey(e)) return;
       if (mode === 'snowfest' && typeof evg !== 'undefined' && evg && typeof snowfestKey === 'function' && snowfestKey(e)) return;
       if (mode === 'party' && typeof py !== 'undefined' && py && typeof partyKey === 'function' && partyKey(e)) return;
       const em = (typeof EmoRules !== 'undefined' && EmoRules.emoByCode) ? EmoRules.emoByCode(e.code, EMOTES) : Object.keys(EMOTES).find(k => { const key = EMOTES[k].key; return key != null && key !== '' && ('Digit' + key === e.code || 'Numpad' + key === e.code); });
@@ -37632,7 +38374,9 @@ function dhLayoutHud(){
       if (mode === 'shelter' && typeof shKey === 'function' && shKey(e)) return;
       if (mode === 'winter' && typeof wnKey === 'function' && wnKey(e)) return;
       if (mode === 'vet' && typeof vtKey === 'function' && vtKey(e)) return;
-      if (mode === 'mermaid' && typeof mmKey === 'function' && mmKey(e)) return; });
+      if (mode === 'mermaid' && typeof mmKey === 'function' && mmKey(e)) return;
+      if (mode === 'treehouse' && typeof thKey === 'function' && thKey(e)) return;
+      if (mode === 'school' && typeof scKey === 'function' && scKey(e)) return; });
     const clearHeldKeys = () => {
       for (const k in keys) keys[k] = false;
       if (typeof joy !== 'undefined' && joy){ joy.x = joy.y = 0; joy.jump = false; }
@@ -38016,7 +38760,7 @@ function dhLayoutHud(){
   }
 
 function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party', 'snowfest', 'cafe', 'fish', 'petshow', 'hunt', 'garden', 'meadow', 'rides', 'hive', 'camp', 'elevator', 'mansion', 'shelter', 'winter', 'vet', 'mermaid'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt' || mode === 'garden' || mode === 'meadow' || mode === 'rides' || mode === 'hive' || mode === 'camp' || mode === 'elevator' || mode === 'mansion' || mode === 'shelter' || mode === 'winter' || mode === 'vet' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party', 'snowfest', 'cafe', 'fish', 'petshow', 'hunt', 'garden', 'meadow', 'rides', 'hive', 'camp', 'elevator', 'mansion', 'shelter', 'winter', 'vet', 'mermaid', 'treehouse', 'school'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt' || mode === 'garden' || mode === 'meadow' || mode === 'rides' || mode === 'hive' || mode === 'camp' || mode === 'elevator' || mode === 'mansion' || mode === 'shelter' || mode === 'winter' || mode === 'vet' || mode === 'mermaid' || mode === 'treehouse' || mode === 'school' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     recordRecentGame(mode);
@@ -38076,6 +38820,8 @@ function start(m = 'obby', d = null){
     else if (mode === 'winter') banner('🎄 Welcome to Pinebell Village! Sled, skate, build a snow pal, and sip cocoa.');
     else if (mode === 'vet') banner('🩺 Welcome to Pawsley Vet Clinic! First-person only — walk the rooms, check the chart, and help every pal feel better.');
     else if (mode === 'mermaid') banner('🧜 Welcome to Glimmergill Cove! Swim up and down, collect shells, and decorate your coral home.');
+    else if (mode === 'treehouse') banner('🌳 Welcome to Oakheart Treehouse! Snap on platforms, ladders, rooms, a slide and a zipline, then hang out with real friends.');
+    else if (mode === 'school') banner('🏫 Afterbell School is locked after dark. Solve the puzzles and slip past the Hush Warden. If it finds you, everyone is okay.');
     else if (diff) begin(diff);
     $('#obby').classList.toggle('rmode', mode === 'race'); ['#rcLapBox', '#rcPosBox', '#rcItem'].forEach(id => $(id).style.display = mode === 'race' ? '' : 'none'); ['#rcPick', '#rcFin'].forEach(id => $(id).classList.remove('show'));
     if (mode === 'race'){ if (!window.__rcBound){ window.__rcBound = true;
@@ -38132,9 +38878,11 @@ function start(m = 'obby', d = null){
     if (mode === 'rides') ridesEnter();
     if (mode === 'hive') hiveEnter();
     if (mode === 'camp') campEnter();
+    if (mode === 'treehouse' && typeof thEnter === 'function') thEnter();
+    if (mode === 'school' && typeof scEnter === 'function') scEnter();
     if (mode === 'elevator') elevEnter();
     { const _elev = document.getElementById('elevBox'); if (_elev) _elev.style.display = mode === 'elevator' ? '' : 'none'; } { const _mn = document.getElementById('mnBox'); if (_mn) _mn.style.display = mode === 'mansion' ? '' : 'none'; } { const _sh = document.getElementById('shBox'); if (_sh) _sh.style.display = mode === 'shelter' ? '' : 'none'; }
-    $('#obby').classList.toggle('elevmode', mode === 'elevator'); $('#obby').classList.toggle('mnmode', mode === 'mansion'); $('#obby').classList.toggle('shmode', mode === 'shelter'); $('#obby').classList.toggle('wnmode', mode === 'winter'); $('#obby').classList.toggle('vtmode', mode === 'vet'); $('#obby').classList.toggle('mmode', mode === 'mermaid');
+    $('#obby').classList.toggle('elevmode', mode === 'elevator'); $('#obby').classList.toggle('mnmode', mode === 'mansion'); $('#obby').classList.toggle('shmode', mode === 'shelter'); $('#obby').classList.toggle('wnmode', mode === 'winter'); $('#obby').classList.toggle('vtmode', mode === 'vet'); $('#obby').classList.toggle('mmode', mode === 'mermaid'); $('#obby').classList.toggle('thmode', mode === 'treehouse'); $('#obby').classList.toggle('scmode', mode === 'school');
     { const _t302 = document.getElementById('t302Box'); if (_t302) _t302.style.display = ['garden','meadow','rides','hive','camp'].includes(mode) ? '' : 'none'; }
     $('#obby').classList.toggle('gardenmode', mode === 'garden');
     $('#obby').classList.toggle('meadowmode', mode === 'meadow');
@@ -40996,7 +41744,7 @@ function start(m = 'obby', d = null){
     // stage
     plat(0, 0.7, -8, 12, 8, '#f4e27a', 0.7);
     plat(0, 0.2, -2.2, 10, 2.2, '#6b4aa0', 0.2);
-    t297Keep(psg, t297Lab('🎭 Stage — start a show here', 0, 3.4, -5));
+    t297Keep(psg, t297Lab('🎭 Stage — start a show here', 0, 3.4, -7)); // QA t330u: was at z -5, right on top of the starting camera
     // judges as fixtures
     [[-3, -11.2], [0, -11.2], [3, -11.2]].forEach(([x,z], i) => {
       plat(x, 1.0, z, 1.4, 1.0, '#3d2a62', 1.0);
@@ -41009,7 +41757,9 @@ function start(m = 'obby', d = null){
     psg.mats = (PsRules ? PsRules.PS_TRICKS : []).map((t, i) => {
       const x = -8 + i * 4, z = 8;
       plat(x, 0.12, z, 2.2, 2.2, i % 2 ? '#ffd6ea' : '#d6f0ff', 0.12);
-      t297Keep(psg, t297Lab(t.emoji + ' ' + t.name, x, 2.2, z));
+      // QA t330u: these filled the screen right under the camera. Smaller, lower and staggered so neighbours don't overlap.
+      const ml = t297Lab(t.emoji + ' ' + t.name, x, 1.5 + (i % 2) * 0.55, z); if (ml) ml.scale.multiplyScalar(0.6);
+      t297Keep(psg, ml);
       return {id:t.id, x, z, name:t.name, emoji:t.emoji};
     });
     // seats
@@ -41206,7 +41956,7 @@ function start(m = 'obby', d = null){
     huntPaintMap();
     const step = huntg.map && huntg.map.steps[huntg.sv.step];
     banner(step ? ('🗺️ Today\'s first clue: ' + step.clue) : '🗺️ You already finished today\'s map — come back tomorrow!');
-    t297Hud(step ? step.clue : 'Today\'s map is done. Wander or come back tomorrow!', '🗺️ Map');
+    t297Hud(step ? step.clue : 'Today\'s map is done. Wander or come back tomorrow!', null);   // QA t330u: the 🗺️ Map button is already on screen
   }
   function huntStop(){
     if (!huntg) return;
@@ -41265,8 +42015,8 @@ function start(m = 'obby', d = null){
     const s = huntSpotNear();
     const cur = huntg.map && huntg.map.steps[huntg.sv.step];
     if (s) t297Hud('Dig at the ' + s.name + '?', '⛏️ Dig');
-    else if (cur) t297Hud(cur.clue, '🗺️ Map');
-    else t297Hud('Today\'s map is complete!', '🗺️ Map');
+    else if (cur) t297Hud(cur.clue, null);   // QA t330u: no second "🗺️ Map" button next to the real one
+    else t297Hud('Today\'s map is complete!', null);
   }
   function huntKey(e){
     if (!huntg || e.repeat) return false;
@@ -41315,7 +42065,7 @@ function start(m = 'obby', d = null){
   }
 
   const T302_MODES = ['garden','meadow','rides','hive','camp'];
-  const T302_OVERLAY_IDS = ['gardenShop','meadowBook','ridesPalette','hiveQuest','campCraft','campWin'];
+  const T302_OVERLAY_IDS = ['gardenShop','meadowBook','ridesPalette','hiveQuest','campCraft','campWin','campJournal'];
   let gd = null, mw = null, rd = null, hv = null, cg = null;
   const t302Btn = {};
 
@@ -41389,7 +42139,7 @@ function start(m = 'obby', d = null){
       act.addEventListener('pointerup', ev => { ev.preventDefault(); ev.stopPropagation(); t302Pointer(false, ev, true); });
       act.addEventListener('pointercancel', ev => { t302Pointer(false, ev, true); });
     }
-    ['gardenShopBtn','meadowBookBtn','ridesPaletteBtn','ridesHelpBtn','ridesDelBtn','ridesUndoBtn','ridesTestBtn','hiveQuestBtn','campCraftBtn','t302LessBtn','campWinAgain','campWinClose','t302TutNext','t302TutSkip'].forEach(id => {
+    ['gardenShopBtn','meadowBookBtn','ridesPaletteBtn','ridesHelpBtn','ridesDelBtn','ridesUndoBtn','ridesTestBtn','hiveQuestBtn','campCraftBtn','t302JournalBtn','t302LessBtn','campWinAgain','campWinClose','campJournalX','t302TutNext','t302TutSkip'].forEach(id => {
       const el = document.getElementById(id);
       if (el && !el.__t302){ el.__t302 = true; el.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); t302Open(id); }; }
     });
@@ -41426,6 +42176,7 @@ function start(m = 'obby', d = null){
   function t302Open(which){
     t302BindOverlays();
     if (which === 't302LessBtn'){ campToggleLess(); return; }
+    if (which === 't302JournalBtn' || which === 'campJournal'){ campOpenJournal(); return; }
     if (which === 'ridesDelBtn'){ ridesToggleDel(); return; }
     if (which === 'ridesUndoBtn'){ ridesUndoNow(); return; }
     if (which === 'ridesTestBtn'){ ridesTestRide(); return; }
@@ -41434,13 +42185,14 @@ function start(m = 'obby', d = null){
     if (which === 'ridesHelpBtn'){ ridesHelp(); return; }
     if (which === 't302TutNext'){ ridesTutGo(); return; }
     if (which === 't302TutSkip'){ ridesTutSkipNow(); return; }
-    const map = {gardenShopBtn:'gardenShop', meadowBookBtn:'meadowBook', ridesPaletteBtn:'ridesPalette', hiveQuestBtn:'hiveQuest', campCraftBtn:'campCraft'};
+    const map = {gardenShopBtn:'gardenShop', meadowBookBtn:'meadowBook', ridesPaletteBtn:'ridesPalette', hiveQuestBtn:'hiveQuest', campCraftBtn:'campCraft', t302JournalBtn:'campJournal'};
     const id = map[which] || which;
     if (id === 'gardenShop') gardenPaintShop();
     if (id === 'meadowBook') meadowPaintBook();
     if (id === 'ridesPalette') ridesPaintPalette();
     if (id === 'hiveQuest') hivePaintQuest();
     if (id === 'campCraft') campPaintCraft();
+    if (id === 'campJournal' || which === 't302JournalBtn') campPaintJournal();
     if (typeof t297OverlayShow === 'function') t297OverlayShow(id, true);
   }
   function t302Box(on){
@@ -42805,6 +43557,78 @@ function start(m = 'obby', d = null){
     cg.run.watchEvents = [];
   }
 
+
+  function campPoseWrenSpooky(){
+    if (!cg) return;
+    cg.shotLock = true;
+    cg.sv.lessScary = false;
+    let s = cg.sv;
+    (CampRules.CAMP_CLUES || []).forEach(c => {
+      const r = CampRules.campFindClue(s, c.id);
+      if (r.ok) s = r.state;
+    });
+    const end = CampRules.campFindCamper(s);
+    if (end.ok) s = end.state;
+    campPersist(s); cg.sv = s;
+    try { if (typeof goreSetLevel === 'function') goreSetLevel('spooky'); } catch (e){}
+    cg.run.phase = 'night';
+    cg.run.t = CampRules.CAMP_NIGHT * 0.45;
+    cg.run.fire = 0.55;
+    cg.run.gmode = 'hidden';
+    cg.run.flicker = 0;
+    campRebuildGore();
+    campRebuildWren();
+    if (cg.gloam) cg.gloam.visible = false;
+    const h = CampRules.CAMP_HOLLOW;
+    if (P){ P.x = h.x - 22; P.y = 0; P.z = h.z - 22; }
+    try { if (typeof body !== 'undefined' && body) body.visible = false; } catch (e){}
+    try { if (typeof model !== 'undefined' && model){ if (model.g) model.g.visible = false; else if (model.visible != null) model.visible = false; } } catch (e){}
+    try { if (typeof blob !== 'undefined' && blob) blob.visible = false; } catch (e){}
+    campWorldLights(false, true, 0.55, 0);
+    if (scene){
+      const c = new THREE.Color('#141018');
+      scene.background = c;
+      if (scene.fog){ scene.fog.color.copy(c); scene.fog.near = 12; scene.fog.far = 64; }
+    }
+    if (!cg.moonLt){
+      cg.moonLt = new THREE.DirectionalLight('#d8c8b8', 0.7);
+      cg.moonLt.position.set(20, 24, 8);
+      cg.moonLt._campSkip = true;
+      scene.add(cg.moonLt); t302Keep(cg, cg.moonLt);
+    }
+    cg.moonLt.intensity = 0.85;
+    cg.moonLt.visible = true;
+    if (cg.wrenMesh){ cg.wrenMesh.rotation.z = 0.16; cg.wrenMesh.visible = true; }
+    campPaintClues();
+    const from = {x:h.x + 4.5, y:2.4, z:h.z + 3.6}, at = {x:h.x + 1.15, y:1.15, z:h.z};
+    if (typeof cam !== 'undefined' && cam){ cam.yaw = Math.atan2(from.x - at.x, from.z - at.z); cam.pitch = 0.14; cam.dist = 9; }
+    try { if (obbyDebug && obbyDebug.camLook) obbyDebug.camLook(from, at); } catch (e){}
+    try {
+      const b = document.getElementById('oBanner');
+      if (b){ b.textContent = ''; b.classList.remove('go'); }
+    } catch (e){}
+    try { window.__campWrenShot = {spooky: true, bandage: true, from: from, at: at}; } catch (e){}
+  }
+  function campPoseStory(){
+    if (!cg) return;
+    cg.shotLock = true;
+    cg.sv.lessScary = false;
+    // show several unfound clues around the lake path plus the journal
+    if (P){ P.x = -20; P.z = 22; P.face = Math.atan2(-10, 14); if (typeof cam !== 'undefined' && cam){ cam.yaw = P.face; cam.pitch = 0.08; cam.dist = 12; } }
+    try { if (typeof body !== 'undefined' && body) body.visible = false; } catch(e){}
+    cg.run.phase = 'night'; cg.run.gmode = 'hidden'; cg.run.fire = 0.5;
+    if (cg.gloam) cg.gloam.visible = false;
+    campWorldLights(false, true, 0.5, 0);
+    if (scene){
+      const c = new THREE.Color('#0b1020');
+      scene.background = c;
+      if (scene.fog){ scene.fog.color.copy(c); scene.fog.near = 14; scene.fog.far = 70; }
+    }
+    campPaintClues();
+    campOpenJournal();
+    try { window.__campStoryShot = {clues: (cg.sv.clues||[]).length, journal: true}; } catch(e){}
+  }
+
   function campPoseGore(level){
     if (!cg) return;
     cg.shotLock = true;
@@ -42989,6 +43813,7 @@ function start(m = 'obby', d = null){
     campRebuildGloam();
     campPaintLessBtn();
     campRebuildGore();
+    campBuildStory();
     checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:8}, flag:new THREE.Object3D()};
   }
   function campEnter(){
@@ -43098,6 +43923,7 @@ function start(m = 'obby', d = null){
       t302Keep(cg, m);
       cg.gore.push(m);
     });
+    campRebuildWren();
   }
 
   function campPaintLessBtn(){
@@ -43214,8 +44040,131 @@ function start(m = 'obby', d = null){
     cg.holding = !!on;
     if (!on && cg.run) cg.run.chopping = null;
   }
+
+
+  function campWrenSpookyNow(){
+    if (!cg) return false;
+    let raw = 'off';
+    try { raw = (typeof goreSetting === 'function') ? goreSetting() : ((typeof load === 'function' && typeof GoreRules !== 'undefined') ? load(GoreRules.GORE_KEY, 'off') : 'off'); } catch (e){}
+    return !!(CampRules && CampRules.campWrenSpooky && CampRules.campWrenSpooky(raw, !!(cg.sv && cg.sv.lessScary)));
+  }
+  function campMakeWren(){
+    const h = CampRules.CAMP_HOLLOW;
+    const spooky = campWrenSpookyNow();
+    const g = new THREE.Group();
+    g.position.set(h.x + 1.2, 0, h.z);
+    g.userData.spooky = !!spooky;
+    g.userData.shiver = !!spooky;
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.1, 0.4), t302Mat('#3a86ff'));
+    body.position.y = 0.9;
+    g.add(body);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.45, 0.45), t302Mat('#ffd23f'));
+    head.position.y = 1.65;
+    g.add(head);
+    const scarf = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.16, 0.54), t302Mat('#c23d4b'));
+    scarf.position.y = 1.42;
+    g.add(scarf);
+    if (spooky){
+      // Scared, wide eyes only. Wren has no red marks.
+      const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.15, 0.04), new THREE.MeshBasicMaterial({color:'#fff8ee'}));
+      eyeL.position.set(-0.1, 1.7, 0.23); g.add(eyeL);
+      const eyeR = eyeL.clone(); eyeR.position.x = 0.1; g.add(eyeR);
+      const pupL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.03), new THREE.MeshBasicMaterial({color:'#1d2340'}));
+      pupL.position.set(-0.1, 1.67, 0.25); g.add(pupL);
+      const pupR = pupL.clone(); pupR.position.x = 0.1; g.add(pupR);
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.5, 0.16), t302Mat('#3a86ff'));
+      arm.position.set(0.42, 0.95, 0); g.add(arm);
+      // A clean white bandage wrapped on one arm.
+      const bandage = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.2, 0.22), t302Mat('#f4f4f0'));
+      bandage.position.set(0.42, 1.08, 0);
+      bandage.userData.bandage = true;
+      g.add(bandage);
+      g.rotation.z = 0.1;
+    }
+    scene.add(g);
+    if (cg) t302Keep(cg, g);
+    return g;
+  }
+  function campRebuildWren(){
+    if (!cg) return;
+    if (cg.wrenMesh){
+      try { if (cg.wrenMesh.parent) cg.wrenMesh.parent.remove(cg.wrenMesh); } catch (e){}
+      try { scene.remove(cg.wrenMesh); } catch (e){}
+    }
+    cg.wrenMesh = campMakeWren();
+    campPaintClues();
+  }
+  function campBuildStory(){
+    if (!cg) return;
+    cg.clueMeshes = {};
+    (CampRules.CAMP_CLUES || []).forEach(c => {
+      const col = c.id === 'light' ? '#ffe566' : (c.id === 'radio' ? '#8ad0ff' : '#d9b48f');
+      const m = t302Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.5), col, c.x, 0.35, c.z, cg);
+      t302Lab((c.emoji || '🔍') + ' ' + c.name, c.x, 1.6, c.z);
+      cg.clueMeshes[c.id] = m;
+    });
+    const h = CampRules.CAMP_HOLLOW;
+    t302Mesh(new THREE.CylinderGeometry(0.7, 0.9, 3.2, 8), '#5a3a22', h.x, 1.6, h.z, cg);
+    t302Lab('🧣 Maple Wren', h.x + 1.2, 2.6, h.z);
+    t302Lab('🌳 Hollow Tree', h.x, 3.4, h.z);
+    campRebuildWren();
+    campPaintClues();
+  }
+
+  function campPaintJournal(){
+    const box = document.getElementById('campJournalList');
+    const title = document.getElementById('campJournalTitle');
+    if (!box || !cg) return;
+    const j = CampRules.campJournalLines(cg.sv, !!(cg.sv && cg.sv.lessScary));
+    if (title) title.textContent = j.title;
+    box.innerHTML = '<p class="campStoryIntro">' + j.intro + '</p>' +
+      j.lines.map(l => '<div class="t297row' + (l.have ? '' : ' dim') + '"><span>' + l.emoji + ' ' + l.name + ' — ' + l.text + '</span></div>').join('') +
+      '<div class="t297row"><span>' + (j.done ? '🧣 Maple Wren is safe by the hollow tree. Everyone is okay!' : (j.ready ? 'All clues are in! Follow them to the hollow tree in the Deep Woods.' : ('Clues ' + j.found + '/' + j.total + '.'))) + '</span></div>';
+  }
+  function campOpenJournal(){
+    campPaintJournal();
+    if (typeof t297OverlayShow === 'function') t297OverlayShow('campJournal', true);
+    else { const el = document.getElementById('campJournal'); if (el) el.classList.add('show'); }
+    return true;
+  }
+  function campPickStory(){
+    if (!cg) return false;
+    const hit = CampRules.campNearClue(P.x, P.z, cg.sv);
+    if (!hit) return false;
+    if (hit.final){
+      const r = CampRules.campFindCamper(cg.sv);
+      if (!r.ok){ banner('Keep looking — there are still clues to find.'); return true; }
+      campPersist(r.state); cg.sv = r.state;
+      t302Pay(r.reward, '🧣 Wren is safe'); t302Snd('win'); t302Ach('camp-wren'); t302Note('camp-wren');
+      try { if (typeof confetti === 'function') confetti(); } catch(e){}
+      banner('🧣 ' + ((CampRules.campWrenEnding && CampRules.campWrenEnding()) || 'You found Maple Wren! They were watching fireflies and lost the path. Everyone is okay!') + (r.reward ? (' +' + r.reward + ' 🪙') : ''));
+      campPaintClues(); campPaintJournal();
+      return true;
+    }
+    const r = CampRules.campFindClue(cg.sv, hit.id);
+    if (!r.ok) return false;
+    campPersist(r.state); cg.sv = r.state;
+    t302Snd('cp'); t302Note('camp-clue');
+    const less = !!(cg.sv && cg.sv.lessScary);
+    banner(hit.emoji + ' ' + CampRules.campClueText(hit.id, less) + (r.left ? ('  (' + (CampRules.CAMP_CLUES.length - r.left) + '/' + CampRules.CAMP_CLUES.length + ')') : '  All clues found! Check the Deep Woods.'));
+    campPaintClues(); campPaintJournal();
+    return true;
+  }
+  function campPaintClues(){
+    if (!cg) return;
+    cg.clues = cg.clues || [];
+    (cg.clues || []).forEach(m => { try { m.visible = true; } catch(e){} });
+    (CampRules.CAMP_CLUES || []).forEach(c => {
+      const have = CampRules.campHasClue(cg.sv, c.id);
+      const mesh = (cg.clueMeshes || {})[c.id];
+      if (mesh) mesh.visible = !have;
+    });
+    if (cg.wrenMesh) cg.wrenMesh.visible = CampRules.campCanFindCamper(cg.sv) || !!(cg.sv && cg.sv.camperFound);
+  }
+
   function campAct(){
     if (!cg || cg.done) return false;
+    if (campPickStory()) return true;
     if (cg.near && cg.near.kind === 'bench'){ t302Open('campCraft'); return true; }
     if (cg.near && cg.near.kind === 'log'){
       const log = CampRules.campLog(cg.run, cg.near.id);
@@ -43498,6 +44447,8 @@ function start(m = 'obby', d = null){
     let near = null;
     if (t302Near(0, 0, 2.4)) near = {kind:'fire'};
     if (t302Near(cg.bench.x, cg.bench.z, 2)) near = {kind:'bench'};
+    const storyHit = CampRules.campNearClue(P.x, P.z, cg.sv);
+    if (storyHit) near = {kind: storyHit.final ? 'wren' : 'clue', id: storyHit.id, name: storyHit.name, emoji: storyHit.emoji};
     (cg.run.logs || []).forEach(log => {
       if ((log.left | 0) > 0 && t302Near(log.x, log.z, 1.7)) near = {kind:'log', id:log.id, chop: log.kind !== 'fallen'};
     });
@@ -43508,7 +44459,16 @@ function start(m = 'obby', d = null){
     else if (near && near.kind === 'log') t302Hud('E / Ⓧ — pick up this fallen log. Carry up to ' + CampRules.CAMP_CARRY + ', then stash them at camp.', '🪵 Pick up');
     else if (near && near.kind === 'bench') t302Hud('E / Ⓧ — craft a blanket or lantern, or change Less scary.', '');
     else if (CampRules.campHas(cg.sv, 'lantern')) t302Hud('Goal: survive 5 nights. L or the Lantern action shines light at the Gloam. Follow the compass back to camp.', '🏮 Lantern');
-    else t302Hud('Goal: survive 5 nights. Hunt logs in the woods, stash them at the fire, watch the trees after dark.', '');
+    else if (near && near.kind === 'clue') t302Hud((near.emoji || '🔍') + ' A clue! E / Ⓧ — pick it up and add it to your journal.', '🔍 Clue');
+    else if (near && near.kind === 'wren') t302Hud('🧣 Maple Wren is here, and they are okay! E / Ⓧ — say hello.', '🧣 Wren');
+    else t302Hud('Goal: survive 5 nights, and help find Maple Wren. Hunt logs, follow clues, keep the fire bright after dark.', '');
+    if (cg.wrenMesh && cg.wrenMesh.userData && cg.wrenMesh.userData.shiver && cg.wrenMesh.visible){
+      const tNow = (typeof worldT === 'number') ? worldT : 0;
+      const h = CampRules.CAMP_HOLLOW;
+      cg.wrenMesh.rotation.z = 0.1 + Math.sin(tNow * 14) * 0.07;
+      cg.wrenMesh.position.x = h.x + 1.2 + Math.sin(tNow * 16) * 0.03;
+    }
+
   }
 
   /* ---------- shared hooks ---------- */
@@ -43557,9 +44517,14 @@ function start(m = 'obby', d = null){
       return false;
     }
     if (mode === 'camp'){
+      // QA t332u: keyup also routes here. E/F keyup only releases a hold; J/L/act run on a fresh keydown.
+      if (e.type === 'keyup'){
+        if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ campHold(false); return true; }
+        return false;
+      }
+      if (e.code === 'KeyJ'){ if (!e.repeat) campOpenJournal(); return true; }
       if (e.code === 'KeyL'){ if (!e.repeat) campShineNow(); return true; }
       if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){
-        if (e.type === 'keyup'){ campHold(false); return true; }
         campHold(true);
         if (!e.repeat) campAct();
         return true;
@@ -43649,6 +44614,8 @@ function start(m = 'obby', d = null){
       watchersLess(){ campPoseWatchers(true); },
       goreMild(){ campPoseGore('mild'); },
       goreSpooky(){ campPoseGore('spooky'); },
+      camperClues(){ campPoseStory(); },
+      wrenSpooky(){ campPoseWrenSpooky(); },
       connectRides(){ if (!rd) return; let s = rd.sv; const spots = [[5,5,0,'curve'],[6,5,0,'curve'],[6,6,0,'curve'],[5,6,0,'curve']]; spots.forEach((q,i) => { const r = RidesRules.ridesPlace(s, q[3], q[0], q[1], q[2], 'me', i ? {snap:true} : {}); if (r.ok){ s = r.state; if (!rd.meshes[r.piece.id]) ridesBuildPiece(r.piece); } }); ridesPersist(s); ridesRefreshJoints(); if (P){ const w = RidesRules.ridesWorld(5,5); P.x = w.x; P.z = w.z + 3; } }
     };
   } catch (e){}
@@ -43813,7 +44780,10 @@ function start(m = 'obby', d = null){
 
   function elevSay(who, text, x, y, z, sec){
     if (!elv) return;
-    const label = (who ? who + ': ' : '') + '"' + text + '"';
+    // QA t330u: intercom lines already carry their speaker ("🛎️ Bingle: \"...\""), so don't say the name twice.
+    const raw = String(text == null ? '' : text), bare = String(who || '').replace(/^[^A-Za-z0-9]+/, '').trim();
+    const spoke = bare && raw.replace(/^[^A-Za-z0-9"]+/, '').startsWith(bare + ':');
+    const label = spoke ? raw : (who ? who + ': ' : '') + '"' + raw + '"';
     const m = elevLab(label, x, y, z);
     if (!m) { banner(label); return; }
     elv.bubbles = (elv.bubbles || []).filter(b => { try { scene.remove(b.mesh); } catch (e){} return false; });
@@ -44461,7 +45431,7 @@ function start(m = 'obby', d = null){
     elevMesh(new THREE.BoxGeometry(1.6, 1.8, 0.12), '#3a2a18', -6.2, 2.4, 23.9, false);
     elevMesh(new THREE.BoxGeometry(1.2, 1.3, 0.08), '#c9b6ff', -6.2, 2.4, 23.78, false);
     elv.secretAt = {x:-6.2, z:23.6};
-    elevLab('🛗 Wobblevator Lobby', 0, 3.4, 22);
+    elevLab('🛗 Wobblevator Lobby', 0, 5.6, 4.5);   // QA t330u: was at z=22, right in front of the camera, covering the HUD
     // big shared cab inside the lobby building / shaft
     const cabFloor = plat(0, 0.05, 0, CW, CD, '#c9a24a', 0.08);
     if (cabFloor) cabFloor.floorOnly = true;
@@ -45223,6 +46193,7 @@ function start(m = 'obby', d = null){
     if (typeof t297EatOverlayKey === 'function' && t297EatOverlayKey(e)) return true;
     if (e.type === 'keyup') return false;
     const c = e.code || e.key;
+    if (e.repeat && (c === 'KeyE' || c === 'KeyF')) return true; // QA t332u: a held key must not ride, then leave, then ride again
     if (c === 'KeyE' || c === 'KeyF'){ elevAct(); return true; }
     if (c === 'KeyH'){ elevOpenHelp(); return true; }
     if (c === 'KeyI'){ elevOpenIndex(); return true; }
@@ -45393,6 +46364,703 @@ function start(m = 'obby', d = null){
     }
   };
 
+  /* ---------- Mallowmist Manor ---------- */
+  let mn = null;
+  function mnKeep(m){ if (m && mn && mn.trash) mn.trash.push(m); return m; }
+  function mnMat(c, o){ return new THREE.MeshLambertMaterial(Object.assign({color:c, side:THREE.DoubleSide}, o||{})); }
+  function mnMesh(geo, c, x, y, z, o){
+    const m = new THREE.Mesh(geo, mnMat(c, o)); m.position.set(x,y,z); scene.add(m); return mnKeep(m);
+  }
+  function mnWall(x, y, z, w, h, d, c){
+    const b = plat(x, y + h/2, z, w, d, c, h);
+    if (b && b.mesh){ b.mesh.material = mnMat(c); mnKeep(b.mesh); }
+    if (b && mn) mn.solids.push(b);
+    return b;
+  }
+  function mnState(){ return MansionRules.mnLoad(typeof load === 'function' ? load(MansionRules.MN_KEY, null) : null); }
+  function mnSave(s){ if (typeof save === 'function') save(MansionRules.MN_KEY, s); if (mn) mn.sv = s; }
+  function mnLess(){ return !!(mn && mn.run && mn.run.lessScary); }
+  function drawMansion(ctx){
+    const skyTop = '#2a2458', skyBot = '#6b5b9a';
+    if (typeof sky === 'function') sky(ctx, skyTop, skyBot);
+    else { ctx.fillStyle = skyTop; ctx.fillRect(0,0,320,200); }
+    ctx.fillStyle = '#3d3358'; ctx.fillRect(40, 50, 240, 120);
+    ctx.fillStyle = '#2a2140'; ctx.beginPath(); ctx.moveTo(30,50); ctx.lineTo(160,10); ctx.lineTo(290,50); ctx.fill();
+    ctx.fillStyle = '#ffd23f'; ctx.fillRect(70, 80, 36, 36); ctx.fillRect(214, 80, 36, 36);
+    ctx.fillStyle = '#c4a574'; ctx.fillRect(140, 110, 40, 60);
+    ctx.font = '28px sans-serif'; ctx.fillText('🕯️', 148, 80); ctx.fillText('👻', 250, 48);
+    if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#c9b6ff');
+  }
+  function mnSky(){
+    const less = mnLess();
+    const bg = less ? '#3a3458' : '#1c1633';
+    scene.background = new THREE.Color(bg);
+    if (scene.fog){ scene.fog.color.set(bg); scene.fog.near = less ? 16 : 8; scene.fog.far = less ? 56 : 36; }
+  }
+  function mnLab(text, x, y, z){
+    try {
+      // QA t330u: room and prop labels drew through the manor walls; let walls hide them.
+      if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m){ if (m.material) m.material.depthTest = true; m.scale.multiplyScalar(0.8); return mnKeep(m); } }
+    } catch (e){}
+    return mnMesh(new THREE.BoxGeometry(0.2,0.2,0.2), '#fff', x, y, z);
+  }
+  function buildMansion(){
+    const sv = mnState();
+    if (sv.lessScary == null) sv.lessScary = !!(typeof CampRules !== 'undefined' && CampRules.campLoad && CampRules.campLoad(typeof load==='function'?load('rubloxCamp',null):null).lessScary);
+    const started = MansionRules.mnNewRun(sv, Date.now());
+    mn = {trash:[], solids:[], sv: started.state, run: started.run, props:[], ghost:null, door:null};
+    mnSky();
+    const wall = mnLess() ? '#6b6088' : '#3f3558';
+    const floor = mnLess() ? '#c4b8a0' : '#5a4a6a';
+    plat(0, 0, -36, 22, 110, floor, 0.3);
+    plat(20, 0, -20, 18, 18, mnLess() ? '#d4e8c8' : '#3e4a48', 0.3);
+    plat(20, 0, -40, 18, 18, mnLess() ? '#c8b8a0' : '#3a3040', 0.3);
+    plat(-20, 0, -58, 18, 18, mnLess() ? '#e8d8c0' : '#3a3458', 0.3);
+    plat(20, 0, -80, 18, 18, mnLess() ? '#e8e0ff' : '#2c2448', 0.3);
+    // outer shell with side-door gaps
+    mnWall(0, 4, 16, 22, 8, 0.5, wall);
+    mnWall(0, 4, -88, 22, 8, 0.5, wall);
+    mnWall(-11, 4, -19, 0.5, 8, 74, wall);
+    mnWall(-11, 4, -74, 0.5, 8, 28, wall);
+    mnWall(11, 4, 0, 0.5, 8, 32, wall);
+    mnWall(11, 4, -30, 0.5, 8, 16, wall);
+    mnWall(11, 4, -59, 0.5, 8, 34, wall);
+    mnWall(11, 4, -84, 0.5, 8, 8, wall);
+    mnWall(0, 8.2, -36, 22, 0.4, 110, mnLess() ? '#efe6d8' : '#2a2438');
+    // room dividers with door gaps at x=0
+    ;[-10, -30, -50, -70].forEach(z => {
+      mnWall(-7, 3, z, 8, 6, 0.4, wall);
+      mnWall(7, 3, z, 8, 6, 0.4, wall);
+      mnWall(0, 5.4, z, 6, 1.2, 0.4, wall);
+    });
+    // foyer props
+    plat(-4, 0.8, 6, 2.2, 1.4, '#8b5a2b', 0.8);
+    mn.props.push({id:'note1', x:-4, z:6, kind:'note', n:1, label: mnLab('📝 Note', -4, 2.0, 6)});
+    plat(4, 1.1, 4, 0.6, 0.6, '#d4a017', 1.1);
+    mn.props.push({id:'lever', x:4, z:4, kind:'lever', label: mnLab('🎚️ Lever', 4, 2.4, 4)});
+    mnLab('🕯️ Foyer', 0, 3.2, 10);
+    // parlor portraits
+    [[-6,-20,0],[-2,-20,1],[2,-20,2],[6,-20,3]].forEach(([x,z,i]) => {
+      const cols = ['#c45c7a','#5c8bc4','#d4a017','#6bbf8a'];
+      plat(x, 1.6, z, 1.6, 0.3, cols[i], 1.6);
+      mn.props.push({id:'pic'+i, x, z, kind:'pic', slot:i, label: mnLab('🖼️ ' + (i+1), x, 3.1, z)});
+    });
+    mnLab('🖼️ Parlor', 0, 3.2, -14);
+    // kitchen
+    plat(3, 0.9, -40, 2.4, 1.6, '#d9c4a0', 0.9);
+    mn.props.push({id:'key', x:3, z:-40, kind:'key', label: mnLab('🔑 Cupboard', 3, 2.2, -40)});
+    mnLab('🍪 Kitchen', 0, 3.2, -34);
+    // library
+    plat(-3, 1.0, -60, 2.2, 1.4, '#6b4a2b', 1.0);
+    mn.props.push({id:'note2', x:-3, z:-60, kind:'note', n:2, label: mnLab('📝 Hidden note', -3, 2.3, -60)});
+    mnLab('📚 Library', 0, 3.2, -54);
+    // foyer clock / pull-string
+    plat(-6, 1.6, 10, 0.8, 0.8, '#6b4a2b', 3.2);
+    mn.props.push({id:'clock', x:-6, z:10, kind:'clock', label: mnLab('🕰️ Clock', -6, 3.6, 10)});
+    // Moonfern Conservatory
+    mnWall(28, 4, -20, 0.5, 8, 18, mnLess() ? '#b8d8c8' : '#355048');
+    mnWall(20, 4, -12, 16, 8, 0.5, mnLess() ? '#b8d8c8' : '#355048');
+    mnWall(20, 4, -28, 16, 8, 0.5, mnLess() ? '#b8d8c8' : '#355048');
+    mnLab('🌿 Conservatory', 20, 3.2, -14);
+    [[16,-18,0],[24,-18,1],[16,-22,2],[24,-22,3]].forEach(([x,z,i]) => {
+      plat(x, 0.4, z, 1.2, 1.2, '#3d8a5a', 0.8);
+      mn.props.push({id:'fern'+i, x, z, kind:'fern', slot:i, label: mnLab('🌿 ' + (i+1), x, 2.0, z)});
+    });
+    // Jam Cellar
+    mnWall(28, 4, -40, 0.5, 8, 18, mnLess() ? '#8a6a48' : '#3a2a28');
+    mnWall(20, 4, -32, 16, 8, 0.5, mnLess() ? '#8a6a48' : '#3a2a28');
+    mnWall(20, 4, -48, 16, 8, 0.5, mnLess() ? '#8a6a48' : '#3a2a28');
+    plat(18, 0.8, -38, 1.4, 1.0, '#c45c1a', 1.2);
+    mn.props.push({id:'crank', x:18, z:-38, kind:'crank', label: mnLab('⚙️ Crank', 18, 2.2, -38)});
+    plat(24, 0.7, -42, 1.2, 1.0, '#d9c4a0', 0.9);
+    mn.props.push({id:'scrap', x:24, z:-42, kind:'scrap', label: mnLab('📄 Scrap', 24, 2.0, -42)});
+    mnLab('🫙 Jam Cellar', 20, 3.2, -34);
+    // Chime Nook
+    mnWall(-28, 4, -58, 0.5, 8, 18, mnLess() ? '#d8c8a8' : '#322a48');
+    mnWall(-20, 4, -50, 16, 8, 0.5, mnLess() ? '#d8c8a8' : '#322a48');
+    mnWall(-20, 4, -66, 16, 8, 0.5, mnLess() ? '#d8c8a8' : '#322a48');
+    mnLab('🔔 Chime Nook', -20, 3.2, -52);
+    [[-16,-56,0],[-24,-56,1],[-16,-60,2],[-24,-60,3]].forEach(([x,z,i]) => {
+      plat(x, 1.4, z, 0.6, 0.6, '#d4a017', 1.4);
+      mn.props.push({id:'chime'+i, x, z, kind:'chime', bell:i, label: mnLab('🔔 ' + (i+1), x, 3.0, z)});
+    });
+    // Secret Attic
+    mnWall(28, 4, -80, 0.5, 8, 18, mnLess() ? '#d8c8ff' : '#2a2048');
+    mnWall(20, 4, -72, 16, 8, 0.5, mnLess() ? '#d8c8ff' : '#2a2048');
+    mnWall(20, 4, -88, 16, 8, 0.5, mnLess() ? '#d8c8ff' : '#2a2048');
+    mnLab('⭐ Secret Attic', 20, 3.2, -74);
+    [[16,-78,0],[24,-78,1],[16,-82,2],[24,-82,3]].forEach(([x,z,i]) => {
+      plat(x, 1.1, z, 1.0, 1.0, '#8b5cf6', 0.9);
+      mn.props.push({id:'star'+i, x, z, kind:'star', slot:i, label: mnLab('⭐ ' + (i+1), x, 2.3, z)});
+    });
+    plat(20, 1.0, -85, 1.4, 1.2, '#ffd23f', 1.2);
+    mn.props.push({id:'lantern', x:20, z:-85, kind:'lantern', label: mnLab('🌙 Moon lantern', 20, 2.6, -85)});
+    const moth = new THREE.Group();
+    const mw = new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 8), mnMat(mnLess() ? '#fff4d6' : '#e8d0ff', {emissive: mnLess() ? '#ffe9a0' : '#4a3080'}));
+    mw.position.y = 1.3; moth.add(mw);
+    moth.position.set(20, 0, -80); scene.add(moth); mnKeep(moth); mn.moth = moth;
+    mnLab('🦋 Dustmoth', 22, 2.4, -80);
+    // attic / Nimble / door
+    plat(0, 2.4, -86, 3.6, 0.6, '#c45c1a', 2.4);
+    mn.door = {x:0, z:-86};
+    mnLab('🚪 Front door', 0, 4.2, -86);
+    mnLab('🫥 Attic Hall', 0, 3.2, -74);
+    const ghost = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.7, 12, 10), mnMat(mnLess() ? '#f4e8ff' : '#d8d0f0', {emissive: mnLess() ? '#b8a0e0' : '#3a3060'}));
+    body.position.y = 1.2; ghost.add(body);
+    const cap = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.5, 10), mnMat('#8b5cf6'));
+    cap.position.y = 1.9; ghost.add(cap);
+    ghost.position.set(4, 0, -78); scene.add(ghost); mnKeep(ghost); mn.ghost = ghost;
+    mnLab('👻 Nimble', 4, 2.8, -78);
+    const lamp = new THREE.PointLight(mnLess() ? 0xfff0c8 : 0xc8b0ff, mnLess() ? 1.1 : 0.55, 40);
+    lamp.position.set(0, 5, -36); scene.add(lamp); mnKeep(lamp);
+    const amb = new THREE.AmbientLight(mnLess() ? 0xfff4e8 : 0x8890c0, mnLess() ? 0.7 : 0.35);
+    scene.add(amb); mnKeep(amb);
+    Object.assign(P, {x:0, y:0.5, z:8, vx:0, vy:0, vz:0});
+    if (typeof cam !== 'undefined' && cam){ cam.yaw = Math.PI; cam.pitch = 0.32; cam.dist = 11; }
+    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:8}, flag:new THREE.Object3D()};
+    mnBind();
+    mnHud();
+    banner(mnLess() ? '😌 Mallowmist Manor feels milder. Look for notes, and say hi to sleepy Nimble.' : '🕯️ Welcome to Mallowmist Manor. Find notes, solve the parlor pictures, and tip-toe past Nimble.');
+  }
+  function mnNear(x, z, r){ return Math.hypot((P.x - x), (P.z - z)) < (r || 2.1); }
+  function mnCurrentRoom(){
+    const x = P.x, z = P.z;
+    if (x > 12.2){
+      if (z > -30) return 'conservatory';
+      if (z > -52) return 'cellar';
+      return 'secret';
+    }
+    if (x < -12.2) return 'chime';
+    if (z > -10) return 'foyer';
+    if (z > -30) return 'parlor';
+    if (z > -50) return 'kitchen';
+    if (z > -70) return 'library';
+    return 'attic';
+  }
+  function mnPrompt(){
+    if (!mn || mn.run.escaped) return null;
+    const hit = mn.props.find(p => mnNear(p.x, p.z, 2.2));
+    if (hit){
+      if (hit.kind === 'note') return {act:() => mnDo('note', hit), lab: 'Read note (E / Ⓧ)'};
+      if (hit.kind === 'lever') return {act:() => mnDo('lever'), lab: 'Flip lever (E / Ⓧ)'};
+      if (hit.kind === 'pic') return {act:() => mnDo('pic', hit), lab: 'Place portrait ' + (hit.slot+1) + ' (E / Ⓧ)'};
+      if (hit.kind === 'key') return {act:() => mnDo('key'), lab: 'Search cupboard (E / Ⓧ)'};
+      if (hit.kind === 'fern') return {act:() => mnDo('fern', hit), lab: 'Water moonfern ' + (hit.slot+1) + ' (E / Ⓧ)'};
+      if (hit.kind === 'crank') return {act:() => mnDo('crank'), lab: 'Turn the crank (E / Ⓧ)'};
+      if (hit.kind === 'scrap') return {act:() => mnDo('scrap'), lab: 'Read the dusty scrap (E / Ⓧ)'};
+      if (hit.kind === 'clock') return {act:() => mnDo('clock'), lab: 'Pull the hidden string (E / Ⓧ)'};
+      if (hit.kind === 'chime') return {act:() => mnDo('chime', hit), lab: 'Ring chime ' + (hit.bell+1) + ' (E / Ⓧ)'};
+      if (hit.kind === 'star') return {act:() => mnDo('star', hit), lab: 'Place star charm ' + (hit.slot+1) + ' (E / Ⓧ)'};
+      if (hit.kind === 'lantern') return {act:() => mnDo('lantern'), lab: 'Take the moon lantern (E / Ⓧ)'};
+    }
+    if (mn.door && mnNear(mn.door.x, mn.door.z, 2.4) && mn.run.key) return {act:() => mnDo('door'), lab: 'Unlock the door (E / Ⓧ)'};
+    return null;
+  }
+  function mnDo(kind, prop){
+    if (!mn || mn.run.escaped) return;
+    const run = mn.run;
+    let r = null;
+    if (kind === 'note') r = MansionRules.mnReadNote(run, prop.n);
+    else if (kind === 'lever') r = MansionRules.mnFlipLever(run);
+    else if (kind === 'pic'){
+      const used = (run.pictures || []).indexOf(prop.slot);
+      r = MansionRules.mnPlacePicture(run, prop.slot, prop.slot);
+      if (used >= 0 && r && r.ok && !r.done){ /* placed this tile in this slot */ }
+    }
+    else if (kind === 'key') r = MansionRules.mnTakeKey(run);
+    else if (kind === 'fern') r = MansionRules.mnWaterFern(run, prop.slot);
+    else if (kind === 'crank') r = MansionRules.mnTurnCrank(run);
+    else if (kind === 'scrap') r = MansionRules.mnReadScrap(run);
+    else if (kind === 'clock') r = MansionRules.mnPullString(run);
+    else if (kind === 'chime') r = MansionRules.mnPlayChime(run, prop.bell);
+    else if (kind === 'star') r = MansionRules.mnPlaceStar(run, prop.slot, prop.slot);
+    else if (kind === 'lantern') r = MansionRules.mnClaimSecret(run, mn.sv);
+    else if (kind === 'door') r = MansionRules.mnEscape(run, mn.sv, Date.now());
+    if (!r || !r.ok){
+      const why = r && r.why;
+      banner(why === 'note' ? 'Read the foyer note first.' : why === 'key' ? 'You still need the brass key.' : why === 'locked' ? 'That room is still closed.' : why === 'scrap' ? 'Turn the cellar crank first.' : why === 'crank' ? 'Turn the rusty crank first.' : why === 'puzzle' ? 'Set the star charms first.' : 'Not yet!');
+      return;
+    }
+    if (kind === 'note') banner('📝 ' + r.text);
+    if (kind === 'lever') banner('🎚️ The parlor doors creak open. A side hall leads to the Moonfern Conservatory.');
+    if (kind === 'pic') banner(r.done ? '🖼️ The portraits click into place! The kitchen is open.' : '🖼️ You hung a portrait.');
+    if (kind === 'key') banner('🔑 You found the brass key! Side rooms in the cellar and chime nook are unlocked.');
+    if (r.text && kind !== 'note') banner((kind === 'lantern' ? '🌙 ' : '✨ ') + r.text);
+    if (kind === 'lantern' && r.ok && r.coins){
+      mn.sv = r.state; mnSave(mn.sv);
+      try { if (typeof pay === 'function') pay(r.coins); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); } } catch (e){}
+      banner('🌙 ' + r.message + ' +' + r.coins + ' 🪙');
+    }
+    if (kind === 'door' && r.ok){
+      mn.sv = r.state; mnSave(mn.sv);
+      try { if (typeof pay === 'function') pay(r.coins); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); } } catch (e){}
+      banner('🌙 ' + r.message + ' +' + r.coins + ' 🪙');
+      try {
+        const em = document.getElementById('oWinEmoji'), title = document.getElementById('oWinTitle');
+        if (em) em.textContent = '🕯️'; if (title) title.textContent = 'You escaped Mallowmist Manor!';
+        const st = document.getElementById('oWinStats'); if (st) st.innerHTML = '👻 Nimble went back to the closet.<br>🎁 +' + r.coins + ' Rublox Coins';
+        const w = document.getElementById('oWin'); if (w) w.classList.add('show');
+      } catch (e){}
+    }
+    mnHud(); mnNet();
+  }
+  function mnCaught(){
+    const r = MansionRules.mnCatch(mn.run, mn.sv);
+    if (!r.ok) return;
+    mn.sv = r.state; mnSave(mn.sv);
+    if (r.spawn && typeof P !== 'undefined'){ P.x = r.spawn.x; P.y = r.spawn.y; P.z = r.spawn.z; P.vx = P.vz = 0; }
+    checkpoints[0].spawn = r.spawn;
+    banner('😌 ' + r.message);
+    mnHud(); mnNet();
+  }
+  function mnHud(){
+    const hint = document.getElementById('mnHint');
+    const run = mn && mn.run;
+    if (hint && run){
+      const room = MansionRules.mnRoom(mnCurrentRoom());
+      hint.textContent = (room.emoji || '') + ' ' + room.name + (run.key ? '  ·  🔑' : '') + (run.pictureDone ? '  ·  portraits set' : '') + (mnLess() ? '  ·  😌 milder' : '');
+    }
+    const btn = document.getElementById('mnAct');
+    const p = mnPrompt();
+    if (btn){ if (p){ btn.textContent = p.lab; btn.classList.add('show'); } else btn.classList.remove('show'); }
+    const less = document.getElementById('mnLessBtn');
+    if (less) less.classList.toggle('on', mnLess());
+  }
+  function mnToggleLess(){
+    if (!mn) return;
+    mn.sv = MansionRules.mnSetLessScary(mn.sv, !mn.sv.lessScary);
+    mn.run.lessScary = !!mn.sv.lessScary;
+    mnSave(mn.sv);
+    mnSky();
+    banner(mnLess() ? '😌 Less scary is on. Nimble is slower and the lights are warmer.' : '🕯️ Less scary is off. Still no gore, and everyone is okay.');
+    mnHud();
+  }
+  function mnAct(){ const p = mnPrompt(); if (p) p.act(); }
+  function mnKey(e){
+    if (!mn) return false;
+    if (e.type === 'keyup') return false;
+    const c = e.code || e.key;
+    if (c === 'KeyE' || c === 'KeyF'){ mnAct(); return true; }
+    if (c === 'KeyL'){ mnToggleLess(); return true; }
+    return false;
+  }
+  function mnPad(jp){
+    if (!mn || !jp) return false;
+    if (!mn._x && jp[2]){ mn._x = true; mnAct(); return true; }
+    if (!jp[2]) mn._x = false;
+    if (!mn._y && jp[3]){ mn._y = true; mnToggleLess(); return true; }
+    if (!jp[3]) mn._y = false;
+    return false;
+  }
+  function mnUpdate(dt){
+    if (!mn || mn.run.escaped) { mnHud(); return; }
+    dt = Math.max(0, Math.min(0.12, +dt || 0));
+    const room = mnCurrentRoom();
+    if (room !== mn.run.room){
+      if (MansionRules.mnCanEnter(mn.run, room)) MansionRules.mnSetRoom(mn.run, room);
+      else if (room !== 'foyer'){
+        // bump back through a locked divider
+        if (room === 'parlor' && P.z < -10) P.z = -9.6;
+        if (room === 'kitchen' && P.z < -30) P.z = -29.6;
+        if (room === 'library' && P.z < -50) P.z = -49.6;
+        if (room === 'attic' && P.z < -70) P.z = -69.6;
+        if (room === 'conservatory' && P.x > 11) P.x = 10.6;
+        if (room === 'cellar' && P.x > 11) P.x = 10.6;
+        if (room === 'chime' && P.x < -11) P.x = -10.6;
+        if (room === 'secret' && P.x > 11) P.x = 10.6;
+        if (room === 'secret' && P.z < -52 && P.x > 12 && !MansionRules.mnCanEnter(mn.run, 'secret')) P.z = -51.4;
+      }
+    }
+    if (!mnIsGuest()){
+      MansionRules.mnNimbleTick(mn.run, dt);
+      MansionRules.mnMothTick(mn.run, dt);
+      if (MansionRules.mnSeenByNimble(mn.run, P.x, P.z) || MansionRules.mnSeenByMoth(mn.run, P.x, P.z)) mnCaught();
+    }
+    if (mn.ghost && mn.run.nimble){
+      mn.ghost.position.x = mn.run.nimble.x;
+      mn.ghost.position.z = mn.run.nimble.z;
+      mn.ghost.rotation.y = mn.run.nimble.dir > 0 ? Math.PI/2 : -Math.PI/2;
+    }
+    if (mn.moth && mn.run.moth){
+      mn.moth.position.x = mn.run.moth.x;
+      mn.moth.position.z = mn.run.moth.z;
+    }
+    mnHud();
+    if (!mnIsGuest()) mnNet();
+  }
+  function mnIsGuest(){ try { return !!(typeof mp !== 'undefined' && mp && mp.on && !mp.host); } catch (e){ return false; } }
+  function mnWire(){ return mn && MansionRules.mnWire(mn.run); }
+  function mnApply(snap){ if (mn && snap){ MansionRules.mnApplyWire(mn.run, snap); mnHud(); } }
+  function mnNet(){
+    if (mnIsGuest() || !mn || typeof mp === 'undefined' || !mp || !mp.on || typeof mpSend !== 'function') return;
+    try { mpSend({t:'mn', snap: mnWire()}); } catch (e){}
+  }
+  function mnFromNet(g, d){ if (d && d.snap) mnApply(d.snap); }
+  function mnFromHost(d){ mnFromNet(null, d); }
+  function mnBind(){
+    const a = document.getElementById('mnAct');
+    if (a && !a.__mn){ a.__mn = true; a.addEventListener('click', ev => { ev.preventDefault(); mnAct(); }); }
+    const l = document.getElementById('mnLessBtn');
+    if (l && !l.__mn){ l.__mn = true; l.addEventListener('click', ev => { ev.preventDefault(); mnToggleLess(); }); }
+  }
+  function mansionStop(){
+    if (!mn) return;
+    (mn.solids || []).forEach(b => { try { b.active = false; if (typeof solids !== 'undefined'){ const i = solids.indexOf(b); if (i>=0) solids.splice(i,1);} } catch(e){} });
+    (mn.trash || []).forEach(m => { try { scene.remove(m); } catch(e){} });
+    mn = null;
+    const box = document.getElementById('mnBox'); if (box) box.style.display = 'none';
+    const b = document.getElementById('mnAct'); if (b) b.classList.remove('show');
+  }
+  if (typeof window !== 'undefined') window.mnDebug = {
+    less(on){ if (!mn) return; if (on != null) mn.sv.lessScary = !on ? false : true; mn.run.lessScary = !!mn.sv.lessScary; mnSave(mn.sv); mnSky(); mnHud(); return mnLess(); },
+    room(id){ if (mn){ MansionRules.mnSetRoom(mn.run, id); const s = MansionRules.mnRoom(id).spawn; P.x=s.x; P.y=s.y; P.z=s.z; } },
+    solve(){ if (!mn) return; const r=mn.run; r.note1=true; r.lever=true; r.parlorOpen=true; r.pictureDone=true; r.kitchenOpen=true; r.key=true; r.note2=true; r.atticOpen=true; r.fernsDone=true; r.conservatoryOpen=true; r.crank=true; r.scrap=true; r.cellarOpen=true; r.chimeOpen=true; r.melodyDone=true; r.clockString=true; r.secretOpen=true; r.starDone=true; mnHud(); },
+    probe(){ return mn && mn.run ? {room:mn.run.room, key:!!mn.run.key, less:mnLess(), escaped:!!mn.run.escaped, secret:!!mn.run.secretOpen, ferns:!!mn.run.fernsDone} : null; }
+  };
+  /* ---------- Wagwell Shelter ---------- */
+  let sh = null;
+  function shKeep(m){ if (m && sh && sh.trash) sh.trash.push(m); return m; }
+  function shMat(c,o){ return new THREE.MeshLambertMaterial(Object.assign({color:c}, o||{})); }
+  function shMesh(geo,c,x,y,z){ const m=new THREE.Mesh(geo, shMat(c)); m.position.set(x,y,z); scene.add(m); return shKeep(m); }
+  function shState(){ return ShelterRules.shLoad(typeof load === 'function' ? load(ShelterRules.SH_KEY, null) : null); }
+  function shSave(s){ if (typeof save === 'function') save(ShelterRules.SH_KEY, s); if (sh) sh.sv = s; }
+  function shCoins(){ try { return (typeof coins === 'number') ? coins : +(typeof load==='function' && load('rubloxCoins', 0)) || 0; } catch(e){ return 0; } }
+  function shPay(n){
+    try {
+      if (typeof pay === 'function'){ pay(n); return; }
+      if (typeof coins === 'number'){ coins += n; if (typeof save === 'function') save('rubloxCoins', coins); }
+    } catch (e){}
+  }
+  function shSpend(n){
+    try {
+      if (typeof coins === 'number'){
+        if (coins < n) return false;
+        coins -= n; if (typeof save === 'function') save('rubloxCoins', coins); return true;
+      }
+    } catch (e){}
+    return shCoins() >= n;
+  }
+  function drawShelter(ctx){
+    if (typeof sky === 'function') sky(ctx, '#b8e8ff', '#fff4d6');
+    ctx.fillStyle = '#8fd39a'; ctx.fillRect(0, 150, 320, 50);
+    ctx.fillStyle = '#f4d7a8'; ctx.fillRect(30, 80, 110, 80);
+    ctx.fillStyle = '#c45c1a'; ctx.beginPath(); ctx.moveTo(20,80); ctx.lineTo(85,40); ctx.lineTo(150,80); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.fillRect(180, 110, 90, 50);
+    ctx.font = '24px sans-serif'; ctx.fillText('🐾', 60, 130); ctx.fillText('🐱', 210, 140); ctx.fillText('🐶', 250, 140);
+    if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#3a86ff');
+  }
+  function shPetMesh(kind, color){
+    const cols = ['#f29a3c','#3d4256','#ece6dd'];
+    const c = cols[color|0] || cols[0];
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 8), shMat(c));
+    body.position.y = 0.4; g.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8), shMat(c));
+    head.position.set(0, 0.7, 0.18); g.add(head);
+    return g;
+  }
+  function buildShelter(){
+    const sv = shState();
+    sh = {trash:[], solids:[], sv, strays:[], family: ShelterRules.shVisitFamily(Math.random), petMeshes:[], strayMeshes:[], curs:null};
+    scene.background = new THREE.Color('#b8e8ff');
+    if (scene.fog){ scene.fog.color.set('#cfefff'); scene.fog.near = 24; scene.fog.far = 90; }
+    plat(0, 0, 8, 48, 48, '#8fd39a', 0.25);
+    plat(0, 0, -10, 18, 16, '#f4e4c4', 0.3); // shelter floor
+    // shelter building
+    const wall = '#f4d7a8';
+    function wallb(x,y,z,w,h,d,c){ const b=plat(x,y+h/2,z,w,d,c,h); if(b&&b.mesh) shKeep(b.mesh); if(b) sh.solids.push(b); return b; }
+    wallb(0, 3, -18, 18, 6, 0.4, wall);
+    wallb(-9, 3, -10, 0.4, 6, 16, wall);
+    wallb(9, 3, -10, 0.4, 6, 16, wall);
+    wallb(0, 6.2, -10, 18, 0.35, 16, '#fff4e0');
+    wallb(-5.4, 3, -2, 7.2, 6, 0.4, wall);
+    wallb(5.4, 3, -2, 7.2, 6, 0.4, wall);
+    shMesh(new THREE.BoxGeometry(2.4, 0.2, 1.6), '#c45c1a', 0, 0.9, -8);
+    sh.desk = {x:0, z:-8};
+    // town street / park / alley
+    plat(14, 0, 16, 10, 14, '#d9e8a8', 0.2);
+    plat(-14, 0, 18, 8, 12, '#c8bea8', 0.2);
+    shLab('🏡 Wagwell Shelter', 0, 3.4, -3);
+    shLab('🌳 Park', 14, 2.2, 16);
+    shLab('🪵 Alley', -14, 2.2, 18);
+    shLab('🛎️ Front desk', 0, 2.2, -8);
+    // Grooming salon
+    plat(22, 0, -2, 14, 16, '#f8d0e8', 0.28);
+    function wallb2(x,y,z,w,h,d,c){ const b=plat(x,y+h/2,z,w,d,c,h); if(b&&b.mesh) shKeep(b.mesh); if(b) sh.solids.push(b); return b; }
+    wallb2(22, 3, -10, 14, 6, 0.4, '#ffd0ea');
+    wallb2(15, 3, -2, 0.4, 6, 16, '#ffd0ea');
+    wallb2(29, 3, -2, 0.4, 6, 16, '#ffd0ea');
+    wallb2(22, 6.2, -2, 14, 0.35, 16, '#fff0f8');
+    wallb2(17.6, 3, 6, 5.2, 6, 0.4, '#ffd0ea');
+    wallb2(26.4, 3, 6, 5.2, 6, 0.4, '#ffd0ea');
+    sh.salon = {x:22, z:-2};
+    sh.stations = [
+      {id:'wash', x:18, z:0, act:'wash', lab:'Wash'},
+      {id:'brush', x:26, z:0, act:'brush', lab:'Brush'},
+      {id:'trim', x:18, z:-4, act:'trim', lab:'Trim'},
+      {id:'bow', x:26, z:-4, act:'bow', lab:'Bow'},
+      {id:'dye', x:22, z:-6, act:'dye', lab:'Color'}
+    ];
+    sh.stations.forEach(s => {
+      shMesh(new THREE.CylinderGeometry(0.7, 0.8, 0.6, 10), '#fff', s.x, 0.4, s.z);
+      shLab('✂️ ' + s.lab, s.x, 1.6, s.z);
+    });
+    shLab('💇 Grooming Salon', 22, 3.2, 4);
+    // Contest lawn and judge
+    plat(-20, 0, -6, 14, 16, '#c8e8a8', 0.22);
+    shMesh(new THREE.BoxGeometry(5, 0.3, 3.2), '#f4e8a8', -20, 0.4, -8);
+    sh.stage = {x:-20, z:-8};
+    const judge = shPetMesh('cat', 1);
+    judge.position.set(-20, 0, -12); scene.add(judge); shKeep(judge);
+    shLab('🏅 Judge Bramble', -20, 2.0, -12);
+    shLab('🎀 Contest Lawn', -20, 3.0, -2);
+    const amb = new THREE.AmbientLight(0xfff6e8, 0.75); scene.add(amb); shKeep(amb);
+    const sun = new THREE.DirectionalLight(0xfff0c8, 0.6); sun.position.set(8, 14, 10); scene.add(sun); shKeep(sun);
+    Object.assign(P, {x:0, y:0.5, z:6, vx:0, vy:0, vz:0});
+    if (typeof cam !== 'undefined' && cam){ cam.yaw = 0; cam.pitch = 0.36; cam.dist = 13; }
+    checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:6}, flag:new THREE.Object3D()};
+    shSpawnStrays();
+    shShowPets();
+    shBind();
+    shHud();
+    banner('🐾 Wagwell Shelter! Rescue strays around town, cheer them up, and match them with visiting families.');
+  }
+  function shLab(text,x,y,z){
+    try { if (typeof t297Lab === 'function'){ const m=t297Lab(text,x,y,z); if(m) return shKeep(m); } } catch(e){}
+    return shMesh(new THREE.BoxGeometry(0.2,0.2,0.2),'#fff',x,y,z);
+  }
+  function shSpawnStrays(){
+    (sh.strayMeshes||[]).forEach(m => { try{ scene.remove(m); }catch(e){} });
+    sh.strayMeshes = [];
+    sh.strays = [];
+    const n = 3;
+    for (let i=0;i<n;i++){
+      const s = ShelterRules.shRollStray(Math.random, Date.now()+i);
+      s.x = (i-1)*8 + (Math.random()*3-1);
+      s.z = 14 + Math.random()*8;
+      sh.strays.push(s);
+      const m = shPetMesh(s.kind, s.color);
+      m.position.set(s.x, 0, s.z); scene.add(m); shKeep(m); sh.strayMeshes.push(m);
+      shLab((ShelterRules.shKind(s.kind).emoji||'') + ' ' + s.name, s.x, 1.6, s.z);
+    }
+  }
+  function shShowPets(){
+    (sh.petMeshes||[]).forEach(m => { try{ scene.remove(m); }catch(e){} });
+    sh.petMeshes = [];
+    (sh.sv.pets||[]).forEach((p,i) => {
+      const m = shPetMesh(p.kind, p.color);
+      const x = -4 + (i%3)*4, z = -12 - Math.floor(i/3)*3;
+      m.position.set(x, 0, z); scene.add(m); shKeep(m); sh.petMeshes.push(m);
+      p._x=x; p._z=z;
+      shLab((ShelterRules.shKind(p.kind).emoji||'')+' '+p.name, x, 1.6, z);
+    });
+  }
+  function shNear(x,z,r){ return Math.hypot(P.x-x, P.z-z) < (r||2.2); }
+  function shPrompt(){
+    if (!sh) return null;
+    const stray = sh.strays.find(s => shNear(s.x, s.z, 2.3));
+    if (stray) return {lab:'Rescue ' + stray.name + ' (E / Ⓧ)', act:() => shRescue(stray)};
+    const pet = (sh.sv.pets||[]).find(p => p._x != null && shNear(p._x, p._z, 2.2));
+    if (pet){
+      return {lab:'Care for ' + pet.name + ' (E feed · tap again)', act:() => shCareMenu(pet)};
+    }
+    if (sh.desk && shNear(sh.desk.x, sh.desk.z, 2.4)){
+      return {lab:'Front desk: match or upgrades (E / Ⓧ)', act:() => shOpenDesk()};
+    }
+    const st = (sh.stations||[]).find(s => shNear(s.x, s.z, 2.1));
+    if (st){
+      const pet = shSalonPet();
+      return {lab: pet ? (st.lab + ' ' + pet.name + ' (E / Ⓧ)') : 'Bring a pal to the salon (E / Ⓧ)', act:() => shSalonDo(st)};
+    }
+    if (sh.stage && shNear(sh.stage.x, sh.stage.z, 3)){
+      const show = sh.show;
+      if (show && show.open && !show.judged) return {lab:'Enter the ' + show.name + ' show (E / Ⓧ)', act:() => shEnter()};
+      if (show && !show.judged && show.entries && show.entries.length) return {lab:'Ask Judge Bramble to score (E / Ⓧ)', act:() => shJudge()};
+      return {lab:'Start a pet contest (E / Ⓧ)', act:() => shBeginShow()};
+    }
+    return null;
+  }
+  function shSalonPet(){
+    if (!sh) return null;
+    if (sh.curs) return (sh.sv.pets||[]).find(p => p.id === sh.curs) || (sh.sv.pets||[])[0];
+    return (sh.sv.pets||[])[0] || null;
+  }
+  const SH_SALON_CHOICE = {
+    trim: ['neat','fluffy','swirl'],
+    bow: ['red','blue','gold'],
+    dye: ['peach','mint','lilac','butter'],
+    trick: ['sit','spin','bow','wave']
+  };
+  function shSalonDo(st){
+    const pet = shSalonPet();
+    if (!pet){ banner('Rescue a pal first, then walk them into the salon!'); return; }
+    sh.curs = pet.id;
+    let choice = undefined;
+    if (SH_SALON_CHOICE[st.act]){
+      sh.choiceI = ((sh.choiceI|0)+1) % SH_SALON_CHOICE[st.act].length;
+      choice = SH_SALON_CHOICE[st.act][sh.choiceI];
+    }
+    const r = ShelterRules.shGroom(sh.sv, pet.id, st.act, choice);
+    if (!r.ok){ banner('The salon is busy — try another station.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    banner('💇 ' + pet.name + ' got a ' + st.lab.toLowerCase() + (choice ? (' (' + choice + ')') : '') + '! Happiness ' + ShelterRules.shHappiness(r.pet) + (r.well ? ' — looking show-ready!' : ''));
+    shHud(); shNet();
+  }
+  function shBeginShow(){
+    const ids = ShelterRules.SH_CONTESTS;
+    sh.showI = ((sh.showI|0)+1) % ids.length;
+    const mode = (typeof mp !== 'undefined' && mp && mp.on) ? 'versus' : 'solo';
+    sh.show = ShelterRules.shNewShow(ids[sh.showI].id, Date.now(), mode);
+    banner(ids[sh.showI].emoji + ' Judge Bramble opened the ' + ids[sh.showI].name + ' contest! ' + (mode === 'versus' ? 'Friends can enter too — no NPC rivals.' : 'Enter your pal for a ribbon.'));
+    shHud(); shNet();
+  }
+  function shEnter(){
+    const pet = shSalonPet();
+    if (!pet){ banner('Cheer a pal up or groom them, then enter!'); return; }
+    const me = {id: (typeof mp !== 'undefined' && mp && mp.me) ? mp.me : 'me', name: (typeof player !== 'undefined' && player && player.name) || 'You'};
+    const r = ShelterRules.shEnterShow(sh.show, pet, me);
+    banner(r.ok ? ('🎀 ' + pet.name + ' entered the ' + sh.show.name + ' show!') : (r.why === 'npc' ? 'Only real players can enter.' : r.why === 'in' ? 'That pal is already in.' : 'The show is not open.'));
+    shHud(); shNet();
+  }
+  function shJudge(){
+    if (!sh.show) return;
+    const r = ShelterRules.shJudgeShow(sh.sv, sh.show);
+    if (!r.ok){ banner(r.why === 'empty' ? 'Someone needs to enter first.' : 'Judge Bramble is waiting.'); return; }
+    sh.sv = r.state; shSave(sh.sv); sh.show = r.show;
+    if (r.coins) shPay(r.coins);
+    const top = (r.show.entries || [])[0];
+    banner('🏅 ' + r.message + (top ? (' ' + top.petName + ' got a ' + top.ribbon + ' ribbon!') : '') + ' +' + r.coins + ' 🪙');
+    shHud(); shNet();
+  }
+
+  function shRescue(stray){
+    const r = ShelterRules.shRescue(sh.sv, stray);
+    if (!r.ok){ banner(r.why === 'full' ? 'The kennels are full — upgrade for more beds!' : 'Cannot rescue that pal right now.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    sh.strays = sh.strays.filter(s => s !== stray);
+    shSpawnStrays = shSpawnStrays;
+    // remove that mesh later by rebuild
+    banner('🐾 ' + r.pet.name + ' is safe at the shelter! Cheer them up before a family visit.');
+    shShowPets();
+    shHud(); shNet();
+  }
+  function shCareMenu(pet){
+    sh.curs = pet.id;
+    const order = ['fed','clean','play'];
+    sh.careI = ((sh.careI|0)+1) % 3;
+    const act = order[sh.careI];
+    const r = ShelterRules.shCare(sh.sv, pet.id, act);
+    if (!r.ok){ banner('That pal is already busy.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    const words = {fed:'had a snack', clean:'got a bath', play:'played a game'};
+    banner((r.ready ? '😊 ' : '🐾 ') + pet.name + ' ' + words[act] + '! Happiness ' + ShelterRules.shHappiness(r.pet) + (r.ready ? ' — ready for a home!' : ''));
+    shHud(); shNet();
+  }
+  function shOpenDesk(){
+    const fam = sh.family || ShelterRules.shVisitFamily(Math.random);
+    sh.family = fam;
+    const ready = (sh.sv.pets||[]).filter(p => ShelterRules.shReady(p));
+    const wish = fam.emoji + ' ' + fam.name + ': "' + fam.line + '"';
+    if (ready.length){
+      const pet = ready.find(p => p.kind === fam.wishKind && p.trait === fam.wishTrait) || ready[0];
+      const m = ShelterRules.shMatch(sh.sv, pet.id, fam.id);
+      if (m.ok){
+        sh.sv = m.state; shSave(sh.sv); shPay(m.coins);
+        sh.family = ShelterRules.shVisitFamily(Math.random, []);
+        banner('🏡 ' + m.message + ' +' + m.coins + ' 🪙');
+        shShowPets(); shHud(); shNet(); return;
+      }
+    }
+    banner(wish + (ready.length ? ' None of the ready pals match yet.' : ' Cheer a pal up, then come back!'));
+    shHud();
+  }
+  function shSend(petId){
+    let petsSave = null;
+    try { petsSave = (typeof load === 'function') ? load('rubloxPets', {v:2, pets:[]}) : {v:2, pets:[]}; } catch(e){ petsSave = {v:2, pets:[]}; }
+    const r = ShelterRules.shSendHome(sh.sv, petId, petsSave);
+    if (!r.ok){ banner(r.why === 'full' ? 'Your pet collection is full (6 pals).' : r.why === 'happy' ? 'Cheer them up a bit more first.' : 'Not now.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    try { if (typeof save === 'function') save('rubloxPets', r.pets); } catch(e){}
+    banner('🏠 ' + (r.pet.n || 'Your pal') + ' went to your pet collection!');
+    shShowPets(); shHud(); shNet();
+  }
+  function shBuy(id){
+    const r = ShelterRules.shBuyUpgrade(sh.sv, id, shCoins());
+    if (!r.ok){ banner(r.why === 'coins' ? 'Need more coins for that upgrade.' : r.why === 'have' ? 'You already have that!' : 'Not now.'); return; }
+    if (!shSpend(r.cost)){ banner('Need more coins for that upgrade.'); return; }
+    sh.sv = r.state; shSave(sh.sv);
+    banner('✨ New shelter upgrade!');
+    shHud(); shNet();
+  }
+  function shHud(){
+    const hint = document.getElementById('shHint');
+    if (hint && sh){
+      const fam = sh.family;
+      const show = sh.show;
+      hint.textContent = '🐾 ' + (sh.sv.pets||[]).length + '/' + (sh.sv.ups.kennels?6:sh.sv.kennels||2) + ' pals  ·  rescued ' + (sh.sv.rescued||0) + '  ·  homes ' + (sh.sv.matched||0) + (sh.sv.trophies ? ('  ·  🏆 ' + sh.sv.trophies) : '') + (show ? ('  ·  ' + (show.emoji||'🎀') + ' ' + show.name) : '') + (fam ? ('  ·  ' + fam.name + ' want a ' + fam.wishTrait + ' ' + fam.wishKind) : '');
+    }
+    const btn = document.getElementById('shAct');
+    const p = shPrompt();
+    if (btn){ if (p){ btn.textContent = p.lab; btn.classList.add('show'); } else btn.classList.remove('show'); }
+    const home = document.getElementById('shHomeBtn');
+    const ready = sh && (sh.sv.pets||[]).find(p => ShelterRules.shReady(p));
+    if (home){ if (ready){ home.classList.add('show'); home.textContent = '🏠 Send ' + ready.name + ' home'; } else home.classList.remove('show'); }
+  }
+  function shAct(){ const p = shPrompt(); if (p) p.act(); }
+  function shKey(e){
+    if (!sh) return false;
+    if (e.type === 'keyup') return false;
+    const c = e.code || e.key;
+    if (c === 'KeyE' || c === 'KeyF'){ shAct(); return true; }
+    if (c === 'KeyH'){ const ready=(sh.sv.pets||[]).find(p => ShelterRules.shReady(p)); if (ready) shSend(ready.id); return true; }
+    if (c === 'KeyU'){ shBuy('kennels'); return true; }
+    return false;
+  }
+  function shPad(jp){
+    if (!sh || !jp) return false;
+    if (!sh._x && jp[2]){ sh._x = true; shAct(); return true; }
+    if (!jp[2]) sh._x = false;
+    if (!sh._y && jp[3]){ sh._y = true; const ready=(sh.sv.pets||[]).find(p => ShelterRules.shReady(p)); if (ready) shSend(ready.id); return true; }
+    if (!jp[3]) sh._y = false;
+    return false;
+  }
+  function shUpdate(){ if (sh) shHud(); }
+  function shIsGuest(){ try { return !!(typeof mp !== 'undefined' && mp && mp.on && !mp.host); } catch(e){ return false; } }
+  function shWire(){ return sh ? ShelterRules.shWire(sh.sv, {family: sh.family, strays: sh.strays, show: sh.show}) : null; }
+  function shApply(snap){
+    if (!sh || !snap) return;
+    if (Array.isArray(snap.pets)) sh.sv.pets = snap.pets;
+    if (snap.family) sh.family = snap.family;
+    if (snap.show) sh.show = snap.show;
+    shHud();
+  }
+  function shNet(){
+    if (shIsGuest() || !sh || typeof mp === 'undefined' || !mp || !mp.on || typeof mpSend !== 'function') return;
+    try { mpSend({t:'sh', snap: shWire()}); } catch(e){}
+  }
+  function shFromNet(g, d){ if (d && d.snap) shApply(d.snap); }
+  function shFromHost(d){ shFromNet(null, d); }
+  function shBind(){
+    const a=document.getElementById('shAct'); if(a && !a.__sh){ a.__sh=true; a.addEventListener('click', ev => { ev.preventDefault(); shAct(); }); }
+    const h=document.getElementById('shHomeBtn'); if(h && !h.__sh){ h.__sh=true; h.addEventListener('click', ev => { ev.preventDefault(); const ready=(sh.sv.pets||[]).find(p => ShelterRules.shReady(p)); if (ready) shSend(ready.id); }); }
+    const u=document.getElementById('shUpBtn'); if(u && !u.__sh){ u.__sh=true; u.addEventListener('click', ev => { ev.preventDefault(); shBuy('kennels'); }); }
+  }
+  function shelterStop(){
+    if (!sh) return;
+    (sh.solids||[]).forEach(b => { try{ b.active=false; if (typeof solids!=='undefined'){ const i=solids.indexOf(b); if(i>=0) solids.splice(i,1);} }catch(e){} });
+    (sh.trash||[]).forEach(m => { try{ scene.remove(m);}catch(e){} });
+    sh=null;
+    const box=document.getElementById('shBox'); if(box) box.style.display='none';
+    ['shAct','shHomeBtn','shUpBtn'].forEach(id => { const b=document.getElementById(id); if(b) b.classList.remove('show'); });
+  }
+  if (typeof window !== 'undefined') window.shDebug = {
+    spawn(){ if (sh) shSpawnStrays(); },
+    fill(){ if (!sh) return; (sh.sv.pets||[]).forEach(p => { p.fed=p.clean=p.play=90; p.happy=90; }); shSave(sh.sv); shHud(); },
+    salon(){ if (!sh) return; P.x=22; P.y=0.5; P.z=-2; },
+    contest(){ if (!sh) return; P.x=-20; P.y=0.5; P.z=-8; if (!sh.show) shBeginShow(); },
+    probe(){ return sh ? {pets:(sh.sv.pets||[]).length, family: sh.family && sh.family.id, strays:(sh.strays||[]).length, show: sh.show && sh.show.id, salon:!!sh.salon} : null; }
+  };
   /* ---------- Pinebell Village ---------- */
   let wn = null;
   function wnKeep(m){ if (m && wn && wn.trash) wn.trash.push(m); return m; }
@@ -45774,6 +47442,7 @@ function start(m = 'obby', d = null){
     if (!wn) return false;
     if (e.type === 'keyup') return false;
     const c = e.code || e.key;
+    if (e.repeat && (c === 'KeyE' || c === 'KeyF')) return true; // QA t332u: holding E on a sled used to hop straight back off
     if (c === 'KeyE'){ wnAct(); return true; }
     if (c === 'KeyF'){ if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)){ wnCocoa(true); return true; } wnAct(); return true; }
     if (c === 'Space' && wn.run.sled && wn.run.sled.on){ WinterRules.wnSledJump(wn.run); return true; }
@@ -45902,7 +47571,8 @@ function start(m = 'obby', d = null){
   }
   function vtLab(text, x, y, z){
     try {
-      if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m) return vtKeep(m); }
+      // QA t330u: indoors and in first person, labels drew through every wall and piled up. Let walls hide them and make them smaller.
+      if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m){ if (m.material) m.material.depthTest = true; m.scale.multiplyScalar(0.62); return vtKeep(m); } }
     } catch (e){}
     return vtMesh(new THREE.BoxGeometry(0.2,0.2,0.2), '#fff', x, y, z);
   }
@@ -46043,9 +47713,23 @@ function start(m = 'obby', d = null){
   function vtDriveCam(){
     if (!vtDriving() || typeof cam === 'undefined' || typeof camera === 'undefined') return;
     const d = vt.run.drive;
-    const back = 8, height = 4.2;
-    const x = d.x - Math.sin(d.yaw) * back;
-    const z = d.z + Math.cos(d.yaw) * back;
+    // QA t330u: the chase camera went inside houses and walls when you drove next to them. Pull it in until the view is clear.
+    const sin = Math.sin(d.yaw), cos = Math.cos(d.yaw);
+    const blocked = (px, py, pz) => (typeof solids !== 'undefined' ? solids : []).some(s => s && s.mesh && s.active !== false && s.hh > 0.6
+      && Math.abs(px - s.mesh.position.x) < s.hw + 0.35 && Math.abs(pz - s.mesh.position.z) < s.hd + 0.35 && Math.abs(py - s.mesh.position.y) < s.hh + 0.35);
+    let back = 8;
+    for (; back > 2.5; back -= 0.5){
+      const h = 1.6 + 2.6 * (back / 8);
+      let obstructed = false;
+      for (let dist = 0.25; dist <= back; dist += 0.25){
+        const t = dist / back;
+        if (blocked(d.x - sin * dist, 1.2 + (h - 1.2) * t, d.z + cos * dist)){ obstructed = true; break; }
+      }
+      if (!obstructed) break;
+    }
+    const height = 1.6 + 2.6 * (back / 8);
+    const x = d.x - sin * back;
+    const z = d.z + cos * back;
     camera.position.set(x, height, z);
     camera.lookAt(d.x, 1.2, d.z);
     cam.yaw = d.yaw;
@@ -46296,7 +47980,7 @@ function start(m = 'obby', d = null){
       if (VetRules.vtInBay(vt.run.drive.x, vt.run.drive.z)){
         return {id:'park', label:'E / Ⓑ  Park and hop out', btn:'🅿️ Park', go:() => vtDoDismount()};
       }
-      return {id:'drive', label: cargo ? ('Drive ' + cargo.name + ' back to the bay') : 'Steer with WASD or the stick · look for pals!', btn:'🚑 Driving'};
+      return {id:'drive', label: cargo ? ('Drive ' + cargo.name + ' back to the bay') : 'Steer with WASD or the stick · look for pals! Drive back to the 🅿️ bay to hop out.', btn:'🚑 Driving'};
     }
     return null;
   }
@@ -46338,19 +48022,24 @@ function start(m = 'obby', d = null){
     vtToast(res.message);
     vtNet();
   }
+  // QA t332u: hopping in or out ignores a second toggle for a moment, so one press (key, tap or Ⓐ) can't undo itself.
+  const VT_TOGGLE_MS = 500;
+  function vtToggleReady(){ return !(vt.toggleAt && Date.now() - vt.toggleAt < VT_TOGGLE_MS); }
   function vtDoMount(){
-    if (!vt) return;
+    if (!vt || !vtToggleReady()) return;
     const res = VetRules.vtMountAmbulance(vt.run, typeof P !== 'undefined' ? P.x : 0, typeof P !== 'undefined' ? P.z : 0);
     if (!res.ok){ vtToast(res.message); return; }
+    vt.toggleAt = Date.now();
     if (typeof P !== 'undefined'){ P.x = vt.run.drive.x; P.z = vt.run.drive.z; P.vx = P.vz = 0; }
     vtHideFpToggle();
     vtPlaceAmbulance();
     vtToast(res.message);
   }
   function vtDoDismount(){
-    if (!vt) return;
+    if (!vt || !vtToggleReady()) return;
     const res = VetRules.vtDismountAmbulance(vt.run);
     if (!res.ok){ vtToast(res.message); return; }
+    vt.toggleAt = Date.now();
     if (typeof P !== 'undefined'){ P.x = 0; P.y = 0; P.z = 22; P.vx = P.vz = 0; }
     vtHideFpToggle();
     vtPlaceAmbulance();
@@ -46382,6 +48071,8 @@ function start(m = 'obby', d = null){
     if (!vt || !vt.run || typeof mode === 'undefined' || mode !== 'vet') return;
     if (!vt.pitchSet && typeof cam !== 'undefined' && !vtDriving()){ cam.pitch = 0.08; cam.yaw = 0; vt.pitchSet = true; }
     vt.run.t = (vt.run.t || 0) + (dt || 0);
+    // QA t330u: in first person a prop label filled the whole screen when you walked up to it; the action button already says it.
+    (vt.props || []).forEach(pr => { if (pr && pr.label && pr.x != null) pr.label.visible = Math.hypot(P.x - pr.x, P.z - pr.z) > 1.9; });
     if (vt.pet) vt.pet.rotation.y += (dt || 0) * 0.4;
     if (vtDriving()){
       vtDriveInput();
@@ -46410,6 +48101,9 @@ function start(m = 'obby', d = null){
   }
   function vtKey(e){
     if (!vt || !e) return false;
+    // QA t332u: the global keyup handler also routes here. One E press used to hop in on keydown and straight
+    // back out on keyup (and a held key auto-repeated the toggle). Only a fresh keydown acts.
+    if (e.type === 'keyup' || e.repeat) return e.type !== 'keyup' && e.code === 'KeyE';
     if (e.code === 'KeyE' || e.code === 'Space'){ vtAct(); return e.code === 'KeyE'; }
     if (e.code === 'KeyV'){ return true; }
     return false;
@@ -46653,7 +48347,8 @@ function start(m = 'obby', d = null){
       const item = MermaidRules.MM_DECOR.find(d => d.id === id);
       if (!item) return;
       mmMesh(new THREE.SphereGeometry(0.35, 8, 8), '#ff8fab', -28 + (i-1)*1.4, 0.6, -2);
-      mmLab(item.emoji + ' ' + item.name, -28 + (i-1)*1.4, 1.5, -2);
+      // QA t330u: decor labels sat 1.4 apart and piled into one smear; stagger and shrink them.
+      { const lab = mmLab(item.emoji + ' ' + item.name, -28 + (i-1)*1.4, 1.5 + (i % 3) * 0.6, -2); if (lab && lab.scale) lab.scale.multiplyScalar(0.6); }
     });
     mm.shopAt = {x:28, z:0};
     mmMesh(new THREE.CylinderGeometry(0.5, 0.6, 1.0, 10), '#e9c46a', 28, 0.6, 2);
@@ -46673,7 +48368,7 @@ function start(m = 'obby', d = null){
     MermaidRules.MM_PETS.forEach((p,i) => {
       const m = mmPetMesh(p.id, 4 + i*2.2, 1.2, 6);
       mm.pets.push({id:p.id, mesh:m, x:4+i*2.2, z:6});
-      mmLab(p.emoji + ' ' + p.name, 4+i*2.2, 2.2, 6);
+      { const lab = mmLab(p.emoji + ' ' + p.name, 4+i*2.2, 2.2 + (i % 2) * 0.7, 6); if (lab && lab.scale) lab.scale.multiplyScalar(0.65); }   // QA t330u: sea-pet names overlapped
     });
     // bubbles
     mm.bubbles = [];
@@ -46799,6 +48494,7 @@ function start(m = 'obby', d = null){
   function mmKey(e){
     if (!mm || !e) return false;
     const c = e.code || e.key;
+    if (e.type === 'keyup' || e.repeat) return e.type !== 'keyup' && c === 'KeyE'; // QA t332u: keyup also routes here; act once per press
     if (c === 'KeyE'){ mmAct(); return true; }
     if (c === 'Space' || c === 'KeyR' || c === 'KeyF' || c === 'ShiftLeft') return true;
     return false;
@@ -46822,6 +48518,583 @@ function start(m = 'obby', d = null){
     home(){ if (!mm) return; P.x=-28; P.y=1.2; P.z=0; if (cam){ cam.yaw=Math.PI/2; cam.pitch=0.3; cam.dist=10; } }
   };
 
+  /* ---------- Oakheart Treehouse ---------- */
+  let th = null;
+  function thKeep(m){ if (m && th && th.trash) th.trash.push(m); return m; }
+  function thMat(c,o){ return new THREE.MeshLambertMaterial(Object.assign({color:c, side:THREE.DoubleSide}, o||{})); }
+  function thMesh(geo,c,x,y,z){ const m=new THREE.Mesh(geo, thMat(c)); m.position.set(x,y,z); scene.add(m); return thKeep(m); }
+  function thState(){ return TreehouseRules.thLoad(typeof load === 'function' ? load(TreehouseRules.TH_KEY, null) : null); }
+  function thSave(s){ if (typeof save === 'function') save(TreehouseRules.TH_KEY, s); if (th) th.sv = s; }
+  function thLab(text,x,y,z){ try { if (typeof t297Lab === 'function'){ const m = t297Lab(text,x,y,z); if (m) return thKeep(m); } } catch(e){} return null; }
+  function thHud(text, act){
+    const hint = document.getElementById('thHint'); if (hint) hint.textContent = text || '';
+    const btn = document.getElementById('thAct');
+    if (btn){ if (act){ btn.textContent = act; btn.classList.add('show'); } else btn.classList.remove('show'); }
+  }
+  function drawTreehouse(ctx){
+    if (typeof sky === 'function') sky(ctx, '#8fd3ff', '#d8ffe0');
+    else { ctx.fillStyle='#8fd3ff'; ctx.fillRect(0,0,320,200); }
+    ctx.fillStyle='#2f8f4a'; ctx.fillRect(0,140,320,60);
+    ctx.fillStyle='#6b3a1d'; ctx.fillRect(140,60,40,90);
+    ctx.fillStyle='#2f8f4a'; ctx.beginPath(); ctx.arc(160,70,70,0,6.3); ctx.fill();
+    ctx.fillStyle='#c45c1a'; ctx.fillRect(175,100,50,12);
+    ctx.font='22px sans-serif'; ctx.fillText('🏠', 186, 98); ctx.fillText('🪵', 80, 130);
+    if (typeof guy === 'function') guy(ctx, 110, 176, 12, '#3a86ff');
+  }
+  function thGhostCell(){
+    if (!th || !P) return {gx:1, gz:0, level: th.sv.level|0};
+    const c = TreehouseRules.TH_CELL;
+    return {gx: Math.round(P.x / c), gz: Math.round(P.z / c), level: th.sv.level|0};
+  }
+  function thBuildPiece(piece){
+    if (!th || !piece) return;
+    const w = TreehouseRules.thWorld(piece.gx, piece.gz, piece.level);
+    const y = w.y;
+    const k = piece.kind;
+    if (k === 'platform' || k === 'room'){
+      const fl = plat(w.x, y, w.z, 2.5, 2.5, k==='room' ? '#c48a4a' : '#8d5524', 0.22);
+      if (fl && fl.mesh) thKeep(fl.mesh);
+      if (fl) th.solids.push(fl);
+    }
+    if (k === 'room'){
+      const wall = '#b8793a', h = 4.4, thk = 0.28, gap = TreehouseRules.TH_DOOR_W, doorH = TreehouseRules.TH_DOOR_H;
+      // four walls, door on +z. plat() takes the TOP of the box.
+      [[0, 1.25, 2.5, thk],[0,-1.25,2.5,thk],[-1.25,0,thk,2.5]].forEach(s => {
+        const b = plat(w.x+s[0], y + h, w.z+s[1], s[2], s[3], wall, h);
+        if (b && b.mesh) thKeep(b.mesh); if (b) th.solids.push(b);
+      });
+      // south wall with door
+      const side = (2.5 - gap) / 2;
+      [-1,1].forEach(sign => {
+        const mid = w.z + 1.25;
+        const b = plat(w.x + sign * (gap/2 + side/2), y + h, mid, side, thk, wall, h);
+        if (b && b.mesh) thKeep(b.mesh); if (b) th.solids.push(b);
+      });
+      const lintel = plat(w.x, y + h, w.z + 1.25, gap, thk, wall, h - doorH);
+      if (lintel && lintel.mesh) thKeep(lintel.mesh); if (lintel) th.solids.push(lintel);
+    }
+    if (k === 'ladder' || k === 'rope'){
+      const col = k==='rope' ? '#c47a3a' : '#8d5524';
+      thMesh(new THREE.BoxGeometry(k==='rope'?0.12:0.4, TreehouseRules.TH_LEVEL + 0.4, 0.12), col, w.x, y + TreehouseRules.TH_LEVEL * 0.5, w.z);
+    }
+    if (k === 'slide'){
+      const s = thMesh(new THREE.BoxGeometry(0.8, 0.16, 3.2), '#3a86ff', w.x, y + 0.4, w.z + 1.2);
+      s.rotation.x = -0.6;
+    }
+    if (k === 'zip'){
+      thMesh(new THREE.CylinderGeometry(0.12, 0.16, 2.4, 6), '#4a4a4a', w.x, y + 1.2, w.z);
+    }
+    if (k === 'rail') thMesh(new THREE.BoxGeometry(2.2, 0.16, 0.12), '#6b3a1d', w.x, y + 1.1, w.z + 1.1);
+    if (k === 'roof'){ const r = thMesh(new THREE.ConeGeometry(1.8, 1.4, 4), '#c23d4b', w.x, y + 5.2, w.z); r.rotation.y = Math.PI/4; }
+    if (k === 'lamp') thMesh(new THREE.SphereGeometry(0.22, 8, 6), '#ffe566', w.x, y + 1.6, w.z);
+    if (k === 'flag') thMesh(new THREE.BoxGeometry(0.7, 0.4, 0.08), '#ff6fb5', w.x + 0.3, y + 1.8, w.z);
+    if (k === 'chair') thMesh(new THREE.BoxGeometry(0.5, 0.45, 0.5), '#6b3a1d', w.x, y + 0.45, w.z);
+    if (k === 'table') thMesh(new THREE.BoxGeometry(0.9, 0.4, 0.9), '#8d5524', w.x, y + 0.55, w.z);
+    if (k === 'hammock') thMesh(new THREE.BoxGeometry(1.4, 0.12, 0.6), '#3a86ff', w.x, y + 0.7, w.z);
+    if (k === 'planter') thMesh(new THREE.BoxGeometry(0.6, 0.3, 0.4), '#2f8f4a', w.x, y + 0.35, w.z);
+    th.meshes[piece.id] = true;
+  }
+  function thClear(){
+    if (!th) return;
+    (th.solids||[]).forEach(b => { try{ b.active=false; if (typeof solids!=='undefined'){ const i=solids.indexOf(b); if(i>=0) solids.splice(i,1);} }catch(e){} });
+    (th.trash||[]).forEach(m => { try{ scene.remove(m);}catch(e){} });
+    th.trash = []; th.solids = []; th.meshes = {};
+  }
+  function thRebuildPieces(){
+    const keepTree = th.tree || [];
+    thClear();
+    th.tree = keepTree;
+    thBuildTree();
+    (th.sv.pieces||[]).forEach(thBuildPiece);
+  }
+  function thBuildTree(){
+    const trunk = thMesh(new THREE.CylinderGeometry(TreehouseRules.TH_TRUNK_R, TreehouseRules.TH_TRUNK_R+0.3, 16, 10), '#6b3a1d', 0, 8, 0);
+    [6, 9, 12, 15].forEach((y,i) => {
+      const leaf = thMesh(new THREE.SphereGeometry(4.2 - i*0.4, 10, 8), '#2f8f4a', 0, y+2, 0);
+    });
+    thLab('🌳 Oakheart', 0, 17, 0);
+    const ground = plat(0, 0, 0, 48, 48, '#1d6a38', 0.25);
+    if (ground && ground.mesh) thKeep(ground.mesh);
+    if (ground) th.solids.push(ground);
+    const trunkR = (TreehouseRules.TH_TRUNK_R || 2.2) * 1.6;
+    const trunkSolid = plat(0, 16, 0, trunkR, trunkR, '#6b3a1d', 16);
+    if (trunkSolid && trunkSolid.mesh){ trunkSolid.mesh.visible = false; thKeep(trunkSolid.mesh); }
+    if (trunkSolid) th.solids.push(trunkSolid);
+  }
+  function thPaintPalette(){
+    const box = document.getElementById('thPaletteList');
+    if (!box || !th) return;
+    box.innerHTML = TreehouseRules.TH_KINDS.map(k => {
+      const on = th.sv.kind === k.id ? ' on' : '';
+      return `<div class="t297row"><span>${k.emoji} ${k.name}</span><button type="button" class="${on.trim()}" data-thk="${k.id}">Pick</button></div>`;
+    }).join('') + `<div class="t297row"><span>Level ${th.sv.level} of ${TreehouseRules.TH_MAX_LEVEL}  ·  rotate ${th.sv.rot*90}°</span><button type="button" data-thlv="1">Level +</button></div>`;
+    box.querySelectorAll('[data-thk]').forEach(b => { b.onclick = ev => { ev.preventDefault(); th.sv = TreehouseRules.thLoad(Object.assign(th.sv, {kind:b.getAttribute('data-thk')})); thSave(th.sv); thPaintPalette(); thHintNow(); }; });
+    const lv = box.querySelector('[data-thlv]');
+    if (lv) lv.onclick = ev => { ev.preventDefault(); th.sv = TreehouseRules.thSetLevel(th.sv, ((th.sv.level|0)+1) % (TreehouseRules.TH_MAX_LEVEL+1)); thSave(th.sv); thPaintPalette(); };
+  }
+  function thOpenPalette(){
+    thPaintPalette();
+    if (typeof t297OverlayShow === 'function') t297OverlayShow('thPalette', true);
+    else { const el=document.getElementById('thPalette'); if(el) el.classList.add('show'); }
+  }
+  function thHintNow(){
+    if (!th) return;
+    const k = TreehouseRules.thKind(th.sv.kind);
+    const ghost = thGhostCell();
+    const climb = TreehouseRules.thClimbAt(th.sv, P.x, P.z, P.y);
+    const ride = TreehouseRules.thRideAt(th.sv, P.x, P.z, P.y);
+    if (th.sv.del) thHud('Delete mode: walk to a piece and press E / Ⓧ to remove it. Undo is ready if you change your mind.', '🗑️ Delete');
+    else if (climb) thHud('🪜 Climb this ' + (climb.kind==='rope'?'rope':'ladder') + '. Hold jump or walk into it.', '');
+    else if (ride) thHud((ride.kind==='slide'?'🛝 Slide!':'➡️ Zipline!') + ' Press E / Ⓧ to ride.', '✨ Ride');
+    else thHud((k?k.emoji+' '+k.name:'Piece') + '  ·  Level ' + th.sv.level + '  ·  R rotate, Q/E cycle, G place, U undo. Hang out with real friends!', '🧰 Place');
+  }
+  function thDoPlace(){
+    if (!th) return false;
+    const g = thGhostCell();
+    if (th.sv.del){
+      const hit = TreehouseRules.thAt(th.sv, g.gx, g.gz, g.level);
+      if (!hit){ banner('No piece here to delete.'); return true; }
+      const r = TreehouseRules.thRemove(th.sv, hit.id);
+      if (r.ok){ thSave(r.state); thRebuildPieces(); banner('Removed a ' + hit.kind + '.'); }
+      return true;
+    }
+    const r = TreehouseRules.thPlace(th.sv, th.sv.kind, g.gx, g.gz, g.level, th.sv.rot, (typeof mp!=='undefined' && mp && mp.me) || 'me', {snap:true});
+    if (!r.ok){ banner(r.why==='full' ? 'The treehouse is full. Undo or delete a piece first.' : 'Need a nearby platform to snap to.'); return true; }
+    thSave(r.state); thBuildPiece(r.piece);
+    try { if (typeof mpSend === 'function' && typeof mp!=='undefined' && mp && mp.on) mpSend({t:'th', a:'place', piece:r.piece}); } catch(e){}
+    banner((TreehouseRules.thKind(r.piece.kind)||{}).emoji + ' Placed ' + r.piece.kind + '!');
+    return true;
+  }
+  function thDoUndo(){
+    if (!th) return false;
+    const r = TreehouseRules.thUndo(th.sv);
+    if (!r.ok){ banner('Nothing to undo yet.'); return true; }
+    thSave(r.state); thRebuildPieces(); banner('Undid the last change.'); return true;
+  }
+  function thToggleDel(){
+    if (!th) return;
+    th.sv = TreehouseRules.thSetDelete(th.sv, !th.sv.del);
+    thSave(th.sv);
+    const b=document.getElementById('thDelBtn'); if(b) b.classList.toggle('on', !!th.sv.del);
+    banner(th.sv.del ? 'Delete mode on.' : 'Delete mode off.');
+  }
+  function buildTreehouse(){
+    const started = TreehouseRules.thNewVisit(thState());
+    th = {trash:[], solids:[], meshes:{}, sv: started.state, run: started.run, tree:[], ride:null};
+    thSave(started.state);
+    try { checkpoints[0] = {idx:0, spawn:{x:6,y:0.5,z:8}, flag:new THREE.Object3D()}; } catch(e){}
+    scene.background = new THREE.Color('#8fd3ff');
+    if (scene.fog){ scene.fog.color.set('#b8e8ff'); scene.fog.near = 20; scene.fog.far = 90; }
+    const hemi = new THREE.HemisphereLight(0xecfff0, 0x1a3a18, 0.95); scene.add(hemi); thKeep(hemi);
+    const sun = new THREE.DirectionalLight(0xfff4d2, 0.6); sun.position.set(8, 20, 6); scene.add(sun); thKeep(sun);
+    thBuildTree();
+    (th.sv.pieces||[]).forEach(thBuildPiece);
+    if (P){ P.x=6; P.y=0.5; P.z=8; }
+    if (typeof cam!=='undefined' && cam){ cam.pitch=0.3; cam.dist=16; cam.yaw=0.4; }
+    const box=document.getElementById('thBox'); if(box) box.style.display='block';
+    thHintNow();
+  }
+  function thEnter(){
+    if (P){ P.x=6; P.y=0.5; P.z=8; P.vx=0; P.vz=0; P.vy=0; }
+    if (typeof cam!=='undefined' && cam){ cam.yaw=Math.atan2(6, 8); cam.pitch=0.28; cam.dist=18; }
+  }
+  function thUpdate(dt){
+    if (!th) return;
+    if (th.ride){
+      th.ride.t = (th.ride.t || 0) + dt;
+      const k = Math.min(1, th.ride.t / 1.4);
+      P.x = th.ride.ax + (th.ride.bx - th.ride.ax) * k;
+      P.y = th.ride.ay + (th.ride.by - th.ride.ay) * k;
+      P.z = th.ride.az + (th.ride.bz - th.ride.az) * k;
+      P.vy = 0;
+      if (k >= 1) th.ride = null;
+    } else {
+      const climb = TreehouseRules.thClimbAt(th.sv, P.x, P.z, P.y);
+      if (climb && (keys[' '] || keys.ArrowUp || (typeof joy!=='undefined' && joy.jump))){
+        P.vy = 4.2; P.onGround = false;
+      }
+    }
+    thHintNow();
+  }
+  function thAct(){
+    if (!th) return false;
+    const ride = TreehouseRules.thRideAt(th.sv, P.x, P.z, P.y);
+    if (ride && !th.sv.del){
+      const w = TreehouseRules.thWorld(ride.gx, ride.gz, ride.level);
+      const dir = ride.rot === 1 ? [1,0] : ride.rot === 2 ? [0,-1] : ride.rot === 3 ? [-1,0] : [0,1];
+      const len = ride.kind === 'slide' ? 6 : 10;
+      th.ride = {ax:P.x, ay:P.y, az:P.z, bx:w.x + dir[0]*len, by: ride.kind==='slide' ? Math.max(0.5, w.y - TreehouseRules.TH_LEVEL) : w.y + 0.4, bz:w.z + dir[1]*len, t:0};
+      banner(ride.kind==='slide' ? '🛝 Weeee!' : '➡️ Zipline!');
+      return true;
+    }
+    return thDoPlace();
+  }
+  function thKey(e){
+    if (!th || !e) return false;
+    if (typeof t297EatOverlayKey === 'function' && t297EatOverlayKey(e)) return true;
+    // QA t332u: the global keyup handler also routes here. Act once per fresh keydown.
+    if (e.type === 'keyup') return false;
+    const c = e.code || e.key;
+    if (e.repeat && (c === 'KeyE' || c === 'KeyG' || c === 'KeyU' || c === 'KeyR' || c === 'KeyQ' || c === 'KeyF' || c === 'KeyC' || c === 'KeyX' || c === 'BracketLeft' || c === 'BracketRight' || c === 'Comma' || c === 'Period')) return true;
+    if (c === 'KeyE' || c === 'KeyG'){ if(!e.repeat) thAct(); return true; }
+    if (c === 'KeyU'){ if(!e.repeat) thDoUndo(); return true; }
+    if (c === 'KeyR'){ if(!e.repeat){ th.sv = TreehouseRules.thRotate(th.sv, 1); thSave(th.sv); thPaintPalette(); } return true; }
+    if (c === 'KeyQ'){ if(!e.repeat){ th.sv = TreehouseRules.thCycleKind(th.sv, -1); thSave(th.sv); thPaintPalette(); } return true; }
+    if (c === 'KeyF' || c === 'KeyC'){ if(!e.repeat) thOpenPalette(); return true; }
+    if (c === 'KeyX'){ if(!e.repeat) thToggleDel(); return true; }
+    if (c === 'BracketLeft' || c === 'Comma'){ if(!e.repeat){ th.sv = TreehouseRules.thSetLevel(th.sv, (th.sv.level|0)-1); thSave(th.sv);} return true; }
+    if (c === 'BracketRight' || c === 'Period'){ if(!e.repeat){ th.sv = TreehouseRules.thSetLevel(th.sv, (th.sv.level|0)+1); thSave(th.sv);} return true; }
+    return false;
+  }
+  function thPad(jp, s){
+    if (!th || !jp) return false;
+    if (typeof t297EatOverlayPad === 'function' && t297EatOverlayPad(jp)) return true;
+    if (jp[2] || jp[7]){ thAct(); if (typeof pad!=='undefined') pad.jump=false; return true; }
+    if (jp[3]){ thOpenPalette(); return true; }
+    if (jp[5]){ thDoUndo(); return true; }
+    if (jp[4]){ thToggleDel(); return true; }
+    return false;
+  }
+  function treehouseStop(){
+    if (!th) return;
+    (th.solids||[]).forEach(b => { try{ b.active=false; if (typeof solids!=='undefined'){ const i=solids.indexOf(b); if(i>=0) solids.splice(i,1);} }catch(e){} });
+    (th.trash||[]).forEach(m => { try{ scene.remove(m);}catch(e){} });
+    th=null;
+    const box=document.getElementById('thBox'); if(box) box.style.display='none';
+    ['thAct','thPaletteBtn','thUndoBtn','thDelBtn'].forEach(id => { const n=document.getElementById(id); if(n) n.classList.remove('show','on'); });
+    if (typeof t297OverlayClose === 'function') t297OverlayClose('thPalette');
+  }
+  if (typeof window !== 'undefined') window.thDebug = {
+    cozy(){
+      if (!th) return;
+      let s = th.sv;
+      [[1,0,1,'platform'],[2,0,1,'platform'],[2,1,1,'room'],[1,0,0,'ladder'],[3,0,1,'slide'],[2,-1,1,'lamp']].forEach(q => {
+        const r = TreehouseRules.thPlace(s, q[3], q[0], q[1], q[2], 0, 'me', {snap:false});
+        if (r.ok) s = r.state;
+      });
+      thSave(s); thRebuildPieces();
+      if (P){ P.x=6; P.y=0.5; P.z=8; }
+      if (typeof cam!=='undefined' && cam){ cam.yaw=0.7; cam.pitch=0.22; cam.dist=18; }
+      try { if (obbyDebug && obbyDebug.camLook) obbyDebug.camLook({x:14,y:8,z:16},{x:2,y:5,z:0}); } catch(e){}
+    }
+  };
+  try {
+    const pal = document.getElementById('thPaletteBtn'); if (pal && !pal.__th){ pal.__th=true; pal.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); thOpenPalette(); }; }
+    const un = document.getElementById('thUndoBtn'); if (un && !un.__th){ un.__th=true; un.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); thDoUndo(); }; }
+    const del = document.getElementById('thDelBtn'); if (del && !del.__th){ del.__th=true; del.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); thToggleDel(); }; }
+    const act = document.getElementById('thAct'); if (act && !act.__th){ act.__th=true; act.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); thAct(); }; }
+  } catch(e){}
+
+  /* ---------- Afterbell School ---------- */
+  let sc = null;
+  function scKeep(m){ if (m && sc && sc.trash) sc.trash.push(m); return m; }
+  function scMat(c,o){ return new THREE.MeshLambertMaterial(Object.assign({color:c, side:THREE.DoubleSide}, o||{})); }
+  function scMesh(geo,c,x,y,z){ const m=new THREE.Mesh(geo, scMat(c)); m.position.set(x,y,z); scene.add(m); return scKeep(m); }
+  function scState(){ return SchoolRules.scLoad(typeof load === 'function' ? load(SchoolRules.SC_KEY, null) : null); }
+  function scSave(s){ if (typeof save === 'function') save(SchoolRules.SC_KEY, s); if (sc) sc.sv = s; }
+  function scLab(text,x,y,z){ try { if (typeof t297Lab === 'function'){ const m = t297Lab(text,x,y,z); if (m) return scKeep(m); } } catch(e){} return null; }
+  function scHud(text, act){
+    const hint = document.getElementById('scHint'); if (hint) hint.textContent = text || '';
+    const btn = document.getElementById('scAct');
+    if (btn){ if (act){ btn.textContent = act; btn.classList.add('show'); } else btn.classList.remove('show'); }
+  }
+  function drawSchool(ctx){
+    if (typeof sky === 'function') sky(ctx, '#141018', '#2a2038');
+    else { ctx.fillStyle='#141018'; ctx.fillRect(0,0,320,200); }
+    ctx.fillStyle='#2a2438'; ctx.fillRect(40,70,240,90);
+    ctx.fillStyle='#1a1624'; ctx.fillRect(60,90,40,50); ctx.fillRect(220,90,40,50);
+    ctx.fillStyle='#ffe566'; ctx.fillRect(150,110,20,50);
+    ctx.font='22px sans-serif'; ctx.fillText('🏫', 148, 70); ctx.fillText('🕯️', 80, 80);
+    if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#8b5cf6');
+  }
+  function scWall(x,y,z,w,h,d,c){
+    // plat(x, top, z, w, d, color, h): y is the floor of the wall, h is its height
+    const b = plat(x, y + h, z, w, d, c, h);
+    if (b && b.mesh){ b.mesh.material = scMat(c); scKeep(b.mesh); }
+    if (b && sc) sc.solids.push(b);
+    return b;
+  }
+  function scSplitWall(along, a0, a1, fixed, gaps, color){
+    const h = SchoolRules.SC_WALL_H, doorH = SchoolRules.SC_DOOR_H, th = 0.42;
+    const opens = (gaps||[]).map(g => ({a:g.c - g.w/2, b:g.c + g.w/2})).sort((p,q)=>p.a-q.a);
+    let cursor = a0;
+    function seg(lo, hi, y, hh){
+      if (hi-lo < 0.15) return;
+      const mid=(lo+hi)/2, len=hi-lo;
+      if (along==='x') scWall(mid, y, fixed, len, hh, th, color);
+      else scWall(fixed, y, mid, th, hh, len, color);
+    }
+    opens.forEach(op => { seg(cursor, op.a, 0, h); seg(op.a, op.b, doorH, Math.max(0.2, h-doorH)); cursor = op.b; });
+    seg(cursor, a1, 0, h);
+  }
+  function scApplyMood(){
+    if (!sc) return;
+    const less = !!sc.sv.lessScary;
+    if (typeof scene !== 'undefined' && scene){
+      scene.background = new THREE.Color(less?'#2a2650':'#141018');
+      if (scene.fog){ scene.fog.color.copy(scene.background); scene.fog.near = less?20:12; scene.fog.far = less?85:55; }
+    }
+    (sc.trash||[]).forEach(m => {
+      if (!m) return;
+      if (m.isHemisphereLight){ m.intensity = less?1.15:0.7; try{ m.color.set(less?0xa0a8d8:0x5a5878);}catch(e){} }
+      if (m.isPointLight){ m.intensity = less?1.5:0.9; m.distance = less?32:26; }
+    });
+  }
+  function scPaintLess(){
+    const b=document.getElementById('scLessBtn'); if(!b||!sc) return;
+    b.textContent = sc.sv.lessScary ? '😈 Really scary' : '😌 Less scary';
+  }
+  function scPaintGoreNote(){
+    const n=document.getElementById('scGoreNote'); if(!n||!sc) return;
+    let raw='off';
+    try { raw = (typeof goreSetting==='function') ? goreSetting() : 'off'; } catch(e){}
+    const note = (typeof GoreRules!=='undefined' && GoreRules.goreCapNote) ? GoreRules.goreCapNote(raw, !!sc.sv.lessScary) : '';
+    if (note){ n.textContent=note; n.classList.add('show'); n.hidden=false; } else { n.textContent=''; n.classList.remove('show'); n.hidden=true; }
+  }
+  function scClearGore(){
+    if (!sc) return;
+    (sc.gore||[]).forEach(m => { try{ scene.remove(m);}catch(e){} });
+    sc.gore=[];
+  }
+  function scRebuildGore(){
+    if (!sc || typeof GoreRules==='undefined') return;
+    scClearGore(); scPaintGoreNote();
+    let raw='off';
+    try { raw = (typeof goreSetting==='function') ? goreSetting() : 'off'; } catch(e){}
+    const list = GoreRules.goreDecalsFor('school', raw, {lessScary: !!sc.sv.lessScary}) || [];
+    list.forEach(d => {
+      const col = d.kind==='scratch' ? '#6a1018' : '#7a1a22';
+      const m = new THREE.Mesh(d.kind==='scratch' ? new THREE.BoxGeometry(d.sx||0.04, d.sy||0.7, d.sz||0.2) : new THREE.CylinderGeometry((d.sx||1)*0.5,(d.sz||0.7)*0.45,d.sy||0.03,8), new THREE.MeshBasicMaterial({color:col, transparent:true, opacity:0.8, depthWrite:false}));
+      m.position.set(d.x, d.y, d.z); m.rotation.y = d.yaw||0; m.raycast=function(){};
+      scene.add(m); scKeep(m); sc.gore.push(m);
+    });
+  }
+  function scMakeWarden(){
+    const g = new THREE.Group();
+    const less = !!(sc && sc.sv && sc.sv.lessScary);
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.7, less?2.4:3.1, 0.45), scMat(less?'#4a3f6a':'#1a1424'));
+    body.position.y = less?1.3:1.6; g.add(body);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.5, 0.5), scMat('#2a2438'));
+    head.position.y = less?2.6:3.15; g.add(head);
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.08,6,5), new THREE.MeshBasicMaterial({color: less?'#ffe566':'#cfe6ff'}));
+    eye.position.set(-0.12, less?2.65:3.2, 0.26); g.add(eye);
+    const eye2 = eye.clone(); eye2.position.x=0.12; g.add(eye2);
+    const pass = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.18, 0.04), new THREE.MeshBasicMaterial({color:'#ffe566'}));
+    pass.position.set(0.4, less?1.4:1.7, 0.2); g.add(pass);
+    scene.add(g); scKeep(g); return g;
+  }
+  function buildSchool(){
+    const started = SchoolRules.scNewVisit(scState());
+    sc = {trash:[], solids:[], gore:[], sv: started.state, run: started.run, warden:null, near:null};
+    scSave(started.state);
+    try { checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:24}, flag:new THREE.Object3D()}; } catch(e){}
+    const less = !!sc.sv.lessScary;
+    scene.background = new THREE.Color(less?'#242044':'#141018');
+    if (scene.fog){ scene.fog.color.copy(scene.background); scene.fog.near = less?18:12; scene.fog.far = less?80:55; }
+    const hemi = new THREE.HemisphereLight(less?0x8a90c0:0x5a5878, 0x1a1020, less?0.95:0.7); scene.add(hemi); scKeep(hemi);
+    const lamp = new THREE.PointLight('#ffd8a0', less?1.4:1.0, 32); lamp.position.set(0, 4.2, 8); scene.add(lamp); scKeep(lamp);
+    const wall = less?'#4a4568':'#3a3552';
+    SchoolRules.SC_ROOMS.forEach(r => {
+      const fl = plat(r.x, 0, r.z, r.w, r.d, r.color, 0.28);
+      if (fl && fl.mesh) scKeep(fl.mesh);
+      const ceil = scMesh(new THREE.BoxGeometry(r.w+0.2, 0.2, r.d+0.2), '#1a1624', r.x, SchoolRules.SC_WALL_H, r.z);
+      scLab(r.name, r.x, 2.6, r.z - r.d/2 + 1.2);
+    });
+    function scBuildRoomWalls(color){
+      const doors = SchoolRules.SC_DOORS || [];
+      SchoolRules.SC_ROOMS.forEach(r => {
+        const x0=r.x-r.w/2, x1=r.x+r.w/2, z0=r.z-r.d/2, z1=r.z+r.d/2;
+        const gaps = (axis, fixed) => doors.filter(d => {
+          if (axis==='x' && d.axis==='z' && Math.abs(d.z-fixed)<0.25 && d.x>=x0-0.2 && d.x<=x1+0.2) return true;
+          if (axis==='z' && d.axis==='x' && Math.abs(d.x-fixed)<0.25 && d.z>=z0-0.2 && d.z<=z1+0.2) return true;
+          return false;
+        }).map(d => ({c: d.axis==='z' ? d.x : d.z, w: d.w}));
+        scSplitWall('x', x0, x1, z0, gaps('x', z0), color);
+        scSplitWall('x', x0, x1, z1, gaps('x', z1), color);
+        scSplitWall('z', z0, z1, x0, gaps('z', x0), color);
+        scSplitWall('z', z0, z1, x1, gaps('z', x1), color);
+      });
+    }
+    scBuildRoomWalls(wall);
+    [ [0,4.2,22], [0,4.2,0], [-22,4.2,0], [22,4.2,0], [-22,4.2,-26], [22,4.2,-26] ].forEach(p => {
+      const lamp2 = new THREE.PointLight('#ffd8a0', less?1.2:0.85, 26);
+      lamp2.position.set(p[0], p[1], p[2]); scene.add(lamp2); scKeep(lamp2);
+    });
+    // warm window slits so hallways stay readable
+    [[-7.7,3.2,6],[7.7,3.2,6],[-7.7,3.2,-6],[7.7,3.2,-6],[-7.7,3.2,20],[7.7,3.2,20]].forEach(p => {
+      const w = scMesh(new THREE.BoxGeometry(0.08, 1.4, 1.1), less?'#ffe9a0':'#c9a24a', p[0], p[1], p[2]);
+      if (w && w.material){ w.material = new THREE.MeshBasicMaterial({color: less?'#ffe9a0':'#c9a24a'}); }
+    });
+    // visible locked front doors on the north wall
+    scMesh(new THREE.BoxGeometry(1.5, 3.6, 0.16), less?'#6a4a2a':'#3a2418', -1.0, 1.8, 29.6);
+    scMesh(new THREE.BoxGeometry(1.5, 3.6, 0.16), less?'#6a4a2a':'#3a2418', 1.0, 1.8, 29.6);
+    const glow = scMesh(new THREE.BoxGeometry(0.2, 0.2, 0.08), '#ffe566', 0, 2.4, 29.7);
+    if (glow && glow.material) glow.material = new THREE.MeshBasicMaterial({color:'#ffe566'});
+        // props
+    scMesh(new THREE.BoxGeometry(1.2, 2.4, 0.5), '#3d3228', 0, 1.2, -6); // locker
+    scLab('🔒 Locker', 0, 2.8, -6);
+    scMesh(new THREE.BoxGeometry(2.4, 1.2, 0.12), '#2a4a2a', -26, 1.8, 8.8); // chalkboard
+    scLab('📝 Chalkboard', -26, 3.0, 8.2);
+    scMesh(new THREE.BoxGeometry(1.4, 1.1, 0.8), '#5a3a22', 26, 0.7, -2);
+    scLab('📚 Library desk', 26, 2.2, -2);
+    scLab('4', 26, 2.0, -30); scLab('1', -26, 2.4, -30); scLab('8', -30, 2.6, 0);
+    scLab('🚪 Front doors', 0, 3.0, 29);
+    if (P){ P.x=0; P.y=0.5; P.z=20; }
+    if (typeof cam!=='undefined' && cam){ cam.pitch=0.12; cam.dist=7; cam.yaw=0; }
+    sc.warden = scMakeWarden();
+    scRebuildGore(); scPaintLess(); scApplyMood();
+    const box=document.getElementById('scBox'); if(box) box.style.display='block';
+    banner(less ? '🌙 Afterbell School. Less scary is on — the Hush Warden is slower and easier to see. Solve the puzzles and walk out. If it finds you, everyone is okay.' : '🌙 Afterbell School. You are locked in after dark. Solve the chalkboard, locker, and hall pass, and slip past the Hush Warden. If it finds you, everyone is okay.');
+  }
+  function scEnter(){
+    if (P){ P.x=0; P.y=0.5; P.z=20; P.vx=0; P.vz=0; P.vy=0; }
+    if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.12; cam.dist=7; }
+  }
+  function scPrompt(){
+    if (!sc || !P) return null;
+    if (Math.hypot(P.x, P.z-(-6)) < 1.8) return {kind:'locker', act:'🔒 Open'};
+    if (Math.hypot(P.x-(-26), P.z-4) < 2.0) return {kind:'board', act:'📝 Read'};
+    if (Math.hypot(P.x-26, P.z-(-2)) < 1.8 && sc.sv.pass) return {kind:'pass', act:'🎫 Hall pass'};
+    SchoolRules.SC_DIGITS.forEach(d => { /* handled below */ });
+    for (let i=0;i<(SchoolRules.SC_DIGITS||[]).length;i++){
+      const d=SchoolRules.SC_DIGITS[i];
+      if (Math.hypot(P.x-d.x, P.z-d.z) < d.r && (sc.sv.digits||[]).indexOf(d.id)<0) return {kind:'digit', id:d.id, n:d.n, act:'🔍 Look'};
+    }
+    if (Math.hypot(P.x, P.z-29) < 2.0) return {kind:'exit', act: sc.sv.pass ? '🚪 Leave' : '🚪 Locked'};
+    return null;
+  }
+  function scOpenLocker(){
+    const body=document.getElementById('scLockerBody');
+    if (sc.sv.locker){ if(body) body.textContent = 'The locker is open. You already have the hall pass.'; }
+    else if (body) body.textContent = sc.sv.riddle || (sc.sv.digits||[]).length>=3 ? 'Enter the three-digit code (hint: 4, 1, and 8).' : 'The locker needs a code. Search the school, or solve the chalkboard riddle first.';
+    const inp=document.getElementById('scLockerIn'); if(inp) inp.value='';
+    if (typeof t297OverlayShow==='function') t297OverlayShow('scLocker', true);
+    else { const el=document.getElementById('scLocker'); if(el) el.classList.add('show'); }
+  }
+  function scTryLocker(){
+    const inp=document.getElementById('scLockerIn');
+    const r = SchoolRules.scOpenLocker(sc.sv, inp ? inp.value : '');
+    if (!r.ok){ banner(r.why==='code' ? 'That code does not work yet.' : 'Find the clues first.'); return; }
+    scSave(r.state); banner('🎫 The locker clicks open. You have a hall pass!');
+    if (typeof t297OverlayClose==='function') t297OverlayClose('scLocker');
+    SchoolRules.scSetCheckpoint(sc.run, 'hall');
+  }
+  function scOpenBoard(){
+    const q=document.getElementById('scBoardQ');
+    if (q) q.textContent = SchoolRules.SC_RIDDLE.prompt;
+    const box=document.getElementById('scBoardChoices');
+    if (box){
+      box.innerHTML = SchoolRules.SC_RIDDLE.choices.map(c => `<button type="button" data-ans="${c}">${c.toUpperCase()}</button>`).join(' ');
+      box.querySelectorAll('[data-ans]').forEach(b => { b.onclick = ev => { ev.preventDefault(); scAnswer(b.getAttribute('data-ans')); }; });
+    }
+    if (typeof t297OverlayShow==='function') t297OverlayShow('scBoard', true);
+  }
+  function scAnswer(ans){
+    const r = SchoolRules.scSolveRiddle(sc.sv, ans);
+    if (!r.ok){ banner('Not that one. Look at the clue again!'); return; }
+    scSave(r.state);
+    banner('📝 Yes — a book! The chalkboard now shows the locker code: ' + r.code + '.');
+    if (typeof t297OverlayClose==='function') t297OverlayClose('scBoard');
+    SchoolRules.scSetCheckpoint(sc.run, 'class');
+  }
+  function scAct(){
+    if (!sc) return false;
+    const p = scPrompt();
+    if (!p) return false;
+    if (p.kind==='locker'){ scOpenLocker(); return true; }
+    if (p.kind==='board'){ scOpenBoard(); return true; }
+    if (p.kind==='digit'){
+      const r=SchoolRules.scFindDigit(sc.sv, p.id);
+      if (r.ok){ scSave(r.state); banner('You found a ' + r.n + '!' + (r.left?(' ' + (3-r.left) + '/3 digits.'):' That is all three digits.')); }
+      return true;
+    }
+    if (p.kind==='pass'){ banner('🎫 You already have the hall pass. Take it to the front doors.'); return true; }
+    if (p.kind==='exit'){
+      const r=SchoolRules.scEscape(sc.sv);
+      if (!r.ok){ banner('The front doors are locked. You need a hall pass.'); return true; }
+      scSave(r.state);
+      try { if (typeof confetti==='function') confetti(); } catch(e){}
+      if (typeof t297Pay==='function') t297Pay(r.reward, '🌙 Afterbell');
+      else if (typeof setCoins==='function') try { setCoins(coins + r.reward); } catch(e){}
+      const body=document.getElementById('scWinBody');
+      if (body) body.textContent = 'The front doors swing open onto the quiet street. Everyone is okay!' + (r.reward?(' +'+r.reward+' 🪙'):'');
+      if (typeof t297OverlayShow==='function') t297OverlayShow('scWin', true);
+      banner('🌙 You made it out of Afterbell School! Everyone is okay!');
+      return true;
+    }
+    return false;
+  }
+  function scToggleLess(){
+    if (!sc) return;
+    sc.sv = SchoolRules.scSetLessScary(sc.sv, !sc.sv.lessScary);
+    scSave(sc.sv);
+    if (sc.warden){ try{ scene.remove(sc.warden);}catch(e){} }
+    sc.warden = scMakeWarden();
+    scRebuildGore(); scPaintLess(); scApplyMood();
+    banner(sc.sv.lessScary ? 'Less scary is on. The Hush Warden is slower and easier to see. Getting caught still means everyone is okay.' : 'Really scary is on. The Hush Warden is sneakier, but light and hiding spots still keep you safe.');
+  }
+  function scUpdate(dt){
+    if (!sc) return;
+    const hide = SchoolRules.scNearHide(P.x, P.z);
+    SchoolRules.scTickWarden(sc.run, dt, {lessScary:!!sc.sv.lessScary, px:P.x, pz:P.z, hidden:!!hide});
+    if (sc.warden){
+      sc.warden.position.set(sc.run.wx||0, 0, sc.run.wz||0);
+      if (P) sc.warden.lookAt(P.x, 1.6, P.z);
+    }
+    if (sc.run.caught){
+      const r = sc.run.respawn || {x:0,y:0.5,z:24};
+      P.x=r.x; P.y=r.y; P.z=r.z; P.vy=0;
+      sc.run.caught=false;
+      banner('The Hush Warden found you… but everyone is okay! Back to your last checkpoint.');
+    }
+    const p = scPrompt();
+    sc.near = p;
+    if (p) scHud(p.kind==='exit' && !sc.sv.pass ? 'The front doors are locked. Find a hall pass.' : 'E / Ⓧ — ' + (p.act||'act') + '.', p.act||'✨ Do it');
+    else if (hide) scHud('You are tucked out of sight. The Hush Warden will walk by.', '');
+    else scHud('Explore Afterbell after dark. Solve the chalkboard, locker, and hall pass. If the Hush Warden finds you, everyone is okay.', '');
+    scPaintGoreNote();
+  }
+  function scKey(e){
+    if (!sc || !e) return false;
+    if (typeof t297EatOverlayKey === 'function' && t297EatOverlayKey(e)) return true;
+    // QA t332u: the global keyup handler also routes here. Act once per fresh keydown.
+    if (e.type === 'keyup') return false;
+    const c = e.code || e.key;
+    if (e.repeat && (c === 'KeyE' || c === 'KeyF' || c === 'KeyL' || c === 'KeyY' || c === 'Enter')) return true;
+    if (c === 'KeyE' || c === 'KeyF'){ if(!e.repeat) scAct(); return true; }
+    if (c === 'KeyL' || c === 'KeyY'){ if(!e.repeat) scToggleLess(); return true; }
+    if (c === 'Enter' && document.getElementById('scLocker') && document.getElementById('scLocker').classList.contains('show')){ scTryLocker(); return true; }
+    return false;
+  }
+  function scPad(jp, s){
+    if (!sc || !jp) return false;
+    if (typeof t297EatOverlayPad === 'function' && t297EatOverlayPad(jp)) return true;
+    if (jp[2] || jp[7]){ scAct(); if (typeof pad!=='undefined') pad.jump=false; return true; }
+    if (jp[3]){ scToggleLess(); return true; }
+    return false;
+  }
+  function schoolStop(){
+    if (!sc) return;
+    (sc.solids||[]).forEach(b => { try{ b.active=false; if (typeof solids!=='undefined'){ const i=solids.indexOf(b); if(i>=0) solids.splice(i,1);} }catch(e){} });
+    (sc.trash||[]).forEach(m => { try{ scene.remove(m);}catch(e){} });
+    sc=null;
+    const box=document.getElementById('scBox'); if(box) box.style.display='none';
+    ['scAct','scLessBtn'].forEach(id => { const n=document.getElementById(id); if(n) n.classList.remove('show'); });
+    const note=document.getElementById('scGoreNote'); if(note){ note.classList.remove('show'); note.hidden=true; }
+    if (typeof t297OverlayClose === 'function')['scLocker','scBoard','scWin'].forEach(id => t297OverlayClose(id));
+  }
+  if (typeof window !== 'undefined') window.scDebug = {
+    hall(){ if(!sc) return; sc.sv.lessScary=false; scSave(sc.sv); scPaintLess(); scApplyMood(); if(P){P.x=0;P.y=0.5;P.z=6;} if(sc.warden) sc.warden.position.set(2,0,-2); if(typeof cam!=='undefined'&&cam){cam.yaw=0.15;cam.pitch=0.08;cam.dist=11;} try{ if(obbyDebug&&obbyDebug.camLook) obbyDebug.camLook({x:5,y:3.4,z:12},{x:0,y:1.6,z:-1}); }catch(e){} },
+    less(){ if(!sc) return; sc.sv.lessScary=true; scSave(sc.sv); if(sc.warden){try{scene.remove(sc.warden);}catch(e){}} sc.warden=scMakeWarden(); scRebuildGore(); scPaintLess(); scApplyMood(); if(P){P.x=0;P.y=0.5;P.z=6;} if(sc.warden) sc.warden.position.set(2,0,-2); if(typeof cam!=='undefined'&&cam){cam.yaw=0.15;cam.pitch=0.08;cam.dist=11;} try{ if(obbyDebug&&obbyDebug.camLook) obbyDebug.camLook({x:5,y:3.4,z:12},{x:0,y:1.6,z:-1}); }catch(e){} }
+  };
+  try {
+    const less=document.getElementById('scLessBtn'); if(less && !less.__sc){ less.__sc=true; less.onclick=ev=>{ev.preventDefault();ev.stopPropagation();scToggleLess();}; }
+    const act=document.getElementById('scAct'); if(act && !act.__sc){ act.__sc=true; act.onclick=ev=>{ev.preventDefault();ev.stopPropagation();scAct();}; }
+    const go=document.getElementById('scLockerGo'); if(go && !go.__sc){ go.__sc=true; go.onclick=ev=>{ev.preventDefault();scTryLocker();}; }
+    const wc=document.getElementById('scWinClose'); if(wc && !wc.__sc){ wc.__sc=true; wc.onclick=ev=>{ev.preventDefault(); if(typeof t297OverlayClose==='function') t297OverlayClose('scWin');}; }
+    ['scLockerX','scBoardX','scWinX'].forEach(id => { const x=document.getElementById(id); if(x && !x.__sc){ x.__sc=true; x.onclick=ev=>{ev.preventDefault(); if(typeof t297OverlayClose==='function') t297OverlayClose(id.replace('X','').replace('scL','scL')==='scLocker'||true); const map={scLockerX:'scLocker',scBoardX:'scBoard',scWinX:'scWin'}; if(typeof t297OverlayClose==='function') t297OverlayClose(map[id]); }; } });
+  } catch(e){}
+
   function stop(){
 
     if (typeof dhHideTestNote === 'function') try { dhHideTestNote(); } catch (e){}
@@ -46834,7 +49107,7 @@ function start(m = 'obby', d = null){
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame'); setHomeInert(false);
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (evg) snowfestStop(); if (typeof t297Stop === 'function') t297Stop(); if (typeof t302Stop === 'function') t302Stop(); if (typeof elevStop === 'function') elevStop(); if (typeof mansionStop === 'function') mansionStop(); if (typeof shelterStop === 'function') shelterStop(); if (py) partyStop(); if (lh) lanternStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (evg) snowfestStop(); if (typeof t297Stop === 'function') t297Stop(); if (typeof t302Stop === 'function') t302Stop(); if (typeof elevStop === 'function') elevStop(); if (typeof mansionStop === 'function') mansionStop(); if (typeof shelterStop === 'function') shelterStop(); if (typeof mermaidStop === 'function') mermaidStop(); if (typeof winterStop === 'function') winterStop(); if (typeof vetStop === 'function') vetStop(); if (typeof treehouseStop === 'function') treehouseStop(); if (typeof schoolStop === 'function') schoolStop(); if (py) partyStop(); if (lh) lanternStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
     try { if (typeof lbOnLeave === 'function') lbOnLeave('host'); } catch (e){}

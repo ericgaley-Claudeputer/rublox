@@ -9,6 +9,8 @@ const S = require('../dev/shelter/shelter_logic.js');
 const W = require('../dev/winter/winter_logic.js');
 const E = require('../dev/elevator/elev_logic.js');
 const R = require('../dev/mermaid/mermaid_logic.js');
+const School = require('../dev/school/school_logic.js');
+const Tree = require('../dev/treehouse/treehouse_logic.js');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
 function walk(list, label){
@@ -106,3 +108,11 @@ describe('doorway clearance for a max-height player', () => {
     });
   });
 });
+
+  test('a max-height player can walk through Afterbell School doors and Oakheart room doors', () => {
+    walk(School.SC_DOORS, 'school');
+    assert.ok(School.SC_DOOR_H >= D.DOOR_MIN_H);
+    assert.ok(School.SC_DOOR_W >= D.DOOR_MIN_W);
+    const st = Tree.thPlace(Tree.thFresh(), 'room', 2, 0, 0, 0, 'me', {});
+    walk(Tree.thAllDoors(st.state).map(d => ({id:d.id, h:d.h, w:d.w, thick:d.thick||0.4})), 'treehouse');
+  });

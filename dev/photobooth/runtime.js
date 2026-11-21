@@ -52,9 +52,12 @@
   }
   function pbOnChrome(key, id){
     const R = PhotoBoothRules, s = pb.shot || R.pbFreshShot();
+    const full = key === 'sticker' && (s.stickers || []).length >= 4 && (s.stickers || []).indexOf(id) < 0;
     if (key === 'sticker') pb.shot = R.pbToggleSticker(s, id);
     else { s[key] = id; pb.shot = R.pbCleanShot(s); }
     pbPaintChrome(); pbPaint();
+    // QA t330u: the 5th sticker used to do nothing at all. Say why.
+    if (full){ const h = document.querySelector('#avBooth .avbooth-h'); if (h){ h.textContent = '📸 Up to 4 stickers! Tap a lit one to take it off.'; clearTimeout(pb.hintT); pb.hintT = setTimeout(() => { h.textContent = '📸 Photo Booth'; }, 2600); } }
   }
   function pbPaintChrome(){
     const R = PhotoBoothRules, s = pb.shot || R.pbFreshShot();

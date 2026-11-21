@@ -1,0 +1,18 @@
+#thBox{display:none;position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center;max-width:none;padding:0;border:0;background:transparent;box-shadow:none;font-weight:800}
+.thmode #thBox{display:block}
+#thBox #thHint{display:inline-block;max-width:min(520px,80vw);padding:8px 12px;border:3px solid #1d2340;border-radius:16px;background:#e8f8e8;box-shadow:3px 3px 0 #1d2340;pointer-events:none}
+#thAct,#thPaletteBtn,#thUndoBtn,#thDelBtn{position:absolute;z-index:8;padding:8px 12px;font-size:14px;border:3px solid #1d2340;border-radius:16px;background:#e8f8e8;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+.thmode #thAct,.thmode #thPaletteBtn,.thmode #thUndoBtn,.thmode #thDelBtn{display:block}
+#thAct{right:16px;bottom:96px}
+#thPaletteBtn{right:16px;bottom:148px}
+#thUndoBtn{right:16px;bottom:200px}
+#thDelBtn{right:16px;bottom:252px}
+#thDelBtn.on{background:#ffd0d4}
+.thmode #oEmoBtn,.thmode #oQuestBtn,.thmode #oTradeBtn,.thmode #oTip,.thmode .otip{display:none!important}
+@media (max-width:700px){
+  #thAct{right:12px;bottom:160px}
+  #thPaletteBtn{right:12px;bottom:212px}
+  #thUndoBtn{right:12px;bottom:264px}
+  #thDelBtn{right:12px;bottom:316px}
+}
+.thHelp{font-weight:700;color:#5d6788}
