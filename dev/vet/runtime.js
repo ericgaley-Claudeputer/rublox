@@ -199,7 +199,12 @@
     let back = 8;
     for (; back > 2.5; back -= 0.5){
       const h = 1.6 + 2.6 * (back / 8);
-      if (![0.35, 0.6, 0.85, 1].some(t => blocked(d.x - sin * back * t, 1.2 + (h - 1.2) * t, d.z + cos * back * t))) break;
+      let obstructed = false;
+      for (let dist = 0.25; dist <= back; dist += 0.25){
+        const t = dist / back;
+        if (blocked(d.x - sin * dist, 1.2 + (h - 1.2) * t, d.z + cos * dist)){ obstructed = true; break; }
+      }
+      if (!obstructed) break;
     }
     const height = 1.6 + 2.6 * (back / 8);
     const x = d.x - sin * back;

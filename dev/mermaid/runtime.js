@@ -105,7 +105,8 @@
       const item = MermaidRules.MM_DECOR.find(d => d.id === id);
       if (!item) return;
       mmMesh(new THREE.SphereGeometry(0.35, 8, 8), '#ff8fab', -28 + (i-1)*1.4, 0.6, -2);
-      mmLab(item.emoji + ' ' + item.name, -28 + (i-1)*1.4, 1.5, -2);
+      // QA t330u: decor labels sat 1.4 apart and piled into one smear; stagger and shrink them.
+      { const lab = mmLab(item.emoji + ' ' + item.name, -28 + (i-1)*1.4, 1.5 + (i % 3) * 0.6, -2); if (lab && lab.scale) lab.scale.multiplyScalar(0.6); }
     });
     mm.shopAt = {x:28, z:0};
     mmMesh(new THREE.CylinderGeometry(0.5, 0.6, 1.0, 10), '#e9c46a', 28, 0.6, 2);
@@ -125,7 +126,7 @@
     MermaidRules.MM_PETS.forEach((p,i) => {
       const m = mmPetMesh(p.id, 4 + i*2.2, 1.2, 6);
       mm.pets.push({id:p.id, mesh:m, x:4+i*2.2, z:6});
-      mmLab(p.emoji + ' ' + p.name, 4+i*2.2, 2.2, 6);
+      { const lab = mmLab(p.emoji + ' ' + p.name, 4+i*2.2, 2.2 + (i % 2) * 0.7, 6); if (lab && lab.scale) lab.scale.multiplyScalar(0.65); }   // QA t330u: sea-pet names overlapped
     });
     // bubbles
     mm.bubbles = [];
