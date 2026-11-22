@@ -91,6 +91,37 @@
       if (m) m.visible = !!show[id];
     });
   }
+  function wnBuildRink(){
+    if (!wn || typeof WinterRules === 'undefined') return;
+    const p = WinterRules.WN_POND;
+    const ice = plat(p.x, 0.5, p.z, (p.r || 7.5) * 1.92, (p.r || 7.5) * 1.92, '#3db8f0', 0.28);
+    if (ice){
+      ice.ice = true;
+      if (ice.mesh){ ice.mesh.material = wnMat('#3db8f0'); wnKeep(ice.mesh); }
+      wn.solids.push(ice);
+    }
+    const R = (p.r || 7.5) + 0.4;
+    for (let i = 0; i < 16; i++){
+      const mid = ((i + 0.5) / 16) * Math.PI * 2;
+      let da = mid - Math.PI / 2;
+      while (da > Math.PI) da -= Math.PI * 2;
+      while (da < -Math.PI) da += Math.PI * 2;
+      if (Math.abs(da) < 0.42) continue;
+      const x = p.x + Math.cos(mid) * R;
+      const z = p.z + Math.sin(mid) * R;
+      wnWall(x, 0.45, z, 1.8, 0.95, 0.36, '#c9a06a');
+    }
+    wnLab('⛸️ Frostlane Rink', p.x, 2.5, p.z - (p.r || 7.5) - 1.1);
+    wnMesh(new THREE.BoxGeometry(0.16, 1.5, 0.16), '#8b5a2b', p.x, 0.75, p.z - (p.r || 7.5) - 1.1);
+  }
+  function wnDoTrick(){
+    if (!wn || !WinterRules.wnSkateTrick) return;
+    const r = WinterRules.wnSkateTrick(wn.run, wn.sv);
+    if (!r.ok) return;
+    wn.sv = r.state; wnSave(wn.sv); wnPay(r.coins);
+    banner('✨ ' + r.name + '! +' + r.coins + ' 🪙');
+    wnHud();
+  }
   function buildWinter(){
     const started = WinterRules.wnNewVisit(wnState(), Date.now());
     wn = {trash:[], solids:[], labels:[], sv: started.state, run: started.run, sledMesh:null, snowmanMesh:null, lights:[], lamp:null};
@@ -110,9 +141,10 @@
     wnMesh(new THREE.CylinderGeometry(0.5, 0.6, 0.8, 10), '#5a2a12', cocoa.x, 1.1, cocoa.z + cocoa.d/2 - 0.55);
     wn.cocoa = {x:cocoa.x, z:cocoa.z + cocoa.d/2 - 0.3};
     const pondDef = WinterRules.WN_POND;
-    const pond = new THREE.Mesh(new THREE.CircleGeometry(pondDef.r || 7.5, 24), wnMat('#b8e8ff'));
-    pond.rotation.x = -Math.PI/2; pond.position.set(pondDef.x, 0.32, pondDef.z); scene.add(pond); wnKeep(pond);
+    const pond = new THREE.Mesh(new THREE.CircleGeometry(pondDef.r || 7.5, 32), wnMat('#2eb4f0'));
+    pond.rotation.x = -Math.PI/2; pond.position.set(pondDef.x, 0.52, pondDef.z); scene.add(pond); wnKeep(pond);
     wn.pond = {x:pondDef.x, z:pondDef.z};
+    wnBuildRink();
     wn.yard = {x:WinterRules.WN_YARD.x, z:WinterRules.WN_YARD.z};
     wn.posts = (WinterRules.WN_POSTS || []).map(p => ({id:p.id, x:p.x, z:p.z}));
     wn.posts.forEach(p => {
@@ -134,7 +166,7 @@
     wnBuildFestive();
     wnBind();
     wnHud();
-    banner('🎄 Welcome to Pinebell Village! Sled, skate, build a snow pal, sip cocoa, and toss practice snowballs. Races and snowball fights are for real friends only.');
+    banner('🎄 Welcome to Pinebell Village! Sled, skate Frostlane Rink (jump for a spin!), build a snow pal, sip cocoa, and toss practice snowballs. Races and snowball fights are for real friends only.');
   }
 
   function wnBuildFestive(){
@@ -284,8 +316,8 @@
     if (wn.finish && wnNear(wn.finish.x, wn.finish.z, 4) && wn.run.sled && wn.run.sled.done) return {lab:'Collect your sled coins (E / Ⓧ)', act:() => wnCashSled()};
     if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)) return {lab:'☕ Buy cocoa (E) or serve a mug (F / hold Ⓧ)', act:() => wnCocoa(false)};
     if (wn.pond && wnNear(wn.pond.x, wn.pond.z, 8)){
-      if (wn.run.skate && wn.run.skate.on) return {lab:'Skate a loop · Ⓑ cash laps', act:() => wnCashSkate()};
-      return {lab:'Start skating (E / Ⓧ)', act:() => wnStartSkate()};
+      if (wn.run.skate && wn.run.skate.on) return {lab:'Skate a loop · jump / Ⓐ spin · Ⓑ cash laps', act:() => wnCashSkate()};
+      return {lab:'Start skating at Frostlane Rink (E / Ⓧ)', act:() => wnStartSkate()};
     }
     if (wn.yard && wnNear(wn.yard.x, wn.yard.z, 3.2)) return {lab:'Build the snow pal (E / Ⓧ)', act:() => wnBuild()};
     const post = (wn.posts||[]).find(p => wnNear(p.x, p.z, 2.2));
@@ -316,7 +348,7 @@
   }
   function wnStartSkate(){
     WinterRules.wnSkateStart(wn.run);
-    banner('⛸️ Skate a loop around Glassgill Pond! Cash in laps when you are done.');
+    banner('⛸️ Skate a loop on Frostlane Rink! Jump or Ⓐ for a spin or twirl, then cash in laps when you are done.');
     wnHud();
   }
   function wnCashSkate(){
@@ -384,6 +416,7 @@
     if (c === 'KeyE'){ wnAct(); return true; }
     if (c === 'KeyF'){ if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)){ wnCocoa(true); return true; } wnAct(); return true; }
     if (c === 'Space' && wn.run.sled && wn.run.sled.on){ WinterRules.wnSledJump(wn.run); return true; }
+    if (c === 'Space' && wn.run.skate && wn.run.skate.on && WinterRules.wnOnRink && WinterRules.wnOnRink(P.x, P.z)){ wnDoTrick(); return false; }
     if ((c === 'KeyA' || c === 'ArrowLeft') && wn.run.sled && wn.run.sled.on){ WinterRules.wnSledSteer(wn.run, -1, 0.08); return true; }
     if ((c === 'KeyD' || c === 'ArrowRight') && wn.run.sled && wn.run.sled.on){ WinterRules.wnSledSteer(wn.run, 1, 0.08); return true; }
     return false;
@@ -418,9 +451,16 @@
       P.x = wn.run.sled.x; P.y = wn.run.sled.y; P.z = wn.run.sled.z; P.vx = P.vz = 0;
       if (wn.run.sled.done) banner('🏁 You reached the finish! Collect your coins.');
     }
+    if (wn.pond && WinterRules.wnOnRink && WinterRules.wnOnRink(P.x, P.z)){
+      if (!wn.run.skate || !wn.run.skate.on) WinterRules.wnSkateStart(wn.run);
+    }
     if (wn.run.skate && wn.run.skate.on){
       const ax = P.x - (wn.pond.x||20), az = P.z - (wn.pond.z|| 4);
       WinterRules.wnSkateTick(wn.run, ax, az, dt);
+      if (WinterRules.wnOnRink && WinterRules.wnOnRink(P.x, P.z)){
+        if (P.vy > 2 && !wn.run.skate._hop){ wn.run.skate._hop = true; wnDoTrick(); }
+        if (P.onGround) wn.run.skate._hop = false;
+      }
     }
     wnPaintLabels();
     wnHud();

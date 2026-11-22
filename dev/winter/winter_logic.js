@@ -20,7 +20,7 @@
     id:c.id, a:'outside', b:c.id, x:c.x, z:c.z + c.d/2, w:WN_DOOR_W, h:WN_DOOR_H, axis:'z', thick:0.42
   }));
   const WN_HILL = {x:0, w:18, startZ:-82, finishZ:-16, finishW:20, finishD:12, steps:8, stepD:8, startY:13, stepDrop:1.5, platH:1.2, bumpZs:[-58, -36]};
-  const WN_POND = {id:'pond', name:'Glassgill Pond', x:20, z:4, r:7.5, w:15, d:15};
+  const WN_POND = {id:'pond', name:'Frostlane Rink', x:20, z:4, r:7.5, w:15, d:15};
   const WN_YARD = {id:'yard', name:'Snow pal yard', x:2, z:30, w:4, d:4};
   const WN_POSTS = [
     {id:'post-1', name:'Post 1', x:4, z:22, w:1.2, d:1.2},
@@ -114,6 +114,7 @@
       sledRuns: 0,
       snowmen: 0,
       skateLaps: 0,
+      skateTricks: 0,
       cocoaServed: 0,
       cocoaBought: 0,
       races: 0,
@@ -129,7 +130,7 @@
   function wnLoad(raw){
     const o = raw && typeof raw === 'object' ? raw : {};
     const d = wnFresh();
-    ['coinsEarned','sledRuns','snowmen','skateLaps','cocoaServed','cocoaBought','races','snowballs','lights','nightShows','wraps'].forEach(k => {
+    ['coinsEarned','sledRuns','snowmen','skateLaps','skateTricks','cocoaServed','cocoaBought','races','snowballs','lights','nightShows','wraps'].forEach(k => {
       d[k] = Math.max(0, o[k] | 0);
     });
     d.sledBest = Math.max(0, +o.sledBest || 0);
@@ -302,7 +303,7 @@
   function wnSkateStart(run){
     if (!run) return {ok:false, why:'no'};
     run.area = 'pond';
-    run.skate = {on:true, laps:0, t:0, lastAng:0, ang:0, crossed:true};
+    run.skate = {on:true, laps:0, t:0, lastAng:0, ang:0, crossed:true, tricks:0, trickT:0, trick:''};
     return {ok:true, why:'ok'};
   }
 
@@ -323,7 +324,27 @@
         s.laps = (s.laps | 0) + 1;
       }
     }
+    if ((s.trickT || 0) > 0) s.trickT = Math.max(0, s.trickT - dt);
     return run;
+  }
+
+  function wnOnRink(x, z){
+    const p = WN_POND;
+    return Math.hypot((x||0) - p.x, (z||0) - p.z) <= (p.r || 7.5) + 0.45;
+  }
+  function wnSkateTrick(run, state){
+    if (!run || !run.skate || !run.skate.on) return {ok:false, why:'skate'};
+    if ((run.skate.trickT || 0) > 0) return {ok:false, why:'wait'};
+    const names = ['Bell twirl', 'Pinebell spin', 'Ribbon spiral'];
+    const name = names[(run.skate.tricks || 0) % names.length];
+    run.skate.trick = name;
+    run.skate.trickT = 0.85;
+    run.skate.tricks = (run.skate.tricks | 0) + 1;
+    const st = wnLoad(state);
+    st.skateTricks = (st.skateTricks | 0) + 1;
+    const coins = 2;
+    st.coinsEarned += coins;
+    return {ok:true, why:'ok', name, coins, state: st, tricks: run.skate.tricks};
   }
 
   function wnSkateBank(run, state){
@@ -561,7 +582,7 @@
     wnSledStart, wnSledSteer, wnSledJump, wnSledTick, wnSledFinish, wnSledRace,
     wnRealPlayers, wnCanPelt, wnThrowSnowball, wnSnowballTick,
     wnAddSnowmanPart, wnFinishSnowman,
-    wnSkateStart, wnSkateTick, wnSkateBank,
+    wnSkateStart, wnSkateTick, wnSkateBank, wnOnRink, wnSkateTrick,
     wnBuyCocoa, wnServeCocoa, wnWire,
     WN_LIGHT_SLOTS, WN_PAPERS, WN_RIBBON_COLORS, WN_BOWS, WN_TAGS, WN_WRAP_STEPS, WN_WRAP_JUDGE,
     WN_HILL, WN_POND, WN_YARD, WN_POSTS, WN_LAMP, WN_WRAP, WN_SPAWN,
