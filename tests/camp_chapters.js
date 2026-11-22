@@ -1,0 +1,62 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const path = require('node:path');
+const C = require(path.join(__dirname, '..', 'dev/t302/camp_logic.js'));
+
+test('Maple Wren chapter 1 journal stays done:true / found:5 after later chapters', () => {
+  let s = C.campFresh();
+  C.CAMP_CLUES.forEach(c => { const r = C.campFindClue(s, c.id); assert.equal(r.ok, true); s = r.state; });
+  const found = C.campFindCamper(s);
+  assert.equal(found.ok, true);
+  s = found.state;
+  const j1 = C.campJournalLines(s, false);
+  assert.equal(j1.done, true);
+  assert.equal(j1.found, 5);
+  assert.equal(j1.total, 5);
+  assert.equal(j1.lines.length, 5);
+  assert.ok(j1.lines.every(l => l.have === true));
+  assert.equal(j1.ch2.unlocked, true);
+  assert.equal(j1.ch2.done, false);
+
+  C.CAMP_CH2.forEach(c => { const r = C.campFindChClue(s, c.id); assert.equal(r.ok, true, c.id); s = r.state; });
+  const th = C.campFindThistle(s);
+  assert.equal(th.ok, true);
+  s = th.state;
+  C.CAMP_CH3.forEach(c => { const r = C.campFindChClue(s, c.id); assert.equal(r.ok, true, c.id); s = r.state; });
+  const hike = C.campFinishHike(s);
+  assert.equal(hike.ok, true);
+  s = hike.state;
+  const j = C.campJournalLines(s, true);
+  assert.equal(j.done, true);
+  assert.equal(j.found, 5);
+  assert.equal(j.total, 5);
+  assert.equal(j.lines.length, 5);
+  assert.ok(j.lines.every(l => l.have === true));
+  assert.equal(j.ch2.done, true);
+  assert.equal(j.ch3.done, true);
+  assert.match(C.campThistleEnding(), /okay/i);
+  assert.match(C.campHikeEnding(), /okay|safe|together/i);
+  assert.doesNotMatch(C.campThistleEnding() + C.campHikeEnding(), /blood|wound|gore/i);
+});
+
+test('Chapter 2 and 3 stay locked until Wren is found, and old saves load', () => {
+  const raw = C.campLoad({ver:3, sticks:4, clues:['map'], camperFound:false});
+  assert.deepEqual(raw.ch2, []);
+  assert.equal(raw.ch2Done, false);
+  assert.equal(raw.ch3Done, false);
+  assert.equal(C.campFindChClue(raw, 'ribbon').ok, false);
+  assert.equal(C.campCh2Unlocked(raw), false);
+  let s = C.campFresh();
+  s.camperFound = true;
+  assert.equal(C.campCh2Unlocked(s), true);
+  assert.equal(C.campCh3Unlocked(s), false);
+  const nearRibbon = C.campNearClue(C.CAMP_CH2[0].x, C.CAMP_CH2[0].z, s);
+  assert.equal(nearRibbon.id, 'ribbon');
+  assert.equal(nearRibbon.chapter, 2);
+  s = C.campFindChClue(s, 'ribbon').state;
+  s = C.campFindChClue(s, 'nibble').state;
+  s = C.campFindChClue(s, 'burrow').state;
+  const thistle = C.campNearClue(C.CAMP_THISTLE.x, C.CAMP_THISTLE.z, s);
+  assert.equal(thistle.id, 'thistle');
+  assert.equal(thistle.final, true);
+});

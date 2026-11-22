@@ -45,6 +45,7 @@
     {id:'mermaid', name:'Glimmergill Cove', emoji:'🧜', keys:['rubloxMermaid']},
     {id:'treehouse', name:'Oakheart Treehouse', emoji:'🌳', keys:['rubloxTreehouse']},
     {id:'school', name:'Afterbell School', emoji:'🏫', keys:['rubloxSchool']},
+    {id:'fieldtrip', name:'Pebblebrook Field Trip', emoji:'🚌', keys:['rubloxFieldTrip']},
     {id:'garden', name:'Sunny Patch Garden', emoji:'🌱', keys:['rubloxGarden']},
     {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', keys:['rubloxMeadow']},
     {id:'rides', name:'Rideland Workshop', emoji:'🎢', keys:['rubloxRides']},

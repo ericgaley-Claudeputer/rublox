@@ -2042,6 +2042,22 @@
     t302Lab('🧣 Maple Wren', h.x + 1.2, 2.6, h.z);
     t302Lab('🌳 Hollow Tree', h.x, 3.4, h.z);
     campRebuildWren();
+    (CampRules.CAMP_CH2 || []).forEach(c => {
+      const m = t302Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.5), '#f3c1d8', c.x, 0.35, c.z, cg);
+      t302Lab((c.emoji || '🔍') + ' ' + c.name, c.x, 1.6, c.z);
+      cg.clueMeshes[c.id] = m;
+    });
+    const th = CampRules.CAMP_THISTLE;
+    cg.thistleMesh = t302Mesh(new THREE.BoxGeometry(0.6, 0.5, 0.8), '#d9c4a0', th.x, 0.4, th.z, cg);
+    t302Lab('🐇 Thistle', th.x, 1.7, th.z);
+    (CampRules.CAMP_CH3 || []).forEach(c => {
+      const m = t302Mesh(new THREE.BoxGeometry(0.45, 0.7, 0.45), '#ffe9a0', c.x, 0.5, c.z, cg);
+      t302Lab((c.emoji || '🏮') + ' ' + c.name, c.x, 1.8, c.z);
+      cg.clueMeshes[c.id] = m;
+    });
+    const lk = CampRules.CAMP_LOOKOUT;
+    t302Mesh(new THREE.CylinderGeometry(0.25, 0.3, 1.8, 8), '#6a4a28', lk.x, 0.9, lk.z, cg);
+    t302Lab('🌙 Mooncap lookout', lk.x, 2.4, lk.z);
     campPaintClues();
   }
 
@@ -2051,9 +2067,19 @@
     if (!box || !cg) return;
     const j = CampRules.campJournalLines(cg.sv, !!(cg.sv && cg.sv.lessScary));
     if (title) title.textContent = j.title;
+    function rows(section, fallback){
+      if (!section || !section.unlocked) return '';
+      const title = fallback;
+      const list = (section.lines || []).map(l => '<div class="t297row' + (l.have ? '' : ' dim') + '"><span>' + l.emoji + ' ' + l.name + ' — ' + l.text + '</span></div>').join('');
+      const foot = section.done ? ('<div class="t297row"><span>' + (section === j.ch2 ? '🐇 Thistle is back at camp. Everyone is okay!' : '🌙 The Mooncap lantern hike is done, and everyone is safe together.') + '</span></div>')
+        : ('<div class="t297row"><span>' + (section.ready ? (section === j.ch2 ? 'All hare clues are in! Check the moss mound for Thistle.' : 'The trail is marked. Meet Wren at the Mooncap lookout.') : ('Clues ' + section.found + '/' + section.total + '.')) + '</span></div>');
+      return '<p class="campStoryIntro">' + title + '</p>' + list + foot;
+    }
     box.innerHTML = '<p class="campStoryIntro">' + j.intro + '</p>' +
       j.lines.map(l => '<div class="t297row' + (l.have ? '' : ' dim') + '"><span>' + l.emoji + ' ' + l.name + ' — ' + l.text + '</span></div>').join('') +
-      '<div class="t297row"><span>' + (j.done ? '🧣 Maple Wren is safe by the hollow tree. Everyone is okay!' : (j.ready ? 'All clues are in! Follow them to the hollow tree in the Deep Woods.' : ('Clues ' + j.found + '/' + j.total + '.'))) + '</span></div>';
+      '<div class="t297row"><span>' + (j.done ? '🧣 Maple Wren is safe by the hollow tree. Everyone is okay!' : (j.ready ? 'All clues are in! Follow them to the hollow tree in the Deep Woods.' : ('Clues ' + j.found + '/' + j.total + '.'))) + '</span></div>' +
+      rows(j.ch2, 'Chapter 2 — Help Wren find Thistle the camp hare.') +
+      rows(j.ch3, 'Chapter 3 — A lantern night hike on the Mooncap trail.');
   }
   function campOpenJournal(){
     campPaintJournal();
@@ -2065,6 +2091,37 @@
     if (!cg) return false;
     const hit = CampRules.campNearClue(P.x, P.z, cg.sv);
     if (!hit) return false;
+    if (hit.chapter === 2 || hit.chapter === 3){
+      if (hit.final && hit.id === 'thistle'){
+        const r = CampRules.campFindThistle(cg.sv);
+        if (!r.ok){ banner('Keep looking — Thistle left more clues.'); return true; }
+        campPersist(r.state); cg.sv = r.state;
+        t302Pay(r.reward, '🐇 Thistle is safe'); t302Snd('win'); t302Note('camp-thistle');
+        try { if (typeof confetti === 'function') confetti(); } catch(e){}
+        banner('🐇 ' + ((CampRules.campThistleEnding && CampRules.campThistleEnding()) || 'You found Thistle! Everyone is okay!') + (r.reward ? (' +' + r.reward + ' 🪙') : ''));
+        campPaintClues(); campPaintJournal();
+        return true;
+      }
+      if (hit.final && hit.id === 'mooncap'){
+        const r = CampRules.campFinishHike(cg.sv);
+        if (!r.ok){ banner('Follow the lanterns up the Mooncap trail.'); return true; }
+        campPersist(r.state); cg.sv = r.state;
+        t302Pay(r.reward, '🌙 Mooncap hike'); t302Snd('win'); t302Note('camp-hike');
+        try { if (typeof confetti === 'function') confetti(); } catch(e){}
+        banner('🌙 ' + ((CampRules.campHikeEnding && CampRules.campHikeEnding()) || 'The lantern hike is done, and everyone is safe together.') + (r.reward ? (' +' + r.reward + ' 🪙') : ''));
+        campPaintClues(); campPaintJournal();
+        return true;
+      }
+      const r = CampRules.campFindChClue(cg.sv, hit.id);
+      if (!r.ok) return false;
+      campPersist(r.state); cg.sv = r.state;
+      t302Snd('cp'); t302Note('camp-clue');
+      const less = !!(cg.sv && cg.sv.lessScary);
+      const total = r.chapter === 2 ? CampRules.CAMP_CH2.length : CampRules.CAMP_CH3.length;
+      banner(hit.emoji + ' ' + CampRules.campClueText(hit.id, less) + (r.left ? ('  (' + (total - r.left) + '/' + total + ')') : (r.chapter === 2 ? '  All hare clues! Check the moss mound.' : '  The trail is marked. Meet Wren at the lookout.')));
+      campPaintClues(); campPaintJournal();
+      return true;
+    }
     if (hit.final){
       const r = CampRules.campFindCamper(cg.sv);
       if (!r.ok){ banner('Keep looking — there are still clues to find.'); return true; }
@@ -2093,6 +2150,17 @@
       const mesh = (cg.clueMeshes || {})[c.id];
       if (mesh) mesh.visible = !have;
     });
+    const ch2on = !!(CampRules.campCh2Unlocked && CampRules.campCh2Unlocked(cg.sv));
+    const ch3on = !!(CampRules.campCh3Unlocked && CampRules.campCh3Unlocked(cg.sv));
+    (CampRules.CAMP_CH2 || []).forEach(c => {
+      const mesh = (cg.clueMeshes || {})[c.id];
+      if (mesh) mesh.visible = ch2on && !CampRules.campHasCh(cg.sv, c.id) && !(cg.sv && cg.sv.ch2Done);
+    });
+    (CampRules.CAMP_CH3 || []).forEach(c => {
+      const mesh = (cg.clueMeshes || {})[c.id];
+      if (mesh) mesh.visible = ch3on && !CampRules.campHasCh(cg.sv, c.id) && !(cg.sv && cg.sv.ch3Done);
+    });
+    if (cg.thistleMesh) cg.thistleMesh.visible = (CampRules.campCanFindThistle && CampRules.campCanFindThistle(cg.sv)) || !!(cg.sv && cg.sv.ch2Done);
     if (cg.wrenMesh) cg.wrenMesh.visible = CampRules.campCanFindCamper(cg.sv) || !!(cg.sv && cg.sv.camperFound);
   }
 
@@ -2382,7 +2450,10 @@
     if (t302Near(0, 0, 2.4)) near = {kind:'fire'};
     if (t302Near(cg.bench.x, cg.bench.z, 2)) near = {kind:'bench'};
     const storyHit = CampRules.campNearClue(P.x, P.z, cg.sv);
-    if (storyHit) near = {kind: storyHit.final ? 'wren' : 'clue', id: storyHit.id, name: storyHit.name, emoji: storyHit.emoji};
+    if (storyHit){
+      const kind = (storyHit.final && storyHit.id === 'thistle') ? 'thistle' : ((storyHit.final && storyHit.id === 'mooncap') ? 'mooncap' : (storyHit.final ? 'wren' : 'clue'));
+      near = {kind, id: storyHit.id, name: storyHit.name, emoji: storyHit.emoji};
+    }
     (cg.run.logs || []).forEach(log => {
       if ((log.left | 0) > 0 && t302Near(log.x, log.z, 1.7)) near = {kind:'log', id:log.id, chop: log.kind !== 'fallen'};
     });
@@ -2394,6 +2465,8 @@
     else if (near && near.kind === 'bench') t302Hud('E / Ⓧ — craft a blanket or lantern, or change Less scary.', '');
     else if (CampRules.campHas(cg.sv, 'lantern')) t302Hud('Goal: survive 5 nights. L or the Lantern action shines light at the Gloam. Follow the compass back to camp.', '🏮 Lantern');
     else if (near && near.kind === 'clue') t302Hud((near.emoji || '🔍') + ' A clue! E / Ⓧ — pick it up and add it to your journal.', '🔍 Clue');
+    else if (near && near.kind === 'thistle') t302Hud('🐇 Thistle the camp hare is here, and they are okay! E / Ⓧ — say hello.', '🐇 Thistle');
+    else if (near && near.kind === 'mooncap') t302Hud('🌙 Wren is waiting at the Mooncap lookout. E / Ⓧ — join the lantern hike.', '🌙 Lookout');
     else if (near && near.kind === 'wren') t302Hud('🧣 Maple Wren is here, and they are okay! E / Ⓧ — say hello.', '🧣 Wren');
     else t302Hud('Goal: survive 5 nights, and help find Maple Wren. Hunt logs, follow clues, keep the fire bright after dark.', '');
     if (cg.wrenMesh && cg.wrenMesh.userData && cg.wrenMesh.userData.shiver && cg.wrenMesh.visible){
