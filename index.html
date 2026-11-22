@@ -1417,20 +1417,81 @@ body.lh-muffled #obby{filter:saturate(.85)}
 .spitem.sel,.musbtn.sel{background:#1db954;color:#fff}
 .musnow b{display:block;font-size:16px}.musnow small{display:block;font-size:12px;opacity:.75}
 </style>
+<style id="hubInkCss">
+/* Home / hub (not the in-game HUD): every title, card, button, label and tip is black.
+   Dark or saturated panels under that text are lightened so it stays readable. */
+body:not(:has(#obby.show)){
+  color:#111;
+  --text:#111;
+  --muted:#222;
+}
+body.dark:not(:has(#obby.show)){
+  --bg:#eef6ff;
+  --bg2:#ffffff;
+  --text:#111;
+  --muted:#222;
+  --card:#ffffff;
+  --line:#d7e3f7;
+  --bar:#ffffffee;
+  --shadow:0 6px 0 rgba(29,35,64,.12), 0 10px 24px rgba(29,35,64,.10);
+  background-color:#eef6ff;
+  color:#111;
+}
+header.top, main, #nameModal, #setModal, #resetModal, #frConfirm, #avPrevModal, #evShop, .qoverlay .qbox, .troverlay, .evoverlay .evbox, #leaderboard, #quests, #friends, #shop, #achievements, #continue, #games, #home, #avatar{
+  color:#111;
+  --text:#111;
+  --muted:#222;
+}
+header.top .logo .b{color:#111;text-shadow:none}
+nav button{color:#111}
+nav button.active{color:#111;background:#b7d4ff;box-shadow:0 4px 0 #6ea4f0}
+.chip{color:#111}
+.hero{color:#111;background:linear-gradient(120deg,#d4e8ff,#ebe0ff 55%,#ffd9ee)}
+.hero h1,.hero p{color:#111;text-shadow:none}
+#evBanner,#evBanner h3,#evBanner p,#evNextNote{color:#111}
+main .big, #nameModal .big, #setModal .big, #resetModal .big, #frConfirm .big, #avPrevModal .big, #evShop .big{
+  color:#111;
+}
+main .big.green, #nameModal .big.green, #setModal .big.green, #resetModal .big.green, #frConfirm .big.green, #evShop .big.green, #avPrevModal .big.green{
+  color:#111;background:#8ef0be;box-shadow:0 6px 0 #2aa56a;
+}
+main .big.blue, #nameModal .big.blue, #setModal .big.blue, #avPrevModal .big.blue{
+  color:#111;background:#b3d4ff;box-shadow:0 6px 0 #3a86ff;
+}
+main .big.red, #nameModal .big.red, #setModal .big.red{
+  color:#111;background:#ffc2c8;box-shadow:0 6px 0 #e85a68;
+}
+.badge{color:#111}
+.badge.play{color:#111;background:#8ef0be;box-shadow:0 3px 0 #2aa56a}
+.cinfo, .cinfo h3, .cinfo small, .mpt, .mpt b, .mpt small, .mpcode, .mpcode small, .mpcode b, .mphint, .mpmsg, .mpst, .mplink, .mplink.ok, .mplink.re, .mplink.off, .contile, .continue h2, h2, h3, h4, .opt h4, .qsub, .qwait, .qdone, .qtop b, .qtop small, .lbempty, .lbnote, .lbname, .lbcat h3, .achcard h3, .achcard p, .achcard em, .achcard.off em, .qbonuswait, .qbonusdone{color:#111}
+.hat.sel{color:#111;background:#b3d4ff}
+.achtab.on, .lbtabs button.on{color:#111;background:#b3d4ff}
+.tab.sel, .avprevmode.on{color:#111;background:#d7c8ff;box-shadow:0 3px 0 #8b5cf6}
+.sbtn, .sitem .sprev{color:#111}
+.sbtn{background:#8ef0be;box-shadow:0 4px 0 #2aa56a}
+.tagl{color:#111;background:#8ef0be}
+.updbar{color:#111;background:#b3d4ff}
+.achok{color:#111;background:#8ef0be;box-shadow:0 2px 0 #2aa56a}
+.frav{color:#111}
+.mbox, .mbox h2, .mbox p, .mbox label, #nameModal, #setModal .mbox, #resetModal .mbox{color:#111}
+#nameModal .mbox, #setModal .mbox, #resetModal .mbox, #frConfirm .mbox, #avPrevModal .mbox{background:#fff;color:#111}
+body:not(:has(#obby.show)) .toast{color:#111;background:#8ef0be;box-shadow:0 6px 0 #2aa56a}
+.qcard, .evitem, .evitem b, .evitem small, .lbrow, .evbox, .evbox h2, .evbox p{color:#111}
+</style>
 </head>
 <body>
 <header class="top">
   <a class="logo" href="#home" aria-label="Rublox home">
-    <span class="b" style="background:var(--red)">R</span>
-    <span class="b" style="background:var(--orange)">U</span>
-    <span class="b" style="background:var(--green)">B</span>
-    <span class="b" style="background:var(--blue)">L</span>
+    <span class="b" style="background:#ffb3ba">R</span>
+    <span class="b" style="background:#ffd27a">U</span>
+    <span class="b" style="background:#8ef0be">B</span>
+    <span class="b" style="background:#b3d4ff">L</span>
     <span class="cube"><svg width="34" height="34" viewBox="0 0 34 34">
       <polygon points="17,2 31,9 17,16 3,9" fill="#ffd23f"/>
       <polygon points="3,9 17,16 17,32 3,25" fill="#8b5cf6"/>
       <polygon points="31,9 17,16 17,32 31,25" fill="#ff6fb5"/>
     </svg></span>
-    <span class="b" style="background:var(--purple)">X</span>
+    <span class="b" style="background:#d7c8ff">X</span>
   </a>
   
 <style id="qtpCss">
@@ -3099,7 +3160,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.20-17';
+const BUILD = '2026.11.22-1';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -15590,7 +15651,7 @@ document.addEventListener('click', ev => { if (dhResetModalIsOpen() && dhIsUiEve
         card.dataset.fr = f.code;
         const av = document.createElement('span');
         av.className = 'frav';
-        av.style.background = f.color || '#3a86ff';
+        av.style.background = 'linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.55)), ' + (f.color || '#b7d4ff');
         av.textContent = (f.name || '?').slice(0, 1).toUpperCase();
         const body = document.createElement('div');
         body.className = 'frbody';

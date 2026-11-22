@@ -254,7 +254,7 @@
         card.dataset.fr = f.code;
         const av = document.createElement('span');
         av.className = 'frav';
-        av.style.background = f.color || '#3a86ff';
+        av.style.background = 'linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.55)), ' + (f.color || '#b7d4ff');
         av.textContent = (f.name || '?').slice(0, 1).toUpperCase();
         const body = document.createElement('div');
         body.className = 'frbody';
