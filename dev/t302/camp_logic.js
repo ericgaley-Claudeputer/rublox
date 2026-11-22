@@ -67,7 +67,11 @@
       nights: 0,
       lessScary: false,
       clues: [],
-      camperFound: false
+      camperFound: false,
+      ch2: [],
+      ch2Done: false,
+      ch3: [],
+      ch3Done: false
     };
   }
 
@@ -87,6 +91,10 @@
     d.lessScary = !!o.lessScary;
     d.clues = Array.isArray(o.clues) ? o.clues.filter((id, i, a) => campClue(id) && a.indexOf(id) === i) : [];
     d.camperFound = !!o.camperFound;
+    d.ch2 = Array.isArray(o.ch2) ? o.ch2.filter((id, i, a) => campChClue(id) && (CAMP_CH2 || []).some(c => c.id === id) && a.indexOf(id) === i) : [];
+    d.ch3 = Array.isArray(o.ch3) ? o.ch3.filter((id, i, a) => campChClue(id) && (CAMP_CH3 || []).some(c => c.id === id) && a.indexOf(id) === i) : [];
+    d.ch2Done = !!o.ch2Done;
+    d.ch3Done = !!o.ch3Done;
     d.ver = CAMP_VER;
     return d;
   }
@@ -112,9 +120,83 @@
       soft:'A cheerful radio chirp: "I am okay! I found a hollow tree and I can see fireflies!"'}
   ];
   const CAMP_HOLLOW = {x:62, z:54, r:2.6};
+  const CAMP_CH2_REWARD = 16;
+  const CAMP_CH3_REWARD = 16;
+  const CAMP_CH2 = [
+    {id:'ribbon', name:'Thistle ribbon', emoji:'🎀', x:12, z:44, r:2.2,
+      blurb:'A soft twine ribbon snagged on a fern. It smells like warm hay — Thistle the camp hare was here.',
+      soft:'A pretty twine ribbon on a fern. Thistle the camp hare left a cozy trail!'},
+    {id:'nibble', name:'Nibble greens', emoji:'🥬', x:-24, z:48, r:2.2,
+      blurb:'Tiny nibble marks in the clover, hopping toward the burrow thicket. No one is hurt — just a snack stop.',
+      soft:'Little clover nibbles, hop-hop toward a burrow. Thistle was having a picnic.'},
+    {id:'burrow', name:'Warm burrow', emoji:'🕳️', x:8, z:56, r:2.2,
+      blurb:'A warm burrow with a tidy nest of leaves. A hare-print turns toward the moss mound.',
+      soft:'A cozy burrow with a leaf nest. A happy hare-print points to the moss mound.'}
+  ];
+  const CAMP_THISTLE = {x:18, z:62, r:2.6, name:'Thistle', emoji:'🐇'};
+  const CAMP_CH3 = [
+    {id:'trail', name:'Lantern trail', emoji:'🏮', x:-8, z:-36, r:2.2,
+      blurb:'A row of little paper lanterns marks the Mooncap trail. They glow like shy fireflies.',
+      soft:'Friendly paper lanterns light the Mooncap trail. Come walk with Wren!'},
+    {id:'glowcap', name:'Mooncap glow', emoji:'🍄', x:22, z:-44, r:2.2,
+      blurb:'Pale mooncaps glow along the stones — cozy, not spooky. The trail climbs to a lookout.',
+      soft:'Soft mooncaps glow like night-lights on the stones. The lookout is just ahead.'},
+    {id:'lookout-note', name:'Lookout note', emoji:'📬', x:32, z:-50, r:2.2,
+      blurb:'A note on a post: "Meet me at the Mooncap lookout with a lantern. — Wren"',
+      soft:'A cheerful note: "Lantern hike picnic at the lookout! — Wren"'}
+  ];
+  const CAMP_LOOKOUT = {x:36, z:-52, r:2.6, name:'Mooncap lookout', emoji:'🌙'};
+  function campChClue(id){ return (CAMP_CH2.find(c => c.id === id) || CAMP_CH3.find(c => c.id === id) || null); }
+  function campCh2Unlocked(state){ return !!campLoad(state).camperFound; }
+  function campCh3Unlocked(state){ return !!campLoad(state).ch2Done; }
+  function campHasCh(state, id){
+    state = campLoad(state);
+    const in2 = CAMP_CH2.some(c => c.id === id);
+    const arr = in2 ? (state.ch2 || []) : (state.ch3 || []);
+    return arr.indexOf(id) >= 0;
+  }
+  function campFindChClue(state, id){
+    state = campLoad(state);
+    const in2 = CAMP_CH2.some(c => c.id === id);
+    const in3 = CAMP_CH3.some(c => c.id === id);
+    if (!in2 && !in3) return {ok:false, why:'unknown', state};
+    if (in2 && !campCh2Unlocked(state)) return {ok:false, why:'lock', state};
+    if (in3 && !campCh3Unlocked(state)) return {ok:false, why:'lock', state};
+    if (campHasCh(state, id)) return {ok:false, why:'have', state};
+    if (in2){
+      state.ch2 = (state.ch2 || []).concat([id]);
+      return {ok:true, why:'found', state, clue: CAMP_CH2.find(c => c.id === id), left: CAMP_CH2.length - state.ch2.length, chapter:2};
+    }
+    state.ch3 = (state.ch3 || []).concat([id]);
+    return {ok:true, why:'found', state, clue: CAMP_CH3.find(c => c.id === id), left: CAMP_CH3.length - state.ch3.length, chapter:3};
+  }
+  function campCanFindThistle(state){
+    state = campLoad(state);
+    return campCh2Unlocked(state) && !state.ch2Done && CAMP_CH2.every(c => (state.ch2 || []).indexOf(c.id) >= 0);
+  }
+  function campFindThistle(state){
+    state = campLoad(state);
+    if (state.ch2Done) return {ok:false, why:'have', state, reward:0};
+    if (!campCanFindThistle(state)) return {ok:false, why:'clues', state, reward:0};
+    state.ch2Done = true;
+    return {ok:true, why:'safe', state, name:'Thistle', reward: CAMP_CH2_REWARD};
+  }
+  function campCanFinishHike(state){
+    state = campLoad(state);
+    return campCh3Unlocked(state) && !state.ch3Done && CAMP_CH3.every(c => (state.ch3 || []).indexOf(c.id) >= 0);
+  }
+  function campFinishHike(state){
+    state = campLoad(state);
+    if (state.ch3Done) return {ok:false, why:'have', state, reward:0};
+    if (!campCanFinishHike(state)) return {ok:false, why:'clues', state, reward:0};
+    state.ch3Done = true;
+    return {ok:true, why:'safe', state, name:'Mooncap lookout', reward: CAMP_CH3_REWARD};
+  }
+  function campThistleEnding(){ return 'You found Thistle the camp hare! Wren held the lantern and the hare hopped right over. Everyone is okay!'; }
+  function campHikeEnding(){ return 'Wren led a lantern night hike up the Mooncap trail. You watched the grove glow together, and everyone is safe.'; }
   function campClue(id){ return CAMP_CLUES.find(c => c.id === id) || null; }
   function campClueText(id, lessScary){
-    const c = campClue(id);
+    const c = campClue(id) || campChClue(id);
     if (!c) return '';
     return (lessScary && c.soft) ? c.soft : c.blurb;
   }
@@ -171,6 +253,12 @@
       const have = (state.clues || []).indexOf(c.id) >= 0;
       return {id:c.id, name:c.name, emoji:c.emoji, have, text: have ? campClueText(c.id, lessScary) : 'Not found yet.'};
     });
+    function chLines(list, have){
+      return list.map(c => {
+        const got = (have || []).indexOf(c.id) >= 0;
+        return {id:c.id, name:c.name, emoji:c.emoji, have: got, text: got ? campClueText(c.id, lessScary) : 'Not found yet.'};
+      });
+    }
     return {
       title: state.camperFound ? (CAMP_CAMPER.name + ' is safe!') : ('Looking for ' + CAMP_CAMPER.name),
       intro: lessScary
@@ -181,7 +269,24 @@
       done: !!state.camperFound,
       ready: campAllClues(state),
       hollow: CAMP_HOLLOW,
-      lines
+      lines,
+      chapter: state.ch3Done ? 3 : (state.ch2Done ? 3 : (state.camperFound ? 2 : 1)),
+      ch2: {
+        unlocked: !!state.camperFound,
+        found: (state.ch2 || []).length,
+        total: CAMP_CH2.length,
+        done: !!state.ch2Done,
+        ready: campCanFindThistle(state),
+        lines: chLines(CAMP_CH2, state.ch2)
+      },
+      ch3: {
+        unlocked: !!state.ch2Done,
+        found: (state.ch3 || []).length,
+        total: CAMP_CH3.length,
+        done: !!state.ch3Done,
+        ready: campCanFinishHike(state),
+        lines: chLines(CAMP_CH3, state.ch3)
+      }
     };
   }
   function campNearClue(x, z, state){
@@ -192,6 +297,24 @@
     }
     if (campCanFindCamper(state) && Math.hypot((x||0) - CAMP_HOLLOW.x, (z||0) - CAMP_HOLLOW.z) <= CAMP_HOLLOW.r){
       return {id:'wren', name:CAMP_CAMPER.name, emoji:CAMP_CAMPER.emoji, final:true};
+    }
+    if (campCh2Unlocked(state) && !state.ch2Done){
+      for (let i = 0; i < CAMP_CH2.length; i++){
+        const c = CAMP_CH2[i];
+        if (Math.hypot((x||0) - c.x, (z||0) - c.z) <= (c.r || 2.2) && !campHasCh(state, c.id)) return Object.assign({chapter:2}, c);
+      }
+      if (campCanFindThistle(state) && Math.hypot((x||0) - CAMP_THISTLE.x, (z||0) - CAMP_THISTLE.z) <= CAMP_THISTLE.r){
+        return {id:'thistle', name:CAMP_THISTLE.name, emoji:CAMP_THISTLE.emoji, final:true, chapter:2};
+      }
+    }
+    if (campCh3Unlocked(state) && !state.ch3Done){
+      for (let i = 0; i < CAMP_CH3.length; i++){
+        const c = CAMP_CH3[i];
+        if (Math.hypot((x||0) - c.x, (z||0) - c.z) <= (c.r || 2.2) && !campHasCh(state, c.id)) return Object.assign({chapter:3}, c);
+      }
+      if (campCanFinishHike(state) && Math.hypot((x||0) - CAMP_LOOKOUT.x, (z||0) - CAMP_LOOKOUT.z) <= CAMP_LOOKOUT.r){
+        return {id:'mooncap', name:CAMP_LOOKOUT.name, emoji:CAMP_LOOKOUT.emoji, final:true, chapter:3};
+      }
     }
     return null;
   }
@@ -979,7 +1102,10 @@
     campCanCarry, campPickLog, campGather, campChopLog, campStash, campAddStick, campShine, campCraft,
     campCaught, campTick, campFinish, campReward,
     CAMP_CAMPER, CAMP_STORY_REWARD, CAMP_CLUES, CAMP_HOLLOW,
+    CAMP_CH2, CAMP_THISTLE, CAMP_CH2_REWARD, CAMP_CH3, CAMP_LOOKOUT, CAMP_CH3_REWARD,
     campClue, campClueText, campHasClue, campFindClue, campCluesLeft, campAllClues,
+    campChClue, campCh2Unlocked, campCh3Unlocked, campHasCh, campFindChClue,
+    campCanFindThistle, campFindThistle, campCanFinishHike, campFinishHike, campThistleEnding, campHikeEnding,
     campCanFindCamper, campFindCamper, campWrenSpooky, campWrenEnding, campJournalLines, campNearClue,
     CAMP_WATCH_KINDS_SCARY, CAMP_WATCH_KINDS_SOFT, campWatchRules, campWatchCollides,
     campWatchPlayers, campWatchDist, campWatchMinDist, campWatchFacing, campWatchSpotOk,
