@@ -100,7 +100,7 @@
     plat(0, 0, 0, 28, 22, '#fff0f8', .3);
     // counter + three scoop stations
     plat(0, 1.1, 2, 16, 2.2, '#ffb3c7', 1.1); plat(0, 2.25, 2, 16, .3, '#fff', .15);
-    [[-5, 0], [0, 1], [5, 2]].forEach(([x, i]) => { const m = plat(x, 1.4, 1.2, 2.6, 1.6, '#7fd6ff', .5); ic.stations.push({i, x, z: 1.2, mesh: m.mesh}); const L = label(['🍦 L', '🍦 M', '🍦 R'][i], 'rgba(255,111,181,.92)'); L.position.set(x, 2.6, 1.2); scene.add(L); });
+    [[5, 0], [0, 1], [-5, 2]].forEach(([x, i]) => { const m = plat(x, 1.4, 1.2, 2.6, 1.6, '#7fd6ff', .5); ic.stations.push({i, x, z: 1.2, mesh: m.mesh}); const L = label(['🍦 L', '🍦 M', '🍦 R'][i], 'rgba(255,111,181,.92)'); L.position.set(x, 2.6, 1.2); scene.add(L); });
     // freezer case + decor
     plat(-10, 1.5, -4, 3, 4, '#c39bff', 1.5); plat(10, 1.5, -4, 3, 4, '#ffe08a', 1.5);
     plat(0, .2, -8, 8, 4, '#9ff0c8', .2);
@@ -112,8 +112,20 @@
     if (!ic.remote && !ic.orders.length){ icNewOrder(); ic.nextO = 10; }
     icHud(); banner(mp.on ? '🍦 Scoop Circus! Work the stations together!' : '🍦 Scoop Circus Ice Cream Shop! Customers want cones & cups!'); tipTimer = 6; }
   function iceCreamStop(){ if (ic && ic.panel >= 0) choosing = false; icClearToast(); ic = null; ['#icAct', '#icPanel', '#icOrders', '#icToast'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
+  // audit56: show who ordered. The customer models used to be built as a "visual stub" and never added to the scene.
+  function icCust(dt){
+    if (!ic || mp.on || typeof buildPlayer !== 'function') return;
+    const C = ic.cust || (ic.cust = {}), t = performance.now() / 1000;
+    ic.orders.forEach(o => { if (o.who < 0 || C[o.id] || o.slot == null) return; const N = IC_NPCS[o.who]; if (!N) return;
+      const m = buildPlayer(Object.assign({}, DEF, N[2])); m.g.position.set([5, 0, -5][o.slot] || 0, .05, 4.6); m.g.rotation.y = Math.PI; scene.add(m.g);
+      const lab = label(N[1] + ' ' + N[0], 'rgba(29,35,64,.75)'); lab.position.y = 3.6; m.g.add(lab); C[o.id] = {m}; });
+    for (const id in C){ const M = C[id], g = M.m.g;
+      if (M.bye == null && !ic.orders.some(o => o.id === +id)) M.bye = 1.2;
+      if (M.bye != null){ M.bye -= dt; g.position.z += dt * 4; g.rotation.y = 0; if (M.bye <= 0){ scene.remove(g); delete C[id]; } continue; }
+      g.position.y = .05 + Math.abs(Math.sin(t * 2 + +id)) * .08; }
+  }
   function iceCreamUpdate(dt){
-    if (!ic) return; icTick(dt);
+    if (!ic) return; icTick(dt); icCust(dt);
     if (ic.toastT > 0){ ic.toastT -= dt; if (ic.toastT <= 0) icClearToast(); }
     // proximity to stations
     let near = -1, best = 2.4; ic.stations.forEach(s => { const d = Math.hypot(P.x - s.x, P.z - s.z); if (d < best){ best = d; near = s.i; } });
