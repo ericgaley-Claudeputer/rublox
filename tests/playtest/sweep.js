@@ -100,7 +100,7 @@ async function playOne(browser, url, id){
     } else if (MOBILE){
       // drag on the left half like a joystick
       const cdp = await ctx.newCDPSession(page);
-      const joy = await page.evaluate(() => { const j = document.getElementById('oJoyZone') || document.getElementById('oJoy'); if (!j) return null; const r = j.getBoundingClientRect(); return r.width > 10 ? [r.left + r.width / 2, r.top + r.height / 2] : null; });
+      const joy = await page.evaluate(() => { const j = document.getElementById('oJoy'); if (j){ const r = j.getBoundingClientRect(); if (r.width > 10 && getComputedStyle(j).display!=='none') return [r.left + r.width / 2, r.top + r.height / 2]; } const z = document.getElementById('oJoyZone'); if (z){ const r = z.getBoundingClientRect(); if (r.width > 10) return [r.left + Math.min(80, r.width/2), r.bottom - 80]; } return null; });
       const x0 = joy ? joy[0] : 80, y0 = joy ? joy[1] : vw.height - 180;
       // twice: on a portrait phone the first touch can just dismiss the "turn your phone sideways" hint
       for (let rep = 0; rep < 2; rep++){
