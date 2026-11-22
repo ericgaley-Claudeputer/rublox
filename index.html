@@ -511,7 +511,7 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .orot.show{display:block;animation:boing .5s cubic-bezier(.3,1.8,.5,1)}
 .orot b{display:inline;font-size:18px;animation:none;margin-right:4px}
 .touchui .orot{top:calc(var(--hudb, 70px) + 6px)}
-.touchui:has(#oRot.show) .otip,.touchui:has(#oRot.show) #t297Box,.touchui:has(#oRot.show) #t302Box,.touchui:has(#oRot.show) #elevBox,.touchui:has(#oRot.show) #mnBox,.touchui:has(#oRot.show) #shBox,.touchui:has(#oRot.show) #wnBox,.touchui:has(#oRot.show) #mmBox,.touchui:has(#oRot.show) #vtBox,.touchui:has(#oRot.show) #scBox,.touchui:has(#oRot.show) #thBox,.touchui:has(#oRot.show) #ftBox{top:calc(var(--hudb, 70px) + 90px)!important}
+.touchui:has(#oRot.show) .otip,.touchui:has(#oRot.show) #t297Box,.touchui:has(#oRot.show) #t302Box,.touchui:has(#oRot.show) #elevBox,.touchui:has(#oRot.show) #mnBox,.touchui:has(#oRot.show) #shBox,.touchui:has(#oRot.show) #wnBox,.touchui:has(#oRot.show) #mmBox,.touchui:has(#oRot.show) #vtBox,.touchui:has(#oRot.show) #scBox,.touchui:has(#oRot.show) #thBox,.touchui:has(#oRot.show) #ftBox,.touchui:has(#oRot.show) #aqBox{top:calc(var(--hudb, 70px) + 90px)!important}
 .touchui:has(#oRot.show) #oBanner{top:62%}
 @keyframes tilt{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(90deg)}}
 @media (max-width:760px),(max-height:500px){
@@ -1730,6 +1730,9 @@ body:not(:has(#obby.show)) .toast{color:#111;background:#8ef0be;box-shadow:0 6px
 .wnmode #wnBox{display:block}
 #wnAct{position:absolute;right:16px;bottom:96px;z-index:8;padding:12px 16px;font-size:18px;border:3px solid #1d2340;border-radius:16px;background:#9fd4ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
 #wnAct.show{display:block}
+#wnSnowBtn{position:absolute;right:16px;bottom:200px;z-index:8;padding:10px 14px;font-size:16px;border:3px solid #1d2340;border-radius:16px;background:#e8f6ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+.wnmode #wnSnowBtn{display:block}
+@media (max-width:700px){ #wnSnowBtn{right:12px;bottom:268px} }
 /* QA t330u: long action labels stretched left over the thumb stick on phones; wrap them instead. */
 #pyAct,#t297Act,#t302Act,#elevAct,#mnAct,#shAct,#wnAct,#mmAct,#vtAct{max-width:min(320px,calc(100vw - 200px));white-space:normal;text-align:center;line-height:1.2}
 @media (max-width:700px){ #wnAct{bottom:120px} }
@@ -1781,6 +1784,14 @@ body:not(:has(#obby.show)) .toast{color:#111;background:#8ef0be;box-shadow:0 6px
 .ftmode #ftAct.show,#ftAct.show{display:block}
 .ftmode #oEmoBtn,.ftmode #oQuestBtn,.ftmode #oTradeBtn,.ftmode #oTip,.ftmode .otip{display:none!important}
 @media (max-width:700px){ #ftAct{right:12px;bottom:160px} }
+
+#aqBox{display:none;position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center;max-width:none;padding:0;border:0;background:transparent;box-shadow:none;font-weight:800}
+.aqmode #aqBox{display:block}
+#aqBox #aqHint{display:inline-block;max-width:min(520px,80vw);padding:8px 12px;border:3px solid #1d2340;border-radius:16px;background:#d7eef4;box-shadow:3px 3px 0 #1d2340;pointer-events:none}
+#aqAct{position:absolute;z-index:8;right:16px;bottom:96px;padding:8px 12px;font-size:14px;border:3px solid #1d2340;border-radius:16px;background:#d7eef4;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+.aqmode #aqAct.show,#aqAct.show{display:block}
+.aqmode #oEmoBtn,.aqmode #oQuestBtn,.aqmode #oTradeBtn,.aqmode #oTip,.aqmode .otip{display:none!important}
+@media (max-width:700px){ #aqAct{right:12px;bottom:160px} }
 
 #t302JournalBtn{position:absolute;z-index:8;left:16px;bottom:200px;padding:8px 12px;font-size:14px;border:3px solid #1d2340;border-radius:16px;background:#efe7ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
 .campmode #t302JournalBtn{display:block}
@@ -2474,6 +2485,7 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
   <button type="button" id="shUpBtn">🏠 Upgrade kennels</button>
 <div id="wnBox" style="display:none"><span id="wnHint"></span></div>
   <button type="button" id="wnAct">✨ Do it</button>
+  <button type="button" id="wnSnowBtn">❄️ Throw</button>
 
   <div id="wnWrap" class="wnwrap" hidden>
     <div class="wnwrap-card">
@@ -2522,6 +2534,8 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
   <div id="scGoreNote" hidden></div>
   <div id="ftBox" style="display:none"><span id="ftHint"></span></div>
   <button type="button" id="ftAct">✨ Do it</button>
+  <div id="aqBox" style="display:none"><span id="aqHint"></span></div>
+  <button type="button" id="aqAct">✨ Do it</button>
   <div id="scLocker" class="t297overlay" role="dialog" aria-label="Locker">
     <div class="t297box">
       <button type="button" class="t297x" id="scLockerX" aria-label="Close">×</button>
@@ -3180,7 +3194,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.22-6';
+const BUILD = '2026.11.22-7';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3923,7 +3937,7 @@ $('#saveAv').onclick = () => {
     day: 'day',
     off: 'off'
   };
-  const WX_SKIP = ['splash', 'waterpark', 'race', 'photostudio', 'dance', 'bakery', 'icecream', 'tower', 'fashion', 'cafe', 'petshow', 'camp', 'elevator', 'treehouse', 'school', 'winter'];
+  const WX_SKIP = ['splash', 'waterpark', 'race', 'photostudio', 'dance', 'bakery', 'icecream', 'tower', 'fashion', 'cafe', 'petshow', 'camp', 'elevator', 'treehouse', 'school', 'fieldtrip', 'aquarium', 'winter'];
   const WX_SNOW = ['obby', 'build', 'hide', 'stable', 'tag', 'party', 'snowfest', 'pets', 'autumn', 'pethotel', 'fish', 'hunt', 'garden', 'meadow', 'rides', 'hive'];
   const WX_FOG = ['haunt', 'lantern', 'hide', 'petisland', 'obby', 'build', 'hunt'];
   const WX_RAIN = ['obby', 'build', 'lantern', 'hide', 'autumn', 'stable', 'petisland', 'pets', 'tag', 'dreamhouse', 'pethotel', 'haunt', 'fish', 'hunt', 'garden', 'meadow', 'rides', 'hive'];
@@ -10772,6 +10786,10 @@ function drawElevator(ctx){
       skateLaps: 0,
       skateTricks: 0,
       cocoaServed: 0,
+      snugBought: 0,
+      snugServed: 0,
+      snowHits: 0,
+      snugToppings: [],
       cocoaBought: 0,
       races: 0,
       snowballs: 0,
@@ -10786,12 +10804,13 @@ function drawElevator(ctx){
   function wnLoad(raw){
     const o = raw && typeof raw === 'object' ? raw : {};
     const d = wnFresh();
-    ['coinsEarned','sledRuns','snowmen','skateLaps','skateTricks','cocoaServed','cocoaBought','races','snowballs','lights','nightShows','wraps'].forEach(k => {
+    ['coinsEarned','sledRuns','snowmen','skateLaps','skateTricks','cocoaServed','cocoaBought','snugBought','snugServed','snowHits','races','snowballs','lights','nightShows','wraps'].forEach(k => {
       d[k] = Math.max(0, o[k] | 0);
     });
     d.sledBest = Math.max(0, +o.sledBest || 0);
     d.wrapBest = Math.max(0, Math.min(100, o.wrapBest | 0));
     d.ribbons = Array.isArray(o.ribbons) ? o.ribbons.filter(id => typeof id === 'string').slice(0, 12) : [];
+    d.snugToppings = Array.isArray(o.snugToppings) ? o.snugToppings.filter(id => typeof id === 'string').slice(0, 8) : [];
     return d;
   }
 
@@ -11034,6 +11053,80 @@ function drawElevator(ctx){
     return {ok:true, why:'ok', coins, state: st, served: run.cocoa.served, message:'A warm mug for a chilly visitor!'};
   }
 
+  const WN_SNUG = {id:'snugmug', name:'Snugmug Cart', x:28, z:12, r:2.5};
+  const WN_SNUG_COST = 4;
+  const WN_TOPPINGS = [
+    {id:'cloud', name:'Whipped cloud', emoji:'☁️', warm:4},
+    {id:'mallow', name:'Marshmallow puffs', emoji:'🤍', warm:5},
+    {id:'peppermint', name:'Peppermint sparkle', emoji:'🍬', warm:6},
+    {id:'cinnamon', name:'Cinnamon snow', emoji:'✨', warm:5}
+  ];
+  function wnTopping(id){ return WN_TOPPINGS.find(t => t.id === id) || WN_TOPPINGS[0]; }
+  function wnSnugBuy(state, coins, toppingId){
+    const top = wnTopping(toppingId);
+    const st = wnLoad(state);
+    if ((coins | 0) < WN_SNUG_COST) return {ok:false, why:'coins', state: st, coins: coins | 0, cost: WN_SNUG_COST};
+    st.snugBought = (st.snugBought | 0) + 1;
+    st.snugToppings = Array.isArray(st.snugToppings) ? st.snugToppings.slice() : [];
+    if (st.snugToppings.indexOf(top.id) < 0) st.snugToppings.push(top.id);
+    return {ok:true, why:'ok', state: st, coins: (coins | 0) - WN_SNUG_COST, cost: WN_SNUG_COST, warm: 14 + (top.warm || 0), topping: top, message: 'A ' + top.name + ' Snugmug cocoa warms you right up!'};
+  }
+  function wnSnugServe(run, state, toppingId){
+    if (!run) return {ok:false, why:'no', state: wnLoad(state)};
+    const top = wnTopping(toppingId);
+    run.snug = run.snug || {served:0};
+    run.snug.served = (run.snug.served | 0) + 1;
+    const st = wnLoad(state);
+    st.snugServed = (st.snugServed | 0) + 1;
+    const coins = 3;
+    st.coinsEarned += coins;
+    return {ok:true, why:'ok', coins, state: st, topping: top, served: run.snug.served, message: 'You slid a ' + top.name + ' cocoa to a chilly skater!'};
+  }
+  const WN_TARGETS = [
+    {id:'can-1', name:'Tin can', kind:'can', x:8, z:20, r:1.1},
+    {id:'can-2', name:'Tin can', kind:'can', x:10, z:21, r:1.1},
+    {id:'can-3', name:'Tin can', kind:'can', x:9, z:23, r:1.1},
+    {id:'puff-1', name:'Puff pal', kind:'snowman', x:14, z:22, r:1.5},
+    {id:'puff-2', name:'Puff pal', kind:'snowman', x:16, z:20, r:1.5}
+  ];
+  function wnThrowAimed(run, state, fromId, origin, dir, roster, extras){
+    if (!run) return {ok:false, why:'no'};
+    if ((run.snowball && run.snowball.cool || 0) > 0) return {ok:false, why:'cool'};
+    const ox = (origin && +origin.x) || 0, oz = (origin && +origin.z) || 0;
+    let dx = (dir && dir.x) || 0, dz = (dir && dir.z);
+    if (!Number.isFinite(dz)) dz = -1;
+    const len = Math.hypot(dx, dz) || 1;
+    const ux = dx / len, uz = dz / len;
+    const range = 12;
+    let best = 99, hit = null, fight = false;
+    (wnRealPlayers(roster) || []).forEach(p => {
+      if (String(p.id || p.uid) === String(fromId)) return;
+      const px = +p.x, pz = +p.z;
+      if (!Number.isFinite(px) || !Number.isFinite(pz)) return;
+      const t = (px - ox) * ux + (pz - oz) * uz;
+      if (t < 0.5 || t > range) return;
+      const dist = Math.hypot(px - (ox + ux * t), pz - (oz + uz * t));
+      if (dist <= 1.4 && t < best){ best = t; hit = p; fight = true; }
+    });
+    (extras || WN_TARGETS).forEach(tg => {
+      const t = ((tg.x||0) - ox) * ux + ((tg.z||0) - oz) * uz;
+      if (t < 0.5 || t > range) return;
+      const dist = Math.hypot((tg.x||0) - (ox + ux * t), (tg.z||0) - (oz + uz * t));
+      if (dist <= (tg.r || 1.2) && t < best){ best = t; hit = tg; fight = false; }
+    });
+    run.snowball = run.snowball || {cool:0, hits:0, targetHits:0};
+    run.snowball.cool = 0.5;
+    const st = wnLoad(state);
+    st.snowballs = (st.snowballs | 0) + 1;
+    const shot = {x:ox, z:oz, dx:ux, dz:uz, t:0, life: 0.7, hitAt: hit ? best : range};
+    if (!hit) return {ok:true, why:'miss', coins:0, state: st, fight:false, shot, giggle:false};
+    const coins = fight ? 2 : 1;
+    if (fight){ run.snowball.hits = (run.snowball.hits | 0) + 1; st.snowHits = (st.snowHits | 0) + 1; }
+    else run.snowball.targetHits = (run.snowball.targetHits | 0) + 1;
+    st.coinsEarned += coins;
+    return {ok:true, why: fight ? 'hit' : 'target', coins, state: st, fight, target: fight ? null : hit, name: hit.name, shot, giggle: true, message: fight ? 'Poof! Your friend giggles and shakes off the snow.' : ('Poof! The ' + (hit.name || 'target') + ' wobbles and a little giggle rings out.')};
+  }
+
 
   const WN_LIGHT_SLOTS = [
     {id:'cottage-a', kind:'house', name:'Cedar Cottage', x:-22, z:28},
@@ -11239,7 +11332,8 @@ function drawElevator(ctx){
     wnRealPlayers, wnCanPelt, wnThrowSnowball, wnSnowballTick,
     wnAddSnowmanPart, wnFinishSnowman,
     wnSkateStart, wnSkateTick, wnSkateBank, wnOnRink, wnSkateTrick,
-    wnBuyCocoa, wnServeCocoa, wnWire,
+    wnBuyCocoa, wnServeCocoa, WN_SNUG, WN_SNUG_COST, WN_TOPPINGS, wnTopping, wnSnugBuy, wnSnugServe,
+    WN_TARGETS, wnThrowAimed, wnWire,
     WN_LIGHT_SLOTS, WN_PAPERS, WN_RIBBON_COLORS, WN_BOWS, WN_TAGS, WN_WRAP_STEPS, WN_WRAP_JUDGE,
     WN_HILL, WN_POND, WN_YARD, WN_POSTS, WN_LAMP, WN_WRAP, WN_SPAWN,
     wnBox, wnHillPlats, wnCottage, wnLayoutBoxes, wnBoxesOverlap, wnLayoutOverlaps,
@@ -12852,10 +12946,24 @@ function drawFieldTrip(ctx){
   ctx.font='22px sans-serif'; ctx.fillText('🚌', 80, 90); ctx.fillText('🌿', 226, 86);
   if (typeof guy === 'function') guy(ctx, 170, 176, 12, '#3a8f5a');
 }
+function drawAquarium(ctx){
+  if (typeof sky === 'function') sky(ctx, '#7ec8ff', '#d7eef4');
+  else { ctx.fillStyle='#7ec8ff'; ctx.fillRect(0,0,320,200); }
+  ctx.fillStyle='#3d8a88'; ctx.fillRect(0,130,320,70);
+  ctx.fillStyle='#f0c44a'; ctx.fillRect(30,100,100,50);
+  ctx.fillStyle='#2d2d2d'; ctx.beginPath(); ctx.arc(50,154,10,0,Math.PI*2); ctx.arc(120,154,10,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#d7eef4'; ctx.fillRect(190,80,90,60);
+  ctx.fillStyle='#2a6a88'; ctx.fillRect(186,74,98,10);
+  ctx.fillStyle='#9ad8e8'; ctx.fillRect(200,96,28,24); ctx.fillRect(244,96,28,24);
+  ctx.font='22px sans-serif'; ctx.fillText('🚌', 70, 90); ctx.fillText('🐠', 226, 80);
+  if (typeof guy === 'function') guy(ctx, 160, 176, 12, '#2a8aaa');
+}
+
 const GAMES = [
   {id:'treehouse', name:'Oakheart Treehouse', emoji:'🌳', tag:'Build a cozy original treehouse in a great oak: platforms, ladders, a slide, a zipline, rooms, and hang out with real friends.', draw: drawTreehouse, playable: true, isNew: true},
   {id:'school', name:'Afterbell School', emoji:'🏫', tag:'Locked in an original school after dark. Solve a locker code, a chalkboard riddle, and a hall pass, and slip past the Hush Warden. If it finds you, everyone is okay!', draw: drawSchool, playable: true, isNew: true},
   {id:'fieldtrip', name:'Pebblebrook Field Trip', emoji:'🚌', tag:'Afterbell School rides the bus to Pebblebrook Nature Nook. Hunt for five trail treasures with Ms. Bramble and guide Fern, then ride home.', draw: drawFieldTrip, playable: true, isNew: true},
+  {id:'aquarium', name:'Tideglass Aquarium', emoji:'🐠', tag:'A second Afterbell field trip: ride the bus to Tideglass Aquarium, visit jellies, turtles and lanternfish, and say a gentle hello at the Pebblecrab pool.', draw: drawAquarium, playable: true, isNew: true},
   {id:'elevator', name:'Wobblevator', emoji:'🛗', tag:'Ride Bingle the Bellhop’s wobbly lift to surprise floors. Clear quirky mini-events, keep your streak, and hop back in — if a floor gets too wobbly, everyone is okay!', draw: drawElevator, playable: true, isNew: true},
   {id:'mansion', name:'Mallowmist Manor', emoji:'🕯️', tag:'A cute haunted house with new rooms and a hidden Secret Attic! Solve simple puzzles, follow a clue chain to a special reward, and tip-toe past Nimble. Getting caught means everyone is okay.', draw: drawMansion, playable: true, isNew: true},
   {id:'shelter', name:'Wagwell Shelter', emoji:'🐾', tag:'Rescue town strays, cheer them up in the grooming salon, match them with visiting families, and enter pet contests judged by Judge Bramble!', draw: drawShelter, playable: true, isNew: true},
@@ -12909,13 +13017,14 @@ const MODE_CONTROLS = {
   treehouse: {kb: ['E or G: place a piece / ride it', 'Q: next piece', 'R: rotate', 'F or C: open the pieces box', 'X: delete mode', 'U: undo', '[ and ]: floor down / up'],
     pad: ['Ⓧ or RT: place a piece / ride it', 'Ⓨ: open the pieces box', 'LB: delete mode', 'RB: undo'], touch: ['Tap the big buttons to place, pick pieces, delete or undo'], walk: true},
   school: {kb: ['E or F: look / use', 'L or Y: Less scary', 'Enter: try the locker code'], pad: ['Ⓧ or RT: look / use', 'Ⓨ: Less scary'], touch: ['Tap the big action button'], walk: true},
-  fieldtrip: {kb: ['E or F: look / collect / talk'], pad: ['Ⓧ or Ⓨ: look / collect / talk'], touch: ['Tap the big action button'], walk: true},
+  fieldtrip: {kb: ['E or F: look / collect / talk / board the bus'], pad: ['Ⓧ or Ⓨ: look / collect / talk / board the bus'], touch: ['Tap the big action button to board, talk or pick things up'], walk: true},
+  aquarium: {kb: ['E or F: look / talk / board the bus / gentle touch'], pad: ['Ⓧ or Ⓨ: look / talk / board the bus / gentle touch'], touch: ['Tap the big action button to board, look or touch gently'], walk: true},
   elevator: {kb: ['E or F: act / shop', 'I: floor list', 'H: help', 'Voting: ← → or 1–3 to pick, Enter or Space to vote'],
     pad: ['Ⓧ: act / shop', 'Ⓨ: floor list', 'Ⓑ: close pop-ups', 'Voting: ✚ d-pad to pick, Ⓐ to vote'], touch: ['Tap the big buttons to act and vote'], walk: true},
   mansion: {kb: ['E or F: read / flip / unlock', 'L: Less scary'], pad: ['Ⓧ: read / flip / unlock', 'Ⓨ: Less scary'], touch: ['Tap the big action button'], walk: true},
   shelter: {kb: ['E or F: rescue / care / desk', 'H: send a happy pal home', 'U: bigger kennels'], pad: ['Ⓧ: rescue / care / desk', 'Ⓨ: send a happy pal home'], touch: ['Tap the big buttons to act'], walk: true},
-  winter: {kb: ['E: act', 'F: cocoa (by the cocoa stand)', 'On a sled: A / D steer, Space hop', 'On the rink: Space does a trick'],
-    pad: ['Ⓧ: act / cocoa', 'Ⓑ: hop off the sled, or cash in your skating laps', 'On a sled: left stick steers, Ⓐ hops'], touch: ['Tap the big buttons to act', 'On a sled: left thumb steers, ⬆️ hops'], walk: true},
+  winter: {kb: ['E: act', 'F: cocoa (Mugsy or Snugmug)', 'Q: throw a snowball, or cycle Snugmug toppings', 'On a sled: A / D steer, Space hop', 'On the rink: Space does a trick'],
+    pad: ['Ⓧ: act / cocoa', 'RB: throw a snowball', 'Ⓑ: hop off the sled, or cash in your skating laps', 'On a sled: left stick steers, Ⓐ hops'], touch: ['Tap the big buttons to act', '❄️: throw a snowball', 'On a sled: left thumb steers, ⬆️ hops'], walk: true},
   vet: {kb: ['E or Space: help / use / get in the ambulance', 'Drag or click: look'], pad: ['Ⓧ: help / use', 'Ⓐ: use when a button shows', 'Ⓑ: get out of the ambulance'], touch: ['Swipe: look', 'Tap the big buttons to help'], walk: true},
   mermaid: {kb: ['E: act', 'Space or R: swim up', 'Shift or F: swim down'], pad: ['Ⓧ: act', 'Ⓐ, RT or RB: swim up', 'LT or LB: swim down'], touch: ['⬆️ ⬇️: swim up and down', 'Tap the big buttons to act'], walk: true},
   garden: {kb: ['E or F: plant / water / harvest / shop'], pad: ['Ⓧ: plant / water / harvest / shop'], touch: ['Tap the big action button'], walk: true},
@@ -14837,6 +14946,7 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
     {id:'treehouse', name:'Oakheart Treehouse', emoji:'🌳', keys:['rubloxTreehouse']},
     {id:'school', name:'Afterbell School', emoji:'🏫', keys:['rubloxSchool']},
     {id:'fieldtrip', name:'Pebblebrook Field Trip', emoji:'🚌', keys:['rubloxFieldTrip']},
+    {id:'aquarium', name:'Tideglass Aquarium', emoji:'🐠', keys:['rubloxAquarium']},
     {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', keys:['rubloxMeadow']},
     {id:'rides', name:'Rideland Workshop', emoji:'🎢', keys:['rubloxRides']},
     {id:'hive', name:'Honeyhill Hive', emoji:'🐝', keys:['rubloxHive']},
@@ -15349,7 +15459,7 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
   const FT_KEY = 'rubloxFieldTrip';
   const FT_VER = 1;
   const FT_REWARD = 18;
-  const FT_RIDE_T = 4.2;
+  const FT_RIDE_T = 8.4;
   const FT_FINDS = [
     {id:'pebble', name:'River pebble', emoji:'🪨', x:16, z:-18, r:2.0,
       blurb:'A smooth river pebble from Brookbell Creek. It still feels cool.'},
@@ -15363,10 +15473,45 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
       blurb:'An acorn compass from the exhibit case. The nut always points to the brook.'}
   ];
   const FT_BUS = {x:0, z:10, r:2.4};
-  const FT_GUIDE = {x:0, z:-22, r:2.0, name:'Fern', role:'guide'};
+  const FT_GUIDE = {x:-8, z:-30, r:2.0, name:'Fern', role:'guide'};
   const FT_TEACHER = {x:-4, z:16, r:1.8, name:'Ms. Bramble', role:'teacher'};
-  const FT_NOOK = {x:0, z:-22};
-  const FT_HOME_BUS = {x:0, z:-6, r:2.4};
+  const FT_NOOK = {x:0, z:-36};
+  const FT_ARRIVE = {x:3.4, z:-8};
+  const FT_HOME_BUS = {x:0, z:-8, r:2.6};
+  const FT_RIDE_PATH = [
+    {x:0, z:10},
+    {x:0, z:2},
+    {x:24, z:2},
+    {x:24, z:-18},
+    {x:0, z:-18},
+    {x:0, z:-8}
+  ];
+  function ftPathLen(path){
+    let n = 0;
+    for (let i = 0; i < (path||[]).length - 1; i++) n += Math.hypot(path[i+1].x - path[i].x, path[i+1].z - path[i].z);
+    return n;
+  }
+  function ftRidePose(run){
+    const path = FT_RIDE_PATH;
+    const t = Math.max(0, Math.min(1, ((run && run.rideT) || 0) / FT_RIDE_T));
+    const total = ftPathLen(path) || 1;
+    let dist = t * total;
+    let yaw = Math.PI;
+    for (let i = 0; i < path.length - 1; i++){
+      const a = path[i], b = path[i+1];
+      const seg = Math.hypot(b.x - a.x, b.z - a.z) || 0.0001;
+      const last = i === path.length - 2;
+      if (dist <= seg || last){
+        const u = Math.max(0, Math.min(1, dist / seg));
+        const dx = b.x - a.x, dz = b.z - a.z;
+        yaw = Math.atan2(dx, dz);
+        return {x: a.x + dx * u, z: a.z + dz * u, yaw: yaw, t: t, done: t >= 1};
+      }
+      dist -= seg;
+    }
+    const last = path[path.length - 1];
+    return {x:last.x, z:last.z, yaw:yaw, t:t, done:true};
+  }
 
   function ftFresh(){
     return {ver: FT_VER, found: [], visits: 0, won: false, coins: 0};
@@ -15467,14 +15612,176 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
   }
 
   const api = {
-    FT_KEY, FT_VER, FT_REWARD, FT_RIDE_T, FT_FINDS, FT_BUS, FT_HOME_BUS, FT_GUIDE, FT_TEACHER, FT_NOOK,
+    FT_KEY, FT_VER, FT_REWARD, FT_RIDE_T, FT_FINDS, FT_BUS, FT_HOME_BUS, FT_GUIDE, FT_TEACHER, FT_NOOK, FT_ARRIVE, FT_RIDE_PATH,
     ftFresh, ftLoad, ftNewVisit, ftFind, ftHas, ftAll, ftPick,
-    ftBoardBus, ftTickRide, ftBoardHome, ftNear, ftGoal
+    ftBoardBus, ftTickRide, ftRidePose, ftPathLen, ftBoardHome, ftNear, ftGoal
   };
   root.FieldTripRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
+
+/* Tideglass Aquarium — a second Afterbell School field trip. Original exhibits, no copied IP.
+   Save key rubloxAquarium (new, optional). */
+(function (root) {
+  const AQ_KEY = 'rubloxAquarium';
+  const AQ_VER = 1;
+  const AQ_REWARD = 20;
+  const AQ_RIDE_T = 8.4;
+  const AQ_FINDS = [
+    {id:'jelly', name:'Moonveil jelly', emoji:'🪼', x:16, z:-17.4, r:2.2,
+      blurb:'A Moonveil jelly pulses like a lantern under the glass. It is soft and safe.'},
+    {id:'turtle', name:'Sand-harbor turtle', emoji:'🐢', x:-16, z:-17.4, r:2.2,
+      blurb:'The Sand-harbor turtle blinks at you and paddles a slow hello.'},
+    {id:'lantern', name:'Lanternfish', emoji:'🐟', x:0, z:-47.4, r:2.2,
+      blurb:'A lanternfish flicks a tiny living light in the deep tank.'},
+    {id:'coral', name:'Bubble-plume coral', emoji:'🪸', x:15.4, z:-36, r:2.2,
+      blurb:'Bubble-plume coral pops little glass-bright beads. No one is harmed.'},
+    {id:'star', name:'Tideglass star', emoji:'⭐', x:-15.4, z:-36, r:2.2,
+      blurb:'A Tideglass star sits like a jewel on the sand. Five arms, five wishes for a safe trip.'}
+  ];
+  const AQ_BUS = {x:0, z:10, r:2.4};
+  const AQ_HOME_BUS = {x:0, z:-8, r:2.6};
+  const AQ_GUIDE = {x:-8, z:-30, r:2.0, name:'Marin', role:'guide'};
+  const AQ_TEACHER = {x:-4, z:16, r:1.8, name:'Ms. Bramble', role:'teacher'};
+  const AQ_HALL = {x:0, z:-40};
+  const AQ_ARRIVE = {x:3.4, z:-8};
+  const AQ_POOL = {x:8, z:-12, r:2.2, name:'Pebblecrab pool'};
+  const AQ_RIDE_PATH = [
+    {x:0, z:10}, {x:0, z:2}, {x:-24, z:2}, {x:-24, z:-18}, {x:0, z:-18}, {x:0, z:-8}
+  ];
+
+  function aqFresh(){ return {ver: AQ_VER, found: [], visits: 0, won: false, coins: 0, touched: false}; }
+  function aqLoad(raw){
+    const d = aqFresh();
+    const o = (raw && typeof raw === 'object') ? raw : {};
+    const ids = AQ_FINDS.map(f => f.id);
+    d.found = Array.isArray(o.found) ? o.found.filter((id, i, a) => ids.indexOf(id) >= 0 && a.indexOf(id) === i) : [];
+    d.visits = Math.max(0, o.visits | 0);
+    d.won = !!o.won;
+    d.coins = Math.max(0, o.coins | 0);
+    d.touched = !!o.touched;
+    d.ver = AQ_VER;
+    return d;
+  }
+  function aqNewVisit(state){
+    const st = aqLoad(state);
+    st.visits = (st.visits | 0) + 1;
+    return {state: st, run: {phase:'yard', t:0, rideT:0, boarded:false}};
+  }
+  function aqFind(id){ return AQ_FINDS.find(f => f.id === id) || null; }
+  function aqHas(state, id){ return (aqLoad(state).found || []).indexOf(id) >= 0; }
+  function aqAll(state){ return AQ_FINDS.every(f => aqHas(state, f.id)); }
+  function aqPick(state, id){
+    state = aqLoad(state);
+    if (!aqFind(id)) return {ok:false, why:'unknown', state};
+    if (aqHas(state, id)) return {ok:false, why:'have', state};
+    state.found = (state.found || []).concat([id]);
+    return {ok:true, why:'found', state, item: aqFind(id), left: AQ_FINDS.length - state.found.length};
+  }
+  function aqTouch(state){
+    state = aqLoad(state);
+    if (state.touched) return {ok:true, why:'have', state, already:true, coins:0};
+    state.touched = true;
+    state.coins = (state.coins | 0) + 4;
+    return {ok:true, why:'touch', state, coins:4, message:'The Pebblecrab tickles your fingers and scuttles back under a smooth stone. Everyone is gentle here!'};
+  }
+  function aqBoardBus(run){
+    if (!run) return {ok:false, why:'no'};
+    if (run.phase !== 'yard') return {ok:false, why:'phase', phase: run.phase};
+    run.phase = 'ride'; run.rideT = 0; run.boarded = true;
+    return {ok:true, why:'ride', phase:'ride'};
+  }
+  function aqPathLen(path){
+    let n = 0;
+    for (let i = 0; i < (path||[]).length - 1; i++) n += Math.hypot(path[i+1].x - path[i].x, path[i+1].z - path[i].z);
+    return n;
+  }
+  function aqRidePose(run){
+    const path = AQ_RIDE_PATH;
+    const t = Math.max(0, Math.min(1, ((run && run.rideT) || 0) / AQ_RIDE_T));
+    const total = aqPathLen(path) || 1;
+    let dist = t * total, yaw = Math.PI;
+    for (let i = 0; i < path.length - 1; i++){
+      const a = path[i], b = path[i+1];
+      const seg = Math.hypot(b.x - a.x, b.z - a.z) || 0.0001;
+      const last = i === path.length - 2;
+      if (dist <= seg || last){
+        const u = Math.max(0, Math.min(1, dist / seg));
+        const dx = b.x - a.x, dz = b.z - a.z;
+        yaw = Math.atan2(dx, dz);
+        return {x: a.x + dx * u, z: a.z + dz * u, yaw: yaw, t: t, done: t >= 1};
+      }
+      dist -= seg;
+    }
+    const last = path[path.length - 1];
+    return {x:last.x, z:last.z, yaw:yaw, t:t, done:true};
+  }
+  function aqTickRide(run, dt){
+    if (!run || run.phase !== 'ride') return run;
+    dt = Math.max(0, Math.min(0.2, +dt || 0));
+    run.rideT = (run.rideT || 0) + dt;
+    if (run.rideT >= AQ_RIDE_T){ run.phase = 'hall'; run.arrived = true; }
+    return run;
+  }
+  function aqBoardHome(run, state){
+    if (!run) return {ok:false, why:'no', state: aqLoad(state)};
+    if (run.phase !== 'hall') return {ok:false, why:'phase', state: aqLoad(state)};
+    state = aqLoad(state);
+    if (!aqAll(state)) return {ok:false, why:'finds', left: AQ_FINDS.length - (state.found||[]).length, state};
+    if (state.won) return {ok:true, why:'have', coins:0, state, already:true};
+    state.won = true;
+    state.coins = (state.coins | 0) + AQ_REWARD;
+    run.phase = 'done';
+    return {ok:true, why:'home', coins: AQ_REWARD, state, message:'The Afterbell bus is heading home from Tideglass Aquarium. You visited every exhibit!'};
+  }
+  function aqNear(x, z, state, run){
+    const phase = (run && run.phase) || 'yard';
+    if (phase === 'yard'){
+      if (Math.hypot((x||0) - AQ_BUS.x, (z||0) - AQ_BUS.z) <= AQ_BUS.r) return {kind:'bus', act:'🚌 Board the bus', name:'Afterbell bus'};
+      if (Math.hypot((x||0) - AQ_TEACHER.x, (z||0) - AQ_TEACHER.z) <= AQ_TEACHER.r) return {kind:'talk', who:'Ms. Bramble', act:'👋 Talk', text:'Ms. Bramble: "Today we ride to Tideglass Aquarium! Look, listen, and be gentle at the touch pool."'};
+      return null;
+    }
+    if (phase === 'ride') return {kind:'ride', act:'🚌 Riding…'};
+    if (phase === 'hall' || phase === 'done'){
+      if (Math.hypot((x||0) - AQ_GUIDE.x, (z||0) - AQ_GUIDE.z) <= AQ_GUIDE.r){
+        const left = AQ_FINDS.length - (aqLoad(state).found||[]).length;
+        const text = left
+          ? ('Marin: "Welcome to Tideglass Aquarium! Visit ' + left + ' more exhibit' + (left===1?'':'s') + ', and you may gently pat a Pebblecrab in the touch pool."')
+          : 'Marin: "You saw them all! The Afterbell bus is waiting by the tide gate."';
+        return {kind:'talk', who:'Marin', act:'👋 Talk', text};
+      }
+      if (Math.hypot((x||0) - AQ_POOL.x, (z||0) - AQ_POOL.z) <= AQ_POOL.r) return {kind:'pool', act:'🦀 Gentle touch', name:AQ_POOL.name};
+      for (let i = 0; i < AQ_FINDS.length; i++){
+        const f = AQ_FINDS[i];
+        if (Math.hypot((x||0) - f.x, (z||0) - f.z) <= (f.r || 2) && !aqHas(state, f.id)) return {kind:'find', id:f.id, name:f.name, emoji:f.emoji, act:(f.emoji||'🔍') + ' Look'};
+      }
+      if (aqAll(state) && Math.hypot((x||0) - AQ_HOME_BUS.x, (z||0) - AQ_HOME_BUS.z) <= AQ_HOME_BUS.r){
+        return {kind:'home', act:'🚌 Ride home', name:'Afterbell bus'};
+      }
+      return null;
+    }
+    return null;
+  }
+  function aqGoal(state, run){
+    const phase = (run && run.phase) || 'yard';
+    const st = aqLoad(state);
+    const n = (st.found || []).length;
+    if (phase === 'yard') return 'Board the Afterbell bus for a field trip to Tideglass Aquarium.';
+    if (phase === 'ride') return 'The bus is rolling along the coast to Tideglass Aquarium…';
+    if (phase === 'done' || (st.won && phase !== 'hall')) return 'Field trip complete! You visited every Tideglass exhibit.';
+    if (n >= AQ_FINDS.length) return 'All five exhibits are in! Board the bus at the tide gate to ride home.';
+    return 'Visit Tideglass exhibits (' + n + '/' + AQ_FINDS.length + ').' + (st.touched ? '' : ' The touch pool is open too.');
+  }
+
+  const api = {
+    AQ_KEY, AQ_VER, AQ_REWARD, AQ_RIDE_T, AQ_FINDS, AQ_BUS, AQ_HOME_BUS, AQ_GUIDE, AQ_TEACHER, AQ_HALL, AQ_ARRIVE, AQ_POOL, AQ_RIDE_PATH,
+    aqFresh, aqLoad, aqNewVisit, aqFind, aqHas, aqAll, aqPick, aqTouch,
+    aqBoardBus, aqRidePose, aqTickRide, aqBoardHome, aqNear, aqGoal
+  };
+  root.AquariumRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
 
 
 /* Reset a game — Settings wiring (local saves only; never broadcasts in multiplayer). */
@@ -19829,7 +20136,7 @@ const Obby = (() => {
     coinGeo = new THREE.CylinderGeometry(.5, .5, .14, 20);
 
     nds = null; slip = false; shake = 0; ext.x = ext.z = 0; bw = null; tg = null; pt = null; rc = null; dsp = null; hs = null; fs = null; au = null; isl = null; bk = null; wp = null; psx = null; td = null; ic = null; ph = null; sb = null; hm = null; db = null; dh = null; py = null; evg = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null; lh = null;
-    if (mode === 'elevator') buildElevator(); else if (mode === 'mansion') buildMansion(); else if (mode === 'shelter') buildShelter(); else if (mode === 'winter') buildWinter(); else if (mode === 'vet') buildVet(); else if (mode === 'mermaid') buildMermaid(); else if (mode === 'treehouse') buildTreehouse(); else if (mode === 'school') buildSchool(); else if (mode === 'fieldtrip') buildFieldTrip(); else if (mode === 'garden') buildGarden(); else if (mode === 'meadow') buildMeadow(); else if (mode === 'rides') buildRides(); else if (mode === 'hive') buildHive(); else if (mode === 'camp') buildCamp(); else if (mode === 'cafe') buildCafe(); else if (mode === 'fish') buildFish(); else if (mode === 'petshow') buildPetShow(); else if (mode === 'hunt') buildHunt(); else if (mode === 'snowfest') buildSnowFest(); else if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
+    if (mode === 'elevator') buildElevator(); else if (mode === 'mansion') buildMansion(); else if (mode === 'shelter') buildShelter(); else if (mode === 'winter') buildWinter(); else if (mode === 'vet') buildVet(); else if (mode === 'mermaid') buildMermaid(); else if (mode === 'treehouse') buildTreehouse(); else if (mode === 'school') buildSchool(); else if (mode === 'fieldtrip') buildFieldTrip(); else if (mode === 'aquarium') buildAquarium(); else if (mode === 'garden') buildGarden(); else if (mode === 'meadow') buildMeadow(); else if (mode === 'rides') buildRides(); else if (mode === 'hive') buildHive(); else if (mode === 'camp') buildCamp(); else if (mode === 'cafe') buildCafe(); else if (mode === 'fish') buildFish(); else if (mode === 'petshow') buildPetShow(); else if (mode === 'hunt') buildHunt(); else if (mode === 'snowfest') buildSnowFest(); else if (mode === 'party') buildParty(); else if (mode === 'lantern') buildLantern(); else if (mode === 'dreamhouse') buildDreamHouse(); else if (mode === 'dance') buildDance(); else if (mode === 'haunt') buildHaunt(); else if (mode === 'stable') buildStable(); else if (mode === 'icecream') buildIceCream(); else if (mode === 'pethotel') buildPetHotel(); else if (mode === 'tower') buildTower(); else if (mode === 'photostudio') buildPhotoStudio(); else if (mode === 'waterpark') buildWaterPark(); else if (mode === 'bakery') buildBakery(); else if (mode === 'petisland') buildPetIsland(); else if (mode === 'autumn') buildAutumn(); else if (mode === 'fashion') buildFashion(); else if (mode === 'hide') buildHide(); else if (mode === 'splash'){ dsp = {}; buildSplash(); } else if (mode === 'race'){ rc = {}; buildRace(); } else if (mode === 'lava') buildLava(); else if (mode === 'nds') buildNds(); else if (mode === 'build') buildBuild(); else if (mode === 'tag') buildTag(); else if (mode === 'pets') buildPets(); else buildObbyLevel(level);
     // decoration
     if (mode === 'nds') [[-30,30,-20,2.5],[35,35,10,3],[-10,45,40,2.5],[25,28,-45,2],[-40,26,-70,2]].forEach(a => cloud(...a));
     else if (mode === 'lava') [[-30,40,10,2.5],[30,60,-20,3],[-20,90,30,2.5],[35,25,25,2],[0,110,-30,3.5]].forEach(a => cloud(...a, '#6b4a6e'));
@@ -20784,7 +21091,7 @@ const Obby = (() => {
       }
       const up = p.y + b.hh - B.y;
       if (b.dy > 0 && up > 0 && up <= b.dy + .05){ B.y = p.y + b.hh; continue; }   // a rising platform (elevator) came up under your feet: ride it, don't get shoved sideways
-      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'vet' || mode === 'mermaid' || mode === 'winter' || mode === 'treehouse' || mode === 'school' || mode === 'fieldtrip' || mode === 'mansion' || mode === 'shelter' || mode === 'hunt' || mode === 'elevator') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
+      if ((mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'build' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'vet' || mode === 'mermaid' || mode === 'winter' || mode === 'treehouse' || mode === 'school' || mode === 'fieldtrip' || mode === 'aquarium' || mode === 'mansion' || mode === 'shelter' || mode === 'hunt' || mode === 'elevator') && (B.onGround || B.vy <= 0) && up > 0 && up <= .62){ B.y = p.y + b.hh; B.vy = 0; B.onGround = true; B.ground = b; continue; } // walk up low steps (the 0.30 m house slab in the doorway, ramps)
       ejectXZ(axis, B, b);
     }
   }
@@ -20920,7 +21227,7 @@ const Obby = (() => {
     if (mode === 'winter'){ if (P.y < -25) respawn(); return; }
     if (mode === 'vet'){ if (P.y < -25) respawn(); return; }
     if (mode === 'mermaid'){ if (P.y < -25) respawn(); return; }
-    if (mode === 'treehouse' || mode === 'school' || mode === 'fieldtrip'){ if (P.y < -25) respawn(); return; }
+    if (mode === 'treehouse' || mode === 'school' || mode === 'fieldtrip' || mode === 'aquarium'){ if (P.y < -25) respawn(); return; }
     for (const k of kills) if (k.active !== false && overlaps(k, .08)) return die();
     for (const s of spinners){
       const a = s.pivot.rotation.y, dx = P.x - s.cx, dz = P.z - s.cz;
@@ -37973,7 +38280,7 @@ const Obby = (() => {
   function setTouchUI(on){ setTouchUIBase(on); if (pad.on) padTip(); }
   function padTip(){
     const t = $('#oTip'), h = t.innerHTML, i = h.indexOf('<br>');
-    const line = mode === 'dreamhouse' ? (typeof dh !== 'undefined' && dh && dh.visiting ? '🎮 Left stick move · Right stick look · Ⓐ jump · Ⓧ like the house · ☰ menu' : '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · Ⓨ invite friends · ⓁⓇ job · ✚▼ show spots · ☰ menu') : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'elevator' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act / shop · Ⓨ floors · Ⓑ close popups · ☰ menu' : mode === 'mansion' ? '🎮 Left stick move · Ⓐ jump · Ⓧ read / flip / unlock · Ⓨ Less scary · ☰ menu' : mode === 'shelter' ? '🎮 Left stick move · Ⓐ jump · Ⓧ rescue / care / desk · Ⓨ send home · ☰ menu' : mode === 'winter' ? '🎮 Left stick move / steer · Ⓐ jump · Ⓧ act · Ⓑ hop off or cash laps · ☰ menu' : mode === 'vet' ? '🎮 Left stick move · right stick look · Ⓐ interact · Ⓧ interact · ☰ menu' : mode === 'mermaid' ? '🎮 Left stick move · Ⓐ jump / swim up · LT/LB swim down · RT/RB swim up · Ⓧ act · ☰ menu' : mode === 'treehouse' ? '🎮 Left stick move · Ⓐ jump · Ⓧ place / ride · Ⓨ pieces · LB delete · RB undo · ☰ menu' : mode === 'school' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act · Ⓨ Less scary · ☰ menu' : mode === 'fieldtrip' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'pethotel' ? '🎮 Left stick move · Ⓐ jump · Ⓧ check in / care / check out · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
+    const line = mode === 'dreamhouse' ? (typeof dh !== 'undefined' && dh && dh.visiting ? '🎮 Left stick move · Right stick look · Ⓐ jump · Ⓧ like the house · ☰ menu' : '🎮 Left stick move · Ⓐ jump · Ⓧ buy / carry / build · Ⓑ rotate · Ⓨ invite friends · ⓁⓇ job · ✚▼ show spots · ☰ menu') : mode === 'dance' ? '🎮 ✚ d-pad / face buttons hit arrows · ☰ menu' : mode === 'elevator' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act / shop · Ⓨ floors · Ⓑ close popups · ☰ menu' : mode === 'mansion' ? '🎮 Left stick move · Ⓐ jump · Ⓧ read / flip / unlock · Ⓨ Less scary · ☰ menu' : mode === 'shelter' ? '🎮 Left stick move · Ⓐ jump · Ⓧ rescue / care / desk · Ⓨ send home · ☰ menu' : mode === 'winter' ? '🎮 Left stick move / steer · Ⓐ jump · Ⓧ act · Ⓑ hop off or cash laps · ☰ menu' : mode === 'vet' ? '🎮 Left stick move · right stick look · Ⓐ interact · Ⓧ interact · ☰ menu' : mode === 'mermaid' ? '🎮 Left stick move · Ⓐ jump / swim up · LT/LB swim down · RT/RB swim up · Ⓧ act · ☰ menu' : mode === 'treehouse' ? '🎮 Left stick move · Ⓐ jump · Ⓧ place / ride · Ⓨ pieces · LB delete · RB undo · ☰ menu' : mode === 'school' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act · Ⓨ Less scary · ☰ menu' : mode === 'fieldtrip' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act · ☰ menu' : mode === 'aquarium' ? '🎮 Left stick move · Ⓐ jump · Ⓧ act · ☰ menu' : mode === 'haunt' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use puzzle · ☰ menu' : mode === 'stable' ? '🎮 Left stick move · Ⓐ jump · Ⓧ care / mount / show · ☰ menu' : mode === 'pethotel' ? '🎮 Left stick move · Ⓐ jump · Ⓧ check in / care / check out · ☰ menu' : mode === 'icecream' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a scoop station · Ⓑ close · ☰ menu' : mode === 'tower' ? '🎮 Left stick move · Ⓐ jump · ☰ menu' : mode === 'photostudio' ? '🎮 Ⓧ Take Photo · Ⓐ snap · LB/RB pose · ✚◀▶ backdrop · ✚▲ framing · ✚▼ angle · Ⓧ border · LT/RT shape · Ⓨ photos · Ⓑ done' : mode === 'waterpark' ? '🎮 Left stick move/steer · Ⓐ jump/paddle · Ⓧ ride · Ⓨ rides menu · ☰ menu' : mode === 'bakery' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use a cake station · Ⓑ close · ☰ menu' : mode === 'petisland' ? '🎮 Left stick move · Ⓐ jump · Ⓧ ask your pet · Ⓨ journal · ☰ menu' : mode === 'autumn' ? '🎮 Left stick move · Ⓐ jump · Right stick look · ☰ menu · 🍂 jump in the leaf piles!' : mode === 'fashion' ? fsTipText().split('<br>')[0] : mode === 'hide' ? '🎮 Left stick move · Ⓐ jump · click left stick to run · Right stick look · ☰ menu' : mode === 'splash' ? '🎮 Left stick move · Ⓐ jump · RB pebble 🪨 · Ⓧ shove 👊 · LB pull a friend 🤝 · ☰ menu' : mode === 'race' ? '🎮 RT or Ⓐ go · LT or Ⓑ brake · Left stick steers · RB/Ⓧ hop & drift · LB/Ⓨ power-up · Right stick look · R3 twice: first person · ☰ menu' : mode === 'pets' ? '🎮 Left stick move · L3 run · Ⓐ jump · Ⓧ pet / use · RB 🎾 throw · LB 🍖 feed · Ⓨ 🦮 walk · Ⓑ my pets · Right stick look · R3 twice: first person · 🚗 RT gas · LT brake · stick steers' : mode === 'build' ? '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · RT place · LT delete · LB/RB pick block · Ⓧ build/delete/paint · Ⓨ undo · D-pad ⬆ play-test · ⬇ share code · ☰ pause'
       : mode === 'meadow' ? '🎮 Left stick move · hold RT to charge, let go to toss · Ⓧ act · ☰ menu'
       : mode === 'camp' ? '🎮 Left stick move · hold Ⓧ to pick up / add logs · RB shine your light · ☰ menu'
       : mode === 'rides' ? '🎮 Left stick move · Ⓧ place · LB/RB pick a ride · Ⓨ rotate · Ⓑ hop off · ☰ menu'
@@ -38084,6 +38391,7 @@ const Obby = (() => {
     if (mode === 'treehouse' && typeof thPad === 'function' && thPad(jp, s)) return;
     if (mode === 'school' && typeof scPad === 'function' && scPad(jp, s)) return;
     if (mode === 'fieldtrip' && typeof ftPad === 'function' && ftPad(jp)) return;
+    if (mode === 'aquarium' && typeof aqPad === 'function' && aqPad(jp)) return;
     if (mode === 'snowfest' && typeof evg !== 'undefined' && evg && typeof snowfestPad === 'function' && snowfestPad(jp)) return;
     if (mode === 'party' && typeof py !== 'undefined' && py && typeof partyPad === 'function' && partyPad(jp)) return;
     if (jp[3]) behind();
@@ -38278,7 +38586,7 @@ function dhLayoutHud(){
     if (NEWTIP[mode]){
       const nt = NEWTIP[mode];
       $('#oTip').innerHTML = (on
-        ? (mode === 'vet' ? '🕹️ Left thumb to move · swipe to look · tap the big buttons to help' : mode === 'mermaid' ? '🕹️ Left thumb to swim · ⬆️ ⬇️ swim up and down · tap the big buttons to act' : mode === 'treehouse' ? '🕹️ Left thumb to move · tap Place, Pieces, Undo, or Delete' : mode === 'school' ? '🕹️ Left thumb to move · tap the big buttons to act or change Less scary' : mode === 'fieldtrip' ? '🕹️ Left thumb to move · tap the big buttons to board or pick things up' : '🕹️ Left thumb to move · ⬆️ jump · tap the big buttons to act')
+        ? (mode === 'vet' ? '🕹️ Left thumb to move · swipe to look · tap the big buttons to help' : mode === 'mermaid' ? '🕹️ Left thumb to swim · ⬆️ ⬇️ swim up and down · tap the big buttons to act' : mode === 'treehouse' ? '🕹️ Left thumb to move · tap Place, Pieces, Undo, or Delete' : mode === 'school' ? '🕹️ Left thumb to move · tap the big buttons to act or change Less scary' : mode === 'fieldtrip' ? '🕹️ Left thumb to move · tap the big buttons to board or pick things up' : mode === 'aquarium' ? '🕹️ Left thumb to move · tap the big buttons to board, look or touch gently' : '🕹️ Left thumb to move · ⬆️ jump · tap the big buttons to act')
         : '⌨️ WASD move · ' + (mode === 'mermaid' ? '' : 'Space jump · ') + nt[0] + ' · Esc pause') + '<br>' + nt[1];
       return;
     }
@@ -38452,6 +38760,8 @@ function dhLayoutHud(){
     if (rc && raceCam()) return;
     if (fs && fashionCam()) return;
     if (psx && photoCam()) return;
+    if (mode === 'fieldtrip' && typeof ftRideCam === 'function' && ftRideCam()) return;
+    if (mode === 'aquarium' && typeof aqRideCam === 'function' && aqRideCam()) return;
     if (fpOn()){   // eyes: just in front of your (hidden) head, looking where the camera yaw/pitch point
       const cp = Math.cos(cam.pitch), fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), ey = P.y + eyeHeight();
       camera.position.set(P.x + fx * .22, ey, P.z + fz * .22);
@@ -38463,7 +38773,7 @@ function dhLayoutHud(){
     }
     const tx = P.x, ty = P.y + 2.2, tz = P.z, cp = Math.cos(cam.pitch);
     let dist = cam.dist;
-    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'winter' || mode === 'mansion' || mode === 'shelter' || mode === 'fieldtrip' || mode === 'hunt' || mode === 'elevator'){ // pull the camera in front of walls so buildings don't block the view
+    if (mode === 'nds' || mode === 'build' || mode === 'tag' || mode === 'pets' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'winter' || mode === 'mansion' || mode === 'shelter' || mode === 'fieldtrip' || mode === 'aquarium' || mode === 'hunt' || mode === 'elevator'){ // pull the camera in front of walls so buildings don't block the view
       dist = clipOrbitCam(tx, ty, tz, cam.dist, mode === 'stable' ? 9 : mode === 'haunt' ? 7.5 : 1.2);
     }
     camera.position.set(tx + Math.sin(cam.yaw) * cp * dist, ty + Math.sin(cam.pitch) * dist, tz + Math.cos(cam.yaw) * cp * dist);
@@ -38671,7 +38981,7 @@ function dhLayoutHud(){
       if (ic) iceCreamUpdate(dt);
       if (ph) petHotelUpdate(dt);
       if (sb) stableUpdate(dt);
-      if (evg) snowfestUpdate(dt); if (py) partyUpdate(dt); if (lh) lanternUpdate(dt); if (typeof t297Update === 'function') t297Update(dt); if (typeof t302Update === 'function') t302Update(dt); if (typeof elevUpdate === 'function') elevUpdate(dt); if (typeof mnUpdate === 'function' && mode === 'mansion') mnUpdate(dt); if (typeof shUpdate === 'function' && mode === 'shelter') shUpdate(dt); if (typeof wnUpdate === 'function' && mode === 'winter') wnUpdate(dt); if (typeof vtUpdate === 'function' && mode === 'vet') vtUpdate(dt); if (typeof mmUpdate === 'function' && mode === 'mermaid') mmUpdate(dt); if (typeof thUpdate === 'function' && mode === 'treehouse') thUpdate(dt); if (typeof scUpdate === 'function' && mode === 'school') scUpdate(dt); if (typeof ftUpdate === 'function' && mode === 'fieldtrip') ftUpdate(dt);
+      if (evg) snowfestUpdate(dt); if (py) partyUpdate(dt); if (lh) lanternUpdate(dt); if (typeof t297Update === 'function') t297Update(dt); if (typeof t302Update === 'function') t302Update(dt); if (typeof elevUpdate === 'function') elevUpdate(dt); if (typeof mnUpdate === 'function' && mode === 'mansion') mnUpdate(dt); if (typeof shUpdate === 'function' && mode === 'shelter') shUpdate(dt); if (typeof wnUpdate === 'function' && mode === 'winter') wnUpdate(dt); if (typeof vtUpdate === 'function' && mode === 'vet') vtUpdate(dt); if (typeof mmUpdate === 'function' && mode === 'mermaid') mmUpdate(dt); if (typeof thUpdate === 'function' && mode === 'treehouse') thUpdate(dt); if (typeof scUpdate === 'function' && mode === 'school') scUpdate(dt); if (typeof ftUpdate === 'function' && mode === 'fieldtrip') ftUpdate(dt); if (typeof aqUpdate === 'function' && mode === 'aquarium') aqUpdate(dt);
       if (hm) hauntUpdate(dt);
       if (db) danceUpdate(dt);
       if (dh) dreamhouseUpdate(dt);
@@ -38866,6 +39176,7 @@ function dhLayoutHud(){
       if (mode === 'treehouse' && typeof thKey === 'function' && thKey(e)) return;
       if (mode === 'school' && typeof scKey === 'function' && scKey(e)) return;
       if (mode === 'fieldtrip' && typeof ftKey === 'function' && ftKey(e)) return;
+      if (mode === 'aquarium' && typeof aqKey === 'function' && aqKey(e)) return;
       if (mode === 'snowfest' && typeof evg !== 'undefined' && evg && typeof snowfestKey === 'function' && snowfestKey(e)) return;
       if (mode === 'party' && typeof py !== 'undefined' && py && typeof partyKey === 'function' && partyKey(e)) return;
       const em = (typeof EmoRules !== 'undefined' && EmoRules.emoByCode) ? EmoRules.emoByCode(e.code, EMOTES) : Object.keys(EMOTES).find(k => { const key = EMOTES[k].key; return key != null && key !== '' && ('Digit' + key === e.code || 'Numpad' + key === e.code); });
@@ -38899,7 +39210,7 @@ function dhLayoutHud(){
       if (mode === 'vet' && typeof vtKey === 'function' && vtKey(e)) return;
       if (mode === 'mermaid' && typeof mmKey === 'function' && mmKey(e)) return;
       if (mode === 'treehouse' && typeof thKey === 'function' && thKey(e)) return;
-      if (mode === 'school' && typeof scKey === 'function' && scKey(e)) return; if (mode === 'fieldtrip' && typeof ftKey === 'function' && ftKey(e)) return; });
+      if (mode === 'school' && typeof scKey === 'function' && scKey(e)) return; if (mode === 'fieldtrip' && typeof ftKey === 'function' && ftKey(e)) return; if (mode === 'aquarium' && typeof aqKey === 'function' && aqKey(e)) return; });
     const clearHeldKeys = () => {
       for (const k in keys) keys[k] = false;
       if (typeof joy !== 'undefined' && joy){ joy.x = joy.y = 0; joy.jump = false; }
@@ -39311,7 +39622,7 @@ function dhLayoutHud(){
   }
 
 function start(m = 'obby', d = null){
-    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party', 'snowfest', 'cafe', 'fish', 'petshow', 'hunt', 'garden', 'meadow', 'rides', 'hive', 'camp', 'elevator', 'mansion', 'shelter', 'winter', 'vet', 'mermaid', 'treehouse', 'school', 'fieldtrip'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt' || mode === 'garden' || mode === 'meadow' || mode === 'rides' || mode === 'hive' || mode === 'camp' || mode === 'elevator' || mode === 'mansion' || mode === 'shelter' || mode === 'winter' || mode === 'vet' || mode === 'mermaid' || mode === 'treehouse' || mode === 'school' || mode === 'fieldtrip' ? null : d;
+    mode = ['lava', 'nds', 'build', 'tag', 'pets', 'race', 'splash', 'hide', 'fashion', 'autumn', 'petisland', 'bakery', 'waterpark', 'photostudio', 'tower', 'icecream', 'pethotel', 'stable', 'haunt', 'dance', 'dreamhouse', 'lantern', 'party', 'snowfest', 'cafe', 'fish', 'petshow', 'hunt', 'garden', 'meadow', 'rides', 'hive', 'camp', 'elevator', 'mansion', 'shelter', 'winter', 'vet', 'mermaid', 'treehouse', 'school', 'fieldtrip', 'aquarium'].includes(m) ? m : 'obby'; diff = mode === 'race' || mode === 'splash' || mode === 'hide' || mode === 'fashion' || mode === 'autumn' || mode === 'petisland' || mode === 'bakery' || mode === 'waterpark' || mode === 'photostudio' || mode === 'tower' || mode === 'icecream' || mode === 'pethotel' || mode === 'stable' || mode === 'haunt' || mode === 'dance' || mode === 'dreamhouse' || mode === 'lantern' || mode === 'party' || mode === 'snowfest' || mode === 'cafe' || mode === 'fish' || mode === 'petshow' || mode === 'hunt' || mode === 'garden' || mode === 'meadow' || mode === 'rides' || mode === 'hive' || mode === 'camp' || mode === 'elevator' || mode === 'mansion' || mode === 'shelter' || mode === 'winter' || mode === 'vet' || mode === 'mermaid' || mode === 'treehouse' || mode === 'school' || mode === 'fieldtrip' || mode === 'aquarium' ? null : d;
     if (mode === 'obby'){ level = Math.max(1, Math.min(OBBY_N, Math.floor(+d) || 1)); diff = level; }
     if (typeof THREE === 'undefined'){ showMsg('😢', 'Oops!', "The 3D engine didn't load."); return; }
     recordRecentGame(mode);
@@ -39374,6 +39685,7 @@ function start(m = 'obby', d = null){
     else if (mode === 'treehouse') banner('🌳 Welcome to Oakheart Treehouse! Snap on platforms, ladders, rooms, a slide and a zipline, then hang out with real friends.');
     else if (mode === 'school') banner('🏫 Afterbell School is locked after dark. Solve the puzzles and slip past the Hush Warden. If it finds you, everyone is okay.');
     else if (mode === 'fieldtrip') banner('🚌 Field trip day! Board the Afterbell bus to Pebblebrook Nature Nook and find five trail treasures.');
+    else if (mode === 'aquarium') banner('🐠 Tideglass Aquarium day! Board the Afterbell bus, visit the exhibits, and be gentle at the touch pool.');
     else if (diff) begin(diff);
     $('#obby').classList.toggle('rmode', mode === 'race'); ['#rcLapBox', '#rcPosBox', '#rcItem'].forEach(id => $(id).style.display = mode === 'race' ? '' : 'none'); ['#rcPick', '#rcFin'].forEach(id => $(id).classList.remove('show'));
     if (mode === 'race'){ if (!window.__rcBound){ window.__rcBound = true;
@@ -39433,9 +39745,10 @@ function start(m = 'obby', d = null){
     if (mode === 'treehouse' && typeof thEnter === 'function') thEnter();
     if (mode === 'school' && typeof scEnter === 'function') scEnter();
     if (mode === 'fieldtrip' && typeof ftEnter === 'function') ftEnter();
+    if (mode === 'aquarium' && typeof aqEnter === 'function') aqEnter();
     if (mode === 'elevator') elevEnter();
     { const _elev = document.getElementById('elevBox'); if (_elev) _elev.style.display = mode === 'elevator' ? '' : 'none'; } { const _mn = document.getElementById('mnBox'); if (_mn) _mn.style.display = mode === 'mansion' ? '' : 'none'; } { const _sh = document.getElementById('shBox'); if (_sh) _sh.style.display = mode === 'shelter' ? '' : 'none'; }
-    $('#obby').classList.toggle('elevmode', mode === 'elevator'); $('#obby').classList.toggle('mnmode', mode === 'mansion'); $('#obby').classList.toggle('shmode', mode === 'shelter'); $('#obby').classList.toggle('wnmode', mode === 'winter'); $('#obby').classList.toggle('vtmode', mode === 'vet'); $('#obby').classList.toggle('mmode', mode === 'mermaid'); $('#obby').classList.toggle('thmode', mode === 'treehouse'); $('#obby').classList.toggle('scmode', mode === 'school'); $('#obby').classList.toggle('ftmode', mode === 'fieldtrip');
+    $('#obby').classList.toggle('elevmode', mode === 'elevator'); $('#obby').classList.toggle('mnmode', mode === 'mansion'); $('#obby').classList.toggle('shmode', mode === 'shelter'); $('#obby').classList.toggle('wnmode', mode === 'winter'); $('#obby').classList.toggle('vtmode', mode === 'vet'); $('#obby').classList.toggle('mmode', mode === 'mermaid'); $('#obby').classList.toggle('thmode', mode === 'treehouse'); $('#obby').classList.toggle('scmode', mode === 'school'); $('#obby').classList.toggle('ftmode', mode === 'fieldtrip'); $('#obby').classList.toggle('aqmode', mode === 'aquarium');
     { const _t302 = document.getElementById('t302Box'); if (_t302) _t302.style.display = ['garden','meadow','rides','hive','camp'].includes(mode) ? '' : 'none'; }
     $('#obby').classList.toggle('gardenmode', mode === 'garden');
     $('#obby').classList.toggle('meadowmode', mode === 'meadow');
@@ -47806,6 +48119,110 @@ function start(m = 'obby', d = null){
       if (m) m.visible = !!show[id];
     });
   }
+
+  function wnBuildSnug(){
+    if (!wn || !WinterRules.WN_SNUG) return;
+    const s = WinterRules.WN_SNUG;
+    wnMesh(new THREE.BoxGeometry(2.4, 2.0, 1.6), '#c45c1a', s.x, 1.1, s.z);
+    wnMesh(new THREE.BoxGeometry(2.7, 0.16, 1.9), '#8b2e1a', s.x, 2.15, s.z);
+    wnMesh(new THREE.CylinderGeometry(0.22, 0.18, 0.7, 8), '#5a2a12', s.x - 0.5, 2.5, s.z);
+    wnMesh(new THREE.BoxGeometry(0.9, 0.7, 0.9), '#fff8ee', s.x + 0.55, 2.55, s.z);
+    wnLab('☕ Snugmug Cart', s.x, 3.4, s.z);
+    wn.snug = {x:s.x, z:s.z};
+    wn.snugTop = 'cloud';
+    // two townsfolk customers in a little queue
+    [[s.x + 2.2, s.z + 1.4, '#e8d0a8'], [s.x + 3.4, s.z + 2.2, '#c8a070']].forEach(p => {
+      try {
+        if (typeof buildPlayer === 'function'){
+          const m = buildPlayer(Object.assign({}, typeof DEF !== 'undefined' ? DEF : {}, {shirt:'#3a86ff', pants:'#2a3a6a', hair:'short', face:'smile', hat:'beanie'}));
+          m.g.position.set(p[0], 0.05, p[1]); m.g.rotation.y = Math.atan2(s.x - p[0], s.z - p[1]); scene.add(m.g); wnKeep(m.g);
+        } else wnMesh(new THREE.BoxGeometry(0.6, 1.5, 0.5), p[2], p[0], 0.85, p[1]);
+      } catch(e){ wnMesh(new THREE.BoxGeometry(0.6, 1.5, 0.5), p[2], p[0], 0.85, p[1]); }
+    });
+    wnLab('👫 Skaters in line', s.x + 2.8, 2.6, s.z + 1.8);
+  }
+  function wnBuildTargets(){
+    if (!wn) return;
+    wn.targets = [];
+    (WinterRules.WN_TARGETS || []).forEach(tg => {
+      if (tg.kind === 'can'){
+        const m = wnMesh(new THREE.CylinderGeometry(0.22, 0.22, 0.7, 8), '#c45c1a', tg.x, 0.45, tg.z);
+        wnLab('🥫 ' + tg.name, tg.x, 1.4, tg.z);
+        wn.targets.push({id:tg.id, mesh:m, baseY:0.45});
+      } else {
+        const g = new THREE.Group();
+        const a = new THREE.Mesh(new THREE.SphereGeometry(0.55, 8, 8), wnMat('#f4fbff')); a.position.y = 0.55; g.add(a);
+        const b = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 8), wnMat('#f4fbff')); b.position.y = 1.2; g.add(b);
+        g.position.set(tg.x, 0, tg.z); scene.add(g); wnKeep(g);
+        wnLab('☃️ ' + tg.name, tg.x, 2.1, tg.z);
+        wn.targets.push({id:tg.id, mesh:g, baseY:0});
+      }
+    });
+    wnLab('❄️ Puffyard', 12, 2.8, 21);
+  }
+  function wnSnugCycle(){
+    const list = WinterRules.WN_TOPPINGS || [];
+    if (!list.length) return;
+    const i = Math.max(0, list.findIndex(t => t.id === (wn.snugTop || 'cloud')));
+    wn.snugTop = list[(i + 1) % list.length].id;
+    const t = WinterRules.wnTopping(wn.snugTop);
+    banner((t.emoji||'☕') + ' Next topping: ' + t.name + '. E buys a mug, F serves a skater in line.');
+    wnHud();
+  }
+  function wnSnugDo(serve){
+    if (!wn) return;
+    const id = wn.snugTop || 'cloud';
+    if (serve){
+      const r = WinterRules.wnSnugServe(wn.run, wn.sv, id);
+      if (r.ok){ wn.sv = r.state; wnSave(wn.sv); wnPay(r.coins); banner('☕ ' + r.message + ' +' + r.coins + ' 🪙'); }
+      wnHud(); wnNet(); return;
+    }
+    const r = WinterRules.wnSnugBuy(wn.sv, wnCoins(), id);
+    if (!r.ok){ banner('Need ' + (r.cost||4) + ' coins for a Snugmug — or press F to serve a skater.'); return; }
+    if (!wnSpend(r.cost)){ banner('Need ' + r.cost + ' coins for a Snugmug.'); return; }
+    wn.sv = r.state; wnSave(wn.sv);
+    wn.run.cocoa = wn.run.cocoa || {warm:0, served:0};
+    wn.run.cocoa.warm = r.warm;
+    banner('☕ ' + r.message);
+    wnHud(); wnNet();
+  }
+  function wnThrowNow(){
+    if (!wn) return;
+    const yaw = (typeof cam !== 'undefined' && cam) ? cam.yaw : 0;
+    const dir = {x: -Math.sin(yaw), z: -Math.cos(yaw)};
+    const me = (typeof mp !== 'undefined' && mp && mp.me) ? mp.me : 'me';
+    let roster = [];
+    try { if (typeof mp !== 'undefined' && mp && mp.on && typeof mpRoster === 'function') roster = mpRoster() || []; } catch(e){}
+    const origin = {x: P.x, z: P.z};
+    const r = WinterRules.wnThrowAimed(wn.run, wn.sv, me, origin, dir, roster, WinterRules.WN_TARGETS);
+    if (!r.ok){ banner(r.why === 'cool' ? 'Wait a tiny second…' : 'Hold that snowball a beat.'); return; }
+    wn.sv = r.state; wnSave(wn.sv); if (r.coins) wnPay(r.coins);
+    // flying puff
+    const shot = r.shot || {x:P.x, z:P.z, dx:dir.x, dz:dir.z, life:0.7, hitAt:8};
+    const ball = wnMesh(new THREE.SphereGeometry(0.22, 7, 7), '#f4fbff', shot.x, 1.15, shot.z);
+    (wn.shots || (wn.shots=[])).push({m:ball, x:shot.x, y:1.15, z:shot.z, dx:shot.dx, dz:shot.dz, t:0, life: Math.min(0.85, (shot.hitAt||8)/14), giggle: r.giggle, msg: r.message, why:r.why});
+    if (r.why === 'miss') banner('❄️ The snowball poofs into the snow.');
+    wnHud(); wnNet();
+  }
+  function wnTickShots(dt){
+    if (!wn) return;
+    const left = [];
+    (wn.shots || []).forEach(s => {
+      s.t = (s.t||0) + dt;
+      s.x += (s.dx||0) * 16 * dt;
+      s.z += (s.dz||0) * 16 * dt;
+      s.y = 1.15 + Math.sin(Math.min(1, s.t / (s.life||0.7)) * Math.PI) * 0.4;
+      if (s.m) s.m.position.set(s.x, s.y, s.z);
+      if (s.t >= (s.life||0.7)){
+        if (s.m){ try { scene.remove(s.m); } catch(e){} }
+        if (s.giggle) banner('❄️ ' + (s.msg || 'Poof! A little giggle rings out.'));
+      } else left.push(s);
+    });
+    wn.shots = left;
+    if (wn.run && wn.run.cocoa && (wn.run.cocoa.warm||0) > 0){
+      wn.run.cocoa.warm = Math.max(0, wn.run.cocoa.warm - dt);
+    }
+  }
   function wnBuildRink(){
     if (!wn || typeof WinterRules === 'undefined') return;
     const p = WinterRules.WN_POND;
@@ -47860,6 +48277,9 @@ function start(m = 'obby', d = null){
     pond.rotation.x = -Math.PI/2; pond.position.set(pondDef.x, 0.52, pondDef.z); scene.add(pond); wnKeep(pond);
     wn.pond = {x:pondDef.x, z:pondDef.z};
     wnBuildRink();
+    wnBuildSnug();
+    wnBuildTargets();
+    wn.shots = [];
     wn.yard = {x:WinterRules.WN_YARD.x, z:WinterRules.WN_YARD.z};
     wn.posts = (WinterRules.WN_POSTS || []).map(p => ({id:p.id, x:p.x, z:p.z}));
     wn.posts.forEach(p => {
@@ -47881,7 +48301,7 @@ function start(m = 'obby', d = null){
     wnBuildFestive();
     wnBind();
     wnHud();
-    banner('🎄 Welcome to Pinebell Village! Sled, skate Frostlane Rink (jump for a spin!), build a snow pal, sip cocoa, and toss practice snowballs. Races and snowball fights are for real friends only.');
+    banner('🎄 Welcome to Pinebell Village! Skate Frostlane Rink, grab a topped cocoa at Snugmug Cart, and toss snowballs (Q / RB / ❄️) at cans, puff pals, or real friends. Hits go poof with a giggle.');
   }
 
   function wnBuildFestive(){
@@ -48030,6 +48450,10 @@ function start(m = 'obby', d = null){
     if (wn.lift && wnNear(wn.lift.x, wn.lift.z, 4)) return {lab:'Start a timed sled run (E / Ⓧ)', act:() => wnStartSled()};
     if (wn.finish && wnNear(wn.finish.x, wn.finish.z, 4) && wn.run.sled && wn.run.sled.done) return {lab:'Collect your sled coins (E / Ⓧ)', act:() => wnCashSled()};
     if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)) return {lab:'☕ Buy cocoa (E) or serve a mug (F / hold Ⓧ)', act:() => wnCocoa(false)};
+    if (wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8)){
+      const top = (typeof WinterRules.wnTopping === 'function') ? WinterRules.wnTopping(wn.snugTop) : {name:'Whipped cloud', emoji:'☁️'};
+      return {lab:'☕ Snugmug: E buy / F serve  ·  ' + (top.emoji||'') + ' ' + top.name + '  ·  Q cycles toppings', act:() => wnSnugDo(false)};
+    }
     if (wn.pond && wnNear(wn.pond.x, wn.pond.z, 8)){
       if (wn.run.skate && wn.run.skate.on) return {lab:'Skate a loop · jump / Ⓐ spin · Ⓑ cash laps', act:() => wnCashSkate()};
       return {lab:'Start skating at Frostlane Rink (E / Ⓧ)', act:() => wnStartSkate()};
@@ -48116,7 +48540,8 @@ function start(m = 'obby', d = null){
     if (hint && wn){
       const s = wn.sv, run = wn.run;
       const sled = run.sled && run.sled.on ? ('  ·  🛷 ' + (run.sled.t||0).toFixed(1) + 's') : (s.sledBest ? ('  ·  best ' + Number(s.sledBest).toFixed(1) + 's') : '');
-      hint.textContent = '🎄 Pinebell  ·  🪙 ' + (s.coinsEarned||0) + ' earned  ·  💡 ' + (s.lights||0) + '  ·  🎁 best ' + (s.wrapBest||0) + sled;
+      const warm = (run.cocoa && run.cocoa.warm > 0) ? ('  ·  ☕ warm ' + Math.ceil(run.cocoa.warm) + 's') : '';
+      hint.textContent = '🎄 Pinebell  ·  🪙 ' + (s.coinsEarned||0) + ' earned  ·  💡 ' + (s.lights||0) + '  ·  🎁 best ' + (s.wrapBest||0) + sled + warm;
     }
     const btn = document.getElementById('wnAct');
     const p = wnPrompt();
@@ -48129,7 +48554,8 @@ function start(m = 'obby', d = null){
     const c = e.code || e.key;
     if (e.repeat && (c === 'KeyE' || c === 'KeyF')) return true; // QA t332u: holding E on a sled used to hop straight back off
     if (c === 'KeyE'){ wnAct(); return true; }
-    if (c === 'KeyF'){ if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)){ wnCocoa(true); return true; } wnAct(); return true; }
+    if (c === 'KeyF'){ if (wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8)){ wnSnugDo(true); return true; } if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)){ wnCocoa(true); return true; } wnAct(); return true; }
+    if (c === 'KeyQ'){ if (wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8)){ wnSnugCycle(); return true; } wnThrowNow(); return true; }
     if (c === 'Space' && wn.run.sled && wn.run.sled.on){ WinterRules.wnSledJump(wn.run); return true; }
     if (c === 'Space' && wn.run.skate && wn.run.skate.on && WinterRules.wnOnRink && WinterRules.wnOnRink(P.x, P.z)){ wnDoTrick(); return false; }
     if ((c === 'KeyA' || c === 'ArrowLeft') && wn.run.sled && wn.run.sled.on){ WinterRules.wnSledSteer(wn.run, -1, 0.08); return true; }
@@ -48145,16 +48571,19 @@ function start(m = 'obby', d = null){
       if (!wn._b && jp && jp[1]){ wn._b = true; wnHopOff(); return true; }
       if (jp && !jp[1]) wn._b = false;
     }
-    if (!wn._x && jp && jp[2]){ wn._x = true; if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6) && wn._holdF) wnCocoa(true); else wnAct(); return true; }
+    if (!wn._x && jp && jp[2]){ wn._x = true; if (wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8) && wn._holdF) wnSnugDo(true); else if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6) && wn._holdF) wnCocoa(true); else wnAct(); return true; }
     if (jp && !jp[2]) wn._x = false;
     if (!wn._b && jp && jp[1] && wn.run.skate && wn.run.skate.on){ wn._b = true; wnCashSkate(); return true; }
     if (jp && !jp[1]) wn._b = false;
+    if (!wn._rb && jp && jp[5]){ wn._rb = true; wnThrowNow(); return true; }
+    if (jp && !jp[5]) wn._rb = false;
     return false;
   }
   function wnUpdate(dt){
     if (!wn) return;
     dt = Math.max(0, Math.min(0.12, +dt || 0));
     WinterRules.wnSnowballTick(wn.run, dt);
+    wnTickShots(dt);
     if (wn.run && wn.run.night && wn.lights){ const tnow = (wn.run.t = (wn.run.t||0)+dt); wn.lights.forEach((L,i)=>{ if (!L.mesh||!L.mesh.visible) return; L.mesh.children.forEach((c,j)=>{ if (c.material) c.material.opacity = 0.65 + 0.35*Math.sin(tnow*4 + i + j); c.material.transparent = true; }); }); }
     (wn.flakes||[]).forEach(f => {
       if (!f.m) return;
@@ -48196,6 +48625,10 @@ function start(m = 'obby', d = null){
   function wnBind(){
     const a=document.getElementById('wnAct');
     if (a && !a.__wn){ a.__wn=true; a.addEventListener('click', ev => { ev.preventDefault(); wnAct(); }); }
+    const snow=document.getElementById('wnSnowBtn');
+    if (snow && !snow.__wn){ snow.__wn=true; snow.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); wnThrowNow(); }); }
+    const cycle=document.getElementById('wnTopBtn');
+    if (cycle && !cycle.__wn){ cycle.__wn=true; cycle.addEventListener('click', ev => { ev.preventDefault(); wnSnugCycle(); }); }
   }
   function winterStop(){
     if (!wn) return;
@@ -49843,7 +50276,7 @@ function start(m = 'obby', d = null){
   }
   function ftLab(text, x, y, z){
     try {
-      if (typeof t297Lab === 'function'){ const l = t297Lab(text, x, y, z); if (l) return ftKeep(l); }
+      if (typeof t297Lab === 'function'){ const l = t297Lab(text, x, y, z); if (l){ l.userData = l.userData || {}; l.userData.ftLab = true; return ftKeep(l); } }
     } catch(e){}
     return null;
   }
@@ -49852,6 +50285,14 @@ function start(m = 'obby', d = null){
     if (b && b.mesh) ftKeep(b.mesh);
     if (b) (ft.solids || (ft.solids=[])).push(b);
     return b;
+  }
+  function ftApplyDaySky(){
+    const hex = '#7ec8ff';
+    try {
+      scene.background = new THREE.Color(hex);
+      if (scene.fog){ scene.fog.color.set(hex); scene.fog.near = 55; scene.fog.far = 180; }
+      if (typeof renderer !== 'undefined' && renderer && renderer.setClearColor) renderer.setClearColor(hex);
+    } catch(e){}
   }
   function ftHud(msg){
     const hint = document.getElementById('ftHint');
@@ -49865,41 +50306,73 @@ function start(m = 'obby', d = null){
       if (p && p.act) act.textContent = p.act;
     }
   }
-  // audit56: real people for Ms. Bramble and Fern (they were plain boxes), turned to face where you arrive
   function ftNpc(av, x, z, fx, fz, col){
     try {
       const m = buildPlayer(Object.assign({}, typeof DEF !== 'undefined' ? DEF : {}, av));
       m.g.position.set(x, .05, z); m.g.rotation.y = Math.atan2(fx - x, fz - z); scene.add(m.g); ftKeep(m.g); return m;
     } catch(e){ return ftMesh(new THREE.BoxGeometry(0.7, 1.6, 0.5), col, x, 0.9, z); }
   }
-  function buildFieldTrip(){
-    const started = FieldTripRules.ftNewVisit(ftState());
-    ft = {trash:[], solids:[], sv: started.state, run: started.run, near:null, bus:null, homeBus:null};
-    ftSave(started.state);
-    try { checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:18}, flag:new THREE.Object3D()}; } catch(e){}
-    scene.background = new THREE.Color('#87c8ff');
-    if (scene.fog){ scene.fog.color.copy(scene.background); scene.fog.near = 40; scene.fog.far = 140; }
-    try { if (typeof renderer !== 'undefined' && renderer && renderer.setClearColor) renderer.setClearColor('#87c8ff'); } catch(e){}
-    const hemi = new THREE.HemisphereLight(0xfff4d8, 0x6a9a4a, 1.05); scene.add(hemi); ftKeep(hemi);
-    const sun = new THREE.DirectionalLight('#fff3c8', 0.7); sun.position.set(8, 16, 6); scene.add(sun); ftKeep(sun);
-    // one big lawn so the yard and nook don't sit on the default cream slab
-    ftPlat(0, 0.14, -4, 80, 100, '#3f8f3a', 0.24);
-    ftPlat(0, 0.16, 16, 36, 28, '#4ea247', 0.16);
-    ftPlat(0, 0.16, -22, 48, 48, '#3d9140', 0.16);
-    // school facade (yard)
-    ftMesh(new THREE.BoxGeometry(16, 8, 2), '#6a5a88', 0, 4, 28);
-    ftLab('🏫 Afterbell School', 0, 8.4, 26);
-    // path
-    ftPlat(0, 0.05, 4, 4, 16, '#c8bea0', 0.08);
-    ftPlat(0, 0.05, -14, 3.2, 20, '#c8bea0', 0.08);
-    // Afterbell bus in the yard
+  function ftTree(x, z, h, leaf){
+    const tall = h || 2.6;
+    ftMesh(new THREE.CylinderGeometry(0.28, 0.36, tall, 7), '#6b3a1d', x, tall/2, z);
+    ftMesh(new THREE.SphereGeometry(1.15 + tall * 0.12, 7, 5), leaf || '#4fa15a', x, tall + 0.4, z);
+  }
+  function ftSchoolBuilding(){
+    // deeper schoolhouse with a roof, door, windows, steps and a flag
+    ftMesh(new THREE.BoxGeometry(18, 8, 8), '#7a6aa0', 0, 4.1, 32);
+    ftMesh(new THREE.BoxGeometry(19, 0.35, 9), '#5a4a78', 0, 8.25, 32);
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(13, 3.2, 4), new THREE.MeshLambertMaterial({color:'#4a3a68'}));
+    roof.position.set(0, 10.1, 32); roof.rotation.y = Math.PI/4; scene.add(roof); ftKeep(roof);
+    ftMesh(new THREE.BoxGeometry(2.2, 3.4, 0.3), '#5a3a22', 0, 1.8, 27.9);
+    ftPlat(0, 0.45, 27.2, 4.2, 2.2, '#c8bea0', 0.35);
+    [[-6, 5.2], [6, 5.2], [-6, 3.2], [6, 3.2], [-10, 5.2], [10, 5.2]].forEach(w => {
+      ftMesh(new THREE.BoxGeometry(1.6, 1.4, 0.12), '#8ec6e8', w[0], w[1], 27.9);
+    });
+    ftMesh(new THREE.CylinderGeometry(0.08, 0.08, 4.2, 8), '#c45c1a', 9.2, 10.4, 30);
+    ftMesh(new THREE.BoxGeometry(1.2, 0.8, 0.06), '#e8f4ff', 9.9, 12.2, 30);
+    ftLab('🏫 Afterbell School', 0, 12.4, 26);
+    ftMesh(new THREE.BoxGeometry(1.6, 0.7, 0.7), '#8b6a3a', -8, 0.5, 20);
+    ftLab('🪑 Yard bench', -8, 1.6, 20);
+  }
+  function ftNookBuilding(){
+    ftMesh(new THREE.BoxGeometry(14, 5.2, 10), '#e8d9b0', 0, 2.7, -40);
+    ftMesh(new THREE.BoxGeometry(15.2, 0.35, 11.2), '#5a7a32', 0, 5.4, -40);
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(10.5, 2.8, 4), new THREE.MeshLambertMaterial({color:'#6a8a3a'}));
+    roof.position.set(0, 7.1, -40); roof.rotation.y = Math.PI/4; scene.add(roof); ftKeep(roof);
+    ftPlat(0, 0.4, -33.4, 8, 4, '#c4a574', 0.28);
+    ftMesh(new THREE.CylinderGeometry(0.18, 0.2, 3.2, 8), '#8b6a3a', -3.4, 1.8, -33.6);
+    ftMesh(new THREE.CylinderGeometry(0.18, 0.2, 3.2, 8), '#8b6a3a', 3.4, 1.8, -33.6);
+    ftMesh(new THREE.BoxGeometry(2, 3, 0.2), '#6b4a28', 0, 1.7, -34.9);
+    [[-5, 3.4], [5, 3.4]].forEach(w => ftMesh(new THREE.BoxGeometry(2.2, 1.6, 0.1), '#b7e0a8', w[0], w[1], -34.9));
+    ftMesh(new THREE.BoxGeometry(1.6, 1.1, 0.7), '#d7c49a', -5, 0.7, -32);
+    ftMesh(new THREE.BoxGeometry(1.6, 1.1, 0.7), '#d7c49a', 5, 0.7, -32);
+    ftLab('🌿 Pebblebrook Nature Nook', 0, 8.6, -36);
+  }
+  function ftMakeBus(){
     const bus = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.2, 7.2), new THREE.MeshLambertMaterial({color:'#f0c44a'}));
+    const yellow = new THREE.MeshLambertMaterial({color:'#f0c44a'});
+    const yellowIn = new THREE.MeshLambertMaterial({color:'#e8b83c'});
+    const body = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.2, 7.2), yellow);
     body.position.y = 1.3; bus.add(body);
-    const cab = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.2, 2.2), new THREE.MeshLambertMaterial({color:'#ffe27a'}));
-    cab.position.set(0, 2.2, 2.6); bus.add(cab);
-    // audit56: windows, a stripe and a door so it reads as a bus, not a yellow box
-    const glass = new THREE.MeshLambertMaterial({color:'#3a5a7a'}), stripe = new THREE.MeshLambertMaterial({color:'#1d2340'});
+    function panel(w,h,d, mat, x,y,z){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat); m.position.set(x,y,z); bus.add(m); return m; }
+    panel(0.06, 0.7, 7.0, yellowIn, -1.7, 1.05, 0);
+    panel(0.06, 0.45, 7.0, yellowIn, -1.7, 2.28, 0);
+    panel(0.06, 0.7, 7.0, yellowIn, 1.7, 1.05, 0);
+    panel(0.06, 0.45, 7.0, yellowIn, 1.7, 2.28, 0);
+    panel(3.3, 2.0, 0.06, yellowIn, 0, 1.5, -3.45);
+    panel(3.4, 0.06, 7.0, yellowIn, 0, 2.46, 0);
+    const floor = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.12, 6.6), new THREE.MeshLambertMaterial({color:'#8b6a3a'}));
+    floor.position.y = 0.72; bus.add(floor);
+    const seatL = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.55, 4.6), new THREE.MeshLambertMaterial({color:'#3a6aaa'}));
+    seatL.position.set(-1.0, 0.95, -0.4); bus.add(seatL);
+    const seatR = seatL.clone(); seatR.position.x = 1.0; bus.add(seatR);
+    panel(3.0, 0.32, 0.7, new THREE.MeshLambertMaterial({color:'#5a4a32'}), 0, 1.2, 2.45);
+    const wheel = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.05, 8, 12), new THREE.MeshLambertMaterial({color:'#2d2d2d'}));
+    wheel.position.set(-0.35, 1.45, 2.2); wheel.rotation.x = Math.PI/2; bus.add(wheel);
+    const cab = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.28, 2.2), new THREE.MeshLambertMaterial({color:'#ffe27a'}));
+    cab.position.set(0, 2.48, 2.6); bus.add(cab);
+    const glass = new THREE.MeshLambertMaterial({color:'#3a5a7a', transparent:true, opacity:0.55});
+    const stripe = new THREE.MeshLambertMaterial({color:'#1d2340'});
     [-1.81, 1.81].forEach(x => {
       for (let i = 0; i < 4; i++){ const w = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.7, 1.1), glass); w.position.set(x, 1.85, -2.6 + i * 1.5); bus.add(w); }
       const st = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.16, 7.0), stripe); st.position.set(x, 1.1, 0); bus.add(st);
@@ -49910,54 +50383,89 @@ function start(m = 'obby', d = null){
       const w = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.4, 10), new THREE.MeshLambertMaterial({color:'#2d2d2d'}));
       w.rotation.z = Math.PI/2; w.position.set(p[0], p[1], p[2]); bus.add(w);
     });
+    return bus;
+  }
+  function ftBuildRoad(){
+    const path = FieldTripRules.FT_RIDE_PATH || [];
+    for (let i = 0; i < path.length - 1; i++){
+      const a = path[i], b = path[i+1];
+      const mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2;
+      const len = Math.hypot(b.x - a.x, b.z - a.z) + 1.6;
+      const alongX = Math.abs(b.x - a.x) >= Math.abs(b.z - a.z);
+      ftPlat(mx, 0.18, mz, alongX ? len : 3.4, alongX ? 3.4 : len, '#4a4e55', 0.1);
+      // little dashed center marks
+      const steps = Math.max(1, (len / 3) | 0);
+      for (let s = 1; s < steps; s++){
+        const u = s / steps;
+        ftMesh(new THREE.BoxGeometry(alongX ? 0.8 : 0.14, 0.04, alongX ? 0.14 : 0.8), '#f4e27a', a.x + (b.x-a.x)*u, 0.24, a.z + (b.z-a.z)*u);
+      }
+    }
+    // roadside scenery
+    [[12,6],[12,-2],[12,-10],[18,-2],[30,6],[30,-6],[30,-16],[18,-24],[-10,2],[-10,-12],[8,-24]].forEach((p, i) => {
+      ftTree(p[0], p[1], 2.2 + (i % 3) * 0.35, i % 2 ? '#4fa15a' : '#68b85a');
+    });
+    ftMesh(new THREE.BoxGeometry(0.16, 2.4, 1.6), '#c45c1a', 24.9, 1.4, -6);
+    ftLab('➡️ Pebblebrook', 25.2, 3.0, -6);
+    ftMesh(new THREE.BoxGeometry(4.4, 2.8, 3.6), '#c45c3a', 32, 1.5, -10);
+    const barnRoof = new THREE.Mesh(new THREE.ConeGeometry(3.4, 1.8, 4), new THREE.MeshLambertMaterial({color:'#8b2e1a'}));
+    barnRoof.position.set(32, 3.5, -10); barnRoof.rotation.y = Math.PI/4; scene.add(barnRoof); ftKeep(barnRoof);
+    ftLab('🌾 Hayloft farm', 32, 4.8, -10);
+    ftPlat(24, 0.22, -18, 8, 3.2, '#6aa0c8', 0.16);
+    ftLab('💧 Brookbell bridge', 24, 1.8, -18);
+  }
+  function buildFieldTrip(){
+    const started = FieldTripRules.ftNewVisit(ftState());
+    ft = {trash:[], solids:[], sv: started.state, run: started.run, near:null, bus:null, homeBus:null};
+    ftSave(started.state);
+    try { checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:18}, flag:new THREE.Object3D()}; } catch(e){}
+    ftApplyDaySky();
+    const hemi = new THREE.HemisphereLight(0xe8f4ff, 0x4a7a3a, 1.1); scene.add(hemi); ftKeep(hemi);
+    const sun = new THREE.DirectionalLight('#fff8e0', 0.85); sun.position.set(10, 18, 8); scene.add(sun); ftKeep(sun);
+    ftPlat(0, 0.14, -4, 90, 110, '#3f8f3a', 0.24);
+    ftPlat(0, 0.16, 16, 36, 28, '#4ea247', 0.16);
+    ftPlat(0, 0.16, -28, 48, 48, '#3d9140', 0.16);
+    ftSchoolBuilding();
+    ftBuildRoad();
+    const bus = ftMakeBus();
     bus.position.set(FieldTripRules.FT_BUS.x, 0, FieldTripRules.FT_BUS.z);
     scene.add(bus); ftKeep(bus); ft.bus = bus;
     ftLab('🚌 Afterbell bus', FieldTripRules.FT_BUS.x, 3.6, FieldTripRules.FT_BUS.z);
-    // Ms. Bramble
     ftNpc({body: 'girl', head: '#e0ac69', shirt: '#c45c8a', pants: '#3a3f6a', pantsPat: 'skirt', hair: 'bun', hairColor: '#6b4226', face: 'smile', shirtPat: null, hat: null}, FieldTripRules.FT_TEACHER.x, FieldTripRules.FT_TEACHER.z, 0, 18, '#c45c8a');
     ftLab('👩‍🏫 Ms. Bramble', FieldTripRules.FT_TEACHER.x, 3.9, FieldTripRules.FT_TEACHER.z);
-    // Nature Nook
-    ftMesh(new THREE.BoxGeometry(10, 4.2, 8), '#e8d9b0', 0, 2.1, -36);
-    ftMesh(new THREE.BoxGeometry(10.4, 0.3, 8.4), '#6a8a3a', 0, 4.3, -36);
-    ftLab('🌿 Pebblebrook Nature Nook', 0, 5.2, -36);
-    // willow / brook / lookout
-    ftMesh(new THREE.CylinderGeometry(0.4, 0.5, 3.4, 8), '#6b3a1d', -18, 1.7, -12);
-    ftMesh(new THREE.SphereGeometry(1.8, 8, 6), '#5aaa4a', -18, 3.6, -12);
+    ftNookBuilding();
+    ftTree(-18, -12, 3.4, '#5aaa4a');
     ftLab('🌳 Willow path', -18, 5.4, -12);
-    [[-22,18],[14,22],[-16,-8],[18,-8],[-26,-28],[20,-20]].forEach(p => {
-      ftMesh(new THREE.CylinderGeometry(0.3, 0.38, 2.4, 7), '#6b3a1d', p[0], 1.2, p[1]);
-      ftMesh(new THREE.SphereGeometry(1.2, 7, 5), (p[1] < 0 ? '#4fa15a' : '#68b85a'), p[0], 2.6, p[1]);
-    });
-    ftPlat(16, 0.06, -18, 6, 4, '#6aa0c8', 0.08);
+    [[-22,18],[14,22],[-16,-8],[18,-8],[-26,-28],[20,-20],[-14,-40],[12,-48]].forEach(p => ftTree(p[0], p[1], 2.4, p[1] < 0 ? '#4fa15a' : '#68b85a'));
+    ftPlat(16, 0.22, -18, 7, 4.5, '#6aa0c8', 0.12);
     ftLab('💧 Brookbell Creek', 16, 1.8, -18);
-    ftMesh(new THREE.BoxGeometry(3, 1.2, 3), '#8b6a3a', 22, 0.7, -32);
-    ftLab('🔭 Lookout', 22, 2.2, -32);
-    // guide Fern
-    ftNpc({head: '#c68642', shirt: '#3a8f5a', pants: '#6b4a2a', hair: 'short', hairColor: '#2a1a10', face: 'smile', shirtPat: null, hat: null}, FieldTripRules.FT_GUIDE.x, FieldTripRules.FT_GUIDE.z, FieldTripRules.FT_NOOK.x, FieldTripRules.FT_NOOK.z + 4, '#3a8f5a');
+    ftMesh(new THREE.BoxGeometry(3.2, 1.4, 3.2), '#8b6a3a', 22, 0.85, -32);
+    ftMesh(new THREE.CylinderGeometry(0.15, 0.18, 1.4, 8), '#c4a574', 22, 1.8, -32);
+    ftLab('🔭 Lookout', 22, 2.6, -32);
+    // Fern waits off to the side of the courtyard, not on the drop-off
+    ftNpc({head: '#c68642', shirt: '#3a8f5a', pants: '#6b4a2a', hair: 'short', hairColor: '#2a1a10', face: 'smile', shirtPat: null, hat: null}, FieldTripRules.FT_GUIDE.x, FieldTripRules.FT_GUIDE.z, FieldTripRules.FT_ARRIVE.x, FieldTripRules.FT_ARRIVE.z, '#3a8f5a');
     ftLab('🧭 Fern', FieldTripRules.FT_GUIDE.x, 3.9, FieldTripRules.FT_GUIDE.z);
-    // home bus (hidden until all finds)
-    const home = bus.clone();
+    const home = ftMakeBus();
     home.position.set(FieldTripRules.FT_HOME_BUS.x, 0, FieldTripRules.FT_HOME_BUS.z);
     home.visible = false;
     scene.add(home); ftKeep(home); ft.homeBus = home;
     ftLab('🚌 Gate', FieldTripRules.FT_HOME_BUS.x, 3.4, FieldTripRules.FT_HOME_BUS.z);
-    // treasures
     ft.findMeshes = {};
     (FieldTripRules.FT_FINDS || []).forEach(f => {
-      const m = ftMesh(new THREE.BoxGeometry(0.55, 0.4, 0.55), '#f4e27a', f.x, 0.4, f.z);
-      ftLab((f.emoji||'🔍') + ' ' + f.name, f.x, 1.5, f.z);
+      const m = ftMesh(new THREE.BoxGeometry(0.55, 0.4, 0.55), '#f4e27a', f.x, 0.5, f.z);
+      ftLab((f.emoji||'🔍') + ' ' + f.name, f.x, 1.6, f.z);
       ft.findMeshes[f.id] = m;
     });
     if (P){ P.x=0; P.y=0.5; P.z=18; P.vx=0; P.vz=0; P.vy=0; }
     if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
     const box=document.getElementById('ftBox'); if(box) box.style.display='block';
-    banner('🚌 Field trip day! Ms. Bramble is taking Afterbell School to Pebblebrook Nature Nook. Board the bus, then find five trail treasures.');
+    banner('🚌 Field trip day! Ms. Bramble is taking Afterbell School to Pebblebrook Nature Nook. Board the bus, sit tight for the ride, then find five trail treasures.');
     ftPaintFinds();
     ftHud();
   }
   function ftEnter(){
     if (P){ P.x=0; P.y=0.5; P.z=18; P.vx=0; P.vz=0; P.vy=0; }
     if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
+    ftApplyDaySky();
   }
   function ftPaintFinds(){
     if (!ft) return;
@@ -49967,6 +50475,46 @@ function start(m = 'obby', d = null){
     });
     if (ft.homeBus) ft.homeBus.visible = FieldTripRules.ftAll(ft.sv) && ft.run && (ft.run.phase === 'nook' || ft.run.phase === 'done');
   }
+  function ftRideVis(hide){
+    try {
+      if (typeof model !== 'undefined' && model){
+        if (model.g) model.g.visible = !hide;
+        else if (model.visible != null) model.visible = !hide;
+      }
+    } catch(e){}
+  }
+  function ftSeatInBus(pose){
+    if (!P || !pose) return;
+    const side = 0.0, along = -2.15;
+    const cy = Math.cos(pose.yaw || 0), sy = Math.sin(pose.yaw || 0);
+    P.x = pose.x + side * cy + along * sy;
+    P.z = pose.z + -side * sy + along * cy;
+    P.y = 1.42;
+    P.vx = P.vz = P.vy = 0;
+    ftRideVis(true);
+    if (typeof cam !== 'undefined' && cam){
+      cam.yaw = Math.atan2(-sy, -cy);
+      cam.pitch = 0.08;
+      cam.dist = 0.22;
+    }
+    if (ft.bus){
+      ft.bus.position.set(pose.x, 0, pose.z);
+      ft.bus.rotation.y = pose.yaw || 0;
+    }
+  }
+
+  function ftRideCam(){
+    if (!ft || !ft.run || ft.run.phase !== 'ride' || typeof camera === 'undefined' || !camera) return false;
+    const pose = FieldTripRules.ftRidePose(ft.run);
+    if (!pose) return false;
+    const cy = Math.cos(pose.yaw || 0), sy = Math.sin(pose.yaw || 0);
+    const along = -1.5, ey = 1.55;
+    const x = pose.x + along * sy, z = pose.z + along * cy;
+    camera.position.set(x, ey, z);
+    camera.lookAt(x + sy * 10, ey + 0.12, z + cy * 10);
+    (ft.trash||[]).forEach(m => { if (m && m.userData && m.userData.ftLab) m.visible = false; });
+    return true;
+  }
   function ftAct(){
     if (!ft) return;
     const hit = FieldTripRules.ftNear(P.x, P.z, ft.sv, ft.run);
@@ -49974,7 +50522,11 @@ function start(m = 'obby', d = null){
     if (hit.kind === 'talk'){ banner(hit.text); return; }
     if (hit.kind === 'bus'){
       const r = FieldTripRules.ftBoardBus(ft.run);
-      if (r.ok){ banner('🚌 All aboard! The Afterbell bus is rolling to Pebblebrook Nature Nook.'); if (typeof cam!=='undefined' && cam){ cam.yaw=0.2; cam.pitch=0.1; cam.dist=12; } }
+      if (r.ok){
+        banner('🚌 All aboard! Grab a seat — the Afterbell bus is rolling to Pebblebrook Nature Nook.');
+        const pose = FieldTripRules.ftRidePose(ft.run);
+        ftSeatInBus(pose);
+      }
       return;
     }
     if (hit.kind === 'find'){
@@ -49990,29 +50542,30 @@ function start(m = 'obby', d = null){
       ft.sv = r.state; ftSave(ft.sv);
       if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
       banner((r.message || 'Bus ride home!') + (r.coins ? ('  +' + r.coins + ' 🪙') : ''));
-      if (P){ P.x=0; P.z=10; P.y=0.5; }
+      if (P){ P.x=0; P.z=18; P.y=0.5; }
+      if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
       return;
     }
   }
   function ftUpdate(dt){
     if (!ft) return;
+    ftApplyDaySky();
     if (ft.run.phase === 'ride'){
       FieldTripRules.ftTickRide(ft.run, dt);
-      if (P && ft.bus){
-        P.x = ft.bus.position.x;
-        P.z = ft.bus.position.z;
-        P.y = 1.6;
-        P.vx = P.vz = 0;
-        ft.bus.position.z = 10 - Math.min(1, (ft.run.rideT || 0) / FieldTripRules.FT_RIDE_T) * 16;
-      }
+      const pose = FieldTripRules.ftRidePose(ft.run);
+      ftSeatInBus(pose);
       if (ft.run.phase === 'nook'){
-        if (P){ P.x = FieldTripRules.FT_NOOK.x; P.y=0.5; P.z = FieldTripRules.FT_NOOK.z + 4; P.vx=0; P.vz=0; }
-        if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.18; cam.dist=11; }
-        banner('🌿 Welcome to Pebblebrook Nature Nook! Fern the guide is in the courtyard. Find five trail treasures, then ride home.');
+        const a = FieldTripRules.FT_ARRIVE || {x:3.4, z:-8};
+        if (P){ P.x=a.x; P.y=0.5; P.z=a.z; P.vx=0; P.vz=0; }
+        if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; }
+        ftRideVis(false);
+        (ft.trash||[]).forEach(m => { if (m && m.userData && m.userData.ftLab) m.visible = true; });
+        if (ft.bus){ ft.bus.position.set(FieldTripRules.FT_HOME_BUS.x, 0, FieldTripRules.FT_HOME_BUS.z); ft.bus.rotation.y = Math.PI; }
+        banner('🌿 Welcome to Pebblebrook Nature Nook! Fern is waiting by the nature hall — not under the bus. Find five trail treasures, then ride home.');
         ftPaintFinds();
       }
     }
-    if (P && P.y < -8){ P.x=0; P.y=0.5; P.z = (ft.run && ft.run.phase === 'nook') ? FieldTripRules.FT_NOOK.z + 4 : 18; P.vx=P.vz=P.vy=0; }
+    if (P && P.y < -8){ P.x=0; P.y=0.5; P.z = (ft.run && ft.run.phase === 'nook') ? (FieldTripRules.FT_ARRIVE||{}).z || -8 : 18; P.vx=P.vz=P.vy=0; }
     ft.near = FieldTripRules.ftNear(P ? P.x : 0, P ? P.z : 0, ft.sv, ft.run);
     ftHud(FieldTripRules.ftGoal(ft.sv, ft.run));
   }
@@ -50023,10 +50576,12 @@ function start(m = 'obby', d = null){
   }
   function ftPad(jp){
     if (!ft || !jp) return false;
-    if (jp[2] || jp[3]){ ftAct(); return true; }
+    if (!ft._x && (jp[2] || jp[3])){ ft._x = true; ftAct(); return true; }
+    if (!jp[2] && !jp[3]) ft._x = false;
     return false;
   }
   function fieldTripStop(){
+    ftRideVis(false);
     if (!ft) return;
     (ft.solids||[]).forEach(b => { try{ b.active=false; if (typeof solids!=='undefined'){ const i=solids.indexOf(b); if(i>=0) solids.splice(i,1);} }catch(e){} });
     (ft.trash||[]).forEach(m => { try{ scene.remove(m);}catch(e){} });
@@ -50035,12 +50590,12 @@ function start(m = 'obby', d = null){
     const act=document.getElementById('ftAct'); if(act) act.classList.remove('show');
   }
   if (typeof window !== 'undefined') window.ftDebug = {
-    probe(){ if (!ft) return null; return {phase: ft.run && ft.run.phase, found: ((ft.sv && ft.sv.found)||[]).slice(), won: !!(ft.sv && ft.sv.won), P: P ? {x:P.x,y:P.y,z:P.z} : null}; },
-    nook(){ if (!ft) return; ft.run.phase='nook'; ft.run.rideT=FieldTripRules.FT_RIDE_T; if(P){P.x=0;P.y=0.5;P.z=FieldTripRules.FT_NOOK.z+4;} ftPaintFinds(); },
+    probe(){ if (!ft) return null; const pose = (ft.run && ft.run.phase === 'ride' && FieldTripRules.ftRidePose) ? FieldTripRules.ftRidePose(ft.run) : null; return {phase: ft.run && ft.run.phase, found: ((ft.sv && ft.sv.found)||[]).slice(), won: !!(ft.sv && ft.sv.won), P: P ? {x:P.x,y:P.y,z:P.z} : null, ride: pose, fern: FieldTripRules.FT_GUIDE, arrive: FieldTripRules.FT_ARRIVE}; },
+    nook(){ if (!ft) return; ft.run.phase='nook'; ft.run.rideT=FieldTripRules.FT_RIDE_T; const a=FieldTripRules.FT_ARRIVE||{x:3.4,z:-8}; if(P){P.x=a.x;P.y=0.5;P.z=a.z;} if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; } ftPaintFinds(); },
     go(id){
       if (!ft || !P) return;
       const F = FieldTripRules;
-      const map = {bus:F.FT_BUS, home:F.FT_HOME_BUS, teacher:F.FT_TEACHER, fern:F.FT_GUIDE, nook:F.FT_NOOK};
+      const map = {bus:F.FT_BUS, home:F.FT_HOME_BUS, teacher:F.FT_TEACHER, fern:F.FT_GUIDE, nook:F.FT_NOOK, arrive:F.FT_ARRIVE};
       const t = F.ftFind(id) || map[id];
       if (!t) return;
       P.x=t.x; P.y=0.5; P.z=t.z; P.vx=0; P.vz=0; P.vy=0;
@@ -50048,6 +50603,274 @@ function start(m = 'obby', d = null){
   };
   try {
     const act=document.getElementById('ftAct'); if(act && !act.__ft){ act.__ft=true; act.onclick=ev=>{ev.preventDefault();ev.stopPropagation();ftAct();}; }
+  } catch(e){}
+
+
+/* Tideglass Aquarium runtime — injected into the main engine IIFE, after the field-trip helpers. */
+  let aq = null;
+  function aqSave(s){ try { if (typeof save === 'function') save(AquariumRules.AQ_KEY, s); } catch(e){} }
+  function aqState(){ try { return AquariumRules.aqLoad(typeof load === 'function' ? load(AquariumRules.AQ_KEY, null) : null); } catch(e){ return AquariumRules.aqFresh(); } }
+  function aqKeep(m){ if (aq && m){ (aq.trash || (aq.trash=[])).push(m); } return m; }
+  function aqMesh(geo, col, x, y, z){
+    const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({color: col}));
+    m.position.set(x, y, z); scene.add(m); aqKeep(m); return m;
+  }
+  function aqLab(text, x, y, z){
+    try { if (typeof t297Lab === 'function'){ const l = t297Lab(text, x, y, z); if (l){ l.userData = l.userData || {}; l.userData.aqLab = true; return aqKeep(l); } } } catch(e){}
+    return null;
+  }
+  function aqPlat(x, y, z, w, d, col, h){
+    const b = plat(x, y, z, w, d, col, h == null ? 0.2 : h);
+    if (b && b.mesh) aqKeep(b.mesh);
+    if (b) (aq.solids || (aq.solids=[])).push(b);
+    return b;
+  }
+  function aqSky(){ if (typeof ftApplyDaySky === 'function') ftApplyDaySky(); else {
+    try { scene.background = new THREE.Color('#7ec8ff'); if (scene.fog){ scene.fog.color.set('#7ec8ff'); scene.fog.near=55; scene.fog.far=180; } } catch(e){}
+  } }
+  function aqHud(msg){
+    const hint = document.getElementById('aqHint');
+    const box = document.getElementById('aqBox');
+    if (hint) hint.textContent = msg || AquariumRules.aqGoal(aq && aq.sv, aq && aq.run);
+    if (box) box.style.display = 'block';
+    const act = document.getElementById('aqAct');
+    if (act){
+      const p = aq && aq.near;
+      act.classList.toggle('show', !!(p && p.act && p.kind !== 'ride'));
+      if (p && p.act) act.textContent = p.act;
+    }
+  }
+  function aqTank(x, z, col, label, fishCol, kind){
+    const glass = new THREE.MeshLambertMaterial({color:'#9ad8e8', transparent:true, opacity:0.35});
+    const shell = new THREE.Mesh(new THREE.BoxGeometry(4.4, 2.8, 3.2), glass);
+    shell.position.set(x, 1.5, z); scene.add(shell); aqKeep(shell);
+    aqPlat(x, 0.2, z, 4.6, 3.4, '#3a6a88', 0.18);
+    const wall = plat(x, 2.7, z, 4.4, 3.2, '#9ad8e8', 2.5);
+    if (wall && wall.mesh){ wall.mesh.visible = false; aqKeep(wall.mesh); }
+    if (wall) (aq.solids || (aq.solids=[])).push(wall);
+    aqLab(label, x, 3.3, z);
+    const swimmers = [];
+    for (let i = 0; i < (kind === 'jelly' ? 3 : 4); i++){
+      const geo = kind === 'jelly' ? new THREE.SphereGeometry(0.22, 8, 6) : (kind === 'turtle' ? new THREE.SphereGeometry(0.28, 8, 6) : new THREE.SphereGeometry(0.14, 7, 6));
+      const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({color: fishCol, transparent: kind==='jelly', opacity: kind==='jelly'?0.8:1}));
+      m.position.set(x, 1.2, z); scene.add(m); aqKeep(m);
+      swimmers.push({m:m, ox:x, oz:z, a: i * 1.4, r: 0.8 + i * 0.12, spd: 0.7 + i * 0.15, y: 1.0 + (i%3)*0.35});
+    }
+    (aq.fish || (aq.fish=[])).push.apply(aq.fish, swimmers);
+  }
+  function aqMakeBus(){ return (typeof ftMakeBus === 'function') ? ftMakeBus() : (function(){ const g=new THREE.Group(); const b=new THREE.Mesh(new THREE.BoxGeometry(3.6,2.2,7.2), new THREE.MeshLambertMaterial({color:'#f0c44a'})); b.position.y=1.3; g.add(b); return g; })(); }
+  function buildAquarium(){
+    const started = AquariumRules.aqNewVisit(aqState());
+    aq = {trash:[], solids:[], sv: started.state, run: started.run, near:null, bus:null, homeBus:null, fish:[]};
+    aqSave(started.state);
+    try { checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:18}, flag:new THREE.Object3D()}; } catch(e){}
+    aqSky();
+    const hemi = new THREE.HemisphereLight(0xe8f4ff, 0x3a6a8a, 1.1); scene.add(hemi); aqKeep(hemi);
+    const sun = new THREE.DirectionalLight('#fff8e0', 0.8); sun.position.set(-8, 18, 8); scene.add(sun); aqKeep(sun);
+    aqPlat(0, 0.14, -4, 90, 110, '#3f8f3a', 0.24);
+    aqPlat(0, 0.16, 16, 36, 28, '#4ea247', 0.16);
+    aqPlat(0, 0.16, -30, 52, 52, '#3d8a88', 0.16);
+    // school (compact, same yard)
+    aqMesh(new THREE.BoxGeometry(18, 8, 8), '#7a6aa0', 0, 4.1, 32);
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(13, 3.2, 4), new THREE.MeshLambertMaterial({color:'#4a3a68'}));
+    roof.position.set(0, 10.1, 32); roof.rotation.y = Math.PI/4; scene.add(roof); aqKeep(roof);
+    aqLab('🏫 Afterbell School', 0, 12.2, 26);
+    try {
+      if (typeof buildPlayer === 'function'){
+        const m = buildPlayer(Object.assign({}, typeof DEF !== 'undefined' ? DEF : {}, {body:'girl', head:'#e0ac69', shirt:'#c45c8a', pants:'#3a3f6a', pantsPat:'skirt', hair:'bun', hairColor:'#6b4226', face:'smile', shirtPat:null, hat:null}));
+        m.g.position.set(AquariumRules.AQ_TEACHER.x, 0.05, AquariumRules.AQ_TEACHER.z);
+        m.g.rotation.y = Math.atan2(0 - AquariumRules.AQ_TEACHER.x, 18 - AquariumRules.AQ_TEACHER.z);
+        scene.add(m.g); aqKeep(m.g);
+      } else aqMesh(new THREE.BoxGeometry(0.7,1.6,0.5), '#c45c8a', AquariumRules.AQ_TEACHER.x, 0.9, AquariumRules.AQ_TEACHER.z);
+    } catch(e){ aqMesh(new THREE.BoxGeometry(0.7,1.6,0.5), '#c45c8a', AquariumRules.AQ_TEACHER.x, 0.9, AquariumRules.AQ_TEACHER.z); }
+    aqLab('👩‍🏫 Ms. Bramble', AquariumRules.AQ_TEACHER.x, 3.9, AquariumRules.AQ_TEACHER.z);
+    // coastal road (west)
+    const path = AquariumRules.AQ_RIDE_PATH || [];
+    for (let i = 0; i < path.length - 1; i++){
+      const a = path[i], b = path[i+1];
+      const mx = (a.x+b.x)/2, mz=(a.z+b.z)/2;
+      const len = Math.hypot(b.x-a.x, b.z-a.z)+1.6;
+      const alongX = Math.abs(b.x-a.x) >= Math.abs(b.z-a.z);
+      aqPlat(mx, 0.18, mz, alongX ? len : 3.4, alongX ? 3.4 : len, '#4a4e55', 0.1);
+    }
+    aqPlat(-24, 0.12, -6, 10, 22, '#3a8ab0', 0.1);
+    aqLab('🌊 Glimmer coast', -24, 2.2, -6);
+    const bus = aqMakeBus();
+    bus.position.set(AquariumRules.AQ_BUS.x, 0, AquariumRules.AQ_BUS.z);
+    scene.add(bus); aqKeep(bus); aq.bus = bus;
+    aqLab('🚌 Afterbell bus', AquariumRules.AQ_BUS.x, 3.6, AquariumRules.AQ_BUS.z);
+    // aquarium hall
+    aqMesh(new THREE.BoxGeometry(16, 6, 12), '#d7eef4', 0, 3.1, -42);
+    aqMesh(new THREE.BoxGeometry(17, 0.3, 13), '#2a6a88', 0, 6.25, -42);
+    const aRoof = new THREE.Mesh(new THREE.ConeGeometry(11.5, 2.6, 4), new THREE.MeshLambertMaterial({color:'#1d5a78'}));
+    aRoof.position.set(0, 7.7, -42); aRoof.rotation.y = Math.PI/4; scene.add(aRoof); aqKeep(aRoof);
+    aqMesh(new THREE.BoxGeometry(2.2, 3.2, 0.2), '#2a4a6a', 0, 1.8, -36);
+    aqLab('🐠 Tideglass Aquarium', 0, 9.0, -36);
+    aqTank(16, -20, '#9ad8e8', '🪼 Moonveil jellies', '#d8b0ff', 'jelly');
+    aqTank(-16, -20, '#9ad8e8', '🐢 Sand-harbor turtles', '#3a8f5a', 'turtle');
+    aqTank(0, -50, '#163050', '🐟 Lanternfish nook', '#ffe566', 'fish');
+    aqTank(18, -36, '#9ad8e8', '🪸 Bubble-plume coral', '#ff8fb0', 'fish');
+    aqTank(-18, -36, '#9ad8e8', '⭐ Tideglass star', '#f4e27a', 'fish');
+    // touch pool
+    aqPlat(8, 0.28, -12, 5, 5, '#6aa0c8', 0.16);
+    aqMesh(new THREE.CylinderGeometry(0.18, 0.22, 0.2, 8), '#c45c3a', 8, 0.45, -12);
+    aqLab('🦀 Pebblecrab pool', 8, 1.8, -12);
+    // Marin off to the side
+    try {
+      if (typeof buildPlayer === 'function'){
+        const m = buildPlayer(Object.assign({}, typeof DEF !== 'undefined' ? DEF : {}, {shirt:'#2a8aaa', pants:'#1d3a55', hair:'short', hairColor:'#1a1a1a', face:'smile', hat:null}));
+        m.g.position.set(AquariumRules.AQ_GUIDE.x, 0.05, AquariumRules.AQ_GUIDE.z);
+        m.g.rotation.y = Math.atan2(AquariumRules.AQ_ARRIVE.x - AquariumRules.AQ_GUIDE.x, AquariumRules.AQ_ARRIVE.z - AquariumRules.AQ_GUIDE.z);
+        scene.add(m.g); aqKeep(m.g);
+      } else aqMesh(new THREE.BoxGeometry(0.7,1.6,0.5), '#2a8aaa', AquariumRules.AQ_GUIDE.x, 0.9, AquariumRules.AQ_GUIDE.z);
+    } catch(e){ aqMesh(new THREE.BoxGeometry(0.7,1.6,0.5), '#2a8aaa', AquariumRules.AQ_GUIDE.x, 0.9, AquariumRules.AQ_GUIDE.z); }
+    aqLab('🧭 Marin', AquariumRules.AQ_GUIDE.x, 3.9, AquariumRules.AQ_GUIDE.z);
+    const home = aqMakeBus();
+    home.position.set(AquariumRules.AQ_HOME_BUS.x, 0, AquariumRules.AQ_HOME_BUS.z);
+    home.visible = false; scene.add(home); aqKeep(home); aq.homeBus = home;
+    aqLab('🚌 Tide gate', AquariumRules.AQ_HOME_BUS.x, 3.4, AquariumRules.AQ_HOME_BUS.z);
+    aq.findMeshes = {};
+    (AquariumRules.AQ_FINDS||[]).forEach(f => { aq.findMeshes[f.id] = true; });
+    if (P){ P.x=0; P.y=0.5; P.z=18; P.vx=0; P.vz=0; P.vy=0; }
+    if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
+    const box=document.getElementById('aqBox'); if(box) box.style.display='block';
+    banner('🐠 Tideglass Aquarium day! Board the Afterbell bus, sit tight for the coastal ride, then visit five exhibits. Be gentle at the Pebblecrab pool.');
+    aqPaint(); aqHud();
+  }
+  function aqEnter(){
+    if (P){ P.x=0; P.y=0.5; P.z=18; P.vx=0; P.vz=0; P.vy=0; }
+    if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
+    aqSky();
+  }
+  function aqPaint(){
+    if (!aq) return;
+    if (aq.homeBus) aq.homeBus.visible = AquariumRules.aqAll(aq.sv) && aq.run && (aq.run.phase === 'hall' || aq.run.phase === 'done');
+  }
+  function aqRideVis(hide){
+    try {
+      if (typeof model !== 'undefined' && model){
+        if (model.g) model.g.visible = !hide;
+        else if (model.visible != null) model.visible = !hide;
+      }
+    } catch(e){}
+  }
+  function aqSeat(pose){
+    if (!P || !pose) return;
+    const side = 0.0, along = -2.15;
+    const cy = Math.cos(pose.yaw || 0), sy = Math.sin(pose.yaw || 0);
+    P.x = pose.x + side * cy + along * sy;
+    P.z = pose.z + -side * sy + along * cy;
+    P.y = 1.42; P.vx = P.vz = P.vy = 0;
+    aqRideVis(true);
+    if (typeof cam !== 'undefined' && cam){ cam.yaw = Math.atan2(-sy, -cy); cam.pitch = 0.08; cam.dist = 0.22; }
+    if (aq.bus){ aq.bus.position.set(pose.x, 0, pose.z); aq.bus.rotation.y = pose.yaw || 0; }
+  }
+
+  function aqRideCam(){
+    if (!aq || !aq.run || aq.run.phase !== 'ride' || typeof camera === 'undefined' || !camera) return false;
+    const pose = AquariumRules.aqRidePose(aq.run);
+    if (!pose) return false;
+    const cy = Math.cos(pose.yaw || 0), sy = Math.sin(pose.yaw || 0);
+    const along = -1.5, ey = 1.55;
+    const x = pose.x + along * sy, z = pose.z + along * cy;
+    camera.position.set(x, ey, z);
+    camera.lookAt(x + sy * 10, ey + 0.12, z + cy * 10);
+    (aq.trash||[]).forEach(m => { if (m && m.userData && m.userData.aqLab) m.visible = false; });
+    return true;
+  }
+  function aqAct(){
+    if (!aq) return;
+    const hit = AquariumRules.aqNear(P.x, P.z, aq.sv, aq.run);
+    if (!hit) return;
+    if (hit.kind === 'talk'){ banner(hit.text); return; }
+    if (hit.kind === 'bus'){
+      const r = AquariumRules.aqBoardBus(aq.run);
+      if (r.ok){ banner('🚌 All aboard! Sit tight — the coast road leads to Tideglass Aquarium.'); aqSeat(AquariumRules.aqRidePose(aq.run)); }
+      return;
+    }
+    if (hit.kind === 'find'){
+      const r = AquariumRules.aqPick(aq.sv, hit.id);
+      if (!r.ok) return;
+      aq.sv = r.state; aqSave(aq.sv); aqPaint();
+      banner((hit.emoji||'🐠') + ' ' + (r.item && r.item.blurb ? r.item.blurb : hit.name) + (r.left ? ('  (' + (AquariumRules.AQ_FINDS.length - r.left) + '/' + AquariumRules.AQ_FINDS.length + ')') : '  All five! Meet the bus at the tide gate.'));
+      return;
+    }
+    if (hit.kind === 'pool'){
+      const r = AquariumRules.aqTouch(aq.sv);
+      aq.sv = r.state; aqSave(aq.sv);
+      if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
+      banner('🦀 ' + (r.message || 'A gentle touch!') + (r.coins ? ('  +' + r.coins + ' 🪙') : (r.already ? ' The Pebblecrab already said hello.' : '')));
+      return;
+    }
+    if (hit.kind === 'home'){
+      const r = AquariumRules.aqBoardHome(aq.run, aq.sv);
+      if (!r.ok){ banner('Marin is still waiting on a few exhibits.'); return; }
+      aq.sv = r.state; aqSave(aq.sv);
+      if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
+      banner((r.message || 'Bus ride home!') + (r.coins ? ('  +' + r.coins + ' 🪙') : ''));
+      if (P){ P.x=0; P.z=18; P.y=0.5; }
+      if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
+    }
+  }
+  function aqUpdate(dt){
+    if (!aq) return;
+    aqSky();
+    (aq.fish||[]).forEach(f => {
+      f.a = (f.a || 0) + (f.spd || 1) * dt;
+      if (f.m) f.m.position.set(f.ox + Math.cos(f.a) * (f.r||0.8), f.y, f.oz + Math.sin(f.a * 0.9) * (f.r||0.8) * 0.6);
+    });
+    if (aq.run.phase === 'ride'){
+      AquariumRules.aqTickRide(aq.run, dt);
+      aqSeat(AquariumRules.aqRidePose(aq.run));
+      if (aq.run.phase === 'hall'){
+        const a = AquariumRules.AQ_ARRIVE || {x:3.4, z:-8};
+        if (P){ P.x=a.x; P.y=0.5; P.z=a.z; P.vx=0; P.vz=0; }
+        if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; }
+        aqRideVis(false);
+        (aq.trash||[]).forEach(m => { if (m && m.userData && m.userData.aqLab) m.visible = true; });
+        if (aq.bus){ aq.bus.position.set(AquariumRules.AQ_HOME_BUS.x, 0, AquariumRules.AQ_HOME_BUS.z); aq.bus.rotation.y = Math.PI; }
+        banner('🐠 Welcome to Tideglass Aquarium! Marin is by the hall, not under the bus. Visit five exhibits, and say hello at the Pebblecrab pool.');
+        aqPaint();
+      }
+    }
+    if (P && P.y < -8){ P.x=0; P.y=0.5; P.z = (aq.run && aq.run.phase === 'hall') ? (AquariumRules.AQ_ARRIVE||{}).z || -8 : 18; P.vx=P.vz=P.vy=0; }
+    aq.near = AquariumRules.aqNear(P ? P.x : 0, P ? P.z : 0, aq.sv, aq.run);
+    aqHud(AquariumRules.aqGoal(aq.sv, aq.run));
+  }
+  function aqKey(e){
+    if (!aq || e.repeat) return false;
+    if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ aqAct(); return true; }
+    return false;
+  }
+  function aqPad(jp){
+    if (!aq || !jp) return false;
+    if (!aq._x && (jp[2] || jp[3])){ aq._x = true; aqAct(); return true; }
+    if (!jp[2] && !jp[3]) aq._x = false;
+    return false;
+  }
+  function aquariumStop(){
+    aqRideVis(false);
+    if (!aq) return;
+    (aq.solids||[]).forEach(b => { try{ b.active=false; if (typeof solids!=='undefined'){ const i=solids.indexOf(b); if(i>=0) solids.splice(i,1);} }catch(e){} });
+    (aq.trash||[]).forEach(m => { try{ scene.remove(m);}catch(e){} });
+    aq=null;
+    const box=document.getElementById('aqBox'); if(box) box.style.display='none';
+    const act=document.getElementById('aqAct'); if(act) act.classList.remove('show');
+  }
+  if (typeof window !== 'undefined') window.aqDebug = {
+    probe(){ if (!aq) return null; return {phase: aq.run && aq.run.phase, found: ((aq.sv && aq.sv.found)||[]).slice(), touched: !!(aq.sv && aq.sv.touched), won: !!(aq.sv && aq.sv.won), P: P ? {x:P.x,y:P.y,z:P.z} : null, marin: AquariumRules.AQ_GUIDE, arrive: AquariumRules.AQ_ARRIVE}; },
+    hall(){ if (!aq) return; aq.run.phase='hall'; aq.run.rideT=AquariumRules.AQ_RIDE_T; const a=AquariumRules.AQ_ARRIVE||{x:3.4,z:-8}; if(P){P.x=a.x;P.y=0.5;P.z=a.z;} if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; } aqPaint(); },
+    go(id){
+      if (!aq || !P) return;
+      const A = AquariumRules;
+      const map = {bus:A.AQ_BUS, home:A.AQ_HOME_BUS, teacher:A.AQ_TEACHER, marin:A.AQ_GUIDE, hall:A.AQ_HALL, arrive:A.AQ_ARRIVE, pool:A.AQ_POOL};
+      const t = A.aqFind(id) || map[id];
+      if (!t) return;
+      P.x=t.x; P.y=0.5; P.z=t.z; P.vx=0; P.vz=0; P.vy=0;
+    }
+  };
+  try {
+    const act=document.getElementById('aqAct'); if(act && !act.__aq){ act.__aq=true; act.onclick=ev=>{ev.preventDefault();ev.stopPropagation();aqAct();}; }
   } catch(e){}
 
 
@@ -50063,7 +50886,7 @@ function start(m = 'obby', d = null){
     for (const k in keys) keys[k] = false; joy.x = joy.y = 0; joy.jump = false;
     $('#obby').classList.remove('show'); $('#oWarn').classList.remove('on', 'blue'); $('#oBig').textContent = ''; document.body.style.overflow = ''; document.documentElement.classList.remove('ingame'); setHomeInert(false);
     emote = null; $('#oRot').classList.remove('show'); $('#oEmos').classList.remove('show');
-    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (evg) snowfestStop(); if (typeof t297Stop === 'function') t297Stop(); if (typeof t302Stop === 'function') t302Stop(); if (typeof elevStop === 'function') elevStop(); if (typeof mansionStop === 'function') mansionStop(); if (typeof shelterStop === 'function') shelterStop(); if (typeof mermaidStop === 'function') mermaidStop(); if (typeof winterStop === 'function') winterStop(); if (typeof vetStop === 'function') vetStop(); if (typeof treehouseStop === 'function') treehouseStop(); if (typeof schoolStop === 'function') schoolStop(); if (typeof fieldTripStop === 'function') fieldTripStop(); if (py) partyStop(); if (lh) lanternStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
+    if (bw) bwSave(); if (pt) petsSave(); raceStop(); splashStop(); if (hs) hideStop(); if (fs){ fashionStop(); if (model) fsRebuild(avatar); } if (au) autumnStop(); if (isl) petIslandStop(); if (bk) bakeryStop(); if (wp) waterparkStop(); if (psx) photostudioStop(); if (td) towerStop(); if (ic) iceCreamStop(); if (ph) petHotelStop(); if (sb) stableStop(); if (evg) snowfestStop(); if (typeof t297Stop === 'function') t297Stop(); if (typeof t302Stop === 'function') t302Stop(); if (typeof elevStop === 'function') elevStop(); if (typeof mansionStop === 'function') mansionStop(); if (typeof shelterStop === 'function') shelterStop(); if (typeof mermaidStop === 'function') mermaidStop(); if (typeof winterStop === 'function') winterStop(); if (typeof vetStop === 'function') vetStop(); if (typeof treehouseStop === 'function') treehouseStop(); if (typeof schoolStop === 'function') schoolStop(); if (typeof fieldTripStop === 'function') fieldTripStop(); if (typeof aquariumStop === 'function') aquariumStop(); if (py) partyStop(); if (lh) lanternStop(); if (hm) hauntStop(); if (db) danceStop(); if (dh) dreamhouseStop(); $('#hsBlind').classList.remove('show'); $('#hsWarn').classList.remove('on'); $('#spMeter').classList.remove('show'); $('#spWarn').classList.remove('on'); $('#spShield').classList.remove('on'); ['#pNamePanel','#pAdoptPanel','#pPetsPanel','#pIndexPanel','#pReturnPanel','#pShopPanel','#pWardPanel','#pTrickPanel'].forEach(id => $(id).classList.remove('show')); $('#obby').classList.remove('pdrive', 'pmode'); ['#pGoal','#pPetBox','#pAct','#pPedals'].forEach(id => $(id).classList.remove('show'));  $('#oSlots').classList.remove('show'); $('#oTagEnd').classList.remove('show'); $('#obby').classList.remove('bmode'); big('');
     updateCoins(true); renderShop();
     mpOnStop();
     try { if (typeof lbOnLeave === 'function') lbOnLeave('host'); } catch (e){}

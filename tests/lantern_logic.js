@@ -7,10 +7,10 @@ const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const RULES = require(path.join(ROOT, 'dev/lantern/lantern_rules.js'));
 const BUILD = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).build || JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
-test('BUILD stamp is 2026.11.22-6 in lantern files and version.json', () => {
+test('BUILD stamp is 2026.11.22-7 in lantern files and version.json', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
-  assert.equal(v.build, '2026.11.22-6');
-  assert.match(HTML, /const BUILD = '2026\.11\.22-6'/);
+  assert.equal(v.build, '2026.11.22-7');
+  assert.match(HTML, /const BUILD = '2026\.11\.22-7'/);
 });
 
 test('Lantern Big Top is a playable GAMES card with original branding', () => {
@@ -580,7 +580,7 @@ test('wagon and midway walls are taller than a jump and use plat top=height', ()
   assert.match(HTML, /mode === 'lantern'/);
   assert.match(HTML, /clipOrbitCam/);
   // lantern is in the orbit-clip mode list so the camera does not sink into the tall walls
-  const cam = HTML.slice(HTML.indexOf('function updateCamera()'), HTML.indexOf('function updateCamera()') + 1600);
+  const cam = HTML.slice(HTML.indexOf('function updateCamera()'), HTML.indexOf('function updateCamera()') + 2400);
   assert.match(cam, /mode === 'lantern'/);
 });
 

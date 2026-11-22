@@ -8,9 +8,9 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
 describe('t297 emotes and new modes wiring', () => {
-  test('BUILD is 2026.11.22-6 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.22-6'"));
-    assert.equal(version.build, '2026.11.22-6');
+  test('BUILD is 2026.11.22-7 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.22-7'"));
+    assert.equal(version.build, '2026.11.22-7');
   });
 
   test('free emotes work anywhere and the wheel uses View, not A/X/LB/RB', () => {

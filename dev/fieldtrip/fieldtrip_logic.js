@@ -5,7 +5,7 @@
   const FT_KEY = 'rubloxFieldTrip';
   const FT_VER = 1;
   const FT_REWARD = 18;
-  const FT_RIDE_T = 4.2;
+  const FT_RIDE_T = 8.4;
   const FT_FINDS = [
     {id:'pebble', name:'River pebble', emoji:'🪨', x:16, z:-18, r:2.0,
       blurb:'A smooth river pebble from Brookbell Creek. It still feels cool.'},
@@ -19,10 +19,45 @@
       blurb:'An acorn compass from the exhibit case. The nut always points to the brook.'}
   ];
   const FT_BUS = {x:0, z:10, r:2.4};
-  const FT_GUIDE = {x:0, z:-22, r:2.0, name:'Fern', role:'guide'};
+  const FT_GUIDE = {x:-8, z:-30, r:2.0, name:'Fern', role:'guide'};
   const FT_TEACHER = {x:-4, z:16, r:1.8, name:'Ms. Bramble', role:'teacher'};
-  const FT_NOOK = {x:0, z:-22};
-  const FT_HOME_BUS = {x:0, z:-6, r:2.4};
+  const FT_NOOK = {x:0, z:-36};
+  const FT_ARRIVE = {x:3.4, z:-8};
+  const FT_HOME_BUS = {x:0, z:-8, r:2.6};
+  const FT_RIDE_PATH = [
+    {x:0, z:10},
+    {x:0, z:2},
+    {x:24, z:2},
+    {x:24, z:-18},
+    {x:0, z:-18},
+    {x:0, z:-8}
+  ];
+  function ftPathLen(path){
+    let n = 0;
+    for (let i = 0; i < (path||[]).length - 1; i++) n += Math.hypot(path[i+1].x - path[i].x, path[i+1].z - path[i].z);
+    return n;
+  }
+  function ftRidePose(run){
+    const path = FT_RIDE_PATH;
+    const t = Math.max(0, Math.min(1, ((run && run.rideT) || 0) / FT_RIDE_T));
+    const total = ftPathLen(path) || 1;
+    let dist = t * total;
+    let yaw = Math.PI;
+    for (let i = 0; i < path.length - 1; i++){
+      const a = path[i], b = path[i+1];
+      const seg = Math.hypot(b.x - a.x, b.z - a.z) || 0.0001;
+      const last = i === path.length - 2;
+      if (dist <= seg || last){
+        const u = Math.max(0, Math.min(1, dist / seg));
+        const dx = b.x - a.x, dz = b.z - a.z;
+        yaw = Math.atan2(dx, dz);
+        return {x: a.x + dx * u, z: a.z + dz * u, yaw: yaw, t: t, done: t >= 1};
+      }
+      dist -= seg;
+    }
+    const last = path[path.length - 1];
+    return {x:last.x, z:last.z, yaw:yaw, t:t, done:true};
+  }
 
   function ftFresh(){
     return {ver: FT_VER, found: [], visits: 0, won: false, coins: 0};
@@ -123,9 +158,9 @@
   }
 
   const api = {
-    FT_KEY, FT_VER, FT_REWARD, FT_RIDE_T, FT_FINDS, FT_BUS, FT_HOME_BUS, FT_GUIDE, FT_TEACHER, FT_NOOK,
+    FT_KEY, FT_VER, FT_REWARD, FT_RIDE_T, FT_FINDS, FT_BUS, FT_HOME_BUS, FT_GUIDE, FT_TEACHER, FT_NOOK, FT_ARRIVE, FT_RIDE_PATH,
     ftFresh, ftLoad, ftNewVisit, ftFind, ftHas, ftAll, ftPick,
-    ftBoardBus, ftTickRide, ftBoardHome, ftNear, ftGoal
+    ftBoardBus, ftTickRide, ftRidePose, ftPathLen, ftBoardHome, ftNear, ftGoal
   };
   root.FieldTripRules = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
