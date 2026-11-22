@@ -31,7 +31,7 @@
   const GORE_GAMES = ['camp', 'school'];
   const GORE_KINDS = ['splat', 'scratch', 'stain', 'handprint'];
 
-  // Environmental decals for Campfire Grove only. No body parts, wounds, or injury poses.
+  // Environmental decals for Campfire Grove and Afterbell School. No body parts, wounds, or injury poses.
   const CAMP_GORE_DECALS = [
     {id:'cabin-door', min:'mild', kind:'splat', at:'cabin-door', x:48.0, y:0.9, z:-29.28, yaw:0, sx:0.55, sy:0.42, sz:0.04},
     {id:'cabin-steps', min:'mild', kind:'splat', at:'cabin-steps', x:47.35, y:0.05, z:-28.15, yaw:0.3, sx:0.7, sy:0.04, sz:0.5},

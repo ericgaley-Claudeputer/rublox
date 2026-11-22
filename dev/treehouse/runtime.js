@@ -245,6 +245,15 @@
     if (typeof t297OverlayClose === 'function') t297OverlayClose('thPalette');
   }
   if (typeof window !== 'undefined') window.thDebug = {
+    probe(){
+      if (!th) return null;
+      return {
+        n: (th.sv.pieces || []).length,
+        pieces: (th.sv.pieces || []).map(p => p.kind + '@' + p.gx + ',' + p.gz + ',L' + p.level),
+        kind: th.sv.kind, level: th.sv.level|0, del: !!th.sv.del,
+        y: (typeof P !== 'undefined' && P) ? P.y : null
+      };
+    },
     cozy(){
       if (!th) return;
       let s = th.sv;

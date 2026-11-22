@@ -52,7 +52,10 @@
   const SC_HIDES = [
     {id:'class-desk', x:-30, z:-4, r:1.6, room:'class'},
     {id:'lib-shelf', x:30, z:4, r:1.6, room:'library'},
-    {id:'cafe-table', x:30, z:-24, r:1.6, room:'cafe'}
+    {id:'cafe-table', x:30, z:-24, r:1.6, room:'cafe'},
+    {id:'hall-plant', x:-6.2, z:6, r:1.6, room:'hall'},
+    {id:'hall-case', x:6.2, z:-6, r:1.6, room:'hall'},
+    {id:'lobby-plant', x:7.2, z:22, r:1.6, room:'lobby'}
   ];
 
   const SC_WARDEN = {id:'hush', name:'the Hush Warden', emoji:'🕯️'};
@@ -148,7 +151,9 @@
     const pts = SC_PATROL;
     const goal = pts[run.wi | 0] || pts[0];
     const dx = goal.x - (run.wx || 0), dz = goal.z - (run.wz || 0);
-    const d = Math.hypot(dx, dz) || 1;
+    const d = Math.hypot(dx, dz);
+    // Don't use `d || 1` for the arrival test: starting exactly on a patrol post
+    // (hypot is 0) would never advance, so the Warden would stand still forever.
     if (d < 0.6){ run.wi = ((run.wi | 0) + 1) % pts.length; }
     else {
       run.wx = (run.wx || 0) + dx / d * speed * step;

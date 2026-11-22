@@ -46,6 +46,21 @@ test('the Hush Warden never chases into a catch that is not okay, and Less scary
   assert.equal(soft.caught, false);
   assert.ok(S.scWardenSpeed(true) < S.scWardenSpeed(false));
   assert.ok(S.scCatchRadius(true) < S.scCatchRadius(false));
+  const walk = S.scFreshRun(S.scFresh());
+  const startZ = walk.wz;
+  for (let i = 0; i < 40; i++) S.scTickWarden(walk, 0.1, {px: 40, pz: 40, lessScary:false});
+  assert.ok(Math.hypot(walk.wx, walk.wz - startZ) > 1, 'the Warden should leave its first patrol post instead of standing still');
+  const hallHides = S.SC_HIDES.filter(h => h.room === 'hall' || h.room === 'lobby');
+  assert.ok(hallHides.length >= 2, 'the hall and lobby need hiding spots, because that is where the Warden can catch you');
+  hallHides.forEach(h => {
+    assert.ok(S.scNearHide(h.x, h.z), h.id);
+    const r = S.scFreshRun(S.scFresh());
+    r.wx = h.x; r.wz = h.z;
+    S.scTickWarden(r, 0.1, {px: h.x, pz: h.z, hidden: !!S.scNearHide(h.x, h.z), lessScary:false});
+    assert.equal(r.caught, false, h.id + ' should hide you from the Warden');
+  });
+  assert.match(html, /hall-plant/);
+  assert.match(html, /🙈 Hide/);
 });
 
 test('school doorways fit a max player, Gore is environmental only, and the mode is wired', () => {

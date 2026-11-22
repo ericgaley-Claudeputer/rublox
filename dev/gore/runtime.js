@@ -33,7 +33,7 @@ function goreSyncUi(){
       if (n) n.checked = st === m;
     });
     const note = document.getElementById('goreSetNote');
-    if (note) note.textContent = 'Used in Campfire Grove only. Cartoon marks, no wounds or body parts. When \u263A Less scary is on there, Gore stays at Mild.'.replace('\u263A', '😌');
+    if (note) note.textContent = 'Used in Campfire Grove and Afterbell School. Cartoon marks, no wounds or body parts. When \u263A Less scary is on, Gore stays at Mild.'.replace('\u263A', '😌');
   } catch (e){}
 }
 try {

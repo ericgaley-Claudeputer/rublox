@@ -2532,6 +2532,7 @@
     if (a === 'toss' && mw) banner('🥣 A friend tossed a snack!');
   }
   try {
+    if (typeof window !== 'undefined') window.campRebuildGore = campRebuildGore;
     if (typeof window !== 'undefined') window.t302Debug = {
       modes: T302_MODES,
       readyGarden(){ if (!gd) return; const now = t302Now(); gd.sv.plots.forEach(p => { if (p.seed) p.plantedAt = now - 10 * 60 * 1000; }); gardenPersist(gd.sv); gd.plots.forEach(p => gardenGrowMesh(p)); },
@@ -2548,6 +2549,31 @@
       watchersLess(){ campPoseWatchers(true); },
       goreMild(){ campPoseGore('mild'); },
       goreSpooky(){ campPoseGore('spooky'); },
+            probeCamp(){
+        if (!cg) return null;
+        const m = cg.wrenMesh;
+        let bandage = false, redOnWren = false;
+        (function walk(o){
+          if (!o) return;
+          if (o.userData && o.userData.bandage) bandage = true;
+          if (o.material && o.material.color){ const c = o.material.color; if (c.r > 0.45 && c.g < 0.25 && c.b < 0.25) redOnWren = true; }
+          (o.children || []).forEach(walk);
+        })(m);
+        let raw = 'off';
+        try { raw = (typeof goreSetting === 'function') ? goreSetting() : 'off'; } catch (e){}
+        return {
+          clues: ((cg.sv && cg.sv.clues) || []).slice(),
+          found: !!(cg.sv && cg.sv.camperFound),
+          less: !!(cg.sv && cg.sv.lessScary),
+          gore: raw,
+          spooky: !!(m && m.userData && m.userData.spooky),
+          shiver: !!(m && m.userData && m.userData.shiver),
+          bandage, redOnWren,
+          goreN: (cg.gore || []).length,
+          ending: (CampRules && CampRules.campWrenEnding && CampRules.campWrenEnding()) || '',
+          y: (typeof P !== 'undefined' && P) ? P.y : null
+        };
+      },
       camperClues(){ campPoseStory(); },
       wrenSpooky(){ campPoseWrenSpooky(); },
       connectRides(){ if (!rd) return; let s = rd.sv; const spots = [[5,5,0,'curve'],[6,5,0,'curve'],[6,6,0,'curve'],[5,6,0,'curve']]; spots.forEach((q,i) => { const r = RidesRules.ridesPlace(s, q[3], q[0], q[1], q[2], 'me', i ? {snap:true} : {}); if (r.ok){ s = r.state; if (!rd.meshes[r.piece.id]) ridesBuildPiece(r.piece); } }); ridesPersist(s); ridesRefreshJoints(); if (P){ const w = RidesRules.ridesWorld(5,5); P.x = w.x; P.z = w.z + 3; } }

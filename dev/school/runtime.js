@@ -152,6 +152,11 @@
     scLab('📚 Library desk', 26, 2.2, -2);
     scLab('4', 26, 2.0, -30); scLab('1', -26, 2.4, -30); scLab('8', -30, 2.6, 0);
     scLab('🚪 Front doors', 0, 3.0, 29);
+    (SchoolRules.SC_HIDES || []).forEach(h => {
+      const col = h.room === 'hall' || h.room === 'lobby' ? '#2f6a3a' : '#3a4a32';
+      scMesh(new THREE.BoxGeometry(0.9, 1.4, 0.9), col, h.x, 0.7, h.z);
+      scLab('🙈 Hide', h.x, 2.2, h.z);
+    });
     if (P){ P.x=0; P.y=0.5; P.z=20; }
     if (typeof cam!=='undefined' && cam){ cam.pitch=0.12; cam.dist=7; cam.yaw=0; }
     sc.warden = scMakeWarden();
@@ -256,7 +261,7 @@
     }
     if (sc.run.caught){
       const r = sc.run.respawn || {x:0,y:0.5,z:24};
-      P.x=r.x; P.y=r.y; P.z=r.z; P.vy=0;
+      Object.assign(P, {x:r.x, y:r.y, z:r.z, vx:0, vy:0, vz:0, onGround:false, ground:null, px:r.x, py:r.y, pz:r.z});
       sc.run.caught=false;
       banner('The Hush Warden found you… but everyone is okay! Back to your last checkpoint.');
     }
@@ -296,7 +301,24 @@
     const note=document.getElementById('scGoreNote'); if(note){ note.classList.remove('show'); note.hidden=true; }
     if (typeof t297OverlayClose === 'function')['scLocker','scBoard','scWin'].forEach(id => t297OverlayClose(id));
   }
+  if (typeof window !== 'undefined') window.scRebuildGore = scRebuildGore;
   if (typeof window !== 'undefined') window.scDebug = {
+    probe(){
+      if (!sc) return null;
+      const hide = (typeof P !== 'undefined' && P && SchoolRules.scNearHide) ? SchoolRules.scNearHide(P.x, P.z) : null;
+      return {
+        digits: (sc.sv.digits || []).slice(),
+        riddle: !!sc.sv.riddle, locker: !!sc.sv.locker, pass: !!sc.sv.pass, won: !!sc.sv.won,
+        less: !!sc.sv.lessScary,
+        checkpoint: sc.run && sc.run.checkpoint,
+        okay: !!(sc.run && sc.run.okay),
+        caught: !!(sc.run && sc.run.caught),
+        warden: sc.run ? {x:sc.run.wx, z:sc.run.wz} : null,
+        hide: hide && hide.id,
+        room: (typeof P !== 'undefined' && P && SchoolRules.scRoomAt) ? (SchoolRules.scRoomAt(P.x, P.z) || {}).id : null,
+        y: (typeof P !== 'undefined' && P) ? P.y : null
+      };
+    },
     hall(){ if(!sc) return; sc.sv.lessScary=false; scSave(sc.sv); scPaintLess(); scApplyMood(); if(P){P.x=0;P.y=0.5;P.z=6;} if(sc.warden) sc.warden.position.set(2,0,-2); if(typeof cam!=='undefined'&&cam){cam.yaw=0.15;cam.pitch=0.08;cam.dist=11;} try{ if(obbyDebug&&obbyDebug.camLook) obbyDebug.camLook({x:5,y:3.4,z:12},{x:0,y:1.6,z:-1}); }catch(e){} },
     less(){ if(!sc) return; sc.sv.lessScary=true; scSave(sc.sv); if(sc.warden){try{scene.remove(sc.warden);}catch(e){}} sc.warden=scMakeWarden(); scRebuildGore(); scPaintLess(); scApplyMood(); if(P){P.x=0;P.y=0.5;P.z=6;} if(sc.warden) sc.warden.position.set(2,0,-2); if(typeof cam!=='undefined'&&cam){cam.yaw=0.15;cam.pitch=0.08;cam.dist=11;} try{ if(obbyDebug&&obbyDebug.camLook) obbyDebug.camLook({x:5,y:3.4,z:12},{x:0,y:1.6,z:-1}); }catch(e){} }
   };

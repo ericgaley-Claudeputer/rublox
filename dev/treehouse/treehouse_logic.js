@@ -44,7 +44,7 @@
     d.visits = Math.max(0, o.visits | 0);
     d.kind = thKind(o.kind) ? o.kind : 'platform';
     d.rot = ((o.rot | 0) % 4 + 4) % 4;
-    d.level = Math.max(0, Math.min(TH_MAX_LEVEL, o.level | 0));
+    d.level = Math.max(0, Math.min(TH_MAX_LEVEL, o.level == null ? d.level : (o.level | 0)));
     d.del = !!o.del;
     if (Array.isArray(o.pieces)){
       d.pieces = o.pieces.map(thNormPiece).filter(Boolean).slice(0, TH_MAX_PIECES);

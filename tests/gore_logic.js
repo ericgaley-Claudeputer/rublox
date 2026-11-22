@@ -82,8 +82,11 @@ test('gore settings are wired in the page and kept as a global option', () => {
   assert.match(HTML, /function goreSetLevel/);
   assert.match(HTML, /function goreSyncUi/);
   assert.match(HTML, /function campRebuildGore/);
+  assert.match(HTML, /window\.campRebuildGore\s*=\s*campRebuildGore/);
+  assert.match(HTML, /window\.scRebuildGore\s*=\s*scRebuildGore/);
+  assert.match(HTML, /Campfire Grove and Afterbell School/);
   assert.match(HTML, /rubloxGore/);
-  assert.match(HTML, /const BUILD = '2026\.11\.20-16'/);
+  assert.match(HTML, /const BUILD = '2026\.11\.20-17'/);
   assert.equal(Reset.RESET_KEEP_ON_ALL.includes('rubloxGore'), true);
   assert.match(HTML, /'rubloxGore'/);
   assert.match(HTML, /no wounds or body parts/i);

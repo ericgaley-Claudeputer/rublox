@@ -2173,7 +2173,7 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
       <label class="invrow"><input type="radio" name="goreSetMode" id="goreSetOff" value="off" checked><span>Off<small>No blood anywhere. This is the default for every save.</small></span></label>
       <label class="invrow"><input type="radio" name="goreSetMode" id="goreSetMild" value="mild"><span>Mild<small>A few cartoon red splats and scratch marks.</small></span></label>
       <label class="invrow"><input type="radio" name="goreSetMode" id="goreSetSpooky" value="spooky"><span>Spooky<small>More splats and creepy stains.</small></span></label>
-      <p id="goreSetNote">Used in Campfire Grove only. Cartoon marks, no wounds or body parts. When 😌 Less scary is on there, Gore stays at Mild.</p>
+      <p id="goreSetNote">Used in Campfire Grove and Afterbell School. Cartoon marks, no wounds or body parts. When 😌 Less scary is on, Gore stays at Mild.</p>
     </div>
     <div class="evset" id="evSet">
       <div style="color:var(--muted);font-weight:700;margin-top:12px">❄️ Seasonal events</div>
@@ -3099,7 +3099,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.20-16';
+const BUILD = '2026.11.20-17';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3995,7 +3995,7 @@ $('#saveAv').onclick = () => {
   const GORE_GAMES = ['camp', 'school'];
   const GORE_KINDS = ['splat', 'scratch', 'stain', 'handprint'];
 
-  // Environmental decals for Campfire Grove only. No body parts, wounds, or injury poses.
+  // Environmental decals for Campfire Grove and Afterbell School. No body parts, wounds, or injury poses.
   const CAMP_GORE_DECALS = [
     {id:'cabin-door', min:'mild', kind:'splat', at:'cabin-door', x:48.0, y:0.9, z:-29.28, yaw:0, sx:0.55, sy:0.42, sz:0.04},
     {id:'cabin-steps', min:'mild', kind:'splat', at:'cabin-steps', x:47.35, y:0.05, z:-28.15, yaw:0.3, sx:0.7, sy:0.04, sz:0.5},
@@ -4337,7 +4337,7 @@ function goreSyncUi(){
       if (n) n.checked = st === m;
     });
     const note = document.getElementById('goreSetNote');
-    if (note) note.textContent = 'Used in Campfire Grove only. Cartoon marks, no wounds or body parts. When \u263A Less scary is on there, Gore stays at Mild.'.replace('\u263A', '😌');
+    if (note) note.textContent = 'Used in Campfire Grove and Afterbell School. Cartoon marks, no wounds or body parts. When \u263A Less scary is on, Gore stays at Mild.'.replace('\u263A', '😌');
   } catch (e){}
 }
 try {
@@ -14638,7 +14638,7 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
     d.visits = Math.max(0, o.visits | 0);
     d.kind = thKind(o.kind) ? o.kind : 'platform';
     d.rot = ((o.rot | 0) % 4 + 4) % 4;
-    d.level = Math.max(0, Math.min(TH_MAX_LEVEL, o.level | 0));
+    d.level = Math.max(0, Math.min(TH_MAX_LEVEL, o.level == null ? d.level : (o.level | 0)));
     d.del = !!o.del;
     if (Array.isArray(o.pieces)){
       d.pieces = o.pieces.map(thNormPiece).filter(Boolean).slice(0, TH_MAX_PIECES);
@@ -14855,7 +14855,10 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
   const SC_HIDES = [
     {id:'class-desk', x:-30, z:-4, r:1.6, room:'class'},
     {id:'lib-shelf', x:30, z:4, r:1.6, room:'library'},
-    {id:'cafe-table', x:30, z:-24, r:1.6, room:'cafe'}
+    {id:'cafe-table', x:30, z:-24, r:1.6, room:'cafe'},
+    {id:'hall-plant', x:-6.2, z:6, r:1.6, room:'hall'},
+    {id:'hall-case', x:6.2, z:-6, r:1.6, room:'hall'},
+    {id:'lobby-plant', x:7.2, z:22, r:1.6, room:'lobby'}
   ];
 
   const SC_WARDEN = {id:'hush', name:'the Hush Warden', emoji:'🕯️'};
@@ -14951,7 +14954,9 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
     const pts = SC_PATROL;
     const goal = pts[run.wi | 0] || pts[0];
     const dx = goal.x - (run.wx || 0), dz = goal.z - (run.wz || 0);
-    const d = Math.hypot(dx, dz) || 1;
+    const d = Math.hypot(dx, dz);
+    // Don't use `d || 1` for the arrival test: starting exactly on a patrol post
+    // (hypot is 0) would never advance, so the Warden would stand still forever.
     if (d < 0.6){ run.wi = ((run.wi | 0) + 1) % pts.length; }
     else {
       run.wx = (run.wx || 0) + dx / d * speed * step;
@@ -44598,6 +44603,7 @@ function start(m = 'obby', d = null){
     if (a === 'toss' && mw) banner('🥣 A friend tossed a snack!');
   }
   try {
+    if (typeof window !== 'undefined') window.campRebuildGore = campRebuildGore;
     if (typeof window !== 'undefined') window.t302Debug = {
       modes: T302_MODES,
       readyGarden(){ if (!gd) return; const now = t302Now(); gd.sv.plots.forEach(p => { if (p.seed) p.plantedAt = now - 10 * 60 * 1000; }); gardenPersist(gd.sv); gd.plots.forEach(p => gardenGrowMesh(p)); },
@@ -44614,6 +44620,31 @@ function start(m = 'obby', d = null){
       watchersLess(){ campPoseWatchers(true); },
       goreMild(){ campPoseGore('mild'); },
       goreSpooky(){ campPoseGore('spooky'); },
+            probeCamp(){
+        if (!cg) return null;
+        const m = cg.wrenMesh;
+        let bandage = false, redOnWren = false;
+        (function walk(o){
+          if (!o) return;
+          if (o.userData && o.userData.bandage) bandage = true;
+          if (o.material && o.material.color){ const c = o.material.color; if (c.r > 0.45 && c.g < 0.25 && c.b < 0.25) redOnWren = true; }
+          (o.children || []).forEach(walk);
+        })(m);
+        let raw = 'off';
+        try { raw = (typeof goreSetting === 'function') ? goreSetting() : 'off'; } catch (e){}
+        return {
+          clues: ((cg.sv && cg.sv.clues) || []).slice(),
+          found: !!(cg.sv && cg.sv.camperFound),
+          less: !!(cg.sv && cg.sv.lessScary),
+          gore: raw,
+          spooky: !!(m && m.userData && m.userData.spooky),
+          shiver: !!(m && m.userData && m.userData.shiver),
+          bandage, redOnWren,
+          goreN: (cg.gore || []).length,
+          ending: (CampRules && CampRules.campWrenEnding && CampRules.campWrenEnding()) || '',
+          y: (typeof P !== 'undefined' && P) ? P.y : null
+        };
+      },
       camperClues(){ campPoseStory(); },
       wrenSpooky(){ campPoseWrenSpooky(); },
       connectRides(){ if (!rd) return; let s = rd.sv; const spots = [[5,5,0,'curve'],[6,5,0,'curve'],[6,6,0,'curve'],[5,6,0,'curve']]; spots.forEach((q,i) => { const r = RidesRules.ridesPlace(s, q[3], q[0], q[1], q[2], 'me', i ? {snap:true} : {}); if (r.ok){ s = r.state; if (!rd.meshes[r.piece.id]) ridesBuildPiece(r.piece); } }); ridesPersist(s); ridesRefreshJoints(); if (P){ const w = RidesRules.ridesWorld(5,5); P.x = w.x; P.z = w.z + 3; } }
@@ -48765,6 +48796,15 @@ function start(m = 'obby', d = null){
     if (typeof t297OverlayClose === 'function') t297OverlayClose('thPalette');
   }
   if (typeof window !== 'undefined') window.thDebug = {
+    probe(){
+      if (!th) return null;
+      return {
+        n: (th.sv.pieces || []).length,
+        pieces: (th.sv.pieces || []).map(p => p.kind + '@' + p.gx + ',' + p.gz + ',L' + p.level),
+        kind: th.sv.kind, level: th.sv.level|0, del: !!th.sv.del,
+        y: (typeof P !== 'undefined' && P) ? P.y : null
+      };
+    },
     cozy(){
       if (!th) return;
       let s = th.sv;
@@ -48939,6 +48979,11 @@ function start(m = 'obby', d = null){
     scLab('📚 Library desk', 26, 2.2, -2);
     scLab('4', 26, 2.0, -30); scLab('1', -26, 2.4, -30); scLab('8', -30, 2.6, 0);
     scLab('🚪 Front doors', 0, 3.0, 29);
+    (SchoolRules.SC_HIDES || []).forEach(h => {
+      const col = h.room === 'hall' || h.room === 'lobby' ? '#2f6a3a' : '#3a4a32';
+      scMesh(new THREE.BoxGeometry(0.9, 1.4, 0.9), col, h.x, 0.7, h.z);
+      scLab('🙈 Hide', h.x, 2.2, h.z);
+    });
     if (P){ P.x=0; P.y=0.5; P.z=20; }
     if (typeof cam!=='undefined' && cam){ cam.pitch=0.12; cam.dist=7; cam.yaw=0; }
     sc.warden = scMakeWarden();
@@ -49043,7 +49088,7 @@ function start(m = 'obby', d = null){
     }
     if (sc.run.caught){
       const r = sc.run.respawn || {x:0,y:0.5,z:24};
-      P.x=r.x; P.y=r.y; P.z=r.z; P.vy=0;
+      Object.assign(P, {x:r.x, y:r.y, z:r.z, vx:0, vy:0, vz:0, onGround:false, ground:null, px:r.x, py:r.y, pz:r.z});
       sc.run.caught=false;
       banner('The Hush Warden found you… but everyone is okay! Back to your last checkpoint.');
     }
@@ -49083,7 +49128,24 @@ function start(m = 'obby', d = null){
     const note=document.getElementById('scGoreNote'); if(note){ note.classList.remove('show'); note.hidden=true; }
     if (typeof t297OverlayClose === 'function')['scLocker','scBoard','scWin'].forEach(id => t297OverlayClose(id));
   }
+  if (typeof window !== 'undefined') window.scRebuildGore = scRebuildGore;
   if (typeof window !== 'undefined') window.scDebug = {
+    probe(){
+      if (!sc) return null;
+      const hide = (typeof P !== 'undefined' && P && SchoolRules.scNearHide) ? SchoolRules.scNearHide(P.x, P.z) : null;
+      return {
+        digits: (sc.sv.digits || []).slice(),
+        riddle: !!sc.sv.riddle, locker: !!sc.sv.locker, pass: !!sc.sv.pass, won: !!sc.sv.won,
+        less: !!sc.sv.lessScary,
+        checkpoint: sc.run && sc.run.checkpoint,
+        okay: !!(sc.run && sc.run.okay),
+        caught: !!(sc.run && sc.run.caught),
+        warden: sc.run ? {x:sc.run.wx, z:sc.run.wz} : null,
+        hide: hide && hide.id,
+        room: (typeof P !== 'undefined' && P && SchoolRules.scRoomAt) ? (SchoolRules.scRoomAt(P.x, P.z) || {}).id : null,
+        y: (typeof P !== 'undefined' && P) ? P.y : null
+      };
+    },
     hall(){ if(!sc) return; sc.sv.lessScary=false; scSave(sc.sv); scPaintLess(); scApplyMood(); if(P){P.x=0;P.y=0.5;P.z=6;} if(sc.warden) sc.warden.position.set(2,0,-2); if(typeof cam!=='undefined'&&cam){cam.yaw=0.15;cam.pitch=0.08;cam.dist=11;} try{ if(obbyDebug&&obbyDebug.camLook) obbyDebug.camLook({x:5,y:3.4,z:12},{x:0,y:1.6,z:-1}); }catch(e){} },
     less(){ if(!sc) return; sc.sv.lessScary=true; scSave(sc.sv); if(sc.warden){try{scene.remove(sc.warden);}catch(e){}} sc.warden=scMakeWarden(); scRebuildGore(); scPaintLess(); scApplyMood(); if(P){P.x=0;P.y=0.5;P.z=6;} if(sc.warden) sc.warden.position.set(2,0,-2); if(typeof cam!=='undefined'&&cam){cam.yaw=0.15;cam.pitch=0.08;cam.dist=11;} try{ if(obbyDebug&&obbyDebug.camLook) obbyDebug.camLook({x:5,y:3.4,z:12},{x:0,y:1.6,z:-1}); }catch(e){} }
   };

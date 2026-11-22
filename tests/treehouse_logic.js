@@ -13,10 +13,15 @@ test('Oakheart Treehouse uses a new rubloxTreehouse save and stays compatible', 
   const s = T.thLoad(null);
   assert.equal(s.pieces.length, 0);
   assert.equal(s.kind, 'platform');
+  assert.equal(s.level, 1, 'a new treehouse starts one floor up, not on the grass');
+  assert.equal(T.thLoad({}).level, 1);
   const kept = T.thLoad({v:1, visits:2, pieces:[{kind:'platform', gx:2, gz:0, level:0, rot:0}]});
   assert.equal(kept.visits, 2);
   assert.equal(kept.pieces.length, 1);
+  assert.equal(kept.level, 1, 'saves that never stored a level still start one floor up');
+  assert.equal(T.thLoad({level:0}).level, 0, 'an explicit saved level 0 stays 0');
   assert.equal(T.thFriendsOnly(), true);
+  assert.match(html, /o\.level == null \? d\.level/);
 });
 
 test('treehouse pieces snap, undo, and delete, and room doors fit a max player', () => {

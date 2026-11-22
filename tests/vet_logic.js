@@ -157,7 +157,7 @@ describe('Pawsley Vet Clinic', () => {
     assert.equal(R.RESET_KEEP_ON_ALL.includes('rubloxVet'), false);
     assert.ok(html.includes("keys:['rubloxVet']") || html.includes('keys:["rubloxVet"]') || html.includes("keys:['rubloxVet']"));
     assert.match(html, /Pawsley Vet Clinic/);
-    assert.match(html, /BUILD = '2026\.11\.20-16'/);
+    assert.match(html, /BUILD = '2026\.11\.20-17'/);
     assert.equal(V.vtKidCopyOk('blood and gore'), false);
   });
 });
