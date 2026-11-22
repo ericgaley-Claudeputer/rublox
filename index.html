@@ -3164,7 +3164,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.22-2';
+const BUILD = '2026.11.22-3';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -3906,7 +3906,7 @@ $('#saveAv').onclick = () => {
     day: 'day',
     off: 'off'
   };
-  const WX_SKIP = ['splash', 'waterpark', 'race', 'photostudio', 'dance', 'bakery', 'icecream', 'tower', 'fashion', 'cafe', 'petshow', 'camp', 'elevator', 'treehouse', 'school'];
+  const WX_SKIP = ['splash', 'waterpark', 'race', 'photostudio', 'dance', 'bakery', 'icecream', 'tower', 'fashion', 'cafe', 'petshow', 'camp', 'elevator', 'treehouse', 'school', 'winter'];
   const WX_SNOW = ['obby', 'build', 'hide', 'stable', 'tag', 'party', 'snowfest', 'pets', 'autumn', 'pethotel', 'fish', 'hunt', 'garden', 'meadow', 'rides', 'hive'];
   const WX_FOG = ['haunt', 'lantern', 'hide', 'petisland', 'obby', 'build', 'hunt'];
   const WX_RAIN = ['obby', 'build', 'lantern', 'hide', 'autumn', 'stable', 'petisland', 'pets', 'tag', 'dreamhouse', 'pethotel', 'haunt', 'fish', 'hunt', 'garden', 'meadow', 'rides', 'hive'];
@@ -4164,6 +4164,20 @@ $('#saveAv').onclick = () => {
 const WX_RULES = (typeof WXRules !== 'undefined' && WXRules) ? WXRules : (typeof window !== 'undefined' && window.WXRules) || {};
 const WX_KEY = WX_RULES.WX_KEY || 'rubloxWeather';
 let wx = null;
+let wxRoom = null;
+// Transient room state, never written to the player's weather preference/save.
+function wxRoomApply(s){
+  if (!s || typeof s.m !== 'string' || !['auto','day','off'].includes(s.setting) ||
+      !Number.isFinite(s.t) || s.t < 0 || s.t > 1e9 || !Number.isFinite(s.age) || s.age < 0 || s.age > 60 ||
+      !['clear','rain','snow','fog'].includes(s.weather)) return false;
+  wxRoom = {m:s.m, setting:s.setting, t:s.t, age:s.age, weather:s.weather, received:performance.now()};
+  return true;
+}
+function wxRoomClear(){ wxRoom = null; if (wx) wx._last = ''; }
+function wxRoomWire(){
+  if (!wx || !wx.modeId) return null;
+  return {m:wx.modeId, setting:wx.set.mode, t:wx.t, age:wx.weatherT, weather:wx.weather};
+}
 
 function wxLoad(){
   let raw = null;
@@ -4290,24 +4304,29 @@ function wxTick(dt, modeId, env){
   wxEnsure();
   if (env) wxBind(env);
   if (modeId) wx.modeId = modeId;
-  const set = wx.set || wxLoad();
-  wx.set = set;
+  // Room-authoritative only while fresh; disconnect restores personal preferences.
+  const own = wx.set || wxLoad();
+  wx.set = own;
+  const remote = wxRoom && wxRoom.m === wx.modeId && performance.now() - wxRoom.received < 10000 ? wxRoom : null;
+  const set = remote ? {mode:remote.setting} : own;
   if (!(WX_RULES.wxEnabled && WX_RULES.wxEnabled(wx.modeId, set))){
     if (wx.drops) wxClearDrops();
     return;
   }
   dt = Math.min(0.08, +dt || 0.016);
-  wx.t += dt;
-  wx.weatherT += dt;
+  if (remote){
+    const elapsed = Math.max(0, (performance.now() - remote.received) / 1000);
+    wx.t = remote.t + elapsed; wx.weatherT = remote.age + elapsed; wx.weather = remote.weather;
+  } else { wx.t += dt; wx.weatherT += dt; }
   const clock = (set.mode === 'day')
     ? (WX_RULES.wxForceDay ? WX_RULES.wxForceDay() : {phase:'day', sun:1})
     : (WX_RULES.wxClock ? WX_RULES.wxClock(wx.t, WX_RULES.WX_DAY_LEN) : {phase:'day', sun:1});
-  if (set.mode === 'auto' && wx.weatherT > (WX_RULES.WX_WEATHER_LEN || 48)){
+  if (!remote && set.mode === 'auto' && wx.weatherT > (WX_RULES.WX_WEATHER_LEN || 48)){
     wx.weatherT = 0;
     wx.weather = WX_RULES.wxPickWeather ? WX_RULES.wxPickWeather(wx.modeId, Math.random) : 'clear';
   }
   if (set.mode === 'day') wx.weather = 'clear';
-  try { if (typeof evFestOn === 'function' && evFestOn() && (wx.modeId === 'party' || wx.modeId === 'snowfest' || (WX_RULES.wxWeatherAllowed && WX_RULES.wxWeatherAllowed('snow', wx.modeId)))) wx.weather = 'snow'; } catch (e){}
+  try { if (!remote && typeof evFestOn === 'function' && evFestOn() && (wx.modeId === 'party' || wx.modeId === 'snowfest' || (WX_RULES.wxWeatherAllowed && WX_RULES.wxWeatherAllowed('snow', wx.modeId)))) wx.weather = 'snow'; } catch (e){}
   const sky = WX_RULES.wxSky ? WX_RULES.wxSky(wx.modeId, clock.phase, wx.weather) : '#8fd3ff';
   const fog = WX_RULES.wxFog ? WX_RULES.wxFog(wx.modeId, clock.phase, wx.weather) : {color: sky, near:70, far:200};
   const dim = WX_RULES.wxLightScale ? WX_RULES.wxLightScale(clock.phase, wx.weather) : 1;
@@ -4344,6 +4363,9 @@ function wxTick(dt, modeId, env){
 
 try {
   if (typeof window !== 'undefined'){
+    window.wxRoomApply = wxRoomApply;
+    window.wxRoomWire = wxRoomWire;
+    window.wxRoomClear = wxRoomClear;
     window.wxEnter = wxEnter;
     window.wxBind = wxBind;
     window.wxTick = wxTick;
@@ -21081,6 +21103,10 @@ const Obby = (() => {
       if (running && ph && !ph.remote && mode === 'pethotel') msg.ph = phWire();
       if (running && wp && mp.host && mode === 'waterpark') msg.wp = waterparkWire();
       if (running && bw && mode === 'build') msg.bt = bwWire();
+      // QA t337u: the host's sky clock + weather is the room's; joiners adopt it (~3x a second, so a new joiner matches right away).
+      mp.wxN = (mp.wxN | 0) + 1; if (running && typeof wxRoomWire === 'function' && mp.wxN % 5 === 1){ const w = wxRoomWire(); if (w) msg.wx = w;
+        if (mode === 'camp' && typeof cg !== 'undefined' && cg && cg.run) msg.skyClock = {m:'camp', phase:cg.run.phase, t:cg.run.t, day:cg.run.day, clock:cg.run.clock};
+      }
       if (ops) msg.o = ops;
       mpBroadcast(msg);
     } else {
@@ -21277,6 +21303,11 @@ const Obby = (() => {
   function mpSnap(d){
     if (!mp.on) return;
     const hm = d.hm || null, hd = hostLvl(hm, d.hd); if (hm !== mp.hmode || hd !== mp.hdiff){ mp.hmode = hm; mp.hdiff = hd; mpRender(); }
+    if (d.wx && typeof wxRoomApply === 'function') try { wxRoomApply(d.wx); } catch (e){}
+    const sk = d.skyClock; // Camp has its own gameplay day/night, separate from global weather.
+    if (sk && sk.m === 'camp' && mode === 'camp' && typeof cg !== 'undefined' && cg && cg.run && ['day','night'].includes(sk.phase) && Number.isFinite(sk.t) && sk.t >= 0 && sk.t <= 180){
+      cg.run.phase = sk.phase; cg.run.t = sk.t; if (Number.isFinite(sk.clock)) cg.run.clock = Math.max(0, sk.clock); if (Number.isInteger(sk.day)) cg.run.day = Math.max(1, Math.min(999, sk.day));
+    }
     const seen = new Set();
     if (Array.isArray(d.p)) d.p.slice(0, 16).forEach(e => { if (!Array.isArray(e) || typeof e[0] !== 'string' || e[0] === mp.me || !/^(H|g\d{1,4}|b[0-3])$/.test(e[0])) return; seen.add(e[0]); mpEnt(e[0], e[1], e.slice(2, 12)); });
     for (const E of mp.ents.values()) if (!seen.has(E.uid)) E.m = null;
@@ -21527,6 +21558,7 @@ const Obby = (() => {
     }, 25000);
   }
   function mpCleanup(){
+    try { if (typeof wxRoomClear === 'function') wxRoomClear(); } catch (e){}
     clearInterval(mp.timer); clearTimeout(mp.joinT); clearTimeout(mp.revT); clearTimeout(mp.retryT); clearTimeout(mp.hostT); mp.timer = mp.revT = mp.hostT = 0;
     for (const g of mp.guests.values()) try { g.conn.close(); } catch(e){}
     try { if (mp.hconn) mp.hconn.close(); } catch(e){}
@@ -47364,6 +47396,7 @@ function start(m = 'obby', d = null){
   }
   function wnToggleNight(){
     if (!wn) return;
+    if (wnIsGuest()){ banner('🌙 The room host controls Pinebell morning and night.'); return; }
     if (!wn.run.night && (wn.run.lights||[]).length){
       const r = WinterRules.wnShowLights(wn.sv, wn.run);
       if (r.state){ wn.sv = r.state; wnSave(wn.sv); }
@@ -47599,7 +47632,10 @@ function start(m = 'obby', d = null){
   }
   function wnIsGuest(){ try { return !!(typeof mp !== 'undefined' && mp && mp.on && !mp.host); } catch(e){ return false; } }
   function wnWire(){ return wn ? WinterRules.wnWire(wn.sv, wn.run) : null; }
-  function wnApply(snap){ if (wn && snap){ if (snap.sledBest) wn.sv.sledBest = snap.sledBest; wnHud(); } }
+  function wnApply(snap){ if (wn && snap){ if (snap.sledBest) wn.sv.sledBest = snap.sledBest;
+    // QA t337u: night is the host's; a joiner adopts it so nobody is in daylight while a friend sees the lights.
+    if (wnIsGuest() && typeof snap.night === 'boolean' && !!wn.run.night !== snap.night){ WinterRules.wnSetNight(wn.run, snap.night); wnPaintLights(); }
+    wnHud(); } }
   function wnNet(){
     if (wnIsGuest() || !wn || typeof mp === 'undefined' || !mp || !mp.on || typeof mpSend !== 'function') return;
     try { mpSend({t:'wn', snap: wnWire()}); } catch (e){}
