@@ -17,10 +17,8 @@ function serve(){
   });
 }
 async function launch(extra){
-  // Two local headless pages need real host ICE candidates (not mDNS-hidden) to open a PeerJS room together.
   return chromium.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome', headless: true,
-    args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist','--autoplay-policy=no-user-gesture-required',
-      '--disable-features=WebRtcHideLocalIpsWithMdns','--allow-loopback-in-peer-connection'].concat(extra || []) });
+    args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist','--autoplay-policy=no-user-gesture-required'].concat(extra || []) });
 }
 // External network noise (fonts/CDN/peer services) is not a game bug.
 const IGNORE = [/Failed to load resource/i, /net::ERR_/i, /favicon/i, /WebSocket/i, /peerjs/i, /GPU stall/i, /GroupMarkerNotSet/i, /Automatic fallback to software WebGL/i];

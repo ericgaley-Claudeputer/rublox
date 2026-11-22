@@ -8,9 +8,9 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
 describe('t302 five play modes wiring', () => {
-  test('BUILD is 2026.11.22-1 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.22-1'"));
-    assert.equal(version.build, '2026.11.22-1');
+  test('BUILD is 2026.11.22-2 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.22-2'"));
+    assert.equal(version.build, '2026.11.22-2');
   });
 
   test('all five modes are playable menu games with original names and save keys', () => {

@@ -192,6 +192,7 @@
   }
   function wnToggleNight(){
     if (!wn) return;
+    if (wnIsGuest()){ banner('🌙 The room host controls Pinebell morning and night.'); return; }
     if (!wn.run.night && (wn.run.lights||[]).length){
       const r = WinterRules.wnShowLights(wn.sv, wn.run);
       if (r.state){ wn.sv = r.state; wnSave(wn.sv); }

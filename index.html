@@ -3160,7 +3160,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.22-1';
+const BUILD = '2026.11.22-2';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -47379,6 +47379,7 @@ function start(m = 'obby', d = null){
   }
   function wnToggleNight(){
     if (!wn) return;
+    if (wnIsGuest()){ banner('🌙 The room host controls Pinebell morning and night.'); return; }
     if (!wn.run.night && (wn.run.lights||[]).length){
       const r = WinterRules.wnShowLights(wn.sv, wn.run);
       if (r.state){ wn.sv = r.state; wnSave(wn.sv); }
