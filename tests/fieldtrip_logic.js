@@ -32,8 +32,15 @@ test('Pebblebrook Field Trip rules: yard bus, nook finds, ride home, old saves l
   assert.equal(visit.run.phase, 'ride');
   F.ftTickRide(visit.run, 0.2);
   assert.equal(visit.run.phase, 'ride');
-  for (let i = 0; i < 30; i++) F.ftTickRide(visit.run, 0.2);
+  const mid = F.ftRidePose(visit.run);
+  assert.ok(Number.isFinite(mid.x) && Number.isFinite(mid.z));
+  for (let i = 0; i < 50; i++) F.ftTickRide(visit.run, 0.2);
   assert.equal(visit.run.phase, 'nook');
+  const startPose = F.ftRidePose({phase:'ride', rideT:0});
+  assert.ok(Math.hypot(startPose.x - F.FT_BUS.x, startPose.z - F.FT_BUS.z) < 0.3);
+  const endPose = F.ftRidePose({phase:'ride', rideT:F.FT_RIDE_T});
+  assert.ok(Math.hypot(endPose.x - F.FT_ARRIVE.x, endPose.z - F.FT_ARRIVE.z) < 5);
+  assert.ok(Math.hypot(F.FT_GUIDE.x - F.FT_ARRIVE.x, F.FT_GUIDE.z - F.FT_ARRIVE.z) > 8, 'Fern stands clear of the arrival spot');
 
   let st = visit.state;
   const earlyHome = F.ftBoardHome(visit.run, st);
@@ -72,5 +79,9 @@ test('Field trip is wired into the hub, reset list, and build dispatch', () => {
   assert.match(html, /function fieldTripStop/);
   assert.match(html, /Pebblebrook Nature Nook/);
   assert.match(html, /Ms\. Bramble/);
-  assert.doesNotMatch(html.slice(html.indexOf('function buildFieldTrip'), html.indexOf('function buildFieldTrip') + 8000), /blood|gore|kill the/i);
+  assert.match(html, /FT_ARRIVE/);
+  assert.match(html, /ftRidePose/);
+  assert.match(html, /ftApplyDaySky/);
+  assert.match(html, /WX_SKIP = \[[^\]]*'fieldtrip'[^\]]*\]/);
+  assert.doesNotMatch(html.slice(html.indexOf('function buildFieldTrip'), html.indexOf('function buildFieldTrip') + 12000), /blood|gore|kill the/i);
 });

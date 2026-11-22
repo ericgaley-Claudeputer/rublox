@@ -1,0 +1,266 @@
+/* Tideglass Aquarium runtime — injected into the main engine IIFE, after the field-trip helpers. */
+  let aq = null;
+  function aqSave(s){ try { if (typeof save === 'function') save(AquariumRules.AQ_KEY, s); } catch(e){} }
+  function aqState(){ try { return AquariumRules.aqLoad(typeof load === 'function' ? load(AquariumRules.AQ_KEY, null) : null); } catch(e){ return AquariumRules.aqFresh(); } }
+  function aqKeep(m){ if (aq && m){ (aq.trash || (aq.trash=[])).push(m); } return m; }
+  function aqMesh(geo, col, x, y, z){
+    const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({color: col}));
+    m.position.set(x, y, z); scene.add(m); aqKeep(m); return m;
+  }
+  function aqLab(text, x, y, z){
+    try { if (typeof t297Lab === 'function'){ const l = t297Lab(text, x, y, z); if (l){ l.userData = l.userData || {}; l.userData.aqLab = true; return aqKeep(l); } } } catch(e){}
+    return null;
+  }
+  function aqPlat(x, y, z, w, d, col, h){
+    const b = plat(x, y, z, w, d, col, h == null ? 0.2 : h);
+    if (b && b.mesh) aqKeep(b.mesh);
+    if (b) (aq.solids || (aq.solids=[])).push(b);
+    return b;
+  }
+  function aqSky(){ if (typeof ftApplyDaySky === 'function') ftApplyDaySky(); else {
+    try { scene.background = new THREE.Color('#7ec8ff'); if (scene.fog){ scene.fog.color.set('#7ec8ff'); scene.fog.near=55; scene.fog.far=180; } } catch(e){}
+  } }
+  function aqHud(msg){
+    const hint = document.getElementById('aqHint');
+    const box = document.getElementById('aqBox');
+    if (hint) hint.textContent = msg || AquariumRules.aqGoal(aq && aq.sv, aq && aq.run);
+    if (box) box.style.display = 'block';
+    const act = document.getElementById('aqAct');
+    if (act){
+      const p = aq && aq.near;
+      act.classList.toggle('show', !!(p && p.act && p.kind !== 'ride'));
+      if (p && p.act) act.textContent = p.act;
+    }
+  }
+  function aqTank(x, z, col, label, fishCol, kind){
+    const glass = new THREE.MeshLambertMaterial({color:'#9ad8e8', transparent:true, opacity:0.35});
+    const shell = new THREE.Mesh(new THREE.BoxGeometry(4.4, 2.8, 3.2), glass);
+    shell.position.set(x, 1.5, z); scene.add(shell); aqKeep(shell);
+    aqPlat(x, 0.2, z, 4.6, 3.4, '#3a6a88', 0.18);
+    const wall = plat(x, 2.7, z, 4.4, 3.2, '#9ad8e8', 2.5);
+    if (wall && wall.mesh){ wall.mesh.visible = false; aqKeep(wall.mesh); }
+    if (wall) (aq.solids || (aq.solids=[])).push(wall);
+    aqLab(label, x, 3.3, z);
+    const swimmers = [];
+    for (let i = 0; i < (kind === 'jelly' ? 3 : 4); i++){
+      const geo = kind === 'jelly' ? new THREE.SphereGeometry(0.22, 8, 6) : (kind === 'turtle' ? new THREE.SphereGeometry(0.28, 8, 6) : new THREE.SphereGeometry(0.14, 7, 6));
+      const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({color: fishCol, transparent: kind==='jelly', opacity: kind==='jelly'?0.8:1}));
+      m.position.set(x, 1.2, z); scene.add(m); aqKeep(m);
+      swimmers.push({m:m, ox:x, oz:z, a: i * 1.4, r: 0.8 + i * 0.12, spd: 0.7 + i * 0.15, y: 1.0 + (i%3)*0.35});
+    }
+    (aq.fish || (aq.fish=[])).push.apply(aq.fish, swimmers);
+  }
+  function aqMakeBus(){ return (typeof ftMakeBus === 'function') ? ftMakeBus() : (function(){ const g=new THREE.Group(); const b=new THREE.Mesh(new THREE.BoxGeometry(3.6,2.2,7.2), new THREE.MeshLambertMaterial({color:'#f0c44a'})); b.position.y=1.3; g.add(b); return g; })(); }
+  function buildAquarium(){
+    const started = AquariumRules.aqNewVisit(aqState());
+    aq = {trash:[], solids:[], sv: started.state, run: started.run, near:null, bus:null, homeBus:null, fish:[]};
+    aqSave(started.state);
+    try { checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:18}, flag:new THREE.Object3D()}; } catch(e){}
+    aqSky();
+    const hemi = new THREE.HemisphereLight(0xe8f4ff, 0x3a6a8a, 1.1); scene.add(hemi); aqKeep(hemi);
+    const sun = new THREE.DirectionalLight('#fff8e0', 0.8); sun.position.set(-8, 18, 8); scene.add(sun); aqKeep(sun);
+    aqPlat(0, 0.14, -4, 90, 110, '#3f8f3a', 0.24);
+    aqPlat(0, 0.16, 16, 36, 28, '#4ea247', 0.16);
+    aqPlat(0, 0.16, -30, 52, 52, '#3d8a88', 0.16);
+    // school (compact, same yard)
+    aqMesh(new THREE.BoxGeometry(18, 8, 8), '#7a6aa0', 0, 4.1, 32);
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(13, 3.2, 4), new THREE.MeshLambertMaterial({color:'#4a3a68'}));
+    roof.position.set(0, 10.1, 32); roof.rotation.y = Math.PI/4; scene.add(roof); aqKeep(roof);
+    aqLab('🏫 Afterbell School', 0, 12.2, 26);
+    try {
+      if (typeof buildPlayer === 'function'){
+        const m = buildPlayer(Object.assign({}, typeof DEF !== 'undefined' ? DEF : {}, {body:'girl', head:'#e0ac69', shirt:'#c45c8a', pants:'#3a3f6a', pantsPat:'skirt', hair:'bun', hairColor:'#6b4226', face:'smile', shirtPat:null, hat:null}));
+        m.g.position.set(AquariumRules.AQ_TEACHER.x, 0.05, AquariumRules.AQ_TEACHER.z);
+        m.g.rotation.y = Math.atan2(0 - AquariumRules.AQ_TEACHER.x, 18 - AquariumRules.AQ_TEACHER.z);
+        scene.add(m.g); aqKeep(m.g);
+      } else aqMesh(new THREE.BoxGeometry(0.7,1.6,0.5), '#c45c8a', AquariumRules.AQ_TEACHER.x, 0.9, AquariumRules.AQ_TEACHER.z);
+    } catch(e){ aqMesh(new THREE.BoxGeometry(0.7,1.6,0.5), '#c45c8a', AquariumRules.AQ_TEACHER.x, 0.9, AquariumRules.AQ_TEACHER.z); }
+    aqLab('👩‍🏫 Ms. Bramble', AquariumRules.AQ_TEACHER.x, 3.9, AquariumRules.AQ_TEACHER.z);
+    // coastal road (west)
+    const path = AquariumRules.AQ_RIDE_PATH || [];
+    for (let i = 0; i < path.length - 1; i++){
+      const a = path[i], b = path[i+1];
+      const mx = (a.x+b.x)/2, mz=(a.z+b.z)/2;
+      const len = Math.hypot(b.x-a.x, b.z-a.z)+1.6;
+      const alongX = Math.abs(b.x-a.x) >= Math.abs(b.z-a.z);
+      aqPlat(mx, 0.18, mz, alongX ? len : 3.4, alongX ? 3.4 : len, '#4a4e55', 0.1);
+    }
+    aqPlat(-24, 0.12, -6, 10, 22, '#3a8ab0', 0.1);
+    aqLab('🌊 Glimmer coast', -24, 2.2, -6);
+    const bus = aqMakeBus();
+    bus.position.set(AquariumRules.AQ_BUS.x, 0, AquariumRules.AQ_BUS.z);
+    scene.add(bus); aqKeep(bus); aq.bus = bus;
+    aqLab('🚌 Afterbell bus', AquariumRules.AQ_BUS.x, 3.6, AquariumRules.AQ_BUS.z);
+    // aquarium hall
+    aqMesh(new THREE.BoxGeometry(16, 6, 12), '#d7eef4', 0, 3.1, -42);
+    aqMesh(new THREE.BoxGeometry(17, 0.3, 13), '#2a6a88', 0, 6.25, -42);
+    const aRoof = new THREE.Mesh(new THREE.ConeGeometry(11.5, 2.6, 4), new THREE.MeshLambertMaterial({color:'#1d5a78'}));
+    aRoof.position.set(0, 7.7, -42); aRoof.rotation.y = Math.PI/4; scene.add(aRoof); aqKeep(aRoof);
+    aqMesh(new THREE.BoxGeometry(2.2, 3.2, 0.2), '#2a4a6a', 0, 1.8, -36);
+    aqLab('🐠 Tideglass Aquarium', 0, 9.0, -36);
+    aqTank(16, -20, '#9ad8e8', '🪼 Moonveil jellies', '#d8b0ff', 'jelly');
+    aqTank(-16, -20, '#9ad8e8', '🐢 Sand-harbor turtles', '#3a8f5a', 'turtle');
+    aqTank(0, -50, '#163050', '🐟 Lanternfish nook', '#ffe566', 'fish');
+    aqTank(18, -36, '#9ad8e8', '🪸 Bubble-plume coral', '#ff8fb0', 'fish');
+    aqTank(-18, -36, '#9ad8e8', '⭐ Tideglass star', '#f4e27a', 'fish');
+    // touch pool
+    aqPlat(8, 0.28, -12, 5, 5, '#6aa0c8', 0.16);
+    aqMesh(new THREE.CylinderGeometry(0.18, 0.22, 0.2, 8), '#c45c3a', 8, 0.45, -12);
+    aqLab('🦀 Pebblecrab pool', 8, 1.8, -12);
+    // Marin off to the side
+    try {
+      if (typeof buildPlayer === 'function'){
+        const m = buildPlayer(Object.assign({}, typeof DEF !== 'undefined' ? DEF : {}, {shirt:'#2a8aaa', pants:'#1d3a55', hair:'short', hairColor:'#1a1a1a', face:'smile', hat:null}));
+        m.g.position.set(AquariumRules.AQ_GUIDE.x, 0.05, AquariumRules.AQ_GUIDE.z);
+        m.g.rotation.y = Math.atan2(AquariumRules.AQ_ARRIVE.x - AquariumRules.AQ_GUIDE.x, AquariumRules.AQ_ARRIVE.z - AquariumRules.AQ_GUIDE.z);
+        scene.add(m.g); aqKeep(m.g);
+      } else aqMesh(new THREE.BoxGeometry(0.7,1.6,0.5), '#2a8aaa', AquariumRules.AQ_GUIDE.x, 0.9, AquariumRules.AQ_GUIDE.z);
+    } catch(e){ aqMesh(new THREE.BoxGeometry(0.7,1.6,0.5), '#2a8aaa', AquariumRules.AQ_GUIDE.x, 0.9, AquariumRules.AQ_GUIDE.z); }
+    aqLab('🧭 Marin', AquariumRules.AQ_GUIDE.x, 3.9, AquariumRules.AQ_GUIDE.z);
+    const home = aqMakeBus();
+    home.position.set(AquariumRules.AQ_HOME_BUS.x, 0, AquariumRules.AQ_HOME_BUS.z);
+    home.visible = false; scene.add(home); aqKeep(home); aq.homeBus = home;
+    aqLab('🚌 Tide gate', AquariumRules.AQ_HOME_BUS.x, 3.4, AquariumRules.AQ_HOME_BUS.z);
+    aq.findMeshes = {};
+    (AquariumRules.AQ_FINDS||[]).forEach(f => { aq.findMeshes[f.id] = true; });
+    if (P){ P.x=0; P.y=0.5; P.z=18; P.vx=0; P.vz=0; P.vy=0; }
+    if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
+    const box=document.getElementById('aqBox'); if(box) box.style.display='block';
+    banner('🐠 Tideglass Aquarium day! Board the Afterbell bus, sit tight for the coastal ride, then visit five exhibits. Be gentle at the Pebblecrab pool.');
+    aqPaint(); aqHud();
+  }
+  function aqEnter(){
+    if (P){ P.x=0; P.y=0.5; P.z=18; P.vx=0; P.vz=0; P.vy=0; }
+    if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
+    aqSky();
+  }
+  function aqPaint(){
+    if (!aq) return;
+    if (aq.homeBus) aq.homeBus.visible = AquariumRules.aqAll(aq.sv) && aq.run && (aq.run.phase === 'hall' || aq.run.phase === 'done');
+  }
+  function aqRideVis(hide){
+    try {
+      if (typeof model !== 'undefined' && model){
+        if (model.g) model.g.visible = !hide;
+        else if (model.visible != null) model.visible = !hide;
+      }
+    } catch(e){}
+  }
+  function aqSeat(pose){
+    if (!P || !pose) return;
+    const side = 0.0, along = -2.15;
+    const cy = Math.cos(pose.yaw || 0), sy = Math.sin(pose.yaw || 0);
+    P.x = pose.x + side * cy + along * sy;
+    P.z = pose.z + -side * sy + along * cy;
+    P.y = 1.42; P.vx = P.vz = P.vy = 0;
+    aqRideVis(true);
+    if (typeof cam !== 'undefined' && cam){ cam.yaw = Math.atan2(-sy, -cy); cam.pitch = 0.08; cam.dist = 0.22; }
+    if (aq.bus){ aq.bus.position.set(pose.x, 0, pose.z); aq.bus.rotation.y = pose.yaw || 0; }
+  }
+
+  function aqRideCam(){
+    if (!aq || !aq.run || aq.run.phase !== 'ride' || typeof camera === 'undefined' || !camera) return false;
+    const pose = AquariumRules.aqRidePose(aq.run);
+    if (!pose) return false;
+    const cy = Math.cos(pose.yaw || 0), sy = Math.sin(pose.yaw || 0);
+    const along = -1.5, ey = 1.55;
+    const x = pose.x + along * sy, z = pose.z + along * cy;
+    camera.position.set(x, ey, z);
+    camera.lookAt(x + sy * 10, ey + 0.12, z + cy * 10);
+    (aq.trash||[]).forEach(m => { if (m && m.userData && m.userData.aqLab) m.visible = false; });
+    return true;
+  }
+  function aqAct(){
+    if (!aq) return;
+    const hit = AquariumRules.aqNear(P.x, P.z, aq.sv, aq.run);
+    if (!hit) return;
+    if (hit.kind === 'talk'){ banner(hit.text); return; }
+    if (hit.kind === 'bus'){
+      const r = AquariumRules.aqBoardBus(aq.run);
+      if (r.ok){ banner('🚌 All aboard! Sit tight — the coast road leads to Tideglass Aquarium.'); aqSeat(AquariumRules.aqRidePose(aq.run)); }
+      return;
+    }
+    if (hit.kind === 'find'){
+      const r = AquariumRules.aqPick(aq.sv, hit.id);
+      if (!r.ok) return;
+      aq.sv = r.state; aqSave(aq.sv); aqPaint();
+      banner((hit.emoji||'🐠') + ' ' + (r.item && r.item.blurb ? r.item.blurb : hit.name) + (r.left ? ('  (' + (AquariumRules.AQ_FINDS.length - r.left) + '/' + AquariumRules.AQ_FINDS.length + ')') : '  All five! Meet the bus at the tide gate.'));
+      return;
+    }
+    if (hit.kind === 'pool'){
+      const r = AquariumRules.aqTouch(aq.sv);
+      aq.sv = r.state; aqSave(aq.sv);
+      if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
+      banner('🦀 ' + (r.message || 'A gentle touch!') + (r.coins ? ('  +' + r.coins + ' 🪙') : (r.already ? ' The Pebblecrab already said hello.' : '')));
+      return;
+    }
+    if (hit.kind === 'home'){
+      const r = AquariumRules.aqBoardHome(aq.run, aq.sv);
+      if (!r.ok){ banner('Marin is still waiting on a few exhibits.'); return; }
+      aq.sv = r.state; aqSave(aq.sv);
+      if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
+      banner((r.message || 'Bus ride home!') + (r.coins ? ('  +' + r.coins + ' 🪙') : ''));
+      if (P){ P.x=0; P.z=18; P.y=0.5; }
+      if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
+    }
+  }
+  function aqUpdate(dt){
+    if (!aq) return;
+    aqSky();
+    (aq.fish||[]).forEach(f => {
+      f.a = (f.a || 0) + (f.spd || 1) * dt;
+      if (f.m) f.m.position.set(f.ox + Math.cos(f.a) * (f.r||0.8), f.y, f.oz + Math.sin(f.a * 0.9) * (f.r||0.8) * 0.6);
+    });
+    if (aq.run.phase === 'ride'){
+      AquariumRules.aqTickRide(aq.run, dt);
+      aqSeat(AquariumRules.aqRidePose(aq.run));
+      if (aq.run.phase === 'hall'){
+        const a = AquariumRules.AQ_ARRIVE || {x:3.4, z:-8};
+        if (P){ P.x=a.x; P.y=0.5; P.z=a.z; P.vx=0; P.vz=0; }
+        if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; }
+        aqRideVis(false);
+        (aq.trash||[]).forEach(m => { if (m && m.userData && m.userData.aqLab) m.visible = true; });
+        if (aq.bus){ aq.bus.position.set(AquariumRules.AQ_HOME_BUS.x, 0, AquariumRules.AQ_HOME_BUS.z); aq.bus.rotation.y = Math.PI; }
+        banner('🐠 Welcome to Tideglass Aquarium! Marin is by the hall, not under the bus. Visit five exhibits, and say hello at the Pebblecrab pool.');
+        aqPaint();
+      }
+    }
+    if (P && P.y < -8){ P.x=0; P.y=0.5; P.z = (aq.run && aq.run.phase === 'hall') ? (AquariumRules.AQ_ARRIVE||{}).z || -8 : 18; P.vx=P.vz=P.vy=0; }
+    aq.near = AquariumRules.aqNear(P ? P.x : 0, P ? P.z : 0, aq.sv, aq.run);
+    aqHud(AquariumRules.aqGoal(aq.sv, aq.run));
+  }
+  function aqKey(e){
+    if (!aq || e.repeat) return false;
+    if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ aqAct(); return true; }
+    return false;
+  }
+  function aqPad(jp){
+    if (!aq || !jp) return false;
+    if (!aq._x && (jp[2] || jp[3])){ aq._x = true; aqAct(); return true; }
+    if (!jp[2] && !jp[3]) aq._x = false;
+    return false;
+  }
+  function aquariumStop(){
+    aqRideVis(false);
+    if (!aq) return;
+    (aq.solids||[]).forEach(b => { try{ b.active=false; if (typeof solids!=='undefined'){ const i=solids.indexOf(b); if(i>=0) solids.splice(i,1);} }catch(e){} });
+    (aq.trash||[]).forEach(m => { try{ scene.remove(m);}catch(e){} });
+    aq=null;
+    const box=document.getElementById('aqBox'); if(box) box.style.display='none';
+    const act=document.getElementById('aqAct'); if(act) act.classList.remove('show');
+  }
+  if (typeof window !== 'undefined') window.aqDebug = {
+    probe(){ if (!aq) return null; return {phase: aq.run && aq.run.phase, found: ((aq.sv && aq.sv.found)||[]).slice(), touched: !!(aq.sv && aq.sv.touched), won: !!(aq.sv && aq.sv.won), P: P ? {x:P.x,y:P.y,z:P.z} : null, marin: AquariumRules.AQ_GUIDE, arrive: AquariumRules.AQ_ARRIVE}; },
+    hall(){ if (!aq) return; aq.run.phase='hall'; aq.run.rideT=AquariumRules.AQ_RIDE_T; const a=AquariumRules.AQ_ARRIVE||{x:3.4,z:-8}; if(P){P.x=a.x;P.y=0.5;P.z=a.z;} if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; } aqPaint(); },
+    go(id){
+      if (!aq || !P) return;
+      const A = AquariumRules;
+      const map = {bus:A.AQ_BUS, home:A.AQ_HOME_BUS, teacher:A.AQ_TEACHER, marin:A.AQ_GUIDE, hall:A.AQ_HALL, arrive:A.AQ_ARRIVE, pool:A.AQ_POOL};
+      const t = A.aqFind(id) || map[id];
+      if (!t) return;
+      P.x=t.x; P.y=0.5; P.z=t.z; P.vx=0; P.vz=0; P.vy=0;
+    }
+  };
+  try {
+    const act=document.getElementById('aqAct'); if(act && !act.__aq){ act.__aq=true; act.onclick=ev=>{ev.preventDefault();ev.stopPropagation();aqAct();}; }
+  } catch(e){}

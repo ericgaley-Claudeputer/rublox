@@ -116,6 +116,10 @@
       skateLaps: 0,
       skateTricks: 0,
       cocoaServed: 0,
+      snugBought: 0,
+      snugServed: 0,
+      snowHits: 0,
+      snugToppings: [],
       cocoaBought: 0,
       races: 0,
       snowballs: 0,
@@ -130,12 +134,13 @@
   function wnLoad(raw){
     const o = raw && typeof raw === 'object' ? raw : {};
     const d = wnFresh();
-    ['coinsEarned','sledRuns','snowmen','skateLaps','skateTricks','cocoaServed','cocoaBought','races','snowballs','lights','nightShows','wraps'].forEach(k => {
+    ['coinsEarned','sledRuns','snowmen','skateLaps','skateTricks','cocoaServed','cocoaBought','snugBought','snugServed','snowHits','races','snowballs','lights','nightShows','wraps'].forEach(k => {
       d[k] = Math.max(0, o[k] | 0);
     });
     d.sledBest = Math.max(0, +o.sledBest || 0);
     d.wrapBest = Math.max(0, Math.min(100, o.wrapBest | 0));
     d.ribbons = Array.isArray(o.ribbons) ? o.ribbons.filter(id => typeof id === 'string').slice(0, 12) : [];
+    d.snugToppings = Array.isArray(o.snugToppings) ? o.snugToppings.filter(id => typeof id === 'string').slice(0, 8) : [];
     return d;
   }
 
@@ -378,6 +383,80 @@
     return {ok:true, why:'ok', coins, state: st, served: run.cocoa.served, message:'A warm mug for a chilly visitor!'};
   }
 
+  const WN_SNUG = {id:'snugmug', name:'Snugmug Cart', x:28, z:12, r:2.5};
+  const WN_SNUG_COST = 4;
+  const WN_TOPPINGS = [
+    {id:'cloud', name:'Whipped cloud', emoji:'☁️', warm:4},
+    {id:'mallow', name:'Marshmallow puffs', emoji:'🤍', warm:5},
+    {id:'peppermint', name:'Peppermint sparkle', emoji:'🍬', warm:6},
+    {id:'cinnamon', name:'Cinnamon snow', emoji:'✨', warm:5}
+  ];
+  function wnTopping(id){ return WN_TOPPINGS.find(t => t.id === id) || WN_TOPPINGS[0]; }
+  function wnSnugBuy(state, coins, toppingId){
+    const top = wnTopping(toppingId);
+    const st = wnLoad(state);
+    if ((coins | 0) < WN_SNUG_COST) return {ok:false, why:'coins', state: st, coins: coins | 0, cost: WN_SNUG_COST};
+    st.snugBought = (st.snugBought | 0) + 1;
+    st.snugToppings = Array.isArray(st.snugToppings) ? st.snugToppings.slice() : [];
+    if (st.snugToppings.indexOf(top.id) < 0) st.snugToppings.push(top.id);
+    return {ok:true, why:'ok', state: st, coins: (coins | 0) - WN_SNUG_COST, cost: WN_SNUG_COST, warm: 14 + (top.warm || 0), topping: top, message: 'A ' + top.name + ' Snugmug cocoa warms you right up!'};
+  }
+  function wnSnugServe(run, state, toppingId){
+    if (!run) return {ok:false, why:'no', state: wnLoad(state)};
+    const top = wnTopping(toppingId);
+    run.snug = run.snug || {served:0};
+    run.snug.served = (run.snug.served | 0) + 1;
+    const st = wnLoad(state);
+    st.snugServed = (st.snugServed | 0) + 1;
+    const coins = 3;
+    st.coinsEarned += coins;
+    return {ok:true, why:'ok', coins, state: st, topping: top, served: run.snug.served, message: 'You slid a ' + top.name + ' cocoa to a chilly skater!'};
+  }
+  const WN_TARGETS = [
+    {id:'can-1', name:'Tin can', kind:'can', x:8, z:20, r:1.1},
+    {id:'can-2', name:'Tin can', kind:'can', x:10, z:21, r:1.1},
+    {id:'can-3', name:'Tin can', kind:'can', x:9, z:23, r:1.1},
+    {id:'puff-1', name:'Puff pal', kind:'snowman', x:14, z:22, r:1.5},
+    {id:'puff-2', name:'Puff pal', kind:'snowman', x:16, z:20, r:1.5}
+  ];
+  function wnThrowAimed(run, state, fromId, origin, dir, roster, extras){
+    if (!run) return {ok:false, why:'no'};
+    if ((run.snowball && run.snowball.cool || 0) > 0) return {ok:false, why:'cool'};
+    const ox = (origin && +origin.x) || 0, oz = (origin && +origin.z) || 0;
+    let dx = (dir && dir.x) || 0, dz = (dir && dir.z);
+    if (!Number.isFinite(dz)) dz = -1;
+    const len = Math.hypot(dx, dz) || 1;
+    const ux = dx / len, uz = dz / len;
+    const range = 12;
+    let best = 99, hit = null, fight = false;
+    (wnRealPlayers(roster) || []).forEach(p => {
+      if (String(p.id || p.uid) === String(fromId)) return;
+      const px = +p.x, pz = +p.z;
+      if (!Number.isFinite(px) || !Number.isFinite(pz)) return;
+      const t = (px - ox) * ux + (pz - oz) * uz;
+      if (t < 0.5 || t > range) return;
+      const dist = Math.hypot(px - (ox + ux * t), pz - (oz + uz * t));
+      if (dist <= 1.4 && t < best){ best = t; hit = p; fight = true; }
+    });
+    (extras || WN_TARGETS).forEach(tg => {
+      const t = ((tg.x||0) - ox) * ux + ((tg.z||0) - oz) * uz;
+      if (t < 0.5 || t > range) return;
+      const dist = Math.hypot((tg.x||0) - (ox + ux * t), (tg.z||0) - (oz + uz * t));
+      if (dist <= (tg.r || 1.2) && t < best){ best = t; hit = tg; fight = false; }
+    });
+    run.snowball = run.snowball || {cool:0, hits:0, targetHits:0};
+    run.snowball.cool = 0.5;
+    const st = wnLoad(state);
+    st.snowballs = (st.snowballs | 0) + 1;
+    const shot = {x:ox, z:oz, dx:ux, dz:uz, t:0, life: 0.7, hitAt: hit ? best : range};
+    if (!hit) return {ok:true, why:'miss', coins:0, state: st, fight:false, shot, giggle:false};
+    const coins = fight ? 2 : 1;
+    if (fight){ run.snowball.hits = (run.snowball.hits | 0) + 1; st.snowHits = (st.snowHits | 0) + 1; }
+    else run.snowball.targetHits = (run.snowball.targetHits | 0) + 1;
+    st.coinsEarned += coins;
+    return {ok:true, why: fight ? 'hit' : 'target', coins, state: st, fight, target: fight ? null : hit, name: hit.name, shot, giggle: true, message: fight ? 'Poof! Your friend giggles and shakes off the snow.' : ('Poof! The ' + (hit.name || 'target') + ' wobbles and a little giggle rings out.')};
+  }
+
 
   const WN_LIGHT_SLOTS = [
     {id:'cottage-a', kind:'house', name:'Cedar Cottage', x:-22, z:28},
@@ -583,7 +662,8 @@
     wnRealPlayers, wnCanPelt, wnThrowSnowball, wnSnowballTick,
     wnAddSnowmanPart, wnFinishSnowman,
     wnSkateStart, wnSkateTick, wnSkateBank, wnOnRink, wnSkateTrick,
-    wnBuyCocoa, wnServeCocoa, wnWire,
+    wnBuyCocoa, wnServeCocoa, WN_SNUG, WN_SNUG_COST, WN_TOPPINGS, wnTopping, wnSnugBuy, wnSnugServe,
+    WN_TARGETS, wnThrowAimed, wnWire,
     WN_LIGHT_SLOTS, WN_PAPERS, WN_RIBBON_COLORS, WN_BOWS, WN_TAGS, WN_WRAP_STEPS, WN_WRAP_JUDGE,
     WN_HILL, WN_POND, WN_YARD, WN_POSTS, WN_LAMP, WN_WRAP, WN_SPAWN,
     wnBox, wnHillPlats, wnCottage, wnLayoutBoxes, wnBoxesOverlap, wnLayoutOverlaps,

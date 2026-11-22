@@ -90,6 +90,64 @@ describe('Pinebell Village', () => {
     assert.ok(served.state.cocoaServed >= 1);
   });
 
+  test('Snugmug Cart sells topped cocoa and a warmth bonus without breaking Mugsy\'s shop', () => {
+    const started = W.wnNewVisit(null, 1);
+    const poor = W.wnSnugBuy(started.state, 2, 'mallow');
+    assert.equal(poor.ok, false);
+    assert.equal(poor.why, 'coins');
+    const mug = W.wnBuyCocoa(started.state, 20);
+    assert.equal(mug.ok, true);
+    const buy = W.wnSnugBuy(mug.state, mug.coins, 'peppermint');
+    assert.equal(buy.ok, true);
+    assert.equal(buy.coins, mug.coins - W.WN_SNUG_COST);
+    assert.ok(buy.warm > 14);
+    assert.equal(buy.topping.id, 'peppermint');
+    assert.equal(buy.state.snugBought, 1);
+    assert.ok(buy.state.snugToppings.includes('peppermint'));
+    const served = W.wnSnugServe(started.run, buy.state, 'peppermint');
+    assert.equal(served.ok, true);
+    assert.equal(served.coins, 3);
+    assert.equal(served.state.snugServed, 1);
+    assert.match(served.message, /skater/i);
+    assert.equal(W.WN_SNUG.name, 'Snugmug Cart');
+  });
+
+  test('aimed snowballs hit real players or practice targets, never fake player bots', () => {
+    const started = W.wnNewVisit(null, 1);
+    const run = started.run;
+    const can = W.WN_TARGETS.find(t => t.id === 'can-1');
+    const atCan = W.wnThrowAimed(run, started.state, 'p1', {x:can.x, z:can.z - 4}, {x:0, z:1}, [{id:'p1'}], W.WN_TARGETS);
+    assert.equal(atCan.ok, true);
+    assert.equal(atCan.why, 'target');
+    assert.equal(atCan.fight, false);
+    assert.equal(atCan.giggle, true);
+    assert.equal(atCan.coins, 1);
+    assert.match(atCan.message, /Poof|giggle/i);
+    assert.doesNotMatch(atCan.message, /hurt|wound|blood/i);
+    assert.equal(run.snowball.targetHits, 1);
+    const cool = W.wnThrowAimed(run, atCan.state, 'p1', {x:can.x, z:can.z - 4}, {x:0, z:1}, [{id:'p1'}], W.WN_TARGETS);
+    assert.equal(cool.ok, false);
+    assert.equal(cool.why, 'cool');
+    run.snowball.cool = 0;
+    const miss = W.wnThrowAimed(run, atCan.state, 'p1', {x:0, z:0}, {x:0, z:-1}, [{id:'p1'}], W.WN_TARGETS);
+    assert.equal(miss.ok, true);
+    assert.equal(miss.why, 'miss');
+    assert.equal(miss.giggle, false);
+    run.snowball.cool = 0;
+    const friend = W.wnThrowAimed(run, miss.state, 'p1', {x:0, z:0}, {x:0, z:-1}, [{id:'p1', name:'Tessa', x:0, z:0}, {id:'p2', name:'Rio', x:0, z:-5}], W.WN_TARGETS);
+    assert.equal(friend.ok, true);
+    assert.equal(friend.fight, true);
+    assert.equal(friend.why, 'hit');
+    assert.equal(friend.giggle, true);
+    assert.equal(friend.state.snowHits, 1);
+    assert.match(friend.message, /giggle/i);
+    run.snowball.cool = 0;
+    const npc = W.wnThrowAimed(run, friend.state, 'p1', {x:0, z:0}, {x:1, z:0}, [{id:'p1', x:0, z:0}, {id:'npc-bot', npc:true, name:'Bot', x:4, z:0}], []);
+    assert.equal(npc.ok, true);
+    assert.equal(npc.why, 'miss');
+    assert.equal(npc.fight, false);
+  });
+
   test('the winter village is wired as a playable game and listed under Reset a game', () => {
     assert.match(html, /id:'winter'/);
     assert.match(html, /Pinebell Village/);
@@ -99,5 +157,8 @@ describe('Pinebell Village', () => {
     assert.match(html, /function wnUpdate\(/);
     assert.match(html, /'winter'/);
     assert.match(html, /id="wnBox"/);
+    assert.match(html, /Snugmug Cart/);
+    assert.match(html, /wnThrowAimed/);
+    assert.match(html, /id="wnSnowBtn"/);
   });
 });

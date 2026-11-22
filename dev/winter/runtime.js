@@ -91,6 +91,110 @@
       if (m) m.visible = !!show[id];
     });
   }
+
+  function wnBuildSnug(){
+    if (!wn || !WinterRules.WN_SNUG) return;
+    const s = WinterRules.WN_SNUG;
+    wnMesh(new THREE.BoxGeometry(2.4, 2.0, 1.6), '#c45c1a', s.x, 1.1, s.z);
+    wnMesh(new THREE.BoxGeometry(2.7, 0.16, 1.9), '#8b2e1a', s.x, 2.15, s.z);
+    wnMesh(new THREE.CylinderGeometry(0.22, 0.18, 0.7, 8), '#5a2a12', s.x - 0.5, 2.5, s.z);
+    wnMesh(new THREE.BoxGeometry(0.9, 0.7, 0.9), '#fff8ee', s.x + 0.55, 2.55, s.z);
+    wnLab('☕ Snugmug Cart', s.x, 3.4, s.z);
+    wn.snug = {x:s.x, z:s.z};
+    wn.snugTop = 'cloud';
+    // two townsfolk customers in a little queue
+    [[s.x + 2.2, s.z + 1.4, '#e8d0a8'], [s.x + 3.4, s.z + 2.2, '#c8a070']].forEach(p => {
+      try {
+        if (typeof buildPlayer === 'function'){
+          const m = buildPlayer(Object.assign({}, typeof DEF !== 'undefined' ? DEF : {}, {shirt:'#3a86ff', pants:'#2a3a6a', hair:'short', face:'smile', hat:'beanie'}));
+          m.g.position.set(p[0], 0.05, p[1]); m.g.rotation.y = Math.atan2(s.x - p[0], s.z - p[1]); scene.add(m.g); wnKeep(m.g);
+        } else wnMesh(new THREE.BoxGeometry(0.6, 1.5, 0.5), p[2], p[0], 0.85, p[1]);
+      } catch(e){ wnMesh(new THREE.BoxGeometry(0.6, 1.5, 0.5), p[2], p[0], 0.85, p[1]); }
+    });
+    wnLab('👫 Skaters in line', s.x + 2.8, 2.6, s.z + 1.8);
+  }
+  function wnBuildTargets(){
+    if (!wn) return;
+    wn.targets = [];
+    (WinterRules.WN_TARGETS || []).forEach(tg => {
+      if (tg.kind === 'can'){
+        const m = wnMesh(new THREE.CylinderGeometry(0.22, 0.22, 0.7, 8), '#c45c1a', tg.x, 0.45, tg.z);
+        wnLab('🥫 ' + tg.name, tg.x, 1.4, tg.z);
+        wn.targets.push({id:tg.id, mesh:m, baseY:0.45});
+      } else {
+        const g = new THREE.Group();
+        const a = new THREE.Mesh(new THREE.SphereGeometry(0.55, 8, 8), wnMat('#f4fbff')); a.position.y = 0.55; g.add(a);
+        const b = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 8), wnMat('#f4fbff')); b.position.y = 1.2; g.add(b);
+        g.position.set(tg.x, 0, tg.z); scene.add(g); wnKeep(g);
+        wnLab('☃️ ' + tg.name, tg.x, 2.1, tg.z);
+        wn.targets.push({id:tg.id, mesh:g, baseY:0});
+      }
+    });
+    wnLab('❄️ Puffyard', 12, 2.8, 21);
+  }
+  function wnSnugCycle(){
+    const list = WinterRules.WN_TOPPINGS || [];
+    if (!list.length) return;
+    const i = Math.max(0, list.findIndex(t => t.id === (wn.snugTop || 'cloud')));
+    wn.snugTop = list[(i + 1) % list.length].id;
+    const t = WinterRules.wnTopping(wn.snugTop);
+    banner((t.emoji||'☕') + ' Next topping: ' + t.name + '. E buys a mug, F serves a skater in line.');
+    wnHud();
+  }
+  function wnSnugDo(serve){
+    if (!wn) return;
+    const id = wn.snugTop || 'cloud';
+    if (serve){
+      const r = WinterRules.wnSnugServe(wn.run, wn.sv, id);
+      if (r.ok){ wn.sv = r.state; wnSave(wn.sv); wnPay(r.coins); banner('☕ ' + r.message + ' +' + r.coins + ' 🪙'); }
+      wnHud(); wnNet(); return;
+    }
+    const r = WinterRules.wnSnugBuy(wn.sv, wnCoins(), id);
+    if (!r.ok){ banner('Need ' + (r.cost||4) + ' coins for a Snugmug — or press F to serve a skater.'); return; }
+    if (!wnSpend(r.cost)){ banner('Need ' + r.cost + ' coins for a Snugmug.'); return; }
+    wn.sv = r.state; wnSave(wn.sv);
+    wn.run.cocoa = wn.run.cocoa || {warm:0, served:0};
+    wn.run.cocoa.warm = r.warm;
+    banner('☕ ' + r.message);
+    wnHud(); wnNet();
+  }
+  function wnThrowNow(){
+    if (!wn) return;
+    const yaw = (typeof cam !== 'undefined' && cam) ? cam.yaw : 0;
+    const dir = {x: -Math.sin(yaw), z: -Math.cos(yaw)};
+    const me = (typeof mp !== 'undefined' && mp && mp.me) ? mp.me : 'me';
+    let roster = [];
+    try { if (typeof mp !== 'undefined' && mp && mp.on && typeof mpRoster === 'function') roster = mpRoster() || []; } catch(e){}
+    const origin = {x: P.x, z: P.z};
+    const r = WinterRules.wnThrowAimed(wn.run, wn.sv, me, origin, dir, roster, WinterRules.WN_TARGETS);
+    if (!r.ok){ banner(r.why === 'cool' ? 'Wait a tiny second…' : 'Hold that snowball a beat.'); return; }
+    wn.sv = r.state; wnSave(wn.sv); if (r.coins) wnPay(r.coins);
+    // flying puff
+    const shot = r.shot || {x:P.x, z:P.z, dx:dir.x, dz:dir.z, life:0.7, hitAt:8};
+    const ball = wnMesh(new THREE.SphereGeometry(0.22, 7, 7), '#f4fbff', shot.x, 1.15, shot.z);
+    (wn.shots || (wn.shots=[])).push({m:ball, x:shot.x, y:1.15, z:shot.z, dx:shot.dx, dz:shot.dz, t:0, life: Math.min(0.85, (shot.hitAt||8)/14), giggle: r.giggle, msg: r.message, why:r.why});
+    if (r.why === 'miss') banner('❄️ The snowball poofs into the snow.');
+    wnHud(); wnNet();
+  }
+  function wnTickShots(dt){
+    if (!wn) return;
+    const left = [];
+    (wn.shots || []).forEach(s => {
+      s.t = (s.t||0) + dt;
+      s.x += (s.dx||0) * 16 * dt;
+      s.z += (s.dz||0) * 16 * dt;
+      s.y = 1.15 + Math.sin(Math.min(1, s.t / (s.life||0.7)) * Math.PI) * 0.4;
+      if (s.m) s.m.position.set(s.x, s.y, s.z);
+      if (s.t >= (s.life||0.7)){
+        if (s.m){ try { scene.remove(s.m); } catch(e){} }
+        if (s.giggle) banner('❄️ ' + (s.msg || 'Poof! A little giggle rings out.'));
+      } else left.push(s);
+    });
+    wn.shots = left;
+    if (wn.run && wn.run.cocoa && (wn.run.cocoa.warm||0) > 0){
+      wn.run.cocoa.warm = Math.max(0, wn.run.cocoa.warm - dt);
+    }
+  }
   function wnBuildRink(){
     if (!wn || typeof WinterRules === 'undefined') return;
     const p = WinterRules.WN_POND;
@@ -145,6 +249,9 @@
     pond.rotation.x = -Math.PI/2; pond.position.set(pondDef.x, 0.52, pondDef.z); scene.add(pond); wnKeep(pond);
     wn.pond = {x:pondDef.x, z:pondDef.z};
     wnBuildRink();
+    wnBuildSnug();
+    wnBuildTargets();
+    wn.shots = [];
     wn.yard = {x:WinterRules.WN_YARD.x, z:WinterRules.WN_YARD.z};
     wn.posts = (WinterRules.WN_POSTS || []).map(p => ({id:p.id, x:p.x, z:p.z}));
     wn.posts.forEach(p => {
@@ -166,7 +273,7 @@
     wnBuildFestive();
     wnBind();
     wnHud();
-    banner('🎄 Welcome to Pinebell Village! Sled, skate Frostlane Rink (jump for a spin!), build a snow pal, sip cocoa, and toss practice snowballs. Races and snowball fights are for real friends only.');
+    banner('🎄 Welcome to Pinebell Village! Skate Frostlane Rink, grab a topped cocoa at Snugmug Cart, and toss snowballs (Q / RB / ❄️) at cans, puff pals, or real friends. Hits go poof with a giggle.');
   }
 
   function wnBuildFestive(){
@@ -315,6 +422,10 @@
     if (wn.lift && wnNear(wn.lift.x, wn.lift.z, 4)) return {lab:'Start a timed sled run (E / Ⓧ)', act:() => wnStartSled()};
     if (wn.finish && wnNear(wn.finish.x, wn.finish.z, 4) && wn.run.sled && wn.run.sled.done) return {lab:'Collect your sled coins (E / Ⓧ)', act:() => wnCashSled()};
     if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)) return {lab:'☕ Buy cocoa (E) or serve a mug (F / hold Ⓧ)', act:() => wnCocoa(false)};
+    if (wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8)){
+      const top = (typeof WinterRules.wnTopping === 'function') ? WinterRules.wnTopping(wn.snugTop) : {name:'Whipped cloud', emoji:'☁️'};
+      return {lab:'☕ Snugmug: E buy / F serve  ·  ' + (top.emoji||'') + ' ' + top.name + '  ·  Q cycles toppings', act:() => wnSnugDo(false)};
+    }
     if (wn.pond && wnNear(wn.pond.x, wn.pond.z, 8)){
       if (wn.run.skate && wn.run.skate.on) return {lab:'Skate a loop · jump / Ⓐ spin · Ⓑ cash laps', act:() => wnCashSkate()};
       return {lab:'Start skating at Frostlane Rink (E / Ⓧ)', act:() => wnStartSkate()};
@@ -401,7 +512,8 @@
     if (hint && wn){
       const s = wn.sv, run = wn.run;
       const sled = run.sled && run.sled.on ? ('  ·  🛷 ' + (run.sled.t||0).toFixed(1) + 's') : (s.sledBest ? ('  ·  best ' + Number(s.sledBest).toFixed(1) + 's') : '');
-      hint.textContent = '🎄 Pinebell  ·  🪙 ' + (s.coinsEarned||0) + ' earned  ·  💡 ' + (s.lights||0) + '  ·  🎁 best ' + (s.wrapBest||0) + sled;
+      const warm = (run.cocoa && run.cocoa.warm > 0) ? ('  ·  ☕ warm ' + Math.ceil(run.cocoa.warm) + 's') : '';
+      hint.textContent = '🎄 Pinebell  ·  🪙 ' + (s.coinsEarned||0) + ' earned  ·  💡 ' + (s.lights||0) + '  ·  🎁 best ' + (s.wrapBest||0) + sled + warm;
     }
     const btn = document.getElementById('wnAct');
     const p = wnPrompt();
@@ -414,7 +526,8 @@
     const c = e.code || e.key;
     if (e.repeat && (c === 'KeyE' || c === 'KeyF')) return true; // QA t332u: holding E on a sled used to hop straight back off
     if (c === 'KeyE'){ wnAct(); return true; }
-    if (c === 'KeyF'){ if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)){ wnCocoa(true); return true; } wnAct(); return true; }
+    if (c === 'KeyF'){ if (wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8)){ wnSnugDo(true); return true; } if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)){ wnCocoa(true); return true; } wnAct(); return true; }
+    if (c === 'KeyQ'){ if (wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8)){ wnSnugCycle(); return true; } wnThrowNow(); return true; }
     if (c === 'Space' && wn.run.sled && wn.run.sled.on){ WinterRules.wnSledJump(wn.run); return true; }
     if (c === 'Space' && wn.run.skate && wn.run.skate.on && WinterRules.wnOnRink && WinterRules.wnOnRink(P.x, P.z)){ wnDoTrick(); return false; }
     if ((c === 'KeyA' || c === 'ArrowLeft') && wn.run.sled && wn.run.sled.on){ WinterRules.wnSledSteer(wn.run, -1, 0.08); return true; }
@@ -430,16 +543,19 @@
       if (!wn._b && jp && jp[1]){ wn._b = true; wnHopOff(); return true; }
       if (jp && !jp[1]) wn._b = false;
     }
-    if (!wn._x && jp && jp[2]){ wn._x = true; if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6) && wn._holdF) wnCocoa(true); else wnAct(); return true; }
+    if (!wn._x && jp && jp[2]){ wn._x = true; if (wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8) && wn._holdF) wnSnugDo(true); else if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6) && wn._holdF) wnCocoa(true); else wnAct(); return true; }
     if (jp && !jp[2]) wn._x = false;
     if (!wn._b && jp && jp[1] && wn.run.skate && wn.run.skate.on){ wn._b = true; wnCashSkate(); return true; }
     if (jp && !jp[1]) wn._b = false;
+    if (!wn._rb && jp && jp[5]){ wn._rb = true; wnThrowNow(); return true; }
+    if (jp && !jp[5]) wn._rb = false;
     return false;
   }
   function wnUpdate(dt){
     if (!wn) return;
     dt = Math.max(0, Math.min(0.12, +dt || 0));
     WinterRules.wnSnowballTick(wn.run, dt);
+    wnTickShots(dt);
     if (wn.run && wn.run.night && wn.lights){ const tnow = (wn.run.t = (wn.run.t||0)+dt); wn.lights.forEach((L,i)=>{ if (!L.mesh||!L.mesh.visible) return; L.mesh.children.forEach((c,j)=>{ if (c.material) c.material.opacity = 0.65 + 0.35*Math.sin(tnow*4 + i + j); c.material.transparent = true; }); }); }
     (wn.flakes||[]).forEach(f => {
       if (!f.m) return;
@@ -481,6 +597,10 @@
   function wnBind(){
     const a=document.getElementById('wnAct');
     if (a && !a.__wn){ a.__wn=true; a.addEventListener('click', ev => { ev.preventDefault(); wnAct(); }); }
+    const snow=document.getElementById('wnSnowBtn');
+    if (snow && !snow.__wn){ snow.__wn=true; snow.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); wnThrowNow(); }); }
+    const cycle=document.getElementById('wnTopBtn');
+    if (cycle && !cycle.__wn){ cycle.__wn=true; cycle.addEventListener('click', ev => { ev.preventDefault(); wnSnugCycle(); }); }
   }
   function winterStop(){
     if (!wn) return;
