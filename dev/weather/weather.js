@@ -2,6 +2,20 @@
   const WX_RULES = (typeof WXRules !== 'undefined' && WXRules) ? WXRules : (typeof window !== 'undefined' && window.WXRules) || {};
   const WX_KEY = WX_RULES.WX_KEY || 'rubloxWeather';
   let wx = null;
+  let wxRoom = null;
+  // Transient room state, never written to the player's weather preference/save.
+  function wxRoomApply(s){
+    if (!s || typeof s.m !== 'string' || !['auto','day','off'].includes(s.setting) ||
+        !Number.isFinite(s.t) || s.t < 0 || s.t > 1e9 || !Number.isFinite(s.age) || s.age < 0 || s.age > 60 ||
+        !['clear','rain','snow','fog'].includes(s.weather)) return false;
+    wxRoom = {m:s.m, setting:s.setting, t:s.t, age:s.age, weather:s.weather, received:performance.now()};
+    return true;
+  }
+  function wxRoomClear(){ wxRoom = null; if (wx) wx._last = ''; }
+  function wxRoomWire(){
+    if (!wx || !wx.modeId) return null;
+    return {m:wx.modeId, setting:wx.set.mode, t:wx.t, age:wx.weatherT, weather:wx.weather};
+  }
 
   function wxLoad(){
     let raw = null;
@@ -128,19 +142,24 @@
     wxEnsure();
     if (env) wxBind(env);
     if (modeId) wx.modeId = modeId;
-    const set = wx.set || wxLoad();
-    wx.set = set;
+    // Room-authoritative only while fresh; disconnect restores personal preferences.
+    const own = wx.set || wxLoad();
+    wx.set = own;
+    const remote = wxRoom && wxRoom.m === wx.modeId && performance.now() - wxRoom.received < 10000 ? wxRoom : null;
+    const set = remote ? {mode:remote.setting} : own;
     if (!(WX_RULES.wxEnabled && WX_RULES.wxEnabled(wx.modeId, set))){
       if (wx.drops) wxClearDrops();
       return;
     }
     dt = Math.min(0.08, +dt || 0.016);
-    wx.t += dt;
-    wx.weatherT += dt;
+    if (remote){
+      const elapsed = Math.max(0, (performance.now() - remote.received) / 1000);
+      wx.t = remote.t + elapsed; wx.weatherT = remote.age + elapsed; wx.weather = remote.weather;
+    } else { wx.t += dt; wx.weatherT += dt; }
     const clock = (set.mode === 'day')
       ? (WX_RULES.wxForceDay ? WX_RULES.wxForceDay() : {phase:'day', sun:1})
       : (WX_RULES.wxClock ? WX_RULES.wxClock(wx.t, WX_RULES.WX_DAY_LEN) : {phase:'day', sun:1});
-    if (set.mode === 'auto' && wx.weatherT > (WX_RULES.WX_WEATHER_LEN || 48)){
+    if (!remote && set.mode === 'auto' && wx.weatherT > (WX_RULES.WX_WEATHER_LEN || 48)){
       wx.weatherT = 0;
       wx.weather = WX_RULES.wxPickWeather ? WX_RULES.wxPickWeather(wx.modeId, Math.random) : 'clear';
     }
@@ -181,6 +200,9 @@
 
   try {
     if (typeof window !== 'undefined'){
+      window.wxRoomApply = wxRoomApply;
+      window.wxRoomWire = wxRoomWire;
+      window.wxRoomClear = wxRoomClear;
       window.wxEnter = wxEnter;
       window.wxBind = wxBind;
       window.wxTick = wxTick;

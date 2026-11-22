@@ -427,7 +427,10 @@
   }
   function wnIsGuest(){ try { return !!(typeof mp !== 'undefined' && mp && mp.on && !mp.host); } catch(e){ return false; } }
   function wnWire(){ return wn ? WinterRules.wnWire(wn.sv, wn.run) : null; }
-  function wnApply(snap){ if (wn && snap){ if (snap.sledBest) wn.sv.sledBest = snap.sledBest; wnHud(); } }
+  function wnApply(snap){ if (wn && snap){ if (snap.sledBest) wn.sv.sledBest = snap.sledBest;
+    // QA t337u: night is the host's; a joiner adopts it so nobody is in daylight while a friend sees the lights.
+    if (wnIsGuest() && typeof snap.night === 'boolean' && !!wn.run.night !== snap.night){ WinterRules.wnSetNight(wn.run, snap.night); wnPaintLights(); }
+    wnHud(); } }
   function wnNet(){
     if (wnIsGuest() || !wn || typeof mp === 'undefined' || !mp || !mp.on || typeof mpSend !== 'function') return;
     try { mpSend({t:'wn', snap: wnWire()}); } catch (e){}
