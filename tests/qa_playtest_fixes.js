@@ -151,3 +151,35 @@ describe('modals and cameras', () => {
     assert.ok(html.includes('Up to 4 stickers! Tap a lit one to take it off.'));
   });
 });
+
+describe('phone HUD: build stamp, rotate tip, and school catch camera', () => {
+  test('the build stamp sits in the bottom center on phones, not on the jump button', () => {
+    assert.match(html, /\.touchui \.fsbuild\.show,\.touchui \.fsbuild\{right:auto;left:50%;transform:translateX\(-50%\)/);
+    assert.doesNotMatch(html, /\.touchui \.fsbuild[^}]*right:max\(8px/);
+  });
+  test('the rotate-phone tip is a short chip away from the screen center and auto-dismisses quickly', () => {
+    assert.match(html, /id="oRot">\s*<b>📱<\/b>Sideways is roomier/);
+    assert.doesNotMatch(html, /Turn your phone sideways for a bigger view!/);
+    assert.match(html, /\.orot\{[^}]*top:max\(10px,calc\(env\(safe-area-inset-top\) \+ 8px\)\)/);
+    assert.doesNotMatch(html, /\.orot\{[^}]*top:50%;[^}]*transform:translate\(-50%,-50%\)/);
+    assert.match(html, /setTimeout\(\(\) => \{ dismissRotate\(\); \}, 2200\)/);
+    assert.match(html, /Wait for the opening speech bubble/);
+    assert.match(html, /:has\(#oRot\.show\) #oBanner\{top:62%\}/);
+    assert.match(html, /function dismissRotate\(/);
+    assert.match(html, /jz\.addEventListener\('pointerdown', e => \{\s*if \(typeof dismissRotate === 'function'\) dismissRotate\(\)/);
+    assert.match(html, /:has\(#oRot\.show\) #elevBox/);
+    assert.match(html, /:has\(#oRot\.show\) #t302Box/);
+    assert.match(html, /:has\(#oRot\.show\) #scBox/);
+    assert.match(html, /#elevMeter\{[^}]*pointer-events:none/);
+    assert.match(html, /\.touchui #elevMeter\{bottom:372px\}/);
+  });
+  test('getting caught in Afterbell School re-frames the camera down the hall', () => {
+    assert.match(html, /Re-frame so you look down the hall/);
+    assert.match(html, /cam\.yaw = id === 'class' \? -Math\.PI\/2 : id === 'library' \? Math\.PI\/2 : 0;/);
+    assert.match(html, /id === 'lobby' \? Math\.min\(r\.z, 18\)/);
+    const src = fs.readFileSync(path.join(__dirname, '..', 'dev/school/runtime.js'), 'utf8');
+    assert.match(src, /cam\.yaw = id === 'class' \? -Math\.PI\/2 : id === 'library' \? Math\.PI\/2 : 0;/);
+    assert.match(src, /id === 'lobby' \? Math\.min\(r\.z, 18\)/);
+    assert.match(src, /cam: \(typeof cam !== 'undefined' && cam\) \? \{yaw:cam\.yaw/);
+  });
+});

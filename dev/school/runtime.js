@@ -261,8 +261,17 @@
     }
     if (sc.run.caught){
       const r = sc.run.respawn || {x:0,y:0.5,z:24};
-      Object.assign(P, {x:r.x, y:r.y, z:r.z, vx:0, vy:0, vz:0, onGround:false, ground:null, px:r.x, py:r.y, pz:r.z});
+      const id = (sc.run && sc.run.checkpoint) || 'lobby';
+      // Lobby checkpoint sits right in front of the "Front doors" sign. Stand a few steps into the room so the third-person camera looks down the hall instead of through that sign.
+      const z = id === 'lobby' ? Math.min(r.z, 18) : r.z;
+      Object.assign(P, {x:r.x, y:r.y, z:z, vx:0, vy:0, vz:0, onGround:false, ground:null, px:r.x, py:r.y, pz:z});
       sc.run.caught=false;
+      // Re-frame so you look down the hall / into the school, not at a nearby wall or sign.
+      if (typeof cam !== 'undefined' && cam){
+        cam.yaw = id === 'class' ? -Math.PI/2 : id === 'library' ? Math.PI/2 : 0;
+        cam.pitch = 0.18;
+        cam.dist = 9;
+      }
       banner('The Hush Warden found you… but everyone is okay! Back to your last checkpoint.');
     }
     const p = scPrompt();
@@ -316,7 +325,8 @@
         warden: sc.run ? {x:sc.run.wx, z:sc.run.wz} : null,
         hide: hide && hide.id,
         room: (typeof P !== 'undefined' && P && SchoolRules.scRoomAt) ? (SchoolRules.scRoomAt(P.x, P.z) || {}).id : null,
-        y: (typeof P !== 'undefined' && P) ? P.y : null
+        y: (typeof P !== 'undefined' && P) ? P.y : null,
+        cam: (typeof cam !== 'undefined' && cam) ? {yaw:cam.yaw, pitch:cam.pitch, dist:cam.dist} : null
       };
     },
     hall(){ if(!sc) return; sc.sv.lessScary=false; scSave(sc.sv); scPaintLess(); scApplyMood(); if(P){P.x=0;P.y=0.5;P.z=6;} if(sc.warden) sc.warden.position.set(2,0,-2); if(typeof cam!=='undefined'&&cam){cam.yaw=0.15;cam.pitch=0.08;cam.dist=11;} try{ if(obbyDebug&&obbyDebug.camLook) obbyDebug.camLook({x:5,y:3.4,z:12},{x:0,y:1.6,z:-1}); }catch(e){} },

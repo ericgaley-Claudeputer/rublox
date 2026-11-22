@@ -83,4 +83,6 @@ test('school doorways fit a max player, Gore is environmental only, and the mode
   assert.match(html, /Afterbell School/);
   assert.match(html, /id="t302LessBtn"|id="scLessBtn"/);
   assert.match(html, /rubloxSchool/);
+  assert.match(html, /cam\.yaw = id === 'class' \? -Math\.PI\/2/);
+
 });

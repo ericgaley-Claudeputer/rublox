@@ -507,9 +507,12 @@ html.ingame,html.ingame body{overflow:hidden;overscroll-behavior:none;height:100
 .touchui .obtns button{min-width:50px;min-height:50px;justify-content:center;font-size:19px}
 .touchui .otip{bottom:auto;top:calc(76px + env(safe-area-inset-top))}
 @media (max-width:560px){.touchui .otip{top:calc(136px + env(safe-area-inset-top))}}
-.orot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(29,35,64,.9);color:#fff;font-weight:900;font-size:18px;padding:18px 22px;border-radius:20px;text-align:center;display:none;max-width:86vw;line-height:1.4}
+.orot{position:absolute;left:50%;top:max(10px,calc(env(safe-area-inset-top) + 8px));bottom:auto;transform:translate(-50%,0);background:rgba(29,35,64,.92);color:#fff;font-weight:900;font-size:14px;padding:8px 12px;border-radius:14px;text-align:center;display:none;max-width:min(260px,58vw);line-height:1.3;z-index:8;pointer-events:auto}
 .orot.show{display:block;animation:boing .5s cubic-bezier(.3,1.8,.5,1)}
-.orot b{display:block;font-size:46px;animation:tilt 1.6s ease-in-out infinite}
+.orot b{display:inline;font-size:18px;animation:none;margin-right:4px}
+.touchui .orot{top:calc(var(--hudb, 70px) + 6px)}
+.touchui:has(#oRot.show) .otip,.touchui:has(#oRot.show) #t297Box,.touchui:has(#oRot.show) #t302Box,.touchui:has(#oRot.show) #elevBox,.touchui:has(#oRot.show) #mnBox,.touchui:has(#oRot.show) #shBox,.touchui:has(#oRot.show) #wnBox,.touchui:has(#oRot.show) #mmBox,.touchui:has(#oRot.show) #vtBox,.touchui:has(#oRot.show) #scBox,.touchui:has(#oRot.show) #thBox{top:calc(var(--hudb, 70px) + 90px)!important}
+.touchui:has(#oRot.show) #oBanner{top:62%}
 @keyframes tilt{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(90deg)}}
 @media (max-width:760px),(max-height:500px){
   .ostats{gap:5px}
@@ -906,7 +909,7 @@ body.dhreset-open #dhCut, body.dhreset-open #dhSkip, body.dhreset-open .dhbubble
 .bkot{display:inline-block;background:#fff4e6;border-radius:8px;padding:1px 6px;margin:2px;font-size:15px}
 @media (max-width:760px),(max-height:520px){.bkord{font-size:15px}.bkb{font-size:16px;min-width:50px;min-height:42px;padding:2px 5px}#bkPanel h2{font-size:17px;margin:0}#bkItems{max-height:52vh;overflow:auto}}
 .fsnotip #oTip{display:none!important}
-.fsbuild{display:none;position:absolute;right:max(8px,env(safe-area-inset-right));bottom:max(6px,env(safe-area-inset-bottom));z-index:9;font-size:10px;font-weight:800;color:rgba(29,35,64,.42);background:rgba(255,255,255,.55);border-radius:8px;padding:2px 7px;pointer-events:none;letter-spacing:.2px}.fsbuild.show{display:block}
+.fsbuild{display:none;position:absolute;right:max(8px,env(safe-area-inset-right));bottom:max(6px,env(safe-area-inset-bottom));z-index:9;font-size:10px;font-weight:800;color:rgba(29,35,64,.42);background:rgba(255,255,255,.55);border-radius:8px;padding:2px 7px;pointer-events:none;letter-spacing:.2px}.fsbuild.show{display:block}.touchui .fsbuild.show,.touchui .fsbuild{right:auto;left:50%;transform:translateX(-50%);bottom:max(8px,env(safe-area-inset-bottom));z-index:5}
 .fswardbtn{display:none;position:absolute;right:14px;bottom:96px;z-index:6;border:0;border-radius:16px;padding:10px 16px;background:#ff6fb5;color:#fff;font:inherit;font-weight:900;font-size:17px;box-shadow:0 4px 0 #c94f8d;cursor:pointer}
 .fswardbtn.show{display:block}.fsshow{background:#8b5cf6;box-shadow:0 4px 0 #5b34c0}
 .fsnear{display:none;position:absolute;left:50%;bottom:120px;transform:translateX(-50%);z-index:6;border:3px solid #fff;border-radius:18px;padding:9px 18px;background:#8b5cf6;color:#fff;font:inherit;font-weight:900;font-size:18px;box-shadow:0 4px 0 #5b34c0;cursor:pointer;animation:fsbob 1s ease-in-out infinite alternate}
@@ -1661,7 +1664,7 @@ body:not(:has(#obby.show)) .toast{color:#111;background:#8ef0be;box-shadow:0 6px
 #elevDailyBtn{right:auto;left:16px;bottom:224px;background:#fff0d8}
 #elevBadgeBtn{right:auto;left:16px;bottom:288px;background:#f0e8ff}
 .elevmode #elevHelpBtn,.elevmode #elevIndexBtn,.elevmode #elevShopBtn,.elevmode #elevLessBtn,.elevmode #elevBadgeBtn,.elevmode #elevDailyBtn{display:block}
-#elevMeter{display:none;position:absolute;left:50%;bottom:140px;transform:translateX(-50%);z-index:9;width:min(520px,84%);height:22px;background:#fff;border:3px solid #1d2340;border-radius:999px;overflow:hidden}
+#elevMeter{display:none;position:absolute;left:50%;bottom:140px;transform:translateX(-50%);z-index:9;width:min(520px,84%);height:22px;background:#fff;border:3px solid #1d2340;border-radius:999px;overflow:hidden;pointer-events:none}
 #elevMeter.show{display:block}
 #elevMeterFill{position:absolute;top:0;bottom:0;left:0;width:0;background:#7c5cff}
 #elevMeterLab{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#1d2340;pointer-events:none}
@@ -1683,7 +1686,8 @@ body:not(:has(#obby.show)) .toast{color:#111;background:#8ef0be;box-shadow:0 6px
   #elevLessBtn{bottom:184px}
   #elevDailyBtn{bottom:248px}
   #elevBadgeBtn{bottom:312px}
-  #elevMeter{bottom:164px}
+  #elevMeter{bottom:164px;pointer-events:none}
+.touchui #elevMeter{bottom:372px}
 }
 #elevVoteList{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:12px}
 .elevVoteCard{display:flex;flex-direction:column;gap:4px;background:#fff8e0;border:3px solid #1d2340;border-radius:16px;padding:12px 10px;min-height:110px;font:inherit;cursor:pointer;font-weight:800;text-align:center}
@@ -2682,7 +2686,7 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
     <div class="stats" id="bShareMsg"></div>
     <div class="owinbtns"><button class="big blue" id="bShareLoad">📥 Load code</button><button class="big gray" id="bShareClose">✖ Close</button></div>
   </div></div>
-  <div class="orot" id="oRot"><b>📱</b>Turn your phone sideways for a bigger view!<br><small>(or keep playing like this 👍)</small></div>
+  <div class="orot" id="oRot"><b>📱</b>Sideways is roomier — or keep playing 👍</div>
   <button class="oskip" id="oSkip" title="Too tricky? Skip to the next level">⏭️ Skip level</button>
   <div class="oflash" id="oFlash"></div>
   <div class="owarn" id="oWarn"></div>
@@ -37875,10 +37879,21 @@ function dhLayoutHud(){
       ? '🕹️ Left thumb to move · ⬆️ to jump · 🏃 to run · Swipe the right side to look · 👁️ first person · 😀 emotes'
       : '⌨️ WASD / Arrows to move · Space to jump · Shift to run · Drag the mouse to look · V first person · Scroll to zoom (all the way in = first person) · 1–8 emotes · Esc to pause') + '<br>' + goal + (mode === 'lava' ? '<br>🪜 Walk into a gray truss to climb it!' : '');
   }
+  function dismissRotate(){
+    rotDismissed = true;
+    clearTimeout(rotT);
+    const el = $('#oRot'); if (el) el.classList.remove('show');
+  }
   function checkRotate(){
-    const show = running && touchUI && innerHeight > innerWidth && !rotDismissed;
-    $('#oRot').classList.toggle('show', show);
-    clearTimeout(rotT); if (show) rotT = setTimeout(() => { rotDismissed = true; $('#oRot').classList.remove('show'); }, 5000);
+    const want = running && touchUI && innerHeight > innerWidth && !rotDismissed;
+    clearTimeout(rotT);
+    if (!want){ const el = $('#oRot'); if (el) el.classList.remove('show'); return; }
+    // Wait for the opening speech bubble to finish so this chip does not cover Pip or NPC lines.
+    rotT = setTimeout(() => {
+      if (!(running && touchUI && innerHeight > innerWidth && !rotDismissed)) return;
+      $('#oRot').classList.add('show');
+      rotT = setTimeout(() => { dismissRotate(); }, 2200);
+    }, 1800);
   }
   function camSolidAt(x, y, z, pad){
     pad = pad == null ? .25 : pad;
@@ -38572,6 +38587,7 @@ function dhLayoutHud(){
       const m = Math.hypot(dx, dy); if (m > jR){ dx *= jR/m; dy *= jR/m; }
       joy.x = dx / jR; joy.y = -dy / jR; if (Math.hypot(joy.x, joy.y) < .12) joy.x = joy.y = 0; knob.style.transform = `translate(${dx}px,${dy}px)`; };
     jz.addEventListener('pointerdown', e => {
+      if (typeof dismissRotate === 'function') dismissRotate();
       e.preventDefault(); if (jid !== null) return; jid = e.pointerId; try { jz.setPointerCapture(jid); } catch(_){}
       jR = base.offsetWidth / 2;
       jcx = Math.max(jR + 8, Math.min(innerWidth * .5 - jR, e.clientX)); jcy = Math.max(jR + 70, Math.min(innerHeight - jR - 8, e.clientY));
@@ -38587,7 +38603,8 @@ function dhLayoutHud(){
     jb.addEventListener('pointerdown', e => { e.preventDefault(); joy.jump = true; jb.classList.add('on'); });
     ['pointerup','pointercancel','pointerleave'].forEach(t => jb.addEventListener(t, () => { joy.jump = false; jb.classList.remove('on'); }));
     $('#oEmoBtn').onclick = e => { e.stopPropagation(); if ($('#oRot').classList.contains('show')) { rotDismissed = true; $('#oRot').classList.remove('show'); } buildEmoteMenu(); $('#oEmos').classList.toggle('show'); };
-    $('#oRot').onclick = () => { rotDismissed = true; $('#oRot').classList.remove('show'); };
+    $('#oRot').onclick = () => { if (typeof dismissRotate === 'function') dismissRotate(); else { rotDismissed = true; $('#oRot').classList.remove('show'); } };
+    if (!$('#obby').__rotPtr){ $('#obby').__rotPtr = true; $('#obby').addEventListener('pointerdown', () => { if (typeof dismissRotate === 'function') dismissRotate(); }, {capture:true}); }
     $('#obby').addEventListener('pointerdown', e => { if (running && e.pointerType === 'touch' && !touchUI) setTouchUI(true); }, true);
     $('#obby').addEventListener('touchmove', e => { if (running && !e.target.closest('.mbox')) e.preventDefault(); }, {passive: false});
     $('#obby').addEventListener('dblclick', e => e.preventDefault());
@@ -49185,8 +49202,17 @@ function start(m = 'obby', d = null){
     }
     if (sc.run.caught){
       const r = sc.run.respawn || {x:0,y:0.5,z:24};
-      Object.assign(P, {x:r.x, y:r.y, z:r.z, vx:0, vy:0, vz:0, onGround:false, ground:null, px:r.x, py:r.y, pz:r.z});
+      const id = (sc.run && sc.run.checkpoint) || 'lobby';
+      // Lobby checkpoint sits right in front of the "Front doors" sign. Stand a few steps into the room so the third-person camera looks down the hall instead of through that sign.
+      const z = id === 'lobby' ? Math.min(r.z, 18) : r.z;
+      Object.assign(P, {x:r.x, y:r.y, z:z, vx:0, vy:0, vz:0, onGround:false, ground:null, px:r.x, py:r.y, pz:z});
       sc.run.caught=false;
+      // Re-frame so you look down the hall / into the school, not at a nearby wall or sign.
+      if (typeof cam !== 'undefined' && cam){
+        cam.yaw = id === 'class' ? -Math.PI/2 : id === 'library' ? Math.PI/2 : 0;
+        cam.pitch = 0.18;
+        cam.dist = 9;
+      }
       banner('The Hush Warden found you… but everyone is okay! Back to your last checkpoint.');
     }
     const p = scPrompt();
@@ -49240,7 +49266,8 @@ function start(m = 'obby', d = null){
         warden: sc.run ? {x:sc.run.wx, z:sc.run.wz} : null,
         hide: hide && hide.id,
         room: (typeof P !== 'undefined' && P && SchoolRules.scRoomAt) ? (SchoolRules.scRoomAt(P.x, P.z) || {}).id : null,
-        y: (typeof P !== 'undefined' && P) ? P.y : null
+        y: (typeof P !== 'undefined' && P) ? P.y : null,
+        cam: (typeof cam !== 'undefined' && cam) ? {yaw:cam.yaw, pitch:cam.pitch, dist:cam.dist} : null
       };
     },
     hall(){ if(!sc) return; sc.sv.lessScary=false; scSave(sc.sv); scPaintLess(); scApplyMood(); if(P){P.x=0;P.y=0.5;P.z=6;} if(sc.warden) sc.warden.position.set(2,0,-2); if(typeof cam!=='undefined'&&cam){cam.yaw=0.15;cam.pitch=0.08;cam.dist=11;} try{ if(obbyDebug&&obbyDebug.camLook) obbyDebug.camLook({x:5,y:3.4,z:12},{x:0,y:1.6,z:-1}); }catch(e){} },
