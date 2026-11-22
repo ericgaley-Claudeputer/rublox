@@ -5,7 +5,7 @@
   const BK_FR = [['white', '🤍', 'Snow', '#fffaf0'], ['pink', '🩷', 'Bubblegum', '#ff8fc8'], ['choc', '🤎', 'Fudge', '#4a2a17'], ['mint', '💚', 'Mint', '#9ff0c8'], ['blue', '💙', 'Sky', '#8cc8ff'], ['purple', '💜', 'Grape', '#c39bff']];
   const BK_TP = [['sprinkles', '🎊', 'Sprinkles', 0], ['cherry', '🍒', 'Cherries', 0], ['candles', '🕯️', 'Candles', 0], ['berries', '🍓', 'Berries', 1], ['stars', '⭐', 'Gold Stars', 3], ['rainbow', '🌈', 'Rainbow Arch', 5]];
   const BK_TI = [[1, '1️⃣', '1 tier'], [2, '2️⃣', '2 tiers']];
-  const BK_ST = [[-6, -6], [0, -6], [6, -6]], BK_SLOTS = [-5, 0, 5];
+  const BK_ST = [[6, -6], [0, -6], [-6, -6]], BK_SLOTS = [5, 0, -5];   // audit56: Station 1 on the left as you face the counter
   const BK_BAKE = 5, BK_OMAX = 3, BK_LV = 5, BK_LVBONUS = 10;
   const BK_NPCS = [['Gran Gloria', '👵', {head: '#ffdbac', shirt: '#ff6fb5', pants: '#8b5cf6', hair: 'bun', hairColor: '#e8e8e8'}], ['Chef Pierre', '👨‍🍳', {head: '#f1c27d', shirt: '#f5f5f5', pants: '#1d2340', hair: 'short', hairColor: '#1d1d1d'}],
     ['Lily', '🌸', {head: '#8d5524', shirt: '#7bd389', pants: '#3a86ff', hair: 'pigtails', hairColor: '#1d1d1d'}], ['Max', '⚽', {head: '#ffdbac', shirt: '#ff4d4d', pants: '#1d2340', hair: 'spiky', hairColor: '#e9b949'}],

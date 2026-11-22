@@ -31,6 +31,13 @@
       if (p && p.act) act.textContent = p.act;
     }
   }
+  // audit56: real people for Ms. Bramble and Fern (they were plain boxes), turned to face where you arrive
+  function ftNpc(av, x, z, fx, fz, col){
+    try {
+      const m = buildPlayer(Object.assign({}, typeof DEF !== 'undefined' ? DEF : {}, av));
+      m.g.position.set(x, .05, z); m.g.rotation.y = Math.atan2(fx - x, fz - z); scene.add(m.g); ftKeep(m.g); return m;
+    } catch(e){ return ftMesh(new THREE.BoxGeometry(0.7, 1.6, 0.5), col, x, 0.9, z); }
+  }
   function buildFieldTrip(){
     const started = FieldTripRules.ftNewVisit(ftState());
     ft = {trash:[], solids:[], sv: started.state, run: started.run, near:null, bus:null, homeBus:null};
@@ -57,6 +64,14 @@
     body.position.y = 1.3; bus.add(body);
     const cab = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.2, 2.2), new THREE.MeshLambertMaterial({color:'#ffe27a'}));
     cab.position.set(0, 2.2, 2.6); bus.add(cab);
+    // audit56: windows, a stripe and a door so it reads as a bus, not a yellow box
+    const glass = new THREE.MeshLambertMaterial({color:'#3a5a7a'}), stripe = new THREE.MeshLambertMaterial({color:'#1d2340'});
+    [-1.81, 1.81].forEach(x => {
+      for (let i = 0; i < 4; i++){ const w = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.7, 1.1), glass); w.position.set(x, 1.85, -2.6 + i * 1.5); bus.add(w); }
+      const st = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.16, 7.0), stripe); st.position.set(x, 1.1, 0); bus.add(st);
+    });
+    const wind = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.8, 0.04), glass); wind.position.set(0, 2.3, 3.72); bus.add(wind);
+    const door = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.6, 0.9), glass); door.position.set(1.82, 1.1, 2.6); bus.add(door);
     [[-1.3,0.5,2.4],[1.3,0.5,2.4],[-1.3,0.5,-2.4],[1.3,0.5,-2.4]].forEach(p => {
       const w = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.4, 10), new THREE.MeshLambertMaterial({color:'#2d2d2d'}));
       w.rotation.z = Math.PI/2; w.position.set(p[0], p[1], p[2]); bus.add(w);
@@ -65,8 +80,8 @@
     scene.add(bus); ftKeep(bus); ft.bus = bus;
     ftLab('🚌 Afterbell bus', FieldTripRules.FT_BUS.x, 3.6, FieldTripRules.FT_BUS.z);
     // Ms. Bramble
-    ftMesh(new THREE.BoxGeometry(0.7, 1.6, 0.5), '#c45c8a', FieldTripRules.FT_TEACHER.x, 0.9, FieldTripRules.FT_TEACHER.z);
-    ftLab('👩‍🏫 Ms. Bramble', FieldTripRules.FT_TEACHER.x, 2.4, FieldTripRules.FT_TEACHER.z);
+    ftNpc({body: 'girl', head: '#e0ac69', shirt: '#c45c8a', pants: '#3a3f6a', pantsPat: 'skirt', hair: 'bun', hairColor: '#6b4226', face: 'smile', shirtPat: null, hat: null}, FieldTripRules.FT_TEACHER.x, FieldTripRules.FT_TEACHER.z, 0, 18, '#c45c8a');
+    ftLab('👩‍🏫 Ms. Bramble', FieldTripRules.FT_TEACHER.x, 3.9, FieldTripRules.FT_TEACHER.z);
     // Nature Nook
     ftMesh(new THREE.BoxGeometry(10, 4.2, 8), '#e8d9b0', 0, 2.1, -36);
     ftMesh(new THREE.BoxGeometry(10.4, 0.3, 8.4), '#6a8a3a', 0, 4.3, -36);
@@ -84,8 +99,8 @@
     ftMesh(new THREE.BoxGeometry(3, 1.2, 3), '#8b6a3a', 22, 0.7, -32);
     ftLab('🔭 Lookout', 22, 2.2, -32);
     // guide Fern
-    ftMesh(new THREE.BoxGeometry(0.7, 1.6, 0.5), '#3a8f5a', FieldTripRules.FT_GUIDE.x, 0.9, FieldTripRules.FT_GUIDE.z);
-    ftLab('🧭 Fern', FieldTripRules.FT_GUIDE.x, 2.4, FieldTripRules.FT_GUIDE.z);
+    ftNpc({head: '#c68642', shirt: '#3a8f5a', pants: '#6b4a2a', hair: 'short', hairColor: '#2a1a10', face: 'smile', shirtPat: null, hat: null}, FieldTripRules.FT_GUIDE.x, FieldTripRules.FT_GUIDE.z, FieldTripRules.FT_NOOK.x, FieldTripRules.FT_NOOK.z + 4, '#3a8f5a');
+    ftLab('🧭 Fern', FieldTripRules.FT_GUIDE.x, 3.9, FieldTripRules.FT_GUIDE.z);
     // home bus (hidden until all finds)
     const home = bus.clone();
     home.position.set(FieldTripRules.FT_HOME_BUS.x, 0, FieldTripRules.FT_HOME_BUS.z);

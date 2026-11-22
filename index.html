@@ -624,6 +624,9 @@ body.reset-open #resetModal, body.reset-open #resetModal .mbox, body.reset-open 
 .padsens{display:flex;align-items:center;gap:10px;font-weight:800;margin:10px 0 8px;background:var(--bg2);border:3px solid var(--line);border-radius:14px;padding:8px 12px}
 .padsens span{flex:none}.padsens input{flex:1;accent-color:var(--green);margin:0;padding:0;border:0;width:auto;min-width:0}.padsens b{flex:none;width:44px;text-align:right}
 .padmap{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pctrl{display:none;text-align:left;margin:8px 0 4px;background:var(--bg2);border:3px solid var(--line);border-radius:14px;padding:8px 12px}.pctrl.show{display:block}
+.pctrl h4{margin:8px 0 4px;font-size:15px}.pctrl h4:first-child{margin-top:0}.pctrl ul{margin:0 0 4px;padding-left:20px}.pctrl li{font-size:14px;font-weight:700;line-height:1.35;margin:2px 0}.pctrl li.w{font-weight:500;color:var(--muted)}.pctrl .pctrlh{font-weight:900;font-size:16px;text-align:center;margin-bottom:4px}
+#pCtrlBtn{margin:4px 0 2px;font-size:16px;padding:8px 14px}
 .pmap{display:none;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;text-align:left}.pmap.show{display:grid}
 #oPausePanel .mbox{max-height:min(92vh, calc(100vh - 80px));overflow:auto;max-width:600px;margin-bottom:28px;padding-bottom:16px}
 #oPausePanel .invset .invrow{margin-bottom:6px}
@@ -828,7 +831,8 @@ body.dhreset-open #dhCut, body.dhreset-open #dhSkip, body.dhreset-open .dhbubble
 @media (max-width:760px),(max-height:520px){.dblane{height:36vh;bottom:150px}.dbnote{width:40px;height:40px;font-size:22px}}
 .hmnear{background:#8b5cf6;box-shadow:0 4px 0 #5b34c0}.hmnear small{color:#8b5cf6}
 .sbnear{background:#ff9f1c;box-shadow:0 4px 0 #c47a10}.sbnear small{color:#ff9f1c}
-#sbPick{z-index:8}#sbPick.show{display:flex}#sbPick .mbox,#sbPick{align-items:center;justify-content:center}
+#sbPick{z-index:8}#sbPick.show{display:flex;z-index:20}
+#obby.touchui #sbPick{align-items:center;justify-content:flex-start;padding-bottom:10px}#obby.touchui #sbPick h2{font-size:22px;margin:4px}#obby.touchui #sbPickList{max-height:min(48vh,420px)}   /* t337u: phone picker hugged the left edge under the tip */#sbPick .mbox,#sbPick{align-items:center;justify-content:center}
 #sbPick{position:absolute;inset:0;background:rgba(29,35,64,.55);flex-direction:column}
 #sbPick h2{color:#fff;font-size:28px;margin:8px}#sbPick .fsitems{background:rgba(255,255,255,.95);border-radius:16px;padding:10px;max-width:92vw}
 .icorders{position:absolute;left:10px;top:64px;z-index:5;display:flex;flex-direction:column;gap:5px;pointer-events:none}
@@ -3104,6 +3108,8 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
   <div class="opanel" id="oPausePanel"><div class="mbox">
     <span class="emoji">⏸️</span><h2 id="oPauseH">Paused</h2>
     <div class="stats" id="oPauseSub">Take a break! 😊</div>
+    <button class="big" id="pCtrlBtn" aria-expanded="false" aria-controls="pCtrl">🎮 Controls for this game</button>
+    <div class="pctrl" id="pCtrl" role="region" aria-label="Controls for this game"></div>
     <div class="invset">
       <label class="invrow"><input type="checkbox" class="invY" id="pInvY"><span>Invert look up/down<small>Flips which way the camera tilts</small></span></label>
       <label class="invrow"><input type="checkbox" class="invX" id="pInvX"><span>Invert look left/right<small>Flips which way the camera turns</small></span></label>
@@ -3174,7 +3180,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.22-5';
+const BUILD = '2026.11.22-6';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -12891,6 +12897,77 @@ const GAMES = [
   {id:'lava',  name:'Lava Escape', emoji:'🌋', tag:'Climb up fast',   draw: drawLava, playable: true, anim: true},
   {id:'nds',   name:'Disaster Island', emoji:'🌪️', tag:'Survive natural disasters!', draw: drawNds, playable: true, anim: true},
 ];
+/* t337u: every game's own keyboard, Xbox controller and touch controls, shown from the pause menu ("🎮 Controls for this game").
+   Each entry lists that game's own buttons first; "walk" adds the shared moving-around lines underneath.
+   tests/mode_controls.js checks every game in GAMES has an entry with all three lists. */
+const CTRL_WALK = {
+  kb: ['WASD / Arrows: move', 'Space: jump', 'Shift: run', 'Drag the mouse: look', 'V: first person', 'Scroll: zoom', '1–8: emotes', 'Esc: pause menu'],
+  pad: ['Left stick: move', 'Ⓐ: jump', 'L3 (press the left stick): run', 'Right stick: look', 'R3 twice: first person', 'LT / RT: zoom', 'View button (two squares): emotes', '☰ Start: pause menu (Ⓨ in the menu: these controls)'],
+  touch: ['Left thumb: move', '⬆️: jump', '🏃: run', 'Swipe the right side: look', '👁️: first person', '😀: emotes', '⏸️ / ⚙️ button: pause menu'],
+};
+const MODE_CONTROLS = {
+  treehouse: {kb: ['E or G: place a piece / ride it', 'Q: next piece', 'R: rotate', 'F or C: open the pieces box', 'X: delete mode', 'U: undo', '[ and ]: floor down / up'],
+    pad: ['Ⓧ or RT: place a piece / ride it', 'Ⓨ: open the pieces box', 'LB: delete mode', 'RB: undo'], touch: ['Tap the big buttons to place, pick pieces, delete or undo'], walk: true},
+  school: {kb: ['E or F: look / use', 'L or Y: Less scary', 'Enter: try the locker code'], pad: ['Ⓧ or RT: look / use', 'Ⓨ: Less scary'], touch: ['Tap the big action button'], walk: true},
+  fieldtrip: {kb: ['E or F: look / collect / talk'], pad: ['Ⓧ or Ⓨ: look / collect / talk'], touch: ['Tap the big action button'], walk: true},
+  elevator: {kb: ['E or F: act / shop', 'I: floor list', 'H: help', 'Voting: ← → or 1–3 to pick, Enter or Space to vote'],
+    pad: ['Ⓧ: act / shop', 'Ⓨ: floor list', 'Ⓑ: close pop-ups', 'Voting: ✚ d-pad to pick, Ⓐ to vote'], touch: ['Tap the big buttons to act and vote'], walk: true},
+  mansion: {kb: ['E or F: read / flip / unlock', 'L: Less scary'], pad: ['Ⓧ: read / flip / unlock', 'Ⓨ: Less scary'], touch: ['Tap the big action button'], walk: true},
+  shelter: {kb: ['E or F: rescue / care / desk', 'H: send a happy pal home', 'U: bigger kennels'], pad: ['Ⓧ: rescue / care / desk', 'Ⓨ: send a happy pal home'], touch: ['Tap the big buttons to act'], walk: true},
+  winter: {kb: ['E: act', 'F: cocoa (by the cocoa stand)', 'On a sled: A / D steer, Space hop', 'On the rink: Space does a trick'],
+    pad: ['Ⓧ: act / cocoa', 'Ⓑ: hop off the sled, or cash in your skating laps', 'On a sled: left stick steers, Ⓐ hops'], touch: ['Tap the big buttons to act', 'On a sled: left thumb steers, ⬆️ hops'], walk: true},
+  vet: {kb: ['E or Space: help / use / get in the ambulance', 'Drag or click: look'], pad: ['Ⓧ: help / use', 'Ⓐ: use when a button shows', 'Ⓑ: get out of the ambulance'], touch: ['Swipe: look', 'Tap the big buttons to help'], walk: true},
+  mermaid: {kb: ['E: act', 'Space or R: swim up', 'Shift or F: swim down'], pad: ['Ⓧ: act', 'Ⓐ, RT or RB: swim up', 'LT or LB: swim down'], touch: ['⬆️ ⬇️: swim up and down', 'Tap the big buttons to act'], walk: true},
+  garden: {kb: ['E or F: plant / water / harvest / shop'], pad: ['Ⓧ: plant / water / harvest / shop'], touch: ['Tap the big action button'], walk: true},
+  meadow: {kb: ['Hold E or F: charge a snack toss, let go to throw', 'E near a friend: say hi / act'], pad: ['Hold RT: charge a snack toss, let go to throw', 'Ⓧ: act'], touch: ['Hold the big button to charge, let go to throw'], walk: true},
+  rides: {kb: ['E or F: place / ride', 'Q: next ride (Shift+Q: back)', 'R: rotate', 'C or Delete: pick up / delete mode', 'Ctrl+Z: undo', 'X: hop off', 'H: help'],
+    pad: ['Ⓧ or RT: place / ride', 'LB / RB: pick a ride', 'Ⓨ: rotate', 'LB + Ⓧ: delete mode', 'Ⓑ: hop off', 'Tutorial: ✚▶ next, ⧉ View skip'], touch: ['Tap the big buttons to place, rotate and ride'], walk: true},
+  hive: {kb: ['E or F: talk / gather / make honey'], pad: ['Ⓧ: talk / gather / make honey'], touch: ['Tap the big action button'], walk: true},
+  camp: {kb: ['Hold E or F: pick up / add logs', 'L: shine your light', 'J: journal'], pad: ['Hold Ⓧ: pick up / add logs', 'Ⓨ or RT: act', 'RB: shine your light'], touch: ['Hold the big button to pick up / add logs', 'Tap the big buttons to act'], walk: true},
+  cafe: {kb: ['E or F: make / serve', 'B: decorate'], pad: ['Ⓧ or Ⓨ: make / serve'], touch: ['Tap the big action button'], walk: true},
+  fish: {kb: ['E or F: cast / reel', 'I: fish index'], pad: ['Ⓧ or Ⓨ: cast / reel'], touch: ['Tap the big button to cast and reel', 'Tap 📖 for the fish index'], walk: true},
+  petshow: {kb: ['E or F: teach / perform'], pad: ['Ⓧ or Ⓨ: teach / perform'], touch: ['Tap the big action button'], walk: true},
+  hunt: {kb: ['E or F: dig', 'M: map'], pad: ['Ⓧ or Ⓨ: dig'], touch: ['Tap the big button to dig'], walk: true},
+  snowfest: {kb: ['E or F: play / use'], pad: ['Ⓧ or Ⓨ: play / use'], touch: ['Tap the big action button'], walk: true},
+  party: {kb: ['E or F: dance / sit / use'], pad: ['Ⓧ or Ⓨ: dance / sit / use'], touch: ['Tap the big action button'], walk: true},
+  lantern: {kb: ['E: use (doorbell, lights, door, bed, doodles)', 'G: write on a wall', 'T: decorate', 'M: map', 'Arcade / prize booth: arrows pick, Space or Enter go, Esc close'],
+    pad: ['Ⓧ: use', 'Ⓨ: map', 'LB: write on a wall', 'RB: decorate', 'Ⓑ: back / close', 'Arcade / prize booth: ✚ d-pad pick, Ⓐ or Ⓧ go'], touch: ['The yellow button rings the doorbell, flips lights or uses a thing', '🎩 Call Maestro Gleam when a friend is fizzled'], walk: true},
+  dreamhouse: {kb: ['E: buy / carry / build', 'Q: show spots (empty hands) / drop', 'Tab: show spots', 'R: rotate', '1–9: pick a job', 'Esc: menu'],
+    pad: ['Ⓧ, Ⓐ or RT: buy / carry / build', 'Ⓑ: rotate', 'Ⓨ: invite friends', 'LB / RB: pick a job', '✚▼: show spots'], touch: ['Left thumb: move', 'Tap 🏡 to buy, carry, mix and lay bricks'], walk: false},
+  pethotel: {kb: ['E: check in / care / check out'], pad: ['Ⓧ: check in / care / check out'], touch: ['Tap 🛎️ to check in, care or check out'], walk: true},
+  dance: {kb: ['← ↓ ↑ → or A S W D: hit the notes', 'Esc: pause'], pad: ['✚ d-pad: hit the notes', '☰ Start: pause'], touch: ['Tap the ← ↓ ↑ → pads in time'], walk: false},
+  haunt: {kb: ['E: use / solve a puzzle', 'Esc: home when you lose'], pad: ['Ⓧ: use / solve a puzzle'], touch: ['Tap 👻 actions'], walk: true},
+  stable: {kb: ['E: care / mount / get off', 'Space: jump (on your pony)', 'Esc: close the pony picker'], pad: ['Ⓧ: care / mount / get off', 'Ⓐ: jump (on your pony)'], touch: ['Tap 🐴 actions'], walk: true},
+  icecream: {kb: ['E: use a scoop station', 'Esc: close the station'], pad: ['Ⓧ: use a scoop station', 'Ⓑ: close'], touch: ['Tap 🍦 Station to scoop'], walk: true},
+  tower: {kb: ['Climb! Gold pads are checkpoints'], pad: ['Climb! Gold pads are checkpoints'], touch: ['Climb! Gold pads are checkpoints'], walk: true},
+  photostudio: {kb: ['E: take a photo', 'Space or Enter: snap', 'Q / E: pose', 'B: backdrop', 'F: framing', 'C: angle', 'T: shape', 'K: border', 'G: your photos', 'Esc: done'],
+    pad: ['Ⓧ: take a photo', 'Ⓐ: snap', 'LB / RB: pose', '✚◀▶: backdrop', '✚▲: framing', '✚▼: angle', 'Ⓧ (camera on): border', 'LT / RT: shape', 'Ⓨ: your photos', 'Ⓑ: done'], touch: ['Tap 📸 Take Photo, then tap the bar to change pose and backdrop', '📸 Snap!'], walk: true},
+  waterpark: {kb: ['E: ride', 'R: rides menu', 'On a float: A / D steer, Space paddle'], pad: ['Ⓧ: ride', 'Ⓨ: rides menu', 'On a float: left stick steers, Ⓐ paddles'], touch: ['Tap a ride button', 'On a float: left thumb steers, ⬆️ paddles'], walk: true},
+  bakery: {kb: ['E: use a cake station', 'Esc: close'], pad: ['Ⓧ: use a cake station', 'Ⓑ: close'], touch: ['Tap 🎂 Station to bake'], walk: true},
+  petisland: {kb: ['E: ask your pet', 'J: journal'], pad: ['Ⓧ: ask your pet', 'Ⓨ: journal'], touch: ['Tap 🐾 to ask your pet'], walk: true},
+  autumn: {kb: ['Jump in the leaf piles and find 12 pumpkins'], pad: ['Jump in the leaf piles and find 12 pumpkins'], touch: ['Jump in the leaf piles and find 12 pumpkins'], walk: true},
+  fashion: {kb: ['C: show menu (lobby)', 'E: wardrobe (dressing room)', 'On the runway: 1–7 pose; rating a friend: 1–5 stars'],
+    pad: ['Ⓧ: show menu / wardrobe', 'On the runway: Ⓧ / Ⓨ change pose', 'Rating a friend: ✚◀▶ stars, LB / RB pick a tag, Ⓧ add it'], touch: ['Tap ✨ Show menu', 'Tap the poses and stars on screen'], walk: true},
+  hide: {kb: ['Seeker: touch hiders to find them', 'Hiders: find a sneaky spot before the count ends'], pad: ['Seeker: touch hiders to find them', 'Hiders: find a sneaky spot before the count ends'], touch: ['Seeker: touch hiders to find them'], walk: true},
+  splash: {kb: ['F: throw a pebble 🪨', 'Q: shove 👊', 'R: pull a friend 🤝'], pad: ['RB: throw a pebble 🪨', 'Ⓧ: shove 👊', 'LB: pull a friend 🤝'], touch: ['🪨: pebble', '👊: shove'], walk: true},
+  race: {kb: ['W / ↑: go', 'S / ↓: brake', 'A / D: steer', 'Space: hop (hold + steer to drift)', 'Shift: use a power-up', 'V: first person', 'Esc: pause'],
+    pad: ['RT or Ⓐ: go', 'LT or Ⓑ: brake', 'Left stick: steer', 'RB or Ⓧ: hop / drift', 'LB or Ⓨ: use a power-up', '☰ Start: pause'], touch: ['Your ride goes by itself: left thumb steers (pull back to brake)', '⬆️: hop (hold + steer to drift)', '🎁: use a power-up', '👁️: first person'], walk: false},
+  pets: {kb: ['E: use / talk', 'M: my pets', 'I: Pet Index', 'In the car: W gas, S brake, A / D steer'],
+    pad: ['Ⓧ: pet / use', 'RB: 🎾 throw', 'LB: 🍖 feed', 'Ⓨ: 🦮 walk', 'Ⓑ: my pets', 'RT: tricks', 'In the car: RT gas, LT brake, stick steers, Ⓨ camera'], touch: ['Tap the yellow button to use things', 'In the car: left thumb steers, ⛽ Go, 🛑 Brake'], walk: true},
+  obby: {kb: ['Grab the coins, dodge the red lava, reach the 🏆'], pad: ['Grab the coins, dodge the red lava, reach the 🏆'], touch: ['Grab the coins, dodge the red lava, reach the 🏆'], walk: true},
+  build: {kb: ['Click: place a block', 'Shift+click or right-click: delete', 'X: build / delete / paint', 'Q / E: pick a block', 'Z: undo', 'G: play-test', 'B: share code'],
+    pad: ['RT: place', 'LT: delete', 'LB / RB: pick a block', 'Ⓧ: build / delete / paint', 'Ⓨ: undo', '✚▲: play-test', '✚▼: share code'], touch: ['Tap: place a block', '🔨: Build / Delete / 🎨 Paint', '▶️: play-test', '📤: share'], walk: true},
+  tag: {kb: ["Don't be IT! Touch someone to pass it on"], pad: ["Don't be IT! Touch someone to pass it on"], touch: ["Don't be IT! Touch someone to pass it on"], walk: true},
+  lava: {kb: ['Climb fast, the lava is rising!'], pad: ['Climb fast, the lava is rising!'], touch: ['Climb fast, the lava is rising!'], walk: true},
+  nds: {kb: ['Survive the disasters: get to high ground and dodge!'], pad: ['Survive the disasters: get to high ground and dodge!'], touch: ['Survive the disasters: get to high ground and dodge!'], walk: true},
+};
+function modeControls(id){
+  const c = MODE_CONTROLS[id]; if (!c) return null;
+  const out = {};
+  ['kb', 'pad', 'touch'].forEach(k => { out[k] = {own: c[k].slice(), walk: c.walk ? CTRL_WALK[k].slice() : []}; });
+  return out;
+}
+if (typeof globalThis !== 'undefined'){ globalThis.MODE_CONTROLS = MODE_CONTROLS; globalThis.CTRL_WALK = CTRL_WALK; globalThis.modeControls = modeControls; }
 function sky(ctx, a, b){ const g = ctx.createLinearGradient(0,0,0,200); g.addColorStop(0,a); g.addColorStop(1,b); ctx.fillStyle = g; ctx.fillRect(0,0,320,200); }
 function cube(ctx, x, y, s, col){ block(ctx, x, y, s, s, col); }
 function guy(ctx, x, y, s, shirt){
@@ -26480,7 +26557,7 @@ const Obby = (() => {
   const BK_FR = [['white', '🤍', 'Snow', '#fffaf0'], ['pink', '🩷', 'Bubblegum', '#ff8fc8'], ['choc', '🤎', 'Fudge', '#4a2a17'], ['mint', '💚', 'Mint', '#9ff0c8'], ['blue', '💙', 'Sky', '#8cc8ff'], ['purple', '💜', 'Grape', '#c39bff']];
   const BK_TP = [['sprinkles', '🎊', 'Sprinkles', 0], ['cherry', '🍒', 'Cherries', 0], ['candles', '🕯️', 'Candles', 0], ['berries', '🍓', 'Berries', 1], ['stars', '⭐', 'Gold Stars', 3], ['rainbow', '🌈', 'Rainbow Arch', 5]];
   const BK_TI = [[1, '1️⃣', '1 tier'], [2, '2️⃣', '2 tiers']];
-  const BK_ST = [[-6, -6], [0, -6], [6, -6]], BK_SLOTS = [-5, 0, 5];
+  const BK_ST = [[6, -6], [0, -6], [-6, -6]], BK_SLOTS = [5, 0, -5];   // audit56: Station 1 on the left as you face the counter
   const BK_BAKE = 5, BK_OMAX = 3, BK_LV = 5, BK_LVBONUS = 10;
   const BK_NPCS = [['Gran Gloria', '👵', {head: '#ffdbac', shirt: '#ff6fb5', pants: '#8b5cf6', hair: 'bun', hairColor: '#e8e8e8'}], ['Chef Pierre', '👨‍🍳', {head: '#f1c27d', shirt: '#f5f5f5', pants: '#1d2340', hair: 'short', hairColor: '#1d1d1d'}],
     ['Lily', '🌸', {head: '#8d5524', shirt: '#7bd389', pants: '#3a86ff', hair: 'pigtails', hairColor: '#1d1d1d'}], ['Max', '⚽', {head: '#ffdbac', shirt: '#ff4d4d', pants: '#1d2340', hair: 'spiky', hairColor: '#e9b949'}],
@@ -27794,7 +27871,7 @@ const Obby = (() => {
     plat(0, 0, 0, 28, 22, '#fff0f8', .3);
     // counter + three scoop stations
     plat(0, 1.1, 2, 16, 2.2, '#ffb3c7', 1.1); plat(0, 2.25, 2, 16, .3, '#fff', .15);
-    [[-5, 0], [0, 1], [5, 2]].forEach(([x, i]) => { const m = plat(x, 1.4, 1.2, 2.6, 1.6, '#7fd6ff', .5); ic.stations.push({i, x, z: 1.2, mesh: m.mesh}); const L = label(['🍦 L', '🍦 M', '🍦 R'][i], 'rgba(255,111,181,.92)'); L.position.set(x, 2.6, 1.2); scene.add(L); });
+    [[5, 0], [0, 1], [-5, 2]].forEach(([x, i]) => { const m = plat(x, 1.4, 1.2, 2.6, 1.6, '#7fd6ff', .5); ic.stations.push({i, x, z: 1.2, mesh: m.mesh}); const L = label(['🍦 L', '🍦 M', '🍦 R'][i], 'rgba(255,111,181,.92)'); L.position.set(x, 2.6, 1.2); scene.add(L); });
     // freezer case + decor
     plat(-10, 1.5, -4, 3, 4, '#c39bff', 1.5); plat(10, 1.5, -4, 3, 4, '#ffe08a', 1.5);
     plat(0, .2, -8, 8, 4, '#9ff0c8', .2);
@@ -27806,8 +27883,20 @@ const Obby = (() => {
     if (!ic.remote && !ic.orders.length){ icNewOrder(); ic.nextO = 10; }
     icHud(); banner(mp.on ? '🍦 Scoop Circus! Work the stations together!' : '🍦 Scoop Circus Ice Cream Shop! Customers want cones & cups!'); tipTimer = 6; }
   function iceCreamStop(){ if (ic && ic.panel >= 0) choosing = false; icClearToast(); ic = null; ['#icAct', '#icPanel', '#icOrders', '#icToast'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); }
+  // audit56: show who ordered. The customer models used to be built as a "visual stub" and never added to the scene.
+  function icCust(dt){
+    if (!ic || mp.on || typeof buildPlayer !== 'function') return;
+    const C = ic.cust || (ic.cust = {}), t = performance.now() / 1000;
+    ic.orders.forEach(o => { if (o.who < 0 || C[o.id] || o.slot == null) return; const N = IC_NPCS[o.who]; if (!N) return;
+      const m = buildPlayer(Object.assign({}, DEF, N[2])); m.g.position.set([5, 0, -5][o.slot] || 0, .05, 4.6); m.g.rotation.y = Math.PI; scene.add(m.g);
+      const lab = label(N[1] + ' ' + N[0], 'rgba(29,35,64,.75)'); lab.position.y = 3.6; m.g.add(lab); C[o.id] = {m}; });
+    for (const id in C){ const M = C[id], g = M.m.g;
+      if (M.bye == null && !ic.orders.some(o => o.id === +id)) M.bye = 1.2;
+      if (M.bye != null){ M.bye -= dt; g.position.z += dt * 4; g.rotation.y = 0; if (M.bye <= 0){ scene.remove(g); delete C[id]; } continue; }
+      g.position.y = .05 + Math.abs(Math.sin(t * 2 + +id)) * .08; }
+  }
   function iceCreamUpdate(dt){
-    if (!ic) return; icTick(dt);
+    if (!ic) return; icTick(dt); icCust(dt);
     if (ic.toastT > 0){ ic.toastT -= dt; if (ic.toastT <= 0) icClearToast(); }
     // proximity to stations
     let near = -1, best = 2.4; ic.stations.forEach(s => { const d = Math.hypot(P.x - s.x, P.z - s.z); if (d < best){ best = d; near = s.i; } });
@@ -37889,6 +37978,7 @@ const Obby = (() => {
       : mode === 'camp' ? '🎮 Left stick move · hold Ⓧ to pick up / add logs · RB shine your light · ☰ menu'
       : mode === 'rides' ? '🎮 Left stick move · Ⓧ place · LB/RB pick a ride · Ⓨ rotate · Ⓑ hop off · ☰ menu'
       : ['garden', 'hive', 'cafe', 'fish', 'petshow', 'hunt', 'party', 'snowfest'].includes(mode) ? '🎮 Left stick move · Ⓐ jump · Ⓧ act · Right stick look · ☰ menu'   // QA t330u: these showed the Obby pad line
+      : mode === 'lantern' ? '🎮 Left stick move · Ⓐ jump · Ⓧ use · Ⓨ map · LB write · RB decorate · Ⓑ back · ☰ menu'   // t337u: showed the plain Obby line
       : '🎮 Left stick move · L3 run · Ⓐ jump · Right stick look · R3 twice: first person · View emotes · LT/RT zoom · ☰ pause';
     t.innerHTML = line + (i >= 0 ? h.slice(i) : '');
   }
@@ -38938,6 +39028,7 @@ function dhLayoutHud(){
     $('#pThrow').onchange = e => setThrow(e.target.checked); $('#setThrow').onchange = e => setThrow(e.target.checked); $('#setThrow').checked = fp.throwTurn;
     $('#pPadSens').oninput = e => { const r = $('#padSens'); r.value = e.target.value; r.dispatchEvent(new Event('input')); menuVals(); };
     $('#pMouseSens').oninput = e => { const r = $('#mouseSens'); r.value = e.target.value; r.dispatchEvent(new Event('input')); menuVals(); };
+    $('#pCtrlBtn').onclick = () => ctrlShow();
     $('#pMapBtn').onclick = () => { const m = $('#pMap'); m.classList.toggle('show'); $('#pMapBtn').textContent = m.classList.contains('show') ? '🎮 Hide button map' : '🎮 Button map'; };
     setInterval(() => { if ($('#oPausePanel').classList.contains('show')) menuPad(); }, 1000);
     const HUD_HIT_SEL = '#dhBar, #dhAct, #dhTip, #dhYard, #dhShop, #dhUp, #dhVisit, #dhSteps, #dhResetModal, .obtns, #oExit, #oExit2, #oExit3, #oFP, #oPause, #oMute, #setBtn, #setModal, #oPausePanel, #chRoot, #chPanel, #chWheel, #chBtn, #lhRoot, #lhAct, #lhSet, #lhDraw, #lhWrite, #lhWriteBtn, #lhKnock, #lhGame, #lhBooth, #lhDecor, #lhDecorBtn, #lhCut, #lhCalm, #lhMeter, #lhFanfare, #lhSetBtn, #lhMyWagon, #lhMapBtn, #lhMap, #lhWall, #elevAct, #elevHelpBtn, #elevIndexBtn, #elevShopBtn, #elevLessBtn, #elevHelp, #elevIndex, #elevShop, #elevBox, #elevMeter, button, a, input, label, select';
@@ -39083,6 +39174,30 @@ function dhLayoutHud(){
   function menuVals(){ $('#pPadSensV').textContent = (+$('#pPadSens').value).toFixed(1) + '×'; $('#pMouseSensV').textContent = (+$('#pMouseSens').value).toFixed(1) + '×'; }
   function menuPad(){ const g = window.GP, st = $('#pPadStatus'), on = !!(g && g.connected); st.classList.toggle('on', on);
     st.innerHTML = on ? '🎮 ✅ Connected: <b>' + String((g.pad && g.pad.id) || 'Controller').replace(/[<>&]/g, '').replace(/\s*\(.*$/, '').slice(0, 40) + '</b>' : '🎮 No controller yet: press any button on it while the game is open.'; }
+  // t337u: every game's own controls (MODE_CONTROLS), opened from the pause menu: tap/click the button, or Ⓨ on a controller.
+  function ctrlPaint(){
+    const box = $('#pCtrl'); if (!box) return;
+    const esc = t => String(t).replace(/[&<>]/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;'}[ch]));
+    const c = typeof modeControls === 'function' ? modeControls(mode) : null;
+    const g = (typeof GAMES !== 'undefined' ? GAMES : []).find(x => x.id === mode);
+    const names = {kb: '⌨️ Keyboard', pad: '🎮 Xbox controller', touch: '📱 Touch screen'};
+    const order = pad.on ? ['pad', 'kb', 'touch'] : touchUI ? ['touch', 'kb', 'pad'] : ['kb', 'pad', 'touch'];
+    const list = k => {
+      const own = c ? c[k].own : [], walk = c ? c[k].walk : (typeof CTRL_WALK !== 'undefined' ? CTRL_WALK[k] : []);
+      return '<h4>' + names[k] + '</h4><ul>' + own.map(t => '<li>' + esc(t) + '</li>').join('') + walk.map(t => '<li class="w">' + esc(t) + '</li>').join('') + '</ul>';
+    };
+    box.innerHTML = '<div class="pctrlh">' + esc(g ? g.emoji + ' ' + g.name : '🎮 This game') + '</div>' + order.map(list).join('');
+    box.dataset.mode = mode;
+  }
+  function ctrlShow(on){
+    const box = $('#pCtrl'), b = $('#pCtrlBtn'); if (!box || !b) return false;
+    if (on === undefined) on = !box.classList.contains('show');
+    if (on) ctrlPaint();
+    box.classList.toggle('show', !!on); b.setAttribute('aria-expanded', on ? 'true' : 'false');
+    b.textContent = on ? '🎮 Hide controls' : '🎮 Controls for this game' + (pad.on ? ' (Ⓨ)' : '');
+    if (on){ try { const mb = $('#oPausePanel .mbox'); if (mb) mb.scrollTop = Math.max(0, b.offsetTop - 12); } catch (e){} }
+    return !!on;
+  }
   function syncMenu(){
     $('#oPauseH').textContent = mp.on ? '⚙️ Menu' : 'Paused'; $('#oPauseSub').textContent = mp.on ? '🌐 The game keeps going for everyone else' : 'Take a break! 😊';
     const inDh = (typeof mode !== 'undefined' && mode === 'dreamhouse' && typeof dh !== 'undefined' && dh);
@@ -39096,6 +39211,7 @@ function dhLayoutHud(){
     $('#pSnd').checked = !muted; $('#pThrow').checked = fp.throwTurn;
     $('#pPadSens').value = window.rubloxPadSens || 1; $('#pMouseSens').value = window.rubloxMouseSens || 1; menuVals(); menuPad();
     const m = document.querySelector('.padmap'); $('#pMap').innerHTML = m ? m.innerHTML : '';
+    ctrlShow($('#pCtrl').classList.contains('show') && $('#pCtrl').dataset.mode === mode);
   }
   function setPause(p){
     if (p && typeof dhExitPointerLock === 'function') dhExitPointerLock();
@@ -49749,6 +49865,13 @@ function start(m = 'obby', d = null){
       if (p && p.act) act.textContent = p.act;
     }
   }
+  // audit56: real people for Ms. Bramble and Fern (they were plain boxes), turned to face where you arrive
+  function ftNpc(av, x, z, fx, fz, col){
+    try {
+      const m = buildPlayer(Object.assign({}, typeof DEF !== 'undefined' ? DEF : {}, av));
+      m.g.position.set(x, .05, z); m.g.rotation.y = Math.atan2(fx - x, fz - z); scene.add(m.g); ftKeep(m.g); return m;
+    } catch(e){ return ftMesh(new THREE.BoxGeometry(0.7, 1.6, 0.5), col, x, 0.9, z); }
+  }
   function buildFieldTrip(){
     const started = FieldTripRules.ftNewVisit(ftState());
     ft = {trash:[], solids:[], sv: started.state, run: started.run, near:null, bus:null, homeBus:null};
@@ -49775,6 +49898,14 @@ function start(m = 'obby', d = null){
     body.position.y = 1.3; bus.add(body);
     const cab = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.2, 2.2), new THREE.MeshLambertMaterial({color:'#ffe27a'}));
     cab.position.set(0, 2.2, 2.6); bus.add(cab);
+    // audit56: windows, a stripe and a door so it reads as a bus, not a yellow box
+    const glass = new THREE.MeshLambertMaterial({color:'#3a5a7a'}), stripe = new THREE.MeshLambertMaterial({color:'#1d2340'});
+    [-1.81, 1.81].forEach(x => {
+      for (let i = 0; i < 4; i++){ const w = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.7, 1.1), glass); w.position.set(x, 1.85, -2.6 + i * 1.5); bus.add(w); }
+      const st = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.16, 7.0), stripe); st.position.set(x, 1.1, 0); bus.add(st);
+    });
+    const wind = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.8, 0.04), glass); wind.position.set(0, 2.3, 3.72); bus.add(wind);
+    const door = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.6, 0.9), glass); door.position.set(1.82, 1.1, 2.6); bus.add(door);
     [[-1.3,0.5,2.4],[1.3,0.5,2.4],[-1.3,0.5,-2.4],[1.3,0.5,-2.4]].forEach(p => {
       const w = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.4, 10), new THREE.MeshLambertMaterial({color:'#2d2d2d'}));
       w.rotation.z = Math.PI/2; w.position.set(p[0], p[1], p[2]); bus.add(w);
@@ -49783,8 +49914,8 @@ function start(m = 'obby', d = null){
     scene.add(bus); ftKeep(bus); ft.bus = bus;
     ftLab('🚌 Afterbell bus', FieldTripRules.FT_BUS.x, 3.6, FieldTripRules.FT_BUS.z);
     // Ms. Bramble
-    ftMesh(new THREE.BoxGeometry(0.7, 1.6, 0.5), '#c45c8a', FieldTripRules.FT_TEACHER.x, 0.9, FieldTripRules.FT_TEACHER.z);
-    ftLab('👩‍🏫 Ms. Bramble', FieldTripRules.FT_TEACHER.x, 2.4, FieldTripRules.FT_TEACHER.z);
+    ftNpc({body: 'girl', head: '#e0ac69', shirt: '#c45c8a', pants: '#3a3f6a', pantsPat: 'skirt', hair: 'bun', hairColor: '#6b4226', face: 'smile', shirtPat: null, hat: null}, FieldTripRules.FT_TEACHER.x, FieldTripRules.FT_TEACHER.z, 0, 18, '#c45c8a');
+    ftLab('👩‍🏫 Ms. Bramble', FieldTripRules.FT_TEACHER.x, 3.9, FieldTripRules.FT_TEACHER.z);
     // Nature Nook
     ftMesh(new THREE.BoxGeometry(10, 4.2, 8), '#e8d9b0', 0, 2.1, -36);
     ftMesh(new THREE.BoxGeometry(10.4, 0.3, 8.4), '#6a8a3a', 0, 4.3, -36);
@@ -49802,8 +49933,8 @@ function start(m = 'obby', d = null){
     ftMesh(new THREE.BoxGeometry(3, 1.2, 3), '#8b6a3a', 22, 0.7, -32);
     ftLab('🔭 Lookout', 22, 2.2, -32);
     // guide Fern
-    ftMesh(new THREE.BoxGeometry(0.7, 1.6, 0.5), '#3a8f5a', FieldTripRules.FT_GUIDE.x, 0.9, FieldTripRules.FT_GUIDE.z);
-    ftLab('🧭 Fern', FieldTripRules.FT_GUIDE.x, 2.4, FieldTripRules.FT_GUIDE.z);
+    ftNpc({head: '#c68642', shirt: '#3a8f5a', pants: '#6b4a2a', hair: 'short', hairColor: '#2a1a10', face: 'smile', shirtPat: null, hat: null}, FieldTripRules.FT_GUIDE.x, FieldTripRules.FT_GUIDE.z, FieldTripRules.FT_NOOK.x, FieldTripRules.FT_NOOK.z + 4, '#3a8f5a');
+    ftLab('🧭 Fern', FieldTripRules.FT_GUIDE.x, 3.9, FieldTripRules.FT_GUIDE.z);
     // home bus (hidden until all finds)
     const home = bus.clone();
     home.position.set(FieldTripRules.FT_HOME_BUS.x, 0, FieldTripRules.FT_HOME_BUS.z);
@@ -50785,6 +50916,10 @@ try { if (typeof window !== 'undefined') window.Obby = Obby; } catch (e){}
       else if (!el.matches('input[type=range]')) el.click();
       return;
     }
+    // t337u: in the pause menu Ⓨ opens / closes "Controls for this game", and Ⓑ closes it before leaving the menu
+    const pauseCtrl = c.kind === 'panel' && c.root && c.root.id === 'oPausePanel' ? document.getElementById('pCtrlBtn') : null;
+    if (pauseCtrl && s.jp[3]){ pauseCtrl.click(); setFocus(pauseCtrl); return; }
+    if (pauseCtrl && s.jp[1] && document.getElementById('pCtrl').classList.contains('show')){ pauseCtrl.click(); setFocus(pauseCtrl); return; }
     if (s.jp[1]){
       if (typeof avPrevIsOpen === 'function' && avPrevIsOpen()){ if (typeof avPrevCancel === 'function') avPrevCancel(); return; }
       return back(c);
