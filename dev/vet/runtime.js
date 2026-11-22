@@ -50,7 +50,8 @@
   }
   function vtLab(text, x, y, z){
     try {
-      if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m) return vtKeep(m); }
+      // QA t330u: indoors and in first person, labels drew through every wall and piled up. Let walls hide them and make them smaller.
+      if (typeof t297Lab === 'function'){ const m = t297Lab(text, x, y, z); if (m){ if (m.material) m.material.depthTest = true; m.scale.multiplyScalar(0.62); return vtKeep(m); } }
     } catch (e){}
     return vtMesh(new THREE.BoxGeometry(0.2,0.2,0.2), '#fff', x, y, z);
   }
@@ -191,9 +192,23 @@
   function vtDriveCam(){
     if (!vtDriving() || typeof cam === 'undefined' || typeof camera === 'undefined') return;
     const d = vt.run.drive;
-    const back = 8, height = 4.2;
-    const x = d.x - Math.sin(d.yaw) * back;
-    const z = d.z + Math.cos(d.yaw) * back;
+    // QA t330u: the chase camera went inside houses and walls when you drove next to them. Pull it in until the view is clear.
+    const sin = Math.sin(d.yaw), cos = Math.cos(d.yaw);
+    const blocked = (px, py, pz) => (typeof solids !== 'undefined' ? solids : []).some(s => s && s.mesh && s.active !== false && s.hh > 0.6
+      && Math.abs(px - s.mesh.position.x) < s.hw + 0.35 && Math.abs(pz - s.mesh.position.z) < s.hd + 0.35 && Math.abs(py - s.mesh.position.y) < s.hh + 0.35);
+    let back = 8;
+    for (; back > 2.5; back -= 0.5){
+      const h = 1.6 + 2.6 * (back / 8);
+      let obstructed = false;
+      for (let dist = 0.25; dist <= back; dist += 0.25){
+        const t = dist / back;
+        if (blocked(d.x - sin * dist, 1.2 + (h - 1.2) * t, d.z + cos * dist)){ obstructed = true; break; }
+      }
+      if (!obstructed) break;
+    }
+    const height = 1.6 + 2.6 * (back / 8);
+    const x = d.x - sin * back;
+    const z = d.z + cos * back;
     camera.position.set(x, height, z);
     camera.lookAt(d.x, 1.2, d.z);
     cam.yaw = d.yaw;
@@ -444,7 +459,7 @@
       if (VetRules.vtInBay(vt.run.drive.x, vt.run.drive.z)){
         return {id:'park', label:'E / Ⓑ  Park and hop out', btn:'🅿️ Park', go:() => vtDoDismount()};
       }
-      return {id:'drive', label: cargo ? ('Drive ' + cargo.name + ' back to the bay') : 'Steer with WASD or the stick · look for pals!', btn:'🚑 Driving'};
+      return {id:'drive', label: cargo ? ('Drive ' + cargo.name + ' back to the bay') : 'Steer with WASD or the stick · look for pals! Drive back to the 🅿️ bay to hop out.', btn:'🚑 Driving'};
     }
     return null;
   }
@@ -486,19 +501,24 @@
     vtToast(res.message);
     vtNet();
   }
+  // QA t332u: hopping in or out ignores a second toggle for a moment, so one press (key, tap or Ⓐ) can't undo itself.
+  const VT_TOGGLE_MS = 500;
+  function vtToggleReady(){ return !(vt.toggleAt && Date.now() - vt.toggleAt < VT_TOGGLE_MS); }
   function vtDoMount(){
-    if (!vt) return;
+    if (!vt || !vtToggleReady()) return;
     const res = VetRules.vtMountAmbulance(vt.run, typeof P !== 'undefined' ? P.x : 0, typeof P !== 'undefined' ? P.z : 0);
     if (!res.ok){ vtToast(res.message); return; }
+    vt.toggleAt = Date.now();
     if (typeof P !== 'undefined'){ P.x = vt.run.drive.x; P.z = vt.run.drive.z; P.vx = P.vz = 0; }
     vtHideFpToggle();
     vtPlaceAmbulance();
     vtToast(res.message);
   }
   function vtDoDismount(){
-    if (!vt) return;
+    if (!vt || !vtToggleReady()) return;
     const res = VetRules.vtDismountAmbulance(vt.run);
     if (!res.ok){ vtToast(res.message); return; }
+    vt.toggleAt = Date.now();
     if (typeof P !== 'undefined'){ P.x = 0; P.y = 0; P.z = 22; P.vx = P.vz = 0; }
     vtHideFpToggle();
     vtPlaceAmbulance();
@@ -530,6 +550,8 @@
     if (!vt || !vt.run || typeof mode === 'undefined' || mode !== 'vet') return;
     if (!vt.pitchSet && typeof cam !== 'undefined' && !vtDriving()){ cam.pitch = 0.08; cam.yaw = 0; vt.pitchSet = true; }
     vt.run.t = (vt.run.t || 0) + (dt || 0);
+    // QA t330u: in first person a prop label filled the whole screen when you walked up to it; the action button already says it.
+    (vt.props || []).forEach(pr => { if (pr && pr.label && pr.x != null) pr.label.visible = Math.hypot(P.x - pr.x, P.z - pr.z) > 1.9; });
     if (vt.pet) vt.pet.rotation.y += (dt || 0) * 0.4;
     if (vtDriving()){
       vtDriveInput();
@@ -558,6 +580,9 @@
   }
   function vtKey(e){
     if (!vt || !e) return false;
+    // QA t332u: the global keyup handler also routes here. One E press used to hop in on keydown and straight
+    // back out on keyup (and a held key auto-repeated the toggle). Only a fresh keydown acts.
+    if (e.type === 'keyup' || e.repeat) return e.type !== 'keyup' && e.code === 'KeyE';
     if (e.code === 'KeyE' || e.code === 'Space'){ vtAct(); return e.code === 'KeyE'; }
     if (e.code === 'KeyV'){ return true; }
     return false;

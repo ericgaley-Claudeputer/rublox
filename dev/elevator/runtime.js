@@ -159,7 +159,10 @@
 
   function elevSay(who, text, x, y, z, sec){
     if (!elv) return;
-    const label = (who ? who + ': ' : '') + '"' + text + '"';
+    // QA t330u: intercom lines already carry their speaker ("🛎️ Bingle: \"...\""), so don't say the name twice.
+    const raw = String(text == null ? '' : text), bare = String(who || '').replace(/^[^A-Za-z0-9]+/, '').trim();
+    const spoke = bare && raw.replace(/^[^A-Za-z0-9"]+/, '').startsWith(bare + ':');
+    const label = spoke ? raw : (who ? who + ': ' : '') + '"' + raw + '"';
     const m = elevLab(label, x, y, z);
     if (!m) { banner(label); return; }
     elv.bubbles = (elv.bubbles || []).filter(b => { try { scene.remove(b.mesh); } catch (e){} return false; });
@@ -807,7 +810,7 @@
     elevMesh(new THREE.BoxGeometry(1.6, 1.8, 0.12), '#3a2a18', -6.2, 2.4, 23.9, false);
     elevMesh(new THREE.BoxGeometry(1.2, 1.3, 0.08), '#c9b6ff', -6.2, 2.4, 23.78, false);
     elv.secretAt = {x:-6.2, z:23.6};
-    elevLab('🛗 Wobblevator Lobby', 0, 3.4, 22);
+    elevLab('🛗 Wobblevator Lobby', 0, 5.6, 4.5);   // QA t330u: was at z=22, right in front of the camera, covering the HUD
     // big shared cab inside the lobby building / shaft
     const cabFloor = plat(0, 0.05, 0, CW, CD, '#c9a24a', 0.08);
     if (cabFloor) cabFloor.floorOnly = true;
@@ -1569,6 +1572,7 @@
     if (typeof t297EatOverlayKey === 'function' && t297EatOverlayKey(e)) return true;
     if (e.type === 'keyup') return false;
     const c = e.code || e.key;
+    if (e.repeat && (c === 'KeyE' || c === 'KeyF')) return true; // QA t332u: a held key must not ride, then leave, then ride again
     if (c === 'KeyE' || c === 'KeyF'){ elevAct(); return true; }
     if (c === 'KeyH'){ elevOpenHelp(); return true; }
     if (c === 'KeyI'){ elevOpenIndex(); return true; }

@@ -116,11 +116,21 @@ describe('Wobblevator closer ride loop', () => {
     state.daily.claimed = false;
     state.daily.reward = 8;
     state.daily.tickets = 1;
-    let {run} = E.elevStartRun(state, 0, false);
-    E.elevBeginFloor(run, 'cloudnook');
-    const cleared = E.elevClearFloor(state, run);
-    state = cleared.state;
-    const claim = E.elevDailyClaim(state, Date.parse('2026-11-20T12:00:00'));
+    // elevClearFloor -> elevDailyProgress uses Date.now() if no clock is passed, so
+    // freeze "today" to the same day this fixture was written for.
+    const frozenNow = Date.parse('2026-11-20T12:00:00');
+    const realNow = Date.now;
+    Date.now = () => frozenNow;
+    let claim;
+    try {
+      let {run} = E.elevStartRun(state, 0, false);
+      E.elevBeginFloor(run, 'cloudnook');
+      const cleared = E.elevClearFloor(state, run);
+      state = cleared.state;
+      claim = E.elevDailyClaim(state, frozenNow);
+    } finally {
+      Date.now = realNow;
+    }
     assert.equal(claim.ok, true);
     assert.equal(claim.pay, 8);
     assert.equal(claim.state.tickets, 1);
