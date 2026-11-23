@@ -26,7 +26,7 @@
       blurb:'A smooth river pebble from Brookbell Creek. It still feels cool.'},
     {id:'catkin', name:'Willow catkin', emoji:'🌿', x:-18, z:ftZ(-12), r:2.0,
       blurb:'A soft willow catkin from the Nook path, fluffy as a cloud.'},
-    {id:'lantern', name:'Moss lantern', emoji:'🏮', x:0, z:ftZ(-36), r:2.0,
+    {id:'lantern', name:'Moss lantern', emoji:'🏮', x:-4.4, z:ftZ(-39.2), r:2.0,
       blurb:'A little moss lantern from the nature hall. It glows a gentle green.'},
     {id:'feather', name:'Trail feather', emoji:'🪶', x:22, z:ftZ(-32), r:2.0,
       blurb:'A painted-jay feather left on the lookout trail.'},

@@ -47,6 +47,7 @@
     {id:'school', name:'Afterbell School', emoji:'🏫', keys:['rubloxSchool']},
     {id:'fieldtrip', name:'Pebblebrook Field Trip', emoji:'🚌', keys:['rubloxFieldTrip']},
     {id:'aquarium', name:'Tideglass Aquarium', emoji:'🐠', keys:['rubloxAquarium']},
+    {id:'farm', name:'Honeymeadow Farm', emoji:'🚜', keys:['rubloxFarm']},
     {id:'garden', name:'Sunny Patch Garden', emoji:'🌱', keys:['rubloxGarden']},
     {id:'meadow', name:'Chow Chuck Meadow', emoji:'🥣', keys:['rubloxMeadow']},
     {id:'rides', name:'Rideland Workshop', emoji:'🎢', keys:['rubloxRides']},

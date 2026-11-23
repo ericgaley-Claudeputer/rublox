@@ -105,5 +105,13 @@ test('Field trip is wired into the hub, reset list, and build dispatch', () => {
   assert.match(html, /function ftApplyZones/);
   assert.match(html, /FT_DEST_DZ/);
   assert.match(html, /lookBack\(\)/);
-  assert.doesNotMatch(html.slice(html.indexOf('function buildFieldTrip'), html.indexOf('function buildFieldTrip') + 14000), /blood|gore|kill the/i);
+  assert.match(html, /function ftHorizonLand/);
+  assert.match(html, /ftPlat\(0, 0\.16, -28, 180, 180/);
+  assert.match(html, /land: true/);
+  assert.match(html, /Trail exhibits/);
+  const lantern = F.FT_FINDS.find(f => f.id === 'lantern');
+  assert.ok(lantern);
+  assert.equal(lantern.x, -4.4);
+  assert.ok(Math.hypot(lantern.x - F.FT_NOOK.x, lantern.z - F.FT_NOOK.z) > 3, 'Moss lantern label is off the doorway');
+  assert.doesNotMatch(html.slice(html.indexOf('function buildFieldTrip'), html.indexOf('function buildFieldTrip') + 20000), /blood|gore|kill the/i);
 });

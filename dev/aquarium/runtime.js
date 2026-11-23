@@ -33,7 +33,7 @@
     if (!aq) return;
     const showYard = (phase === 'yard' || phase === 'ride' || phase === 'done');
     const showDest = (phase === 'hall' || phase === 'ride');
-    const vis = {yard: showYard, dest: showDest, road: true};
+    const vis = {yard: showYard, dest: showDest, road: true, land: true};
     Object.keys(vis).forEach(z => {
       (aq.zones && aq.zones[z] || []).forEach(m => { if (m) m.visible = !!vis[z]; });
     });
@@ -58,6 +58,20 @@
       act.classList.toggle('show', !!(p && p.act && p.kind !== 'ride'));
       if (p && p.act) act.textContent = p.act;
     }
+  }
+  function aqHorizonLand(cx, cz, col){
+    const prevZ = aq.curZone, prevS = aq.shiftZ;
+    aq.curZone = 'land'; aq.shiftZ = 0;
+    aqPlat(cx, 0.05, cz, 1600, 1600, col || '#3d8a70', 0.1);
+    for (let i = 0; i < 20; i++){
+      const a = i * Math.PI * 2 / 20;
+      const r = 210 + (i % 4) * 14;
+      const x = cx + Math.cos(a) * r, z = cz + Math.sin(a) * r;
+      aqMesh(new THREE.SphereGeometry(5.5 + (i % 3), 7, 5), i % 2 ? '#2a6a58' : '#3d8a70', x, 2.8, z);
+      aqMesh(new THREE.CylinderGeometry(0.28, 0.36, 3.0, 7), '#6b3a1d', x + 7, 1.5, z + 5);
+      aqMesh(new THREE.SphereGeometry(1.3, 7, 5), '#2f7a5a', x + 7, 3.2, z + 5);
+    }
+    aq.curZone = prevZ; aq.shiftZ = prevS;
   }
   function aqTank(x, z, col, label, fishCol, kind, faceZ){
     // Framed tank with a sand bed and a front glass so the fish read from the plaza.
@@ -148,7 +162,60 @@
       const lit2 = new THREE.PointLight('#b8e0ff', 0.35, 12, 2);
       lit2.position.set(0, 3.2, aqWZ(-37)); scene.add(lit2); aqKeep(lit2);
     } catch(e){}
+    // Cozier hall: rug, benches already there, plants, signs, a small exhibit case
+    aqMesh(new THREE.BoxGeometry(6.0, 0.05, 4.2), '#1d5a78', 0, 0.3, -42);
+    aqMesh(new THREE.BoxGeometry(2.6, 0.04, 1.6), '#c5e6ee', 0, 0.32, -42);
+    [[-6.4, -38],[6.4, -38],[-6.4, -45],[6.4, -45]].forEach(p => {
+      aqMesh(new THREE.CylinderGeometry(0.22, 0.18, 0.4, 8), '#1d5a78', p[0], 0.45, p[1]);
+      aqMesh(new THREE.SphereGeometry(0.4, 7, 6), '#2f8a6a', p[0], 0.95, p[1]);
+    });
+    aqMesh(new THREE.BoxGeometry(2.2, 1.6, 0.5), '#2a6a88', -6.4, 1.4, -42);
+    aqMesh(new THREE.BoxGeometry(1.8, 0.7, 0.2), '#9ad8e8', -6.4, 1.55, -41.85);
+    aqMesh(new THREE.BoxGeometry(2.2, 1.6, 0.5), '#2a6a88', 6.4, 1.4, -42);
+    aqMesh(new THREE.BoxGeometry(1.8, 1.1, 0.08), '#f4e27a', 6.4, 1.6, -41.8);
+    aqLab('🐟 Hall exhibits', 0, 2.4, -44.0);
+    [[-3.5, 4.6, -40],[3.5, 4.6, -40]].forEach(p => {
+      const lamp = aqMesh(new THREE.SphereGeometry(0.16, 8, 8), '#e8f6ff', p[0], p[1], p[2]);
+      try { lamp.material.emissive = new THREE.Color('#e8f6ff'); lamp.material.emissiveIntensity = 0.8; } catch(e){}
+    });
     aqLab('🐠 Tideglass Aquarium', 0, 8.8, -35.4);
+    aq.shiftZ = 0;
+  }
+  function aqGiftShop(){
+    aq.curZone = 'dest'; aq.shiftZ = AquariumRules.AQ_DEST_DZ || 0;
+    // Walk-in gift nook to the right of the arrival plaza
+    const wall = '#f2e6d4', trim = '#1d5a78';
+    aqPlat(14, 0.22, -11, 8.4, 8.4, '#e8d9c0', 0.16);
+    aqMesh(new THREE.BoxGeometry(8.4, 3.6, 0.24), wall, 14, 2.0, -15.1);
+    aqMesh(new THREE.BoxGeometry(0.24, 3.6, 8.4), wall, 9.9, 2.0, -11);
+    aqMesh(new THREE.BoxGeometry(0.24, 3.6, 8.4), wall, 18.1, 2.0, -11);
+    // front wall with a doorway
+    aqMesh(new THREE.BoxGeometry(2.6, 3.6, 0.24), wall, 11.2, 2.0, -6.9);
+    aqMesh(new THREE.BoxGeometry(2.6, 3.6, 0.24), wall, 16.8, 2.0, -6.9);
+    aqMesh(new THREE.BoxGeometry(3.0, 1.0, 0.24), wall, 14, 3.3, -6.9);
+    aqMesh(new THREE.BoxGeometry(8.8, 0.24, 8.8), trim, 14, 3.9, -11);
+    aqMesh(new THREE.BoxGeometry(2.8, 0.12, 1.6), trim, 14, 2.85, -6.4);
+    // counter and shelves
+    aqMesh(new THREE.BoxGeometry(3.4, 1.0, 0.8), '#2a6a88', 14, 0.7, -13.4);
+    [[12.4, -11.4],[15.6, -11.4],[12.4, -8.6],[15.6, -8.6],[12.4, -13.2],[15.6, -13.2]].forEach(p => {
+      aqMesh(new THREE.BoxGeometry(1.1, 0.9, 1.1), '#c4a060', p[0], 0.65, p[1]);
+    });
+    (AquariumRules.AQ_GIFTS||[]).forEach(g => {
+      const col = g.kind === 'hat' ? '#1d5a78' : (g.id.indexOf('jelly')>=0 ? '#d8b0ff' : g.id.indexOf('turtle')>=0 ? '#3a8f5a' : g.id.indexOf('crab')>=0 ? '#c45c3a' : '#f4e27a');
+      const geo = g.kind === 'hat' ? new THREE.CylinderGeometry(0.28, 0.32, 0.28, 10) : new THREE.SphereGeometry(0.28, 8, 6);
+      // gifts already have world z; place in local dest space
+      const localZ = g.z - (AquariumRules.AQ_DEST_DZ || 0);
+      aqMesh(geo, col, g.x, 1.25, localZ);
+      aqLab((g.emoji||'🛍️') + ' ' + g.price, g.x, 1.8, localZ);
+    });
+    // shopkeep Pearl
+    aqMesh(new THREE.BoxGeometry(0.7, 1.5, 0.5), '#2a8aaa', 14, 0.95, -13.8);
+    aqLab('🛍️ Pearl', 14, 2.6, -13.8);
+    aqLab('🛍️ Gift Nook', 14, 3.55, -6.5);
+    try {
+      const lit = new THREE.PointLight('#ffe8c8', 0.55, 10, 2);
+      lit.position.set(14, 3.2, aqWZ(-11)); scene.add(lit); aqKeep(lit);
+    } catch(e){}
     aq.shiftZ = 0;
   }
 
@@ -208,7 +275,8 @@
     // aquarium hall (open shell, facade tanks, interior lights)
     aqHallBuilding();
     aq.curZone = 'dest'; aq.shiftZ = AquariumRules.AQ_DEST_DZ || 0;
-    aqPlat(0, 0.16, -30, 60, 60, '#3d8a88', 0.16);
+    aqHorizonLand(0, AquariumRules.aqZ(-30), '#3d8a88');
+    aqPlat(0, 0.16, -30, 180, 180, '#3d8a88', 0.16);
     aqTank(16, -20, '#9ad8e8', '🪼 Moonveil jellies', '#d8b0ff', 'jelly');
     aqTank(-16, -20, '#9ad8e8', '🐢 Sand-harbor turtles', '#3a8f5a', 'turtle');
     aqTank(0, -50, '#163050', '🐟 Lanternfish nook', '#ffe566', 'lantern');
@@ -219,6 +287,7 @@
     aqMesh(new THREE.CylinderGeometry(0.18, 0.22, 0.2, 8), '#c45c3a', 8, 0.45, -12);
     aqLab('🦀 Pebblecrab pool', 8, 1.8, -12);
     aq.shiftZ = 0;
+    aqGiftShop();
     // Marin off to the side
     try {
       if (typeof buildPlayer === 'function'){
@@ -309,6 +378,27 @@
       banner('🦀 ' + (r.message || 'A gentle touch!') + (r.coins ? ('  +' + r.coins + ' 🪙') : (r.already ? ' The Pebblecrab already said hello.' : '')));
       return;
     }
+    if (hit.kind === 'gift'){
+      const have = (typeof coins !== 'undefined') ? coins : 0;
+      const r = AquariumRules.aqBuyGift(aq.sv, hit.id, have);
+      if (!r.ok){
+        if (r.already) banner('🛍️ You already have the ' + (r.item && r.item.name || hit.name) + '.');
+        else if (r.why === 'coins') banner('🪙 Need ' + r.need + ' more coins for the ' + (r.item && r.item.name || hit.name) + '.');
+        else banner('🛍️ That souvenir is not for sale right now.');
+        return;
+      }
+      aq.sv = r.state; aqSave(aq.sv);
+      if (typeof coins !== 'undefined'){ try { coins = r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
+      try {
+        if (r.item && r.item.kind === 'hat' && r.item.id && typeof owned !== 'undefined' && owned){
+          if (owned.add) owned.add(r.item.id); else if (Array.isArray(owned) && owned.indexOf(r.item.id) < 0) owned.push(r.item.id);
+          if (typeof save === 'function') save('rubloxOwned', (owned instanceof Set) ? [...owned] : owned);
+          if (typeof wear === 'function') wear({id:r.item.id, cat:'looks', emoji:r.item.emoji, name:r.item.name, price:r.item.price, slot:r.item.slot, val:r.item.val}, true);
+        }
+      } catch(e){}
+      banner((r.item.emoji||'🛍️') + ' You got the ' + r.item.name + '!  🪙 −' + r.spent);
+      return;
+    }
     if (hit.kind === 'home'){
       const r = AquariumRules.aqBoardHome(aq.run, aq.sv);
       if (!r.ok){ banner('Marin is still waiting on a few exhibits.'); return; }
@@ -373,6 +463,7 @@
     lookBack(){ if (!aq) return; this.look(Math.PI); },
     look(yaw){ if (!aq) return; aq.run.phase='hall'; const a=AquariumRules.AQ_ARRIVE||{x:3.4,z:-8}; if(P){P.x=a.x;P.y=0.5;P.z=a.z;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=(yaw==null?Math.PI:yaw); cam.pitch=0.12; cam.dist=12; } aqApplyZones('hall'); },
     ride(t){ if (!aq) return; aq.run.phase='ride'; aq.run.rideT= (t==null? 3.2 : t); const pose=AquariumRules.aqRidePose(aq.run); aqSeat(pose); aqRideVis(true); aqApplyZones('ride'); },
+    shop(){ if (!aq) return; aq.run.phase='hall'; const s=AquariumRules.AQ_SHOP||{x:14,z:-10}; if(P){P.x=s.x;P.y=0.5;P.z=s.z;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=8; } aqApplyZones('hall'); },
     tankFront(){ if (!aq || !P) return; aq.run.phase='hall'; const z = AquariumRules.aqZ ? AquariumRules.aqZ(-14.2) : -14.2; P.x=13.4; P.y=0.5; P.z=z; P.vx=0; P.vz=0; if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.14; cam.dist=6.2; } aqApplyZones('hall'); },
     go(id){
       if (!aq || !P) return;
