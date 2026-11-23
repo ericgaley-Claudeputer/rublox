@@ -83,5 +83,14 @@ test('Field trip is wired into the hub, reset list, and build dispatch', () => {
   assert.match(html, /ftRidePose/);
   assert.match(html, /ftApplyDaySky/);
   assert.match(html, /WX_SKIP = \[[^\]]*'fieldtrip'[^\]]*\]/);
-  assert.doesNotMatch(html.slice(html.indexOf('function buildFieldTrip'), html.indexOf('function buildFieldTrip') + 12000), /blood|gore|kill the/i);
+  assert.match(html, /Yard bench/);
+  // Bench sits in front of the spawn and in from the left edge, so the label is not clipped.
+  assert.match(html, /ftLab\('🪑 Yard bench', -4\.6, 2\.3, 13\.4\)/);
+  assert.doesNotMatch(html, /ftLab\('🪑 Yard bench', -8,/);
+  assert.match(html, /function ftNookBuilding/);
+  assert.match(html, /PointLight\('#ffe0b0'/);
+  assert.doesNotMatch(html, /BoxGeometry\(14, 5\.2, 10\)/);
+  assert.match(html, /MeshBasicMaterial\(\{color:'#f3d56a'\}\)/);
+  assert.match(html, /inside\(\)\{ if \(!ft\)/);
+  assert.doesNotMatch(html.slice(html.indexOf('function buildFieldTrip'), html.indexOf('function buildFieldTrip') + 14000), /blood|gore|kill the/i);
 });

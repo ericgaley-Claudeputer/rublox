@@ -133,6 +133,8 @@
     wnLab('❄️ Puffyard', 12, 2.8, 21);
   }
   function wnSnugCycle(){
+    if (!wn) return;
+    if (!wn.snug || !wnNear(wn.snug.x, wn.snug.z, 2.8)){ banner('Walk up to the Snugmug Cart to pick a topping.'); return; }
     const list = WinterRules.WN_TOPPINGS || [];
     if (!list.length) return;
     const i = Math.max(0, list.findIndex(t => t.id === (wn.snugTop || 'cloud')));
@@ -198,12 +200,16 @@
   function wnBuildRink(){
     if (!wn || typeof WinterRules === 'undefined') return;
     const p = WinterRules.WN_POND;
-    const ice = plat(p.x, 0.5, p.z, (p.r || 7.5) * 1.92, (p.r || 7.5) * 1.92, '#3db8f0', 0.28);
+    const rinkR = p.r || 7.5;
+    const ice = plat(p.x, 0.5, p.z, rinkR * 2, rinkR * 2, '#3db8f0', 0.28);
     if (ice){
       ice.ice = true;
-      if (ice.mesh){ ice.mesh.material = wnMat('#3db8f0'); wnKeep(ice.mesh); }
+      ice.rad = rinkR; // circular footprint: overlaps() ignores the square corners
+      if (ice.mesh){ ice.mesh.visible = false; wnKeep(ice.mesh); }
       wn.solids.push(ice);
     }
+    const disc = new THREE.Mesh(new THREE.CylinderGeometry(rinkR, rinkR, 0.28, 48), wnMat('#3db8f0'));
+    disc.position.set(p.x, 0.36, p.z); scene.add(disc); wnKeep(disc);
     const R = (p.r || 7.5) + 0.4;
     for (let i = 0; i < 16; i++){
       const mid = ((i + 0.5) / 16) * Math.PI * 2;
@@ -518,6 +524,13 @@
     const btn = document.getElementById('wnAct');
     const p = wnPrompt();
     if (btn){ if (p){ btn.textContent = p.lab; btn.classList.add('show'); } else btn.classList.remove('show'); }
+    const topBtn = document.getElementById('wnTopBtn');
+    if (topBtn){
+      const near = !!(wn && wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8));
+      topBtn.classList.toggle('near', near);
+      const top = (typeof WinterRules !== 'undefined' && WinterRules.wnTopping) ? WinterRules.wnTopping(wn.snugTop || 'cloud') : null;
+      if (top) topBtn.textContent = (top.emoji || '🍭') + ' Topping';
+    }
   }
   function wnAct(){ const p = wnPrompt(); if (p) p.act(); }
   function wnKey(e){
@@ -549,6 +562,8 @@
     if (jp && !jp[1]) wn._b = false;
     if (!wn._rb && jp && jp[5]){ wn._rb = true; wnThrowNow(); return true; }
     if (jp && !jp[5]) wn._rb = false;
+    if (!wn._lb && jp && jp[4]){ wn._lb = true; if (wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8)) wnSnugCycle(); return true; }
+    if (jp && !jp[4]) wn._lb = false;
     return false;
   }
   function wnUpdate(dt){

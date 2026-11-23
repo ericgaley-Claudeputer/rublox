@@ -64,22 +64,66 @@
     ftMesh(new THREE.CylinderGeometry(0.08, 0.08, 4.2, 8), '#c45c1a', 9.2, 10.4, 30);
     ftMesh(new THREE.BoxGeometry(1.2, 0.8, 0.06), '#e8f4ff', 9.9, 12.2, 30);
     ftLab('🏫 Afterbell School', 0, 12.4, 26);
-    ftMesh(new THREE.BoxGeometry(1.6, 0.7, 0.7), '#8b6a3a', -8, 0.5, 20);
-    ftLab('🪑 Yard bench', -8, 1.6, 20);
+    // In front of the spawn (z=18, looking -z) and in from the left edge so the label stays on screen.
+    ftMesh(new THREE.BoxGeometry(1.6, 0.7, 0.7), '#8b6a3a', -4.6, 0.5, 13.4);
+    ftLab('🪑 Yard bench', -4.6, 2.3, 13.4);
   }
   function ftNookBuilding(){
-    ftMesh(new THREE.BoxGeometry(14, 5.2, 10), '#e8d9b0', 0, 2.7, -40);
+    // Shell (not a solid block) so you can walk inside and see the exhibits.
+    const wall = '#d7c4a0', trim = '#6b4a28', leaf = '#b7e0a8';
+    ftPlat(0, 0.22, -40, 13.4, 9.4, '#d8c49a', 0.16);
+    ftMesh(new THREE.BoxGeometry(14, 5.0, 0.28), wall, 0, 2.7, -44.9); // back
+    ftMesh(new THREE.BoxGeometry(0.28, 5.0, 10), wall, -7.0, 2.7, -40);
+    ftMesh(new THREE.BoxGeometry(0.28, 5.0, 10), wall, 7.0, 2.7, -40);
+    // front wall with a doorway
+    ftMesh(new THREE.BoxGeometry(5.4, 5.0, 0.28), wall, -4.7, 2.7, -35.15);
+    ftMesh(new THREE.BoxGeometry(5.4, 5.0, 0.28), wall, 4.7, 2.7, -35.15);
+    ftMesh(new THREE.BoxGeometry(4.0, 1.6, 0.28), wall, 0, 4.4, -35.15);
+    ftMesh(new THREE.BoxGeometry(0.22, 3.4, 0.22), trim, -1.15, 1.8, -35.0);
+    ftMesh(new THREE.BoxGeometry(0.22, 3.4, 0.22), trim, 1.15, 1.8, -35.0);
+    ftMesh(new THREE.BoxGeometry(2.5, 0.22, 0.22), trim, 0, 3.5, -35.0);
     ftMesh(new THREE.BoxGeometry(15.2, 0.35, 11.2), '#5a7a32', 0, 5.4, -40);
     const roof = new THREE.Mesh(new THREE.ConeGeometry(10.5, 2.8, 4), new THREE.MeshLambertMaterial({color:'#6a8a3a'}));
     roof.position.set(0, 7.1, -40); roof.rotation.y = Math.PI/4; scene.add(roof); ftKeep(roof);
-    ftPlat(0, 0.4, -33.4, 8, 4, '#c4a574', 0.28);
-    ftMesh(new THREE.CylinderGeometry(0.18, 0.2, 3.2, 8), '#8b6a3a', -3.4, 1.8, -33.6);
-    ftMesh(new THREE.CylinderGeometry(0.18, 0.2, 3.2, 8), '#8b6a3a', 3.4, 1.8, -33.6);
-    ftMesh(new THREE.BoxGeometry(2, 3, 0.2), '#6b4a28', 0, 1.7, -34.9);
-    [[-5, 3.4], [5, 3.4]].forEach(w => ftMesh(new THREE.BoxGeometry(2.2, 1.6, 0.1), '#b7e0a8', w[0], w[1], -34.9));
-    ftMesh(new THREE.BoxGeometry(1.6, 1.1, 0.7), '#d7c49a', -5, 0.7, -32);
-    ftMesh(new THREE.BoxGeometry(1.6, 1.1, 0.7), '#d7c49a', 5, 0.7, -32);
-    ftLab('🌿 Pebblebrook Nature Nook', 0, 8.6, -36);
+    // facade: framed windows, flower boxes, porch, door lantern
+    [[-5, 3.4], [5, 3.4]].forEach(w => {
+      ftMesh(new THREE.BoxGeometry(2.6, 2.0, 0.12), '#8b6a3a', w[0], w[1], -34.96);
+      ftMesh(new THREE.BoxGeometry(2.2, 1.6, 0.08), leaf, w[0], w[1], -34.88);
+    });
+    ftMesh(new THREE.BoxGeometry(2.4, 0.3, 0.5), '#5a7a32', -5, 2.2, -34.6);
+    ftMesh(new THREE.BoxGeometry(2.4, 0.3, 0.5), '#5a7a32', 5, 2.2, -34.6);
+    ftMesh(new THREE.SphereGeometry(0.12, 6, 6), '#e8c04a', -5, 2.5, -34.5);
+    ftMesh(new THREE.SphereGeometry(0.12, 6, 6), '#e8c04a', 5, 2.5, -34.5);
+    ftPlat(0, 0.4, -33.2, 8, 4.2, '#c4a574', 0.28);
+    ftMesh(new THREE.CylinderGeometry(0.18, 0.2, 3.2, 8), '#8b6a3a', -3.4, 1.8, -33.4);
+    ftMesh(new THREE.CylinderGeometry(0.18, 0.2, 3.2, 8), '#8b6a3a', 3.4, 1.8, -33.4);
+    ftMesh(new THREE.BoxGeometry(8.2, 0.16, 2.8), '#6a8a3a', 0, 3.5, -33.2);
+    const lamp = ftMesh(new THREE.SphereGeometry(0.18, 8, 8), '#ffe9a0', 0, 3.15, -34.7);
+    try { lamp.material.emissive = new THREE.Color('#ffe9a0'); lamp.material.emissiveIntensity = 0.8; } catch(e){}
+    // inside: exhibit cases, rug, bench, a hanging lamp and a warm light
+    ftMesh(new THREE.BoxGeometry(2.2, 1.4, 0.8), '#d7c49a', -4.4, 0.95, -41.6);
+    ftMesh(new THREE.BoxGeometry(2.2, 1.4, 0.8), '#d7c49a', 4.4, 0.95, -41.6);
+    ftMesh(new THREE.BoxGeometry(1.6, 0.08, 0.5), '#8ec6e8', -4.4, 1.7, -41.5);
+    ftMesh(new THREE.BoxGeometry(1.6, 0.08, 0.5), '#8ec6e8', 4.4, 1.7, -41.5);
+    ftMesh(new THREE.CylinderGeometry(0.08, 0.1, 0.7, 6), '#6a4a28', -4.4, 1.15, -41.6);
+    ftMesh(new THREE.SphereGeometry(0.38, 7, 6), '#3d7a38', -4.4, 1.7, -41.6);
+    ftMesh(new THREE.CylinderGeometry(0.07, 0.09, 0.55, 6), '#6a4a28', 4.4, 1.1, -41.6);
+    ftMesh(new THREE.ConeGeometry(0.32, 0.7, 7), '#c4a050', 4.4, 1.65, -41.6);
+    ftMesh(new THREE.BoxGeometry(0.7, 0.9, 0.14), '#d8c090', 0, 1.15, -44.5);
+    ftMesh(new THREE.SphereGeometry(0.16, 6, 6), '#c45a3a', 0, 1.55, -44.5);
+    ftMesh(new THREE.BoxGeometry(3.2, 0.06, 2.2), '#8b3a2a', 0, 0.28, -40);
+    ftMesh(new THREE.BoxGeometry(1.8, 0.55, 0.6), '#8b6a3a', 0, 0.52, -42.4);
+    ftMesh(new THREE.BoxGeometry(1.6, 1.1, 0.08), '#c4a060', -3.2, 2.6, -44.7);
+    ftMesh(new THREE.BoxGeometry(1.6, 1.1, 0.08), '#7a9a4a', 3.2, 2.6, -44.7);
+    ftMesh(new THREE.BoxGeometry(2.4, 0.7, 0.2), '#8b6a3a', 0, 2.2, -44.7);
+    (function(){ const c=new THREE.Mesh(new THREE.BoxGeometry(13.6, 0.08, 9.6), new THREE.MeshBasicMaterial({color:'#f3e6c4'})); c.position.set(0, 5.18, -40); scene.add(c); ftKeep(c); })();
+    const glow = ftMesh(new THREE.SphereGeometry(0.16, 8, 8), '#ffe7b0', 0, 4.7, -40);
+    try { glow.material.emissive = new THREE.Color('#ffe7b0'); glow.material.emissiveIntensity = 0.9; } catch(e){}
+    try {
+      const lit = new THREE.PointLight('#ffe0b0', 0.7, 14, 2);
+      lit.position.set(0, 4.4, -40); scene.add(lit); ftKeep(lit);
+    } catch(e){}
+    ftLab('🌿 Pebblebrook Nature Nook', 0, 8.6, -35.2);
   }
   function ftMakeBus(){
     const bus = new THREE.Group();
@@ -93,7 +137,8 @@
     panel(0.06, 0.7, 7.0, yellowIn, 1.7, 1.05, 0);
     panel(0.06, 0.45, 7.0, yellowIn, 1.7, 2.28, 0);
     panel(3.3, 2.0, 0.06, yellowIn, 0, 1.5, -3.45);
-    panel(3.4, 0.06, 7.0, yellowIn, 0, 2.46, 0);
+    const roofIn = new THREE.MeshBasicMaterial({color:'#f3d56a'});
+    panel(3.4, 0.06, 7.0, roofIn, 0, 2.46, 0);
     const floor = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.12, 6.6), new THREE.MeshLambertMaterial({color:'#8b6a3a'}));
     floor.position.y = 0.72; bus.add(floor);
     const seatL = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.55, 4.6), new THREE.MeshLambertMaterial({color:'#3a6aaa'}));
@@ -102,7 +147,7 @@
     panel(3.0, 0.32, 0.7, new THREE.MeshLambertMaterial({color:'#5a4a32'}), 0, 1.2, 2.45);
     const wheel = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.05, 8, 12), new THREE.MeshLambertMaterial({color:'#2d2d2d'}));
     wheel.position.set(-0.35, 1.45, 2.2); wheel.rotation.x = Math.PI/2; bus.add(wheel);
-    const cab = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.28, 2.2), new THREE.MeshLambertMaterial({color:'#ffe27a'}));
+    const cab = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.28, 2.2), new THREE.MeshBasicMaterial({color:'#f3d56a'}));
     cab.position.set(0, 2.48, 2.6); bus.add(cab);
     const glass = new THREE.MeshLambertMaterial({color:'#3a5a7a', transparent:true, opacity:0.55});
     const stripe = new THREE.MeshLambertMaterial({color:'#1d2340'});
@@ -125,12 +170,12 @@
       const mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2;
       const len = Math.hypot(b.x - a.x, b.z - a.z) + 1.6;
       const alongX = Math.abs(b.x - a.x) >= Math.abs(b.z - a.z);
-      ftPlat(mx, 0.18, mz, alongX ? len : 3.4, alongX ? 3.4 : len, '#4a4e55', 0.1);
+      ftPlat(mx, 0.18, mz, alongX ? len : 3.4, alongX ? 3.4 : len, '#2a2e33', 0.1);
       // little dashed center marks
       const steps = Math.max(1, (len / 3) | 0);
       for (let s = 1; s < steps; s++){
         const u = s / steps;
-        ftMesh(new THREE.BoxGeometry(alongX ? 0.8 : 0.14, 0.04, alongX ? 0.14 : 0.8), '#f4e27a', a.x + (b.x-a.x)*u, 0.24, a.z + (b.z-a.z)*u);
+        ftMesh(new THREE.BoxGeometry(alongX ? 0.9 : 0.16, 0.05, alongX ? 0.16 : 0.9), '#f6d44a', a.x + (b.x-a.x)*u, 0.24, a.z + (b.z-a.z)*u);
       }
     }
     // roadside scenery
@@ -244,7 +289,7 @@
     const along = -1.5, ey = 1.55;
     const x = pose.x + along * sy, z = pose.z + along * cy;
     camera.position.set(x, ey, z);
-    camera.lookAt(x + sy * 10, ey + 0.12, z + cy * 10);
+    camera.lookAt(x + sy * 10, ey - 0.35, z + cy * 10);
     (ft.trash||[]).forEach(m => { if (m && m.userData && m.userData.ftLab) m.visible = false; });
     return true;
   }
@@ -325,6 +370,8 @@
   if (typeof window !== 'undefined') window.ftDebug = {
     probe(){ if (!ft) return null; const pose = (ft.run && ft.run.phase === 'ride' && FieldTripRules.ftRidePose) ? FieldTripRules.ftRidePose(ft.run) : null; return {phase: ft.run && ft.run.phase, found: ((ft.sv && ft.sv.found)||[]).slice(), won: !!(ft.sv && ft.sv.won), P: P ? {x:P.x,y:P.y,z:P.z} : null, ride: pose, fern: FieldTripRules.FT_GUIDE, arrive: FieldTripRules.FT_ARRIVE}; },
     nook(){ if (!ft) return; ft.run.phase='nook'; ft.run.rideT=FieldTripRules.FT_RIDE_T; const a=FieldTripRules.FT_ARRIVE||{x:3.4,z:-8}; if(P){P.x=a.x;P.y=0.5;P.z=a.z;} if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; } ftPaintFinds(); },
+    inside(){ if (!ft) return; ft.run.phase='nook'; if(P){P.x=0;P.y=0.5;P.z=-40.2;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.18; cam.dist=4.4; } },
+    ride(t){ if (!ft) return; ft.run.phase='ride'; ft.run.rideT= (t==null? 3.2 : t); const pose=FieldTripRules.ftRidePose(ft.run); ftSeatInBus(pose); ftRideVis(true); },
     go(id){
       if (!ft || !P) return;
       const F = FieldTripRules;
