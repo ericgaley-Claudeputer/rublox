@@ -41,6 +41,16 @@ test('Pebblebrook Field Trip rules: yard bus, nook finds, ride home, old saves l
   const endPose = F.ftRidePose({phase:'ride', rideT:F.FT_RIDE_T});
   assert.ok(Math.hypot(endPose.x - F.FT_ARRIVE.x, endPose.z - F.FT_ARRIVE.z) < 5);
   assert.ok(Math.hypot(F.FT_GUIDE.x - F.FT_ARRIVE.x, F.FT_GUIDE.z - F.FT_ARRIVE.z) > 8, 'Fern stands clear of the arrival spot');
+  assert.equal(F.FT_DEST_DZ, -560);
+  assert.equal(F.FT_VIEW_FAR, 400);
+  assert.ok(F.ftDestClearOfSchool(F.FT_ARRIVE.x, F.FT_ARRIVE.z), 'arrival is beyond school draw distance');
+  assert.ok(F.ftDestClearOfSchool(F.FT_NOOK.x, F.FT_NOOK.z));
+  assert.ok(F.ftDestClearOfSchool(F.FT_HOME_BUS.x, F.FT_HOME_BUS.z));
+  assert.ok(F.ftDestClearOfSchool(F.FT_GUIDE.x, F.FT_GUIDE.z));
+  F.FT_FINDS.forEach(f => assert.ok(F.ftDestClearOfSchool(f.x, f.z), f.id + ' is beyond school draw distance'));
+  assert.ok(F.ftPathLen(F.FT_RIDE_PATH) > F.FT_VIEW_FAR, 'the bus ride covers more than the view distance');
+  assert.equal(F.ftDestClearOfSchool(0, 18), false);
+
 
   let st = visit.state;
   const earlyHome = F.ftBoardHome(visit.run, st);
@@ -92,5 +102,8 @@ test('Field trip is wired into the hub, reset list, and build dispatch', () => {
   assert.doesNotMatch(html, /BoxGeometry\(14, 5\.2, 10\)/);
   assert.match(html, /MeshBasicMaterial\(\{color:'#f3d56a'\}\)/);
   assert.match(html, /inside\(\)\{ if \(!ft\)/);
+  assert.match(html, /function ftApplyZones/);
+  assert.match(html, /FT_DEST_DZ/);
+  assert.match(html, /lookBack\(\)/);
   assert.doesNotMatch(html.slice(html.indexOf('function buildFieldTrip'), html.indexOf('function buildFieldTrip') + 14000), /blood|gore|kill the/i);
 });

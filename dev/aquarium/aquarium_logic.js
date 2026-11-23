@@ -5,27 +5,46 @@
   const AQ_VER = 1;
   const AQ_REWARD = 20;
   const AQ_RIDE_T = 8.4;
+  const AQ_DEST_DZ = -560;
+  const AQ_VIEW_FAR = 400;
+  function aqZ(z){ return z + AQ_DEST_DZ; }
+  const AQ_YARD_LANDMARKS = [
+    {id:'school', x:0, z:32},
+    {id:'bus', x:0, z:10},
+    {id:'teacher', x:-4, z:16},
+    {id:'spawn', x:0, z:18}
+  ];
+  function aqDestClearOfSchool(x, z){
+    return AQ_YARD_LANDMARKS.every(p => Math.hypot((x||0) - p.x, (z||0) - p.z) > AQ_VIEW_FAR);
+  }
   const AQ_FINDS = [
-    {id:'jelly', name:'Moonveil jelly', emoji:'🪼', x:16, z:-17.4, r:2.2,
+    {id:'jelly', name:'Moonveil jelly', emoji:'🪼', x:16, z:aqZ(-17.4), r:2.2,
       blurb:'A Moonveil jelly pulses like a lantern under the glass. It is soft and safe.'},
-    {id:'turtle', name:'Sand-harbor turtle', emoji:'🐢', x:-16, z:-17.4, r:2.2,
+    {id:'turtle', name:'Sand-harbor turtle', emoji:'🐢', x:-16, z:aqZ(-17.4), r:2.2,
       blurb:'The Sand-harbor turtle blinks at you and paddles a slow hello.'},
-    {id:'lantern', name:'Lanternfish', emoji:'🐟', x:0, z:-47.4, r:2.2,
+    {id:'lantern', name:'Lanternfish', emoji:'🐟', x:0, z:aqZ(-47.4), r:2.2,
       blurb:'A lanternfish flicks a tiny living light in the deep tank.'},
-    {id:'coral', name:'Bubble-plume coral', emoji:'🪸', x:15.4, z:-36, r:2.2,
+    {id:'coral', name:'Bubble-plume coral', emoji:'🪸', x:15.4, z:aqZ(-36), r:2.2,
       blurb:'Bubble-plume coral pops little glass-bright beads. No one is harmed.'},
-    {id:'star', name:'Tideglass star', emoji:'⭐', x:-15.4, z:-36, r:2.2,
+    {id:'star', name:'Tideglass star', emoji:'⭐', x:-15.4, z:aqZ(-36), r:2.2,
       blurb:'A Tideglass star sits like a jewel on the sand. Five arms, five wishes for a safe trip.'}
   ];
   const AQ_BUS = {x:0, z:10, r:2.4};
-  const AQ_HOME_BUS = {x:0, z:-8, r:2.6};
-  const AQ_GUIDE = {x:-8, z:-30, r:2.0, name:'Marin', role:'guide'};
+  const AQ_HOME_BUS = {x:0, z:aqZ(-8), r:2.6};
+  const AQ_GUIDE = {x:-8, z:aqZ(-30), r:2.0, name:'Marin', role:'guide'};
   const AQ_TEACHER = {x:-4, z:16, r:1.8, name:'Ms. Bramble', role:'teacher'};
-  const AQ_HALL = {x:0, z:-40};
-  const AQ_ARRIVE = {x:3.4, z:-8};
-  const AQ_POOL = {x:8, z:-12, r:2.2, name:'Pebblecrab pool'};
+  const AQ_HALL = {x:0, z:aqZ(-40)};
+  const AQ_ARRIVE = {x:3.4, z:aqZ(-8)};
+  const AQ_POOL = {x:8, z:aqZ(-12), r:2.2, name:'Pebblecrab pool'};
   const AQ_RIDE_PATH = [
-    {x:0, z:10}, {x:0, z:2}, {x:-24, z:2}, {x:-24, z:-18}, {x:0, z:-18}, {x:0, z:-8}
+    {x:0, z:10},
+    {x:0, z:2},
+    {x:-28, z:2},
+    {x:-28, z:-80},
+    {x:-16, z:-180},
+    {x:-24, z:-300},
+    {x:-8, z:-420},
+    {x:0, z:aqZ(-8)}
   ];
 
   function aqFresh(){ return {ver: AQ_VER, found: [], visits: 0, won: false, coins: 0, touched: false}; }
@@ -152,7 +171,7 @@
   }
 
   const api = {
-    AQ_KEY, AQ_VER, AQ_REWARD, AQ_RIDE_T, AQ_FINDS, AQ_BUS, AQ_HOME_BUS, AQ_GUIDE, AQ_TEACHER, AQ_HALL, AQ_ARRIVE, AQ_POOL, AQ_RIDE_PATH,
+    AQ_KEY, AQ_VER, AQ_REWARD, AQ_RIDE_T, AQ_DEST_DZ, AQ_VIEW_FAR, AQ_YARD_LANDMARKS, aqZ, aqDestClearOfSchool, AQ_FINDS, AQ_BUS, AQ_HOME_BUS, AQ_GUIDE, AQ_TEACHER, AQ_HALL, AQ_ARRIVE, AQ_POOL, AQ_RIDE_PATH,
     aqFresh, aqLoad, aqNewVisit, aqFind, aqHas, aqAll, aqPick, aqTouch,
     aqBoardBus, aqRidePose, aqTickRide, aqBoardHome, aqNear, aqGoal
   };

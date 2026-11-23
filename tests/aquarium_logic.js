@@ -44,6 +44,20 @@ test('Tideglass Aquarium rules: coastal bus ride, five exhibits, touch pool, rid
   const endPose = A.aqRidePose({phase:'ride', rideT:A.AQ_RIDE_T});
   assert.ok(Math.hypot(endPose.x - A.AQ_ARRIVE.x, endPose.z - A.AQ_ARRIVE.z) < 5);
   assert.ok(Math.hypot(A.AQ_GUIDE.x - A.AQ_ARRIVE.x, A.AQ_GUIDE.z - A.AQ_ARRIVE.z) > 8, 'Marin stands clear of the arrival spot');
+  assert.equal(A.AQ_DEST_DZ, -560);
+  assert.equal(A.AQ_VIEW_FAR, 400);
+  assert.ok(A.aqDestClearOfSchool(A.AQ_ARRIVE.x, A.AQ_ARRIVE.z), 'arrival is beyond school draw distance');
+  assert.ok(A.aqDestClearOfSchool(A.AQ_HALL.x, A.AQ_HALL.z));
+  assert.ok(A.aqDestClearOfSchool(A.AQ_HOME_BUS.x, A.AQ_HOME_BUS.z));
+  assert.ok(A.aqDestClearOfSchool(A.AQ_GUIDE.x, A.AQ_GUIDE.z));
+  assert.ok(A.aqDestClearOfSchool(A.AQ_POOL.x, A.AQ_POOL.z));
+  A.AQ_FINDS.forEach(f => assert.ok(A.aqDestClearOfSchool(f.x, f.z), f.id + ' is beyond school draw distance'));
+  let rideLen = 0;
+  const path = A.AQ_RIDE_PATH;
+  for (let i = 0; i < path.length - 1; i++) rideLen += Math.hypot(path[i+1].x - path[i].x, path[i+1].z - path[i].z);
+  assert.ok(rideLen > A.AQ_VIEW_FAR, 'the coastal ride covers more than the view distance');
+  assert.equal(A.aqDestClearOfSchool(0, 18), false);
+
 
   let st = visit.state;
   const earlyHome = A.aqBoardHome(visit.run, st);
@@ -99,6 +113,9 @@ test('Tideglass Aquarium is wired into the hub, reset list, controls, and weathe
   assert.match(html, /facade window-tanks/);
   assert.match(html, /1\.7, 2\.0, -36\.0/);
   assert.match(html, /inside\(\)\{ if \(!aq\)/);
+  assert.match(html, /function aqApplyZones/);
+  assert.match(html, /AQ_DEST_DZ/);
+  assert.match(html, /lookBack\(\)/);
   const g = R.resetGame('aquarium');
   assert.ok(g);
   assert.ok(g.keys.includes('rubloxAquarium'));
