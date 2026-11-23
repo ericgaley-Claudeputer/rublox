@@ -34,9 +34,25 @@ test('Frostlane Rink uses ice slip, counts laps, and awards optional trick coins
   assert.equal(trick2.state.skateTricks, 2);
 });
 
-test('Rink is built with an ice plat, boards, and a Frostlane sign', () => {
+test('Rink is built with a circular ice collider, boards, and a Frostlane sign', () => {
   assert.match(html, /ice\s*=\s*true/);
   assert.match(html, /Frostlane Rink/);
   assert.match(html, /function wnDoTrick/);
   assert.match(html, /function wnBuildRink/);
+  assert.match(html, /ice\.rad = rinkR/);
+  assert.match(html, /CylinderGeometry\(rinkR/);
+  assert.match(html, /if \(hit && b\.rad\)/);
+  // A square of width 2r would stick out at the corners; the circle itself does not.
+  const p = W.WN_POND;
+  const r = p.r || 7.5;
+  const corner = r * Math.SQRT2; // distance from center to a square corner of the old AABB
+  assert.ok(corner - r > 2, 'square corners used to stick out past the circle');
+  assert.equal(W.wnOnRink(p.x, p.z), true);
+  assert.equal(W.wnOnRink(p.x + r, p.z), true);
+  assert.equal(W.wnOnRink(p.x + corner, p.z + 0), false);
+  assert.equal(W.wnOnRink(p.x + r * 0.96, p.z + r * 0.96), false);
+  assert.match(html, /id="wnTopBtn"/);
+  assert.match(html, /LB: cycle Snugmug toppings/);
+  assert.match(html, /🍭: cycle Snugmug toppings/);
+  assert.match(html, /jp\[4\]/);
 });

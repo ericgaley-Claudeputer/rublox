@@ -160,5 +160,6 @@ describe('Pinebell Village', () => {
     assert.match(html, /Snugmug Cart/);
     assert.match(html, /wnThrowAimed/);
     assert.match(html, /id="wnSnowBtn"/);
+    assert.match(html, /id="wnTopBtn"/);
   });
 });

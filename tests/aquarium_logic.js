@@ -95,6 +95,10 @@ test('Tideglass Aquarium is wired into the hub, reset list, controls, and weathe
   assert.match(html, /Pebblecrab/);
   assert.match(html, /aquarium: \{kb:/);
   assert.match(html, /WX_SKIP = \[[^\]]*'aquarium'[^\]]*\]/);
+  assert.match(html, /function aqHallBuilding/);
+  assert.match(html, /facade window-tanks/);
+  assert.match(html, /1\.7, 2\.0, -36\.0/);
+  assert.match(html, /inside\(\)\{ if \(!aq\)/);
   const g = R.resetGame('aquarium');
   assert.ok(g);
   assert.ok(g.keys.includes('rubloxAquarium'));
