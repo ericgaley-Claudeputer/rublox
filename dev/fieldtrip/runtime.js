@@ -2,22 +2,49 @@
   let ft = null;
   function ftSave(s){ try { if (typeof save === 'function') save(FieldTripRules.FT_KEY, s); } catch(e){} }
   function ftState(){ try { return FieldTripRules.ftLoad(typeof load === 'function' ? load(FieldTripRules.FT_KEY, null) : null); } catch(e){ return FieldTripRules.ftFresh(); } }
-  function ftKeep(m){ if (ft && m){ (ft.trash || (ft.trash=[])).push(m); } return m; }
+  function ftWZ(z){ return (z||0) + ((ft && ft.shiftZ) || 0); }
+  function ftKeep(m){
+    if (ft && m){
+      (ft.trash || (ft.trash=[])).push(m);
+      if (ft.curZone){
+        m.userData = m.userData || {};
+        m.userData.ftZone = ft.curZone;
+        (ft.zones || (ft.zones={}))[ft.curZone] = ft.zones[ft.curZone] || [];
+        ft.zones[ft.curZone].push(m);
+      }
+    }
+    return m;
+  }
   function ftMesh(geo, col, x, y, z){
     const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({color: col}));
-    m.position.set(x, y, z); scene.add(m); ftKeep(m); return m;
+    m.position.set(x, y, ftWZ(z)); scene.add(m); ftKeep(m); return m;
   }
   function ftLab(text, x, y, z){
     try {
-      if (typeof t297Lab === 'function'){ const l = t297Lab(text, x, y, z); if (l){ l.userData = l.userData || {}; l.userData.ftLab = true; return ftKeep(l); } }
+      if (typeof t297Lab === 'function'){ const l = t297Lab(text, x, y, ftWZ(z)); if (l){ l.userData = l.userData || {}; l.userData.ftLab = true; return ftKeep(l); } }
     } catch(e){}
     return null;
   }
   function ftPlat(x, y, z, w, d, col, h){
-    const b = plat(x, y, z, w, d, col, h == null ? 0.2 : h);
+    const b = plat(x, y, ftWZ(z), w, d, col, h == null ? 0.2 : h);
     if (b && b.mesh) ftKeep(b.mesh);
-    if (b) (ft.solids || (ft.solids=[])).push(b);
+    if (b){ (ft.solids || (ft.solids=[])).push(b); if (ft.curZone) b.ftZone = ft.curZone; }
     return b;
+  }
+  function ftApplyZones(phase){
+    if (!ft) return;
+    const showYard = (phase === 'yard' || phase === 'ride' || phase === 'done');
+    const showDest = (phase === 'nook' || phase === 'ride');
+    const vis = {yard: showYard, dest: showDest, road: true};
+    Object.keys(vis).forEach(z => {
+      (ft.zones && ft.zones[z] || []).forEach(m => { if (m) m.visible = !!vis[z]; });
+    });
+    (ft.solids||[]).forEach(b => {
+      if (!b) return;
+      if (b.ftZone === 'yard') b.active = showYard;
+      if (b.ftZone === 'dest') b.active = showDest;
+    });
+    if (typeof ftPaintFinds === 'function') ftPaintFinds();
   }
   function ftApplyDaySky(){
     const hex = '#7ec8ff';
@@ -69,6 +96,7 @@
     ftLab('🪑 Yard bench', -4.6, 2.3, 13.4);
   }
   function ftNookBuilding(){
+    ft.curZone = 'dest'; ft.shiftZ = FieldTripRules.FT_DEST_DZ || 0;
     // Shell (not a solid block) so you can walk inside and see the exhibits.
     const wall = '#d7c4a0', trim = '#6b4a28', leaf = '#b7e0a8';
     ftPlat(0, 0.22, -40, 13.4, 9.4, '#d8c49a', 0.16);
@@ -84,7 +112,7 @@
     ftMesh(new THREE.BoxGeometry(2.5, 0.22, 0.22), trim, 0, 3.5, -35.0);
     ftMesh(new THREE.BoxGeometry(15.2, 0.35, 11.2), '#5a7a32', 0, 5.4, -40);
     const roof = new THREE.Mesh(new THREE.ConeGeometry(10.5, 2.8, 4), new THREE.MeshLambertMaterial({color:'#6a8a3a'}));
-    roof.position.set(0, 7.1, -40); roof.rotation.y = Math.PI/4; scene.add(roof); ftKeep(roof);
+    roof.position.set(0, 7.1, ftWZ(-40)); roof.rotation.y = Math.PI/4; scene.add(roof); ftKeep(roof);
     // facade: framed windows, flower boxes, porch, door lantern
     [[-5, 3.4], [5, 3.4]].forEach(w => {
       ftMesh(new THREE.BoxGeometry(2.6, 2.0, 0.12), '#8b6a3a', w[0], w[1], -34.96);
@@ -116,14 +144,15 @@
     ftMesh(new THREE.BoxGeometry(1.6, 1.1, 0.08), '#c4a060', -3.2, 2.6, -44.7);
     ftMesh(new THREE.BoxGeometry(1.6, 1.1, 0.08), '#7a9a4a', 3.2, 2.6, -44.7);
     ftMesh(new THREE.BoxGeometry(2.4, 0.7, 0.2), '#8b6a3a', 0, 2.2, -44.7);
-    (function(){ const c=new THREE.Mesh(new THREE.BoxGeometry(13.6, 0.08, 9.6), new THREE.MeshBasicMaterial({color:'#f3e6c4'})); c.position.set(0, 5.18, -40); scene.add(c); ftKeep(c); })();
+    (function(){ const c=new THREE.Mesh(new THREE.BoxGeometry(13.6, 0.08, 9.6), new THREE.MeshBasicMaterial({color:'#f3e6c4'})); c.position.set(0, 5.18, ftWZ(-40)); scene.add(c); ftKeep(c); })();
     const glow = ftMesh(new THREE.SphereGeometry(0.16, 8, 8), '#ffe7b0', 0, 4.7, -40);
     try { glow.material.emissive = new THREE.Color('#ffe7b0'); glow.material.emissiveIntensity = 0.9; } catch(e){}
     try {
       const lit = new THREE.PointLight('#ffe0b0', 0.7, 14, 2);
-      lit.position.set(0, 4.4, -40); scene.add(lit); ftKeep(lit);
+      lit.position.set(0, 4.4, ftWZ(-40)); scene.add(lit); ftKeep(lit);
     } catch(e){}
     ftLab('🌿 Pebblebrook Nature Nook', 0, 8.6, -35.2);
+    ft.shiftZ = 0;
   }
   function ftMakeBus(){
     const bus = new THREE.Group();
@@ -164,6 +193,7 @@
     return bus;
   }
   function ftBuildRoad(){
+    ft.curZone = 'road'; ft.shiftZ = 0;
     const path = FieldTripRules.FT_RIDE_PATH || [];
     for (let i = 0; i < path.length - 1; i++){
       const a = path[i], b = path[i+1];
@@ -177,48 +207,65 @@
         const u = s / steps;
         ftMesh(new THREE.BoxGeometry(alongX ? 0.9 : 0.16, 0.05, alongX ? 0.16 : 0.9), '#f6d44a', a.x + (b.x-a.x)*u, 0.24, a.z + (b.z-a.z)*u);
       }
+      // a few roadside trees along the long ride, not in the school or nook yards
+      if (i >= 2 && len > 20){
+        const side = (i % 2 ? 1 : -1) * 7;
+        for (let s = 1; s < Math.min(6, (len / 40) | 0) + 1; s++){
+          const u = s / (Math.min(6, (len / 40) | 0) + 1);
+          const tx = a.x + (b.x-a.x)*u + (alongX ? 0 : side);
+          const tz = a.z + (b.z-a.z)*u + (alongX ? side : 0);
+          ftTree(tx, tz, 2.2 + (s % 3) * 0.35, s % 2 ? '#4fa15a' : '#68b85a');
+        }
+      }
     }
-    // roadside scenery
-    [[12,6],[12,-2],[12,-10],[18,-2],[30,6],[30,-6],[30,-16],[18,-24],[-10,2],[-10,-12],[8,-24]].forEach((p, i) => {
+    // scenery just outside the school yard, then mid-ride landmarks
+    [[12,6],[12,-2],[18,-2],[30,6],[30,-6],[-10,2]].forEach((p, i) => {
       ftTree(p[0], p[1], 2.2 + (i % 3) * 0.35, i % 2 ? '#4fa15a' : '#68b85a');
     });
-    ftMesh(new THREE.BoxGeometry(0.16, 2.4, 1.6), '#c45c1a', 24.9, 1.4, -6);
-    ftLab('➡️ Pebblebrook', 25.2, 3.0, -6);
-    ftMesh(new THREE.BoxGeometry(4.4, 2.8, 3.6), '#c45c3a', 32, 1.5, -10);
+    ftMesh(new THREE.BoxGeometry(0.16, 2.4, 1.6), '#c45c1a', 29.2, 1.4, 2);
+    ftLab('➡️ Pebblebrook', 29.6, 3.0, 2);
+    ftMesh(new THREE.BoxGeometry(4.4, 2.8, 3.6), '#c45c3a', 36, 1.5, -8);
     const barnRoof = new THREE.Mesh(new THREE.ConeGeometry(3.4, 1.8, 4), new THREE.MeshLambertMaterial({color:'#8b2e1a'}));
-    barnRoof.position.set(32, 3.5, -10); barnRoof.rotation.y = Math.PI/4; scene.add(barnRoof); ftKeep(barnRoof);
-    ftLab('🌾 Hayloft farm', 32, 4.8, -10);
-    ftPlat(24, 0.22, -18, 8, 3.2, '#6aa0c8', 0.16);
-    ftLab('💧 Brookbell bridge', 24, 1.8, -18);
+    barnRoof.position.set(36, 3.5, -8); barnRoof.rotation.y = Math.PI/4; scene.add(barnRoof); ftKeep(barnRoof);
+    ftLab('🌾 Hayloft farm', 36, 4.8, -8);
+    ftPlat(16, 0.22, -180, 8, 3.2, '#6aa0c8', 0.16);
+    ftLab('💧 Brookbell bridge', 16, 1.8, -180);
   }
   function buildFieldTrip(){
     const started = FieldTripRules.ftNewVisit(ftState());
-    ft = {trash:[], solids:[], sv: started.state, run: started.run, near:null, bus:null, homeBus:null};
+    ft = {trash:[], solids:[], zones:{}, sv: started.state, run: started.run, near:null, bus:null, homeBus:null, curZone:null, shiftZ:0};
     ftSave(started.state);
     try { checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:18}, flag:new THREE.Object3D()}; } catch(e){}
     ftApplyDaySky();
     const hemi = new THREE.HemisphereLight(0xe8f4ff, 0x4a7a3a, 1.1); scene.add(hemi); ftKeep(hemi);
     const sun = new THREE.DirectionalLight('#fff8e0', 0.85); sun.position.set(10, 18, 8); scene.add(sun); ftKeep(sun);
-    ftPlat(0, 0.14, -4, 90, 110, '#3f8f3a', 0.24);
+    // School yard and Nature Nook are separate places, not one shared lawn.
+    ft.curZone = 'yard'; ft.shiftZ = 0;
+    ftPlat(0, 0.14, 18, 52, 44, '#3f8f3a', 0.24);
     ftPlat(0, 0.16, 16, 36, 28, '#4ea247', 0.16);
-    ftPlat(0, 0.16, -28, 48, 48, '#3d9140', 0.16);
     ftSchoolBuilding();
     ftBuildRoad();
+    ft.curZone = 'yard'; ft.shiftZ = 0;
     const bus = ftMakeBus();
     bus.position.set(FieldTripRules.FT_BUS.x, 0, FieldTripRules.FT_BUS.z);
-    scene.add(bus); ftKeep(bus); ft.bus = bus;
+    scene.add(bus); ft.bus = bus; // traveling bus is never zone-hidden
+    ft.curZone = 'yard';
     ftLab('🚌 Afterbell bus', FieldTripRules.FT_BUS.x, 3.6, FieldTripRules.FT_BUS.z);
     ftNpc({body: 'girl', head: '#e0ac69', shirt: '#c45c8a', pants: '#3a3f6a', pantsPat: 'skirt', hair: 'bun', hairColor: '#6b4226', face: 'smile', shirtPat: null, hat: null}, FieldTripRules.FT_TEACHER.x, FieldTripRules.FT_TEACHER.z, 0, 18, '#c45c8a');
     ftLab('👩‍🏫 Ms. Bramble', FieldTripRules.FT_TEACHER.x, 3.9, FieldTripRules.FT_TEACHER.z);
+    [[-22,18],[14,22],[-20,8],[18,10]].forEach(p => ftTree(p[0], p[1], 2.4, '#68b85a'));
     ftNookBuilding();
+    ft.curZone = 'dest'; ft.shiftZ = FieldTripRules.FT_DEST_DZ || 0;
+    ftPlat(0, 0.16, -28, 56, 56, '#3d9140', 0.16);
     ftTree(-18, -12, 3.4, '#5aaa4a');
     ftLab('🌳 Willow path', -18, 5.4, -12);
-    [[-22,18],[14,22],[-16,-8],[18,-8],[-26,-28],[20,-20],[-14,-40],[12,-48]].forEach(p => ftTree(p[0], p[1], 2.4, p[1] < 0 ? '#4fa15a' : '#68b85a'));
+    [[-16,-8],[18,-8],[-26,-28],[20,-20],[-14,-40],[12,-48]].forEach(p => ftTree(p[0], p[1], 2.4, '#4fa15a'));
     ftPlat(16, 0.22, -18, 7, 4.5, '#6aa0c8', 0.12);
     ftLab('💧 Brookbell Creek', 16, 1.8, -18);
     ftMesh(new THREE.BoxGeometry(3.2, 1.4, 3.2), '#8b6a3a', 22, 0.85, -32);
     ftMesh(new THREE.CylinderGeometry(0.15, 0.18, 1.4, 8), '#c4a574', 22, 1.8, -32);
     ftLab('🔭 Lookout', 22, 2.6, -32);
+    ft.shiftZ = 0;
     // Fern waits off to the side of the courtyard, not on the drop-off
     ftNpc({head: '#c68642', shirt: '#3a8f5a', pants: '#6b4a2a', hair: 'short', hairColor: '#2a1a10', face: 'smile', shirtPat: null, hat: null}, FieldTripRules.FT_GUIDE.x, FieldTripRules.FT_GUIDE.z, FieldTripRules.FT_ARRIVE.x, FieldTripRules.FT_ARRIVE.z, '#3a8f5a');
     ftLab('🧭 Fern', FieldTripRules.FT_GUIDE.x, 3.9, FieldTripRules.FT_GUIDE.z);
@@ -233,10 +280,13 @@
       ftLab((f.emoji||'🔍') + ' ' + f.name, f.x, 1.6, f.z);
       ft.findMeshes[f.id] = m;
     });
+    ft.curZone = 'dest'; ft.shiftZ = 0;
     if (P){ P.x=0; P.y=0.5; P.z=18; P.vx=0; P.vz=0; P.vy=0; }
     if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
     const box=document.getElementById('ftBox'); if(box) box.style.display='block';
     banner('🚌 Field trip day! Ms. Bramble is taking Afterbell School to Pebblebrook Nature Nook. Board the bus, sit tight for the ride, then find five trail treasures.');
+    ft.curZone = null;
+    ftApplyZones((ft.run && ft.run.phase) || 'yard');
     ftPaintFinds();
     ftHud();
   }
@@ -247,11 +297,12 @@
   }
   function ftPaintFinds(){
     if (!ft) return;
+    const destOn = !!(ft.run && (ft.run.phase === 'nook' || ft.run.phase === 'ride'));
     (FieldTripRules.FT_FINDS || []).forEach(f => {
       const m = (ft.findMeshes || {})[f.id];
-      if (m) m.visible = !FieldTripRules.ftHas(ft.sv, f.id);
+      if (m) m.visible = destOn && !FieldTripRules.ftHas(ft.sv, f.id);
     });
-    if (ft.homeBus) ft.homeBus.visible = FieldTripRules.ftAll(ft.sv) && ft.run && (ft.run.phase === 'nook' || ft.run.phase === 'done');
+    if (ft.homeBus) ft.homeBus.visible = destOn && FieldTripRules.ftAll(ft.sv) && ft.run && ft.run.phase === 'nook';
   }
   function ftRideVis(hide){
     try {
@@ -322,6 +373,8 @@
       banner((r.message || 'Bus ride home!') + (r.coins ? ('  +' + r.coins + ' 🪙') : ''));
       if (P){ P.x=0; P.z=18; P.y=0.5; }
       if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
+      if (ft.bus){ ft.bus.position.set(FieldTripRules.FT_BUS.x, 0, FieldTripRules.FT_BUS.z); ft.bus.rotation.y = 0; }
+      ftApplyZones('done');
       return;
     }
   }
@@ -337,13 +390,13 @@
         if (P){ P.x=a.x; P.y=0.5; P.z=a.z; P.vx=0; P.vz=0; }
         if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; }
         ftRideVis(false);
-        (ft.trash||[]).forEach(m => { if (m && m.userData && m.userData.ftLab) m.visible = true; });
         if (ft.bus){ ft.bus.position.set(FieldTripRules.FT_HOME_BUS.x, 0, FieldTripRules.FT_HOME_BUS.z); ft.bus.rotation.y = Math.PI; }
         banner('🌿 Welcome to Pebblebrook Nature Nook! Fern is waiting by the nature hall — not under the bus. Find five trail treasures, then ride home.');
-        ftPaintFinds();
+        ftApplyZones('nook');
       }
     }
     if (P && P.y < -8){ P.x=0; P.y=0.5; P.z = (ft.run && ft.run.phase === 'nook') ? (FieldTripRules.FT_ARRIVE||{}).z || -8 : 18; P.vx=P.vz=P.vy=0; }
+    ftApplyZones(ft.run && ft.run.phase);
     ft.near = FieldTripRules.ftNear(P ? P.x : 0, P ? P.z : 0, ft.sv, ft.run);
     ftHud(FieldTripRules.ftGoal(ft.sv, ft.run));
   }
@@ -369,9 +422,11 @@
   }
   if (typeof window !== 'undefined') window.ftDebug = {
     probe(){ if (!ft) return null; const pose = (ft.run && ft.run.phase === 'ride' && FieldTripRules.ftRidePose) ? FieldTripRules.ftRidePose(ft.run) : null; return {phase: ft.run && ft.run.phase, found: ((ft.sv && ft.sv.found)||[]).slice(), won: !!(ft.sv && ft.sv.won), P: P ? {x:P.x,y:P.y,z:P.z} : null, ride: pose, fern: FieldTripRules.FT_GUIDE, arrive: FieldTripRules.FT_ARRIVE}; },
-    nook(){ if (!ft) return; ft.run.phase='nook'; ft.run.rideT=FieldTripRules.FT_RIDE_T; const a=FieldTripRules.FT_ARRIVE||{x:3.4,z:-8}; if(P){P.x=a.x;P.y=0.5;P.z=a.z;} if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; } ftPaintFinds(); },
-    inside(){ if (!ft) return; ft.run.phase='nook'; if(P){P.x=0;P.y=0.5;P.z=-40.2;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.18; cam.dist=4.4; } },
-    ride(t){ if (!ft) return; ft.run.phase='ride'; ft.run.rideT= (t==null? 3.2 : t); const pose=FieldTripRules.ftRidePose(ft.run); ftSeatInBus(pose); ftRideVis(true); },
+    nook(){ if (!ft) return; ft.run.phase='nook'; ft.run.rideT=FieldTripRules.FT_RIDE_T; const a=FieldTripRules.FT_ARRIVE||{x:3.4,z:-8}; if(P){P.x=a.x;P.y=0.5;P.z=a.z;} if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; } ftApplyZones('nook'); },
+    inside(){ if (!ft) return; ft.run.phase='nook'; const z = FieldTripRules.ftZ ? FieldTripRules.ftZ(-40.2) : -40.2; if(P){P.x=0;P.y=0.5;P.z=z;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.18; cam.dist=4.4; } ftApplyZones('nook'); },
+    lookBack(){ if (!ft) return; this.look(Math.PI); },
+    look(yaw){ if (!ft) return; ft.run.phase='nook'; const a=FieldTripRules.FT_ARRIVE||{x:3.4,z:-8}; if(P){P.x=a.x;P.y=0.5;P.z=a.z;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=(yaw==null?Math.PI:yaw); cam.pitch=0.12; cam.dist=12; } ftApplyZones('nook'); },
+    ride(t){ if (!ft) return; ft.run.phase='ride'; ft.run.rideT= (t==null? 3.2 : t); const pose=FieldTripRules.ftRidePose(ft.run); ftSeatInBus(pose); ftRideVis(true); ftApplyZones('ride'); },
     go(id){
       if (!ft || !P) return;
       const F = FieldTripRules;

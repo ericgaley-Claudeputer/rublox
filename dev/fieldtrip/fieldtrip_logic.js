@@ -6,31 +6,48 @@
   const FT_VER = 1;
   const FT_REWARD = 18;
   const FT_RIDE_T = 8.4;
+  // Destination sits well beyond the main camera far plane (400) and fog (180)
+  // so Afterbell School cannot be seen from the Nook, even looking back.
+  const FT_DEST_DZ = -560;
+  const FT_VIEW_FAR = 400;
+  function ftZ(z){ return z + FT_DEST_DZ; }
+  const FT_YARD_LANDMARKS = [
+    {id:'school', x:0, z:32},
+    {id:'bus', x:0, z:10},
+    {id:'teacher', x:-4, z:16},
+    {id:'bench', x:-4.6, z:13.4},
+    {id:'spawn', x:0, z:18}
+  ];
+  function ftDestClearOfSchool(x, z){
+    return FT_YARD_LANDMARKS.every(p => Math.hypot((x||0) - p.x, (z||0) - p.z) > FT_VIEW_FAR);
+  }
   const FT_FINDS = [
-    {id:'pebble', name:'River pebble', emoji:'🪨', x:16, z:-18, r:2.0,
+    {id:'pebble', name:'River pebble', emoji:'🪨', x:16, z:ftZ(-18), r:2.0,
       blurb:'A smooth river pebble from Brookbell Creek. It still feels cool.'},
-    {id:'catkin', name:'Willow catkin', emoji:'🌿', x:-18, z:-12, r:2.0,
+    {id:'catkin', name:'Willow catkin', emoji:'🌿', x:-18, z:ftZ(-12), r:2.0,
       blurb:'A soft willow catkin from the Nook path, fluffy as a cloud.'},
-    {id:'lantern', name:'Moss lantern', emoji:'🏮', x:0, z:-36, r:2.0,
+    {id:'lantern', name:'Moss lantern', emoji:'🏮', x:0, z:ftZ(-36), r:2.0,
       blurb:'A little moss lantern from the nature hall. It glows a gentle green.'},
-    {id:'feather', name:'Trail feather', emoji:'🪶', x:22, z:-32, r:2.0,
+    {id:'feather', name:'Trail feather', emoji:'🪶', x:22, z:ftZ(-32), r:2.0,
       blurb:'A painted-jay feather left on the lookout trail.'},
-    {id:'acorn', name:'Acorn compass', emoji:'🧭', x:-14, z:-30, r:2.0,
+    {id:'acorn', name:'Acorn compass', emoji:'🧭', x:-14, z:ftZ(-30), r:2.0,
       blurb:'An acorn compass from the exhibit case. The nut always points to the brook.'}
   ];
   const FT_BUS = {x:0, z:10, r:2.4};
-  const FT_GUIDE = {x:-8, z:-30, r:2.0, name:'Fern', role:'guide'};
+  const FT_GUIDE = {x:-8, z:ftZ(-30), r:2.0, name:'Fern', role:'guide'};
   const FT_TEACHER = {x:-4, z:16, r:1.8, name:'Ms. Bramble', role:'teacher'};
-  const FT_NOOK = {x:0, z:-36};
-  const FT_ARRIVE = {x:3.4, z:-8};
-  const FT_HOME_BUS = {x:0, z:-8, r:2.6};
+  const FT_NOOK = {x:0, z:ftZ(-36)};
+  const FT_ARRIVE = {x:3.4, z:ftZ(-8)};
+  const FT_HOME_BUS = {x:0, z:ftZ(-8), r:2.6};
   const FT_RIDE_PATH = [
     {x:0, z:10},
     {x:0, z:2},
-    {x:24, z:2},
-    {x:24, z:-18},
-    {x:0, z:-18},
-    {x:0, z:-8}
+    {x:28, z:2},
+    {x:28, z:-80},
+    {x:16, z:-180},
+    {x:24, z:-300},
+    {x:8, z:-420},
+    {x:0, z:ftZ(-8)}
   ];
   function ftPathLen(path){
     let n = 0;
@@ -158,7 +175,7 @@
   }
 
   const api = {
-    FT_KEY, FT_VER, FT_REWARD, FT_RIDE_T, FT_FINDS, FT_BUS, FT_HOME_BUS, FT_GUIDE, FT_TEACHER, FT_NOOK, FT_ARRIVE, FT_RIDE_PATH,
+    FT_KEY, FT_VER, FT_REWARD, FT_RIDE_T, FT_DEST_DZ, FT_VIEW_FAR, FT_YARD_LANDMARKS, ftZ, ftDestClearOfSchool, FT_FINDS, FT_BUS, FT_HOME_BUS, FT_GUIDE, FT_TEACHER, FT_NOOK, FT_ARRIVE, FT_RIDE_PATH,
     ftFresh, ftLoad, ftNewVisit, ftFind, ftHas, ftAll, ftPick,
     ftBoardBus, ftTickRide, ftRidePose, ftPathLen, ftBoardHome, ftNear, ftGoal
   };

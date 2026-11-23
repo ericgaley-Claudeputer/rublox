@@ -2,20 +2,47 @@
   let aq = null;
   function aqSave(s){ try { if (typeof save === 'function') save(AquariumRules.AQ_KEY, s); } catch(e){} }
   function aqState(){ try { return AquariumRules.aqLoad(typeof load === 'function' ? load(AquariumRules.AQ_KEY, null) : null); } catch(e){ return AquariumRules.aqFresh(); } }
-  function aqKeep(m){ if (aq && m){ (aq.trash || (aq.trash=[])).push(m); } return m; }
+  function aqWZ(z){ return (z||0) + ((aq && aq.shiftZ) || 0); }
+  function aqKeep(m){
+    if (aq && m){
+      (aq.trash || (aq.trash=[])).push(m);
+      if (aq.curZone){
+        m.userData = m.userData || {};
+        m.userData.aqZone = aq.curZone;
+        (aq.zones || (aq.zones={}))[aq.curZone] = aq.zones[aq.curZone] || [];
+        aq.zones[aq.curZone].push(m);
+      }
+    }
+    return m;
+  }
   function aqMesh(geo, col, x, y, z){
     const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({color: col}));
-    m.position.set(x, y, z); scene.add(m); aqKeep(m); return m;
+    m.position.set(x, y, aqWZ(z)); scene.add(m); aqKeep(m); return m;
   }
   function aqLab(text, x, y, z){
-    try { if (typeof t297Lab === 'function'){ const l = t297Lab(text, x, y, z); if (l){ l.userData = l.userData || {}; l.userData.aqLab = true; return aqKeep(l); } } } catch(e){}
+    try { if (typeof t297Lab === 'function'){ const l = t297Lab(text, x, y, aqWZ(z)); if (l){ l.userData = l.userData || {}; l.userData.aqLab = true; return aqKeep(l); } } } catch(e){}
     return null;
   }
   function aqPlat(x, y, z, w, d, col, h){
-    const b = plat(x, y, z, w, d, col, h == null ? 0.2 : h);
+    const b = plat(x, y, aqWZ(z), w, d, col, h == null ? 0.2 : h);
     if (b && b.mesh) aqKeep(b.mesh);
-    if (b) (aq.solids || (aq.solids=[])).push(b);
+    if (b){ (aq.solids || (aq.solids=[])).push(b); if (aq.curZone) b.aqZone = aq.curZone; }
     return b;
+  }
+  function aqApplyZones(phase){
+    if (!aq) return;
+    const showYard = (phase === 'yard' || phase === 'ride' || phase === 'done');
+    const showDest = (phase === 'hall' || phase === 'ride');
+    const vis = {yard: showYard, dest: showDest, road: true};
+    Object.keys(vis).forEach(z => {
+      (aq.zones && aq.zones[z] || []).forEach(m => { if (m) m.visible = !!vis[z]; });
+    });
+    (aq.solids||[]).forEach(b => {
+      if (!b) return;
+      if (b.aqZone === 'yard') b.active = showYard;
+      if (b.aqZone === 'dest') b.active = showDest;
+    });
+    if (typeof aqPaint === 'function') aqPaint();
   }
   function aqSky(){ if (typeof ftApplyDaySky === 'function') ftApplyDaySky(); else {
     try { scene.background = new THREE.Color('#7ec8ff'); if (scene.fog){ scene.fog.color.set('#7ec8ff'); scene.fog.near=55; scene.fog.far=180; } } catch(e){}
@@ -35,21 +62,22 @@
   function aqTank(x, z, col, label, fishCol, kind, faceZ){
     // Framed tank with a sand bed and a front glass so the fish read from the plaza.
     const front = faceZ == null ? (z + 1.7) : faceZ;
+    const wz = aqWZ(z), wfront = aqWZ(front);
     const frame = '#1d4a66';
     aqPlat(x, 0.2, z, 4.8, 3.6, '#2a5570', 0.18);
-    const wall = plat(x, 2.7, z, 4.4, 3.2, '#9ad8e8', 2.5);
+    const wall = plat(x, 2.7, wz, 4.4, 3.2, '#9ad8e8', 2.5);
     if (wall && wall.mesh){ wall.mesh.visible = false; aqKeep(wall.mesh); }
-    if (wall) (aq.solids || (aq.solids=[])).push(wall);
+    if (wall){ (aq.solids || (aq.solids=[])).push(wall); if (aq.curZone) wall.aqZone = aq.curZone; }
     const waterCol = (kind === 'lantern' || col === '#163050') ? '#163050' : '#4eb8d4';
     const water = new THREE.Mesh(new THREE.BoxGeometry(4.0, 2.4, 2.8), new THREE.MeshLambertMaterial({color: waterCol, transparent:true, opacity:0.45}));
-    water.position.set(x, 1.5, z); scene.add(water); aqKeep(water);
+    water.position.set(x, 1.5, wz); scene.add(water); aqKeep(water);
     // frame posts and lintel
     [[-2.15, 0], [2.15, 0], [0, -1.5], [0, 1.5]].forEach((p, i) => {
       const isSide = i < 2;
       aqMesh(new THREE.BoxGeometry(isSide ? 0.18 : 4.4, isSide ? 2.8 : 0.18, isSide ? 3.2 : 0.18), frame, x+p[0], isSide ? 1.5 : (p[1] < 0 ? 0.25 : 2.75), z+p[1]);
     });
     const glass = new THREE.Mesh(new THREE.BoxGeometry(4.0, 2.3, 0.08), new THREE.MeshLambertMaterial({color:'#c8f4ff', transparent:true, opacity:0.28}));
-    glass.position.set(x, 1.5, front); scene.add(glass); aqKeep(glass);
+    glass.position.set(x, 1.5, wfront); scene.add(glass); aqKeep(glass);
     aqMesh(new THREE.BoxGeometry(3.6, 0.2, 2.4), '#c8b070', x, 0.4, z);
     aqLab(label, x, 3.35, front + 0.15);
     const swimmers = [];
@@ -59,12 +87,13 @@
       const mat = new THREE.MeshLambertMaterial({color: fishCol, transparent: kind==='jelly', opacity: kind==='jelly'?0.85:1});
       if (kind === 'lantern' || fishCol === '#ffe566'){ try { mat.emissive = new THREE.Color(fishCol); mat.emissiveIntensity = 0.7; } catch(e){} }
       const m = new THREE.Mesh(geo, mat);
-      m.position.set(x, 1.2, z); scene.add(m); aqKeep(m);
-      swimmers.push({m:m, ox:x, oz:z, a: i * 1.4, r: 0.85 + i * 0.12, spd: 0.7 + i * 0.15, y: 1.0 + (i%3)*0.4});
+      m.position.set(x, 1.2, wz); scene.add(m); aqKeep(m);
+      swimmers.push({m:m, ox:x, oz:wz, a: i * 1.4, r: 0.85 + i * 0.12, spd: 0.7 + i * 0.15, y: 1.0 + (i%3)*0.4});
     }
     (aq.fish || (aq.fish=[])).push.apply(aq.fish, swimmers);
   }
   function aqHallBuilding(){
+    aq.curZone = 'dest'; aq.shiftZ = AquariumRules.AQ_DEST_DZ || 0;
     const wall = '#b9d4e2', trim = '#1d5a78';
     aqPlat(0, 0.22, -42, 15.2, 11.2, '#c5e6ee', 0.16);
     // shell walls, open doorway in the front and a viewing window in the back
@@ -85,25 +114,25 @@
     aqMesh(new THREE.BoxGeometry(5.2, 0.12, 2.4), trim, 0, 4.15, -34.8);
     aqMesh(new THREE.BoxGeometry(17, 0.3, 13), trim, 0, 6.25, -42);
     const aRoof = new THREE.Mesh(new THREE.ConeGeometry(11.5, 2.6, 4), new THREE.MeshLambertMaterial({color:'#1d5a78'}));
-    aRoof.position.set(0, 7.7, -42); aRoof.rotation.y = Math.PI/4; scene.add(aRoof); aqKeep(aRoof);
+    aRoof.position.set(0, 7.7, aqWZ(-42)); aRoof.rotation.y = Math.PI/4; scene.add(aRoof); aqKeep(aRoof);
     // facade window-tanks so the front of the hall itself reads as an aquarium
     function facadeTank(tx){
       const water = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.2, 0.7), new THREE.MeshLambertMaterial({color:'#3aa8c8', transparent:true, opacity:0.5}));
-      water.position.set(tx, 2.4, -35.7); scene.add(water); aqKeep(water);
+      water.position.set(tx, 2.4, aqWZ(-35.7)); scene.add(water); aqKeep(water);
       aqMesh(new THREE.BoxGeometry(3.9, 2.5, 0.16), '#1d4a66', tx, 2.4, -35.35);
       const glass = new THREE.Mesh(new THREE.BoxGeometry(3.5, 2.1, 0.06), new THREE.MeshLambertMaterial({color:'#c8f4ff', transparent:true, opacity:0.25}));
-      glass.position.set(tx, 2.4, -35.25); scene.add(glass); aqKeep(glass);
+      glass.position.set(tx, 2.4, aqWZ(-35.25)); scene.add(glass); aqKeep(glass);
       for (let i = 0; i < 3; i++){
         const col = tx < 0 ? '#f4e27a' : '#ff8fb0';
         const m = new THREE.Mesh(new THREE.SphereGeometry(0.16, 7, 6), new THREE.MeshLambertMaterial({color: col}));
-        m.position.set(tx, 2.1, -35.7); scene.add(m); aqKeep(m);
-        (aq.fish || (aq.fish=[])).push({m:m, ox:tx, oz:-35.7, a: i * 2.1, r: 0.9, spd: 0.8 + i * 0.1, y: 2.0 + i * 0.25});
+        m.position.set(tx, 2.1, aqWZ(-35.7)); scene.add(m); aqKeep(m);
+        (aq.fish || (aq.fish=[])).push({m:m, ox:tx, oz:aqWZ(-35.7), a: i * 2.1, r: 0.9, spd: 0.8 + i * 0.1, y: 2.0 + i * 0.25});
       }
     }
     facadeTank(-5.0); facadeTank(5.0);
     // back-wall viewing window toward the lanternfish nook
     const backGlass = new THREE.Mesh(new THREE.BoxGeometry(6.5, 3.2, 0.08), new THREE.MeshLambertMaterial({color:'#9ad8e8', transparent:true, opacity:0.3}));
-    backGlass.position.set(0, 2.4, -47.7); scene.add(backGlass); aqKeep(backGlass);
+    backGlass.position.set(0, 2.4, aqWZ(-47.7)); scene.add(backGlass); aqKeep(backGlass);
     aqMesh(new THREE.BoxGeometry(6.8, 0.16, 0.16), '#1d4a66', 0, 4.05, -47.7);
     // inside: desk, benches, ceiling lights
     aqMesh(new THREE.BoxGeometry(2.6, 1.0, 1.1), '#2a6a88', 0, 0.75, -44.2);
@@ -115,26 +144,27 @@
     });
     try {
       const lit = new THREE.PointLight('#c8eeff', 0.55, 16, 2);
-      lit.position.set(0, 4.8, -42); scene.add(lit); aqKeep(lit);
+      lit.position.set(0, 4.8, aqWZ(-42)); scene.add(lit); aqKeep(lit);
       const lit2 = new THREE.PointLight('#b8e0ff', 0.35, 12, 2);
-      lit2.position.set(0, 3.2, -37); scene.add(lit2); aqKeep(lit2);
+      lit2.position.set(0, 3.2, aqWZ(-37)); scene.add(lit2); aqKeep(lit2);
     } catch(e){}
     aqLab('🐠 Tideglass Aquarium', 0, 8.8, -35.4);
+    aq.shiftZ = 0;
   }
 
   function aqMakeBus(){ return (typeof ftMakeBus === 'function') ? ftMakeBus() : (function(){ const g=new THREE.Group(); const b=new THREE.Mesh(new THREE.BoxGeometry(3.6,2.2,7.2), new THREE.MeshLambertMaterial({color:'#f0c44a'})); b.position.y=1.3; g.add(b); return g; })(); }
   function buildAquarium(){
     const started = AquariumRules.aqNewVisit(aqState());
-    aq = {trash:[], solids:[], sv: started.state, run: started.run, near:null, bus:null, homeBus:null, fish:[]};
+    aq = {trash:[], solids:[], zones:{}, sv: started.state, run: started.run, near:null, bus:null, homeBus:null, fish:[], curZone:null, shiftZ:0};
     aqSave(started.state);
     try { checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:18}, flag:new THREE.Object3D()}; } catch(e){}
     aqSky();
     const hemi = new THREE.HemisphereLight(0xe8f4ff, 0x3a6a8a, 1.1); scene.add(hemi); aqKeep(hemi);
     const sun = new THREE.DirectionalLight('#fff8e0', 0.8); sun.position.set(-8, 18, 8); scene.add(sun); aqKeep(sun);
-    aqPlat(0, 0.14, -4, 90, 110, '#3f8f3a', 0.24);
+    aq.curZone = 'yard'; aq.shiftZ = 0;
+    aqPlat(0, 0.14, 18, 52, 44, '#3f8f3a', 0.24);
     aqPlat(0, 0.16, 16, 36, 28, '#4ea247', 0.16);
-    aqPlat(0, 0.16, -30, 52, 52, '#3d8a88', 0.16);
-    // school (compact, same yard)
+    // school yard only — the aquarium is a long bus ride away
     aqMesh(new THREE.BoxGeometry(18, 8, 8), '#7a6aa0', 0, 4.1, 32);
     const roof = new THREE.Mesh(new THREE.ConeGeometry(13, 3.2, 4), new THREE.MeshLambertMaterial({color:'#4a3a68'}));
     roof.position.set(0, 10.1, 32); roof.rotation.y = Math.PI/4; scene.add(roof); aqKeep(roof);
@@ -148,7 +178,8 @@
       } else aqMesh(new THREE.BoxGeometry(0.7,1.6,0.5), '#c45c8a', AquariumRules.AQ_TEACHER.x, 0.9, AquariumRules.AQ_TEACHER.z);
     } catch(e){ aqMesh(new THREE.BoxGeometry(0.7,1.6,0.5), '#c45c8a', AquariumRules.AQ_TEACHER.x, 0.9, AquariumRules.AQ_TEACHER.z); }
     aqLab('👩‍🏫 Ms. Bramble', AquariumRules.AQ_TEACHER.x, 3.9, AquariumRules.AQ_TEACHER.z);
-    // coastal road (west)
+    // coastal road (west), long enough that the school is out of view from Tideglass
+    aq.curZone = 'road'; aq.shiftZ = 0;
     const path = AquariumRules.AQ_RIDE_PATH || [];
     for (let i = 0; i < path.length - 1; i++){
       const a = path[i], b = path[i+1];
@@ -156,15 +187,28 @@
       const len = Math.hypot(b.x-a.x, b.z-a.z)+1.6;
       const alongX = Math.abs(b.x-a.x) >= Math.abs(b.z-a.z);
       aqPlat(mx, 0.18, mz, alongX ? len : 3.4, alongX ? 3.4 : len, '#2a2e33', 0.1);
+      if (i >= 2 && len > 20){
+        const side = (i % 2 ? 1 : -1) * 8;
+        for (let s = 1; s < Math.min(5, (len / 50) | 0) + 1; s++){
+          const u = s / (Math.min(5, (len / 50) | 0) + 1);
+          const tx = a.x + (b.x-a.x)*u + (alongX ? 0 : side);
+          const tz = a.z + (b.z-a.z)*u + (alongX ? side : 0);
+          aqMesh(new THREE.SphereGeometry(1.1, 7, 5), '#3d8a5a', tx, 2.2, tz);
+          aqMesh(new THREE.CylinderGeometry(0.25, 0.32, 2.2, 7), '#6b3a1d', tx, 1.1, tz);
+        }
+      }
     }
-    aqPlat(-24, 0.12, -6, 10, 22, '#3a8ab0', 0.1);
-    aqLab('🌊 Glimmer coast', -24, 2.2, -6);
+    aqPlat(-28, 0.12, -80, 10, 40, '#3a8ab0', 0.1);
+    aqLab('🌊 Glimmer coast', -28, 2.2, -80);
+    aq.curZone = 'yard';
     const bus = aqMakeBus();
     bus.position.set(AquariumRules.AQ_BUS.x, 0, AquariumRules.AQ_BUS.z);
-    scene.add(bus); aqKeep(bus); aq.bus = bus;
+    scene.add(bus); aq.bus = bus; // traveling bus is never zone-hidden
     aqLab('🚌 Afterbell bus', AquariumRules.AQ_BUS.x, 3.6, AquariumRules.AQ_BUS.z);
     // aquarium hall (open shell, facade tanks, interior lights)
     aqHallBuilding();
+    aq.curZone = 'dest'; aq.shiftZ = AquariumRules.AQ_DEST_DZ || 0;
+    aqPlat(0, 0.16, -30, 60, 60, '#3d8a88', 0.16);
     aqTank(16, -20, '#9ad8e8', '🪼 Moonveil jellies', '#d8b0ff', 'jelly');
     aqTank(-16, -20, '#9ad8e8', '🐢 Sand-harbor turtles', '#3a8f5a', 'turtle');
     aqTank(0, -50, '#163050', '🐟 Lanternfish nook', '#ffe566', 'lantern');
@@ -174,6 +218,7 @@
     aqPlat(8, 0.28, -12, 5, 5, '#6aa0c8', 0.16);
     aqMesh(new THREE.CylinderGeometry(0.18, 0.22, 0.2, 8), '#c45c3a', 8, 0.45, -12);
     aqLab('🦀 Pebblecrab pool', 8, 1.8, -12);
+    aq.shiftZ = 0;
     // Marin off to the side
     try {
       if (typeof buildPlayer === 'function'){
@@ -194,7 +239,9 @@
     if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
     const box=document.getElementById('aqBox'); if(box) box.style.display='block';
     banner('🐠 Tideglass Aquarium day! Board the Afterbell bus, sit tight for the coastal ride, then visit five exhibits. Be gentle at the Pebblecrab pool.');
-    aqPaint(); aqHud();
+    aq.curZone = null;
+    aqApplyZones((aq.run && aq.run.phase) || 'yard');
+    aqHud();
   }
   function aqEnter(){
     if (P){ P.x=0; P.y=0.5; P.z=18; P.vx=0; P.vz=0; P.vy=0; }
@@ -203,7 +250,8 @@
   }
   function aqPaint(){
     if (!aq) return;
-    if (aq.homeBus) aq.homeBus.visible = AquariumRules.aqAll(aq.sv) && aq.run && (aq.run.phase === 'hall' || aq.run.phase === 'done');
+    const destOn = !!(aq.run && (aq.run.phase === 'hall' || aq.run.phase === 'ride'));
+    if (aq.homeBus) aq.homeBus.visible = destOn && AquariumRules.aqAll(aq.sv) && aq.run && aq.run.phase === 'hall';
   }
   function aqRideVis(hide){
     try {
@@ -268,6 +316,8 @@
       if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
       banner((r.message || 'Bus ride home!') + (r.coins ? ('  +' + r.coins + ' 🪙') : ''));
       if (P){ P.x=0; P.z=18; P.y=0.5; }
+      if (aq.bus){ aq.bus.position.set(AquariumRules.AQ_BUS.x, 0, AquariumRules.AQ_BUS.z); aq.bus.rotation.y = 0; }
+      aqApplyZones('done');
       if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
     }
   }
@@ -286,13 +336,13 @@
         if (P){ P.x=a.x; P.y=0.5; P.z=a.z; P.vx=0; P.vz=0; }
         if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; }
         aqRideVis(false);
-        (aq.trash||[]).forEach(m => { if (m && m.userData && m.userData.aqLab) m.visible = true; });
         if (aq.bus){ aq.bus.position.set(AquariumRules.AQ_HOME_BUS.x, 0, AquariumRules.AQ_HOME_BUS.z); aq.bus.rotation.y = Math.PI; }
         banner('🐠 Welcome to Tideglass Aquarium! Marin is by the hall, not under the bus. Visit five exhibits, and say hello at the Pebblecrab pool.');
-        aqPaint();
+        aqApplyZones('hall');
       }
     }
     if (P && P.y < -8){ P.x=0; P.y=0.5; P.z = (aq.run && aq.run.phase === 'hall') ? (AquariumRules.AQ_ARRIVE||{}).z || -8 : 18; P.vx=P.vz=P.vy=0; }
+    aqApplyZones(aq.run && aq.run.phase);
     aq.near = AquariumRules.aqNear(P ? P.x : 0, P ? P.z : 0, aq.sv, aq.run);
     aqHud(AquariumRules.aqGoal(aq.sv, aq.run));
   }
@@ -318,10 +368,12 @@
   }
   if (typeof window !== 'undefined') window.aqDebug = {
     probe(){ if (!aq) return null; return {phase: aq.run && aq.run.phase, found: ((aq.sv && aq.sv.found)||[]).slice(), touched: !!(aq.sv && aq.sv.touched), won: !!(aq.sv && aq.sv.won), P: P ? {x:P.x,y:P.y,z:P.z} : null, marin: AquariumRules.AQ_GUIDE, arrive: AquariumRules.AQ_ARRIVE}; },
-    hall(){ if (!aq) return; aq.run.phase='hall'; aq.run.rideT=AquariumRules.AQ_RIDE_T; const a=AquariumRules.AQ_ARRIVE||{x:3.4,z:-8}; if(P){P.x=a.x;P.y=0.5;P.z=a.z;} if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; } aqPaint(); },
-    inside(){ if (!aq) return; aq.run.phase='hall'; if(P){P.x=0;P.y=0.5;P.z=-41;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.14; cam.dist=5.2; } },
-    ride(t){ if (!aq) return; aq.run.phase='ride'; aq.run.rideT= (t==null? 3.2 : t); const pose=AquariumRules.aqRidePose(aq.run); aqSeat(pose); aqRideVis(true); },
-    tankFront(){ if (!aq || !P) return; P.x=13.4; P.y=0.5; P.z=-14.2; P.vx=0; P.vz=0; if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.14; cam.dist=6.2; } },
+    hall(){ if (!aq) return; aq.run.phase='hall'; aq.run.rideT=AquariumRules.AQ_RIDE_T; const a=AquariumRules.AQ_ARRIVE||{x:3.4,z:-8}; if(P){P.x=a.x;P.y=0.5;P.z=a.z;} if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; } aqApplyZones('hall'); },
+    inside(){ if (!aq) return; aq.run.phase='hall'; const z = AquariumRules.aqZ ? AquariumRules.aqZ(-41) : -41; if(P){P.x=0;P.y=0.5;P.z=z;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.14; cam.dist=5.2; } aqApplyZones('hall'); },
+    lookBack(){ if (!aq) return; this.look(Math.PI); },
+    look(yaw){ if (!aq) return; aq.run.phase='hall'; const a=AquariumRules.AQ_ARRIVE||{x:3.4,z:-8}; if(P){P.x=a.x;P.y=0.5;P.z=a.z;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=(yaw==null?Math.PI:yaw); cam.pitch=0.12; cam.dist=12; } aqApplyZones('hall'); },
+    ride(t){ if (!aq) return; aq.run.phase='ride'; aq.run.rideT= (t==null? 3.2 : t); const pose=AquariumRules.aqRidePose(aq.run); aqSeat(pose); aqRideVis(true); aqApplyZones('ride'); },
+    tankFront(){ if (!aq || !P) return; aq.run.phase='hall'; const z = AquariumRules.aqZ ? AquariumRules.aqZ(-14.2) : -14.2; P.x=13.4; P.y=0.5; P.z=z; P.vx=0; P.vz=0; if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.14; cam.dist=6.2; } aqApplyZones('hall'); },
     go(id){
       if (!aq || !P) return;
       const A = AquariumRules;
