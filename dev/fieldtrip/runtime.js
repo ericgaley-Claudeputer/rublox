@@ -35,7 +35,7 @@
     if (!ft) return;
     const showYard = (phase === 'yard' || phase === 'ride' || phase === 'done');
     const showDest = (phase === 'nook' || phase === 'ride');
-    const vis = {yard: showYard, dest: showDest, road: true};
+    const vis = {yard: showYard, dest: showDest, road: true, land: true};
     Object.keys(vis).forEach(z => {
       (ft.zones && ft.zones[z] || []).forEach(m => { if (m) m.visible = !!vis[z]; });
     });
@@ -76,6 +76,19 @@
     const tall = h || 2.6;
     ftMesh(new THREE.CylinderGeometry(0.28, 0.36, tall, 7), '#6b3a1d', x, tall/2, z);
     ftMesh(new THREE.SphereGeometry(1.15 + tall * 0.12, 7, 5), leaf || '#4fa15a', x, tall + 0.4, z);
+  }
+  function ftHorizonLand(cx, cz, col){
+    const prevZ = ft.curZone, prevS = ft.shiftZ;
+    ft.curZone = 'land'; ft.shiftZ = 0;
+    ftPlat(cx, 0.05, cz, 1600, 1600, col || '#3f8f3a', 0.1);
+    for (let i = 0; i < 20; i++){
+      const a = i * Math.PI * 2 / 20;
+      const r = 210 + (i % 4) * 14;
+      const x = cx + Math.cos(a) * r, z = cz + Math.sin(a) * r;
+      ftMesh(new THREE.SphereGeometry(5.5 + (i % 3), 7, 5), i % 2 ? '#2e7a38' : '#3d8a40', x, 2.8, z);
+      if (i % 2 === 0) ftTree(x + 7, z + 5, 3.0 + (i % 3) * 0.3, '#4fa15a');
+    }
+    ft.curZone = prevZ; ft.shiftZ = prevS;
   }
   function ftSchoolBuilding(){
     // deeper schoolhouse with a roof, door, windows, steps and a flag
@@ -150,6 +163,36 @@
     try {
       const lit = new THREE.PointLight('#ffe0b0', 0.7, 14, 2);
       lit.position.set(0, 4.4, ftWZ(-40)); scene.add(lit); ftKeep(lit);
+    } catch(e){}
+    // Cozier hall: rugs, shelves, plants, lamps, displays and a little reading nook
+    ftMesh(new THREE.BoxGeometry(5.4, 0.05, 3.4), '#c45a3a', 0, 0.3, -40);
+    ftMesh(new THREE.BoxGeometry(2.2, 0.04, 1.4), '#e8d4a0', 0, 0.32, -42.2);
+    // back-wall shelves and little specimens
+    ftMesh(new THREE.BoxGeometry(4.8, 0.1, 0.4), '#8b6a3a', 0, 3.15, -44.65);
+    ftMesh(new THREE.BoxGeometry(4.8, 0.1, 0.4), '#8b6a3a', 0, 2.35, -44.65);
+    [[-1.6, 3.4, '#6a8a3a'],[0, 3.4, '#c4a060'],[1.6, 3.4, '#5a7a9a'],[-1.4, 2.55, '#e8c04a'],[0.4, 2.55, '#c45a3a'],[1.5, 2.55, '#3d7a38']].forEach(p => {
+      ftMesh(new THREE.BoxGeometry(0.5, 0.35, 0.28), p[2], p[0], p[1], -44.55);
+    });
+    // potted plants in the corners
+    [[-5.4, -37.5],[5.4, -37.5],[-5.4, -43.6],[5.4, -43.6]].forEach(p => {
+      ftMesh(new THREE.CylinderGeometry(0.22, 0.18, 0.4, 8), '#c45c3a', p[0], 0.45, p[1]);
+      ftMesh(new THREE.SphereGeometry(0.38, 7, 6), '#3d7a38', p[0], 0.95, p[1]);
+    });
+    // hanging lamps
+    [[-3.2, -38.5],[3.2, -38.5],[-3.2, -42.6],[3.2, -42.6]].forEach(p => {
+      const lamp = ftMesh(new THREE.SphereGeometry(0.16, 8, 8), '#ffe7b0', p[0], 4.55, p[1]);
+      try { lamp.material.emissive = new THREE.Color('#ffe7b0'); lamp.material.emissiveIntensity = 0.85; } catch(e){}
+    });
+    // a small exhibit tank on the left and a fern display on the right
+    ftMesh(new THREE.BoxGeometry(1.6, 1.2, 0.7), '#6a8a3a', -5.0, 1.4, -39.2);
+    ftMesh(new THREE.BoxGeometry(1.4, 0.9, 0.5), '#8ec6e8', -5.0, 1.45, -39.15);
+    ftMesh(new THREE.SphereGeometry(0.16, 6, 6), '#3a8f5a', -5.0, 1.5, -39.15);
+    ftMesh(new THREE.BoxGeometry(1.5, 1.5, 0.18), '#d8c090', 5.0, 1.9, -44.55);
+    ftMesh(new THREE.ConeGeometry(0.28, 0.7, 7), '#3d7a38', 5.0, 1.55, -44.2);
+    ftLab('🌿 Trail exhibits', 0, 3.6, -43.4);
+    try {
+      const lit2 = new THREE.PointLight('#ffe0b0', 0.45, 12, 2);
+      lit2.position.set(0, 3.6, ftWZ(-40)); scene.add(lit2); ftKeep(lit2);
     } catch(e){}
     ftLab('🌿 Pebblebrook Nature Nook', 0, 8.6, -35.2);
     ft.shiftZ = 0;
@@ -256,7 +299,8 @@
     [[-22,18],[14,22],[-20,8],[18,10]].forEach(p => ftTree(p[0], p[1], 2.4, '#68b85a'));
     ftNookBuilding();
     ft.curZone = 'dest'; ft.shiftZ = FieldTripRules.FT_DEST_DZ || 0;
-    ftPlat(0, 0.16, -28, 56, 56, '#3d9140', 0.16);
+    ftHorizonLand(0, FieldTripRules.ftZ(-28), '#3d9140');
+    ftPlat(0, 0.16, -28, 180, 180, '#3d9140', 0.16);
     ftTree(-18, -12, 3.4, '#5aaa4a');
     ftLab('🌳 Willow path', -18, 5.4, -12);
     [[-16,-8],[18,-8],[-26,-28],[20,-20],[-14,-40],[12,-48]].forEach(p => ftTree(p[0], p[1], 2.4, '#4fa15a'));

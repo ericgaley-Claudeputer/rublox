@@ -36,6 +36,22 @@
   const AQ_HALL = {x:0, z:aqZ(-40)};
   const AQ_ARRIVE = {x:3.4, z:aqZ(-8)};
   const AQ_POOL = {x:8, z:aqZ(-12), r:2.2, name:'Pebblecrab pool'};
+  const AQ_SHOP = {x:14, z:aqZ(-10), r:2.4, name:'Tideglass Gift Nook'};
+  const AQ_GIFTS = [
+    {id:'jelly-plush', name:'Moonveil jelly plush', emoji:'🪼', price:18, kind:'plush', x:12.4, z:aqZ(-11.4), r:1.5,
+      blurb:'A squishy Moonveil jelly plush. It wiggles if you poke it.'},
+    {id:'turtle-plush', name:'Sand-harbor turtle plush', emoji:'🐢', price:18, kind:'plush', x:15.6, z:aqZ(-11.4), r:1.5,
+      blurb:'A soft Sand-harbor turtle plush with a little sand-colored shell.'},
+    {id:'crab-plush', name:'Pebblecrab plush', emoji:'🦀', price:16, kind:'plush', x:12.4, z:aqZ(-8.6), r:1.5,
+      blurb:'A tiny Pebblecrab plush. Its claws are only for hugs.'},
+    {id:'star-plush', name:'Tideglass star plush', emoji:'⭐', price:16, kind:'plush', x:15.6, z:aqZ(-8.6), r:1.5,
+      blurb:'A sparkly Tideglass star plush. Five arms, five cozy wishes.'},
+    {id:'hat-jellycap', name:'Moonveil jelly cap', emoji:'🧢', price:40, kind:'hat', slot:'hat', val:'jellycap', x:12.4, z:aqZ(-13.2), r:1.5,
+      blurb:'A soft teal cap with a tiny jelly on top. It sits on your head, not on your face.'},
+    {id:'hat-tidecap', name:'Tideglass tide cap', emoji:'🎩', price:42, kind:'hat', slot:'hat', val:'tidecap', x:15.6, z:aqZ(-13.2), r:1.5,
+      blurb:'A little sea-blue cap with a gold star. It sits up on your head, clear of your eyes.'}
+  ];
+
   const AQ_RIDE_PATH = [
     {x:0, z:10},
     {x:0, z:2},
@@ -47,7 +63,7 @@
     {x:0, z:aqZ(-8)}
   ];
 
-  function aqFresh(){ return {ver: AQ_VER, found: [], visits: 0, won: false, coins: 0, touched: false}; }
+  function aqFresh(){ return {ver: AQ_VER, found: [], visits: 0, won: false, coins: 0, touched: false, gifts: []}; }
   function aqLoad(raw){
     const d = aqFresh();
     const o = (raw && typeof raw === 'object') ? raw : {};
@@ -57,6 +73,8 @@
     d.won = !!o.won;
     d.coins = Math.max(0, o.coins | 0);
     d.touched = !!o.touched;
+    const gids = AQ_GIFTS.map(g => g.id);
+    d.gifts = Array.isArray(o.gifts) ? o.gifts.filter((id, i, a) => gids.indexOf(id) >= 0 && a.indexOf(id) === i) : [];
     d.ver = AQ_VER;
     return d;
   }
@@ -131,6 +149,19 @@
     run.phase = 'done';
     return {ok:true, why:'home', coins: AQ_REWARD, state, message:'The Afterbell bus is heading home from Tideglass Aquarium. You visited every exhibit!'};
   }
+
+  function aqGift(id){ return AQ_GIFTS.find(g => g.id === id) || null; }
+  function aqHasGift(state, id){ return (aqLoad(state).gifts || []).indexOf(id) >= 0; }
+  function aqBuyGift(state, id, coins){
+    state = aqLoad(state);
+    const g = aqGift(id);
+    if (!g) return {ok:false, why:'unknown', state, coins: coins||0};
+    if (aqHasGift(state, id)) return {ok:false, why:'have', already:true, state, item:g, coins: coins||0};
+    const have = (coins == null) ? 0 : coins;
+    if (have < g.price) return {ok:false, why:'coins', need: g.price - have, state, item:g, coins: have};
+    state.gifts = (state.gifts || []).concat([id]);
+    return {ok:true, why:'bought', state, item:g, coins: have - g.price, spent:g.price};
+  }
   function aqNear(x, z, state, run){
     const phase = (run && run.phase) || 'yard';
     if (phase === 'yard'){
@@ -152,6 +183,16 @@
         const f = AQ_FINDS[i];
         if (Math.hypot((x||0) - f.x, (z||0) - f.z) <= (f.r || 2) && !aqHas(state, f.id)) return {kind:'find', id:f.id, name:f.name, emoji:f.emoji, act:(f.emoji||'🔍') + ' Look'};
       }
+      if (Math.hypot((x||0) - AQ_SHOP.x, (z||0) - AQ_SHOP.z) <= (AQ_SHOP.r||2.4) && !AQ_GIFTS.some(g => Math.hypot((x||0)-g.x,(z||0)-g.z) <= (g.r||1.5))){
+        return {kind:'talk', who:'Pearl', act:'🛍️ Browse', text:'Pearl: "Welcome to the Tideglass Gift Nook! Pick a plush or a cap — everything here is from our own little shop."'};
+      }
+      for (let i = 0; i < AQ_GIFTS.length; i++){
+        const g = AQ_GIFTS[i];
+        if (Math.hypot((x||0) - g.x, (z||0) - g.z) <= (g.r || 1.5)){
+          if (aqHasGift(state, g.id)) return {kind:'talk', who:'Pearl', act:'🛍️ Look', text:'You already have the ' + g.name + '. ' + (g.blurb||'')};
+          return {kind:'gift', id:g.id, name:g.name, emoji:g.emoji, price:g.price, act:(g.emoji||'🛍️') + ' Buy ' + g.name + ' · 🪙 ' + g.price};
+        }
+      }
       if (aqAll(state) && Math.hypot((x||0) - AQ_HOME_BUS.x, (z||0) - AQ_HOME_BUS.z) <= AQ_HOME_BUS.r){
         return {kind:'home', act:'🚌 Ride home', name:'Afterbell bus'};
       }
@@ -167,12 +208,13 @@
     if (phase === 'ride') return 'The bus is rolling along the coast to Tideglass Aquarium…';
     if (phase === 'done' || (st.won && phase !== 'hall')) return 'Field trip complete! You visited every Tideglass exhibit.';
     if (n >= AQ_FINDS.length) return 'All five exhibits are in! Board the bus at the tide gate to ride home.';
-    return 'Visit Tideglass exhibits (' + n + '/' + AQ_FINDS.length + ').' + (st.touched ? '' : ' The touch pool is open too.');
+    return 'Visit Tideglass exhibits (' + n + '/' + AQ_FINDS.length + ').' + (st.touched ? '' : ' The touch pool is open too.') + ' The gift nook is open too.';
   }
 
   const api = {
-    AQ_KEY, AQ_VER, AQ_REWARD, AQ_RIDE_T, AQ_DEST_DZ, AQ_VIEW_FAR, AQ_YARD_LANDMARKS, aqZ, aqDestClearOfSchool, AQ_FINDS, AQ_BUS, AQ_HOME_BUS, AQ_GUIDE, AQ_TEACHER, AQ_HALL, AQ_ARRIVE, AQ_POOL, AQ_RIDE_PATH,
+    AQ_KEY, AQ_VER, AQ_REWARD, AQ_RIDE_T, AQ_DEST_DZ, AQ_VIEW_FAR, AQ_YARD_LANDMARKS, aqZ, aqDestClearOfSchool, AQ_FINDS, AQ_BUS, AQ_HOME_BUS, AQ_GUIDE, AQ_TEACHER, AQ_HALL, AQ_ARRIVE, AQ_POOL, AQ_SHOP, AQ_GIFTS, AQ_RIDE_PATH,
     aqFresh, aqLoad, aqNewVisit, aqFind, aqHas, aqAll, aqPick, aqTouch,
+    aqGift, aqHasGift, aqBuyGift,
     aqBoardBus, aqRidePose, aqTickRide, aqBoardHome, aqNear, aqGoal
   };
   root.AquariumRules = api;
