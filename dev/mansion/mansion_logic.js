@@ -378,6 +378,7 @@
   }
 
   function mnEscape(run, state, now){
+    if (run && run.escaped) return {ok:true, why:'already', coins:0, already:true, state: mnLoad(state), message:'You already slipped out of Mallowmist Manor. Everyone is okay.'};
     const unlocked = mnUnlockDoor(run);
     if (!unlocked.ok) return unlocked;
     const st = mnLoad(state);

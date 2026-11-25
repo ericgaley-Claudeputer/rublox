@@ -149,7 +149,7 @@
       state: wnLoad(state),
       run: {
         area: 'village',
-        sled: {on:false, x:0, y:0, z:0, vx:0, vz:0, yaw:0, air:0, t:0, started:0, jumps:0, done:false, time:0},
+        sled: {on:false, x:0, y:0, z:0, vx:0, vz:0, yaw:0, air:0, t:0, started:0, jumps:0, done:false, time:0, claimed:false},
         snowman: {parts:[]},
         skate: {on:false, laps:0, t:0, lastAng:0, ang:0},
         cocoa: {warm:0, served:0},
@@ -225,6 +225,8 @@
 
   function wnSledFinish(run, state){
     if (!run || !run.sled || !run.sled.done || !run.sled.time) return {ok:false, why:'race'};
+    if (run.sled.claimed) return {ok:true, why:'have', coins:0, already:true, time:+run.sled.time, jumps:run.sled.jumps|0, state: wnLoad(state)};
+    run.sled.claimed = true;
     const time = +run.sled.time;
     const jumps = run.sled.jumps | 0;
     const st = wnLoad(state);
@@ -644,7 +646,7 @@
       coinsEarned: state.coinsEarned,
       sledBest: state.sledBest,
       area: run.area || 'village',
-      sled: run.sled ? {on:!!run.sled.on, x:+run.sled.x||0, z:+run.sled.z||0, yaw:+run.sled.yaw||0, done:!!run.sled.done, time:+run.sled.time||0} : null,
+      sled: run.sled ? {on:!!run.sled.on, x:+run.sled.x||0, z:+run.sled.z||0, yaw:+run.sled.yaw||0, done:!!run.sled.done, time:+run.sled.time||0, claimed:!!run.sled.claimed} : null,
       snowman: run.snowman ? {parts:(run.snowman.parts||[]).slice(), claimed:!!run.snowman.claimed} : null,
       skate: run.skate ? {on:!!run.skate.on, laps:run.skate.laps|0} : null,
       night: !!run.night,

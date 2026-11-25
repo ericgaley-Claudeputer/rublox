@@ -54,6 +54,11 @@ describe('Mallowmist Manor', () => {
     assert.equal(win.ok, true);
     assert.ok(win.coins >= 20);
     assert.equal(win.state.escapes, 1);
+    const again = M.mnEscape(run, win.state, 6000);
+    assert.equal(again.ok, true);
+    assert.equal(again.already, true);
+    assert.equal(again.coins, 0);
+    assert.equal(again.state.escapes, 1);
     const snap = M.mnWire(run);
     const other = M.mnNewRun(null, 1).run;
     M.mnApplyWire(other, snap);

@@ -178,7 +178,10 @@
       const d=SchoolRules.SC_DIGITS[i];
       if (Math.hypot(P.x-d.x, P.z-d.z) < d.r && (sc.sv.digits||[]).indexOf(d.id)<0) return {kind:'digit', id:d.id, n:d.n, act:'🔍 Look'};
     }
-    if (Math.hypot(P.x, P.z-29) < 2.0) return {kind:'exit', act: sc.sv.pass ? '🚪 Leave' : '🚪 Locked'};
+    if (Math.hypot(P.x, P.z-29) < 2.0){
+      if (sc.sv.won) return {kind:'exited', act:''};
+      return {kind:'exit', act: sc.sv.pass ? '🚪 Leave' : '🚪 Locked'};
+    }
     return null;
   }
   function scOpenLocker(){
@@ -227,10 +230,12 @@
       return true;
     }
     if (p.kind==='pass'){ banner('🎫 You already have the hall pass. Take it to the front doors.'); return true; }
+    if (p.kind==='exited'){ banner('🌙 You already made it out of Afterbell School. Everyone is okay!'); return true; }
     if (p.kind==='exit'){
       const r=SchoolRules.scEscape(sc.sv);
       if (!r.ok){ banner('The front doors are locked. You need a hall pass.'); return true; }
       scSave(r.state);
+      if (r.already || !(r.reward > 0)){ banner('🌙 You already made it out of Afterbell School. Everyone is okay!'); return true; }
       try { if (typeof confetti==='function') confetti(); } catch(e){}
       if (typeof t297Pay==='function') t297Pay(r.reward, '🌙 Afterbell');
       else if (typeof setCoins==='function') try { setCoins(coins + r.reward); } catch(e){}
@@ -276,7 +281,8 @@
     }
     const p = scPrompt();
     sc.near = p;
-    if (p) scHud(p.kind==='exit' && !sc.sv.pass ? 'The front doors are locked. Find a hall pass.' : 'E / Ⓧ — ' + (p.act||'act') + '.', p.act||'✨ Do it');
+    if (p && p.kind==='exited') scHud('You already made it out. Everyone is okay!', '');
+    else if (p) scHud(p.kind==='exit' && !sc.sv.pass ? 'The front doors are locked. Find a hall pass.' : 'E / Ⓧ — ' + (p.act||'act') + '.', p.act||'✨ Do it');
     else if (hide) scHud('You are tucked out of sight. The Hush Warden will walk by.', '');
     else scHud('Explore Afterbell after dark. Solve the chalkboard, locker, and hall pass. If the Hush Warden finds you, everyone is okay.', '');
     scPaintGoreNote();
@@ -324,13 +330,18 @@
         caught: !!(sc.run && sc.run.caught),
         warden: sc.run ? {x:sc.run.wx, z:sc.run.wz} : null,
         hide: hide && hide.id,
+        prompt: (typeof scPrompt === 'function') ? (function(){ const p=scPrompt(); return p && p.kind; })() : null,
+        actShown: !!(document.getElementById('scAct') && document.getElementById('scAct').classList.contains('show')),
         room: (typeof P !== 'undefined' && P && SchoolRules.scRoomAt) ? (SchoolRules.scRoomAt(P.x, P.z) || {}).id : null,
         y: (typeof P !== 'undefined' && P) ? P.y : null,
         cam: (typeof cam !== 'undefined' && cam) ? {yaw:cam.yaw, pitch:cam.pitch, dist:cam.dist} : null
       };
     },
     hall(){ if(!sc) return; sc.sv.lessScary=false; scSave(sc.sv); scPaintLess(); scApplyMood(); if(P){P.x=0;P.y=0.5;P.z=6;} if(sc.warden) sc.warden.position.set(2,0,-2); if(typeof cam!=='undefined'&&cam){cam.yaw=0.15;cam.pitch=0.08;cam.dist=11;} try{ if(obbyDebug&&obbyDebug.camLook) obbyDebug.camLook({x:5,y:3.4,z:12},{x:0,y:1.6,z:-1}); }catch(e){} },
-    less(){ if(!sc) return; sc.sv.lessScary=true; scSave(sc.sv); if(sc.warden){try{scene.remove(sc.warden);}catch(e){}} sc.warden=scMakeWarden(); scRebuildGore(); scPaintLess(); scApplyMood(); if(P){P.x=0;P.y=0.5;P.z=6;} if(sc.warden) sc.warden.position.set(2,0,-2); if(typeof cam!=='undefined'&&cam){cam.yaw=0.15;cam.pitch=0.08;cam.dist=11;} try{ if(obbyDebug&&obbyDebug.camLook) obbyDebug.camLook({x:5,y:3.4,z:12},{x:0,y:1.6,z:-1}); }catch(e){} }
+    less(){ if(!sc) return; sc.sv.lessScary=true; scSave(sc.sv); if(sc.warden){try{scene.remove(sc.warden);}catch(e){}} sc.warden=scMakeWarden(); scRebuildGore(); scPaintLess(); scApplyMood(); if(P){P.x=0;P.y=0.5;P.z=6;} if(sc.warden) sc.warden.position.set(2,0,-2); if(typeof cam!=='undefined'&&cam){cam.yaw=0.15;cam.pitch=0.08;cam.dist=11;} try{ if(obbyDebug&&obbyDebug.camLook) obbyDebug.camLook({x:5,y:3.4,z:12},{x:0,y:1.6,z:-1}); }catch(e){} },
+    unlock(){ if(!sc) return; sc.sv.riddle=true; sc.sv.locker=true; sc.sv.pass=true; scSave(sc.sv); },
+    goDoor(){ if(!sc || typeof P === 'undefined' || !P) return; P.x=0; P.y=0.5; P.z=29; P.vx=0; P.vz=0; P.vy=0; },
+    act(){ return scAct(); }
   };
   try {
     const less=document.getElementById('scLessBtn'); if(less && !less.__sc){ less.__sc=true; less.onclick=ev=>{ev.preventDefault();ev.stopPropagation();scToggleLess();}; }
