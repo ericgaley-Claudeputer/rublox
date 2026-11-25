@@ -3207,7 +3207,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.22-11';
+const BUILD = '2026.11.22-12';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -13054,7 +13054,7 @@ const MODE_CONTROLS = {
   school: {kb: ['E or F: look / use', 'L or Y: Less scary', 'Enter: try the locker code'], pad: ['Ⓧ or RT: look / use', 'Ⓨ: Less scary'], touch: ['Tap the big action button'], walk: true},
   fieldtrip: {kb: ['E or F: look / collect / talk / board the bus'], pad: ['Ⓧ or Ⓨ: look / collect / talk / board the bus'], touch: ['Tap the big action button to board, talk or pick things up'], walk: true},
   aquarium: {kb: ['E or F: look / talk / board the bus / gentle touch / gift shop'], pad: ['Ⓧ or Ⓨ: look / talk / board the bus / gentle touch / gift shop'], touch: ['Tap the big action button to board, look, touch gently or buy a souvenir'], walk: true},
-  farm: {kb: ['E or F: feed / collect / pick / talk / board the bus or hay wagon'], pad: ['Ⓧ or Ⓨ: feed / collect / pick / talk / board the bus or hay wagon'], touch: ['Tap the big action button to feed, collect, pick, talk or ride'], walk: true},
+  farm: {kb: ['E or F: feed / collect / pick / talk / sell / adopt / board the bus or hay wagon'], pad: ['Ⓧ or Ⓨ: feed / collect / pick / talk / sell / adopt / board the bus or hay wagon'], touch: ['Tap the big action button to feed, collect, pick, sell, adopt, talk or ride'], walk: true},
   elevator: {kb: ['E or F: act / shop', 'I: floor list', 'H: help', 'Voting: ← → or 1–3 to pick, Enter or Space to vote'],
     pad: ['Ⓧ: act / shop', 'Ⓨ: floor list', 'Ⓑ: close pop-ups', 'Voting: ✚ d-pad to pick, Ⓐ to vote'], touch: ['Tap the big buttons to act and vote'], walk: true},
   mansion: {kb: ['E or F: read / flip / unlock', 'L: Less scary'], pad: ['Ⓧ: read / flip / unlock', 'Ⓨ: Less scary'], touch: ['Tap the big action button'], walk: true},
@@ -15719,19 +15719,32 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
   const AQ_POOL = {x:8, z:aqZ(-12), r:2.2, name:'Pebblecrab pool'};
   const AQ_SHOP = {x:14, z:aqZ(-10), r:2.4, name:'Tideglass Gift Nook'};
   const AQ_GIFTS = [
-    {id:'jelly-plush', name:'Moonveil jelly plush', emoji:'🪼', price:18, kind:'plush', x:12.4, z:aqZ(-11.4), r:1.5,
-      blurb:'A squishy Moonveil jelly plush. It wiggles if you poke it.'},
-    {id:'turtle-plush', name:'Sand-harbor turtle plush', emoji:'🐢', price:18, kind:'plush', x:15.6, z:aqZ(-11.4), r:1.5,
-      blurb:'A soft Sand-harbor turtle plush with a little sand-colored shell.'},
-    {id:'crab-plush', name:'Pebblecrab plush', emoji:'🦀', price:16, kind:'plush', x:12.4, z:aqZ(-8.6), r:1.5,
+    {id:'crab-plush', name:'Pebblecrab plush', emoji:'🦀', price:16, kind:'plush', x:10.8, z:aqZ(-8.2), r:1.4,
       blurb:'A tiny Pebblecrab plush. Its claws are only for hugs.'},
-    {id:'star-plush', name:'Tideglass star plush', emoji:'⭐', price:16, kind:'plush', x:15.6, z:aqZ(-8.6), r:1.5,
-      blurb:'A sparkly Tideglass star plush. Five arms, five cozy wishes.'},
-    {id:'hat-jellycap', name:'Moonveil jelly cap', emoji:'🧢', price:40, kind:'hat', slot:'hat', val:'jellycap', x:12.4, z:aqZ(-13.2), r:1.5,
+    {id:'jelly-plush', name:'Moonveil jelly plush', emoji:'🪼', price:18, kind:'plush', x:10.8, z:aqZ(-11.0), r:1.4,
+      blurb:'A squishy Moonveil jelly plush. It wiggles if you poke it.'},
+    {id:'hat-jellycap', name:'Moonveil jelly cap', emoji:'🧢', price:40, kind:'hat', slot:'hat', val:'jellycap', x:10.8, z:aqZ(-13.8), r:1.4,
       blurb:'A soft teal cap with a tiny jelly on top. It sits on your head, not on your face.'},
-    {id:'hat-tidecap', name:'Tideglass tide cap', emoji:'🎩', price:42, kind:'hat', slot:'hat', val:'tidecap', x:15.6, z:aqZ(-13.2), r:1.5,
+    {id:'star-plush', name:'Tideglass star plush', emoji:'⭐', price:16, kind:'plush', x:17.2, z:aqZ(-8.2), r:1.4,
+      blurb:'A sparkly Tideglass star plush. Five arms, five cozy wishes.'},
+    {id:'turtle-plush', name:'Sand-harbor turtle plush', emoji:'🐢', price:18, kind:'plush', x:17.2, z:aqZ(-11.0), r:1.4,
+      blurb:'A soft Sand-harbor turtle plush with a little sand-colored shell.'},
+    {id:'hat-tidecap', name:'Tideglass tide cap', emoji:'🎩', price:42, kind:'hat', slot:'hat', val:'tidecap', x:17.2, z:aqZ(-13.8), r:1.4,
       blurb:'A little sea-blue cap with a gold star. It sits up on your head, clear of your eyes.'}
   ];
+  function aqGiftLabel(g){
+    if (!g) return null;
+    const side = g.x < 14 ? -0.95 : 0.95;
+    return {x: g.x + side, y: 2.05, z: g.z};
+  }
+  function aqGiftsOverlap(minDist){
+    minDist = minDist == null ? 2.4 : minDist;
+    const labs = AQ_GIFTS.map(aqGiftLabel);
+    for (let i = 0; i < labs.length; i++) for (let j = i + 1; j < labs.length; j++){
+      if (Math.hypot(labs[i].x - labs[j].x, labs[i].z - labs[j].z) < minDist) return true;
+    }
+    return false;
+  }
 
   const AQ_RIDE_PATH = [
     {x:0, z:10},
@@ -15893,7 +15906,7 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
   }
 
   const api = {
-    AQ_KEY, AQ_VER, AQ_REWARD, AQ_RIDE_T, AQ_DEST_DZ, AQ_VIEW_FAR, AQ_YARD_LANDMARKS, aqZ, aqDestClearOfSchool, AQ_FINDS, AQ_BUS, AQ_HOME_BUS, AQ_GUIDE, AQ_TEACHER, AQ_HALL, AQ_ARRIVE, AQ_POOL, AQ_SHOP, AQ_GIFTS, AQ_RIDE_PATH,
+    AQ_KEY, AQ_VER, AQ_REWARD, AQ_RIDE_T, AQ_DEST_DZ, AQ_VIEW_FAR, AQ_YARD_LANDMARKS, aqZ, aqDestClearOfSchool, AQ_FINDS, AQ_BUS, AQ_HOME_BUS, AQ_GUIDE, AQ_TEACHER, AQ_HALL, AQ_ARRIVE, AQ_POOL, AQ_SHOP, AQ_GIFTS, aqGiftLabel, aqGiftsOverlap, AQ_RIDE_PATH,
     aqFresh, aqLoad, aqNewVisit, aqFind, aqHas, aqAll, aqPick, aqTouch,
     aqGift, aqHasGift, aqBuyGift,
     aqBoardBus, aqRidePose, aqTickRide, aqBoardHome, aqNear, aqGoal
@@ -15909,7 +15922,7 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
   const FM_VER = 1;
   const FM_REWARD = 22;
   const FM_RIDE_T = 8.4;
-  const FM_HAY_T = 6.2;
+  const FM_HAY_T = 9;
   const FM_DEST_DZ = -560;
   const FM_VIEW_FAR = 400;
   function fmZ(z){ return z + FM_DEST_DZ; }
@@ -15961,14 +15974,42 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
   ];
   const FM_HAY_PATH = [
     {x:0, z:fmZ(-16)},
-    {x:10, z:fmZ(-20)},
-    {x:14, z:fmZ(-30)},
-    {x:6, z:fmZ(-40)},
-    {x:-8, z:fmZ(-36)},
-    {x:-12, z:fmZ(-24)},
-    {x:-4, z:fmZ(-16)},
+    {x:8, z:fmZ(-11)},
+    {x:22, z:fmZ(-12)},
+    {x:32, z:fmZ(-24)},
+    {x:32, z:fmZ(-44)},
+    {x:20, z:fmZ(-60)},
+    {x:0, z:fmZ(-64)},
+    {x:-32, z:fmZ(-58)},
+    {x:-34, z:fmZ(-32)},
+    {x:-32, z:fmZ(-16)},
+    {x:-20, z:fmZ(-11)},
+    {x:-6, z:fmZ(-11)},
     {x:0, z:fmZ(-16)}
   ];
+  const FM_BARN_BOX = {w:10, d:8, margin:8};
+  const FM_STAND = {x:10, z:fmZ(-5), r:2.6, name:'Honeymeadow Stand'};
+  const FM_PRICES = {egg:4, apple:3, pump:5};
+  const FM_PRICE_LIST = [
+    {kind:'egg', name:'Warm egg', emoji:'🥚', price:4, stockKey:'eggs', soldKey:'egg'},
+    {kind:'apple', name:'Farm apple', emoji:'🍎', price:3, stockKey:'apples', soldKey:'apple'},
+    {kind:'pump', name:'Harvest pumpkin', emoji:'🎃', price:5, stockKey:'pumps', soldKey:'pump'}
+  ];
+  const FM_CUSTOMERS = [
+    {id:'pip', name:'Pip', emoji:'🧒', want:'egg', line:'Pip: "A warm egg for breakfast, please!"'},
+    {id:'clover', name:'Clover', emoji:'👧', want:'apple', line:'Clover: "I would love a crunchy farm apple!"'},
+    {id:'wes', name:'Wes', emoji:'👦', want:'pump', line:'Wes: "A little pumpkin for the porch, please!"'},
+    {id:'mabel', name:'Mabel', emoji:'👩', want:'apple', line:'Mabel: "Two hands, one apple — perfect."'},
+    {id:'juniper', name:'Juniper', emoji:'🧑', want:'egg', line:'Juniper: "A speckled egg would make my day!"'}
+  ];
+  const FM_BABIES = [
+    {id:'chick', kind:'chick', name:'Speckle chick', emoji:'🐥', x:-20, z:fmZ(-36), r:1.8, needFeed:'hens', names:['Pip','Nugget','Sunny']},
+    {id:'lamb', kind:'lamb', name:'Cloudwool lamb', emoji:'🐑', x:-18.2, z:fmZ(-39.2), r:1.8, needFeed:'sheep', names:['Clover','Puff','Woolly']},
+    {id:'calf', kind:'calf', name:'Butterspot calf', emoji:'🐄', x:-21.6, z:fmZ(-39.4), r:1.9, needFeed:'cows', names:['Buttercup','Dot','Moo']},
+    {id:'piglet', kind:'piglet', name:'Mudpuddle piglet', emoji:'🐷', x:-17.4, z:fmZ(-33.6), r:1.8, needFeed:null, names:['Puddle','Oinky','Peach']},
+    {id:'duckling', kind:'duckling', name:'Pondripple duckling', emoji:'🐤', x:-22.2, z:fmZ(-33.4), r:1.8, needFeed:null, names:['Ripple','Paddle','Bean']}
+  ];
+  const FM_NURSERY = {x:-19.5, z:fmZ(-36.5)};
   function fmPathLen(path){
     let n = 0;
     for (let i = 0; i < (path||[]).length - 1; i++) n += Math.hypot(path[i+1].x - path[i].x, path[i+1].z - path[i].z);
@@ -15997,7 +16038,7 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
   function fmRidePose(run){ return fmPoseOn(FM_RIDE_PATH, (run && run.rideT) || 0, FM_RIDE_T); }
   function fmHayPose(run){ return fmPoseOn(FM_HAY_PATH, (run && run.hayT) || 0, FM_HAY_T); }
 
-  function fmFresh(){ return {ver: FM_VER, fed: [], eggs: [], apples: [], pumps: [], hay: false, visits: 0, won: false, coins: 0}; }
+  function fmFresh(){ return {ver: FM_VER, fed: [], eggs: [], apples: [], pumps: [], hay: false, visits: 0, won: false, coins: 0, sold:{egg:0, apple:0, pump:0}, adopted:[], served:0}; }
   function fmFilter(list, allowed){
     const ids = allowed.map(a => a.id);
     return Array.isArray(list) ? list.filter((id, i, a) => ids.indexOf(id) >= 0 && a.indexOf(id) === i) : [];
@@ -16013,13 +16054,114 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
     d.visits = Math.max(0, o.visits | 0);
     d.won = !!o.won;
     d.coins = Math.max(0, o.coins | 0);
+    const sold = (o.sold && typeof o.sold === 'object') ? o.sold : {};
+    d.sold = {
+      egg: Math.max(0, Math.min((d.eggs || []).length, sold.egg | 0)),
+      apple: Math.max(0, Math.min((d.apples || []).length, sold.apple | 0)),
+      pump: Math.max(0, Math.min((d.pumps || []).length, sold.pump | 0))
+    };
+    d.adopted = fmFilter(o.adopted, FM_BABIES);
+    d.served = Math.max(0, o.served | 0);
     d.ver = FM_VER;
     return d;
+  }
+  function fmStock(state){
+    const st = fmLoad(state);
+    return {
+      egg: Math.max(0, (st.eggs || []).length - ((st.sold && st.sold.egg) || 0)),
+      apple: Math.max(0, (st.apples || []).length - ((st.sold && st.sold.apple) || 0)),
+      pump: Math.max(0, (st.pumps || []).length - ((st.sold && st.sold.pump) || 0))
+    };
+  }
+  function fmPrice(kind){
+    const it = FM_PRICE_LIST.find(p => p.kind === kind);
+    return it ? it.price : 0;
+  }
+  function fmCustomer(run, state){
+    const stock = fmStock(state);
+    const start = ((run && run.custI) || 0) % FM_CUSTOMERS.length;
+    for (let i = 0; i < FM_CUSTOMERS.length; i++){
+      const c = FM_CUSTOMERS[(start + i) % FM_CUSTOMERS.length];
+      if (stock[c.want] > 0) return c;
+    }
+    return FM_CUSTOMERS[start];
+  }
+  function fmSell(state, kind, run){
+    state = fmLoad(state);
+    const item = FM_PRICE_LIST.find(p => p.kind === kind);
+    if (!item) return {ok:false, why:'unknown', state};
+    const stock = fmStock(state);
+    if (stock[kind] <= 0) return {ok:false, why:'stock', state, stock};
+    const cust = fmCustomer(run, state);
+    if (cust.want !== kind) return {ok:false, why:'want', state, customer:cust, need:cust.want};
+    state.sold = Object.assign({}, state.sold);
+    state.sold[item.soldKey] = (state.sold[item.soldKey] || 0) + 1;
+    state.coins = (state.coins || 0) + item.price;
+    state.served = (state.served || 0) + 1;
+    if (run) run.custI = ((run.custI || 0) + 1) % FM_CUSTOMERS.length;
+    return {ok:true, state, item, coins:item.price, customer:cust, stock: fmStock(state)};
+  }
+  function fmBaby(id){ return FM_BABIES.find(b => b.id === id) || null; }
+  function fmAdopt(state, id){
+    state = fmLoad(state);
+    const baby = fmBaby(id);
+    if (!baby) return {ok:false, why:'unknown', state};
+    if (fmHas(state.adopted, id)) return {ok:false, why:'have', already:true, state, baby};
+    if (baby.needFeed && !fmHas(state.fed, baby.needFeed)){
+      const feed = FM_FEEDS.find(f => f.id === baby.needFeed);
+      return {ok:false, why:'feed', state, baby, need: feed && feed.name};
+    }
+    state.adopted = fmAdd(state.adopted, id);
+    const n = (baby.names && baby.names[state.adopted.length % baby.names.length]) || baby.name;
+    return {ok:true, state, baby, petName:n, pet:{k:baby.kind, c:0, n:n, xp:0, f:80, u:80, e:90, b:1, g:'g', acc:{}, src:'farm'}};
+  }
+  function fmGrantPet(petsSave, pet, max){
+    max = max || 6;
+    const s = petsSave && typeof petsSave === 'object' ? petsSave : {};
+    const next = {
+      v: s.v || 1,
+      pets: Array.isArray(s.pets) ? s.pets.slice() : [],
+      a: s.a | 0,
+      dex: s.dex && typeof s.dex === 'object' ? {seen: Object.assign({}, s.dex.seen || {}), own: Object.assign({}, s.dex.own || {}), done: Object.assign({}, s.dex.done || {})} : {seen:{}, own:{}, done:{}},
+      inv: s.inv && typeof s.inv === 'object' ? Object.assign({}, s.inv) : {},
+      flow: s.flow || null,
+      pend: s.pend,
+      tut: s.tut | 0,
+      t: s.t || 0
+    };
+    if (next.pets.length >= max) return {ok:false, why:'full', pets: next};
+    if (!pet || !pet.k) return {ok:false, why:'pet', pets: next};
+    next.pets.push({k:pet.k, c:pet.c|0, n:String(pet.n || 'Buddy').slice(0, 16), xp:0, f:80, u:80, e:90, b:pet.b || 1, g:pet.g === 'b' ? 'b' : 'g', acc: pet.acc && typeof pet.acc === 'object' ? pet.acc : {}, src:'farm'});
+    next.a = next.pets.length - 1;
+    next.dex.seen[pet.k] = 1;
+    next.dex.own[pet.k] = 1;
+    return {ok:true, pets: next, pet: next.pets[next.pets.length - 1]};
+  }
+  function fmHayClearance(along){
+    along = along == null ? 1.4 : along;
+    const hw = (FM_BARN_BOX.w || 10) / 2, hd = (FM_BARN_BOX.d || 8) / 2;
+    let min = Infinity;
+    for (let t = 0; t <= FM_HAY_T + 0.001; t += 0.12){
+      const p = fmHayPose({hayT: t});
+      const cy = Math.cos(p.yaw || 0), sy = Math.sin(p.yaw || 0);
+      const pts = [
+        {x:p.x, z:p.z},
+        {x:p.x + along * sy, z:p.z + along * cy},
+        {x:p.x - 1.9 * sy, z:p.z - 1.9 * cy}
+      ];
+      pts.forEach(q => {
+        const dx = Math.max(0, Math.abs(q.x - FM_BARN.x) - hw);
+        const dz = Math.max(0, Math.abs(q.z - FM_BARN.z) - hd);
+        const d = Math.hypot(dx, dz);
+        if (d < min) min = d;
+      });
+    }
+    return min;
   }
   function fmNewVisit(state){
     const st = fmLoad(state);
     st.visits = (st.visits | 0) + 1;
-    return {state: st, run: {phase:'yard', t:0, rideT:0, hayT:0, haying:false, near:null, boarded:false}};
+    return {state: st, run: {phase:'yard', t:0, rideT:0, hayT:0, haying:false, near:null, boarded:false, custI:0}};
   }
   function fmHas(arr, id){ return (arr || []).indexOf(id) >= 0; }
   function fmAdd(arr, id){ return fmHas(arr, id) ? arr : (arr || []).concat([id]); }
@@ -16102,15 +16244,15 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
     const phase = (run && run.phase) || 'yard';
     if (phase === 'yard'){
       if (Math.hypot((x||0) - FM_BUS.x, (z||0) - FM_BUS.z) <= FM_BUS.r) return {kind:'bus', act:'🚌 Board the bus', name:'Afterbell bus'};
-      if (Math.hypot((x||0) - FM_TEACHER.x, (z||0) - FM_TEACHER.z) <= FM_TEACHER.r) return {kind:'talk', who:'Ms. Bramble', act:'👋 Talk', text:'Ms. Bramble: "Today we visit Honeymeadow Farm! Feed the animals, gather eggs, pick apples and pumpkins, and take the hay wagon for a ride."'};
+      if (Math.hypot((x||0) - FM_TEACHER.x, (z||0) - FM_TEACHER.z) <= FM_TEACHER.r) return {kind:'talk', who:'Ms. Bramble', act:'👋 Talk', text:'Ms. Bramble: "Today we visit Honeymeadow Farm! Feed the animals, gather eggs, pick apples and pumpkins, take the hay wagon, sell at the stand, and maybe adopt a baby animal."'};
       return null;
     }
     if (phase === 'ride' || (run && run.haying)) return {kind:'ride', act:'🚌 Riding…'};
     if (phase === 'farm' || phase === 'done'){
       if (Math.hypot((x||0) - FM_GUIDE.x, (z||0) - FM_GUIDE.z) <= FM_GUIDE.r){
         const text = fmAllDone(state)
-          ? 'Farmer Nettie: "The wagon, the hens, the trees — you did it all! The Afterbell bus is waiting at the gate."'
-          : 'Farmer Nettie: "Welcome to Honeymeadow Farm! Feed the animals, gather eggs, pick apples and pumpkins, then hop on the hay wagon."';
+          ? 'Farmer Nettie: "The wagon, the hens, the trees — you did it all! Sell extras at the stand if you like, then the Afterbell bus is waiting at the gate."'
+          : 'Farmer Nettie: "Welcome to Honeymeadow Farm! Feed the animals, gather eggs, pick apples and pumpkins, hop on the hay wagon, sell at my stand, and visit the little ones in the nursery."';
         return {kind:'talk', who:'Farmer Nettie', act:'👋 Talk', text};
       }
       if (Math.hypot((x||0) - FM_WAGON.x, (z||0) - FM_WAGON.z) <= FM_WAGON.r){
@@ -16134,6 +16276,32 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
         const f = FM_PUMPS[i];
         if (Math.hypot((x||0) - f.x, (z||0) - f.z) <= (f.r || 1.6) && !fmHas(fmLoad(state).pumps, f.id)) return {kind:'pump', id:f.id, name:f.name, emoji:f.emoji, act:'🎃 Pick pumpkin'};
       }
+      if (Math.hypot((x||0) - FM_STAND.x, (z||0) - FM_STAND.z) <= (FM_STAND.r || 2.6)){
+        const st = fmLoad(state);
+        const stock = fmStock(st);
+        const cust = fmCustomer(run, st);
+        const have = stock[cust.want] || 0;
+        const item = FM_PRICE_LIST.find(p => p.kind === cust.want);
+        if (have > 0 && item){
+          return {kind:'sell', want:cust.want, customer:cust, item, act:'🪙 Sell ' + item.emoji + ' ' + item.name + ' to ' + cust.name + ' · ' + item.price, text:cust.line};
+        }
+        const left = stock.egg + stock.apple + stock.pump;
+        const wish = item ? (item.emoji + ' ' + item.name) : 'something from the stand';
+        return {kind:'talk', who:cust.name, act:'👋 Talk', text: left
+          ? (cust.name + ' is hoping for a ' + wish + '. Check the price board!')
+          : (cust.name + ': "The stand is open! Bring eggs, apples or pumpkins and I will pay in coins."')};
+      }
+      for (let i = 0; i < FM_BABIES.length; i++){
+        const b = FM_BABIES[i];
+        if (Math.hypot((x||0) - b.x, (z||0) - b.z) <= (b.r || 1.8) && !fmHas(fmLoad(state).adopted, b.id)){
+          const st = fmLoad(state);
+          if (b.needFeed && !fmHas(st.fed, b.needFeed)){
+            const feed = FM_FEEDS.find(f => f.id === b.needFeed);
+            return {kind:'talk', who:b.name, act:'👋 Look', text:'This little ' + b.name + ' is shy until the ' + ((feed && feed.name) || 'animals') + ' have been fed.'};
+          }
+          return {kind:'adopt', id:b.id, baby:b, act:(b.emoji||'🐾') + ' Adopt the ' + b.name, name:b.name};
+        }
+      }
       if (fmAllDone(state) && Math.hypot((x||0) - FM_HOME_BUS.x, (z||0) - FM_HOME_BUS.z) <= FM_HOME_BUS.r){
         return {kind:'home', act:'🚌 Ride home', name:'Afterbell bus'};
       }
@@ -16148,14 +16316,22 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
     if (phase === 'ride') return 'The bus is rolling out to Honeymeadow Farm…';
     if (run && run.haying) return 'The hay wagon is taking you around the farm…';
     if (phase === 'done' || (st.won && phase !== 'farm')) return 'Farm day complete! You helped Honeymeadow Farm from hens to hay.';
-    if (fmAllDone(st)) return 'All the farm chores are done! Board the bus at the gate to ride home.';
+    if (fmAllDone(st)){
+      const stock = fmStock(st);
+      if (stock.egg + stock.apple + stock.pump > 0) return 'Chores are done! Sell extras at the Honeymeadow stand, or board the bus at the gate.';
+      return 'All the farm chores are done! Board the bus at the gate to ride home.';
+    }
+    const stock = fmStock(st);
+    if (stock.egg + stock.apple + stock.pump > 0) return 'Help at Honeymeadow Farm, and sell eggs, apples or pumpkins at the stand for coins.';
     return 'Help at Honeymeadow Farm: feed ' + st.fed.length + '/' + FM_FEEDS.length + ', eggs ' + st.eggs.length + '/' + FM_EGGS.length + ', apples ' + st.apples.length + '/' + FM_APPLES.length + ', pumpkins ' + st.pumps.length + '/' + FM_PUMPS.length + (st.hay ? ', wagon done' : ', then the hay wagon') + '.';
   }
 
   const api = {
     FM_KEY, FM_VER, FM_REWARD, FM_RIDE_T, FM_HAY_T, FM_DEST_DZ, FM_VIEW_FAR, FM_YARD_LANDMARKS, fmZ, fmDestClearOfSchool,
-    FM_FEEDS, FM_EGGS, FM_APPLES, FM_PUMPS, FM_BUS, FM_HOME_BUS, FM_GUIDE, FM_TEACHER, FM_BARN, FM_ARRIVE, FM_WAGON, FM_RIDE_PATH, FM_HAY_PATH,
-    fmFresh, fmLoad, fmNewVisit, fmAllDone, fmFeed, fmPickEgg, fmPickApple, fmPickPump,
+    FM_FEEDS, FM_EGGS, FM_APPLES, FM_PUMPS, FM_BUS, FM_HOME_BUS, FM_GUIDE, FM_TEACHER, FM_BARN, FM_BARN_BOX, FM_ARRIVE, FM_WAGON, FM_RIDE_PATH, FM_HAY_PATH,
+    FM_STAND, FM_PRICES, FM_PRICE_LIST, FM_CUSTOMERS, FM_BABIES, FM_NURSERY,
+    fmFresh, fmLoad, fmNewVisit, fmAllDone, fmFeed, fmPickEgg, fmPickApple, fmPickPump, fmStock, fmPrice, fmCustomer, fmSell,
+    fmBaby, fmAdopt, fmGrantPet, fmHayClearance,
     fmBoardBus, fmRidePose, fmTickRide, fmStartHay, fmHayPose, fmTickHay, fmBoardHome, fmNear, fmGoal, fmPathLen
   };
   root.FarmRules = api;
@@ -22769,6 +22945,11 @@ const Obby = (() => {
     unicorn: {r: 4, name: 'Unicorn', emoji: '🦄', base: 1.12, tm: 'horse', cr: .26, cols: [['Pearl', '#fbf7ff', '#ff8fd0'], ['Lilac', '#d9c2ff', '#7fe3ff'], ['Midnight', '#2b2d52', '#ffd23f']]},
     pie:     {r: 2, name: 'Pie Pal', emoji: '🥧', base: 1.0, tm: 'none', cr: .62, cols: [['Pumpkin', '#e9873a', '#e8bf7a'], ['Apple', '#f2c46a', '#d9a35c'], ['Cherry', '#d8344f', '#efc583']]},
     dragon:  {r: 4, name: 'Dragon',  emoji: '🐉', base: 1.15, tm: 'segs', cr: .27, cols: [['Ruby', '#e8384f', '#ffd23f'], ['Emerald', '#2ec27e', '#ffe08a'], ['Sapphire', '#3a6df0', '#bff3ff']]},
+    chick:    {r: 0, name: 'Speckle Chick', emoji: '🐥', base: .7, tm: 'bird', farm: true, cols: [['Sunny', '#f4d15a', '#f4a04a'], ['Peach', '#f7c48a', '#e07a20'], ['Snow', '#f8f4e8', '#f4d15a']]},
+    lamb:     {r: 0, name: 'Cloudwool Lamb', emoji: '🐑', base: .78, tm: 'puff', farm: true, cols: [['Cloud', '#f4f1ea', '#e8d0b0'], ['Cream', '#fff6e8', '#d4b08a'], ['Cocoa', '#e8d0b0', '#8b5a2a']]},
+    calf:     {r: 0, name: 'Butterspot Calf', emoji: '🐄', base: .95, tm: 'segs', farm: true, cols: [['Butter', '#f4e8d0', '#6b4a2a'], ['Cream', '#fff4e6', '#3a2a1a'], ['Sand', '#e8d4b0', '#8b5a2a']]},
+    piglet:   {r: 0, name: 'Mudpuddle Piglet', emoji: '🐷', base: .75, tm: 'puff', farm: true, cols: [['Peach', '#f3a6b0', '#ef8a98'], ['Rose', '#f4b8c0', '#e07080'], ['Blush', '#f7c8d0', '#d45a6a']]},
+    duckling: {r: 0, name: 'Pondripple Duckling', emoji: '🐤', base: .7, tm: 'bird', farm: true, cols: [['Sunny', '#f4d15a', '#f4a04a'], ['Gold', '#ffd84d', '#ff9f1c'], ['Lemon', '#ffe08a', '#f4a04a']]},
   };
   const PET_ORDER = Object.keys(PET_KINDS).sort((a, b) => PET_KINDS[a].r - PET_KINDS[b].r);   // the Pet Index order
   const STARTERS = ['mouse', 'cat', 'dog'];
@@ -22802,7 +22983,7 @@ const Obby = (() => {
     const tot = RARITY.reduce((a, R) => a + R.w, 0), out = [];
     for (let tries = 0; out.length < 3 && tries < 60; tries++){
       let x = rng() * tot, r = 0; while (r < 4 && x >= RARITY[r].w){ x -= RARITY[r].w; r++; }
-      const pool = PET_ORDER.filter(k => PET_KINDS[k].r === r && !out.includes(k));
+      const pool = PET_ORDER.filter(k => PET_KINDS[k].r === r && !PET_KINDS[k].farm && !out.includes(k));
       if (pool.length) out.push(pool[Math.floor(rng() * pool.length)]);
     }
     return out;
@@ -22848,7 +23029,7 @@ const Obby = (() => {
     const r = load(PET_KEY, null), o = r && typeof r === 'object' ? r : {};
     const pets = (Array.isArray(o.pets) ? o.pets : []).slice(0, PET_MAX).filter(p => p && PET_KINDS[p.k]).map(p => ({
       k: p.k, c: clamp(p.c | 0, 0, 2), n: petNameClean(p.n) && !petNameBad(p.n) ? petNameClean(p.n) : 'Buddy', xp: clamp(+p.xp || 0, 0, 1e6),
-      f: clamp(isFinite(+p.f) ? +p.f : 80, 0, 100), u: clamp(isFinite(+p.u) ? +p.u : 80, 0, 100), e: clamp(isFinite(+p.e) ? +p.e : 80, 0, 100), b: +p.b || Date.now(), acc: accClean(p.acc), tr: trClean(p.tr), g: p.g === 'b' || p.g === 'g' ? p.g : (Math.random() < .5 ? 'b' : 'g'), src: p.src === 'shelter' ? 'shelter' : undefined}));   // older pets get a gender once (saved below)
+      f: clamp(isFinite(+p.f) ? +p.f : 80, 0, 100), u: clamp(isFinite(+p.u) ? +p.u : 80, 0, 100), e: clamp(isFinite(+p.e) ? +p.e : 80, 0, 100), b: +p.b || Date.now(), acc: accClean(p.acc), tr: trClean(p.tr), g: p.g === 'b' || p.g === 'g' ? p.g : (Math.random() < .5 ? 'b' : 'g'), src: p.src === 'farm' ? 'farm' : p.src === 'shelter' ? 'shelter' : undefined}));   // older pets get a gender once (saved below)
     const s = {v: 1, pets, a: clamp(o.a | 0, 0, Math.max(0, pets.length - 1)), flow: ['shelter', 'choose', 'home'].includes(o.flow) ? o.flow : null,
       pend: petNameClean(o.pend), pendG: o.pendG === 'b' || o.pendG === 'g' ? o.pendG : '', inv: invClean(o.inv), tut: clamp(o.tut | 0, 0, 3), t: +o.t || Date.now()};
     // Pet Index (v2): seen = met at the shelter, own = adopted, done = row prize paid
@@ -23038,10 +23219,52 @@ const Obby = (() => {
       for (let i = 0; i < 5; i++){ const s2 = grp(0, 0, i ? -.22 : 0, par); const c = cyl(.09 - .014 * i, .1 - .014 * i, .25, main, 0, 0, -.11, s2, 6); c.rotation.x = Math.PI / 2; s2.rotation.x = i ? -.06 : .45; tailSegs.push(s2); par = s2;
         if (i === 4){ const tip = cone(.09, .2, acc, 0, 0, -.3, s2, 4); tip.rotation.x = -Math.PI / 2; } }
       neck = [0, 1.14, .52];
+
+    } else if (kind === 'chick'){
+      body = sph(.2, main, 0, .28, 0, 1, .95, 1.05);
+      head = grp(0, .5, .12); sph(.14, main, 0, 0, 0, 1, 1, 1, head);
+      eye(head, .06, .03, .11, .04); eye(head, -.06, .03, .11, .04);
+      const bk = cone(.035, .09, acc, 0, -.02, .16, head, 5); bk.rotation.x = Math.PI / 2;
+      cone(.03, .07, '#e05050', 0, .12, 0, head, 5);
+      feet2(.06, .12, .02, .1, acc);
+      tail = grp(0, .3, -.16); cone(.04, .12, acc, 0, .04, -.02, tail, 5).rotation.x = -1.1;
+      neck = [0, .42, .12];
+    } else if (kind === 'lamb'){
+      body = sph(.28, main, 0, .38, 0, 1.05, .9, 1.2); sph(.12, main, .18, .48, .08, 1, 1, 1, inner, 6);
+      head = grp(0, .48, .3); sph(.15, acc, 0, 0, 0, .95, .9, 1.05, head);
+      eye(head, .06, .04, .12, .035); eye(head, -.06, .04, .12, .035);
+      [-1, 1].forEach(k => { const e = grp(k * .1, .1, -.02, head); sph(.06, acc, 0, .03, 0, .6, 1.1, .4, e, 5); ears.push(e); });
+      legs4(.1, .12, -.12, .22, .22, .045, acc, acc);
+      tail = grp(0, .4, -.32); sph(.07, main, 0, 0, 0, 1, 1, 1, tail, 5);
+      neck = [0, .44, .24];
+    } else if (kind === 'calf'){
+      body = sph(.34, main, 0, .5, 0, .95, .8, 1.35); sph(.1, acc, .18, .58, .08, 1, .55, 1, inner, 6);
+      head = grp(0, .7, .4); sph(.18, main, 0, 0, 0, .95, .85, 1.05, head);
+      eye(head, .07, .05, .14, .04); eye(head, -.07, .05, .14, .04);
+      [-1, 1].forEach(k => { const e = grp(k * .14, .08, -.02, head); sph(.07, main, 0, 0, 0, .55, .9, .35, e, 5); ears.push(e); });
+      legs4(.12, .2, -.2, .32, .32, .06, main, acc);
+      tail = grp(0, .58, -.44); const tw = cyl(.02, .02, .24, main, 0, -.08, 0, tail, 5); tw.rotation.x = .25; sph(.05, acc, 0, -.2, 0, 1, 1, 1, tail, 4);
+      neck = [0, .62, .32];
+    } else if (kind === 'piglet'){
+      body = sph(.24, main, 0, .32, 0, 1.1, .85, 1.25);
+      head = grp(0, .4, .24); sph(.15, main, 0, 0, 0, 1, .9, 1.05, head); sph(.07, acc, 0, -.02, .14, 1.1, .8, .7, head, 6);
+      eye(head, .06, .04, .11, .035); eye(head, -.06, .04, .11, .035);
+      [-1, 1].forEach(k => { const e = grp(k * .12, .1, -.02, head); sph(.05, main, 0, 0, 0, .45, .9, .35, e, 5); ears.push(e); });
+      legs4(.08, .1, -.1, .18, .16, .04, main, main);
+      tail = grp(0, .36, -.28); const curl = cyl(.015, .015, .12, main, .04, .04, 0, tail, 5); curl.rotation.z = 1.2;
+      neck = [0, .38, .2];
+    } else if (kind === 'duckling'){
+      body = sph(.2, main, 0, .26, 0, 1.05, .9, 1.2);
+      head = grp(0, .42, .14); sph(.13, main, 0, 0, 0, 1, 1, 1, head);
+      eye(head, .05, .03, .1, .035); eye(head, -.05, .03, .1, .035);
+      const bk = cone(.03, .09, acc, 0, -.02, .14, head, 5); bk.rotation.x = Math.PI / 2;
+      feet2(.06, .1, .02, .08, acc);
+      tail = grp(0, .28, -.18); cone(.04, .1, acc, 0, .03, -.02, tail, 5).rotation.x = -1.2;
+      neck = [0, .36, .12];
     }
     return {body, head, tail, neck};
   }
-  const PET_H = {dog: 1.75, cat: 1.6, mouse: 1.25, bunny: 1.75, hamster: 1.3, duck: 1.55, frog: 1.15, pie: 1.05, turtle: 1.2, hedgehog: 1.2, fox: 1.7, penguin: 1.85, owl: 1.85, koala: 1.75, redpanda: 1.65, snowleo: 1.7, phoenix: 1.6, unicorn: 2.5, dragon: 2.0};
+  const PET_H = {dog: 1.75, cat: 1.6, mouse: 1.25, bunny: 1.75, hamster: 1.3, duck: 1.55, frog: 1.15, pie: 1.05, turtle: 1.2, hedgehog: 1.2, fox: 1.7, penguin: 1.85, owl: 1.85, koala: 1.75, redpanda: 1.65, snowleo: 1.7, phoenix: 1.6, unicorn: 2.5, dragon: 2.0, chick: 1.05, lamb: 1.15, calf: 1.35, piglet: 1.05, duckling: 1.05};
   function buildPet(kind, ci, stage){
     const K = PET_KINDS[kind] || PET_KINDS.dog, col = K.cols[ci] || K.cols[0], main = col[1], acc = col[2], S = STAGES[stage] || STAGES[0];
     const g = new THREE.Group(), inner = new THREE.Group(); g.add(inner);
@@ -23461,14 +23684,20 @@ const Obby = (() => {
   }
   function dexCheck(){
     const d = pt.s.dex;
-    RARITY.forEach((R, r) => { if (d.done[r] || !PET_ORDER.filter(k => PET_KINDS[k].r === r).every(k => d.seen[k])) return;
+    RARITY.forEach((R, r) => { if (d.done[r] || !PET_ORDER.filter(k => PET_KINDS[k].r === r && !PET_KINDS[k].farm).every(k => d.seen[k])) return;
       d.done[r] = 1; earn(R.prize); setTimeout(() => { if (running && pt){ banner('📖 ' + R.e + ' ' + R.n + ' row complete! +' + R.prize + ' 🪙'); confetti(); SND.win(); } }, 3200); });
   }
   function renderIndex(){
     const d = pt.s.dex; let h = '';
-    RARITY.forEach((R, r) => { const ks = PET_ORDER.filter(k => PET_KINDS[k].r === r), n = ks.filter(k => d.seen[k]).length;
+    RARITY.forEach((R, r) => { const ks = PET_ORDER.filter(k => PET_KINDS[k].r === r && !PET_KINDS[k].farm), n = ks.filter(k => d.seen[k]).length;
       h += `<div class="pirow" style="--rc:${R.c}"><div class="pirh"><b>${R.e} ${R.n}</b><small>${R.w}% odds</small><span>${n}/${ks.length}</span><em class="${d.done[r] ? 'ok' : ''}">${d.done[r] ? '✅ +' + R.prize + ' 🪙' : '🎁 ' + R.prize + ' 🪙'}</em></div><div class="pigrid">`
         + ks.map(k => { const K = PET_KINDS[k], sn = d.seen[k], ow = d.own[k]; return `<button class="pic${sn ? ' seen' : ''}${ow ? ' own' : ''}" data-k="${k}"><span class="pie">${K.emoji}</span><b>${sn ? K.name : '???'}</b><small>${ow ? '🏠 Adopted' : sn ? '👀 Seen' : '❔ Not found'}</small></button>`; }).join('') + '</div></div>'; });
+    const farmKs = PET_ORDER.filter(k => PET_KINDS[k].farm);
+    if (farmKs.length){
+      const n = farmKs.filter(k => d.seen[k]).length;
+      h += `<div class="pirow" style="--rc:#c45c3a"><div class="pirh"><b>🚜 Honeymeadow Farm</b><small>visit the farm</small><span>${n}/${farmKs.length}</span></div><div class="pigrid">`
+        + farmKs.map(k => { const K = PET_KINDS[k], sn = d.seen[k], ow = d.own[k]; return `<button class="pic${sn ? ' seen' : ''}${ow ? ' own' : ''}" data-k="${k}"><span class="pie">${K.emoji}</span><b>${sn ? K.name : '???'}</b><small>${ow ? '🏠 Adopted' : sn ? '👀 Seen' : '❔ Not found'}</small></button>`; }).join('') + '</div></div>';
+    }
     $('#pIdx').innerHTML = h; $('#pIdxCount').textContent = PET_ORDER.filter(k => d.seen[k]).length + ' / ' + PET_ORDER.length;
   }
   function openIndex(){ if (!pt || !running) return; $('#pPetsPanel').classList.remove('show'); renderIndex(); openPanel('#pIndexPanel'); }
@@ -51211,6 +51440,13 @@ function start(m = 'obby', d = null){
       if (b.aqZone === 'dest') b.active = showDest;
     });
     if (typeof aqPaint === 'function') aqPaint();
+    const shop = (typeof aqInGiftShop === 'function') && aqInGiftShop();
+    (aq.trash||[]).forEach(m => {
+      if (m && m.userData && m.userData.aqLab){
+        if (shop) m.visible = !!m.userData.aqShopLab;
+        else if (m.userData.aqShopLab) m.visible = !!(aq.run && (aq.run.phase === 'hall' || aq.run.phase === 'ride'));
+      }
+    });
   }
   function aqSky(){ if (typeof ftApplyDaySky === 'function') ftApplyDaySky(); else {
     try { scene.background = new THREE.Color('#7ec8ff'); if (scene.fog){ scene.fog.color.set('#7ec8ff'); scene.fog.near=55; scene.fog.far=180; } } catch(e){}
@@ -51349,37 +51585,45 @@ function start(m = 'obby', d = null){
     aqLab('🐠 Tideglass Aquarium', 0, 8.8, -35.4);
     aq.shiftZ = 0;
   }
+  function aqShopLab(text, x, y, z){
+    const l = aqLab(text, x, y, z);
+    if (l) l.userData.aqShopLab = true;
+    return l;
+  }
+  function aqInGiftShop(){
+    if (!aq || !P || !aq.run || aq.run.phase !== 'hall') return false;
+    const z0 = (AquariumRules.AQ_SHOP && AquariumRules.AQ_SHOP.z) || 0;
+    return Math.abs(P.x - 14) < 5.1 && Math.abs(P.z - z0) < 4.8;
+  }
   function aqGiftShop(){
     aq.curZone = 'dest'; aq.shiftZ = AquariumRules.AQ_DEST_DZ || 0;
     // Walk-in gift nook to the right of the arrival plaza
-    const wall = '#f2e6d4', trim = '#1d5a78';
-    aqPlat(14, 0.22, -11, 8.4, 8.4, '#e8d9c0', 0.16);
-    aqMesh(new THREE.BoxGeometry(8.4, 3.6, 0.24), wall, 14, 2.0, -15.1);
-    aqMesh(new THREE.BoxGeometry(0.24, 3.6, 8.4), wall, 9.9, 2.0, -11);
-    aqMesh(new THREE.BoxGeometry(0.24, 3.6, 8.4), wall, 18.1, 2.0, -11);
-    // front wall with a doorway
-    aqMesh(new THREE.BoxGeometry(2.6, 3.6, 0.24), wall, 11.2, 2.0, -6.9);
-    aqMesh(new THREE.BoxGeometry(2.6, 3.6, 0.24), wall, 16.8, 2.0, -6.9);
-    aqMesh(new THREE.BoxGeometry(3.0, 1.0, 0.24), wall, 14, 3.3, -6.9);
-    aqMesh(new THREE.BoxGeometry(8.8, 0.24, 8.8), trim, 14, 3.9, -11);
-    aqMesh(new THREE.BoxGeometry(2.8, 0.12, 1.6), trim, 14, 2.85, -6.4);
-    // counter and shelves
-    aqMesh(new THREE.BoxGeometry(3.4, 1.0, 0.8), '#2a6a88', 14, 0.7, -13.4);
-    [[12.4, -11.4],[15.6, -11.4],[12.4, -8.6],[15.6, -8.6],[12.4, -13.2],[15.6, -13.2]].forEach(p => {
-      aqMesh(new THREE.BoxGeometry(1.1, 0.9, 1.1), '#c4a060', p[0], 0.65, p[1]);
-    });
+    const wall = '#f2e6d4', trim = '#1d5a78', dz = AquariumRules.AQ_DEST_DZ || 0;
+    aqPlat(14, 0.22, -11, 10.6, 9.2, '#e8d9c0', 0.16);
+    aqMesh(new THREE.BoxGeometry(10.6, 3.6, 0.24), wall, 14, 2.0, -15.5);
+    aqMesh(new THREE.BoxGeometry(0.24, 3.6, 9.2), wall, 8.8, 2.0, -11);
+    aqMesh(new THREE.BoxGeometry(0.24, 3.6, 9.2), wall, 19.2, 2.0, -11);
+    // front wall with a wide doorway so tags stay on the side walls
+    aqMesh(new THREE.BoxGeometry(3.2, 3.6, 0.24), wall, 10.4, 2.0, -6.5);
+    aqMesh(new THREE.BoxGeometry(3.2, 3.6, 0.24), wall, 17.6, 2.0, -6.5);
+    aqMesh(new THREE.BoxGeometry(3.2, 1.0, 0.24), wall, 14, 3.3, -6.5);
+    aqMesh(new THREE.BoxGeometry(11.0, 0.24, 9.6), trim, 14, 3.9, -11);
+    aqMesh(new THREE.BoxGeometry(2.8, 0.12, 1.6), trim, 14, 2.85, -6.15);
+    // back counter, clear of the side stands
+    aqMesh(new THREE.BoxGeometry(3.2, 1.0, 0.8), '#2a6a88', 14, 0.7, -14.7);
     (AquariumRules.AQ_GIFTS||[]).forEach(g => {
       const col = g.kind === 'hat' ? '#1d5a78' : (g.id.indexOf('jelly')>=0 ? '#d8b0ff' : g.id.indexOf('turtle')>=0 ? '#3a8f5a' : g.id.indexOf('crab')>=0 ? '#c45c3a' : '#f4e27a');
       const geo = g.kind === 'hat' ? new THREE.CylinderGeometry(0.28, 0.32, 0.28, 10) : new THREE.SphereGeometry(0.28, 8, 6);
-      // gifts already have world z; place in local dest space
-      const localZ = g.z - (AquariumRules.AQ_DEST_DZ || 0);
+      const localZ = g.z - dz;
+      aqMesh(new THREE.BoxGeometry(1.05, 0.9, 1.05), '#c4a060', g.x, 0.65, localZ);
       aqMesh(geo, col, g.x, 1.25, localZ);
-      aqLab((g.emoji||'🛍️') + ' ' + g.price, g.x, 1.8, localZ);
+      const lab = (typeof AquariumRules.aqGiftLabel === 'function') ? AquariumRules.aqGiftLabel(g) : {x:g.x, y:1.55, z:g.z};
+      aqShopLab((g.emoji||'🛍️') + ' ' + g.price, lab.x, lab.y, lab.z - dz);
     });
-    // shopkeep Pearl
-    aqMesh(new THREE.BoxGeometry(0.7, 1.5, 0.5), '#2a8aaa', 14, 0.95, -13.8);
-    aqLab('🛍️ Pearl', 14, 2.6, -13.8);
-    aqLab('🛍️ Gift Nook', 14, 3.55, -6.5);
+    // shopkeep Pearl at the back wall, away from the side tags
+    aqMesh(new THREE.BoxGeometry(0.7, 1.5, 0.5), '#2a8aaa', 14, 0.95, -15.0);
+    aqShopLab('🛍️ Pearl', 14, 2.45, -15.0);
+    aqShopLab('🛍️ Gift Nook', 14, 3.7, -15.15);
     try {
       const lit = new THREE.PointLight('#ffe8c8', 0.55, 10, 2);
       lit.position.set(14, 3.2, aqWZ(-11)); scene.add(lit); aqKeep(lit);
@@ -51631,7 +51875,8 @@ function start(m = 'obby', d = null){
     lookBack(){ if (!aq) return; this.look(Math.PI); },
     look(yaw){ if (!aq) return; aq.run.phase='hall'; const a=AquariumRules.AQ_ARRIVE||{x:3.4,z:-8}; if(P){P.x=a.x;P.y=0.5;P.z=a.z;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=(yaw==null?Math.PI:yaw); cam.pitch=0.12; cam.dist=12; } aqApplyZones('hall'); },
     ride(t){ if (!aq) return; aq.run.phase='ride'; aq.run.rideT= (t==null? 3.2 : t); const pose=AquariumRules.aqRidePose(aq.run); aqSeat(pose); aqRideVis(true); aqApplyZones('ride'); },
-    shop(){ if (!aq) return; aq.run.phase='hall'; const s=AquariumRules.AQ_SHOP||{x:14,z:-10}; if(P){P.x=s.x;P.y=0.5;P.z=s.z;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=8; } aqApplyZones('hall'); },
+    cam(yaw, pitch, dist){ if (typeof cam !== 'undefined' && cam){ if (yaw != null) cam.yaw = yaw; if (pitch != null) cam.pitch = pitch; if (dist != null) cam.dist = dist; } },
+    shop(){ if (!aq) return; aq.run.phase='hall'; const s=AquariumRules.AQ_SHOP||{x:14,z:-10}; if(P){P.x=s.x;P.y=0.5;P.z=s.z;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.12; cam.dist=6; } aqApplyZones('hall'); },
     tankFront(){ if (!aq || !P) return; aq.run.phase='hall'; const z = AquariumRules.aqZ ? AquariumRules.aqZ(-14.2) : -14.2; P.x=13.4; P.y=0.5; P.z=z; P.vx=0; P.vz=0; if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.14; cam.dist=6.2; } aqApplyZones('hall'); },
     go(id){
       if (!aq || !P) return;
@@ -51687,6 +51932,27 @@ function start(m = 'obby', d = null){
     hideIf(FarmRules.FM_PUMPS, id => (st.pumps||[]).indexOf(id)>=0);
     if (fm.homeBus) fm.homeBus.visible = destOn && FarmRules.fmAllDone(st) && fm.run && fm.run.phase === 'farm';
     if (fm.gateLab) fm.gateLab.visible = !!(fm.homeBus && fm.homeBus.visible);
+    const adopted = st.adopted || [];
+    let nearBaby = null, nearD = 99;
+    Object.keys(fm.babies || {}).forEach(id => {
+      const slot = fm.babies[id]; const on = destOn && adopted.indexOf(id) < 0;
+      if (slot.mesh) slot.mesh.visible = on;
+      if (on && P && FarmRules.FM_BABIES){
+        const b = FarmRules.FM_BABIES.find(x => x.id === id);
+        if (b){ const d = Math.hypot(P.x - b.x, P.z - b.z); if (d < nearD){ nearD = d; nearBaby = id; } }
+      }
+    });
+    Object.keys(fm.babies || {}).forEach(id => {
+      const slot = fm.babies[id];
+      if (!slot.lab) return;
+      const on = destOn && adopted.indexOf(id) < 0;
+      // When you walk into the paddock, only the closest baby keeps a name tag so they do not stack.
+      slot.lab.visible = on && (nearD > 5 || id === nearBaby);
+    });
+    if (fm.custLab && destOn && typeof FarmRules.fmCustomer === 'function'){
+      const cust = FarmRules.fmCustomer(fm.run, st);
+      fm.custLab.element && (fm.custLab.element.textContent = (cust.emoji||'🧒') + ' ' + cust.name);
+    }
   }
   function fmApplyZones(phase){
     if (!fm) return;
@@ -51700,6 +51966,7 @@ function start(m = 'obby', d = null){
       if (b.fmZone === 'dest') b.active = showDest;
     });
     fmPaint();
+    if (fm.hideLabs){ (fm.trash||[]).forEach(m => { if (m && m.userData && m.userData.fmLab) m.visible = false; }); }
   }
   function fmSky(){ if (typeof ftApplyDaySky === 'function') ftApplyDaySky(); else {
     try { scene.background = new THREE.Color('#7ec8ff'); if (scene.fog){ scene.fog.color.set('#7ec8ff'); scene.fog.near=55; scene.fog.far=180; } } catch(e){}
@@ -51747,6 +52014,180 @@ function start(m = 'obby', d = null){
     });
     return g;
   }
+
+  function fmMat(c){ return new THREE.MeshLambertMaterial({color:c}); }
+  function fmSph(par, r, c, x, y, z, sx, sy, sz, seg){
+    const m = new THREE.Mesh(new THREE.SphereGeometry(r, seg||8, Math.max(5,(seg||8)-2)), fmMat(c));
+    m.position.set(x, y, z); if (sx) m.scale.set(sx, sy==null?sx:sy, sz==null?sx:sz); par.add(m); return m;
+  }
+  function fmBox(par, w, h, d, c, x, y, z){
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), fmMat(c)); m.position.set(x,y,z); par.add(m); return m;
+  }
+  function fmCyl(par, r1, r2, h, c, x, y, z){
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, 7), fmMat(c)); m.position.set(x,y,z); par.add(m); return m;
+  }
+  function fmEye(par, x, y, z, r){
+    fmSph(par, r, '#1d2340', x, y, z, 1, 1, 0.7, 6);
+    fmSph(par, r*0.35, '#ffffff', x + r*0.25, y + r*0.3, z + r*0.35, 1, 1, 1, 4);
+  }
+  function fmMakeHen(){
+    const g = new THREE.Group(), bodyC = '#f4d15a', wingC = '#e8b84a';
+    fmSph(g, 0.28, bodyC, 0, 0.42, 0, 1, 0.9, 1.15, 8);
+    const head = new THREE.Group(); head.position.set(0, 0.68, 0.22); g.add(head); g.userData.head = head;
+    fmSph(head, 0.18, bodyC, 0, 0, 0, 1, 1, 1, 8);
+    fmEye(head, 0.07, 0.04, 0.14, 0.045); fmEye(head, -0.07, 0.04, 0.14, 0.045);
+    const beak = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.12, 6), fmMat('#f4a04a')); beak.rotation.x = Math.PI/2; beak.position.set(0, -0.02, 0.2); head.add(beak);
+    fmCyl(head, 0.03, 0.05, 0.1, '#e05050', 0, 0.16, 0);
+    fmSph(head, 0.04, '#e05050', 0.05, 0.12, 0, 1, 0.7, 0.7, 5);
+    fmSph(head, 0.04, '#e05050', -0.05, 0.12, 0, 1, 0.7, 0.7, 5);
+    fmSph(g, 0.16, wingC, 0.22, 0.42, -0.02, 0.45, 0.7, 1.0, 6);
+    fmSph(g, 0.16, wingC, -0.22, 0.42, -0.02, 0.45, 0.7, 1.0, 6);
+    const tail = new THREE.Group(); tail.position.set(0, 0.5, -0.28); g.add(tail); g.userData.tail = tail;
+    [0, 0.1, -0.1].forEach((x,i) => { const f = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.22, 5), fmMat(i? '#e07a20':'#f4a04a')); f.rotation.x = -1.1; f.position.set(x, 0.08, -0.04); tail.add(f); });
+    fmCyl(g, 0.03, 0.03, 0.2, '#f4a04a', 0.08, 0.16, 0.04);
+    fmCyl(g, 0.03, 0.03, 0.2, '#f4a04a', -0.08, 0.16, 0.04);
+    fmBox(g, 0.1, 0.03, 0.12, '#f4a04a', 0.08, 0.05, 0.08);
+    fmBox(g, 0.1, 0.03, 0.12, '#f4a04a', -0.08, 0.05, 0.08);
+    g.userData.kind = 'hen'; g.scale.setScalar(1.45); return g;
+  }
+  function fmMakeSheep(){
+    const g = new THREE.Group(), wool = '#f4f1ea', skin = '#e8d0b0';
+    fmSph(g, 0.42, wool, 0, 0.58, 0, 1.05, 0.9, 1.25, 8);
+    fmSph(g, 0.18, wool, 0.28, 0.72, 0.1, 1, 1, 1, 6);
+    fmSph(g, 0.16, wool, -0.26, 0.7, -0.16, 1, 1, 1, 6);
+    fmSph(g, 0.17, wool, 0.1, 0.78, -0.22, 1, 1, 1, 6);
+    const head = new THREE.Group(); head.position.set(0, 0.7, 0.42); g.add(head); g.userData.head = head;
+    fmSph(head, 0.2, skin, 0, 0, 0, 0.95, 0.9, 1.1, 8);
+    fmEye(head, 0.08, 0.05, 0.16, 0.04); fmEye(head, -0.08, 0.05, 0.16, 0.04);
+    fmSph(head, 0.04, '#f4a0b4', 0, -0.04, 0.18, 1.1, 0.7, 0.8, 5);
+    const earL = new THREE.Group(); earL.position.set(0.14, 0.12, -0.02); head.add(earL);
+    const earR = new THREE.Group(); earR.position.set(-0.14, 0.12, -0.02); head.add(earR);
+    fmSph(earL, 0.07, skin, 0, 0.04, 0, 0.7, 1.2, 0.45, 5);
+    fmSph(earR, 0.07, skin, 0, 0.04, 0, 0.7, 1.2, 0.45, 5);
+    g.userData.ears = [earL, earR];
+    fmCyl(g, 0.07, 0.06, 0.32, '#f2e0c8', 0.16, 0.22, 0.16);
+    fmCyl(g, 0.07, 0.06, 0.32, '#f2e0c8', -0.16, 0.22, 0.16);
+    fmCyl(g, 0.07, 0.06, 0.32, '#f2e0c8', 0.16, 0.22, -0.18);
+    fmCyl(g, 0.07, 0.06, 0.32, '#f2e0c8', -0.16, 0.22, -0.18);
+    const tail = new THREE.Group(); tail.position.set(0, 0.62, -0.48); g.add(tail); g.userData.tail = tail;
+    fmSph(tail, 0.09, wool, 0, 0, 0, 1, 1, 1, 6);
+    g.userData.kind = 'sheep'; g.scale.setScalar(1.28); return g;
+  }
+  function fmMakeCow(){
+    const g = new THREE.Group(), hide = '#f4e8d0', spot = '#6b4a2a';
+    fmSph(g, 0.48, hide, 0, 0.78, 0, 0.95, 0.8, 1.45, 8);
+    fmSph(g, 0.14, spot, 0.28, 0.9, 0.1, 1, 0.6, 1, 6);
+    fmSph(g, 0.12, spot, -0.22, 0.72, -0.2, 1, 0.55, 1, 6);
+    fmSph(g, 0.1, spot, 0.08, 0.95, -0.35, 1, 0.5, 1, 6);
+    const head = new THREE.Group(); head.position.set(0, 1.05, 0.58); g.add(head); g.userData.head = head;
+    fmSph(head, 0.26, hide, 0, 0, 0, 0.95, 0.85, 1.1, 8);
+    fmSph(head, 0.14, '#ffe8d6', 0, -0.08, 0.18, 1, 0.75, 0.9, 6);
+    fmEye(head, 0.1, 0.08, 0.18, 0.05); fmEye(head, -0.1, 0.08, 0.18, 0.05);
+    fmSph(head, 0.04, '#3a2a1a', 0.04, -0.04, 0.3, 1, 1, 1, 4);
+    fmSph(head, 0.04, '#3a2a1a', -0.04, -0.04, 0.3, 1, 1, 1, 4);
+    const hornL = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.16, 5), fmMat('#f2e0c8')); hornL.position.set(0.14, 0.22, -0.02); hornL.rotation.z = -0.4; head.add(hornL);
+    const hornR = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.16, 5), fmMat('#f2e0c8')); hornR.position.set(-0.14, 0.22, -0.02); hornR.rotation.z = 0.4; head.add(hornR);
+    const earL = new THREE.Group(); earL.position.set(0.2, 0.1, -0.02); head.add(earL);
+    const earR = new THREE.Group(); earR.position.set(-0.2, 0.1, -0.02); head.add(earR);
+    fmSph(earL, 0.08, hide, 0, 0, 0, 0.6, 1, 0.4, 5);
+    fmSph(earR, 0.08, hide, 0, 0, 0, 0.6, 1, 0.4, 5);
+    g.userData.ears = [earL, earR];
+    fmCyl(g, 0.08, 0.07, 0.55, hide, 0.2, 0.35, 0.32);
+    fmCyl(g, 0.08, 0.07, 0.55, hide, -0.2, 0.35, 0.32);
+    fmCyl(g, 0.08, 0.07, 0.55, hide, 0.2, 0.35, -0.32);
+    fmCyl(g, 0.08, 0.07, 0.55, hide, -0.2, 0.35, -0.32);
+    const tail = new THREE.Group(); tail.position.set(0, 0.9, -0.68); g.add(tail); g.userData.tail = tail;
+    fmCyl(tail, 0.03, 0.03, 0.45, hide, 0, -0.16, 0); tail.children[0].rotation.x = 0.3;
+    fmSph(tail, 0.07, spot, 0, -0.4, 0.02, 1, 1, 1, 5);
+    g.userData.kind = 'cow'; g.scale.setScalar(1.32); return g;
+  }
+  function fmMakeChick(){
+    const g = new THREE.Group();
+    fmSph(g, 0.16, '#f4d15a', 0, 0.22, 0, 1, 0.95, 1.05, 8);
+    const head = new THREE.Group(); head.position.set(0, 0.38, 0.1); g.add(head); g.userData.head = head;
+    fmSph(head, 0.12, '#f4d15a', 0, 0, 0, 1, 1, 1, 8);
+    fmEye(head, 0.05, 0.03, 0.09, 0.035); fmEye(head, -0.05, 0.03, 0.09, 0.035);
+    const beak = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.08, 5), fmMat('#f4a04a')); beak.rotation.x = Math.PI/2; beak.position.set(0, -0.01, 0.13); head.add(beak);
+    fmCyl(head, 0.015, 0.03, 0.06, '#e05050', 0, 0.1, 0);
+    const tail = new THREE.Group(); tail.position.set(0, 0.24, -0.14); g.add(tail); g.userData.tail = tail;
+    const f = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.1, 5), fmMat('#f4a04a')); f.rotation.x = -1.1; tail.add(f);
+    fmCyl(g, 0.02, 0.02, 0.1, '#f4a04a', 0.05, 0.08, 0.02);
+    fmCyl(g, 0.02, 0.02, 0.1, '#f4a04a', -0.05, 0.08, 0.02);
+    g.userData.kind = 'chick'; g.scale.setScalar(1.25); return g;
+  }
+  function fmMakeLamb(){
+    const g = new THREE.Group();
+    fmSph(g, 0.22, '#f4f1ea', 0, 0.3, 0, 1.05, 0.9, 1.15, 8);
+    const head = new THREE.Group(); head.position.set(0, 0.38, 0.22); g.add(head); g.userData.head = head;
+    fmSph(head, 0.12, '#e8d0b0', 0, 0, 0, 0.95, 0.9, 1.05, 8);
+    fmEye(head, 0.05, 0.03, 0.1, 0.03); fmEye(head, -0.05, 0.03, 0.1, 0.03);
+    fmSph(head, 0.05, '#e8d0b0', 0.08, 0.08, -0.02, 0.6, 1, 0.4, 5);
+    fmSph(head, 0.05, '#e8d0b0', -0.08, 0.08, -0.02, 0.6, 1, 0.4, 5);
+    const tail = new THREE.Group(); tail.position.set(0, 0.32, -0.24); g.add(tail); g.userData.tail = tail;
+    fmSph(tail, 0.06, '#f4f1ea', 0, 0, 0, 1, 1, 1, 5);
+    fmCyl(g, 0.04, 0.035, 0.16, '#e8d0b0', 0.08, 0.12, 0.08);
+    fmCyl(g, 0.04, 0.035, 0.16, '#e8d0b0', -0.08, 0.12, 0.08);
+    fmCyl(g, 0.04, 0.035, 0.16, '#e8d0b0', 0.08, 0.12, -0.08);
+    fmCyl(g, 0.04, 0.035, 0.16, '#e8d0b0', -0.08, 0.12, -0.08);
+    g.userData.kind = 'lamb'; g.scale.setScalar(1.25); return g;
+  }
+  function fmMakeCalf(){
+    const g = new THREE.Group(), hide = '#f4e8d0', spot = '#6b4a2a';
+    fmSph(g, 0.26, hide, 0, 0.4, 0, 0.95, 0.8, 1.3, 8);
+    fmSph(g, 0.08, spot, 0.14, 0.48, 0.05, 1, 0.55, 1, 5);
+    const head = new THREE.Group(); head.position.set(0, 0.55, 0.3); g.add(head); g.userData.head = head;
+    fmSph(head, 0.14, hide, 0, 0, 0, 0.95, 0.85, 1.05, 8);
+    fmEye(head, 0.06, 0.04, 0.11, 0.035); fmEye(head, -0.06, 0.04, 0.11, 0.035);
+    fmSph(head, 0.06, hide, 0.1, 0.06, -0.02, 0.55, 0.9, 0.35, 5);
+    fmSph(head, 0.06, hide, -0.1, 0.06, -0.02, 0.55, 0.9, 0.35, 5);
+    const tail = new THREE.Group(); tail.position.set(0, 0.46, -0.34); g.add(tail); g.userData.tail = tail;
+    fmCyl(tail, 0.02, 0.02, 0.22, hide, 0, -0.08, 0);
+    fmSph(tail, 0.04, spot, 0, -0.2, 0, 1, 1, 1, 4);
+    fmCyl(g, 0.045, 0.04, 0.28, hide, 0.1, 0.18, 0.16);
+    fmCyl(g, 0.045, 0.04, 0.28, hide, -0.1, 0.18, 0.16);
+    fmCyl(g, 0.045, 0.04, 0.28, hide, 0.1, 0.18, -0.16);
+    fmCyl(g, 0.045, 0.04, 0.28, hide, -0.1, 0.18, -0.16);
+    g.userData.kind = 'calf'; g.scale.setScalar(1.28); return g;
+  }
+  function fmMakePiglet(){
+    const g = new THREE.Group(), pink = '#f3a6b0';
+    fmSph(g, 0.2, pink, 0, 0.26, 0, 1.1, 0.85, 1.25, 8);
+    const head = new THREE.Group(); head.position.set(0, 0.32, 0.2); g.add(head); g.userData.head = head;
+    fmSph(head, 0.13, pink, 0, 0, 0, 1, 0.9, 1.05, 8);
+    fmSph(head, 0.06, '#ef8a98', 0, -0.02, 0.12, 1.1, 0.8, 0.7, 6);
+    fmEye(head, 0.05, 0.04, 0.09, 0.03); fmEye(head, -0.05, 0.04, 0.09, 0.03);
+    fmSph(head, 0.05, pink, 0.1, 0.08, -0.02, 0.45, 0.9, 0.35, 5);
+    fmSph(head, 0.05, pink, -0.1, 0.08, -0.02, 0.45, 0.9, 0.35, 5);
+    const tail = new THREE.Group(); tail.position.set(0, 0.3, -0.24); g.add(tail); g.userData.tail = tail;
+    fmCyl(tail, 0.015, 0.015, 0.12, pink, 0.04, 0.04, 0); tail.children[0].rotation.z = 1.2;
+    fmCyl(g, 0.035, 0.03, 0.14, pink, 0.08, 0.1, 0.08);
+    fmCyl(g, 0.035, 0.03, 0.14, pink, -0.08, 0.1, 0.08);
+    fmCyl(g, 0.035, 0.03, 0.14, pink, 0.08, 0.1, -0.08);
+    fmCyl(g, 0.035, 0.03, 0.14, pink, -0.08, 0.1, -0.08);
+    g.userData.kind = 'piglet'; g.scale.setScalar(1.25); return g;
+  }
+  function fmMakeDuckling(){
+    const g = new THREE.Group();
+    fmSph(g, 0.16, '#f4d15a', 0, 0.2, 0, 1.05, 0.9, 1.2, 8);
+    const head = new THREE.Group(); head.position.set(0, 0.34, 0.12); g.add(head); g.userData.head = head;
+    fmSph(head, 0.11, '#f4d15a', 0, 0, 0, 1, 1, 1, 8);
+    fmEye(head, 0.045, 0.03, 0.08, 0.03); fmEye(head, -0.045, 0.03, 0.08, 0.03);
+    const beak = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.08, 5), fmMat('#f4a04a')); beak.rotation.x = Math.PI/2; beak.position.set(0, -0.01, 0.12); head.add(beak);
+    const tail = new THREE.Group(); tail.position.set(0, 0.22, -0.16); g.add(tail); g.userData.tail = tail;
+    const f = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.1, 5), fmMat('#f4a04a')); f.rotation.x = -1.2; tail.add(f);
+    fmCyl(g, 0.02, 0.02, 0.08, '#f4a04a', 0.05, 0.08, 0.02);
+    fmCyl(g, 0.02, 0.02, 0.08, '#f4a04a', -0.05, 0.08, 0.02);
+    g.userData.kind = 'duckling'; g.scale.setScalar(1.25); return g;
+  }
+  function fmPlaceCritter(g, x, z, yaw){
+    g.position.set(x, 0, fmWZ(z));
+    g.rotation.y = yaw || 0;
+    g.userData.y0 = 0;
+    g.userData.bob = Math.random() * 8;
+    scene.add(g); fmKeep(g);
+    (fm.critters || (fm.critters=[])).push(g);
+    return g;
+  }
   function fmNpc(av, x, z, fx, fz, col){
     try {
       const m = buildPlayer(Object.assign({}, typeof DEF !== 'undefined' ? DEF : {}, av));
@@ -51755,7 +52196,7 @@ function start(m = 'obby', d = null){
   }
   function buildFarm(){
     const started = FarmRules.fmNewVisit(fmState());
-    fm = {trash:[], solids:[], zones:{}, sv: started.state, run: started.run, near:null, bus:null, homeBus:null, wagon:null, marks:{}, curZone:null, shiftZ:0};
+    fm = {trash:[], solids:[], zones:{}, sv: started.state, run: started.run, near:null, bus:null, homeBus:null, wagon:null, marks:{}, curZone:null, shiftZ:0, critters:[], babies:{}, t:0};
     fmSave(started.state);
     try { checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:18}, flag:new THREE.Object3D()}; } catch(e){}
     fmSky();
@@ -51797,20 +52238,21 @@ function start(m = 'obby', d = null){
     fmMesh(new THREE.BoxGeometry(2.4, 3.2, 0.2), '#6b3a1d', 0, 1.8, -32);
     fmLab('🏠 Honeymeadow barn', 0, 8.2, -32);
     // pens
+    fm.critters = [];
     fmPlat(12, 0.22, -18, 7, 6, '#c4a060', 0.12);
     fmMesh(new THREE.BoxGeometry(0.16, 1.0, 6), '#8b6a3a', 8.5, 0.7, -18);
     fmMesh(new THREE.BoxGeometry(0.16, 1.0, 6), '#8b6a3a', 15.5, 0.7, -18);
-    fmMesh(new THREE.SphereGeometry(0.28, 7, 6), '#f4e27a', 11.2, 0.5, -17.4);
-    fmMesh(new THREE.SphereGeometry(0.28, 7, 6), '#f4e27a', 13, 0.5, -18.6);
-    fmLab('🐔 Speckle hens', 12, 2.4, -18);
+    fmPlaceCritter(fmMakeHen(), 11.1, -17.4, 0.4);
+    fmPlaceCritter(fmMakeHen(), 13.1, -18.7, -0.3);
+    fmLab('🐔 Speckle hens', 12, 2.6, -14.6);
     fmPlat(-12, 0.22, -18, 7, 6, '#c4a060', 0.12);
-    fmMesh(new THREE.SphereGeometry(0.4, 7, 6), '#f2f0e8', -11.2, 0.7, -17.6);
-    fmMesh(new THREE.SphereGeometry(0.4, 7, 6), '#e8e0d0', -13, 0.7, -18.6);
-    fmLab('🐑 Cloudwool sheep', -12, 2.4, -18);
+    fmPlaceCritter(fmMakeSheep(), -11.1, -17.5, 0.5);
+    fmPlaceCritter(fmMakeSheep(), -13.0, -18.7, -0.2);
+    fmLab('🐑 Cloudwool sheep', -12, 2.6, -14.6);
     fmPlat(16, 0.22, -32, 8, 6, '#c4a060', 0.12);
-    fmMesh(new THREE.BoxGeometry(1.4, 1.0, 0.7), '#f4e8d0', 15.2, 0.8, -31.4);
-    fmMesh(new THREE.BoxGeometry(1.4, 1.0, 0.7), '#efe0c8', 17, 0.8, -32.6);
-    fmLab('🐄 Butterspot cows', 16, 2.4, -32);
+    fmPlaceCritter(fmMakeCow(), 15.0, -31.3, 0.5);
+    fmPlaceCritter(fmMakeCow(), 17.2, -32.8, -0.35);
+    fmLab('🐄 Butterspot cows', 20.2, 2.6, -32);
     // apple trees
     (FarmRules.FM_APPLES||[]).forEach(a => {
       const lz = a.z - (FarmRules.FM_DEST_DZ||0);
@@ -51845,10 +52287,41 @@ function start(m = 'obby', d = null){
     home.visible = false; scene.add(home); fmKeep(home); fm.homeBus = home;
     fm.gateLab = fmLab('🚌 Gate', FarmRules.FM_HOME_BUS.x, 3.4, FarmRules.FM_HOME_BUS.z);
     if (fm.gateLab) fm.gateLab.visible = false;
+    // Honeymeadow Stand
+    const st = FarmRules.FM_STAND;
+    fmPlat(st.x, 0.22, st.z, 5.2, 3.4, '#c4a060', 0.12);
+    fmMesh(new THREE.BoxGeometry(3.2, 1.05, 0.8), '#8b5a2a', st.x, 0.75, st.z - 0.6);
+    fmMesh(new THREE.BoxGeometry(3.4, 0.12, 1.2), '#6b3a1d', st.x, 1.7, st.z - 0.6);
+    fmMesh(new THREE.BoxGeometry(0.16, 1.7, 0.16), '#6b3a1d', st.x - 1.5, 0.9, st.z - 0.6);
+    fmMesh(new THREE.BoxGeometry(0.16, 1.7, 0.16), '#6b3a1d', st.x + 1.5, 0.9, st.z - 0.6);
+    fmMesh(new THREE.BoxGeometry(2.6, 0.7, 0.08), '#f4e8c4', st.x, 2.15, st.z - 0.7);
+    fmLab('🪙 Honeymeadow Stand', st.x, 3.3, st.z - 1.1);
+    fmLab('🥚 4   🍎 3   🎃 5', st.x, 2.35, st.z - 0.85);
+    fm.cust = fmNpc({head:'#e0ac69', shirt:'#3a86ff', pants:'#3a3f6a', hair:'short', hairColor:'#5a3a1a', face:'smile', hat:null}, st.x + 1.6, st.z + 1.3, st.x, st.z, '#3a86ff');
+    fm.custLab = fmLab('🧒 Pip', st.x + 2.1, 2.6, st.z + 1.4);
+    // nursery paddock
+    const nu = FarmRules.FM_NURSERY || {x:-19.5, z:FarmRules.fmZ(-36.5)};
+    fmPlat(nu.x, 0.2, nu.z, 8, 8, '#c4a060', 0.1);
+    fmMesh(new THREE.BoxGeometry(0.16, 0.9, 8), '#8b6a3a', nu.x - 4, 0.6, nu.z);
+    fmMesh(new THREE.BoxGeometry(0.16, 0.9, 8), '#8b6a3a', nu.x + 4, 0.6, nu.z);
+    fmMesh(new THREE.BoxGeometry(8, 0.9, 0.16), '#8b6a3a', nu.x, 0.6, nu.z - 4);
+    fmLab('🍼 Little ones', nu.x, 2.5, nu.z + 4.4);
+    fm.babies = {};
+    (FarmRules.FM_BABIES||[]).forEach(b => {
+      const maker = {chick:fmMakeChick, lamb:fmMakeLamb, calf:fmMakeCalf, piglet:fmMakePiglet, duckling:fmMakeDuckling}[b.kind] || fmMakeChick;
+      const g = maker();
+      g.position.set(b.x, 0, b.z);
+      g.rotation.y = Math.atan2(FarmRules.FM_ARRIVE.x - b.x, FarmRules.FM_ARRIVE.z - b.z);
+      g.userData.y0 = 0; g.userData.bob = Math.random()*8; g.userData.babyId = b.id;
+      scene.add(g); fmKeep(g); (fm.critters||(fm.critters=[])).push(g);
+      const short = (b.kind==='chick'?'Chick':b.kind==='lamb'?'Lamb':b.kind==='calf'?'Calf':b.kind==='piglet'?'Piglet':'Duckling');
+      const lab = fmLab((b.emoji||'🐾') + ' ' + short, b.x, 1.55, b.z);
+      fm.babies[b.id] = {mesh:g, lab:lab};
+    });
     if (P){ P.x=0; P.y=0.5; P.z=18; P.vx=0; P.vz=0; P.vy=0; }
     if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
     const box=document.getElementById('fmBox'); if(box) box.style.display='block';
-    banner('🌾 Farm day! Ms. Bramble is taking Afterbell School to Honeymeadow Farm. Board the bus, then help Farmer Nettie with the animals, eggs, apples, pumpkins, and the hay wagon.');
+    banner('🌾 Farm day! Ms. Bramble is taking Afterbell School to Honeymeadow Farm. Board the bus, then help Farmer Nettie with the animals, the little ones, the farm stand, eggs, apples, pumpkins, and the hay wagon.');
     fm.curZone = null;
     fmApplyZones((fm.run && fm.run.phase) || 'yard');
     fmHud();
@@ -51878,13 +52351,22 @@ function start(m = 'obby', d = null){
     if (!fm || !fm.run || typeof camera === 'undefined' || !camera) return false;
     let pose = null, along = -1.5, ey = 1.55;
     if (fm.run.phase === 'ride') pose = FarmRules.fmRidePose(fm.run);
-    else if (fm.run.haying){ pose = FarmRules.fmHayPose(fm.run); along = -1.2; ey = 1.7; }
+    else if (fm.run.haying){ pose = FarmRules.fmHayPose(fm.run); along = -4.2; ey = 5.6; }
     if (!pose) return false;
     const cy = Math.cos(pose.yaw || 0), sy = Math.sin(pose.yaw || 0);
     const x = pose.x + along * sy, z = pose.z + along * cy;
     camera.position.set(x, ey, z);
-    camera.lookAt(x + sy * 10, ey - 0.2, z + cy * 10);
+    if (fm.run.haying && FarmRules.FM_BARN){
+      camera.lookAt(
+        x + sy * 7 + FarmRules.FM_BARN.x * 0.25,
+        1.8,
+        z + cy * 7 + FarmRules.FM_BARN.z * 0.25
+      );
+    } else {
+      camera.lookAt(x + sy * 10, ey - 0.35, z + cy * 10);
+    }
     (fm.trash||[]).forEach(m => { if (m && m.userData && m.userData.fmLab) m.visible = false; });
+    if (fm.run.haying) fmRideVis(true);
     return true;
   }
   function fmAct(){
@@ -51931,6 +52413,44 @@ function start(m = 'obby', d = null){
       if (r.ok){ banner('🌾 Hop on! The hay wagon is taking a slow loop around Honeymeadow Farm.'); fmRideVis(true); }
       return;
     }
+    if (hit.kind === 'sell'){
+      const r = FarmRules.fmSell(fm.sv, hit.want, fm.run);
+      if (!r.ok){
+        if (r.why === 'stock') banner('The stand is waiting for more eggs, apples or pumpkins.');
+        else if (r.why === 'want' && r.customer) banner(r.customer.name + ' is hoping for something else — check the price board!');
+        return;
+      }
+      fm.sv = r.state; fmSave(fm.sv); fmPaint();
+      if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); if (typeof updateCoins === 'function') updateCoins(true); } catch(e){} }
+      const who = (r.customer && r.customer.name) || 'a friend';
+      banner('🪙 ' + who + ' bought a ' + (r.item && r.item.name || 'treat') + '!  +' + r.coins + ' 🪙');
+      return;
+    }
+    if (hit.kind === 'adopt'){
+      const r = FarmRules.fmAdopt(fm.sv, hit.id);
+      if (!r.ok){
+        if (r.why === 'feed') banner('Feed the ' + (r.need || 'animals') + ' first — then this little one will be ready to come home.');
+        else if (r.already) banner('You already adopted this little one!');
+        return;
+      }
+      let petsSave = null;
+      try { petsSave = (typeof load === 'function') ? load('rubloxPets', null) : null; } catch(e){}
+      const grant = FarmRules.fmGrantPet(petsSave, r.pet, 6);
+      if (!grant.ok){
+        // leave the baby at the farm so the player can try again after making room
+        const undone = FarmRules.fmLoad(r.state);
+        undone.adopted = (undone.adopted || []).filter(id => id !== hit.id);
+        fm.sv = undone; fmSave(fm.sv);
+        banner('Your pet beds are full (6). Make a little room in Adopt a Pet, then come back for this ' + (r.baby && r.baby.name || 'friend') + '!');
+        return;
+      }
+      fm.sv = r.state; fmSave(fm.sv);
+      try { if (typeof save === 'function') save('rubloxPets', grant.pets); } catch(e){}
+      fmPaint();
+      try { if (typeof pfEnter === 'function') pfEnter(typeof mode !== 'undefined' ? mode : 'farm'); } catch(e){}
+      banner((r.baby && r.baby.emoji || '🐾') + ' ' + (r.petName || 'Your new friend') + ' the ' + (r.baby && r.baby.name || 'baby') + ' is yours! They will follow you around.');
+      return;
+    }
     if (hit.kind === 'home'){
       const r = FarmRules.fmBoardHome(fm.run, fm.sv);
       if (!r.ok){ banner('Farmer Nettie is still waiting on a few farm jobs.'); return; }
@@ -51959,7 +52479,7 @@ function start(m = 'obby', d = null){
         if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; }
         fmRideVis(false);
         if (fm.bus){ fm.bus.position.set(FarmRules.FM_HOME_BUS.x, 0, FarmRules.FM_HOME_BUS.z); fm.bus.rotation.y = Math.PI; }
-        banner('🌾 Welcome to Honeymeadow Farm! Farmer Nettie is by the barn — not under the bus. Help with the animals, eggs, apples, pumpkins, and the hay wagon.');
+        banner('🌾 Welcome to Honeymeadow Farm! Farmer Nettie is by the barn — not under the bus. Help with the animals, sell at the stand, and visit the little ones.');
         fmApplyZones('farm');
       }
     }
@@ -51967,7 +52487,7 @@ function start(m = 'obby', d = null){
       const r = FarmRules.fmTickHay(fm.run, fm.sv, dt);
       fm.sv = r.state;
       const pose = FarmRules.fmHayPose(fm.run);
-      fmSeat(pose, -1.2, 1.35); fmRideVis(true);
+      fmSeat(pose, -0.2, 1.55); fmRideVis(true);
       if (fm.wagon){ fm.wagon.position.set(pose.x, 0, pose.z); fm.wagon.rotation.y = pose.yaw || 0; }
       if (r.done){
         fmSave(fm.sv);
@@ -51980,6 +52500,15 @@ function start(m = 'obby', d = null){
       }
     }
     if (P && P.y < -8){ P.x=0; P.y=0.5; P.z = (fm.run && fm.run.phase === 'farm') ? (FarmRules.FM_ARRIVE||{}).z || -8 : 18; P.vx=P.vz=P.vy=0; }
+    fm.t = (fm.t || 0) + (dt || 0);
+    (fm.critters||[]).forEach((g, i) => {
+      if (!g || !g.visible) return;
+      const T = fm.t + (g.userData.bob || 0);
+      g.position.y = (g.userData.y0 || 0) + Math.sin(T * 2.2) * (g.userData.kind === 'hen' || g.userData.kind === 'chick' || g.userData.kind === 'duckling' ? 0.035 : 0.025);
+      if (g.userData.tail) g.userData.tail.rotation.y = Math.sin(T * 4.0 + i) * 0.45;
+      if (g.userData.head) g.userData.head.rotation.x = Math.sin(T * 1.6 + i) * 0.1;
+      if (g.userData.ears) g.userData.ears.forEach((e, k) => { e.rotation.z = Math.sin(T * 2.4 + k) * 0.12; });
+    });
     fmApplyZones(fm.run && fm.run.phase);
     fm.near = FarmRules.fmNear(P ? P.x : 0, P ? P.z : 0, fm.sv, fm.run);
     fmHud(FarmRules.fmGoal(fm.sv, fm.run));
@@ -52011,11 +52540,40 @@ function start(m = 'obby', d = null){
     look(yaw){ if (!fm) return; fm.run.phase='farm'; const a=FarmRules.FM_ARRIVE; if(P){P.x=a.x;P.y=0.5;P.z=a.z;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=(yaw==null?Math.PI:yaw); cam.pitch=0.12; cam.dist=12; } fmApplyZones('farm'); },
     hay(){ if (!fm) return; fm.run.phase='farm'; const w=FarmRules.FM_WAGON; if(P){P.x=w.x;P.y=0.5;P.z=w.z;} if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=8; } fmApplyZones('farm'); },
     ride(t){ if (!fm) return; fm.run.phase='ride'; fm.run.rideT=(t==null?3.2:t); const pose=FarmRules.fmRidePose(fm.run); fmSeat(pose); fmRideVis(true); if(fm.bus){fm.bus.position.set(pose.x,0,pose.z); fm.bus.rotation.y=pose.yaw||0;} fmApplyZones('ride'); },
+    stand(){ if (!fm) return; this.farm(); this.go('stand'); if (P){ P.z += 2.2; } if (typeof cam!=='undefined' && cam){ cam.yaw=Math.PI; cam.pitch=0.12; cam.dist=6.5; } },
+    nursery(){ if (!fm) return; this.farm(); const nu=FarmRules.FM_NURSERY; if(P&&nu){ P.x=nu.x; P.y=0.5; P.z=nu.z+5.2; } if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.12; cam.dist=7; } },
+    hideLabs(on){
+      if (fm) fm.hideLabs = !!on;
+      (fm && fm.trash || []).forEach(m => { if (m && m.userData && m.userData.fmLab) m.visible = !on; });
+    },
+    hensClose(){ if (!fm) return; this.farm(); this.hideLabs(true); const f=FarmRules.FM_FEEDS[0]; if(P&&f){ P.x=f.x+7.2; P.y=0.5; P.z=f.z+1.0; } if (typeof cam!=='undefined' && cam){ cam.yaw=Math.PI/2; cam.pitch=0.06; cam.dist=6.4; } },
+    sheepClose(){ if (!fm) return; this.farm(); this.hideLabs(true); const f=FarmRules.FM_FEEDS[1]; if(P&&f){ P.x=f.x-7.2; P.y=0.5; P.z=f.z+1.0; } if (typeof cam!=='undefined' && cam){ cam.yaw=-Math.PI/2; cam.pitch=0.06; cam.dist=6.4; } },
+    cowsClose(){ if (!fm) return; this.farm(); this.hideLabs(true); const f=FarmRules.FM_FEEDS[2]; if(P&&f){ P.x=f.x+7.4; P.y=0.5; P.z=f.z+1.0; } if (typeof cam!=='undefined' && cam){ cam.yaw=Math.PI/2; cam.pitch=0.06; cam.dist=6.8; } },
+    hayRide(t){ if (!fm) return; fm.run.phase='farm'; FarmRules.fmStartHay(fm.run, fm.sv); fm.run.hayT=(t==null?2.4:t); const pose=FarmRules.fmHayPose(fm.run); fmSeat(pose, -0.2, 1.55); fmRideVis(true); if(fm.wagon){fm.wagon.position.set(pose.x,0,pose.z); fm.wagon.rotation.y=pose.yaw||0;} fmApplyZones('farm'); },
+    cam(yaw, pitch, dist){ if (typeof cam !== 'undefined' && cam){ if (yaw != null) cam.yaw = yaw; if (pitch != null) cam.pitch = pitch; if (dist != null) cam.dist = dist; } },
+    nudge(dx, dz){ if (P){ P.x += dx||0; P.z += dz||0; P.vx=0; P.vz=0; } },
+    critterReport(){
+      return (fm && fm.critters || []).map(g => {
+        const p = g.getWorldPosition ? g.getWorldPosition(new THREE.Vector3()) : g.position;
+        return {kind: g.userData && g.userData.kind, x:+p.x.toFixed(2), y:+p.y.toFixed(2), z:+p.z.toFixed(2), vis:g.visible, kids:g.children && g.children.length, scale:g.scale && g.scale.x};
+      });
+    },
+    seed(){
+      if (!fm) return null;
+      const F = FarmRules;
+      (F.FM_FEEDS||[]).forEach(f => { const r = F.fmFeed(fm.sv, f.id); if (r.ok) fm.sv = r.state; });
+      (F.FM_EGGS||[]).forEach(f => { const r = F.fmPickEgg(fm.sv, f.id); if (r.ok) fm.sv = r.state; });
+      (F.FM_APPLES||[]).forEach(f => { const r = F.fmPickApple(fm.sv, f.id); if (r.ok) fm.sv = r.state; });
+      (F.FM_PUMPS||[]).forEach(f => { const r = F.fmPickPump(fm.sv, f.id); if (r.ok) fm.sv = r.state; });
+      fmSave(fm.sv); fmPaint();
+      return {stock: F.fmStock(fm.sv), fed: fm.sv.fed, adopted: fm.sv.adopted};
+    },
     go(id){
       if (!fm || !P) return;
       const F = FarmRules;
-      const map = {bus:F.FM_BUS, home:F.FM_HOME_BUS, teacher:F.FM_TEACHER, nettie:F.FM_GUIDE, barn:F.FM_BARN, arrive:F.FM_ARRIVE, wagon:F.FM_WAGON, hens:F.FM_FEEDS[0], sheep:F.FM_FEEDS[1], cows:F.FM_FEEDS[2]};
-      const t = map[id];
+      const baby = (F.FM_BABIES||[]).find(b => b.id === id || b.kind === id);
+      const map = {bus:F.FM_BUS, home:F.FM_HOME_BUS, teacher:F.FM_TEACHER, nettie:F.FM_GUIDE, barn:F.FM_BARN, arrive:F.FM_ARRIVE, wagon:F.FM_WAGON, hens:F.FM_FEEDS[0], sheep:F.FM_FEEDS[1], cows:F.FM_FEEDS[2], stand:F.FM_STAND, nursery:F.FM_NURSERY};
+      const t = map[id] || baby;
       if (!t) return;
       P.x=t.x; P.y=0.5; P.z=t.z; P.vx=0; P.vz=0; P.vy=0;
     }

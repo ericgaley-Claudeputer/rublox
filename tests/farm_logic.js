@@ -67,7 +67,7 @@ test('Honeymeadow Farm rules: bus ride, chores, hay wagon, ride home, old saves 
   assert.equal(F.fmStartHay(visit.run, st).ok, true);
   assert.equal(visit.run.haying, true);
   let doneHay = false;
-  for (let i = 0; i < 40; i++){
+  for (let i = 0; i < 80; i++){
     const r = F.fmTickHay(visit.run, st, 0.2);
     st = r.state;
     if (r.done){ doneHay = true; break; }
@@ -106,9 +106,69 @@ test('Honeymeadow Farm is wired into the hub, reset list, controls, and weather 
   assert.match(html, /function fmApplyZones/);
   assert.match(html, /FM_DEST_DZ/);
   assert.match(html, /lookBack\(\)/);
+  assert.match(html, /function fmMakeHen/);
+  assert.match(html, /function fmMakeSheep/);
+  assert.match(html, /function fmMakeCow/);
+  assert.match(html, /Honeymeadow Stand/);
+  assert.match(html, /function fmSell/);
+  assert.match(html, /function fmAdopt/);
+  assert.match(html, /Speckle Chick/);
+  assert.match(html, /farm: true/);
+  assert.match(html, /sell \/ adopt/);
   assert.match(html, /mode === 'farm' \|\| mode === 'hunt' \|\| mode === 'elevator'\)\{ \/\/ pull the camera/);
   const g = R.resetGame('farm');
   assert.ok(g);
   assert.ok(g.keys.includes('rubloxFarm'));
   assert.doesNotMatch(html.slice(html.indexOf('function buildFarm'), html.indexOf('function buildFarm') + 20000), /blood|gore|kill the/i);
+});
+
+test('Hay wagon stays clear of the barn, and the stand sells produce for coins', () => {
+  assert.ok(F.fmHayClearance(-4.2) >= 8, 'hay path and camera stay off the barn walls');
+  assert.ok(F.fmDestClearOfSchool(F.FM_STAND.x, F.FM_STAND.z));
+  F.FM_BABIES.forEach(b => {
+    assert.ok(b.id && b.kind && b.name && Number.isFinite(b.x));
+    assert.ok(F.fmDestClearOfSchool(b.x, b.z), b.id);
+    assert.doesNotMatch(b.name, /blood|gore|kill/i);
+  });
+  let st = F.fmFresh();
+  const visit = F.fmNewVisit(st);
+  visit.run.phase = 'farm';
+  const empty = F.fmNear(F.FM_STAND.x, F.FM_STAND.z, st, visit.run);
+  assert.equal(empty.kind, 'talk');
+  F.FM_EGGS.forEach(f => { st = F.fmPickEgg(st, f.id).state; });
+  F.FM_APPLES.forEach(f => { st = F.fmPickApple(st, f.id).state; });
+  F.FM_PUMPS.forEach(f => { st = F.fmPickPump(st, f.id).state; });
+  assert.deepEqual(F.fmStock(st), {egg:3, apple:3, pump:3});
+  const cust = F.fmCustomer(visit.run, st);
+  const sold = F.fmSell(st, cust.want, visit.run);
+  assert.equal(sold.ok, true);
+  assert.ok(sold.coins > 0);
+  assert.equal(F.fmStock(sold.state)[cust.want], 2);
+  const old = F.fmLoad({eggs:['egg-1'], coins:4});
+  assert.equal(old.sold.egg, 0);
+  assert.deepEqual(old.adopted, []);
+});
+
+test('Honeymeadow babies can be adopted into the existing pet save', () => {
+  let st = F.fmFresh();
+  const shy = F.fmAdopt(st, 'chick');
+  assert.equal(shy.ok, false);
+  assert.equal(shy.why, 'feed');
+  st = F.fmFeed(st, 'hens').state;
+  const ok = F.fmAdopt(st, 'chick');
+  assert.equal(ok.ok, true);
+  assert.equal(ok.pet.k, 'chick');
+  assert.equal(ok.pet.src, 'farm');
+  const grant = F.fmGrantPet({pets:[]}, ok.pet, 6);
+  assert.equal(grant.ok, true);
+  assert.equal(grant.pets.pets.length, 1);
+  assert.equal(grant.pets.dex.own.chick, 1);
+  const full = F.fmGrantPet({pets:[{k:'dog'},{k:'cat'},{k:'mouse'},{k:'bunny'},{k:'fox'},{k:'owl'}]}, ok.pet, 6);
+  assert.equal(full.why, 'full');
+  const pig = F.fmAdopt(ok.state, 'piglet');
+  assert.equal(pig.ok, true);
+  const visit = F.fmNewVisit(ok.state);
+  visit.run.phase = 'farm';
+  const near = F.fmNear(F.FM_BABIES.find(b => b.id==='chick').x, F.FM_BABIES.find(b => b.id==='chick').z, ok.state, visit.run);
+  assert.ok(!near || near.kind !== 'adopt');
 });

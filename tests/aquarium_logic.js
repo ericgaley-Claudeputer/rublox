@@ -165,3 +165,13 @@ test('Tideglass Gift Nook sells original souvenirs with optional gift saves', ()
   const nearStand = A.aqNear(stand.x, stand.z, hat.state, visit.run);
   assert.equal(nearStand.kind, 'gift');
 });
+
+test('Tideglass Gift Nook price tags do not overlap, even in the aisle', () => {
+  assert.equal(A.aqGiftsOverlap(2.4), false);
+  const labs = A.AQ_GIFTS.map(g => A.aqGiftLabel(g));
+  labs.forEach(l => {
+    assert.ok(Number.isFinite(l.x) && Number.isFinite(l.z));
+    assert.ok(Math.abs(l.x - 14) >= 2.2, 'tags sit on the side walls, not in the aisle');
+  });
+  assert.match(html, /aqGiftLabel/);
+});

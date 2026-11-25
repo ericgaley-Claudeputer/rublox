@@ -5,7 +5,7 @@
   const FM_VER = 1;
   const FM_REWARD = 22;
   const FM_RIDE_T = 8.4;
-  const FM_HAY_T = 6.2;
+  const FM_HAY_T = 9;
   const FM_DEST_DZ = -560;
   const FM_VIEW_FAR = 400;
   function fmZ(z){ return z + FM_DEST_DZ; }
@@ -57,14 +57,42 @@
   ];
   const FM_HAY_PATH = [
     {x:0, z:fmZ(-16)},
-    {x:10, z:fmZ(-20)},
-    {x:14, z:fmZ(-30)},
-    {x:6, z:fmZ(-40)},
-    {x:-8, z:fmZ(-36)},
-    {x:-12, z:fmZ(-24)},
-    {x:-4, z:fmZ(-16)},
+    {x:8, z:fmZ(-11)},
+    {x:22, z:fmZ(-12)},
+    {x:32, z:fmZ(-24)},
+    {x:32, z:fmZ(-44)},
+    {x:20, z:fmZ(-60)},
+    {x:0, z:fmZ(-64)},
+    {x:-32, z:fmZ(-58)},
+    {x:-34, z:fmZ(-32)},
+    {x:-32, z:fmZ(-16)},
+    {x:-20, z:fmZ(-11)},
+    {x:-6, z:fmZ(-11)},
     {x:0, z:fmZ(-16)}
   ];
+  const FM_BARN_BOX = {w:10, d:8, margin:8};
+  const FM_STAND = {x:10, z:fmZ(-5), r:2.6, name:'Honeymeadow Stand'};
+  const FM_PRICES = {egg:4, apple:3, pump:5};
+  const FM_PRICE_LIST = [
+    {kind:'egg', name:'Warm egg', emoji:'🥚', price:4, stockKey:'eggs', soldKey:'egg'},
+    {kind:'apple', name:'Farm apple', emoji:'🍎', price:3, stockKey:'apples', soldKey:'apple'},
+    {kind:'pump', name:'Harvest pumpkin', emoji:'🎃', price:5, stockKey:'pumps', soldKey:'pump'}
+  ];
+  const FM_CUSTOMERS = [
+    {id:'pip', name:'Pip', emoji:'🧒', want:'egg', line:'Pip: "A warm egg for breakfast, please!"'},
+    {id:'clover', name:'Clover', emoji:'👧', want:'apple', line:'Clover: "I would love a crunchy farm apple!"'},
+    {id:'wes', name:'Wes', emoji:'👦', want:'pump', line:'Wes: "A little pumpkin for the porch, please!"'},
+    {id:'mabel', name:'Mabel', emoji:'👩', want:'apple', line:'Mabel: "Two hands, one apple — perfect."'},
+    {id:'juniper', name:'Juniper', emoji:'🧑', want:'egg', line:'Juniper: "A speckled egg would make my day!"'}
+  ];
+  const FM_BABIES = [
+    {id:'chick', kind:'chick', name:'Speckle chick', emoji:'🐥', x:-20, z:fmZ(-36), r:1.8, needFeed:'hens', names:['Pip','Nugget','Sunny']},
+    {id:'lamb', kind:'lamb', name:'Cloudwool lamb', emoji:'🐑', x:-18.2, z:fmZ(-39.2), r:1.8, needFeed:'sheep', names:['Clover','Puff','Woolly']},
+    {id:'calf', kind:'calf', name:'Butterspot calf', emoji:'🐄', x:-21.6, z:fmZ(-39.4), r:1.9, needFeed:'cows', names:['Buttercup','Dot','Moo']},
+    {id:'piglet', kind:'piglet', name:'Mudpuddle piglet', emoji:'🐷', x:-17.4, z:fmZ(-33.6), r:1.8, needFeed:null, names:['Puddle','Oinky','Peach']},
+    {id:'duckling', kind:'duckling', name:'Pondripple duckling', emoji:'🐤', x:-22.2, z:fmZ(-33.4), r:1.8, needFeed:null, names:['Ripple','Paddle','Bean']}
+  ];
+  const FM_NURSERY = {x:-19.5, z:fmZ(-36.5)};
   function fmPathLen(path){
     let n = 0;
     for (let i = 0; i < (path||[]).length - 1; i++) n += Math.hypot(path[i+1].x - path[i].x, path[i+1].z - path[i].z);
@@ -93,7 +121,7 @@
   function fmRidePose(run){ return fmPoseOn(FM_RIDE_PATH, (run && run.rideT) || 0, FM_RIDE_T); }
   function fmHayPose(run){ return fmPoseOn(FM_HAY_PATH, (run && run.hayT) || 0, FM_HAY_T); }
 
-  function fmFresh(){ return {ver: FM_VER, fed: [], eggs: [], apples: [], pumps: [], hay: false, visits: 0, won: false, coins: 0}; }
+  function fmFresh(){ return {ver: FM_VER, fed: [], eggs: [], apples: [], pumps: [], hay: false, visits: 0, won: false, coins: 0, sold:{egg:0, apple:0, pump:0}, adopted:[], served:0}; }
   function fmFilter(list, allowed){
     const ids = allowed.map(a => a.id);
     return Array.isArray(list) ? list.filter((id, i, a) => ids.indexOf(id) >= 0 && a.indexOf(id) === i) : [];
@@ -109,13 +137,114 @@
     d.visits = Math.max(0, o.visits | 0);
     d.won = !!o.won;
     d.coins = Math.max(0, o.coins | 0);
+    const sold = (o.sold && typeof o.sold === 'object') ? o.sold : {};
+    d.sold = {
+      egg: Math.max(0, Math.min((d.eggs || []).length, sold.egg | 0)),
+      apple: Math.max(0, Math.min((d.apples || []).length, sold.apple | 0)),
+      pump: Math.max(0, Math.min((d.pumps || []).length, sold.pump | 0))
+    };
+    d.adopted = fmFilter(o.adopted, FM_BABIES);
+    d.served = Math.max(0, o.served | 0);
     d.ver = FM_VER;
     return d;
+  }
+  function fmStock(state){
+    const st = fmLoad(state);
+    return {
+      egg: Math.max(0, (st.eggs || []).length - ((st.sold && st.sold.egg) || 0)),
+      apple: Math.max(0, (st.apples || []).length - ((st.sold && st.sold.apple) || 0)),
+      pump: Math.max(0, (st.pumps || []).length - ((st.sold && st.sold.pump) || 0))
+    };
+  }
+  function fmPrice(kind){
+    const it = FM_PRICE_LIST.find(p => p.kind === kind);
+    return it ? it.price : 0;
+  }
+  function fmCustomer(run, state){
+    const stock = fmStock(state);
+    const start = ((run && run.custI) || 0) % FM_CUSTOMERS.length;
+    for (let i = 0; i < FM_CUSTOMERS.length; i++){
+      const c = FM_CUSTOMERS[(start + i) % FM_CUSTOMERS.length];
+      if (stock[c.want] > 0) return c;
+    }
+    return FM_CUSTOMERS[start];
+  }
+  function fmSell(state, kind, run){
+    state = fmLoad(state);
+    const item = FM_PRICE_LIST.find(p => p.kind === kind);
+    if (!item) return {ok:false, why:'unknown', state};
+    const stock = fmStock(state);
+    if (stock[kind] <= 0) return {ok:false, why:'stock', state, stock};
+    const cust = fmCustomer(run, state);
+    if (cust.want !== kind) return {ok:false, why:'want', state, customer:cust, need:cust.want};
+    state.sold = Object.assign({}, state.sold);
+    state.sold[item.soldKey] = (state.sold[item.soldKey] || 0) + 1;
+    state.coins = (state.coins || 0) + item.price;
+    state.served = (state.served || 0) + 1;
+    if (run) run.custI = ((run.custI || 0) + 1) % FM_CUSTOMERS.length;
+    return {ok:true, state, item, coins:item.price, customer:cust, stock: fmStock(state)};
+  }
+  function fmBaby(id){ return FM_BABIES.find(b => b.id === id) || null; }
+  function fmAdopt(state, id){
+    state = fmLoad(state);
+    const baby = fmBaby(id);
+    if (!baby) return {ok:false, why:'unknown', state};
+    if (fmHas(state.adopted, id)) return {ok:false, why:'have', already:true, state, baby};
+    if (baby.needFeed && !fmHas(state.fed, baby.needFeed)){
+      const feed = FM_FEEDS.find(f => f.id === baby.needFeed);
+      return {ok:false, why:'feed', state, baby, need: feed && feed.name};
+    }
+    state.adopted = fmAdd(state.adopted, id);
+    const n = (baby.names && baby.names[state.adopted.length % baby.names.length]) || baby.name;
+    return {ok:true, state, baby, petName:n, pet:{k:baby.kind, c:0, n:n, xp:0, f:80, u:80, e:90, b:1, g:'g', acc:{}, src:'farm'}};
+  }
+  function fmGrantPet(petsSave, pet, max){
+    max = max || 6;
+    const s = petsSave && typeof petsSave === 'object' ? petsSave : {};
+    const next = {
+      v: s.v || 1,
+      pets: Array.isArray(s.pets) ? s.pets.slice() : [],
+      a: s.a | 0,
+      dex: s.dex && typeof s.dex === 'object' ? {seen: Object.assign({}, s.dex.seen || {}), own: Object.assign({}, s.dex.own || {}), done: Object.assign({}, s.dex.done || {})} : {seen:{}, own:{}, done:{}},
+      inv: s.inv && typeof s.inv === 'object' ? Object.assign({}, s.inv) : {},
+      flow: s.flow || null,
+      pend: s.pend,
+      tut: s.tut | 0,
+      t: s.t || 0
+    };
+    if (next.pets.length >= max) return {ok:false, why:'full', pets: next};
+    if (!pet || !pet.k) return {ok:false, why:'pet', pets: next};
+    next.pets.push({k:pet.k, c:pet.c|0, n:String(pet.n || 'Buddy').slice(0, 16), xp:0, f:80, u:80, e:90, b:pet.b || 1, g:pet.g === 'b' ? 'b' : 'g', acc: pet.acc && typeof pet.acc === 'object' ? pet.acc : {}, src:'farm'});
+    next.a = next.pets.length - 1;
+    next.dex.seen[pet.k] = 1;
+    next.dex.own[pet.k] = 1;
+    return {ok:true, pets: next, pet: next.pets[next.pets.length - 1]};
+  }
+  function fmHayClearance(along){
+    along = along == null ? 1.4 : along;
+    const hw = (FM_BARN_BOX.w || 10) / 2, hd = (FM_BARN_BOX.d || 8) / 2;
+    let min = Infinity;
+    for (let t = 0; t <= FM_HAY_T + 0.001; t += 0.12){
+      const p = fmHayPose({hayT: t});
+      const cy = Math.cos(p.yaw || 0), sy = Math.sin(p.yaw || 0);
+      const pts = [
+        {x:p.x, z:p.z},
+        {x:p.x + along * sy, z:p.z + along * cy},
+        {x:p.x - 1.9 * sy, z:p.z - 1.9 * cy}
+      ];
+      pts.forEach(q => {
+        const dx = Math.max(0, Math.abs(q.x - FM_BARN.x) - hw);
+        const dz = Math.max(0, Math.abs(q.z - FM_BARN.z) - hd);
+        const d = Math.hypot(dx, dz);
+        if (d < min) min = d;
+      });
+    }
+    return min;
   }
   function fmNewVisit(state){
     const st = fmLoad(state);
     st.visits = (st.visits | 0) + 1;
-    return {state: st, run: {phase:'yard', t:0, rideT:0, hayT:0, haying:false, near:null, boarded:false}};
+    return {state: st, run: {phase:'yard', t:0, rideT:0, hayT:0, haying:false, near:null, boarded:false, custI:0}};
   }
   function fmHas(arr, id){ return (arr || []).indexOf(id) >= 0; }
   function fmAdd(arr, id){ return fmHas(arr, id) ? arr : (arr || []).concat([id]); }
@@ -198,15 +327,15 @@
     const phase = (run && run.phase) || 'yard';
     if (phase === 'yard'){
       if (Math.hypot((x||0) - FM_BUS.x, (z||0) - FM_BUS.z) <= FM_BUS.r) return {kind:'bus', act:'🚌 Board the bus', name:'Afterbell bus'};
-      if (Math.hypot((x||0) - FM_TEACHER.x, (z||0) - FM_TEACHER.z) <= FM_TEACHER.r) return {kind:'talk', who:'Ms. Bramble', act:'👋 Talk', text:'Ms. Bramble: "Today we visit Honeymeadow Farm! Feed the animals, gather eggs, pick apples and pumpkins, and take the hay wagon for a ride."'};
+      if (Math.hypot((x||0) - FM_TEACHER.x, (z||0) - FM_TEACHER.z) <= FM_TEACHER.r) return {kind:'talk', who:'Ms. Bramble', act:'👋 Talk', text:'Ms. Bramble: "Today we visit Honeymeadow Farm! Feed the animals, gather eggs, pick apples and pumpkins, take the hay wagon, sell at the stand, and maybe adopt a baby animal."'};
       return null;
     }
     if (phase === 'ride' || (run && run.haying)) return {kind:'ride', act:'🚌 Riding…'};
     if (phase === 'farm' || phase === 'done'){
       if (Math.hypot((x||0) - FM_GUIDE.x, (z||0) - FM_GUIDE.z) <= FM_GUIDE.r){
         const text = fmAllDone(state)
-          ? 'Farmer Nettie: "The wagon, the hens, the trees — you did it all! The Afterbell bus is waiting at the gate."'
-          : 'Farmer Nettie: "Welcome to Honeymeadow Farm! Feed the animals, gather eggs, pick apples and pumpkins, then hop on the hay wagon."';
+          ? 'Farmer Nettie: "The wagon, the hens, the trees — you did it all! Sell extras at the stand if you like, then the Afterbell bus is waiting at the gate."'
+          : 'Farmer Nettie: "Welcome to Honeymeadow Farm! Feed the animals, gather eggs, pick apples and pumpkins, hop on the hay wagon, sell at my stand, and visit the little ones in the nursery."';
         return {kind:'talk', who:'Farmer Nettie', act:'👋 Talk', text};
       }
       if (Math.hypot((x||0) - FM_WAGON.x, (z||0) - FM_WAGON.z) <= FM_WAGON.r){
@@ -230,6 +359,32 @@
         const f = FM_PUMPS[i];
         if (Math.hypot((x||0) - f.x, (z||0) - f.z) <= (f.r || 1.6) && !fmHas(fmLoad(state).pumps, f.id)) return {kind:'pump', id:f.id, name:f.name, emoji:f.emoji, act:'🎃 Pick pumpkin'};
       }
+      if (Math.hypot((x||0) - FM_STAND.x, (z||0) - FM_STAND.z) <= (FM_STAND.r || 2.6)){
+        const st = fmLoad(state);
+        const stock = fmStock(st);
+        const cust = fmCustomer(run, st);
+        const have = stock[cust.want] || 0;
+        const item = FM_PRICE_LIST.find(p => p.kind === cust.want);
+        if (have > 0 && item){
+          return {kind:'sell', want:cust.want, customer:cust, item, act:'🪙 Sell ' + item.emoji + ' ' + item.name + ' to ' + cust.name + ' · ' + item.price, text:cust.line};
+        }
+        const left = stock.egg + stock.apple + stock.pump;
+        const wish = item ? (item.emoji + ' ' + item.name) : 'something from the stand';
+        return {kind:'talk', who:cust.name, act:'👋 Talk', text: left
+          ? (cust.name + ' is hoping for a ' + wish + '. Check the price board!')
+          : (cust.name + ': "The stand is open! Bring eggs, apples or pumpkins and I will pay in coins."')};
+      }
+      for (let i = 0; i < FM_BABIES.length; i++){
+        const b = FM_BABIES[i];
+        if (Math.hypot((x||0) - b.x, (z||0) - b.z) <= (b.r || 1.8) && !fmHas(fmLoad(state).adopted, b.id)){
+          const st = fmLoad(state);
+          if (b.needFeed && !fmHas(st.fed, b.needFeed)){
+            const feed = FM_FEEDS.find(f => f.id === b.needFeed);
+            return {kind:'talk', who:b.name, act:'👋 Look', text:'This little ' + b.name + ' is shy until the ' + ((feed && feed.name) || 'animals') + ' have been fed.'};
+          }
+          return {kind:'adopt', id:b.id, baby:b, act:(b.emoji||'🐾') + ' Adopt the ' + b.name, name:b.name};
+        }
+      }
       if (fmAllDone(state) && Math.hypot((x||0) - FM_HOME_BUS.x, (z||0) - FM_HOME_BUS.z) <= FM_HOME_BUS.r){
         return {kind:'home', act:'🚌 Ride home', name:'Afterbell bus'};
       }
@@ -244,14 +399,22 @@
     if (phase === 'ride') return 'The bus is rolling out to Honeymeadow Farm…';
     if (run && run.haying) return 'The hay wagon is taking you around the farm…';
     if (phase === 'done' || (st.won && phase !== 'farm')) return 'Farm day complete! You helped Honeymeadow Farm from hens to hay.';
-    if (fmAllDone(st)) return 'All the farm chores are done! Board the bus at the gate to ride home.';
+    if (fmAllDone(st)){
+      const stock = fmStock(st);
+      if (stock.egg + stock.apple + stock.pump > 0) return 'Chores are done! Sell extras at the Honeymeadow stand, or board the bus at the gate.';
+      return 'All the farm chores are done! Board the bus at the gate to ride home.';
+    }
+    const stock = fmStock(st);
+    if (stock.egg + stock.apple + stock.pump > 0) return 'Help at Honeymeadow Farm, and sell eggs, apples or pumpkins at the stand for coins.';
     return 'Help at Honeymeadow Farm: feed ' + st.fed.length + '/' + FM_FEEDS.length + ', eggs ' + st.eggs.length + '/' + FM_EGGS.length + ', apples ' + st.apples.length + '/' + FM_APPLES.length + ', pumpkins ' + st.pumps.length + '/' + FM_PUMPS.length + (st.hay ? ', wagon done' : ', then the hay wagon') + '.';
   }
 
   const api = {
     FM_KEY, FM_VER, FM_REWARD, FM_RIDE_T, FM_HAY_T, FM_DEST_DZ, FM_VIEW_FAR, FM_YARD_LANDMARKS, fmZ, fmDestClearOfSchool,
-    FM_FEEDS, FM_EGGS, FM_APPLES, FM_PUMPS, FM_BUS, FM_HOME_BUS, FM_GUIDE, FM_TEACHER, FM_BARN, FM_ARRIVE, FM_WAGON, FM_RIDE_PATH, FM_HAY_PATH,
-    fmFresh, fmLoad, fmNewVisit, fmAllDone, fmFeed, fmPickEgg, fmPickApple, fmPickPump,
+    FM_FEEDS, FM_EGGS, FM_APPLES, FM_PUMPS, FM_BUS, FM_HOME_BUS, FM_GUIDE, FM_TEACHER, FM_BARN, FM_BARN_BOX, FM_ARRIVE, FM_WAGON, FM_RIDE_PATH, FM_HAY_PATH,
+    FM_STAND, FM_PRICES, FM_PRICE_LIST, FM_CUSTOMERS, FM_BABIES, FM_NURSERY,
+    fmFresh, fmLoad, fmNewVisit, fmAllDone, fmFeed, fmPickEgg, fmPickApple, fmPickPump, fmStock, fmPrice, fmCustomer, fmSell,
+    fmBaby, fmAdopt, fmGrantPet, fmHayClearance,
     fmBoardBus, fmRidePose, fmTickRide, fmStartHay, fmHayPose, fmTickHay, fmBoardHome, fmNear, fmGoal, fmPathLen
   };
   root.FarmRules = api;
