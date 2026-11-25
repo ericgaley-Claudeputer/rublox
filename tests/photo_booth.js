@@ -367,4 +367,13 @@ describe('Photo booth buttons respond to clicks in a jsdom-style DOM', () => {
     assert.match(html, /getElementById\('avBooth'\)/);
     assert.match(html, /avBooth:\s*'#avBoothX'|avBooth: '#avBoothX'/);
   });
+
+  test('phone layouts keep Take photo, Download, Gallery, and Close on screen', () => {
+    const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+    const css = fs.readFileSync(path.join(__dirname, '..', 'dev/photobooth/hud.css'), 'utf8');
+    for (const src of [html, css]){
+      assert.match(src, /\.avbooth-acts\{[^}]*position:\s*sticky/);
+      assert.match(src, /@media \(max-width:760px\),\(max-height:780px\)\{#avBoothCv\{max-width:240px/);
+    }
+  });
 });

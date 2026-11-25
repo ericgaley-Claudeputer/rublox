@@ -7,10 +7,10 @@ const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const RULES = require(path.join(ROOT, 'dev/lantern/lantern_rules.js'));
 const BUILD = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).build || JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
-test('BUILD stamp is 2026.11.22-12 in lantern files and version.json', () => {
+test('BUILD stamp is 2026.11.22-13 in lantern files and version.json', () => {
   const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
-  assert.equal(v.build, '2026.11.22-12');
-  assert.match(HTML, /const BUILD = '2026\.11\.22-12'/);
+  assert.equal(v.build, '2026.11.22-13');
+  assert.match(HTML, /const BUILD = '2026\.11\.22-13'/);
 });
 
 test('Lantern Big Top is a playable GAMES card with original branding', () => {
