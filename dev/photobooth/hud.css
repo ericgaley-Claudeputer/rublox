@@ -7,8 +7,9 @@
 .avbooth-row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;position:relative;z-index:2;pointer-events:auto}
 .avbooth-row button,.avbooth-acts button{border:2px solid #1d2340;border-radius:12px;padding:6px 8px;font-weight:700;cursor:pointer;background:#fff;position:relative;z-index:2;pointer-events:auto;touch-action:manipulation}
 .avbooth-row button.on{background:#ffd23f}
+.avbooth-tip{font-size:12px;font-weight:700;color:#5b6180;text-align:center;margin:2px 0 4px}
 .avbooth-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;position:sticky;bottom:0;z-index:3;pointer-events:auto;background:#fff8ef;padding:8px 0 4px}
-@media (max-width:760px),(max-height:780px){#avBoothCv{max-width:240px;margin-bottom:6px}.avbooth-card{max-height:calc(100dvh - 12px);padding:10px}}
+@media (max-width:760px),(max-height:780px){#avBoothCv{max-width:240px;max-height:220px;width:auto;margin-bottom:6px}.avbooth-card{max-height:calc(100dvh - 12px);padding:10px}.avbooth-row{gap:4px;margin:4px 0}.avbooth-row button{padding:4px 7px;font-size:11.5px}.avbooth-acts button{padding:5px 8px;font-size:13px}.avbooth-tip{font-size:11px}}
 .avbooth-gal{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;position:relative;z-index:2;pointer-events:auto}
 .avbooth-gal img{width:88px;height:88px;object-fit:cover;border-radius:10px;border:2px solid #1d2340;pointer-events:auto;cursor:pointer}
 #hubBoothBtn,#avBoothBtn{margin-left:8px;position:relative;z-index:2;pointer-events:auto;touch-action:manipulation}

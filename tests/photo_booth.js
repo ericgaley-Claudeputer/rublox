@@ -44,6 +44,17 @@ describe('Avatar photo booth', () => {
     assert.equal(lay.stickers.length, 2);
     shot = P.pbToggleSticker(shot, 'star');
     assert.equal(shot.stickers.includes('star'), false);
+
+    assert.ok(Array.isArray(P.PB_PROPS) && P.PB_PROPS.length >= 5);
+    shot = P.pbToggleProp(shot, 'glasses');
+    shot = P.pbToggleProp(shot, 'party');
+    shot = P.pbSetStickerPos(shot, 'heart', 0.25, 0.35);
+    const lay2 = P.pbLayout(shot, 520, 600);
+    assert.equal(lay2.props.length, 2);
+    assert.equal(lay2.stickers[0].x, 0.25);
+    assert.equal(lay2.stickers[0].y, 0.35);
+    shot = P.pbToggleProp(shot, 'glasses');
+    assert.equal(shot.props.includes('glasses'), false);
   });
 
   test('the avatar editor and hub expose a photo booth', () => {
@@ -183,7 +194,7 @@ function miniDom(htmlBooth){
   const card = makeEl('div', {className:'avbooth-card'});
   booth.appendChild(card);
   card.appendChild(makeEl('canvas', {id:'avBoothCv'}));
-  ['avBoothPoses','avBoothBgs','avBoothFrames','avBoothStickers'].forEach(id => card.appendChild(makeEl('div', {id, className:'avbooth-row'})));
+  ['avBoothPoses','avBoothBgs','avBoothFrames','avBoothProps','avBoothStickers'].forEach(id => card.appendChild(makeEl('div', {id, className:'avbooth-row'})));
   const acts = makeEl('div', {className:'avbooth-acts'});
   acts.appendChild(makeEl('button', {id:'avBoothSnap', textContent:'Take photo'}));
   acts.appendChild(makeEl('button', {id:'avBoothDl', textContent:'Download'}));
@@ -267,6 +278,14 @@ describe('Photo booth buttons respond to clicks in a jsdom-style DOM', () => {
     assert.equal(sandbox.pb.shot.frame, 'gold');
 
     const pick = (row, id) => $(row).children.find(b => b.getAttribute('data-pb-id') === id);
+    pick('avBoothProps','glasses').click();
+    assert.ok(sandbox.pb.shot.props.includes('glasses'));
+    pick('avBoothProps','party').click();
+    assert.ok(sandbox.pb.shot.props.includes('party'));
+    pick('avBoothProps','glasses').click();
+    assert.equal(sandbox.pb.shot.props.includes('glasses'), false);
+    pick('avBoothProps','glasses').click();
+
     pick('avBoothStickers','star').click();
     assert.ok(sandbox.pb.shot.stickers.includes('star'));
     pick('avBoothStickers','star').click();

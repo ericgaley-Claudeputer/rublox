@@ -21,7 +21,9 @@
   const FM_FEEDS = [
     {id:'hens', name:'Speckle hens', emoji:'🐔', x:12, z:fmZ(-18), r:2.2, blurb:'The Speckle hens fluff up and peck the grain. Thank you!'},
     {id:'sheep', name:'Cloudwool sheep', emoji:'🐑', x:-12, z:fmZ(-18), r:2.2, blurb:'The Cloudwool sheep nudge the clover and go baa in a tiny voice.'},
-    {id:'cows', name:'Butterspot cows', emoji:'🐄', x:16, z:fmZ(-32), r:2.4, blurb:'The Butterspot cows blink slowly and chew. They look very pleased.'}
+    {id:'cows', name:'Butterspot cows', emoji:'🐄', x:16, z:fmZ(-32), r:2.4, blurb:'The Butterspot cows blink slowly and chew. They look very pleased.'},
+    {id:'goats', name:'Cloverleaf goats', emoji:'🐐', x:-10, z:fmZ(-49), r:2.3, blurb:'The Cloverleaf goats nibble fresh hay, wiggle their floppy ears, and hop with joy!'},
+    {id:'bunnies', name:'Velvettail bunnies', emoji:'🐇', x:2, z:fmZ(-49), r:2.2, blurb:'The Velvettail bunnies twitch their pink noses and do happy little velvet hops!'}
   ];
   const FM_EGGS = [
     {id:'egg-1', name:'Warm egg', emoji:'🥚', x:10.2, z:fmZ(-16.2), r:1.4},
@@ -90,7 +92,9 @@
     {id:'lamb', kind:'lamb', name:'Cloudwool lamb', emoji:'🐑', x:-18.2, z:fmZ(-39.2), r:1.8, needFeed:'sheep', names:['Clover','Puff','Woolly']},
     {id:'calf', kind:'calf', name:'Butterspot calf', emoji:'🐄', x:-21.6, z:fmZ(-39.4), r:1.9, needFeed:'cows', names:['Buttercup','Dot','Moo']},
     {id:'piglet', kind:'piglet', name:'Mudpuddle piglet', emoji:'🐷', x:-17.4, z:fmZ(-33.6), r:1.8, needFeed:null, names:['Puddle','Oinky','Peach']},
-    {id:'duckling', kind:'duckling', name:'Pondripple duckling', emoji:'🐤', x:-22.2, z:fmZ(-33.4), r:1.8, needFeed:null, names:['Ripple','Paddle','Bean']}
+    {id:'duckling', kind:'duckling', name:'Pondripple duckling', emoji:'🐤', x:-22.2, z:fmZ(-33.4), r:1.8, needFeed:null, names:['Ripple','Paddle','Bean']},
+    {id:'kid', kind:'kid', name:'Cloverleaf kid', emoji:'🐐', x:-16.8, z:fmZ(-36.6), r:1.8, needFeed:'goats', names:['Clover','Sprout','Skip']},
+    {id:'kit', kind:'kit', name:'Velvettail bunny', emoji:'🐇', x:-22.6, z:fmZ(-36.6), r:1.8, needFeed:'bunnies', names:['Velvet','Cotton','Hop']}
   ];
   const FM_NURSERY = {x:-19.5, z:fmZ(-36.5)};
   function fmPathLen(path){
@@ -383,6 +387,12 @@
             return {kind:'talk', who:b.name, act:'👋 Look', text:'This little ' + b.name + ' is shy until the ' + ((feed && feed.name) || 'animals') + ' have been fed.'};
           }
           return {kind:'adopt', id:b.id, baby:b, act:(b.emoji||'🐾') + ' Adopt the ' + b.name, name:b.name};
+        }
+      }
+      for (let i = 0; i < FM_FEEDS.length; i++){
+        const f = FM_FEEDS[i];
+        if (Math.hypot((x||0) - f.x, (z||0) - f.z) <= (f.r || 2) && fmHas(fmLoad(state).fed, f.id)){
+          return {kind:'pet', id:f.id, name:f.name, emoji:f.emoji, act:'💕 Pet ' + f.name, text:'You pet the ' + f.name + '! They lean in with happy wiggles.'};
         }
       }
       if (fmAllDone(state) && Math.hypot((x||0) - FM_HOME_BUS.x, (z||0) - FM_HOME_BUS.z) <= FM_HOME_BUS.r){

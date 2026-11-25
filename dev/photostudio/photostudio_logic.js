@@ -26,7 +26,7 @@ function world(store, opt = {}){
   };
   ctx.banner = t => ctx.banners.push(t); ctx.mpSendTo = (c, m) => ctx.out.push(m); ctx.updateCamera = () => ctx.A.photoCam();
   vm.createContext(ctx);
-  vm.runInContext(SRC + '\n;globalThis.A = {get psx(){ return psx; }, buildPhotoStudio, photostudioEnter, photostudioUpdate, photostudioAnimate, photostudioStop, psAct, psCamOn, psSnap, psCapture, psCycle, psSet, psGallery, psStore, psDelete, psCamPos, psCrop, psOutSize, psFileName, psPosed, photoCam, psPad, psKey, psGalOpen, psDownload, PS_BGS, PS_FRAMES, PS_ANGLES, PS_SHAPES, PS_BORDERS, PS_MAX};', ctx);
+  vm.runInContext(SRC + '\n;globalThis.A = {get psx(){ return psx; }, buildPhotoStudio, photostudioEnter, photostudioUpdate, photostudioAnimate, photostudioStop, psAct, psCamOn, psSnap, psCapture, psCycle, psSet, psGallery, psStore, psDelete, psCamPos, psCrop, psOutSize, psFileName, psPosed, photoCam, psPad, psKey, psGalOpen, psDownload, psToggleProp, psToggleSticker, psMoveSticker, psClearExtras, psTrayToggle, psDrawSticker2d, PS_BGS, PS_FRAMES, PS_ANGLES, PS_SHAPES, PS_BORDERS, PS_PROPS, PS_STICKERS, PS_MAX};', ctx);
   return ctx;
 }
 const tick = (W, s) => { for (let t = 0; t < s; t += 1 / 60){ W.worldT += 1 / 60; W.A.photostudioUpdate(1 / 60); W.A.photostudioAnimate(1 / 60); } };
@@ -107,10 +107,20 @@ chk('only photo-studio keys added', Object.keys(st).filter(k => !['rubloxAvatar'
 const M = world({}, {mp: true}); M.A.buildPhotoStudio(); M.A.psAct(); M.A.psSnap(); tick(M, 3.3);
 chk('multiplayer: photo taken locally, nothing sent to other players', M.A.psGallery().length === 1 && M.out.length === 0);
 chk('source has no network calls or remote URLs', !/fetch\(|XMLHttpRequest|WebSocket|sendBeacon|mpSend|https?:\/\//.test(SRC));
+// --- silly props & stickers ---
+W.A.buildPhotoStudio(); W.A.psAct();
+chk('6 silly props & 6 original stickers available', W.A.PS_PROPS.length === 6 && W.A.PS_STICKERS.length === 6);
+chk('O opens props & stickers tray', key(W, 'KeyO') && W.A.psx.tray);
+chk('toggling props works up to 4 and saves', W.A.psToggleProp('glasses') && W.A.psToggleProp('party') && W.A.psToggleProp('ears') && W.A.psToggleProp('bubble') && !W.A.psToggleProp('mustache') && W.A.psx.props.length === 4);
+chk('toggling off a prop frees a slot', W.A.psToggleProp('party') && W.A.psx.props.length === 3 && W.A.psToggleProp('mustache') && W.A.psx.props.length === 4);
+chk('toggling & moving stickers works and persists', W.A.psToggleSticker('star') && W.A.psToggleSticker('heart') && W.A.psMoveSticker('star', 0.25, 0.3) && W.A.psx.stickers[0].x === 0.25 && W.A.psSet().stickers.length === 2);
+chk('L3 toggles tray on pad and Ⓑ closes tray before camera', W.A.psPad(jp(1)) && !W.A.psx.tray && W.A.psx.cam && W.A.psPad(jp(10)) && W.A.psx.tray);
+W.A.psPad(jp(1)); W.A.psClearExtras();
+chk('clear removes props & stickers cleanly', W.A.psx.props.length === 0 && W.A.psx.stickers.length === 0);
 W.A.photostudioStop(); chk('leaving the studio clears it', W.A.psx === null && !W.$('#psBar').classList.contains('show'));
 // --- built page integration ---
 if (fs.existsSync(HTML)){ const h = fs.readFileSync(HTML, 'utf8');
-  chk('built page: studio card, hooks, Xbox back map, real avatar pose hook', ["id:'photostudio'", 'buildPhotoStudio()', 'if (psx && photoCam()) return;', 'psGal: \'#psGalClose\'', 'applyPose(dt, psPosed() || (rc && rc.me', "mode === 'photostudio' && psx && psPad(jp)", "mode === 'photostudio' && psx && psKey(e)"].every(s => h.includes(s)));
+  chk('built page: studio card, hooks, Xbox back map, real avatar pose hook', ["id:'photostudio'", 'buildPhotoStudio()', 'if (psx && photoCam()) return;', 'psGal: \'#psGalClose\'', 'psPosed() || (rc && rc.me', "mode === 'photostudio' && psx && psPad(jp)", "mode === 'photostudio' && psx && psKey(e)"].every(s => h.includes(s)));
   chk('built page: all four additions still present', ["id:'petisland'", "id:'bakery'", "id:'waterpark'", "id:'photostudio'"].every(s => h.includes(s)));
   chk('built page: photos never put on the multiplayer wire', !/msg\.ps\b|psx\s*&&[^\n]*msg\./.test(h));
 } else console.log('SKIP built page checks (no index.html)');

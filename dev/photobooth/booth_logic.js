@@ -31,22 +31,33 @@
     {id:'pink', name:'Pink frame', color:'#ff8fab', pad:16},
     {id:'navy', name:'Navy frame', color:'#1d3557', pad:16}
   ];
+  const PB_PROPS = [
+    {id:'glasses', name:'Goofy Glasses', emoji:'🤓'},
+    {id:'mustache', name:'Mustache', emoji:'🥸'},
+    {id:'party', name:'Party Hat', emoji:'🥳'},
+    {id:'ears', name:'Bunny Ears', emoji:'🐰'},
+    {id:'shades', name:'Star Shades', emoji:'😎'},
+    {id:'bubble', name:'Speech Bubble', emoji:'💬'}
+  ];
   const PB_STICKERS = [
-    {id:'star', name:'Star', emoji:'⭐', x:0.82, y:0.14},
-    {id:'heart', name:'Heart', emoji:'💕', x:0.16, y:0.16},
+    {id:'star', name:'Star', emoji:'⭐', x:0.16, y:0.16},
+    {id:'heart', name:'Heart', emoji:'💕', x:0.84, y:0.34},
     {id:'sparkle', name:'Sparkle', emoji:'✨', x:0.84, y:0.78},
     {id:'paw', name:'Paw', emoji:'🐾', x:0.14, y:0.8},
     {id:'bow', name:'Bow', emoji:'🎀', x:0.5, y:0.1},
-    {id:'sun', name:'Sun', emoji:'🌞', x:0.86, y:0.46}
+    {id:'sun', name:'Sun', emoji:'🌞', x:0.86, y:0.46},
+    {id:'rainbow', name:'Rainbow', emoji:'🌈', x:0.15, y:0.48},
+    {id:'crown', name:'Crown', emoji:'👑', x:0.5, y:0.88}
   ];
 
   function pbPose(id){ return PB_POSES.find(p => p.id === id) || PB_POSES[0]; }
   function pbBg(id){ return PB_BGS.find(p => p.id === id) || PB_BGS[0]; }
   function pbFrame(id){ return PB_FRAMES.find(p => p.id === id) || PB_FRAMES[0]; }
+  function pbProp(id){ return PB_PROPS.find(p => p.id === id) || null; }
   function pbSticker(id){ return PB_STICKERS.find(p => p.id === id) || null; }
 
   function pbFreshShot(){
-    return {pose:'stand', bg:'studio', frame:'white', stickers:[]};
+    return {pose:'stand', bg:'studio', frame:'white', props:[], stickers:[], stickerPos:{}};
   }
 
   function pbCleanShot(raw){
@@ -55,11 +66,31 @@
     if (pbPose(o.pose).id === o.pose) d.pose = o.pose;
     if (pbBg(o.bg).id === o.bg) d.bg = o.bg;
     if (pbFrame(o.frame).id === o.frame) d.frame = o.frame;
+    const pids = Array.isArray(o.props) ? o.props : [];
+    d.props = [];
+    pids.forEach(id => { if (pbProp(id) && d.props.indexOf(id) < 0) d.props.push(id); });
+    d.props = d.props.slice(0, 4);
     const ids = Array.isArray(o.stickers) ? o.stickers : [];
     d.stickers = [];
     ids.forEach(id => { if (pbSticker(id) && d.stickers.indexOf(id) < 0) d.stickers.push(id); });
     d.stickers = d.stickers.slice(0, 4);
+    const sp = o.stickerPos && typeof o.stickerPos === 'object' ? o.stickerPos : {};
+    Object.keys(sp).forEach(id => {
+      const p = sp[id];
+      if (pbSticker(id) && p && Number.isFinite(+p.x) && Number.isFinite(+p.y)){
+        d.stickerPos[id] = {x: Math.max(0.08, Math.min(0.92, +p.x)), y: Math.max(0.08, Math.min(0.92, +p.y))};
+      }
+    });
     return d;
+  }
+
+  function pbToggleProp(shot, id){
+    const s = pbCleanShot(shot);
+    if (!pbProp(id)) return s;
+    const i = s.props.indexOf(id);
+    if (i >= 0) s.props.splice(i, 1);
+    else if (s.props.length < 4) s.props.push(id);
+    return s;
   }
 
   function pbToggleSticker(shot, id){
@@ -68,6 +99,13 @@
     const i = s.stickers.indexOf(id);
     if (i >= 0) s.stickers.splice(i, 1);
     else if (s.stickers.length < 4) s.stickers.push(id);
+    return s;
+  }
+
+  function pbSetStickerPos(shot, id, x, y){
+    const s = pbCleanShot(shot);
+    if (!pbSticker(id)) return s;
+    s.stickerPos[id] = {x: Math.max(0.08, Math.min(0.92, +x || 0.5)), y: Math.max(0.08, Math.min(0.92, +y || 0.5))};
     return s;
   }
 
@@ -125,13 +163,19 @@
       width: w || 520,
       height: h || 600,
       bg, frame: fr, pose, pad, poseShift,
-      stickers: s.stickers.map(id => pbSticker(id)).filter(Boolean)
+      props: s.props.map(id => pbProp(id)).filter(Boolean),
+      stickers: s.stickers.map(id => {
+        const base = pbSticker(id);
+        if (!base) return null;
+        const pos = s.stickerPos && s.stickerPos[id];
+        return pos ? Object.assign({}, base, {x: pos.x, y: pos.y}) : base;
+      }).filter(Boolean)
     };
   }
 
   return {
-    PB_KEY, PB_MAX, PB_POSES, PB_BGS, PB_FRAMES, PB_STICKERS,
-    pbPose, pbBg, pbFrame, pbSticker, pbFreshShot, pbCleanShot, pbToggleSticker,
+    PB_KEY, PB_MAX, PB_POSES, PB_BGS, PB_FRAMES, PB_PROPS, PB_STICKERS,
+    pbPose, pbBg, pbFrame, pbProp, pbSticker, pbFreshShot, pbCleanShot, pbToggleProp, pbToggleSticker, pbSetStickerPos,
     pbNeed2dFallback, pbIsPhotoData, pbGallery, pbStore, pbDelete, pbLayout
   };
 });
