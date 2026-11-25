@@ -9,7 +9,7 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
 test('Honeymeadow Farm rules: bus ride, chores, hay wagon, ride home, old saves load', () => {
   assert.equal(F.FM_KEY, 'rubloxFarm');
-  assert.equal(F.FM_FEEDS.length, 3);
+  assert.equal(F.FM_FEEDS.length, 5);
   assert.equal(F.FM_EGGS.length, 3);
   assert.equal(F.FM_APPLES.length, 3);
   assert.equal(F.FM_PUMPS.length, 3);
@@ -109,6 +109,12 @@ test('Honeymeadow Farm is wired into the hub, reset list, controls, and weather 
   assert.match(html, /function fmMakeHen/);
   assert.match(html, /function fmMakeSheep/);
   assert.match(html, /function fmMakeCow/);
+  assert.match(html, /function fmMakeGoat/);
+  assert.match(html, /function fmMakeBunny/);
+  assert.match(html, /function fmMakeKid/);
+  assert.match(html, /function fmMakeKit/);
+  assert.match(html, /Cloverleaf goats/);
+  assert.match(html, /Velvettail bunnies/);
   assert.match(html, /Honeymeadow Stand/);
   assert.match(html, /function fmSell/);
   assert.match(html, /function fmAdopt/);
@@ -171,4 +177,25 @@ test('Honeymeadow babies can be adopted into the existing pet save', () => {
   visit.run.phase = 'farm';
   const near = F.fmNear(F.FM_BABIES.find(b => b.id==='chick').x, F.FM_BABIES.find(b => b.id==='chick').z, ok.state, visit.run);
   assert.ok(!near || near.kind !== 'adopt');
+
+  // Cloverleaf goats & Velvettail bunnies + baby kid & kit
+  const goatFeed = F.FM_FEEDS.find(f => f.id === 'goats');
+  const bunnyFeed = F.FM_FEEDS.find(f => f.id === 'bunnies');
+  assert.ok(goatFeed && bunnyFeed);
+  let s2 = F.fmFresh();
+  assert.equal(F.fmAdopt(s2, 'kid').why, 'feed');
+  assert.equal(F.fmAdopt(s2, 'kit').why, 'feed');
+  s2 = F.fmFeed(s2, 'goats').state;
+  s2 = F.fmFeed(s2, 'bunnies').state;
+  const v2 = F.fmNewVisit(s2); v2.run.phase = 'farm';
+  assert.equal(F.fmNear(goatFeed.x, goatFeed.z, s2, v2.run).kind, 'pet');
+  assert.equal(F.fmNear(bunnyFeed.x, bunnyFeed.z, s2, v2.run).kind, 'pet');
+  const akid = F.fmAdopt(s2, 'kid'); assert.equal(akid.ok, true); assert.equal(akid.pet.k, 'kid'); assert.equal(akid.pet.src, 'farm');
+  const akit = F.fmAdopt(akid.state, 'kit'); assert.equal(akit.ok, true); assert.equal(akit.pet.k, 'kit'); assert.equal(akit.pet.src, 'farm');
+  const g2 = F.fmGrantPet({pets:[]}, akid.pet, 6);
+  const g3 = F.fmGrantPet(g2.pets, akit.pet, 6);
+  assert.equal(g3.ok, true);
+  assert.equal(g3.pets.pets.length, 2);
+  assert.equal(g3.pets.dex.own.kid, 1);
+  assert.equal(g3.pets.dex.own.kit, 1);
 });

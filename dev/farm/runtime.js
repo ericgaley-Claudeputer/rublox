@@ -208,6 +208,56 @@
     fmSph(tail, 0.07, spot, 0, -0.4, 0.02, 1, 1, 1, 5);
     g.userData.kind = 'cow'; g.scale.setScalar(1.32); return g;
   }
+  function fmMakeGoat(){
+    const g = new THREE.Group(), coat = '#f5efe4', patch = '#c89b6e';
+    fmSph(g, 0.36, coat, 0, 0.62, 0, 0.88, 0.86, 1.32, 8);
+    fmSph(g, 0.14, patch, 0.2, 0.68, 0.08, 1, 0.7, 1.1, 6);
+    fmSph(g, 0.12, patch, -0.18, 0.6, -0.18, 1, 0.65, 1, 6);
+    const head = new THREE.Group(); head.position.set(0, 0.88, 0.44); g.add(head); g.userData.head = head;
+    fmSph(head, 0.2, coat, 0, 0, 0, 0.88, 0.88, 1.15, 8);
+    fmSph(head, 0.11, '#ffe8d6', 0, -0.06, 0.17, 0.9, 0.72, 1.0, 6);
+    fmEye(head, 0.08, 0.06, 0.15, 0.042); fmEye(head, -0.08, 0.06, 0.15, 0.042);
+    fmSph(head, 0.035, '#f4a0b4', 0, -0.04, 0.27, 1.1, 0.7, 0.8, 5);
+    const beard = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.14, 5), fmMat(patch)); beard.rotation.x = Math.PI; beard.position.set(0, -0.17, 0.14); head.add(beard);
+    [-1, 1].forEach(k => {
+      const horn = new THREE.Mesh(new THREE.ConeGeometry(0.036, 0.19, 5), fmMat('#e6d2b5'));
+      horn.position.set(k * 0.09, 0.2, -0.04); horn.rotation.z = -k * 0.25; horn.rotation.x = -0.35; head.add(horn);
+      const ear = new THREE.Group(); ear.position.set(k * 0.16, 0.06, -0.02); head.add(ear);
+      fmSph(ear, 0.065, patch, k * 0.05, -0.04, 0, 1.25, 0.65, 0.45, 5);
+      (g.userData.ears || (g.userData.ears = [])).push(ear);
+    });
+    [[-0.14,0.22],[0.14,0.22],[-0.14,-0.24],[0.14,-0.24]].forEach(([x,z]) => {
+      fmCyl(g, 0.055, 0.05, 0.36, coat, x, 0.22, z);
+      fmCyl(g, 0.058, 0.058, 0.08, '#5a4232', x, 0.05, z);
+    });
+    const tail = new THREE.Group(); tail.position.set(0, 0.74, -0.44); g.add(tail); g.userData.tail = tail;
+    fmSph(tail, 0.065, patch, 0, 0.05, -0.04, 0.8, 1.3, 0.8, 5);
+    g.userData.kind = 'goat'; g.scale.setScalar(1.26); return g;
+  }
+  function fmMakeBunny(){
+    const g = new THREE.Group(), fur = '#f2e9e4', spot = '#d8b8a4';
+    fmSph(g, 0.3, fur, 0, 0.38, -0.02, 1.0, 0.92, 1.22, 8);
+    fmSph(g, 0.13, spot, 0.16, 0.44, -0.06, 1, 0.75, 1, 6);
+    const head = new THREE.Group(); head.position.set(0, 0.64, 0.24); g.add(head); g.userData.head = head;
+    fmSph(head, 0.21, fur, 0, 0, 0, 1.05, 0.95, 1.0, 8);
+    fmSph(head, 0.08, '#ffdce5', 0.13, -0.05, 0.13, 0.8, 0.65, 0.6, 5);
+    fmSph(head, 0.08, '#ffdce5', -0.13, -0.05, 0.13, 0.8, 0.65, 0.6, 5);
+    fmEye(head, 0.085, 0.04, 0.16, 0.045); fmEye(head, -0.085, 0.04, 0.16, 0.045);
+    fmSph(head, 0.036, '#ff8fa3', 0, -0.02, 0.2, 1.2, 0.85, 0.8, 5);
+    [-1, 1].forEach(k => {
+      const ear = new THREE.Group(); ear.position.set(k * 0.09, 0.16, -0.02); head.add(ear);
+      fmSph(ear, 0.065, k > 0 ? spot : fur, 0, 0.18, 0, 0.75, 2.5, 0.45, 6);
+      fmSph(ear, 0.04, '#ffb3c7', 0, 0.17, 0.02, 0.65, 2.0, 0.35, 5);
+      (g.userData.ears || (g.userData.ears = [])).push(ear);
+    });
+    fmSph(g, 0.075, fur, 0.12, 0.16, 0.18, 0.9, 0.9, 1.1, 6);
+    fmSph(g, 0.075, fur, -0.12, 0.16, 0.18, 0.9, 0.9, 1.1, 6);
+    fmSph(g, 0.1, fur, 0.16, 0.12, -0.14, 0.95, 0.55, 1.65, 6);
+    fmSph(g, 0.1, fur, -0.16, 0.12, -0.14, 0.95, 0.55, 1.65, 6);
+    const tail = new THREE.Group(); tail.position.set(0, 0.34, -0.36); g.add(tail); g.userData.tail = tail;
+    fmSph(tail, 0.11, '#ffffff', 0, 0, 0, 1, 1, 1, 6);
+    g.userData.kind = 'bunny'; g.scale.setScalar(1.32); return g;
+  }
   function fmMakeChick(){
     const g = new THREE.Group();
     fmSph(g, 0.16, '#f4d15a', 0, 0.22, 0, 1, 0.95, 1.05, 8);
@@ -286,6 +336,43 @@
     fmCyl(g, 0.02, 0.02, 0.08, '#f4a04a', -0.05, 0.08, 0.02);
     g.userData.kind = 'duckling'; g.scale.setScalar(1.25); return g;
   }
+  function fmMakeKid(){
+    const g = new THREE.Group(), coat = '#f5efe4', patch = '#c89b6e';
+    fmSph(g, 0.22, coat, 0, 0.38, 0, 0.9, 0.88, 1.25, 8);
+    fmSph(g, 0.09, patch, 0.12, 0.42, 0.04, 1, 0.7, 1, 5);
+    const head = new THREE.Group(); head.position.set(0, 0.54, 0.26); g.add(head); g.userData.head = head;
+    fmSph(head, 0.15, coat, 0, 0, 0, 0.92, 0.92, 1.08, 8);
+    fmEye(head, 0.06, 0.04, 0.12, 0.036); fmEye(head, -0.06, 0.04, 0.12, 0.036);
+    fmSph(head, 0.028, '#f4a0b4', 0, -0.03, 0.16, 1.1, 0.7, 0.8, 5);
+    [-1, 1].forEach(k => {
+      const bud = new THREE.Mesh(new THREE.ConeGeometry(0.024, 0.09, 5), fmMat('#e6d2b5'));
+      bud.position.set(k * 0.065, 0.14, -0.02); bud.rotation.z = -k * 0.25; head.add(bud);
+      const ear = new THREE.Group(); ear.position.set(k * 0.12, 0.05, -0.01); head.add(ear);
+      fmSph(ear, 0.055, patch, k * 0.04, -0.03, 0, 1.3, 0.65, 0.45, 5);
+      (g.userData.ears || (g.userData.ears = [])).push(ear);
+    });
+    [[-0.09,0.14],[0.09,0.14],[-0.09,-0.15],[0.09,-0.15]].forEach(([x,z]) => fmCyl(g, 0.038, 0.035, 0.24, coat, x, 0.14, z));
+    const tail = new THREE.Group(); tail.position.set(0, 0.45, -0.26); g.add(tail); g.userData.tail = tail;
+    fmSph(tail, 0.048, patch, 0, 0.03, -0.02, 0.8, 1.3, 0.8, 5);
+    g.userData.kind = 'kid'; g.scale.setScalar(1.22); return g;
+  }
+  function fmMakeKit(){
+    const g = new THREE.Group(), fur = '#f2e9e4', spot = '#ffb3c7';
+    fmSph(g, 0.19, fur, 0, 0.24, 0, 1.02, 0.95, 1.16, 8);
+    const head = new THREE.Group(); head.position.set(0, 0.4, 0.14); g.add(head); g.userData.head = head;
+    fmSph(head, 0.145, fur, 0, 0, 0, 1.05, 0.96, 1.0, 8);
+    fmEye(head, 0.06, 0.03, 0.11, 0.036); fmEye(head, -0.06, 0.03, 0.11, 0.036);
+    fmSph(head, 0.026, '#ff8fa3', 0, -0.02, 0.14, 1.2, 0.85, 0.8, 5);
+    [-1, 1].forEach(k => {
+      const ear = new THREE.Group(); ear.position.set(k * 0.06, 0.11, -0.01); head.add(ear);
+      fmSph(ear, 0.048, fur, 0, 0.12, 0, 0.75, 2.2, 0.45, 5);
+      fmSph(ear, 0.03, spot, 0, 0.11, 0.015, 0.65, 1.8, 0.35, 5);
+      (g.userData.ears || (g.userData.ears = [])).push(ear);
+    });
+    const tail = new THREE.Group(); tail.position.set(0, 0.22, -0.22); g.add(tail); g.userData.tail = tail;
+    fmSph(tail, 0.075, '#ffffff', 0, 0, 0, 1, 1, 1, 5);
+    g.userData.kind = 'kit'; g.scale.setScalar(1.22); return g;
+  }
   function fmPlaceCritter(g, x, z, yaw){
     g.position.set(x, 0, fmWZ(z));
     g.rotation.y = yaw || 0;
@@ -360,6 +447,22 @@
     fmPlaceCritter(fmMakeCow(), 15.0, -31.3, 0.5);
     fmPlaceCritter(fmMakeCow(), 17.2, -32.8, -0.35);
     fmLab('🐄 Butterspot cows', 20.2, 2.6, -32);
+    // Cloverleaf goats pen
+    fmPlat(-10, 0.22, -49, 7, 6, '#c4a060', 0.12);
+    fmMesh(new THREE.BoxGeometry(7, 0.95, 0.16), '#8b6a3a', -10, 0.68, -52);
+    fmMesh(new THREE.BoxGeometry(0.16, 0.95, 6), '#8b6a3a', -13.5, 0.68, -49);
+    fmMesh(new THREE.BoxGeometry(0.16, 0.95, 6), '#8b6a3a', -6.5, 0.68, -49);
+    fmPlaceCritter(fmMakeGoat(), -11.0, -48.3, 0.45);
+    fmPlaceCritter(fmMakeGoat(), -8.9, -49.7, -0.4);
+    fmLab('🐐 Cloverleaf goats', -10, 2.6, -45.6);
+    // Velvettail bunnies pen
+    fmPlat(2, 0.22, -49, 6.5, 5.5, '#c4a060', 0.12);
+    fmMesh(new THREE.BoxGeometry(6.5, 0.75, 0.14), '#8b6a3a', 2, 0.58, -51.75);
+    fmMesh(new THREE.BoxGeometry(0.14, 0.75, 5.5), '#8b6a3a', -1.25, 0.58, -49);
+    fmMesh(new THREE.BoxGeometry(0.14, 0.75, 5.5), '#8b6a3a', 5.25, 0.58, -49);
+    fmPlaceCritter(fmMakeBunny(), 1.1, -48.3, 0.35);
+    fmPlaceCritter(fmMakeBunny(), 3.0, -49.6, -0.45);
+    fmLab('🐇 Velvettail bunnies', 2, 2.4, -45.8);
     // apple trees
     (FarmRules.FM_APPLES||[]).forEach(a => {
       const lz = a.z - (FarmRules.FM_DEST_DZ||0);
@@ -408,20 +511,20 @@
     fm.custLab = fmLab('🧒 Pip', st.x + 2.1, 2.6, st.z + 1.4);
     // nursery paddock
     const nu = FarmRules.FM_NURSERY || {x:-19.5, z:FarmRules.fmZ(-36.5)};
-    fmPlat(nu.x, 0.2, nu.z, 8, 8, '#c4a060', 0.1);
-    fmMesh(new THREE.BoxGeometry(0.16, 0.9, 8), '#8b6a3a', nu.x - 4, 0.6, nu.z);
-    fmMesh(new THREE.BoxGeometry(0.16, 0.9, 8), '#8b6a3a', nu.x + 4, 0.6, nu.z);
-    fmMesh(new THREE.BoxGeometry(8, 0.9, 0.16), '#8b6a3a', nu.x, 0.6, nu.z - 4);
-    fmLab('🍼 Little ones', nu.x, 2.5, nu.z + 4.4);
+    fmPlat(nu.x, 0.2, nu.z, 9.5, 8.5, '#c4a060', 0.1);
+    fmMesh(new THREE.BoxGeometry(0.16, 0.9, 8.5), '#8b6a3a', nu.x - 4.75, 0.6, nu.z);
+    fmMesh(new THREE.BoxGeometry(0.16, 0.9, 8.5), '#8b6a3a', nu.x + 4.75, 0.6, nu.z);
+    fmMesh(new THREE.BoxGeometry(9.5, 0.9, 0.16), '#8b6a3a', nu.x, 0.6, nu.z - 4.25);
+    fmLab('🍼 Little ones', nu.x, 2.5, nu.z + 4.65);
     fm.babies = {};
     (FarmRules.FM_BABIES||[]).forEach(b => {
-      const maker = {chick:fmMakeChick, lamb:fmMakeLamb, calf:fmMakeCalf, piglet:fmMakePiglet, duckling:fmMakeDuckling}[b.kind] || fmMakeChick;
+      const maker = {chick:fmMakeChick, lamb:fmMakeLamb, calf:fmMakeCalf, piglet:fmMakePiglet, duckling:fmMakeDuckling, kid:fmMakeKid, kit:fmMakeKit}[b.kind] || fmMakeChick;
       const g = maker();
       g.position.set(b.x, 0, b.z);
       g.rotation.y = Math.atan2(FarmRules.FM_ARRIVE.x - b.x, FarmRules.FM_ARRIVE.z - b.z);
       g.userData.y0 = 0; g.userData.bob = Math.random()*8; g.userData.babyId = b.id;
       scene.add(g); fmKeep(g); (fm.critters||(fm.critters=[])).push(g);
-      const short = (b.kind==='chick'?'Chick':b.kind==='lamb'?'Lamb':b.kind==='calf'?'Calf':b.kind==='piglet'?'Piglet':'Duckling');
+      const short = ({chick:'Chick', lamb:'Lamb', calf:'Calf', piglet:'Piglet', duckling:'Duckling', kid:'Kid', kit:'Bunny'}[b.kind] || 'Baby');
       const lab = fmLab((b.emoji||'🐾') + ' ' + short, b.x, 1.55, b.z);
       fm.babies[b.id] = {mesh:g, lab:lab};
     });
@@ -492,6 +595,11 @@
       if (!r.ok) return;
       fm.sv = r.state; fmSave(fm.sv); fmPaint();
       banner((hit.emoji||'🌾') + ' ' + (r.item && r.item.blurb ? r.item.blurb : ('You fed the ' + hit.name + '.')));
+      return;
+    }
+    if (hit.kind === 'pet'){
+      try { if (typeof SND !== 'undefined' && SND.coin) SND.coin(); } catch(e){}
+      banner((hit.emoji||'💕') + ' ' + (hit.text || ('You pet the happy ' + hit.name + '!')));
       return;
     }
     if (hit.kind === 'egg'){
@@ -656,6 +764,8 @@
     hensClose(){ if (!fm) return; this.farm(); this.hideLabs(true); const f=FarmRules.FM_FEEDS[0]; if(P&&f){ P.x=f.x+7.2; P.y=0.5; P.z=f.z+1.0; } if (typeof cam!=='undefined' && cam){ cam.yaw=Math.PI/2; cam.pitch=0.06; cam.dist=6.4; } },
     sheepClose(){ if (!fm) return; this.farm(); this.hideLabs(true); const f=FarmRules.FM_FEEDS[1]; if(P&&f){ P.x=f.x-7.2; P.y=0.5; P.z=f.z+1.0; } if (typeof cam!=='undefined' && cam){ cam.yaw=-Math.PI/2; cam.pitch=0.06; cam.dist=6.4; } },
     cowsClose(){ if (!fm) return; this.farm(); this.hideLabs(true); const f=FarmRules.FM_FEEDS[2]; if(P&&f){ P.x=f.x+7.4; P.y=0.5; P.z=f.z+1.0; } if (typeof cam!=='undefined' && cam){ cam.yaw=Math.PI/2; cam.pitch=0.06; cam.dist=6.8; } },
+    goatsClose(){ if (!fm) return; this.farm(); this.hideLabs(true); const f=FarmRules.FM_FEEDS[3]; if(P&&f){ P.x=f.x-1.2; P.y=0.5; P.z=f.z+1.5; } if (typeof cam!=='undefined' && cam){ cam.yaw=-0.32; cam.pitch=0.26; cam.dist=6.8; } },
+    bunniesClose(){ if (!fm) return; this.farm(); this.hideLabs(true); const f=FarmRules.FM_FEEDS[4]; if(P&&f){ P.x=f.x+1.2; P.y=0.5; P.z=f.z+1.5; } if (typeof cam!=='undefined' && cam){ cam.yaw=0.32; cam.pitch=0.26; cam.dist=6.8; } },
     hayRide(t){ if (!fm) return; fm.run.phase='farm'; FarmRules.fmStartHay(fm.run, fm.sv); fm.run.hayT=(t==null?2.4:t); const pose=FarmRules.fmHayPose(fm.run); fmSeat(pose, -0.2, 1.55); fmRideVis(true); if(fm.wagon){fm.wagon.position.set(pose.x,0,pose.z); fm.wagon.rotation.y=pose.yaw||0;} fmApplyZones('farm'); },
     cam(yaw, pitch, dist){ if (typeof cam !== 'undefined' && cam){ if (yaw != null) cam.yaw = yaw; if (pitch != null) cam.pitch = pitch; if (dist != null) cam.dist = dist; } },
     nudge(dx, dz){ if (P){ P.x += dx||0; P.z += dz||0; P.vx=0; P.vz=0; } },
@@ -679,7 +789,7 @@
       if (!fm || !P) return;
       const F = FarmRules;
       const baby = (F.FM_BABIES||[]).find(b => b.id === id || b.kind === id);
-      const map = {bus:F.FM_BUS, home:F.FM_HOME_BUS, teacher:F.FM_TEACHER, nettie:F.FM_GUIDE, barn:F.FM_BARN, arrive:F.FM_ARRIVE, wagon:F.FM_WAGON, hens:F.FM_FEEDS[0], sheep:F.FM_FEEDS[1], cows:F.FM_FEEDS[2], stand:F.FM_STAND, nursery:F.FM_NURSERY};
+      const map = {bus:F.FM_BUS, home:F.FM_HOME_BUS, teacher:F.FM_TEACHER, nettie:F.FM_GUIDE, barn:F.FM_BARN, arrive:F.FM_ARRIVE, wagon:F.FM_WAGON, hens:F.FM_FEEDS[0], sheep:F.FM_FEEDS[1], cows:F.FM_FEEDS[2], goats:F.FM_FEEDS[3], bunnies:F.FM_FEEDS[4], stand:F.FM_STAND, nursery:F.FM_NURSERY};
       const t = map[id] || baby;
       if (!t) return;
       P.x=t.x; P.y=0.5; P.z=t.z; P.vx=0; P.vz=0; P.vy=0;

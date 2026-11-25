@@ -27,7 +27,7 @@
   }
   function pbButtons(){
     const box = pbBox(); if (!box || box.hidden) return [];
-    return Array.prototype.slice.call(box.querySelectorAll('button')).filter(b => b && !b.disabled && !b.hidden);
+    return Array.prototype.slice.call(box.querySelectorAll('button')).filter(b => b && !b.disabled && !b.hidden && (!b.closest || !b.closest('[hidden]')));
   }
   function pbFocusAt(i){
     const list = pbButtons(); if (!list.length) return;
@@ -52,12 +52,17 @@
   }
   function pbOnChrome(key, id){
     const R = PhotoBoothRules, s = pb.shot || R.pbFreshShot();
-    const full = key === 'sticker' && (s.stickers || []).length >= 4 && (s.stickers || []).indexOf(id) < 0;
-    if (key === 'sticker') pb.shot = R.pbToggleSticker(s, id);
-    else { s[key] = id; pb.shot = R.pbCleanShot(s); }
+    const fullSticker = key === 'sticker' && (s.stickers || []).length >= 4 && (s.stickers || []).indexOf(id) < 0;
+    const fullProp = key === 'prop' && (s.props || []).length >= 4 && (s.props || []).indexOf(id) < 0;
+    if (key === 'sticker'){
+      pb.shot = R.pbToggleSticker(s, id);
+      if ((pb.shot.stickers || []).indexOf(id) >= 0) pb.lastSticker = id;
+    } else if (key === 'prop'){
+      pb.shot = R.pbToggleProp(s, id);
+    } else { s[key] = id; pb.shot = R.pbCleanShot(s); }
     pbPaintChrome(); pbPaint();
     // QA t330u: the 5th sticker used to do nothing at all. Say why.
-    if (full){ const h = document.querySelector('#avBooth .avbooth-h'); if (h){ h.textContent = '📸 Up to 4 stickers! Tap a lit one to take it off.'; clearTimeout(pb.hintT); pb.hintT = setTimeout(() => { h.textContent = '📸 Photo Booth'; }, 2600); } }
+    if (fullSticker || fullProp){ const h = document.querySelector('#avBooth .avbooth-h'); if (h){ h.textContent = fullProp ? '📸 Up to 4 props! Tap a lit one to take it off.' : '📸 Up to 4 stickers! Tap a lit one to take it off.'; clearTimeout(pb.hintT); pb.hintT = setTimeout(() => { h.textContent = '📸 Photo Booth'; }, 2600); } }
   }
   function pbPaintChrome(){
     const R = PhotoBoothRules, s = pb.shot || R.pbFreshShot();
@@ -70,19 +75,164 @@
         b.setAttribute('data-pb-key', key);
         b.setAttribute('data-pb-id', it.id);
         b.textContent = labelFn(it);
-        if (s[key] === it.id || (key === 'sticker' && (s.stickers||[]).indexOf(it.id)>=0)) b.classList.add('on');
+        if (s[key] === it.id || (key === 'sticker' && (s.stickers||[]).indexOf(it.id)>=0) || (key === 'prop' && (s.props||[]).indexOf(it.id)>=0)) b.classList.add('on');
         el.appendChild(b);
       });
     }
     row('avBoothPoses', R.PB_POSES, 'pose', it => it.emoji + ' ' + it.name);
     row('avBoothBgs', R.PB_BGS, 'bg', it => it.name);
     row('avBoothFrames', R.PB_FRAMES, 'frame', it => it.name);
+    row('avBoothProps', R.PB_PROPS || [], 'prop', it => it.emoji + ' ' + it.name);
     row('avBoothStickers', R.PB_STICKERS, 'sticker', it => it.emoji + ' ' + it.name);
   }
   function pbAv(){
     try { if (typeof draft !== 'undefined' && draft) return draft; } catch(e){}
     try { if (typeof avatar !== 'undefined' && avatar) return avatar; } catch(e){}
     return {};
+  }
+  function pbDrawProp2d(ctx, id){
+    if (!ctx || !ctx.arc || !ctx.moveTo || !ctx.fill || !ctx.stroke) return;
+    ctx.save();
+    if (id === 'glasses'){
+      ctx.lineWidth = 4; ctx.strokeStyle = '#2563eb'; ctx.fillStyle = 'rgba(219,238,255,.55)';
+      ctx.beginPath(); ctx.arc(112, 72, 13, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(148, 72, 13, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(125, 72); ctx.quadraticCurveTo(130, 67, 135, 72); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(90, 70); ctx.lineTo(99, 71); ctx.moveTo(161, 71); ctx.lineTo(170, 70); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,.8)';
+      ctx.beginPath(); ctx.arc(107, 67, 3, 0, Math.PI*2); ctx.arc(143, 67, 3, 0, Math.PI*2); ctx.fill();
+    } else if (id === 'shades'){
+      const star = (cx, cy, r1, r2) => {
+        ctx.beginPath();
+        for (let i = 0; i < 10; i++){
+          const a = -Math.PI/2 + i * Math.PI/5, r = i % 2 ? r2 : r1;
+          const x = cx + Math.cos(a)*r, y = cy + Math.sin(a)*r;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+      };
+      ctx.fillStyle = '#1d2340'; ctx.strokeStyle = '#ff4d94'; ctx.lineWidth = 3;
+      star(112, 72, 16, 8); ctx.fill(); ctx.stroke();
+      star(148, 72, 16, 8); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.moveTo(124, 71); ctx.lineTo(136, 71); ctx.stroke();
+    } else if (id === 'mustache'){
+      ctx.fillStyle = '#4a2c18'; ctx.strokeStyle = '#2b170b'; ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(130, 84);
+      ctx.bezierCurveTo(118, 78, 108, 92, 98, 84);
+      ctx.bezierCurveTo(104, 96, 120, 95, 130, 89);
+      ctx.bezierCurveTo(140, 95, 156, 96, 162, 84);
+      ctx.bezierCurveTo(152, 92, 142, 78, 130, 84);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+    } else if (id === 'party'){
+      ctx.fillStyle = '#8b5cf6'; ctx.strokeStyle = '#1d2340'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(108, 44); ctx.lineTo(130, -6); ctx.lineTo(152, 44); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.moveTo(116, 26); ctx.lineTo(144, 26); ctx.lineTo(147, 33); ctx.lineTo(113, 33); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#ff6fb5'; ctx.beginPath(); ctx.arc(130, -8, 8, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    } else if (id === 'ears'){
+      ctx.fillStyle = '#ff6fb5'; ctx.fillRect(92, 38, 76, 7);
+      [-1, 1].forEach(k => {
+        ctx.save(); ctx.translate(130 + k * 20, 40); ctx.rotate(k * 0.14);
+        ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#1d2340'; ctx.lineWidth = 2.5;
+        ctx.beginPath(); if (ctx.ellipse) ctx.ellipse(0, -24, 10, 26, 0, 0, Math.PI*2); else ctx.arc(0, -24, 12, 0, Math.PI*2);
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#ffb3c7';
+        ctx.beginPath(); if (ctx.ellipse) ctx.ellipse(0, -22, 5, 18, 0, 0, Math.PI*2); else ctx.arc(0, -22, 6, 0, Math.PI*2);
+        ctx.fill(); ctx.restore();
+      });
+    } else if (id === 'bubble'){
+      ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#1d2340'; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(166, 8, 78, 34, 12);
+      else ctx.rect(166, 8, 78, 34);
+      ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(176, 40); ctx.lineTo(164, 52); ctx.lineTo(188, 41); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ff4d6d'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('CHEESE!', 205, 25);
+    }
+    ctx.restore();
+  }
+  function pbDrawSticker2d(ctx, id, cx, cy, r){
+    if (!ctx || !ctx.arc || !ctx.moveTo || !ctx.fill){
+      ctx.fillText(id, cx, cy);
+      return;
+    }
+    ctx.save(); ctx.translate(cx, cy);
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    if (id === 'star'){
+      ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#d98200'; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++){
+        const a = -Math.PI/2 + i * Math.PI/5, d = i % 2 ? r * 0.45 : r;
+        const x = Math.cos(a)*d, y = Math.sin(a)*d;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#fff7c2'; ctx.beginPath(); ctx.arc(-r*0.2, -r*0.2, r*0.18, 0, Math.PI*2); ctx.fill();
+    } else if (id === 'heart'){
+      ctx.fillStyle = '#ff4d79'; ctx.strokeStyle = '#b51748'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(0, r*0.85);
+      ctx.bezierCurveTo(-r*1.2, r*0.15, -r*1.0, -r*0.9, 0, -r*0.3);
+      ctx.bezierCurveTo(r*1.0, -r*0.9, r*1.2, r*0.15, 0, r*0.85);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(-r*0.35, -r*0.35, r*0.18, 0, Math.PI*2); ctx.fill();
+    } else if (id === 'sparkle'){
+      const sp = (ox, oy, sr, c) => {
+        ctx.fillStyle = c; ctx.beginPath();
+        ctx.moveTo(ox, oy - sr); ctx.quadraticCurveTo(ox, oy, ox + sr, oy);
+        ctx.quadraticCurveTo(ox, oy, ox, oy + sr); ctx.quadraticCurveTo(ox, oy, ox - sr, oy);
+        ctx.quadraticCurveTo(ox, oy, ox, oy - sr); ctx.fill();
+      };
+      sp(-r*0.15, 0, r*0.85, '#ffd23f');
+      sp(r*0.55, -r*0.45, r*0.42, '#38bdf8');
+      sp(r*0.5, r*0.5, r*0.34, '#ff6fb5');
+    } else if (id === 'paw'){
+      ctx.fillStyle = '#ff8fab'; ctx.strokeStyle = '#9d174d'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(0, r*0.2, r*0.48, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      [[-0.55,-0.32],[-0.2,-0.56],[0.2,-0.56],[0.55,-0.32]].forEach(([dx, dy]) => {
+        ctx.beginPath(); ctx.arc(dx*r, dy*r, r*0.2, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      });
+    } else if (id === 'bow'){
+      ctx.fillStyle = '#ff6fb5'; ctx.strokeStyle = '#9d174d'; ctx.lineWidth = 2.2;
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-r*0.95, -r*0.55); ctx.lineTo(-r*0.95, r*0.55); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(r*0.95, -r*0.55); ctx.lineTo(r*0.95, r*0.55); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ffb3d9'; ctx.beginPath(); ctx.arc(0, 0, r*0.26, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    } else if (id === 'sun'){
+      ctx.strokeStyle = '#ff9f1c'; ctx.lineWidth = 3;
+      for (let i = 0; i < 8; i++){
+        const a = i * Math.PI/4;
+        ctx.beginPath(); ctx.moveTo(Math.cos(a)*r*0.66, Math.sin(a)*r*0.66); ctx.lineTo(Math.cos(a)*r*0.98, Math.sin(a)*r*0.98); ctx.stroke();
+      }
+      ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(0, 0, r*0.55, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#1d2340'; ctx.beginPath(); ctx.arc(-r*0.18, -r*0.08, 2.2, 0, Math.PI*2); ctx.arc(r*0.18, -r*0.08, 2.2, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(0, r*0.05, r*0.2, 0.2, Math.PI - 0.2); ctx.stroke();
+    } else if (id === 'rainbow'){
+      ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff'].forEach((c, i) => {
+        ctx.strokeStyle = c; ctx.lineWidth = Math.max(2, r*0.16);
+        ctx.beginPath(); ctx.arc(0, r*0.25, r*(0.92 - i*0.14), Math.PI, 0); ctx.stroke();
+      });
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(-r*0.65, r*0.32, r*0.28, 0, Math.PI*2); ctx.arc(r*0.65, r*0.32, r*0.28, 0, Math.PI*2); ctx.fill();
+    } else if (id === 'crown'){
+      ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#b97c00'; ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.moveTo(-r*0.85, r*0.55); ctx.lineTo(-r*0.85, -r*0.35); ctx.lineTo(-r*0.35, r*0.05); ctx.lineTo(0, -r*0.65); ctx.lineTo(r*0.35, r*0.05); ctx.lineTo(r*0.85, -r*0.35); ctx.lineTo(r*0.85, r*0.55); ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ff2d55'; ctx.beginPath(); ctx.arc(0, r*0.22, r*0.14, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function pbPlaceStickerAt(ev){
+    const cv = document.getElementById('avBoothCv'); if (!cv || !pb.shot) return;
+    const list = pb.shot.stickers || [];
+    if (!list.length) return;
+    const id = (pb.lastSticker && list.indexOf(pb.lastSticker) >= 0) ? pb.lastSticker : list[list.length - 1];
+    const rect = cv.getBoundingClientRect ? cv.getBoundingClientRect() : null;
+    if (!rect || !rect.width || !rect.height) return;
+    const x = (ev.clientX - rect.left) / rect.width;
+    const y = (ev.clientY - rect.top) / rect.height;
+    pb.shot = PhotoBoothRules.pbSetStickerPos(pb.shot, id, x, y);
+    pbPaint();
   }
   function pbPaint(){
     const cv = document.getElementById('avBoothCv'); if (!cv) return;
@@ -103,17 +253,36 @@
       ctx.scale(lay.poseShift.scale, lay.poseShift.scale);
       ctx.translate(-cv.width/2, -cv.height/2);
     }
-    try { if (typeof drawAvatar === 'function') drawAvatar(ctx, pbAv(), {}); } catch (e){}
+    try {
+      if (typeof drawAvatar === 'function'){
+        let avCv = pb.avCv;
+        if (!avCv && typeof document !== 'undefined' && document.createElement){ avCv = pb.avCv = document.createElement('canvas'); }
+        const avCtx = avCv && avCv.getContext ? avCv.getContext('2d') : null;
+        if (avCtx){
+          if (avCv.width !== cv.width || avCv.height !== cv.height){ avCv.width = cv.width; avCv.height = cv.height; }
+          drawAvatar(avCtx, pbAv(), {});
+          ctx.drawImage(avCv, 0, 0);
+        } else {
+          drawAvatar(ctx, pbAv(), {});
+        }
+      }
+    } catch (e){}
+    if ((lay.props || []).length){
+      ctx.save();
+      const s = Math.min(cv.width / 260, cv.height / 310);
+      ctx.scale(s, s); ctx.translate((cv.width / s - 260) / 2, 10);
+      lay.props.forEach(p => pbDrawProp2d(ctx, p.id));
+      ctx.restore();
+    }
     ctx.restore();
     if (lay.frame && lay.frame.color && pad){
       ctx.strokeStyle = lay.frame.color;
       ctx.lineWidth = pad;
       ctx.strokeRect(pad/2, pad/2, cv.width-pad, cv.height-pad);
     }
-    ctx.font = Math.round(cv.width * 0.08) + 'px sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const r = Math.round(cv.width * 0.055);
     (lay.stickers||[]).forEach(st => {
-      ctx.fillText(st.emoji, st.x * cv.width, st.y * cv.height);
+      pbDrawSticker2d(ctx, st.id, st.x * cv.width, st.y * cv.height, r);
     });
     pb.last = cv;
   }
@@ -172,6 +341,7 @@
     if (ev){ try { ev.preventDefault(); ev.stopPropagation(); if (ev.stopImmediatePropagation) ev.stopImmediatePropagation(); } catch (e){} }
     const key = t.getAttribute && t.getAttribute('data-pb-key');
     if (key){ pbOnChrome(key, t.getAttribute('data-pb-id')); return true; }
+    if (t.id === 'avBoothCv'){ pbPlaceStickerAt(ev); return true; }
     if (t.id === 'avBoothX'){ pbClose(); return true; }
     if (t.id === 'avBoothSnap'){ pbSnap(); return true; }
     if (t.id === 'avBoothDl'){ pbDownload(); return true; }

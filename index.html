@@ -361,7 +361,7 @@ body.dark .sitem canvas{background:linear-gradient(#34427e,#26306a)}
 .ofps.on{display:block}
 #setGfx{font:inherit;font-weight:900;border:2px solid var(--line,#d9dcec);border-radius:10px;padding:6px 10px;background:#fff}
 .gfxset .padsens{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0}
-.ohud{position:absolute;top:10px;left:10px;right:10px;z-index:200;display:flex;justify-content:space-between;gap:10px;pointer-events:none;flex-wrap:wrap}
+.ohud{position:absolute;top:10px;left:10px;right:10px;z-index:250;display:flex;justify-content:space-between;gap:10px;pointer-events:none;flex-wrap:wrap}
 .ostats{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;max-width:min(46vw,380px);position:relative;z-index:40}
 .dhstack{position:absolute;top:max(10px,calc(env(safe-area-inset-top) + 8px));left:max(10px,env(safe-area-inset-left));z-index:40;display:none;flex-direction:column;align-items:stretch;gap:10px;max-width:min(42vw,280px);pointer-events:none}
 .dhstack.show{display:flex}
@@ -397,7 +397,7 @@ body.dark .sitem canvas{background:linear-gradient(#34427e,#26306a)}
 .lvbtn.lock{opacity:.45;cursor:default;border-style:dashed}
 .lvbtn.boss:not(.lock){background:linear-gradient(135deg,#ffd23f,#ff9f1c);color:#1d2340;border-color:#c98a00}.lvbtn.boss small{color:#1d2340}
 .lvbtn:not(.lock):hover{transform:translateY(-2px)}
-.opanel.show{display:grid;pointer-events:auto;z-index:60}
+.opanel.show{display:grid;pointer-events:auto;z-index:245}
 #oWin{place-items:end center;padding-bottom:3vh;background:rgba(10,14,35,.12)}
 #oWin .mbox{padding:18px 24px}
 #oWin .mbox .emoji{font-size:40px}
@@ -893,13 +893,22 @@ body.dhreset-open #dhCut, body.dhreset-open #dhSkip, body.dhreset-open .dhbubble
 .icb small{font-size:10px;font-weight:900}.icb.on{border-color:#7fd6ff;background:#e8f7ff;box-shadow:0 0 0 2px #7fd6ff}.icb:disabled{opacity:.4;cursor:default}
 @media (max-width:760px),(max-height:520px){.icord{font-size:15px}.icb{font-size:16px;min-width:50px;min-height:42px}}
 .psnear{background:#ff6fb5;box-shadow:0 4px 0 #c94f8d}.psnear small{display:block;font-size:12px}.psgbtn{background:#8b5cf6;box-shadow:0 4px 0 #5b34c0}
+.psov{display:none;position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none;touch-action:manipulation}.psov.show{display:block}.psov.pick{pointer-events:auto;cursor:crosshair}
 .psflash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:7}
-.psbar{display:none;position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:6;flex-wrap:wrap;justify-content:center;gap:5px;max-width:96vw;background:rgba(29,35,64,.7);padding:6px;border-radius:16px}
-.psbar.show{display:flex}.psbar button{border:0;border-radius:12px;padding:6px 9px;background:#fff;color:#1d2340;font:inherit;font-weight:800;font-size:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center}
+#obby:has(#psBar.show) #oTip{opacity:0;pointer-events:none}
+#obby:has(#psBar.show) .otouch{display:none!important}
+.psdock{position:absolute;left:50%;bottom:max(8px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:6;display:flex;flex-direction:column;align-items:center;gap:6px;max-width:96vw;pointer-events:none}
+.psbar{display:none;flex-wrap:wrap;justify-content:center;gap:5px;max-width:96vw;background:rgba(29,35,64,.7);padding:6px;border-radius:16px;pointer-events:auto}
+.psbar.show{display:flex}.psbar button{border:0;border-radius:12px;padding:6px 9px;background:#fff;color:#1d2340;font:inherit;font-weight:800;font-size:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;touch-action:manipulation}
+.psbar button.on{background:#ffd23f}
 .psbar button small{font-size:10px;opacity:.7}.psbar .pssnap{background:#ff4d5e;color:#fff;font-size:18px;padding:8px 16px}.psbar .psdone{background:#9aa0ab;color:#fff}
+.pstray{display:none;flex-direction:column;gap:5px;max-width:96vw;max-height:36vh;overflow-y:auto;background:rgba(255,248,239,.96);color:#1d2340;border:3px solid #1d2340;border-radius:16px;padding:7px 9px;box-shadow:0 6px 20px rgba(0,0,0,.25);pointer-events:auto}
+.pstray.show{display:flex}.psrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px}.psrow b{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;color:#5b6180;margin-right:2px}
+.pstray button{border:2px solid #1d2340;border-radius:10px;padding:4px 8px;background:#fff;color:#1d2340;font:inherit;font-weight:800;font-size:13px;cursor:pointer;touch-action:manipulation}
+.pstray button.on{background:#ffd23f}.pstray button.gpf{outline:3px solid #3a86ff;outline-offset:1px}.pstip{font-size:11px;font-weight:800;color:#5b6180;text-align:center}
 .psgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;max-height:48vh;overflow:auto;margin:8px 0}.psth{border:3px solid #fff;border-radius:10px;padding:0;background:#eee;cursor:pointer}.psth img{width:100%;display:block;border-radius:7px}
 .psbig{max-width:100%;max-height:52vh;display:block;margin:8px auto;border-radius:10px}.psnote{display:block;opacity:.8;font-weight:700}
-@media (max-width:760px),(max-height:520px){#psGal .emoji{display:none}#psGal h2{font-size:18px;margin:0}.psbar button{font-size:12px;padding:4px 6px}.psbar .pssnap{font-size:15px}.psbig{max-height:42vh}}
+@media (max-width:760px),(max-height:520px){#psGal .emoji{display:none}#psGal h2{font-size:18px;margin:0}.psbar{gap:4px;padding:5px}.psbar button{font-size:12px;padding:4px 6px}.psbar .pssnap{font-size:14px;padding:6px 12px}.pstray{max-height:32vh;padding:5px 7px}.pstray button{font-size:12px;padding:3px 6px}.psbig{max-height:42vh}}
 .wpnear{background:#3a86ff;box-shadow:0 4px 0 #2563c9}.wpnear small{color:#3a86ff}.wpbtn{background:#3ac6ff;box-shadow:0 4px 0 #1f8fc0}
 .wplist{display:flex;flex-direction:column;gap:8px;margin:8px 0}.wprb{display:flex;flex-direction:column;align-items:center}.wprb small{font-size:12px;font-weight:800;opacity:.85}.wprb:disabled{opacity:.5}
 @media (max-width:760px),(max-height:520px){#wpPanel .emoji{display:none}#wpPanel h2{font-size:18px;margin:0}.wprb{padding:6px 12px;font-size:15px}.wplist{gap:5px;max-height:58vh;overflow:auto}}
@@ -1561,9 +1570,9 @@ body:not(:has(#obby.show)) .toast{color:#111;background:#8ef0be;box-shadow:0 6px
 .cafemode #cafeBoardBtn,.cafemode #cafeDecorBtn,.fishmode #fishIndexBtn,.huntmode #huntMapBtn,.psmode #psVoteOpen{display:block}
 #cafeBoardBtn,#cafeDecorBtn,#fishIndexBtn,#huntMapBtn,#psVoteOpen{position:absolute;z-index:8;right:16px;bottom:160px;padding:10px 14px;font-size:16px;border:3px solid #1d2340;border-radius:16px;background:#fff3e0;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
 .cafemode #cafeDecorBtn{bottom:216px}
-.t297overlay{position:fixed;inset:0;background:rgba(29,35,64,.45);z-index:240;display:none;align-items:center;justify-content:center;padding:16px}
+.t297overlay{position:fixed;inset:0;background:rgba(29,35,64,.45);z-index:240;display:none;align-items:center;justify-content:center;padding:max(74px,calc(env(safe-area-inset-top) + 62px)) 16px 16px}
 .t297overlay.show{display:flex}
-.t297box{position:relative;max-width:520px;width:100%;max-height:90vh;overflow:auto;background:#fff8ee;border:4px solid #1d2340;border-radius:20px;padding:16px;box-shadow:6px 6px 0 #1d2340}
+.t297box{position:relative;max-width:520px;width:100%;max-height:calc(100dvh - 96px);overflow:auto;background:#fff8ee;border:4px solid #1d2340;border-radius:20px;padding:16px;box-shadow:6px 6px 0 #1d2340}
 .t297box h3{margin:0 0 8px}
 .t297row{display:flex;gap:8px;align-items:center;justify-content:space-between;background:#fff;border:2px solid #1d2340;border-radius:12px;padding:8px 10px;margin:6px 0;font-weight:700}
 .t297row.dim{opacity:.55}
@@ -1575,7 +1584,7 @@ body:not(:has(#obby.show)) .toast{color:#111;background:#8ef0be;box-shadow:0 6px
 #cafeDecorList button{display:block;width:100%;margin:6px 0;padding:8px 10px;border:2px solid #1d2340;border-radius:12px;background:#fff;font-weight:800;text-align:left}
 #psVoteBox .psvotes{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0}
 #psVoteBox .psvotes button{width:44px;height:44px;border:3px solid #1d2340;border-radius:12px;background:#ffd23f;font-weight:800}
-@media (max-width:700px){ #t297Act{bottom:120px} #cafeBoardBtn,#fishIndexBtn,#huntMapBtn,#psVoteOpen{bottom:184px} .cafemode #cafeDecorBtn{bottom:240px} }
+@media (max-width:700px){ .t297overlay{padding-top:max(84px,calc(env(safe-area-inset-top) + 68px))} #t297Act{bottom:120px} #cafeBoardBtn,#fishIndexBtn,#huntMapBtn,#psVoteOpen{bottom:184px} .cafemode #cafeDecorBtn{bottom:240px} }
 </style>
 <style id="t302Css">
 #t302Box{position:absolute;left:12px;right:12px;top:64px;z-index:6;pointer-events:none;text-align:center;display:none}
@@ -1820,8 +1829,9 @@ body:not(:has(#obby.show)) .toast{color:#111;background:#8ef0be;box-shadow:0 6px
 .avbooth-row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;position:relative;z-index:2;pointer-events:auto}
 .avbooth-row button,.avbooth-acts button{border:2px solid #1d2340;border-radius:12px;padding:6px 8px;font-weight:700;cursor:pointer;background:#fff;position:relative;z-index:2;pointer-events:auto;touch-action:manipulation}
 .avbooth-row button.on{background:#ffd23f}
+.avbooth-tip{font-size:12px;font-weight:700;color:#5b6180;text-align:center;margin:2px 0 4px}
 .avbooth-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;position:sticky;bottom:0;z-index:3;pointer-events:auto;background:#fff8ef;padding:8px 0 4px}
-@media (max-width:760px),(max-height:780px){#avBoothCv{max-width:240px;margin-bottom:6px}.avbooth-card{max-height:calc(100dvh - 12px);padding:10px}}
+@media (max-width:760px),(max-height:780px){#avBoothCv{max-width:240px;max-height:220px;width:auto;margin-bottom:6px}.avbooth-card{max-height:calc(100dvh - 12px);padding:10px}.avbooth-row{gap:4px;margin:4px 0}.avbooth-row button{padding:4px 7px;font-size:11.5px}.avbooth-acts button{padding:5px 8px;font-size:13px}.avbooth-tip{font-size:11px}}
 .avbooth-gal{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;position:relative;z-index:2;pointer-events:auto}
 .avbooth-gal img{width:88px;height:88px;object-fit:cover;border-radius:10px;border:2px solid #1d2340;pointer-events:auto;cursor:pointer}
 #hubBoothBtn,#avBoothBtn{margin-left:8px;position:relative;z-index:2;pointer-events:auto;touch-action:manipulation}
@@ -2983,15 +2993,20 @@ html.snowfest-on #evChip, body.snowfest-on #evChip{display:inline-flex;align-ite
     <div class="fsitems" id="icItems"></div>
     <div class="row"><button class="big green" id="icServe">🛎️ Serve!</button><button class="big red" id="icTrash">🗑️ Start over</button><button class="big gray" id="icClose">👋 Done</button></div>
   </div></div>
+  <canvas class="psov" id="psOverlay"></canvas>
   <div class="psflash" id="psFlash"></div>
   <button class="fsnear psnear" id="psCamBtn">📸 Take Photo<small>E / Ⓧ — works anywhere</small></button>
   <button class="fswardbtn psgbtn" id="psGalBtn">🖼️ My Photos</button>
-  <div class="psbar" id="psBar">
-    <button data-k="pose" data-d="-1">◀</button><button data-k="pose"><small>Pose</small><span id="psV_pose"></span></button><button data-k="pose" data-d="1">▶</button>
-    <button data-k="bg"><small>Backdrop</small><span id="psV_bg"></span></button><button data-k="frame"><small>Framing</small><span id="psV_frame"></span></button>
-    <button data-k="angle"><small>Camera</small><span id="psV_angle"></span></button><button data-k="shape"><small>Shape</small><span id="psV_shape"></span></button>
-    <button data-k="border"><small>Border</small><span id="psV_border"></span></button>
-    <button class="pssnap" id="psSnap">📸 Snap!</button><button class="psdone" id="psDone">✖ Done</button>
+  <div class="psdock" id="psDock">
+    <div class="pstray" id="psTray"></div>
+    <div class="psbar" id="psBar">
+      <button data-k="pose" data-d="-1">◀</button><button data-k="pose"><small>Pose</small><span id="psV_pose"></span></button><button data-k="pose" data-d="1">▶</button>
+      <button data-k="bg"><small>Backdrop</small><span id="psV_bg"></span></button><button data-k="frame"><small>Framing</small><span id="psV_frame"></span></button>
+      <button data-k="angle"><small>Camera</small><span id="psV_angle"></span></button><button data-k="shape"><small>Shape</small><span id="psV_shape"></span></button>
+      <button data-k="border"><small>Border</small><span id="psV_border"></span></button>
+      <button id="psExtrasBtn"><small>Props &amp; ✨</small><span id="psV_extras">🎭 0 · ✨ 0</span></button>
+      <button class="pssnap" id="psSnap">📸 Snap!</button><button class="psdone" id="psDone">✖ Done</button>
+    </div>
   </div>
   <div class="opanel" id="psGal"><div class="mbox rcbox">
     <span class="emoji">🖼️</span><h2>My Photos</h2><small class="psnote">🔒 Saved only on this device — never uploaded or shared. Download the ones you love!</small>
@@ -3208,7 +3223,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.22-13';
+const BUILD = '2026.11.22-14';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -12501,22 +12516,33 @@ function drawElevator(ctx){
     {id:'pink', name:'Pink frame', color:'#ff8fab', pad:16},
     {id:'navy', name:'Navy frame', color:'#1d3557', pad:16}
   ];
+  const PB_PROPS = [
+    {id:'glasses', name:'Goofy Glasses', emoji:'🤓'},
+    {id:'mustache', name:'Mustache', emoji:'🥸'},
+    {id:'party', name:'Party Hat', emoji:'🥳'},
+    {id:'ears', name:'Bunny Ears', emoji:'🐰'},
+    {id:'shades', name:'Star Shades', emoji:'😎'},
+    {id:'bubble', name:'Speech Bubble', emoji:'💬'}
+  ];
   const PB_STICKERS = [
-    {id:'star', name:'Star', emoji:'⭐', x:0.82, y:0.14},
-    {id:'heart', name:'Heart', emoji:'💕', x:0.16, y:0.16},
+    {id:'star', name:'Star', emoji:'⭐', x:0.16, y:0.16},
+    {id:'heart', name:'Heart', emoji:'💕', x:0.84, y:0.34},
     {id:'sparkle', name:'Sparkle', emoji:'✨', x:0.84, y:0.78},
     {id:'paw', name:'Paw', emoji:'🐾', x:0.14, y:0.8},
     {id:'bow', name:'Bow', emoji:'🎀', x:0.5, y:0.1},
-    {id:'sun', name:'Sun', emoji:'🌞', x:0.86, y:0.46}
+    {id:'sun', name:'Sun', emoji:'🌞', x:0.86, y:0.46},
+    {id:'rainbow', name:'Rainbow', emoji:'🌈', x:0.15, y:0.48},
+    {id:'crown', name:'Crown', emoji:'👑', x:0.5, y:0.88}
   ];
 
   function pbPose(id){ return PB_POSES.find(p => p.id === id) || PB_POSES[0]; }
   function pbBg(id){ return PB_BGS.find(p => p.id === id) || PB_BGS[0]; }
   function pbFrame(id){ return PB_FRAMES.find(p => p.id === id) || PB_FRAMES[0]; }
+  function pbProp(id){ return PB_PROPS.find(p => p.id === id) || null; }
   function pbSticker(id){ return PB_STICKERS.find(p => p.id === id) || null; }
 
   function pbFreshShot(){
-    return {pose:'stand', bg:'studio', frame:'white', stickers:[]};
+    return {pose:'stand', bg:'studio', frame:'white', props:[], stickers:[], stickerPos:{}};
   }
 
   function pbCleanShot(raw){
@@ -12525,11 +12551,31 @@ function drawElevator(ctx){
     if (pbPose(o.pose).id === o.pose) d.pose = o.pose;
     if (pbBg(o.bg).id === o.bg) d.bg = o.bg;
     if (pbFrame(o.frame).id === o.frame) d.frame = o.frame;
+    const pids = Array.isArray(o.props) ? o.props : [];
+    d.props = [];
+    pids.forEach(id => { if (pbProp(id) && d.props.indexOf(id) < 0) d.props.push(id); });
+    d.props = d.props.slice(0, 4);
     const ids = Array.isArray(o.stickers) ? o.stickers : [];
     d.stickers = [];
     ids.forEach(id => { if (pbSticker(id) && d.stickers.indexOf(id) < 0) d.stickers.push(id); });
     d.stickers = d.stickers.slice(0, 4);
+    const sp = o.stickerPos && typeof o.stickerPos === 'object' ? o.stickerPos : {};
+    Object.keys(sp).forEach(id => {
+      const p = sp[id];
+      if (pbSticker(id) && p && Number.isFinite(+p.x) && Number.isFinite(+p.y)){
+        d.stickerPos[id] = {x: Math.max(0.08, Math.min(0.92, +p.x)), y: Math.max(0.08, Math.min(0.92, +p.y))};
+      }
+    });
     return d;
+  }
+
+  function pbToggleProp(shot, id){
+    const s = pbCleanShot(shot);
+    if (!pbProp(id)) return s;
+    const i = s.props.indexOf(id);
+    if (i >= 0) s.props.splice(i, 1);
+    else if (s.props.length < 4) s.props.push(id);
+    return s;
   }
 
   function pbToggleSticker(shot, id){
@@ -12538,6 +12584,13 @@ function drawElevator(ctx){
     const i = s.stickers.indexOf(id);
     if (i >= 0) s.stickers.splice(i, 1);
     else if (s.stickers.length < 4) s.stickers.push(id);
+    return s;
+  }
+
+  function pbSetStickerPos(shot, id, x, y){
+    const s = pbCleanShot(shot);
+    if (!pbSticker(id)) return s;
+    s.stickerPos[id] = {x: Math.max(0.08, Math.min(0.92, +x || 0.5)), y: Math.max(0.08, Math.min(0.92, +y || 0.5))};
     return s;
   }
 
@@ -12595,13 +12648,19 @@ function drawElevator(ctx){
       width: w || 520,
       height: h || 600,
       bg, frame: fr, pose, pad, poseShift,
-      stickers: s.stickers.map(id => pbSticker(id)).filter(Boolean)
+      props: s.props.map(id => pbProp(id)).filter(Boolean),
+      stickers: s.stickers.map(id => {
+        const base = pbSticker(id);
+        if (!base) return null;
+        const pos = s.stickerPos && s.stickerPos[id];
+        return pos ? Object.assign({}, base, {x: pos.x, y: pos.y}) : base;
+      }).filter(Boolean)
     };
   }
 
   return {
-    PB_KEY, PB_MAX, PB_POSES, PB_BGS, PB_FRAMES, PB_STICKERS,
-    pbPose, pbBg, pbFrame, pbSticker, pbFreshShot, pbCleanShot, pbToggleSticker,
+    PB_KEY, PB_MAX, PB_POSES, PB_BGS, PB_FRAMES, PB_PROPS, PB_STICKERS,
+    pbPose, pbBg, pbFrame, pbProp, pbSticker, pbFreshShot, pbCleanShot, pbToggleProp, pbToggleSticker, pbSetStickerPos,
     pbNeed2dFallback, pbIsPhotoData, pbGallery, pbStore, pbDelete, pbLayout
   };
 });
@@ -13086,8 +13145,9 @@ const MODE_CONTROLS = {
   stable: {kb: ['E: care / mount / get off', 'Space: jump (on your pony)', 'Esc: close the pony picker'], pad: ['Ⓧ: care / mount / get off', 'Ⓐ: jump (on your pony)'], touch: ['Tap 🐴 actions'], walk: true},
   icecream: {kb: ['E: use a scoop station', 'Esc: close the station'], pad: ['Ⓧ: use a scoop station', 'Ⓑ: close'], touch: ['Tap 🍦 Station to scoop'], walk: true},
   tower: {kb: ['Climb! Gold pads are checkpoints'], pad: ['Climb! Gold pads are checkpoints'], touch: ['Climb! Gold pads are checkpoints'], walk: true},
-  photostudio: {kb: ['E: take a photo', 'Space or Enter: snap', 'Q / E: pose', 'B: backdrop', 'F: framing', 'C: angle', 'T: shape', 'K: border', 'G: your photos', 'Esc: done'],
-    pad: ['Ⓧ: take a photo', 'Ⓐ: snap', 'LB / RB: pose', '✚◀▶: backdrop', '✚▲: framing', '✚▼: angle', 'Ⓧ (camera on): border', 'LT / RT: shape', 'Ⓨ: your photos', 'Ⓑ: done'], touch: ['Tap 📸 Take Photo, then tap the bar to change pose and backdrop', '📸 Snap!'], walk: true},
+  photostudio: {kb: ['E: take a photo', 'Space or Enter: snap', 'Q / E: pose', 'B: backdrop', 'F: framing', 'C: angle', 'T: shape', 'K: border', 'O: props & stickers', 'R / N: cycle prop / sticker', 'G: your photos', 'Esc: done'],
+    pad: ['Ⓧ: take a photo', 'Ⓐ: snap', 'LB / RB: pose', '✚◀▶: backdrop', '✚▲: framing', '✚▼: angle', 'Ⓧ (camera on): border', 'LT / RT: shape', 'L3: props & stickers', 'Ⓨ: your photos', 'Ⓑ: done'],
+    touch: ['Tap 📸 Take Photo, then tap the bar for pose, props & stickers', 'Tap Props & ✨ to toggle silly props & stickers; tap frame to move stickers', '📸 Snap!'], walk: true},
   waterpark: {kb: ['E: ride', 'R: rides menu', 'On a float: A / D steer, Space paddle'], pad: ['Ⓧ: ride', 'Ⓨ: rides menu', 'On a float: left stick steers, Ⓐ paddles'], touch: ['Tap a ride button', 'On a float: left thumb steers, ⬆️ paddles'], walk: true},
   bakery: {kb: ['E: use a cake station', 'Esc: close'], pad: ['Ⓧ: use a cake station', 'Ⓑ: close'], touch: ['Tap 🎂 Station to bake'], walk: true},
   petisland: {kb: ['E: ask your pet', 'J: journal'], pad: ['Ⓧ: ask your pet', 'Ⓨ: journal'], touch: ['Tap 🐾 to ask your pet'], walk: true},
@@ -15939,7 +15999,9 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
   const FM_FEEDS = [
     {id:'hens', name:'Speckle hens', emoji:'🐔', x:12, z:fmZ(-18), r:2.2, blurb:'The Speckle hens fluff up and peck the grain. Thank you!'},
     {id:'sheep', name:'Cloudwool sheep', emoji:'🐑', x:-12, z:fmZ(-18), r:2.2, blurb:'The Cloudwool sheep nudge the clover and go baa in a tiny voice.'},
-    {id:'cows', name:'Butterspot cows', emoji:'🐄', x:16, z:fmZ(-32), r:2.4, blurb:'The Butterspot cows blink slowly and chew. They look very pleased.'}
+    {id:'cows', name:'Butterspot cows', emoji:'🐄', x:16, z:fmZ(-32), r:2.4, blurb:'The Butterspot cows blink slowly and chew. They look very pleased.'},
+    {id:'goats', name:'Cloverleaf goats', emoji:'🐐', x:-10, z:fmZ(-49), r:2.3, blurb:'The Cloverleaf goats nibble fresh hay, wiggle their floppy ears, and hop with joy!'},
+    {id:'bunnies', name:'Velvettail bunnies', emoji:'🐇', x:2, z:fmZ(-49), r:2.2, blurb:'The Velvettail bunnies twitch their pink noses and do happy little velvet hops!'}
   ];
   const FM_EGGS = [
     {id:'egg-1', name:'Warm egg', emoji:'🥚', x:10.2, z:fmZ(-16.2), r:1.4},
@@ -16008,7 +16070,9 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
     {id:'lamb', kind:'lamb', name:'Cloudwool lamb', emoji:'🐑', x:-18.2, z:fmZ(-39.2), r:1.8, needFeed:'sheep', names:['Clover','Puff','Woolly']},
     {id:'calf', kind:'calf', name:'Butterspot calf', emoji:'🐄', x:-21.6, z:fmZ(-39.4), r:1.9, needFeed:'cows', names:['Buttercup','Dot','Moo']},
     {id:'piglet', kind:'piglet', name:'Mudpuddle piglet', emoji:'🐷', x:-17.4, z:fmZ(-33.6), r:1.8, needFeed:null, names:['Puddle','Oinky','Peach']},
-    {id:'duckling', kind:'duckling', name:'Pondripple duckling', emoji:'🐤', x:-22.2, z:fmZ(-33.4), r:1.8, needFeed:null, names:['Ripple','Paddle','Bean']}
+    {id:'duckling', kind:'duckling', name:'Pondripple duckling', emoji:'🐤', x:-22.2, z:fmZ(-33.4), r:1.8, needFeed:null, names:['Ripple','Paddle','Bean']},
+    {id:'kid', kind:'kid', name:'Cloverleaf kid', emoji:'🐐', x:-16.8, z:fmZ(-36.6), r:1.8, needFeed:'goats', names:['Clover','Sprout','Skip']},
+    {id:'kit', kind:'kit', name:'Velvettail bunny', emoji:'🐇', x:-22.6, z:fmZ(-36.6), r:1.8, needFeed:'bunnies', names:['Velvet','Cotton','Hop']}
   ];
   const FM_NURSERY = {x:-19.5, z:fmZ(-36.5)};
   function fmPathLen(path){
@@ -16301,6 +16365,12 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
             return {kind:'talk', who:b.name, act:'👋 Look', text:'This little ' + b.name + ' is shy until the ' + ((feed && feed.name) || 'animals') + ' have been fed.'};
           }
           return {kind:'adopt', id:b.id, baby:b, act:(b.emoji||'🐾') + ' Adopt the ' + b.name, name:b.name};
+        }
+      }
+      for (let i = 0; i < FM_FEEDS.length; i++){
+        const f = FM_FEEDS[i];
+        if (Math.hypot((x||0) - f.x, (z||0) - f.z) <= (f.r || 2) && fmHas(fmLoad(state).fed, f.id)){
+          return {kind:'pet', id:f.id, name:f.name, emoji:f.emoji, act:'💕 Pet ' + f.name, text:'You pet the ' + f.name + '! They lean in with happy wiggles.'};
         }
       }
       if (fmAllDone(state) && Math.hypot((x||0) - FM_HOME_BUS.x, (z||0) - FM_HOME_BUS.z) <= FM_HOME_BUS.r){
@@ -19175,7 +19245,7 @@ requestAnimationFrame(animateLava);
   }
   function pbButtons(){
     const box = pbBox(); if (!box || box.hidden) return [];
-    return Array.prototype.slice.call(box.querySelectorAll('button')).filter(b => b && !b.disabled && !b.hidden);
+    return Array.prototype.slice.call(box.querySelectorAll('button')).filter(b => b && !b.disabled && !b.hidden && (!b.closest || !b.closest('[hidden]')));
   }
   function pbFocusAt(i){
     const list = pbButtons(); if (!list.length) return;
@@ -19200,12 +19270,17 @@ requestAnimationFrame(animateLava);
   }
   function pbOnChrome(key, id){
     const R = PhotoBoothRules, s = pb.shot || R.pbFreshShot();
-    const full = key === 'sticker' && (s.stickers || []).length >= 4 && (s.stickers || []).indexOf(id) < 0;
-    if (key === 'sticker') pb.shot = R.pbToggleSticker(s, id);
-    else { s[key] = id; pb.shot = R.pbCleanShot(s); }
+    const fullSticker = key === 'sticker' && (s.stickers || []).length >= 4 && (s.stickers || []).indexOf(id) < 0;
+    const fullProp = key === 'prop' && (s.props || []).length >= 4 && (s.props || []).indexOf(id) < 0;
+    if (key === 'sticker'){
+      pb.shot = R.pbToggleSticker(s, id);
+      if ((pb.shot.stickers || []).indexOf(id) >= 0) pb.lastSticker = id;
+    } else if (key === 'prop'){
+      pb.shot = R.pbToggleProp(s, id);
+    } else { s[key] = id; pb.shot = R.pbCleanShot(s); }
     pbPaintChrome(); pbPaint();
     // QA t330u: the 5th sticker used to do nothing at all. Say why.
-    if (full){ const h = document.querySelector('#avBooth .avbooth-h'); if (h){ h.textContent = '📸 Up to 4 stickers! Tap a lit one to take it off.'; clearTimeout(pb.hintT); pb.hintT = setTimeout(() => { h.textContent = '📸 Photo Booth'; }, 2600); } }
+    if (fullSticker || fullProp){ const h = document.querySelector('#avBooth .avbooth-h'); if (h){ h.textContent = fullProp ? '📸 Up to 4 props! Tap a lit one to take it off.' : '📸 Up to 4 stickers! Tap a lit one to take it off.'; clearTimeout(pb.hintT); pb.hintT = setTimeout(() => { h.textContent = '📸 Photo Booth'; }, 2600); } }
   }
   function pbPaintChrome(){
     const R = PhotoBoothRules, s = pb.shot || R.pbFreshShot();
@@ -19218,19 +19293,164 @@ requestAnimationFrame(animateLava);
         b.setAttribute('data-pb-key', key);
         b.setAttribute('data-pb-id', it.id);
         b.textContent = labelFn(it);
-        if (s[key] === it.id || (key === 'sticker' && (s.stickers||[]).indexOf(it.id)>=0)) b.classList.add('on');
+        if (s[key] === it.id || (key === 'sticker' && (s.stickers||[]).indexOf(it.id)>=0) || (key === 'prop' && (s.props||[]).indexOf(it.id)>=0)) b.classList.add('on');
         el.appendChild(b);
       });
     }
     row('avBoothPoses', R.PB_POSES, 'pose', it => it.emoji + ' ' + it.name);
     row('avBoothBgs', R.PB_BGS, 'bg', it => it.name);
     row('avBoothFrames', R.PB_FRAMES, 'frame', it => it.name);
+    row('avBoothProps', R.PB_PROPS || [], 'prop', it => it.emoji + ' ' + it.name);
     row('avBoothStickers', R.PB_STICKERS, 'sticker', it => it.emoji + ' ' + it.name);
   }
   function pbAv(){
     try { if (typeof draft !== 'undefined' && draft) return draft; } catch(e){}
     try { if (typeof avatar !== 'undefined' && avatar) return avatar; } catch(e){}
     return {};
+  }
+  function pbDrawProp2d(ctx, id){
+    if (!ctx || !ctx.arc || !ctx.moveTo || !ctx.fill || !ctx.stroke) return;
+    ctx.save();
+    if (id === 'glasses'){
+      ctx.lineWidth = 4; ctx.strokeStyle = '#2563eb'; ctx.fillStyle = 'rgba(219,238,255,.55)';
+      ctx.beginPath(); ctx.arc(112, 72, 13, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(148, 72, 13, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(125, 72); ctx.quadraticCurveTo(130, 67, 135, 72); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(90, 70); ctx.lineTo(99, 71); ctx.moveTo(161, 71); ctx.lineTo(170, 70); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,.8)';
+      ctx.beginPath(); ctx.arc(107, 67, 3, 0, Math.PI*2); ctx.arc(143, 67, 3, 0, Math.PI*2); ctx.fill();
+    } else if (id === 'shades'){
+      const star = (cx, cy, r1, r2) => {
+        ctx.beginPath();
+        for (let i = 0; i < 10; i++){
+          const a = -Math.PI/2 + i * Math.PI/5, r = i % 2 ? r2 : r1;
+          const x = cx + Math.cos(a)*r, y = cy + Math.sin(a)*r;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+      };
+      ctx.fillStyle = '#1d2340'; ctx.strokeStyle = '#ff4d94'; ctx.lineWidth = 3;
+      star(112, 72, 16, 8); ctx.fill(); ctx.stroke();
+      star(148, 72, 16, 8); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.moveTo(124, 71); ctx.lineTo(136, 71); ctx.stroke();
+    } else if (id === 'mustache'){
+      ctx.fillStyle = '#4a2c18'; ctx.strokeStyle = '#2b170b'; ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(130, 84);
+      ctx.bezierCurveTo(118, 78, 108, 92, 98, 84);
+      ctx.bezierCurveTo(104, 96, 120, 95, 130, 89);
+      ctx.bezierCurveTo(140, 95, 156, 96, 162, 84);
+      ctx.bezierCurveTo(152, 92, 142, 78, 130, 84);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+    } else if (id === 'party'){
+      ctx.fillStyle = '#8b5cf6'; ctx.strokeStyle = '#1d2340'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(108, 44); ctx.lineTo(130, -6); ctx.lineTo(152, 44); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.moveTo(116, 26); ctx.lineTo(144, 26); ctx.lineTo(147, 33); ctx.lineTo(113, 33); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#ff6fb5'; ctx.beginPath(); ctx.arc(130, -8, 8, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    } else if (id === 'ears'){
+      ctx.fillStyle = '#ff6fb5'; ctx.fillRect(92, 38, 76, 7);
+      [-1, 1].forEach(k => {
+        ctx.save(); ctx.translate(130 + k * 20, 40); ctx.rotate(k * 0.14);
+        ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#1d2340'; ctx.lineWidth = 2.5;
+        ctx.beginPath(); if (ctx.ellipse) ctx.ellipse(0, -24, 10, 26, 0, 0, Math.PI*2); else ctx.arc(0, -24, 12, 0, Math.PI*2);
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#ffb3c7';
+        ctx.beginPath(); if (ctx.ellipse) ctx.ellipse(0, -22, 5, 18, 0, 0, Math.PI*2); else ctx.arc(0, -22, 6, 0, Math.PI*2);
+        ctx.fill(); ctx.restore();
+      });
+    } else if (id === 'bubble'){
+      ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#1d2340'; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(166, 8, 78, 34, 12);
+      else ctx.rect(166, 8, 78, 34);
+      ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(176, 40); ctx.lineTo(164, 52); ctx.lineTo(188, 41); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ff4d6d'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('CHEESE!', 205, 25);
+    }
+    ctx.restore();
+  }
+  function pbDrawSticker2d(ctx, id, cx, cy, r){
+    if (!ctx || !ctx.arc || !ctx.moveTo || !ctx.fill){
+      ctx.fillText(id, cx, cy);
+      return;
+    }
+    ctx.save(); ctx.translate(cx, cy);
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    if (id === 'star'){
+      ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#d98200'; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++){
+        const a = -Math.PI/2 + i * Math.PI/5, d = i % 2 ? r * 0.45 : r;
+        const x = Math.cos(a)*d, y = Math.sin(a)*d;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#fff7c2'; ctx.beginPath(); ctx.arc(-r*0.2, -r*0.2, r*0.18, 0, Math.PI*2); ctx.fill();
+    } else if (id === 'heart'){
+      ctx.fillStyle = '#ff4d79'; ctx.strokeStyle = '#b51748'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(0, r*0.85);
+      ctx.bezierCurveTo(-r*1.2, r*0.15, -r*1.0, -r*0.9, 0, -r*0.3);
+      ctx.bezierCurveTo(r*1.0, -r*0.9, r*1.2, r*0.15, 0, r*0.85);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(-r*0.35, -r*0.35, r*0.18, 0, Math.PI*2); ctx.fill();
+    } else if (id === 'sparkle'){
+      const sp = (ox, oy, sr, c) => {
+        ctx.fillStyle = c; ctx.beginPath();
+        ctx.moveTo(ox, oy - sr); ctx.quadraticCurveTo(ox, oy, ox + sr, oy);
+        ctx.quadraticCurveTo(ox, oy, ox, oy + sr); ctx.quadraticCurveTo(ox, oy, ox - sr, oy);
+        ctx.quadraticCurveTo(ox, oy, ox, oy - sr); ctx.fill();
+      };
+      sp(-r*0.15, 0, r*0.85, '#ffd23f');
+      sp(r*0.55, -r*0.45, r*0.42, '#38bdf8');
+      sp(r*0.5, r*0.5, r*0.34, '#ff6fb5');
+    } else if (id === 'paw'){
+      ctx.fillStyle = '#ff8fab'; ctx.strokeStyle = '#9d174d'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(0, r*0.2, r*0.48, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      [[-0.55,-0.32],[-0.2,-0.56],[0.2,-0.56],[0.55,-0.32]].forEach(([dx, dy]) => {
+        ctx.beginPath(); ctx.arc(dx*r, dy*r, r*0.2, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      });
+    } else if (id === 'bow'){
+      ctx.fillStyle = '#ff6fb5'; ctx.strokeStyle = '#9d174d'; ctx.lineWidth = 2.2;
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-r*0.95, -r*0.55); ctx.lineTo(-r*0.95, r*0.55); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(r*0.95, -r*0.55); ctx.lineTo(r*0.95, r*0.55); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ffb3d9'; ctx.beginPath(); ctx.arc(0, 0, r*0.26, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    } else if (id === 'sun'){
+      ctx.strokeStyle = '#ff9f1c'; ctx.lineWidth = 3;
+      for (let i = 0; i < 8; i++){
+        const a = i * Math.PI/4;
+        ctx.beginPath(); ctx.moveTo(Math.cos(a)*r*0.66, Math.sin(a)*r*0.66); ctx.lineTo(Math.cos(a)*r*0.98, Math.sin(a)*r*0.98); ctx.stroke();
+      }
+      ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(0, 0, r*0.55, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#1d2340'; ctx.beginPath(); ctx.arc(-r*0.18, -r*0.08, 2.2, 0, Math.PI*2); ctx.arc(r*0.18, -r*0.08, 2.2, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(0, r*0.05, r*0.2, 0.2, Math.PI - 0.2); ctx.stroke();
+    } else if (id === 'rainbow'){
+      ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff'].forEach((c, i) => {
+        ctx.strokeStyle = c; ctx.lineWidth = Math.max(2, r*0.16);
+        ctx.beginPath(); ctx.arc(0, r*0.25, r*(0.92 - i*0.14), Math.PI, 0); ctx.stroke();
+      });
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(-r*0.65, r*0.32, r*0.28, 0, Math.PI*2); ctx.arc(r*0.65, r*0.32, r*0.28, 0, Math.PI*2); ctx.fill();
+    } else if (id === 'crown'){
+      ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#b97c00'; ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.moveTo(-r*0.85, r*0.55); ctx.lineTo(-r*0.85, -r*0.35); ctx.lineTo(-r*0.35, r*0.05); ctx.lineTo(0, -r*0.65); ctx.lineTo(r*0.35, r*0.05); ctx.lineTo(r*0.85, -r*0.35); ctx.lineTo(r*0.85, r*0.55); ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ff2d55'; ctx.beginPath(); ctx.arc(0, r*0.22, r*0.14, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function pbPlaceStickerAt(ev){
+    const cv = document.getElementById('avBoothCv'); if (!cv || !pb.shot) return;
+    const list = pb.shot.stickers || [];
+    if (!list.length) return;
+    const id = (pb.lastSticker && list.indexOf(pb.lastSticker) >= 0) ? pb.lastSticker : list[list.length - 1];
+    const rect = cv.getBoundingClientRect ? cv.getBoundingClientRect() : null;
+    if (!rect || !rect.width || !rect.height) return;
+    const x = (ev.clientX - rect.left) / rect.width;
+    const y = (ev.clientY - rect.top) / rect.height;
+    pb.shot = PhotoBoothRules.pbSetStickerPos(pb.shot, id, x, y);
+    pbPaint();
   }
   function pbPaint(){
     const cv = document.getElementById('avBoothCv'); if (!cv) return;
@@ -19251,17 +19471,36 @@ requestAnimationFrame(animateLava);
       ctx.scale(lay.poseShift.scale, lay.poseShift.scale);
       ctx.translate(-cv.width/2, -cv.height/2);
     }
-    try { if (typeof drawAvatar === 'function') drawAvatar(ctx, pbAv(), {}); } catch (e){}
+    try {
+      if (typeof drawAvatar === 'function'){
+        let avCv = pb.avCv;
+        if (!avCv && typeof document !== 'undefined' && document.createElement){ avCv = pb.avCv = document.createElement('canvas'); }
+        const avCtx = avCv && avCv.getContext ? avCv.getContext('2d') : null;
+        if (avCtx){
+          if (avCv.width !== cv.width || avCv.height !== cv.height){ avCv.width = cv.width; avCv.height = cv.height; }
+          drawAvatar(avCtx, pbAv(), {});
+          ctx.drawImage(avCv, 0, 0);
+        } else {
+          drawAvatar(ctx, pbAv(), {});
+        }
+      }
+    } catch (e){}
+    if ((lay.props || []).length){
+      ctx.save();
+      const s = Math.min(cv.width / 260, cv.height / 310);
+      ctx.scale(s, s); ctx.translate((cv.width / s - 260) / 2, 10);
+      lay.props.forEach(p => pbDrawProp2d(ctx, p.id));
+      ctx.restore();
+    }
     ctx.restore();
     if (lay.frame && lay.frame.color && pad){
       ctx.strokeStyle = lay.frame.color;
       ctx.lineWidth = pad;
       ctx.strokeRect(pad/2, pad/2, cv.width-pad, cv.height-pad);
     }
-    ctx.font = Math.round(cv.width * 0.08) + 'px sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const r = Math.round(cv.width * 0.055);
     (lay.stickers||[]).forEach(st => {
-      ctx.fillText(st.emoji, st.x * cv.width, st.y * cv.height);
+      pbDrawSticker2d(ctx, st.id, st.x * cv.width, st.y * cv.height, r);
     });
     pb.last = cv;
   }
@@ -19320,6 +19559,7 @@ requestAnimationFrame(animateLava);
     if (ev){ try { ev.preventDefault(); ev.stopPropagation(); if (ev.stopImmediatePropagation) ev.stopImmediatePropagation(); } catch (e){} }
     const key = t.getAttribute && t.getAttribute('data-pb-key');
     if (key){ pbOnChrome(key, t.getAttribute('data-pb-id')); return true; }
+    if (t.id === 'avBoothCv'){ pbPlaceStickerAt(ev); return true; }
     if (t.id === 'avBoothX'){ pbClose(); return true; }
     if (t.id === 'avBoothSnap'){ pbSnap(); return true; }
     if (t.id === 'avBoothDl'){ pbDownload(); return true; }
@@ -22951,6 +23191,8 @@ const Obby = (() => {
     calf:     {r: 0, name: 'Butterspot Calf', emoji: '🐄', base: .95, tm: 'segs', farm: true, cols: [['Butter', '#f4e8d0', '#6b4a2a'], ['Cream', '#fff4e6', '#3a2a1a'], ['Sand', '#e8d4b0', '#8b5a2a']]},
     piglet:   {r: 0, name: 'Mudpuddle Piglet', emoji: '🐷', base: .75, tm: 'puff', farm: true, cols: [['Peach', '#f3a6b0', '#ef8a98'], ['Rose', '#f4b8c0', '#e07080'], ['Blush', '#f7c8d0', '#d45a6a']]},
     duckling: {r: 0, name: 'Pondripple Duckling', emoji: '🐤', base: .7, tm: 'bird', farm: true, cols: [['Sunny', '#f4d15a', '#f4a04a'], ['Gold', '#ffd84d', '#ff9f1c'], ['Lemon', '#ffe08a', '#f4a04a']]},
+    kid:      {r: 0, name: 'Cloverleaf Kid', emoji: '🐐', base: .78, tm: 'puff', farm: true, cols: [['Clover', '#f5efe4', '#c89b6e'], ['Meadow', '#e8dfd1', '#8b6a4a'], ['Cream', '#fff8ee', '#d4a373']]},
+    kit:      {r: 0, name: 'Velvettail Bunny', emoji: '🐇', base: .72, tm: 'puff', farm: true, cols: [['Velvet', '#f2e9e4', '#ffb3c7'], ['Oat', '#e6ccb2', '#f7a1b8'], ['Cocoa', '#b08968', '#ffd6e0']]},
   };
   const PET_ORDER = Object.keys(PET_KINDS).sort((a, b) => PET_KINDS[a].r - PET_KINDS[b].r);   // the Pet Index order
   const STARTERS = ['mouse', 'cat', 'dog'];
@@ -23262,10 +23504,27 @@ const Obby = (() => {
       feet2(.06, .1, .02, .08, acc);
       tail = grp(0, .28, -.18); cone(.04, .1, acc, 0, .03, -.02, tail, 5).rotation.x = -1.2;
       neck = [0, .36, .12];
+    } else if (kind === 'kid'){
+      body = sph(.26, main, 0, .4, 0, .9, .88, 1.25); sph(.1, acc, .14, .44, .05, 1, .65, 1, inner, 5);
+      head = grp(0, .58, .3); sph(.16, main, 0, 0, 0, .92, .92, 1.08, head);
+      sph(.032, '#ff9fb4', 0, -.03, .16, 1.1, .7, .8, head, 5);
+      eye(head, .065, .04, .13, .038); eye(head, -.065, .04, .13, .038);
+      [-1, 1].forEach(k => { const h = cone(.026, .09, '#e6d2b5', k * .07, .15, -.02, head, 5); h.rotation.z = -k * .25;
+        const e = grp(k * .13, .05, -.02, head); sph(.06, acc, k * .04, -.03, 0, 1.25, .65, .45, e, 5); ears.push(e); });
+      legs4(.1, .14, -.16, .24, .24, .042, main, '#5a4232');
+      tail = grp(0, .48, -.3); sph(.055, acc, 0, .03, -.02, .8, 1.3, .8, tail, 5); neck = [0, .5, .24];
+    } else if (kind === 'kit'){
+      body = sph(.22, main, 0, .28, 0, 1.02, .94, 1.18);
+      head = grp(0, .46, .16); sph(.155, main, 0, 0, 0, 1.05, .96, 1, head);
+      sph(.03, '#ff8fa3', 0, -.02, .15, 1.2, .85, .8, head, 5);
+      eye(head, .065, .035, .12, .038); eye(head, -.065, .035, .12, .038);
+      [-1, 1].forEach(k => { const e = grp(k * .065, .12, -.02, head); sph(.052, main, 0, .12, 0, .75, 2.2, .45, e, 5); sph(.032, acc, 0, .11, .02, .65, 1.8, .35, e, 5); ears.push(e); });
+      legs4(.09, .1, -.12, .14, .12, .042, main, acc);
+      tail = grp(0, .26, -.24); sph(.08, '#ffffff', 0, 0, 0, 1, 1, 1, tail, 5); neck = [0, .4, .14];
     }
     return {body, head, tail, neck};
   }
-  const PET_H = {dog: 1.75, cat: 1.6, mouse: 1.25, bunny: 1.75, hamster: 1.3, duck: 1.55, frog: 1.15, pie: 1.05, turtle: 1.2, hedgehog: 1.2, fox: 1.7, penguin: 1.85, owl: 1.85, koala: 1.75, redpanda: 1.65, snowleo: 1.7, phoenix: 1.6, unicorn: 2.5, dragon: 2.0, chick: 1.05, lamb: 1.15, calf: 1.35, piglet: 1.05, duckling: 1.05};
+  const PET_H = {dog: 1.75, cat: 1.6, mouse: 1.25, bunny: 1.75, hamster: 1.3, duck: 1.55, frog: 1.15, pie: 1.05, turtle: 1.2, hedgehog: 1.2, fox: 1.7, penguin: 1.85, owl: 1.85, koala: 1.75, redpanda: 1.65, snowleo: 1.7, phoenix: 1.6, unicorn: 2.5, dragon: 2.0, chick: 1.05, lamb: 1.15, calf: 1.35, piglet: 1.05, duckling: 1.05, kid: 1.15, kit: 1.05};
   function buildPet(kind, ci, stage){
     const K = PET_KINDS[kind] || PET_KINDS.dog, col = K.cols[ci] || K.cols[0], main = col[1], acc = col[2], S = STAGES[stage] || STAGES[0];
     const g = new THREE.Group(), inner = new THREE.Group(); g.add(inner);
@@ -27924,14 +28183,37 @@ const Obby = (() => {
     {id: 'hero', e: '🦸', n: 'Hero (low)', yaw: 0, h: -1.1}, {id: 'top', e: '🚁', n: 'From Above', yaw: 0, h: 2.6}];
   const PS_SHAPES = [{id: 'tall', e: '📱', n: 'Tall', r: 4 / 5}, {id: 'sq', e: '⬛', n: 'Square', r: 1}, {id: 'wide', e: '🖥️', n: 'Wide', r: 16 / 9}];
   const PS_BORDERS = [{id: 'none', e: '⬜', n: 'No Border'}, {id: 'pola', e: '🖼️', n: 'Snapshot'}, {id: 'stars', e: '✨', n: 'Sparkles'}, {id: 'hearts', e: '💕', n: 'Hearts'}, {id: 'film', e: '🎞️', n: 'Film Strip'}];
+  const PS_PROPS = [
+    {id: 'glasses', e: '🤓', n: 'Goofy Glasses'}, {id: 'mustache', e: '🥸', n: 'Mustache'},
+    {id: 'party', e: '🥳', n: 'Party Hat'}, {id: 'ears', e: '🐰', n: 'Bunny Ears'},
+    {id: 'shades', e: '😎', n: 'Star Shades'}, {id: 'bubble', e: '💬', n: 'Speech Bubble'}
+  ];
+  const PS_STICKERS = [
+    {id: 'star', e: '⭐', n: 'Star', x: .14, y: .16}, {id: 'heart', e: '💕', n: 'Heart', x: .86, y: .16},
+    {id: 'sparkle', e: '✨', n: 'Sparkles', x: .14, y: .82}, {id: 'rainbow', e: '🌈', n: 'Rainbow', x: .86, y: .82},
+    {id: 'crown', e: '👑', n: 'Crown', x: .5, y: .13}, {id: 'paw', e: '🐾', n: 'Paw', x: .5, y: .86}
+  ];
   const PS_POSE_N = () => FS_POSES.length + 1;   // 0 = natural (your normal idle)
   const PS_OPTS = {bg: PS_BGS, frame: PS_FRAMES, angle: PS_ANGLES, shape: PS_SHAPES, border: PS_BORDERS};
   const PS_MARK = [0, 0];   // stage spot (stage top is at y = .4)
   let psx = null;
   const psClamp = (v, n) => Math.max(0, Math.min(n - 1, v | 0));
+  function psCleanProps(a){ const out = []; (Array.isArray(a) ? a : []).forEach(id => { if (PS_PROPS.some(p => p.id === id) && out.indexOf(id) < 0) out.push(id); }); return out.slice(0, 4); }
+  function psCleanStickers(a){ const out = []; (Array.isArray(a) ? a : []).forEach(s => {
+    const id = typeof s === 'string' ? s : (s && s.id), base = PS_STICKERS.find(k => k.id === id);
+    if (!base || out.some(k => k.id === id)) return;
+    const x = s && Number.isFinite(+s.x) ? Math.max(.06, Math.min(.94, +s.x)) : base.x;
+    const y = s && Number.isFinite(+s.y) ? Math.max(.06, Math.min(.94, +s.y)) : base.y;
+    out.push({id, x, y});
+  }); return out.slice(0, 6); }
   function psSet(){ const r = load(PS_KEY, null), o = r && typeof r === 'object' ? r : {};
-    return {bg: psClamp(o.bg, PS_BGS.length), frame: psClamp(o.frame, PS_FRAMES.length), angle: psClamp(o.angle, PS_ANGLES.length), shape: psClamp(o.shape, PS_SHAPES.length),
-      border: psClamp(o.border, PS_BORDERS.length), pose: psClamp(o.pose, PS_POSE_N()), shots: Math.max(0, o.shots | 0)}; }
+    const res = {bg: psClamp(o.bg, PS_BGS.length), frame: psClamp(o.frame, PS_FRAMES.length), angle: psClamp(o.angle, PS_ANGLES.length), shape: psClamp(o.shape, PS_SHAPES.length),
+      border: psClamp(o.border, PS_BORDERS.length), pose: psClamp(o.pose, PS_POSE_N()), shots: Math.max(0, o.shots | 0)};
+    const pr = psCleanProps(o.props), st = psCleanStickers(o.stickers);
+    if (pr.length) res.props = pr;
+    if (st.length) res.stickers = st;
+    return res; }
+  function psSaveSet(){ if (!psx) return; const S = Object.assign({}, psx.s); if (psx.props && psx.props.length) S.props = psx.props.slice(); else delete S.props; if (psx.stickers && psx.stickers.length) S.stickers = psx.stickers.map(s => ({id: s.id, x: +s.x.toFixed(3), y: +s.y.toFixed(3)})); else delete S.stickers; save(PS_KEY, S); }
   function psGallery(){ const r = load(PS_GAL, []); return (Array.isArray(r) ? r : []).filter(p => p && typeof p.d === 'string' && /^data:image\/(jpeg|png);base64,/.test(p.d) && +p.t > 0).slice(-PS_MAX).map(p => ({id: String(p.id || p.t).slice(0, 24), t: +p.t, d: p.d, bg: psClamp(p.bg, PS_BGS.length)})); }
   // store a photo; if the device is out of room, drop the oldest until it fits. Returns how many are kept (0 = could not save, download it instead).
   function psStore(photo){
@@ -27940,7 +28222,7 @@ const Obby = (() => {
     return 0;
   }
   function psDelete(id){ const g = psGallery().filter(p => p.id !== id); try { localStorage.setItem(PS_GAL, JSON.stringify(g)); } catch (e){} return g.length; }
-  function psCycle(k, dir){ if (!psx) return; const n = k === 'pose' ? PS_POSE_N() : PS_OPTS[k].length; psx.s[k] = ((psx.s[k] + (dir || 1)) % n + n) % n; save(PS_KEY, psx.s); if (k === 'bg') psPaintBackdrop(); psHud(); }
+  function psCycle(k, dir){ if (!psx) return; if (k === 'extras'){ psTrayToggle(); return; } const n = k === 'pose' ? PS_POSE_N() : PS_OPTS[k].length; psx.s[k] = ((psx.s[k] + (dir || 1)) % n + n) % n; psSaveSet(); if (k === 'bg') psPaintBackdrop(); psHud(); }
   // camera for the current framing/angle; the player stands on the mark facing +z (towards the camera)
   function psCamPos(s, px, py, pz){ const F = PS_FRAMES[s.frame], A = PS_ANGLES[s.angle], ty = py + F.y;
     return {x: px + Math.sin(A.yaw) * F.d, y: ty + A.h * (F.d / 7.2) + (s.frame === 2 ? 0 : .2), z: pz + Math.cos(A.yaw) * F.d, tx: px, ty, tz: pz}; }
@@ -27958,7 +28240,8 @@ const Obby = (() => {
   function psPaintBackdrop(){ if (!psx || !psx.bdC) return; psBgPaint(psx.bdC.getContext('2d'), psx.bdC.width, psx.bdC.height, psx.s.bg); psx.bdT.needsUpdate = true; scene.background = new THREE.Color(PS_BGS[psx.s.bg].a); }
   function buildPhotoStudio(){
     scene.background = new THREE.Color('#ffe9f5');
-    psx = {s: psSet(), cam: false, count: 0, flash: 0, gal: false, view: null, near: false, last: null, bdC: null, bdT: null};
+    const init = psSet();
+    psx = {s: init, props: psCleanProps(init.props), stickers: psCleanStickers(init.stickers), activeSticker: null, tray: false, trayIdx: 0, propG: null, cam: false, count: 0, flash: 0, gal: false, view: null, near: false, last: null, bdC: null, bdT: null};
     plat(0, 0, 0, 40, 40, '#f7d9ea', 2);
     [[0, -20, 40, 1], [0, 20, 40, 1], [-20, 0, 1, 40], [20, 0, 1, 40]].forEach(([x, z, w, d]) => plat(x, 6, z, w, d, '#ffffff', 6, {noEdge: true}));
     plat(0, .4, -1, 9, 7, '#ffffff', .4);   // stage
@@ -27981,9 +28264,196 @@ const Obby = (() => {
   }
   function photostudioEnter(){ P.face = Math.PI; psHud(); }
   function psOnMark(){ return Math.hypot(P.x - PS_MARK[0], P.z - PS_MARK[1]) < 2.2; }
+  function psClearProps3D(){
+    if (!psx || !psx.propG) return;
+    try { if (psx.propG.parent) psx.propG.parent.remove(psx.propG);
+      psx.propG.traverse(o => { if (o.geometry) o.geometry.dispose(); [].concat(o.material || []).forEach(m => { if (m.map) m.map.dispose(); m.dispose(); }); });
+    } catch (e){}
+    psx.propG = null;
+  }
+  function psSyncProps(){
+    psClearProps3D();
+    if (!psx || !psx.props || !psx.props.length) return;
+    if (typeof THREE === 'undefined' || typeof model === 'undefined' || !model || !model.head) return;
+    const g = new THREE.Group(), mat = c => new THREE.MeshLambertMaterial({color: c});
+    const addM = (geo, c, x, y, z, rx = 0, ry = 0, rz = 0, par = g) => { const m = new THREE.Mesh(geo, mat(c)); m.position.set(x, y, z); m.rotation.set(rx, ry, rz); par.add(m); return m; };
+    psx.props.forEach(id => {
+      if (id === 'glasses'){
+        [-1, 1].forEach(k => {
+          addM(new THREE.TorusGeometry(.13, .028, 8, 16), '#2563eb', k * .17, .46, .43);
+          const lens = new THREE.Mesh(new THREE.CircleGeometry(.115, 14), new THREE.MeshBasicMaterial({color: '#dbeeff', transparent: true, opacity: .55, side: THREE.DoubleSide}));
+          lens.position.set(k * .17, .46, .435); g.add(lens);
+          addM(new THREE.BoxGeometry(.03, .03, .36), '#2563eb', k * .32, .46, .25);
+        });
+        addM(new THREE.BoxGeometry(.1, .035, .035), '#2563eb', 0, .47, .44);
+      } else if (id === 'shades'){
+        [-1, 1].forEach(k => {
+          addM(new THREE.CylinderGeometry(.14, .14, .03, 5), '#1d2340', k * .17, .46, .43, Math.PI/2);
+          addM(new THREE.TorusGeometry(.135, .024, 6, 5), '#ff4d94', k * .17, .46, .438);
+          addM(new THREE.BoxGeometry(.03, .03, .36), '#ff4d94', k * .32, .46, .25);
+        });
+        addM(new THREE.BoxGeometry(.1, .035, .035), '#ffd23f', 0, .47, .44);
+      } else if (id === 'mustache'){
+        addM(new THREE.BoxGeometry(.18, .06, .06), '#4a2c18', -.08, .25, .43, 0, 0, .18);
+        addM(new THREE.BoxGeometry(.18, .06, .06), '#4a2c18', .08, .25, .43, 0, 0, -.18);
+        addM(new THREE.SphereGeometry(.045, 7, 5), '#4a2c18', -.18, .27, .43);
+        addM(new THREE.SphereGeometry(.045, 7, 5), '#4a2c18', .18, .27, .43);
+      } else if (id === 'party'){
+        addM(new THREE.ConeGeometry(.28, .72, 12), '#8b5cf6', 0, 1.18, 0);
+        addM(new THREE.TorusGeometry(.27, .04, 6, 14), '#ffd23f', 0, .86, 0, Math.PI/2);
+        addM(new THREE.SphereGeometry(.095, 8, 6), '#ff6fb5', 0, 1.56, 0);
+      } else if (id === 'ears'){
+        addM(new THREE.TorusGeometry(.42, .04, 6, 16, Math.PI), '#ff6fb5', 0, .84, 0);
+        [-1, 1].forEach(k => {
+          const piv = new THREE.Group(); piv.position.set(k * .2, .9, 0); piv.rotation.z = -k * .15; g.add(piv);
+          addM(new THREE.BoxGeometry(.15, .62, .07), '#ffffff', 0, .28, 0, 0, 0, 0, piv);
+          addM(new THREE.BoxGeometry(.08, .44, .02), '#ffb3c7', 0, .27, .035, 0, 0, 0, piv);
+        });
+      } else if (id === 'bubble'){
+        try {
+          const cv = document.createElement('canvas'); cv.width = 256; cv.height = 128;
+          const cx = cv.getContext('2d');
+          if (cx && cx.roundRect){
+            cx.fillStyle = '#ffffff'; cx.strokeStyle = '#1d2340'; cx.lineWidth = 8;
+            cx.beginPath(); cx.roundRect(12, 10, 232, 86, 26); cx.fill(); cx.stroke();
+            cx.beginPath(); cx.moveTo(46, 94); cx.lineTo(22, 122); cx.lineTo(76, 95); cx.closePath(); cx.fill(); cx.stroke();
+          } else if (cx){ cx.fillStyle = '#ffffff'; cx.fillRect(12, 10, 232, 86); }
+          if (cx){ cx.fillStyle = '#ff4d6d'; cx.font = 'bold 42px sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText('CHEESE!', 128, 53); }
+          const tex = new THREE.CanvasTexture(cv);
+          const sp = new THREE.Mesh(new THREE.PlaneGeometry(1.15, .58), new THREE.MeshBasicMaterial({map: tex, transparent: true, side: THREE.DoubleSide}));
+          sp.position.set(1.26, 1.05, .38); g.add(sp);
+        } catch (e){}
+      }
+    });
+    model.head.add(g); psx.propG = g;
+  }
+  function psDrawSticker2d(ctx, id, cx, cy, r){
+    if (!ctx || !ctx.arc || !ctx.moveTo || !ctx.fill){ ctx.fillText(id, cx, cy); return; }
+    ctx.save(); ctx.translate(cx, cy); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    if (id === 'star'){
+      ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#d98200'; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++){ const a = -Math.PI/2 + i * Math.PI/5, d = i % 2 ? r*.45 : r; const x = Math.cos(a)*d, y = Math.sin(a)*d; if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#fff7c2'; ctx.beginPath(); ctx.arc(-r*.2, -r*.2, r*.18, 0, Math.PI*2); ctx.fill();
+    } else if (id === 'heart'){
+      ctx.fillStyle = '#ff4d79'; ctx.strokeStyle = '#b51748'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(0, r*.85);
+      ctx.bezierCurveTo(-r*1.2, r*.15, -r*1.0, -r*.9, 0, -r*.3);
+      ctx.bezierCurveTo(r*1.0, -r*.9, r*1.2, r*.15, 0, r*.85);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(-r*.35, -r*.35, r*.18, 0, Math.PI*2); ctx.fill();
+    } else if (id === 'sparkle'){
+      const sp = (ox, oy, sr, c) => {
+        ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(ox, oy - sr); ctx.quadraticCurveTo(ox, oy, ox + sr, oy);
+        ctx.quadraticCurveTo(ox, oy, ox, oy + sr); ctx.quadraticCurveTo(ox, oy, ox - sr, oy); ctx.quadraticCurveTo(ox, oy, ox, oy - sr); ctx.fill();
+      };
+      sp(-r*.15, 0, r*.85, '#ffd23f'); sp(r*.55, -r*.45, r*.42, '#38bdf8'); sp(r*.5, r*.5, r*.34, '#ff6fb5');
+    } else if (id === 'rainbow'){
+      ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff'].forEach((c, i) => {
+        ctx.strokeStyle = c; ctx.lineWidth = Math.max(2, r*.16);
+        ctx.beginPath(); ctx.arc(0, r*.25, r*(.92 - i*.14), Math.PI, 0); ctx.stroke();
+      });
+      ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-r*.65, r*.32, r*.28, 0, Math.PI*2); ctx.arc(r*.65, r*.32, r*.28, 0, Math.PI*2); ctx.fill();
+    } else if (id === 'crown'){
+      ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#b97c00'; ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.moveTo(-r*.85, r*.55); ctx.lineTo(-r*.85, -r*.35); ctx.lineTo(-r*.35, r*.05); ctx.lineTo(0, -r*.65); ctx.lineTo(r*.35, r*.05); ctx.lineTo(r*.85, -r*.35); ctx.lineTo(r*.85, r*.55); ctx.closePath();
+      ctx.fill(); ctx.stroke(); ctx.fillStyle = '#ff2d55'; ctx.beginPath(); ctx.arc(0, r*.22, r*.14, 0, Math.PI*2); ctx.fill();
+    } else if (id === 'paw'){
+      ctx.fillStyle = '#ff8fab'; ctx.strokeStyle = '#9d174d'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(0, r*.2, r*.48, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      [[-.55,-.32],[-.2,-.56],[.2,-.56],[.55,-.32]].forEach(([dx, dy]) => { ctx.beginPath(); ctx.arc(dx*r, dy*r, r*.2, 0, Math.PI*2); ctx.fill(); ctx.stroke(); });
+    }
+    ctx.restore();
+  }
+  function psToggleProp(id){
+    if (!psx || !PS_PROPS.some(p => p.id === id)) return false;
+    const i = psx.props.indexOf(id);
+    if (i >= 0) psx.props.splice(i, 1);
+    else if (psx.props.length < 4) psx.props.push(id);
+    else { banner('🎭 Up to 4 props! Tap a lit one to take it off.'); return false; }
+    psSaveSet(); psSyncProps(); psHud(); return true;
+  }
+  function psToggleSticker(id){
+    if (!psx) return false;
+    const base = PS_STICKERS.find(s => s.id === id); if (!base) return false;
+    const i = psx.stickers.findIndex(s => s.id === id);
+    if (i >= 0){ psx.stickers.splice(i, 1); if (psx.activeSticker === id) psx.activeSticker = psx.stickers.length ? psx.stickers[psx.stickers.length - 1].id : null; }
+    else if (psx.stickers.length < 6){ psx.stickers.push({id: base.id, x: base.x, y: base.y}); psx.activeSticker = id; }
+    else { banner('✨ Up to 6 stickers! Tap a lit one to take it off.'); return false; }
+    psSaveSet(); psHud(); return true;
+  }
+  function psMoveSticker(id, x, y){
+    if (!psx) return false;
+    const st = psx.stickers.find(s => s.id === id) || psx.stickers[psx.stickers.length - 1];
+    if (!st) return false;
+    st.x = Math.max(.06, Math.min(.94, +x || .5)); st.y = Math.max(.06, Math.min(.94, +y || .5));
+    psSaveSet(); psOverlayPaint(); return true;
+  }
+  function psClearExtras(){
+    if (!psx) return;
+    psx.props = []; psx.stickers = []; psx.activeSticker = null;
+    psSaveSet(); psSyncProps(); psHud();
+  }
+  function psTrayToggle(open){
+    if (!psx) return false;
+    psx.tray = open === undefined ? !psx.tray : !!open;
+    psx.trayIdx = 0; psHud(); return psx.tray;
+  }
+  function psOverlayClick(ev){
+    if (!psx || !psx.cam || !psx.stickers.length) return false;
+    const cv = $('#psOverlay'); if (!cv || !cv.getBoundingClientRect) return false;
+    const r = cv.getBoundingClientRect(); if (!r.width || !r.height) return false;
+    const cr = psCrop(r.width, r.height, PS_SHAPES[psx.s.shape].r);
+    const lx = ev.clientX - r.left, ly = ev.clientY - r.top;
+    if (lx < cr.x || lx > cr.x + cr.w || ly < cr.y || ly > cr.y + cr.h) return false;
+    const id = psx.activeSticker || psx.stickers[psx.stickers.length - 1].id;
+    return psMoveSticker(id, (lx - cr.x) / cr.w, (ly - cr.y) / cr.h);
+  }
+  function psOverlayPaint(){
+    const cv = $('#psOverlay'); if (!cv || !cv.getContext) return;
+    const on = !!(psx && psx.cam && !psx.gal);
+    cv.classList.toggle('show', on);
+    cv.classList.toggle('pick', on && !!(psx.stickers && psx.stickers.length));
+    if (!on) return;
+    const w = (typeof innerWidth === 'number' && innerWidth > 0) ? innerWidth : 1280;
+    const h = (typeof innerHeight === 'number' && innerHeight > 0) ? innerHeight : 800;
+    if (cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
+    const ctx = cv.getContext('2d'); if (!ctx) return;
+    if (ctx.clearRect) ctx.clearRect(0, 0, w, h);
+    const cr = psCrop(w, h, PS_SHAPES[psx.s.shape].r);
+    if (ctx.strokeRect){
+      ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 2;
+      if (ctx.setLineDash) ctx.setLineDash([8, 6]);
+      ctx.strokeRect(cr.x + 1, cr.y + 1, cr.w - 2, cr.h - 2);
+      ctx.restore();
+    }
+    const r = Math.max(16, Math.round(Math.min(cr.w, cr.h) * .065));
+    (psx.stickers || []).forEach(st => psDrawSticker2d(ctx, st.id, cr.x + st.x * cr.w, cr.y + st.y * cr.h, r));
+  }
+  function psTrayRender(){
+    const tray = $('#psTray'); if (!tray || !psx) return;
+    const on = !!(psx.cam && psx.tray && !psx.gal);
+    tray.classList.toggle('show', on);
+    if (!on) return;
+    tray.innerHTML = '<div class="psrow"><b>🎭 Props</b>' + PS_PROPS.map(p =>
+      '<button type="button" data-ps-prop="' + p.id + '" class="' + (psx.props.includes(p.id) ? 'on' : '') + '">' + p.e + ' ' + p.n + '</button>'
+    ).join('') + '</div><div class="psrow"><b>✨ Stickers</b>' + PS_STICKERS.map(s =>
+      '<button type="button" data-ps-stik="' + s.id + '" class="' + (psx.stickers.some(x => x.id === s.id) ? 'on' : '') + '">' + s.e + ' ' + s.n + '</button>'
+    ).join('') + ((psx.props.length || psx.stickers.length) ? '<button type="button" id="psClearEx">🧹 Clear</button>' : '') +
+      '</div><div class="pstip">Tap props or stickers · tap the frame to move your sticker!</div>';
+    const btns = Array.prototype.slice.call(tray.querySelectorAll('button'));
+    btns.forEach((b, idx) => {
+      if (b.dataset && b.dataset.psProp) b.onclick = () => psToggleProp(b.dataset.psProp);
+      else if (b.dataset && b.dataset.psStik) b.onclick = () => psToggleSticker(b.dataset.psStik);
+      else if (b.id === 'psClearEx') b.onclick = () => psClearExtras();
+      b.classList.toggle('gpf', idx === ((psx.trayIdx || 0) % Math.max(1, btns.length)));
+    });
+  }
   function psCamOn(on){
-    if (!psx) return; psx.cam = on; psx.count = 0;
-    if (on){ Object.assign(P, {x: PS_MARK[0], y: .45, z: PS_MARK[1], vx: 0, vy: 0, vz: 0}); P.face = 0; for (const k in keys) keys[k] = false; banner('📸 Camera on! You\'re on the photo spot — pick a pose and backdrop, then press 📸 Snap!'); }
+    if (!psx) return; psx.cam = on; psx.count = 0; if (!on) psx.tray = false;
+    if (on){ Object.assign(P, {x: PS_MARK[0], y: .45, z: PS_MARK[1], vx: 0, vy: 0, vz: 0}); P.face = 0; for (const k in keys) keys[k] = false; psSyncProps(); banner('📸 Camera on! Pick poses, backdrops, silly props & stickers, then press 📸 Snap!'); }
+    else psClearProps3D();
     psHud();
   }
   function psSnap(){ if (!psx || !psx.cam || psx.count > 0) return false; psx.count = 3.01; psHud(); return true; }
@@ -27996,9 +28466,11 @@ const Obby = (() => {
     ctx.fillStyle = S.border === 4 ? '#14141c' : '#ffffff'; ctx.fillRect(0, 0, out.w, out.h);
     try { ctx.drawImage(src, cr.x, cr.y, cr.w, cr.h, pad, pad, out.w - pad * 2, out.h - pad - bottom); } catch (e){ return null; }
     psDecorate(ctx, out.w, out.h, S.border, bottom);
+    const iw = out.w - pad * 2, ih = out.h - pad - bottom, sr = Math.max(18, Math.round(Math.min(iw, ih) * .065));
+    (psx.stickers || []).forEach(st => psDrawSticker2d(ctx, st.id, pad + st.x * iw, pad + st.y * ih, sr));
     let d; try { d = cv.toDataURL('image/jpeg', .85); } catch (e){ return null; }
     const t = Date.now(), photo = {id: 'p' + t, t, d, bg: S.bg}; psx.last = photo; psx.flash = 1;
-    S.shots++; save(PS_KEY, S);
+    S.shots++; psSaveSet();
     const kept = psStore(photo); banner(kept ? '📸 Snap! Saved on this device (' + kept + '/' + PS_MAX + ') — tap 🖼️ to see or download it' : '📸 Snap! This device is out of photo space — download it from 🖼️');
     SND.cp && SND.cp(); return photo;
   }
@@ -28026,9 +28498,11 @@ const Obby = (() => {
     if (!psx) return; const S = psx.s, pz = S.pose ? FS_POSES[S.pose - 1] : {e: '🙂', n: 'Natural'};
     $('#psBar').classList.toggle('show', psx.cam); $('#psCamBtn').classList.toggle('show', !psx.cam && !psx.gal);   // always there in the studio — no hunting for the spot
     $('#psN').textContent = '📸 Photos: ' + psGallery().length + '/' + PS_MAX;
+    psOverlayPaint(); psTrayRender();
     if (!psx.cam) return;
-    const lab = {pose: pz.e + ' ' + pz.n, bg: PS_BGS[S.bg].e + ' ' + PS_BGS[S.bg].n, frame: PS_FRAMES[S.frame].e + ' ' + PS_FRAMES[S.frame].n, angle: PS_ANGLES[S.angle].e + ' ' + PS_ANGLES[S.angle].n, shape: PS_SHAPES[S.shape].e + ' ' + PS_SHAPES[S.shape].n, border: PS_BORDERS[S.border].e + ' ' + PS_BORDERS[S.border].n};
+    const lab = {pose: pz.e + ' ' + pz.n, bg: PS_BGS[S.bg].e + ' ' + PS_BGS[S.bg].n, frame: PS_FRAMES[S.frame].e + ' ' + PS_FRAMES[S.frame].n, angle: PS_ANGLES[S.angle].e + ' ' + PS_ANGLES[S.angle].n, shape: PS_SHAPES[S.shape].e + ' ' + PS_SHAPES[S.shape].n, border: PS_BORDERS[S.border].e + ' ' + PS_BORDERS[S.border].n, extras: '🎭 ' + (psx.props ? psx.props.length : 0) + ' · ✨ ' + (psx.stickers ? psx.stickers.length : 0)};
     Object.keys(lab).forEach(k => { const e = $('#psV_' + k); if (e) e.textContent = lab[k]; });
+    const eb = $('#psExtrasBtn'); if (eb) eb.classList.toggle('on', !!psx.tray);
     $('#psSnap').textContent = psx.count > 0 ? Math.ceil(psx.count) + '…' : '📸 Snap!';
   }
   function photostudioUpdate(dt){
@@ -28132,6 +28606,19 @@ const Obby = (() => {
   function psAct(){ if (!psx) return false; if (psx.cam) return psSnap(); psCamOn(true); return true; }   // works from anywhere: you're placed on the photo spot automatically
   function psPad(jp){ if (!psx) return false; if (psx.gal) return false;
     if (!psx.cam){ if (jp[2]){ psAct(); return true; } if (jp[3]){ psGalOpen(true); return true; } return false; }
+    if (jp[10]){ psTrayToggle(); return true; }
+    if (psx.tray){
+      const tray = $('#psTray'), btns = tray && tray.querySelectorAll ? Array.prototype.slice.call(tray.querySelectorAll('button')) : [];
+      if (jp[1]){ psTrayToggle(false); return true; }
+      if (jp[2]){ psSnap(); return true; }
+      if (jp[3]){ psGalOpen(true); return true; }
+      if (btns.length){
+        if (jp[15] || jp[13] || jp[5]){ psx.trayIdx = ((psx.trayIdx || 0) + 1) % btns.length; psTrayRender(); return true; }
+        if (jp[14] || jp[12] || jp[4]){ psx.trayIdx = ((psx.trayIdx || 0) - 1 + btns.length) % btns.length; psTrayRender(); return true; }
+        if (jp[0]){ const b = btns[(psx.trayIdx || 0) % btns.length]; if (b && b.onclick) b.onclick(); return true; }
+      }
+      return true;
+    }
     if (jp[0]) psSnap(); else if (jp[1]) psCamOn(false); else if (jp[3]) psGalOpen(true); else if (jp[4]) psCycle('pose', -1); else if (jp[5]) psCycle('pose', 1);
     else if (jp[14]) psCycle('bg', -1); else if (jp[15]) psCycle('bg', 1); else if (jp[12]) psCycle('frame', 1); else if (jp[13]) psCycle('angle', 1); else if (jp[2]) psCycle('border', 1); else if (jp[6] || jp[7]) psCycle('shape', 1); else return false;
     return true; }
@@ -28141,11 +28628,14 @@ const Obby = (() => {
     if (!psx.cam){ if (c === 'KeyE'){ psAct(); return true; } return false; }
     const m = {KeyQ: ['pose', -1], KeyE: ['pose', 1], KeyB: ['bg', 1], KeyF: ['frame', 1], KeyC: ['angle', 1], KeyT: ['shape', 1], KeyK: ['border', 1]};
     if (m[c]){ psCycle(m[c][0], m[c][1]); return true; }
+    if (c === 'KeyO'){ psTrayToggle(); return true; }
+    if (c === 'KeyR'){ const nxt = PS_PROPS.find(p => !psx.props.includes(p.id)) || PS_PROPS[0]; psToggleProp(nxt.id); return true; }
+    if (c === 'KeyN'){ const nxt = PS_STICKERS.find(s => !psx.stickers.some(x => x.id === s.id)) || PS_STICKERS[0]; psToggleSticker(nxt.id); return true; }
     if (c === 'Space' || c === 'Enter'){ psSnap(); return true; }
-    if (c === 'Escape'){ psCamOn(false); return true; }
+    if (c === 'Escape'){ if (psx.tray){ psTrayToggle(false); return true; } psCamOn(false); return true; }
     return true;   // camera mode swallows other keys so you don't walk off the mark
   }
-  function photostudioStop(){ psx = null; ['#psBar', '#psCamBtn', '#psGal'].forEach(id => { const e = $(id); if (e) e.classList.remove('show'); }); const f = $('#psFlash'); if (f) f.style.opacity = 0; }
+  function photostudioStop(){ psClearProps3D(); psx = null; ['#psBar', '#psCamBtn', '#psGal', '#psTray', '#psOverlay'].forEach(id => { const e = $(id); if (e) e.classList.remove('show', 'pick'); }); const f = $('#psFlash'); if (f) f.style.opacity = 0; }
 
 
 
@@ -40405,6 +40895,8 @@ function start(m = 'obby', d = null){
     if (mode === 'photostudio'){ if (!window.__psBound){ window.__psBound = true;
         $('#psCamBtn').onclick = () => psAct(); $('#psGalBtn').onclick = () => psx && psGalOpen(true); $('#psGalClose').onclick = () => psGalOpen(false); $('#psHome').onclick = () => { psGalOpen(false); stop(); };
         $('#psSnap').onclick = () => psSnap(); $('#psDone').onclick = () => psCamOn(false);
+        const eb = $('#psExtrasBtn'); if (eb) eb.onclick = () => psTrayToggle();
+        const ov = $('#psOverlay'); if (ov) ov.onclick = e => psOverlayClick(e);
         document.querySelectorAll('#psBar [data-k]').forEach(b => b.onclick = () => psCycle(b.dataset.k, +(b.dataset.d || 1))); }
       $('#psGalBtn').classList.add('show'); photostudioEnter(); }
     $('#wpBox').style.display = mode === 'waterpark' ? '' : 'none'; ['#wpAct', '#wpPanel', '#wpRides'].forEach(id => $(id).classList.remove('show'));
@@ -52102,6 +52594,56 @@ function start(m = 'obby', d = null){
     fmSph(tail, 0.07, spot, 0, -0.4, 0.02, 1, 1, 1, 5);
     g.userData.kind = 'cow'; g.scale.setScalar(1.32); return g;
   }
+  function fmMakeGoat(){
+    const g = new THREE.Group(), coat = '#f5efe4', patch = '#c89b6e';
+    fmSph(g, 0.36, coat, 0, 0.62, 0, 0.88, 0.86, 1.32, 8);
+    fmSph(g, 0.14, patch, 0.2, 0.68, 0.08, 1, 0.7, 1.1, 6);
+    fmSph(g, 0.12, patch, -0.18, 0.6, -0.18, 1, 0.65, 1, 6);
+    const head = new THREE.Group(); head.position.set(0, 0.88, 0.44); g.add(head); g.userData.head = head;
+    fmSph(head, 0.2, coat, 0, 0, 0, 0.88, 0.88, 1.15, 8);
+    fmSph(head, 0.11, '#ffe8d6', 0, -0.06, 0.17, 0.9, 0.72, 1.0, 6);
+    fmEye(head, 0.08, 0.06, 0.15, 0.042); fmEye(head, -0.08, 0.06, 0.15, 0.042);
+    fmSph(head, 0.035, '#f4a0b4', 0, -0.04, 0.27, 1.1, 0.7, 0.8, 5);
+    const beard = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.14, 5), fmMat(patch)); beard.rotation.x = Math.PI; beard.position.set(0, -0.17, 0.14); head.add(beard);
+    [-1, 1].forEach(k => {
+      const horn = new THREE.Mesh(new THREE.ConeGeometry(0.036, 0.19, 5), fmMat('#e6d2b5'));
+      horn.position.set(k * 0.09, 0.2, -0.04); horn.rotation.z = -k * 0.25; horn.rotation.x = -0.35; head.add(horn);
+      const ear = new THREE.Group(); ear.position.set(k * 0.16, 0.06, -0.02); head.add(ear);
+      fmSph(ear, 0.065, patch, k * 0.05, -0.04, 0, 1.25, 0.65, 0.45, 5);
+      (g.userData.ears || (g.userData.ears = [])).push(ear);
+    });
+    [[-0.14,0.22],[0.14,0.22],[-0.14,-0.24],[0.14,-0.24]].forEach(([x,z]) => {
+      fmCyl(g, 0.055, 0.05, 0.36, coat, x, 0.22, z);
+      fmCyl(g, 0.058, 0.058, 0.08, '#5a4232', x, 0.05, z);
+    });
+    const tail = new THREE.Group(); tail.position.set(0, 0.74, -0.44); g.add(tail); g.userData.tail = tail;
+    fmSph(tail, 0.065, patch, 0, 0.05, -0.04, 0.8, 1.3, 0.8, 5);
+    g.userData.kind = 'goat'; g.scale.setScalar(1.26); return g;
+  }
+  function fmMakeBunny(){
+    const g = new THREE.Group(), fur = '#f2e9e4', spot = '#d8b8a4';
+    fmSph(g, 0.3, fur, 0, 0.38, -0.02, 1.0, 0.92, 1.22, 8);
+    fmSph(g, 0.13, spot, 0.16, 0.44, -0.06, 1, 0.75, 1, 6);
+    const head = new THREE.Group(); head.position.set(0, 0.64, 0.24); g.add(head); g.userData.head = head;
+    fmSph(head, 0.21, fur, 0, 0, 0, 1.05, 0.95, 1.0, 8);
+    fmSph(head, 0.08, '#ffdce5', 0.13, -0.05, 0.13, 0.8, 0.65, 0.6, 5);
+    fmSph(head, 0.08, '#ffdce5', -0.13, -0.05, 0.13, 0.8, 0.65, 0.6, 5);
+    fmEye(head, 0.085, 0.04, 0.16, 0.045); fmEye(head, -0.085, 0.04, 0.16, 0.045);
+    fmSph(head, 0.036, '#ff8fa3', 0, -0.02, 0.2, 1.2, 0.85, 0.8, 5);
+    [-1, 1].forEach(k => {
+      const ear = new THREE.Group(); ear.position.set(k * 0.09, 0.16, -0.02); head.add(ear);
+      fmSph(ear, 0.065, k > 0 ? spot : fur, 0, 0.18, 0, 0.75, 2.5, 0.45, 6);
+      fmSph(ear, 0.04, '#ffb3c7', 0, 0.17, 0.02, 0.65, 2.0, 0.35, 5);
+      (g.userData.ears || (g.userData.ears = [])).push(ear);
+    });
+    fmSph(g, 0.075, fur, 0.12, 0.16, 0.18, 0.9, 0.9, 1.1, 6);
+    fmSph(g, 0.075, fur, -0.12, 0.16, 0.18, 0.9, 0.9, 1.1, 6);
+    fmSph(g, 0.1, fur, 0.16, 0.12, -0.14, 0.95, 0.55, 1.65, 6);
+    fmSph(g, 0.1, fur, -0.16, 0.12, -0.14, 0.95, 0.55, 1.65, 6);
+    const tail = new THREE.Group(); tail.position.set(0, 0.34, -0.36); g.add(tail); g.userData.tail = tail;
+    fmSph(tail, 0.11, '#ffffff', 0, 0, 0, 1, 1, 1, 6);
+    g.userData.kind = 'bunny'; g.scale.setScalar(1.32); return g;
+  }
   function fmMakeChick(){
     const g = new THREE.Group();
     fmSph(g, 0.16, '#f4d15a', 0, 0.22, 0, 1, 0.95, 1.05, 8);
@@ -52180,6 +52722,43 @@ function start(m = 'obby', d = null){
     fmCyl(g, 0.02, 0.02, 0.08, '#f4a04a', -0.05, 0.08, 0.02);
     g.userData.kind = 'duckling'; g.scale.setScalar(1.25); return g;
   }
+  function fmMakeKid(){
+    const g = new THREE.Group(), coat = '#f5efe4', patch = '#c89b6e';
+    fmSph(g, 0.22, coat, 0, 0.38, 0, 0.9, 0.88, 1.25, 8);
+    fmSph(g, 0.09, patch, 0.12, 0.42, 0.04, 1, 0.7, 1, 5);
+    const head = new THREE.Group(); head.position.set(0, 0.54, 0.26); g.add(head); g.userData.head = head;
+    fmSph(head, 0.15, coat, 0, 0, 0, 0.92, 0.92, 1.08, 8);
+    fmEye(head, 0.06, 0.04, 0.12, 0.036); fmEye(head, -0.06, 0.04, 0.12, 0.036);
+    fmSph(head, 0.028, '#f4a0b4', 0, -0.03, 0.16, 1.1, 0.7, 0.8, 5);
+    [-1, 1].forEach(k => {
+      const bud = new THREE.Mesh(new THREE.ConeGeometry(0.024, 0.09, 5), fmMat('#e6d2b5'));
+      bud.position.set(k * 0.065, 0.14, -0.02); bud.rotation.z = -k * 0.25; head.add(bud);
+      const ear = new THREE.Group(); ear.position.set(k * 0.12, 0.05, -0.01); head.add(ear);
+      fmSph(ear, 0.055, patch, k * 0.04, -0.03, 0, 1.3, 0.65, 0.45, 5);
+      (g.userData.ears || (g.userData.ears = [])).push(ear);
+    });
+    [[-0.09,0.14],[0.09,0.14],[-0.09,-0.15],[0.09,-0.15]].forEach(([x,z]) => fmCyl(g, 0.038, 0.035, 0.24, coat, x, 0.14, z));
+    const tail = new THREE.Group(); tail.position.set(0, 0.45, -0.26); g.add(tail); g.userData.tail = tail;
+    fmSph(tail, 0.048, patch, 0, 0.03, -0.02, 0.8, 1.3, 0.8, 5);
+    g.userData.kind = 'kid'; g.scale.setScalar(1.22); return g;
+  }
+  function fmMakeKit(){
+    const g = new THREE.Group(), fur = '#f2e9e4', spot = '#ffb3c7';
+    fmSph(g, 0.19, fur, 0, 0.24, 0, 1.02, 0.95, 1.16, 8);
+    const head = new THREE.Group(); head.position.set(0, 0.4, 0.14); g.add(head); g.userData.head = head;
+    fmSph(head, 0.145, fur, 0, 0, 0, 1.05, 0.96, 1.0, 8);
+    fmEye(head, 0.06, 0.03, 0.11, 0.036); fmEye(head, -0.06, 0.03, 0.11, 0.036);
+    fmSph(head, 0.026, '#ff8fa3', 0, -0.02, 0.14, 1.2, 0.85, 0.8, 5);
+    [-1, 1].forEach(k => {
+      const ear = new THREE.Group(); ear.position.set(k * 0.06, 0.11, -0.01); head.add(ear);
+      fmSph(ear, 0.048, fur, 0, 0.12, 0, 0.75, 2.2, 0.45, 5);
+      fmSph(ear, 0.03, spot, 0, 0.11, 0.015, 0.65, 1.8, 0.35, 5);
+      (g.userData.ears || (g.userData.ears = [])).push(ear);
+    });
+    const tail = new THREE.Group(); tail.position.set(0, 0.22, -0.22); g.add(tail); g.userData.tail = tail;
+    fmSph(tail, 0.075, '#ffffff', 0, 0, 0, 1, 1, 1, 5);
+    g.userData.kind = 'kit'; g.scale.setScalar(1.22); return g;
+  }
   function fmPlaceCritter(g, x, z, yaw){
     g.position.set(x, 0, fmWZ(z));
     g.rotation.y = yaw || 0;
@@ -52254,6 +52833,22 @@ function start(m = 'obby', d = null){
     fmPlaceCritter(fmMakeCow(), 15.0, -31.3, 0.5);
     fmPlaceCritter(fmMakeCow(), 17.2, -32.8, -0.35);
     fmLab('🐄 Butterspot cows', 20.2, 2.6, -32);
+    // Cloverleaf goats pen
+    fmPlat(-10, 0.22, -49, 7, 6, '#c4a060', 0.12);
+    fmMesh(new THREE.BoxGeometry(7, 0.95, 0.16), '#8b6a3a', -10, 0.68, -52);
+    fmMesh(new THREE.BoxGeometry(0.16, 0.95, 6), '#8b6a3a', -13.5, 0.68, -49);
+    fmMesh(new THREE.BoxGeometry(0.16, 0.95, 6), '#8b6a3a', -6.5, 0.68, -49);
+    fmPlaceCritter(fmMakeGoat(), -11.0, -48.3, 0.45);
+    fmPlaceCritter(fmMakeGoat(), -8.9, -49.7, -0.4);
+    fmLab('🐐 Cloverleaf goats', -10, 2.6, -45.6);
+    // Velvettail bunnies pen
+    fmPlat(2, 0.22, -49, 6.5, 5.5, '#c4a060', 0.12);
+    fmMesh(new THREE.BoxGeometry(6.5, 0.75, 0.14), '#8b6a3a', 2, 0.58, -51.75);
+    fmMesh(new THREE.BoxGeometry(0.14, 0.75, 5.5), '#8b6a3a', -1.25, 0.58, -49);
+    fmMesh(new THREE.BoxGeometry(0.14, 0.75, 5.5), '#8b6a3a', 5.25, 0.58, -49);
+    fmPlaceCritter(fmMakeBunny(), 1.1, -48.3, 0.35);
+    fmPlaceCritter(fmMakeBunny(), 3.0, -49.6, -0.45);
+    fmLab('🐇 Velvettail bunnies', 2, 2.4, -45.8);
     // apple trees
     (FarmRules.FM_APPLES||[]).forEach(a => {
       const lz = a.z - (FarmRules.FM_DEST_DZ||0);
@@ -52302,20 +52897,20 @@ function start(m = 'obby', d = null){
     fm.custLab = fmLab('🧒 Pip', st.x + 2.1, 2.6, st.z + 1.4);
     // nursery paddock
     const nu = FarmRules.FM_NURSERY || {x:-19.5, z:FarmRules.fmZ(-36.5)};
-    fmPlat(nu.x, 0.2, nu.z, 8, 8, '#c4a060', 0.1);
-    fmMesh(new THREE.BoxGeometry(0.16, 0.9, 8), '#8b6a3a', nu.x - 4, 0.6, nu.z);
-    fmMesh(new THREE.BoxGeometry(0.16, 0.9, 8), '#8b6a3a', nu.x + 4, 0.6, nu.z);
-    fmMesh(new THREE.BoxGeometry(8, 0.9, 0.16), '#8b6a3a', nu.x, 0.6, nu.z - 4);
-    fmLab('🍼 Little ones', nu.x, 2.5, nu.z + 4.4);
+    fmPlat(nu.x, 0.2, nu.z, 9.5, 8.5, '#c4a060', 0.1);
+    fmMesh(new THREE.BoxGeometry(0.16, 0.9, 8.5), '#8b6a3a', nu.x - 4.75, 0.6, nu.z);
+    fmMesh(new THREE.BoxGeometry(0.16, 0.9, 8.5), '#8b6a3a', nu.x + 4.75, 0.6, nu.z);
+    fmMesh(new THREE.BoxGeometry(9.5, 0.9, 0.16), '#8b6a3a', nu.x, 0.6, nu.z - 4.25);
+    fmLab('🍼 Little ones', nu.x, 2.5, nu.z + 4.65);
     fm.babies = {};
     (FarmRules.FM_BABIES||[]).forEach(b => {
-      const maker = {chick:fmMakeChick, lamb:fmMakeLamb, calf:fmMakeCalf, piglet:fmMakePiglet, duckling:fmMakeDuckling}[b.kind] || fmMakeChick;
+      const maker = {chick:fmMakeChick, lamb:fmMakeLamb, calf:fmMakeCalf, piglet:fmMakePiglet, duckling:fmMakeDuckling, kid:fmMakeKid, kit:fmMakeKit}[b.kind] || fmMakeChick;
       const g = maker();
       g.position.set(b.x, 0, b.z);
       g.rotation.y = Math.atan2(FarmRules.FM_ARRIVE.x - b.x, FarmRules.FM_ARRIVE.z - b.z);
       g.userData.y0 = 0; g.userData.bob = Math.random()*8; g.userData.babyId = b.id;
       scene.add(g); fmKeep(g); (fm.critters||(fm.critters=[])).push(g);
-      const short = (b.kind==='chick'?'Chick':b.kind==='lamb'?'Lamb':b.kind==='calf'?'Calf':b.kind==='piglet'?'Piglet':'Duckling');
+      const short = ({chick:'Chick', lamb:'Lamb', calf:'Calf', piglet:'Piglet', duckling:'Duckling', kid:'Kid', kit:'Bunny'}[b.kind] || 'Baby');
       const lab = fmLab((b.emoji||'🐾') + ' ' + short, b.x, 1.55, b.z);
       fm.babies[b.id] = {mesh:g, lab:lab};
     });
@@ -52386,6 +52981,11 @@ function start(m = 'obby', d = null){
       if (!r.ok) return;
       fm.sv = r.state; fmSave(fm.sv); fmPaint();
       banner((hit.emoji||'🌾') + ' ' + (r.item && r.item.blurb ? r.item.blurb : ('You fed the ' + hit.name + '.')));
+      return;
+    }
+    if (hit.kind === 'pet'){
+      try { if (typeof SND !== 'undefined' && SND.coin) SND.coin(); } catch(e){}
+      banner((hit.emoji||'💕') + ' ' + (hit.text || ('You pet the happy ' + hit.name + '!')));
       return;
     }
     if (hit.kind === 'egg'){
@@ -52550,6 +53150,8 @@ function start(m = 'obby', d = null){
     hensClose(){ if (!fm) return; this.farm(); this.hideLabs(true); const f=FarmRules.FM_FEEDS[0]; if(P&&f){ P.x=f.x+7.2; P.y=0.5; P.z=f.z+1.0; } if (typeof cam!=='undefined' && cam){ cam.yaw=Math.PI/2; cam.pitch=0.06; cam.dist=6.4; } },
     sheepClose(){ if (!fm) return; this.farm(); this.hideLabs(true); const f=FarmRules.FM_FEEDS[1]; if(P&&f){ P.x=f.x-7.2; P.y=0.5; P.z=f.z+1.0; } if (typeof cam!=='undefined' && cam){ cam.yaw=-Math.PI/2; cam.pitch=0.06; cam.dist=6.4; } },
     cowsClose(){ if (!fm) return; this.farm(); this.hideLabs(true); const f=FarmRules.FM_FEEDS[2]; if(P&&f){ P.x=f.x+7.4; P.y=0.5; P.z=f.z+1.0; } if (typeof cam!=='undefined' && cam){ cam.yaw=Math.PI/2; cam.pitch=0.06; cam.dist=6.8; } },
+    goatsClose(){ if (!fm) return; this.farm(); this.hideLabs(true); const f=FarmRules.FM_FEEDS[3]; if(P&&f){ P.x=f.x-1.2; P.y=0.5; P.z=f.z+1.5; } if (typeof cam!=='undefined' && cam){ cam.yaw=-0.32; cam.pitch=0.26; cam.dist=6.8; } },
+    bunniesClose(){ if (!fm) return; this.farm(); this.hideLabs(true); const f=FarmRules.FM_FEEDS[4]; if(P&&f){ P.x=f.x+1.2; P.y=0.5; P.z=f.z+1.5; } if (typeof cam!=='undefined' && cam){ cam.yaw=0.32; cam.pitch=0.26; cam.dist=6.8; } },
     hayRide(t){ if (!fm) return; fm.run.phase='farm'; FarmRules.fmStartHay(fm.run, fm.sv); fm.run.hayT=(t==null?2.4:t); const pose=FarmRules.fmHayPose(fm.run); fmSeat(pose, -0.2, 1.55); fmRideVis(true); if(fm.wagon){fm.wagon.position.set(pose.x,0,pose.z); fm.wagon.rotation.y=pose.yaw||0;} fmApplyZones('farm'); },
     cam(yaw, pitch, dist){ if (typeof cam !== 'undefined' && cam){ if (yaw != null) cam.yaw = yaw; if (pitch != null) cam.pitch = pitch; if (dist != null) cam.dist = dist; } },
     nudge(dx, dz){ if (P){ P.x += dx||0; P.z += dz||0; P.vx=0; P.vz=0; } },
@@ -52573,7 +53175,7 @@ function start(m = 'obby', d = null){
       if (!fm || !P) return;
       const F = FarmRules;
       const baby = (F.FM_BABIES||[]).find(b => b.id === id || b.kind === id);
-      const map = {bus:F.FM_BUS, home:F.FM_HOME_BUS, teacher:F.FM_TEACHER, nettie:F.FM_GUIDE, barn:F.FM_BARN, arrive:F.FM_ARRIVE, wagon:F.FM_WAGON, hens:F.FM_FEEDS[0], sheep:F.FM_FEEDS[1], cows:F.FM_FEEDS[2], stand:F.FM_STAND, nursery:F.FM_NURSERY};
+      const map = {bus:F.FM_BUS, home:F.FM_HOME_BUS, teacher:F.FM_TEACHER, nettie:F.FM_GUIDE, barn:F.FM_BARN, arrive:F.FM_ARRIVE, wagon:F.FM_WAGON, hens:F.FM_FEEDS[0], sheep:F.FM_FEEDS[1], cows:F.FM_FEEDS[2], goats:F.FM_FEEDS[3], bunnies:F.FM_FEEDS[4], stand:F.FM_STAND, nursery:F.FM_NURSERY};
       const t = map[id] || baby;
       if (!t) return;
       P.x=t.x; P.y=0.5; P.z=t.z; P.vx=0; P.vz=0; P.vy=0;
@@ -53560,7 +54162,9 @@ try { if (typeof window !== 'undefined') window.Obby = Obby; } catch (e){}
       <div class="avbooth-row" id="avBoothPoses"></div>
       <div class="avbooth-row" id="avBoothBgs"></div>
       <div class="avbooth-row" id="avBoothFrames"></div>
+      <div class="avbooth-row" id="avBoothProps"></div>
       <div class="avbooth-row" id="avBoothStickers"></div>
+      <div class="avbooth-tip" id="avBoothTip">Tap props &amp; stickers to toggle — they show in your snapped photo!</div>
       <div class="avbooth-acts">
         <button type="button" id="avBoothSnap">📸 Take photo</button>
         <button type="button" id="avBoothDl">⬇️ Download</button>

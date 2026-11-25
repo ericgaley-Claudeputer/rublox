@@ -8,9 +8,9 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const version = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8'));
 
 describe('t302 five play modes wiring', () => {
-  test('BUILD is 2026.11.22-13 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.22-13'"));
-    assert.equal(version.build, '2026.11.22-13');
+  test('BUILD is 2026.11.22-14 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.22-14'"));
+    assert.equal(version.build, '2026.11.22-14');
   });
 
   test('all five modes are playable menu games with original names and save keys', () => {
@@ -93,6 +93,15 @@ describe('t302 five play modes wiring', () => {
     assert.match(html, /document\.pointerLockElement/);
   });
 
+
+  test('Buzzhive quest overlay clears and sits below Exit and pause panel for Xbox pad reachability', () => {
+    const ohudZ = +html.match(/\.ohud\{[^}]*z-index:(\d+)/)[1];
+    const opanelZ = +html.match(/\.opanel\.show\{[^}]*z-index:(\d+)/)[1];
+    const ovZ = +html.match(/\.t297overlay\{[^}]*z-index:(\d+)/)[1];
+    assert.ok(ohudZ > ovZ, '.ohud z-index (' + ohudZ + ') must be above .t297overlay (' + ovZ + ')');
+    assert.ok(opanelZ > ovZ, '.opanel.show z-index (' + opanelZ + ') must be above .t297overlay (' + ovZ + ')');
+    assert.match(html, /\.t297overlay\{[^}]*padding:max\(74px/);
+  });
 
   test('Garden shows a coin wallet, rarities, rides has a tutorial, hive regen and clover path, meadow rebirth', () => {
     assert.match(html, /id="t302Coins"/);

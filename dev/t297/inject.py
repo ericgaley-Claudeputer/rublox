@@ -44,9 +44,9 @@ CSS = r'''
 .cafemode #cafeBoardBtn,.cafemode #cafeDecorBtn,.fishmode #fishIndexBtn,.huntmode #huntMapBtn,.psmode #psVoteOpen{display:block}
 #cafeBoardBtn,#cafeDecorBtn,#fishIndexBtn,#huntMapBtn,#psVoteOpen{position:absolute;z-index:8;right:16px;bottom:160px;padding:10px 14px;font-size:16px;border:3px solid #1d2340;border-radius:16px;background:#fff3e0;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
 .cafemode #cafeDecorBtn{bottom:216px}
-.t297overlay{position:fixed;inset:0;background:rgba(29,35,64,.45);z-index:240;display:none;align-items:center;justify-content:center;padding:16px}
+.t297overlay{position:fixed;inset:0;background:rgba(29,35,64,.45);z-index:240;display:none;align-items:center;justify-content:center;padding:max(74px,calc(env(safe-area-inset-top) + 62px)) 16px 16px}
 .t297overlay.show{display:flex}
-.t297box{position:relative;max-width:520px;width:100%;max-height:90vh;overflow:auto;background:#fff8ee;border:4px solid #1d2340;border-radius:20px;padding:16px;box-shadow:6px 6px 0 #1d2340}
+.t297box{position:relative;max-width:520px;width:100%;max-height:calc(100dvh - 96px);overflow:auto;background:#fff8ee;border:4px solid #1d2340;border-radius:20px;padding:16px;box-shadow:6px 6px 0 #1d2340}
 .t297box h3{margin:0 0 8px}
 .t297row{display:flex;gap:8px;align-items:center;justify-content:space-between;background:#fff;border:2px solid #1d2340;border-radius:12px;padding:8px 10px;margin:6px 0;font-weight:700}
 .t297row.dim{opacity:.55}
@@ -58,7 +58,7 @@ CSS = r'''
 #cafeDecorList button{display:block;width:100%;margin:6px 0;padding:8px 10px;border:2px solid #1d2340;border-radius:12px;background:#fff;font-weight:800;text-align:left}
 #psVoteBox .psvotes{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0}
 #psVoteBox .psvotes button{width:44px;height:44px;border:3px solid #1d2340;border-radius:12px;background:#ffd23f;font-weight:800}
-@media (max-width:700px){ #t297Act{bottom:120px} #cafeBoardBtn,#fishIndexBtn,#huntMapBtn,#psVoteOpen{bottom:184px} .cafemode #cafeDecorBtn{bottom:240px} }
+@media (max-width:700px){ .t297overlay{padding-top:max(84px,calc(env(safe-area-inset-top) + 68px))} #t297Act{bottom:120px} #cafeBoardBtn,#fishIndexBtn,#huntMapBtn,#psVoteOpen{bottom:184px} .cafemode #cafeDecorBtn{bottom:240px} }
 </style>
 '''
 
