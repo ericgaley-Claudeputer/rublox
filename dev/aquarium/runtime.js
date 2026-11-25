@@ -43,6 +43,13 @@
       if (b.aqZone === 'dest') b.active = showDest;
     });
     if (typeof aqPaint === 'function') aqPaint();
+    const shop = (typeof aqInGiftShop === 'function') && aqInGiftShop();
+    (aq.trash||[]).forEach(m => {
+      if (m && m.userData && m.userData.aqLab){
+        if (shop) m.visible = !!m.userData.aqShopLab;
+        else if (m.userData.aqShopLab) m.visible = !!(aq.run && (aq.run.phase === 'hall' || aq.run.phase === 'ride'));
+      }
+    });
   }
   function aqSky(){ if (typeof ftApplyDaySky === 'function') ftApplyDaySky(); else {
     try { scene.background = new THREE.Color('#7ec8ff'); if (scene.fog){ scene.fog.color.set('#7ec8ff'); scene.fog.near=55; scene.fog.far=180; } } catch(e){}
@@ -181,37 +188,45 @@
     aqLab('🐠 Tideglass Aquarium', 0, 8.8, -35.4);
     aq.shiftZ = 0;
   }
+  function aqShopLab(text, x, y, z){
+    const l = aqLab(text, x, y, z);
+    if (l) l.userData.aqShopLab = true;
+    return l;
+  }
+  function aqInGiftShop(){
+    if (!aq || !P || !aq.run || aq.run.phase !== 'hall') return false;
+    const z0 = (AquariumRules.AQ_SHOP && AquariumRules.AQ_SHOP.z) || 0;
+    return Math.abs(P.x - 14) < 5.1 && Math.abs(P.z - z0) < 4.8;
+  }
   function aqGiftShop(){
     aq.curZone = 'dest'; aq.shiftZ = AquariumRules.AQ_DEST_DZ || 0;
     // Walk-in gift nook to the right of the arrival plaza
-    const wall = '#f2e6d4', trim = '#1d5a78';
-    aqPlat(14, 0.22, -11, 8.4, 8.4, '#e8d9c0', 0.16);
-    aqMesh(new THREE.BoxGeometry(8.4, 3.6, 0.24), wall, 14, 2.0, -15.1);
-    aqMesh(new THREE.BoxGeometry(0.24, 3.6, 8.4), wall, 9.9, 2.0, -11);
-    aqMesh(new THREE.BoxGeometry(0.24, 3.6, 8.4), wall, 18.1, 2.0, -11);
-    // front wall with a doorway
-    aqMesh(new THREE.BoxGeometry(2.6, 3.6, 0.24), wall, 11.2, 2.0, -6.9);
-    aqMesh(new THREE.BoxGeometry(2.6, 3.6, 0.24), wall, 16.8, 2.0, -6.9);
-    aqMesh(new THREE.BoxGeometry(3.0, 1.0, 0.24), wall, 14, 3.3, -6.9);
-    aqMesh(new THREE.BoxGeometry(8.8, 0.24, 8.8), trim, 14, 3.9, -11);
-    aqMesh(new THREE.BoxGeometry(2.8, 0.12, 1.6), trim, 14, 2.85, -6.4);
-    // counter and shelves
-    aqMesh(new THREE.BoxGeometry(3.4, 1.0, 0.8), '#2a6a88', 14, 0.7, -13.4);
-    [[12.4, -11.4],[15.6, -11.4],[12.4, -8.6],[15.6, -8.6],[12.4, -13.2],[15.6, -13.2]].forEach(p => {
-      aqMesh(new THREE.BoxGeometry(1.1, 0.9, 1.1), '#c4a060', p[0], 0.65, p[1]);
-    });
+    const wall = '#f2e6d4', trim = '#1d5a78', dz = AquariumRules.AQ_DEST_DZ || 0;
+    aqPlat(14, 0.22, -11, 10.6, 9.2, '#e8d9c0', 0.16);
+    aqMesh(new THREE.BoxGeometry(10.6, 3.6, 0.24), wall, 14, 2.0, -15.5);
+    aqMesh(new THREE.BoxGeometry(0.24, 3.6, 9.2), wall, 8.8, 2.0, -11);
+    aqMesh(new THREE.BoxGeometry(0.24, 3.6, 9.2), wall, 19.2, 2.0, -11);
+    // front wall with a wide doorway so tags stay on the side walls
+    aqMesh(new THREE.BoxGeometry(3.2, 3.6, 0.24), wall, 10.4, 2.0, -6.5);
+    aqMesh(new THREE.BoxGeometry(3.2, 3.6, 0.24), wall, 17.6, 2.0, -6.5);
+    aqMesh(new THREE.BoxGeometry(3.2, 1.0, 0.24), wall, 14, 3.3, -6.5);
+    aqMesh(new THREE.BoxGeometry(11.0, 0.24, 9.6), trim, 14, 3.9, -11);
+    aqMesh(new THREE.BoxGeometry(2.8, 0.12, 1.6), trim, 14, 2.85, -6.15);
+    // back counter, clear of the side stands
+    aqMesh(new THREE.BoxGeometry(3.2, 1.0, 0.8), '#2a6a88', 14, 0.7, -14.7);
     (AquariumRules.AQ_GIFTS||[]).forEach(g => {
       const col = g.kind === 'hat' ? '#1d5a78' : (g.id.indexOf('jelly')>=0 ? '#d8b0ff' : g.id.indexOf('turtle')>=0 ? '#3a8f5a' : g.id.indexOf('crab')>=0 ? '#c45c3a' : '#f4e27a');
       const geo = g.kind === 'hat' ? new THREE.CylinderGeometry(0.28, 0.32, 0.28, 10) : new THREE.SphereGeometry(0.28, 8, 6);
-      // gifts already have world z; place in local dest space
-      const localZ = g.z - (AquariumRules.AQ_DEST_DZ || 0);
+      const localZ = g.z - dz;
+      aqMesh(new THREE.BoxGeometry(1.05, 0.9, 1.05), '#c4a060', g.x, 0.65, localZ);
       aqMesh(geo, col, g.x, 1.25, localZ);
-      aqLab((g.emoji||'🛍️') + ' ' + g.price, g.x, 1.8, localZ);
+      const lab = (typeof AquariumRules.aqGiftLabel === 'function') ? AquariumRules.aqGiftLabel(g) : {x:g.x, y:1.55, z:g.z};
+      aqShopLab((g.emoji||'🛍️') + ' ' + g.price, lab.x, lab.y, lab.z - dz);
     });
-    // shopkeep Pearl
-    aqMesh(new THREE.BoxGeometry(0.7, 1.5, 0.5), '#2a8aaa', 14, 0.95, -13.8);
-    aqLab('🛍️ Pearl', 14, 2.6, -13.8);
-    aqLab('🛍️ Gift Nook', 14, 3.55, -6.5);
+    // shopkeep Pearl at the back wall, away from the side tags
+    aqMesh(new THREE.BoxGeometry(0.7, 1.5, 0.5), '#2a8aaa', 14, 0.95, -15.0);
+    aqShopLab('🛍️ Pearl', 14, 2.45, -15.0);
+    aqShopLab('🛍️ Gift Nook', 14, 3.7, -15.15);
     try {
       const lit = new THREE.PointLight('#ffe8c8', 0.55, 10, 2);
       lit.position.set(14, 3.2, aqWZ(-11)); scene.add(lit); aqKeep(lit);
@@ -463,7 +478,8 @@
     lookBack(){ if (!aq) return; this.look(Math.PI); },
     look(yaw){ if (!aq) return; aq.run.phase='hall'; const a=AquariumRules.AQ_ARRIVE||{x:3.4,z:-8}; if(P){P.x=a.x;P.y=0.5;P.z=a.z;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=(yaw==null?Math.PI:yaw); cam.pitch=0.12; cam.dist=12; } aqApplyZones('hall'); },
     ride(t){ if (!aq) return; aq.run.phase='ride'; aq.run.rideT= (t==null? 3.2 : t); const pose=AquariumRules.aqRidePose(aq.run); aqSeat(pose); aqRideVis(true); aqApplyZones('ride'); },
-    shop(){ if (!aq) return; aq.run.phase='hall'; const s=AquariumRules.AQ_SHOP||{x:14,z:-10}; if(P){P.x=s.x;P.y=0.5;P.z=s.z;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=8; } aqApplyZones('hall'); },
+    cam(yaw, pitch, dist){ if (typeof cam !== 'undefined' && cam){ if (yaw != null) cam.yaw = yaw; if (pitch != null) cam.pitch = pitch; if (dist != null) cam.dist = dist; } },
+    shop(){ if (!aq) return; aq.run.phase='hall'; const s=AquariumRules.AQ_SHOP||{x:14,z:-10}; if(P){P.x=s.x;P.y=0.5;P.z=s.z;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.12; cam.dist=6; } aqApplyZones('hall'); },
     tankFront(){ if (!aq || !P) return; aq.run.phase='hall'; const z = AquariumRules.aqZ ? AquariumRules.aqZ(-14.2) : -14.2; P.x=13.4; P.y=0.5; P.z=z; P.vx=0; P.vz=0; if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.14; cam.dist=6.2; } aqApplyZones('hall'); },
     go(id){
       if (!aq || !P) return;

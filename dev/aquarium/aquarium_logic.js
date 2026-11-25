@@ -38,19 +38,32 @@
   const AQ_POOL = {x:8, z:aqZ(-12), r:2.2, name:'Pebblecrab pool'};
   const AQ_SHOP = {x:14, z:aqZ(-10), r:2.4, name:'Tideglass Gift Nook'};
   const AQ_GIFTS = [
-    {id:'jelly-plush', name:'Moonveil jelly plush', emoji:'🪼', price:18, kind:'plush', x:12.4, z:aqZ(-11.4), r:1.5,
-      blurb:'A squishy Moonveil jelly plush. It wiggles if you poke it.'},
-    {id:'turtle-plush', name:'Sand-harbor turtle plush', emoji:'🐢', price:18, kind:'plush', x:15.6, z:aqZ(-11.4), r:1.5,
-      blurb:'A soft Sand-harbor turtle plush with a little sand-colored shell.'},
-    {id:'crab-plush', name:'Pebblecrab plush', emoji:'🦀', price:16, kind:'plush', x:12.4, z:aqZ(-8.6), r:1.5,
+    {id:'crab-plush', name:'Pebblecrab plush', emoji:'🦀', price:16, kind:'plush', x:10.8, z:aqZ(-8.2), r:1.4,
       blurb:'A tiny Pebblecrab plush. Its claws are only for hugs.'},
-    {id:'star-plush', name:'Tideglass star plush', emoji:'⭐', price:16, kind:'plush', x:15.6, z:aqZ(-8.6), r:1.5,
-      blurb:'A sparkly Tideglass star plush. Five arms, five cozy wishes.'},
-    {id:'hat-jellycap', name:'Moonveil jelly cap', emoji:'🧢', price:40, kind:'hat', slot:'hat', val:'jellycap', x:12.4, z:aqZ(-13.2), r:1.5,
+    {id:'jelly-plush', name:'Moonveil jelly plush', emoji:'🪼', price:18, kind:'plush', x:10.8, z:aqZ(-11.0), r:1.4,
+      blurb:'A squishy Moonveil jelly plush. It wiggles if you poke it.'},
+    {id:'hat-jellycap', name:'Moonveil jelly cap', emoji:'🧢', price:40, kind:'hat', slot:'hat', val:'jellycap', x:10.8, z:aqZ(-13.8), r:1.4,
       blurb:'A soft teal cap with a tiny jelly on top. It sits on your head, not on your face.'},
-    {id:'hat-tidecap', name:'Tideglass tide cap', emoji:'🎩', price:42, kind:'hat', slot:'hat', val:'tidecap', x:15.6, z:aqZ(-13.2), r:1.5,
+    {id:'star-plush', name:'Tideglass star plush', emoji:'⭐', price:16, kind:'plush', x:17.2, z:aqZ(-8.2), r:1.4,
+      blurb:'A sparkly Tideglass star plush. Five arms, five cozy wishes.'},
+    {id:'turtle-plush', name:'Sand-harbor turtle plush', emoji:'🐢', price:18, kind:'plush', x:17.2, z:aqZ(-11.0), r:1.4,
+      blurb:'A soft Sand-harbor turtle plush with a little sand-colored shell.'},
+    {id:'hat-tidecap', name:'Tideglass tide cap', emoji:'🎩', price:42, kind:'hat', slot:'hat', val:'tidecap', x:17.2, z:aqZ(-13.8), r:1.4,
       blurb:'A little sea-blue cap with a gold star. It sits up on your head, clear of your eyes.'}
   ];
+  function aqGiftLabel(g){
+    if (!g) return null;
+    const side = g.x < 14 ? -0.95 : 0.95;
+    return {x: g.x + side, y: 2.05, z: g.z};
+  }
+  function aqGiftsOverlap(minDist){
+    minDist = minDist == null ? 2.4 : minDist;
+    const labs = AQ_GIFTS.map(aqGiftLabel);
+    for (let i = 0; i < labs.length; i++) for (let j = i + 1; j < labs.length; j++){
+      if (Math.hypot(labs[i].x - labs[j].x, labs[i].z - labs[j].z) < minDist) return true;
+    }
+    return false;
+  }
 
   const AQ_RIDE_PATH = [
     {x:0, z:10},
@@ -212,7 +225,7 @@
   }
 
   const api = {
-    AQ_KEY, AQ_VER, AQ_REWARD, AQ_RIDE_T, AQ_DEST_DZ, AQ_VIEW_FAR, AQ_YARD_LANDMARKS, aqZ, aqDestClearOfSchool, AQ_FINDS, AQ_BUS, AQ_HOME_BUS, AQ_GUIDE, AQ_TEACHER, AQ_HALL, AQ_ARRIVE, AQ_POOL, AQ_SHOP, AQ_GIFTS, AQ_RIDE_PATH,
+    AQ_KEY, AQ_VER, AQ_REWARD, AQ_RIDE_T, AQ_DEST_DZ, AQ_VIEW_FAR, AQ_YARD_LANDMARKS, aqZ, aqDestClearOfSchool, AQ_FINDS, AQ_BUS, AQ_HOME_BUS, AQ_GUIDE, AQ_TEACHER, AQ_HALL, AQ_ARRIVE, AQ_POOL, AQ_SHOP, AQ_GIFTS, aqGiftLabel, aqGiftsOverlap, AQ_RIDE_PATH,
     aqFresh, aqLoad, aqNewVisit, aqFind, aqHas, aqAll, aqPick, aqTouch,
     aqGift, aqHasGift, aqBuyGift,
     aqBoardBus, aqRidePose, aqTickRide, aqBoardHome, aqNear, aqGoal
