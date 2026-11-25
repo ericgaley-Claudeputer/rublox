@@ -613,7 +613,7 @@
     M.g.position.y = 0;
     if (typeof animPet === 'function') animPet(M, sp > 0.6 ? 1 : 0, sp, dt, (typeof worldT !== 'undefined' ? worldT : 0));
   }
-  function psAct(){
+  function pshowAct(){
     if (!psg || !PsRules) return false;
     if (psg.show) return true;
     const mat = psMatNear();
@@ -707,14 +707,14 @@
     }
     psDrivePet(dt);
   }
-  function psKey(e){
+  function pshowKey(e){
     if (!psg || e.repeat) return false;
     if (t297EatOverlayKey(e)) return true;
-    if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ psAct(); return true; }
+    if (e.code === 'KeyE' || e.code === 'KeyF' || e.key === 'e' || e.key === 'f'){ pshowAct(); return true; }
     if (e.code && /^Digit[1-9]$/.test(e.code) && psg.show && mp.on){ psCastVote(+e.code.slice(-1)); return true; }
     return false;
   }
-  function psPad(jp){ if (!psg) return false; if (t297EatOverlayPad(jp)) return true; if (jp && (jp[2] || jp[3])){ psAct(); return true; } return false; }
+  function pshowPad(jp){ if (!psg) return false; if (t297EatOverlayPad(jp)) return true; if (jp && (jp[2] || jp[3])){ pshowAct(); return true; } return false; }
 
   /* ===== Treasure Trail ===== */
   function buildHunt(){
@@ -834,7 +834,7 @@
   function t297Act(){
     if (mode === 'cafe') return cafeAct();
     if (mode === 'fish') return fishAct();
-    if (mode === 'petshow') return psAct();
+    if (mode === 'petshow') return pshowAct();
     if (mode === 'hunt') return huntAct();
     return false;
   }
@@ -850,7 +850,7 @@
     if (t297EatOverlayKey(e)) return true;
     if (mode === 'cafe') return cafeKey(e);
     if (mode === 'fish') return fishKey(e);
-    if (mode === 'petshow') return psKey(e);
+    if (mode === 'petshow') return pshowKey(e);
     if (mode === 'hunt') return huntKey(e);
     return false;
   }
@@ -858,7 +858,7 @@
     if (t297EatOverlayPad(jp)) return true;
     if (mode === 'cafe') return cafePad(jp);
     if (mode === 'fish') return fishPad(jp);
-    if (mode === 'petshow') return psPad(jp);
+    if (mode === 'petshow') return pshowPad(jp);
     if (mode === 'hunt') return huntPad(jp);
     return false;
   }
