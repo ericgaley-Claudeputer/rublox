@@ -34,6 +34,11 @@ describe('Pinebell Village', () => {
     assert.ok(fin.coins > 0);
     assert.equal(fin.state.sledRuns, 1);
     assert.ok(fin.state.sledBest > 0);
+    const again = W.wnSledFinish(run, fin.state);
+    assert.equal(again.ok, true);
+    assert.equal(again.already, true);
+    assert.equal(again.coins, 0);
+    assert.equal(again.state.sledRuns, 1);
   });
 
   test('snowball fights only work against real players, and practice posts never pretend to be rivals', () => {

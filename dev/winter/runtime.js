@@ -426,7 +426,7 @@
     if (!wn) return null;
     if (wn.run.sled && wn.run.sled.on && !wn.run.sled.done) return {lab:'Steer with the stick · Ⓐ jump · Ⓑ hop off', act:() => wnHopOff()};
     if (wn.lift && wnNear(wn.lift.x, wn.lift.z, 4)) return {lab:'Start a timed sled run (E / Ⓧ)', act:() => wnStartSled()};
-    if (wn.finish && wnNear(wn.finish.x, wn.finish.z, 4) && wn.run.sled && wn.run.sled.done) return {lab:'Collect your sled coins (E / Ⓧ)', act:() => wnCashSled()};
+    if (wn.finish && wnNear(wn.finish.x, wn.finish.z, 4) && wn.run.sled && wn.run.sled.done && !wn.run.sled.claimed) return {lab:'Collect your sled coins (E / Ⓧ)', act:() => wnCashSled()};
     if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)) return {lab:'☕ Buy cocoa (E) or serve a mug (F / hold Ⓧ)', act:() => wnCocoa(false)};
     if (wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8)){
       const top = (typeof WinterRules.wnTopping === 'function') ? WinterRules.wnTopping(wn.snugTop) : {name:'Whipped cloud', emoji:'☁️'};
@@ -459,6 +459,7 @@
   function wnCashSled(){
     const r = WinterRules.wnSledFinish(wn.run, wn.sv);
     if (!r.ok){ banner('Finish a run first!'); return; }
+    if (r.already || !(r.coins > 0)){ banner('You already collected those sled coins.'); return; }
     wn.sv = r.state; wnSave(wn.sv); wnPay(r.coins);
     banner('🏁 ' + r.message + ' ' + r.time.toFixed(1) + 's, ' + r.jumps + ' jumps. +' + r.coins + ' 🪙');
     wnHud(); wnNet();

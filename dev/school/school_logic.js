@@ -127,7 +127,12 @@
   function scEscape(state){
     state = scLoad(state);
     if (!state.pass) return {ok:false, why:'pass', state};
-    if (!state.won){ state.won = true; state.escaped = (state.escaped | 0) + 1; }
+    // Pay once per escape. `won` stays set on the save so leaving and coming
+    // back cannot farm coins. A new escapable run only happens after a fresh
+    // school save (reset), which clears `won` and the puzzles together.
+    if (state.won) return {ok:true, why:'already', state, reward: 0, already:true};
+    state.won = true;
+    state.escaped = (state.escaped | 0) + 1;
     return {ok:true, why:'out', state, reward: 30};
   }
   function scCheckpointOf(id){ return SC_CHECKPOINTS.find(c => c.id === id) || SC_CHECKPOINTS[0]; }

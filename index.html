@@ -3207,7 +3207,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.22-10';
+const BUILD = '2026.11.22-11';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -10185,6 +10185,7 @@ function drawElevator(ctx){
   }
 
   function mnEscape(run, state, now){
+    if (run && run.escaped) return {ok:true, why:'already', coins:0, already:true, state: mnLoad(state), message:'You already slipped out of Mallowmist Manor. Everyone is okay.'};
     const unlocked = mnUnlockDoor(run);
     if (!unlocked.ok) return unlocked;
     const st = mnLoad(state);
@@ -10832,7 +10833,7 @@ function drawElevator(ctx){
       state: wnLoad(state),
       run: {
         area: 'village',
-        sled: {on:false, x:0, y:0, z:0, vx:0, vz:0, yaw:0, air:0, t:0, started:0, jumps:0, done:false, time:0},
+        sled: {on:false, x:0, y:0, z:0, vx:0, vz:0, yaw:0, air:0, t:0, started:0, jumps:0, done:false, time:0, claimed:false},
         snowman: {parts:[]},
         skate: {on:false, laps:0, t:0, lastAng:0, ang:0},
         cocoa: {warm:0, served:0},
@@ -10908,6 +10909,8 @@ function drawElevator(ctx){
 
   function wnSledFinish(run, state){
     if (!run || !run.sled || !run.sled.done || !run.sled.time) return {ok:false, why:'race'};
+    if (run.sled.claimed) return {ok:true, why:'have', coins:0, already:true, time:+run.sled.time, jumps:run.sled.jumps|0, state: wnLoad(state)};
+    run.sled.claimed = true;
     const time = +run.sled.time;
     const jumps = run.sled.jumps | 0;
     const st = wnLoad(state);
@@ -11327,7 +11330,7 @@ function drawElevator(ctx){
       coinsEarned: state.coinsEarned,
       sledBest: state.sledBest,
       area: run.area || 'village',
-      sled: run.sled ? {on:!!run.sled.on, x:+run.sled.x||0, z:+run.sled.z||0, yaw:+run.sled.yaw||0, done:!!run.sled.done, time:+run.sled.time||0} : null,
+      sled: run.sled ? {on:!!run.sled.on, x:+run.sled.x||0, z:+run.sled.z||0, yaw:+run.sled.yaw||0, done:!!run.sled.done, time:+run.sled.time||0, claimed:!!run.sled.claimed} : null,
       snowman: run.snowman ? {parts:(run.snowman.parts||[]).slice(), claimed:!!run.snowman.claimed} : null,
       skate: run.skate ? {on:!!run.skate.on, laps:run.skate.laps|0} : null,
       night: !!run.night,
@@ -15419,7 +15422,12 @@ const pfHide = document.getElementById('pfSetHide'); if (pfHide) pfHide.addEvent
   function scEscape(state){
     state = scLoad(state);
     if (!state.pass) return {ok:false, why:'pass', state};
-    if (!state.won){ state.won = true; state.escaped = (state.escaped | 0) + 1; }
+    // Pay once per escape. `won` stays set on the save so leaving and coming
+    // back cannot farm coins. A new escapable run only happens after a fresh
+    // school save (reset), which clears `won` and the puzzles together.
+    if (state.won) return {ok:true, why:'already', state, reward: 0, already:true};
+    state.won = true;
+    state.escaped = (state.escaped | 0) + 1;
     return {ok:true, why:'out', state, reward: 30};
   }
   function scCheckpointOf(id){ return SC_CHECKPOINTS.find(c => c.id === id) || SC_CHECKPOINTS[0]; }
@@ -48834,7 +48842,7 @@ function start(m = 'obby', d = null){
     if (!wn) return null;
     if (wn.run.sled && wn.run.sled.on && !wn.run.sled.done) return {lab:'Steer with the stick · Ⓐ jump · Ⓑ hop off', act:() => wnHopOff()};
     if (wn.lift && wnNear(wn.lift.x, wn.lift.z, 4)) return {lab:'Start a timed sled run (E / Ⓧ)', act:() => wnStartSled()};
-    if (wn.finish && wnNear(wn.finish.x, wn.finish.z, 4) && wn.run.sled && wn.run.sled.done) return {lab:'Collect your sled coins (E / Ⓧ)', act:() => wnCashSled()};
+    if (wn.finish && wnNear(wn.finish.x, wn.finish.z, 4) && wn.run.sled && wn.run.sled.done && !wn.run.sled.claimed) return {lab:'Collect your sled coins (E / Ⓧ)', act:() => wnCashSled()};
     if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)) return {lab:'☕ Buy cocoa (E) or serve a mug (F / hold Ⓧ)', act:() => wnCocoa(false)};
     if (wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8)){
       const top = (typeof WinterRules.wnTopping === 'function') ? WinterRules.wnTopping(wn.snugTop) : {name:'Whipped cloud', emoji:'☁️'};
@@ -48867,6 +48875,7 @@ function start(m = 'obby', d = null){
   function wnCashSled(){
     const r = WinterRules.wnSledFinish(wn.run, wn.sv);
     if (!r.ok){ banner('Finish a run first!'); return; }
+    if (r.already || !(r.coins > 0)){ banner('You already collected those sled coins.'); return; }
     wn.sv = r.state; wnSave(wn.sv); wnPay(r.coins);
     banner('🏁 ' + r.message + ' ' + r.time.toFixed(1) + 's, ' + r.jumps + ' jumps. +' + r.coins + ' 🪙');
     wnHud(); wnNet();
@@ -50498,7 +50507,10 @@ function start(m = 'obby', d = null){
       const d=SchoolRules.SC_DIGITS[i];
       if (Math.hypot(P.x-d.x, P.z-d.z) < d.r && (sc.sv.digits||[]).indexOf(d.id)<0) return {kind:'digit', id:d.id, n:d.n, act:'🔍 Look'};
     }
-    if (Math.hypot(P.x, P.z-29) < 2.0) return {kind:'exit', act: sc.sv.pass ? '🚪 Leave' : '🚪 Locked'};
+    if (Math.hypot(P.x, P.z-29) < 2.0){
+      if (sc.sv.won) return {kind:'exited', act:''};
+      return {kind:'exit', act: sc.sv.pass ? '🚪 Leave' : '🚪 Locked'};
+    }
     return null;
   }
   function scOpenLocker(){
@@ -50547,10 +50559,12 @@ function start(m = 'obby', d = null){
       return true;
     }
     if (p.kind==='pass'){ banner('🎫 You already have the hall pass. Take it to the front doors.'); return true; }
+    if (p.kind==='exited'){ banner('🌙 You already made it out of Afterbell School. Everyone is okay!'); return true; }
     if (p.kind==='exit'){
       const r=SchoolRules.scEscape(sc.sv);
       if (!r.ok){ banner('The front doors are locked. You need a hall pass.'); return true; }
       scSave(r.state);
+      if (r.already || !(r.reward > 0)){ banner('🌙 You already made it out of Afterbell School. Everyone is okay!'); return true; }
       try { if (typeof confetti==='function') confetti(); } catch(e){}
       if (typeof t297Pay==='function') t297Pay(r.reward, '🌙 Afterbell');
       else if (typeof setCoins==='function') try { setCoins(coins + r.reward); } catch(e){}
@@ -50596,7 +50610,8 @@ function start(m = 'obby', d = null){
     }
     const p = scPrompt();
     sc.near = p;
-    if (p) scHud(p.kind==='exit' && !sc.sv.pass ? 'The front doors are locked. Find a hall pass.' : 'E / Ⓧ — ' + (p.act||'act') + '.', p.act||'✨ Do it');
+    if (p && p.kind==='exited') scHud('You already made it out. Everyone is okay!', '');
+    else if (p) scHud(p.kind==='exit' && !sc.sv.pass ? 'The front doors are locked. Find a hall pass.' : 'E / Ⓧ — ' + (p.act||'act') + '.', p.act||'✨ Do it');
     else if (hide) scHud('You are tucked out of sight. The Hush Warden will walk by.', '');
     else scHud('Explore Afterbell after dark. Solve the chalkboard, locker, and hall pass. If the Hush Warden finds you, everyone is okay.', '');
     scPaintGoreNote();
@@ -50644,13 +50659,18 @@ function start(m = 'obby', d = null){
         caught: !!(sc.run && sc.run.caught),
         warden: sc.run ? {x:sc.run.wx, z:sc.run.wz} : null,
         hide: hide && hide.id,
+        prompt: (typeof scPrompt === 'function') ? (function(){ const p=scPrompt(); return p && p.kind; })() : null,
+        actShown: !!(document.getElementById('scAct') && document.getElementById('scAct').classList.contains('show')),
         room: (typeof P !== 'undefined' && P && SchoolRules.scRoomAt) ? (SchoolRules.scRoomAt(P.x, P.z) || {}).id : null,
         y: (typeof P !== 'undefined' && P) ? P.y : null,
         cam: (typeof cam !== 'undefined' && cam) ? {yaw:cam.yaw, pitch:cam.pitch, dist:cam.dist} : null
       };
     },
     hall(){ if(!sc) return; sc.sv.lessScary=false; scSave(sc.sv); scPaintLess(); scApplyMood(); if(P){P.x=0;P.y=0.5;P.z=6;} if(sc.warden) sc.warden.position.set(2,0,-2); if(typeof cam!=='undefined'&&cam){cam.yaw=0.15;cam.pitch=0.08;cam.dist=11;} try{ if(obbyDebug&&obbyDebug.camLook) obbyDebug.camLook({x:5,y:3.4,z:12},{x:0,y:1.6,z:-1}); }catch(e){} },
-    less(){ if(!sc) return; sc.sv.lessScary=true; scSave(sc.sv); if(sc.warden){try{scene.remove(sc.warden);}catch(e){}} sc.warden=scMakeWarden(); scRebuildGore(); scPaintLess(); scApplyMood(); if(P){P.x=0;P.y=0.5;P.z=6;} if(sc.warden) sc.warden.position.set(2,0,-2); if(typeof cam!=='undefined'&&cam){cam.yaw=0.15;cam.pitch=0.08;cam.dist=11;} try{ if(obbyDebug&&obbyDebug.camLook) obbyDebug.camLook({x:5,y:3.4,z:12},{x:0,y:1.6,z:-1}); }catch(e){} }
+    less(){ if(!sc) return; sc.sv.lessScary=true; scSave(sc.sv); if(sc.warden){try{scene.remove(sc.warden);}catch(e){}} sc.warden=scMakeWarden(); scRebuildGore(); scPaintLess(); scApplyMood(); if(P){P.x=0;P.y=0.5;P.z=6;} if(sc.warden) sc.warden.position.set(2,0,-2); if(typeof cam!=='undefined'&&cam){cam.yaw=0.15;cam.pitch=0.08;cam.dist=11;} try{ if(obbyDebug&&obbyDebug.camLook) obbyDebug.camLook({x:5,y:3.4,z:12},{x:0,y:1.6,z:-1}); }catch(e){} },
+    unlock(){ if(!sc) return; sc.sv.riddle=true; sc.sv.locker=true; sc.sv.pass=true; scSave(sc.sv); },
+    goDoor(){ if(!sc || typeof P === 'undefined' || !P) return; P.x=0; P.y=0.5; P.z=29; P.vx=0; P.vz=0; P.vy=0; },
+    act(){ return scAct(); }
   };
   try {
     const less=document.getElementById('scLessBtn'); if(less && !less.__sc){ less.__sc=true; less.onclick=ev=>{ev.preventDefault();ev.stopPropagation();scToggleLess();}; }

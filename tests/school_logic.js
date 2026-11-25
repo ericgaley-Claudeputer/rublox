@@ -33,6 +33,28 @@ test('locker, chalkboard, and hall-pass puzzles unlock a safe escape', () => {
   const esc = S.scEscape(st);
   assert.equal(esc.ok, true);
   assert.ok(esc.reward > 0);
+  assert.equal(esc.state.won, true);
+  assert.equal(esc.state.escaped, 1);
+  const again = S.scEscape(esc.state);
+  assert.equal(again.ok, true);
+  assert.equal(again.already, true);
+  assert.equal(again.reward, 0);
+  assert.equal(again.state.escaped, 1);
+  // A later visit must not pay again while the same escape is still saved.
+  const visit = S.scNewVisit(again.state);
+  const third = S.scEscape(visit.state);
+  assert.equal(third.reward, 0);
+  assert.equal(third.state.escaped, 1);
+});
+
+test('the Afterbell escape payout is wired once, and the leave prompt hides after you claim it', () => {
+  assert.match(html, /if \(state\.won\) return \{ok:true, why:'already'/);
+  assert.match(html, /kind:'exited'/);
+  assert.match(html, /r\.already \|\| !\(r\.reward > 0\)/);
+  assert.match(html, /function scKey\(/);
+  assert.match(html, /function scPad\(/);
+  assert.match(html, /scAct\(\)/);
+  assert.match(html, /id="scAct"/);
 });
 
 test('the Hush Warden never chases into a catch that is not okay, and Less scary is gentler', () => {
