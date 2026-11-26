@@ -472,7 +472,7 @@
     if (!res) return;
     if (res.state) vtSave(res.state);
     if (res.coins && typeof coins !== 'undefined'){
-      try { coins += res.coins; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof paintCoins === 'function') paintCoins(); } catch (e){}
+      try { if (typeof setCoins === 'function') setCoins(coins + res.coins); else { coins += res.coins; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); } } catch (e){}
     }
     vtPlaceActors();
     vtToast(res.message);

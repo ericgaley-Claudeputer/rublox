@@ -1,6 +1,8 @@
 /* Pebblebrook Field Trip runtime — injected into the main engine IIFE. */
   let ft = null;
   function ftSave(s){ try { if (typeof save === 'function') save(FieldTripRules.FT_KEY, s); } catch(e){} }
+  function ftSetCoins(n){ try { if (typeof setCoins === 'function') setCoins(n); else { coins = n; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); } } catch(e){} }
+  function ftPay(n){ if (n && typeof coins !== 'undefined') ftSetCoins(coins + n); }
   function ftState(){ try { return FieldTripRules.ftLoad(typeof load === 'function' ? load(FieldTripRules.FT_KEY, null) : null); } catch(e){ return FieldTripRules.ftFresh(); } }
   function ftWZ(z){ return (z||0) + ((ft && ft.shiftZ) || 0); }
   function ftKeep(m){
@@ -413,7 +415,7 @@
       const r = FieldTripRules.ftBoardHome(ft.run, ft.sv);
       if (!r.ok){ banner('Fern is still waiting on a few treasures.'); return; }
       ft.sv = r.state; ftSave(ft.sv);
-      if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
+      ftPay(r.coins);
       banner((r.message || 'Bus ride home!') + (r.coins ? ('  +' + r.coins + ' 🪙') : ''));
       if (P){ P.x=0; P.z=18; P.y=0.5; }
       if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }

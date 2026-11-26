@@ -8,15 +8,17 @@
   function shCoins(){ try { return (typeof coins === 'number') ? coins : +(typeof load==='function' && load('rubloxCoins', 0)) || 0; } catch(e){ return 0; } }
   function shPay(n){
     try {
-      if (typeof pay === 'function'){ pay(n); return; }
-      if (typeof coins === 'number'){ coins += n; if (typeof save === 'function') save('rubloxCoins', coins); }
+      if (typeof setCoins === 'function' && typeof coins === 'number'){ setCoins(coins + n); return; }
+      if (typeof coins === 'number'){ coins += n; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); }
     } catch (e){}
   }
   function shSpend(n){
     try {
       if (typeof coins === 'number'){
         if (coins < n) return false;
-        coins -= n; if (typeof save === 'function') save('rubloxCoins', coins); return true;
+        if (typeof setCoins === 'function') setCoins(coins - n);
+        else { coins -= n; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); }
+        return true;
       }
     } catch (e){}
     return shCoins() >= n;
