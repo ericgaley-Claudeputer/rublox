@@ -18,3 +18,8 @@
 .wnwrap-ch{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
 .wnwrap-ch button{border:2px solid #1d2340;border-radius:12px;padding:8px 10px;font-weight:700;cursor:pointer}
 #wnWrapX{margin-top:6px;font-weight:800;border:2px solid #1d2340;border-radius:12px;padding:6px 12px;background:#ffd23f}
+/* GB-6: Snowdrift Fort Field scoop button (touch) — only near the field */
+#wnFortBtn{position:absolute;right:16px;bottom:252px;z-index:8;padding:10px 14px;font-size:16px;border:3px solid #1d2340;border-radius:16px;background:#dff0ff;font-weight:800;box-shadow:3px 3px 0 #1d2340;display:none}
+.wnmode #wnFortBtn.near{display:block}
+#obby:has(#wnFortBtn.near) #wnTopBtn{display:none}
+@media (max-width:700px){ #wnFortBtn{right:12px;bottom:328px} }

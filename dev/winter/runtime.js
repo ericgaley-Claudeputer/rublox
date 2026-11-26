@@ -8,6 +8,7 @@
   function wnPay(n){
     try {
       if (typeof pay === 'function'){ pay(n); return; }
+      if (typeof setCoins === 'function' && typeof coins === 'number'){ setCoins(coins + n); return; }
       if (typeof coins === 'number'){ coins += n; if (typeof save === 'function') save('rubloxCoins', coins); }
     } catch (e){}
   }
@@ -76,7 +77,7 @@
   }
   function wnPlaceName(lab){
     if (!lab) return null;
-    const prefix = ({hill:'🛷 ', finish:'🏁 ', village:'🎄 ', cocoa:'☕ ', pond:'⛸️ ', yard:'☃️ ', lamp:'🌙 ', wrap:'🎁 '}[lab.id] || (String(lab.id||'').indexOf('post')===0 ? '🎯 ' : (String(lab.id||'').indexOf('tree')===0 ? '🎄 ' : (lab.anchor && String(lab.anchor).indexOf('house')>=0 || ['cocoa','blue','green'].indexOf(lab.id)>=0 ? '🏠 ' : ''))));
+    const prefix = ({hill:'🛷 ', finish:'🏁 ', village:'🎄 ', cocoa:'☕ ', pond:'⛸️ ', yard:'☃️ ', lamp:'🌙 ', wrap:'🎁 ', fort:'🧱 ', judges:'⭐ '}[lab.id] || (String(lab.id||'').indexOf('post')===0 ? '🎯 ' : (String(lab.id||'').indexOf('tree')===0 ? '🎄 ' : (lab.anchor && String(lab.anchor).indexOf('house')>=0 || ['cocoa','blue','green'].indexOf(lab.id)>=0 ? '🏠 ' : ''))));
     const m = wnLab((prefix || '') + lab.name, lab.x, lab.y, lab.z);
     if (m){ m.userData = m.userData || {}; m.userData.wnLabId = lab.id; }
     return m;
@@ -160,23 +161,228 @@
     banner('☕ ' + r.message);
     wnHud(); wnNet();
   }
+  // Real players only: me plus friends in Pinebell right now (positions from multiplayer), never NPCs or bots.
+  function wnRoster(){
+    const me = (typeof mp !== 'undefined' && mp && mp.me) ? mp.me : 'me';
+    const out = [{id: me, name: 'You', x: P.x, z: P.z}];
+    try {
+      if (typeof mp !== 'undefined' && mp && mp.on && mp.ents){
+        const now = performance.now();
+        mp.ents.forEach((E, uid) => {
+          if (!E || uid === me || E.m !== 'winter' || now - (E.seen || 0) > 3000 || String(uid)[0] === 'b') return;
+          const L = (typeof mpLook === 'function') ? mpLook(uid) : null;
+          if (L && L.bot) return;
+          out.push({id: uid, name: (L && L.short) || 'Friend', x: +E.tx || +E.x || 0, z: +E.tz || +E.z || 0});
+        });
+      }
+    } catch(e){}
+    return out;
+  }
+  function wnCapNote(r){ if (r && r.capped && !wn._capNote){ wn._capNote = true; banner('🫙 Pinebell\'s coin jar is empty for today — the fun keeps going!'); } }
   function wnThrowNow(){
     if (!wn) return;
+    if (wn.run.show && wn.run.show.on){ wnShowDo('spiral'); return; }
     const yaw = (typeof cam !== 'undefined' && cam) ? cam.yaw : 0;
     const dir = {x: -Math.sin(yaw), z: -Math.cos(yaw)};
     const me = (typeof mp !== 'undefined' && mp && mp.me) ? mp.me : 'me';
-    let roster = [];
-    try { if (typeof mp !== 'undefined' && mp && mp.on && typeof mpRoster === 'function') roster = mpRoster() || []; } catch(e){}
+    const roster = wnRoster();
     const origin = {x: P.x, z: P.z};
-    const r = WinterRules.wnThrowAimed(wn.run, wn.sv, me, origin, dir, roster, WinterRules.WN_TARGETS);
+    const extras = (WinterRules.WN_TARGETS || []).concat(WinterRules.WN_FORT_TARGETS || []);
+    const r = WinterRules.wnThrowAimed(wn.run, wn.sv, me, origin, dir, roster, extras, wn.run.fort);
     if (!r.ok){ banner(r.why === 'cool' ? 'Wait a tiny second…' : 'Hold that snowball a beat.'); return; }
     wn.sv = r.state; wnSave(wn.sv); if (r.coins) wnPay(r.coins);
     // flying puff
     const shot = r.shot || {x:P.x, z:P.z, dx:dir.x, dz:dir.z, life:0.7, hitAt:8};
-    const ball = wnMesh(new THREE.SphereGeometry(0.22, 7, 7), '#f4fbff', shot.x, 1.15, shot.z);
-    (wn.shots || (wn.shots=[])).push({m:ball, x:shot.x, y:1.15, z:shot.z, dx:shot.dx, dz:shot.dz, t:0, life: Math.min(0.85, (shot.hitAt||8)/14), giggle: r.giggle, msg: r.message, why:r.why});
+    wnLaunch(shot, r.giggle, r.message, r.why);
+    try { if (typeof SND !== 'undefined' && SND.boing) beep([660, 440], .05, 'sine', .05); } catch(e){}
     if (r.why === 'miss') banner('❄️ The snowball poofs into the snow.');
+    if (r.fight && r.toId) wnSendEv({ev:'poof', to: r.toId, from: me, nm: (typeof player !== 'undefined' && player && player.name) ? String(player.name).slice(0, 16) : 'A friend'});
+    wnSendEv({ev:'ball', x:+shot.x.toFixed(2), z:+shot.z.toFixed(2), dx:+shot.dx.toFixed(3), dz:+shot.dz.toFixed(3), h:+(shot.hitAt||8).toFixed(2)});
+    wnCapNote(r);
     wnHud(); wnNet();
+  }
+  function wnLaunch(shot, giggle, msg, why){
+    const ball = wnMesh(new THREE.SphereGeometry(0.22, 7, 7), '#f4fbff', shot.x, 1.15, shot.z);
+    (wn.shots || (wn.shots=[])).push({m:ball, x:shot.x, y:1.15, z:shot.z, dx:shot.dx, dz:shot.dz, t:0, life: Math.min(0.85, (shot.hitAt||8)/14), giggle: giggle, msg: msg, why: why, poof: why === 'hit' || why === 'target' || why === 'wall' || why === 'remote'});
+  }
+  function wnPoofAt(x, y, z){
+    if (!wn) return;
+    for (let i = 0; i < 7; i++){
+      const a = i * Math.PI * 2 / 7;
+      const m = wnMesh(new THREE.SphereGeometry(0.16, 6, 6), '#ffffff', x, y, z);
+      try { m.material.transparent = true; } catch(e){}
+      (wn.puffs || (wn.puffs = [])).push({m, vx: Math.cos(a) * 2.4, vy: 1.2 + (i % 3) * 0.5, vz: Math.sin(a) * 2.4, t: 0});
+    }
+  }
+  function wnTickPuffs(dt){
+    if (!wn || !wn.puffs) return;
+    wn.puffs = wn.puffs.filter(p => {
+      p.t += dt;
+      if (p.m){ p.m.position.x += p.vx * dt; p.m.position.y += p.vy * dt; p.m.position.z += p.vz * dt; try { p.m.material.opacity = Math.max(0, 1 - p.t / 0.5); } catch(e){} }
+      if (p.t >= 0.5){ try { scene.remove(p.m); } catch(e){} return false; }
+      return true;
+    });
+  }
+  /* ---- GB-6: Snowdrift Fort Field ---- */
+  function wnInFortNow(){ return !!(wn && P && WinterRules.wnInFort && WinterRules.wnInFort(P.x, P.z)); }
+  function wnCamDir(){ const yaw = (typeof cam !== 'undefined' && cam) ? cam.yaw : 0; return {x: -Math.sin(yaw), z: -Math.cos(yaw)}; }
+  function wnPaintFortCell(i, j){
+    if (!wn) return;
+    const k = i + ',' + j;
+    wn.fortSolids = wn.fortSolids || {};
+    (wn.fortSolids[k] || []).forEach(b => {
+      try { b.active = false; if (typeof solids !== 'undefined'){ const n = solids.indexOf(b); if (n >= 0) solids.splice(n, 1); } } catch(e){}
+      try { const n = wn.solids.indexOf(b); if (n >= 0) wn.solids.splice(n, 1); } catch(e){}
+      try { if (b.mesh) scene.remove(b.mesh); } catch(e){}
+    });
+    wn.fortSolids[k] = [];
+    const h = WinterRules.wnFortH(wn.run.fort, i, j);
+    const c = WinterRules.wnFortCenter(i, j);
+    const F = WinterRules.WN_FORT, s = F.cell - 0.08;
+    for (let lv = 0; lv < h; lv++){
+      const b = plat(c.x, (lv + 1) * F.blockH, c.z, s, s, (i + j + lv) % 2 ? '#9cc8ee' : '#86b6e4', F.blockH);
+      if (b){ if (b.mesh) wnKeep(b.mesh); wn.solids.push(b); wn.fortSolids[k].push(b); }
+    }
+  }
+  function wnPaintFortAll(){
+    if (!wn) return;
+    Object.keys(wn.fortSolids || {}).forEach(k => { const a = k.split(','); wnPaintFortCell(+a[0], +a[1]); });
+    Object.keys((wn.run.fort && wn.run.fort.cells) || {}).forEach(k => { const a = k.split(','); wnPaintFortCell(+a[0], +a[1]); });
+  }
+  function wnFortDo(add){
+    if (!wn) return;
+    const d = wnCamDir();
+    const r = add ? WinterRules.wnFortPlace(wn.run.fort, P.x, P.z, d.x, d.z) : WinterRules.wnFortScoop(wn.run.fort, P.x, P.z, d.x, d.z);
+    if (!r.ok){
+      banner({field:'Walk into Snowdrift Fort Field to build.', edge:'Face into the field to build.', you:'Step back a little — that spot is under your boots.', target:'Leave room around the mitten flags!', tall:'That stack is as tall as it goes (3 blocks).', full:'The field is full of forts! Scoop a block first.', empty:'No block there to scoop.'}[r.why] || 'Try another spot.');
+      return;
+    }
+    wnPaintFortCell(r.i, r.j);
+    if (add){ wn.sv = WinterRules.wnFortBank(wn.sv, 1); wnSave(wn.sv); }
+    try { beep(add ? [392, 523] : [523, 392], .05, 'triangle', .05); } catch(e){}
+    wnSendEv({ev:'fort', i:r.i, j:r.j, h:r.h});
+    wnHud();
+  }
+  function wnBuildFort(){
+    if (!wn) return;
+    const F = WinterRules.WN_FORT;
+    wn.run.fort = wn.run.fort || WinterRules.wnFortFresh();
+    wn.fortSolids = {};
+    // packed-snow field with a soft blue border and a centre line
+    const pad = wnMesh(new THREE.BoxGeometry(F.w, 0.06, F.d), '#eaf6ff', F.x, 0.04, F.z);
+    [[F.x, F.z - F.d/2, F.w + 0.4, 0.3], [F.x, F.z + F.d/2, F.w + 0.4, 0.3], [F.x - F.w/2, F.z, 0.3, F.d], [F.x + F.w/2, F.z, 0.3, F.d]].forEach(e => wnMesh(new THREE.BoxGeometry(e[2], 0.1, e[3]), '#7ab8e8', e[0], 0.08, e[1]));
+    wnMesh(new THREE.BoxGeometry(F.w, 0.08, 0.16), '#b8d8f4', F.x, 0.07, F.z);
+    // snow block pile so it reads as "grab blocks here"
+    [[-1, 0], [0, 0], [1, 0], [-0.5, 1], [0.5, 1], [0, 2]].forEach((p, n) => wnMesh(new THREE.BoxGeometry(0.8, 0.6, 0.8), n % 2 ? '#f4fbff' : '#dcecf8', F.x - F.w/2 - 2 + p[0] * 0.85, 0.3 + p[1] * 0.6, F.z - 5));
+    wnLab('🧱 Snow blocks', F.x - F.w/2 - 2, 2.6, F.z - 5);
+    // mitten flags (practice targets) on the far side
+    wn.fortFlags = [];
+    (WinterRules.WN_FORT_TARGETS || []).forEach((t, n) => {
+      wnMesh(new THREE.CylinderGeometry(0.07, 0.07, 2.2, 6), '#8b5a2b', t.x, 1.1, t.z);
+      const flag = wnMesh(new THREE.BoxGeometry(0.9, 0.6, 0.06), ['#ff6fb5', '#3a86ff', '#ffd23f'][n % 3], t.x + 0.45, 1.9, t.z);
+      wn.fortFlags.push({id:t.id, m:flag, x:t.x});
+      wnLab('🧤 ' + t.name, t.x, 2.8, t.z);
+    });
+    // ghost block shows where the next block lands
+    const g = new THREE.Mesh(new THREE.BoxGeometry(F.cell - 0.08, F.blockH, F.cell - 0.08), wnMat('#9fd4ff', {transparent:true, opacity:0.35}));
+    g.visible = false; scene.add(g); wnKeep(g); wn.fortGhost = g;
+    wnPaintFortAll();
+  }
+  function wnFortGhost(){
+    if (!wn || !wn.fortGhost) return;
+    const on = wnInFortNow() && !(wn.run.show && wn.run.show.on);
+    if (!on){ wn.fortGhost.visible = false; return; }
+    const d = wnCamDir();
+    const c = WinterRules.wnFortAim(P.x, P.z, d.x, d.z);
+    if (!c){ wn.fortGhost.visible = false; return; }
+    const h = WinterRules.wnFortH(wn.run.fort, c.i, c.j);
+    const ctr = WinterRules.wnFortCenter(c.i, c.j);
+    const F = WinterRules.WN_FORT;
+    wn.fortGhost.visible = h < F.maxH;
+    wn.fortGhost.position.set(ctr.x, h * F.blockH + F.blockH / 2, ctr.z);
+  }
+  /* ---- GB-6: Frostlane Star Show ---- */
+  function wnTune(notes, dur){ try { if (typeof beep === 'function') beep(notes, dur || .11, 'triangle', .06); } catch(e){} }
+  function wnBuildJudges(){
+    if (!wn) return;
+    const J = WinterRules.WN_JUDGES;
+    wnWall(J.x, 0.5, J.z, J.w, 1.0, J.d * 0.7, '#3a4a8a');
+    wnMesh(new THREE.BoxGeometry(J.w + 0.2, 0.12, J.d * 0.8), '#ffd23f', J.x, 1.06, J.z);
+    wn.judges = [];
+    (WinterRules.WN_JUDGE_LIST || []).forEach((jd, n) => {
+      const x = J.x - 2 + n * 2, z = J.z - 1.3;
+      try {
+        if (typeof buildPlayer === 'function'){
+          const look = [{shirt:'#8b5cf6', pants:'#2a2a4a', hair:'bun', hairColor:'#c0c0c0', hat:'earmuffs'}, {shirt:'#1d2340', pants:'#1d2340', hair:'short', hairColor:'#1a1a1a', hat:'tophat'}, {shirt:'#2ec27e', pants:'#3a2a1a', hair:'long', hairColor:'#7a3d14', hat:'beanie'}][n % 3];
+          const m = buildPlayer(Object.assign({}, typeof DEF !== 'undefined' ? DEF : {}, look, {face:'smile'}));
+          m.g.position.set(x, 0.05, z); m.g.rotation.y = 0; scene.add(m.g); wnKeep(m.g);
+        } else wnMesh(new THREE.BoxGeometry(0.6, 1.5, 0.5), '#8b5cf6', x, 0.85, z);
+      } catch(e){ wnMesh(new THREE.BoxGeometry(0.6, 1.5, 0.5), '#8b5cf6', x, 0.85, z); }
+      wnLab(jd.emoji + ' ' + String(jd.name).replace(/^Judge /, ''), x, n === 1 ? 3.75 : 3.2, z);
+      const card = wnMesh(new THREE.BoxGeometry(0.7, 0.5, 0.05), '#ffffff', x, 1.6, z + 0.9);
+      card.visible = false;
+      wn.judges.push({id: jd.id, x, z, card, lab: null});
+    });
+  }
+  function wnShowCards(scores){
+    if (!wn || !wn.judges) return;
+    wn.judges.forEach((j, n) => {
+      if (j.lab){ try { scene.remove(j.lab); } catch(e){} j.lab = null; }
+      const s = scores && scores[n];
+      j.card.visible = !!s;
+      if (s){ j.lab = wnLab('🪧 ' + s.score, j.x, 2.2, j.z + 1.0); j.card.position.y = 1.9; }
+    });
+    wn.cardT = scores ? 9 : 0;
+  }
+  function wnStartShow(){
+    if (!wn) return;
+    const r = WinterRules.wnShowStart(wn.run, Date.now());
+    if (!r.ok){ banner('The Star Show is already on — skate!'); return; }
+    wnShowCards(null);
+    wnTune([523, 659, 784, 659, 880, 784]);
+    banner('⭐ The Frostlane Star Show begins! On the ice: E / Ⓧ / ✨ = 🌀 spin, jump (Space / Ⓐ / ⬆️) = ❄️ hop, Q / RB / 🦢 = swan spiral. Five moves, then the judges score!');
+    wnHud();
+  }
+  function wnOnIce(){ return !!(wn && WinterRules.wnOnRink && WinterRules.wnOnRink(P.x, P.z)); }
+  function wnShowDo(kind){
+    if (!wn || !wn.run.show || !wn.run.show.on) return false;
+    const r = WinterRules.wnShowMove(wn.run, kind, {onIce: wnOnIce(), speed: Math.hypot(P.vx || 0, P.vz || 0)});
+    if (!r.ok){ if (r.why === 'ice') banner('⛸️ Glide onto the ice first, then show your moves!'); return true; }
+    wnTune(kind === 'spin' ? [784, 988] : kind === 'hop' ? [659, 1047] : [587, 740, 880], .08);
+    banner(r.move.emoji + ' ' + r.move.name + '! +' + r.pts + ' style  ·  ' + r.n + '/' + WinterRules.WN_SHOW_MOVES);
+    if (wn.run.skate){ wn.run.skate.trick = r.move.name; wn.run.skate.trickT = 0.7; }
+    if (r.done) wnFinishShow();
+    wnHud();
+    return true;
+  }
+  function wnFinishShow(){
+    if (!wn || !wn.run.show) return;
+    const r = WinterRules.wnShowJudge(wn.run, wn.sv);
+    if (!r.ok){ WinterRules.wnShowQuit(wn.run); banner('⭐ The show ended before any moves. Visit the judges to try again!'); wnHud(); return; }
+    if (r.already) return;
+    wn.sv = r.state; wnSave(wn.sv); if (r.coins) wnPay(r.coins);
+    wnShowCards(r.scores);
+    wnTune([523, 659, 784, 1047, 784, 1047], .12);
+    banner('⭐ ' + r.message + ' (' + r.sum + '/30' + (r.best ? ', a new best!' : '') + ')' + (r.coins ? ('  +' + r.coins + ' 🪙') : (r.capped ? '  The judges have handed out today\'s show coins — come back tomorrow!' : '')));
+    wnHud(); wnNet();
+  }
+  function wnHitBanner(nm){ banner('❄️ Poof! ' + (nm || 'A friend') + ' got you with a snowball — just fluffy snow, no ouch!'); }
+  function wnSendEv(o){
+    if (typeof mp === 'undefined' || !mp || !mp.on || typeof mpSend !== 'function') return;
+    try { mpSend(Object.assign({t:'wn'}, o)); } catch(e){}
+  }
+  function wnEv(d){
+    if (!wn || !d || typeof d.ev !== 'string') return;
+    const me = (typeof mp !== 'undefined' && mp && mp.me) ? mp.me : 'me';
+    if (d.ev === 'fort'){
+      const r = WinterRules.wnFortSet(wn.run.fort, d.i | 0, d.j | 0, d.h | 0);
+      if (r.ok) wnPaintFortCell(r.i, r.j);
+    } else if (d.ev === 'poof'){
+      if (String(d.to) === String(me)){ WinterRules.wnGotHit(wn.run); wnPoofAt(P.x, 1.6, P.z); wnHitBanner(String(d.nm || '').replace(/[<>]/g, '').slice(0, 16)); wnHud(); }
+    } else if (d.ev === 'ball'){
+      const ok = [d.x, d.z, d.dx, d.dz, d.h].every(v => Number.isFinite(+v));
+      if (ok && (wn.shots || []).length < 30) wnLaunch({x:+d.x, z:+d.z, dx:+d.dx, dz:+d.dz, hitAt: Math.max(0.5, Math.min(12, +d.h))}, false, '', 'remote');
+    }
   }
   function wnTickShots(dt){
     if (!wn) return;
@@ -189,6 +395,7 @@
       if (s.m) s.m.position.set(s.x, s.y, s.z);
       if (s.t >= (s.life||0.7)){
         if (s.m){ try { scene.remove(s.m); } catch(e){} }
+        if (s.poof) wnPoofAt(s.x, s.y, s.z);
         if (s.giggle) banner('❄️ ' + (s.msg || 'Poof! A little giggle rings out.'));
       } else left.push(s);
     });
@@ -226,10 +433,12 @@
   }
   function wnDoTrick(){
     if (!wn || !WinterRules.wnSkateTrick) return;
+    if (wn.run.show && wn.run.show.on){ wnShowDo('hop'); return; }
     const r = WinterRules.wnSkateTrick(wn.run, wn.sv);
     if (!r.ok) return;
-    wn.sv = r.state; wnSave(wn.sv); wnPay(r.coins);
-    banner('✨ ' + r.name + '! +' + r.coins + ' 🪙');
+    wn.sv = r.state; wnSave(wn.sv); if (r.coins) wnPay(r.coins);
+    banner('✨ ' + r.name + '!' + (r.coins ? (' +' + r.coins + ' 🪙') : ''));
+    wnCapNote(r);
     wnHud();
   }
   function buildWinter(){
@@ -257,7 +466,9 @@
     wnBuildRink();
     wnBuildSnug();
     wnBuildTargets();
-    wn.shots = [];
+    wn.shots = []; wn.puffs = [];
+    wnBuildFort();
+    wnBuildJudges();
     wn.yard = {x:WinterRules.WN_YARD.x, z:WinterRules.WN_YARD.z};
     wn.posts = (WinterRules.WN_POSTS || []).map(p => ({id:p.id, x:p.x, z:p.z}));
     wn.posts.forEach(p => {
@@ -279,7 +490,7 @@
     wnBuildFestive();
     wnBind();
     wnHud();
-    banner('🎄 Welcome to Pinebell Village! Skate Frostlane Rink, grab a topped cocoa at Snugmug Cart, and toss snowballs (Q / RB / ❄️) at cans, puff pals, or real friends. Hits go poof with a giggle.');
+    banner('🎄 Welcome to Pinebell Village! Build a snow fort at Snowdrift Fort Field, put on a Star Show for the judges at Frostlane Rink, and toss snowballs (Q / RB / ❄️) at mitten flags or real friends. Hits go poof with a giggle.');
   }
 
   function wnBuildFestive(){
@@ -425,6 +636,13 @@
   function wnPrompt(){
     if (!wn) return null;
     if (wn.run.sled && wn.run.sled.on && !wn.run.sled.done) return {lab:'Steer with the stick · Ⓐ jump · Ⓑ hop off', act:() => wnHopOff()};
+    if (wn.run.show && wn.run.show.on){
+      const s = wn.run.show;
+      return {lab:'🌀 Spin (E / Ⓧ)  ·  ' + (s.moves || []).length + '/' + WinterRules.WN_SHOW_MOVES + ' moves  ·  ' + Math.max(0, Math.ceil(WinterRules.WN_SHOW_T - (s.t || 0))) + 's', act:() => wnShowDo('spin')};
+    }
+    const J = WinterRules.WN_JUDGES;
+    if (J && wnNear(J.x, J.z, 3.4)) return {lab:'⭐ Start the Star Show for the judges (E / Ⓧ)', act:() => wnStartShow()};
+    if (wnInFortNow()) return {lab:'🧱 Place a snow block (E / Ⓧ)  ·  F / Ⓨ scoop', act:() => wnFortDo(true)};
     if (wn.lift && wnNear(wn.lift.x, wn.lift.z, 4)) return {lab:'Start a timed sled run (E / Ⓧ)', act:() => wnStartSled()};
     if (wn.finish && wnNear(wn.finish.x, wn.finish.z, 4) && wn.run.sled && wn.run.sled.done && !wn.run.sled.claimed) return {lab:'Collect your sled coins (E / Ⓧ)', act:() => wnCashSled()};
     if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)) return {lab:'☕ Buy cocoa (E) or serve a mug (F / hold Ⓧ)', act:() => wnCocoa(false)};
@@ -520,11 +738,21 @@
       const s = wn.sv, run = wn.run;
       const sled = run.sled && run.sled.on ? ('  ·  🛷 ' + (run.sled.t||0).toFixed(1) + 's') : (s.sledBest ? ('  ·  best ' + Number(s.sledBest).toFixed(1) + 's') : '');
       const warm = (run.cocoa && run.cocoa.warm > 0) ? ('  ·  ☕ warm ' + Math.ceil(run.cocoa.warm) + 's') : '';
-      hint.textContent = '🎄 Pinebell  ·  🪙 ' + (s.coinsEarned||0) + ' earned  ·  💡 ' + (s.lights||0) + '  ·  🎁 best ' + (s.wrapBest||0) + sled + warm;
+      const fight = (run.fight && (run.fight.hits || run.fight.got)) ? ('  ·  ❄️ ' + (run.fight.hits|0) + ' hits / ' + (run.fight.got|0) + ' poofed') : '';
+      const fort = wnInFortNow() ? ('  ·  🧱 ' + ((run.fort && run.fort.n)|0) + ' blocks') : '';
+      const show = (run.show && run.show.on) ? ('  ·  ⭐ show ' + (run.show.moves||[]).length + '/' + WinterRules.WN_SHOW_MOVES) : (s.showBest ? ('  ·  ⭐ best ' + s.showBest + '/30') : '');
+      hint.textContent = '🎄 Pinebell  ·  🪙 ' + (s.coinsEarned||0) + ' earned  ·  💡 ' + (s.lights||0) + '  ·  🎁 best ' + (s.wrapBest||0) + sled + warm + fort + fight + show;
     }
     const btn = document.getElementById('wnAct');
     const p = wnPrompt();
     if (btn){ if (p){ btn.textContent = p.lab; btn.classList.add('show'); } else btn.classList.remove('show'); }
+    const showOn = !!(wn && wn.run.show && wn.run.show.on);
+    const fortBtn = document.getElementById('wnFortBtn');
+    if (fortBtn){
+      fortBtn.classList.toggle('near', !!(wn && wnInFortNow() && !showOn));
+    }
+    const snowBtn = document.getElementById('wnSnowBtn');
+    if (snowBtn) snowBtn.textContent = showOn ? '🦢 Spiral' : '❄️ Throw';
     const topBtn = document.getElementById('wnTopBtn');
     if (topBtn){
       const near = !!(wn && wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8));
@@ -540,6 +768,11 @@
     const c = e.code || e.key;
     if (e.repeat && (c === 'KeyE' || c === 'KeyF')) return true; // QA t332u: holding E on a sled used to hop straight back off
     if (c === 'KeyE'){ wnAct(); return true; }
+    if (wn.run.show && wn.run.show.on){
+      if (c === 'KeyQ' || c === 'KeyF'){ wnShowDo('spiral'); return true; }
+      if (c === 'Space' && wnOnIce()){ wnShowDo('hop'); return false; }
+    }
+    if (c === 'KeyF' && wnInFortNow()){ wnFortDo(false); return true; }
     if (c === 'KeyF'){ if (wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8)){ wnSnugDo(true); return true; } if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6)){ wnCocoa(true); return true; } wnAct(); return true; }
     if (c === 'KeyQ'){ if (wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8)){ wnSnugCycle(); return true; } wnThrowNow(); return true; }
     if (c === 'Space' && wn.run.sled && wn.run.sled.on){ WinterRules.wnSledJump(wn.run); return true; }
@@ -557,8 +790,16 @@
       if (!wn._b && jp && jp[1]){ wn._b = true; wnHopOff(); return true; }
       if (jp && !jp[1]) wn._b = false;
     }
+    if (wn.run.show && wn.run.show.on){
+      if (!wn._y && jp && jp[3]){ wn._y = true; wnShowDo('spiral'); return true; }
+      if (jp && !jp[3]) wn._y = false;
+    } else if (wnInFortNow()){
+      if (!wn._y && jp && jp[3]){ wn._y = true; wnFortDo(false); return true; }
+      if (jp && !jp[3]) wn._y = false;
+    }
     if (!wn._x && jp && jp[2]){ wn._x = true; if (wn.snug && wnNear(wn.snug.x, wn.snug.z, 2.8) && wn._holdF) wnSnugDo(true); else if (wn.cocoa && wnNear(wn.cocoa.x, wn.cocoa.z, 2.6) && wn._holdF) wnCocoa(true); else wnAct(); return true; }
     if (jp && !jp[2]) wn._x = false;
+    if (!wn._b && jp && jp[1] && wn.run.show && wn.run.show.on){ wn._b = true; wnFinishShow(); return true; }
     if (!wn._b && jp && jp[1] && wn.run.skate && wn.run.skate.on){ wn._b = true; wnCashSkate(); return true; }
     if (jp && !jp[1]) wn._b = false;
     if (!wn._rb && jp && jp[5]){ wn._rb = true; wnThrowNow(); return true; }
@@ -572,6 +813,16 @@
     dt = Math.max(0, Math.min(0.12, +dt || 0));
     WinterRules.wnSnowballTick(wn.run, dt);
     wnTickShots(dt);
+    wnTickPuffs(dt);
+    wnFortGhost();
+    (wn.fortFlags || []).forEach((f, n) => { if (f.m) f.m.rotation.y = Math.sin((wn.run.t || 0) * 2 + n) * 0.25; });
+    if (wn.run.show && wn.run.show.on){
+      WinterRules.wnShowTick(wn.run, dt);
+      if (wn.run.show.done) wnFinishShow();
+      else if (wn.pond && Math.hypot(P.x - wn.pond.x, P.z - wn.pond.z) > 18){ if ((wn.run.show.moves || []).length) wnFinishShow(); else { WinterRules.wnShowQuit(wn.run); banner('⭐ Show paused — visit the judges when you are ready.'); } }
+    }
+    if ((wn.cardT || 0) > 0){ wn.cardT -= dt; if (wn.cardT <= 0) wnShowCards(null); }
+    if (!wnIsGuest() && typeof mp !== 'undefined' && mp && mp.on && wn.run.fort){ wn.fortNetT = (wn.fortNetT || 0) - dt; if (wn.fortNetT <= 0){ wn.fortNetT = 2.5; wnSendEv({fort: WinterRules.wnFortWire(wn.run.fort)}); } }
     if (wn.run && wn.run.night && wn.lights){ const tnow = (wn.run.t = (wn.run.t||0)+dt); wn.lights.forEach((L,i)=>{ if (!L.mesh||!L.mesh.visible) return; L.mesh.children.forEach((c,j)=>{ if (c.material) c.material.opacity = 0.65 + 0.35*Math.sin(tnow*4 + i + j); c.material.transparent = true; }); }); }
     (wn.flakes||[]).forEach(f => {
       if (!f.m) return;
@@ -590,7 +841,7 @@
       const ax = P.x - (wn.pond.x||20), az = P.z - (wn.pond.z|| 4);
       WinterRules.wnSkateTick(wn.run, ax, az, dt);
       if (WinterRules.wnOnRink && WinterRules.wnOnRink(P.x, P.z)){
-        if (P.vy > 2 && !wn.run.skate._hop){ wn.run.skate._hop = true; wnDoTrick(); }
+        if (P.vy > 2 && !wn.run.skate._hop){ wn.run.skate._hop = true; if (wn.run.show && wn.run.show.on) wnShowDo('hop'); else wnDoTrick(); }
         if (P.onGround) wn.run.skate._hop = false;
       }
     }
@@ -608,13 +859,34 @@
     if (wnIsGuest() || !wn || typeof mp === 'undefined' || !mp || !mp.on || typeof mpSend !== 'function') return;
     try { mpSend({t:'wn', snap: wnWire()}); } catch (e){}
   }
-  function wnFromNet(g, d){ if (d && d.snap) wnApply(d.snap); }
-  function wnFromHost(d){ wnFromNet(null, d); }
+  function wnFromNet(g, d){
+    if (!d) return;
+    if (d.snap) wnApply(d.snap);
+    if (d.ev){
+      wnEv(d);
+      // host relays a guest's fort block / snowball to everyone else in the room
+      if (g && typeof mp !== 'undefined' && mp && mp.host && typeof mpBroadcast === 'function'){ try { mpBroadcast(d, g.conn); } catch(e){} }
+    }
+  }
+  function wnFromHost(d){
+    if (!d) return;
+    if (d.snap) wnApply(d.snap);
+    if (d.ev) wnEv(d);
+    if (typeof d.fort === 'string' && wn && String(d.fort).length < 4000){
+      const next = WinterRules.wnFortUnwire(d.fort);
+      const old = wn.run.fort;
+      wn.run.fort = next;
+      const keys = new Set(Object.keys((old && old.cells) || {}).concat(Object.keys(next.cells || {})));
+      keys.forEach(k => { const a = k.split(','); if (WinterRules.wnFortH(old, +a[0], +a[1]) !== WinterRules.wnFortH(next, +a[0], +a[1])) wnPaintFortCell(+a[0], +a[1]); });
+    }
+  }
   function wnBind(){
     const a=document.getElementById('wnAct');
     if (a && !a.__wn){ a.__wn=true; a.addEventListener('click', ev => { ev.preventDefault(); wnAct(); }); }
     const snow=document.getElementById('wnSnowBtn');
     if (snow && !snow.__wn){ snow.__wn=true; snow.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); wnThrowNow(); }); }
+    const scoop=document.getElementById('wnFortBtn');
+    if (scoop && !scoop.__wn){ scoop.__wn=true; scoop.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); wnFortDo(false); }); }
     const cycle=document.getElementById('wnTopBtn');
     if (cycle && !cycle.__wn){ cycle.__wn=true; cycle.addEventListener('click', ev => { ev.preventDefault(); wnSnugCycle(); }); }
   }
@@ -633,5 +905,17 @@
     wrap(){ if (!wn) return; const w=WinterRules.WN_WRAP; P.x=w.x; P.y=0.5; P.z=w.z+2; wnOpenWrap(); if (cam){ cam.yaw=0; cam.pitch=0.4; cam.dist=10; } },
     sled(){ if (!wn) return; wnStartSled(); for (let i=0;i<20;i++) WinterRules.wnSledTick(wn.run, 0.08); P.x=wn.run.sled.x; P.y=wn.run.sled.y; P.z=wn.run.sled.z; if (cam){ cam.yaw=Math.PI; cam.pitch=0.28; cam.dist=12; } },
     pond(){ if (!wn) return; const p=WinterRules.WN_POND; P.x=p.x; P.y=0.5; P.z=p.z; },
+    fort(demo){ if (!wn) return; const F=WinterRules.WN_FORT; P.x=F.x; P.y=0.5; P.z=F.z-6.5; P.vx=P.vz=0; if (cam){ cam.yaw=Math.PI; cam.pitch=0.4; cam.dist=14; }
+      if (demo){ const D=WinterRules.wnFortDims(); for (let i=3;i<D.cols-3;i++){ WinterRules.wnFortSet(wn.run.fort, i, 4, (i%3===0)?2:3); wnPaintFortCell(i, 4); } [[3,3],[3,2],[D.cols-4,3],[D.cols-4,2]].forEach(c => { WinterRules.wnFortSet(wn.run.fort, c[0], c[1], 2); wnPaintFortCell(c[0], c[1]); }); } wnHud(); },
+    place(n){ if (!wn) return; for (let k=0;k<(n||1);k++) wnFortDo(true); },
+    scoop(){ if (!wn) return; wnFortDo(false); },
+    throwAt(x, z){ if (!wn) return; if (cam){ cam.yaw = Math.atan2(-(x - P.x), -(z - P.z)); } wn.run.snowball.cool = 0; wnThrowNow(); },
+    judges(){ if (!wn) return; const J=WinterRules.WN_JUDGES; P.x=J.x; P.y=0.5; P.z=J.z+3; P.vx=P.vz=0; if (cam){ cam.yaw=0; cam.pitch=0.3; cam.dist=9; } wnHud(); },
+    show(){ if (!wn) return; const p=WinterRules.WN_POND; wnStartShow(); P.x=p.x; P.y=0.6; P.z=p.z; P.vx=P.vz=0; if (cam){ cam.yaw=Math.PI; cam.pitch=0.32; cam.dist=13; } },
+    move(kind){ if (!wn || !wn.run.show) return null; wn.run.show.cool = 0; wnShowDo(kind || 'spin'); return wn.run.show ? {moves:(wn.run.show.moves||[]).length, on:!!wn.run.show.on, sum:wn.run.show.sum|0} : null; },
+    showProbe(){ return wn && wn.run.show ? {on:!!wn.run.show.on, moves:(wn.run.show.moves||[]).length, claimed:!!wn.run.show.claimed, sum:wn.run.show.sum|0, shows:wn.sv.shows|0, showPaid:wn.sv.showPaid|0} : null; },
+    at(x, z, y){ if (!wn) return; P.x = x; P.z = z; P.y = y == null ? 0.6 : y; P.vx = P.vz = 0; },
+    aim(x, z, pitch, dist){ if (!wn || !cam) return; cam.yaw = Math.atan2(-(x - P.x), -(z - P.z)); if (pitch != null) cam.pitch = pitch; if (dist != null) cam.dist = dist; },
+    fortProbe(){ return wn ? {n:(wn.run.fort&&wn.run.fort.n)|0, forts:wn.sv.forts|0, inFort: wnInFortNow(), hits:(wn.run.fight&&wn.run.fight.hits)|0, walls:(wn.run.fight&&wn.run.fight.walls)|0} : null; },
     probe(){ return wn ? {area:wn.run.area, sled:!!(wn.run.sled&&wn.run.sled.on), snowman:(wn.run.snowman.parts||[]).length, labels:(wn.labels||[]).length} : null; }
   };
