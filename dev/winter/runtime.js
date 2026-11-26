@@ -7,16 +7,17 @@
   function wnSave(s){ if (typeof save === 'function') save(WinterRules.WN_KEY, s); if (wn) wn.sv = s; }
   function wnPay(n){
     try {
-      if (typeof pay === 'function'){ pay(n); return; }
       if (typeof setCoins === 'function' && typeof coins === 'number'){ setCoins(coins + n); return; }
-      if (typeof coins === 'number'){ coins += n; if (typeof save === 'function') save('rubloxCoins', coins); }
+      if (typeof coins === 'number'){ coins += n; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); }
     } catch (e){}
   }
   function wnSpend(n){
     try {
       if (typeof coins === 'number'){
         if (coins < n) return false;
-        coins -= n; if (typeof save === 'function') save('rubloxCoins', coins); return true;
+        if (typeof setCoins === 'function') setCoins(coins - n);
+        else { coins -= n; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); }
+        return true;
       }
     } catch (e){}
     return false;

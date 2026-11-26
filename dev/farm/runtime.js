@@ -1,6 +1,8 @@
 /* Honeymeadow Farm runtime — injected into the main engine IIFE, after the aquarium helpers. */
   let fm = null;
   function fmSave(s){ try { if (typeof save === 'function') save(FarmRules.FM_KEY, s); } catch(e){} }
+  function fmSetCoins(n){ try { if (typeof setCoins === 'function') setCoins(n); else { coins = n; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); } } catch(e){} }
+  function fmPay(n){ if (n && typeof coins !== 'undefined') fmSetCoins(coins + n); }
   function fmState(){ try { return FarmRules.fmLoad(typeof load === 'function' ? load(FarmRules.FM_KEY, null) : null); } catch(e){ return FarmRules.fmFresh(); } }
   function fmWZ(z){ return (z||0) + ((fm && fm.shiftZ) || 0); }
   function fmKeep(m){
@@ -636,7 +638,7 @@
         return;
       }
       fm.sv = r.state; fmSave(fm.sv); fmPaint();
-      if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); if (typeof updateCoins === 'function') updateCoins(true); } catch(e){} }
+      fmPay(r.coins);
       const who = (r.customer && r.customer.name) || 'a friend';
       banner('🪙 ' + who + ' bought a ' + (r.item && r.item.name || 'treat') + '!  +' + r.coins + ' 🪙');
       return;
@@ -670,7 +672,7 @@
       const r = FarmRules.fmBoardHome(fm.run, fm.sv);
       if (!r.ok){ banner('Farmer Nettie is still waiting on a few farm jobs.'); return; }
       fm.sv = r.state; fmSave(fm.sv);
-      if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
+      fmPay(r.coins);
       banner((r.message || 'Bus ride home!') + (r.coins ? ('  +' + r.coins + ' 🪙') : ''));
       if (P){ P.x=0; P.z=18; P.y=0.5; }
       if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }

@@ -3239,7 +3239,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS = ['#ff4d5e','#ff9f1c','#ffd23f','#2ec27e','#3a86ff','#8b5cf6','#ff6fb5','#ffffff','#2d2d2d','#8d5524','#f1c27d','#ffdbac'];
 // Bump BUILD on every deploy (version.json next to index.html must match). Old cached pages compare and refresh themselves.
-const BUILD = '2026.11.22-15';
+const BUILD = '2026.11.22-16';
 function checkUpdate(why){
   if (location.protocol === 'file:') return Promise.resolve(false);
   return fetch('version.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
@@ -49220,12 +49220,12 @@ function start(m = 'obby', d = null){
     if (r.text && kind !== 'note') banner((kind === 'lantern' ? '🌙 ' : '✨ ') + r.text);
     if (kind === 'lantern' && r.ok && r.coins){
       mn.sv = r.state; mnSave(mn.sv);
-      try { if (typeof pay === 'function') pay(r.coins); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); } } catch (e){}
+      try { if (typeof setCoins === 'function' && typeof coins === 'number') setCoins(coins + (r.coins || 0)); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); } } catch (e){}
       banner('🌙 ' + r.message + ' +' + r.coins + ' 🪙');
     }
     if (kind === 'door' && r.ok){
       mn.sv = r.state; mnSave(mn.sv);
-      try { if (typeof pay === 'function') pay(r.coins); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); } } catch (e){}
+      try { if (typeof setCoins === 'function' && typeof coins === 'number') setCoins(coins + (r.coins || 0)); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); } } catch (e){}
       banner('🌙 ' + r.message + ' +' + r.coins + ' 🪙');
       try {
         const em = document.getElementById('oWinEmoji'), title = document.getElementById('oWinTitle');
@@ -49359,15 +49359,17 @@ function start(m = 'obby', d = null){
   function shCoins(){ try { return (typeof coins === 'number') ? coins : +(typeof load==='function' && load('rubloxCoins', 0)) || 0; } catch(e){ return 0; } }
   function shPay(n){
     try {
-      if (typeof pay === 'function'){ pay(n); return; }
-      if (typeof coins === 'number'){ coins += n; if (typeof save === 'function') save('rubloxCoins', coins); }
+      if (typeof setCoins === 'function' && typeof coins === 'number'){ setCoins(coins + n); return; }
+      if (typeof coins === 'number'){ coins += n; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); }
     } catch (e){}
   }
   function shSpend(n){
     try {
       if (typeof coins === 'number'){
         if (coins < n) return false;
-        coins -= n; if (typeof save === 'function') save('rubloxCoins', coins); return true;
+        if (typeof setCoins === 'function') setCoins(coins - n);
+        else { coins -= n; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); }
+        return true;
       }
     } catch (e){}
     return shCoins() >= n;
@@ -49701,16 +49703,17 @@ function start(m = 'obby', d = null){
   function wnSave(s){ if (typeof save === 'function') save(WinterRules.WN_KEY, s); if (wn) wn.sv = s; }
   function wnPay(n){
     try {
-      if (typeof pay === 'function'){ pay(n); return; }
       if (typeof setCoins === 'function' && typeof coins === 'number'){ setCoins(coins + n); return; }
-      if (typeof coins === 'number'){ coins += n; if (typeof save === 'function') save('rubloxCoins', coins); }
+      if (typeof coins === 'number'){ coins += n; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); }
     } catch (e){}
   }
   function wnSpend(n){
     try {
       if (typeof coins === 'number'){
         if (coins < n) return false;
-        coins -= n; if (typeof save === 'function') save('rubloxCoins', coins); return true;
+        if (typeof setCoins === 'function') setCoins(coins - n);
+        else { coins -= n; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); }
+        return true;
       }
     } catch (e){}
     return false;
@@ -51088,7 +51091,7 @@ function start(m = 'obby', d = null){
     if (!res) return;
     if (res.state) vtSave(res.state);
     if (res.coins && typeof coins !== 'undefined'){
-      try { coins += res.coins; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof paintCoins === 'function') paintCoins(); } catch (e){}
+      try { if (typeof setCoins === 'function') setCoins(coins + res.coins); else { coins += res.coins; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); } } catch (e){}
     }
     vtPlaceActors();
     vtToast(res.message);
@@ -52245,6 +52248,8 @@ function start(m = 'obby', d = null){
 /* Pebblebrook Field Trip runtime — injected into the main engine IIFE. */
   let ft = null;
   function ftSave(s){ try { if (typeof save === 'function') save(FieldTripRules.FT_KEY, s); } catch(e){} }
+  function ftSetCoins(n){ try { if (typeof setCoins === 'function') setCoins(n); else { coins = n; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); } } catch(e){} }
+  function ftPay(n){ if (n && typeof coins !== 'undefined') ftSetCoins(coins + n); }
   function ftState(){ try { return FieldTripRules.ftLoad(typeof load === 'function' ? load(FieldTripRules.FT_KEY, null) : null); } catch(e){ return FieldTripRules.ftFresh(); } }
   function ftWZ(z){ return (z||0) + ((ft && ft.shiftZ) || 0); }
   function ftKeep(m){
@@ -52657,7 +52662,7 @@ function start(m = 'obby', d = null){
       const r = FieldTripRules.ftBoardHome(ft.run, ft.sv);
       if (!r.ok){ banner('Fern is still waiting on a few treasures.'); return; }
       ft.sv = r.state; ftSave(ft.sv);
-      if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
+      ftPay(r.coins);
       banner((r.message || 'Bus ride home!') + (r.coins ? ('  +' + r.coins + ' 🪙') : ''));
       if (P){ P.x=0; P.z=18; P.y=0.5; }
       if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
@@ -52731,6 +52736,8 @@ function start(m = 'obby', d = null){
 /* Tideglass Aquarium runtime — injected into the main engine IIFE, after the field-trip helpers. */
   let aq = null;
   function aqSave(s){ try { if (typeof save === 'function') save(AquariumRules.AQ_KEY, s); } catch(e){} }
+  function aqSetCoins(n){ try { if (typeof setCoins === 'function') setCoins(n); else { coins = n; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); } } catch(e){} }
+  function aqPay(n){ if (n && typeof coins !== 'undefined') aqSetCoins(coins + n); }
   function aqState(){ try { return AquariumRules.aqLoad(typeof load === 'function' ? load(AquariumRules.AQ_KEY, null) : null); } catch(e){ return AquariumRules.aqFresh(); } }
   function aqWZ(z){ return (z||0) + ((aq && aq.shiftZ) || 0); }
   function aqKeep(m){
@@ -53119,7 +53126,7 @@ function start(m = 'obby', d = null){
     if (hit.kind === 'pool'){
       const r = AquariumRules.aqTouch(aq.sv);
       aq.sv = r.state; aqSave(aq.sv);
-      if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
+      aqPay(r.coins);
       banner('🦀 ' + (r.message || 'A gentle touch!') + (r.coins ? ('  +' + r.coins + ' 🪙') : (r.already ? ' The Pebblecrab already said hello.' : '')));
       return;
     }
@@ -53133,7 +53140,7 @@ function start(m = 'obby', d = null){
         return;
       }
       aq.sv = r.state; aqSave(aq.sv);
-      if (typeof coins !== 'undefined'){ try { coins = r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
+      if (typeof coins !== 'undefined') aqSetCoins(r.coins);
       try {
         if (r.item && r.item.kind === 'hat' && r.item.id && typeof owned !== 'undefined' && owned){
           if (owned.add) owned.add(r.item.id); else if (Array.isArray(owned) && owned.indexOf(r.item.id) < 0) owned.push(r.item.id);
@@ -53148,7 +53155,7 @@ function start(m = 'obby', d = null){
       const r = AquariumRules.aqBoardHome(aq.run, aq.sv);
       if (!r.ok){ banner('Marin is still waiting on a few exhibits.'); return; }
       aq.sv = r.state; aqSave(aq.sv);
-      if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
+      aqPay(r.coins);
       banner((r.message || 'Bus ride home!') + (r.coins ? ('  +' + r.coins + ' 🪙') : ''));
       if (P){ P.x=0; P.z=18; P.y=0.5; }
       if (aq.bus){ aq.bus.position.set(AquariumRules.AQ_BUS.x, 0, AquariumRules.AQ_BUS.z); aq.bus.rotation.y = 0; }
@@ -53202,7 +53209,10 @@ function start(m = 'obby', d = null){
     const act=document.getElementById('aqAct'); if(act) act.classList.remove('show');
   }
   if (typeof window !== 'undefined') window.aqDebug = {
-    probe(){ if (!aq) return null; return {phase: aq.run && aq.run.phase, found: ((aq.sv && aq.sv.found)||[]).slice(), touched: !!(aq.sv && aq.sv.touched), won: !!(aq.sv && aq.sv.won), P: P ? {x:P.x,y:P.y,z:P.z} : null, marin: AquariumRules.AQ_GUIDE, arrive: AquariumRules.AQ_ARRIVE}; },
+    probe(){ if (!aq) return null; return {phase: aq.run && aq.run.phase, found: ((aq.sv && aq.sv.found)||[]).slice(), touched: !!(aq.sv && aq.sv.touched), won: !!(aq.sv && aq.sv.won), gifts: ((aq.sv && aq.sv.gifts)||[]).slice(), coins: (typeof coins === 'number') ? coins : null, P: P ? {x:P.x,y:P.y,z:P.z} : null, marin: AquariumRules.AQ_GUIDE, arrive: AquariumRules.AQ_ARRIVE}; },
+    act(){ aqAct(); return this.probe(); },
+    pickAll(){ if (!aq) return this.probe(); (AquariumRules.AQ_FINDS||[]).forEach(f => { const r = AquariumRules.aqPick(aq.sv, f.id); if (r.ok) aq.sv = r.state; }); aqSave(aq.sv); return this.probe(); },
+    phase(p){ if (aq && aq.run && p) aq.run.phase = p; return this.probe(); },
     hall(){ if (!aq) return; aq.run.phase='hall'; aq.run.rideT=AquariumRules.AQ_RIDE_T; const a=AquariumRules.AQ_ARRIVE||{x:3.4,z:-8}; if(P){P.x=a.x;P.y=0.5;P.z=a.z;} if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; } aqApplyZones('hall'); },
     inside(){ if (!aq) return; aq.run.phase='hall'; const z = AquariumRules.aqZ ? AquariumRules.aqZ(-41) : -41; if(P){P.x=0;P.y=0.5;P.z=z;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.14; cam.dist=5.2; } aqApplyZones('hall'); },
     lookBack(){ if (!aq) return; this.look(Math.PI); },
@@ -53227,6 +53237,8 @@ function start(m = 'obby', d = null){
 /* Honeymeadow Farm runtime — injected into the main engine IIFE, after the aquarium helpers. */
   let fm = null;
   function fmSave(s){ try { if (typeof save === 'function') save(FarmRules.FM_KEY, s); } catch(e){} }
+  function fmSetCoins(n){ try { if (typeof setCoins === 'function') setCoins(n); else { coins = n; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); } } catch(e){} }
+  function fmPay(n){ if (n && typeof coins !== 'undefined') fmSetCoins(coins + n); }
   function fmState(){ try { return FarmRules.fmLoad(typeof load === 'function' ? load(FarmRules.FM_KEY, null) : null); } catch(e){ return FarmRules.fmFresh(); } }
   function fmWZ(z){ return (z||0) + ((fm && fm.shiftZ) || 0); }
   function fmKeep(m){
@@ -53862,7 +53874,7 @@ function start(m = 'obby', d = null){
         return;
       }
       fm.sv = r.state; fmSave(fm.sv); fmPaint();
-      if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); if (typeof updateCoins === 'function') updateCoins(true); } catch(e){} }
+      fmPay(r.coins);
       const who = (r.customer && r.customer.name) || 'a friend';
       banner('🪙 ' + who + ' bought a ' + (r.item && r.item.name || 'treat') + '!  +' + r.coins + ' 🪙');
       return;
@@ -53896,7 +53908,7 @@ function start(m = 'obby', d = null){
       const r = FarmRules.fmBoardHome(fm.run, fm.sv);
       if (!r.ok){ banner('Farmer Nettie is still waiting on a few farm jobs.'); return; }
       fm.sv = r.state; fmSave(fm.sv);
-      if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
+      fmPay(r.coins);
       banner((r.message || 'Bus ride home!') + (r.coins ? ('  +' + r.coins + ' 🪙') : ''));
       if (P){ P.x=0; P.z=18; P.y=0.5; }
       if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
