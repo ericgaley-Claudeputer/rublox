@@ -47,7 +47,7 @@ const covers = (s, z) => { for (let x = z[0] + 1; x < z[2]; x += 2) for (let y =
 const EYES = [[108, 66, 118, 80], [142, 66, 152, 80]], MOUTH = [[116, 84, 144, 100]];
 // every hairstyle and hat sold in the shop (from ITEMS in a real browser run, 2026.11.22)
 const HAIRS = ['short','long','ponytail','pigtails','curly','spiky','bun','beehive','braid','bowl','spacebuns','combover','sidepony','twinbraids','curl','wolf','shag','curtains','crimped','waves','updo','slickbob','undercut','milkmaid','mullet'];
-const HATS = ['toque','burger','backcap','propeller','pumpkin','witch','santa','turkey','beanie','bucket','visor','beret','tophat','slouch','earmuffs','newsboy','flower','jellycap','tidecap'];
+const HATS = ['toque','burger','backcap','propeller','pumpkin','witch','santa','turkey','beanie','bucket','visor','beret','tophat','slouch','earmuffs','newsboy','flower','jellycap','tidecap','dinocap','starcap'];
 
 test('every hairstyle and hat in the list is still sold', () => {
   for (const v of HAIRS) assert.ok(new RegExp("slot:\\s*'hair',\\s*val:\\s*'" + v + "'|\\['" + v + "',").test(html), 'hair ' + v);

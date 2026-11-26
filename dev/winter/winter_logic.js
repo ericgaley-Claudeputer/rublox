@@ -30,6 +30,41 @@
   const WN_LAMP = {id:'lamp', name:'Night lamp', x:0, z:6, w:1.2, d:1.2};
   const WN_WRAP = {id:'wrap', name:'Wrap table', x:6, z:10, w:1.8, d:1.8};
   const WN_SPAWN = {x:0, z:8};
+  // GB-6: Snowdrift Fort Field — stack snow blocks into forts, then snowball real friends (or the mitten flags when solo).
+  const WN_FORT = {id:'fort', name:'Snowdrift Fort Field', x:0, z:50, w:25.2, d:16.8, cell:1.4, blockH:1.0, maxH:3, maxBlocks:140};
+  const WN_FORT_TARGETS = [
+    {id:'flag-1', name:'Mitten flag', kind:'flag', x:-6, z:56.4, r:1.2},
+    {id:'flag-2', name:'Mitten flag', kind:'flag', x:0, z:57.2, r:1.2},
+    {id:'flag-3', name:'Mitten flag', kind:'flag', x:6, z:56.4, r:1.2}
+  ];
+  // GB-6: Frostlane Star Show — three judges score a five-move skating routine. Pays once per show, a few shows a day.
+  const WN_JUDGES = {id:'judges', name:'Star Show judges', x:20, z:-7, w:6, d:1.6};
+  const WN_JUDGE_LIST = [
+    {id:'hazel', name:'Judge Hazel', emoji:'🦉', likes:'spin'},
+    {id:'otto', name:'Judge Otto', emoji:'🐧', likes:'hop'},
+    {id:'juniper', name:'Judge Juniper', emoji:'🦌', likes:'spiral'}
+  ];
+  const WN_SHOW_MOVES = 5;
+  const WN_SHOW_T = 45;
+  const WN_SHOW_PAID_PER_DAY = 3;
+  const WN_SHOW_KINDS = {
+    spin:{id:'spin', name:'Pinwheel spin', emoji:'🌀', pts:3},
+    hop:{id:'hop', name:'Snowflake hop', emoji:'❄️', pts:3},
+    spiral:{id:'spiral', name:'Swan spiral', emoji:'🦢', pts:2}
+  };
+  // Free-play coins (snowballs, tricks, laps, serving cocoa) share one gentle daily jar so they cannot be farmed forever.
+  const WN_FREE_CAP = 40;
+  function wnDayKey(now){
+    const d = new Date(+now || 0);
+    return isFinite(d.getTime()) ? d.toISOString().slice(0, 10) : '1970-01-01';
+  }
+  function wnFreePay(st, run, want){
+    const day = (run && run.day) || wnDayKey(0);
+    if (st.freeDay !== day){ st.freeDay = day; st.freeCoins = 0; }
+    const pay = Math.max(0, Math.min(want | 0, WN_FREE_CAP - (st.freeCoins | 0)));
+    st.freeCoins = (st.freeCoins | 0) + pay;
+    return pay;
+  }
 
   function wnBox(o){
     const w = Math.max(0.2, +o.w || (o.r ? o.r * 2 : 1));
@@ -58,6 +93,8 @@
     WN_POSTS.forEach(p => boxes.push(wnBox(Object.assign({kind:'post'}, p))));
     boxes.push(wnBox(Object.assign({kind:'lamp'}, WN_LAMP)));
     boxes.push(wnBox(Object.assign({kind:'wrap'}, WN_WRAP)));
+    boxes.push(wnBox(Object.assign({kind:'fort'}, WN_FORT)));
+    boxes.push(wnBox(Object.assign({kind:'judges'}, WN_JUDGES)));
     (WN_LIGHT_SLOTS || []).forEach(s => {
       if (s.kind === 'tree') boxes.push(wnBox(Object.assign({kind:'tree', w:s.w||2.8, d:s.d||2.8}, s)));
     });
@@ -127,18 +164,30 @@
       nightShows: 0,
       wraps: 0,
       wrapBest: 0,
-      ribbons: []
+      ribbons: [],
+      forts: 0,
+      fortHits: 0,
+      shows: 0,
+      showBest: 0,
+      showDay: '',
+      showPaid: 0,
+      freeDay: '',
+      freeCoins: 0
     };
   }
 
   function wnLoad(raw){
     const o = raw && typeof raw === 'object' ? raw : {};
     const d = wnFresh();
-    ['coinsEarned','sledRuns','snowmen','skateLaps','skateTricks','cocoaServed','cocoaBought','snugBought','snugServed','snowHits','races','snowballs','lights','nightShows','wraps'].forEach(k => {
+    ['coinsEarned','sledRuns','snowmen','skateLaps','skateTricks','cocoaServed','cocoaBought','snugBought','snugServed','snowHits','races','snowballs','lights','nightShows','wraps','forts','fortHits','shows','showPaid','freeCoins'].forEach(k => {
       d[k] = Math.max(0, o[k] | 0);
     });
     d.sledBest = Math.max(0, +o.sledBest || 0);
     d.wrapBest = Math.max(0, Math.min(100, o.wrapBest | 0));
+    d.showBest = Math.max(0, Math.min(30, o.showBest | 0));
+    d.showDay = typeof o.showDay === 'string' ? o.showDay.slice(0, 10) : '';
+    d.freeDay = typeof o.freeDay === 'string' ? o.freeDay.slice(0, 10) : '';
+    d.freeCoins = Math.min(WN_FREE_CAP, d.freeCoins);
     d.ribbons = Array.isArray(o.ribbons) ? o.ribbons.filter(id => typeof id === 'string').slice(0, 12) : [];
     d.snugToppings = Array.isArray(o.snugToppings) ? o.snugToppings.filter(id => typeof id === 'string').slice(0, 8) : [];
     return d;
@@ -157,6 +206,10 @@
         lights: [],
         wrap: {open:false, step:0, paper:'', ribbon:'', bow:'', tag:'', score:0, coop:false, entries:{}},
         snowball: {cool:0, hits:0},
+        fort: wnFortFresh(),
+        fight: {hits:0, got:0, walls:0},
+        show: null,
+        day: wnDayKey(now),
         t: 0,
         started: now || 0
       }
@@ -271,13 +324,13 @@
     let coins = 0;
     if (vsPlayer){
       run.snowball.hits = (run.snowball.hits | 0) + 1;
-      coins = 2;
+      coins = wnFreePay(st, run, 2);
       st.coinsEarned += coins;
     } else if (practice){
-      coins = 1;
+      coins = wnFreePay(st, run, 1);
       st.coinsEarned += coins;
     }
-    return {ok:true, why: vsPlayer ? 'hit' : 'practice', coins, state: st, fight: !!vsPlayer};
+    return {ok:true, why: vsPlayer ? 'hit' : 'practice', coins, state: st, fight: !!vsPlayer, capped: coins === 0};
   }
 
   function wnSnowballTick(run, dt){
@@ -349,9 +402,9 @@
     run.skate.tricks = (run.skate.tricks | 0) + 1;
     const st = wnLoad(state);
     st.skateTricks = (st.skateTricks | 0) + 1;
-    const coins = 2;
+    const coins = wnFreePay(st, run, 2);
     st.coinsEarned += coins;
-    return {ok:true, why:'ok', name, coins, state: st, tricks: run.skate.tricks};
+    return {ok:true, why:'ok', name, coins, state: st, tricks: run.skate.tricks, capped: coins === 0};
   }
 
   function wnSkateBank(run, state){
@@ -362,9 +415,9 @@
     run.skate.banked = laps;
     const st = wnLoad(state);
     st.skateLaps = (st.skateLaps | 0) + add;
-    const coins = add * 3;
+    const coins = wnFreePay(st, run, add * 3);
     st.coinsEarned += coins;
-    return {ok:true, why:'ok', laps: add, coins, state: st};
+    return {ok:true, why:'ok', laps: add, coins, state: st, capped: coins === 0};
   }
 
   function wnBuyCocoa(state, coins){
@@ -380,7 +433,7 @@
     run.cocoa.served = (run.cocoa.served | 0) + 1;
     const st = wnLoad(state);
     st.cocoaServed = (st.cocoaServed | 0) + 1;
-    const coins = 4;
+    const coins = wnFreePay(st, run, 4);
     st.coinsEarned += coins;
     return {ok:true, why:'ok', coins, state: st, served: run.cocoa.served, message:'A warm mug for a chilly visitor!'};
   }
@@ -410,7 +463,7 @@
     run.snug.served = (run.snug.served | 0) + 1;
     const st = wnLoad(state);
     st.snugServed = (st.snugServed | 0) + 1;
-    const coins = 3;
+    const coins = wnFreePay(st, run, 3);
     st.coinsEarned += coins;
     return {ok:true, why:'ok', coins, state: st, topping: top, served: run.snug.served, message: 'You slid a ' + top.name + ' cocoa to a chilly skater!'};
   }
@@ -421,7 +474,7 @@
     {id:'puff-1', name:'Puff pal', kind:'snowman', x:14, z:22, r:1.5},
     {id:'puff-2', name:'Puff pal', kind:'snowman', x:16, z:20, r:1.5}
   ];
-  function wnThrowAimed(run, state, fromId, origin, dir, roster, extras){
+  function wnThrowAimed(run, state, fromId, origin, dir, roster, extras, fort){
     if (!run) return {ok:false, why:'no'};
     if ((run.snowball && run.snowball.cool || 0) > 0) return {ok:false, why:'cool'};
     const ox = (origin && +origin.x) || 0, oz = (origin && +origin.z) || 0;
@@ -450,13 +503,24 @@
     run.snowball.cool = 0.5;
     const st = wnLoad(state);
     st.snowballs = (st.snowballs | 0) + 1;
+    const wallAt = fort ? wnFortRay(fort, ox, oz, ux, uz, Math.min(range, best), 0.9) : null;
+    if (wallAt != null){
+      run.fight = run.fight || {hits:0, got:0, walls:0};
+      run.fight.walls = (run.fight.walls | 0) + 1;
+      return {ok:true, why:'wall', coins:0, state: st, fight:false, shot:{x:ox, z:oz, dx:ux, dz:uz, t:0, life:0.7, hitAt: wallAt}, giggle:true, wall:true, message:'Thud! The snowball poofs on the fort wall.'};
+    }
     const shot = {x:ox, z:oz, dx:ux, dz:uz, t:0, life: 0.7, hitAt: hit ? best : range};
     if (!hit) return {ok:true, why:'miss', coins:0, state: st, fight:false, shot, giggle:false};
-    const coins = fight ? 2 : 1;
-    if (fight){ run.snowball.hits = (run.snowball.hits | 0) + 1; st.snowHits = (st.snowHits | 0) + 1; }
+    const coins = wnFreePay(st, run, fight ? 2 : 1);
+    if (fight){
+      run.snowball.hits = (run.snowball.hits | 0) + 1; st.snowHits = (st.snowHits | 0) + 1;
+      run.fight = run.fight || {hits:0, got:0, walls:0};
+      run.fight.hits = (run.fight.hits | 0) + 1;
+      if (fort && wnInFort(ox, oz)) st.fortHits = (st.fortHits | 0) + 1;
+    }
     else run.snowball.targetHits = (run.snowball.targetHits | 0) + 1;
     st.coinsEarned += coins;
-    return {ok:true, why: fight ? 'hit' : 'target', coins, state: st, fight, target: fight ? null : hit, name: hit.name, shot, giggle: true, message: fight ? 'Poof! Your friend giggles and shakes off the snow.' : ('Poof! The ' + (hit.name || 'target') + ' wobbles and a little giggle rings out.')};
+    return {ok:true, why: fight ? 'hit' : 'target', coins, capped: coins === 0, state: st, fight, target: fight ? null : hit, toId: fight ? String(hit.id || hit.uid) : null, name: hit.name, shot, giggle: true, message: fight ? 'Poof! Your friend giggles and shakes off the snow.' : ('Poof! The ' + (hit.name || 'target') + ' wobbles and a little giggle rings out.')};
   }
 
 
@@ -486,6 +550,8 @@
     add('tosses', 'Practice tosses', -2, 26, 2.6, 'posts');
     add('lamp', WN_LAMP.name, WN_LAMP.x, WN_LAMP.z, 4.0, 'lamp');
     add('wrap', WN_WRAP.name, WN_WRAP.x, WN_WRAP.z, 1.8, 'wrap');
+    add('fort', WN_FORT.name, WN_FORT.x, WN_FORT.z - 6.5, 2.6, 'fort');
+    add('judges', WN_JUDGES.name, WN_JUDGES.x, WN_JUDGES.z - 1.4, 4.7, 'judges');
     WN_LIGHT_SLOTS.forEach(s => {
       if (s.kind === 'tree') add(s.id, s.name, s.x, s.z, 3.5, s.id);
     });
@@ -635,6 +701,174 @@
     return {mode: list.length > 1 ? 'compete' : 'coop', winner: scores[0], scores};
   }
 
+  /* ---- GB-6: Snowdrift Fort Field (snow blocks) ---- */
+  function wnFortDims(){
+    const F = WN_FORT;
+    return {cols: Math.round(F.w / F.cell), rows: Math.round(F.d / F.cell), x0: F.x - F.w / 2, z0: F.z - F.d / 2, cell: F.cell};
+  }
+  function wnFortFresh(){ return {cells:{}, n:0, rev:0}; }
+  function wnInFort(x, z){
+    const F = WN_FORT;
+    return Math.abs((x||0) - F.x) <= F.w / 2 && Math.abs((z||0) - F.z) <= F.d / 2;
+  }
+  function wnFortCell(x, z){
+    if (!wnInFort(x, z)) return null;
+    const D = wnFortDims();
+    const i = Math.max(0, Math.min(D.cols - 1, Math.floor(((x||0) - D.x0) / D.cell)));
+    const j = Math.max(0, Math.min(D.rows - 1, Math.floor(((z||0) - D.z0) / D.cell)));
+    return {i, j};
+  }
+  function wnFortCenter(i, j){
+    const D = wnFortDims();
+    return {x: D.x0 + (i + 0.5) * D.cell, z: D.z0 + (j + 0.5) * D.cell};
+  }
+  function wnFortH(fort, i, j){ return (fort && fort.cells && fort.cells[i + ',' + j]) | 0; }
+  function wnFortAim(x, z, dx, dz){
+    const len = Math.hypot(dx || 0, dz || 0) || 1;
+    return wnFortCell((x||0) + (dx||0) / len * 1.6, (z||0) + (dz||0) / len * 1.6);
+  }
+  function wnFortPlace(fort, x, z, dx, dz){
+    if (!fort) return {ok:false, why:'no'};
+    if (!wnInFort(x, z)) return {ok:false, why:'field'};
+    const c = wnFortAim(x, z, dx, dz);
+    if (!c) return {ok:false, why:'edge'};
+    const ctr = wnFortCenter(c.i, c.j);
+    const half = WN_FORT.cell / 2 + 0.4;
+    if (Math.abs((x||0) - ctr.x) < half && Math.abs((z||0) - ctr.z) < half) return {ok:false, why:'you'};
+    if (WN_FORT_TARGETS.some(t => Math.hypot(t.x - ctr.x, t.z - ctr.z) < (t.r || 1.2) + 0.9)) return {ok:false, why:'target'};
+    const h = wnFortH(fort, c.i, c.j);
+    if (h >= WN_FORT.maxH) return {ok:false, why:'tall', i:c.i, j:c.j, h};
+    if ((fort.n | 0) >= WN_FORT.maxBlocks) return {ok:false, why:'full'};
+    return wnFortSet(fort, c.i, c.j, h + 1);
+  }
+  function wnFortScoop(fort, x, z, dx, dz){
+    if (!fort) return {ok:false, why:'no'};
+    if (!wnInFort(x, z)) return {ok:false, why:'field'};
+    const c = wnFortAim(x, z, dx, dz);
+    if (!c) return {ok:false, why:'edge'};
+    const h = wnFortH(fort, c.i, c.j);
+    if (!h) return {ok:false, why:'empty', i:c.i, j:c.j};
+    return wnFortSet(fort, c.i, c.j, h - 1);
+  }
+  function wnFortSet(fort, i, j, h){
+    const D = wnFortDims();
+    i = i | 0; j = j | 0; h = Math.max(0, Math.min(WN_FORT.maxH, h | 0));
+    if (i < 0 || j < 0 || i >= D.cols || j >= D.rows) return {ok:false, why:'edge'};
+    fort.cells = fort.cells || {};
+    const k = i + ',' + j, was = fort.cells[k] | 0;
+    if (h > was && (fort.n | 0) + (h - was) > WN_FORT.maxBlocks) return {ok:false, why:'full'};
+    if (h) fort.cells[k] = h; else delete fort.cells[k];
+    fort.n = Math.max(0, (fort.n | 0) + (h - was));
+    fort.rev = (fort.rev | 0) + 1;
+    const c = wnFortCenter(i, j);
+    return {ok:true, why: h > was ? 'add' : 'scoop', i, j, h, was, x:c.x, z:c.z, n:fort.n};
+  }
+  // ray-march across the grid; snowballs fly about one block high, so any block stops them
+  function wnFortRay(fort, ox, oz, ux, uz, range, minT){
+    if (!fort || !fort.n) return null;
+    for (let t = minT == null ? 0.9 : minT; t <= range; t += 0.2){
+      const c = wnFortCell(ox + ux * t, oz + uz * t);
+      if (c && wnFortH(fort, c.i, c.j) > 0) return t;
+    }
+    return null;
+  }
+  function wnFortWire(fort){
+    return Object.keys((fort && fort.cells) || {}).map(k => k + ',' + (fort.cells[k] | 0)).join(';');
+  }
+  function wnFortUnwire(str){
+    const fort = wnFortFresh();
+    String(str || '').split(';').slice(0, 400).forEach(p => {
+      const a = p.split(',').map(n => parseInt(n, 10));
+      if (a.length === 3 && a.every(Number.isFinite)) wnFortSet(fort, a[0], a[1], a[2]);
+    });
+    return fort;
+  }
+  function wnFortBank(state, placed){
+    const st = wnLoad(state);
+    st.forts = (st.forts | 0) + Math.max(0, placed | 0);
+    return st;
+  }
+  function wnGotHit(run){
+    if (!run) return run;
+    run.fight = run.fight || {hits:0, got:0, walls:0};
+    run.fight.got = (run.fight.got | 0) + 1;
+    return run;
+  }
+
+  /* ---- GB-6: Frostlane Star Show (judges) ---- */
+  function wnShowStart(run, now){
+    if (!run) return {ok:false, why:'no'};
+    if (run.show && run.show.on) return {ok:false, why:'on'};
+    run.show = {on:true, id: (run.showN = (run.showN | 0) + 1), t:0, moves:[], cool:0, done:false, claimed:false, started: now || 0};
+    if (!run.skate || !run.skate.on) wnSkateStart(run);
+    return {ok:true, why:'ok', id: run.show.id};
+  }
+  function wnShowMove(run, kind, opts){
+    const s = run && run.show;
+    if (!s || !s.on || s.done) return {ok:false, why:'show'};
+    const K = WN_SHOW_KINDS[kind];
+    if (!K) return {ok:false, why:'kind'};
+    if (opts && opts.onIce === false) return {ok:false, why:'ice'};
+    if ((s.cool || 0) > 0) return {ok:false, why:'wait'};
+    const prev = s.moves.length ? s.moves[s.moves.length - 1].k : '';
+    let pts = K.pts;
+    if (opts && (+opts.speed || 0) >= 2) pts += 1;
+    if (prev && prev !== kind) pts += 1;
+    s.moves.push({k: kind, pts});
+    s.cool = 0.7;
+    if (s.moves.length >= WN_SHOW_MOVES) s.done = true;
+    return {ok:true, why:'move', move:K, pts, n:s.moves.length, left: WN_SHOW_MOVES - s.moves.length, done: s.done};
+  }
+  function wnShowTick(run, dt){
+    const s = run && run.show;
+    if (!s || !s.on || s.done) return run;
+    dt = Math.max(0, Math.min(0.2, +dt || 0));
+    s.t = (s.t || 0) + dt;
+    s.cool = Math.max(0, (s.cool || 0) - dt);
+    if (s.t >= WN_SHOW_T) s.done = true;
+    return run;
+  }
+  function wnShowScores(moves){
+    const list = moves || [];
+    const total = list.reduce((n, m) => n + (m.pts | 0), 0);
+    const maxTotal = WN_SHOW_MOVES * 5;
+    return WN_JUDGE_LIST.map(j => {
+      const liked = list.some(m => m.k === j.likes) ? 1 : 0;
+      const score = Math.max(1, Math.min(10, 3 + Math.round(total * 6 / maxTotal) + liked));
+      return {id:j.id, name:j.name, emoji:j.emoji, score};
+    });
+  }
+  function wnShowJudge(run, state){
+    const s = run && run.show;
+    if (!s || !s.on) return {ok:false, why:'show', state: wnLoad(state)};
+    if (s.claimed) return {ok:true, why:'have', already:true, coins:0, state: wnLoad(state), scores: s.scores || [], sum: s.sum | 0};
+    if (!s.moves.length) return {ok:false, why:'moves', state: wnLoad(state)};
+    s.done = true;
+    s.claimed = true;
+    const scores = wnShowScores(s.moves);
+    const sum = scores.reduce((n, j) => n + j.score, 0);
+    s.scores = scores; s.sum = sum;
+    const st = wnLoad(state);
+    const day = run.day || wnDayKey(0);
+    if (st.showDay !== day){ st.showDay = day; st.showPaid = 0; }
+    st.shows = (st.shows | 0) + 1;
+    const best = sum > (st.showBest | 0);
+    st.showBest = Math.max(st.showBest | 0, sum);
+    const medal = sum >= 26 ? {id:'gold', name:'Gold star', emoji:'🥇'} : sum >= 18 ? {id:'silver', name:'Silver star', emoji:'🥈'} : {id:'bronze', name:'Bronze ribbon', emoji:'🥉'};
+    let coins = 0, capped = false;
+    if ((st.showPaid | 0) < WN_SHOW_PAID_PER_DAY){
+      coins = 3 + Math.floor(sum / 5);
+      st.showPaid = (st.showPaid | 0) + 1;
+      st.coinsEarned += coins;
+    } else capped = true;
+    s.on = false;
+    return {ok:true, why:'judged', coins, capped, scores, sum, best, medal, state: st, message: medal.emoji + ' ' + medal.name + '! The judges hold up ' + scores.map(j => j.score).join(', ') + '.'};
+  }
+  function wnShowQuit(run){
+    if (run && run.show){ run.show.on = false; run.show.done = true; }
+    return run;
+  }
+
   function wnRealPlayersOnly(roster){
     return (roster || []).filter(p => p && p.id && !p.npc);
   }
@@ -652,6 +886,7 @@
       night: !!run.night,
       lights: (run.lights || []).slice(),
       wrap: run.wrap ? {open:!!run.wrap.open, step:run.wrap.step|0, score:run.wrap.score|0, coop:!!run.wrap.coop} : null,
+      fortRev: run.fort ? (run.fort.rev | 0) : 0,
       lightsHung: state.lights|0,
       wrapBest: state.wrapBest|0
     };
@@ -670,6 +905,10 @@
     WN_HILL, WN_POND, WN_YARD, WN_POSTS, WN_LAMP, WN_WRAP, WN_SPAWN,
     wnBox, wnHillPlats, wnCottage, wnLayoutBoxes, wnBoxesOverlap, wnLayoutOverlaps,
     wnInDoorway, wnHitWall, wnWalkableAt, wnPlaceLabels, wnVisibleLabels,
-    wnLightSlot, wnSetNight, wnPlaceLight, wnShowLights, wnWrapOpen, wnWrapPick, wnWrapScoreLook, wnWrapJudge, wnWrapCompete
+    wnLightSlot, wnSetNight, wnPlaceLight, wnShowLights, wnWrapOpen, wnWrapPick, wnWrapScoreLook, wnWrapJudge, wnWrapCompete,
+    WN_FORT, WN_FORT_TARGETS, WN_FREE_CAP, wnDayKey, wnFreePay,
+    wnFortDims, wnFortFresh, wnInFort, wnFortCell, wnFortCenter, wnFortH, wnFortAim, wnFortPlace, wnFortScoop, wnFortSet, wnFortRay, wnFortWire, wnFortUnwire, wnFortBank, wnGotHit,
+    WN_JUDGES, WN_JUDGE_LIST, WN_SHOW_MOVES, WN_SHOW_T, WN_SHOW_PAID_PER_DAY, WN_SHOW_KINDS,
+    wnShowStart, wnShowMove, wnShowTick, wnShowScores, wnShowJudge, wnShowQuit
   };
 });

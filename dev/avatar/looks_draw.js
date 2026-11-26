@@ -13,6 +13,8 @@ function drawLookHat(ctx, av){
   else if (h === 'flower'){ ['#ff6fb5','#ffd23f','#8b5cf6','#2ec27e','#ff9f1c'].forEach((c, i) => { const a = i * 1.26; circ(ctx, 130 + Math.cos(a)*28, 36 + Math.sin(a)*10, 8, c); }); circ(ctx, 130, 36, 7, '#ffd23f'); }
   else if (h === 'jellycap'){ rrect(ctx, 86, 18, 88, 40, 16, '#2a8aaa'); rrect(ctx, 86, 48, 88, 8, 4, '#7ad0e8'); circ(ctx, 130, 16, 9, '#d8b0ff'); }
   else if (h === 'tidecap'){ rrect(ctx, 90, 16, 80, 38, 12, '#1d5a78'); rrect(ctx, 90, 46, 80, 8, 4, '#f4e27a'); circ(ctx, 130, 14, 7, '#f4e27a'); }
+  else if (h === 'dinocap'){ rrect(ctx, 88, 18, 84, 38, 14, '#3a8f5a'); rrect(ctx, 88, 48, 84, 8, 4, '#2a6a44'); [108, 130, 152].forEach(x => { ctx.fillStyle = '#f4e2a8'; ctx.beginPath(); ctx.moveTo(x - 7, 20); ctx.lineTo(x, 4); ctx.lineTo(x + 7, 20); ctx.fill(); }); }
+  else if (h === 'starcap'){ rrect(ctx, 90, 16, 80, 38, 12, '#1d2a5a'); rrect(ctx, 90, 46, 80, 8, 4, '#d8a040'); circ(ctx, 130, 30, 8, '#ffd23f'); }
 }
 
 function drawLookHair(ctx, av){
@@ -78,6 +80,8 @@ function drawLook3D(av, g, bx, mat, hc){
   else if (hat === 'flower'){ ['#ff6fb5','#ffd23f','#8b5cf6','#2ec27e'].forEach((c, i) => { const a = i * 1.57; bx(.16, .1, .16, c, Math.cos(a)*.35, 3.0, Math.sin(a)*.35); }); }
   else if (hat === 'jellycap'){ bx(.92, .32, .92, '#2a8aaa', 0, 3.04, 0); bx(.22, .16, .22, '#d8b0ff', 0, 3.26, 0); }
   else if (hat === 'tidecap'){ bx(.88, .30, .88, '#1d5a78', 0, 3.04, 0); bx(.18, .12, .18, '#f4e27a', 0, 3.26, 0); }
+  else if (hat === 'dinocap'){ bx(.9, .30, .9, '#3a8f5a', 0, 3.04, 0); [-.26, 0, .26].forEach(x => bx(.12, .2, .12, '#f4e2a8', x, 3.29, -.05)); }
+  else if (hat === 'starcap'){ bx(.88, .30, .88, '#1d2a5a', 0, 3.04, 0); bx(.9, .06, .9, '#d8a040', 0, 2.92, 0); bx(.2, .14, .2, '#ffd23f', 0, 3.26, 0); }
 
   if (hair === 'wolf' || hair === 'shag' || hair === 'mullet' || hair === 'waves'){ bx(.9, 1.1, .2, hairC, 0, 2.15, -.5); bx(.16, .85, .3, hairC, -.46, 2.2, -.2); bx(.16, .85, .3, hairC, .46, 2.2, -.2); }
   else if (hair === 'curtains' || hair === 'slickbob'){ bx(.12, .6, .14, hairC, -.38, 2.48, .4); bx(.12, .6, .14, hairC, .38, 2.48, .4); if (hair === 'slickbob'){ bx(.14, .75, .7, hairC, -.47, 2.35, -.06); bx(.14, .75, .7, hairC, .47, 2.35, -.06); bx(.9, .75, .14, hairC, 0, 2.35, -.47); } } // audit56: frame the face from the edges instead of sitting on the eyes
