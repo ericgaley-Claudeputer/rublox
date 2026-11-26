@@ -55,7 +55,7 @@
     {id:'camp', name:'Campfire Grove', emoji:'🔥', keys:['rubloxCamp']},
     {id:'cafe', name:'Cozy Corner Café', emoji:'☕', keys:['rubloxCafe']},
     {id:'fish', name:'Ripple Lake Fishing', emoji:'🎣', keys:['rubloxFish']},
-    {id:'petshow', name:'Pet Talent Show', emoji:'🎭', keys:['rubloxPetShow']},
+    {id:'petshow', name:'Pet Talent Show', emoji:'🎭', keys:['rubloxPetShow', 'rubloxFarmShow']},
     {id:'hunt', name:'Treasure Trail', emoji:'🗺️', keys:['rubloxHunt']},
     {id:'snowfest', name:'Snow Festival', emoji:'❄️', keys:['rubloxSeason']},
     {id:'lantern', name:'Lantern Big Top', emoji:'🏮', keys:['rubloxLantern']},

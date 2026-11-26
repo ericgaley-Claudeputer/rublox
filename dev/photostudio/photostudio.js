@@ -40,6 +40,7 @@
       border: psClamp(o.border, PS_BORDERS.length), pose: psClamp(o.pose, PS_POSE_N()), shots: Math.max(0, o.shots | 0)};
     const pr = psCleanProps(o.props), st = psCleanStickers(o.stickers);
     if (pr.length) res.props = pr;
+    if (typeof CostumeRules !== 'undefined' && o.costume && CostumeRules.csClean(o.costume) !== 'none') res.costume = CostumeRules.csClean(o.costume);   // GB-7
     if (st.length) res.stickers = st;
     return res; }
   function psSaveSet(){ if (!psx) return; const S = Object.assign({}, psx.s); if (psx.props && psx.props.length) S.props = psx.props.slice(); else delete S.props; if (psx.stickers && psx.stickers.length) S.stickers = psx.stickers.map(s => ({id: s.id, x: +s.x.toFixed(3), y: +s.y.toFixed(3)})); else delete S.stickers; save(PS_KEY, S); }
@@ -195,6 +196,48 @@
     }
     ctx.restore();
   }
+  // GB-7: dress-up costumes. While the camera is on you wear the picked costume (clothes + original pieces); it comes off after.
+  function psCostume3D(id){
+    if (!psx || typeof CostumeRules === 'undefined' || typeof model === 'undefined' || !model || !model.head) return;
+    const parts = CostumeRules.cs3dParts(id); if (!parts.length) return;
+    const body = model.head.parent || model.g, made = [];
+    parts.forEach(pt => {
+      const a = pt.a;
+      const geo = pt.s === 'box' ? new THREE.BoxGeometry(a[0], a[1], a[2]) : pt.s === 'sph' ? new THREE.SphereGeometry(a[0], 10, 8)
+        : pt.s === 'cyl' ? new THREE.CylinderGeometry(a[0], a[1], a[2], a[3] || 12) : pt.s === 'cone' ? new THREE.ConeGeometry(a[0], a[1], a[2] || 8)
+        : new THREE.TorusGeometry(a[0], a[1], 8, 20);
+      const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({color: pt.c}));
+      m.position.set(pt.p[0], pt.p[1], pt.p[2]); m.rotation.set(pt.r[0], pt.r[1], pt.r[2]);
+      (pt.at === 'head' ? model.head : body).add(m); made.push(m);
+    });
+    psx.cosParts = made;
+  }
+  function psWear(on){
+    if (!psx) return;
+    const id = on && psx.s.costume && typeof CostumeRules !== 'undefined' && CostumeRules.csClean(psx.s.costume) !== 'none' ? psx.s.costume : null;
+    if ((psx.wearing || null) === id) return;
+    try {
+      if (typeof model !== 'undefined' && model && typeof buildPlayer === 'function'){
+        const g = model.g, pos = g.position.clone(), ry = g.rotation.y;
+        psClearProps3D(); scene.remove(g);
+        model = buildPlayer(id ? CostumeRules.csApply(avatar, id) : avatar);
+        model.g.position.copy(pos); model.g.rotation.y = ry; scene.add(model.g);
+        psx.cosParts = null;
+        if (id) psCostume3D(id);
+        if (on) psSyncProps();
+      }
+    } catch (e){}
+    psx.wearing = id;
+  }
+  function psSetCostume(id){
+    if (!psx || typeof CostumeRules === 'undefined') return false;
+    const c = CostumeRules.csClean(id);
+    if (c === 'none') delete psx.s.costume; else psx.s.costume = c;
+    psSaveSet(); psWear(!!psx.cam); psHud();
+    const it = CostumeRules.csGet(c);
+    banner(c === 'none' ? '👕 Back in your own outfit.' : it.emoji + ' Dressed up as the ' + it.name + '!');
+    return true;
+  }
   function psToggleProp(id){
     if (!psx || !PS_PROPS.some(p => p.id === id)) return false;
     const i = psx.props.indexOf(id);
@@ -265,7 +308,10 @@
     const on = !!(psx.cam && psx.tray && !psx.gal);
     tray.classList.toggle('show', on);
     if (!on) return;
-    tray.innerHTML = '<div class="psrow"><b>🎭 Props</b>' + PS_PROPS.map(p =>
+    const csOn = (psx.s.costume || 'none');
+    tray.innerHTML = (typeof CostumeRules !== 'undefined' ? '<div class="psrow"><b>👗 Costumes</b>' + CostumeRules.CS_LIST.map(c =>
+      '<button type="button" data-ps-cos="' + c.id + '" class="' + (csOn === c.id ? 'on' : '') + '">' + c.emoji + ' ' + c.name + '</button>').join('') + '</div>' : '') +
+      '<div class="psrow"><b>🎭 Props</b>' + PS_PROPS.map(p =>
       '<button type="button" data-ps-prop="' + p.id + '" class="' + (psx.props.includes(p.id) ? 'on' : '') + '">' + p.e + ' ' + p.n + '</button>'
     ).join('') + '</div><div class="psrow"><b>✨ Stickers</b>' + PS_STICKERS.map(s =>
       '<button type="button" data-ps-stik="' + s.id + '" class="' + (psx.stickers.some(x => x.id === s.id) ? 'on' : '') + '">' + s.e + ' ' + s.n + '</button>'
@@ -276,13 +322,14 @@
       if (b.dataset && b.dataset.psProp) b.onclick = () => psToggleProp(b.dataset.psProp);
       else if (b.dataset && b.dataset.psStik) b.onclick = () => psToggleSticker(b.dataset.psStik);
       else if (b.id === 'psClearEx') b.onclick = () => psClearExtras();
+      else if (b.dataset && b.dataset.psCos) b.onclick = () => psSetCostume(b.dataset.psCos);
       b.classList.toggle('gpf', idx === ((psx.trayIdx || 0) % Math.max(1, btns.length)));
     });
   }
   function psCamOn(on){
     if (!psx) return; psx.cam = on; psx.count = 0; if (!on) psx.tray = false;
-    if (on){ Object.assign(P, {x: PS_MARK[0], y: .45, z: PS_MARK[1], vx: 0, vy: 0, vz: 0}); P.face = 0; for (const k in keys) keys[k] = false; psSyncProps(); banner('📸 Camera on! Pick poses, backdrops, silly props & stickers, then press 📸 Snap!'); }
-    else psClearProps3D();
+    if (on){ Object.assign(P, {x: PS_MARK[0], y: .45, z: PS_MARK[1], vx: 0, vy: 0, vz: 0}); P.face = 0; for (const k in keys) keys[k] = false; psWear(true); psSyncProps(); banner('📸 Camera on! Pick poses, backdrops, silly props & stickers, then press 📸 Snap!'); }
+    else { psClearProps3D(); psWear(false); }
     psHud();
   }
   function psSnap(){ if (!psx || !psx.cam || psx.count > 0) return false; psx.count = 3.01; psHud(); return true; }
@@ -329,7 +376,7 @@
     $('#psN').textContent = '📸 Photos: ' + psGallery().length + '/' + PS_MAX;
     psOverlayPaint(); psTrayRender();
     if (!psx.cam) return;
-    const lab = {pose: pz.e + ' ' + pz.n, bg: PS_BGS[S.bg].e + ' ' + PS_BGS[S.bg].n, frame: PS_FRAMES[S.frame].e + ' ' + PS_FRAMES[S.frame].n, angle: PS_ANGLES[S.angle].e + ' ' + PS_ANGLES[S.angle].n, shape: PS_SHAPES[S.shape].e + ' ' + PS_SHAPES[S.shape].n, border: PS_BORDERS[S.border].e + ' ' + PS_BORDERS[S.border].n, extras: '🎭 ' + (psx.props ? psx.props.length : 0) + ' · ✨ ' + (psx.stickers ? psx.stickers.length : 0)};
+    const lab = {pose: pz.e + ' ' + pz.n, bg: PS_BGS[S.bg].e + ' ' + PS_BGS[S.bg].n, frame: PS_FRAMES[S.frame].e + ' ' + PS_FRAMES[S.frame].n, angle: PS_ANGLES[S.angle].e + ' ' + PS_ANGLES[S.angle].n, shape: PS_SHAPES[S.shape].e + ' ' + PS_SHAPES[S.shape].n, border: PS_BORDERS[S.border].e + ' ' + PS_BORDERS[S.border].n, extras: ((typeof CostumeRules !== 'undefined' && psx.s.costume) ? CostumeRules.csGet(psx.s.costume).emoji + ' · ' : '') + '🎭 ' + (psx.props ? psx.props.length : 0) + ' · ✨ ' + (psx.stickers ? psx.stickers.length : 0)};
     Object.keys(lab).forEach(k => { const e = $('#psV_' + k); if (e) e.textContent = lab[k]; });
     const eb = $('#psExtrasBtn'); if (eb) eb.classList.toggle('on', !!psx.tray);
     $('#psSnap').textContent = psx.count > 0 ? Math.ceil(psx.count) + '…' : '📸 Snap!';
@@ -370,10 +417,11 @@
     const m = {KeyQ: ['pose', -1], KeyE: ['pose', 1], KeyB: ['bg', 1], KeyF: ['frame', 1], KeyC: ['angle', 1], KeyT: ['shape', 1], KeyK: ['border', 1]};
     if (m[c]){ psCycle(m[c][0], m[c][1]); return true; }
     if (c === 'KeyO'){ psTrayToggle(); return true; }
+    if (c === 'KeyU' && typeof CostumeRules !== 'undefined'){ psSetCostume(CostumeRules.csNext(psx.s.costume || 'none', 1)); return true; }
     if (c === 'KeyR'){ const nxt = PS_PROPS.find(p => !psx.props.includes(p.id)) || PS_PROPS[0]; psToggleProp(nxt.id); return true; }
     if (c === 'KeyN'){ const nxt = PS_STICKERS.find(s => !psx.stickers.some(x => x.id === s.id)) || PS_STICKERS[0]; psToggleSticker(nxt.id); return true; }
     if (c === 'Space' || c === 'Enter'){ psSnap(); return true; }
     if (c === 'Escape'){ if (psx.tray){ psTrayToggle(false); return true; } psCamOn(false); return true; }
     return true;   // camera mode swallows other keys so you don't walk off the mark
   }
-  function photostudioStop(){ psClearProps3D(); psx = null; ['#psBar', '#psCamBtn', '#psGal', '#psTray', '#psOverlay'].forEach(id => { const e = $(id); if (e) e.classList.remove('show', 'pick'); }); const f = $('#psFlash'); if (f) f.style.opacity = 0; }
+  function photostudioStop(){ psClearProps3D(); psWear(false); psx = null; ['#psBar', '#psCamBtn', '#psGal', '#psTray', '#psOverlay'].forEach(id => { const e = $(id); if (e) e.classList.remove('show', 'pick'); }); const f = $('#psFlash'); if (f) f.style.opacity = 0; }

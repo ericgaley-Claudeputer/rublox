@@ -7,6 +7,9 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const PB_KEY = 'rubloxPhotos';
   const PB_MAX = 12;
+  // GB-7: dress-up costumes come from CostumeRules (dev/costumes/costume_logic.js).
+  const CSR = (typeof globalThis !== 'undefined' && globalThis.CostumeRules) || (function(){ try { return (typeof require === 'function') ? require('../costumes/costume_logic.js') : null; } catch (e){ return null; } })();
+  const PB_COSTUMES = CSR ? CSR.CS_LIST : [{id:'none', name:'No costume', emoji:'🙂'}];
 
   const PB_POSES = [
     {id:'stand', name:'Stand tall', emoji:'🧍'},
@@ -57,8 +60,9 @@
   function pbSticker(id){ return PB_STICKERS.find(p => p.id === id) || null; }
 
   function pbFreshShot(){
-    return {pose:'stand', bg:'studio', frame:'white', props:[], stickers:[], stickerPos:{}};
+    return {pose:'stand', bg:'studio', frame:'white', props:[], stickers:[], stickerPos:{}, costume:'none'};
   }
+  function pbCostume(id){ return CSR ? CSR.csGet(id) : PB_COSTUMES[0]; }
 
   function pbCleanShot(raw){
     const d = pbFreshShot();
@@ -66,6 +70,7 @@
     if (pbPose(o.pose).id === o.pose) d.pose = o.pose;
     if (pbBg(o.bg).id === o.bg) d.bg = o.bg;
     if (pbFrame(o.frame).id === o.frame) d.frame = o.frame;
+    d.costume = pbCostume(o.costume).id;
     const pids = Array.isArray(o.props) ? o.props : [];
     d.props = [];
     pids.forEach(id => { if (pbProp(id) && d.props.indexOf(id) < 0) d.props.push(id); });
@@ -164,6 +169,7 @@
       height: h || 600,
       bg, frame: fr, pose, pad, poseShift,
       props: s.props.map(id => pbProp(id)).filter(Boolean),
+      costume: pbCostume(s.costume),
       stickers: s.stickers.map(id => {
         const base = pbSticker(id);
         if (!base) return null;
@@ -174,8 +180,8 @@
   }
 
   return {
-    PB_KEY, PB_MAX, PB_POSES, PB_BGS, PB_FRAMES, PB_PROPS, PB_STICKERS,
-    pbPose, pbBg, pbFrame, pbProp, pbSticker, pbFreshShot, pbCleanShot, pbToggleProp, pbToggleSticker, pbSetStickerPos,
+    PB_KEY, PB_MAX, PB_POSES, PB_BGS, PB_FRAMES, PB_PROPS, PB_STICKERS, PB_COSTUMES,
+    pbCostume, pbPose, pbBg, pbFrame, pbProp, pbSticker, pbFreshShot, pbCleanShot, pbToggleProp, pbToggleSticker, pbSetStickerPos,
     pbNeed2dFallback, pbIsPhotoData, pbGallery, pbStore, pbDelete, pbLayout
   };
 });

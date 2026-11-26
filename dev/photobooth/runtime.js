@@ -82,6 +82,7 @@
     row('avBoothPoses', R.PB_POSES, 'pose', it => it.emoji + ' ' + it.name);
     row('avBoothBgs', R.PB_BGS, 'bg', it => it.name);
     row('avBoothFrames', R.PB_FRAMES, 'frame', it => it.name);
+    row('avBoothCostumes', R.PB_COSTUMES || [], 'costume', it => it.emoji + ' ' + it.name);
     row('avBoothProps', R.PB_PROPS || [], 'prop', it => it.emoji + ' ' + it.name);
     row('avBoothStickers', R.PB_STICKERS, 'sticker', it => it.emoji + ' ' + it.name);
   }
@@ -89,6 +90,12 @@
     try { if (typeof draft !== 'undefined' && draft) return draft; } catch(e){}
     try { if (typeof avatar !== 'undefined' && avatar) return avatar; } catch(e){}
     return {};
+  }
+  // GB-7: the avatar as drawn in the booth — with the picked costume's clothes swapped in.
+  function pbDressed(){
+    const id = pb.shot && pb.shot.costume;
+    try { if (id && id !== 'none' && typeof CostumeRules !== 'undefined') return CostumeRules.csApply(pbAv(), id); } catch(e){}
+    return pbAv();
   }
   function pbDrawProp2d(ctx, id){
     if (!ctx || !ctx.arc || !ctx.moveTo || !ctx.fill || !ctx.stroke) return;
@@ -260,13 +267,20 @@
         const avCtx = avCv && avCv.getContext ? avCv.getContext('2d') : null;
         if (avCtx){
           if (avCv.width !== cv.width || avCv.height !== cv.height){ avCv.width = cv.width; avCv.height = cv.height; }
-          drawAvatar(avCtx, pbAv(), {});
+          drawAvatar(avCtx, pbDressed(), {});
           ctx.drawImage(avCv, 0, 0);
         } else {
-          drawAvatar(ctx, pbAv(), {});
+          drawAvatar(ctx, pbDressed(), {});
         }
       }
     } catch (e){}
+    if (lay.costume && lay.costume.id !== 'none' && typeof CostumeRules !== 'undefined'){
+      ctx.save();
+      const s = Math.min(cv.width / 260, cv.height / 310);
+      ctx.scale(s, s); ctx.translate((cv.width / s - 260) / 2, 10);
+      try { CostumeRules.csDraw2d(ctx, lay.costume.id); } catch (e){}
+      ctx.restore();
+    }
     if ((lay.props || []).length){
       ctx.save();
       const s = Math.min(cv.width / 260, cv.height / 310);

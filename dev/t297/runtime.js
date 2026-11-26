@@ -482,6 +482,7 @@
     for (let i = -3; i <= 3; i++) plat(i * 2.2, 0.4, 12, 1.6, 1.2, '#6b4aa0', 0.4);
     // Real pet mesh (every species, including dogs) — attached in psEnter/psUpdate.
     psg.mesh = null; psg.ownMesh = false; psg.useFollow = false; psg.busy = null; psg.lastMat = null; psg.holdFollow = false;
+    try { psFarmBuild(); } catch (e){ psg.farm = null; }
     checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:4}, flag:new THREE.Object3D()};
     Object.assign(P, {x:0,y:0.5,z:4, vx:0,vy:0,vz:0, face:Math.PI});
   }
@@ -509,6 +510,7 @@
   function psStop(){
     if (!psg) return;
     if (typeof pf !== 'undefined' && pf) pf.holdFollow = false;
+    try { psFarmStop(); } catch (e){}
     try { psg.trash.forEach(m => { if (m && m.parent) m.parent.remove(m); }); } catch (e){}
     const el = document.getElementById('psVoteBox'); if (el) el.classList.remove('show');
     psg = null;
@@ -616,6 +618,8 @@
   function pshowAct(){
     if (!psg || !PsRules) return false;
     if (psg.show) return true;
+    if (psg.farm && psg.farm.run.show) return true;
+    if (psFarmAct()) return true;
     const mat = psMatNear();
     if (mat){
       if (psg.busy) psg.busy = null;
@@ -671,6 +675,7 @@
   }
   function psUpdate(dt){
     if (!psg) return;
+    if (psFarmUpdate(dt)){ if (psg.busy){ psg.busy.t += dt; if (psg.busy.t >= psg.busy.dur) psg.busy = null; } if (!psg.busy){ psg.holdFollow = false; if (typeof pf !== 'undefined' && pf) pf.holdFollow = false; } psDrivePet(dt); return; }
     if (psg.show){
       psg.holdFollow = true; if (typeof pf !== 'undefined' && pf) pf.holdFollow = true;
       psg.t += dt;
@@ -707,6 +712,208 @@
     }
     psDrivePet(dt);
   }
+  /* ===== GB-7: 🌾 Little Ones Ring — farm babies class at the Pet Talent Show ===== */
+  const PSF_GATE = {x:17.2, z:-5.2}, PSF_GROOM = {x:17.2, z:5.0}, PSF_RING = {x:23.2, z:0, r:3.0};
+  function psFarmBuild(){
+    if (!psg || typeof FarmShowRules === 'undefined') return;
+    const FR = FarmShowRules;
+    const sv = FR.fbLoad(typeof load === 'function' ? load(FR.FB_KEY, null) : null);
+    const babies = FR.fbBabies(psg.pets);
+    psg.farm = {sv, babies, run: FR.fbNewRun(), mesh: null, meshFor: null, bow: null, fx: [], t: 0, st: 0, step: 0, qs: [], judges: [], scoreLabs: [], hidPf: false};
+    const keep = m => t297Keep(psg, m);
+    const box = (w, h, d, c, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({color: c})); m.position.set(x, y, z); scene.add(m); return keep(m); };
+    const cyl = (r1, r2, h, c, x, y, z, seg) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, seg || 10), new THREE.MeshLambertMaterial({color: c})); m.position.set(x, y, z); scene.add(m); return keep(m); };
+    plat(22, 0, 0, 16, 18, '#eadfb2', 0.2);                 // straw floor joined to the show hall
+    // the show ring: straw circle with a white post-and-rail fence and a gap facing the hall
+    cyl(PSF_RING.r, PSF_RING.r, 0.05, '#f2d77a', PSF_RING.x, 0.03, PSF_RING.z, 28);
+    for (let i = 0; i < 16; i++){
+      const a = i / 16 * Math.PI * 2; if (Math.cos(a) < -0.8) continue;   // opening on the hall side
+      cyl(0.07, 0.07, 0.8, '#ffffff', PSF_RING.x + Math.cos(a) * (PSF_RING.r + 0.5), 0.4, PSF_RING.z + Math.sin(a) * (PSF_RING.r + 0.5), 6);
+    }
+    keep(t297Lab('🌾 Little Ones Ring', PSF_RING.x + 1.2, 5.6, PSF_RING.z, 'rgba(70,110,40,.92)'));
+    { const ar = t297Lab('🌾 Farm babies ring →', 12.4, 3.0, -1.6, 'rgba(70,110,40,.92)'); if (ar) ar.scale.multiplyScalar(0.6); keep(ar); }
+    // baby gate (pick which farm baby to enter)
+    box(2.6, 0.9, 0.12, '#c8955a', PSF_GATE.x, 0.45, PSF_GATE.z - 1.0);
+    box(0.12, 0.9, 2.0, '#c8955a', PSF_GATE.x - 1.3, 0.45, PSF_GATE.z);
+    box(0.12, 0.9, 2.0, '#c8955a', PSF_GATE.x + 1.3, 0.45, PSF_GATE.z);
+    keep(t297Lab('🍼 Pick a farm baby', PSF_GATE.x, 2.3, PSF_GATE.z - 0.6));
+    // grooming table with a bubble tub and a brush
+    box(2.2, 0.12, 1.3, '#f4f1e6', PSF_GROOM.x + 0.6, 0.78, PSF_GROOM.z);
+    [[-0.4, -0.5], [-0.4, 0.5], [1.6, -0.5], [1.6, 0.5]].forEach(([dx, dz]) => box(0.1, 0.78, 0.1, '#9a6a3a', PSF_GROOM.x + dx, 0.39, PSF_GROOM.z + dz));
+    cyl(0.42, 0.34, 0.36, '#8ecae6', PSF_GROOM.x - 1.3, 0.2, PSF_GROOM.z + 0.2);
+    box(0.5, 0.08, 0.16, '#ff8fab', PSF_GROOM.x + 1.4, 0.88, PSF_GROOM.z - 0.4);
+    keep(t297Lab('🪮 Grooming table', PSF_GROOM.x, 2.4, PSF_GROOM.z + 0.6));
+    // three judges at a little table, facing the ring
+    box(1.2, 0.8, 6.6, '#6b4aa0', 28.2, 0.4, 0);
+    const looks = [
+      {body:'girl', head:'#f1c27d', shirt:'#f4a259', pants:'#5b8e3a', pantsPat:'skirt', hair:'bun', hairColor:'#c0762b', face:'smile', hat:'none'},
+      {body:'boy', head:'#c68642', shirt:'#3a5a8a', pants:'#2b2b33', hair:'short', hairColor:'#2b1a10', face:'smile', hat:'tophat'},
+      {head:'#e0ac69', shirt:'#ff8fc8', pants:'#6b4aa0', hair:'pigtails', hairColor:'#7a3d14', face:'smile', hat:'flower'}
+    ];
+    FR.FB_JUDGES.forEach((j, i) => {
+      const z = -2.4 + i * 2.4, x = 29.3;
+      let m = null;
+      try { m = buildPlayer(Object.assign({}, typeof DEF !== 'undefined' ? DEF : {}, looks[i])); m.g.position.set(x, 0.05, z); m.g.rotation.y = Math.atan2(PSF_RING.x - x, PSF_RING.z - z); scene.add(m.g); keep(m.g); } catch (e){ box(0.6, 1.6, 0.5, '#f6d2b0', x, 0.8, z); }
+      { const jl = t297Lab(j.emoji + ' ' + j.name.replace('Judge ', '').split(' ')[0], x, 3.5 + (i % 2) * 0.45, z, 'rgba(40,20,70,.92)'); if (jl) jl.scale.multiplyScalar(0.55); keep(jl); }
+      psg.farm.judges.push({id: j.id, x, z, m});
+    });
+    psFarmMesh();
+  }
+  function psFarmPet(){ const F = psg && psg.farm; return F && F.babies.length ? F.babies[(F.run.pick | 0) % F.babies.length] : null; }
+  function psFarmMesh(){
+    const F = psg && psg.farm; if (!F) return null;
+    const pet = psFarmPet();
+    if (F.mesh && F.meshFor === pet) return F.mesh;
+    if (F.mesh && F.mesh.g){ try { if (F.mesh.g.parent) F.mesh.g.parent.remove(F.mesh.g); } catch (e){} }
+    F.mesh = null; F.bow = null; F.meshFor = pet;
+    if (!pet || typeof buildPet !== 'function') return null;
+    const kind = (typeof PET_KINDS !== 'undefined' && PET_KINDS[pet.k]) ? pet.k : 'chick';
+    let m = null;
+    try { m = buildPet(kind, pet.c | 0, 2); } catch (e){ m = null; }
+    if (!m || !m.g) return null;
+    try { const tag = label('🐾 ' + (pet.n || pet.name || 'Baby'), 'rgba(90,140,50,.92)', '#fff', 220); if (tag){ tag.scale.multiplyScalar(0.5); tag.position.y = (m.top || 1.0) + 0.45; m.g.add(tag); } } catch (e){}
+    m.g.position.set(PSF_GROOM.x + 0.6, 0.84, PSF_GROOM.z);
+    scene.add(m.g); t297Keep(psg, m.g); F.mesh = m;
+    return m;
+  }
+  function psFarmBow(on){
+    const F = psg && psg.farm; if (!F || !F.mesh) return;
+    if (on && !F.bow){
+      const g = new THREE.Group(), mt = new THREE.MeshLambertMaterial({color: '#ff4d94'});
+      [-1, 1].forEach(k => { const l = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.2, 6), mt); l.rotation.z = k * Math.PI / 2; l.position.x = k * 0.1; g.add(l); });
+      g.add(new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 4), mt));
+      g.position.set(0, (F.mesh.top || 0.8) + 0.02, 0.05); F.mesh.g.add(g); F.bow = g;
+    } else if (!on && F.bow){ try { F.mesh.g.remove(F.bow); } catch (e){} F.bow = null; }
+  }
+  function psFarmFx(kind){
+    const F = psg && psg.farm; if (!F || !F.mesh) return;
+    const p = F.mesh.g.position, col = kind === 'bath' ? '#dff4ff' : kind === 'brush' ? '#fff3a8' : '#ffb3d9';
+    for (let i = 0; i < 8; i++){
+      const s = new THREE.Mesh(new THREE.SphereGeometry(kind === 'bath' ? 0.12 : 0.06, 6, 4), new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: 0.85}));
+      s.position.set(p.x + Math.cos(i) * 0.4, p.y + 0.3 + (i % 3) * 0.15, p.z + Math.sin(i) * 0.4); scene.add(s); t297Keep(psg, s);
+      F.fx.push({m: s, t: 0, vy: 0.5 + (i % 3) * 0.2});
+    }
+  }
+  function psFarmZone(){ return !!(psg && psg.farm && P && P.x > 14.2); }
+  function psFarmWhere(){
+    if (t297Near(PSF_GATE.x, PSF_GATE.z, 2.0)) return 'gate';
+    if (t297Near(PSF_GROOM.x, PSF_GROOM.z, 2.1)) return 'groom';
+    if (t297Near(PSF_RING.x, PSF_RING.z, PSF_RING.r + 0.6)) return 'ring';
+    return '';
+  }
+  function psFarmAct(){
+    const F = psg && psg.farm; if (!F) return false;
+    if (F.run.show) return true;
+    if (!psFarmZone()) return false;
+    const FR = FarmShowRules, at = psFarmWhere(), pet = psFarmPet();
+    if (!F.babies.length){ banner('🍼 Adopt a little one at Honeymeadow Farm (Afterbell School field trip) — then bring them to the Little Ones Ring!'); return true; }
+    if (at === 'gate'){
+      const r = FR.fbPick(F.run, F.babies, 1);
+      if (r.ok){ psFarmBow(false); psFarmMesh(); banner('🍼 ' + (r.pet.n || 'Your baby') + ' is up next! Groom them at the table, then come to the ring.'); }
+      return true;
+    }
+    if (at === 'groom'){
+      const r = FR.fbGroom(F.run);
+      if (!r.ok){ banner(r.why === 'done' ? '✨ ' + (pet.n || 'Your baby') + ' is all groomed — step into the ring for the show!' : 'Wait for the show to finish.'); return true; }
+      psFarmFx(r.step.id); if (r.step.id === 'bow') psFarmBow(true);
+      try { if (typeof SND !== 'undefined' && SND.coin) SND.coin(); } catch (e){}
+      banner(r.step.emoji + ' ' + r.step.line + (r.done ? '  Ready for the ring!' : '  (' + r.left + ' more)'));
+      return true;
+    }
+    if (at === 'ring'){
+      let known = [];
+      try { known = PsRules.psKnown(psg.sv, PsRules.psPetId ? PsRules.psPetId(pet) : (pet.id || pet.n)); } catch (e){}
+      const r = FR.fbStart(F.run, pet, known);
+      if (!r.ok){ banner(r.why === 'groom' ? '🪮 Groom ' + (pet.n || 'your baby') + ' at the table first (' + r.need + ' step' + (r.need > 1 ? 's' : '') + ' left).' : 'The judges are getting ready…'); return true; }
+      F.st = 0; F.step = 0; F.qs = [];
+      psFarmScores(null);
+      const sig = FR.fbTrickName(r.routine[0]);
+      banner('🌾 Showtime in the Little Ones Ring! ' + (pet.n || 'Your baby') + ' starts with ' + sig.emoji + ' ' + sig.name + '!');
+      return true;
+    }
+    banner('🌾 Pick a baby at the gate, groom them at the table, then show them in the ring!');
+    return true;
+  }
+  function psFarmScores(judged){
+    const F = psg && psg.farm; if (!F) return;
+    (F.scoreLabs || []).forEach(l => { try { if (l && l.parent) l.parent.remove(l); } catch (e){} });
+    F.scoreLabs = [];
+    if (!judged) return;
+    judged.judges.forEach((j, i) => { const J = F.judges[i]; if (!J) return; const l = t297Lab('⭐ ' + j.score, J.x - 1.0, 2.5, J.z, 'rgba(255,170,40,.95)'); if (l){ l.scale.multiplyScalar(0.55); t297Keep(psg, l); F.scoreLabs.push(l); } });
+    const rl = t297Lab(judged.ribbon.emoji + ' ' + judged.ribbon.name, PSF_RING.x, 2.2, PSF_RING.z, 'rgba(255,111,181,.95)'); if (rl){ rl.scale.multiplyScalar(0.6); t297Keep(psg, rl); F.scoreLabs.push(rl); }
+  }
+  function psFarmFinish(){
+    const F = psg && psg.farm; if (!F) return;
+    const FR = FarmShowRules, pet = psFarmPet();
+    const judged = FR.fbJudge(F.run, F.qs);
+    const rec = FR.fbRecord(F.sv, F.run, judged, Date.now());
+    F.run.show = false;
+    psFarmBow(false);
+    if (!rec.ok) return;
+    F.sv = rec.state; t297Save(FR.FB_KEY, F.sv);
+    psFarmScores(judged);
+    const head = rec.ribbon.emoji + ' ' + (pet && pet.n || 'Your baby') + ' won the ' + rec.ribbon.name + ' · ' + rec.score + '/10';
+    if (rec.coins) t297Pay(rec.coins, head);
+    else banner(head + ' — what a star! (Today\'s ring coins are all handed out — ribbons still count.)');
+    t297Note('ps-show');
+  }
+  function psFarmUpdate(dt){
+    const F = psg && psg.farm; if (!F) return false;
+    F.t += dt;
+    F.fx = F.fx.filter(f => { f.t += dt; f.m.position.y += f.vy * dt; if (f.m.material) f.m.material.opacity = Math.max(0, 0.85 - f.t); if (f.t > 0.9){ try { if (f.m.parent) f.m.parent.remove(f.m); } catch (e){} return false; } return true; });
+    const M = psFarmMesh();
+    // Hide the follow-along copy of the same baby while it is in the ring area, so there are never two.
+    const same = M && typeof pf !== 'undefined' && pf && pf.pet && pf.pet.m && pf.pet.m.g && psg.pets[0] === F.meshFor;
+    const hide = !!(same && (psFarmZone() || F.run.show));
+    if (same){ pf.pet.m.g.visible = !hide; F.hidPf = hide; }
+    if (psg.show) return false;
+    if (F.run.show){
+      const FR = FarmShowRules, cur = F.run.routine[F.step], dur = 1.8;
+      F.st += dt;
+      if (M && M.g){
+        const pose = PsRules.psTrickPose(FR.fbPoseOf(cur), F.st, dur);
+        M.g.position.set(PSF_RING.x, pose.hop || 0, PSF_RING.z);
+        M.g.rotation.set(0, (pose.yaw || 0) + Math.PI / 2, 0);
+        if (typeof animPet === 'function') animPet(M, pose.act, 0, dt, F.t);
+        if (pose.roll){ if (M.inner) M.inner.rotation.z = pose.roll; else M.g.rotation.z = pose.roll; }
+      }
+      if (F.st >= dur){
+        F.qs.push(0.7 + Math.random() * 0.3); F.step += 1; F.st = 0;
+        if (M && M.inner) M.inner.rotation.z = 0;
+        if (F.step >= F.run.routine.length){ psFarmFinish(); }
+        else { const n = FR.fbTrickName(F.run.routine[F.step]); banner('Next: ' + n.emoji + ' ' + n.name); }
+      }
+      const n = FR.fbTrickName(cur || '');
+      t297Hud('🌾 ' + ((psFarmPet() || {}).n || 'Your baby') + ' is doing ' + n.emoji + ' ' + n.name + ' for the judges…', '');
+      return true;
+    }
+    if (M && M.g){
+      M.g.position.set(PSF_GROOM.x + 0.6, 0.84 + Math.abs(Math.sin(F.t * 2.2)) * 0.04, PSF_GROOM.z);
+      M.g.rotation.set(0, Math.atan2(P.x - M.g.position.x, P.z - M.g.position.z), 0);
+      if (M.inner) M.inner.rotation.z = 0;
+      if (typeof animPet === 'function') animPet(M, 0, 0, dt, F.t);
+    }
+    if (!psFarmZone()) return false;
+    const at = psFarmWhere(), pet = psFarmPet(), nm = (pet && pet.n) || 'your baby';
+    if (!F.babies.length) t297Hud('Adopt a farm baby at Honeymeadow Farm to enter the Little Ones Ring.', at ? '🍼 Look' : '');
+    else if (at === 'gate') t297Hud('Up now: ' + nm + '. Press again to pick another farm baby (' + F.babies.length + ').', '🍼 Next baby');
+    else if (at === 'groom') t297Hud(F.run.groom.length >= 3 ? nm + ' is groomed and ready for the ring!' : 'Groom ' + nm + ': ' + FarmShowRules.FB_GROOM.map(s => (F.run.groom.indexOf(s.id) >= 0 ? '✅' : s.emoji) + ' ' + s.name).join(' · '), F.run.groom.length >= 3 ? '' : (FarmShowRules.FB_GROOM[F.run.groom.length].emoji + ' ' + FarmShowRules.FB_GROOM[F.run.groom.length].name));
+    else if (at === 'ring') t297Hud(F.run.groom.length >= 3 ? 'Show ' + nm + ' to the three judges!' : 'Groom ' + nm + ' at the table before the show.', '🌾 Show');
+    else t297Hud('🌾 Little Ones Ring: pick a baby at the gate, groom at the table, then show in the ring.', '');
+    return true;
+  }
+  function psFarmStop(){
+    const F = psg && psg.farm; if (!F) return;
+    if (F.hidPf && typeof pf !== 'undefined' && pf && pf.pet && pf.pet.m && pf.pet.m.g) pf.pet.m.g.visible = true;
+    psFarmScores(null);
+  }
+  if (typeof window !== 'undefined') window.psFarmDebug = {
+    state(){ const F = psg && psg.farm; return F ? {babies: F.babies.map(b => b.n + ':' + b.k), pick: F.run.pick, groom: F.run.groom.slice(), show: F.run.show, paid: F.run.paid, step: F.step, sv: F.sv, mesh: !!F.mesh} : null; },
+    go(where){ const t = {gate: PSF_GATE, groom: PSF_GROOM, ring: PSF_RING}[where]; if (t && P){ P.x = t.x - (where === 'ring' ? 3.1 : 0); P.z = t.z + (where === 'ring' ? 0 : 1.2); P.y = 0.5; P.vx = P.vz = 0; } },
+    view(){ if (P){ P.x = 14.8; P.z = 0.2; P.y = 0.5; } if (typeof cam !== 'undefined' && cam){ cam.yaw = -Math.PI / 2; cam.pitch = 0.22; cam.dist = 9; } },
+    fast(){ const F = psg && psg.farm; if (F && F.run.show) F.st = 99; }
+  };
+
   function pshowKey(e){
     if (!psg || e.repeat) return false;
     if (t297EatOverlayKey(e)) return true;
