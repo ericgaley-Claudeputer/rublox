@@ -1,6 +1,8 @@
 /* Tideglass Aquarium runtime — injected into the main engine IIFE, after the field-trip helpers. */
   let aq = null;
   function aqSave(s){ try { if (typeof save === 'function') save(AquariumRules.AQ_KEY, s); } catch(e){} }
+  function aqSetCoins(n){ try { if (typeof setCoins === 'function') setCoins(n); else { coins = n; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); } } catch(e){} }
+  function aqPay(n){ if (n && typeof coins !== 'undefined') aqSetCoins(coins + n); }
   function aqState(){ try { return AquariumRules.aqLoad(typeof load === 'function' ? load(AquariumRules.AQ_KEY, null) : null); } catch(e){ return AquariumRules.aqFresh(); } }
   function aqWZ(z){ return (z||0) + ((aq && aq.shiftZ) || 0); }
   function aqKeep(m){
@@ -389,7 +391,7 @@
     if (hit.kind === 'pool'){
       const r = AquariumRules.aqTouch(aq.sv);
       aq.sv = r.state; aqSave(aq.sv);
-      if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
+      aqPay(r.coins);
       banner('🦀 ' + (r.message || 'A gentle touch!') + (r.coins ? ('  +' + r.coins + ' 🪙') : (r.already ? ' The Pebblecrab already said hello.' : '')));
       return;
     }
@@ -403,7 +405,7 @@
         return;
       }
       aq.sv = r.state; aqSave(aq.sv);
-      if (typeof coins !== 'undefined'){ try { coins = r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
+      if (typeof coins !== 'undefined') aqSetCoins(r.coins);
       try {
         if (r.item && r.item.kind === 'hat' && r.item.id && typeof owned !== 'undefined' && owned){
           if (owned.add) owned.add(r.item.id); else if (Array.isArray(owned) && owned.indexOf(r.item.id) < 0) owned.push(r.item.id);
@@ -418,7 +420,7 @@
       const r = AquariumRules.aqBoardHome(aq.run, aq.sv);
       if (!r.ok){ banner('Marin is still waiting on a few exhibits.'); return; }
       aq.sv = r.state; aqSave(aq.sv);
-      if (r.coins && typeof coins !== 'undefined'){ try { coins += r.coins; if (typeof saveCoins === 'function') saveCoins(); } catch(e){} }
+      aqPay(r.coins);
       banner((r.message || 'Bus ride home!') + (r.coins ? ('  +' + r.coins + ' 🪙') : ''));
       if (P){ P.x=0; P.z=18; P.y=0.5; }
       if (aq.bus){ aq.bus.position.set(AquariumRules.AQ_BUS.x, 0, AquariumRules.AQ_BUS.z); aq.bus.rotation.y = 0; }
@@ -472,7 +474,10 @@
     const act=document.getElementById('aqAct'); if(act) act.classList.remove('show');
   }
   if (typeof window !== 'undefined') window.aqDebug = {
-    probe(){ if (!aq) return null; return {phase: aq.run && aq.run.phase, found: ((aq.sv && aq.sv.found)||[]).slice(), touched: !!(aq.sv && aq.sv.touched), won: !!(aq.sv && aq.sv.won), P: P ? {x:P.x,y:P.y,z:P.z} : null, marin: AquariumRules.AQ_GUIDE, arrive: AquariumRules.AQ_ARRIVE}; },
+    probe(){ if (!aq) return null; return {phase: aq.run && aq.run.phase, found: ((aq.sv && aq.sv.found)||[]).slice(), touched: !!(aq.sv && aq.sv.touched), won: !!(aq.sv && aq.sv.won), gifts: ((aq.sv && aq.sv.gifts)||[]).slice(), coins: (typeof coins === 'number') ? coins : null, P: P ? {x:P.x,y:P.y,z:P.z} : null, marin: AquariumRules.AQ_GUIDE, arrive: AquariumRules.AQ_ARRIVE}; },
+    act(){ aqAct(); return this.probe(); },
+    pickAll(){ if (!aq) return this.probe(); (AquariumRules.AQ_FINDS||[]).forEach(f => { const r = AquariumRules.aqPick(aq.sv, f.id); if (r.ok) aq.sv = r.state; }); aqSave(aq.sv); return this.probe(); },
+    phase(p){ if (aq && aq.run && p) aq.run.phase = p; return this.probe(); },
     hall(){ if (!aq) return; aq.run.phase='hall'; aq.run.rideT=AquariumRules.AQ_RIDE_T; const a=AquariumRules.AQ_ARRIVE||{x:3.4,z:-8}; if(P){P.x=a.x;P.y=0.5;P.z=a.z;} if (typeof cam!=='undefined' && cam){ cam.yaw=0.15; cam.pitch=0.16; cam.dist=9; } aqApplyZones('hall'); },
     inside(){ if (!aq) return; aq.run.phase='hall'; const z = AquariumRules.aqZ ? AquariumRules.aqZ(-41) : -41; if(P){P.x=0;P.y=0.5;P.z=z;P.vx=0;P.vz=0;} if (typeof cam!=='undefined' && cam){ cam.yaw=0; cam.pitch=0.14; cam.dist=5.2; } aqApplyZones('hall'); },
     lookBack(){ if (!aq) return; this.look(Math.PI); },

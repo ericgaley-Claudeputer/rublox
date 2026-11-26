@@ -1,0 +1,45 @@
+// Headless check: aquarium (and farm/field-trip style) wallet payouts persist via setCoins.
+const L = require('./lib');
+const assert = require('node:assert/strict');
+const OUT = process.argv.includes('--out') ? process.argv[process.argv.indexOf('--out') + 1] : null;
+(async () => {
+  const {server, url} = await L.serve();
+  const b = await L.launch();
+  const ctx = await b.newContext({viewport:{width:1280, height:760}});
+  const p = await ctx.newPage();
+  const errs = []; L.watch(p, errs);
+  await p.goto(url);
+  await p.waitForSelector('#grid .card');
+  await p.fill('#nameIn', 'T');
+  await p.click('#nameOk');
+  await p.evaluate(() => { try { if (typeof ach !== 'undefined' && ach) ach._paying = true; } catch(e){} setCoins(10); });
+  await p.evaluate(() => Obby.play('aquarium'));
+  await p.waitForTimeout(1200);
+  const start = await p.evaluate(() => ({coins, saved: load('rubloxCoins', null)}));
+  await p.evaluate(() => { aqDebug.hall(); aqDebug.go('pool'); aqDebug.act(); });
+  const touch = await p.evaluate(() => ({coins, saved: load('rubloxCoins', null), probe: aqDebug.probe()}));
+  await p.evaluate(() => aqDebug.act());
+  const touch2 = await p.evaluate(() => ({coins, saved: load('rubloxCoins', null), probe: aqDebug.probe()}));
+  // collect exhibits and ride home
+  await p.evaluate(() => { aqDebug.pickAll(); aqDebug.go('home'); aqDebug.act(); });
+  const home = await p.evaluate(() => ({coins, saved: load('rubloxCoins', null), probe: aqDebug.probe()}));
+  await p.evaluate(() => { aqDebug.phase('hall'); aqDebug.go('home'); aqDebug.act(); });
+  const home2 = await p.evaluate(() => ({coins, saved: load('rubloxCoins', null), probe: aqDebug.probe()}));
+  console.log(JSON.stringify({start, touch, touch2, home, home2, errs}));
+  assert.equal(start.coins, 10);
+  assert.equal(start.saved, 10);
+  assert.equal(touch.coins, 14);
+  assert.equal(touch.saved, 14);
+  assert.equal(touch.probe.touched, true);
+  assert.equal(touch2.coins, 14);
+  assert.equal(touch2.saved, 14);
+  assert.equal(home.coins, 34);
+  assert.equal(home.saved, 34);
+  assert.equal(home.probe.won, true);
+  assert.equal(home2.coins, 34);
+  assert.equal(home2.saved, 34);
+  if (errs.length) throw new Error('console errors ' + JSON.stringify(errs));
+  console.log('ALL GOOD');
+  if (OUT) await p.screenshot({path: require('path').join(OUT, 'coin-save-aquarium.png')});
+  await b.close(); server.close();
+})().catch(e => { console.error(e); process.exit(1); });

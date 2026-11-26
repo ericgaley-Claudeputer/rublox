@@ -17,9 +17,9 @@ const BANNED = [
 ];
 
 describe('Wobblevator wiring', () => {
-  test('BUILD is 2026.11.22-16 and matches version.json', () => {
-    assert.ok(html.includes("const BUILD = '2026.11.22-16'"));
-    assert.equal(version.build, '2026.11.22-16');
+  test('BUILD is 2026.11.22-17 and matches version.json', () => {
+    assert.ok(html.includes("const BUILD = '2026.11.22-17'"));
+    assert.equal(version.build, '2026.11.22-17');
   });
 
   test('the mode is a playable menu game with an original name and save key', () => {

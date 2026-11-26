@@ -223,12 +223,12 @@
     if (r.text && kind !== 'note') banner((kind === 'lantern' ? '🌙 ' : '✨ ') + r.text);
     if (kind === 'lantern' && r.ok && r.coins){
       mn.sv = r.state; mnSave(mn.sv);
-      try { if (typeof pay === 'function') pay(r.coins); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); } } catch (e){}
+      try { if (typeof setCoins === 'function' && typeof coins === 'number') setCoins(coins + (r.coins || 0)); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); } } catch (e){}
       banner('🌙 ' + r.message + ' +' + r.coins + ' 🪙');
     }
     if (kind === 'door' && r.ok){
       mn.sv = r.state; mnSave(mn.sv);
-      try { if (typeof pay === 'function') pay(r.coins); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); } } catch (e){}
+      try { if (typeof setCoins === 'function' && typeof coins === 'number') setCoins(coins + (r.coins || 0)); else if (typeof coins === 'number') { coins += r.coins; if (typeof save === 'function') save('rubloxCoins', coins); if (typeof updateCoins === 'function') updateCoins(true); } } catch (e){}
       banner('🌙 ' + r.message + ' +' + r.coins + ' 🪙');
       try {
         const em = document.getElementById('oWinEmoji'), title = document.getElementById('oWinTitle');
