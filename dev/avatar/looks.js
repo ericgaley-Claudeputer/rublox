@@ -17,6 +17,8 @@
     {id:'hat-flower', cat:'looks', emoji:'🌸', name:'Flower Crown', price:180, slot:'hat', val:'flower', vibe:'fancy'},
     {id:'hat-jellycap', cat:'looks', emoji:'🧢', name:'Moonveil Jelly Cap', price:40, slot:'hat', val:'jellycap', vibe:'cozy'},
     {id:'hat-tidecap', cat:'looks', emoji:'🎩', name:'Tideglass Tide Cap', price:42, slot:'hat', val:'tidecap', vibe:'cozy'},
+    {id:'hat-dinocap', cat:'looks', emoji:'🧢', name:'Thunderhorn Cap', price:40, slot:'hat', val:'dinocap', vibe:'cozy'},
+    {id:'hat-starcap', cat:'looks', emoji:'🎩', name:'Stargazer Cap', price:42, slot:'hat', val:'starcap', vibe:'cozy'},
     {id:'hair-wolf', cat:'looks', also:'hair', emoji:'💇', name:'Wolf Cut', price:175, slot:'hair', val:'wolf', vibe:'grunge'},
     {id:'hair-shag', cat:'looks', also:'hair', emoji:'💇', name:'Messy Shag', price:150, slot:'hair', val:'shag', vibe:'grunge'},
     {id:'hair-curtains', cat:'looks', also:'hair', emoji:'💇', name:'Curtain Bangs', price:160, slot:'hair', val:'curtains', vibe:'y2k'},
