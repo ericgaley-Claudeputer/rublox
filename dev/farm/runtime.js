@@ -338,6 +338,21 @@
     fmCyl(g, 0.02, 0.02, 0.08, '#f4a04a', -0.05, 0.08, 0.02);
     g.userData.kind = 'duckling'; g.scale.setScalar(1.25); return g;
   }
+  // GB-7: a grown-up Pondripple duck (cream body, teal head, a blue ripple stripe on each wing).
+  function fmMakeDuck(){
+    const g = new THREE.Group();
+    fmSph(g, 0.34, '#f4ecd8', 0, 0.3, 0, 1.0, 0.72, 1.35, 9);
+    [-1, 1].forEach(k => { fmSph(g, 0.2, '#e2d6bc', k * 0.27, 0.34, -0.04, 0.45, 0.6, 1.3, 7); fmBox(g, 0.04, 0.06, 0.34, '#4f8fd6', k * 0.33, 0.36, -0.06); });
+    const tail = new THREE.Group(); tail.position.set(0, 0.38, -0.42); g.add(tail); g.userData.tail = tail;
+    const tf = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.24, 6), fmMat('#e2d6bc')); tf.rotation.x = -2.0; tail.add(tf);
+    const head = new THREE.Group(); head.position.set(0, 0.66, 0.34); g.add(head); g.userData.head = head;
+    fmCyl(head, 0.09, 0.12, 0.26, '#f4ecd8', 0, -0.14, -0.04);
+    fmSph(head, 0.17, '#2f8f86', 0, 0.02, 0, 1, 0.95, 1.05, 8);
+    fmEye(head, 0.09, 0.05, 0.12, 0.035); fmEye(head, -0.09, 0.05, 0.12, 0.035);
+    const beak = fmBox(head, 0.13, 0.05, 0.16, '#f2a33a', 0, -0.02, 0.2);
+    beak.rotation.x = 0.12;
+    g.userData.kind = 'duck'; return g;
+  }
   function fmMakeKid(){
     const g = new THREE.Group(), coat = '#f5efe4', patch = '#c89b6e';
     fmSph(g, 0.22, coat, 0, 0.38, 0, 0.9, 0.88, 1.25, 8);
@@ -390,14 +405,126 @@
       m.g.position.set(x, .05, z); m.g.rotation.y = Math.atan2(fx - x, fz - z); scene.add(m.g); fmKeep(m.g); return m;
     } catch(e){ return fmMesh(new THREE.BoxGeometry(0.7, 1.6, 0.5), col, x, 0.9, z); }
   }
+  // GB-7: Pondripple Pond, a dock, lily pads, the duck feeding spot, and fields + hills on the far side of the hay loop.
+  function fmBuildPond(){
+    const R = FarmRules, po = R.FM_POND, dk = R.FM_DOCK, fd = R.FM_DUCK_FEED;
+    if (!po) return;
+    const prevS = fm.shiftZ; fm.curZone = 'dest'; fm.shiftZ = 0;
+    const ellipse = (rx, rz, col, y, seg) => {
+      const m = new THREE.Mesh(new THREE.CircleGeometry(1, seg || 40), new THREE.MeshLambertMaterial({color: col}));
+      m.rotation.x = -Math.PI / 2; m.scale.set(rx, rz, 1); m.position.set(po.x, y, po.z); scene.add(m); fmKeep(m); return m;
+    };
+    ellipse(po.rx + 1.6, po.rz + 1.5, '#d8c48a', 0.172);   // sandy shore
+    ellipse(po.rx, po.rz, '#3f8fc8', 0.19);                 // water
+    const shine = ellipse(po.rx * 0.62, po.rz * 0.55, '#6fb7e6', 0.196); shine.position.x -= 2.2; shine.position.z -= 1.2;
+    fm.pondWater = shine;
+    // shore stones and reeds (cattails)
+    for (let i = 0; i < 26; i++){
+      const a = i / 26 * Math.PI * 2, rx = po.rx + 0.35, rz = po.rz + 0.35;
+      const x = po.x + Math.cos(a) * rx, z = po.z + Math.sin(a) * rz;
+      if (Math.abs(z - dk.z) < 1.6 && x > po.x) continue;          // leave the dock gap open
+      if (Math.abs(x - fd.x) < 2.2 && z > po.z) continue;           // and the duck feeding spot
+      if (i % 3 === 0){
+        fmMesh(new THREE.CylinderGeometry(0.035, 0.035, 1.3, 5), '#5a7a2a', x, 0.8, z);
+        fmMesh(new THREE.CylinderGeometry(0.09, 0.09, 0.32, 6), '#7a4a22', x, 1.35, z);
+      } else fmMesh(new THREE.SphereGeometry(0.34 + (i % 2) * 0.12, 6, 4), i % 2 ? '#9a9a92' : '#b8b4a8', x, 0.26, z);
+    }
+    // lily pads, some with pink flowers
+    fm.lily = [];
+    [[-7.5, -2.2], [-5.2, 2.8], [-9.6, 1.4], [2.2, 3.6], [0.4, -4.4], [-3.8, -5.2], [6.4, 3.4], [-1.2, 1.2], [3.6, -2.4]].forEach(([ox, oz], i) => {
+      const pad = fmMesh(new THREE.CylinderGeometry(0.62 + (i % 3) * 0.12, 0.62 + (i % 3) * 0.12, 0.04, 12), i % 2 ? '#4fae4a' : '#3d9a46', po.x + ox, 0.215, po.z + oz);
+      pad.userData.bob = i * 0.9; fm.lily.push(pad);
+      if (i % 3 === 0){ fmMesh(new THREE.SphereGeometry(0.17, 7, 5), '#ff8fc8', po.x + ox + 0.15, 0.3, po.z + oz); fmMesh(new THREE.SphereGeometry(0.07, 6, 4), '#ffe36a', po.x + ox + 0.15, 0.4, po.z + oz); }
+    });
+    // the little dock
+    const dl = dk.x1 - dk.x0, dcx = (dk.x0 + dk.x1) / 2;
+    fmPlat(dcx, 0.42, dk.z, dl, dk.w, '#a8743e', 0.24);
+    for (let i = 0; i < 6; i++) fmMesh(new THREE.BoxGeometry(0.06, 0.03, dk.w), '#7a4f26', dk.x0 + 0.6 + i * (dl - 1) / 5, 0.435, dk.z);
+    [[dk.x0 + 0.2, -1], [dk.x0 + 0.2, 1], [dk.x0 + 3.2, -1], [dk.x0 + 3.2, 1]].forEach(([x, k]) => fmMesh(new THREE.CylinderGeometry(0.11, 0.11, 0.9, 6), '#6b3a1d', x, 0.2, dk.z + k * (dk.w / 2 + 0.05)));
+    fmMesh(new THREE.BoxGeometry(0.5, 0.42, 0.5), '#3d6fb5', dk.x0 + 1.4, 0.64, dk.z - 0.55);   // tackle box
+    fm.bobber = fmMesh(new THREE.SphereGeometry(0.11, 8, 6), '#ff4d5e', dk.x0 - 1.4, 0.24, dk.z);
+    fm.bobber.visible = false;
+    fmLab('🎣 Pondripple dock', dk.x1 - 1.2, 2.2, dk.z + 1.2);
+    // duck feeding spot: a little sign and a bucket of pellets
+    fmMesh(new THREE.CylinderGeometry(0.28, 0.22, 0.42, 9), '#c9cdd6', fd.x + 1.0, 0.38, fd.z + 0.3);
+    fmMesh(new THREE.CylinderGeometry(0.06, 0.06, 1.4, 5), '#6b3a1d', fd.x - 1.3, 0.86, fd.z + 0.2);
+    fmMesh(new THREE.BoxGeometry(1.4, 0.6, 0.08), '#f4e8c4', fd.x - 1.3, 1.6, fd.z + 0.2);
+    fmLab('🦆 Pondripple Pond', po.x, 3.2, po.z + po.rz + 1.6);
+    // Pondripple ducks (and two ducklings) paddling in loops
+    fm.ducks = [];
+    [[0, 5.2, 0.24], [1.2, 3.6, 0.3], [2.6, 6.4, 0.2], [4.0, 4.4, 0.27], [0.4, 2.2, 0.36, true], [0.7, 2.0, 0.36, true]].forEach(([ph, rr, sp, baby], i) => {
+      const g = baby ? fmMakeDuckling() : fmMakeDuck();
+      if (!baby) g.scale.setScalar(0.95);
+      g.position.set(po.x, 0.12, po.z); g.userData.y0 = 0.12; g.userData.bob = i * 1.7;
+      g.userData.pond = {ph, rr, sp, baby: !!baby}; g.userData.kind = 'duck';
+      scene.add(g); fmKeep(g); fm.critters.push(g); fm.ducks.push(g);
+    });
+    // far side of the hay loop: fields, hay bales, a windmill, fences and tree lines out to the hills
+    const fz = R.fmZ;
+    for (let r = 0; r < 7; r++){
+      fmPlat(-28, 0.2, fz(-74 - r * 2.4), 18, 1.3, r % 2 ? '#a7c24a' : '#8fae3a', 0.06);       // green crop rows
+      for (let c = 0; c < 6; c++) fmMesh(new THREE.SphereGeometry(0.42, 6, 4), '#f0c419', -34.5 + c * 2.6, 0.95, fz(-74 - r * 2.4));   // sunflower heads
+    }
+    fmLab('🌻 Sunflower rows', -28, 3.2, fz(-70.5));
+    for (let r = 0; r < 6; r++) fmPlat(26, 0.2, fz(-74 - r * 2.6), 16, 1.6, r % 2 ? '#c9a24a' : '#b8913c', 0.08);   // wheat strips
+    [[20, -79], [23, -84], [30, -77], [27, -88]].forEach(([x, z]) => { const b = fmMesh(new THREE.CylinderGeometry(0.9, 0.9, 1.3, 12), '#e2b84a', x, 0.8, fz(z)); b.rotation.z = Math.PI / 2; });
+    // windmill (original Honeymeadow one with candy-striped sails)
+    const wx = 18, wz = fz(-102);
+    fmMesh(new THREE.CylinderGeometry(1.4, 2.2, 9, 8), '#f1e6d2', wx, 4.6, wz);
+    fmMesh(new THREE.ConeGeometry(2.0, 2.4, 8), '#c45c3a', wx, 10.3, wz);
+    const hub = new THREE.Group(); hub.position.set(wx, 8.2, wz + 1.7); scene.add(hub); fmKeep(hub);
+    [0, 1, 2, 3].forEach(k => { const s = new THREE.Mesh(new THREE.BoxGeometry(0.8, 5.0, 0.12), fmMat(k % 2 ? '#ffffff' : '#ff8fab')); s.position.y = 2.6; const arm = new THREE.Group(); arm.rotation.z = k * Math.PI / 2; arm.add(s); hub.add(arm); });
+    fm.sails = hub;
+    fmLab('🌀 Honeymeadow windmill', wx, 13.4, wz);
+    // long fence lines and tree rows to fill the view
+    for (let i = 0; i < 34; i++){ fmMesh(new THREE.BoxGeometry(0.16, 1.0, 0.16), '#8b6a3a', -50 + i * 3, 0.66, fz(-112)); }
+    fmMesh(new THREE.BoxGeometry(100, 0.12, 0.1), '#8b6a3a', -0.5, 0.92, fz(-112));
+    fmMesh(new THREE.BoxGeometry(100, 0.12, 0.1), '#8b6a3a', -0.5, 0.5, fz(-112));
+    for (let i = 0; i < 16; i++) fmTree(-58 + i * 7.6, fz(-118 - (i % 3) * 3), 3.2 + (i % 4) * 0.5, i % 2 ? '#3d8a3e' : '#5aa04a');
+    [[-40, -96, 3.2], [38, -104, 3.6], [-14, -104, 2.8], [-46, -84, 3.0], [42, -80, 3.4]].forEach(([x, z, h]) => fmTree(x, fz(z), h, '#4f9a48'));
+    // rolling hills on the far horizon
+    [[-70, -150, 26], [-20, -165, 32], [40, -158, 28], [90, -140, 24], [-110, -120, 22]].forEach(([x, z, r], i) => {
+      const h = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), fmMat(i % 2 ? '#5aa548' : '#6fb653'));
+      h.scale.y = 0.36; h.position.set(x, 0.1, fz(z)); scene.add(h); fmKeep(h);
+    });
+    fm.shiftZ = prevS;
+  }
+  function fmPondTick(dt){
+    if (!fm || !fm.ducks || !FarmRules.FM_POND) return;
+    const po = FarmRules.FM_POND, fd = FarmRules.FM_DUCK_FEED;
+    if (fm.duckFeedT > 0) fm.duckFeedT = Math.max(0, fm.duckFeedT - dt);
+    const eat = fm.duckFeedT > 0;
+    fm.ducks.forEach((g, i) => {
+      const u = g.userData.pond; if (!u) return;
+      u.a = (u.a == null ? u.ph : u.a) + dt * u.sp * (eat ? 0.4 : 1);
+      let tx = po.x + Math.cos(u.a) * u.rr * 1.4, tz = po.z + Math.sin(u.a) * u.rr * 0.8;
+      if (u.baby){ const mom = fm.ducks[1]; if (mom){ tx = mom.position.x - Math.cos(u.a + i) * 0.9; tz = mom.position.z - Math.sin(u.a + i) * 0.7; } }
+      if (eat && !u.baby){ tx = fd.x - 1.6 + i * 1.1; tz = po.z + po.rz - 1.3 - (i % 2) * 0.6; }
+      const dx = tx - g.position.x, dz = tz - g.position.z, d = Math.hypot(dx, dz);
+      const step = Math.min(d, dt * (eat ? 2.2 : 1.4));
+      if (d > 0.02){ g.position.x += dx / d * step; g.position.z += dz / d * step; g.rotation.y = Math.atan2(dx, dz); }
+      if (eat && !u.baby && g.userData.head) g.userData.head.rotation.x = 0.5 + Math.sin(fm.t * 9 + i) * 0.25;
+    });
+    (fm.lily || []).forEach(p => { p.position.y = 0.215 + Math.sin(fm.t * 1.3 + (p.userData.bob || 0)) * 0.012; });
+    if (fm.sails) fm.sails.rotation.z -= dt * 0.7;
+    if (fm.fishT > 0){
+      fm.fishT = Math.max(0, fm.fishT - dt);
+      if (fm.bobber){ fm.bobber.visible = fm.fishT > 0; fm.bobber.position.y = 0.24 + Math.sin(fm.t * 8) * (fm.fishT < 0.7 ? 0.08 : 0.025); }
+    }
+    if (P && fm.run && fm.run.phase === 'farm' && !fm.run.haying && FarmRules.fmPondPush){
+      const s = FarmRules.fmPondPush(P.x, P.z);
+      if (s){ P.x = s.x; P.z = s.z; P.vx = 0; P.vz = 0; }
+    }
+  }
   function buildFarm(){
     const started = FarmRules.fmNewVisit(fmState());
     fm = {trash:[], solids:[], zones:{}, sv: started.state, run: started.run, near:null, bus:null, homeBus:null, wagon:null, marks:{}, curZone:null, shiftZ:0, critters:[], babies:{}, t:0};
     fmSave(started.state);
     try { checkpoints[0] = {idx:0, spawn:{x:0,y:0.5,z:18}, flag:new THREE.Object3D()}; } catch(e){}
     fmSky();
-    const hemi = new THREE.HemisphereLight(0xe8f4ff, 0x4a7a3a, 1.1); scene.add(hemi); fmKeep(hemi);
-    const sun = new THREE.DirectionalLight('#fff8e0', 0.85); sun.position.set(10, 18, 8); scene.add(sun); fmKeep(sun);
+    // GB-7: these used to stack on the world lights (1.7 hemi + 1.35 sun) and bleached the grass to pale yellow.
+    const hemi = new THREE.HemisphereLight(0xe8f4ff, 0x4a7a3a, 0.25); scene.add(hemi); fmKeep(hemi);
+    const sun = new THREE.DirectionalLight('#fff8e0', 0.18); sun.position.set(10, 18, 8); scene.add(sun); fmKeep(sun);
     fm.curZone = 'yard'; fm.shiftZ = 0;
     fmPlat(0, 0.14, 18, 52, 44, '#3f8f3a', 0.24);
     fmPlat(0, 0.16, 16, 36, 28, '#4ea247', 0.16);
@@ -530,6 +657,7 @@
       const lab = fmLab((b.emoji||'🐾') + ' ' + short, b.x, 1.55, b.z);
       fm.babies[b.id] = {mesh:g, lab:lab};
     });
+    fmBuildPond();
     if (P){ P.x=0; P.y=0.5; P.z=18; P.vx=0; P.vz=0; P.vy=0; }
     if (typeof cam !== 'undefined' && cam){ cam.yaw=0; cam.pitch=0.16; cam.dist=10; }
     const box=document.getElementById('fmBox'); if(box) box.style.display='block';
@@ -597,6 +725,22 @@
       if (!r.ok) return;
       fm.sv = r.state; fmSave(fm.sv); fmPaint();
       banner((hit.emoji||'🌾') + ' ' + (r.item && r.item.blurb ? r.item.blurb : ('You fed the ' + hit.name + '.')));
+      return;
+    }
+    if (hit.kind === 'ducks'){
+      const r = FarmRules.fmFeedDucks(fm.sv);
+      if (!r.ok) return;
+      fm.sv = r.state; fmSave(fm.sv); fm.duckFeedT = 6;
+      banner('🦆 ' + r.item.blurb);
+      return;
+    }
+    if (hit.kind === 'fish'){
+      if (fm.fishT > 0) return;   // one cast at a time
+      const r = FarmRules.fmFish(fm.sv, Math.random());
+      fm.fishT = 1.6;
+      fm.sv = r.state; fmSave(fm.sv);
+      fmPay(r.coins);
+      banner('🎣 ' + (r.first ? 'New catch! ' : '') + 'You caught ' + r.fish.line + ' ' + r.fish.emoji + ' and let it swim home.' + (r.coins ? ('  +' + r.coins + ' 🪙') : '') + (r.first ? ('  (' + r.count + '/' + FarmRules.FM_POND_FISH.length + ' kinds)') : ''));
       return;
     }
     if (hit.kind === 'pet'){
@@ -726,6 +870,7 @@
       if (g.userData.head) g.userData.head.rotation.x = Math.sin(T * 1.6 + i) * 0.1;
       if (g.userData.ears) g.userData.ears.forEach((e, k) => { e.rotation.z = Math.sin(T * 2.4 + k) * 0.12; });
     });
+    fmPondTick(dt || 0);
     fmApplyZones(fm.run && fm.run.phase);
     fm.near = FarmRules.fmNear(P ? P.x : 0, P ? P.z : 0, fm.sv, fm.run);
     fmHud(FarmRules.fmGoal(fm.sv, fm.run));
@@ -791,7 +936,7 @@
       if (!fm || !P) return;
       const F = FarmRules;
       const baby = (F.FM_BABIES||[]).find(b => b.id === id || b.kind === id);
-      const map = {bus:F.FM_BUS, home:F.FM_HOME_BUS, teacher:F.FM_TEACHER, nettie:F.FM_GUIDE, barn:F.FM_BARN, arrive:F.FM_ARRIVE, wagon:F.FM_WAGON, hens:F.FM_FEEDS[0], sheep:F.FM_FEEDS[1], cows:F.FM_FEEDS[2], goats:F.FM_FEEDS[3], bunnies:F.FM_FEEDS[4], stand:F.FM_STAND, nursery:F.FM_NURSERY};
+      const map = {bus:F.FM_BUS, home:F.FM_HOME_BUS, teacher:F.FM_TEACHER, nettie:F.FM_GUIDE, barn:F.FM_BARN, arrive:F.FM_ARRIVE, wagon:F.FM_WAGON, hens:F.FM_FEEDS[0], sheep:F.FM_FEEDS[1], cows:F.FM_FEEDS[2], goats:F.FM_FEEDS[3], bunnies:F.FM_FEEDS[4], stand:F.FM_STAND, nursery:F.FM_NURSERY, pond:F.FM_DUCK_FEED, dock:F.FM_DOCK && F.FM_DOCK.end};
       const t = map[id] || baby;
       if (!t) return;
       P.x=t.x; P.y=0.5; P.z=t.z; P.vx=0; P.vz=0; P.vy=0;

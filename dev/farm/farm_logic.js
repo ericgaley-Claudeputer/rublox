@@ -97,6 +97,17 @@
     {id:'kit', kind:'kit', name:'Velvettail bunny', emoji:'🐇', x:-22.6, z:fmZ(-36.6), r:1.8, needFeed:'bunnies', names:['Velvet','Cotton','Hop']}
   ];
   const FM_NURSERY = {x:-19.5, z:fmZ(-36.5)};
+  // GB-7: Pondripple Pond, past the far side of the hay loop. An oval pond with a little dock.
+  const FM_POND = {x:-2, z:fmZ(-86), rx:12, rz:8, name:'Pondripple Pond'};
+  const FM_DOCK = {x0:4.2, x1:11.6, z:fmZ(-86), w:1.8, end:{x:5.0, z:fmZ(-86), r:1.9}};
+  const FM_DUCK_FEED = {x:-2, z:fmZ(-76.4), r:2.6, name:'Pondripple ducks', emoji:'🦆', blurb:'The Pondripple ducks paddle over in a wobbly line and gobble the duck pellets. Quack-quack, thank you!'};
+  const FM_POND_FISH = [
+    {id:'minnowmint', name:'Minnowmint', emoji:'🐟', line:'a tiny, minty-green Minnowmint'},
+    {id:'reedfin', name:'Reedfin perch', emoji:'🐠', line:'a stripy Reedfin perch'},
+    {id:'lilyglow', name:'Lilyglow koi', emoji:'🎏', line:'a shimmery Lilyglow koi'},
+    {id:'puddlepip', name:'Puddlepip sunny', emoji:'🐡', line:'a round little Puddlepip sunny'}
+  ];
+  const FM_FISH_COINS = 3; // paid once per new kind of fish, so at most 12 coins ever
   function fmPathLen(path){
     let n = 0;
     for (let i = 0; i < (path||[]).length - 1; i++) n += Math.hypot(path[i+1].x - path[i].x, path[i+1].z - path[i].z);
@@ -125,7 +136,7 @@
   function fmRidePose(run){ return fmPoseOn(FM_RIDE_PATH, (run && run.rideT) || 0, FM_RIDE_T); }
   function fmHayPose(run){ return fmPoseOn(FM_HAY_PATH, (run && run.hayT) || 0, FM_HAY_T); }
 
-  function fmFresh(){ return {ver: FM_VER, fed: [], eggs: [], apples: [], pumps: [], hay: false, visits: 0, won: false, coins: 0, sold:{egg:0, apple:0, pump:0}, adopted:[], served:0}; }
+  function fmFresh(){ return {ver: FM_VER, fed: [], eggs: [], apples: [], pumps: [], hay: false, visits: 0, won: false, coins: 0, sold:{egg:0, apple:0, pump:0}, adopted:[], served:0, ducks:false, fish:[]}; }
   function fmFilter(list, allowed){
     const ids = allowed.map(a => a.id);
     return Array.isArray(list) ? list.filter((id, i, a) => ids.indexOf(id) >= 0 && a.indexOf(id) === i) : [];
@@ -149,6 +160,8 @@
     };
     d.adopted = fmFilter(o.adopted, FM_BABIES);
     d.served = Math.max(0, o.served | 0);
+    d.ducks = !!o.ducks;
+    d.fish = fmFilter(o.fish, FM_POND_FISH);
     d.ver = FM_VER;
     return d;
   }
@@ -327,6 +340,38 @@
     if (run) run.phase = 'done';
     return {ok:true, coins: FM_REWARD, state, message:'Hay, eggs, fruit and full tummies — what a farm day!'};
   }
+  function fmInPond(x, z, pad){
+    const dx = ((x||0) - FM_POND.x) / (FM_POND.rx + (pad||0)), dz = ((z||0) - FM_POND.z) / (FM_POND.rz + (pad||0));
+    return dx * dx + dz * dz < 1;
+  }
+  function fmOnDock(x, z){
+    return (x||0) >= FM_DOCK.x0 - 0.2 && (x||0) <= FM_DOCK.x1 + 0.4 && Math.abs((z||0) - FM_DOCK.z) <= FM_DOCK.w / 2 + 0.15;
+  }
+  // Keep walkers out of the water: anyone inside the pond (and not on the dock) is moved to the shore.
+  function fmPondPush(x, z){
+    if (fmOnDock(x, z) || !fmInPond(x, z, -0.6)) return null;
+    let dx = ((x||0) - FM_POND.x) / FM_POND.rx, dz = ((z||0) - FM_POND.z) / FM_POND.rz;
+    let L = Math.hypot(dx, dz); if (L < 1e-4){ dx = 0; dz = 1; L = 1; }
+    const k = 1 / L * 1.0;
+    return {x: FM_POND.x + dx * k * (FM_POND.rx - 0.55), z: FM_POND.z + dz * k * (FM_POND.rz - 0.55)};
+  }
+  function fmFeedDucks(state){
+    state = fmLoad(state);
+    if (state.ducks) return {ok:false, why:'have', already:true, state, item:FM_DUCK_FEED};
+    state.ducks = true;
+    return {ok:true, state, item:FM_DUCK_FEED};
+  }
+  // roll: 0..1 picks the fish. New kinds are added to the save and pay a few coins once; repeats pay nothing.
+  function fmFish(state, roll){
+    state = fmLoad(state);
+    const r = Math.max(0, Math.min(0.9999, +roll || 0));
+    const fish = FM_POND_FISH[Math.floor(r * FM_POND_FISH.length)];
+    const first = !fmHas(state.fish, fish.id);
+    if (first) state.fish = fmAdd(state.fish, fish.id);
+    const coins = first ? FM_FISH_COINS : 0;
+    if (coins) state.coins = (state.coins | 0) + coins;
+    return {ok:true, state, fish, first, coins, all: state.fish.length >= FM_POND_FISH.length, count: state.fish.length};
+  }
   function fmNear(x, z, state, run){
     const phase = (run && run.phase) || 'yard';
     if (phase === 'yard'){
@@ -395,6 +440,13 @@
           return {kind:'pet', id:f.id, name:f.name, emoji:f.emoji, act:'💕 Pet ' + f.name, text:'You pet the ' + f.name + '! They lean in with happy wiggles.'};
         }
       }
+      if (fmOnDock(x, z) && Math.hypot((x||0) - FM_DOCK.end.x, (z||0) - FM_DOCK.end.z) <= FM_DOCK.end.r){
+        return {kind:'fish', act:'🎣 Fish off the dock', name:'Pondripple dock'};
+      }
+      if (Math.hypot((x||0) - FM_DUCK_FEED.x, (z||0) - FM_DUCK_FEED.z) <= FM_DUCK_FEED.r){
+        if (!fmLoad(state).ducks) return {kind:'ducks', act:'🦆 Feed the Pondripple ducks', name:FM_DUCK_FEED.name, emoji:'🦆'};
+        return {kind:'talk', who:'Pondripple ducks', act:'🦆 Wave', text:'The Pondripple ducks bob on the water and quack hello. The lily pads wobble as they paddle past.'};
+      }
       if (fmAllDone(state) && Math.hypot((x||0) - FM_HOME_BUS.x, (z||0) - FM_HOME_BUS.z) <= FM_HOME_BUS.r){
         return {kind:'home', act:'🚌 Ride home', name:'Afterbell bus'};
       }
@@ -423,6 +475,7 @@
     FM_KEY, FM_VER, FM_REWARD, FM_RIDE_T, FM_HAY_T, FM_DEST_DZ, FM_VIEW_FAR, FM_YARD_LANDMARKS, fmZ, fmDestClearOfSchool,
     FM_FEEDS, FM_EGGS, FM_APPLES, FM_PUMPS, FM_BUS, FM_HOME_BUS, FM_GUIDE, FM_TEACHER, FM_BARN, FM_BARN_BOX, FM_ARRIVE, FM_WAGON, FM_RIDE_PATH, FM_HAY_PATH,
     FM_STAND, FM_PRICES, FM_PRICE_LIST, FM_CUSTOMERS, FM_BABIES, FM_NURSERY,
+    FM_POND, FM_DOCK, FM_DUCK_FEED, FM_POND_FISH, FM_FISH_COINS, fmInPond, fmOnDock, fmPondPush, fmFeedDucks, fmFish,
     fmFresh, fmLoad, fmNewVisit, fmAllDone, fmFeed, fmPickEgg, fmPickApple, fmPickPump, fmStock, fmPrice, fmCustomer, fmSell,
     fmBaby, fmAdopt, fmGrantPet, fmHayClearance,
     fmBoardBus, fmRidePose, fmTickRide, fmStartHay, fmHayPose, fmTickHay, fmBoardHome, fmNear, fmGoal, fmPathLen
